@@ -1491,7 +1491,31 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 <span class="normal">376</span>
 <span class="normal">377</span>
 <span class="normal">378</span>
-<span class="normal">379</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># Fides Configuration File</span>
+<span class="normal">379</span>
+<span class="normal">380</span>
+<span class="normal">381</span>
+<span class="normal">382</span>
+<span class="normal">383</span>
+<span class="normal">384</span>
+<span class="normal">385</span>
+<span class="normal">386</span>
+<span class="normal">387</span>
+<span class="normal">388</span>
+<span class="normal">389</span>
+<span class="normal">390</span>
+<span class="normal">391</span>
+<span class="normal">392</span>
+<span class="normal">393</span>
+<span class="normal">394</span>
+<span class="normal">395</span>
+<span class="normal">396</span>
+<span class="normal">397</span>
+<span class="normal">398</span>
+<span class="normal">399</span>
+<span class="normal">400</span>
+<span class="normal">401</span>
+<span class="normal">402</span>
+<span class="normal">403</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># Fides Configuration File</span>
 <span class="c1"># Additional Documentation at : https://ethyca.github.io/fides/stable/config/</span>
 
 <span class="c1">#--------------#</span>
@@ -1525,7 +1549,7 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 
 <span class="c1"># A fully anonymized unique identifier that is automatically generated</span>
 <span class="c1"># by the application. Used for anonymous analytics when opted-in.</span>
-<span class="n">analytics_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;7ce7244a19ea5f2f02523b5235bbcac3&quot;</span><span class="w"> </span><span class="c1"># string</span>
+<span class="n">analytics_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;d30770dc7994ec38981582e4881368be&quot;</span><span class="w"> </span><span class="c1"># string</span>
 
 <span class="c1"># When set to True, disables functionality that requires making calls</span>
 <span class="c1"># to a Fides webserver.</span>
@@ -1578,6 +1602,18 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 <span class="c1"># overflow connections are discarded afterwards and not maintained.</span>
 <span class="n">api_engine_max_overflow</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">50</span><span class="w"> </span><span class="c1"># integer</span>
 
+<span class="c1"># Number of seconds of inactivity before the client sends a TCP</span>
+<span class="c1"># keepalive packet to verify the database connection is still alive.</span>
+<span class="n">api_engine_keepalives_idle</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">30</span><span class="w"> </span><span class="c1"># integer</span>
+
+<span class="c1"># Number of seconds between TCP keepalive retries if the initial</span>
+<span class="c1"># keepalive packet receives no response. These are client-side retries.</span>
+<span class="n">api_engine_keepalives_interval</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">10</span><span class="w"> </span><span class="c1"># integer</span>
+
+<span class="c1"># Maximum number of TCP keepalive retries before the client considers</span>
+<span class="c1"># the connection dead and closes it.</span>
+<span class="n">api_engine_keepalives_count</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">5</span><span class="w"> </span><span class="c1"># integer</span>
+
 <span class="c1"># The name of the application database.</span>
 <span class="n">db</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;default_db&quot;</span><span class="w"> </span><span class="c1"># string</span>
 
@@ -1606,6 +1642,18 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 <span class="c1"># each worker, if the pool reaches the limit. These overflow</span>
 <span class="c1"># connections are discarded afterwards and not maintained.</span>
 <span class="n">task_engine_max_overflow</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">50</span><span class="w"> </span><span class="c1"># integer</span>
+
+<span class="c1"># Number of seconds of inactivity before the client sends a TCP</span>
+<span class="c1"># keepalive packet to verify the database connection is still alive.</span>
+<span class="n">task_engine_keepalives_idle</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">30</span><span class="w"> </span><span class="c1"># integer</span>
+
+<span class="c1"># Number of seconds between TCP keepalive retries if the initial</span>
+<span class="c1"># keepalive packet receives no response. These are client-side retries.</span>
+<span class="n">task_engine_keepalives_interval</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">10</span><span class="w"> </span><span class="c1"># integer</span>
+
+<span class="c1"># Maximum number of TCP keepalive retries before the client considers</span>
+<span class="c1"># the connection dead and closes it.</span>
+<span class="n">task_engine_keepalives_count</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">5</span><span class="w"> </span><span class="c1"># integer</span>
 
 <span class="c1"># The database user with which to login to the application database.</span>
 <span class="n">user</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;defaultuser&quot;</span><span class="w"> </span><span class="c1"># string</span>

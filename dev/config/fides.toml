@@ -32,7 +32,7 @@ task_always_eager = true # boolean
 
 # A fully anonymized unique identifier that is automatically generated
 # by the application. Used for anonymous analytics when opted-in.
-analytics_id = "7ce7244a19ea5f2f02523b5235bbcac3" # string
+analytics_id = "d30770dc7994ec38981582e4881368be" # string
 
 # When set to True, disables functionality that requires making calls
 # to a Fides webserver.
@@ -85,6 +85,18 @@ api_engine_pool_size = 50 # integer
 # overflow connections are discarded afterwards and not maintained.
 api_engine_max_overflow = 50 # integer
 
+# Number of seconds of inactivity before the client sends a TCP
+# keepalive packet to verify the database connection is still alive.
+api_engine_keepalives_idle = 30 # integer
+
+# Number of seconds between TCP keepalive retries if the initial
+# keepalive packet receives no response. These are client-side retries.
+api_engine_keepalives_interval = 10 # integer
+
+# Maximum number of TCP keepalive retries before the client considers
+# the connection dead and closes it.
+api_engine_keepalives_count = 5 # integer
+
 # The name of the application database.
 db = "default_db" # string
 
@@ -113,6 +125,18 @@ task_engine_pool_size = 50 # integer
 # each worker, if the pool reaches the limit. These overflow
 # connections are discarded afterwards and not maintained.
 task_engine_max_overflow = 50 # integer
+
+# Number of seconds of inactivity before the client sends a TCP
+# keepalive packet to verify the database connection is still alive.
+task_engine_keepalives_idle = 30 # integer
+
+# Number of seconds between TCP keepalive retries if the initial
+# keepalive packet receives no response. These are client-side retries.
+task_engine_keepalives_interval = 10 # integer
+
+# Maximum number of TCP keepalive retries before the client considers
+# the connection dead and closes it.
+task_engine_keepalives_count = 5 # integer
 
 # The database user with which to login to the application database.
 user = "defaultuser" # string
