@@ -1024,7 +1024,6 @@ async def test_restart_graph_from_failure(
     ]
 
     assert customer_detail_logs == [
-        ("Dataset traversal", "complete"),
         ("mongo_test:customer_details", "in_processing"),
         ("mongo_test:customer_details", "error"),
         ("mongo_test:customer_details", "in_processing"),
@@ -1141,7 +1140,6 @@ async def test_restart_graph_from_failure_on_different_scheduler(
     ]
 
     assert customer_detail_logs == [
-        ("Dataset traversal", "complete"),
         ("mongo_test:customer_details", "in_processing"),
         ("mongo_test:customer_details", "error"),
         ("mongo_test:customer_details", "in_processing"),
@@ -1284,7 +1282,6 @@ async def test_restart_graph_from_failure_during_erasure(
     ]
 
     assert address_logs == [
-        ("Dataset traversal", "complete"),
         ("postgres_example_test_dataset:address", "access", "in_processing"),
         ("postgres_example_test_dataset:address", "access", "complete"),
         ("postgres_example_test_dataset:address", "erasure", "in_processing"),
