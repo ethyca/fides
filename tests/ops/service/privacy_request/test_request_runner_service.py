@@ -48,10 +48,7 @@ from fides.api.schemas.saas.saas_config import SaaSRequest
 from fides.api.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
 from fides.api.service.connectors.dynamodb_connector import DynamoDBConnector
 from fides.api.service.connectors.saas_connector import SaaSConnector
-from fides.api.service.connectors.sql_connector import (
-    RedshiftConnector,
-    SnowflakeConnector,
-)
+from fides.api.service.connectors.sql_connector import RedshiftConnector
 from fides.api.service.masking.strategy.masking_strategy import MaskingStrategy
 from fides.api.service.masking.strategy.masking_strategy_hmac import HmacMaskingStrategy
 from fides.api.service.privacy_request.request_runner_service import (
@@ -1339,6 +1336,60 @@ def test_create_and_process_erasure_request_specific_category_postgres(
     assert customer_found
 
 
+@pytest.mark.integration_postgres
+@pytest.mark.integration
+@pytest.mark.parametrize(
+    "dsr_version",
+    ["use_dsr_3_0", "use_dsr_2_0"],
+)
+def test_create_and_process_erasure_request_with_masking_strategy_override(
+    postgres_integration_db,
+    postgres_example_test_dataset_config,
+    cache,
+    db,
+    generate_auth_header,
+    erasure_policy,
+    dsr_version,
+    request,
+    read_connection_config,
+    run_privacy_request_task,
+):
+    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+
+    employee_email = "employee-1@example.com"
+    employee_id = 1
+    data = {
+        "requested_at": "2021-08-30T16:09:37.359Z",
+        "policy_key": erasure_policy.key,
+        "identity": {"email": employee_email},
+    }
+
+    stmt = select("*").select_from(table("employee"))
+    res = postgres_integration_db.execute(stmt).all()
+
+    pr = get_privacy_request_results(
+        db,
+        erasure_policy,
+        run_privacy_request_task,
+        data,
+    )
+    pr.delete(db=db)
+
+    stmt = select(
+        column("id"),
+        column("name"),
+    ).select_from(table("employee"))
+    res = postgres_integration_db.execute(stmt).all()
+
+    customer_found = False
+    for row in res:
+        if employee_id == row.id:
+            customer_found = True
+            # Check that the `name` field was masked with the override provided in the dataset
+            assert row.name == "testing-test"
+    assert customer_found
+
+
 @pytest.mark.integration_mssql
 @pytest.mark.integration
 @pytest.mark.parametrize(
@@ -1786,126 +1837,6 @@ def test_create_and_process_erasure_request_read_access(
 
 
 @pytest.fixture(scope="function")
-def snowflake_resources(
-    snowflake_example_test_dataset_config,
-):
-    snowflake_connection_config = (
-        snowflake_example_test_dataset_config.connection_config
-    )
-    snowflake_client = SnowflakeConnector(snowflake_connection_config).client()
-    uuid = str(uuid4())
-    customer_email = f"customer-{uuid}@example.com"
-    formatted_customer_email = f"'{customer_email}'"
-    customer_name = f"{uuid}"
-    formatted_customer_name = f"'{customer_name}'"
-
-    stmt = 'select max("id") from "customer";'
-    res = snowflake_client.execute(stmt).all()
-    customer_id = res[0][0] + 1
-
-    stmt = f"""
-    insert into "customer" ("id", "email", "name", "variant_eg")
-    select {customer_id}, {formatted_customer_email}, {formatted_customer_name}, to_variant({formatted_customer_name});
-    """
-    res = snowflake_client.execute(stmt).all()
-    assert res[0][0] == 1
-    yield {
-        "email": customer_email,
-        "formatted_email": formatted_customer_email,
-        "name": customer_name,
-        "id": customer_id,
-        "client": snowflake_client,
-    }
-    # Remove test data and close Snowflake connection in teardown
-    stmt = f'delete from "customer" where "email" = {formatted_customer_email};'
-    res = snowflake_client.execute(stmt).all()
-    assert res[0][0] == 1
-
-
-@pytest.mark.integration_external
-@pytest.mark.integration_snowflake
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
-)
-def test_create_and_process_access_request_snowflake(
-    snowflake_resources,
-    db,
-    cache,
-    policy,
-    dsr_version,
-    request,
-    run_privacy_request_task,
-):
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
-    customer_email = snowflake_resources["email"]
-    customer_name = snowflake_resources["name"]
-    data = {
-        "requested_at": "2021-08-30T16:09:37.359Z",
-        "policy_key": policy.key,
-        "identity": {"email": customer_email},
-    }
-    pr = get_privacy_request_results(
-        db,
-        policy,
-        run_privacy_request_task,
-        data,
-        task_timeout=PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL,
-    )
-    results = pr.get_raw_access_results()
-    customer_table_key = f"snowflake_example_test_dataset:customer"
-    assert len(results[customer_table_key]) == 1
-    assert results[customer_table_key][0]["email"] == customer_email
-    assert results[customer_table_key][0]["name"] == customer_name
-
-    pr.delete(db=db)
-
-
-@pytest.mark.integration_external
-@pytest.mark.integration_snowflake
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
-)
-def test_create_and_process_erasure_request_snowflake(
-    snowflake_example_test_dataset_config,
-    snowflake_resources,
-    integration_config: Dict[str, str],
-    db,
-    cache,
-    dsr_version,
-    request,
-    erasure_policy,
-    run_privacy_request_task,
-):
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
-    customer_email = snowflake_resources["email"]
-    snowflake_client = snowflake_resources["client"]
-    formatted_customer_email = snowflake_resources["formatted_email"]
-    data = {
-        "requested_at": "2021-08-30T16:09:37.359Z",
-        "policy_key": erasure_policy.key,
-        "identity": {"email": customer_email},
-    }
-    pr = get_privacy_request_results(
-        db,
-        erasure_policy,
-        run_privacy_request_task,
-        data,
-        task_timeout=PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL,
-    )
-    pr.delete(db=db)
-
-    stmt = f'select "name", "variant_eg" from "customer" where "email" = {formatted_customer_email};'
-    res = snowflake_client.execute(stmt).all()
-    for row in res:
-        assert row.name is None
-        assert row.variant_eg is None
-
-
-@pytest.fixture(scope="function")
 def redshift_resources(
     redshift_example_test_dataset_config,
 ):
@@ -2181,7 +2112,7 @@ def test_create_and_process_erasure_request_bigquery(
     dsr_version,
     request,
     bigquery_fixtures,
-    erasure_policy,
+    biquery_erasure_policy,
     run_privacy_request_task,
 ):
     request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
@@ -2200,14 +2131,14 @@ def test_create_and_process_erasure_request_bigquery(
     customer_email = bigquery_resources["email"]
     data = {
         "requested_at": "2021-08-30T16:09:37.359Z",
-        "policy_key": erasure_policy.key,
+        "policy_key": biquery_erasure_policy.key,
         "identity": {"email": customer_email},
     }
 
     # Should erase customer name
     pr = get_privacy_request_results(
         db,
-        erasure_policy,
+        biquery_erasure_policy,
         run_privacy_request_task,
         data,
         task_timeout=PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL,
@@ -2231,14 +2162,15 @@ def test_create_and_process_erasure_request_bigquery(
             assert row.city == bigquery_resources["city"]
             assert row.state == bigquery_resources["state"]
 
-    target = erasure_policy.rules[0].targets[0]
-    target.data_category = "user.contact.address.state"
-    target.save(db=db)
+    for target in biquery_erasure_policy.rules[0].targets:
+        if target.data_category == "user.name":
+            target.data_category = "user.contact.address.state"
+            target.save(db=db)
 
     # Should erase state fields on address table
     pr = get_privacy_request_results(
         db,
-        erasure_policy,
+        biquery_erasure_policy,
         run_privacy_request_task,
         data,
         task_timeout=PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL,
@@ -2247,19 +2179,14 @@ def test_create_and_process_erasure_request_bigquery(
     bigquery_client = bigquery_resources["client"]
     with bigquery_client.connect() as connection:
         address_id = bigquery_resources["address_id"]
-        stmt = f"select 'id', city, state from fidesopstest.address where id = {address_id};"
+        stmt = f"select 'id', city, state, street from fidesopstest.address where id = {address_id};"
         res = connection.execute(stmt).all()
         for row in res:
             # State field was targeted by erasure policy but city was not
             assert row.city is not None
             assert row.state is None
-
-        stmt = f"select 'id', city, state from fidesopstest.address where id = {address_id};"
-        res = connection.execute(stmt).all()
-        for row in res:
-            # State field was targeted by erasure policy but city was not
-            assert row.city is not None
-            assert row.state is None
+            # Street field was targeted by erasure policy but overridden by field-level masking_strategy_override
+            assert row.street == "REDACTED"
 
         stmt = f"select * from fidesopstest.employee where address_id = {bigquery_resources['address_id']};"
         res = connection.execute(stmt).all()

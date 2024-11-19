@@ -51,23 +51,7 @@ import {
   ConnectorParametersForm,
   TestConnectionResponse,
 } from "./ConnectorParametersForm";
-
-const generateIntegrationKey = (
-  systemFidesKey: string,
-  connectionOption: ConnectionSystemTypeMap,
-): string => {
-  let integrationKey = systemFidesKey;
-
-  if (!systemFidesKey.includes(connectionOption.identifier)) {
-    integrationKey += `_${connectionOption.identifier}`;
-  }
-
-  if (connectionOption.type === SystemType.SAAS) {
-    integrationKey += "_api";
-  }
-
-  return integrationKey;
-};
+import { generateIntegrationKey } from "./helpers";
 
 /**
  * Only handles creating saas connectors. The BE handler automatically

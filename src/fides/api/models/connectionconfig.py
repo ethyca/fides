@@ -2,8 +2,9 @@ from __future__ import annotations
 
 import enum
 from datetime import datetime
-from typing import Any, Dict, Optional, Type
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Type
 
+from loguru import logger
 from sqlalchemy import Boolean, Column, DateTime, Enum, ForeignKey, String, event
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB
 from sqlalchemy.ext.mutable import MutableDict
@@ -20,6 +21,9 @@ from fides.api.models.sql_models import System  # type: ignore[attr-defined]
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.saas.saas_config import SaaSConfig
 from fides.config import CONFIG
+
+if TYPE_CHECKING:
+    from fides.api.models.detection_discovery import MonitorConfig
 
 
 class ConnectionTestStatus(enum.Enum):
@@ -162,6 +166,14 @@ class ConnectionConfig(Base):
         cascade="all, delete",
     )
 
+    # Monitor configs related to this connection config.
+    # If the connection config is deleted, the monitor configs will be deleted as well.
+    monitors: RelationshipProperty[List["MonitorConfig"]] = relationship(
+        "MonitorConfig",
+        back_populates="connection_config",
+        cascade="all, delete",
+    )
+
     access_manual_webhook = relationship(  # type: ignore[misc]
         "AccessManualWebhook",
         back_populates="connection_config",
@@ -276,8 +288,20 @@ class ConnectionConfig(Base):
 
     def delete(self, db: Session) -> Optional[FidesBase]:
         """Hard deletes datastores that map this ConnectionConfig."""
+        logger.info(
+            "Deleting connection config {}...",
+            self.key,
+        )
         for dataset in self.datasets:
             dataset.delete(db=db)
+
+        for monitor in self.monitors:
+            logger.info(
+                "Deleting monitor config {} associated with connection config {}...",
+                monitor.key,
+                self.key,
+            )
+            monitor.delete(db=db)
 
         return super().delete(db=db)
 

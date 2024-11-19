@@ -1,22 +1,21 @@
-import { stubPlus, stubSystemCrud } from "cypress/support/stubs";
+import {
+  stubDatasetCrud,
+  stubPlus,
+  stubSystemCrud,
+  stubSystemIntegrations,
+  stubTaxonomyEntities,
+} from "cypress/support/stubs";
 
 import { SYSTEM_ROUTE } from "~/features/common/nav/v2/routes";
 
 describe("System integrations", () => {
   beforeEach(() => {
     cy.login();
-    cy.intercept("GET", "/api/v1/system*", {
-      fixture: "systems/systems_paginated.json",
-    }).as("getSystems");
-
-    cy.intercept("GET", "/api/v1/connection_type*", {
-      fixture: "connectors/connection_types.json",
-    }).as("getConnectionTypes");
-    cy.intercept("GET", "/api/v1/connection_type/postgres/secret", {
-      fixture: "connectors/postgres_secret.json",
-    }).as("getPostgresConnectorSecret");
     stubPlus(false);
+    stubSystemIntegrations();
     stubSystemCrud();
+    stubDatasetCrud();
+    stubTaxonomyEntities();
     cy.visit(SYSTEM_ROUTE);
   });
 

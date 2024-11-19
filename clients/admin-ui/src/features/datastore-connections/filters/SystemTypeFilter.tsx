@@ -1,9 +1,8 @@
-import SelectDropdown from "common/dropdown/SelectDropdown";
-import { Box } from "fidesui";
 import React from "react";
 import { useSelector } from "react-redux";
 
 import { useAppDispatch } from "~/app/hooks";
+import { FilterSelect } from "~/features/common/dropdown/FilterSelect";
 
 import { CONNECTION_TYPE_FILTER_MAP } from "../add-connection/constants";
 import {
@@ -17,6 +16,12 @@ const SystemTypeFilter = () => {
 
   const list = new Map(CONNECTION_TYPE_FILTER_MAP);
   list.delete("Show all");
+  const options = [...list].map(([key, value]) => {
+    return {
+      value: value.value,
+      label: key,
+    };
+  });
 
   // Hooks
   const dispatch = useAppDispatch();
@@ -27,15 +32,12 @@ const SystemTypeFilter = () => {
   };
 
   return (
-    <Box>
-      <SelectDropdown
-        enableSorting={false}
-        label="System Type"
-        list={list}
-        onChange={handleChange}
-        selectedValue={system_type?.toString()}
-      />
-    </Box>
+    <FilterSelect
+      placeholder="System Type"
+      options={options}
+      onChange={handleChange}
+      defaultValue={system_type?.toString() || undefined}
+    />
   );
 };
 

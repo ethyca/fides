@@ -12,6 +12,7 @@ import {
 import { useMediaQuery } from "../lib/hooks/useMediaQuery";
 import { DEFAULT_LOCALE, Locale, messageExists } from "../lib/i18n";
 import { useI18n } from "../lib/i18n/i18n-context";
+import BrandLink from "./BrandLink";
 import Button from "./Button";
 import LanguageSelector from "./LanguageSelector";
 import PrivacyPolicyLink from "./PrivacyPolicyLink";
@@ -56,6 +57,7 @@ export const ConsentButtons = ({
       onManagePreferencesClick();
     }
   };
+  const includeBrandLink = isInModal && options.showFidesBrandLink;
 
   useEffect(() => {
     if (isLoadingModal && !isMinimalTCF) {
@@ -109,7 +111,7 @@ export const ConsentButtons = ({
             : "fides-banner-button-group fides-banner-secondary-actions"
         }${includeLanguageSelector ? " fides-button-group-i18n" : ""}${
           includePrivacyPolicyLink ? " fides-button-group-privacy-policy" : ""
-        }`}
+        }${includeBrandLink ? " fides-button-group-brand" : ""}`}
       >
         {includeLanguageSelector && (
           <LanguageSelector
@@ -127,6 +129,7 @@ export const ConsentButtons = ({
           />
         )}
         {includePrivacyPolicyLink && <PrivacyPolicyLink />}
+        {includeBrandLink && <BrandLink />}
       </div>
     </div>
   );

@@ -55,9 +55,12 @@ describe("Consent configuration", () => {
           enabled: false,
         },
       });
-      cy.intercept("GET", "/api/v1/system", {
+      cy.intercept("GET", "/api/v1/plus/dictionary/system-vendors", {
         body: [],
       }).as("getEmptySystems");
+      cy.intercept("GET", "/api/v1/plus/dictionary/system?size*", {
+        fixture: "dictionary-entries.json",
+      }).as("getDict");
       cy.visit(ADD_MULTIPLE_VENDORS_ROUTE);
       cy.getByTestId("no-results-notice");
     });

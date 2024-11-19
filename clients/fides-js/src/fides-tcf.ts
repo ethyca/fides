@@ -16,6 +16,7 @@ import {
   isPrivacyExperience,
   shouldResurfaceConsent,
 } from "./fides";
+import { blueconic } from "./integrations/blueconic";
 import { gtm } from "./integrations/gtm";
 import { meta } from "./integrations/meta";
 import { shopify } from "./integrations/shopify";
@@ -259,11 +260,13 @@ const _Fides: FidesGlobal = {
     base64Cookie: false,
     fidesPrimaryColor: null,
     fidesClearCookie: false,
+    showFidesBrandLink: false,
   },
   fides_meta: {},
   identity: {},
   tcf_consent: {},
   saved_consent: {},
+  blueconic,
   gtm,
   init,
   config: undefined,
