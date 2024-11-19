@@ -190,34 +190,14 @@ SAMPLE_START_DATE = datetime(2024, 5, 20, 0, 42, 5, 17137, tzinfo=timezone.utc)
 
 
 class TestMonitorConfigModel:
-    @pytest.fixture
-    def create_monitor_config(self, db: Session, connection_config: ConnectionConfig):
-        mc = MonitorConfig.create(
-            db=db,
-            data={
-                "name": "test monitor config 1",
-                "key": "test_monitor_config_1",
-                "connection_config_id": connection_config.id,
-                "classify_params": {
-                    "num_samples": 25,
-                    "num_threads": 2,
-                },
-                "databases": ["db1", "db2"],
-                "execution_frequency": None,
-                "execution_start_date": None,
-            },
-        )
-        yield mc
-        db.delete(mc)
-
     def test_create_monitor_config(
-        self, db: Session, create_monitor_config, connection_config: ConnectionConfig
+        self, db: Session, monitor_config, connection_config: ConnectionConfig
     ) -> None:
         """
         Creation fixture creates the config, this tests that it was created successfully
         and that we can access its attributes as expected.
         """
-        mc: MonitorConfig = MonitorConfig.get(db=db, object_id=create_monitor_config.id)
+        mc: MonitorConfig = MonitorConfig.get(db=db, object_id=monitor_config.id)
         assert mc.name == "test monitor config 1"
         assert mc.key == "test_monitor_config_1"
         assert mc.classify_params == {
@@ -237,11 +217,11 @@ class TestMonitorConfigModel:
         assert mc.excluded_databases == []
 
     def test_update_monitor_config_fails_with_conflicting_dbs(
-        self, db: Session, create_monitor_config, connection_config: ConnectionConfig
+        self, db: Session, monitor_config, connection_config: ConnectionConfig
     ) -> None:
         """ """
         with pytest.raises(ValueError):
-            create_monitor_config.update(
+            monitor_config.update(
                 db=db,
                 data={
                     "name": "updated test monitor config 1",
@@ -388,12 +368,12 @@ class TestMonitorConfigModel:
         self,
         db: Session,
         connection_config: ConnectionConfig,
-        create_monitor_config: MonitorConfig,
+        monitor_config: MonitorConfig,
         monitor_frequency,
         expected_dict,
     ):
         """Tests that execution_trigger logic works as expected during within `update`"""
-        create_monitor_config.update(
+        monitor_config.update(
             db=db,
             data={
                 "name": "updated test monitor config 1",
@@ -407,7 +387,7 @@ class TestMonitorConfigModel:
                 "execution_frequency": monitor_frequency,
             },
         )
-        mc: MonitorConfig = MonitorConfig.get(db=db, object_id=create_monitor_config.id)
+        mc: MonitorConfig = MonitorConfig.get(db=db, object_id=monitor_config.id)
 
         # first ensure update works as expected on a "normal" field
         assert mc.name == "updated test monitor config 1"

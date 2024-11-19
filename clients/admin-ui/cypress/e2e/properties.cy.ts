@@ -1,4 +1,10 @@
-import { stubPlus } from "cypress/support/stubs";
+import {
+  stubExperienceConfig,
+  stubFidesCloud,
+  stubLanguages,
+  stubPlus,
+  stubProperties,
+} from "cypress/support/stubs";
 
 import { PROPERTIES_ROUTE } from "~/features/common/nav/v2/routes";
 import { RoleRegistryEnum } from "~/types/api";
@@ -7,9 +13,10 @@ describe("Properties page", () => {
   beforeEach(() => {
     cy.login();
     stubPlus(true);
-    cy.intercept("GET", "/api/v1/plus/properties*", {
-      fixture: "properties/properties.json",
-    }).as("getProperties");
+    stubProperties();
+    stubExperienceConfig();
+    stubFidesCloud();
+    stubLanguages();
     cy.visit(PROPERTIES_ROUTE);
   });
 
@@ -21,7 +28,7 @@ describe("Properties page", () => {
 
     it("Should show empty table notice if there are no properties", () => {
       cy.intercept("GET", "/api/v1/plus/properties*", {
-        body: { items: [], page: 1, size: 10, total: 0 },
+        fixture: "empty-pagination.json",
       }).as("getProperties");
       cy.getByTestId("fidesTable").should("be.visible");
       cy.getByTestId("no-results-notice").should("be.visible");

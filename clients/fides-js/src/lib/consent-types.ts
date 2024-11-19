@@ -4,6 +4,7 @@ import type {
   FidesExperienceConfig,
   FidesOptions,
 } from "../docs";
+import { blueconic } from "../integrations/blueconic";
 import type { gtm } from "../integrations/gtm";
 import type { meta } from "../integrations/meta";
 import type { shopify } from "../integrations/shopify";
@@ -135,6 +136,9 @@ export interface FidesInitOptions {
 
   // Shows fides.js overlay UI on load deleting the fides_consent cookie as if no preferences have been saved
   fidesClearCookie: boolean;
+
+  // Whether to render the brand link in the footer of the modal
+  showFidesBrandLink: boolean;
 }
 
 /**
@@ -161,6 +165,7 @@ export interface FidesGlobal extends Fides {
   options: FidesInitOptions;
   saved_consent: NoticeConsent;
   tcf_consent: TcfOtherConsent;
+  blueconic: typeof blueconic;
   gtm: typeof gtm;
   init: (config?: FidesConfig) => Promise<void>;
   meta: typeof meta;

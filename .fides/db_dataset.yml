@@ -716,6 +716,9 @@ dataset:
     - name: vendor_deleted_date
       data_categories:
       - system.operations
+    - name: hidden
+      data_categories:
+      - system.operations
   - name: messagingconfig
     description: 'Fides Generated Description for Table: messagingconfig'
     data_categories: []

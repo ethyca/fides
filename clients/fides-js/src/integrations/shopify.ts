@@ -1,3 +1,4 @@
+import { MARKETING_CONSENT_KEYS } from "../lib/consent-constants";
 import { NoticeConsent } from "../lib/consent-types";
 
 declare global {
@@ -18,14 +19,7 @@ declare global {
 }
 
 const CONSENT_MAP = {
-  marketing: [
-    "marketing",
-    "data_sales_and_sharing",
-    "data_sales_sharing_gpp_us_state",
-    "data_sharing_gpp_us_state",
-    "data_sales_gpp_us_state",
-    "targeted_advertising_gpp_us_state",
-  ],
+  marketing: MARKETING_CONSENT_KEYS,
   sale_of_data: [
     "marketing",
     "data_sales_and_sharing",
