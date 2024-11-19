@@ -2,14 +2,13 @@ import hashlib
 import json
 from typing import Any, Dict, List
 
-from loguru import logger
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
 from fides.api.service.connectors.saas.authenticated_client import AuthenticatedClient
 from fides.api.service.saas_request.saas_request_override_factory import (
+    SaaSRequestType,
     register,
-    SaaSRequestType
 )
 
 
@@ -29,16 +28,14 @@ def segment_delete_md5(
 
     for row_param_values in param_values_per_row:
         email = row_param_values["email"]
-        hashed_email = hashlib.md5(email.encode('utf-8')).hexdigest()
+        hashed_email = hashlib.md5(email.encode("utf-8")).hexdigest()
 
-        payload  = json.dumps(
+        payload = json.dumps(
             {
-              "regulation_type": "Suppress_With_Delete",
-              "attributes": {
-                "name": "userId",
-                "values": [hashed_email]
-              }
-            })
+                "regulation_type": "Suppress_With_Delete",
+                "attributes": {"name": "userId", "values": [hashed_email]},
+            }
+        )
 
         workspace_name = row_param_values["workspace_name"]
 
