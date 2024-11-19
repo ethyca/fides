@@ -24,6 +24,8 @@ import {
 
 import { useGetSystemPurposeSummaryQuery } from "~/features/plus/plus.slice";
 
+const { Text, Title } = Typography;
+
 export const useConsentManagementModal = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
 
@@ -43,6 +45,21 @@ export const ConsentManagementModal = ({
 }: Props) => {
   const { data: systemPurposeSummary, isLoading } =
     useGetSystemPurposeSummaryQuery(fidesKey);
+
+  const listRender = (label: string, list: string[]) => (
+    <>
+      <Title level={5}>{label}</Title>
+      {list?.length ? (
+        <div>
+          <Space size={[0, 2]} wrap>
+            {list?.map((item) => <Tag key={item}>{item}</Tag>)}
+          </Space>
+        </div>
+      ) : (
+        <Text italic>no known {label.toLowerCase()}</Text>
+      )}
+    </>
+  );
 
   return (
     <Modal
@@ -64,87 +81,68 @@ export const ConsentManagementModal = ({
             </Flex>
           ) : (
             !!systemPurposeSummary && (
-              <>
+              <Typography>
+                <Title level={5}>Purposes</Title>
                 {Object.entries(systemPurposeSummary.purposes || {}).length >
-                  0 && <Typography.Text strong>Purposes</Typography.Text>}
-                <Accordion allowMultiple>
-                  {Object.entries(systemPurposeSummary.purposes).map(
-                    ([purposeName], index: number) => (
-                      <AccordionItem key={index}>
-                        {({ isExpanded }) => (
-                          <>
-                            <AccordionButton
-                              backgroundColor={isExpanded ? "gray.50" : "unset"}
-                            >
-                              <Box flex="1" textAlign="left">
-                                {purposeName}
-                              </Box>
-                              <AccordionIcon />
-                            </AccordionButton>
-                            <AccordionPanel backgroundColor="gray.50">
-                              <Flex className="my-4" vertical>
-                                <Typography.Text strong>
-                                  Data Categories
-                                </Typography.Text>
-                                <div>
-                                  <Space size={[0, 2]} wrap>
-                                    {systemPurposeSummary.purposes[
-                                      purposeName
-                                    ].data_uses?.map((data_use) => (
-                                      <Tag key={data_use}>{data_use}</Tag>
-                                    ))}
-                                  </Space>
-                                </div>
-                              </Flex>
-                              <Flex className="my-4" vertical>
-                                <Typography.Text strong>
-                                  Data Categories
-                                </Typography.Text>
-                                <div>
-                                  <Space size={[0, 2]} wrap>
-                                    {systemPurposeSummary.purposes[
-                                      purposeName
-                                    ].legal_bases?.map((legal_base) => (
-                                      <Tag key={legal_base}>{legal_base}</Tag>
-                                    ))}
-                                  </Space>
-                                </div>
-                              </Flex>
-                            </AccordionPanel>
-                          </>
-                        )}
-                      </AccordionItem>
-                    ),
+                0 ? (
+                  <Accordion allowMultiple>
+                    {Object.entries(systemPurposeSummary.purposes).map(
+                      ([purposeName], index: number) => (
+                        <AccordionItem key={index}>
+                          {({ isExpanded }) => (
+                            <>
+                              <AccordionButton
+                                backgroundColor={
+                                  isExpanded ? "gray.50" : "unset"
+                                }
+                              >
+                                <Box flex="1" textAlign="left">
+                                  {purposeName}
+                                </Box>
+                                <AccordionIcon />
+                              </AccordionButton>
+                              <AccordionPanel backgroundColor="gray.50">
+                                <Flex className="my-4" vertical>
+                                  {listRender(
+                                    "Data uses",
+                                    systemPurposeSummary.purposes[purposeName]
+                                      .data_uses,
+                                  )}
+                                </Flex>
+                                <Flex className="my-4" vertical>
+                                  {listRender(
+                                    "Legal basis",
+                                    systemPurposeSummary.purposes[purposeName]
+                                      .legal_bases,
+                                  )}
+                                </Flex>
+                              </AccordionPanel>
+                            </>
+                          )}
+                        </AccordionItem>
+                      ),
+                    )}
+                  </Accordion>
+                ) : (
+                  <Text italic>no known purposes</Text>
+                )}
+                <div className="my-4">
+                  {listRender("Features", systemPurposeSummary.features)}
+                </div>
+                <div className="my-4">
+                  {listRender(
+                    "Data categories",
+                    systemPurposeSummary.data_categories,
                   )}
-                </Accordion>
-                <div className="my-4">
-                  <Typography.Text strong>Features</Typography.Text>
-                  <div>
-                    <Space size={[0, 2]} wrap>
-                      {systemPurposeSummary.features?.map((feature) => (
-                        <Tag key={feature}>{feature}</Tag>
-                      ))}
-                    </Space>
-                  </div>
                 </div>
-                <div className="my-4">
-                  <Typography.Text strong>Data Categories</Typography.Text>
-                  <div>
-                    <Space size={[0, 2]} wrap>
-                      {systemPurposeSummary.data_categories?.map((category) => (
-                        <Tag key={category}>{category}</Tag>
-                      ))}
-                    </Space>
-                  </div>
-                </div>
-              </>
+              </Typography>
             )
           )}
         </ModalBody>
 
         <ModalFooter>
           <Button size="small" onClick={onClose}>
-            Close{" "}
+            Close
           </Button>
           <Spacer />
         </ModalFooter>
