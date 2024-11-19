@@ -1,34 +1,29 @@
 import { ExecutionLog, ExecutionLogStatus } from "privacy-requests/types";
 
-/**
- *
- * A helper function to determine if the list of execution logs has any unresolved errors.
- * This means any error logs without a subsequent complete log.
- */
-export const hasUnresolvedError = (logs: ExecutionLog[]) => {
-  const groupedByCollection: { [key: string]: ExecutionLog } = {};
+export const hasUnresolvedError = (logs: ExecutionLog[]): boolean => {
+  if (logs.length === 0) {
+    return false;
+  }
 
-  logs.forEach((log) => {
-    const { collection_name: collectionName, updated_at: updatedAt } = log;
-    if (
-      !groupedByCollection[collectionName] ||
-      new Date(groupedByCollection[collectionName].updated_at) <
-        new Date(updatedAt)
-    ) {
-      groupedByCollection[collectionName] = log;
+  // Sort by date descending
+  const sortedLogs = Array.from(logs).sort(
+    (a, b) =>
+      new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime(),
+  );
+
+  // If latest entry has no collection and is errored, return true
+  if (!sortedLogs[0].collection_name) {
+    return sortedLogs[0].status === ExecutionLogStatus.ERROR;
+  }
+
+  // If the latest entry for any collection is errored, return true
+  const latestByCollection: { [key: string]: ExecutionLog } = {};
+  sortedLogs.forEach((log) => {
+    if (log.collection_name && !latestByCollection[log.collection_name]) {
+      latestByCollection[log.collection_name] = log;
     }
   });
-
-  return Object.values(groupedByCollection).some((log) => {
-    if (log.collection_name) {
-      const latestComplete = logs.find(
-        (e) =>
-          e.status === ExecutionLogStatus.COMPLETE &&
-          !e.collection_name &&
-          new Date(e.updated_at) > new Date(log.updated_at),
-      );
-      return !latestComplete && log.status === ExecutionLogStatus.ERROR;
-    }
-    return log.status === ExecutionLogStatus.ERROR;
-  });
+  return Object.values(latestByCollection).some(
+    (log) => log.status === ExecutionLogStatus.ERROR,
+  );
 };

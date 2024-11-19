@@ -22,7 +22,7 @@ export enum ExecutionLogStatus {
 }
 
 export interface ExecutionLog {
-  collection_name: string;
+  collection_name: string | null;
   fields_affected: FieldsAffected[];
   message: string;
   action_type: string;
