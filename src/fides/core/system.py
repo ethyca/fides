@@ -158,7 +158,7 @@ def generate_system_aws(
     headers: Dict[str, str],
 ) -> str:
     """
-    Connect to an aws account by leveraging a valid boto3 environment varible
+    Connect to an aws account by leveraging a valid boto3 environment variable
     configuration and extract tracked resource to write a System manifest with.
     """
 
@@ -372,7 +372,7 @@ def scan_system_aws(
     headers: Dict[str, str],
 ) -> None:
     """
-    Connect to an aws account by leveraging a valid boto3 environment varible
+    Connect to an aws account by leveraging a valid boto3 environment variable
     configuration and compares tracked resources to existing systems.
     """
 

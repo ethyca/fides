@@ -65,12 +65,13 @@ describe("Connectors", () => {
       // The dataset dropdown selector should have the value of the existing connected dataset
       cy.getByTestId("save-dataset-link-btn").should("be.enabled");
       cy.getByTestId("dataset-selector").should(
-        "have.value",
+        "have.text",
         "postgres_example_test_dataset",
       );
 
       // Change the linked dataset
-      cy.getByTestId("dataset-selector").select("demo_users_dataset_2");
+      cy.getByTestId("dataset-selector").antSelect("demo_users_dataset_2");
+
       cy.getByTestId("save-dataset-link-btn").click();
 
       cy.wait("@patchDatasetconfig").then((interception) => {
@@ -95,7 +96,7 @@ describe("Connectors", () => {
       cy.wait("@getPostgresConnectorDatasetconfig");
 
       // Unset the linked dataset, which should switch the save button enable-ness
-      cy.getByTestId("dataset-selector").select("Select");
+      cy.getByTestId("dataset-selector").antClearSelect();
       cy.getByTestId("save-dataset-link-btn").should("be.disabled");
       // The monaco yaml editor takes a bit to load
       // eslint-disable-next-line cypress/no-unnecessary-waiting

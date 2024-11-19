@@ -15,6 +15,7 @@ from pydantic import ValidationError as PydanticValidationError
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.status import HTTP_422_UNPROCESSABLE_ENTITY
 
+from fides.api.common_exceptions import ValidationError
 from fides.api.db.crud import (
     create_resource,
     delete_resource,
@@ -24,6 +25,7 @@ from fides.api.db.crud import (
     upsert_resources,
 )
 from fides.api.db.ctl_session import get_async_db
+from fides.api.models.datasetconfig import validate_masking_strategy_override
 from fides.api.models.sql_models import (
     DataCategory,
     ModelWithDefaultField,
@@ -65,6 +67,16 @@ async def validate_data_categories(
         raise HTTPException(
             status_code=HTTP_422_UNPROCESSABLE_ENTITY,
             detail=jsonable_encoder(e.errors(include_url=False, include_input=False)),
+        )
+
+
+def validate_masking_strategy(dataset: Dataset) -> None:
+    try:
+        validate_masking_strategy_override(dataset)
+    except ValidationError as e:
+        raise HTTPException(
+            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=jsonable_encoder(e.message),
         )
 
 
@@ -145,6 +157,7 @@ def create_router_factory(fides_model: FidesModelType, model_type: str) -> APIRo
         sql_model = sql_model_map[model_type]
         if isinstance(resource, Dataset):
             await validate_data_categories(resource, db)
+            validate_masking_strategy(resource)
         if isinstance(sql_model, ModelWithDefaultField) and resource.is_default:
             raise errors.ForbiddenIsDefaultTaxonomyError(
                 model_type, resource.fides_key, action="create"
@@ -250,6 +263,7 @@ def update_router_factory(fides_model: FidesModelType, model_type: str) -> APIRo
         sql_model = sql_model_map[model_type]
         if isinstance(resource, Dataset):
             await validate_data_categories(resource, db)
+            validate_masking_strategy(resource)
         await forbid_if_editing_is_default(sql_model, resource.fides_key, resource, db)
         return await update_resource(sql_model, resource.model_dump(mode="json"), db)
 
@@ -331,7 +345,7 @@ def upsert_router_factory(fides_model: FidesModelType, model_type: str) -> APIRo
         for resource in resources:
             if isinstance(resource, Dataset):
                 await validate_data_categories(resource, db)
-
+                validate_masking_strategy(resource)
         await forbid_if_editing_any_is_default(sql_model, resource_dicts, db)
         result = await upsert_resources(sql_model, resource_dicts, db)
         response.status_code = (

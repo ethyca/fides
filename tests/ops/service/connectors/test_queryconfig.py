@@ -1,5 +1,6 @@
 from datetime import datetime, timezone
-from typing import Any, Dict, Set
+from typing import Any, Dict, Generator, Set
+from unittest import mock
 
 import pytest
 from boto3.dynamodb.types import TypeDeserializer
@@ -24,11 +25,13 @@ from fides.api.schemas.namespace_meta.namespace_meta import NamespaceMeta
 from fides.api.service.connectors.query_config import (
     DynamoDBQueryConfig,
     MongoQueryConfig,
+    QueryConfig,
     SQLQueryConfig,
 )
 from fides.api.service.connectors.scylla_query_config import ScyllaDBQueryConfig
 from fides.api.service.masking.strategy.masking_strategy_hash import HashMaskingStrategy
 from fides.api.util.data_category import DataCategory
+from tests.fixtures.application_fixtures import load_dataset
 
 from ...task.traversal_data import combined_mongo_postgresql_graph, integration_db_graph
 from ...test_helpers.cache_secrets_helper import cache_secret, clear_cache_secrets
@@ -55,6 +58,53 @@ user_traversal_node = traversal_nodes[
 user_request_task = user_traversal_node.to_mock_request_task()
 user_node = ExecutionNode(user_request_task)
 privacy_request = PrivacyRequest(id="234544")
+
+
+@mock.patch.multiple(QueryConfig, __abstractmethods__=set())
+class TestQueryConfig:
+
+    def test_update_value_map_masking_strategy_override(
+        self, erasure_policy_all_categories, connection_config
+    ):
+        example_dataset = load_dataset(
+            "data/dataset/example_field_masking_override_test_dataset.yml"
+        )
+        dataset = Dataset(**example_dataset[0])
+        graph = convert_dataset_to_graph(dataset, connection_config.key)
+        dataset_graph = DatasetGraph(*[graph])
+        traversal = Traversal(dataset_graph, {"email": "customer-1@example.com"})
+
+        customer_node = traversal.traversal_node_dict[
+            CollectionAddress("field_masking_override_test_dataset", "customer")
+        ].to_mock_execution_node()
+
+        config = QueryConfig(customer_node)
+        row = {
+            "email": "customer-1@example.com",
+            "name": "John Customer",
+            "address_id": 1,
+            "id": 1,
+            "address": {
+                "city": "San Francisco",
+                "state": "CA",
+                "zip": "94105",
+                "house": "123",
+                "street": "Main St",
+            },
+        }
+        updated_value_map = config.update_value_map(
+            row, erasure_policy_all_categories, privacy_request
+        )
+
+        for key, value in updated_value_map.items():
+            # override the null rewrite masking strategy for the name field to use random_string_rewrite
+            if key == "name":
+                assert value.endswith("@example.com")
+            # override the null rewrite masking strategy for address.house field to use string_rewrite
+            elif key == "address.house":
+                assert value == "1234-test"
+            else:
+                assert value is None
 
 
 class TestSQLQueryConfig:
@@ -783,7 +833,10 @@ class TestSQLLikeQueryConfig:
             pass
 
         with pytest.raises(MissingNamespaceSchemaException) as exc:
-            NewSQLQueryConfig(payment_card_node, NewSQLNamespaceMeta(schema="public"))
+            NewSQLQueryConfig(
+                payment_card_node,
+                NewSQLNamespaceMeta(schema="public"),
+            )
         assert (
             "NewSQLQueryConfig must define a namespace_meta_schema when namespace_meta is provided."
             in str(exc)
