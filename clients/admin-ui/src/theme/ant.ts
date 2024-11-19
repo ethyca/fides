@@ -19,7 +19,7 @@ export const antTheme: AntThemeConfig = {
     colorSuccess: palette.FIDESUI_SUCCESS,
     colorWarning: palette.FIDESUI_WARNING,
     colorError: palette.FIDESUI_ERROR,
-    colorLink: palette.LINK,
+    colorLink: palette.FIDESUI_LINK,
     colorBgBase: palette.FIDESUI_FULL_WHITE,
     borderRadius: 4,
     wireframe: true,
