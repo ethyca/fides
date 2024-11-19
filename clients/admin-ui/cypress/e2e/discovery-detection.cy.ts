@@ -470,7 +470,7 @@ describe("discovery and detection", () => {
     });
   });
 
-  describe.only("without a db layer", () => {
+  describe("without a db layer", () => {
     it("shows resource name for resources that are not subfields", () => {
       cy.intercept("GET", "/api/v1/plus/discovery-monitor/results?*", {
         fixture: "detection-discovery/results/no-db-layer/field-list.json",
