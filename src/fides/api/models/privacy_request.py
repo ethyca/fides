@@ -1303,7 +1303,7 @@ class PrivacyRequest(
         collection_name: Optional[str],
         message: str,
         action_type: ActionType,
-    ):
+    ) -> ExecutionLog:
         return ExecutionLog.create(
             db=db,
             data={
