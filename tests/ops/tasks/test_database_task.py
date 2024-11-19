@@ -6,7 +6,7 @@ import pytest
 from sqlalchemy.engine import Engine
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import Session
-from sqlalchemy.pool import QueuePool
+from sqlalchemy.pool import NullPool
 
 from fides.api.tasks import NEW_SESSION_RETRIES, DatabaseTask
 from fides.config import CONFIG
@@ -55,9 +55,7 @@ class TestDatabaseTask:
         t = DatabaseTask()
         session: Session = t.get_new_session()
         engine: Engine = session.get_bind()
-        pool: QueuePool = engine.pool
-        assert pool.size() == pool_size
-        assert pool._max_overflow == max_overflow
+        assert isinstance(engine.pool, NullPool)
 
     def test_retry_on_operational_error(self, recovering_session_maker):
         """Test that session creation retries on OperationalError"""
