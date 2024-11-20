@@ -46,7 +46,7 @@ const useCumulativeGetDatabases = (
       if (initialLoadingRef.current && onTimeout) {
         onTimeout();
       }
-    }, 500);
+    }, 5000);
     return () => clearTimeout(t);
     // this should only run once on mount
     // eslint-disable-next-line react-hooks/exhaustive-deps

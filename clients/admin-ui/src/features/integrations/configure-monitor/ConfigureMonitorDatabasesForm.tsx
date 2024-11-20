@@ -35,6 +35,7 @@ const ConfigureMonitorDatabasesForm = ({
       description:
         "Loading projects to narrow scope of this monitor is taking a long time, usually because many projects are available.  The monitor has been saved without a set scope and will monitor all available projects.",
     });
+    onClose();
   };
 
   const {
