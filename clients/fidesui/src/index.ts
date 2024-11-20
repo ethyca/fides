@@ -11,6 +11,7 @@ export type {
   InputProps as AntInputProps,
   SelectProps as AntSelectProps,
   SwitchProps as AntSwitchProps,
+  TabsProps as AntTabsProps,
   GetProps,
 } from "antd/lib";
 export {
@@ -22,6 +23,7 @@ export {
   DatePicker as AntDatePicker,
   Divider as AntDivider,
   Flex as AntFlex,
+  Form as AntForm,
   Input as AntInput,
   InputNumber as AntInputNumber,
   Layout as AntLayout,
@@ -29,6 +31,7 @@ export {
   Row as AntRow,
   Space as AntSpace,
   Switch as AntSwitch,
+  Tabs as AntTabs,
   Tag as AntTag,
   Tooltip as AntTooltip,
   Typography as AntTypography,
