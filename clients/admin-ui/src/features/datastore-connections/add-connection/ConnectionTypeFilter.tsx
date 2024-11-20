@@ -38,6 +38,7 @@ const ConnectionTypeFilter = () => {
       options={options.current}
       onChange={handleChange}
       defaultValue=""
+      data-testid="connection-type-filter"
     />
   );
 };
