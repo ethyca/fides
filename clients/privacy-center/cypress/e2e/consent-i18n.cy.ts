@@ -1052,7 +1052,6 @@ describe("Consent i18n", () => {
             const experienceTranslationOverrides = {
               fides_title: "My override title",
               fides_description: "My override description",
-              fides_privacy_policy_url: "https://example.com/privacy",
               fides_override_language: "ja",
             };
             cy.fixture("consent/experience_banner_modal.json").then(
@@ -1082,11 +1081,6 @@ describe("Consent i18n", () => {
                   cy.get(
                     "div#fides-banner-description.fides-banner-description",
                   ).contains(translation.banner_description as string);
-                  cy.get("#fides-privacy-policy-link a").should(
-                    "have.attr",
-                    "href",
-                    translation.privacy_policy_url as string,
-                  );
                 });
                 // Open the modal
                 cy.contains("button", "Manage preferences").click();
@@ -1096,6 +1090,36 @@ describe("Consent i18n", () => {
                   );
                   cy.get(".fides-modal-description").contains(
                     translation.description as string,
+                  );
+                });
+              },
+            );
+          });
+          it("does apply fides_privacy_policy_url override", () => {
+            const experienceTranslationOverrides = {
+              fides_privacy_policy_url: "https://example.com/privacy",
+              fides_override_language: "ja",
+            };
+            cy.fixture("consent/experience_banner_modal.json").then(
+              (experience) => {
+                const experienceItem = experience.items[0];
+                stubConfig(
+                  {
+                    options: {
+                      customOptionsPath: TEST_OVERRIDE_WINDOW_PATH,
+                    },
+                    experience: experienceItem,
+                  },
+                  null,
+                  null,
+                  undefined,
+                  { ...experienceTranslationOverrides },
+                );
+                cy.get("div#fides-banner").within(() => {
+                  cy.get("#fides-privacy-policy-link a").should(
+                    "have.attr",
+                    "href",
+                    experienceTranslationOverrides.fides_privacy_policy_url as string,
                   );
                 });
               },
@@ -1115,7 +1139,6 @@ describe("Consent i18n", () => {
             const experienceTranslationOverrides = {
               fides_title: "My override title",
               fides_description: "My override description",
-              fides_privacy_policy_url: "https://example.com/privacy",
               // skips setting fides_override_language
             };
             cy.fixture("consent/experience_banner_modal.json").then(
@@ -1144,11 +1167,6 @@ describe("Consent i18n", () => {
                   cy.get(
                     "div#fides-banner-description.fides-banner-description",
                   ).contains(translation.banner_description as string);
-                  cy.get("#fides-privacy-policy-link a").should(
-                    "have.attr",
-                    "href",
-                    translation.privacy_policy_url as string,
-                  );
                 });
                 // Open the modal
                 cy.contains("button", "Manage preferences").click();
@@ -1158,6 +1176,35 @@ describe("Consent i18n", () => {
                   );
                   cy.get(".fides-modal-description").contains(
                     translation.description as string,
+                  );
+                });
+              },
+            );
+          });
+          it("does apply fides_privacy_policy_url override", () => {
+            const experienceTranslationOverrides = {
+              fides_privacy_policy_url: "https://example.com/privacy",
+            };
+            cy.fixture("consent/experience_banner_modal.json").then(
+              (experience) => {
+                const experienceItem = experience.items[0];
+                stubConfig(
+                  {
+                    options: {
+                      customOptionsPath: TEST_OVERRIDE_WINDOW_PATH,
+                    },
+                    experience: experienceItem,
+                  },
+                  null,
+                  null,
+                  undefined,
+                  { ...experienceTranslationOverrides },
+                );
+                cy.get("div#fides-banner").within(() => {
+                  cy.get("#fides-privacy-policy-link a").should(
+                    "have.attr",
+                    "href",
+                    experienceTranslationOverrides.fides_privacy_policy_url as string,
                   );
                 });
               },

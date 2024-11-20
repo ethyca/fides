@@ -71,6 +71,102 @@ class TestLogContextDecorator:
             "one_more_thing": "456",
         }
 
+    def test_log_context_with_captured_args(self, loguru_caplog):
+        """Test that arguments are captured and mapped to context keys correctly"""
+
+        @log_context(capture_args={"task_id": LoggerContextKeys.task_id})
+        def func(task_id: str):
+            logger.info("processing task")
+            return task_id
+
+        func(task_id="abc123")
+
+        assert loguru_caplog.records[0].extra == {
+            LoggerContextKeys.task_id.value: "abc123"
+        }
+
+    def test_log_context_with_captured_args_and_contextualizable(self, loguru_caplog):
+        """Test that both captured args and Contextualizable objects work together"""
+
+        class LoggableClass(Contextualizable):
+            def get_log_context(self) -> Dict[LoggerContextKeys, Any]:
+                return {LoggerContextKeys.privacy_request_id: "123"}
+
+        @log_context(capture_args={"task_id": LoggerContextKeys.task_id})
+        def func(param: LoggableClass, task_id: str):
+            logger.info("processing")
+            return param
+
+        func(LoggableClass(), task_id="abc123")
+
+        assert loguru_caplog.records[0].extra == {
+            LoggerContextKeys.privacy_request_id.value: "123",
+            LoggerContextKeys.task_id.value: "abc123",
+        }
+
+    def test_log_context_with_captured_args_and_additional_context(self, loguru_caplog):
+        """Test that captured args work with additional context"""
+
+        @log_context(
+            capture_args={"task_id": LoggerContextKeys.task_id}, tenant="example"
+        )
+        def func(task_id: str):
+            logger.info("processing")
+            return task_id
+
+        func(task_id="abc123")
+
+        assert loguru_caplog.records[0].extra == {
+            LoggerContextKeys.task_id.value: "abc123",
+            "tenant": "example",
+        }
+
+    def test_log_context_with_missing_captured_arg(self, loguru_caplog):
+        """Test that missing captured args don't cause issues"""
+
+        @log_context(capture_args={"task_id": LoggerContextKeys.task_id})
+        def func(different_param: str):
+            logger.info("processing")
+            return different_param
+
+        func(different_param="abc123")
+
+        assert loguru_caplog.records[0].extra == {}
+
+    def test_log_context_with_multiple_captured_args(self, loguru_caplog):
+        """Test capturing multiple arguments"""
+
+        @log_context(
+            capture_args={
+                "task_id": LoggerContextKeys.task_id,
+                "request_id": LoggerContextKeys.privacy_request_id,
+            }
+        )
+        def func(task_id: str, request_id: str):
+            logger.info("processing")
+            return task_id, request_id
+
+        func(task_id="abc123", request_id="req456")
+
+        assert loguru_caplog.records[0].extra == {
+            LoggerContextKeys.task_id.value: "abc123",
+            LoggerContextKeys.privacy_request_id.value: "req456",
+        }
+
+    def test_log_context_with_positional_captured_args(self, loguru_caplog):
+        """Test that captured args work with positional arguments"""
+
+        @log_context(capture_args={"task_id": LoggerContextKeys.task_id})
+        def func(other_param: str, task_id: str):
+            logger.info("processing")
+            return other_param, task_id
+
+        func("something", task_id="abc123")
+
+        assert loguru_caplog.records[0].extra == {
+            LoggerContextKeys.task_id.value: "abc123"
+        }
+
 
 class TestDetailFunctions:
     @pytest.fixture

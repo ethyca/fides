@@ -2102,6 +2102,17 @@ def audit_log(db: Session, privacy_request) -> PrivacyRequest:
 
 
 @pytest.fixture(scope="function")
+def privacy_request_status_approved(db: Session, policy: Policy) -> PrivacyRequest:
+    privacy_request = _create_privacy_request_for_policy(
+        db,
+        policy,
+        PrivacyRequestStatus.approved,
+    )
+    yield privacy_request
+    privacy_request.delete(db)
+
+
+@pytest.fixture(scope="function")
 def privacy_request_status_pending(db: Session, policy: Policy) -> PrivacyRequest:
     privacy_request = _create_privacy_request_for_policy(
         db,
@@ -2689,6 +2700,7 @@ def example_datasets() -> List[Dict]:
         "data/dataset/google_cloud_sql_mysql_example_test_dataset.yml",
         "data/dataset/google_cloud_sql_postgres_example_test_dataset.yml",
         "data/dataset/scylladb_example_test_dataset.yml",
+        "data/dataset/bigquery_enterprise_test_dataset.yml",
     ]
     for filename in example_filenames:
         example_datasets += load_dataset(filename)

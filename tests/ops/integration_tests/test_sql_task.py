@@ -33,6 +33,7 @@ from fides.api.service.connectors.scylla_connector import ScyllaConnectorMissing
 from fides.api.task.filter_results import filter_data_categories
 from fides.api.task.graph_task import get_cached_data_for_erasures
 from fides.config import CONFIG
+from tests.ops.integration_tests.test_execution import get_collection_identifier
 
 from ...conftest import access_runner_tester, erasure_runner_tester
 from ..graph.graph_test_util import (
@@ -1384,11 +1385,12 @@ class TestRetryIntegration:
                 # Execution starts with the employee collection, retries once on failure, and then errors
                 assert [
                     (
-                        CollectionAddress(log.dataset_name, log.collection_name).value,
+                        get_collection_identifier(log),
                         log.status.value,
                     )
                     for log in execution_logs.order_by("created_at")
                 ] == [
+                    ("Dataset traversal", "complete"),
                     ("postgres_example_test_dataset:employee", "in_processing"),
                     ("postgres_example_test_dataset:employee", "retrying"),
                     ("postgres_example_test_dataset:employee", "error"),
@@ -1407,19 +1409,18 @@ class TestRetryIntegration:
             execution_logs = db.query(ExecutionLog).filter_by(
                 privacy_request_id=privacy_request.id
             )
-            assert 12 == execution_logs.count()
+            assert 13 == execution_logs.count()
 
             # All four nodes directly downstream of the root node attempt to process,
             # and nothing further processes downstream
             assert [
                 (
-                    CollectionAddress(log.dataset_name, log.collection_name).value,
+                    get_collection_identifier(log),
                     log.status.value,
                 )
-                for log in execution_logs.order_by(
-                    ExecutionLog.collection_name, ExecutionLog.created_at
-                )
+                for log in execution_logs.order_by(ExecutionLog.created_at)
             ] == [
+                ("Dataset traversal", "complete"),
                 ("postgres_example_test_dataset:customer", "in_processing"),
                 ("postgres_example_test_dataset:customer", "retrying"),
                 ("postgres_example_test_dataset:customer", "error"),
@@ -1538,11 +1539,12 @@ class TestRetryIntegration:
                 # Execution starts with the address collection, retries twice on failure, and then errors
                 assert [
                     (
-                        CollectionAddress(log.dataset_name, log.collection_name).value,
+                        get_collection_identifier(log),
                         log.status.value,
                     )
                     for log in execution_logs.order_by("created_at")
                 ] == [
+                    ("Dataset traversal", "complete"),
                     ("postgres_example_test_dataset:address", "in_processing"),
                     ("postgres_example_test_dataset:address", "retrying"),
                     ("postgres_example_test_dataset:address", "retrying"),
