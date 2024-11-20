@@ -93,7 +93,14 @@ function extractMessagesFromExperienceConfig(
         const messages: Messages = {};
         EXPERIENCE_TRANSLATION_FIELDS.forEach((key) => {
           let overrideValue: string | null | undefined = null;
-          if (experienceTranslationOverrides && localeHasOverride) {
+
+          const isPrivacyPolicyUrl = key === "privacy_policy_url";
+          // Override value when matching translation override exists for the language.
+          // Override privacy_policy_url, even if the translation doesn't match the language
+          const shouldOverrideValue =
+            experienceTranslationOverrides &&
+            (localeHasOverride || isPrivacyPolicyUrl);
+          if (shouldOverrideValue) {
             overrideValue =
               key in experienceTranslationOverrides
                 ? experienceTranslationOverrides[

@@ -111,7 +111,7 @@ from fides.api.service.masking.strategy.masking_strategy_random_string_rewrite i
 from fides.api.service.masking.strategy.masking_strategy_string_rewrite import (
     StringRewriteMaskingStrategy,
 )
-from fides.api.util.data_category import DataCategory
+from fides.api.util.data_category import DataCategory, get_user_data_categories
 from fides.config import CONFIG
 from fides.config.helpers import load_file
 from tests.ops.integration_tests.saas.connector_runner import (
@@ -880,6 +880,66 @@ def erasure_policy(
 
 
 @pytest.fixture(scope="function")
+def biquery_erasure_policy(
+    db: Session,
+    oauth_client: ClientDetail,
+) -> Generator:
+    erasure_policy = Policy.create(
+        db=db,
+        data={
+            "name": "example erasure policy",
+            "key": "example_erasure_policy",
+            "client_id": oauth_client.id,
+        },
+    )
+
+    erasure_rule = Rule.create(
+        db=db,
+        data={
+            "action_type": ActionType.erasure.value,
+            "client_id": oauth_client.id,
+            "name": "Erasure Rule",
+            "policy_id": erasure_policy.id,
+            "masking_strategy": {
+                "strategy": "null_rewrite",
+                "configuration": {},
+            },
+        },
+    )
+
+    user_name_target = RuleTarget.create(
+        db=db,
+        data={
+            "client_id": oauth_client.id,
+            "data_category": DataCategory("user.name").value,
+            "rule_id": erasure_rule.id,
+        },
+    )
+    street_address_target = RuleTarget.create(
+        db=db,
+        data={
+            "client_id": oauth_client.id,
+            "data_category": DataCategory("user.contact.address.street").value,
+            "rule_id": erasure_rule.id,
+        },
+    )
+    yield erasure_policy
+    try:
+        user_name_target.delete(db)
+        street_address_target.delete(db)
+    except ObjectDeletedError:
+        pass
+    try:
+        erasure_rule.delete(db)
+    except ObjectDeletedError:
+        pass
+    try:
+        erasure_policy.delete(db)
+    except ObjectDeletedError:
+        pass
+
+
+@pytest.fixture(scope="function")
 def erasure_policy_aes(
     db: Session,
     oauth_client: ClientDetail,
@@ -1022,6 +1082,64 @@ def erasure_policy_two_rules(
         pass
     try:
         second_erasure_rule.delete(db)
+    except ObjectDeletedError:
+        pass
+    try:
+        erasure_policy.delete(db)
+    except ObjectDeletedError:
+        pass
+
+
+@pytest.fixture(scope="function")
+def erasure_policy_all_categories(
+    db: Session,
+    oauth_client: ClientDetail,
+) -> Generator:
+    erasure_policy = Policy.create(
+        db=db,
+        data={
+            "name": "example erasure policy",
+            "key": "example_erasure_policy",
+            "client_id": oauth_client.id,
+        },
+    )
+
+    erasure_rule = Rule.create(
+        db=db,
+        data={
+            "action_type": ActionType.erasure.value,
+            "client_id": oauth_client.id,
+            "name": "Erasure Rule",
+            "policy_id": erasure_policy.id,
+            "masking_strategy": {
+                "strategy": "null_rewrite",
+                "configuration": {},
+            },
+        },
+    )
+
+    filtered_categories = get_user_data_categories()
+    rule_targets = []
+
+    for category in filtered_categories:
+        rule_targets.append(
+            RuleTarget.create(
+                db=db,
+                data={
+                    "client_id": oauth_client.id,
+                    "data_category": category,
+                    "rule_id": erasure_rule.id,
+                },
+            )
+        )
+    yield erasure_policy
+    try:
+        for rule_target in rule_targets:
+            rule_target.delete(db)
+    except ObjectDeletedError:
+        pass
+    try:
+        erasure_rule.delete(db)
     except ObjectDeletedError:
         pass
     try:
@@ -1984,6 +2102,17 @@ def audit_log(db: Session, privacy_request) -> PrivacyRequest:
 
 
 @pytest.fixture(scope="function")
+def privacy_request_status_approved(db: Session, policy: Policy) -> PrivacyRequest:
+    privacy_request = _create_privacy_request_for_policy(
+        db,
+        policy,
+        PrivacyRequestStatus.approved,
+    )
+    yield privacy_request
+    privacy_request.delete(db)
+
+
+@pytest.fixture(scope="function")
 def privacy_request_status_pending(db: Session, policy: Policy) -> PrivacyRequest:
     privacy_request = _create_privacy_request_for_policy(
         db,
@@ -2571,6 +2700,7 @@ def example_datasets() -> List[Dict]:
         "data/dataset/google_cloud_sql_mysql_example_test_dataset.yml",
         "data/dataset/google_cloud_sql_postgres_example_test_dataset.yml",
         "data/dataset/scylladb_example_test_dataset.yml",
+        "data/dataset/bigquery_enterprise_test_dataset.yml",
     ]
     for filename in example_filenames:
         example_datasets += load_dataset(filename)

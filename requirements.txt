@@ -71,4 +71,4 @@ twilio==7.15.0
 typing-extensions==4.12.2
 validators==0.20.0
 versioneer==0.19
-fideslang==3.0.8
+fideslang==3.0.9

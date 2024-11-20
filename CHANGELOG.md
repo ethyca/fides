@@ -15,27 +15,50 @@ The types of changes are:
 - `Fixed` for any bug fixes.
 - `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fidesplus/compare/2.49.1...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.50.0...main)
+
+
+
+
+
+## [Unreleased](https://github.com/ethyca/fides/compare/2.49.1...2.50.0)
 
 ### Added
 - Added namespace support for Snowflake [#5486](https://github.com/ethyca/fides/pull/5486)
-
-### Developer Experience
-- Migrated several instances of Chakra's Select component to use Ant's Select component [#5475](https://github.com/ethyca/fides/pull/5475)
-
-### Fixed
-- Fixed deletion of ConnectionConfigs that have related MonitorConfigs [#5478](https://github.com/ethyca/fides/pull/5478)
+- Added support for field-level masking overrides [#5446](https://github.com/ethyca/fides/pull/5446)
+- Added BigQuery Enterprise access request integration test [#5504](https://github.com/ethyca/fides/pull/5504)
+- Added MD5 email hashing for Segment's Right to Forget endpoint requests [#5514](https://github.com/ethyca/fides/pull/5514)
 
 ### Changed
 - Allow hiding systems via a `hidden` parameter and add two flags on the `/system` api endpoint; `show_hidden` and `dnd_relevant`, to display only systems with integrations [#5484](https://github.com/ethyca/fides/pull/5484)
+- The CMP override `fides_privacy_policy_url` will now apply even if the `fides_override_language` doesn't match [#5515](https://github.com/ethyca/fides/pull/5515)
+- Updated POST taxonomy endpoints to handle creating resources without specifying fides_key [#5468](https://github.com/ethyca/fides/pull/5468)
+- Disabled connection pooling for task workers and added retries and keep-alive configurations for database connections [#5448](https://github.com/ethyca/fides/pull/5448)
+- Added timeout handling in the UI for async discovery monitor-related queries [#5519](https://github.com/ethyca/fides/pull/5519)
 
 ### Developer Experience
+- Migrated several instances of Chakra's Select component to use Ant's Select component [#5475](https://github.com/ethyca/fides/pull/5475)
 - Fixing BigQuery integration tests [#5491](https://github.com/ethyca/fides/pull/5491)
+- Enhanced logging for privacy requests [#5500](https://github.com/ethyca/fides/pull/5500)
 
 ### Docs
 - Added docs for PrivacyNoticeRegion type [#5488](https://github.com/ethyca/fides/pull/5488)
 
-## [2.49.1](https://github.com/ethyca/fidesplus/compare/2.49.0...2.49.1)
+### Fixed
+- Fixed deletion of ConnectionConfigs that have related MonitorConfigs [#5478](https://github.com/ethyca/fides/pull/5478)
+- Fixed extra delete icon on Domains page [#5513](https://github.com/ethyca/fides/pull/5513)
+- Fixed incorrect display names on some D&D resources [#5498](https://github.com/ethyca/fides/pull/5498)
+- Fixed position of "Integration" button on system detail page [#5497](https://github.com/ethyca/fides/pull/5497)
+- Fixing issue where "privacy request received" emails would not be sent if the request had custom identities [#5518](https://github.com/ethyca/fides/pull/5518)
+- Fixed issue with long-running privacy request tasks losing their connection to the database [#5500](https://github.com/ethyca/fides/pull/5500)
+
+### Docs
+- Added docs for PrivacyNoticeRegion type [#5488](https://github.com/ethyca/fides/pull/5488)
+
+### Security
+ - Password Policy is now Enforced in Accept Invite API [CVE-2024-52008](https://github.com/ethyca/fides/security/advisories/GHSA-v7vm-rhmg-8j2r)
+
+## [2.49.1](https://github.com/ethyca/fides/compare/2.49.0...2.49.1)
 
 ### Added
 - Added support for GPP national string to be used alongside state-by-state using a new approach option [#5480](https://github.com/ethyca/fides/pull/5480)
@@ -47,7 +70,7 @@ The types of changes are:
 - Use BlueConic Profile API correctly. [#5487](https://github.com/ethyca/fides/pull/5487)
 - Fixed a bug where branding link was sometimes misaligned [#5496](https://github.com/ethyca/fides/pull/5496)
 
-## [2.49.0](https://github.com/ethyca/fidesplus/compare/2.48.2...2.49.0)
+## [2.49.0](https://github.com/ethyca/fides/compare/2.48.2...2.49.0)
 
 ### Added
 - Added DataHub integration config [#5401](https://github.com/ethyca/fides/pull/5401)
@@ -73,18 +96,18 @@ The types of changes are:
 - Fixing external SaaS connector tests [#5463](https://github.com/ethyca/fides/pull/5463)
 - Updating Paramiko to version 3.4.1 to prevent warning during server startup [#5467](https://github.com/ethyca/fides/pull/5467)
 
-## [2.48.2](https://github.com/ethyca/fidesplus/compare/2.48.1...2.48.2)
+## [2.48.2](https://github.com/ethyca/fides/compare/2.48.1...2.48.2)
 
 ### Fixed
 - Fixed ValidationError for datasets with a connection_type [#5447](https://github.com/ethyca/fides/pull/5447)
 
-## [2.48.1](https://github.com/ethyca/fidesplus/compare/2.48.0...2.48.1)
+## [2.48.1](https://github.com/ethyca/fides/compare/2.48.0...2.48.1)
 
 ### Fixed
  - API router sanitizer being too aggressive with NextJS Catch-all Segments [#5438](https://github.com/ethyca/fides/pull/5438)
  - Fix BigQuery `partitioning` queries to properly support multiple identity clauses [#5432](https://github.com/ethyca/fides/pull/5432)
 
-## [2.48.0](https://github.com/ethyca/fidesplus/compare/2.47.1...2.48.0)
+## [2.48.0](https://github.com/ethyca/fides/compare/2.47.1...2.48.0)
 
 ### Added
 - Added Azure as an SSO provider. [#5402](https://github.com/ethyca/fides/pull/5402)
@@ -109,7 +132,7 @@ The types of changes are:
 ### Developer Experience
 - Fix warning messages from slowapi and docker [#5385](https://github.com/ethyca/fides/pull/5385)
 
-## [2.47.1](https://github.com/ethyca/fidesplus/compare/2.47.0...2.47.1)
+## [2.47.1](https://github.com/ethyca/fides/compare/2.47.0...2.47.1)
 
 ### Added
 - Adding access and erasure support for Gladly [#5346](https://github.com/ethyca/fides/pull/5346)
@@ -125,7 +148,7 @@ The types of changes are:
 - Allow Responsys and Firebase connectors to ignore extra identities [#5388](https://github.com/ethyca/fides/pull/5388)
 - Fixed cookies not deleting on opt-out [#5338](https://github.com/ethyca/fides/pull/5338)
 
-## [2.47.0](https://github.com/ethyca/fidesplus/compare/2.46.2...2.47.0)
+## [2.47.0](https://github.com/ethyca/fides/compare/2.46.2...2.47.0)
 
 ### Added
 - Make all "Description" table columns expandable in Admin UI tables [#5340](https://github.com/ethyca/fides/pull/5340)

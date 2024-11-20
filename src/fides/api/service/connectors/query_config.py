@@ -19,7 +19,7 @@ from fides.api.graph.config import (
     CollectionAddress,
     Field,
     FieldPath,
-    MaskingOverride,
+    MaskingTruncation,
 )
 from fides.api.graph.execution import ExecutionNode
 from fides.api.models.policy import Policy, Rule
@@ -165,26 +165,32 @@ class QueryConfig(Generic[T], ABC):
             strategy_config = rule.masking_strategy
             if not strategy_config:
                 continue
-            strategy: MaskingStrategy = MaskingStrategy.get_strategy(
-                strategy_config["strategy"], strategy_config["configuration"]
-            )
             for rule_field_path in field_paths:
-                masking_override: MaskingOverride = [
-                    MaskingOverride(field.data_type_converter, field.length)
+                strategy: MaskingStrategy = MaskingStrategy.get_strategy(
+                    strategy_config["strategy"], strategy_config["configuration"]
+                )
+                truncation: MaskingTruncation = [
+                    MaskingTruncation(field.data_type_converter, field.length)
                     for field_path, field in self.field_map().items()
                     if field_path == rule_field_path
                 ][0]
-                null_masking: bool = (
-                    strategy_config.get("strategy") == NullMaskingStrategy.name
-                )
-                if not self._supported_data_type(
-                    masking_override, null_masking, strategy
-                ):
+                field = self.field_map().get(rule_field_path)
+                if field and field.masking_strategy_override:
+                    masking_strategy_override = field.masking_strategy_override
+                    strategy = MaskingStrategy.get_strategy(
+                        masking_strategy_override.strategy,
+                        masking_strategy_override.configuration,  # type: ignore[arg-type]
+                    )
+                    logger.warning(
+                        f"Using field-level masking override of type '{strategy.name}' for {rule_field_path.string_path}"
+                    )
+                null_masking: bool = strategy.name == NullMaskingStrategy.name
+                if not self._supported_data_type(truncation, null_masking, strategy):
                     logger.warning(
                         "Unable to generate a query for field {}: data_type is either not present on the field or not supported for the {} masking strategy. Received data type: {}",
                         rule_field_path.string_path,
-                        strategy_config["strategy"],
-                        masking_override.data_type_converter.name,  # type: ignore
+                        strategy.name,
+                        truncation.data_type_converter.name,  # type: ignore
                     )
                     continue
 
@@ -199,7 +205,7 @@ class QueryConfig(Generic[T], ABC):
                         request_id=request.id,
                         strategy=strategy,
                         val=pydash.objects.get(row, detailed_path),
-                        masking_override=masking_override,
+                        masking_truncation=truncation,
                         null_masking=null_masking,
                         str_field_path=detailed_path,
                     )
@@ -207,15 +213,17 @@ class QueryConfig(Generic[T], ABC):
 
     @staticmethod
     def _supported_data_type(
-        masking_override: MaskingOverride, null_masking: bool, strategy: MaskingStrategy
+        masking_truncation: MaskingTruncation,
+        null_masking: bool,
+        strategy: MaskingStrategy,
     ) -> bool:
         """Helper method to determine whether given data_type exists and is supported by the masking strategy"""
         if null_masking:
             return True
-        if not masking_override.data_type_converter:
+        if not masking_truncation.data_type_converter:
             return False
         if not strategy.data_type_supported(
-            data_type=masking_override.data_type_converter.name
+            data_type=masking_truncation.data_type_converter.name
         ):
             return False
         return True
@@ -225,7 +233,7 @@ class QueryConfig(Generic[T], ABC):
         request_id: str,
         strategy: MaskingStrategy,
         val: Any,
-        masking_override: MaskingOverride,
+        masking_truncation: MaskingTruncation,
         null_masking: bool,
         str_field_path: str,
     ) -> T:
@@ -242,14 +250,14 @@ class QueryConfig(Generic[T], ABC):
         if null_masking:
             return masked_val
 
-        if masking_override.length:
+        if masking_truncation.length:
             logger.warning(
                 "Because a length has been specified for field {}, we will truncate length of masked value to match, regardless of masking strategy",
                 str_field_path,
             )
             #  for strategies other than null masking we assume that masked data type is the same as specified data type
-            masked_val = masking_override.data_type_converter.truncate(  # type: ignore
-                masking_override.length, masked_val
+            masked_val = masking_truncation.data_type_converter.truncate(  # type: ignore
+                masking_truncation.length, masked_val
             )
         return masked_val
 

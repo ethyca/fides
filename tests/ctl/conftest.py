@@ -45,18 +45,11 @@ def monkeypatch_requests(test_client, monkeysession) -> None:
 
 
 @pytest.fixture(scope="session", autouse=True)
-@pytest.mark.usefixtures("monkeypatch_requests")
-def setup_ctl_db(test_config, test_client, config):
-    "Sets up the database for testing."
+def setup_db(api_client, config):
+    """Apply migrations at beginning and end of testing session"""
     assert config.test_mode
-    assert (
-        requests.post == test_client.post
-    )  # Sanity check to make sure monkeypatch_requests fixture has run
-    yield api.db_action(
-        server_url=test_config.cli.server_url,
-        headers=config.user.auth_header,
-        action="reset",
-    )
+    assert requests.post != api_client.post
+    yield api_client.post(url=f"{config.cli.server_url}/v1/admin/db/reset")
 
 
 @pytest.fixture(scope="session")

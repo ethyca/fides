@@ -46,6 +46,9 @@ def get_api_session() -> Session:
             config=CONFIG,
             pool_size=CONFIG.database.api_engine_pool_size,
             max_overflow=CONFIG.database.api_engine_max_overflow,
+            keepalives_idle=CONFIG.database.api_engine_keepalives_idle,
+            keepalives_interval=CONFIG.database.api_engine_keepalives_interval,
+            keepalives_count=CONFIG.database.api_engine_keepalives_count,
         )
     SessionLocal = get_db_session(CONFIG, engine=_engine)
     db = SessionLocal()
