@@ -130,7 +130,7 @@ const ConfigureSystem: NextPage = () => {
           {discoveryDetectionEnabled && (
             <Button
               size="small"
-              className="absolute right-0 top-1/2 -translate-y-1/2"
+              className="absolute right-2 top-2"
               data-testid="integration-page-btn"
               onClick={() => router.push(INTEGRATION_MANAGEMENT_ROUTE)}
             >
