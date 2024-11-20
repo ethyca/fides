@@ -297,7 +297,7 @@ def _send_privacy_request_receipt_message_to_user(
                 body_params=RequestReceiptBodyParams(request_types=request_types),
             ).model_dump(mode="json"),
             "service_type": service_type,
-            "to_identity": to_identity.model_dump(mode="json"),
+            "to_identity": to_identity.labeled_dict(),
             "property_id": property_id,
         },
     )

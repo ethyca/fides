@@ -20,6 +20,7 @@ The types of changes are:
 ### Added
 - Added namespace support for Snowflake [#5486](https://github.com/ethyca/fides/pull/5486)
 - Added support for field-level masking overrides [#5446](https://github.com/ethyca/fides/pull/5446)
+- Added BigQuery Enterprise access request integration test [#5504](https://github.com/ethyca/fides/pull/5504)
 
 ### Developer Experience
 - Migrated several instances of Chakra's Select component to use Ant's Select component [#5475](https://github.com/ethyca/fides/pull/5475)
@@ -29,6 +30,7 @@ The types of changes are:
 - Fixed extra delete icon on Domains page [#5513](https://github.com/ethyca/fides/pull/5513)
 - Fixed incorrect display names on some D&D resources [#5498](https://github.com/ethyca/fides/pull/5498)
 - Fixed position of "Integration" button on system detail page [#5497](https://github.com/ethyca/fides/pull/5497)
+- Fixing issue where "privacy request received" emails would not be sent if the request had custom identities [#5518](https://github.com/ethyca/fides/pull/5518)
 
 ### Changed
 - Allow hiding systems via a `hidden` parameter and add two flags on the `/system` api endpoint; `show_hidden` and `dnd_relevant`, to display only systems with integrations [#5484](https://github.com/ethyca/fides/pull/5484)

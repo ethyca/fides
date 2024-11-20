@@ -5557,6 +5557,83 @@ class TestVerifyIdentity:
         queue = call_args["queue"]
         assert queue == MESSAGING_QUEUE_NAME
 
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+    )
+    @mock.patch(
+        "fides.api.api.v1.endpoints.privacy_request_endpoints.dispatch_message_task.apply_async"
+    )
+    def test_verify_identity_with_custom_identity_admin_approval_needed(
+        self,
+        mock_dispatch_message,
+        mock_run_privacy_request,
+        require_manual_request_approval,
+        db,
+        api_client,
+        url,
+        privacy_request,
+        privacy_request_receipt_notification_enabled,
+    ):
+        privacy_request.status = PrivacyRequestStatus.identity_unverified
+        privacy_request.save(db)
+        privacy_request.cache_identity_verification_code(self.code)
+
+        # add a custom identity to the request to verify it can be
+        # passed successfully to the dispatch_message_task
+        privacy_request.persist_identity(
+            db=db,
+            identity=Identity(
+                custom_id=LabeledIdentity(label="Custom ID", value="123"),
+            ),
+        )
+
+        request_body = {"code": self.code}
+        resp = api_client.post(url, headers={}, json=request_body)
+        assert resp.status_code == 200
+
+        resp = resp.json()
+        assert resp["status"] == "pending"
+        assert resp["identity_verified_at"] is not None
+
+        db.refresh(privacy_request)
+        assert privacy_request.status == PrivacyRequestStatus.pending
+        assert privacy_request.identity_verified_at is not None
+
+        approved_audit_log: AuditLog = AuditLog.filter(
+            db=db,
+            conditions=(
+                (AuditLog.privacy_request_id == privacy_request.id)
+                & (AuditLog.action == AuditLogAction.approved)
+            ),
+        ).first()
+
+        assert approved_audit_log is None
+        assert not mock_run_privacy_request.called
+
+        assert mock_dispatch_message.called
+
+        call_args = mock_dispatch_message.call_args[1]
+        task_kwargs = call_args["kwargs"]
+        assert (
+            task_kwargs["to_identity"]
+            == Identity(
+                phone_number="+12345678910",
+                email="test@example.com",
+                custom_id=LabeledIdentity(label="Custom ID", value="123"),
+            ).labeled_dict()
+        )
+        assert task_kwargs["service_type"] == MessagingServiceType.mailgun.value
+
+        message_meta = task_kwargs["message_meta"]
+        assert (
+            message_meta["action_type"] == MessagingActionType.PRIVACY_REQUEST_RECEIPT
+        )
+        assert message_meta["body_params"] == RequestReceiptBodyParams(
+            request_types={ActionType.access.value}
+        ).model_dump(mode="json")
+        queue = call_args["queue"]
+        assert queue == MESSAGING_QUEUE_NAME
+
 
 class TestCreatePrivacyRequestEmailVerificationRequired:
     @pytest.fixture(scope="function")

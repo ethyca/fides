@@ -987,9 +987,18 @@ class TestUpdateUserPassword:
         [
             ("short", "Value error, Password must have at least eight characters."),
             ("longerpassword", "Value error, Password must have at least one number."),
-            ("longer55password", "Value error, Password must have at least one capital letter."),
-            ("LONGER55PASSWORD", "Value error, Password must have at least one lowercase letter."),
-            ("LoNgEr55paSSworD", "Value error, Password must have at least one symbol."),
+            (
+                "longer55password",
+                "Value error, Password must have at least one capital letter.",
+            ),
+            (
+                "LONGER55PASSWORD",
+                "Value error, Password must have at least one lowercase letter.",
+            ),
+            (
+                "LoNgEr55paSSworD",
+                "Value error, Password must have at least one symbol.",
+            ),
         ],
     )
     def test_force_update_bad_password(
