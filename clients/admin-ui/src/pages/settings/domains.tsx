@@ -212,14 +212,12 @@ const CORSConfigurationPage: NextPage = () => {
 
                                 <Button
                                   aria-label="delete-domain"
-                                  className="z-[2] ml-8"
+                                  className="z-[2] ml-4"
                                   icon={<DeleteIcon />}
                                   onClick={() => {
                                     arrayHelpers.remove(index);
                                   }}
-                                >
-                                  <DeleteIcon />
-                                </Button>
+                                />
                               </Flex>
                             ),
                           )}
