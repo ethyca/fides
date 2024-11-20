@@ -173,7 +173,7 @@ def update_user_password(
             status_code=HTTP_401_UNAUTHORIZED, detail="Incorrect password."
         )
 
-    current_user.update_password(db=db, new_password=b64_str_to_str(data.new_password))
+    current_user.update_password(db=db, new_password=data.new_password)
 
     logger.info("Updated user with id: '{}'.", current_user.id)
     return current_user
@@ -202,7 +202,7 @@ def force_update_password(
             detail=f"User with ID {user_id} does not exist.",
         )
 
-    user.update_password(db=db, new_password=b64_str_to_str(data.new_password))
+    user.update_password(db=db, new_password=data.new_password)
     logger.info("Updated user with id: '{}'.", user.id)
     return user
 

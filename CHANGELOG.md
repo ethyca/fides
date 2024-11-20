@@ -41,6 +41,9 @@ The types of changes are:
 ### Docs
 - Added docs for PrivacyNoticeRegion type [#5488](https://github.com/ethyca/fides/pull/5488)
 
+### Security
+ - Password Policy is now Enforced in Accept Invite API [CVE-2024-52008](https://github.com/ethyca/fides/security/advisories/GHSA-v7vm-rhmg-8j2r)
+
 ## [2.49.1](https://github.com/ethyca/fidesplus/compare/2.49.0...2.49.1)
 
 ### Added
