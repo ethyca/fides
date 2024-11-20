@@ -1052,6 +1052,58 @@ class TestPutDatasetConfigs:
         db.refresh(connection_config)
         assert len(connection_config.datasets) == 1
 
+    def test_put_create_dataset_configs_add_and_remove_all(
+        self,
+        db,
+        example_datasets,
+        generate_auth_header,
+        api_client,
+        datasets_url,
+        connection_config: ConnectionConfig,
+    ):
+        # create ctl_datasets
+        postgres_dataset = CtlDataset(
+            **example_datasets[0], organization_fides_key="default_organization"
+        )
+        db.add(postgres_dataset)
+        postgres_extended_dataset = CtlDataset(
+            **example_datasets[12], organization_fides_key="default_organization"
+        )
+        db.add(postgres_extended_dataset)
+        db.commit()
+
+        # add both datasets to the connection
+        auth_header = generate_auth_header(scopes=[DATASET_CREATE_OR_UPDATE])
+        response = api_client.put(
+            datasets_url,
+            headers=auth_header,
+            json=[
+                {
+                    "fides_key": postgres_dataset.fides_key,
+                    "ctl_dataset_fides_key": postgres_dataset.fides_key,
+                },
+                {
+                    "fides_key": postgres_extended_dataset.fides_key,
+                    "ctl_dataset_fides_key": postgres_extended_dataset.fides_key,
+                },
+            ],
+        )
+        assert response.status_code == 200
+
+        db.refresh(connection_config)
+        assert len(connection_config.datasets) == 2
+
+        # remove both datasets by passing in an empty list
+        response = api_client.put(
+            datasets_url,
+            headers=auth_header,
+            json=[],
+        )
+        assert response.status_code == 200
+
+        db.refresh(connection_config)
+        assert len(connection_config.datasets) == 0
+
     def test_put_create_dataset_configs_invalid_field_masking_strategy_override(
         self,
         db,
