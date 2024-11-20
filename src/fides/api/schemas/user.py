@@ -10,7 +10,6 @@ from fides.api.schemas.base_class import FidesSchema
 from fides.api.schemas.oauth import AccessToken
 
 
-
 class PrivacyRequestReviewer(FidesSchema):
     """Data we can expose via the PrivacyRequest.reviewer relation"""
 
@@ -38,13 +37,13 @@ class UserCreate(FidesSchema):
 
     @field_validator("password")
     @classmethod
-    def validate_password(cls, password: str) -> str:
+    def validate_password_field(cls, password: str) -> str:
         """Add some password requirements"""
         decoded_password = decode_password(password)
-        return UserCreate._validate_password(decoded_password)
+        return UserCreate.validate_password(decoded_password)
 
     @staticmethod
-    def _validate_password(password: str) -> str:
+    def validate_password(password: str) -> str:
         """
         Validate password requirements.
             Raises:
@@ -54,7 +53,7 @@ class UserCreate(FidesSchema):
         """
         if len(password) < 8:
             raise ValueError("Password must have at least eight characters.")
-        if re.search("[\d]", password) is None:
+        if re.search(r"[\d]", password) is None:
             raise ValueError("Password must have at least one number.")
         if re.search("[A-Z]", password) is None:
             raise ValueError("Password must have at least one capital letter.")
@@ -118,7 +117,7 @@ class UserPasswordReset(FidesSchema):
     def validate_new_password(cls, password: str) -> str:
         """Add some password requirements"""
         decoded_password = decode_password(password)
-        return UserCreate._validate_password(decoded_password)
+        return UserCreate.validate_password(decoded_password)
 
 
 class UserForcePasswordReset(FidesSchema):
@@ -131,7 +130,7 @@ class UserForcePasswordReset(FidesSchema):
     def validate_new_password(cls, password: str) -> str:
         """Add some password requirements"""
         decoded_password = decode_password(password)
-        return UserCreate._validate_password(decoded_password)
+        return UserCreate.validate_password(decoded_password)
 
 
 class UserUpdate(FidesSchema):
