@@ -33,10 +33,22 @@ from ..service.privacy_request.test_request_runner_service import (
 )
 
 
+def get_collection_identifier(log) -> str:
+    """
+    Get a standardized identifier for a collection from an execution log.
+    """
+
+    # This is necessary because the log for a complete "Dataset traversal" does not have a collection.
+    # The better approach in the long-term is to support more general execution data in the execution logs.
+    if log.collection_name:
+        return CollectionAddress(log.dataset_name, log.collection_name or "").value
+    return log.dataset_name
+
+
 def get_sorted_execution_logs(db, privacy_request: PrivacyRequest):
     return [
         (
-            CollectionAddress(log.dataset_name, log.collection_name).value,
+            get_collection_identifier(log),
             log.status.value,
         )
         for log in db.query(ExecutionLog)
@@ -238,6 +250,7 @@ class TestDeleteCollection:
 
             execution_logs = get_sorted_execution_logs(db, privacy_request)
             assert execution_logs == [
+                ("Dataset traversal", "complete"),
                 ("postgres_example_test_dataset:customer", "in_processing"),
                 ("postgres_example_test_dataset:customer", "complete"),
                 ("postgres_example_test_dataset:payment_card", "in_processing"),
@@ -301,6 +314,7 @@ class TestDeleteCollection:
         if "use_dsr_2_0" == dsr_version:
             execution_logs = get_sorted_execution_logs(db, privacy_request)
             assert execution_logs == [
+                ("Dataset traversal", "complete"),
                 ("postgres_example_test_dataset:customer", "in_processing"),
                 ("postgres_example_test_dataset:customer", "complete"),
                 ("postgres_example_test_dataset:payment_card", "in_processing"),
@@ -313,6 +327,7 @@ class TestDeleteCollection:
                 ("postgres_example_test_dataset:product", "complete"),
                 ("mongo_test:customer_details", "in_processing"),
                 ("mongo_test:customer_details", "error"),
+                ("Dataset traversal", "complete"),
                 ("postgres_example_test_dataset:employee", "in_processing"),
                 ("postgres_example_test_dataset:employee", "complete"),
                 ("postgres_example_test_dataset:service_request", "in_processing"),
@@ -387,11 +402,11 @@ class TestDeleteCollection:
         )
         assert pr.get_results() != {}
         logs = get_sorted_execution_logs(db, pr)
-        assert len(logs) == 22
+        assert len(logs) == 23
 
         read_connection_config.delete(db)
         logs = get_sorted_execution_logs(db, pr)
-        assert len(logs) == 22
+        assert len(logs) == 23
 
 
 @pytest.mark.integration
@@ -574,6 +589,7 @@ class TestSkipCollectionDueToDisabledConnectionConfig:
 
             execution_logs = get_sorted_execution_logs(db, privacy_request)
             assert execution_logs == [
+                ("Dataset traversal", "complete"),
                 ("postgres_example_test_dataset:customer", "in_processing"),
                 ("postgres_example_test_dataset:customer", "complete"),
                 ("postgres_example_test_dataset:payment_card", "in_processing"),
@@ -634,6 +650,7 @@ class TestSkipCollectionDueToDisabledConnectionConfig:
         if dsr_version == "use_dsr_2_0":
             execution_logs = get_sorted_execution_logs(db, privacy_request)
             assert execution_logs == [
+                ("Dataset traversal", "complete"),
                 ("postgres_example_test_dataset:customer", "in_processing"),
                 ("postgres_example_test_dataset:customer", "complete"),
                 ("postgres_example_test_dataset:payment_card", "in_processing"),
@@ -646,6 +663,7 @@ class TestSkipCollectionDueToDisabledConnectionConfig:
                 ("postgres_example_test_dataset:product", "complete"),
                 ("mongo_test:customer_details", "in_processing"),
                 ("mongo_test:customer_details", "error"),
+                ("Dataset traversal", "complete"),
                 ("postgres_example_test_dataset:employee", "in_processing"),
                 ("postgres_example_test_dataset:employee", "complete"),
                 ("postgres_example_test_dataset:service_request", "in_processing"),
@@ -728,12 +746,12 @@ class TestSkipCollectionDueToDisabledConnectionConfig:
         )
         assert pr.get_results() != {}
         logs = get_sorted_execution_logs(db, pr)
-        assert len(logs) == 22
+        assert len(logs) == 23
 
         read_connection_config.disabled = True
         read_connection_config.save(db)
         logs = get_sorted_execution_logs(db, pr)
-        assert len(logs) == 22
+        assert len(logs) == 23
 
 
 @pytest.mark.integration
@@ -914,6 +932,7 @@ async def test_restart_graph_from_failure(
         execution_logs = get_sorted_execution_logs(db, privacy_request)
         # Assert execution logs failed at mongo node
         assert execution_logs == [
+            ("Dataset traversal", "complete"),
             ("postgres_example_test_dataset:customer", "in_processing"),
             ("postgres_example_test_dataset:customer", "complete"),
             ("postgres_example_test_dataset:payment_card", "in_processing"),
@@ -992,7 +1011,7 @@ async def test_restart_graph_from_failure(
 
     customer_detail_logs = [
         (
-            CollectionAddress(log.dataset_name, log.collection_name).value,
+            get_collection_identifier(log),
             log.status.value,
         )
         for log in db.query(ExecutionLog)
@@ -1108,7 +1127,7 @@ async def test_restart_graph_from_failure_on_different_scheduler(
 
     customer_detail_logs = [
         (
-            CollectionAddress(log.dataset_name, log.collection_name).value,
+            get_collection_identifier(log),
             log.status.value,
         )
         for log in db.query(ExecutionLog)
@@ -1250,7 +1269,7 @@ async def test_restart_graph_from_failure_during_erasure(
 
     address_logs = [
         (
-            CollectionAddress(log.dataset_name, log.collection_name).value,
+            get_collection_identifier(log),
             log.action_type.value,
             log.status.value,
         )
