@@ -362,7 +362,7 @@ export const FormsPOC = () => {
                     <label htmlFor="input">Input</label>
                     <div>
                       <Field name="input">
-                        {({ field }) => (
+                        {({ field }: any) => (
                           <Input {...field} id="input" type="text" />
                         )}
                       </Field>
@@ -370,7 +370,7 @@ export const FormsPOC = () => {
                   </div>
                   <div>
                     <Field name="radio">
-                      {({ field }) => (
+                      {({ field }: any) => (
                         <Radio.Group {...field}>
                           <Radio value="1">Radio 1</Radio>
                           <Radio value="2">Radio 2</Radio>
@@ -380,7 +380,7 @@ export const FormsPOC = () => {
                   </div>
                   <div>
                     <Field name="checkbox">
-                      {({ field }) => (
+                      {({ field }: any) => (
                         <Checkbox {...field} defaultChecked={values.checkbox}>
                           Checkbox
                         </Checkbox>
@@ -394,7 +394,7 @@ export const FormsPOC = () => {
                     <label htmlFor="select">Select</label>
                     <div>
                       <Field name="select">
-                        {({ field }) => (
+                        {({ field }: any) => (
                           <Select
                             allowClear
                             id="select"
@@ -418,7 +418,7 @@ export const FormsPOC = () => {
                     <label htmlFor="multiselect">Multiselect</label>
                     <div>
                       <Field name="multiselect">
-                        {({ field }) => (
+                        {({ field }: any) => (
                           <Select
                             mode="multiple"
                             allowClear
@@ -443,7 +443,7 @@ export const FormsPOC = () => {
                     <label htmlFor="tags">Tags</label>
                     <div>
                       <Field name="tags">
-                        {({ field }) => (
+                        {({ field }: any) => (
                           <Select
                             mode="tags"
                             allowClear
@@ -468,7 +468,7 @@ export const FormsPOC = () => {
                     <label htmlFor="date">Date</label>
                     <div>
                       <Field name="date">
-                        {({ field }) => (
+                        {({ field }: any) => (
                           <DatePicker id="date" status="error" {...field} />
                         )}
                       </Field>
@@ -482,7 +482,7 @@ export const FormsPOC = () => {
                     <label htmlFor="number">Number</label>
                     <div>
                       <Field name="number">
-                        {({ field }) => (
+                        {({ field }: any) => (
                           <InputNumber
                             id="number"
                             defaultValue={values.number}
