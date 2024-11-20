@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import {
   useGetDatabasesByConnectionQuery,
@@ -26,23 +26,31 @@ const useCumulativeGetDatabases = (
       connection_config_key: integrationKey,
     });
 
-  useEffect(() => {
-    const t = setTimeout(() => {
-      if (initialIsLoading && onTimeout) {
-        onTimeout();
-      }
-    }, 5000);
-    return () => clearTimeout(t);
-    // this should only run on mount
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const initialLoadingRef = useRef(initialIsLoading);
 
   const { items: initialDatabases, total: totalDatabases } =
-    initialResult || EMPTY_RESPONSE;
+    initialResult ?? EMPTY_RESPONSE;
 
   const reachedEnd = !!initialResult?.pages && nextPage > initialResult.pages;
 
   const [databases, setDatabases] = useState<string[]>(initialDatabases);
+
+  useEffect(() => {
+    initialLoadingRef.current = initialIsLoading;
+    // this needs to be in this hook or else it will be set to [] instead of the actual result
+    setDatabases(initialDatabases);
+  }, [initialIsLoading, initialDatabases]);
+
+  useEffect(() => {
+    const t = setTimeout(() => {
+      if (initialLoadingRef.current && onTimeout) {
+        onTimeout();
+      }
+    }, 500);
+    return () => clearTimeout(t);
+    // this should only run once on mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const [
     refetchTrigger,
