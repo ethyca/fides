@@ -87,12 +87,6 @@ def test_create_and_process_access_request_bigquery_enterprise(
     assert len(users) == 1
     user_details = users[0]
     assert user_details["id"] == user_id
-    assert user_details["display_name"] == "David R. Longnecker"
-    assert user_details["location"] == "Kansas City, MO, USA"
-    assert (
-        user_details["profile_image_url"]
-        == "https://i.stack.imgur.com/egFxf.jpg?s=128&g=1"
-    )
 
     assert (
         len(

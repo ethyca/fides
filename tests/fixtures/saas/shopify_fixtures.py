@@ -12,7 +12,6 @@ from tests.ops.test_helpers.saas_test_utils import poll_for_existence
 from tests.ops.test_helpers.vault_client import get_secrets
 
 secrets = get_secrets("shopify")
-# todo- model secrets after this pattern for BigQuery
 
 faker = Faker()
 
