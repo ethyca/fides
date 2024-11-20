@@ -10,6 +10,9 @@ import { MonitorConfig } from "~/types/api";
 
 const TOOLTIP_COPY =
   "Selecting a project will monitor all current and future datasets within that project.";
+const TIMEOUT_COPY =
+  "Loading resources is taking longer than expected. The monitor has been saved and is tracking all available resources. You can return later to limit its scope if needed";
+
 const ConfigureMonitorDatabasesForm = ({
   monitor,
   isEditing,
@@ -32,8 +35,7 @@ const ConfigureMonitorDatabasesForm = ({
     toast({
       ...DEFAULT_TOAST_PARAMS,
       status: "info",
-      description:
-        "Loading projects to narrow scope of this monitor is taking a long time, usually because many projects are available.  The monitor has been saved without a set scope and will monitor all available projects.",
+      description: TIMEOUT_COPY,
     });
     onClose();
   };

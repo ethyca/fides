@@ -17,6 +17,10 @@ import {
 } from "~/types/api";
 import { isErrorResult, RTKResult } from "~/types/errors";
 
+const TIMEOUT_DELAY = 5000;
+const TIMEOUT_COPY =
+  "Saving this monitor is taking longer than expected. Fides will continue processing it in the background, and you can check back later to view the updates.";
+
 const ConfigureMonitorModal = ({
   isOpen,
   onClose,
@@ -63,12 +67,11 @@ const ConfigureMonitorModal = ({
         toast({
           ...DEFAULT_TOAST_PARAMS,
           status: "info",
-          description:
-            "This monitor is taking an unusually long time to save.  Fides will continue to process it in the background, and you can return to view it later.",
+          description: TIMEOUT_COPY,
         });
         onClose();
       }
-    }, 5000);
+    }, TIMEOUT_DELAY);
     result = await putMonitorMutationTrigger(values);
     if (result) {
       clearTimeout(timeout);

@@ -5,6 +5,8 @@ import {
   useLazyGetDatabasesByConnectionQuery,
 } from "~/features/data-discovery-and-detection/discovery-detection.slice";
 
+const TIMEOUT_DELAY = 5000;
+
 const EMPTY_RESPONSE = {
   items: [] as string[],
   total: 1,
@@ -46,7 +48,7 @@ const useCumulativeGetDatabases = (
       if (initialLoadingRef.current && onTimeout) {
         onTimeout();
       }
-    }, 5000);
+    }, TIMEOUT_DELAY);
     return () => clearTimeout(t);
     // this should only run once on mount
     // eslint-disable-next-line react-hooks/exhaustive-deps
