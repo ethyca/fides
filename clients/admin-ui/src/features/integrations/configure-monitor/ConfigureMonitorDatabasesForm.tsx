@@ -1,8 +1,9 @@
-import { AntButton as Button, Flex, Text, Tooltip } from "fidesui";
+import { AntButton as Button, Flex, Text, Tooltip, useToast } from "fidesui";
 
 import FidesSpinner from "~/features/common/FidesSpinner";
 import { usePaginatedPicker } from "~/features/common/hooks/usePicker";
 import QuestionTooltip from "~/features/common/QuestionTooltip";
+import { DEFAULT_TOAST_PARAMS } from "~/features/common/toast";
 import MonitorDatabasePicker from "~/features/integrations/configure-monitor/MonitorDatabasePicker";
 import useCumulativeGetDatabases from "~/features/integrations/configure-monitor/useCumulativeGetDatabases";
 import { MonitorConfig } from "~/types/api";
@@ -24,6 +25,18 @@ const ConfigureMonitorDatabasesForm = ({
   onSubmit: (monitor: MonitorConfig) => void;
   onClose: () => void;
 }) => {
+  const toast = useToast();
+
+  const handleTimeout = () => {
+    onSubmit({ ...monitor, databases: [] });
+    toast({
+      ...DEFAULT_TOAST_PARAMS,
+      status: "info",
+      description:
+        "Loading projects to narrow scope of this monitor is taking a long time, usually because many projects are available.  The monitor has been saved without a set scope and will monitor all available projects.",
+    });
+  };
+
   const {
     databases,
     totalDatabases: totalRows,
@@ -31,9 +44,7 @@ const ConfigureMonitorDatabasesForm = ({
     reachedEnd,
     isLoading: refetchPending,
     initialIsLoading,
-  } = useCumulativeGetDatabases(integrationKey);
-
-  console.log(databases);
+  } = useCumulativeGetDatabases(integrationKey, handleTimeout);
 
   const initialSelected = monitor?.databases ?? [];
 
@@ -62,10 +73,8 @@ const ConfigureMonitorDatabasesForm = ({
 
   const saveIsDisabled = !allSelected && selected.length === 0;
 
-  console.log(initialIsLoading);
-
   if (initialIsLoading) {
-    return <FidesSpinner />;
+    return <FidesSpinner my={12} />;
   }
 
   return (

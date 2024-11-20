@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 
 import {
   useGetDatabasesByConnectionQuery,
@@ -13,10 +13,12 @@ const EMPTY_RESPONSE = {
   pages: 0,
 };
 
-const useCumulativeGetDatabases = (integrationKey: string) => {
-  const [showLongLoadingMessage, setShowLongLoadingMessage] = useState(false);
-
+const useCumulativeGetDatabases = (
+  integrationKey: string,
+  onTimeout?: () => void,
+) => {
   const [nextPage, setNextPage] = useState(2);
+
   const { data: initialResult, isLoading: initialIsLoading } =
     useGetDatabasesByConnectionQuery({
       page: 1,
@@ -24,15 +26,16 @@ const useCumulativeGetDatabases = (integrationKey: string) => {
       connection_config_key: integrationKey,
     });
 
-  useMemo(
-    () =>
-      setTimeout(() => {
-        if (initialIsLoading) {
-          setShowLongLoadingMessage(true);
-        }
-      }, 5000),
-    [initialIsLoading],
-  );
+  useEffect(() => {
+    const t = setTimeout(() => {
+      if (initialIsLoading && onTimeout) {
+        onTimeout();
+      }
+    }, 5000);
+    return () => clearTimeout(t);
+    // this should only run on mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const { items: initialDatabases, total: totalDatabases } =
     initialResult || EMPTY_RESPONSE;
@@ -71,7 +74,6 @@ const useCumulativeGetDatabases = (integrationKey: string) => {
     initialIsLoading,
     isLoading,
     reachedEnd,
-    showLongLoadingMessage,
   };
 };
 
