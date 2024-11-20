@@ -29,7 +29,7 @@ const ConnectionTypeFilter = () => {
   }, [connectionOptions, connection_type]);
 
   const list = useMemo(() => loadList(), [loadList]);
-  const options = [...list].map(([key]) => ({ value: key }));
+  const options = [...list].map(([key]) => ({ value: key, label: key }));
 
   // Hooks
   const dispatch = useAppDispatch();
