@@ -508,7 +508,7 @@ class TestPersistAccessRequestTasks:
         assert "dataset_with_unreachable_collections:report" in str(err.value)
 
         db.refresh(privacy_request)
-        privacy_request.status == PrivacyRequestStatus.error
+        assert privacy_request.status == PrivacyRequestStatus.error
 
         # We expect two error logs, one per unreachable collection
         error_logs = privacy_request.execution_logs.filter(
@@ -518,14 +518,20 @@ class TestPersistAccessRequestTasks:
         error_logs = sorted(
             error_logs, key=lambda execution_log: execution_log.collection_name
         )
-        assert error_logs[0].dataset_name == "dataset_with_unreachable_collections"
-        assert error_logs[0].collection_name == "login"
+        assert error_logs[0].dataset_name == "Dataset traversal"
+        assert (
+            error_logs[0].collection_name
+            == "dataset_with_unreachable_collections.login"
+        )
         assert (
             error_logs[0].message
             == "Node dataset_with_unreachable_collections:login is not reachable"
         )
-        assert error_logs[1].dataset_name == "dataset_with_unreachable_collections"
-        assert error_logs[1].collection_name == "report"
+        assert error_logs[1].dataset_name == "Dataset traversal"
+        assert (
+            error_logs[1].collection_name
+            == "dataset_with_unreachable_collections.report"
+        )
         assert (
             error_logs[1].message
             == "Node dataset_with_unreachable_collections:report is not reachable"

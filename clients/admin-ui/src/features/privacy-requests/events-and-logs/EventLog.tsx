@@ -102,7 +102,7 @@ const EventLog = ({ eventLogs, openErrorPanel }: EventDetailsProps) => {
             </Tr>
           </Thead>
 
-          <Tbody id="tabelBody">{tableItems}</Tbody>
+          <Tbody id="tableBody">{tableItems}</Tbody>
         </Table>
       </TableContainer>
     </Box>

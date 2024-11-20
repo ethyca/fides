@@ -30,6 +30,7 @@ from fides.api.task.task_resources import TaskResources
 from fides.api.tasks import DatabaseTask, celery_app
 from fides.api.util.cache import cache_task_tracking_key
 from fides.api.util.collection_util import Row
+from fides.api.util.logger_context_utils import LoggerContextKeys, log_context
 
 # DSR 3.0 task functions
 
@@ -74,7 +75,7 @@ def run_prerequisite_task_checks(
         # the node is already queued.
         if not request_task.upstream_tasks_complete(session, should_log=False):
             raise UpstreamTasksNotReady(
-                f"Cannot start {request_task.action_type} task {request_task.collection_address}. Privacy Request: {privacy_request.id}, Request Task {request_task.id}.  Waiting for upstream tasks to finish."
+                f"Cannot start {request_task.action_type} task {request_task.collection_address}. Waiting for upstream tasks to finish."
             )
 
     return privacy_request, request_task, upstream_results
@@ -93,9 +94,7 @@ def create_graph_task(
 
     except Exception as exc:
         logger.debug(
-            "Cannot execute task - error loading task from database. Privacy Request: {}, Request Task {}. Exception {}",
-            request_task.privacy_request_id,
-            request_task.id,
+            "Cannot execute task - error loading task from database. Exception {}",
             str(exc),
         )
         # Normally the GraphTask takes care of creating the ExecutionLog, but in this case we can't create it in the first place!
@@ -128,10 +127,8 @@ def can_run_task_body(
     complete or this is a root/terminator node"""
     if request_task.is_terminator_task:
         logger.info(
-            "Terminator {} task reached. Privacy Request: {}, Request Task {}",
+            "Terminator {} task reached.",
             request_task.action_type.value,
-            request_task.privacy_request_id,
-            request_task.id,
         )
         return False
     if request_task.is_root_task:
@@ -139,12 +136,10 @@ def can_run_task_body(
         return False
     if request_task.status != ExecutionLogStatus.pending:
         logger_method(request_task)(
-            "Skipping {} task {} with status {}. Privacy Request: {}, Request Task {}",
+            "Skipping {} task {} with status {}.",
             request_task.action_type.value,
             request_task.collection_address,
             request_task.status.value,
-            request_task.privacy_request_id,
-            request_task.id,
         )
         return False
 
@@ -191,6 +186,12 @@ def queue_downstream_tasks(
 
 
 @celery_app.task(base=DatabaseTask, bind=True)
+@log_context(
+    capture_args={
+        "privacy_request_id": LoggerContextKeys.privacy_request_id,
+        "privacy_request_task_id": LoggerContextKeys.task_id,
+    }
+)
 def run_access_node(
     self: DatabaseTask,
     privacy_request_id: str,
@@ -234,6 +235,7 @@ def run_access_node(
                 graph_task.access_request(*upstream_access_data)
                 log_task_complete(request_task)
 
+    with self.get_new_session() as session:
         queue_downstream_tasks(
             session,
             request_task,
@@ -241,10 +243,15 @@ def run_access_node(
             CurrentStep.upload_access,
             privacy_request_proceed,
         )
-        return
 
 
 @celery_app.task(base=DatabaseTask, bind=True)
+@log_context(
+    capture_args={
+        "privacy_request_id": LoggerContextKeys.privacy_request_id,
+        "privacy_request_task_id": LoggerContextKeys.task_id,
+    }
+)
 def run_erasure_node(
     self: DatabaseTask,
     privacy_request_id: str,
@@ -280,6 +287,7 @@ def run_erasure_node(
 
                 log_task_complete(request_task)
 
+    with self.get_new_session() as session:
         queue_downstream_tasks(
             session,
             request_task,
@@ -287,10 +295,15 @@ def run_erasure_node(
             CurrentStep.finalize_erasure,
             privacy_request_proceed,
         )
-        return
 
 
 @celery_app.task(base=DatabaseTask, bind=True)
+@log_context(
+    capture_args={
+        "privacy_request_id": LoggerContextKeys.privacy_request_id,
+        "privacy_request_task_id": LoggerContextKeys.task_id,
+    }
+)
 def run_consent_node(
     self: DatabaseTask,
     privacy_request_id: str,
@@ -328,6 +341,7 @@ def run_consent_node(
 
                 log_task_complete(request_task)
 
+    with self.get_new_session() as session:
         queue_downstream_tasks(
             session,
             request_task,
@@ -335,7 +349,6 @@ def run_consent_node(
             CurrentStep.finalize_consent,
             privacy_request_proceed,
         )
-        return
 
 
 def logger_method(request_task: RequestTask) -> Callable:
@@ -350,24 +363,20 @@ def logger_method(request_task: RequestTask) -> Callable:
 def log_task_starting(request_task: RequestTask) -> None:
     """Convenience method for logging task start"""
     logger_method(request_task)(
-        "Starting '{}' task {} with current status '{}'. Privacy Request: {}, Request Task {}",
+        "Starting '{}' task {} with current status '{}'.",
         request_task.action_type,
         request_task.collection_address,
         request_task.status.value,
-        request_task.privacy_request_id,
-        request_task.id,
     )
 
 
 def log_task_complete(request_task: RequestTask) -> None:
     """Convenience method for logging task completion"""
     logger.info(
-        "{} task {} is {}. Privacy Request: {}, Request Task {}",
+        "{} task {} is {}.",
         request_task.action_type.value.capitalize(),
         request_task.collection_address,
         request_task.status.value,
-        request_task.privacy_request_id,
-        request_task.id,
     )
 
 
@@ -416,10 +425,8 @@ def queue_request_task(
 def log_task_queued(request_task: RequestTask, location: str) -> None:
     """Helper for logging that tasks are queued"""
     logger_method(request_task)(
-        "Queuing {} task {} from {}. Privacy Request: {}, Request Task {}",
+        "Queuing {} task {} from {}.",
         request_task.action_type.value,
         request_task.collection_address,
         location,
-        request_task.privacy_request_id,
-        request_task.id,
     )

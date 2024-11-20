@@ -1,4 +1,4 @@
-import { Badge, BadgeProps } from "fidesui";
+import { Badge, BadgeProps, Spinner } from "fidesui";
 
 import { PrivacyRequestStatus } from "~/types/api";
 
@@ -65,7 +65,18 @@ const RequestStatusBadge = ({ status }: RequestBadgeProps) => (
     textAlign="center"
     data-testid="request-status-badge"
   >
-    {statusPropMap[status].label}
+    <span
+      style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
+      {statusPropMap[status].label}
+      {status === PrivacyRequestStatus.IN_PROCESSING && (
+        <Spinner size="xs" color="white" ml={2} />
+      )}
+    </span>
   </Badge>
 );
 
