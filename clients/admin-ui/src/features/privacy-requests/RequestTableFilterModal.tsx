@@ -16,13 +16,13 @@ import {
   Stack,
 } from "fidesui";
 
-import { MultiSelectTags } from "~/features/common/dropdown/MultiSelectTags";
 import {
-  SubjectRequestActionTypeMap,
-  SubjectRequestStatusMap,
+  SubjectRequestActionTypeOptions,
+  SubjectRequestStatusOptions,
 } from "~/features/privacy-requests/constants";
 import { useRequestFilters } from "~/features/privacy-requests/hooks/useRequestFilters";
-import { ActionType, PrivacyRequestStatus } from "~/types/api";
+
+import { FilterSelect } from "../common/dropdown/FilterSelect";
 
 interface RequestTableFilterModalProps extends Omit<ModalProps, "children"> {
   onFilterChange: () => void;
@@ -100,25 +100,27 @@ export const RequestTableFilterModal = ({
               </HStack>
             </Stack>
             <Stack>
-              <FormLabel size="md" id="request-status-label">
+              <FormLabel size="md" htmlFor="request-status-label">
                 Status
               </FormLabel>
-              <MultiSelectTags<PrivacyRequestStatus>
-                options={SubjectRequestStatusMap}
+              <FilterSelect
+                id="request-status-label"
+                mode="multiple"
+                options={SubjectRequestStatusOptions}
                 value={statusList}
                 onChange={handleStatusChange}
-                aria-describedby="request-status-label"
               />
             </Stack>
             <Stack>
-              <FormLabel size="md" id="request-action-type-label">
+              <FormLabel size="md" htmlFor="request-action-type-label">
                 Request Type
               </FormLabel>
-              <MultiSelectTags<ActionType>
-                options={SubjectRequestActionTypeMap}
+              <FilterSelect
+                id="request-action-type-label"
+                mode="multiple"
+                options={SubjectRequestActionTypeOptions}
                 value={actionTypeList}
                 onChange={handleActionTypeChange}
-                aria-describedby="request-action-type-label"
               />
             </Stack>
           </Stack>
