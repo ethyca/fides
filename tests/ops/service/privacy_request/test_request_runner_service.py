@@ -1336,6 +1336,60 @@ def test_create_and_process_erasure_request_specific_category_postgres(
     assert customer_found
 
 
+@pytest.mark.integration_postgres
+@pytest.mark.integration
+@pytest.mark.parametrize(
+    "dsr_version",
+    ["use_dsr_3_0", "use_dsr_2_0"],
+)
+def test_create_and_process_erasure_request_with_masking_strategy_override(
+    postgres_integration_db,
+    postgres_example_test_dataset_config,
+    cache,
+    db,
+    generate_auth_header,
+    erasure_policy,
+    dsr_version,
+    request,
+    read_connection_config,
+    run_privacy_request_task,
+):
+    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+
+    employee_email = "employee-1@example.com"
+    employee_id = 1
+    data = {
+        "requested_at": "2021-08-30T16:09:37.359Z",
+        "policy_key": erasure_policy.key,
+        "identity": {"email": employee_email},
+    }
+
+    stmt = select("*").select_from(table("employee"))
+    res = postgres_integration_db.execute(stmt).all()
+
+    pr = get_privacy_request_results(
+        db,
+        erasure_policy,
+        run_privacy_request_task,
+        data,
+    )
+    pr.delete(db=db)
+
+    stmt = select(
+        column("id"),
+        column("name"),
+    ).select_from(table("employee"))
+    res = postgres_integration_db.execute(stmt).all()
+
+    customer_found = False
+    for row in res:
+        if employee_id == row.id:
+            customer_found = True
+            # Check that the `name` field was masked with the override provided in the dataset
+            assert row.name == "testing-test"
+    assert customer_found
+
+
 @pytest.mark.integration_mssql
 @pytest.mark.integration
 @pytest.mark.parametrize(
@@ -2058,7 +2112,7 @@ def test_create_and_process_erasure_request_bigquery(
     dsr_version,
     request,
     bigquery_fixtures,
-    erasure_policy,
+    biquery_erasure_policy,
     run_privacy_request_task,
 ):
     request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
@@ -2077,14 +2131,14 @@ def test_create_and_process_erasure_request_bigquery(
     customer_email = bigquery_resources["email"]
     data = {
         "requested_at": "2021-08-30T16:09:37.359Z",
-        "policy_key": erasure_policy.key,
+        "policy_key": biquery_erasure_policy.key,
         "identity": {"email": customer_email},
     }
 
     # Should erase customer name
     pr = get_privacy_request_results(
         db,
-        erasure_policy,
+        biquery_erasure_policy,
         run_privacy_request_task,
         data,
         task_timeout=PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL,
@@ -2108,14 +2162,15 @@ def test_create_and_process_erasure_request_bigquery(
             assert row.city == bigquery_resources["city"]
             assert row.state == bigquery_resources["state"]
 
-    target = erasure_policy.rules[0].targets[0]
-    target.data_category = "user.contact.address.state"
-    target.save(db=db)
+    for target in biquery_erasure_policy.rules[0].targets:
+        if target.data_category == "user.name":
+            target.data_category = "user.contact.address.state"
+            target.save(db=db)
 
     # Should erase state fields on address table
     pr = get_privacy_request_results(
         db,
-        erasure_policy,
+        biquery_erasure_policy,
         run_privacy_request_task,
         data,
         task_timeout=PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL,
@@ -2124,19 +2179,14 @@ def test_create_and_process_erasure_request_bigquery(
     bigquery_client = bigquery_resources["client"]
     with bigquery_client.connect() as connection:
         address_id = bigquery_resources["address_id"]
-        stmt = f"select 'id', city, state from fidesopstest.address where id = {address_id};"
+        stmt = f"select 'id', city, state, street from fidesopstest.address where id = {address_id};"
         res = connection.execute(stmt).all()
         for row in res:
             # State field was targeted by erasure policy but city was not
             assert row.city is not None
             assert row.state is None
-
-        stmt = f"select 'id', city, state from fidesopstest.address where id = {address_id};"
-        res = connection.execute(stmt).all()
-        for row in res:
-            # State field was targeted by erasure policy but city was not
-            assert row.city is not None
-            assert row.state is None
+            # Street field was targeted by erasure policy but overridden by field-level masking_strategy_override
+            assert row.street == "REDACTED"
 
         stmt = f"select * from fidesopstest.employee where address_id = {bigquery_resources['address_id']};"
         res = connection.execute(stmt).all()
