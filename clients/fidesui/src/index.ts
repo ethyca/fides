@@ -14,6 +14,7 @@ export type {
   ListProps as AntListProps,
   SelectProps as AntSelectProps,
   SwitchProps as AntSwitchProps,
+  TabsProps as AntTabsProps,
   GetProps,
   InputRef,
 } from "antd/lib";
@@ -40,6 +41,7 @@ export {
   Skeleton as AntSkeleton,
   Space as AntSpace,
   Switch as AntSwitch,
+  Tabs as AntTabs,
   Tag as AntTag,
   Tooltip as AntTooltip,
   Typography as AntTypography,
