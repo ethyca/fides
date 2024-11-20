@@ -852,7 +852,7 @@ class TestUpdateUserPassword:
         application_user,
     ) -> None:
         OLD_PASSWORD = "oldpassword"
-        NEW_PASSWORD = "newpassword"
+        NEW_PASSWORD = "Newpassword1!"
         application_user.update_password(db=db, new_password=OLD_PASSWORD)
 
         auth_header = generate_auth_header_for_user(user=application_user, scopes=[])
@@ -874,7 +874,7 @@ class TestUpdateUserPassword:
         application_user = application_user.refresh_from_db(db=db)
         assert application_user.credentials_valid(password=OLD_PASSWORD)
 
-    def test_update_user_password_invalid(
+    def test_update_user_password_invalid_old_password(
         self,
         api_client,
         db,
@@ -882,7 +882,7 @@ class TestUpdateUserPassword:
         application_user,
     ) -> None:
         OLD_PASSWORD = "oldpassword"
-        NEW_PASSWORD = "newpassword"
+        NEW_PASSWORD = "Newpassword1!"
         application_user.update_password(db=db, new_password=OLD_PASSWORD)
 
         auth_header = generate_auth_header_for_user(user=application_user, scopes=[])
@@ -909,7 +909,7 @@ class TestUpdateUserPassword:
         application_user,
     ) -> None:
         OLD_PASSWORD = "oldpassword"
-        NEW_PASSWORD = "newpassword"
+        NEW_PASSWORD = "Newpassword1!"
         application_user.update_password(db=db, new_password=OLD_PASSWORD)
         auth_header = generate_auth_header_for_user(user=application_user, scopes=[])
         resp = api_client.post(
@@ -934,7 +934,7 @@ class TestUpdateUserPassword:
         application_user,
     ) -> None:
         """A user without the proper scope cannot change another user's password"""
-        NEW_PASSWORD = "newpassword"
+        NEW_PASSWORD = "Newpassword1!"
         old_hashed_password = user.hashed_password
 
         auth_header = generate_auth_header_for_user(user=application_user, scopes=[])
@@ -965,7 +965,7 @@ class TestUpdateUserPassword:
         A user with the right scope should be able to set a new password
         for another user.
         """
-        NEW_PASSWORD = "newpassword"
+        NEW_PASSWORD = "Newpassword1!"
         auth_header = generate_auth_header_for_user(
             user=application_user, scopes=[USER_PASSWORD_RESET]
         )
@@ -982,6 +982,46 @@ class TestUpdateUserPassword:
         user = user.refresh_from_db(db=db)
         assert user.credentials_valid(password=NEW_PASSWORD)
 
+    @pytest.mark.parametrize(
+        "new_password, expected_error",
+        [
+            ("short", "Value error, Password must have at least eight characters."),
+            ("longerpassword", "Value error, Password must have at least one number."),
+            ("longer55password", "Value error, Password must have at least one capital letter."),
+            ("LONGER55PASSWORD", "Value error, Password must have at least one lowercase letter."),
+            ("LoNgEr55paSSworD", "Value error, Password must have at least one symbol."),
+        ],
+    )
+    def test_force_update_bad_password(
+        self,
+        api_client,
+        db,
+        url_no_id,
+        user,
+        application_user,
+        new_password,
+        expected_error,
+    ) -> None:
+        """
+        A user with the right scope should be able to set a new password
+        for another user.
+        """
+        auth_header = generate_auth_header_for_user(
+            user=application_user, scopes=[USER_PASSWORD_RESET]
+        )
+
+        resp = api_client.post(
+            f"{url_no_id}/{user.id}/force-reset-password",
+            headers=auth_header,
+            json={
+                "new_password": str_to_b64_str(new_password),
+            },
+        )
+
+        assert resp.status_code == HTTP_422_UNPROCESSABLE_ENTITY
+        assert expected_error in resp.json()["detail"][0]["msg"]
+        db.expunge(user)
+
     def test_force_update_non_existent_user(
         self,
         api_client,
@@ -991,7 +1031,7 @@ class TestUpdateUserPassword:
         """
         Resetting on a user that does not exist should 404
         """
-        NEW_PASSWORD = "newpassword"
+        NEW_PASSWORD = "Newpassword1!"
         auth_header = generate_auth_header_for_user(
             user=application_user, scopes=[USER_PASSWORD_RESET]
         )
@@ -1902,7 +1942,7 @@ class TestAcceptUserInvite:
         response = api_client.post(
             url,
             params={"username": "valid_user", "invite_code": "valid_code"},
-            json={"username": "valid_user", "new_password": "pass"},
+            json={"username": "valid_user", "new_password": "Testpassword1!"},
         )
 
         assert response.status_code == HTTP_200_OK
@@ -1925,7 +1965,7 @@ class TestAcceptUserInvite:
         response = api_client.post(
             url,
             params={"username": "valid_user", "invite_code": "invalid_code"},
-            json={"username": "valid_user", "new_password": "pass"},
+            json={"username": "valid_user", "new_password": "Testpassword1!"},
         )
         assert response.status_code == HTTP_400_BAD_REQUEST
         assert response.json()["detail"] == "Invite code is invalid."
@@ -1943,7 +1983,7 @@ class TestAcceptUserInvite:
         response = api_client.post(
             url,
             params={"username": "valid_user", "invite_code": "expired_code"},
-            json={"username": "valid_user", "new_password": "pass"},
+            json={"username": "valid_user", "new_password": "Testpassword1!"},
         )
         assert response.status_code == HTTP_400_BAD_REQUEST
         assert response.json()["detail"] == "Invite code has expired."
@@ -1954,7 +1994,7 @@ class TestAcceptUserInvite:
             params={"username": "nonexistent_user", "invite_code": "some_code"},
             json={
                 "username": "nonexistent_user",
-                "new_password": "pass",
+                "new_password": "Testpassword1!",
             },
         )
         assert response.status_code == HTTP_404_NOT_FOUND
