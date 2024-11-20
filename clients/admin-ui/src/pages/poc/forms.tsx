@@ -13,19 +13,19 @@ import {
   AntRadio as Radio,
   AntRow as Row,
   AntSelect as Select,
+  AntTag as Tag,
   AntTypography as Typography,
 } from "fidesui";
 import palette from "fidesui/src/palette/palette.module.scss";
 import { Field, Form, Formik } from "formik";
 
 const { Content } = Layout;
-const { Title } = Typography;
+const { Text, Title, Paragraph } = Typography;
 
 const initialValues = {
   input: "default text",
   radio: "2",
-  checkbox1: true,
-  checkbox2: false,
+  checkbox: true,
   select: "2",
   multiselect: ["2"],
   tags: ["1"],
@@ -44,14 +44,24 @@ export const FormsPOC = () => {
         {({ values, setFieldValue }) => (
           <Row>
             <Col span={12}>
-              <Title level={2}>{`<Formik> + <Field>`}</Title>
+              <Title level={2}>{`<Formik> + Controlled`}</Title>
+              <Tag color="green">funcitonal</Tag>
+              <Tag color="red">high effort</Tag>
+              <Paragraph>
+                This is the most controlled way to handle forms with Formik.
+                This is the most flexible way to handle forms, but also requires
+                the most effort. Labels and errors are manually handled.
+              </Paragraph>
               <Form>
                 <Flex vertical gap={16}>
                   <div>
                     <label htmlFor="input">Input</label>
                     <div>
-                      {/* I wasn't able to get any other field type to work with <Field> as nicely as <Input> does. They all require custom controller value/onChange */}
-                      <Field as={Input} id="input" name="input" type="text" />
+                      <Input
+                        id="input"
+                        onChange={(e) => setFieldValue("input", e.target.value)}
+                        defaultValue={values.input}
+                      />
                     </div>
                   </div>
                   <div>
@@ -67,19 +77,11 @@ export const FormsPOC = () => {
                   <div>
                     <Checkbox
                       onChange={(e) =>
-                        setFieldValue("checkbox1", e.target.checked)
+                        setFieldValue("checkbox", e.target.checked)
                       }
-                      defaultChecked={values.checkbox1}
+                      defaultChecked={values.checkbox}
                     >
-                      Checkbox 1
-                    </Checkbox>
-                    <Checkbox
-                      onChange={(e) =>
-                        setFieldValue("checkbox2", e.target.checked)
-                      }
-                      defaultChecked={values.checkbox2}
-                    >
-                      Checkbox 2
+                      Checkbox
                     </Checkbox>
                   </div>
                   <div>
@@ -151,6 +153,349 @@ export const FormsPOC = () => {
                         onChange={(value) => setFieldValue("number", value)}
                       />
                     </div>
+                  </div>
+                </Flex>
+              </Form>
+            </Col>
+            <Col span={8} offset={4}>
+              <Title level={4}>Controlled Values</Title>
+              <Card
+                style={{
+                  backgroundColor: palette.FIDESUI_MINOS,
+                  color: palette.FIDESUI_CORINTH,
+                }}
+              >
+                <pre>
+                  <code>
+                    {"{\n"}
+                    {Object.keys(values).map((key) => {
+                      const typedKey = key as keyof typeof values;
+                      return `  ${typedKey}: ${values[typedKey]}\n`;
+                    })}
+                    {"}"}
+                  </code>
+                </pre>
+              </Card>
+            </Col>
+          </Row>
+        )}
+      </Formik>
+      <Divider />
+      <Formik initialValues={{ ...initialValues }} onSubmit={console.log}>
+        {({ values }) => (
+          <Row>
+            <Col span={12}>
+              <Title level={2}>{`<Formik> + <Field>`}</Title>
+              <Tag color="red">non functional</Tag>
+              <Tag color="red">high effort</Tag>
+              <Paragraph>
+                This is slightly more convenient than the fully controlled way,
+                but still requires a lot of manual handling. Labels and errors
+                are manually handled. Several components simply aren&apos;t
+                compatible with Field out of the box.
+              </Paragraph>
+              <Form>
+                <Flex vertical gap={16}>
+                  <div>
+                    <label htmlFor="input">Input</label>
+                    <div>
+                      <Field as={Input} id="input" name="input" type="text" />
+                    </div>
+                  </div>
+                  <div>
+                    <Field as={Radio.Group} name="radio">
+                      <Radio value="1">Radio 1</Radio>
+                      <Radio value="2">Radio 2</Radio>
+                    </Field>
+                  </div>
+                  <div>
+                    <Field
+                      as={Checkbox}
+                      defaultChecked={values.checkbox}
+                      name="checkbox"
+                    >
+                      Checkbox
+                    </Field>
+                    <Text type="warning">
+                      Requires additional logic to handle default state
+                    </Text>
+                  </div>
+                  <div>
+                    <label htmlFor="select">Select</label>
+                    <div>
+                      <Field
+                        as={Select}
+                        allowClear
+                        id="select"
+                        name="select"
+                        className="w-full"
+                        status="error"
+                      >
+                        <option value="1">Option 1</option>
+                        <option value="2">Option 2</option>
+                      </Field>
+                    </div>
+                    <Text type="danger">
+                      Ant Select&apos;s onChange is too different from Formik,
+                      requires to be fully controlled. This will not work with{" "}
+                      {`<Field>`} alone
+                    </Text>
+                  </div>
+                  <div>
+                    <label htmlFor="multiselect">Multiselect</label>
+                    <div>
+                      <Field
+                        as={Select}
+                        mode="multiple"
+                        allowClear
+                        id="multiselect"
+                        name="multiselect"
+                        className="w-full"
+                        status="error"
+                      >
+                        <option value="1">Option 1</option>
+                        <option value="2">Option 2</option>
+                      </Field>
+                    </div>
+                    <Text type="danger">
+                      Ant Select&apos;s onChange is too different from Formik,
+                      requires to be fully controlled. This will not work with{" "}
+                      {`<Field>`} alone
+                    </Text>
+                  </div>
+                  <div>
+                    <label htmlFor="multiselect">Tags</label>
+                    <div>
+                      <Field
+                        as={Select}
+                        mode="tags"
+                        allowClear
+                        id="tags"
+                        name="tags"
+                        className="w-full"
+                        status="error"
+                      >
+                        <option value="1">Option 1</option>
+                        <option value="2">Option 2</option>
+                      </Field>
+                    </div>
+                    <Text type="danger">
+                      Ant Select&apos;s onChange is too different from Formik,
+                      requires to be fully controlled. This will not work with{" "}
+                      {`<Field>`} alone
+                    </Text>
+                  </div>
+                  <div>
+                    <label htmlFor="date">Date</label>
+                    <div>
+                      <Field
+                        as={DatePicker}
+                        id="date"
+                        name="date"
+                        status="error"
+                      />
+                    </div>
+                    <Text type="danger">
+                      Ant DatePicker&apos;s onChange is different from Formik,
+                      requires to be fully controlled. This will not work with{" "}
+                      {`<Field>`} alone
+                    </Text>
+                  </div>
+                  <div>
+                    <label htmlFor="number">Number</label>
+                    <div>
+                      <Field
+                        as={InputNumber}
+                        id="number"
+                        name="number"
+                        status="error"
+                      />
+                    </div>
+                    <Text type="danger">
+                      Ant InputNumber&apos;s onChange is different from Formik,
+                      requires to be fully controlled. This will not work with{" "}
+                      {`<Field>`} alone
+                    </Text>
+                  </div>
+                </Flex>
+              </Form>
+            </Col>
+            <Col span={8} offset={4}>
+              <Title level={4}>Controlled Values</Title>
+              <Card
+                style={{
+                  backgroundColor: palette.FIDESUI_MINOS,
+                  color: palette.FIDESUI_CORINTH,
+                }}
+              >
+                <pre>
+                  <code>
+                    {"{\n"}
+                    {Object.keys(values).map((key) => {
+                      const typedKey = key as keyof typeof values;
+                      return `  ${typedKey}: ${values[typedKey]}\n`;
+                    })}
+                    {"}"}
+                  </code>
+                </pre>
+              </Card>
+            </Col>
+          </Row>
+        )}
+      </Formik>
+      <Divider />
+      <Formik initialValues={{ ...initialValues }} onSubmit={console.log}>
+        {({ values }) => (
+          <Row>
+            <Col span={12}>
+              <Title level={2}>{`<Formik> + <Form> + {...field}`}</Title>
+              <Tag color="red">non functional</Tag>
+              <Tag color="red">high effort</Tag>
+              <Paragraph>
+                This doesn&apos;t offer much more than the previous example.
+                Causes Typescript headaches that will need to be dealt with.
+                Labels and errors are manually handled.
+              </Paragraph>
+              <Form>
+                <Flex vertical gap={16}>
+                  <div>
+                    <label htmlFor="input">Input</label>
+                    <div>
+                      <Field name="input">
+                        {({ field }) => (
+                          <Input {...field} id="input" type="text" />
+                        )}
+                      </Field>
+                    </div>
+                  </div>
+                  <div>
+                    <Field name="radio">
+                      {({ field }) => (
+                        <Radio.Group {...field}>
+                          <Radio value="1">Radio 1</Radio>
+                          <Radio value="2">Radio 2</Radio>
+                        </Radio.Group>
+                      )}
+                    </Field>
+                  </div>
+                  <div>
+                    <Field name="checkbox">
+                      {({ field }) => (
+                        <Checkbox {...field} defaultChecked={values.checkbox}>
+                          Checkbox
+                        </Checkbox>
+                      )}
+                    </Field>
+                    <Text type="warning">
+                      Requires additional logic to handle default state
+                    </Text>
+                  </div>
+                  <div>
+                    <label htmlFor="select">Select</label>
+                    <div>
+                      <Field name="select">
+                        {({ field }) => (
+                          <Select
+                            allowClear
+                            id="select"
+                            className="w-full"
+                            defaultValue={values.select}
+                            status="error"
+                            {...field}
+                          >
+                            <option value="1">Option 1</option>
+                            <option value="2">Option 2</option>
+                          </Select>
+                        )}
+                      </Field>
+                    </div>
+                    <Text type="danger">
+                      Ant Select&apos;s onChange is too different from Formik,
+                      requires to be fully controlled.
+                    </Text>
+                  </div>
+                  <div>
+                    <label htmlFor="multiselect">Multiselect</label>
+                    <div>
+                      <Field name="multiselect">
+                        {({ field }) => (
+                          <Select
+                            mode="multiple"
+                            allowClear
+                            id="multiselect"
+                            className="w-full"
+                            defaultValue={values.multiselect}
+                            status="error"
+                            {...field}
+                          >
+                            <option value="1">Option 1</option>
+                            <option value="2">Option 2</option>
+                          </Select>
+                        )}
+                      </Field>
+                    </div>
+                    <Text type="danger">
+                      Ant Select&apos;s onChange is too different from Formik,
+                      requires to be fully controlled.
+                    </Text>
+                  </div>
+                  <div>
+                    <label htmlFor="tags">Tags</label>
+                    <div>
+                      <Field name="tags">
+                        {({ field }) => (
+                          <Select
+                            mode="tags"
+                            allowClear
+                            id="tags"
+                            className="w-full"
+                            defaultValue={values.tags}
+                            status="error"
+                            {...field}
+                          >
+                            <option value="1">Option 1</option>
+                            <option value="2">Option 2</option>
+                          </Select>
+                        )}
+                      </Field>
+                    </div>
+                    <Text type="danger">
+                      Ant Select&apos;s onChange is too different from Formik,
+                      requires to be fully controlled.
+                    </Text>
+                  </div>
+                  <div>
+                    <label htmlFor="date">Date</label>
+                    <div>
+                      <Field name="date">
+                        {({ field }) => (
+                          <DatePicker id="date" status="error" {...field} />
+                        )}
+                      </Field>
+                    </div>
+                    <Text type="danger">
+                      Ant DatePicker&apos;s onChange is different from Formik,
+                      requires to be fully controlled.
+                    </Text>
+                  </div>
+                  <div>
+                    <label htmlFor="number">Number</label>
+                    <div>
+                      <Field name="number">
+                        {({ field }) => (
+                          <InputNumber
+                            id="number"
+                            defaultValue={values.number}
+                            status="error"
+                            {...field}
+                          />
+                        )}
+                      </Field>
+                    </div>
+                    <Text type="danger">
+                      Ant InputNumber&apos;s onChange is different from Formik,
+                      requires to be fully controlled.
+                    </Text>
                   </div>
                 </Flex>
               </Form>
