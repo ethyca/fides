@@ -6,6 +6,8 @@ All routes should get imported here and added to the CTL_ROUTER
 
 from fastapi import APIRouter
 
+from fides.api.api.v1.endpoints.dataset_lifecycle import LIFECYCLE_ROUTER
+
 from .endpoints.generate import GENERATE_ROUTER
 from .endpoints.generic import (
     DATA_CATEGORY_ROUTER,
@@ -40,6 +42,7 @@ routers = [
     SYSTEM_CONNECTIONS_ROUTER,
     SYSTEM_ROUTER,
     VALIDATE_ROUTER,
+    LIFECYCLE_ROUTER,
 ]
 
 CTL_ROUTER = APIRouter()

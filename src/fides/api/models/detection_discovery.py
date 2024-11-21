@@ -278,6 +278,9 @@ class StagedResource(Base):
         default=dict,
     )
 
+    # hidden flag, used by some parts of the dataset lifecycle experience
+    hidden = Column(Boolean, default=False, nullable=False)
+
     @classmethod
     def get_urn(cls, db: Session, urn: str) -> Optional[StagedResource]:
         """Utility to retrieve the staged resource with the given URN"""
@@ -337,3 +340,20 @@ class StagedResource(Base):
             )
             if parent_resource:
                 parent_resource.add_child_diff_status(DiffStatus.ADDITION)
+
+
+def fetch_staged_resources_by_type(
+    db: Session,
+    resource_type: str,
+    monitor_config_id: Optional[str] = None,
+    show_hidden: bool = False,
+) -> List[StagedResource]:
+    """
+    Fetches staged resources by type and monitor config ID
+    """
+    query = db.query(StagedResource).filter(StagedResource.resource_type == resource_type)
+    if not show_hidden:
+        query = query.filter(StagedResource.hidden == False)
+    if monitor_config_id:
+        query = query.filter(StagedResource.monitor_config_id == monitor_config_id)
+    return query.all()
