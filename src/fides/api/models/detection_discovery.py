@@ -351,7 +351,9 @@ def fetch_staged_resources_by_type(
     """
     Fetches staged resources by type and monitor config ID
     """
-    query = db.query(StagedResource).filter(StagedResource.resource_type == resource_type)
+    query = db.query(StagedResource).filter(
+        StagedResource.resource_type == resource_type
+    )
     if not show_hidden:
         query = query.filter(StagedResource.hidden == False)
     if monitor_config_id:
