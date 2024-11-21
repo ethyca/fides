@@ -51,6 +51,7 @@ The types of changes are:
 - Fixed position of "Integration" button on system detail page [#5497](https://github.com/ethyca/fides/pull/5497)
 - Fixing issue where "privacy request received" emails would not be sent if the request had custom identities [#5518](https://github.com/ethyca/fides/pull/5518)
 - Fixed issue with long-running privacy request tasks losing their connection to the database [#5500](https://github.com/ethyca/fides/pull/5500)
+- Fixed missing "Manage privacy preferences" button label option in TCF experience translations [#5528](https://github.com/ethyca/fides/pull/5528)
 
 ### Docs
 - Added docs for PrivacyNoticeRegion type [#5488](https://github.com/ethyca/fides/pull/5488)
