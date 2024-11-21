@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from enum import Enum as EnumType
 from typing import Any, Dict, List, Optional, Set, Type, TypeVar
+from loguru import logger
 
 from fideslang import MAPPED_PURPOSES_BY_DATA_USE
 from fideslang.gvl import MAPPED_PURPOSES, MappedPurpose
@@ -275,6 +276,7 @@ class Dataset(Base, FidesBase):
     @property
     def field_data_categories(self) -> Set[str]:
         """Returns a set of all the data categories found within the fields of all collections in this dataset."""
+        logger.info("CALLING field_data_categories")
         data_categories = set()
         for collection in self.collections:
             dataset_collection = FideslangDatasetCollection(**collection)
@@ -437,6 +439,7 @@ class System(Base, FidesBase):
         that are not associated with any data use (privacy declaration).
         """
 
+        logger.info("CALLING System.undeclared_data_categories")
         privacy_declaration_data_categories = set()
         for privacy_declaration in self.privacy_declarations:
             privacy_declaration_data_categories.update(
@@ -558,6 +561,7 @@ class PrivacyDeclaration(Base):
         # privacy declaration. However, the search space for identifying undeclared data categories includes all
         # data categories across this privacy declaration and its sibling privacy declarations.
 
+        logger.info("CALLING PrivacyDeclaration.undeclared_data_categories")
         # all data categories from the datasets
         dataset_data_categories = set()
         for dataset in self.datasets:
