@@ -50,6 +50,7 @@ const ConnectionTypeFilter = () => {
       onChange={handleChange}
       defaultValue={connection_type?.length ? connection_type : []}
       className="w-60"
+      data-testid="connection-type-filter"
     />
   );
 };

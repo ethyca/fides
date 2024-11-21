@@ -46,6 +46,7 @@ const TestingStatusFilter = () => {
       options={options}
       onChange={handleChange}
       defaultValue={test_status?.toString() || undefined}
+      data-testid="testing-status-filter"
     />
   );
 };

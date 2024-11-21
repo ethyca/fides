@@ -100,27 +100,29 @@ export const RequestTableFilterModal = ({
               </HStack>
             </Stack>
             <Stack>
-              <FormLabel size="md" htmlFor="request-status-label">
+              <FormLabel size="md" htmlFor="request-status">
                 Status
               </FormLabel>
               <FilterSelect
-                id="request-status-label"
+                id="request-status"
                 mode="multiple"
                 options={SubjectRequestStatusOptions}
                 value={statusList}
                 onChange={handleStatusChange}
+                data-testid="request-status-filter"
               />
             </Stack>
             <Stack>
-              <FormLabel size="md" htmlFor="request-action-type-label">
+              <FormLabel size="md" htmlFor="request-action-type">
                 Request Type
               </FormLabel>
               <FilterSelect
-                id="request-action-type-label"
+                id="request-action-type"
                 mode="multiple"
                 options={SubjectRequestActionTypeOptions}
                 value={actionTypeList}
                 onChange={handleActionTypeChange}
+                data-testid="request-action-type-filter"
               />
             </Stack>
           </Stack>

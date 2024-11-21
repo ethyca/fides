@@ -46,6 +46,7 @@ const DisabledStatusFilter = () => {
       options={options}
       onChange={handleChange}
       defaultValue={disabled_status?.toString() || undefined}
+      data-testid="disabled-status-filter"
     />
   );
 };

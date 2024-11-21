@@ -44,6 +44,7 @@ const withCustomProps = (WrappedComponent: typeof Select) => {
       optionRender,
       className,
       suffixIcon,
+      "data-testid": `select${props.id ? `-${props.id}` : ""}`,
       ...props,
     };
     return <WrappedComponent {...customProps} />;
