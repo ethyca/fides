@@ -29,7 +29,7 @@ const ConnectionTypeFilter = () => {
   }, [connectionOptions, connection_type]);
 
   const list = useMemo(() => loadList(), [loadList]);
-  const options = [...list].map(([key]) => ({ value: key }));
+  const options = [...list].map(([key]) => ({ value: key, label: key }));
 
   // Hooks
   const dispatch = useAppDispatch();
@@ -50,6 +50,7 @@ const ConnectionTypeFilter = () => {
       onChange={handleChange}
       defaultValue={connection_type?.length ? connection_type : []}
       className="w-60"
+      data-testid="connection-type-filter"
     />
   );
 };

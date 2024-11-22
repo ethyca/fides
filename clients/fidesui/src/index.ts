@@ -31,6 +31,10 @@ export {
   Tooltip as AntTooltip,
   Typography as AntTypography,
 } from "antd/lib";
+export type {
+  BaseOptionType as AntBaseOptionType,
+  DefaultOptionType as AntDefaultOptionType,
+} from "antd/lib/select";
 
 // Higher-order components
 export { CustomSelect as AntSelect } from "./hoc";
@@ -61,7 +65,6 @@ export { extendTheme, theme } from "./FidesUITheme";
  * These components are custom to FidesUI and are not included in ChakraUI, although they may rely on ChakraUI components.
  */
 export { CheckboxTree } from "./components/checkbox-tree";
-export { ClassifiedDataCategoryDropdown } from "./components/classified-data-category-dropdown";
 export type { ColumnMetadata } from "./components/column-dropdown";
 export { ColumnDropdown } from "./components/column-dropdown";
 export { ConfirmationModal } from "./components/confirmation-modal";

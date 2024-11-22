@@ -18,6 +18,8 @@ The types of changes are:
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.50.0...main)
 
 
+### Developer Experience
+- Migrated remaining instances of Chakra's Select component to use Ant's Select component [#5502](https://github.com/ethyca/fides/pull/5502)
 
 
 

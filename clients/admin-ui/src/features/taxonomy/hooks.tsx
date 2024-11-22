@@ -16,7 +16,8 @@ import {
 } from "~/types/api";
 
 import { YesNoOptions } from "../common/constants";
-import { CustomRadioGroup, CustomSelect } from "../common/form/inputs";
+import { ControlledSelect } from "../common/form/ControlledSelect";
+import { CustomRadioGroup } from "../common/form/inputs";
 import { enumToOptions } from "../common/helpers";
 import {
   useCreateDataSubjectMutation,
@@ -434,20 +435,20 @@ export const useDataSubject = (): TaxonomyHookData<DataSubject> => {
 
   const renderExtraFormFields = (entity: DataSubject) => (
     <>
-      <CustomSelect
+      <ControlledSelect
         name="rights"
         label={labels.rights}
         options={enumToOptions(DataSubjectRightsEnum)}
-        isMulti
+        mode="multiple"
       />
       {/* @ts-ignore because of discrepancy between form and entity type, again */}
-      {entity.rights && entity.rights.length ? (
-        <CustomSelect
+      {!!entity.rights && !!entity.rights.length && (
+        <ControlledSelect
           name="strategy"
           label={labels.strategy}
           options={enumToOptions(IncludeExcludeEnum)}
         />
-      ) : null}
+      )}
       <CustomRadioGroup
         name="automatic_decisions_or_profiling"
         label={labels.automatic_decisions}

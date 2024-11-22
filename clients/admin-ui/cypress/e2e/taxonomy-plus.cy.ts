@@ -129,8 +129,8 @@ describe("Taxonomy management with Plus features", () => {
     it("can create a multi-select custom field", () => {
       cy.getByTestId("create-custom-fields-form").within(() => {
         cy.getByTestId("custom-input-name").type("Multi-select");
-        cy.selectOption("input-field_type", "Multiple select");
-        cy.selectOption("input-allow_list_id", "Prime numbers");
+        cy.getByTestId("input-field_type").antSelect("Multiple select");
+        cy.getByTestId("input-allow_list_id").antSelect("Prime numbers");
       });
 
       cy.intercept(
@@ -204,43 +204,34 @@ describe("Taxonomy management with Plus features", () => {
     });
 
     const testIdSingle =
-      "input-customFieldValues.id-custom-field-definition-starter-pokemon";
+      "controlled-select-customFieldValues.id-custom-field-definition-starter-pokemon";
     const testIdMulti =
-      "input-customFieldValues.id-custom-field-definition-pokemon-party";
+      "controlled-select-customFieldValues.id-custom-field-definition-pokemon-party";
 
     it("initializes form fields with values returned by the API", () => {
       cy.getByTestId("custom-fields-list");
-      cy.getSelectValueContainer(testIdSingle).contains("Squirtle");
+      cy.getByTestId(testIdSingle).contains("Squirtle");
 
       ["Charmander", "Eevee", "Snorlax"].forEach((value) => {
-        cy.getSelectValueContainer(testIdMulti).contains(value);
+        cy.getByTestId(testIdMulti).contains(value);
       });
     });
 
     it("allows choosing and changing selections", () => {
       cy.getByTestId("custom-fields-list");
 
-      cy.clearSingleValue(testIdSingle);
-      cy.selectOption(testIdSingle, "Snorlax");
-      cy.getSelectValueContainer(testIdSingle).contains("Snorlax");
-      cy.clearSingleValue(testIdSingle);
+      cy.getByTestId(testIdSingle).antClearSelect();
+      cy.getByTestId(testIdSingle).antSelect("Snorlax");
+      cy.getByTestId(testIdSingle).contains("Snorlax");
+      cy.getByTestId(testIdSingle).antClearSelect();
 
-      cy.removeMultiValue(testIdMulti, "Eevee");
-      cy.removeMultiValue(testIdMulti, "Snorlax");
+      cy.getByTestId(testIdMulti).antRemoveSelectTag("Eevee");
+      cy.getByTestId(testIdMulti).antRemoveSelectTag("Snorlax");
 
-      // clicking directly on the select element as we usually do hits the
-      // "remove" on the Charmander tag, so force it to find the dropdown
-      // indicator instead
-      cy.getByTestId(testIdMulti)
-        .find(".custom-select__dropdown-indicator")
-        .click();
-      cy.getByTestId(testIdMulti)
-        .find(".custom-select__menu-list")
-        .contains("Eevee")
-        .click();
+      cy.getByTestId(testIdMulti).antSelect("Eevee");
 
       ["Charmander", "Eevee"].forEach((value) => {
-        cy.getSelectValueContainer(testIdMulti).contains(value);
+        cy.getByTestId(testIdMulti).contains(value);
       });
 
       cy.intercept("POST", `/api/v1/plus/custom-metadata/custom-field/bulk`, {

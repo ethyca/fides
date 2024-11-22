@@ -4,7 +4,7 @@ import { useState } from "react";
 import * as Yup from "yup";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
-import { CustomSelect, CustomTextInput } from "~/features/common/form/inputs";
+import { CustomTextInput } from "~/features/common/form/inputs";
 import {
   isErrorResult,
   ParsedError,
@@ -19,6 +19,7 @@ import {
 } from "~/types/api";
 import { RTKErrorResult } from "~/types/errors";
 
+import { ControlledSelect } from "../common/form/ControlledSelect";
 import {
   changeStep,
   selectOrganizationFidesKey,
@@ -138,9 +139,6 @@ const AuthenticateAwsForm = () => {
                   <CustomTextInput
                     name="aws_access_key_id"
                     label="Access Key ID"
-                    // TODO(#724): These fields should link to the AWS docs, but that requires HTML
-                    // content instead of just a string label. The message would be:
-                    // "You can find more information about creating access keys and secrets on AWS docs here."
                     tooltip="The Access Key ID created by the cloud hosting provider."
                     isRequired
                   />
@@ -148,7 +146,6 @@ const AuthenticateAwsForm = () => {
                     type="password"
                     name="aws_secret_access_key"
                     label="Secret"
-                    // "You can find more about creating access keys and secrets on AWS docs here."
                     tooltip="The secret associated with the Access Key ID used for authentication."
                     isRequired
                   />
@@ -156,16 +153,15 @@ const AuthenticateAwsForm = () => {
                     type="password"
                     name="aws_session_token"
                     label="Session Token"
-                    // "You can find more about creating access keys and secrets on AWS docs here."
                     tooltip="The session token when using temporary credentials."
                   />
-                  <CustomSelect
+                  <ControlledSelect
                     name="region_name"
                     label="AWS Region"
-                    // "You can learn more about regions in AWS docs here."
                     tooltip="The geographic region of the cloud hosting provider you would like to scan."
                     options={AWS_REGION_OPTIONS}
                     isRequired
+                    placeholder="Select a region"
                   />
                 </Stack>
               </>

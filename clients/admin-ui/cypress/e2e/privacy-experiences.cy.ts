@@ -186,7 +186,9 @@ describe("Privacy experiences", () => {
 
       it("can create an experience", () => {
         cy.getByTestId("input-name").type("Test experience name");
-        cy.selectOption("input-component", "Banner and modal");
+        cy.getByTestId("controlled-select-component").antSelect(
+          "Banner and modal",
+        );
         cy.getByTestId("add-privacy-notice").click();
         cy.getByTestId("select-privacy-notice").antSelect(0);
         cy.getByTestId("add-location").click();
@@ -230,13 +232,20 @@ describe("Privacy experiences", () => {
       });
 
       it("doesn't allow component type to be changed after selection", () => {
-        cy.selectOption("input-component", "Banner and modal");
-        cy.getByTestId("input-component").find("input").should("be.disabled");
+        cy.getByTestId("controlled-select-component").antSelect(
+          "Banner and modal",
+        );
+        cy.getByTestId("controlled-select-component").should(
+          "have.class",
+          "ant-select-disabled",
+        );
         cy.getByTestId("input-dismissable").should("be.visible");
       });
 
       it("doesn't show a preview for a privacy center", () => {
-        cy.selectOption("input-component", "Privacy center");
+        cy.getByTestId("controlled-select-component").antSelect(
+          "Privacy center",
+        );
         cy.getByTestId("input-dismissable").should("not.be.visible");
         cy.getByTestId("no-preview-notice").contains(
           "Privacy center preview not available",
@@ -244,7 +253,9 @@ describe("Privacy experiences", () => {
       });
 
       it("doesn't show preview until privacy notice is added", () => {
-        cy.selectOption("input-component", "Banner and modal");
+        cy.getByTestId("controlled-select-component").antSelect(
+          "Banner and modal",
+        );
         cy.getByTestId("no-preview-notice").contains(
           "No privacy notices added",
         );
@@ -256,7 +267,9 @@ describe("Privacy experiences", () => {
 
       it("shows option to display privacy notices in banner and updates preview when clicked", () => {
         cy.getByTestId("input-show_layer1_notices").should("not.be.visible");
-        cy.selectOption("input-component", "Banner and modal");
+        cy.getByTestId("controlled-select-component").antSelect(
+          "Banner and modal",
+        );
         cy.getByTestId("add-privacy-notice").click();
         cy.getByTestId("select-privacy-notice").antSelect(0);
         cy.getByTestId("input-show_layer1_notices").click();
@@ -267,7 +280,9 @@ describe("Privacy experiences", () => {
       });
 
       it("allows editing experience text and shows updated text in the preview", () => {
-        cy.selectOption("input-component", "Banner and modal");
+        cy.getByTestId("controlled-select-component").antSelect(
+          "Banner and modal",
+        );
         cy.getByTestId("add-privacy-notice").click();
         cy.getByTestId("select-privacy-notice").antSelect(0);
         cy.getByTestId("edit-experience-btn").click();
@@ -288,7 +303,10 @@ describe("Privacy experiences", () => {
 
       it("populates the form and shows the preview with the existing values", () => {
         cy.wait("@getExperienceDetail");
-        cy.getByTestId("input-component").find("input").should("be.disabled");
+        cy.getByTestId("controlled-select-component").should(
+          "have.class",
+          "ant-select-disabled",
+        );
         cy.getByTestId("input-name").should(
           "have.value",
           "Example modal experience",

@@ -19,11 +19,7 @@ import {
   useCustomFields,
 } from "~/features/common/custom-fields";
 import { useFeatures } from "~/features/common/features/features.slice";
-import {
-  CustomSelect,
-  CustomSwitch,
-  CustomTextInput,
-} from "~/features/common/form/inputs";
+import { CustomSwitch, CustomTextInput } from "~/features/common/form/inputs";
 import {
   extractVendorSource,
   getErrorMessage,
@@ -44,7 +40,6 @@ import {
 } from "~/features/system/dictionary-form/dict-suggestion.slice";
 import {
   DictSuggestionNumberInput,
-  DictSuggestionSelect,
   DictSuggestionSwitch,
   DictSuggestionTextArea,
   DictSuggestionTextInput,
@@ -66,6 +61,7 @@ import SystemFormInputGroup from "~/features/system/SystemFormInputGroup";
 import VendorSelector from "~/features/system/VendorSelector";
 import { ResourceTypes, SystemResponse } from "~/types/api";
 
+import { ControlledSelect } from "../common/form/ControlledSelect";
 import { usePrivacyDeclarationData } from "./privacy-declarations/hooks";
 import {
   legalBasisForProfilingOptions,
@@ -346,7 +342,7 @@ const SystemInformationForm = ({
                 tooltip="What services does this system perform?"
                 disabled={lockedForGVL}
               />
-              <DictSuggestionSelect
+              <ControlledSelect
                 mode="tags"
                 id="tags"
                 name="tags"
@@ -359,20 +355,20 @@ const SystemInformationForm = ({
                       }))
                     : []
                 }
+                layout="stacked"
                 tooltip="Are there any tags to associate with this system?"
                 disabled={lockedForGVL}
-                className="w-full"
               />
             </SystemFormInputGroup>
             <SystemFormInputGroup heading="Dataset reference">
-              <CustomSelect
+              <ControlledSelect
                 name="dataset_references"
                 label="Dataset references"
                 options={datasetSelectOptions}
                 tooltip="Is there a dataset configured for this system?"
-                isMulti
-                variant="stacked"
-                isDisabled={lockedForGVL}
+                mode="multiple"
+                layout="stacked"
+                disabled={lockedForGVL}
               />
             </SystemFormInputGroup>
             <SystemFormInputGroup heading="Data processing properties">
@@ -436,7 +432,9 @@ const SystemInformationForm = ({
                         }}
                       >
                         <Box mt={4}>
-                          <DictSuggestionSelect
+                          <ControlledSelect
+                            mode="multiple"
+                            layout="stacked"
                             name="legal_basis_for_profiling"
                             label="Legal basis for profiling"
                             options={legalBasisForProfilingOptions}
@@ -462,7 +460,9 @@ const SystemInformationForm = ({
                         }}
                       >
                         <Box mt={4}>
-                          <DictSuggestionSelect
+                          <ControlledSelect
+                            mode="multiple"
+                            layout="stacked"
                             name="legal_basis_for_transfers"
                             label="Legal basis for transfer"
                             options={legalBasisForTransferOptions}
@@ -576,7 +576,9 @@ const SystemInformationForm = ({
                     lockedForGVL
                   }
                 />
-                <DictSuggestionSelect
+                <ControlledSelect
+                  mode="multiple"
+                  layout="stacked"
                   label="Responsibility"
                   name="responsibility"
                   options={responsibilityOptions}
