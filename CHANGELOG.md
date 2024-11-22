@@ -17,7 +17,8 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.50.0...main)
 
-
+### Changed
+- Show "powered by" branding link by default [#5534](https://github.com/ethyca/fides/pull/5534)
 
 
 
