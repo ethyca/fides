@@ -1,5 +1,5 @@
 import { CellContext } from "@tanstack/react-table";
-import React from "react";
+import React, { useState } from "react";
 
 import { DefaultCell, EnableCell } from "~/features/common/table/v2/cells";
 import { COMPONENT_MAP } from "~/features/privacy-experience/constants";
@@ -17,12 +17,17 @@ export const EnablePrivacyExperienceCell = ({
 }: CellContext<ExperienceConfigListViewResponse, boolean | undefined>) => {
   const [limitedPatchExperienceMutationTrigger] =
     useLimitedPatchExperienceConfigMutation();
+  const [isLoading, setIsLoading] = useState(false);
 
-  const onToggle = async (toggle: boolean) =>
-    limitedPatchExperienceMutationTrigger({
+  const onToggle = async (toggle: boolean) => {
+    setIsLoading(true);
+    const response = await limitedPatchExperienceMutationTrigger({
       id: row.original.id,
       disabled: !toggle,
     });
+    setIsLoading(false);
+    return response;
+  };
 
   const disabled = getValue()!;
   const { regions } = row.original;
@@ -41,6 +46,7 @@ export const EnablePrivacyExperienceCell = ({
       onToggle={onToggle}
       title={title}
       message={message}
+      loading={isLoading}
     />
   );
 };
