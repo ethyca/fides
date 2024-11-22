@@ -21,13 +21,14 @@ The types of changes are:
 
 
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.49.1...2.50.0)
+## [2.50.0](https://github.com/ethyca/fides/compare/2.49.1...2.50.0)
 
 ### Added
 - Added namespace support for Snowflake [#5486](https://github.com/ethyca/fides/pull/5486)
 - Added support for field-level masking overrides [#5446](https://github.com/ethyca/fides/pull/5446)
 - Added BigQuery Enterprise access request integration test [#5504](https://github.com/ethyca/fides/pull/5504)
 - Added MD5 email hashing for Segment's Right to Forget endpoint requests [#5514](https://github.com/ethyca/fides/pull/5514)
+- Added loading state to the toggle switches on the Privacy experiences page [#5529](https://github.com/ethyca/fides/pull/5529)
 
 ### Changed
 - Allow hiding systems via a `hidden` parameter and add two flags on the `/system` api endpoint; `show_hidden` and `dnd_relevant`, to display only systems with integrations [#5484](https://github.com/ethyca/fides/pull/5484)
