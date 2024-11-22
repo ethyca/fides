@@ -297,7 +297,7 @@ def _send_privacy_request_receipt_message_to_user(
                 body_params=RequestReceiptBodyParams(request_types=request_types),
             ).model_dump(mode="json"),
             "service_type": service_type,
-            "to_identity": to_identity.model_dump(mode="json"),
+            "to_identity": to_identity.labeled_dict(),
             "property_id": property_id,
         },
     )
@@ -2592,6 +2592,11 @@ def get_access_results_urls(
     """
     Endpoint for retrieving access results URLs for a privacy request.
     """
+    if not CONFIG.security.subject_request_download_ui_enabled:
+        raise HTTPException(
+            status_code=HTTP_403_FORBIDDEN,
+            detail="Access results download is disabled.",
+        )
     privacy_request: PrivacyRequest = get_privacy_request_or_error(
         db, privacy_request_id
     )

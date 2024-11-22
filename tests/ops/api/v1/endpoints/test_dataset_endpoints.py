@@ -34,6 +34,7 @@ from fides.common.api.v1.urn_registry import (
     V1_URL_PREFIX,
     YAML_DATASETS,
 )
+from tests.fixtures.application_fixtures import load_dataset
 
 
 def _reject_key(dict: Dict, key: str) -> Dict:
@@ -1051,6 +1052,50 @@ class TestPutDatasetConfigs:
         db.refresh(connection_config)
         assert len(connection_config.datasets) == 1
 
+    def test_put_create_dataset_configs_invalid_field_masking_strategy_override(
+        self,
+        db,
+        generate_auth_header,
+        api_client,
+        datasets_url,
+        connection_config: ConnectionConfig,
+    ):
+        # create ctl_datasets
+        example_dataset = load_dataset(
+            "data/dataset/postgres_example_invalid_masking_strategy_override_dataset.yml"
+        )
+        field_masking_override_dataset = CtlDataset(
+            **example_dataset[0], organization_fides_key="default_organization"
+        )
+        db.add(field_masking_override_dataset)
+        db.commit()
+
+        # add the first dataset to the connection
+        auth_header = generate_auth_header(scopes=[DATASET_CREATE_OR_UPDATE])
+        response = api_client.put(
+            datasets_url,
+            headers=auth_header,
+            json=[
+                {
+                    "fides_key": field_masking_override_dataset.fides_key,
+                    "ctl_dataset_fides_key": field_masking_override_dataset.fides_key,
+                }
+            ],
+        )
+        assert response.status_code == 200
+        response_body = json.loads(response.text)
+        assert len(response_body["succeeded"]) == 0
+        assert len(response_body["failed"]) == 1
+        field_masking_override_dataset = response_body["failed"][0]
+        assert (
+            field_masking_override_dataset["data"]["fides_key"]
+            == "postgres_example_invalid_masking_strategy_override"
+        )
+        assert (
+            field_masking_override_dataset["message"]
+            == "Masking strategy 'hash' with required secrets not allowed as an override."
+        )
+
 
 class TestPutDatasets:
     @pytest.fixture
@@ -1122,7 +1167,7 @@ class TestPutDatasets:
         )
         assert response.status_code == 200
         response_body = json.loads(response.text)
-        assert len(response_body["succeeded"]) == 16
+        assert len(response_body["succeeded"]) == 17
         assert len(response_body["failed"]) == 0
 
         # Confirm that postgres dataset matches the values we provided
@@ -1232,6 +1277,216 @@ class TestPutDatasets:
         scylladb_config.delete(db)
         scylladb_ctl_dataset.delete(db)
 
+    def test_patch_datasets_field_masking_strategy_override_create(
+        self,
+        datasets_url,
+        api_client: TestClient,
+        db: Session,
+        generate_auth_header,
+        connection_config,
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[DATASET_CREATE_OR_UPDATE])
+        example_dataset = load_dataset(
+            "data/dataset/example_field_masking_override_test_dataset.yml"
+        )
+        response = api_client.patch(
+            datasets_url, headers=auth_header, json=example_dataset
+        )
+        assert response.status_code == 200
+        response_body = json.loads(response.text)
+        assert len(response_body["succeeded"]) == 1
+        assert len(response_body["failed"]) == 0
+
+        field_masking_override_dataset = response_body["succeeded"][0]
+        field_masking_override_config = DatasetConfig.get_by(
+            db=db, field="fides_key", value="field_masking_override_test_dataset"
+        )
+        assert field_masking_override_config is not None
+        field_masking_override_ctl_dataset = field_masking_override_config.ctl_dataset
+        assert field_masking_override_ctl_dataset is not None
+        assert (
+            field_masking_override_dataset["fides_key"]
+            == "field_masking_override_test_dataset"
+        )
+        assert (
+            field_masking_override_dataset["name"]
+            == "Field Masking Override Test Dataset"
+        )
+        assert (
+            "Example of a dataset containing masking strategy override at the field-level."
+            in field_masking_override_dataset["description"]
+        )
+        assert len(field_masking_override_dataset["collections"]) == 11
+        assert len(field_masking_override_ctl_dataset.collections) == 11
+
+        field_masking_override_config.delete(db)
+        field_masking_override_ctl_dataset.delete(db)
+
+    def test_patch_datasets_invalid_field_masking_strategy_override_create(
+        self,
+        datasets_url,
+        api_client: TestClient,
+        db: Session,
+        generate_auth_header,
+        connection_config,
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[DATASET_CREATE_OR_UPDATE])
+        example_dataset = load_dataset(
+            "data/dataset/postgres_example_invalid_masking_strategy_override_dataset.yml"
+        )
+        response = api_client.patch(
+            datasets_url, headers=auth_header, json=example_dataset
+        )
+        assert response.status_code == 200
+        response_body = json.loads(response.text)
+        assert len(response_body["succeeded"]) == 0
+        assert len(response_body["failed"]) == 1
+
+        # Confirm that postgres dataset matches the values we provided
+        field_masking_override_dataset = response_body["failed"][0]
+        assert (
+            field_masking_override_dataset["data"]["fides_key"]
+            == "postgres_example_invalid_masking_strategy_override"
+        )
+        assert (
+            field_masking_override_dataset["message"]
+            == "Masking strategy 'hash' with required secrets not allowed as an override."
+        )
+        field_masking_override_config = DatasetConfig.get_by(
+            db=db,
+            field="fides_key",
+            value="postgres_example_invalid_masking_strategy_override",
+        )
+        assert field_masking_override_config is None
+
+    def test_patch_datasets_field_masking_strategy_override_update(
+        self,
+        datasets_url,
+        api_client: TestClient,
+        db: Session,
+        generate_auth_header,
+    ) -> None:
+        # Create first, then update
+        auth_header = generate_auth_header(scopes=[DATASET_CREATE_OR_UPDATE])
+        example_dataset = load_dataset(
+            "data/dataset/example_field_masking_override_test_dataset.yml"
+        )
+        api_client.patch(datasets_url, headers=auth_header, json=example_dataset)
+
+        valid_masking_override = {
+            "strategy": "string_rewrite",
+            "configuration": {"rewrite_value": "REDACTED"},
+        }
+
+        updated_datasets = example_dataset.copy()[0]
+        # Remove all collections from the dataset example, except for the customer table.
+        # Note we also need to remove customer.address_id as it references the addresses table
+        updated_datasets["collections"] = [
+            collection
+            for collection in updated_datasets["collections"]
+            if collection["name"] == "customer"
+        ]
+        updated_datasets["collections"][0]["fields"] = [
+            field
+            for field in updated_datasets["collections"][0]["fields"]
+            if field["name"] != "address_id"
+        ]
+        # Update the masking strategy override for the name field
+        for idx, field in enumerate(updated_datasets["collections"][0]["fields"]):
+            if field["name"] == "name":
+                updated_datasets["collections"][0]["fields"][idx]["fides_meta"][
+                    "masking_strategy_override"
+                ] = valid_masking_override
+
+        response = api_client.patch(
+            datasets_url, headers=auth_header, json=[updated_datasets]
+        )
+
+        assert response.status_code == 200
+        response_body = json.loads(response.text)
+        assert len(response_body["succeeded"]) == 1
+        assert len(response_body["failed"]) == 0
+
+        # test postgres
+        field_masking_override_dataset = response_body["succeeded"][0]
+        assert (
+            field_masking_override_dataset["fides_key"]
+            == "field_masking_override_test_dataset"
+        )
+        field_masking_override_config = DatasetConfig.get_by(
+            db=db, field="fides_key", value="field_masking_override_test_dataset"
+        )
+
+        field_masking_override_config.delete(db)
+        postgres_ctl_dataset = field_masking_override_config.ctl_dataset
+        postgres_ctl_dataset.delete(db)
+
+    def test_patch_datasets_invalid_field_masking_strategy_override_update(
+        self,
+        datasets_url,
+        api_client: TestClient,
+        db: Session,
+        generate_auth_header,
+    ) -> None:
+        # Create first, then update
+        auth_header = generate_auth_header(scopes=[DATASET_CREATE_OR_UPDATE])
+        example_dataset = load_dataset(
+            "data/dataset/example_field_masking_override_test_dataset.yml"
+        )
+        api_client.patch(datasets_url, headers=auth_header, json=example_dataset)
+
+        invalid_masking_override = {
+            "strategy": "hash",
+            "configuration": {"algorithm": "SHA-256"},
+        }
+
+        updated_datasets = example_dataset.copy()[0]
+        # Remove all collections from the dataset example, except for the customer table.
+        # Note we also need to remove customer.address_id as it references the addresses table
+        updated_datasets["collections"] = [
+            collection
+            for collection in updated_datasets["collections"]
+            if collection["name"] == "customer"
+        ]
+        updated_datasets["collections"][0]["fields"] = [
+            field
+            for field in updated_datasets["collections"][0]["fields"]
+            if field["name"] != "address_id"
+        ]
+        # Update the masking strategy override for the name field
+        for idx, field in enumerate(updated_datasets["collections"][0]["fields"]):
+            if field["name"] == "name":
+                updated_datasets["collections"][0]["fields"][idx]["fides_meta"][
+                    "masking_strategy_override"
+                ] = invalid_masking_override
+
+        response = api_client.patch(
+            datasets_url, headers=auth_header, json=[updated_datasets]
+        )
+
+        assert response.status_code == 200
+        response_body = json.loads(response.text)
+        assert len(response_body["succeeded"]) == 0
+        assert len(response_body["failed"]) == 1
+
+        # test postgres
+        field_masking_override_dataset = response_body["failed"][0]
+        assert (
+            field_masking_override_dataset["data"]["fides_key"]
+            == "field_masking_override_test_dataset"
+        )
+        assert (
+            field_masking_override_dataset["message"]
+            == "Masking strategy 'hash' with required secrets not allowed as an override."
+        )
+        field_masking_override_config = DatasetConfig.get_by(
+            db=db, field="fides_key", value="field_masking_override_test_dataset"
+        )
+
+        field_masking_override_config.delete(db)
+        postgres_ctl_dataset = field_masking_override_config.ctl_dataset
+        postgres_ctl_dataset.delete(db)
+
     def test_patch_datasets_bulk_update(
         self,
         example_datasets,
@@ -1285,7 +1540,7 @@ class TestPutDatasets:
 
         assert response.status_code == 200
         response_body = json.loads(response.text)
-        assert len(response_body["succeeded"]) == 16
+        assert len(response_body["succeeded"]) == 17
         assert len(response_body["failed"]) == 0
 
         # test postgres
@@ -1534,7 +1789,7 @@ class TestPutDatasets:
         assert response.status_code == 200  # Returns 200 regardless
         response_body = json.loads(response.text)
         assert len(response_body["succeeded"]) == 0
-        assert len(response_body["failed"]) == 16
+        assert len(response_body["failed"]) == 17
 
         for failed_response in response_body["failed"]:
             assert "Dataset create/update failed" in failed_response["message"]

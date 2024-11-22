@@ -11,12 +11,12 @@ import {
   CmpStatus,
   SignalStatus,
   TcfEuV2,
-  UsCaV1,
-  UsCoV1,
-  UsCtV1,
-  UsNatV1,
-  UsUtV1,
-  UsVaV1,
+  UsCa,
+  UsCo,
+  UsCt,
+  UsNat,
+  UsUt,
+  UsVa,
 } from "@iabgpp/cmpapi";
 
 import { FidesEvent } from "./fides";
@@ -115,13 +115,22 @@ const getSupportedApis = () => {
       if (window.Fides.options.tcfEnabled && gppSettings.enable_tcfeu_string) {
         supportedApis.push(`${TcfEuV2.ID}:${TcfEuV2.NAME}`);
       }
-      if (gppSettings.us_approach === GPPUSApproach.NATIONAL) {
-        supportedApis.push(`${UsNatV1.ID}:${UsNatV1.NAME}`);
+      fidesDebugger("GPP settings", gppSettings);
+      if (
+        gppSettings.us_approach === GPPUSApproach.NATIONAL ||
+        gppSettings.us_approach === GPPUSApproach.ALL
+      ) {
+        fidesDebugger("setting US National");
+        supportedApis.push(`${UsNat.ID}:${UsNat.NAME}`);
       }
-      if (gppSettings.us_approach === GPPUSApproach.STATE) {
+      if (
+        gppSettings.us_approach === GPPUSApproach.STATE ||
+        gppSettings.us_approach === GPPUSApproach.ALL
+      ) {
+        fidesDebugger("setting US State");
         // TODO: include the states based off of locations/regulations.
         // For now, hard code all of them. https://ethyca.atlassian.net/browse/PROD-1595
-        [UsCaV1, UsCoV1, UsCtV1, UsUtV1, UsVaV1].forEach((state) => {
+        [UsCa, UsCo, UsCt, UsUt, UsVa].forEach((state) => {
           supportedApis.push(`${state.ID}:${state.NAME}`);
         });
       }

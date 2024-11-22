@@ -82,16 +82,10 @@ describe("Config Wizard", () => {
     });
 
     it("Allows stepping back to the previous step during an in-progress scan", () => {
-      cy.intercept(
-        "POST",
-        "/api/v1/generate",
-
-        (req) => {
-          req.continue((res) => {
-            res.setDelay(1000);
-          });
-        },
-      ).as("postGenerate");
+      cy.intercept("POST", "/api/v1/generate", {
+        delay: 1000,
+        statusCode: 503,
+      }).as("postGenerateDelayedAndCanceled");
       cy.getByTestId("submit-btn")
         .click()
         .then(() => {

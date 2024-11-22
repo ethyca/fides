@@ -15,6 +15,7 @@ from tests.ops.graph.graph_test_util import assert_rows_match
 from tests.ops.test_helpers.cache_secrets_helper import clear_cache_identities
 
 
+@pytest.mark.skip(reason="move to plus in progress")
 @pytest.mark.integration_saas
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
@@ -97,6 +98,7 @@ async def test_firebase_auth_access_request(
     assert "photo_url" not in provider_data[1].keys()
 
 
+@pytest.mark.skip(reason="move to plus in progress")
 @pytest.mark.integration_saas
 @pytest.mark.asyncio
 @pytest.mark.usefixtures("firebase_auth_user")
@@ -173,6 +175,7 @@ async def test_firebase_auth_access_request_non_existent_users(
     assert message in loguru_caplog.text
 
 
+@pytest.mark.skip(reason="move to plus in progress")
 @pytest.mark.integration_saas
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
@@ -256,6 +259,7 @@ async def test_firebase_auth_access_request_phone_number_identity(
     assert "photo_url" not in provider_data[1].keys()
 
 
+@pytest.mark.skip(reason="move to plus in progress")
 @pytest.mark.integration_saas
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
@@ -545,6 +549,7 @@ async def test_firebase_auth_update_request_phone_number_identity(
     )
 
 
+@pytest.mark.skip(reason="move to plus in progress")
 @pytest.mark.integration_saas
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
@@ -625,6 +630,7 @@ async def test_firebase_auth_delete_request(
     CONFIG.execution.masking_strict = masking_strict
 
 
+@pytest.mark.skip(reason="move to plus in progress")
 @pytest.mark.integration_saas
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
@@ -706,6 +712,7 @@ async def test_firebase_auth_delete_request_phone_number_identity(
     CONFIG.execution.masking_strict = masking_strict
 
 
+@pytest.mark.skip(reason="move to plus in progress")
 @pytest.mark.integration_saas
 @pytest.mark.integration_saas_override
 @pytest.mark.asyncio
@@ -754,6 +761,7 @@ async def test_firebase_auth_user_delete_function(
         auth.get_user(firebase_auth_user.uid, app=app)
 
 
+@pytest.mark.skip(reason="move to plus in progress")
 @pytest.mark.integration_saas
 @pytest.mark.integration_saas_override
 @pytest.mark.asyncio

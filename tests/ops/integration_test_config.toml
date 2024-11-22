@@ -73,6 +73,8 @@ dataset=""
 
 [bigquery.keyfile_creds]
 
+[bigquery_enterprise]
+
 [mssql_example]
 server="mssql_example"
 user="sa"

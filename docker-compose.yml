@@ -126,6 +126,7 @@ services:
     restart: always
     environment:
       FIDES__CONFIG_PATH: ${FIDES__CONFIG_PATH:-/fides/.fides/fides.toml}
+      FIDES__LOGGING__COLORIZE: "True"
       FIDES__USER__ANALYTICS_OPT_OUT: "True"
     volumes:
       - type: bind

@@ -19,7 +19,7 @@ from fides.api.graph.config import (
     CollectionAddress,
     Field,
     FieldPath,
-    MaskingOverride,
+    MaskingTruncation,
 )
 from fides.api.graph.execution import ExecutionNode
 from fides.api.models.policy import Policy, Rule
@@ -28,6 +28,9 @@ from fides.api.schemas.namespace_meta.bigquery_namespace_meta import (
     BigQueryNamespaceMeta,
 )
 from fides.api.schemas.namespace_meta.namespace_meta import NamespaceMeta
+from fides.api.schemas.namespace_meta.snowflake_namespace_meta import (
+    SnowflakeNamespaceMeta,
+)
 from fides.api.schemas.policy import ActionType
 from fides.api.service.masking.strategy.masking_strategy import MaskingStrategy
 from fides.api.service.masking.strategy.masking_strategy_nullify import (
@@ -162,26 +165,32 @@ class QueryConfig(Generic[T], ABC):
             strategy_config = rule.masking_strategy
             if not strategy_config:
                 continue
-            strategy: MaskingStrategy = MaskingStrategy.get_strategy(
-                strategy_config["strategy"], strategy_config["configuration"]
-            )
             for rule_field_path in field_paths:
-                masking_override: MaskingOverride = [
-                    MaskingOverride(field.data_type_converter, field.length)
+                strategy: MaskingStrategy = MaskingStrategy.get_strategy(
+                    strategy_config["strategy"], strategy_config["configuration"]
+                )
+                truncation: MaskingTruncation = [
+                    MaskingTruncation(field.data_type_converter, field.length)
                     for field_path, field in self.field_map().items()
                     if field_path == rule_field_path
                 ][0]
-                null_masking: bool = (
-                    strategy_config.get("strategy") == NullMaskingStrategy.name
-                )
-                if not self._supported_data_type(
-                    masking_override, null_masking, strategy
-                ):
+                field = self.field_map().get(rule_field_path)
+                if field and field.masking_strategy_override:
+                    masking_strategy_override = field.masking_strategy_override
+                    strategy = MaskingStrategy.get_strategy(
+                        masking_strategy_override.strategy,
+                        masking_strategy_override.configuration,  # type: ignore[arg-type]
+                    )
+                    logger.warning(
+                        f"Using field-level masking override of type '{strategy.name}' for {rule_field_path.string_path}"
+                    )
+                null_masking: bool = strategy.name == NullMaskingStrategy.name
+                if not self._supported_data_type(truncation, null_masking, strategy):
                     logger.warning(
                         "Unable to generate a query for field {}: data_type is either not present on the field or not supported for the {} masking strategy. Received data type: {}",
                         rule_field_path.string_path,
-                        strategy_config["strategy"],
-                        masking_override.data_type_converter.name,  # type: ignore
+                        strategy.name,
+                        truncation.data_type_converter.name,  # type: ignore
                     )
                     continue
 
@@ -196,7 +205,7 @@ class QueryConfig(Generic[T], ABC):
                         request_id=request.id,
                         strategy=strategy,
                         val=pydash.objects.get(row, detailed_path),
-                        masking_override=masking_override,
+                        masking_truncation=truncation,
                         null_masking=null_masking,
                         str_field_path=detailed_path,
                     )
@@ -204,15 +213,17 @@ class QueryConfig(Generic[T], ABC):
 
     @staticmethod
     def _supported_data_type(
-        masking_override: MaskingOverride, null_masking: bool, strategy: MaskingStrategy
+        masking_truncation: MaskingTruncation,
+        null_masking: bool,
+        strategy: MaskingStrategy,
     ) -> bool:
         """Helper method to determine whether given data_type exists and is supported by the masking strategy"""
         if null_masking:
             return True
-        if not masking_override.data_type_converter:
+        if not masking_truncation.data_type_converter:
             return False
         if not strategy.data_type_supported(
-            data_type=masking_override.data_type_converter.name
+            data_type=masking_truncation.data_type_converter.name
         ):
             return False
         return True
@@ -222,7 +233,7 @@ class QueryConfig(Generic[T], ABC):
         request_id: str,
         strategy: MaskingStrategy,
         val: Any,
-        masking_override: MaskingOverride,
+        masking_truncation: MaskingTruncation,
         null_masking: bool,
         str_field_path: str,
     ) -> T:
@@ -239,14 +250,14 @@ class QueryConfig(Generic[T], ABC):
         if null_masking:
             return masked_val
 
-        if masking_override.length:
+        if masking_truncation.length:
             logger.warning(
                 "Because a length has been specified for field {}, we will truncate length of masked value to match, regardless of masking strategy",
                 str_field_path,
             )
             #  for strategies other than null masking we assume that masked data type is the same as specified data type
-            masked_val = masking_override.data_type_converter.truncate(  # type: ignore
-                masking_override.length, masked_val
+            masked_val = masking_truncation.data_type_converter.truncate(  # type: ignore
+                masking_truncation.length, masked_val
             )
         return masked_val
 
@@ -775,6 +786,8 @@ class MicrosoftSQLServerQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig)
 class SnowflakeQueryConfig(SQLQueryConfig):
     """Generates SQL in Snowflake's custom dialect."""
 
+    namespace_meta_schema = SnowflakeNamespaceMeta
+
     def generate_raw_query(
         self, field_list: List[str], filters: Dict[str, List[Any]]
     ) -> Optional[TextClause]:
@@ -791,13 +804,34 @@ class SnowflakeQueryConfig(SQLQueryConfig):
         """Returns field names in clauses surrounded by quotation marks as required by Snowflake syntax."""
         return f'"{string_path}" {operator} (:{operand})'
 
+    def _generate_table_name(self) -> str:
+        """
+        Prepends the dataset name and schema to the base table name
+        if the Snowflake namespace meta is provided.
+        """
+
+        table_name = (
+            f'"{self.node.collection.name}"'  # Always quote the base table name
+        )
+
+        if not self.namespace_meta:
+            return table_name
+
+        snowflake_meta = cast(SnowflakeNamespaceMeta, self.namespace_meta)
+        qualified_name = f'"{snowflake_meta.schema}".{table_name}'
+
+        if database_name := snowflake_meta.database_name:
+            return f'"{database_name}".{qualified_name}'
+
+        return qualified_name
+
     def get_formatted_query_string(
         self,
         field_list: str,
         clauses: List[str],
     ) -> str:
         """Returns a query string with double quotation mark formatting as required by Snowflake syntax."""
-        return f'SELECT {field_list} FROM "{self.node.collection.name}" WHERE ({" OR ".join(clauses)})'
+        return f'SELECT {field_list} FROM {self._generate_table_name()} WHERE ({" OR ".join(clauses)})'
 
     def format_key_map_for_update_stmt(self, fields: List[str]) -> List[str]:
         """Adds the appropriate formatting for update statements in this datastore."""
@@ -809,8 +843,8 @@ class SnowflakeQueryConfig(SQLQueryConfig):
         update_clauses: List[str],
         pk_clauses: List[str],
     ) -> str:
-        """Returns a parameterised update statement in Snowflake dialect."""
-        return f'UPDATE "{self.node.address.collection}" SET {",".join(update_clauses)} WHERE  {" AND ".join(pk_clauses)}'
+        """Returns a parameterized update statement in Snowflake dialect."""
+        return f'UPDATE {self._generate_table_name()} SET {", ".join(update_clauses)} WHERE {" AND ".join(pk_clauses)}'
 
 
 class RedshiftQueryConfig(SQLQueryConfig):
