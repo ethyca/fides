@@ -1,15 +1,19 @@
-from typing import Optional
+from typing import List, Optional
 
 from fastapi import Depends
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
-from fastapi_pagination.ext.async_sqlalchemy import paginate as async_paginate
+from fastapi_pagination.ext.sqlalchemy import paginate
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
 from starlette.status import HTTP_200_OK
 
 from fides.api.api.deps import get_db
 from fides.api.db.ctl_session import get_async_db
-from fides.api.models.detection_discovery import fetch_staged_resources_by_type_query
+from fides.api.models.detection_discovery import (
+    fetch_staged_resources_by_type_query,
+    mark_resources_hidden,
+)
 from fides.api.schemas.detection_discovery import StagedResourceResponse
 from fides.api.util.api_router import APIRouter
 
@@ -62,3 +66,23 @@ async def get_datasets(
         show_hidden=show_hidden,
     )
     return paginate(db, query, params)  # type: ignore
+
+
+@LIFECYCLE_ROUTER.patch("/hide/", status_code=HTTP_200_OK)
+async def hide_resources(
+    urns: List[str], db_async: AsyncSession = Depends(get_async_db)
+) -> None:
+    """
+    Hide resources, specified by urn, from the lifecycle experience
+    """
+    await mark_resources_hidden(db_async, urns, True)
+
+
+@LIFECYCLE_ROUTER.patch("/un-hide/", status_code=HTTP_200_OK)
+async def un_hide_resources(
+    urns: List[str], db_async: AsyncSession = Depends(get_async_db)
+) -> None:
+    """
+    Un-hide resources, specified by urn, from the lifecycle experience
+    """
+    await mark_resources_hidden(db_async, urns, False)

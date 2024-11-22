@@ -4,6 +4,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, Iterable, List, Optional, Type
 
+from loguru import logger
 from sqlalchemy import ARRAY, Boolean, Column, DateTime, ForeignKey, String
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -351,6 +352,9 @@ def fetch_staged_resources_by_type_query(
     """
     Fetches staged resources by type and monitor config ID. Optionally filters out hidden resources.
     """
+    logger.info(
+        f"Fetching staged resources of type {resource_type}, show_hidden={show_hidden}, monitor_config_id={monitor_config_id}"
+    )
     query = select(StagedResource).where(StagedResource.resource_type == resource_type)
 
     if monitor_config_id:
@@ -361,3 +365,21 @@ def fetch_staged_resources_by_type_query(
         )
 
     return query
+
+
+async def mark_resources_hidden(
+    db: AsyncSession,
+    urns: List[str],
+    hidden: bool,
+) -> None:
+    """
+    Marks the resources with the given URNs as hidden or not hidden
+    """
+    logger.info(f"Marking {len(urns)} resources as hidden={hidden}")
+    resources = await StagedResource.get_urn_list_async(db, urns)
+    if not resources:
+        logger.warning("No resources found with the given URNs")
+        return
+    for resource in resources:
+        resource.hidden = hidden
+    await db.commit()
