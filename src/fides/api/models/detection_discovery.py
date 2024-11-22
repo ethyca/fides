@@ -10,6 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.future import select
 from sqlalchemy.orm import Session, relationship
+from sqlalchemy.orm.query import Query
 
 from fides.api.db.base_class import Base, FidesBase
 from fides.api.models.connectionconfig import ConnectionConfig
@@ -342,12 +343,12 @@ class StagedResource(Base):
                 parent_resource.add_child_diff_status(DiffStatus.ADDITION)
 
 
-def fetch_staged_resources_by_type(
+def fetch_staged_resources_by_type_query(
     db: Session,
     resource_type: str,
     monitor_config_id: Optional[str] = None,
     show_hidden: bool = False,
-) -> List[StagedResource]:
+) -> Query[StagedResource]:
     """
     Fetches staged resources by type and monitor config ID
     """
@@ -355,7 +356,9 @@ def fetch_staged_resources_by_type(
         StagedResource.resource_type == resource_type
     )
     if not show_hidden:
-        query = query.filter(StagedResource.hidden == False)
+        query = query.filter(
+            StagedResource.hidden == False  # pylint: disable=singleton-comparison
+        )
     if monitor_config_id:
         query = query.filter(StagedResource.monitor_config_id == monitor_config_id)
-    return query.all()
+    return query
