@@ -4,9 +4,10 @@ from fastapi import Depends
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.async_sqlalchemy import paginate as async_paginate
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import Session
 from starlette.status import HTTP_200_OK
 
+from fides.api.api.deps import get_db
 from fides.api.db.ctl_session import get_async_db
 from fides.api.models.detection_discovery import fetch_staged_resources_by_type_query
 from fides.api.schemas.detection_discovery import StagedResourceResponse
@@ -24,7 +25,7 @@ LIFECYCLE_ROUTER = APIRouter(
 )
 async def get_projects(
     params: Params = Depends(),
-    db: AsyncSession = Depends(get_async_db),
+    db: Session = Depends(get_db),
     show_hidden: bool = False,
     monitor_config_id: Optional[str] = None,
 ) -> AbstractPage[StagedResourceResponse]:
@@ -33,12 +34,11 @@ async def get_projects(
     A "project" for lifecycle experience is a stagedresource "database"
     """
     query = fetch_staged_resources_by_type_query(
-        db=db,
-        resource_type="database",
+        resource_type="Database",
         monitor_config_id=monitor_config_id,
         show_hidden=show_hidden,
     )
-    return await async_paginate(db, query, params)  # type: ignore
+    return paginate(db, query, params)  # type: ignore
 
 
 @LIFECYCLE_ROUTER.get(
@@ -48,7 +48,7 @@ async def get_projects(
 )
 async def get_datasets(
     params: Params = Depends(),
-    db: AsyncSession = Depends(get_async_db),
+    db: Session = Depends(get_db),
     monitor_config_id: Optional[str] = None,
     show_hidden: bool = False,
 ) -> AbstractPage[StagedResourceResponse]:
@@ -57,9 +57,8 @@ async def get_datasets(
     A "dataset" for lifecycle experience is a stagedresource "schema"
     """
     query = fetch_staged_resources_by_type_query(
-        db=db,
         resource_type="schema",
         monitor_config_id=monitor_config_id,
         show_hidden=show_hidden,
     )
-    return await async_paginate(db, query, params)  # type: ignore
+    return paginate(db, query, params)  # type: ignore

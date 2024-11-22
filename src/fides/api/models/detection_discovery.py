@@ -344,21 +344,20 @@ class StagedResource(Base):
 
 
 def fetch_staged_resources_by_type_query(
-    db: Session,
     resource_type: str,
     monitor_config_id: Optional[str] = None,
     show_hidden: bool = False,
 ) -> Query[StagedResource]:
     """
-    Fetches staged resources by type and monitor config ID
+    Fetches staged resources by type and monitor config ID. Optionally filters out hidden resources.
     """
-    query = db.query(StagedResource).filter(
-        StagedResource.resource_type == resource_type
-    )
+    query = select(StagedResource).where(StagedResource.resource_type == resource_type)
+
+    if monitor_config_id:
+        query = query.where(StagedResource.monitor_config_id == monitor_config_id)
     if not show_hidden:
-        query = query.filter(
+        query = query.where(
             StagedResource.hidden == False  # pylint: disable=singleton-comparison
         )
-    if monitor_config_id:
-        query = query.filter(StagedResource.monitor_config_id == monitor_config_id)
+
     return query
