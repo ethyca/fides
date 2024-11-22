@@ -285,7 +285,7 @@ export const loadServerSettings = (): PrivacyCenterServerSettings => {
 // eslint-disable-next-line no-underscore-dangle,@typescript-eslint/naming-convention
 
 export const loadPrivacyCenterEnvironment = async ({
-  customPropertyPath = undefined,
+  customPropertyPath = "mvdigital",
 }: { customPropertyPath?: string } = {}): Promise<PrivacyCenterEnvironment> => {
   if (typeof window !== "undefined") {
     throw new Error(
