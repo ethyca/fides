@@ -3049,7 +3049,7 @@ class TestDefaultTaxonomyCrudOverrides:
             resource_type=endpoint,
             json_resource=json_resource,
         )
-        assert result.status_code == HTTP_409_CONFLICT
+        assert result.status_code == HTTP_422_UNPROCESSABLE_ENTITY
 
     @pytest.mark.parametrize("endpoint", TAXONOMY_ENDPOINTS)
     def test_api_can_create_without_explicit_fides_key(

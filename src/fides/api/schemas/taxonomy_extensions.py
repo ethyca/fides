@@ -1,13 +1,15 @@
 """
 Fides-specific extensions to the pydantic models of taxonomy elements as defined in fideslang.
 """
-from typing import Optional, List
 
-from fideslang.models import DataCategory as BaseDataCategory, DataSubjectRights
+from typing import List, Optional
+
+from fideslang.models import DataCategory as BaseDataCategory
 from fideslang.models import DataSubject as BaseDataSubject
+from fideslang.models import DataSubjectRights
 from fideslang.models import DataUse as BaseDataUse
 from fideslang.validation import FidesKey
-from pydantic import Field, BaseModel
+from pydantic import BaseModel, Field
 
 active_field = Field(
     default=True, description="Indicates whether the resource is currently 'active'."
@@ -27,7 +29,7 @@ class DataSubject(BaseDataSubject):
 
 
 class TaxonomyCreateBase(BaseModel):
-    name: str = None
+    name: Optional[str] = None
     description: str
     active: bool = True
     fides_key: Optional[FidesKey] = None
@@ -35,11 +37,14 @@ class TaxonomyCreateBase(BaseModel):
     tags: Optional[List[str]] = None
     organization_fides_key: Optional[FidesKey] = "default_organization"
 
+
 class DataUseCreate(TaxonomyCreateBase):
     parent_key: Optional[FidesKey] = None
 
+
 class DataCategoryCreate(TaxonomyCreateBase):
     parent_key: Optional[FidesKey] = None
+
 
 class DataSubjectCreate(TaxonomyCreateBase):
     rights: Optional[DataSubjectRights] = None
