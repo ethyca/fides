@@ -1,11 +1,12 @@
-from typing import Generator, Iterator
+from typing import Iterator
+
 import pytest
-from starlette.testclient import TestClient
-from fides.api.models.detection_discovery import StagedResource
-from fides.config import CONFIG, FidesConfig
 from sqlalchemy.orm import Session
+from starlette.testclient import TestClient
+
+from fides.api.models.detection_discovery import StagedResource
 from fides.api.util.endpoint_utils import API_PREFIX
-from fides.config import FidesConfig
+from fides.config import CONFIG, FidesConfig
 
 
 @pytest.fixture(scope="function")
