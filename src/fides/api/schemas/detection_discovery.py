@@ -13,5 +13,5 @@ class StagedResourceResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
     diff_status: str
-    child_diff_statuses: List[str]
+    child_diff_statuses: dict
     hidden: bool
