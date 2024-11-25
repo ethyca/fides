@@ -17,11 +17,11 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.50.0...main)
 
+### Added
+- Added `hidden` column to `stagedresource` table and endpoints for upcoming Dataset Lifecycle experience for DnD to retrieve Projects and Datasets [#5527](https://github.com/ethyca/fides/pull/5527)
 
 
-
-
-## [Unreleased](https://github.com/ethyca/fides/compare/2.49.1...2.50.0)
+## [2.50.0](https://github.com/ethyca/fides/compare/2.49.1...2.50.0)
 
 ### Added
 - Added namespace support for Snowflake [#5486](https://github.com/ethyca/fides/pull/5486)
