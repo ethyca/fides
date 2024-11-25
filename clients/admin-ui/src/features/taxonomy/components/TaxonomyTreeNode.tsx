@@ -16,7 +16,6 @@ export type TaxonomyTreeNodeType = Node<
 const TaxonomyTreeNode = ({ data }: NodeProps<TaxonomyTreeNodeType>) => {
   const { taxonomyItem, onAddButtonClick, onTaxonomyItemClick, label } = data;
 
-  // TODO: Differenciate disabled items
   // TODO: set a max width for tree nodes, test how it behaves with layout library
   return (
     <div className="group relative">
@@ -27,6 +26,7 @@ const TaxonomyTreeNode = ({ data }: NodeProps<TaxonomyTreeNodeType>) => {
         disabled={!onTaxonomyItemClick}
       >
         {label}
+        {taxonomyItem?.active === false ? " (disabled)" : ""}
       </button>
 
       <Handle type="target" position={Position.Left} />

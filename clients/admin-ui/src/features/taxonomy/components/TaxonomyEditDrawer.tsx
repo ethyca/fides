@@ -43,8 +43,6 @@ const TaxonomyEditDrawer = ({
   const CUSTOM_FIELDS_FORM_ID = "custom-fields-form";
   const [customFieldsForm] = AntForm.useForm();
 
-  const isCustomTaxonomy = !taxonomyItem?.is_default;
-
   const toast = useToast();
 
   const {
@@ -53,7 +51,7 @@ const TaxonomyEditDrawer = ({
     onClose: onDeleteClose,
   } = useDisclosure();
 
-  const { updateTrigger, deleteTrigger } = useTaxonomySlices({ taxonomyType });
+  const { updateTrigger } = useTaxonomySlices({ taxonomyType });
 
   const customFields = useCustomFields({
     resourceFidesKey: taxonomyItem?.fides_key,
@@ -80,7 +78,12 @@ const TaxonomyEditDrawer = ({
   };
 
   const handleDelete = async () => {
-    await deleteTrigger(taxonomyItem!.fides_key);
+    // For record keeping, we will not actually delete the taxonomy
+    // but rather mark it as disabled and not show it in the UI
+    await updateTrigger({
+      ...taxonomyItem!,
+      active: false,
+    });
     onDeleteClose();
     closeDrawer();
   };
@@ -98,7 +101,7 @@ const TaxonomyEditDrawer = ({
         footer={
           <EditDrawerFooter
             onClose={closeDrawer}
-            onDelete={isCustomTaxonomy ? onDeleteOpen : undefined}
+            onDelete={onDeleteOpen}
             formId={TAXONOMY_FORM_ID}
           />
         }

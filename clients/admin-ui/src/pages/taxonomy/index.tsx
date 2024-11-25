@@ -1,5 +1,7 @@
 import { AntButton, AntInput, AntSelect, AntSpace, useToast } from "fidesui";
+import { filter } from "lodash";
 import type { NextPage } from "next";
+import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 
 import {
@@ -20,9 +22,15 @@ const TaxonomyPage: NextPage = () => {
   const [taxonomyType, setTaxonomyType] = useState<CoreTaxonomiesEnum>(
     CoreTaxonomiesEnum.DATA_CATEGORIES,
   );
-  const { createTrigger, getAllTrigger, taxonomyItems } = useTaxonomySlices({
+  const {
+    createTrigger,
+    getAllTrigger,
+    taxonomyItems = [],
+  } = useTaxonomySlices({
     taxonomyType,
   });
+  const searchParams = useSearchParams();
+  const showDisabledItems = searchParams?.get("showDisabledItems") === "true";
 
   useEffect(() => {
     getAllTrigger();
@@ -72,6 +80,11 @@ const TaxonomyPage: NextPage = () => {
     [createTrigger, draftNewItem, toast],
   );
 
+  const activeTaxonomyItems = filter(
+    taxonomyItems,
+    "active",
+  ) as TaxonomyEntity[];
+
   return (
     <Layout
       title="Taxonomy"
@@ -108,7 +121,9 @@ const TaxonomyPage: NextPage = () => {
         </div>
         <div className="grow">
           <TaxonomyInteractiveTree
-            taxonomyItems={taxonomyItems || []}
+            taxonomyItems={
+              showDisabledItems ? taxonomyItems : activeTaxonomyItems
+            }
             draftNewItem={draftNewItem}
             onTaxonomyItemClick={(taxonomyItem) => {
               setTaxonomyItemToEdit(taxonomyItem);
