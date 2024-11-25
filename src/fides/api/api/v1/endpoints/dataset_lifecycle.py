@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 from starlette.status import HTTP_200_OK
 
 from fides.api.api.deps import get_db
+from fides.api.api.v1.endpoints import API_PREFIX
 from fides.api.db.ctl_session import get_async_db
 from fides.api.models.detection_discovery import (
     fetch_staged_resources_by_type_query,
@@ -18,12 +19,13 @@ from fides.api.schemas.detection_discovery import StagedResourceResponse
 from fides.api.util.api_router import APIRouter
 
 LIFECYCLE_ROUTER = APIRouter(
-    tags=["Dataset Lifecycle", "Detection and Discovery"], prefix="/lifecycle"
+    tags=["Dataset Lifecycle", "Detection and Discovery"],
+    prefix=f"{API_PREFIX}/lifecycle",
 )
 
 
 @LIFECYCLE_ROUTER.get(
-    "/get/projects",
+    "/project",
     status_code=HTTP_200_OK,
     response_model=Page[StagedResourceResponse],
 )
@@ -46,7 +48,7 @@ async def get_projects(
 
 
 @LIFECYCLE_ROUTER.get(
-    "/get/datasets",
+    "/dataset",
     status_code=HTTP_200_OK,
     response_model=Page[StagedResourceResponse],
 )
