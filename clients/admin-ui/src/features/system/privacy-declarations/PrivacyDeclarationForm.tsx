@@ -19,11 +19,8 @@ import { Form, Formik, FormikHelpers } from "formik";
 import { useMemo, useState } from "react";
 import * as Yup from "yup";
 
-import {
-  CustomCreatableSelect,
-  CustomSelect,
-  CustomTextInput,
-} from "~/features/common/form/inputs";
+import { ControlledSelect } from "~/features/common/form/ControlledSelect";
+import { CustomTextInput } from "~/features/common/form/inputs";
 import { FormGuard } from "~/features/common/hooks/useIsAnyFormDirty";
 import {
   DataCategory,
@@ -101,7 +98,7 @@ export const PrivacyDeclarationFormComponents = ({
 
   return (
     <Stack spacing={4}>
-      <CustomSelect
+      <ControlledSelect
         id="data_use"
         label="Data use"
         name="data_use"
@@ -110,9 +107,8 @@ export const PrivacyDeclarationFormComponents = ({
           label: data.fides_key,
         }))}
         tooltip="What is the system using the data for. For example, is it for third party advertising or perhaps simply providing system operations."
-        variant="stacked"
-        singleValueBlock
-        isDisabled={!!privacyDeclarationId}
+        layout="stacked"
+        disabled={!!privacyDeclarationId}
       />
       <CustomTextInput
         id="name"
@@ -122,7 +118,7 @@ export const PrivacyDeclarationFormComponents = ({
         tooltip="The personal data processing activity or activities associated with this data use."
         disabled={!!privacyDeclarationId}
       />
-      <CustomSelect
+      <ControlledSelect
         name="data_categories"
         label="Data categories"
         options={allDataCategories.map((data) => ({
@@ -130,11 +126,11 @@ export const PrivacyDeclarationFormComponents = ({
           label: data.fides_key,
         }))}
         tooltip="What type of data is your system processing? This could be various types of user or system data."
-        isMulti
-        variant="stacked"
-        isDisabled
+        mode="multiple"
+        layout="stacked"
+        disabled
       />
-      <CustomSelect
+      <ControlledSelect
         name="data_subjects"
         label="Data subjects"
         options={allDataSubjects.map((data) => ({
@@ -142,28 +138,26 @@ export const PrivacyDeclarationFormComponents = ({
           label: data.fides_key,
         }))}
         tooltip="Whose data are you processing? This could be customers, employees or any other type of user in your system."
-        isMulti
-        variant="stacked"
-        isDisabled
+        mode="multiple"
+        layout="stacked"
+        disabled
       />
       {includeCookies ? (
-        <CustomCreatableSelect
+        <ControlledSelect
           name="cookies"
           label="Cookies"
-          options={[]}
-          isMulti
-          variant="stacked"
-          isClearable={false}
+          mode="tags"
+          layout="stacked"
         />
       ) : null}
       {allDatasets ? (
-        <CustomSelect
+        <ControlledSelect
           name="dataset_references"
           label="Dataset references"
           options={datasetOptions}
           tooltip="Referenced Dataset fides keys used by the system."
-          isMulti
-          variant="stacked"
+          mode="multiple"
+          layout="stacked"
         />
       ) : null}
       {includeCustomFields ? (

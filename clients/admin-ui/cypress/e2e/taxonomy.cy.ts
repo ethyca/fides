@@ -220,9 +220,9 @@ describe("Taxonomy management page", () => {
         "Object",
       ];
       rightValues.forEach((v) => {
-        cy.getByTestId("input-rights").should("contain", v);
+        cy.getByTestId("controlled-select-rights").should("contain", v);
       });
-      cy.getByTestId("input-strategy").should("contain", "INCLUDE");
+      cy.getByTestId("controlled-select-strategy").should("contain", "INCLUDE");
       cy.getByTestId("input-automatic_decisions_or_profiling").within(() => {
         cy.getByTestId("option-true").should("have.attr", "data-checked");
         // For some reason Cypress can accidentally click the dropdown selector above,
@@ -256,8 +256,8 @@ describe("Taxonomy management page", () => {
       // check an entity that has no optional fields filled in
       cy.getByTestId("item-Anonymous User").trigger("mouseover");
       cy.getByTestId("edit-btn").click();
-      cy.getByTestId("input-rights").should("contain", "Select...");
-      cy.getByTestId("input-strategy").should("not.exist");
+      cy.getByTestId("controlled-select-rights").should("contain", "Select...");
+      cy.getByTestId("controlled-select-strategy").should("not.exist");
     });
 
     it("Can trigger an error", () => {
