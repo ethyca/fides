@@ -1,4 +1,4 @@
-from typing import Generator
+from typing import Generator, Iterator
 import pytest
 from starlette.testclient import TestClient
 from fides.api.models.detection_discovery import StagedResource
@@ -11,7 +11,7 @@ from fides.config import FidesConfig
 @pytest.fixture(scope="function")
 def sample_projects(
     db: Session,
-) -> Generator:
+) -> Iterator:
     """Fixture to add sample projects to the database"""
     resources = [
         StagedResource(
@@ -46,7 +46,7 @@ def sample_projects(
 @pytest.fixture(scope="function")
 def sample_datasets(
     db: Session,
-) -> Generator:
+) -> Iterator:
     """Fixture to add sample datasets to the database"""
     resources = [
         StagedResource(
@@ -95,6 +95,14 @@ def test_lifecycle_get_projects(
     ]
     assert len(result.json()["items"]) == len(expected_non_hidden)
 
+    result = test_client.get(
+        test_config.cli.server_url + API_PREFIX + "/lifecycle/project",
+        headers=test_config.user.auth_header,
+        params={"show_hidden": "true"},
+    )
+    assert result.status_code == 200
+    assert len(result.json()["items"]) == len([project for project in sample_projects])
+
 
 def test_lifecycle_get_datasets(
     test_config: FidesConfig,
@@ -112,3 +120,11 @@ def test_lifecycle_get_datasets(
         resource for resource in sample_datasets if not resource.hidden
     ]
     assert len(result.json()["items"]) == len(expected_non_hidden)
+
+    result = test_client.get(
+        test_config.cli.server_url + API_PREFIX + "/lifecycle/dataset",
+        headers=test_config.user.auth_header,
+        params={"show_hidden": "true"},
+    )
+    assert result.status_code == 200
+    assert len(result.json()["items"]) == len([dataset for dataset in sample_datasets])
