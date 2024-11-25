@@ -187,9 +187,12 @@ const useSystemFormTabs = ({
   const { attemptAction } = useIsAnyFormDirty();
 
   const onTabChange = useCallback(
-    (index: number) => {
-      attemptAction().then((modalConfirmed: boolean) => {
+    async (index: number) => {
+      try {
+        const modalConfirmed = await attemptAction();
+
         if (modalConfirmed) {
+          // Handle status first if it exists
           const { status } = router.query;
           if (status) {
             if (status === "succeeded") {
@@ -199,13 +202,16 @@ const useSystemFormTabs = ({
             }
           }
 
-          // Handle tab change and URL update
+          // Update local state first
           setTabIndex(index);
+
+          // Then update URL
           const tab = getTabFromIndex(index);
           if (tab) {
             const newQuery = { ...router.query };
             delete newQuery.status;
-            router.replace(
+
+            await router.replace(
               {
                 pathname: router.pathname,
                 query: newQuery,
@@ -216,7 +222,9 @@ const useSystemFormTabs = ({
             );
           }
         }
-      });
+      } catch (error) {
+        console.error("Error changing tabs:", error);
+      }
     },
     [attemptAction, router, toast],
   );
