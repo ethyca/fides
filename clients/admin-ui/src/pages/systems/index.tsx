@@ -43,6 +43,7 @@ import {
   useServerSidePagination,
 } from "~/features/common/table/v2";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
+import EditDataUseCell from "~/features/data-discovery-and-detection/new-dataset-lifecycle/EditDataUseCell";
 import {
   setActiveSystem,
   useDeleteSystemMutation,
@@ -164,6 +165,15 @@ const Systems: NextPage = () => {
         meta: {
           showHeaderMenu: true,
         },
+      }),
+      columnHelper.display({
+        id: "data-uses",
+        cell: ({ row }) => <EditDataUseCell system={row.original} />,
+        header: (props) => <DefaultHeaderCell value="Data uses" {...props} />,
+        meta: {
+          disableRowClick: true,
+        },
+        minSize: 280,
       }),
       columnHelper.accessor((row) => row.administrating_department, {
         id: "department",

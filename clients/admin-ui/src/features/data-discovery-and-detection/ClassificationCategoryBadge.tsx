@@ -1,33 +1,39 @@
 import { Flex, FlexProps } from "fidesui";
+import React from "react";
 
-interface ClassificationCategoryBadgeProps extends FlexProps {
-  classification?: string | JSX.Element;
+interface TaxonomyBadgeProps extends FlexProps {
   children: React.ReactNode;
+  closeButton?: React.ReactNode;
 }
 
-const ClassificationCategoryBadge = ({
+const TaxonomyBadge = ({
   children,
   onClick,
+  closeButton,
   ...props
-}: ClassificationCategoryBadgeProps) => {
+}: TaxonomyBadgeProps) => {
   return (
     <Flex
       fontSize="xs"
-      alignItems="center"
-      gap={1.5}
       px={1.5}
       h="20px"
       borderWidth="1px"
       borderColor="gray.200"
       borderRadius="sm"
-      cursor={onClick ? "pointer" : "default"}
       _hover={onClick ? { bg: "gray.100" } : undefined}
-      onClick={onClick}
       {...props}
     >
-      {children}
+      <Flex
+        alignItems="center"
+        gap={1.5}
+        cursor={onClick ? "pointer" : "default"}
+        onClick={onClick}
+      >
+        {children}
+      </Flex>
+      {closeButton}
     </Flex>
   );
 };
 
-export default ClassificationCategoryBadge;
+export default TaxonomyBadge;
