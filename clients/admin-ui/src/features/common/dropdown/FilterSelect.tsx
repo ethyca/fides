@@ -10,6 +10,8 @@ export const FilterSelect = <ValueType,>({
       maxTagCount="responsive"
       allowClear
       dropdownStyle={isMulti ? undefined : { width: "auto", minWidth: "200px" }}
+      className="w-auto"
+      data-testid="filter-select"
       {...props}
     />
   );

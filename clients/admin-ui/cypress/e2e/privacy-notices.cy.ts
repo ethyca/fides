@@ -238,7 +238,7 @@ describe("Privacy notices", () => {
         cy.getByTestId("input-name").should("have.value", notice.name);
 
         // consent mechanism section
-        cy.getSelectValueContainer("input-consent_mechanism").contains(
+        cy.getByTestId("controlled-select-consent_mechanism").contains(
           "Notice only",
         );
 
@@ -250,11 +250,11 @@ describe("Privacy notices", () => {
 
         // configuration section
         notice.data_uses.forEach((dataUse) => {
-          cy.getSelectValueContainer("input-data_uses").contains(dataUse);
+          cy.getByTestId("controlled-select-data_uses").contains(dataUse);
         });
 
         // enforcement level
-        cy.getSelectValueContainer("input-enforcement_level").contains(
+        cy.getByTestId("controlled-select-enforcement_level").contains(
           "Not applicable",
         );
 
@@ -368,11 +368,13 @@ describe("Privacy notices", () => {
       cy.getByTestId("input-name").type(notice.name);
 
       // consent mechanism section
-      cy.selectOption("input-consent_mechanism", "Opt in");
+      cy.getByTestId("controlled-select-consent_mechanism").antSelect("Opt in");
       cy.getByTestId("input-has_gpc_flag").click();
 
       // configuration section
-      cy.selectOption("input-data_uses", notice.data_uses[0]);
+      cy.getByTestId("controlled-select-data_uses").antSelect(
+        notice.data_uses[0],
+      );
 
       // translations
       cy.getByTestId("input-translations.0.title").type("Title");

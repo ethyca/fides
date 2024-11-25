@@ -13,12 +13,26 @@ export const SubjectRequestStatusMap = new Map<PrivacyRequestStatus, string>([
   [PrivacyRequestStatus.REQUIRES_INPUT, "Requires input"],
 ]);
 
+export const SubjectRequestStatusOptions = [...SubjectRequestStatusMap].map(
+  ([key, value]) => ({
+    label: value,
+    value: key,
+  }),
+);
+
 export const SubjectRequestActionTypeMap = new Map<ActionType, string>([
   [ActionType.ACCESS, "Access"],
   [ActionType.ERASURE, "Erasure"],
   [ActionType.CONSENT, "Consent"],
   [ActionType.UPDATE, "Update"],
 ]);
+
+export const SubjectRequestActionTypeOptions = [
+  ...SubjectRequestActionTypeMap,
+].map(([key, value]) => ({
+  label: value,
+  value: key,
+}));
 
 export const messagingProviders = {
   mailgun: "mailgun",
