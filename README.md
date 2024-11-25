@@ -86,7 +86,7 @@ The Fides core team is committed to providing a variety of documentation to help
 
 For more information on getting started with Fides, how to configure and set up Fides, and more about the Fides ecosystem of open source projects:
 
-* Documentation: <https://docs.ethyca.com>
+* Documentation: <https://ethyca.com/docs>
 * Website: www.ethyca.com/fides
 
 ### Support
