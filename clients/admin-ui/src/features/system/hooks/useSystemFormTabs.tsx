@@ -100,12 +100,12 @@ const useSystemFormTabs = ({
   const router = useRouter();
 
   // Get initial tab index based on URL hash
-  const getInitialTabIndex = useCallback((): number => {
+  const getInitialTabIndex = (): number => {
     const hash: string = router.asPath.split("#")[1];
     return hash
       ? (getTabFromHash(hash)?.index ?? SYSTEM_TABS.INFORMATION.index)
       : SYSTEM_TABS.INFORMATION.index;
-  }, [router.asPath]);
+  };
 
   const [tabIndex, setTabIndex] = useState(getInitialTabIndex());
 
