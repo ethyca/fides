@@ -460,4 +460,36 @@ describe("System management with Plus features", () => {
       });
     });
   });
+
+  describe("tab navigation", () => {
+    it("updates URL hash when switching tabs", () => {
+      cy.visit(`${SYSTEM_ROUTE}/configure/demo_analytics_system#information`);
+      cy.location("hash").should("eq", "#information");
+
+      cy.getByTestId("tab-Data uses").click();
+      cy.location("hash").should("eq", "#data-uses");
+
+      cy.getByTestId("tab-Data flow").click();
+      cy.location("hash").should("eq", "#data-flow");
+
+      cy.getByTestId("tab-Integrations").click();
+      cy.location("hash").should("eq", "#integrations");
+
+      cy.getByTestId("tab-History").click();
+      cy.location("hash").should("eq", "#history");
+    });
+
+    it("loads correct tab directly based on URL hash", () => {
+      // Visit page with specific hash
+      cy.visit(`${SYSTEM_ROUTE}/configure/demo_analytics_system#data-uses`);
+
+      // Verify correct tab is active
+      cy.getByTestId("tab-Data uses").should(
+        "have.attr",
+        "aria-selected",
+        "true",
+      );
+      cy.location("hash").should("eq", "#data-uses");
+    });
+  });
 });
