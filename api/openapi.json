@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.49.1"
+    "version": "2.50.0"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -103,13 +103,13 @@
           "DataCategory"
         ],
         "summary": "Create",
-        "description": "Create a resource.\n\nPayloads with an is_default field can only be set to False,\nwill return a `403 Forbidden`.",
+        "description": "Create a data category",
         "operationId": "Create_api_v1_data_category_post",
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/DataCategory"
+                "$ref": "#/components/schemas/DataCategoryCreate"
               }
             }
           },
@@ -122,20 +122,6 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/DataCategory"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "example": {
-                  "detail": {
-                    "error": "user does not have permission to modify this resource",
-                    "resource_type": "data_category",
-                    "fides_key": "example.key"
-                  }
                 }
               }
             }
@@ -457,13 +443,13 @@
           "DataSubject"
         ],
         "summary": "Create",
-        "description": "Create a resource.\n\nPayloads with an is_default field can only be set to False,\nwill return a `403 Forbidden`.",
+        "description": "Create a data subject",
         "operationId": "Create_api_v1_data_subject_post",
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/DataSubject"
+                "$ref": "#/components/schemas/DataSubjectCreate"
               }
             }
           },
@@ -476,20 +462,6 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/DataSubject"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "example": {
-                  "detail": {
-                    "error": "user does not have permission to modify this resource",
-                    "resource_type": "data_subject",
-                    "fides_key": "example.key"
-                  }
                 }
               }
             }
@@ -811,13 +783,13 @@
           "DataUse"
         ],
         "summary": "Create",
-        "description": "Create a resource.\n\nPayloads with an is_default field can only be set to False,\nwill return a `403 Forbidden`.",
+        "description": "Create a data use. Updates existing data use if data use with name already exists and is disabled.",
         "operationId": "Create_api_v1_data_use_post",
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/DataUse"
+                "$ref": "#/components/schemas/DataUseCreate"
               }
             }
           },
@@ -830,20 +802,6 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/DataUse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "example": {
-                  "detail": {
-                    "error": "user does not have permission to modify this resource",
-                    "resource_type": "data_use",
-                    "fides_key": "example.key"
-                  }
                 }
               }
             }
@@ -3178,7 +3136,7 @@
           "System"
         ],
         "summary": "List Systems (Optionally Paginated)",
-        "description": "Get a list of all of the Systems.\nIf any pagination parameters (size or page) are provided, then the response will be paginated\n& provided filters (search, taxonomy fields) will be applied.\nOtherwise all Systems will be returned (this may be a slow operation if there are many systems,\nso using the pagination parameters is recommended).",
+        "description": "Get a list of all of the Systems.\nIf any parameters or filters are provided the response will be paginated and/or filtered.\nOtherwise all Systems will be returned (this may be a slow operation if there are many systems,\nso using the pagination parameters is recommended).",
         "operationId": "List_systems__optionally_paginated__api_v1_system_get",
         "security": [
           {
@@ -3294,6 +3252,39 @@
                 }
               ],
               "title": "Data Subjects"
+            }
+          },
+          {
+            "name": "dnd_relevant",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Dnd Relevant"
+            }
+          },
+          {
+            "name": "show_hidden",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": false,
+              "title": "Show Hidden"
             }
           }
         ],
@@ -5660,6 +5651,40 @@
             }
           }
         }
+      }
+    },
+    "/api/v1/datasets/clean": {
+      "get": {
+        "tags": [
+          "Dataset Configs"
+        ],
+        "summary": "Clean Datasets",
+        "description": "Clean up names of datasets and upsert them.",
+        "operationId": "clean_datasets_api_v1_datasets_clean_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/Dataset"
+                  },
+                  "type": "array",
+                  "title": "Response Clean Datasets Api V1 Datasets Clean Get"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": true,
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "dataset:read"
+            ]
+          }
+        ]
       }
     },
     "/api/v1/drp/exercise": {
@@ -14195,8 +14220,8 @@
                 "type": "null"
               }
             ],
-            "title": "Default dataset",
-            "description": "The default BigQuery dataset that will be used if one isn't provided in the associated Fides datasets."
+            "title": "Dataset",
+            "description": "Only provide a dataset to scope discovery monitors and privacy request automation to a specific BigQuery dataset. In most cases, this can be left blank."
           }
         },
         "type": "object",
@@ -15832,6 +15857,88 @@
         ],
         "title": "DataCategory"
       },
+      "DataCategoryCreate": {
+        "properties": {
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "active": {
+            "type": "boolean",
+            "title": "Active",
+            "default": true
+          },
+          "fides_key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fides Key"
+          },
+          "is_default": {
+            "type": "boolean",
+            "title": "Is Default",
+            "default": false
+          },
+          "tags": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tags"
+          },
+          "organization_fides_key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Organization Fides Key",
+            "default": "default_organization"
+          },
+          "parent_key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parent Key"
+          }
+        },
+        "type": "object",
+        "required": [
+          "description"
+        ],
+        "title": "DataCategoryCreate"
+      },
       "DataFlow": {
         "properties": {
           "fides_key": {
@@ -16006,6 +16113,98 @@
           "fides_key"
         ],
         "title": "DataSubject"
+      },
+      "DataSubjectCreate": {
+        "properties": {
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "active": {
+            "type": "boolean",
+            "title": "Active",
+            "default": true
+          },
+          "fides_key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fides Key"
+          },
+          "is_default": {
+            "type": "boolean",
+            "title": "Is Default",
+            "default": false
+          },
+          "tags": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tags"
+          },
+          "organization_fides_key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Organization Fides Key",
+            "default": "default_organization"
+          },
+          "rights": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DataSubjectRights"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "automated_decisions_or_profiling": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Automated Decisions Or Profiling"
+          }
+        },
+        "type": "object",
+        "required": [
+          "description"
+        ],
+        "title": "DataSubjectCreate"
       },
       "DataSubjectRights": {
         "properties": {
@@ -16186,6 +16385,88 @@
           "fides_key"
         ],
         "title": "DataUse"
+      },
+      "DataUseCreate": {
+        "properties": {
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "active": {
+            "type": "boolean",
+            "title": "Active",
+            "default": true
+          },
+          "fides_key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fides Key"
+          },
+          "is_default": {
+            "type": "boolean",
+            "title": "Is Default",
+            "default": false
+          },
+          "tags": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tags"
+          },
+          "organization_fides_key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Organization Fides Key",
+            "default": "default_organization"
+          },
+          "parent_key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parent Key"
+          }
+        },
+        "type": "object",
+        "required": [
+          "description"
+        ],
+        "title": "DataUseCreate"
       },
       "DatabaseConfig": {
         "properties": {
@@ -17545,11 +17826,48 @@
             ],
             "title": "Custom Request Field",
             "description": "Optionally specify that a field may be used as a custom request field in DSRs. The value is the name of the field in the DSR."
+          },
+          "masking_strategy_override": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FieldMaskingStrategyOverride"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Optionally specify a masking strategy override for this field."
           }
         },
         "type": "object",
         "title": "FidesMeta",
         "description": "Supplementary metadata used by the Fides application for additional features."
+      },
+      "FieldMaskingStrategyOverride": {
+        "properties": {
+          "strategy": {
+            "type": "string",
+            "title": "Strategy"
+          },
+          "configuration": {
+            "anyOf": [
+              {
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Configuration",
+            "default": {}
+          }
+        },
+        "type": "object",
+        "required": [
+          "strategy"
+        ],
+        "title": "FieldMaskingStrategyOverride",
+        "description": "Overrides field-level masking strategies."
       },
       "FieldsAffectedResponse": {
         "properties": {
@@ -18329,7 +18647,7 @@
           "strategy"
         ],
         "title": "MaskingStrategyOverride",
-        "description": "Overrides policy-level masking strategies."
+        "description": "Overrides collection-level masking strategies."
       },
       "MatchesEnum": {
         "type": "string",
@@ -24045,14 +24363,28 @@
             "description": "The name of the Snowflake warehouse where your queries will be executed."
           },
           "database_name": {
-            "type": "string",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Database",
-            "description": "The name of the Snowflake database you want to connect to."
+            "description": "Only provide a database name to scope discovery monitors and privacy request automation to a specific database. In most cases, this can be left blank."
           },
           "schema_name": {
-            "type": "string",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Schema",
-            "description": "The name of the Snowflake schema within the selected database."
+            "description": "Only provide a schema to scope discovery monitors and privacy request automation to a specific schema. In most cases, this can be left blank."
           },
           "role_name": {
             "anyOf": [
@@ -24071,9 +24403,7 @@
         "required": [
           "account_identifier",
           "user_login_name",
-          "warehouse_name",
-          "database_name",
-          "schema_name"
+          "warehouse_name"
         ],
         "title": "SnowflakeDocsSchema",
         "description": "Snowflake Secrets Schema for API Docs"
@@ -26158,7 +26488,7 @@
                 "type": "null"
               }
             ],
-            "title": "Private Key ID"
+            "title": "Private key ID"
           },
           "private_key": {
             "anyOf": [
@@ -26169,7 +26499,7 @@
                 "type": "null"
               }
             ],
-            "title": "Private Key",
+            "title": "Private key",
             "sensitive": true
           },
           "client_email": {
@@ -26182,7 +26512,7 @@
                 "type": "null"
               }
             ],
-            "title": "Client Email"
+            "title": "Client email"
           },
           "client_id": {
             "anyOf": [
@@ -26226,7 +26556,7 @@
                 "type": "null"
               }
             ],
-            "title": "Auth Provider X509 Cert URL"
+            "title": "Auth provider X509 cert URL"
           },
           "client_x509_cert_url": {
             "anyOf": [
@@ -26237,7 +26567,7 @@
                 "type": "null"
               }
             ],
-            "title": "Client X509 Cert URL"
+            "title": "Client X509 cert URL"
           }
         },
         "type": "object",
