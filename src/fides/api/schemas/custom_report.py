@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Any, Dict
+from typing import Any, Dict, List, Optional
 
 from pydantic import Field
 
@@ -22,4 +22,7 @@ class CustomReportConfig(FidesSchema):
     )
     column_map: Dict[str, str] = Field(
         default_factory=dict, description="A map between column keys and custom labels"
+    )
+    column_order: Optional[List[str]] = Field(
+        default_factory=list, description="The order of columns in the report"
     )
