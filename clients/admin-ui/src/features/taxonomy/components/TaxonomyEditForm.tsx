@@ -26,7 +26,7 @@ const TaxonomyEditForm = ({
       ...formValues,
     };
     if (
-      updatedTaxonomy?.rights?.values &&
+      !updatedTaxonomy?.rights?.values ||
       isEmpty(updatedTaxonomy?.rights?.values)
     ) {
       unset(updatedTaxonomy, "rights");
