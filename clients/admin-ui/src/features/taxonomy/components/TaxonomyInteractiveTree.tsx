@@ -132,17 +132,19 @@ const TaxonomyInteractiveTree = ({
   );
 
   return (
-    <div className="size-full  bg-[#fafafa]">
+    <div className="size-full bg-[#fafafa]">
       <ReactFlow
         nodes={nodesAfterLayout}
         edges={edgesAfterLayout}
         nodeTypes={nodeTypes}
         maxZoom={2}
         minZoom={0.3}
+        edgesFocusable={false}
+        elementsSelectable={false}
       >
         <Background color="#eee" variant={BackgroundVariant.Dots} size={3} />
         <MiniMap nodeStrokeWidth={3} pannable />
-        <Controls />
+        <Controls showInteractive={false} />
       </ReactFlow>
     </div>
   );
