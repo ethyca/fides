@@ -66,6 +66,7 @@ const TaxonomyPage: NextPage = () => {
       const newItem = {
         ...draftNewItem,
         name: labelName,
+        description: "",
         fides_key: fidesKey,
       };
 
@@ -117,7 +118,7 @@ const TaxonomyPage: NextPage = () => {
               label: e.label,
               key: e.value,
             }))}
-            className="absolute left-2 top-2 z-[2000]"
+            className="absolute left-2 top-2 z-[1000]"
           />
 
           {taxonomyItems.length && (
