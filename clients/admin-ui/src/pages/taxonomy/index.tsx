@@ -99,17 +99,18 @@ const TaxonomyPage: NextPage = () => {
           </div>
         </div>
         <div className="relative grow">
-          <AntMenu
-            style={{ width: 220 }}
-            selectedKeys={[taxonomyType]}
-            onSelect={({ key }) => setTaxonomyType(key as CoreTaxonomiesEnum)}
-            mode="vertical"
-            items={enumToOptions(CoreTaxonomiesEnum).map((e) => ({
-              label: e.label,
-              key: e.value,
-            }))}
-            className="absolute left-2 top-2 z-[1000]"
-          />
+          <div className="absolute left-2 top-2 z-[1000] shadow-lg">
+            <AntMenu
+              style={{ width: 220 }}
+              selectedKeys={[taxonomyType]}
+              onSelect={({ key }) => setTaxonomyType(key as CoreTaxonomiesEnum)}
+              mode="vertical"
+              items={enumToOptions(CoreTaxonomiesEnum).map((e) => ({
+                label: e.label,
+                key: e.value,
+              }))}
+            />
+          </div>
 
           {!!taxonomyItems.length && (
             <TaxonomyInteractiveTree
