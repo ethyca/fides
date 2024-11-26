@@ -120,26 +120,28 @@ const TaxonomyPage: NextPage = () => {
             className="absolute left-2 top-2 z-[2000]"
           />
 
-          <TaxonomyInteractiveTree
-            taxonomyItems={
-              showDisabledItems ? taxonomyItems : activeTaxonomyItems
-            }
-            draftNewItem={draftNewItem}
-            onTaxonomyItemClick={(taxonomyItem) => {
-              setTaxonomyItemToEdit(taxonomyItem);
-            }}
-            onAddButtonClick={(taxonomyItem) => {
-              const newItem = {
-                parent_key: taxonomyItem?.fides_key ?? null,
-                is_default: false,
-              };
+          {taxonomyItems.length && (
+            <TaxonomyInteractiveTree
+              taxonomyItems={
+                showDisabledItems ? taxonomyItems : activeTaxonomyItems
+              }
+              draftNewItem={draftNewItem}
+              onTaxonomyItemClick={(taxonomyItem) => {
+                setTaxonomyItemToEdit(taxonomyItem);
+              }}
+              onAddButtonClick={(taxonomyItem) => {
+                const newItem = {
+                  parent_key: taxonomyItem?.fides_key ?? null,
+                  is_default: false,
+                };
 
-              setDraftNewItem(newItem);
-            }}
-            taxonomyType={taxonomyType}
-            onCancelDraftItem={() => setDraftNewItem(null)}
-            onSubmitDraftItem={createNewLabel}
-          />
+                setDraftNewItem(newItem);
+              }}
+              taxonomyType={taxonomyType}
+              onCancelDraftItem={() => setDraftNewItem(null)}
+              onSubmitDraftItem={createNewLabel}
+            />
+          )}
         </div>
       </div>
       {taxonomyItemToEdit && (
