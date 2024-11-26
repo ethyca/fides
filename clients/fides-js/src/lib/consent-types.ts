@@ -139,6 +139,9 @@ export interface FidesInitOptions {
 
   // Whether to render the brand link in the footer of the modal
   showFidesBrandLink: boolean;
+
+  // Whether to reject all consent preferences by default
+  fidesRejectAll: boolean;
 }
 
 /**
@@ -686,6 +689,7 @@ export type FidesInitOptionsOverrides = Pick<
   | "fidesLocale"
   | "fidesPrimaryColor"
   | "fidesClearCookie"
+  | "fidesRejectAll"
 >;
 
 export type FidesExperienceTranslationOverrides = {

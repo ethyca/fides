@@ -25,6 +25,7 @@ import {
 } from "../../lib/i18n";
 import { useI18n } from "../../lib/i18n/i18n-context";
 import { updateConsentPreferences } from "../../lib/preferences";
+import { EMPTY_ENABLED_IDS } from "../../lib/tcf/constants";
 import { useGvl } from "../../lib/tcf/gvl-context";
 import type { EnabledIds, TcfSavePreferences } from "../../lib/tcf/types";
 import {
@@ -163,15 +164,7 @@ export const TcfOverlay = ({
 
   useEffect(() => {
     if (!experience) {
-      setDraftIds({
-        purposesConsent: [],
-        purposesLegint: [],
-        specialPurposes: [],
-        features: [],
-        specialFeatures: [],
-        vendorsConsent: [],
-        vendorsLegint: [],
-      });
+      setDraftIds(EMPTY_ENABLED_IDS);
     } else {
       const {
         tcf_purpose_consents: consentPurposes = [],
@@ -292,6 +285,15 @@ export const TcfOverlay = ({
       servedNoticeHistoryId,
     ],
   );
+
+  useEffect(() => {
+    if (options.fidesRejectAll) {
+      fidesDebugger(
+        "Consent automatically rejected by fides_reject_all override!",
+      );
+      handleUpdateAllPreferences(ConsentMethod.REJECT, EMPTY_ENABLED_IDS);
+    }
+  }, [handleUpdateAllPreferences, options.fidesRejectAll]);
 
   const [activeTabIndex, setActiveTabIndex] = useState(0);
 

@@ -75,6 +75,7 @@ const Overlay: FunctionComponent<Props> = ({
 
   const showBanner = useMemo(
     () =>
+      !options.fidesRejectAll &&
       !options.fidesDisableBanner &&
       experience.experience_config?.component !== ComponentType.MODAL &&
       shouldResurfaceConsent(experience, cookie, savedConsent),

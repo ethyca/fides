@@ -229,6 +229,28 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
     ],
   );
 
+  useEffect(() => {
+    if (
+      handleUpdatePreferences &&
+      options.fidesRejectAll &&
+      experience.privacy_notices
+    ) {
+      fidesDebugger(
+        "Consent automatically rejected by fides_reject_all override!",
+      );
+      handleUpdatePreferences(
+        ConsentMethod.REJECT,
+        experience.privacy_notices
+          .filter((n) => n.consent_mechanism === ConsentMechanism.NOTICE_ONLY)
+          .map((n) => n.notice_key),
+      );
+    }
+  }, [
+    experience.privacy_notices,
+    handleUpdatePreferences,
+    options.fidesRejectAll,
+  ]);
+
   const dispatchOpenBannerEvent = useCallback(() => {
     dispatchFidesEvent("FidesUIShown", cookie, options.debug, {
       servingComponent: ServingComponent.BANNER,

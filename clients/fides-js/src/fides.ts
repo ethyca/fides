@@ -201,6 +201,7 @@ const _Fides: FidesGlobal = {
     fidesPrimaryColor: null,
     fidesClearCookie: false,
     showFidesBrandLink: true,
+    fidesRejectAll: false,
   },
   fides_meta: {},
   identity: {},
@@ -221,6 +222,10 @@ const _Fides: FidesGlobal = {
   shouldShowExperience() {
     if (!isPrivacyExperience(this.experience)) {
       // Nothing to show if there's no experience
+      return false;
+    }
+    if (this.options.fidesRejectAll) {
+      // If automatically rejected, we should not show the experience
       return false;
     }
     if (!this.cookie) {

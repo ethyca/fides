@@ -6,6 +6,7 @@ import {
   PrivacyExperience,
   PrivacyExperienceMinimal,
 } from "../../lib/consent-types";
+import { EMPTY_ENABLED_IDS } from "../../lib/tcf/constants";
 import type { EnabledIds, TcfModels } from "../../lib/tcf/types";
 import { ConsentButtons } from "../ConsentButtons";
 
@@ -87,15 +88,7 @@ export const TcfConsentButtons = ({
     onSave(ConsentMethod.ACCEPT, allIds);
   };
   const handleRejectAll = () => {
-    const emptyIds: EnabledIds = {
-      purposesConsent: [],
-      purposesLegint: [],
-      specialPurposes: [],
-      features: [],
-      specialFeatures: [],
-      vendorsConsent: [],
-      vendorsLegint: [],
-    };
+    const emptyIds: EnabledIds = EMPTY_ENABLED_IDS;
     onSave(ConsentMethod.REJECT, emptyIds);
   };
 

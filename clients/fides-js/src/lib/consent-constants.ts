@@ -85,6 +85,12 @@ export const FIDES_OVERRIDE_OPTIONS_VALIDATOR_MAP: {
     overrideKey: "fides_clear_cookie",
     validationRegex: /(.*)/,
   },
+  {
+    overrideName: "fidesRejectAll",
+    overrideType: "boolean",
+    overrideKey: "fides_reject_all",
+    validationRegex: /^(true|false)$/,
+  },
 ];
 
 /**
