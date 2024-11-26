@@ -18,16 +18,20 @@ The types of changes are:
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.50.0...main)
 
 
+### Developer Experience
+- Migrated remaining instances of Chakra's Select component to use Ant's Select component [#5502](https://github.com/ethyca/fides/pull/5502)
 
 
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.49.1...2.50.0)
+## [2.50.0](https://github.com/ethyca/fides/compare/2.49.1...2.50.0)
 
 ### Added
 - Added namespace support for Snowflake [#5486](https://github.com/ethyca/fides/pull/5486)
 - Added support for field-level masking overrides [#5446](https://github.com/ethyca/fides/pull/5446)
 - Added BigQuery Enterprise access request integration test [#5504](https://github.com/ethyca/fides/pull/5504)
 - Added MD5 email hashing for Segment's Right to Forget endpoint requests [#5514](https://github.com/ethyca/fides/pull/5514)
+- Added loading state to the toggle switches on the Privacy experiences page [#5529](https://github.com/ethyca/fides/pull/5529)
+- Added new env variable to set a privacy center to default to a specific property  [#5532](https://github.com/ethyca/fides/pull/5532)
 
 ### Changed
 - Allow hiding systems via a `hidden` parameter and add two flags on the `/system` api endpoint; `show_hidden` and `dnd_relevant`, to display only systems with integrations [#5484](https://github.com/ethyca/fides/pull/5484)
@@ -52,6 +56,7 @@ The types of changes are:
 - Fixing issue where "privacy request received" emails would not be sent if the request had custom identities [#5518](https://github.com/ethyca/fides/pull/5518)
 - Fixed issue with long-running privacy request tasks losing their connection to the database [#5500](https://github.com/ethyca/fides/pull/5500)
 - Fixed missing "Manage privacy preferences" button label option in TCF experience translations [#5528](https://github.com/ethyca/fides/pull/5528)
+- Fixed privacy center not fetching the correct experience when using custom property paths  [#5532](https://github.com/ethyca/fides/pull/5532)
 
 ### Docs
 - Added docs for PrivacyNoticeRegion type [#5488](https://github.com/ethyca/fides/pull/5488)

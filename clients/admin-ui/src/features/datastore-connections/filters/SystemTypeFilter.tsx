@@ -37,6 +37,7 @@ const SystemTypeFilter = () => {
       options={options}
       onChange={handleChange}
       defaultValue={system_type?.toString() || undefined}
+      data-testid="system-type-filter"
     />
   );
 };

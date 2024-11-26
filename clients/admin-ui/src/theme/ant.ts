@@ -21,7 +21,7 @@ export const antTheme: AntThemeConfig = {
     colorSuccess: palette.FIDESUI_SUCCESS,
     colorWarning: palette.FIDESUI_WARNING,
     colorError: palette.FIDESUI_ERROR,
-    colorLink: palette.LINK,
+    colorLink: palette.FIDESUI_LINK,
     colorBgBase: palette.FIDESUI_FULL_WHITE,
     borderRadius: 4,
     wireframe: true,
@@ -31,7 +31,7 @@ export const antTheme: AntThemeConfig = {
     colorWarningBg: "#ffecc9", // custom override
     colorWarningBorder: "#ffdba1", // custom override
     colorSuccessBorder: palette.FIDESUI_SUCCESS,
-    colorPrimaryBg: palette.FIDESUI_SANDSTONE,
+    colorPrimaryBg: palette.FIDESUI_NEUTRAL_75,
     colorBorder: palette.FIDESUI_NEUTRAL_100,
   },
   components: {

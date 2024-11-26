@@ -285,7 +285,7 @@ export const loadServerSettings = (): PrivacyCenterServerSettings => {
 // eslint-disable-next-line no-underscore-dangle,@typescript-eslint/naming-convention
 
 export const loadPrivacyCenterEnvironment = async ({
-  customPropertyPath = undefined,
+  customPropertyPath,
 }: { customPropertyPath?: string } = {}): Promise<PrivacyCenterEnvironment> => {
   if (typeof window !== "undefined") {
     throw new Error(
@@ -302,6 +302,14 @@ export const loadPrivacyCenterEnvironment = async ({
   if (settings.CUSTOM_PROPERTIES && customPropertyPath) {
     const result = await getPropertyFromUrl({
       customPropertyPath,
+      fidesApiUrl: settings.SERVER_SIDE_FIDES_API_URL || settings.FIDES_API_URL,
+    });
+    if (result) {
+      property = result;
+    }
+  } else if (settings.FIDES_PRIVACY_CENTER__ROOT_PROPERTY_PATH) {
+    const result = await getPropertyFromUrl({
+      customPropertyPath: settings.FIDES_PRIVACY_CENTER__ROOT_PROPERTY_PATH,
       fidesApiUrl: settings.SERVER_SIDE_FIDES_API_URL || settings.FIDES_API_URL,
     });
     if (result) {
