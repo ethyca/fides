@@ -21,7 +21,7 @@ const TaxonomyTreeNode = ({ data }: NodeProps<TaxonomyTreeNodeType>) => {
     <div className="group relative">
       <button
         type="button"
-        className="cursor-default rounded px-4 py-1 transition-colors group-hover:bg-black group-hover:text-white"
+        className="cursor-pointer rounded px-4 py-1 transition-colors duration-300 group-hover:bg-black group-hover:text-white"
         onClick={() => onTaxonomyItemClick?.(taxonomyItem!)}
         disabled={!onTaxonomyItemClick}
       >
@@ -31,7 +31,7 @@ const TaxonomyTreeNode = ({ data }: NodeProps<TaxonomyTreeNodeType>) => {
 
       <Handle type="target" position={Position.Left} />
       <Handle type="source" position={Position.Right} />
-      <div className="absolute left-full top-0 hidden pl-2 group-hover:block">
+      <div className=" absolute left-full top-0 pl-2 opacity-0 transition duration-300 group-hover:opacity-100">
         <AntButton
           type="default"
           className="bg-white pt-0.5 shadow-[0_1px_3px_0px_rgba(0,0,0,0.1)] "
