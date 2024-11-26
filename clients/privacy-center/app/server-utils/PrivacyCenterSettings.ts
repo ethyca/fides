@@ -39,4 +39,5 @@ export interface PrivacyCenterSettings {
   FIDES_PRIMARY_COLOR: string | null; // (optional) sets fides primary color
   FIDES_CLEAR_COOKIE: boolean; // (optional) deletes fides_consent cookie on reload
   FIDES_REJECT_ALL: boolean; // (optional) rejects all consent preferences on load
+  FIDES_ACCEPT_ALL: boolean; // (optional) accepts all consent preferences on load. This will override FIDES_REJECT_ALL if both are set to true
 }

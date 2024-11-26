@@ -88,6 +88,9 @@ const loadEnvironmentVariables = () => {
     FIDES_REJECT_ALL: process.env.FIDES_PRIVACY_CENTER__FIDES_REJECT_ALL
       ? process.env.FIDES_PRIVACY_CENTER__FIDES_REJECT_ALL === "true"
       : false,
+    FIDES_ACCEPT_ALL: process.env.FIDES_PRIVACY_CENTER__FIDES_ACCEPT_ALL
+      ? process.env.FIDES_PRIVACY_CENTER__FIDES_ACCEPT_ALL === "true"
+      : false,
   };
   return settings;
 };

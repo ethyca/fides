@@ -262,6 +262,7 @@ const _Fides: FidesGlobal = {
     fidesClearCookie: false,
     showFidesBrandLink: false,
     fidesRejectAll: false,
+    fidesAcceptAll: false,
   },
   fides_meta: {},
   identity: {},
@@ -282,8 +283,8 @@ const _Fides: FidesGlobal = {
       // Nothing to show if there's no experience
       return false;
     }
-    if (this.options.fidesRejectAll) {
-      // If automatically rejected, we should not show the experience
+    if (this.options.fidesRejectAll || this.options.fidesAcceptAll) {
+      // If consent preference was automatic, we should not show the experience
       return false;
     }
     if (!this.cookie) {

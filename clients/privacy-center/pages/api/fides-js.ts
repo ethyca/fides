@@ -263,6 +263,7 @@ export default async function handler(
       fidesPrimaryColor: environment.settings.FIDES_PRIMARY_COLOR,
       fidesClearCookie: environment.settings.FIDES_CLEAR_COOKIE,
       fidesRejectAll: environment.settings.FIDES_REJECT_ALL,
+      fidesAcceptAll: environment.settings.FIDES_ACCEPT_ALL,
     },
     experience: experience || undefined,
     geolocation: geolocation || undefined,

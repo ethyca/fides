@@ -229,26 +229,50 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
     ],
   );
 
+  const handleAcceptAll = useCallback(() => {
+    handleUpdatePreferences(
+      ConsentMethod.ACCEPT,
+      privacyNoticeItems.map((n) => n.notice.notice_key),
+    );
+  }, [handleUpdatePreferences, privacyNoticeItems]);
+
+  const handleRejectAll = useCallback(() => {
+    handleUpdatePreferences(
+      ConsentMethod.REJECT,
+      privacyNoticeItems
+        .filter(
+          (n) => n.notice.consent_mechanism === ConsentMechanism.NOTICE_ONLY,
+        )
+        .map((n) => n.notice.notice_key),
+    );
+  }, [handleUpdatePreferences, privacyNoticeItems]);
+
   useEffect(() => {
     if (
-      handleUpdatePreferences &&
-      options.fidesRejectAll &&
+      ((handleAcceptAll && options.fidesRejectAll) ||
+        (handleRejectAll && options.fidesAcceptAll)) &&
       experience.privacy_notices
     ) {
-      fidesDebugger(
-        "Consent automatically rejected by fides_reject_all override!",
-      );
-      handleUpdatePreferences(
-        ConsentMethod.REJECT,
-        experience.privacy_notices
-          .filter((n) => n.consent_mechanism === ConsentMechanism.NOTICE_ONLY)
-          .map((n) => n.notice_key),
-      );
+      if (options.fidesAcceptAll) {
+        // fidesAcceptAll takes precedence over fidesRejectAll
+        fidesDebugger(
+          "Consent automatically accepted by fides_accept_all override!",
+        );
+        handleAcceptAll();
+      } else if (options.fidesRejectAll) {
+        fidesDebugger(
+          "Consent automatically rejected by fides_reject_all override!",
+        );
+        handleRejectAll();
+      }
     }
   }, [
     experience.privacy_notices,
     handleUpdatePreferences,
     options.fidesRejectAll,
+    options.fidesAcceptAll,
+    handleAcceptAll,
+    handleRejectAll,
   ]);
 
   const dispatchOpenBannerEvent = useCallback(() => {
@@ -290,7 +314,6 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
         isEmbedded,
         isOpen,
         onClose,
-        onSave,
         onManagePreferencesClick,
       }) => {
         const isAcknowledge =
@@ -312,12 +335,20 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
                 experience={experience}
                 onManagePreferencesClick={onManagePreferencesClick}
                 enabledKeys={draftEnabledNoticeKeys}
+                onAcceptAll={() => {
+                  handleAcceptAll();
+                  onClose();
+                }}
+                onRejectAll={() => {
+                  handleRejectAll();
+                  onClose();
+                }}
                 onSave={(
                   consentMethod: ConsentMethod,
                   keys: Array<PrivacyNotice["notice_key"]>,
                 ) => {
                   handleUpdatePreferences(consentMethod, keys);
-                  onSave();
+                  onClose();
                 }}
                 isAcknowledge={isAcknowledge}
                 hideOptInOut={isAcknowledge}
@@ -345,6 +376,14 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
         <NoticeConsentButtons
           experience={experience}
           enabledKeys={draftEnabledNoticeKeys}
+          onAcceptAll={() => {
+            handleAcceptAll();
+            onClose();
+          }}
+          onRejectAll={() => {
+            handleRejectAll();
+            onClose();
+          }}
           onSave={(
             consentMethod: ConsentMethod,
             keys: Array<PrivacyNotice["notice_key"]>,

@@ -154,4 +154,14 @@ export interface FidesOptions {
    * Defaults to `false`.
    */
   fides_reject_all: boolean;
+
+  /**
+   * Similar to `fides_reject_all`, when `true`, FidesJS will automatically opt
+   * in to all consent and only show the consent modal upon user request. These 2
+   * options are mutually exclusive, and `fides_accept_all` will take precedence
+   * if both are set to `true`.
+   *
+   * Defaults to `false`.
+   */
+  fides_accept_all: boolean;
 }

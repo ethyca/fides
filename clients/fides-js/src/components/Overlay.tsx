@@ -32,7 +32,6 @@ interface RenderBannerProps {
   isOpen: boolean;
   isEmbedded: boolean;
   onClose: () => void;
-  onSave: () => void;
   onManagePreferencesClick: () => void;
 }
 
@@ -72,14 +71,15 @@ const Overlay: FunctionComponent<Props> = ({
   const delayBannerMilliseconds = 100;
   const delayModalLinkMilliseconds = 200;
   const hasMounted = useHasMounted();
+  const isAutoConsented = options.fidesAcceptAll || options.fidesRejectAll;
 
   const showBanner = useMemo(
     () =>
-      !options.fidesRejectAll &&
+      !isAutoConsented &&
       !options.fidesDisableBanner &&
       experience.experience_config?.component !== ComponentType.MODAL &&
       shouldResurfaceConsent(experience, cookie, savedConsent),
-    [cookie, savedConsent, experience, options],
+    [cookie, savedConsent, experience, options, isAutoConsented],
   );
 
   const [bannerIsOpen, setBannerIsOpen] = useState(
@@ -236,9 +236,6 @@ const Overlay: FunctionComponent<Props> = ({
             isOpen: bannerIsOpen,
             isEmbedded: options.fidesEmbed,
             onClose: () => {
-              setBannerIsOpen(false);
-            },
-            onSave: () => {
               setBannerIsOpen(false);
             },
             onManagePreferencesClick: handleManagePreferencesClick,

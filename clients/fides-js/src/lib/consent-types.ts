@@ -142,6 +142,9 @@ export interface FidesInitOptions {
 
   // Whether to reject all consent preferences by default
   fidesRejectAll: boolean;
+
+  // Whether to accept all consent preferences by default
+  fidesAcceptAll: boolean;
 }
 
 /**
@@ -672,7 +675,7 @@ export type OverrideExperienceTranslations = {
 };
 
 /**
- * Select the subset of FidesInitOptions that can be overriden at runtime using
+ * Select the subset of FidesInitOptions that can be overridden at runtime using
  * one of the customer-provided FidesOptions properties above. There's a 1:1
  * correspondence here, but note that we use snake_case for the runtime options
  * and then convert to camelCase variables for the `Fides.init({ options })`
@@ -690,6 +693,7 @@ export type FidesInitOptionsOverrides = Pick<
   | "fidesPrimaryColor"
   | "fidesClearCookie"
   | "fidesRejectAll"
+  | "fidesAcceptAll"
 >;
 
 export type FidesExperienceTranslationOverrides = {

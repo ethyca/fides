@@ -27,7 +27,11 @@ import { useI18n } from "../../lib/i18n/i18n-context";
 import { updateConsentPreferences } from "../../lib/preferences";
 import { EMPTY_ENABLED_IDS } from "../../lib/tcf/constants";
 import { useGvl } from "../../lib/tcf/gvl-context";
-import type { EnabledIds, TcfSavePreferences } from "../../lib/tcf/types";
+import type {
+  EnabledIds,
+  TcfModels,
+  TcfSavePreferences,
+} from "../../lib/tcf/types";
 import {
   buildTcfEntitiesFromCookieAndFidesString as buildUserPrefs,
   constructTCFNoticesServedProps,
@@ -46,6 +50,13 @@ import { OverlayProps } from "../types";
 import { TCFBannerSupplemental } from "./TCFBannerSupplemental";
 import { TcfConsentButtons } from "./TcfConsentButtons";
 import TcfTabs from "./TcfTabs";
+
+const getAllIds = (modelList: TcfModels) => {
+  if (!modelList) {
+    return [];
+  }
+  return modelList.map((m) => `${m.id}`);
+};
 
 interface TcfOverlayProps extends Omit<OverlayProps, "experience"> {
   experienceMinimal: PrivacyExperienceMinimal;
@@ -160,7 +171,7 @@ export const TcfOverlay = ({
 
   const { setVendorCount } = useVendorButton();
 
-  const [draftIds, setDraftIds] = useState<EnabledIds>();
+  const [draftIds, setDraftIds] = useState<EnabledIds>(EMPTY_ENABLED_IDS);
 
   useEffect(() => {
     if (!experience) {
@@ -286,14 +297,71 @@ export const TcfOverlay = ({
     ],
   );
 
+  const handleAcceptAll = useCallback(() => {
+    let allIds: EnabledIds;
+    let exp = experience || experienceMinimal;
+    if (!exp.minimal_tcf) {
+      exp = experience as PrivacyExperience;
+      allIds = {
+        purposesConsent: getAllIds(exp.tcf_purpose_consents),
+        purposesLegint: getAllIds(exp.tcf_purpose_legitimate_interests),
+        specialPurposes: getAllIds(exp.tcf_special_purposes),
+        features: getAllIds(exp.tcf_features),
+        specialFeatures: getAllIds(exp.tcf_special_features),
+        vendorsConsent: getAllIds([
+          ...(exp.tcf_vendor_consents || []),
+          ...(exp.tcf_system_consents || []),
+        ]),
+        vendorsLegint: getAllIds([
+          ...(exp.tcf_vendor_legitimate_interests || []),
+          ...(exp.tcf_system_legitimate_interests || []),
+        ]),
+      };
+    } else {
+      // eslint-disable-next-line no-param-reassign
+      exp = experienceMinimal as PrivacyExperienceMinimal;
+      allIds = {
+        purposesConsent:
+          exp.tcf_purpose_consent_ids?.map((id) => `${id}`) || [],
+        purposesLegint:
+          exp.tcf_purpose_legitimate_interest_ids?.map((id) => `${id}`) || [],
+        specialPurposes:
+          exp.tcf_special_purpose_ids?.map((id) => `${id}`) || [],
+        features: exp.tcf_feature_ids?.map((id) => `${id}`) || [],
+        specialFeatures:
+          exp.tcf_special_feature_ids?.map((id) => `${id}`) || [],
+        vendorsConsent: [
+          ...(exp.tcf_vendor_consent_ids || []),
+          ...(exp.tcf_system_consent_ids || []),
+        ],
+        vendorsLegint: [
+          ...(exp.tcf_vendor_legitimate_interest_ids || []),
+          ...(exp.tcf_system_legitimate_interest_ids || []),
+        ],
+      };
+    }
+    handleUpdateAllPreferences(ConsentMethod.ACCEPT, allIds);
+  }, [experience, experienceMinimal, handleUpdateAllPreferences]);
+
+  const handleRejectAll = useCallback(() => {
+    handleUpdateAllPreferences(ConsentMethod.REJECT, EMPTY_ENABLED_IDS);
+  }, [handleUpdateAllPreferences]);
+
   useEffect(() => {
-    if (options.fidesRejectAll) {
+    if (options.fidesAcceptAll) {
+      // fidesAcceptAll takes precedence over fidesRejectAll
+      fidesDebugger(
+        "Consent automatically accepted by fides_accept_all override!",
+      );
+      setTimeout(() => handleAcceptAll());
+    } else if (options.fidesRejectAll) {
       fidesDebugger(
         "Consent automatically rejected by fides_reject_all override!",
       );
-      handleUpdateAllPreferences(ConsentMethod.REJECT, EMPTY_ENABLED_IDS);
+      setTimeout(() => handleRejectAll());
     }
-  }, [handleUpdateAllPreferences, options.fidesRejectAll]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [options.fidesRejectAll, options.fidesAcceptAll]);
 
   const [activeTabIndex, setActiveTabIndex] = useState(0);
 
@@ -338,7 +406,6 @@ export const TcfOverlay = ({
         isEmbedded,
         isOpen,
         onClose,
-        onSave,
         onManagePreferencesClick,
       }) => {
         const goToVendorTab = () => {
@@ -352,17 +419,21 @@ export const TcfOverlay = ({
             isEmbedded={isEmbedded}
             onOpen={dispatchOpenBannerEvent}
             onClose={() => {
-              onClose();
               handleDismiss();
+              onClose();
             }}
             onVendorPageClick={goToVendorTab}
             renderButtonGroup={() => (
               <TcfConsentButtons
                 experience={experience || experienceMinimal}
                 onManagePreferencesClick={onManagePreferencesClick}
-                onSave={(consentMethod: ConsentMethod, keys: EnabledIds) => {
-                  handleUpdateAllPreferences(consentMethod, keys);
-                  onSave();
+                onAcceptAll={() => {
+                  handleAcceptAll();
+                  onClose();
+                }}
+                onRejectAll={() => {
+                  handleRejectAll();
+                  onClose();
                 }}
                 options={options}
               />
@@ -403,12 +474,19 @@ export const TcfOverlay = ({
               return (
                 <TcfConsentButtons
                   experience={experience}
-                  onSave={onSave}
+                  onAcceptAll={() => {
+                    handleAcceptAll();
+                    onClose();
+                  }}
+                  onRejectAll={() => {
+                    handleRejectAll();
+                    onClose();
+                  }}
                   renderFirstButton={() => (
                     <Button
                       buttonType={ButtonType.SECONDARY}
                       label={i18n.t("exp.save_button_label")}
-                      onClick={() => onSave(ConsentMethod.SAVE, draftIds!)}
+                      onClick={() => onSave(ConsentMethod.SAVE, draftIds)}
                       className="fides-save-button"
                     />
                   )}

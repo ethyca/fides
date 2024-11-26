@@ -174,3 +174,16 @@ context (e.g. a native app, another website, etc.) and you want to ensure
 that those preferences are respected.
 
 Defaults to `false`.
+
+***
+
+### fides\_accept\_all
+
+> **fides\_accept\_all**: `boolean`
+
+Similar to `fides_reject_all`, when `true`, FidesJS will automatically opt
+in to all consent and only show the consent modal upon user request. These 2
+options are mutually exclusive, and `fides_accept_all` will take precedence
+if both are set to `true`.
+
+Defaults to `false`.

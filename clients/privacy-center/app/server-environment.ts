@@ -67,6 +67,7 @@ export type PrivacyCenterClientSettings = Pick<
   | "FIDES_PRIMARY_COLOR"
   | "FIDES_CLEAR_COOKIE"
   | "FIDES_REJECT_ALL"
+  | "FIDES_ACCEPT_ALL"
 >;
 
 export type Styles = string;
@@ -354,6 +355,7 @@ export const loadPrivacyCenterEnvironment = async ({
     FIDES_PRIMARY_COLOR: settings.FIDES_PRIMARY_COLOR,
     FIDES_CLEAR_COOKIE: settings.FIDES_CLEAR_COOKIE,
     FIDES_REJECT_ALL: settings.FIDES_REJECT_ALL,
+    FIDES_ACCEPT_ALL: settings.FIDES_ACCEPT_ALL,
   };
 
   // For backwards-compatibility, override FIDES_API_URL with the value from the config file if present
