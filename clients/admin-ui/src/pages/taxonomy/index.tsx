@@ -1,4 +1,4 @@
-import { AntButton, AntInput, AntSelect, AntSpace, useToast } from "fidesui";
+import { AntButton, AntInput, AntMenu, AntSpace, useToast } from "fidesui";
 import { filter } from "lodash";
 import type { NextPage } from "next";
 import { useSearchParams } from "next/navigation";
@@ -105,21 +105,21 @@ const TaxonomyPage: NextPage = () => {
               />
               <AntButton type="default">Clear</AntButton>
             </AntSpace.Compact>
-            <div>
-              <AntButton type="primary">Add label</AntButton>
-            </div>
-          </div>
-          <div className="mb-6">
-            <AntSelect
-              className="min-w-[220px]"
-              style={{ width: 120 }}
-              onChange={(t) => setTaxonomyType(t)}
-              options={enumToOptions(CoreTaxonomiesEnum)}
-              value={taxonomyType}
-            />
           </div>
         </div>
-        <div className="grow">
+        <div className="relative grow">
+          <AntMenu
+            style={{ width: 220 }}
+            selectedKeys={[taxonomyType]}
+            onSelect={({ key }) => setTaxonomyType(key as CoreTaxonomiesEnum)}
+            mode="vertical"
+            items={enumToOptions(CoreTaxonomiesEnum).map((e) => ({
+              label: e.label,
+              key: e.value,
+            }))}
+            className="absolute left-2 top-2 z-[2000]"
+          />
+
           <TaxonomyInteractiveTree
             taxonomyItems={
               showDisabledItems ? taxonomyItems : activeTaxonomyItems

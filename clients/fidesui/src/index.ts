@@ -26,6 +26,7 @@ export {
   Form as AntForm,
   Input as AntInput,
   Layout as AntLayout,
+  Menu as AntMenu,
   Radio as AntRadio,
   Row as AntRow,
   Space as AntSpace,
