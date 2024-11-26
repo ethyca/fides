@@ -398,7 +398,7 @@ export const useDataSubject = (): TaxonomyHookData<DataSubject> => {
 
   const handleDelete = deleteDataSubjectMutationTrigger;
 
-  const transformEntityToInitialValues = (ds: DataSubject) => {
+  const transformEntityToInitialValues = (ds: any) => {
     const base = transformTaxonomyBaseToInitialValues(
       ds,
       customFields.customFieldValues,
