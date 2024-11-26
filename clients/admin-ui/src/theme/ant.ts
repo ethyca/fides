@@ -33,6 +33,7 @@ export const antTheme: AntThemeConfig = {
     colorSuccessBorder: palette.FIDESUI_SUCCESS,
     colorPrimaryBg: palette.FIDESUI_NEUTRAL_75,
     colorBorder: palette.FIDESUI_NEUTRAL_100,
+    zIndexPopupBase: 1500, // supersede Chakra's modal z-index
   },
   components: {
     Alert: {
