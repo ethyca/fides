@@ -121,7 +121,7 @@ const TaxonomyPage: NextPage = () => {
             className="absolute left-2 top-2 z-[1000]"
           />
 
-          {taxonomyItems.length && (
+          {!!taxonomyItems.length && (
             <TaxonomyInteractiveTree
               taxonomyItems={
                 showDisabledItems ? taxonomyItems : activeTaxonomyItems
