@@ -1,4 +1,3 @@
-import { MenuPosition } from "chakra-react-select";
 import { Center, Flex, Spinner } from "fidesui";
 import { Field, FieldInputProps } from "formik";
 
@@ -12,13 +11,11 @@ import { useCustomFields } from "./hooks";
 type CustomFieldsListProps = {
   resourceFidesKey?: string;
   resourceType: ResourceTypes;
-  menuPosition?: MenuPosition;
 };
 
 export const CustomFieldsList = ({
   resourceFidesKey,
   resourceType,
-  menuPosition,
 }: CustomFieldsListProps) => {
   const {
     idToAllowListWithOptions,
