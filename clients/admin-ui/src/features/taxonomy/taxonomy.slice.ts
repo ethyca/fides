@@ -25,7 +25,7 @@ const taxonomyApi = baseApi.injectEndpoints({
       invalidatesTags: ["Data Categories"],
     }),
 
-    createDataCategory: build.mutation<DataCategory, DataCategory>({
+    createDataCategory: build.mutation<DataCategory, Partial<DataCategory>>({
       query: (dataCategory) => ({
         url: `data_category`,
         method: "POST",

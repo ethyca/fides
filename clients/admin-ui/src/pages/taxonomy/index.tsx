@@ -55,19 +55,9 @@ const TaxonomyPage: NextPage = () => {
         return;
       }
 
-      // defer LA-41: remove fides_key from request, be will autogenerate it
-      let fidesKey;
-      if (draftNewItem.parent_key) {
-        fidesKey = `${draftNewItem.parent_key}.${labelName.toLocaleLowerCase().replaceAll(" ", "_")}`;
-      } else {
-        fidesKey = labelName.toLocaleLowerCase().replaceAll(" ", "_");
-      }
-
       const newItem = {
         ...draftNewItem,
         name: labelName,
-        description: "",
-        fides_key: fidesKey,
       };
 
       const result = await createTrigger(newItem);
@@ -134,6 +124,7 @@ const TaxonomyPage: NextPage = () => {
                 const newItem = {
                   parent_key: taxonomyItem?.fides_key ?? null,
                   is_default: false,
+                  description: "",
                 };
 
                 setDraftNewItem(newItem);
