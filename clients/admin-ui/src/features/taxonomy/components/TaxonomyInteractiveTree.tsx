@@ -3,7 +3,9 @@ import "@xyflow/react/dist/style.css";
 import {
   Background,
   BackgroundVariant,
+  Controls,
   Edge,
+  MiniMap,
   Node,
   NodeTypes,
   ReactFlow,
@@ -136,9 +138,11 @@ const TaxonomyInteractiveTree = ({
         edges={edgesAfterLayout}
         nodeTypes={nodeTypes}
         maxZoom={2}
-        minZoom={0.5}
+        minZoom={0.3}
       >
         <Background color="#eee" variant={BackgroundVariant.Dots} size={3} />
+        <MiniMap nodeStrokeWidth={3} pannable />
+        <Controls />
       </ReactFlow>
     </div>
   );
