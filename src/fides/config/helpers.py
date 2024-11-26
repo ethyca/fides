@@ -42,7 +42,6 @@ def load_file(file_names: Union[List[Path], List[str]]) -> str:
         for file_name in file_names:
             possible_location = os.path.join(dir_str, file_name)
             if possible_location and os.path.isfile(possible_location):
-                logger.debug("Loading file {} from {}", file_name, dir_str)
                 return possible_location
 
     raise FileNotFoundError
