@@ -35,6 +35,12 @@ const setupFidesWithConsent = (key: string, optInStatus: boolean) => {
   } as any as FidesGlobal;
 };
 
+const setupFidesWithoutConsent = () => {
+  window.Fides = {
+    consent: {},
+  } as any as FidesGlobal;
+};
+
 describe("blueconic", () => {
   afterEach(() => {
     window.blueConicClient = undefined;
@@ -56,6 +62,22 @@ describe("blueconic", () => {
     expect(
       window.blueConicClient?.profile?.updateProfile,
     ).not.toHaveBeenCalled();
+  });
+
+  test("when fides configures no consent, blueconic sets consent for all purposes", () => {
+    const { client, mockProfile } = setupBlueConicClient();
+    setupFidesWithoutConsent();
+
+    blueconic();
+
+    expect(mockProfile.setConsentedObjectives).toHaveBeenCalledWith([
+      "iab_purpose_1",
+      "iab_purpose_2",
+      "iab_purpose_3",
+      "iab_purpose_4",
+    ]);
+    expect(mockProfile.setRefusedObjectives).toHaveBeenCalledWith([]);
+    expect(client.profile.updateProfile).toHaveBeenCalled();
   });
 
   describe.each(MARKETING_CONSENT_KEYS)(
