@@ -2,6 +2,7 @@ from typing import Any, ContextManager, Dict, List, Optional
 
 from celery import Celery, Task
 from loguru import logger
+from sqlalchemy.engine import Engine
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import Session
 from tenacity import (
@@ -54,30 +55,21 @@ class DatabaseTask(Task):  # pylint: disable=W0223
     )
     def get_new_session(self) -> ContextManager[Session]:
         """
-        Creates a new Session to be used for each task invocation.
-
-        The new Sessions will reuse a shared `Engine` and `sessionmaker`
-        across invocations, so as to reuse db connection resources.
+        Creates a new Session using a new Engine.
         """
-        # only one engine will be instantiated in a given task scope, i.e
-        # once per celery process.
-        if self._task_engine is None:
-            self._task_engine = get_db_engine(
-                config=CONFIG,
-                keepalives_idle=CONFIG.database.task_engine_keepalives_idle,
-                keepalives_interval=CONFIG.database.task_engine_keepalives_interval,
-                keepalives_count=CONFIG.database.task_engine_keepalives_count,
-                disable_pooling=True,
-            )
 
-        # same for the sessionmaker
-        if self._sessionmaker is None:
-            self._sessionmaker = get_db_session(config=CONFIG, engine=self._task_engine)
+        engine: Engine = get_db_engine(
+            config=CONFIG,
+            keepalives_idle=CONFIG.database.task_engine_keepalives_idle,
+            keepalives_interval=CONFIG.database.task_engine_keepalives_interval,
+            keepalives_count=CONFIG.database.task_engine_keepalives_count,
+            disable_pooling=True,
+        )
 
-        # but a new session is instantiated each time the method is invoked
-        # to prevent session overlap when requests are executing concurrently
-        # when in task_always_eager mode (i.e. without proper workers)
-        return self._sessionmaker()
+        return get_db_session(
+            config=CONFIG,
+            engine=engine,
+        )()
 
 
 def _create_celery(config: FidesConfig = CONFIG) -> Celery:
