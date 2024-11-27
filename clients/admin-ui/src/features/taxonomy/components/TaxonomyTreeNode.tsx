@@ -21,7 +21,7 @@ const TaxonomyTreeNode = ({ data }: NodeProps<TaxonomyTreeNodeType>) => {
     <div className="group relative">
       <button
         type="button"
-        className="cursor-pointer rounded px-4 py-1 transition-colors duration-300 group-hover:bg-black group-hover:text-white"
+        className="max-w-[300px] cursor-pointer truncate rounded px-4 py-1 transition-colors duration-300 group-hover:bg-black group-hover:text-white"
         onClick={() => onTaxonomyItemClick?.(taxonomyItem!)}
         disabled={!onTaxonomyItemClick}
       >

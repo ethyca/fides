@@ -11,7 +11,7 @@ interface UseTreeLayoutProps {
   };
 }
 
-const NODE_WIDTH = 200;
+const NODE_WIDTH = 220;
 const NODE_HEIGHT = 25;
 
 const useTreeLayout = ({ nodes, edges, options }: UseTreeLayoutProps) => {
@@ -19,7 +19,7 @@ const useTreeLayout = ({ nodes, edges, options }: UseTreeLayoutProps) => {
     const g = new Dagre.graphlib.Graph().setDefaultEdgeLabel(() => ({}));
     g.setGraph({
       rankdir: options.direction,
-      ranksep: 220,
+      ranksep: 200,
       nodesep: 20,
     });
 
