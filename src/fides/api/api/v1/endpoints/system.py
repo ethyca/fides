@@ -138,6 +138,8 @@ def patch_connections(
     Otherwise, a new ConnectionConfiguration will be created for you.
     """
     system = get_system(db, fides_key)
+    logger.info("Patching connection configs for system '{}'", system.fides_key)
+    logger.debug("Connection configs: {}", configs[0].secrets)
     return patch_connection_configs(db, configs, system)
 
 
@@ -170,6 +172,9 @@ def patch_connection_secrets(
     connection_config: ConnectionConfig = get_connection_config_or_error(
         db, system.connection_configs.key
     )
+    logger.info(f"Oauth Log: For Key '{connection_config.key}'.  secrets: {connection_config.secrets}")
+    logger.info(f"Oauth Log: unvalidated_secrets: {unvalidated_secrets}")
+
     # Inserts unchanged sensitive values. The FE does not send masked values sensitive secrets.
     if connection_config.secrets is not None:
         for key, value in connection_config.secrets.items():
@@ -185,16 +190,20 @@ def patch_connection_secrets(
         db, unvalidated_secrets, connection_config
     ).model_dump(mode="json")
 
+    logger.info(f"Oauth Log: validated_secrets: {validated_secrets}")
+
+
     for key, value in validated_secrets.items():
         connection_config.secrets[key] = value  # type: ignore
 
     # Deauthorize an OAuth connection when the secrets are updated. This is necessary because
     # the existing access tokens may not be valid anymore. This only applies to SaaS connection
-    # configurations that use the "oauth2_authorization_code" authentication strategy.
+    # configurations that uses an Oauth authentication strategy.
     if (
         connection_config.authorized
         and connection_config.connection_type == ConnectionType.saas
     ):
+        logger.info(f"Removing access Token {connection_config.secrets['access_token']}")
         del connection_config.secrets["access_token"]
 
     # Save validated secrets, regardless of whether they've been verified.
