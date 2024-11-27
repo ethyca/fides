@@ -16,7 +16,7 @@ export type TaxonomyTreeNodeType = Node<
 const TaxonomyTreeNode = ({ data }: NodeProps<TaxonomyTreeNodeType>) => {
   const { taxonomyItem, onAddButtonClick, onTaxonomyItemClick, label } = data;
 
-  // TODO: set a max width for tree nodes, test how it behaves with layout library
+  const handleRadius = 8;
   return (
     <div className="group relative">
       <button
@@ -29,8 +29,16 @@ const TaxonomyTreeNode = ({ data }: NodeProps<TaxonomyTreeNodeType>) => {
         {taxonomyItem?.active === false ? " (disabled)" : ""}
       </button>
 
-      <Handle type="target" position={Position.Left} />
-      <Handle type="source" position={Position.Right} />
+      <Handle
+        type="target"
+        position={Position.Left}
+        style={{ width: handleRadius, height: handleRadius }}
+      />
+      <Handle
+        type="source"
+        position={Position.Right}
+        style={{ width: handleRadius, height: handleRadius }}
+      />
       <div className=" absolute left-full top-0 pl-2 opacity-0 transition duration-300 group-hover:opacity-100">
         <AntButton
           type="default"
