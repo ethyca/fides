@@ -11,13 +11,12 @@ import {
   Tr,
 } from "fidesui";
 import { ExecutionLog, ExecutionLogStatus } from "privacy-requests/types";
-import {ActionType} from "~/types/api";
+import { ActionType } from "~/types/api";
 
 type EventDetailsProps = {
   eventLogs: ExecutionLog[];
   openErrorPanel: (message: string) => void;
 };
-
 
 const actionTypeToLabel = (actionType: string) => {
   switch (actionType) {
@@ -32,7 +31,7 @@ const actionTypeToLabel = (actionType: string) => {
     default:
       return actionType;
   }
-}
+};
 
 const EventLog = ({ eventLogs, openErrorPanel }: EventDetailsProps) => {
   const tableItems = eventLogs?.map((detail) => (
