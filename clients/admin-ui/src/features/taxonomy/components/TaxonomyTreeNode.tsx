@@ -25,8 +25,8 @@ const TaxonomyTreeNode = ({ data }: NodeProps<TaxonomyTreeNodeType>) => {
         onClick={() => onTaxonomyItemClick?.(taxonomyItem!)}
         disabled={!onTaxonomyItemClick}
       >
+        {taxonomyItem?.active === false ? "(disabled) " : ""}
         {label}
-        {taxonomyItem?.active === false ? " (disabled)" : ""}
       </button>
 
       <Handle
