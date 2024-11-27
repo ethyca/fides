@@ -297,67 +297,79 @@ export const TcfOverlay = ({
     ],
   );
 
-  const handleAcceptAll = useCallback(() => {
-    let allIds: EnabledIds;
-    let exp = experience || experienceMinimal;
-    if (!exp.minimal_tcf) {
-      exp = experience as PrivacyExperience;
-      allIds = {
-        purposesConsent: getAllIds(exp.tcf_purpose_consents),
-        purposesLegint: getAllIds(exp.tcf_purpose_legitimate_interests),
-        specialPurposes: getAllIds(exp.tcf_special_purposes),
-        features: getAllIds(exp.tcf_features),
-        specialFeatures: getAllIds(exp.tcf_special_features),
-        vendorsConsent: getAllIds([
-          ...(exp.tcf_vendor_consents || []),
-          ...(exp.tcf_system_consents || []),
-        ]),
-        vendorsLegint: getAllIds([
-          ...(exp.tcf_vendor_legitimate_interests || []),
-          ...(exp.tcf_system_legitimate_interests || []),
-        ]),
-      };
-    } else {
-      // eslint-disable-next-line no-param-reassign
-      exp = experienceMinimal as PrivacyExperienceMinimal;
-      allIds = {
-        purposesConsent:
-          exp.tcf_purpose_consent_ids?.map((id) => `${id}`) || [],
-        purposesLegint:
-          exp.tcf_purpose_legitimate_interest_ids?.map((id) => `${id}`) || [],
-        specialPurposes:
-          exp.tcf_special_purpose_ids?.map((id) => `${id}`) || [],
-        features: exp.tcf_feature_ids?.map((id) => `${id}`) || [],
-        specialFeatures:
-          exp.tcf_special_feature_ids?.map((id) => `${id}`) || [],
-        vendorsConsent: [
-          ...(exp.tcf_vendor_consent_ids || []),
-          ...(exp.tcf_system_consent_ids || []),
-        ],
-        vendorsLegint: [
-          ...(exp.tcf_vendor_legitimate_interest_ids || []),
-          ...(exp.tcf_system_legitimate_interest_ids || []),
-        ],
-      };
-    }
-    handleUpdateAllPreferences(ConsentMethod.ACCEPT, allIds);
-  }, [experience, experienceMinimal, handleUpdateAllPreferences]);
+  const handleAcceptAll = useCallback(
+    (isKnown?: boolean) => {
+      let allIds: EnabledIds;
+      let exp = experience || experienceMinimal;
+      if (!exp.minimal_tcf) {
+        exp = experience as PrivacyExperience;
+        allIds = {
+          purposesConsent: getAllIds(exp.tcf_purpose_consents),
+          purposesLegint: getAllIds(exp.tcf_purpose_legitimate_interests),
+          specialPurposes: getAllIds(exp.tcf_special_purposes),
+          features: getAllIds(exp.tcf_features),
+          specialFeatures: getAllIds(exp.tcf_special_features),
+          vendorsConsent: getAllIds([
+            ...(exp.tcf_vendor_consents || []),
+            ...(exp.tcf_system_consents || []),
+          ]),
+          vendorsLegint: getAllIds([
+            ...(exp.tcf_vendor_legitimate_interests || []),
+            ...(exp.tcf_system_legitimate_interests || []),
+          ]),
+        };
+      } else {
+        // eslint-disable-next-line no-param-reassign
+        exp = experienceMinimal as PrivacyExperienceMinimal;
+        allIds = {
+          purposesConsent:
+            exp.tcf_purpose_consent_ids?.map((id) => `${id}`) || [],
+          purposesLegint:
+            exp.tcf_purpose_legitimate_interest_ids?.map((id) => `${id}`) || [],
+          specialPurposes:
+            exp.tcf_special_purpose_ids?.map((id) => `${id}`) || [],
+          features: exp.tcf_feature_ids?.map((id) => `${id}`) || [],
+          specialFeatures:
+            exp.tcf_special_feature_ids?.map((id) => `${id}`) || [],
+          vendorsConsent: [
+            ...(exp.tcf_vendor_consent_ids || []),
+            ...(exp.tcf_system_consent_ids || []),
+          ],
+          vendorsLegint: [
+            ...(exp.tcf_vendor_legitimate_interest_ids || []),
+            ...(exp.tcf_system_legitimate_interest_ids || []),
+          ],
+        };
+      }
+      handleUpdateAllPreferences(
+        isKnown ? ConsentMethod.KNOWN_ACCEPT : ConsentMethod.ACCEPT,
+        allIds,
+      );
+    },
+    [experience, experienceMinimal, handleUpdateAllPreferences],
+  );
 
-  const handleRejectAll = useCallback(() => {
-    handleUpdateAllPreferences(ConsentMethod.REJECT, EMPTY_ENABLED_IDS);
-  }, [handleUpdateAllPreferences]);
+  const handleRejectAll = useCallback(
+    (isKnown?: boolean) => {
+      handleUpdateAllPreferences(
+        isKnown ? ConsentMethod.KNOWN_REJECT : ConsentMethod.REJECT,
+        EMPTY_ENABLED_IDS,
+      );
+    },
+    [handleUpdateAllPreferences],
+  );
 
   useEffect(() => {
     if (options.fidesKnownPreference === ConsentMethod.ACCEPT) {
       fidesDebugger(
         "Consent automatically accepted by fides_accept_all override!",
       );
-      handleAcceptAll();
+      handleAcceptAll(true);
     } else if (options.fidesKnownPreference === ConsentMethod.REJECT) {
       fidesDebugger(
         "Consent automatically rejected by fides_reject_all override!",
       );
-      handleRejectAll();
+      handleRejectAll(true);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [options.fidesKnownPreference]);

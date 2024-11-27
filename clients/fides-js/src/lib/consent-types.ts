@@ -726,6 +726,8 @@ export enum ConsentMethod {
   BUTTON = "button", // deprecated- keeping for backwards-compatibility
   REJECT = "reject",
   ACCEPT = "accept",
+  KNOWN_REJECT = "known_reject",
+  KNOWN_ACCEPT = "known_accept",
   SAVE = "save",
   DISMISS = "dismiss",
   GPC = "gpc",

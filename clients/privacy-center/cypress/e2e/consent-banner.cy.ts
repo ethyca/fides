@@ -1814,7 +1814,7 @@ describe("Consent overlay", () => {
               privacy_notice_history_id: "pri_notice-history-essential-en-000",
             },
           ]);
-          expect(body.method).to.eql(ConsentMethod.REJECT);
+          expect(body.method).to.eql(ConsentMethod.KNOWN_REJECT);
         };
         it("rejects all notices automatically when set", () => {
           stubConfig({
@@ -1887,7 +1887,7 @@ describe("Consent overlay", () => {
               privacy_notice_history_id: "pri_notice-history-essential-en-000",
             },
           ]);
-          expect(body.method).to.eql(ConsentMethod.ACCEPT);
+          expect(body.method).to.eql(ConsentMethod.KNOWN_ACCEPT);
         };
         it("accepts all notices automatically when set", () => {
           stubConfig({

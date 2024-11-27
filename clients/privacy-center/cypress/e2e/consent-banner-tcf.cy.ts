@@ -3124,7 +3124,7 @@ describe("Fides-js TCF", () => {
         // check a few to see they are empty arrays
         expect(body.purpose_consent_preferences).to.eql([]);
         expect(body.purpose_legitimate_interests_preferences).to.eql([]);
-        expect(body.method).to.eql(ConsentMethod.REJECT);
+        expect(body.method).to.eql(ConsentMethod.KNOWN_REJECT);
       };
       it("rejects all notices automatically when set", () => {
         stubTCFExperience({
@@ -3228,7 +3228,7 @@ describe("Fides-js TCF", () => {
             preference: "opt_in",
           },
         ]);
-        expect(body.method).to.eql(ConsentMethod.ACCEPT);
+        expect(body.method).to.eql(ConsentMethod.KNOWN_ACCEPT);
       };
       it("accepts all notices automatically when set", () => {
         stubTCFExperience({

@@ -229,23 +229,29 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
     ],
   );
 
-  const handleAcceptAll = useCallback(() => {
-    handleUpdatePreferences(
-      ConsentMethod.ACCEPT,
-      privacyNoticeItems.map((n) => n.notice.notice_key),
-    );
-  }, [handleUpdatePreferences, privacyNoticeItems]);
+  const handleAcceptAll = useCallback(
+    (isKnown?: boolean) => {
+      handleUpdatePreferences(
+        isKnown ? ConsentMethod.KNOWN_ACCEPT : ConsentMethod.ACCEPT,
+        privacyNoticeItems.map((n) => n.notice.notice_key),
+      );
+    },
+    [handleUpdatePreferences, privacyNoticeItems],
+  );
 
-  const handleRejectAll = useCallback(() => {
-    handleUpdatePreferences(
-      ConsentMethod.REJECT,
-      privacyNoticeItems
-        .filter(
-          (n) => n.notice.consent_mechanism === ConsentMechanism.NOTICE_ONLY,
-        )
-        .map((n) => n.notice.notice_key),
-    );
-  }, [handleUpdatePreferences, privacyNoticeItems]);
+  const handleRejectAll = useCallback(
+    (isKnown?: boolean) => {
+      handleUpdatePreferences(
+        isKnown ? ConsentMethod.KNOWN_REJECT : ConsentMethod.REJECT,
+        privacyNoticeItems
+          .filter(
+            (n) => n.notice.consent_mechanism === ConsentMechanism.NOTICE_ONLY,
+          )
+          .map((n) => n.notice.notice_key),
+      );
+    },
+    [handleUpdatePreferences, privacyNoticeItems],
+  );
 
   useEffect(() => {
     if (!!options.fidesKnownPreference && experience.privacy_notices) {
@@ -253,12 +259,12 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
         fidesDebugger(
           "Consent automatically accepted by fides_accept_all override!",
         );
-        handleAcceptAll();
+        handleAcceptAll(true);
       } else if (options.fidesKnownPreference === ConsentMethod.REJECT) {
         fidesDebugger(
           "Consent automatically rejected by fides_reject_all override!",
         );
-        handleRejectAll();
+        handleRejectAll(true);
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
