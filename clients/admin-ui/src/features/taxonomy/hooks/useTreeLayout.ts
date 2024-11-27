@@ -11,22 +11,26 @@ interface UseTreeLayoutProps {
   };
 }
 
+const NODE_WIDTH = 200;
+const NODE_HEIGHT = 25;
+
 const useTreeLayout = ({ nodes, edges, options }: UseTreeLayoutProps) => {
   const layouted = useMemo(() => {
     const g = new Dagre.graphlib.Graph().setDefaultEdgeLabel(() => ({}));
     g.setGraph({
       rankdir: options.direction,
-      ranksep: 200,
+      ranksep: 220,
+      nodesep: 20,
     });
 
     edges.forEach((edge) => g.setEdge(edge.source, edge.target));
-    nodes.forEach((node) =>
+    nodes.forEach((node) => {
       g.setNode(node.id, {
         ...node,
-        width: node.measured?.width ?? 220,
-        height: node.measured?.height ?? 0,
-      }),
-    );
+        width: NODE_WIDTH,
+        height: NODE_HEIGHT,
+      });
+    });
 
     Dagre.layout(g, {
       disableOptimalOrderHeuristic: options.stableOrder,
@@ -37,8 +41,8 @@ const useTreeLayout = ({ nodes, edges, options }: UseTreeLayoutProps) => {
         const position = g.node(node.id);
         // We are shifting the dagre node position (anchor=center center) to the top left
         // so it matches the React Flow node anchor point (top left).
-        const x = position.x - (node.measured?.width ?? 0) / 2;
-        const y = position.y - (node.measured?.height ?? 0) / 2;
+        const x = position.x - NODE_WIDTH / 2;
+        const y = position.y - NODE_HEIGHT / 2;
 
         return { ...node, position: { x, y } };
       }),
