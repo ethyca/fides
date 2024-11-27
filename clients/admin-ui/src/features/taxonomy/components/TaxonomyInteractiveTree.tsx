@@ -12,6 +12,7 @@ import {
   ReactFlowProvider,
   useReactFlow,
 } from "@xyflow/react";
+import palette from "fidesui/src/palette/palette.module.scss";
 import { useEffect, useMemo } from "react";
 
 import useTreeLayout from "../hooks/useTreeLayout";
@@ -88,6 +89,7 @@ const TaxonomyInteractiveTree = ({
       id: `${parentKey}-${taxonomyItem.fides_key}`,
       source: parentKey,
       target: taxonomyItem.fides_key,
+      style: { stroke: palette.FIDESUI_SANDSTONE, strokeWidth: 1 },
     });
   });
 
