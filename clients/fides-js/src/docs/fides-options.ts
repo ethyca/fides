@@ -145,23 +145,13 @@ export interface FidesOptions {
   fides_tcf_gdpr_applies: boolean;
 
   /**
-   * When `true`, FidesJS will automatically opt out of all consent and
+   * FidesJS will automatically opt in or out of all notices with this option and
    * only show the consent modal upon user request. This is useful for any
    * scenario where the user has previously provided consent in a different
    * context (e.g. a native app, another website, etc.) and you want to ensure
    * that those preferences are respected.
    *
-   * Defaults to `false`.
+   * Defaults to `undefined`.
    */
-  fides_reject_all: boolean;
-
-  /**
-   * Similar to `fides_reject_all`, when `true`, FidesJS will automatically opt
-   * in to all consent and only show the consent modal upon user request. These 2
-   * options are mutually exclusive, and `fides_accept_all` will take precedence
-   * if both are set to `true`.
-   *
-   * Defaults to `false`.
-   */
-  fides_accept_all: boolean;
+  fides_known_preference: "accept" | "reject";
 }

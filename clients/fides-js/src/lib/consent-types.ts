@@ -141,10 +141,7 @@ export interface FidesInitOptions {
   showFidesBrandLink: boolean;
 
   // Whether to reject all consent preferences by default
-  fidesRejectAll: boolean;
-
-  // Whether to accept all consent preferences by default
-  fidesAcceptAll: boolean;
+  fidesKnownPreference: ConsentMethod.ACCEPT | ConsentMethod.REJECT | null;
 }
 
 /**
@@ -692,8 +689,7 @@ export type FidesInitOptionsOverrides = Pick<
   | "fidesLocale"
   | "fidesPrimaryColor"
   | "fidesClearCookie"
-  | "fidesRejectAll"
-  | "fidesAcceptAll"
+  | "fidesKnownPreference"
 >;
 
 export type FidesExperienceTranslationOverrides = {

@@ -348,20 +348,19 @@ export const TcfOverlay = ({
   }, [handleUpdateAllPreferences]);
 
   useEffect(() => {
-    if (options.fidesAcceptAll) {
-      // fidesAcceptAll takes precedence over fidesRejectAll
+    if (options.fidesKnownPreference === ConsentMethod.ACCEPT) {
       fidesDebugger(
         "Consent automatically accepted by fides_accept_all override!",
       );
-      setTimeout(() => handleAcceptAll());
-    } else if (options.fidesRejectAll) {
+      handleAcceptAll();
+    } else if (options.fidesKnownPreference === ConsentMethod.REJECT) {
       fidesDebugger(
         "Consent automatically rejected by fides_reject_all override!",
       );
-      setTimeout(() => handleRejectAll());
+      handleRejectAll();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [options.fidesRejectAll, options.fidesAcceptAll]);
+  }, [options.fidesKnownPreference]);
 
   const [activeTabIndex, setActiveTabIndex] = useState(0);
 

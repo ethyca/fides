@@ -1,3 +1,5 @@
+import { ConsentMethod } from "~/types/api";
+
 /**
  * Settings that can be controlled using ENV vars on the server.
  *
@@ -38,6 +40,5 @@ export interface PrivacyCenterSettings {
   BASE_64_COOKIE: boolean; // whether or not to encode cookie as base64 on top of the default JSON string
   FIDES_PRIMARY_COLOR: string | null; // (optional) sets fides primary color
   FIDES_CLEAR_COOKIE: boolean; // (optional) deletes fides_consent cookie on reload
-  FIDES_REJECT_ALL: boolean; // (optional) rejects all consent preferences on load
-  FIDES_ACCEPT_ALL: boolean; // (optional) accepts all consent preferences on load. This will override FIDES_REJECT_ALL if both are set to true
+  FIDES_KNOWN_PREFERENCE: ConsentMethod.ACCEPT | ConsentMethod.REJECT | null; // (optional) sets a previously learned consent preference for the user
 }

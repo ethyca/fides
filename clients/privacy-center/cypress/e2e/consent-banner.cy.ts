@@ -1797,93 +1797,60 @@ describe("Consent overlay", () => {
 
     describe("Automatically set preferences", () => {
       describe("Reject all", () => {
+        const validateRejectAll = (interception: any) => {
+          const { body } = interception.request;
+          expect(body.preferences).to.eql([
+            {
+              preference: "opt_out",
+              privacy_notice_history_id:
+                "pri_notice-history-advertising-en-000",
+            },
+            {
+              preference: "opt_out",
+              privacy_notice_history_id: "pri_notice-history-analytics-en-000",
+            },
+            {
+              preference: "acknowledge",
+              privacy_notice_history_id: "pri_notice-history-essential-en-000",
+            },
+          ]);
+          expect(body.method).to.eql(ConsentMethod.REJECT);
+        };
         it("rejects all notices automatically when set", () => {
           stubConfig({
             options: {
-              fidesRejectAll: true,
+              fidesKnownPreference: ConsentMethod.REJECT,
             },
           });
           cy.waitUntilFidesInitialized().then(() => {
             cy.wait("@patchPrivacyPreference").then((interception) => {
-              const { body } = interception.request;
-              expect(body.preferences).to.eql([
-                {
-                  preference: "opt_out",
-                  privacy_notice_history_id:
-                    "pri_notice-history-advertising-en-000",
-                },
-                {
-                  preference: "opt_out",
-                  privacy_notice_history_id:
-                    "pri_notice-history-analytics-en-000",
-                },
-                {
-                  preference: "acknowledge",
-                  privacy_notice_history_id:
-                    "pri_notice-history-essential-en-000",
-                },
-              ]);
-              expect(body.method).to.eql(ConsentMethod.REJECT);
+              validateRejectAll(interception);
             });
           });
         });
 
         it("rejects all notices automatically when set via cookie", () => {
           cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
-          cy.getCookie("fides_reject_all").should("not.exist");
-          cy.setCookie("fides_reject_all", "true");
+          cy.getCookie("fides_known_preference").should("not.exist");
+          cy.setCookie("fides_known_preference", ConsentMethod.REJECT);
           stubConfig({});
 
           cy.waitUntilFidesInitialized().then(() => {
             cy.wait("@patchPrivacyPreference").then((interception) => {
-              const { body } = interception.request;
-              expect(body.preferences).to.eql([
-                {
-                  preference: "opt_out",
-                  privacy_notice_history_id:
-                    "pri_notice-history-advertising-en-000",
-                },
-                {
-                  preference: "opt_out",
-                  privacy_notice_history_id:
-                    "pri_notice-history-analytics-en-000",
-                },
-                {
-                  preference: "acknowledge",
-                  privacy_notice_history_id:
-                    "pri_notice-history-essential-en-000",
-                },
-              ]);
-              expect(body.method).to.eql(ConsentMethod.REJECT);
+              validateRejectAll(interception);
             });
           });
         });
 
         it("rejects all notices automatically when set via query param", () => {
           cy.getCookie("fides_string").should("not.exist");
-          stubConfig({}, null, null, { fides_reject_all: "true" });
+          stubConfig({}, null, null, {
+            fides_known_preference: ConsentMethod.REJECT,
+          });
 
           cy.waitUntilFidesInitialized().then(() => {
             cy.wait("@patchPrivacyPreference").then((interception) => {
-              const { body } = interception.request;
-              expect(body.preferences).to.eql([
-                {
-                  preference: "opt_out",
-                  privacy_notice_history_id:
-                    "pri_notice-history-advertising-en-000",
-                },
-                {
-                  preference: "opt_out",
-                  privacy_notice_history_id:
-                    "pri_notice-history-analytics-en-000",
-                },
-                {
-                  preference: "acknowledge",
-                  privacy_notice_history_id:
-                    "pri_notice-history-essential-en-000",
-                },
-              ]);
-              expect(body.method).to.eql(ConsentMethod.REJECT);
+              validateRejectAll(interception);
             });
           });
         });
@@ -1891,123 +1858,72 @@ describe("Consent overlay", () => {
         it("rejects all notices automatically when set via window obj", () => {
           cy.getCookie("fides_string").should("not.exist");
           stubConfig({}, null, null, null, {
-            fides_reject_all: "true",
+            fides_known_preference: ConsentMethod.REJECT,
           });
 
           cy.waitUntilFidesInitialized().then(() => {
             cy.wait("@patchPrivacyPreference").then((interception) => {
-              const { body } = interception.request;
-              expect(body.preferences).to.eql([
-                {
-                  preference: "opt_out",
-                  privacy_notice_history_id:
-                    "pri_notice-history-advertising-en-000",
-                },
-                {
-                  preference: "opt_out",
-                  privacy_notice_history_id:
-                    "pri_notice-history-analytics-en-000",
-                },
-                {
-                  preference: "acknowledge",
-                  privacy_notice_history_id:
-                    "pri_notice-history-essential-en-000",
-                },
-              ]);
-              expect(body.method).to.eql(ConsentMethod.REJECT);
+              validateRejectAll(interception);
             });
           });
         });
       });
 
       describe("Accept all", () => {
+        const validateAcceptAll = (interception: any) => {
+          const { body } = interception.request;
+          expect(body.preferences).to.eql([
+            {
+              preference: "opt_in",
+              privacy_notice_history_id:
+                "pri_notice-history-advertising-en-000",
+            },
+            {
+              preference: "opt_in",
+              privacy_notice_history_id: "pri_notice-history-analytics-en-000",
+            },
+            {
+              preference: "acknowledge",
+              privacy_notice_history_id: "pri_notice-history-essential-en-000",
+            },
+          ]);
+          expect(body.method).to.eql(ConsentMethod.ACCEPT);
+        };
         it("accepts all notices automatically when set", () => {
           stubConfig({
             options: {
-              fidesAcceptAll: true,
+              fidesKnownPreference: ConsentMethod.ACCEPT,
             },
           });
           cy.waitUntilFidesInitialized().then(() => {
             cy.wait("@patchPrivacyPreference").then((interception) => {
-              const { body } = interception.request;
-              expect(body.preferences).to.eql([
-                {
-                  preference: "opt_in",
-                  privacy_notice_history_id:
-                    "pri_notice-history-advertising-en-000",
-                },
-                {
-                  preference: "opt_in",
-                  privacy_notice_history_id:
-                    "pri_notice-history-analytics-en-000",
-                },
-                {
-                  preference: "acknowledge",
-                  privacy_notice_history_id:
-                    "pri_notice-history-essential-en-000",
-                },
-              ]);
-              expect(body.method).to.eql(ConsentMethod.ACCEPT);
+              validateAcceptAll(interception);
             });
           });
         });
 
         it("accepts all notices automatically when set via cookie", () => {
           cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
-          cy.getCookie("fides_accept_all").should("not.exist");
-          cy.setCookie("fides_accept_all", "true");
+          cy.getCookie("fides_known_preference").should("not.exist");
+          cy.setCookie("fides_known_preference", ConsentMethod.ACCEPT);
           stubConfig({});
 
           cy.waitUntilFidesInitialized().then(() => {
             cy.wait("@patchPrivacyPreference").then((interception) => {
-              const { body } = interception.request;
-              expect(body.preferences).to.eql([
-                {
-                  preference: "opt_in",
-                  privacy_notice_history_id:
-                    "pri_notice-history-advertising-en-000",
-                },
-                {
-                  preference: "opt_in",
-                  privacy_notice_history_id:
-                    "pri_notice-history-analytics-en-000",
-                },
-                {
-                  preference: "acknowledge",
-                  privacy_notice_history_id:
-                    "pri_notice-history-essential-en-000",
-                },
-              ]);
-              expect(body.method).to.eql(ConsentMethod.ACCEPT);
+              validateAcceptAll(interception);
             });
           });
         });
 
         it("accepts all notices automatically when set via query param", () => {
           cy.getCookie("fides_string").should("not.exist");
-          stubConfig({}, null, null, { fides_accept_all: "true" });
+          stubConfig({}, null, null, {
+            fides_known_preference: ConsentMethod.ACCEPT,
+          });
 
           cy.waitUntilFidesInitialized().then(() => {
             cy.wait("@patchPrivacyPreference").then((interception) => {
-              const { body } = interception.request;
-              expect(body.preferences).to.eql([
-                {
-                  preference: "opt_in",
-                  privacy_notice_history_id:
-                    "pri_notice-history-advertising-en-000",
-                },
-                {
-                  preference: "opt_in",
-                  privacy_notice_history_id:
-                    "pri_notice-history-analytics-en-000",
-                },
-                {
-                  preference: "acknowledge",
-                  privacy_notice_history_id:
-                    "pri_notice-history-essential-en-000",
-                },
-              ]);
-              expect(body.method).to.eql(ConsentMethod.ACCEPT);
+              validateAcceptAll(interception);
             });
           });
         });
@@ -2015,30 +1931,12 @@ describe("Consent overlay", () => {
         it("accepts all notices automatically when set via window obj", () => {
           cy.getCookie("fides_string").should("not.exist");
           stubConfig({}, null, null, null, {
-            fides_accept_all: "true",
+            fides_known_preference: ConsentMethod.ACCEPT,
           });
 
           cy.waitUntilFidesInitialized().then(() => {
             cy.wait("@patchPrivacyPreference").then((interception) => {
-              const { body } = interception.request;
-              expect(body.preferences).to.eql([
-                {
-                  preference: "opt_in",
-                  privacy_notice_history_id:
-                    "pri_notice-history-advertising-en-000",
-                },
-                {
-                  preference: "opt_in",
-                  privacy_notice_history_id:
-                    "pri_notice-history-analytics-en-000",
-                },
-                {
-                  preference: "acknowledge",
-                  privacy_notice_history_id:
-                    "pri_notice-history-essential-en-000",
-                },
-              ]);
-              expect(body.method).to.eql(ConsentMethod.ACCEPT);
+              validateAcceptAll(interception);
             });
           });
         });

@@ -14,6 +14,7 @@ import { useA11yDialog } from "../lib/a11y-dialog";
 import { FIDES_OVERLAY_WRAPPER } from "../lib/consent-constants";
 import {
   ComponentType,
+  ConsentMethod,
   FidesCookie,
   FidesInitOptions,
   NoticeConsent,
@@ -71,15 +72,17 @@ const Overlay: FunctionComponent<Props> = ({
   const delayBannerMilliseconds = 100;
   const delayModalLinkMilliseconds = 200;
   const hasMounted = useHasMounted();
-  const isAutoConsented = options.fidesAcceptAll || options.fidesRejectAll;
+  const isKnownPreference =
+    options.fidesKnownPreference === ConsentMethod.ACCEPT ||
+    options.fidesKnownPreference === ConsentMethod.REJECT;
 
   const showBanner = useMemo(
     () =>
-      !isAutoConsented &&
+      !isKnownPreference &&
       !options.fidesDisableBanner &&
       experience.experience_config?.component !== ComponentType.MODAL &&
       shouldResurfaceConsent(experience, cookie, savedConsent),
-    [cookie, savedConsent, experience, options, isAutoConsented],
+    [cookie, savedConsent, experience, options, isKnownPreference],
   );
 
   const [bannerIsOpen, setBannerIsOpen] = useState(

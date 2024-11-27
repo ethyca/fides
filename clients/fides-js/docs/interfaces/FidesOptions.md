@@ -163,27 +163,14 @@ Defaults to `true`.
 
 ***
 
-### fides\_reject\_all
+### fides\_known\_preference
 
-> **fides\_reject\_all**: `boolean`
+> **fides\_known\_preference**: `"accept"` \| `"reject"`
 
-When `true`, FidesJS will automatically opt out of all consent and
+FidesJS will automatically opt in or out of all notices with this option and
 only show the consent modal upon user request. This is useful for any
 scenario where the user has previously provided consent in a different
 context (e.g. a native app, another website, etc.) and you want to ensure
 that those preferences are respected.
 
-Defaults to `false`.
-
-***
-
-### fides\_accept\_all
-
-> **fides\_accept\_all**: `boolean`
-
-Similar to `fides_reject_all`, when `true`, FidesJS will automatically opt
-in to all consent and only show the consent modal upon user request. These 2
-options are mutually exclusive, and `fides_accept_all` will take precedence
-if both are set to `true`.
-
-Defaults to `false`.
+Defaults to `undefined`.

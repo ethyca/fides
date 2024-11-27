@@ -1,4 +1,5 @@
 import { PrivacyCenterSettings } from "~/app/server-utils/PrivacyCenterSettings";
+import { ConsentMethod } from "~/types/api";
 
 const loadEnvironmentVariables = () => {
   // Load environment variables
@@ -85,12 +86,10 @@ const loadEnvironmentVariables = () => {
     FIDES_CLEAR_COOKIE: process.env.FIDES_PRIVACY_CENTER__FIDES_CLEAR_COOKIE
       ? process.env.FIDES_PRIVACY_CENTER__FIDES_CLEAR_COOKIE === "true"
       : false,
-    FIDES_REJECT_ALL: process.env.FIDES_PRIVACY_CENTER__FIDES_REJECT_ALL
-      ? process.env.FIDES_PRIVACY_CENTER__FIDES_REJECT_ALL === "true"
-      : false,
-    FIDES_ACCEPT_ALL: process.env.FIDES_PRIVACY_CENTER__FIDES_ACCEPT_ALL
-      ? process.env.FIDES_PRIVACY_CENTER__FIDES_ACCEPT_ALL === "true"
-      : false,
+    FIDES_KNOWN_PREFERENCE:
+      (process.env.FIDES_PRIVACY_CENTER__FIDES_KNOWN_PREFERENCE as
+        | ConsentMethod.ACCEPT
+        | ConsentMethod.REJECT) || null,
   };
   return settings;
 };

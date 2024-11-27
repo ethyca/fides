@@ -11,6 +11,7 @@ import { meta } from "./integrations/meta";
 import { shopify } from "./integrations/shopify";
 import { raise } from "./lib/common-utils";
 import {
+  ConsentMethod,
   FidesConfig,
   FidesExperienceTranslationOverrides,
   FidesGlobal,
@@ -201,8 +202,7 @@ const _Fides: FidesGlobal = {
     fidesPrimaryColor: null,
     fidesClearCookie: false,
     showFidesBrandLink: true,
-    fidesRejectAll: false,
-    fidesAcceptAll: false,
+    fidesKnownPreference: null,
   },
   fides_meta: {},
   identity: {},
@@ -225,7 +225,10 @@ const _Fides: FidesGlobal = {
       // Nothing to show if there's no experience
       return false;
     }
-    if (this.options.fidesRejectAll || this.options.fidesAcceptAll) {
+    if (
+      this.options.fidesKnownPreference === ConsentMethod.ACCEPT ||
+      this.options.fidesKnownPreference === ConsentMethod.REJECT
+    ) {
       // If consent preference was automatic, we should not show the experience
       return false;
     }

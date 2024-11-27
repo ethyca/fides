@@ -3128,7 +3128,7 @@ describe("Fides-js TCF", () => {
       };
       it("rejects all notices automatically when set", () => {
         stubTCFExperience({
-          stubOptions: { fidesRejectAll: true },
+          stubOptions: { fidesKnownPreference: ConsentMethod.REJECT },
         });
         cy.waitUntilFidesInitialized().then(() => {
           cy.wait("@patchPrivacyPreference").then((interception) => {
@@ -3139,8 +3139,8 @@ describe("Fides-js TCF", () => {
 
       it("rejects all notices automatically when set via cookie", () => {
         cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
-        cy.getCookie("fides_reject_all").should("not.exist");
-        cy.setCookie("fides_reject_all", "true");
+        cy.getCookie("fides_known_preference").should("not.exist");
+        cy.setCookie("fides_known_preference", ConsentMethod.REJECT);
         stubTCFExperience({});
 
         cy.waitUntilFidesInitialized().then(() => {
@@ -3153,7 +3153,7 @@ describe("Fides-js TCF", () => {
       it("rejects all notices automatically when set via query param", () => {
         cy.getCookie("fides_string").should("not.exist");
         stubTCFExperience({
-          demoPageQueryParams: { fides_reject_all: "true" },
+          demoPageQueryParams: { fides_known_preference: ConsentMethod.REJECT },
         });
 
         cy.waitUntilFidesInitialized().then(() => {
@@ -3166,7 +3166,9 @@ describe("Fides-js TCF", () => {
       it("rejects all notices automatically when set via window obj", () => {
         cy.getCookie("fides_string").should("not.exist");
         stubTCFExperience({
-          demoPageWindowParams: { fides_reject_all: "true" },
+          demoPageWindowParams: {
+            fides_known_preference: ConsentMethod.REJECT,
+          },
         });
 
         cy.waitUntilFidesInitialized().then(() => {
@@ -3230,7 +3232,7 @@ describe("Fides-js TCF", () => {
       };
       it("accepts all notices automatically when set", () => {
         stubTCFExperience({
-          stubOptions: { fidesAcceptAll: true },
+          stubOptions: { fidesKnownPreference: ConsentMethod.ACCEPT },
         });
         cy.waitUntilFidesInitialized().then(() => {
           cy.wait("@patchPrivacyPreference").then((interception) => {
@@ -3241,8 +3243,8 @@ describe("Fides-js TCF", () => {
 
       it("accepts all notices automatically when set via cookie", () => {
         cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
-        cy.getCookie("fides_accept_all").should("not.exist");
-        cy.setCookie("fides_accept_all", "true");
+        cy.getCookie("fides_known_preference").should("not.exist");
+        cy.setCookie("fides_known_preference", ConsentMethod.ACCEPT);
         stubTCFExperience({});
 
         cy.waitUntilFidesInitialized().then(() => {
@@ -3255,7 +3257,7 @@ describe("Fides-js TCF", () => {
       it("accepts all notices automatically when set via query param", () => {
         cy.getCookie("fides_string").should("not.exist");
         stubTCFExperience({
-          demoPageQueryParams: { fides_accept_all: "true" },
+          demoPageQueryParams: { fides_known_preference: ConsentMethod.ACCEPT },
         });
 
         cy.waitUntilFidesInitialized().then(() => {
@@ -3268,7 +3270,9 @@ describe("Fides-js TCF", () => {
       it("accepts all notices automatically when set via window obj", () => {
         cy.getCookie("fides_string").should("not.exist");
         stubTCFExperience({
-          demoPageWindowParams: { fides_accept_all: "true" },
+          demoPageWindowParams: {
+            fides_known_preference: ConsentMethod.ACCEPT,
+          },
         });
 
         cy.waitUntilFidesInitialized().then(() => {

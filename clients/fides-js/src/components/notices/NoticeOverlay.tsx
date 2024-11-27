@@ -248,32 +248,21 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
   }, [handleUpdatePreferences, privacyNoticeItems]);
 
   useEffect(() => {
-    if (
-      ((handleAcceptAll && options.fidesRejectAll) ||
-        (handleRejectAll && options.fidesAcceptAll)) &&
-      experience.privacy_notices
-    ) {
-      if (options.fidesAcceptAll) {
-        // fidesAcceptAll takes precedence over fidesRejectAll
+    if (!!options.fidesKnownPreference && experience.privacy_notices) {
+      if (options.fidesKnownPreference === ConsentMethod.ACCEPT) {
         fidesDebugger(
           "Consent automatically accepted by fides_accept_all override!",
         );
         handleAcceptAll();
-      } else if (options.fidesRejectAll) {
+      } else if (options.fidesKnownPreference === ConsentMethod.REJECT) {
         fidesDebugger(
           "Consent automatically rejected by fides_reject_all override!",
         );
         handleRejectAll();
       }
     }
-  }, [
-    experience.privacy_notices,
-    handleUpdatePreferences,
-    options.fidesRejectAll,
-    options.fidesAcceptAll,
-    handleAcceptAll,
-    handleRejectAll,
-  ]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [experience.privacy_notices, options.fidesKnownPreference]);
 
   const dispatchOpenBannerEvent = useCallback(() => {
     dispatchFidesEvent("FidesUIShown", cookie, options.debug, {
