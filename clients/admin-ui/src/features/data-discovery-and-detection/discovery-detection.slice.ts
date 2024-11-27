@@ -10,6 +10,7 @@ import {
   Page_StagedResourceAPIResponse_,
   Page_str_,
 } from "~/types/api";
+import { Page_StagedResourceResponse_ } from "~/types/api/models/Page_StagedResourceResponse_";
 
 interface State {
   page?: number;
@@ -34,6 +35,7 @@ interface DatabaseByMonitorQueryParams {
   page: number;
   size: number;
   monitor_config_id: string;
+  show_hidden?: boolean;
 }
 
 interface DatabaseByConnectionQueryParams {
@@ -89,7 +91,7 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
         }),
       },
     ),
-    getDatabasesByConnection: build.query<
+    getAvailableDatabasesByConnection: build.query<
       Page_str_,
       DatabaseByConnectionQueryParams
     >({
@@ -101,6 +103,16 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
           connection_config_key: params.connection_config_key,
           classify_params: {},
         },
+      }),
+    }),
+    getProjects: build.query<
+      Page_StagedResourceResponse_,
+      DatabaseByMonitorQueryParams
+    >({
+      query: (params) => ({
+        method: "GET",
+        url: `/plus/lifecycle/projects`,
+        params,
       }),
     }),
     executeDiscoveryMonitor: build.mutation<any, MonitorActionQueryParams>({
@@ -227,8 +239,9 @@ export const {
   useGetMonitorsByIntegrationQuery,
   usePutDiscoveryMonitorMutation,
   useGetDatabasesByMonitorQuery,
-  useGetDatabasesByConnectionQuery,
-  useLazyGetDatabasesByConnectionQuery,
+  useGetAvailableDatabasesByConnectionQuery,
+  useLazyGetAvailableDatabasesByConnectionQuery,
+  useGetProjectsQuery,
   useExecuteDiscoveryMonitorMutation,
   useDeleteDiscoveryMonitorMutation,
   useGetMonitorResultsQuery,

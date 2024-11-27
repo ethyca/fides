@@ -35,9 +35,11 @@ import {
 } from "~/features/common/table/v2";
 import { IndeterminateCheckboxCell } from "~/features/common/table/v2/cells";
 import IconLegendTooltip from "~/features/data-discovery-and-detection/IndicatorLegend";
+import EditDataUseCell from "~/features/data-discovery-and-detection/new-dataset-lifecycle/EditDataUseCell";
 import { SearchInput } from "~/features/data-discovery-and-detection/SearchInput";
 import SystemActionsCell from "~/features/dataset-lifecycle/systems/SystemActionCell";
 import { useGetSystemsQuery } from "~/features/system";
+import useShowHideSystems from "~/features/system/hooks/useShowHideSystems";
 import { BasicSystemResponse } from "~/types/api";
 
 const EMPTY_RESPONSE = {
@@ -76,6 +78,10 @@ const SystemsTable = () => {
     {},
   );
 
+  // const [showHidden, setShowHidden] = useState(false);
+
+  const { showSystem, hideSystem } = useShowHideSystems();
+
   const router = useRouter();
 
   const {
@@ -101,6 +107,7 @@ const SystemsTable = () => {
     size: pageSize,
     search: searchQuery,
     dnd_relevant: true,
+    show_hidden: false,
   });
 
   const {
@@ -138,6 +145,7 @@ const SystemsTable = () => {
           cellProps: {
             borderRight: "none",
           },
+          disableRowClick: true,
         },
       }),
       columnHelper.accessor((row) => row.name, {
@@ -149,12 +157,13 @@ const SystemsTable = () => {
       }),
       columnHelper.accessor((row) => row.privacy_declarations, {
         id: "data-uses",
-        cell: ({ getValue }) => <DefaultCell value={getValue().join(", ")} />,
+        cell: ({ row }) => <EditDataUseCell system={row.original} />,
         header: (props) => <DefaultHeaderCell value="Data uses" {...props} />,
         meta: {
           cellProps: {
             borderRight: "none",
           },
+          disableRowClick: true,
         },
       }),
       columnHelper.display({
@@ -164,9 +173,7 @@ const SystemsTable = () => {
             onDetailClick={() =>
               router.push(`/systems/configure/${props.row.original.fides_key}`)
             }
-            onHideClick={() =>
-              console.log(`hiding system ${props.row.original.fides_key}...`)
-            }
+            onHideClick={() => hideSystem(props.row.original)}
           />
         ),
         maxSize: 20,
@@ -175,6 +182,7 @@ const SystemsTable = () => {
           cellProps: {
             borderLeft: "none",
           },
+          disableRowClick: true,
         },
       }),
     ],

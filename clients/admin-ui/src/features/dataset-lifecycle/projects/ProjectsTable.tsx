@@ -31,6 +31,7 @@ import {
   useServerSidePagination,
 } from "~/features/common/table/v2";
 import { RelativeTimestampCell } from "~/features/common/table/v2/cells";
+import { useGetProjectsQuery } from "~/features/data-discovery-and-detection/discovery-detection.slice";
 import IconLegendTooltip from "~/features/data-discovery-and-detection/IndicatorLegend";
 import { SearchInput } from "~/features/data-discovery-and-detection/SearchInput";
 import useSpoofGetProjectsQuery, {
@@ -69,7 +70,11 @@ const EmptyTableNotice = () => (
 
 const columnHelper = createColumnHelper<DatasetLifecycleProject>();
 
-const ProjectsTable = () => {
+const ProjectsTable = ({
+  monitor_config_id,
+}: {
+  monitor_config_id?: string;
+}) => {
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [rowSelectionState, setRowSelectionState] = useState<RowSelectionState>(
     {},
@@ -93,10 +98,10 @@ const ProjectsTable = () => {
     isFetching,
     isLoading,
     data: queryResult,
-  } = useSpoofGetProjectsQuery({
-    pageIndex,
-    pageSize,
-    searchQuery,
+  } = useGetProjectsQuery({
+    page: pageIndex,
+    size: pageSize,
+    monitor_config_id: "bq-monitor",
   });
 
   const {
