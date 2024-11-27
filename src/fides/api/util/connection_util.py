@@ -172,6 +172,7 @@ def patch_connection_configs(
 
         if config.connection_type == "saas":
             if config.secrets:
+                logger.info("Oauth Log: Registered New Config Secrets")
                 # This is here rather than with the get_connection_config_or_error because
                 # it will also throw an HTTPException if validation fails and we don't want
                 # to catch it in this case.
@@ -180,6 +181,8 @@ def patch_connection_configs(
                         db, config.secrets, existing_connection_config
                     )
                 else:
+                    # Refactor idea: Transform this into a function for readability
+                    logger.info("Oauth Log: Into Non existing connection config branch")
                     if not config.saas_connector_type:
                         raise HTTPException(
                             status_code=HTTP_422_UNPROCESSABLE_ENTITY,
@@ -251,6 +254,7 @@ def patch_connection_configs(
         orig_data = config.model_dump(serialize_as_any=True, mode="json").copy()
         config_dict = config.model_dump(serialize_as_any=True, exclude_unset=True)
         config_dict.pop("saas_connector_type", None)
+
 
         if existing_connection_config:
             config_dict = {
