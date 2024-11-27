@@ -3113,4 +3113,170 @@ describe("Fides-js TCF", () => {
       });
     });
   });
+
+  describe("Automatically set preferences", () => {
+    beforeEach(() => {
+      cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
+    });
+    describe("Reject all", () => {
+      const validateRejectAll = (interception: any) => {
+        const { body } = interception.request;
+        // check a few to see they are empty arrays
+        expect(body.purpose_consent_preferences).to.eql([]);
+        expect(body.purpose_legitimate_interests_preferences).to.eql([]);
+        expect(body.method).to.eql(ConsentMethod.REJECT);
+      };
+      it("rejects all notices automatically when set", () => {
+        stubTCFExperience({
+          stubOptions: { fidesRejectAll: true },
+        });
+        cy.waitUntilFidesInitialized().then(() => {
+          cy.wait("@patchPrivacyPreference").then((interception) => {
+            validateRejectAll(interception);
+          });
+        });
+      });
+
+      it("rejects all notices automatically when set via cookie", () => {
+        cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
+        cy.getCookie("fides_reject_all").should("not.exist");
+        cy.setCookie("fides_reject_all", "true");
+        stubTCFExperience({});
+
+        cy.waitUntilFidesInitialized().then(() => {
+          cy.wait("@patchPrivacyPreference").then((interception) => {
+            validateRejectAll(interception);
+          });
+        });
+      });
+
+      it("rejects all notices automatically when set via query param", () => {
+        cy.getCookie("fides_string").should("not.exist");
+        stubTCFExperience({
+          demoPageQueryParams: { fides_reject_all: "true" },
+        });
+
+        cy.waitUntilFidesInitialized().then(() => {
+          cy.wait("@patchPrivacyPreference").then((interception) => {
+            validateRejectAll(interception);
+          });
+        });
+      });
+
+      it("rejects all notices automatically when set via window obj", () => {
+        cy.getCookie("fides_string").should("not.exist");
+        stubTCFExperience({
+          demoPageWindowParams: { fides_reject_all: "true" },
+        });
+
+        cy.waitUntilFidesInitialized().then(() => {
+          cy.wait("@patchPrivacyPreference").then((interception) => {
+            validateRejectAll(interception);
+          });
+        });
+      });
+    });
+
+    describe("Accept all", () => {
+      const validateAcceptAll = (interception: any) => {
+        const { body } = interception.request;
+        expect(body.purpose_consent_preferences).to.eql([
+          {
+            id: 1,
+            preference: "opt_in",
+          },
+          {
+            id: 2,
+            preference: "opt_in",
+          },
+          {
+            id: 3,
+            preference: "opt_in",
+          },
+          {
+            id: 4,
+            preference: "opt_in",
+          },
+          {
+            id: 5,
+            preference: "opt_in",
+          },
+          {
+            id: 6,
+            preference: "opt_in",
+          },
+          {
+            id: 7,
+            preference: "opt_in",
+          },
+          {
+            id: 8,
+            preference: "opt_in",
+          },
+          {
+            id: 9,
+            preference: "opt_in",
+          },
+          {
+            id: 10,
+            preference: "opt_in",
+          },
+          {
+            id: 11,
+            preference: "opt_in",
+          },
+        ]);
+        expect(body.method).to.eql(ConsentMethod.ACCEPT);
+      };
+      it("accepts all notices automatically when set", () => {
+        stubTCFExperience({
+          stubOptions: { fidesAcceptAll: true },
+        });
+        cy.waitUntilFidesInitialized().then(() => {
+          cy.wait("@patchPrivacyPreference").then((interception) => {
+            validateAcceptAll(interception);
+          });
+        });
+      });
+
+      it("accepts all notices automatically when set via cookie", () => {
+        cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
+        cy.getCookie("fides_accept_all").should("not.exist");
+        cy.setCookie("fides_accept_all", "true");
+        stubTCFExperience({});
+
+        cy.waitUntilFidesInitialized().then(() => {
+          cy.wait("@patchPrivacyPreference").then((interception) => {
+            validateAcceptAll(interception);
+          });
+        });
+      });
+
+      it("accepts all notices automatically when set via query param", () => {
+        cy.getCookie("fides_string").should("not.exist");
+        stubTCFExperience({
+          demoPageQueryParams: { fides_accept_all: "true" },
+        });
+
+        cy.waitUntilFidesInitialized().then(() => {
+          cy.wait("@patchPrivacyPreference").then((interception) => {
+            validateAcceptAll(interception);
+          });
+        });
+      });
+
+      it("accepts all notices automatically when set via window obj", () => {
+        cy.getCookie("fides_string").should("not.exist");
+        stubTCFExperience({
+          demoPageWindowParams: { fides_accept_all: "true" },
+        });
+
+        cy.waitUntilFidesInitialized().then(() => {
+          cy.wait("@patchPrivacyPreference").then((interception) => {
+            validateAcceptAll(interception);
+          });
+        });
+      });
+    });
+  });
 });
