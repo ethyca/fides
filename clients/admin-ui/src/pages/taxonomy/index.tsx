@@ -87,15 +87,18 @@ const TaxonomyPage: NextPage = () => {
         <div>
           <PageHeader breadcrumbs={[{ title: "Taxonomy" }]} />
 
-          <div className="mb-5 flex justify-between">
-            <AntSpace.Compact>
-              <AntInput
-                className="min-w-[350px]"
-                placeholder="Search"
-                allowClear
-              />
-              <AntButton type="default">Clear</AntButton>
-            </AntSpace.Compact>
+          {/* hide search bar until functionality is implemented */}
+          <div className="hidden">
+            <div className="mb-5 flex justify-between">
+              <AntSpace.Compact>
+                <AntInput
+                  className="min-w-[350px]"
+                  placeholder="Search"
+                  allowClear
+                />
+                <AntButton type="default">Clear</AntButton>
+              </AntSpace.Compact>
+            </div>
           </div>
         </div>
         <div className="relative grow">
