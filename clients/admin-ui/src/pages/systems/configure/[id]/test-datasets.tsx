@@ -1,37 +1,45 @@
 import {
+  AntButton as Button,
+  AntSelect as Select,
   Box,
+  ErrorWarningIcon,
   GreenCheckCircleIcon,
   Heading,
   HStack,
   Stack,
-  AntButton as Button,
-  AntSelect as Select,
   Text,
   Textarea,
-  VStack,
   useToast,
+  VStack,
 } from "fidesui";
+import yaml from "js-yaml";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+
 import { useAppDispatch } from "~/app/hooks";
 import ClipboardButton from "~/features/common/ClipboardButton";
 import FidesSpinner from "~/features/common/FidesSpinner";
+import { getErrorMessage } from "~/features/common/helpers";
 import Layout from "~/features/common/Layout";
 import { SYSTEM_ROUTE } from "~/features/common/nav/v2/routes";
 import PageHeader from "~/features/common/PageHeader";
+import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { Editor } from "~/features/common/yaml/helpers";
-import { useGetConnectionConfigDatasetConfigsQuery } from "~/features/datastore-connections";
+import { useUpdateDatasetMutation } from "~/features/dataset";
+import {
+  useGetConnectionConfigDatasetConfigsQuery,
+  useGetDatasetInputsQuery,
+  useGetDatasetReachabilityQuery,
+  useTestDatastoreConnectionDatasetsMutation,
+} from "~/features/datastore-connections";
+import { useGetFilteredResultsQuery } from "~/features/privacy-requests";
 import {
   setActiveSystem,
   useGetSystemByFidesKeyQuery,
 } from "~/features/system";
-import yaml from "js-yaml";
 import { Dataset, DatasetConfigSchema } from "~/types/api";
-import { getErrorMessage } from "~/features/common/helpers";
-import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { isErrorResult } from "~/types/errors";
-import { useUpdateDatasetMutation } from "~/features/dataset";
 
 // Types
 interface DatasetOption {
@@ -41,7 +49,9 @@ interface DatasetOption {
 
 // Helper functions
 const getSystemId = (query: { id?: string | string[] }): string => {
-  if (!query.id) return "";
+  if (!query.id) {
+    return "";
+  }
   return Array.isArray(query.id) ? query.id[0] : query.id;
 };
 
@@ -54,23 +64,49 @@ const createDatasetOptions = (
   }));
 };
 
-// Components
-const EditorSection: React.FC<{
+interface EditorSectionProps {
+  connectionKey: string;
   selectedDataset: DatasetConfigSchema | null;
   datasetOptions: DatasetOption[];
   onDatasetChange: (value: string) => void;
   onRefresh: () => void;
   isRefreshing: boolean;
-}> = ({
+}
+
+// Components
+const EditorSection = ({
+  connectionKey,
   selectedDataset,
   datasetOptions,
   onDatasetChange,
   onRefresh,
   isRefreshing,
-}) => {
+}: EditorSectionProps) => {
   const [updateDataset, { isLoading }] = useUpdateDatasetMutation();
   const toast = useToast();
   const [editorContent, setEditorContent] = useState("");
+
+  // Updated to use the connectionKey prop
+  const {
+    data: isReachable,
+    refetch: refetchReachability,
+    error: reachabilityError,
+    isLoading: isReachabilityLoading,
+  } = useGetDatasetReachabilityQuery(
+    {
+      connectionKey,
+      datasetKey: selectedDataset?.fides_key || "",
+    },
+    {
+      skip: !connectionKey || !selectedDataset?.fides_key,
+    },
+  );
+  // Updated to use connectionKey prop
+  useEffect(() => {
+    if (connectionKey && selectedDataset?.fides_key) {
+      refetchReachability();
+    }
+  }, [connectionKey, selectedDataset?.fides_key, refetchReachability]);
 
   // Update editor content when selected dataset changes
   useEffect(() => {
@@ -109,6 +145,7 @@ const EditorSection: React.FC<{
           toast(errorToastParams(getErrorMessage(result.error)));
         } else {
           toast(successToastParams("Successfully modified dataset"));
+          await refetchReachability();
         }
       } catch (error) {
         toast(errorToastParams(error as string));
@@ -188,33 +225,175 @@ const EditorSection: React.FC<{
         />
       </Stack>
       <Stack
-        backgroundColor="gray.50"
+        backgroundColor={isReachable ? "green.50" : "red.50"}
         border="1px solid"
-        borderColor="green.500"
+        borderColor={isReachable ? "green.500" : "red.500"}
         borderRadius="md"
         justifyContent="space-between"
         py={2}
         px={4}
       >
         <Text fontSize="sm">
-          <GreenCheckCircleIcon /> Dataset is reachable via the <b>email</b>{" "}
-          identity
+          {isReachable ? (
+            <>
+              <GreenCheckCircleIcon /> Dataset is reachable
+            </>
+          ) : (
+            <>
+              <ErrorWarningIcon className="text-red-500" /> Dataset is not
+              reachable
+            </>
+          )}
         </Text>
       </Stack>
     </VStack>
   );
 };
 
-const TestResultsSection: React.FC = () => {
-  const [testInput, setTestInput] = useState(
-    JSON.stringify({ email: "user@example.com" }, null, 2),
+const TestResultsSection = ({
+  connectionKey,
+  selectedDataset,
+}: {
+  connectionKey: string;
+  selectedDataset: DatasetConfigSchema | null;
+}) => {
+  const toast = useToast();
+  const [testDatasets] = useTestDatastoreConnectionDatasetsMutation();
+  const [testInput, setTestInput] = useState({});
+  const [testResults, setTestResults] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [privacyRequestId, setPrivacyRequestId] = useState<string | null>(null);
+
+  // Poll for results when we have a privacy request ID
+  const { data: filteredResults } = useGetFilteredResultsQuery(
+    { privacy_request_id: privacyRequestId! },
+    {
+      skip: !privacyRequestId,
+      pollingInterval: 2000, // Poll every 2 seconds
+    },
   );
-  const [sqlQuery] = useState(
-    "SELECT * FROM customer WHERE email='user@example.com'",
+
+  useEffect(() => {
+    if (!filteredResults) return;
+
+    console.log("Filtered results:", filteredResults);
+
+    if (
+      filteredResults.status === "complete" ||
+      filteredResults.status === "error"
+    ) {
+      if (filteredResults.status === "complete") {
+        setTestResults(JSON.stringify(filteredResults.results, null, 2));
+        toast(successToastParams("Test run completed successfully"));
+      } else {
+        toast(errorToastParams("Test run failed"));
+      }
+      setIsLoading(false);
+      setPrivacyRequestId(null); // Stop polling by clearing the ID
+    }
+  }, [filteredResults, toast]);
+
+  // Keep track of values for each dataset
+  const datasetValuesRef = useRef<Record<string, Record<string, any>>>({});
+
+  const { data: inputsData, error: inputsError } = useGetDatasetInputsQuery(
+    {
+      connectionKey,
+      datasetKey: selectedDataset?.fides_key || "",
+    },
+    {
+      skip: !connectionKey || !selectedDataset?.fides_key,
+    },
   );
-  const [testResults] = useState(
-    JSON.stringify({ customer: [{ first_name: "Test" }] }, null, 2),
-  );
+
+  useEffect(() => {
+    if (!selectedDataset?.fides_key || !inputsData) return;
+
+    try {
+      const existingValues =
+        datasetValuesRef.current[selectedDataset.fides_key] || {};
+
+      const currentInputValues = testInput ? JSON.parse(testInput) : {};
+
+      const filteredValues: Record<string, any> = {};
+      Object.keys(inputsData).forEach((key) => {
+        if (key in existingValues) {
+          filteredValues[key] = existingValues[key];
+        }
+        if (key in currentInputValues) {
+          filteredValues[key] = currentInputValues[key];
+        }
+        if (!(key in filteredValues)) {
+          filteredValues[key] = inputsData[key];
+        }
+      });
+
+      datasetValuesRef.current[selectedDataset.fides_key] = filteredValues;
+      setTestInput(JSON.stringify(filteredValues, null, 2));
+    } catch (e) {
+      console.error("Error parsing test input:", e);
+      setTestInput(JSON.stringify(inputsData, null, 2));
+    }
+  }, [inputsData, selectedDataset?.fides_key]);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const newValue = e.target.value;
+    setTestInput(newValue);
+
+    if (selectedDataset?.fides_key && inputsData) {
+      try {
+        const parsedValues = JSON.parse(newValue);
+        const validKeys = Object.keys(inputsData);
+
+        const filteredValues: Record<string, any> = {};
+        validKeys.forEach((key) => {
+          if (key in parsedValues) {
+            filteredValues[key] = parsedValues[key];
+          }
+        });
+
+        datasetValuesRef.current[selectedDataset.fides_key] = filteredValues;
+      } catch (e) {
+        console.error("Error parsing modified input:", e);
+      }
+    }
+  };
+
+  const handleTestRun = async () => {
+    try {
+      setIsLoading(true);
+      setTestResults(""); // Clear previous results
+
+      let parsedInput;
+      try {
+        parsedInput = JSON.parse(testInput);
+      } catch (e) {
+        toast(errorToastParams("Invalid JSON in test input"));
+        setIsLoading(false);
+        return;
+      }
+
+      const result = await testDatasets({
+        connection_key: connectionKey,
+        dataset_key: selectedDataset?.fides_key || "",
+        input_data: parsedInput,
+      });
+
+      if (isErrorResult(result)) {
+        toast(errorToastParams(getErrorMessage(result.error)));
+        setIsLoading(false);
+      } else if ("data" in result) {
+        // If the response is just a string, use it directly
+        setPrivacyRequestId(result.data);
+      } else {
+        setIsLoading(false);
+        toast(errorToastParams("No privacy request ID in response"));
+      }
+    } catch (error) {
+      setIsLoading(false);
+      toast(errorToastParams("Failed to start test run"));
+    }
+  };
 
   return (
     <VStack alignItems="stretch" flex="1" maxWidth="70vw" minHeight="0">
@@ -234,6 +413,8 @@ const TestResultsSection: React.FC = () => {
           size="small"
           type="primary"
           data-testid="save-btn"
+          onClick={handleTestRun}
+          loading={isLoading}
         >
           Run
         </Button>
@@ -242,22 +423,10 @@ const TestResultsSection: React.FC = () => {
         size="sm"
         focusBorderColor="primary.600"
         color="gray.800"
-        isDisabled={false}
+        isDisabled={isLoading}
         height="100%"
         value={testInput}
-        onChange={(e) => setTestInput(e.target.value)}
-      />
-      <Heading as="h3" size="sm">
-        Generated SQL queries <ClipboardButton copyText={sqlQuery} />
-      </Heading>
-      <Textarea
-        isReadOnly
-        size="sm"
-        focusBorderColor="primary.600"
-        color="gray.800"
-        isDisabled={false}
-        height="100%"
-        value={sqlQuery}
+        onChange={handleInputChange}
       />
       <Heading as="h3" size="sm">
         Test results <ClipboardButton copyText={testResults} />
@@ -362,13 +531,17 @@ const TestDatasetPage: NextPage = () => {
         padding="4 4 4 0"
       >
         <EditorSection
+          connectionKey={system?.connection_configs?.key || ""}
           selectedDataset={selectedDataset}
           datasetOptions={datasetOptions}
           onDatasetChange={handleDatasetChange}
           onRefresh={handleRefresh}
           isRefreshing={isDatasetConfigsLoading}
         />
-        <TestResultsSection />
+        <TestResultsSection
+          connectionKey={system?.connection_configs?.key || ""}
+          selectedDataset={selectedDataset}
+        />
       </HStack>
     </Layout>
   );
