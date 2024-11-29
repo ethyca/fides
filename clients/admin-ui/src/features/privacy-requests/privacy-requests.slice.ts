@@ -540,6 +540,20 @@ export const privacyRequestApi = baseApi.injectEndpoints({
         url: `privacy-request/${privacy_request_id}/access-results`,
       }),
     }),
+    getFilteredResults: build.query<
+      {
+        status: PrivacyRequestStatus;
+        results: {
+          [key: string]: Array<Record<string, any>>;
+        };
+      },
+      { privacy_request_id: string }
+    >({
+      query: ({ privacy_request_id }) => ({
+        method: "GET",
+        url: `privacy-request/${privacy_request_id}/filtered-results`,
+      }),
+    }),
   }),
 });
 
@@ -570,6 +584,7 @@ export const {
   useCreateMessagingConfigurationSecretsMutation,
   useCreateTestConnectionMessageMutation,
   useGetPrivacyRequestAccessResultsQuery,
+  useGetFilteredResultsQuery,
 } = privacyRequestApi;
 
 export type CORSOrigins = Pick<SecurityApplicationConfig, "cors_origins">;

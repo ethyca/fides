@@ -72,6 +72,8 @@ from fides.api.models.pre_approval_webhook import (
 )
 from fides.api.models.privacy_preference import PrivacyPreferenceHistory
 from fides.api.models.privacy_request import (
+    COMPLETED_EXECUTION_LOG_STATUSES,
+    EXITED_EXECUTION_LOG_STATUSES,
     CheckpointActionRequired,
     ConsentRequest,
     CustomPrivacyRequestField,
@@ -166,6 +168,7 @@ from fides.common.api.v1.urn_registry import (
     PRIVACY_REQUEST_BULK_RETRY,
     PRIVACY_REQUEST_BULK_SOFT_DELETE,
     PRIVACY_REQUEST_DENY,
+    PRIVACY_REQUEST_FILTERED_RESULTS,
     PRIVACY_REQUEST_MANUAL_WEBHOOK_ACCESS_INPUT,
     PRIVACY_REQUEST_MANUAL_WEBHOOK_ERASURE_INPUT,
     PRIVACY_REQUEST_NOTIFICATIONS,
@@ -2619,3 +2622,36 @@ def get_access_results_urls(
         return PrivacyRequestAccessResults(access_result_urls=[])
 
     return privacy_request.access_result_urls
+
+
+@router.get(
+    PRIVACY_REQUEST_FILTERED_RESULTS,
+    dependencies=[
+        Security(verify_oauth_client, scopes=[PRIVACY_REQUEST_READ_ACCESS_RESULTS])
+    ],
+    status_code=HTTP_200_OK,
+    response_model=Dict[str, Any],
+)
+def get_filtered_results(
+    privacy_request_id: str,
+    db: Session = Depends(deps.get_db),
+) -> Dict[str, Any]:
+    """Get filtered results for a test privacy request and update its status if complete."""
+    privacy_request = get_privacy_request_or_error(db, privacy_request_id)
+
+    # Check completion status of all tasks
+    statuses = [task.status for task in privacy_request.access_tasks]
+    all_completed = all(status in EXITED_EXECUTION_LOG_STATUSES for status in statuses)
+
+    # Update request status if all tasks are done
+    if all_completed:
+        has_errors = ExecutionLogStatus.error in statuses
+        privacy_request.status = (
+            PrivacyRequestStatus.error if has_errors else PrivacyRequestStatus.complete
+        )
+        privacy_request.save(db=db)
+
+    return {
+        "status": privacy_request.status,
+        "results": privacy_request.get_raw_access_results(),
+    }

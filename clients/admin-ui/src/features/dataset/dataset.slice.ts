@@ -73,7 +73,7 @@ const datasetApi = baseApi.injectEndpoints({
         method: "PUT",
         body: dataset,
       }),
-      invalidatesTags: ["Datasets", "Dataset"],
+      invalidatesTags: ["Datasets", "Dataset", "Datastore Connection"],
     }),
     // we accept 'unknown' as well since the user can paste anything in, and we rely
     // on the backend to do the validation for us
