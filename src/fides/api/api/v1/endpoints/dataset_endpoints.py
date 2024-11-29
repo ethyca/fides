@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-from typing import Annotated, Callable, List
+from typing import Annotated, Any, Callable, Dict, List
 
 import yaml
 from fastapi import Depends, HTTPException, Request
@@ -41,6 +41,7 @@ from fides.api.models.datasetconfig import (
     to_graph_field,
     validate_masking_strategy_override,
 )
+from fides.api.models.policy import Policy
 from fides.api.oauth.utils import verify_oauth_client
 from fides.api.schemas.api import BulkUpdateFailed
 from fides.api.schemas.dataset import (
@@ -50,6 +51,11 @@ from fides.api.schemas.dataset import (
     DatasetTraversalDetails,
     ValidateDatasetResponse,
     validate_data_categories_against_db,
+)
+from fides.api.service.dataset.dataset_service import (
+    get_dataset_reachability,
+    get_identities_and_references,
+    run_test_access_request,
 )
 from fides.api.util.api_router import APIRouter
 from fides.api.util.data_category import get_data_categories_from_db
@@ -62,9 +68,12 @@ from fides.common.api.scope_registry import (
 from fides.common.api.v1.urn_registry import (
     CONNECTION_DATASETS,
     DATASET_BY_KEY,
+    DATASET_CONFIG_BY_KEY,
     DATASET_CONFIGS,
+    DATASET_INPUTS,
+    DATASET_REACHABILITY,
+    DATASET_TEST,
     DATASET_VALIDATE,
-    DATASETCONFIG_BY_KEY,
     DATASETS,
     V1_URL_PREFIX,
     YAML_DATASETS,
@@ -571,7 +580,7 @@ def get_dataset_configs(
 
 
 @router.get(
-    DATASETCONFIG_BY_KEY,
+    DATASET_CONFIG_BY_KEY,
     dependencies=[Security(verify_oauth_client, scopes=[DATASET_READ])],
     response_model=DatasetConfigSchema,
 )
@@ -762,3 +771,104 @@ def clean_datasets(
             "failed": failed,
         },
     )
+
+
+@router.get(
+    DATASET_INPUTS,
+    dependencies=[Security(verify_oauth_client, scopes=[DATASET_READ])],
+)
+def dataset_identities_and_references(
+    *,
+    db: Session = Depends(deps.get_db),
+    connection_config: ConnectionConfig = Depends(_get_connection_config),
+    fides_key: FidesKey,
+) -> Dict[str, Any]:
+    """
+    Returns a dictionary containing the immediate identity and dataset reference
+    dependencies for the given dataset.
+    """
+
+    dataset_config = DatasetConfig.filter(
+        db=db,
+        conditions=(
+            (DatasetConfig.connection_config_id == connection_config.id)
+            & (DatasetConfig.fides_key == fides_key)
+        ),
+    ).first()
+    if not dataset_config:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail=f"No dataset config with fides_key '{fides_key}'",
+        )
+
+    inputs = get_identities_and_references(dataset_config)
+    return {input: None for input in inputs}
+
+
+@router.get(
+    DATASET_REACHABILITY,
+    dependencies=[Security(verify_oauth_client, scopes=[DATASET_READ])],
+)
+def dataset_reachability(
+    *,
+    db: Session = Depends(deps.get_db),
+    connection_config: ConnectionConfig = Depends(_get_connection_config),
+    fides_key: FidesKey,
+) -> bool:
+    """
+    Returns a dictionary containing the immediate identity and dataset reference
+    dependencies for the given dataset.
+    """
+
+    dataset_config = DatasetConfig.filter(
+        db=db,
+        conditions=(
+            (DatasetConfig.connection_config_id == connection_config.id)
+            & (DatasetConfig.fides_key == fides_key)
+        ),
+    ).first()
+    if not dataset_config:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail=f"No dataset config with fides_key '{fides_key}'",
+        )
+    return get_dataset_reachability(db, dataset_config)
+
+
+@router.post(
+    DATASET_TEST,
+    status_code=HTTP_200_OK,
+    dependencies=[Security(verify_oauth_client, scopes=[DATASET_READ])],
+    response_model=str,
+)
+def test_connection_datasets(
+    *,
+    db: Session = Depends(deps.get_db),
+    connection_config: ConnectionConfig = Depends(_get_connection_config),
+    fides_key: FidesKey,
+    data: Dict[str, Any],
+) -> str:
+    dataset_config = DatasetConfig.filter(
+        db=db,
+        conditions=(
+            (DatasetConfig.connection_config_id == connection_config.id)
+            & (DatasetConfig.fides_key == fides_key)
+        ),
+    ).first()
+    if not dataset_config:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail=f"No dataset config with fides_key '{fides_key}'",
+        )
+
+    access_policy: Policy = Policy.get_by(
+        db, field="key", value="default_access_policy"
+    )
+
+    privacy_request = run_test_access_request(
+        db,
+        access_policy,
+        dataset_config,
+        data,
+    )
+    return privacy_request.id

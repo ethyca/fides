@@ -602,6 +602,14 @@ def _filter_privacy_request_queryset(
             )
         )
 
+    # Filter out test privacy requests
+    query = query.filter(
+        or_(
+            PrivacyRequest.source != PrivacyRequestSource.dataset_test,
+            PrivacyRequest.source.is_(None),
+        )
+    )
+
     # Filter out deleted requests
     if not include_deleted_requests:
         query = query.filter(PrivacyRequest.deleted_at.is_(None))
