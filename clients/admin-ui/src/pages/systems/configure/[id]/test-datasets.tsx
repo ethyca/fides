@@ -63,14 +63,18 @@ const TestDatasetPage: NextPage = () => {
       const existingValues =
         datasetValuesRef.current[selectedDataset.fides_key] || {};
 
-      // First, collect all non-null existing values
-      const filteredValues = Object.fromEntries(
-        Object.entries(existingValues).filter(([, value]) => value !== null),
-      );
+      const filteredValues: Record<string, any> = {};
 
-      // Then add input data for missing or null values
+      // Only keep non-null values for keys that exist in inputsData
+      Object.entries(existingValues)
+        .filter(([key, value]) => key in inputsData && value !== null)
+        .forEach(([key, value]) => {
+          filteredValues[key] = value;
+        });
+
+      // Add input data for any remaining keys
       Object.entries(inputsData).forEach(([key, value]) => {
-        if (!(key in filteredValues) || filteredValues[key] === null) {
+        if (!(key in filteredValues)) {
           filteredValues[key] = value;
         }
       });

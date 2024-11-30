@@ -79,11 +79,29 @@ const EditorSection = ({
     }
   }, [datasetConfigs, state.selectedDataset, onDatasetChange]);
 
+  const removeNulls = (obj: any): any => {
+    if (Array.isArray(obj)) {
+      return obj
+        .map((item) => removeNulls(item))
+        .filter((item) => item !== null);
+    }
+    if (obj && typeof obj === "object") {
+      return Object.fromEntries(
+        Object.entries(obj)
+          .map(([key, value]) => [key, removeNulls(value)])
+          .filter(([, value]) => value !== null),
+      );
+    }
+    return obj;
+  };
+
   useEffect(() => {
     if (state.selectedDataset?.ctl_dataset) {
       setState((prev) => ({
         ...prev,
-        editorContent: yaml.dump(state.selectedDataset?.ctl_dataset),
+        editorContent: yaml.dump(
+          removeNulls(state.selectedDataset?.ctl_dataset),
+        ),
       }));
     }
   }, [state.selectedDataset]);
@@ -133,7 +151,7 @@ const EditorSection = ({
         setState((prev) => ({
           ...prev,
           selectedDataset: refreshedDataset,
-          editorContent: yaml.dump(refreshedDataset.ctl_dataset),
+          editorContent: yaml.dump(removeNulls(refreshedDataset.ctl_dataset)),
         }));
       }
       onSaveOrRefresh?.();
