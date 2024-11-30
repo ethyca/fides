@@ -123,7 +123,11 @@ describe("System management with Plus features", () => {
       cy.wait("@getDictSystem");
       cy.getByTestId("input-dpo").should("have.value", "DPO@anzu.io");
       cy.getByTestId("tab-Data uses").click();
+      // eslint-disable-next-line cypress/no-unnecessary-waiting
+      cy.wait(500);
       cy.getByTestId("tab-Information").click();
+      // eslint-disable-next-line cypress/no-unnecessary-waiting
+      cy.wait(500);
       cy.getByTestId("tab-Data uses").click();
       cy.getByTestId("confirmation-modal").should("not.exist");
     });
@@ -458,6 +462,46 @@ describe("System management with Plus features", () => {
       cy.location().should((location) => {
         expect(location.pathname).to.eq(INDEX_ROUTE);
       });
+    });
+  });
+
+  describe("tab navigation", () => {
+    it("updates URL hash when switching tabs", () => {
+      cy.visit(`${SYSTEM_ROUTE}/configure/demo_analytics_system#information`);
+      cy.location("hash").should("eq", "#information");
+
+      // eslint-disable-next-line cypress/no-unnecessary-waiting
+      cy.wait(500);
+      cy.getByTestId("tab-Data uses").click();
+      cy.location("hash").should("eq", "#data-uses");
+
+      // eslint-disable-next-line cypress/no-unnecessary-waiting
+      cy.wait(500);
+      cy.getByTestId("tab-Data flow").click();
+      cy.location("hash").should("eq", "#data-flow");
+
+      // eslint-disable-next-line cypress/no-unnecessary-waiting
+      cy.wait(500);
+      cy.getByTestId("tab-Integrations").click();
+      cy.location("hash").should("eq", "#integrations");
+
+      // eslint-disable-next-line cypress/no-unnecessary-waiting
+      cy.wait(500);
+      cy.getByTestId("tab-History").click();
+      cy.location("hash").should("eq", "#history");
+    });
+
+    it("loads correct tab directly based on URL hash", () => {
+      // Visit page with specific hash
+      cy.visit(`${SYSTEM_ROUTE}/configure/demo_analytics_system#data-uses`);
+
+      // Verify correct tab is active
+      cy.getByTestId("tab-Data uses").should(
+        "have.attr",
+        "aria-selected",
+        "true",
+      );
+      cy.location("hash").should("eq", "#data-uses");
     });
   });
 });

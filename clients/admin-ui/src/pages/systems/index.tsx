@@ -129,6 +129,7 @@ const Systems: NextPage = () => {
         query: {
           id: system.fides_key,
         },
+        hash: "#information",
       });
     },
     [dispatch, router],
