@@ -23,6 +23,9 @@ The types of changes are:
 ### Developer Experience
 - Migrated remaining instances of Chakra's Select component to use Ant's Select component [#5502](https://github.com/ethyca/fides/pull/5502)
 
+### Fixed
+- Updating dataset PUT to allow deleting all datasets [#5524](https://github.com/ethyca/fides/pull/5524)
+
 ## [2.50.0](https://github.com/ethyca/fides/compare/2.49.1...2.50.0)
 
 ### Added
