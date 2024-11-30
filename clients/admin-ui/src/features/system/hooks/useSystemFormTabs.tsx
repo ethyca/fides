@@ -188,7 +188,7 @@ const useSystemFormTabs = ({
 
   const onTabChange = useCallback(
     (index: number) => {
-      attemptAction().then((modalConfirmed: boolean) => {
+      attemptAction().then(async (modalConfirmed: boolean) => {
         if (modalConfirmed) {
           const { status } = router.query;
           if (status) {
@@ -209,7 +209,7 @@ const useSystemFormTabs = ({
               const newQuery = { ...router.query };
               delete newQuery.status;
 
-              router.replace(
+              await router.replace(
                 {
                   pathname: router.pathname,
                   query: newQuery,

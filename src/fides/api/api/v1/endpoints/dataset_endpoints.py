@@ -223,7 +223,8 @@ def put_dataset_configs(
         db.query(DatasetConfig).filter(
             DatasetConfig.connection_config_id == connection_config.id,
             DatasetConfig.fides_key.in_(config_keys_to_remove),
-        ).delete()
+        ).delete(synchronize_session=False)
+        db.commit()
 
     # reuse the existing patch logic once we've removed the unused dataset configs
     return patch_dataset_configs(dataset_pairs, db, connection_config)
