@@ -51,29 +51,31 @@ describe("System management with Plus features", () => {
     });
 
     it("can display the vendor list dropdown", () => {
-      cy.getSelectContainer("input-name");
+      cy.getByTestId("vendor-name-select");
     });
 
     it("contains type ahead dictionary entries", () => {
-      cy.getSelectContainer("input-name").type("A");
+      cy.getByTestId("vendor-name-select").find("input").type("A");
       cy.get(".ant-select-item").eq(0).contains("Aniview LTD");
       cy.get(".ant-select-item").eq(1).contains("Anzu Virtual Reality LTD");
     });
 
     it("can reset suggestions by clearing vendor input", () => {
-      cy.getSelectContainer("input-name").type("L{enter}");
+      cy.getByTestId("vendor-name-select").find("input").type("L");
+      cy.antSelectDropdownVisible();
+      cy.getByTestId("vendor-name-select").realPress("Enter");
       cy.getByTestId("input-legal_name").should("have.value", "LINE");
       cy.getByTestId("clear-btn").click();
       cy.getByTestId("input-legal_name").should("be.empty");
     });
 
     it("can't refresh suggestions immediately after populating", () => {
-      cy.getSelectContainer("input-name").type("A{enter}");
+      cy.getByTestId("vendor-name-select").find("input").type("A{enter}");
       cy.getByTestId("refresh-suggestions-btn").should("be.disabled");
     });
 
     it("can refresh suggestions when editing a saved system", () => {
-      cy.getSelectContainer("input-name").type("A{enter}");
+      cy.getByTestId("vendor-name-select").find("input").type("A{enter}");
       cy.fixture("systems/dictionary-system.json").then((dictSystem) => {
         cy.fixture("systems/system.json").then((origSystem) => {
           cy.intercept(
@@ -99,7 +101,7 @@ describe("System management with Plus features", () => {
     // the form to be mistakenly marked as dirty and the "unsaved changes"
     // modal to pop up incorrectly when switching tabs
     it("can switch between tabs after populating from dictionary", () => {
-      cy.getSelectContainer("input-name").type("Anzu{enter}");
+      cy.getByTestId("vendor-name-select").find("input").type("Anzu{enter}");
       // the form fetches the system again after saving, so update the intercept with dictionary values
       cy.fixture("systems/dictionary-system.json").then((dictSystem) => {
         cy.fixture("systems/system.json").then((origSystem) => {
@@ -121,19 +123,23 @@ describe("System management with Plus features", () => {
       cy.wait("@getDictSystem");
       cy.getByTestId("input-dpo").should("have.value", "DPO@anzu.io");
       cy.getByTestId("tab-Data uses").click();
+      // eslint-disable-next-line cypress/no-unnecessary-waiting
+      cy.wait(500);
       cy.getByTestId("tab-Information").click();
+      // eslint-disable-next-line cypress/no-unnecessary-waiting
+      cy.wait(500);
       cy.getByTestId("tab-Data uses").click();
       cy.getByTestId("confirmation-modal").should("not.exist");
     });
 
     it("locks editing for a GVL vendor when TCF is enabled", () => {
-      cy.getSelectContainer("input-name").type("Aniview{enter}");
+      cy.getByTestId("vendor-name-select").find("input").type("Aniview{enter}");
       cy.getByTestId("locked-for-GVL-notice");
       cy.getByTestId("input-description").should("be.disabled");
     });
 
     it("does not allow changes to data uses when locked", () => {
-      cy.getSelectContainer("input-name").type("Aniview{enter}");
+      cy.getByTestId("vendor-name-select").find("input").type("Aniview{enter}");
       cy.getByTestId("save-btn").click();
       cy.wait(["@postSystem", "@getSystem", "@getSystems"]);
       cy.getByTestId("tab-Data uses").click();
@@ -144,7 +150,7 @@ describe("System management with Plus features", () => {
     });
 
     it("does not lock editing for a non-GVL vendor", () => {
-      cy.getSelectContainer("input-name").type("L{enter}");
+      cy.getByTestId("vendor-name-select").find("input").type("L{enter}");
       cy.getByTestId("locked-for-GVL-notice").should("not.exist");
       cy.getByTestId("input-description").should("not.be.disabled");
     });
@@ -181,20 +187,22 @@ describe("System management with Plus features", () => {
     });
 
     it("allows changes to data uses for non-GVL vendors", () => {
-      cy.getSelectContainer("input-name").type("L{enter}");
+      cy.getByTestId("vendor-name-select").find("input").type("L");
+      cy.antSelectDropdownVisible();
+      cy.getByTestId("vendor-name-select").realPress("Enter");
       cy.getByTestId("save-btn").click();
       cy.wait(["@postSystem", "@getSystem", "@getSystems"]);
       cy.getByTestId("tab-Data uses").click();
       cy.getByTestId("add-btn");
       cy.getByTestId("delete-btn");
       cy.getByTestId("row-functional.service.improve").click();
-      cy.getByTestId("input-data_categories")
+      cy.getByTestId("controlled-select-data_categories")
         .find("input")
         .should("not.be.disabled");
     });
 
     it("don't allow editing declaration name after creation", () => {
-      cy.getSelectContainer("input-name").type("L{enter}");
+      cy.getByTestId("vendor-name-select").find("input").type("L{enter}");
       cy.getByTestId("save-btn").click();
       cy.wait(["@postSystem", "@getSystem", "@getSystems"]);
       cy.getByTestId("tab-Data uses").click();
@@ -203,12 +211,16 @@ describe("System management with Plus features", () => {
     });
 
     it("don't allow editing data uses after creation", () => {
-      cy.getSelectContainer("input-name").type("L{enter}");
+      cy.getByTestId("vendor-name-select").find("input").type("L");
+      cy.antSelectDropdownVisible();
+      cy.getByTestId("vendor-name-select").realPress("Enter");
       cy.getByTestId("save-btn").click();
       cy.wait(["@postSystem", "@getSystem", "@getSystems"]);
       cy.getByTestId("tab-Data uses").click();
       cy.getByTestId("row-functional.service.improve").click();
-      cy.getByTestId("input-data_use").find("input").should("be.disabled");
+      cy.getByTestId("controlled-select-data_use")
+        .find("input")
+        .should("be.disabled");
     });
   });
 
@@ -254,7 +266,7 @@ describe("System management with Plus features", () => {
       // Should not be able to save while form is untouched
       cy.getByTestId("save-btn").should("be.disabled");
       const testId =
-        "input-customFieldValues.id-custom-field-definition-pokemon-party";
+        "controlled-select-customFieldValues.id-custom-field-definition-pokemon-party";
       cy.getByTestId(testId).contains("Charmander");
       cy.getByTestId(testId).contains("Eevee");
       cy.getByTestId(testId).contains("Snorlax");
@@ -450,6 +462,46 @@ describe("System management with Plus features", () => {
       cy.location().should((location) => {
         expect(location.pathname).to.eq(INDEX_ROUTE);
       });
+    });
+  });
+
+  describe("tab navigation", () => {
+    it("updates URL hash when switching tabs", () => {
+      cy.visit(`${SYSTEM_ROUTE}/configure/demo_analytics_system#information`);
+      cy.location("hash").should("eq", "#information");
+
+      // eslint-disable-next-line cypress/no-unnecessary-waiting
+      cy.wait(500);
+      cy.getByTestId("tab-Data uses").click();
+      cy.location("hash").should("eq", "#data-uses");
+
+      // eslint-disable-next-line cypress/no-unnecessary-waiting
+      cy.wait(500);
+      cy.getByTestId("tab-Data flow").click();
+      cy.location("hash").should("eq", "#data-flow");
+
+      // eslint-disable-next-line cypress/no-unnecessary-waiting
+      cy.wait(500);
+      cy.getByTestId("tab-Integrations").click();
+      cy.location("hash").should("eq", "#integrations");
+
+      // eslint-disable-next-line cypress/no-unnecessary-waiting
+      cy.wait(500);
+      cy.getByTestId("tab-History").click();
+      cy.location("hash").should("eq", "#history");
+    });
+
+    it("loads correct tab directly based on URL hash", () => {
+      // Visit page with specific hash
+      cy.visit(`${SYSTEM_ROUTE}/configure/demo_analytics_system#data-uses`);
+
+      // Verify correct tab is active
+      cy.getByTestId("tab-Data uses").should(
+        "have.attr",
+        "aria-selected",
+        "true",
+      );
+      cy.location("hash").should("eq", "#data-uses");
     });
   });
 });

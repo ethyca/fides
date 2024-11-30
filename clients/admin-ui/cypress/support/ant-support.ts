@@ -16,14 +16,28 @@ declare global {
        * Clear all options from an Ant Design Select component
        */
       antClearSelect: () => void;
+      /**
+       * Remove a tag (or selected option in mode="multiple") from an Ant Design Select component
+       */
+      antRemoveSelectTag: (option: string) => void;
+      /**
+       * Ant Desitn Select component dropdown is visible
+       */
+      antSelectDropdownVisible: () => void;
     }
   }
 }
 
 Cypress.Commands.add("getAntSelectOption", (option: string | number) =>
   typeof option === "string"
-    ? cy.get(`.ant-select-item-option[title="${option}"]`)
-    : cy.get(`.ant-select-item-option`).eq(option),
+    ? cy.get(
+        `.ant-select-dropdown:not(.ant-select-dropdown-hidden) .ant-select-item-option[title="${option}"]`,
+      )
+    : cy
+        .get(
+          `.ant-select-dropdown:not(.ant-select-dropdown-hidden) .ant-select-item-option`,
+        )
+        .eq(option),
 );
 
 Cypress.Commands.add(
@@ -41,9 +55,14 @@ Cypress.Commands.add(
           throw new Error("Cannot select from a disabled Ant Select component");
         }
         if (!classes.includes("ant-select-open")) {
-          cy.get(subject.selector).first().click(clickOptions);
+          if (classes.includes("ant-select-multiple")) {
+            cy.get(subject.selector).first().find("input").click();
+          } else {
+            cy.get(subject.selector).first().click(clickOptions);
+          }
         }
       });
+    cy.antSelectDropdownVisible();
     cy.getAntSelectOption(option).should("be.visible").click(clickOptions);
   },
 );
@@ -58,5 +77,24 @@ Cypress.Commands.add(
     cy.get(subject.selector).find(".ant-select-clear").click({ force: true });
   },
 );
+
+Cypress.Commands.add(
+  "antRemoveSelectTag",
+  {
+    prevSubject: "element",
+  },
+  (subject, option) => {
+    cy.get(subject.selector)
+      .find(`.ant-select-selection-item[title="${option}"]`)
+      .find(".ant-select-selection-item-remove")
+      .click();
+  },
+);
+
+Cypress.Commands.add("antSelectDropdownVisible", () => {
+  cy.get(".ant-select-dropdown:not(.ant-select-dropdown-hidden)").should(
+    "be.visible",
+  );
+});
 
 export {};
