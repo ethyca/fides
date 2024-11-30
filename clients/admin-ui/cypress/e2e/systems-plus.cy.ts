@@ -123,7 +123,9 @@ describe("System management with Plus features", () => {
       cy.wait("@getDictSystem");
       cy.getByTestId("input-dpo").should("have.value", "DPO@anzu.io");
       cy.getByTestId("tab-Data uses").click();
+      cy.wait(500);
       cy.getByTestId("tab-Information").click();
+      cy.wait(500);
       cy.getByTestId("tab-Data uses").click();
       cy.getByTestId("confirmation-modal").should("not.exist");
     });
