@@ -63,15 +63,15 @@ const TestDatasetPage: NextPage = () => {
       const existingValues =
         datasetValuesRef.current[selectedDataset.fides_key] || {};
 
-      const filteredValues: Record<string, any> = {};
-      Object.keys(inputsData).forEach((key) => {
-        // Preserve existing stored values first
-        if (key in existingValues) {
-          filteredValues[key] = existingValues[key];
-        }
-        // Otherwise use default values
-        else {
-          filteredValues[key] = inputsData[key];
+      // First, collect all non-null existing values
+      const filteredValues = Object.fromEntries(
+        Object.entries(existingValues).filter(([, value]) => value !== null),
+      );
+
+      // Then add input data for missing or null values
+      Object.entries(inputsData).forEach(([key, value]) => {
+        if (!(key in filteredValues) || filteredValues[key] === null) {
+          filteredValues[key] = value;
         }
       });
 
@@ -109,10 +109,6 @@ const TestDatasetPage: NextPage = () => {
   // Handle dataset refresh/save
   const handleDatasetUpdate = async () => {
     if (selectedDataset?.fides_key && inputsData) {
-      // Reset stored values
-      delete datasetValuesRef.current[selectedDataset.fides_key];
-
-      // Refetch inputs
       await refetchInputs();
     }
   };
