@@ -108,6 +108,7 @@ from fides.api.schemas.privacy_request import (
     BulkSoftDeletePrivacyRequests,
     DenyPrivacyRequests,
     ExecutionLogDetailResponse,
+    FilteredPrivacyRequestResults,
     ManualWebhookData,
     PrivacyRequestAccessResults,
     PrivacyRequestCreate,
@@ -2629,7 +2630,7 @@ def get_access_results_urls(
         Security(verify_oauth_client, scopes=[PRIVACY_REQUEST_READ_ACCESS_RESULTS])
     ],
     status_code=HTTP_200_OK,
-    response_model=Dict[str, Any],
+    response_model=FilteredPrivacyRequestResults,
 )
 def get_filtered_results(
     privacy_request_id: str,
@@ -2637,6 +2638,12 @@ def get_filtered_results(
 ) -> Dict[str, Any]:
     """Get filtered results for a test privacy request and update its status if complete."""
     privacy_request = get_privacy_request_or_error(db, privacy_request_id)
+
+    if privacy_request.source != PrivacyRequestSource.dataset_test:
+        raise HTTPException(
+            status_code=HTTP_403_FORBIDDEN,
+            detail="Results can only be retrieved for test privacy requests.",
+        )
 
     # Check completion status of all tasks
     statuses = [task.status for task in privacy_request.access_tasks]

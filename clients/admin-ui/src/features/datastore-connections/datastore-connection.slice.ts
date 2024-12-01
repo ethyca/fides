@@ -409,7 +409,7 @@ export const datastoreConnectionApi = baseApi.injectEndpoints({
       { connectionKey: string; datasetKey: string }
     >({
       query: ({ connectionKey, datasetKey }) => ({
-        url: `${CONNECTION_ROUTE}/${connectionKey}/dataset/${datasetKey}/reachable`,
+        url: `${CONNECTION_ROUTE}/${connectionKey}/dataset/${datasetKey}/reachability`,
         method: "GET",
       }),
       providesTags: () => ["Datastore Connection"],

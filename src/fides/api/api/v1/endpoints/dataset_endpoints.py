@@ -48,10 +48,12 @@ from fides.api.schemas.dataset import (
     BulkPutDataset,
     DatasetConfigCtlDataset,
     DatasetConfigSchema,
+    DatasetReachability,
     DatasetTraversalDetails,
     ValidateDatasetResponse,
     validate_data_categories_against_db,
 )
+from fides.api.schemas.privacy_request import TestPrivacyRequest
 from fides.api.schemas.redis_cache import UnlabeledIdentities
 from fides.api.service.dataset.dataset_service import (
     get_dataset_reachability,
@@ -811,6 +813,7 @@ def dataset_identities_and_references(
 @router.get(
     DATASET_REACHABILITY,
     dependencies=[Security(verify_oauth_client, scopes=[DATASET_READ])],
+    response_model=DatasetReachability,
 )
 def dataset_reachability(
     *,
@@ -844,7 +847,7 @@ def dataset_reachability(
     TEST_DATASET,
     status_code=HTTP_200_OK,
     dependencies=[Security(verify_oauth_client, scopes=[DATASET_TEST])],
-    response_model=Dict[str, Any],
+    response_model=TestPrivacyRequest,
 )
 def test_connection_datasets(
     *,

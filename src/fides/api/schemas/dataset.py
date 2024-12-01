@@ -131,3 +131,12 @@ class DryRunDatasetResponse(FidesSchema):
 
     collectionAddress: CollectionAddressResponse
     query: Any
+
+
+class DatasetReachability(FidesSchema):
+    """
+    Response containing reachability details for a single dataset
+    """
+
+    reachable: bool
+    details: Optional[str]
