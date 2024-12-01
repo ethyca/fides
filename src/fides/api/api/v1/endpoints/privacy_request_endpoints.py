@@ -72,7 +72,6 @@ from fides.api.models.pre_approval_webhook import (
 )
 from fides.api.models.privacy_preference import PrivacyPreferenceHistory
 from fides.api.models.privacy_request import (
-    COMPLETED_EXECUTION_LOG_STATUSES,
     EXITED_EXECUTION_LOG_STATUSES,
     CheckpointActionRequired,
     ConsentRequest,
@@ -2652,6 +2651,7 @@ def get_filtered_results(
         privacy_request.save(db=db)
 
     return {
+        "privacy_request_id": privacy_request.id,
         "status": privacy_request.status,
         "results": privacy_request.get_raw_access_results(),
     }

@@ -1,7 +1,8 @@
-from typing import Any, Dict, Set
+from typing import Any, Dict, Optional, Set, Tuple
 
 from sqlalchemy.orm import Session
 
+from fides.api.common_exceptions import UnreachableNodesError, ValidationError
 from fides.api.graph.config import GraphDataset
 from fides.api.graph.graph import DatasetGraph
 from fides.api.graph.traversal import Traversal
@@ -19,9 +20,9 @@ from fides.api.task.create_request_tasks import run_access_request
 def get_dataset_reachability(
     db: Session,
     dataset_config: DatasetConfig,
-):
+) -> Tuple[bool, Optional[str]]:
     """
-    Determines if the given dataset is reachable.
+    Determines if the given dataset is reachable along with an error message
     """
 
     # Get all the dataset configs that are not associated with a disabled connection
@@ -44,9 +45,11 @@ def get_dataset_reachability(
 
     try:
         dataset_graph = DatasetGraph(*dataset_graphs, *sibling_dataset_graphs)
-    except Exception:
-        # TODO: add more detail
-        return False
+    except ValidationError as exc:
+        return (
+            False,
+            f'The following dataset references do not exist "{", ".join(exc.errors)}"',
+        )
 
     identity_seed: Dict[str, str] = {
         k: "something" for k in dataset_graph.identity_keys.values()
@@ -54,11 +57,13 @@ def get_dataset_reachability(
 
     try:
         Traversal(dataset_graph, identity_seed)
-    except Exception:
-        # TODO: check if our datasets are in the exception
-        return False
+    except UnreachableNodesError as exc:
+        return (
+            False,
+            f'The following collections are not reachable "{", ".join(exc.errors)}"',
+        )
 
-    return True
+    return True, None
 
 
 def get_identities_and_references(
@@ -67,7 +72,7 @@ def get_identities_and_references(
     """
     Returns all identity and dataset references in the dataset.
     """
-    result = set()
+    result: Set[str] = set()
     dataset: GraphDataset = dataset_config.get_graph()
     for collection in dataset.collections:
         # Process the identities in the collection
@@ -76,9 +81,7 @@ def get_identities_and_references(
             # Take first reference only
             ref, edge_direction = field_refs[0]
             if edge_direction == "from" and ref.dataset != dataset_config.fides_key:
-                result.add(
-                    f"{ref.dataset}.{ref.collection}.{ref.field_path.string_path}"
-                )
+                result.add(ref.value)
     return result
 
 
@@ -105,9 +108,10 @@ def run_test_access_request(
         },
     )
 
-    # Remove periods to avoid them being parsed as path delimiters downstream.
+    # Remove periods and colons to avoid them being parsed as path delimiters downstream.
     escaped_input_data = {
-        key.replace(".", "_"): value for key, value in input_data.items()
+        key.replace(".", "_").replace(":", "_"): value
+        for key, value in input_data.items()
     }
 
     # Manually cache the input data as identity data.

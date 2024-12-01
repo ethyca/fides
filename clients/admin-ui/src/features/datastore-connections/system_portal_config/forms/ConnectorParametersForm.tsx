@@ -509,9 +509,11 @@ export const ConnectorParametersForm = ({
                     {testButtonLabel}
                   </Button>
                 ) : null}
-                <Button onClick={() => onTestDatasetsClick()}>
-                  Test datasets
-                </Button>
+                {!_.isEmpty(initialDatasets) && (
+                  <Button onClick={() => onTestDatasetsClick()}>
+                    Test datasets
+                  </Button>
+                )}
                 {connectionOption.authorization_required && !authorized ? (
                   <Button
                     loading={isAuthorizing}

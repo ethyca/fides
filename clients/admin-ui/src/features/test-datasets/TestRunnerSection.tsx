@@ -74,12 +74,11 @@ const TestResultsSection = ({
       if (filteredResults.status === "complete") {
         resultValuesRef.current[selectedDataset.fides_key] =
           filteredResults.results;
-        setTestResults(JSON.stringify(filteredResults.results, null, 2));
+        setTestResults(JSON.stringify(filteredResults, null, 2));
         toast(successToastParams("Test run completed successfully"));
       } else {
+        setTestResults(JSON.stringify(filteredResults, null, 2));
         toast(errorToastParams("Test run failed"));
-        delete resultValuesRef.current[selectedDataset.fides_key];
-        setTestResults("");
       }
       setIsLoading(false);
       setPrivacyRequestId(null);
@@ -118,7 +117,7 @@ const TestResultsSection = ({
         toast(errorToastParams(getErrorMessage(result.error)));
         setIsLoading(false);
       } else if ("data" in result) {
-        setPrivacyRequestId(result.data);
+        setPrivacyRequestId(result.data.privacy_request_id);
       } else {
         setIsLoading(false);
         toast(errorToastParams("No privacy request ID in response"));

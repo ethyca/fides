@@ -60,6 +60,7 @@ STORAGE = "storage"
 SYSTEM = "system"
 SYSTEM_MANAGER = "system_manager"
 TAXONOMY = "taxonomy"
+TEST = "test"
 TRANSFER = "transfer"
 UPDATE = "update"
 UPLOAD_DATA = "upload_data"
@@ -129,6 +130,7 @@ DATA_USE_DELETE = f"{DATA_USE}:{DELETE}"
 DATASET_CREATE_OR_UPDATE = f"{DATASET}:{CREATE_OR_UPDATE}"
 DATASET_DELETE = f"{DATASET}:{DELETE}"
 DATASET_READ = f"{DATASET}:{READ}"
+DATASET_TEST = f"{DATASET}:{TEST}"
 
 ENCRYPTION_EXEC = f"{ENCRYPTION}:{EXEC}"
 
@@ -275,6 +277,7 @@ SCOPE_DOCS = {
     DATASET_CREATE_OR_UPDATE: "Create or modify datasets",
     DATASET_DELETE: "Delete datasets",
     DATASET_READ: "View datasets",
+    DATASET_TEST: "Run a standalone privacy request test for a dataset",
     ENCRYPTION_EXEC: "Encrypt data",
     MESSAGING_TEMPLATE_UPDATE: "Update messaging templates",
     EVALUATION_CREATE: "Create evaluation",

@@ -381,7 +381,7 @@ export const datastoreConnectionApi = baseApi.injectEndpoints({
       invalidatesTags: () => ["Datastore Connection"],
     }),
     testDatastoreConnectionDatasets: build.mutation<
-      string,
+      { privacy_request_id: string },
       {
         connection_key: string;
         dataset_key: string;
@@ -405,7 +405,7 @@ export const datastoreConnectionApi = baseApi.injectEndpoints({
       providesTags: () => ["Datastore Connection"],
     }),
     getDatasetReachability: build.query<
-      boolean,
+      { reachable: boolean; details: string },
       { connectionKey: string; datasetKey: string }
     >({
       query: ({ connectionKey, datasetKey }) => ({

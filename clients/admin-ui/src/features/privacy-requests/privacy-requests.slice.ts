@@ -542,6 +542,7 @@ export const privacyRequestApi = baseApi.injectEndpoints({
     }),
     getFilteredResults: build.query<
       {
+        privacy_request_id: string;
         status: PrivacyRequestStatus;
         results: {
           [key: string]: Array<Record<string, any>>;

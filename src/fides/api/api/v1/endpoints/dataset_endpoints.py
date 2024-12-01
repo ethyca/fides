@@ -52,6 +52,7 @@ from fides.api.schemas.dataset import (
     ValidateDatasetResponse,
     validate_data_categories_against_db,
 )
+from fides.api.schemas.redis_cache import UnlabeledIdentities
 from fides.api.service.dataset.dataset_service import (
     get_dataset_reachability,
     get_identities_and_references,
@@ -64,6 +65,7 @@ from fides.common.api.scope_registry import (
     DATASET_CREATE_OR_UPDATE,
     DATASET_DELETE,
     DATASET_READ,
+    DATASET_TEST,
 )
 from fides.common.api.v1.urn_registry import (
     CONNECTION_DATASETS,
@@ -72,9 +74,9 @@ from fides.common.api.v1.urn_registry import (
     DATASET_CONFIGS,
     DATASET_INPUTS,
     DATASET_REACHABILITY,
-    DATASET_TEST,
     DATASET_VALIDATE,
     DATASETS,
+    TEST_DATASET,
     V1_URL_PREFIX,
     YAML_DATASETS,
 )
@@ -815,7 +817,7 @@ def dataset_reachability(
     db: Session = Depends(deps.get_db),
     connection_config: ConnectionConfig = Depends(_get_connection_config),
     fides_key: FidesKey,
-) -> bool:
+) -> Dict[str, Any]:
     """
     Returns a dictionary containing the immediate identity and dataset reference
     dependencies for the given dataset.
@@ -833,22 +835,24 @@ def dataset_reachability(
             status_code=HTTP_404_NOT_FOUND,
             detail=f"No dataset config with fides_key '{fides_key}'",
         )
-    return get_dataset_reachability(db, dataset_config)
+
+    reachable, details = get_dataset_reachability(db, dataset_config)
+    return {"reachable": reachable, "details": details}
 
 
 @router.post(
-    DATASET_TEST,
+    TEST_DATASET,
     status_code=HTTP_200_OK,
-    dependencies=[Security(verify_oauth_client, scopes=[DATASET_READ])],
-    response_model=str,
+    dependencies=[Security(verify_oauth_client, scopes=[DATASET_TEST])],
+    response_model=Dict[str, Any],
 )
 def test_connection_datasets(
     *,
     db: Session = Depends(deps.get_db),
     connection_config: ConnectionConfig = Depends(_get_connection_config),
     fides_key: FidesKey,
-    data: Dict[str, Any],
-) -> str:
+    unlabeled_identities: UnlabeledIdentities,
+) -> Dict[str, Any]:
     dataset_config = DatasetConfig.filter(
         db=db,
         conditions=(
@@ -862,14 +866,17 @@ def test_connection_datasets(
             detail=f"No dataset config with fides_key '{fides_key}'",
         )
 
-    access_policy: Policy = Policy.get_by(
-        db, field="key", value="default_access_policy"
-    )
+    access_policy = Policy.get_by(db, field="key", value="default_access_policy")
+    if not access_policy:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail='Policy with key "default_access_policy" not found',
+        )
 
     privacy_request = run_test_access_request(
         db,
         access_policy,
         dataset_config,
-        data,
+        input_data=unlabeled_identities.data,
     )
-    return privacy_request.id
+    return {"privacy_request_id": privacy_request.id}

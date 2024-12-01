@@ -22,26 +22,32 @@ class TestGetDatasetReachability:
     @pytest.mark.parametrize(
         "dataset_config, expected",
         [
-            ("single_identity_dataset_config", True),
+            ("single_identity_dataset_config", (True, None)),
             (
                 "single_identity_with_internal_dependency_dataset_config",
-                True,
+                (True, None),
             ),
             (
                 "multiple_identities_dataset_config",
-                True,
+                (True, None),
             ),
             (
                 "multiple_identities_with_external_dependencies_dataset_config",
-                False,
+                (
+                    False,
+                    'The following dataset references do not exist "single_identity:customer:id"',
+                ),
             ),
             (
                 "optional_identities_dataset_config",
-                True,
+                (True, None),
             ),
             (
                 "no_identities_dataset_config",
-                False,
+                (
+                    False,
+                    'The following collections are not reachable "single_identity:customer"',
+                ),
             ),
         ],
     )
@@ -78,7 +84,7 @@ class TestGetIdentitiesAndReferences:
             ),
             (
                 "multiple_identities_with_external_dependencies_dataset_config",
-                {"loyalty_id", "single_identity.customer.id"},
+                {"loyalty_id", "single_identity:customer:id"},
             ),
             (
                 "optional_identities_dataset_config",
@@ -206,7 +212,7 @@ class TestRunTestAccessRequest:
             db,
             policy,
             dataset_config,
-            {"loyalty_id": "CH-1", "single_identity.customer.id": 1},
+            {"loyalty_id": "CH-1", "single_identity:customer:id": 1},
         )
         wait_for_tasks_to_complete(db, privacy_request, ActionType.access)
         assert privacy_request.get_raw_access_results() == {

@@ -51,16 +51,19 @@ const EditorSection = ({
     skip: !connectionKey,
   });
 
-  const { data: isReachable, refetch: refetchReachability } =
-    useGetDatasetReachabilityQuery(
-      {
-        connectionKey,
-        datasetKey: state.selectedDataset?.fides_key || "",
-      },
-      {
-        skip: !connectionKey || !state.selectedDataset?.fides_key,
-      },
-    );
+  const {
+    data: reachability,
+    isLoading: checkingReachability,
+    refetch: refetchReachability,
+  } = useGetDatasetReachabilityQuery(
+    {
+      connectionKey,
+      datasetKey: state.selectedDataset?.fides_key || "",
+    },
+    {
+      skip: !connectionKey || !state.selectedDataset?.fides_key,
+    },
+  );
 
   const datasetOptions = useMemo(
     () =>
@@ -205,7 +208,8 @@ const EditorSection = ({
         py={4}
         pr={4}
         data-testid="empty-state"
-        height="100vh"
+        flex="1 1 auto"
+        minHeight="200px"
       >
         <Editor
           defaultLanguage="yaml"
@@ -228,24 +232,28 @@ const EditorSection = ({
         />
       </Stack>
       <Stack
-        backgroundColor={isReachable ? "green.50" : "red.50"}
+        backgroundColor={reachability?.reachable ? "green.50" : "red.50"}
         border="1px solid"
-        borderColor={isReachable ? "green.500" : "red.500"}
+        borderColor={reachability?.reachable ? "green.500" : "red.500"}
         borderRadius="md"
-        py={2}
-        px={4}
+        p={2}
+        flexShrink={0}
+        mt={2}
       >
-        <Text fontSize="sm">
-          {isReachable ? (
-            <>
-              <GreenCheckCircleIcon /> Dataset is reachable
-            </>
-          ) : (
-            <>
-              <ErrorWarningIcon /> Dataset is not reachable
-            </>
-          )}
-        </Text>
+        <HStack alignItems="center">
+          <HStack flex="1">
+            {reachability?.reachable ? (
+              <GreenCheckCircleIcon />
+            ) : (
+              <ErrorWarningIcon />
+            )}
+            <Text fontSize="sm" whiteSpace="pre-wrap">
+              {reachability?.reachable
+                ? "Dataset is reachable"
+                : `Dataset is not reachable. ${reachability?.details}`}
+            </Text>
+          </HStack>
+        </HStack>
       </Stack>
     </VStack>
   );
