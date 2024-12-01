@@ -143,7 +143,6 @@ class UnlabeledIdentities(FidesSchema):
         if not values:
             raise BadRequest("No inputs provided")
 
-        # Create a temporary Identity instance to validate standard fields
         standard_fields = {}
         custom_fields = {}
 
