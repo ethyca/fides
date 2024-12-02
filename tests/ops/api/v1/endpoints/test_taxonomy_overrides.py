@@ -89,6 +89,21 @@ class TestCreateDataUse:
         data_use = db.query(DataUse).filter_by(fides_key="analytics.test_data_use")[0]
         data_use.delete(db)
 
+    def test_create_data_use_with_fides_key_and_non_matching_parent_key(
+        self,
+        db: Session,
+        api_client: TestClient,
+        payload,
+        url,
+        generate_auth_header,
+    ):
+        payload["fides_key"] = "analytics.test_data_use"
+        payload["parent_key"] = "invalid_parent"
+        auth_header = generate_auth_header([DATA_USE_CREATE])
+        response = api_client.post(url, headers=auth_header, json=payload)
+
+        assert 422 == response.status_code
+
     def test_create_data_use_with_no_fides_key(
         self,
         db: Session,

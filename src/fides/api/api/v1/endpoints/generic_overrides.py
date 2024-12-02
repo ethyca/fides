@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Optional, Type, Union
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Security
 from fastapi_pagination import Page, Params
@@ -110,6 +110,69 @@ async def list_dataset_paginated(
     return await async_paginate(db, filtered_query, pagination_params)
 
 
+def validate_and_create_taxonomy(
+    db: Session,
+    model: Union[
+        Type[DataCategoryDbModel], Type[DataUseDbModel], Type[DataSubjectDbModel]
+    ],
+    validation_schema: type,
+    data: Union[DataCategoryCreate, DataUseCreate, DataSubjectCreate],
+) -> Dict:
+    """
+    Validate and create a taxonomy element.
+    """
+    validated_taxonomy = validation_schema(**data.model_dump(mode="json"))
+    return model.create(db=db, data=validated_taxonomy.model_dump(mode="json"))
+
+
+def validate_and_update_taxonomy(
+    db: Session,
+    resource: Union[DataCategoryDbModel, DataUseDbModel, DataSubjectDbModel],
+    validation_schema: type,
+    data: Union[DataCategoryCreate, DataUseCreate, DataSubjectCreate],
+) -> Dict:
+    """
+    Validate and update a taxonomy element.
+    """
+    validated_taxonomy = validation_schema(**data.model_dump(mode="json"))
+    return resource.update(db=db, data=validated_taxonomy.model_dump(mode="json"))
+
+
+def create_or_update_taxonomy(
+    db: Session,
+    data: Union[DataCategoryCreate, DataUseCreate, DataSubjectCreate],
+    model: Union[
+        Type[DataCategoryDbModel], Type[DataUseDbModel], Type[DataSubjectDbModel]
+    ],
+    validation_schema: type,
+) -> Dict:
+    """
+    Create or update a taxonomy element. If the element is disabled, it will be updated and re-enabled.
+    """
+    if data.fides_key is None:
+        disabled_resource_with_name = (
+            db.query(model)
+            .filter(
+                model.active.is_(False),
+                model.name == data.name,
+            )
+            .first()
+        )
+        data.fides_key = get_key_from_data(
+            {"key": data.fides_key, "name": data.name}, validation_schema.__name__
+        )
+        if data.parent_key if hasattr(data, "parent_key") else None:
+            data.fides_key = f"{data.parent_key}.{data.fides_key}"  # type: ignore[union-attr]
+        if disabled_resource_with_name:
+            data.active = True
+            return validate_and_update_taxonomy(
+                db, disabled_resource_with_name, validation_schema, data
+            )
+        return validate_and_create_taxonomy(db, model, validation_schema, data)
+
+    return validate_and_create_taxonomy(db, model, validation_schema, data)
+
+
 @data_use_router.post(
     "/data_use",
     dependencies=[Security(verify_oauth_client, scopes=[DATA_USE_CREATE])],
@@ -125,25 +188,7 @@ async def create_data_use(
     Create a data use. Updates existing data use if data use with name already exists and is disabled.
     """
     try:
-        if data_use.fides_key is None:
-            disabled_resource_with_name = (
-                db.query(DataUseDbModel)
-                .filter(
-                    DataUseDbModel.active.is_(False),
-                    DataUseDbModel.name == data_use.name,
-                )
-                .first()
-            )
-            data_use.fides_key = get_key_from_data(
-                {"key": data_use.fides_key, "name": data_use.name}, DataUse.__name__
-            )
-            if data_use.parent_key:
-                data_use.fides_key = f"{data_use.parent_key}.{data_use.fides_key}"
-            if disabled_resource_with_name:
-                data_use.active = True
-                return disabled_resource_with_name.update(db, data=data_use.model_dump(mode="json"))  # type: ignore[union-attr]
-            return DataUseDbModel.create(db=db, data=data_use.model_dump(mode="json"))  # type: ignore[union-attr]
-        return DataUseDbModel.create(db=db, data=data_use.model_dump(mode="json"))
+        return create_or_update_taxonomy(db, data_use, DataUseDbModel, DataUse)
     except KeyOrNameAlreadyExists:
         raise HTTPException(
             status_code=HTTP_422_UNPROCESSABLE_ENTITY,
@@ -172,30 +217,8 @@ async def create_data_category(
     """
 
     try:
-        if data_category.fides_key is None:
-            disabled_resource_with_name = (
-                db.query(DataCategoryDbModel)
-                .filter(
-                    DataCategoryDbModel.active.is_(False),
-                    DataCategoryDbModel.name == data_category.name,
-                )
-                .first()
-            )
-            data_category.fides_key = get_key_from_data(
-                {"key": data_category.fides_key, "name": data_category.name},
-                DataCategory.__name__,
-            )
-            if data_category.parent_key:
-                data_category.fides_key = (
-                    f"{data_category.parent_key}.{data_category.fides_key}"
-                )
-            if disabled_resource_with_name:
-                data_category.active = True
-                return disabled_resource_with_name.update(db, data=data_category.model_dump(mode="json"))  # type: ignore[union-attr]
-            return DataCategoryDbModel.create(db=db, data=data_category.model_dump(mode="json"))  # type: ignore[union-attr]
-
-        return DataCategoryDbModel.create(
-            db=db, data=data_category.model_dump(mode="json")
+        return create_or_update_taxonomy(
+            db, data_category, DataCategoryDbModel, DataCategory
         )
     except KeyOrNameAlreadyExists:
         raise HTTPException(
@@ -225,25 +248,8 @@ async def create_data_subject(
     """
 
     try:
-        if data_subject.fides_key is None:
-            disabled_resource_with_name = (
-                db.query(DataSubjectDbModel)
-                .filter(
-                    DataSubjectDbModel.active.is_(False),
-                    DataSubjectDbModel.name == data_subject.name,
-                )
-                .first()
-            )
-            data_subject.fides_key = get_key_from_data(
-                {"key": data_subject.fides_key, "name": data_subject.name},
-                DataSubject.__name__,
-            )
-            if disabled_resource_with_name:
-                data_subject.active = True
-                return disabled_resource_with_name.update(db, data=data_subject.model_dump(mode="json"))  # type: ignore[union-attr]
-            return DataSubjectDbModel.create(db=db, data=data_subject.model_dump(mode="json"))  # type: ignore[union-attr]
-        return DataSubjectDbModel.create(
-            db=db, data=data_subject.model_dump(mode="json")
+        return create_or_update_taxonomy(
+            db, data_subject, DataSubjectDbModel, DataSubject
         )
     except KeyOrNameAlreadyExists:
         raise HTTPException(
