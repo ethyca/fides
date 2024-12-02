@@ -11,6 +11,7 @@ import {
   Tr,
 } from "fidesui";
 import { ExecutionLog, ExecutionLogStatus } from "privacy-requests/types";
+
 import { ActionType } from "~/types/api";
 
 type EventDetailsProps = {
