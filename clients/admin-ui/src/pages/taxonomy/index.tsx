@@ -102,8 +102,9 @@ const TaxonomyPage: NextPage = () => {
           </div>
         </div>
         <div className="relative grow">
-          <div className="absolute left-2 top-2 z-[1000] shadow-lg">
+          <div className="absolute left-2 top-2 z-[1000] rounded-md shadow-lg">
             <AntMenu
+              className="rounded-md"
               style={{ width: 220 }}
               selectedKeys={[taxonomyType]}
               onSelect={({ key }) => setTaxonomyType(key as CoreTaxonomiesEnum)}
