@@ -2,7 +2,7 @@
 """Integration tests for the API module."""
 import json
 import typing
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from json import loads
 from typing import Dict, List, Tuple
 from uuid import uuid4
@@ -1664,6 +1664,41 @@ class TestSystemList:
         assert len(result_json["items"]) == 1
 
         assert result_json["items"][0]["fides_key"] == tcf_system.fides_key
+
+    @pytest.mark.parametrize(
+        "vendor_deleted_date, expected_systems_count, show_deleted",
+        [
+            (datetime.now() - timedelta(days=1), 1, True),
+            (datetime.now() - timedelta(days=1), 0, None),
+            (datetime.now() + timedelta(days=1), 1, None),
+            (None, 1, None),
+        ],
+    )
+    def test_vendor_deleted_systems(
+        self,
+        db,
+        test_config,
+        system_with_cleanup,
+        vendor_deleted_date,
+        expected_systems_count,
+        show_deleted,
+    ):
+
+        system_with_cleanup.vendor_deleted_date = vendor_deleted_date
+        db.commit()
+        db.refresh(system_with_cleanup)
+
+        result = _api.ls(
+            url=test_config.cli.server_url,
+            headers=test_config.user.auth_header,
+            resource_type="system",
+            query_params={"show_deleted": True} if show_deleted else {},
+        )
+
+        assert result.status_code == 200
+        result_json = result.json()
+
+        assert len(result_json) == expected_systems_count
 
 
 @pytest.mark.unit
