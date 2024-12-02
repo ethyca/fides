@@ -17,19 +17,15 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.50.0...main)
 
-<<<<<<< HEAD
-### Fixed
-- Adds support for fides_key generation when parent_key is provided in Taxonomy create endpoints [#5542](https://github.com/ethyca/fides/pull/5542)
-=======
 ### Changed
 - Adding hashes to system tab URLs [#5535](https://github.com/ethyca/fides/pull/5535)
->>>>>>> f1865030d52eabe84e650a576c9f0449d24d90a3
 
 ### Developer Experience
 - Migrated remaining instances of Chakra's Select component to use Ant's Select component [#5502](https://github.com/ethyca/fides/pull/5502)
 
 ### Fixed
 - Updating dataset PUT to allow deleting all datasets [#5524](https://github.com/ethyca/fides/pull/5524)
+- Adds support for fides_key generation when parent_key is provided in Taxonomy create endpoints [#5542](https://github.com/ethyca/fides/pull/5542)
 
 ## [2.50.0](https://github.com/ethyca/fides/compare/2.49.1...2.50.0)
 
