@@ -17,13 +17,19 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.50.0...main)
 
+<<<<<<< HEAD
 ### Fixed
 - Adds support for fides_key generation when parent_key is provided in Taxonomy create endpoints [#5542](https://github.com/ethyca/fides/pull/5542)
+=======
+### Changed
+- Adding hashes to system tab URLs [#5535](https://github.com/ethyca/fides/pull/5535)
+>>>>>>> f1865030d52eabe84e650a576c9f0449d24d90a3
 
 ### Developer Experience
 - Migrated remaining instances of Chakra's Select component to use Ant's Select component [#5502](https://github.com/ethyca/fides/pull/5502)
 
-
+### Fixed
+- Updating dataset PUT to allow deleting all datasets [#5524](https://github.com/ethyca/fides/pull/5524)
 
 ## [2.50.0](https://github.com/ethyca/fides/compare/2.49.1...2.50.0)
 
@@ -59,9 +65,6 @@ The types of changes are:
 - Fixed issue with long-running privacy request tasks losing their connection to the database [#5500](https://github.com/ethyca/fides/pull/5500)
 - Fixed missing "Manage privacy preferences" button label option in TCF experience translations [#5528](https://github.com/ethyca/fides/pull/5528)
 - Fixed privacy center not fetching the correct experience when using custom property paths  [#5532](https://github.com/ethyca/fides/pull/5532)
-
-### Docs
-- Added docs for PrivacyNoticeRegion type [#5488](https://github.com/ethyca/fides/pull/5488)
 
 ### Security
  - Password Policy is now Enforced in Accept Invite API [CVE-2024-52008](https://github.com/ethyca/fides/security/advisories/GHSA-v7vm-rhmg-8j2r)
