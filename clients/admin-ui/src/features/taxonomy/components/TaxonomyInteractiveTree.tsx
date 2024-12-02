@@ -143,6 +143,7 @@ const TaxonomyInteractiveTree = ({
         minZoom={0.3}
         edgesFocusable={false}
         elementsSelectable={false}
+        proOptions={{ hideAttribution: true }}
       >
         <Background color="#eee" variant={BackgroundVariant.Dots} size={3} />
         <MiniMap nodeStrokeWidth={3} pannable />
