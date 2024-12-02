@@ -1,7 +1,7 @@
-import { AntButton as Button, Box, Text, useToast, VStack } from "fidesui";
+import { AntButton as Button, Box, Text, VStack } from "fidesui";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import DataTabsContent from "~/features/common/DataTabsContent";
@@ -16,7 +16,6 @@ import {
   SYSTEM_ROUTE,
 } from "~/features/common/nav/v2/routes";
 import PageHeader from "~/features/common/PageHeader";
-import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { useGetAllDictionaryEntriesQuery } from "~/features/plus/plus.slice";
 import {
   setActiveSystem,
@@ -29,13 +28,9 @@ import {
 import GVLNotice from "~/features/system/GVLNotice";
 import useSystemFormTabs from "~/features/system/hooks/useSystemFormTabs";
 
-const INTEGRATION_TAB_INDEX = 3; // this needs to be updated if the order of the tabs changes
-
 const ConfigureSystem: NextPage = () => {
-  const toast = useToast();
   const router = useRouter();
   const dispatch = useAppDispatch();
-  const [initialTabIndex, setInitialTabIndex] = useState(0);
 
   let systemId = "";
   if (router.query.id) {
@@ -70,33 +65,8 @@ const ConfigureSystem: NextPage = () => {
     }
   }, [system, dispatch, isTCFEnabled]);
 
-  useEffect(() => {
-    const { status } = router.query;
-
-    if (status) {
-      if (status === "succeeded") {
-        toast(successToastParams(`Integration successfully authorized.`));
-      } else {
-        toast(errorToastParams(`Failed to authorize integration.`));
-      }
-      // create a new url without the status query param
-      const newQuery = { ...router.query };
-      delete newQuery.status;
-      const newUrl = {
-        pathname: router.pathname,
-        query: newQuery,
-      };
-
-      // replace the current history entry
-      router.replace(newUrl, undefined, { shallow: true });
-
-      setInitialTabIndex(INTEGRATION_TAB_INDEX);
-    }
-  }, [router, toast]);
-
   const { tabData, tabIndex, onTabChange } = useSystemFormTabs({
     isCreate: false,
-    initialTabIndex,
   });
 
   if ((isLoading || isDictionaryLoading) && !dictionaryError) {
