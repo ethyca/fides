@@ -1,5 +1,6 @@
 import {
   AntForm,
+  AntTooltip,
   ConfirmationModal,
   Stack,
   Text,
@@ -109,8 +110,12 @@ const TaxonomyEditDrawer = ({
         <div className="mb-4">
           <h3 className="mb-3 font-semibold text-gray-700">Details</h3>
           <div className="flex">
-            <span className="w-1/3 text-sm text-gray-500">Fides key:</span>
-            <span>{taxonomyItem?.fides_key}</span>
+            <span className="w-1/3 shrink-0 text-sm text-gray-500">
+              Fides key:
+            </span>
+            <AntTooltip title={taxonomyItem?.fides_key} trigger="click">
+              <span className="flex-1 truncate">{taxonomyItem?.fides_key}</span>
+            </AntTooltip>
           </div>
           {/* <div className="flex">
             <span className=" w-1/3 text-sm text-gray-500">Qualifiers:</span>
