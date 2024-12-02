@@ -7,123 +7,185 @@ import {
   useToast,
   VStack,
 } from "fidesui";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 
+import { useAppDispatch } from "~/app/hooks";
 import ClipboardButton from "~/features/common/ClipboardButton";
 import { getErrorMessage } from "~/features/common/helpers";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
-import { useTestDatastoreConnectionDatasetsMutation } from "~/features/datastore-connections";
+import {
+  useGetDatasetInputsQuery,
+  useTestDatastoreConnectionDatasetsMutation,
+} from "~/features/datastore-connections";
 import { useGetFilteredResultsQuery } from "~/features/privacy-requests";
-import { DatasetConfigSchema } from "~/types/api";
 import { isErrorResult } from "~/types/errors";
+
+import {
+  finishTest,
+  selectCurrentDataset,
+  selectIsTestRunning,
+  selectPrivacyRequestId,
+  selectTestInputs,
+  selectTestResults,
+  setPrivacyRequestId,
+  setTestInputs,
+  setTestResults,
+  startTest,
+} from "./dataset-test.slice";
 
 interface TestResultsSectionProps {
   connectionKey: string;
-  selectedDataset: DatasetConfigSchema | null;
-  testInput: string;
-  onInputChange: (value: string) => void;
 }
 
-const TestResultsSection = ({
-  connectionKey,
-  selectedDataset,
-  testInput,
-  onInputChange,
-}: TestResultsSectionProps) => {
+const TestResultsSection = ({ connectionKey }: TestResultsSectionProps) => {
   const toast = useToast();
+  const dispatch = useAppDispatch();
   const [testDatasets] = useTestDatastoreConnectionDatasetsMutation();
-  const [testResults, setTestResults] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [privacyRequestId, setPrivacyRequestId] = useState<string | null>(null);
 
-  // Keep track of results for each dataset
-  const resultValuesRef = useRef<Record<string, Record<string, any>>>({});
+  const currentDataset = useSelector(selectCurrentDataset);
+  const testResults = useSelector(selectTestResults);
+  const testInputs = useSelector(selectTestInputs);
+  const isTestRunning = useSelector(selectIsTestRunning);
+  const privacyRequestId = useSelector(selectPrivacyRequestId);
+
+  const [inputValue, setInputValue] = useState("{}");
+
+  useEffect(() => {
+    if (currentDataset) {
+      setInputValue(JSON.stringify(testInputs, null, 2));
+    }
+  }, [currentDataset, testInputs]);
 
   // Poll for results when we have a privacy request ID
   const { data: filteredResults } = useGetFilteredResultsQuery(
     { privacy_request_id: privacyRequestId! },
     {
-      skip: !privacyRequestId,
+      skip: !privacyRequestId || !currentDataset?.fides_key,
       pollingInterval: 2000,
     },
   );
 
-  // Handle dataset changes or results updates
-  useEffect(() => {
-    if (!selectedDataset?.fides_key) {
-      setTestResults("");
-      return;
-    }
+  // Get dataset inputs
+  const { refetch: refetchInputs } = useGetDatasetInputsQuery(
+    {
+      connectionKey,
+      datasetKey: currentDataset?.fides_key || "",
+    },
+    {
+      skip: !connectionKey || !currentDataset?.fides_key,
+      refetchOnMountOrArgChange: true,
+    },
+  );
 
-    const currentResults = resultValuesRef.current[selectedDataset.fides_key];
-    setTestResults(
-      currentResults ? JSON.stringify(currentResults, null, 2) : "",
-    );
-  }, [selectedDataset]);
+  useEffect(() => {
+    const datasetKey = currentDataset?.fides_key;
+
+    if (connectionKey && datasetKey) {
+      // First refetch to ensure we have latest data
+      refetchInputs().then((response) => {
+        // Only set inputs if we got valid data for the current dataset
+        if (response.data && currentDataset?.fides_key === datasetKey) {
+          dispatch(
+            setTestInputs({
+              datasetKey,
+              values: response.data,
+            }),
+          );
+        }
+      });
+    }
+  }, [currentDataset, connectionKey, dispatch, refetchInputs]);
 
   // Handle filtered results updates
   useEffect(() => {
-    if (!filteredResults || !selectedDataset?.fides_key) {
+    const currentDatasetKey = currentDataset?.fides_key;
+
+    if (
+      !filteredResults ||
+      filteredResults.privacy_request_id !== privacyRequestId ||
+      !currentDatasetKey
+    ) {
       return;
     }
 
-    if (
-      filteredResults.status === "complete" ||
-      filteredResults.status === "error"
-    ) {
-      if (filteredResults.status === "complete") {
-        resultValuesRef.current[selectedDataset.fides_key] =
-          filteredResults.results;
-        setTestResults(JSON.stringify(filteredResults, null, 2));
-        toast(successToastParams("Test run completed successfully"));
-      } else {
-        setTestResults(JSON.stringify(filteredResults, null, 2));
-        toast(errorToastParams("Test run failed"));
-      }
-      setIsLoading(false);
-      setPrivacyRequestId(null);
-    }
-  }, [filteredResults, toast]);
+    // Create the results action with the current dataset key
+    const resultsAction = {
+      datasetKey: currentDatasetKey,
+      values: JSON.stringify(filteredResults, null, 2),
+    };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    onInputChange(e.target.value);
+    if (filteredResults.status === "complete") {
+      if (isTestRunning) {
+        dispatch(setTestResults(resultsAction));
+        dispatch(finishTest());
+        toast(successToastParams("Test run completed successfully"));
+      }
+    } else if (filteredResults.status === "error") {
+      dispatch(setTestResults(resultsAction));
+      dispatch(finishTest());
+      toast(errorToastParams("Test run failed"));
+    }
+  }, [
+    filteredResults,
+    privacyRequestId,
+    currentDataset,
+    isTestRunning,
+    dispatch,
+    toast,
+  ]);
+
+  const handleInputChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const newValue = event.target.value;
+    setInputValue(newValue);
+    try {
+      const parsedValue = JSON.parse(newValue);
+      if (currentDataset) {
+        dispatch(
+          setTestInputs({
+            datasetKey: currentDataset.fides_key,
+            values: parsedValue,
+          }),
+        );
+      }
+    } catch (error) {
+      // JSON will be invalid as the user types it out, this is expected
+    }
   };
 
   const handleTestRun = async () => {
-    if (!selectedDataset?.fides_key) {
+    if (!currentDataset?.fides_key) {
       return;
     }
 
     try {
-      setIsLoading(true);
-      setTestResults("");
-
       let parsedInput;
       try {
-        parsedInput = JSON.parse(testInput);
+        parsedInput = JSON.parse(inputValue);
       } catch (e) {
         toast(errorToastParams("Invalid JSON in test input"));
-        setIsLoading(false);
         return;
       }
 
+      dispatch(startTest(currentDataset.fides_key));
+
       const result = await testDatasets({
         connection_key: connectionKey,
-        dataset_key: selectedDataset.fides_key,
+        dataset_key: currentDataset.fides_key,
         input_data: parsedInput,
       });
 
       if (isErrorResult(result)) {
         toast(errorToastParams(getErrorMessage(result.error)));
-        setIsLoading(false);
+        dispatch(finishTest());
       } else if ("data" in result) {
-        setPrivacyRequestId(result.data.privacy_request_id);
+        dispatch(setPrivacyRequestId(result.data.privacy_request_id));
       } else {
-        setIsLoading(false);
+        dispatch(finishTest());
         toast(errorToastParams("No privacy request ID in response"));
       }
     } catch (error) {
-      setIsLoading(false);
+      dispatch(finishTest());
       toast(errorToastParams("Failed to start test run"));
     }
   };
@@ -139,7 +201,7 @@ const TestResultsSection = ({
       >
         <HStack>
           <Text>Test inputs (identities and references)</Text>
-          <ClipboardButton copyText={testInput} />
+          <ClipboardButton copyText={inputValue} />
         </HStack>
         <Button
           htmlType="submit"
@@ -147,7 +209,7 @@ const TestResultsSection = ({
           type="primary"
           data-testid="save-btn"
           onClick={handleTestRun}
-          loading={isLoading}
+          loading={isTestRunning}
         >
           Run
         </Button>
@@ -156,9 +218,9 @@ const TestResultsSection = ({
         size="sm"
         focusBorderColor="primary.600"
         color="gray.800"
-        isDisabled={isLoading}
+        isDisabled={isTestRunning}
         height="100%"
-        value={testInput}
+        value={inputValue}
         onChange={handleInputChange}
       />
       <Heading as="h3" size="sm">
