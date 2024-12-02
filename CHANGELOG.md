@@ -22,6 +22,7 @@ The types of changes are:
 
 ### Changed
 - Adding hashes to system tab URLs [#5535](https://github.com/ethyca/fides/pull/5535)
+- Updated `/system` endpoint to filter vendor deleted systems [#5553](https://github.com/ethyca/fides/pull/5553)
 
 ### Developer Experience
 - Migrated remaining instances of Chakra's Select component to use Ant's Select component [#5502](https://github.com/ethyca/fides/pull/5502)

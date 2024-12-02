@@ -1686,7 +1686,6 @@ class TestSystemList:
 
         system_with_cleanup.vendor_deleted_date = vendor_deleted_date
         db.commit()
-        db.refresh(system_with_cleanup)
 
         result = _api.ls(
             url=test_config.cli.server_url,
