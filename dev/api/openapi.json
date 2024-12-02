@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.49.2b0.post0.dev24"
+    "version": "2.49.2b0.post0.dev25"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -15859,6 +15859,48 @@
       },
       "DataCategoryCreate": {
         "properties": {
+          "version_added": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Version Added",
+            "description": "The version of Fideslang in which this label was added."
+          },
+          "version_deprecated": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Version Deprecated",
+            "description": "The version of Fideslang in which this label was deprecated."
+          },
+          "replaced_by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Replaced By",
+            "description": "The new name, if applicable, for this label after deprecation."
+          },
+          "is_default": {
+            "type": "boolean",
+            "title": "Is Default",
+            "description": "Denotes whether the resource is part of the default taxonomy or not.",
+            "default": false
+          },
           "name": {
             "anyOf": [
               {
@@ -15889,11 +15931,6 @@
               }
             ],
             "title": "Fides Key"
-          },
-          "is_default": {
-            "type": "boolean",
-            "title": "Is Default",
-            "default": false
           },
           "tags": {
             "anyOf": [
@@ -16116,6 +16153,48 @@
       },
       "DataSubjectCreate": {
         "properties": {
+          "version_added": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Version Added",
+            "description": "The version of Fideslang in which this label was added."
+          },
+          "version_deprecated": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Version Deprecated",
+            "description": "The version of Fideslang in which this label was deprecated."
+          },
+          "replaced_by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Replaced By",
+            "description": "The new name, if applicable, for this label after deprecation."
+          },
+          "is_default": {
+            "type": "boolean",
+            "title": "Is Default",
+            "description": "Denotes whether the resource is part of the default taxonomy or not.",
+            "default": false
+          },
           "name": {
             "anyOf": [
               {
@@ -16146,11 +16225,6 @@
               }
             ],
             "title": "Fides Key"
-          },
-          "is_default": {
-            "type": "boolean",
-            "title": "Is Default",
-            "default": false
           },
           "tags": {
             "anyOf": [
@@ -16388,6 +16462,48 @@
       },
       "DataUseCreate": {
         "properties": {
+          "version_added": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Version Added",
+            "description": "The version of Fideslang in which this label was added."
+          },
+          "version_deprecated": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Version Deprecated",
+            "description": "The version of Fideslang in which this label was deprecated."
+          },
+          "replaced_by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Replaced By",
+            "description": "The new name, if applicable, for this label after deprecation."
+          },
+          "is_default": {
+            "type": "boolean",
+            "title": "Is Default",
+            "description": "Denotes whether the resource is part of the default taxonomy or not.",
+            "default": false
+          },
           "name": {
             "anyOf": [
               {
@@ -16418,11 +16534,6 @@
               }
             ],
             "title": "Fides Key"
-          },
-          "is_default": {
-            "type": "boolean",
-            "title": "Is Default",
-            "default": false
           },
           "tags": {
             "anyOf": [
