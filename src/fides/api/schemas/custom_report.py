@@ -23,6 +23,3 @@ class CustomReportConfig(FidesSchema):
     column_map: Dict[str, str] = Field(
         default_factory=dict, description="A map between column keys and custom labels"
     )
-    column_order: Optional[List[str]] = Field(
-        default_factory=list, description="The order of columns in the report"
-    )
