@@ -2632,7 +2632,7 @@ def get_access_results_urls(
     status_code=HTTP_200_OK,
     response_model=FilteredPrivacyRequestResults,
 )
-def get_filtered_results(
+def get_test_privacy_request_results(
     privacy_request_id: str,
     db: Session = Depends(deps.get_db),
 ) -> Dict[str, Any]:

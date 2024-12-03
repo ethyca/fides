@@ -11,7 +11,7 @@ import {
   useToast,
   VStack,
 } from "fidesui";
-import yaml from "js-yaml";
+import yaml, { YAMLException } from "js-yaml";
 import { useEffect, useMemo, useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
@@ -24,7 +24,7 @@ import {
   useGetConnectionConfigDatasetConfigsQuery,
   useGetDatasetReachabilityQuery,
 } from "~/features/datastore-connections";
-import { Dataset, DatasetConfigSchema } from "~/types/api";
+import { Dataset } from "~/types/api";
 
 import { selectCurrentDataset, setCurrentDataset } from "./dataset-test.slice";
 import { removeNulls } from "./helpers";
@@ -105,28 +105,43 @@ const EditorSection = ({ connectionKey }: EditorSectionProps) => {
   };
 
   const handleSave = async () => {
-    try {
-      if (currentDataset) {
-        const datasetValues = yaml.load(editorContent) as Partial<Dataset>;
-        const updatedDatasetConfig: DatasetConfigSchema = {
-          fides_key: currentDataset.fides_key,
-          ctl_dataset: {
-            ...currentDataset.ctl_dataset,
-            ...datasetValues,
-          },
-        };
-
-        const result = await updateDataset(updatedDatasetConfig.ctl_dataset);
-        if (isErrorResult(result)) {
-          throw new Error(getErrorMessage(result.error));
-        }
-        dispatch(setCurrentDataset(updatedDatasetConfig));
-        toast(successToastParams("Successfully modified dataset"));
-        await refetchDatasets();
-      }
-    } catch (error) {
-      toast(errorToastParams(getErrorMessage(error as FetchBaseQueryError)));
+    if (!currentDataset) {
+      return;
     }
+
+    // Parse YAML first
+    let datasetValues: Dataset;
+    try {
+      datasetValues = yaml.load(editorContent) as Dataset;
+    } catch (yamlError) {
+      toast(
+        errorToastParams(
+          `YAML Parsing Error: ${
+            yamlError instanceof YAMLException
+              ? `${yamlError.reason} ${yamlError.mark ? `at line ${yamlError.mark.line}` : ""}`
+              : "Invalid YAML format"
+          }`,
+        ),
+      );
+      return;
+    }
+
+    // Then handle the API update
+    const result = await updateDataset(datasetValues);
+
+    if (isErrorResult(result)) {
+      toast(errorToastParams(getErrorMessage(result.error)));
+      return;
+    }
+
+    dispatch(
+      setCurrentDataset({
+        fides_key: currentDataset.fides_key,
+        ctl_dataset: result.data,
+      }),
+    );
+    toast(successToastParams("Successfully modified dataset"));
+    await refetchDatasets();
   };
 
   const handleRefresh = async () => {
@@ -169,7 +184,7 @@ const EditorSection = ({ connectionKey }: EditorSectionProps) => {
           <Button
             htmlType="submit"
             size="small"
-            data-testid="save-btn"
+            data-testid="refresh-btn"
             onClick={handleRefresh}
             loading={isDatasetConfigsLoading}
           >

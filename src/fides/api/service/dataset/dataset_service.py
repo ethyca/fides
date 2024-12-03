@@ -1,3 +1,4 @@
+from copy import deepcopy
 from typing import Any, Dict, Optional, Set, Tuple
 
 from sqlalchemy.orm import Session
@@ -51,6 +52,7 @@ def get_dataset_reachability(
             f'The following dataset references do not exist "{", ".join(exc.errors)}"',
         )
 
+    # dummy data is enough to determine traversability
     identity_seed: Dict[str, str] = {
         k: "something" for k in dataset_graph.identity_keys.values()
     }
@@ -71,14 +73,17 @@ def get_identities_and_references(
 ) -> Set[str]:
     """
     Returns all identity and dataset references in the dataset.
+    If a field has multiple references only the first reference will be considered.
     """
+
     result: Set[str] = set()
     dataset: GraphDataset = dataset_config.get_graph()
     for collection in dataset.collections:
         # Process the identities in the collection
         result.update(collection.identities().values())
         for _, field_refs in collection.references().items():
-            # Take first reference only
+            # Take first reference only, we only care that this collection is reachable,
+            # how we get there doesn't matter for our current use case
             ref, edge_direction = field_refs[0]
             if edge_direction == "from" and ref.dataset != dataset_config.fides_key:
                 result.add(ref.value)
@@ -127,19 +132,12 @@ def run_test_access_request(
     }
     privacy_request.cache_identity(input_identity)
 
-    # We're providing external reference values directly, so we can replace
-    # field references with identities and provide the values as seed data
-    # at the start of the traversal. This way we don't need to run collections
-    # from any other datasets, only from the dataset we're testing.
     graph_dataset = dataset_config.get_graph()
-    for collection in graph_dataset.collections:
-        for field in collection.fields:
-            for ref, edge_direction in field.references[:]:
-                if edge_direction == "from" and ref.dataset != dataset_config.fides_key:
-                    field.identity = f"{ref.dataset}_{ref.collection}_{'_'.join(ref.field_path.levels)}"
-                    field.references.remove((ref, "from"))
+    modified_graph_dataset = _replace_references_with_identities(
+        dataset_config.fides_key, graph_dataset
+    )
 
-    dataset_graph = DatasetGraph(graph_dataset)
+    dataset_graph = DatasetGraph(modified_graph_dataset)
     connection_config = dataset_config.connection_config
 
     # Finally invoke the existing DSR 3.0 access request task
@@ -153,3 +151,25 @@ def run_test_access_request(
         privacy_request_proceed=False,
     )
     return privacy_request
+
+
+def _replace_references_with_identities(dataset_key: str, graph_dataset: GraphDataset):
+    """
+    Replace external field references with identity values for testing.
+
+    Creates a copy of the graph dataset and replaces dataset references with
+    equivalent identity references that can be seeded directly. This allows
+    testing a single dataset in isolation without needing to load data from
+    referenced external datasets.
+    """
+
+    modified_graph_dataset = deepcopy(graph_dataset)
+
+    for collection in modified_graph_dataset.collections:
+        for field in collection.fields:
+            for ref, edge_direction in field.references[:]:
+                if edge_direction == "from" and ref.dataset != dataset_key:
+                    field.identity = f"{ref.dataset}_{ref.collection}_{'_'.join(ref.field_path.levels)}"
+                    field.references.remove((ref, "from"))
+
+    return modified_graph_dataset

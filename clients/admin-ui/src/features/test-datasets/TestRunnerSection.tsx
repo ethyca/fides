@@ -13,12 +13,14 @@ import { useSelector } from "react-redux";
 import { useAppDispatch } from "~/app/hooks";
 import ClipboardButton from "~/features/common/ClipboardButton";
 import { getErrorMessage } from "~/features/common/helpers";
+import QuestionTooltip from "~/features/common/QuestionTooltip";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import {
   useGetDatasetInputsQuery,
   useTestDatastoreConnectionDatasetsMutation,
 } from "~/features/datastore-connections";
 import { useGetFilteredResultsQuery } from "~/features/privacy-requests";
+import { PrivacyRequestStatus } from "~/types/api";
 import { isErrorResult } from "~/types/errors";
 
 import {
@@ -115,13 +117,13 @@ const TestResultsSection = ({ connectionKey }: TestResultsSectionProps) => {
       values: JSON.stringify(filteredResults, null, 2),
     };
 
-    if (filteredResults.status === "complete") {
+    if (filteredResults.status === PrivacyRequestStatus.COMPLETE) {
       if (isTestRunning) {
         dispatch(setTestResults(resultsAction));
         dispatch(finishTest());
         toast(successToastParams("Test run completed successfully"));
       }
-    } else if (filteredResults.status === "error") {
+    } else if (filteredResults.status === PrivacyRequestStatus.ERROR) {
       dispatch(setTestResults(resultsAction));
       dispatch(finishTest());
       toast(errorToastParams("Test run failed"));
@@ -203,16 +205,19 @@ const TestResultsSection = ({ connectionKey }: TestResultsSectionProps) => {
           <Text>Test inputs (identities and references)</Text>
           <ClipboardButton copyText={inputValue} />
         </HStack>
-        <Button
-          htmlType="submit"
-          size="small"
-          type="primary"
-          data-testid="save-btn"
-          onClick={handleTestRun}
-          loading={isTestRunning}
-        >
-          Run
-        </Button>
+        <HStack>
+          <QuestionTooltip label="Run a test access request using the provided test input data" />
+          <Button
+            htmlType="submit"
+            size="small"
+            type="primary"
+            data-testid="run-btn"
+            onClick={handleTestRun}
+            loading={isTestRunning}
+          >
+            Run
+          </Button>
+        </HStack>
       </Heading>
       <Textarea
         size="sm"
