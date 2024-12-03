@@ -153,7 +153,9 @@ def run_test_access_request(
     return privacy_request
 
 
-def _replace_references_with_identities(dataset_key: str, graph_dataset: GraphDataset):
+def _replace_references_with_identities(
+    dataset_key: str, graph_dataset: GraphDataset
+) -> GraphDataset:
     """
     Replace external field references with identity values for testing.
 
