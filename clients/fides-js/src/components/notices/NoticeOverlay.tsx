@@ -3,6 +3,7 @@ import "../fides.css";
 import { FunctionComponent, h } from "preact";
 import { useCallback, useEffect, useMemo, useState } from "preact/hooks";
 
+import { isConsentOverride } from "../../lib/common-utils";
 import { getConsentContext } from "../../lib/consent-context";
 import {
   ConsentMechanism,
@@ -229,6 +230,47 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
     ],
   );
 
+  const handleAcceptAll = useCallback(
+    (wasAutomated?: boolean) => {
+      handleUpdatePreferences(
+        wasAutomated ? ConsentMethod.SCRIPT : ConsentMethod.ACCEPT,
+        privacyNoticeItems.map((n) => n.notice.notice_key),
+      );
+    },
+    [handleUpdatePreferences, privacyNoticeItems],
+  );
+
+  const handleRejectAll = useCallback(
+    (wasAutomated?: boolean) => {
+      handleUpdatePreferences(
+        wasAutomated ? ConsentMethod.SCRIPT : ConsentMethod.REJECT,
+        privacyNoticeItems
+          .filter(
+            (n) => n.notice.consent_mechanism === ConsentMechanism.NOTICE_ONLY,
+          )
+          .map((n) => n.notice.notice_key),
+      );
+    },
+    [handleUpdatePreferences, privacyNoticeItems],
+  );
+
+  useEffect(() => {
+    if (isConsentOverride(options) && experience.privacy_notices) {
+      if (options.fidesConsentOverride === ConsentMethod.ACCEPT) {
+        fidesDebugger(
+          "Consent automatically accepted by fides_accept_all override!",
+        );
+        handleAcceptAll(true);
+      } else if (options.fidesConsentOverride === ConsentMethod.REJECT) {
+        fidesDebugger(
+          "Consent automatically rejected by fides_reject_all override!",
+        );
+        handleRejectAll(true);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [experience.privacy_notices, options.fidesConsentOverride]);
+
   const dispatchOpenBannerEvent = useCallback(() => {
     dispatchFidesEvent("FidesUIShown", cookie, options.debug, {
       servingComponent: ServingComponent.BANNER,
@@ -268,7 +310,6 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
         isEmbedded,
         isOpen,
         onClose,
-        onSave,
         onManagePreferencesClick,
       }) => {
         const isAcknowledge =
@@ -290,12 +331,20 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
                 experience={experience}
                 onManagePreferencesClick={onManagePreferencesClick}
                 enabledKeys={draftEnabledNoticeKeys}
+                onAcceptAll={() => {
+                  handleAcceptAll();
+                  onClose();
+                }}
+                onRejectAll={() => {
+                  handleRejectAll();
+                  onClose();
+                }}
                 onSave={(
                   consentMethod: ConsentMethod,
                   keys: Array<PrivacyNotice["notice_key"]>,
                 ) => {
                   handleUpdatePreferences(consentMethod, keys);
-                  onSave();
+                  onClose();
                 }}
                 isAcknowledge={isAcknowledge}
                 hideOptInOut={isAcknowledge}
@@ -323,6 +372,14 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
         <NoticeConsentButtons
           experience={experience}
           enabledKeys={draftEnabledNoticeKeys}
+          onAcceptAll={() => {
+            handleAcceptAll();
+            onClose();
+          }}
+          onRejectAll={() => {
+            handleRejectAll();
+            onClose();
+          }}
           onSave={(
             consentMethod: ConsentMethod,
             keys: Array<PrivacyNotice["notice_key"]>,
