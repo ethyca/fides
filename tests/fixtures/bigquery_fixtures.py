@@ -1,5 +1,7 @@
 import ast
 import os
+import random
+from datetime import datetime
 from typing import Dict, Generator, List
 from uuid import uuid4
 
@@ -446,6 +448,98 @@ def bigquery_resources_with_namespace_meta(
         connection.execute(stmt)
 
         stmt = f"delete from fidesopstest.employee where address_id = {address_id};"
+        connection.execute(stmt)
+
+
+@pytest.fixture(scope="function")
+def bigquery_enterprise_resources(
+        bigquery_enterprise_test_dataset_config,
+):
+    bigquery_connection_config = bigquery_enterprise_test_dataset_config.connection_config
+    connector = BigQueryConnector(bigquery_connection_config)
+    bigquery_client = connector.client()
+    with bigquery_client.connect() as connection:
+
+        # Real max id in the Stackoverflow dataset is 20081052, so we purposefully generate and id above this max
+        stmt = "select max(id) from enterprise_dsr_testing.users;"
+        res = connection.execute(stmt)
+        # Increment the id by a random number to avoid conflicts on concurrent test runs
+        random_increment = random.randint(0, 99999)
+        user_id = res.all()[0][0] + random_increment
+        display_name = f"fides_testing_{user_id}" # prefix to do manual cleanup if needed
+        last_access_date = datetime.now()
+        creation_date = datetime.now()
+        location = "Dream World"
+
+        # Create test user data
+        stmt = f"""
+            insert into enterprise_dsr_testing.users (id, display_name, last_access_date, creation_date, location)
+            values ({user_id}, '{display_name}', '{last_access_date}', '{creation_date}', '{location}');
+        """
+        connection.execute(stmt)
+
+        # Create test stackoverflow_posts data. Posts are responses to questions on Stackoverflow, and does not include original question.
+        post_body = "For me, the solution was to adopt 3 cats and dance with them under the full moon at midnight."
+        stmt = "select max(id) from enterprise_dsr_testing.stackoverflow_posts;"
+        res = connection.execute(stmt)
+        random_increment = random.randint(0, 99999)
+        post_id = res.all()[0][0] + random_increment
+        stmt = f"""
+            insert into enterprise_dsr_testing.stackoverflow_posts (body, creation_date, id, owner_user_id, owner_display_name)
+            values ('{post_body}', '{creation_date}', {post_id}, {user_id}, '{display_name}');
+        """
+        connection.execute(stmt)
+
+        # Create test comments data. Comments are responses to posts or questions on Stackoverflow, and does not include original question or post itself.
+        stmt = "select max(id) from enterprise_dsr_testing.comments;"
+        res = connection.execute(stmt)
+        random_increment = random.randint(0, 99999)
+        comment_id = res.all()[0][0] + random_increment
+        comment_text = "FYI this only works if you have pytest installed locally."
+        stmt = f"""
+            insert into enterprise_dsr_testing.comments (id, text, creation_date, post_id, user_id, user_display_name)
+            values ({comment_id}, '{comment_text}', '{creation_date}', {post_id}, {user_id}, '{display_name}');
+        """
+        connection.execute(stmt)
+
+        # Create test post_history data
+        stmt = "select max(id) from enterprise_dsr_testing.comments;"
+        res = connection.execute(stmt)
+        random_increment = random.randint(0, 99999)
+        post_history_id = res.all()[0][0] + random_increment
+        revision_text = "this works if you have pytest"
+        uuid = str(uuid4())
+        stmt = f"""
+            insert into enterprise_dsr_testing.post_history (id, text, creation_date, post_id, user_id, post_history_type_id, revision_guid)
+            values ({post_history_id}, '{revision_text}', '{creation_date}', {post_id}, {user_id}, 1, '{uuid}');
+        """
+        connection.execute(stmt)
+
+
+        yield {
+            "name": display_name,
+            "user_id": user_id,
+            "comment_id": comment_id,
+            "post_history_id": post_history_id,
+            "post_id": post_id,
+            "client": bigquery_client,
+            "connector": connector,
+            "first_comment_text": comment_text,
+            "first_post_body": post_body,
+            "revision_text": revision_text,
+            "display_name": display_name,
+        }
+        # Remove test data and close BigQuery connection in teardown
+        stmt = f"delete from enterprise_dsr_testing.post_history where id = {post_history_id};"
+        connection.execute(stmt)
+
+        stmt = f"delete from enterprise_dsr_testing.comments where id = {comment_id};"
+        connection.execute(stmt)
+
+        stmt = f"delete from enterprise_dsr_testing.stackoverflow_posts where id = {post_id};"
+        connection.execute(stmt)
+
+        stmt = f"delete from enterprise_dsr_testing.users where id = {user_id};"
         connection.execute(stmt)
 
 
