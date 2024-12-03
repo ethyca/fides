@@ -189,6 +189,7 @@ export const ConnectorParametersForm = ({
                   onChange={field.onChange}
                   size="lg"
                   colorScheme="primary"
+                  mt={0.5}
                 />
               )}
               {item.type === "integer" && (
