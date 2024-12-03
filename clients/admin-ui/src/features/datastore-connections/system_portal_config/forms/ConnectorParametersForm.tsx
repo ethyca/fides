@@ -163,6 +163,7 @@ export const ConnectorParametersForm = ({
         const touch = form.touched.secrets ? form.touched.secrets[key] : false;
 
         const isBoolean = item.type === "boolean";
+        const isInteger = item.type === "integer";
 
         return (
           <FormControl
@@ -172,7 +173,7 @@ export const ConnectorParametersForm = ({
           >
             {getFormLabel(key, item.title)}
             <VStack align="flex-start" w="inherit">
-              {item.type !== "integer" && !isBoolean && (
+              {!isInteger && !isBoolean && (
                 <Input
                   {...field}
                   type={item.sensitive ? "password" : "text"}
@@ -192,7 +193,7 @@ export const ConnectorParametersForm = ({
                   mt={0.5}
                 />
               )}
-              {item.type === "integer" && (
+              {isInteger && (
                 <NumberInput
                   allowMouseWheel
                   color="gray.700"
