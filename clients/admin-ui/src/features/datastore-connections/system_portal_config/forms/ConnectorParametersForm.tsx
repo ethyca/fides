@@ -8,6 +8,7 @@ import DSRCustomizationModal from "datastore-connections/system_portal_config/fo
 import {
   AntButton as Button,
   AntSelect as Select,
+  Checkbox,
   CircleHelpIcon,
   Flex,
   FormControl,
@@ -161,15 +162,17 @@ export const ConnectorParametersForm = ({
         const error = form.errors.secrets && form.errors.secrets[key];
         const touch = form.touched.secrets ? form.touched.secrets[key] : false;
 
+        const isBoolean = item.type === "boolean";
+
         return (
           <FormControl
             display="flex"
-            isRequired={isRequiredSecretValue(key)}
+            isRequired={isRequiredSecretValue(key) && !isBoolean}
             isInvalid={error && touch}
           >
             {getFormLabel(key, item.title)}
             <VStack align="flex-start" w="inherit">
-              {item.type !== "integer" && (
+              {item.type !== "integer" && !isBoolean && (
                 <Input
                   {...field}
                   type={item.sensitive ? "password" : "text"}
@@ -177,6 +180,15 @@ export const ConnectorParametersForm = ({
                   autoComplete="off"
                   color="gray.700"
                   size="sm"
+                />
+              )}
+              {isBoolean && (
+                <Checkbox
+                  {...field}
+                  isChecked={!!field.value}
+                  onChange={field.onChange}
+                  size="lg"
+                  colorScheme="primary"
                 />
               )}
               {item.type === "integer" && (
