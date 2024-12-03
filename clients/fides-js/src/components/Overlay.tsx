@@ -11,10 +11,10 @@ import {
 } from "preact/hooks";
 
 import { useA11yDialog } from "../lib/a11y-dialog";
+import { isConsentOverride } from "../lib/common-utils";
 import { FIDES_OVERLAY_WRAPPER } from "../lib/consent-constants";
 import {
   ComponentType,
-  ConsentMethod,
   FidesCookie,
   FidesInitOptions,
   NoticeConsent,
@@ -72,9 +72,7 @@ const Overlay: FunctionComponent<Props> = ({
   const delayBannerMilliseconds = 100;
   const delayModalLinkMilliseconds = 200;
   const hasMounted = useHasMounted();
-  const isAutomatedConsent =
-    options.fidesConsentOverride === ConsentMethod.ACCEPT ||
-    options.fidesConsentOverride === ConsentMethod.REJECT;
+  const isAutomatedConsent = isConsentOverride(options);
 
   const showBanner = useMemo(
     () =>

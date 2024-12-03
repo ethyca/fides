@@ -9,9 +9,8 @@ import { blueconic } from "./integrations/blueconic";
 import { gtm } from "./integrations/gtm";
 import { meta } from "./integrations/meta";
 import { shopify } from "./integrations/shopify";
-import { raise } from "./lib/common-utils";
+import { isConsentOverride, raise } from "./lib/common-utils";
 import {
-  ConsentMethod,
   FidesConfig,
   FidesExperienceTranslationOverrides,
   FidesGlobal,
@@ -225,10 +224,7 @@ const _Fides: FidesGlobal = {
       // Nothing to show if there's no experience
       return false;
     }
-    if (
-      this.options.fidesConsentOverride === ConsentMethod.ACCEPT ||
-      this.options.fidesConsentOverride === ConsentMethod.REJECT
-    ) {
+    if (isConsentOverride(this.options)) {
       // If consent preference override exists, we should not show the experience
       return false;
     }

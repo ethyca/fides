@@ -3,6 +3,8 @@ import "../fides.css";
 import { FunctionComponent, h } from "preact";
 import { useCallback, useEffect, useMemo, useState } from "preact/hooks";
 
+import { isConsentOverride } from "~/lib/common-utils";
+
 import { getConsentContext } from "../../lib/consent-context";
 import {
   ConsentMechanism,
@@ -254,7 +256,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
   );
 
   useEffect(() => {
-    if (!!options.fidesConsentOverride && experience.privacy_notices) {
+    if (isConsentOverride(options) && experience.privacy_notices) {
       if (options.fidesConsentOverride === ConsentMethod.ACCEPT) {
         fidesDebugger(
           "Consent automatically accepted by fides_accept_all override!",
