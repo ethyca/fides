@@ -73,8 +73,8 @@ const Overlay: FunctionComponent<Props> = ({
   const delayModalLinkMilliseconds = 200;
   const hasMounted = useHasMounted();
   const isKnownPreference =
-    options.fidesKnownPreference === ConsentMethod.ACCEPT ||
-    options.fidesKnownPreference === ConsentMethod.REJECT;
+    options.fidesConsentOverride === ConsentMethod.ACCEPT ||
+    options.fidesConsentOverride === ConsentMethod.REJECT;
 
   const showBanner = useMemo(
     () =>

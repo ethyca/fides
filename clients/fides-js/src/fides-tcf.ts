@@ -262,7 +262,7 @@ const _Fides: FidesGlobal = {
     fidesPrimaryColor: null,
     fidesClearCookie: false,
     showFidesBrandLink: false,
-    fidesKnownPreference: null,
+    fidesConsentOverride: null,
   },
   fides_meta: {},
   identity: {},
@@ -284,8 +284,8 @@ const _Fides: FidesGlobal = {
       return false;
     }
     if (
-      this.options.fidesKnownPreference === ConsentMethod.ACCEPT ||
-      this.options.fidesKnownPreference === ConsentMethod.REJECT
+      this.options.fidesConsentOverride === ConsentMethod.ACCEPT ||
+      this.options.fidesConsentOverride === ConsentMethod.REJECT
     ) {
       // If consent preference was automatic, we should not show the experience
       return false;

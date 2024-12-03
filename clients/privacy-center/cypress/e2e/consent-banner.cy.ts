@@ -1814,12 +1814,12 @@ describe("Consent overlay", () => {
               privacy_notice_history_id: "pri_notice-history-essential-en-000",
             },
           ]);
-          expect(body.method).to.eql(ConsentMethod.KNOWN_REJECT);
+          expect(body.method).to.eql(ConsentMethod.SCRIPT);
         };
         it("rejects all notices automatically when set", () => {
           stubConfig({
             options: {
-              fidesKnownPreference: ConsentMethod.REJECT,
+              fidesConsentOverride: ConsentMethod.REJECT,
             },
           });
           cy.waitUntilFidesInitialized().then(() => {
@@ -1831,8 +1831,8 @@ describe("Consent overlay", () => {
 
         it("rejects all notices automatically when set via cookie", () => {
           cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
-          cy.getCookie("fides_known_preference").should("not.exist");
-          cy.setCookie("fides_known_preference", ConsentMethod.REJECT);
+          cy.getCookie("fides_consent_override").should("not.exist");
+          cy.setCookie("fides_consent_override", ConsentMethod.REJECT);
           stubConfig({});
 
           cy.waitUntilFidesInitialized().then(() => {
@@ -1845,7 +1845,7 @@ describe("Consent overlay", () => {
         it("rejects all notices automatically when set via query param", () => {
           cy.getCookie("fides_string").should("not.exist");
           stubConfig({}, null, null, {
-            fides_known_preference: ConsentMethod.REJECT,
+            fides_consent_override: ConsentMethod.REJECT,
           });
 
           cy.waitUntilFidesInitialized().then(() => {
@@ -1858,7 +1858,7 @@ describe("Consent overlay", () => {
         it("rejects all notices automatically when set via window obj", () => {
           cy.getCookie("fides_string").should("not.exist");
           stubConfig({}, null, null, null, {
-            fides_known_preference: ConsentMethod.REJECT,
+            fides_consent_override: ConsentMethod.REJECT,
           });
 
           cy.waitUntilFidesInitialized().then(() => {
@@ -1887,12 +1887,12 @@ describe("Consent overlay", () => {
               privacy_notice_history_id: "pri_notice-history-essential-en-000",
             },
           ]);
-          expect(body.method).to.eql(ConsentMethod.KNOWN_ACCEPT);
+          expect(body.method).to.eql(ConsentMethod.SCRIPT);
         };
         it("accepts all notices automatically when set", () => {
           stubConfig({
             options: {
-              fidesKnownPreference: ConsentMethod.ACCEPT,
+              fidesConsentOverride: ConsentMethod.ACCEPT,
             },
           });
           cy.waitUntilFidesInitialized().then(() => {
@@ -1904,8 +1904,8 @@ describe("Consent overlay", () => {
 
         it("accepts all notices automatically when set via cookie", () => {
           cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
-          cy.getCookie("fides_known_preference").should("not.exist");
-          cy.setCookie("fides_known_preference", ConsentMethod.ACCEPT);
+          cy.getCookie("fides_consent_override").should("not.exist");
+          cy.setCookie("fides_consent_override", ConsentMethod.ACCEPT);
           stubConfig({});
 
           cy.waitUntilFidesInitialized().then(() => {
@@ -1918,7 +1918,7 @@ describe("Consent overlay", () => {
         it("accepts all notices automatically when set via query param", () => {
           cy.getCookie("fides_string").should("not.exist");
           stubConfig({}, null, null, {
-            fides_known_preference: ConsentMethod.ACCEPT,
+            fides_consent_override: ConsentMethod.ACCEPT,
           });
 
           cy.waitUntilFidesInitialized().then(() => {
@@ -1931,7 +1931,7 @@ describe("Consent overlay", () => {
         it("accepts all notices automatically when set via window obj", () => {
           cy.getCookie("fides_string").should("not.exist");
           stubConfig({}, null, null, null, {
-            fides_known_preference: ConsentMethod.ACCEPT,
+            fides_consent_override: ConsentMethod.ACCEPT,
           });
 
           cy.waitUntilFidesInitialized().then(() => {

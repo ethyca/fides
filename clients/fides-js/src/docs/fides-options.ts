@@ -153,5 +153,5 @@ export interface FidesOptions {
    *
    * Defaults to `undefined`.
    */
-  fides_known_preference: "accept" | "reject";
+  fides_consent_override: "accept" | "reject";
 }

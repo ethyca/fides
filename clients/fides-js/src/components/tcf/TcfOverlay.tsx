@@ -298,7 +298,7 @@ export const TcfOverlay = ({
   );
 
   const handleAcceptAll = useCallback(
-    (isKnown?: boolean) => {
+    (wasAutomated?: boolean) => {
       let allIds: EnabledIds;
       let exp = experience || experienceMinimal;
       if (!exp.minimal_tcf) {
@@ -342,7 +342,7 @@ export const TcfOverlay = ({
         };
       }
       handleUpdateAllPreferences(
-        isKnown ? ConsentMethod.KNOWN_ACCEPT : ConsentMethod.ACCEPT,
+        wasAutomated ? ConsentMethod.SCRIPT : ConsentMethod.ACCEPT,
         allIds,
       );
     },
@@ -350,9 +350,9 @@ export const TcfOverlay = ({
   );
 
   const handleRejectAll = useCallback(
-    (isKnown?: boolean) => {
+    (wasAutomated?: boolean) => {
       handleUpdateAllPreferences(
-        isKnown ? ConsentMethod.KNOWN_REJECT : ConsentMethod.REJECT,
+        wasAutomated ? ConsentMethod.SCRIPT : ConsentMethod.REJECT,
         EMPTY_ENABLED_IDS,
       );
     },
@@ -360,19 +360,19 @@ export const TcfOverlay = ({
   );
 
   useEffect(() => {
-    if (options.fidesKnownPreference === ConsentMethod.ACCEPT) {
+    if (options.fidesConsentOverride === ConsentMethod.ACCEPT) {
       fidesDebugger(
         "Consent automatically accepted by fides_accept_all override!",
       );
       handleAcceptAll(true);
-    } else if (options.fidesKnownPreference === ConsentMethod.REJECT) {
+    } else if (options.fidesConsentOverride === ConsentMethod.REJECT) {
       fidesDebugger(
         "Consent automatically rejected by fides_reject_all override!",
       );
       handleRejectAll(true);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [options.fidesKnownPreference]);
+  }, [options.fidesConsentOverride]);
 
   const [activeTabIndex, setActiveTabIndex] = useState(0);
 

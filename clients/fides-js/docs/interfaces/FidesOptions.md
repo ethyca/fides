@@ -163,9 +163,9 @@ Defaults to `true`.
 
 ***
 
-### fides\_known\_preference
+### fides\_consent\_override
 
-> **fides\_known\_preference**: `"accept"` \| `"reject"`
+> **fides\_consent\_override**: `"accept"` \| `"reject"`
 
 FidesJS will automatically opt in or out of all notices with this option and
 only show the consent modal upon user request. This is useful for any

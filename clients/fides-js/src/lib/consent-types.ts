@@ -141,7 +141,7 @@ export interface FidesInitOptions {
   showFidesBrandLink: boolean;
 
   // Whether to reject all consent preferences by default
-  fidesKnownPreference: ConsentMethod.ACCEPT | ConsentMethod.REJECT | null;
+  fidesConsentOverride: ConsentMethod.ACCEPT | ConsentMethod.REJECT | null;
 }
 
 /**
@@ -689,7 +689,7 @@ export type FidesInitOptionsOverrides = Pick<
   | "fidesLocale"
   | "fidesPrimaryColor"
   | "fidesClearCookie"
-  | "fidesKnownPreference"
+  | "fidesConsentOverride"
 >;
 
 export type FidesExperienceTranslationOverrides = {
@@ -726,8 +726,7 @@ export enum ConsentMethod {
   BUTTON = "button", // deprecated- keeping for backwards-compatibility
   REJECT = "reject",
   ACCEPT = "accept",
-  KNOWN_REJECT = "known_reject",
-  KNOWN_ACCEPT = "known_accept",
+  SCRIPT = "script",
   SAVE = "save",
   DISMISS = "dismiss",
   GPC = "gpc",
