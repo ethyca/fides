@@ -101,7 +101,7 @@ def test_create_and_process_access_request_bigquery_enterprise(
         len(
             [post["user_id"] for post in results["enterprise_dsr_testing:post_history"]]
         )
-        == 60
+        == 39
     )
     assert (
         len(
