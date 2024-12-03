@@ -19,6 +19,7 @@ The types of changes are:
 
 ### Added
 - Added new column for Action Type in privacy request event logs [#5546](https://github.com/ethyca/fides/pull/5546)
+- Added new erasure tests for BigQuery Enterprise [#5554](https://github.com/ethyca/fides/pull/5554)
 
 ### Changed
 - Adding hashes to system tab URLs [#5535](https://github.com/ethyca/fides/pull/5535)
