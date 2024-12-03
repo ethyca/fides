@@ -229,7 +229,7 @@ const _Fides: FidesGlobal = {
       this.options.fidesConsentOverride === ConsentMethod.ACCEPT ||
       this.options.fidesConsentOverride === ConsentMethod.REJECT
     ) {
-      // If consent preference was automatic, we should not show the experience
+      // If consent preference override exists, we should not show the experience
       return false;
     }
     if (!this.cookie) {
