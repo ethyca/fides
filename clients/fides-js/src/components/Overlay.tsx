@@ -72,17 +72,17 @@ const Overlay: FunctionComponent<Props> = ({
   const delayBannerMilliseconds = 100;
   const delayModalLinkMilliseconds = 200;
   const hasMounted = useHasMounted();
-  const isKnownPreference =
+  const isAutomatedConsent =
     options.fidesConsentOverride === ConsentMethod.ACCEPT ||
     options.fidesConsentOverride === ConsentMethod.REJECT;
 
   const showBanner = useMemo(
     () =>
-      !isKnownPreference &&
+      !isAutomatedConsent &&
       !options.fidesDisableBanner &&
       experience.experience_config?.component !== ComponentType.MODAL &&
       shouldResurfaceConsent(experience, cookie, savedConsent),
-    [cookie, savedConsent, experience, options, isKnownPreference],
+    [cookie, savedConsent, experience, options, isAutomatedConsent],
   );
 
   const [bannerIsOpen, setBannerIsOpen] = useState(
