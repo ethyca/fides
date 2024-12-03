@@ -509,7 +509,7 @@ export const ConnectorParametersForm = ({
                     {testButtonLabel}
                   </Button>
                 ) : null}
-                {!_.isEmpty(initialDatasets) && (
+                {isPlusEnabled && !_.isEmpty(initialDatasets) && (
                   <Button onClick={() => onTestDatasetsClick()}>
                     Test datasets
                   </Button>
