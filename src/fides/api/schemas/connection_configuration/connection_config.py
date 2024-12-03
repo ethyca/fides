@@ -119,6 +119,14 @@ class ConnectionConfigurationResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+class ConnectionConfigurationResponseWithMonitors(ConnectionConfigurationResponse):
+    """
+    Describes the returned schema for a ConnectionConfiguration with MonitorConfigs.
+    """
+
+    monitors: List[str] = []
+
+
 class BulkPutConnectionConfiguration(BulkResponse):
     """Schema with mixed success/failure responses for Bulk Create/Update of ConnectionConfiguration responses."""
 

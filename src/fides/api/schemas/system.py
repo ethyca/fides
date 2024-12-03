@@ -5,8 +5,10 @@ from fideslang.models import Cookies, PrivacyDeclaration, System
 from pydantic import ConfigDict, Field
 from pydantic.main import BaseModel
 
+from fides.api.models.detection_discovery import MonitorConfig
 from fides.api.schemas.connection_configuration.connection_config import (
     ConnectionConfigurationResponse,
+    ConnectionConfigurationResponseWithMonitors,
 )
 from fides.api.schemas.user import UserResponse
 
@@ -51,6 +53,20 @@ class SystemResponse(BasicSystemResponse):
     data_stewards: Optional[List[UserResponse]] = Field(
         description="System managers of the current system",
     )
+
+
+class SystemResponseWithMonitors(SystemResponse):
+    """Extension of SystemResponse response model to include other relationships only needed for Lifecycle view"""
+
+    monitor_configs: List[MonitorConfig] = Field(
+        description="Monitors associated with the system (via ConnectionConfig)",
+    )
+
+    hidden: bool = Field(
+        description="Flag to indicate if the system is hidden",
+    )
+
+    model_config = ConfigDict(arbitrary_types_allowed=True)
 
 
 class SystemHistoryResponse(BaseModel):

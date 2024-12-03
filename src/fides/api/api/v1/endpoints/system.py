@@ -389,24 +389,13 @@ async def ls(  # pylint: disable=invalid-name
     data_uses: Optional[List[FidesKey]] = Query(None),
     data_categories: Optional[List[FidesKey]] = Query(None),
     data_subjects: Optional[List[FidesKey]] = Query(None),
-    dnd_relevant: Optional[bool] = Query(None),
-    show_hidden: Optional[bool] = Query(False),
 ) -> List:
     """Get a list of all of the Systems.
     If any parameters or filters are provided the response will be paginated and/or filtered.
     Otherwise all Systems will be returned (this may be a slow operation if there are many systems,
     so using the pagination parameters is recommended).
     """
-    if not (
-        size
-        or page
-        or search
-        or data_uses
-        or data_categories
-        or data_subjects
-        or dnd_relevant
-        or show_hidden
-    ):
+    if not (size or page or search or data_uses or data_categories or data_subjects):
         return await list_resource(System, db)
 
     pagination_params = Params(page=page or 1, size=size or 50)
@@ -415,21 +404,6 @@ async def ls(  # pylint: disable=invalid-name
     query = select(System).outerjoin(
         PrivacyDeclaration, System.id == PrivacyDeclaration.system_id
     )
-
-    # Fetch any system that is relevant for Detection and Discovery, ie any of the following:
-    # - has connection configurations (has some integration for DnD or SaaS)
-    # - has dataset references
-    if dnd_relevant:
-        query = query.filter(
-            (System.connection_configs != None)  # pylint: disable=singleton-comparison
-            | (System.dataset_references.any())
-        )
-
-    # Filter out any hidden systems, unless explicilty asked for
-    if not show_hidden:
-        query = query.filter(
-            System.hidden == False  # pylint: disable=singleton-comparison
-        )
 
     filter_params = FilterParams(
         search=search,
