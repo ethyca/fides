@@ -19,6 +19,10 @@ The types of changes are:
 
 ### Added
 - Added `hidden` column to `stagedresource` table and endpoints for upcoming Dataset Lifecycle experience for DnD to retrieve Projects and Datasets [#5527](https://github.com/ethyca/fides/pull/5527)
+- Added new column for Action Type in privacy request event logs [#5546](https://github.com/ethyca/fides/pull/5546)
+
+### Changed
+- Adding hashes to system tab URLs [#5535](https://github.com/ethyca/fides/pull/5535)
 
 ### Developer Experience
 - Migrated remaining instances of Chakra's Select component to use Ant's Select component [#5502](https://github.com/ethyca/fides/pull/5502)
@@ -58,9 +62,6 @@ The types of changes are:
 - Fixed issue with long-running privacy request tasks losing their connection to the database [#5500](https://github.com/ethyca/fides/pull/5500)
 - Fixed missing "Manage privacy preferences" button label option in TCF experience translations [#5528](https://github.com/ethyca/fides/pull/5528)
 - Fixed privacy center not fetching the correct experience when using custom property paths  [#5532](https://github.com/ethyca/fides/pull/5532)
-
-### Docs
-- Added docs for PrivacyNoticeRegion type [#5488](https://github.com/ethyca/fides/pull/5488)
 
 ### Security
  - Password Policy is now Enforced in Accept Invite API [CVE-2024-52008](https://github.com/ethyca/fides/security/advisories/GHSA-v7vm-rhmg-8j2r)

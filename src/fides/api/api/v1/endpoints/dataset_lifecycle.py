@@ -4,6 +4,8 @@ from fastapi import Depends
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
+from fastapi_pagination.ext.async_sqlalchemy import paginate as async_paginate
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
 from starlette.status import HTTP_200_OK
@@ -15,8 +17,11 @@ from fides.api.models.detection_discovery import (
     fetch_staged_resources_by_type_query,
     mark_resources_hidden,
 )
+from fides.api.models.sql_models import System
 from fides.api.schemas.detection_discovery import StagedResourceResponse
+from fides.api.schemas.system import SystemResponseWithMonitors
 from fides.api.util.api_router import APIRouter
+from fides.api.models.detection_discovery import MonitorConfig, ConnectionConfig
 
 LIFECYCLE_ROUTER = APIRouter(
     tags=["Dataset Lifecycle", "Detection and Discovery"],
@@ -88,3 +93,26 @@ async def un_hide_resources(
     Un-hide resources, specified by urn, from the lifecycle experience
     """
     await mark_resources_hidden(db_async, urns, False)
+
+
+@LIFECYCLE_ROUTER.get(
+    "/system",
+    status_code=HTTP_200_OK,
+    response_model=Page[SystemResponseWithMonitors],
+)
+async def get_systems(
+    params: Params = Depends(),
+    db_async: AsyncSession = Depends(get_async_db),
+    show_hidden: bool = False,
+) -> AbstractPage[SystemResponseWithMonitors]:
+    """
+    Get all DnD relevant systems from the db. Systems must either be referenced in an integration, or have at least one dataset
+    """
+    query = select(System).filter(
+        (System.dataset_references != {}) | (System.connection_configs != None)
+    )
+
+    if not show_hidden:
+        query = query.filter(System.hidden == False)
+
+    return await async_paginate(db_async, query, params)

@@ -413,6 +413,15 @@ class System(Base, FidesBase):
         viewonly=True,
     )
 
+    monitor_configs = relationship(
+        "MonitorConfig",
+        secondary="connectionconfig",
+        primaryjoin="System.id == ConnectionConfig.system_id",
+        secondaryjoin="ConnectionConfig.id == MonitorConfig.connection_config_id",
+        viewonly=True,
+        lazy="selectin",
+    )
+
     @classmethod
     def get_data_uses(
         cls: Type[System], systems: List[System], include_parents: bool = True
