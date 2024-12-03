@@ -3,8 +3,7 @@ import "../fides.css";
 import { FunctionComponent, h } from "preact";
 import { useCallback, useEffect, useMemo, useState } from "preact/hooks";
 
-import { isConsentOverride } from "~/lib/common-utils";
-
+import { isConsentOverride } from "../../lib/common-utils";
 import { getConsentContext } from "../../lib/consent-context";
 import {
   ConsentMechanism,
