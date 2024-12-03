@@ -194,6 +194,8 @@ class TestDatasetReachability:
         assert set(response.json().keys()) == {"reachable", "details"}
 
 
+@pytest.mark.integration_external
+@pytest.mark.integration_postgres
 class TestDatasetTest:
     @pytest.fixture(scope="function")
     def default_access_policy(self, db) -> None:

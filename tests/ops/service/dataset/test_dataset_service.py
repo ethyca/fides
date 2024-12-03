@@ -111,6 +111,8 @@ class TestGetIdentitiesAndReferences:
         assert required_identities == expected_required_identities
 
 
+@pytest.mark.integration_external
+@pytest.mark.integration_postgres
 class TestRunTestAccessRequest:
     @pytest.mark.usefixtures("postgres_integration_db")
     def test_run_test_access_request(
