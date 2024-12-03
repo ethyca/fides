@@ -941,8 +941,8 @@ def biquery_erasure_policy(
 
 @pytest.fixture(scope="function")
 def bigquery_enterprise_erasure_policy(
-        db: Session,
-        oauth_client: ClientDetail,
+    db: Session,
+    oauth_client: ClientDetail,
 ) -> Generator:
     erasure_policy = Policy.create(
         db=db,
@@ -988,6 +988,7 @@ def bigquery_enterprise_erasure_policy(
         erasure_policy.delete(db)
     except ObjectDeletedError:
         pass
+
 
 @pytest.fixture(scope="function")
 def erasure_policy_aes(

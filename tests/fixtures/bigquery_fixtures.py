@@ -453,9 +453,11 @@ def bigquery_resources_with_namespace_meta(
 
 @pytest.fixture(scope="function")
 def bigquery_enterprise_resources(
-        bigquery_enterprise_test_dataset_config,
+    bigquery_enterprise_test_dataset_config,
 ):
-    bigquery_connection_config = bigquery_enterprise_test_dataset_config.connection_config
+    bigquery_connection_config = (
+        bigquery_enterprise_test_dataset_config.connection_config
+    )
     connector = BigQueryConnector(bigquery_connection_config)
     bigquery_client = connector.client()
     with bigquery_client.connect() as connection:
@@ -466,7 +468,9 @@ def bigquery_enterprise_resources(
         # Increment the id by a random number to avoid conflicts on concurrent test runs
         random_increment = random.randint(0, 99999)
         user_id = res.all()[0][0] + random_increment
-        display_name = f"fides_testing_{user_id}" # prefix to do manual cleanup if needed
+        display_name = (
+            f"fides_testing_{user_id}"  # prefix to do manual cleanup if needed
+        )
         last_access_date = datetime.now()
         creation_date = datetime.now()
         location = "Dream World"
@@ -514,7 +518,6 @@ def bigquery_enterprise_resources(
             values ({post_history_id}, '{revision_text}', '{creation_date}', {post_id}, {user_id}, 1, '{uuid}');
         """
         connection.execute(stmt)
-
 
         yield {
             "name": display_name,

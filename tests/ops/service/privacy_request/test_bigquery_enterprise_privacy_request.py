@@ -149,18 +149,20 @@ def test_create_and_process_access_request_bigquery_enterprise(
 )
 @pytest.mark.parametrize(
     "bigquery_fixtures",
-    ["bigquery_enterprise_resources"], # todo- add other resources to test, e.g. partitioned data
+    [
+        "bigquery_enterprise_resources"
+    ],  # todo- add other resources to test, e.g. partitioned data
 )
 def test_create_and_process_erasure_request_bigquery(
-        db,
-        request,
-        policy,
-        cache,
-        dsr_version,
-        bigquery_fixtures,
-        bigquery_enterprise_test_dataset_config,
-        bigquery_enterprise_erasure_policy,
-        run_privacy_request_task,
+    db,
+    request,
+    policy,
+    cache,
+    dsr_version,
+    bigquery_fixtures,
+    bigquery_enterprise_test_dataset_config,
+    bigquery_enterprise_erasure_policy,
+    run_privacy_request_task,
 ):
     request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
     bigquery_enterprise_resources = request.getfixturevalue(bigquery_fixtures)
@@ -202,30 +204,29 @@ def test_create_and_process_erasure_request_bigquery(
     assert user_details["id"] == user_id
 
     assert (
-            len(
-                [
-                    comment["user_id"]
-                    for comment in results["enterprise_dsr_testing:comments"]
-                ]
-            )
-            == 1
+        len(
+            [
+                comment["user_id"]
+                for comment in results["enterprise_dsr_testing:comments"]
+            ]
+        )
+        == 1
     )
     assert (
-            len(
-                [post["user_id"] for post in results["enterprise_dsr_testing:post_history"]]
-            )
-            == 1
+        len(
+            [post["user_id"] for post in results["enterprise_dsr_testing:post_history"]]
+        )
+        == 1
     )
     assert (
-            len(
-                [
-                    post["title"]
-                    for post in results["enterprise_dsr_testing:stackoverflow_posts"]
-                ]
-            )
-            == 1
+        len(
+            [
+                post["title"]
+                for post in results["enterprise_dsr_testing:stackoverflow_posts"]
+            ]
+        )
+        == 1
     )
-
 
     data = {
         "requested_at": "2024-08-30T16:09:37.359Z",
@@ -254,33 +255,27 @@ def test_create_and_process_erasure_request_bigquery(
     comment_id = bigquery_enterprise_resources["comment_id"]
     post_id = bigquery_enterprise_resources["post_id"]
     with bigquery_client.connect() as connection:
-        stmt = (
-            f"select text from enterprise_dsr_testing.post_history where id = {post_history_id};"
-        )
+        stmt = f"select text from enterprise_dsr_testing.post_history where id = {post_history_id};"
         res = connection.execute(stmt).all()
         for row in res:
             assert row.text is None
 
-        stmt = (
-            f"select user_display_name, text from enterprise_dsr_testing.comments where id = {comment_id};"
-        )
+        stmt = f"select user_display_name, text from enterprise_dsr_testing.comments where id = {comment_id};"
         res = connection.execute(stmt).all()
         for row in res:
             assert row.user_display_name is None
             assert row.text is None
 
-        stmt = (
-            f"select owner_user_id, owner_display_name, body from enterprise_dsr_testing.stackoverflow_posts where id = {post_id};"
-        )
+        stmt = f"select owner_user_id, owner_display_name, body from enterprise_dsr_testing.stackoverflow_posts where id = {post_id};"
         res = connection.execute(stmt).all()
         for row in res:
-            assert row.owner_user_id == bigquery_enterprise_resources["user_id"] # not targeted by policy
+            assert (
+                row.owner_user_id == bigquery_enterprise_resources["user_id"]
+            )  # not targeted by policy
             assert row.owner_display_name is None
             assert row.body is None
 
-        stmt = (
-            f"select display_name, location from enterprise_dsr_testing.users where id = {user_id};"
-        )
+        stmt = f"select display_name, location from enterprise_dsr_testing.users where id = {user_id};"
         res = connection.execute(stmt).all()
         for row in res:
             assert row.display_name is None
