@@ -112,7 +112,6 @@ export const patchConnectionConfig = async (
         ? connectionOption.type
         : connectionOption.identifier) as ConnectionType,
       description: values.description,
-      disabled: false,
       key,
       ...(values.enabled_actions
         ? { enabled_actions: values.enabled_actions as ActionType[] }
