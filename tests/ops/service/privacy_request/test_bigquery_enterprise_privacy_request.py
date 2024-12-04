@@ -28,7 +28,7 @@ from tests.ops.service.privacy_request.test_request_runner_service import (
 
 PRIVACY_REQUEST_TASK_TIMEOUT = 5
 # External services take much longer to return
-PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL = 60
+PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL = 100
 
 
 @pytest.mark.integration_bigquery
