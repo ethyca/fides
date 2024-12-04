@@ -29,7 +29,7 @@ LIFECYCLE_ROUTER = APIRouter(
 )
 
 
-@LIFECYCLE_ROUTER.get(
+@LIFECYCLE_ROUTER.post(
     "/project",
     status_code=HTTP_200_OK,
     response_model=Page[StagedResourceResponse],
@@ -38,7 +38,7 @@ async def get_projects(
     params: Params = Depends(),
     db: Session = Depends(get_db),
     show_hidden: bool = False,
-    monitor_config_id: Optional[str] = None,
+    monitor_config_ids: Optional[List[str]] = None,
 ) -> AbstractPage[StagedResourceResponse]:
     """
     Get all lifecycle projects from the db.
@@ -46,13 +46,13 @@ async def get_projects(
     """
     query = fetch_staged_resources_by_type_query(
         resource_type="Database",
-        monitor_config_id=monitor_config_id,
+        monitor_config_ids=monitor_config_ids,
         show_hidden=show_hidden,
     )
     return paginate(db, query, params)  # type: ignore
 
 
-@LIFECYCLE_ROUTER.get(
+@LIFECYCLE_ROUTER.post(
     "/dataset",
     status_code=HTTP_200_OK,
     response_model=Page[StagedResourceResponse],
@@ -60,7 +60,7 @@ async def get_projects(
 async def get_datasets(
     params: Params = Depends(),
     db: Session = Depends(get_db),
-    monitor_config_id: Optional[str] = None,
+    monitor_config_ids: Optional[List[str]] = None,
     show_hidden: bool = False,
 ) -> AbstractPage[StagedResourceResponse]:
     """
@@ -69,10 +69,11 @@ async def get_datasets(
     """
     query = fetch_staged_resources_by_type_query(
         resource_type="schema",
-        monitor_config_id=monitor_config_id,
+        monitor_config_ids=monitor_config_ids,
         show_hidden=show_hidden,
     )
-    return paginate(db, query, params)  # type: ignore
+    results = paginate(db, query, params)
+    return results
 
 
 @LIFECYCLE_ROUTER.patch("/hide/", status_code=HTTP_200_OK)

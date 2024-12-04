@@ -346,19 +346,19 @@ class StagedResource(Base):
 
 def fetch_staged_resources_by_type_query(
     resource_type: str,
-    monitor_config_id: Optional[str] = None,
+    monitor_config_ids: Optional[List[str]] = None,
     show_hidden: bool = False,
 ) -> Query[StagedResource]:
     """
     Fetches staged resources by type and monitor config ID. Optionally filters out hidden resources.
     """
     logger.info(
-        f"Fetching staged resources of type {resource_type}, show_hidden={show_hidden}, monitor_config_id={monitor_config_id}"
+        f"Fetching staged resources of type {resource_type}, show_hidden={show_hidden}, monitor_config_ids={monitor_config_ids}"
     )
     query = select(StagedResource).where(StagedResource.resource_type == resource_type)
 
-    if monitor_config_id:
-        query = query.where(StagedResource.monitor_config_id == monitor_config_id)
+    if monitor_config_ids:
+        query = query.filter(StagedResource.monitor_config_id.in_(monitor_config_ids))
     if not show_hidden:
         query = query.where(
             StagedResource.hidden == False  # pylint: disable=singleton-comparison
