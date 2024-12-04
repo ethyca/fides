@@ -120,14 +120,14 @@ const getSupportedApis = () => {
         gppSettings.us_approach === GPPUSApproach.NATIONAL ||
         gppSettings.us_approach === GPPUSApproach.ALL
       ) {
-        fidesDebugger("setting US National");
+        fidesDebugger("GPP: setting US National APIs");
         supportedApis.push(`${UsNat.ID}:${UsNat.NAME}`);
       }
       if (
         gppSettings.us_approach === GPPUSApproach.STATE ||
         gppSettings.us_approach === GPPUSApproach.ALL
       ) {
-        fidesDebugger("setting US State");
+        fidesDebugger("GPP: setting US State APIs");
         // TODO: include the states based off of locations/regulations.
         // For now, hard code all of them. https://ethyca.atlassian.net/browse/PROD-1595
         [UsCa, UsCo, UsCt, UsUt, UsVa].forEach((state) => {
@@ -145,7 +145,12 @@ const initializeGppCmpApi = () => {
   cmpApi.setCmpStatus(CmpStatus.LOADED);
   window.addEventListener("FidesInitialized", (event) => {
     // TODO (PROD-1439): re-evaluate if GPP is "cheating" accessing window.Fides instead of using the event details only
-    const { experience, saved_consent: savedConsent, options } = window.Fides;
+    const {
+      experience,
+      saved_consent: savedConsent,
+      options,
+      geolocation,
+    } = window.Fides;
     const isTcfEnabled = options.tcfEnabled;
     cmpApi.setSupportedAPIs(getSupportedApis());
     // Set status to ready immediately upon initialization, if either:
@@ -182,6 +187,20 @@ const initializeGppCmpApi = () => {
         cmpApi.setApplicableSections([-1]);
       }
       cmpApi.setSignalStatus(SignalStatus.READY);
+
+      // mimics __gpp('ping', console.log);
+      fidesDebugger(
+        `GPP: CMP status and configuration for ${geolocation?.location}`,
+        {
+          cmpStatus: cmpApi.getCmpStatus(),
+          cmpDisplayStatus: cmpApi.getCmpDisplayStatus(),
+          signalStatus: cmpApi.getSignalStatus(),
+          supportedAPIs: cmpApi.getSupportedAPIs(),
+          applicableSections: cmpApi.getApplicableSections(),
+          gppString: cmpApi.getGppString(),
+          parsedSections: cmpApi.getObject(),
+        },
+      );
     }
   });
 
