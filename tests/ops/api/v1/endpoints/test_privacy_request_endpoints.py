@@ -12,6 +12,7 @@ import pytest
 from dateutil.parser import parse
 from fastapi import HTTPException, status
 from fastapi_pagination import Params
+from starlette.status import HTTP_200_OK, HTTP_401_UNAUTHORIZED, HTTP_403_FORBIDDEN
 from starlette.testclient import TestClient
 
 from fides.api.api.v1.endpoints.privacy_request_endpoints import (
@@ -23,6 +24,7 @@ from fides.api.cryptography.schemas.jwt import (
     JWE_PAYLOAD_CLIENT_ID,
     JWE_PAYLOAD_ROLES,
 )
+from fides.api.db.seed import get_client_id, load_default_access_policy
 from fides.api.graph.config import CollectionAddress
 from fides.api.graph.graph import DatasetGraph
 from fides.api.models.application_config import ApplicationConfig
@@ -58,6 +60,7 @@ from fides.api.schemas.redis_cache import Identity, LabeledIdentity
 from fides.api.task.graph_runners import access_runner
 from fides.api.tasks import MESSAGING_QUEUE_NAME
 from fides.api.util.cache import get_encryption_cache_key, get_masking_secret_cache_key
+from fides.api.util.data_category import get_user_data_categories
 from fides.api.util.fuzzy_search_utils import (
     get_should_refresh_automaton,
     manually_reset_automaton,
@@ -65,12 +68,14 @@ from fides.api.util.fuzzy_search_utils import (
 )
 from fides.common.api.scope_registry import (
     DATASET_CREATE_OR_UPDATE,
+    DATASET_TEST,
     PRIVACY_REQUEST_CALLBACK_RESUME,
     PRIVACY_REQUEST_CREATE,
     PRIVACY_REQUEST_DELETE,
     PRIVACY_REQUEST_NOTIFICATIONS_CREATE_OR_UPDATE,
     PRIVACY_REQUEST_NOTIFICATIONS_READ,
     PRIVACY_REQUEST_READ,
+    PRIVACY_REQUEST_READ_ACCESS_RESULTS,
     PRIVACY_REQUEST_REVIEW,
     PRIVACY_REQUEST_TRANSFER,
     PRIVACY_REQUEST_UPLOAD_DATA,
@@ -85,6 +90,7 @@ from fides.common.api.v1.urn_registry import (
     PRIVACY_REQUEST_BULK_RETRY,
     PRIVACY_REQUEST_BULK_SOFT_DELETE,
     PRIVACY_REQUEST_DENY,
+    PRIVACY_REQUEST_FILTERED_RESULTS,
     PRIVACY_REQUEST_MANUAL_WEBHOOK_ACCESS_INPUT,
     PRIVACY_REQUEST_MANUAL_WEBHOOK_ERASURE_INPUT,
     PRIVACY_REQUEST_NOTIFICATIONS,
@@ -106,6 +112,7 @@ from fides.common.api.v1.urn_registry import (
 )
 from fides.config import CONFIG
 from tests.conftest import generate_role_header_for_user
+from tests.ops.api.v1.endpoints.test_dataset_endpoints import get_connection_dataset_url
 
 page_size = Params().size
 
@@ -8355,3 +8362,100 @@ class TestGetAccessResults:
         )
         response = api_client.get(url, headers=auth_header)
         assert response.status_code == 403
+
+
+@pytest.mark.integration_external
+@pytest.mark.integration_postgres
+class TestPrivacyRequestFilteredResults:
+    @pytest.fixture(scope="function")
+    def default_access_policy(self, db) -> None:
+        load_default_access_policy(db, get_client_id(db), get_user_data_categories())
+
+    def test_filtered_results_not_authenticated(
+        self, privacy_request, api_client
+    ) -> None:
+        url = V1_URL_PREFIX + PRIVACY_REQUEST_FILTERED_RESULTS.format(
+            privacy_request_id=privacy_request.id
+        )
+        response = api_client.get(url, headers={})
+        assert response.status_code == 401
+
+    def test_filtered_results_wrong_scope(
+        self,
+        privacy_request,
+        api_client: TestClient,
+        generate_auth_header,
+    ) -> None:
+        url = V1_URL_PREFIX + PRIVACY_REQUEST_FILTERED_RESULTS.format(
+            privacy_request_id=privacy_request.id
+        )
+        auth_header = generate_auth_header(scopes=[DATASET_CREATE_OR_UPDATE])
+        response = api_client.get(url, headers=auth_header)
+        assert response.status_code == 403
+
+    @pytest.mark.usefixtures("default_access_policy")
+    @pytest.mark.parametrize(
+        "auth_header,expected_status",
+        [
+            ("owner_auth_header", HTTP_200_OK),
+            ("contributor_auth_header", HTTP_200_OK),
+            ("viewer_and_approver_auth_header", HTTP_403_FORBIDDEN),
+            ("viewer_auth_header", HTTP_403_FORBIDDEN),
+            ("approver_auth_header", HTTP_403_FORBIDDEN),
+        ],
+    )
+    def test_filtered_results_with_roles(
+        self,
+        db,
+        privacy_request,
+        auth_header,
+        expected_status,
+        test_client: TestClient,
+        request,
+    ) -> None:
+        # this endpoint is only for test privacy requests
+        privacy_request.source = PrivacyRequestSource.dataset_test
+        db.commit()
+
+        url = V1_URL_PREFIX + PRIVACY_REQUEST_FILTERED_RESULTS.format(
+            privacy_request_id=privacy_request.id
+        )
+        auth_header = request.getfixturevalue(auth_header)
+        response = test_client.get(
+            url,
+            headers=auth_header,
+        )
+        assert response.status_code == expected_status
+
+    @pytest.mark.usefixtures("default_access_policy", "postgres_integration_db")
+    def test_filtered_results(
+        self,
+        connection_config,
+        dataset_config,
+        api_client: TestClient,
+        generate_auth_header,
+    ) -> None:
+        dataset_url = get_connection_dataset_url(connection_config, dataset_config)
+        auth_header = generate_auth_header(scopes=[DATASET_TEST])
+        response = api_client.post(
+            dataset_url + "/test",
+            headers=auth_header,
+            json={"email": "jane@example.com"},
+        )
+        assert response.status_code == HTTP_200_OK
+
+        privacy_request_id = response.json()["privacy_request_id"]
+        url = V1_URL_PREFIX + PRIVACY_REQUEST_FILTERED_RESULTS.format(
+            privacy_request_id=privacy_request_id
+        )
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ_ACCESS_RESULTS])
+        response = api_client.get(
+            url,
+            headers=auth_header,
+        )
+        assert response.status_code == HTTP_200_OK
+        assert set(response.json().keys()) == {
+            "privacy_request_id",
+            "status",
+            "results",
+        }
