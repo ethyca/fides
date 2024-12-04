@@ -1,6 +1,8 @@
 import { Handle, Node, NodeProps, Position } from "@xyflow/react";
 import { AntButton, SmallAddIcon } from "fidesui";
+import { useContext } from "react";
 
+import { TaxonomyTreeHoverContext } from "../context/TaxonomyTreeHoverContext";
 import { TaxonomyEntity } from "../types";
 
 export type TaxonomyTreeNodeType = Node<
@@ -14,11 +16,16 @@ export type TaxonomyTreeNodeType = Node<
 >;
 
 const TaxonomyTreeNode = ({ data }: NodeProps<TaxonomyTreeNodeType>) => {
+  const { onMouseEnter, onMouseLeave } = useContext(TaxonomyTreeHoverContext);
   const { taxonomyItem, onAddButtonClick, onTaxonomyItemClick, label } = data;
 
   const handleRadius = 8;
   return (
-    <div className="group relative">
+    <div
+      className="group relative"
+      onMouseEnter={() => onMouseEnter(taxonomyItem?.fides_key!)}
+      onMouseLeave={() => onMouseLeave(taxonomyItem?.fides_key!)}
+    >
       <button
         type="button"
         className="max-w-[300px] cursor-pointer truncate rounded px-4 py-1 transition-colors duration-300 group-hover:bg-black group-hover:text-white"

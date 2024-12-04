@@ -15,6 +15,7 @@ import {
 import palette from "fidesui/src/palette/palette.module.scss";
 import { useEffect, useMemo } from "react";
 
+import { TaxonomyTreeHoverProvider } from "../context/TaxonomyTreeHoverContext";
 import useTreeLayout from "../hooks/useTreeLayout";
 import { TaxonomyEntity } from "../types";
 import { CoreTaxonomiesEnum } from "../types/CoreTaxonomiesEnum";
@@ -135,20 +136,22 @@ const TaxonomyInteractiveTree = ({
 
   return (
     <div className="size-full bg-[#fafafa]">
-      <ReactFlow
-        nodes={nodesAfterLayout}
-        edges={edgesAfterLayout}
-        nodeTypes={nodeTypes}
-        maxZoom={2}
-        minZoom={0.3}
-        edgesFocusable={false}
-        elementsSelectable={false}
-        proOptions={{ hideAttribution: true }}
-      >
-        <Background color="#eee" variant={BackgroundVariant.Dots} size={3} />
-        <MiniMap nodeStrokeWidth={3} pannable />
-        <Controls showInteractive={false} />
-      </ReactFlow>
+      <TaxonomyTreeHoverProvider>
+        <ReactFlow
+          nodes={nodesAfterLayout}
+          edges={edgesAfterLayout}
+          nodeTypes={nodeTypes}
+          maxZoom={2}
+          minZoom={0.3}
+          edgesFocusable={false}
+          elementsSelectable={false}
+          proOptions={{ hideAttribution: true }}
+        >
+          <Background color="#eee" variant={BackgroundVariant.Dots} size={3} />
+          <MiniMap nodeStrokeWidth={3} pannable />
+          <Controls showInteractive={false} />
+        </ReactFlow>
+      </TaxonomyTreeHoverProvider>
     </div>
   );
 };
