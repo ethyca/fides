@@ -24,6 +24,7 @@ The types of changes are:
 
 ### Changed
 - Adding hashes to system tab URLs [#5535](https://github.com/ethyca/fides/pull/5535)
+- Boolean inputs will now show as a select with true/false values in the connection form [#5555](https://github.com/ethyca/fides/pull/5555)
 - Updated Cookie House to be responsive [#5541](https://github.com/ethyca/fides/pull/5541)
 
 ### Developer Experience
@@ -32,6 +33,7 @@ The types of changes are:
 ### Fixed
 - Updating dataset PUT to allow deleting all datasets [#5524](https://github.com/ethyca/fides/pull/5524)
 - Adds support for fides_key generation when parent_key is provided in Taxonomy create endpoints [#5542](https://github.com/ethyca/fides/pull/5542)
+- An integration will no longer re-enable after saving the connection form [#5555](https://github.com/ethyca/fides/pull/5555)
 
 ### Removed
 - Removed unnecessary debug logging from the load_file config helper [#5544](https://github.com/ethyca/fides/pull/5544)
