@@ -3,6 +3,7 @@ from typing import Any, Dict, Union
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization
 from snowflake.sqlalchemy import URL as Snowflake_URL
+from sqlalchemy.orm import Session
 
 from fides.api.graph.execution import ExecutionNode
 from fides.api.schemas.connection_configuration import SnowflakeSchema
@@ -70,4 +71,8 @@ class SnowflakeConnector(SQLConnector):
 
     def query_config(self, node: ExecutionNode) -> SQLQueryConfig:
         """Query wrapper corresponding to the input execution_node."""
-        return SnowflakeQueryConfig(node)
+
+        db: Session = Session.object_session(self.configuration)
+        return SnowflakeQueryConfig(
+            node, SQLConnector.get_namespace_meta(db, node.address.dataset)
+        )

@@ -6,9 +6,14 @@ from sqlalchemy import column, select, table
 
 from fides.api.graph.config import CollectionAddress, FieldPath
 from fides.api.models.audit_log import AuditLog, AuditLogAction
-from fides.api.models.privacy_request import ExecutionLog, PrivacyRequestStatus
+from fides.api.models.privacy_request import (
+    ExecutionLog,
+    ExecutionLogStatus,
+    PrivacyRequestStatus,
+)
 from fides.api.util.data_category import DataCategory
 from tests.ops.service.privacy_request.test_request_runner_service import (
+    PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL,
     get_privacy_request_results,
 )
 
@@ -403,6 +408,60 @@ def test_create_and_process_access_request_with_invalid_skipped_collection(
     db.refresh(pr)
 
     assert pr.status == PrivacyRequestStatus.error
+
+
+@pytest.mark.integration_postgres
+@pytest.mark.integration
+@pytest.mark.parametrize(
+    "dsr_version",
+    ["use_dsr_2_0", "use_dsr_3_0"],
+)
+def test_create_and_process_access_request_postgres_with_disabled_integration(
+    postgres_integration_db,
+    postgres_example_test_dataset_config,
+    connection_config,
+    db,
+    dsr_version,
+    request,
+    policy,
+    run_privacy_request_task,
+):
+    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+
+    data = {
+        "requested_at": "2021-08-30T16:09:37.359Z",
+        "policy_key": policy.key,
+        "identity": {"external_id": "ext-123"},
+    }
+
+    pr = get_privacy_request_results(
+        db,
+        policy,
+        run_privacy_request_task,
+        data,
+        task_timeout=PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL,
+    )
+
+    for execution_log in pr.execution_logs:
+        assert execution_log.dataset_name == "Dataset traversal"
+        assert execution_log.status == ExecutionLogStatus.error
+
+    connection_config.disabled = True
+    connection_config.save(db=db)
+
+    pr = get_privacy_request_results(
+        db,
+        policy,
+        run_privacy_request_task,
+        data,
+        task_timeout=PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL,
+    )
+
+    assert pr.execution_logs.count() == 1
+
+    execution_log = pr.execution_logs[0]
+    assert execution_log.dataset_name == "Dataset traversal"
+    assert execution_log.status == ExecutionLogStatus.complete
 
 
 @pytest.mark.integration_postgres
