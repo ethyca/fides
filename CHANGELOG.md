@@ -15,7 +15,13 @@ The types of changes are:
 - `Fixed` for any bug fixes.
 - `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.50.0...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.51.0...main)
+
+
+
+
+
+## [2.51.0](https://github.com/ethyca/fides/compare/2.50.0...2.51.0)
 
 ### Added
 - Added new column for Action Type in privacy request event logs [#5546](https://github.com/ethyca/fides/pull/5546)
