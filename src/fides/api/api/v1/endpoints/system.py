@@ -19,7 +19,11 @@ from starlette.status import HTTP_200_OK, HTTP_204_NO_CONTENT, HTTP_404_NOT_FOUN
 
 from fides.api.api import deps
 from fides.api.api.v1.endpoints.saas_config_endpoints import instantiate_connection
-from fides.api.db.crud import get_resource, get_resource_with_custom_fields
+from fides.api.db.crud import (
+    get_resource,
+    get_resource_with_custom_fields,
+    list_resource,
+)
 from fides.api.db.ctl_session import get_async_db
 from fides.api.db.system import (
     create_system,
@@ -396,16 +400,24 @@ async def ls(  # pylint: disable=invalid-name
     Otherwise all Systems will be returned (this may be a slow operation if there are many systems,
     so using the pagination parameters is recommended).
     """
-
-    query = select(System)
+    if not (
+        size
+        or page
+        or search
+        or data_uses
+        or data_categories
+        or data_subjects
+        or dnd_relevant
+        or show_hidden
+    ):
+        return await list_resource(System, db)
 
     pagination_params = Params(page=page or 1, size=size or 50)
     # Need to join with PrivacyDeclaration in order to be able to filter
     # by data use, data category, and data subject
-    if any([data_uses, data_categories, data_subjects]):
-        query = query.outerjoin(
-            PrivacyDeclaration, System.id == PrivacyDeclaration.system_id
-        )
+    query = select(System).outerjoin(
+        PrivacyDeclaration, System.id == PrivacyDeclaration.system_id
+    )
 
     # Fetch any system that is relevant for Detection and Discovery, ie any of the following:
     # - has connection configurations (has some integration for DnD or SaaS)
@@ -446,19 +458,6 @@ async def ls(  # pylint: disable=invalid-name
 
     # Add a distinct so we only get one row per system
     duplicates_removed = filtered_query.distinct(System.id)
-
-    if not (
-        size
-        or page
-        or search
-        or data_uses
-        or data_categories
-        or data_subjects
-        or dnd_relevant
-        or show_hidden
-    ):
-        result = await db.execute(duplicates_removed)
-        return result.scalars().all()
 
     return await async_paginate(db, duplicates_removed, pagination_params)
 
