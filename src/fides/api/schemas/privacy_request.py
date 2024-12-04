@@ -388,3 +388,17 @@ class PrivacyRequestAccessResults(FidesSchema):
     """Schema for the access results of a PrivacyRequest"""
 
     access_result_urls: List[str]
+
+
+class TestPrivacyRequest(FidesSchema):
+    """Schema containing the data for a test privacy request"""
+
+    privacy_request_id: str
+
+
+class FilteredPrivacyRequestResults(FidesSchema):
+    """Schema representing the status and results of a test privacy request"""
+
+    privacy_request_id: str
+    status: PrivacyRequestStatus
+    results: Dict[str, Any]
