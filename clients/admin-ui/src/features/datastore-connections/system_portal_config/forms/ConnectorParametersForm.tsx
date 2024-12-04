@@ -7,8 +7,8 @@ import { useLazyGetDatastoreConnectionStatusQuery } from "datastore-connections/
 import DSRCustomizationModal from "datastore-connections/system_portal_config/forms/DSRCustomizationForm/DSRCustomizationModal";
 import {
   AntButton as Button,
+  AntSelect,
   AntSelect as Select,
-  Checkbox,
   CircleHelpIcon,
   Flex,
   FormControl,
@@ -184,13 +184,13 @@ export const ConnectorParametersForm = ({
                 />
               )}
               {isBoolean && (
-                <Checkbox
-                  {...field}
-                  isChecked={!!field.value}
-                  onChange={field.onChange}
-                  size="lg"
-                  colorScheme="primary"
-                  mt={0.5}
+                <AntSelect
+                  value={!!field.value}
+                  onChange={(value) => form.setFieldValue(field.name, value)}
+                  options={[
+                    { label: "False", value: false },
+                    { label: "True", value: true },
+                  ]}
                 />
               )}
               {isInteger && (
