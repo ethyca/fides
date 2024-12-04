@@ -75,7 +75,7 @@ describe("System integrations", () => {
     });
   });
 
-  describe.only("Loading existing integration", () => {
+  describe("Loading existing integration", () => {
     beforeEach(() => {
       cy.login();
       stubPlus(false);
