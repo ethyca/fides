@@ -63,6 +63,10 @@ type ConnectorParametersFormProps = {
    */
   onTestConnectionClick: (value: TestConnectionResponse) => void;
   /**
+   * Parent callback when Test Dataset is clicked
+   */
+  onTestDatasetsClick: () => void;
+  /**
    * Text for the test button. Defaults to "Test connection"
    */
   testButtonLabel?: string;
@@ -86,6 +90,7 @@ export const ConnectorParametersForm = ({
   isAuthorizing = false,
   onSaveClick,
   onTestConnectionClick,
+  onTestDatasetsClick,
   onAuthorizeConnectionClick,
   testButtonLabel = "Test integration",
   connectionOption,
@@ -517,6 +522,11 @@ export const ConnectorParametersForm = ({
                     {testButtonLabel}
                   </Button>
                 ) : null}
+                {isPlusEnabled && !_.isEmpty(initialDatasets) && (
+                  <Button onClick={() => onTestDatasetsClick()}>
+                    Test datasets
+                  </Button>
+                )}
                 {connectionOption.authorization_required && !authorized ? (
                   <Button
                     loading={isAuthorizing}
