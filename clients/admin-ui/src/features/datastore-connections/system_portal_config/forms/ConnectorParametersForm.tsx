@@ -7,7 +7,6 @@ import { useLazyGetDatastoreConnectionStatusQuery } from "datastore-connections/
 import DSRCustomizationModal from "datastore-connections/system_portal_config/forms/DSRCustomizationForm/DSRCustomizationModal";
 import {
   AntButton as Button,
-  AntSelect,
   AntSelect as Select,
   CircleHelpIcon,
   Flex,
@@ -184,7 +183,7 @@ export const ConnectorParametersForm = ({
                 />
               )}
               {isBoolean && (
-                <AntSelect
+                <Select
                   value={!!field.value}
                   onChange={(value) => form.setFieldValue(field.name, value)}
                   options={[
