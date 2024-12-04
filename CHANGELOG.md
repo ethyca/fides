@@ -27,7 +27,6 @@ The types of changes are:
 - Adding hashes to system tab URLs [#5535](https://github.com/ethyca/fides/pull/5535)
 - Boolean inputs will now show as a select with true/false values in the connection form [#5555](https://github.com/ethyca/fides/pull/5555)
 - Updated Cookie House to be responsive [#5541](https://github.com/ethyca/fides/pull/5541)
-- Updated `/system` endpoint to filter vendor deleted systems [#5553](https://github.com/ethyca/fides/pull/5553)
 
 ### Developer Experience
 - Migrated remaining instances of Chakra's Select component to use Ant's Select component [#5502](https://github.com/ethyca/fides/pull/5502)
