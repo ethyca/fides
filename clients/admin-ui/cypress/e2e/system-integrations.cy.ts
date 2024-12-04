@@ -95,7 +95,6 @@ describe("System integrations", () => {
         cy.get("button[type=submit]").click();
       });
       cy.wait("@patchConnection").then(({ request }) => {
-        console.log(request);
         expect(request.body[0]).to.deep.equal({
           access: "write",
           connection_type: "postgres",
