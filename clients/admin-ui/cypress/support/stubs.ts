@@ -240,6 +240,10 @@ export const stubPlus = (available: boolean, options?: HealthCheck) => {
       statusCode: 400,
       body: {},
     }).as("getPlusHealth");
+    cy.intercept("GET", "/api/v1/plus/*", {
+      statusCode: 404,
+      body: {},
+    }).as("getNoPlusAvailable");
   }
 };
 
@@ -431,6 +435,31 @@ export const stubSystemIntegrations = () => {
       fixture: "connectors/bigquery_connection_list.json",
     },
   ).as("getConnections");
+};
+
+export const stubDisabledIntegrationSystemCrud = () => {
+  cy.intercept("GET", "/api/v1/system/disabled_postgres_system", {
+    fixture: "systems/system_disabled_integration.json",
+  }).as("getDisabledSystemIntegration");
+
+  cy.intercept("PATCH", "/api/v1/system/disabled_postgres_system/connection", {
+    statusCode: 200,
+    body: {},
+  }).as("patchConnection");
+
+  cy.intercept("PUT", "/api/v1/connection/asdasd_postgres/datasetconfig", {
+    statusCode: 200,
+    body: {},
+  }).as("putDatasetConfig");
+
+  cy.intercept(
+    "PATCH",
+    "/api/v1/system/disabled_postgres_system/connection/secrets*",
+    {
+      statusCode: 200,
+      body: {},
+    },
+  ).as("patchConnectionSecret");
 };
 
 export const stubUserManagement = () => {

@@ -11,6 +11,7 @@ import {
 } from "preact/hooks";
 
 import { useA11yDialog } from "../lib/a11y-dialog";
+import { isConsentOverride } from "../lib/common-utils";
 import { FIDES_OVERLAY_WRAPPER } from "../lib/consent-constants";
 import {
   ComponentType,
@@ -32,7 +33,6 @@ interface RenderBannerProps {
   isOpen: boolean;
   isEmbedded: boolean;
   onClose: () => void;
-  onSave: () => void;
   onManagePreferencesClick: () => void;
 }
 
@@ -72,13 +72,15 @@ const Overlay: FunctionComponent<Props> = ({
   const delayBannerMilliseconds = 100;
   const delayModalLinkMilliseconds = 200;
   const hasMounted = useHasMounted();
+  const isAutomatedConsent = isConsentOverride(options);
 
   const showBanner = useMemo(
     () =>
+      !isAutomatedConsent &&
       !options.fidesDisableBanner &&
       experience.experience_config?.component !== ComponentType.MODAL &&
       shouldResurfaceConsent(experience, cookie, savedConsent),
-    [cookie, savedConsent, experience, options],
+    [cookie, savedConsent, experience, options, isAutomatedConsent],
   );
 
   const [bannerIsOpen, setBannerIsOpen] = useState(
@@ -235,9 +237,6 @@ const Overlay: FunctionComponent<Props> = ({
             isOpen: bannerIsOpen,
             isEmbedded: options.fidesEmbed,
             onClose: () => {
-              setBannerIsOpen(false);
-            },
-            onSave: () => {
               setBannerIsOpen(false);
             },
             onManagePreferencesClick: handleManagePreferencesClick,
