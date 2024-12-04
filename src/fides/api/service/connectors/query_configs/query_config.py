@@ -22,9 +22,6 @@ from fides.api.graph.execution import ExecutionNode
 from fides.api.models.policy import Policy, Rule
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.namespace_meta.namespace_meta import NamespaceMeta
-from fides.api.schemas.namespace_meta.snowflake_namespace_meta import (
-    SnowflakeNamespaceMeta,
-)
 from fides.api.schemas.policy import ActionType
 from fides.api.service.masking.strategy.masking_strategy import MaskingStrategy
 from fides.api.service.masking.strategy.masking_strategy_nullify import (
