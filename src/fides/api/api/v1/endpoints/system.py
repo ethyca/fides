@@ -418,7 +418,7 @@ async def ls(  # pylint: disable=invalid-name
     pagination_params = Params(page=page or 1, size=size or 50)
     # Need to join with PrivacyDeclaration in order to be able to filter
     # by data use, data category, and data subject
-if any([data_uses, data_categories, data_subjects]):
+    if any([data_uses, data_categories, data_subjects]):
         query = query.outerjoin(
             PrivacyDeclaration, System.id == PrivacyDeclaration.system_id
         )
