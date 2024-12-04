@@ -5,10 +5,11 @@
  *
  * See the overall package docs in ./docs/README.md for more!
  */
+import { blueconic } from "./integrations/blueconic";
 import { gtm } from "./integrations/gtm";
 import { meta } from "./integrations/meta";
 import { shopify } from "./integrations/shopify";
-import { raise } from "./lib/common-utils";
+import { isConsentOverride, raise } from "./lib/common-utils";
 import {
   FidesConfig,
   FidesExperienceTranslationOverrides,
@@ -199,11 +200,14 @@ const _Fides: FidesGlobal = {
     base64Cookie: false,
     fidesPrimaryColor: null,
     fidesClearCookie: false,
+    showFidesBrandLink: true,
+    fidesConsentOverride: null,
   },
   fides_meta: {},
   identity: {},
   tcf_consent: {},
   saved_consent: {},
+  blueconic,
   gtm,
   init,
   config: undefined,
@@ -218,6 +222,10 @@ const _Fides: FidesGlobal = {
   shouldShowExperience() {
     if (!isPrivacyExperience(this.experience)) {
       // Nothing to show if there's no experience
+      return false;
+    }
+    if (isConsentOverride(this.options)) {
+      // If consent preference override exists, we should not show the experience
       return false;
     }
     if (!this.cookie) {

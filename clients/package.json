@@ -1,4 +1,5 @@
 {
+  "name": "clients",
   "private": true,
   "workspaces": [
     "admin-ui",
@@ -32,6 +33,7 @@
     "openapi:generate": "turbo run openapi:generate"
   },
   "devDependencies": {
-    "turbo": "^1.9.3"
-  }
+    "turbo": "^2.2.3"
+  },
+  "packageManager": "npm@10.8.3"
 }

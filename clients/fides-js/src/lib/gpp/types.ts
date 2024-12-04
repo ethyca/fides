@@ -15,6 +15,7 @@ export type GppFunction = (
 export enum GPPUSApproach {
   NATIONAL = "national",
   STATE = "state",
+  ALL = "all",
 }
 
 export type GPPSettings = {

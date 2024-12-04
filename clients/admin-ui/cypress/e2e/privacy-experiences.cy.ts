@@ -1,7 +1,10 @@
 import {
+  stubExperienceConfig,
+  stubFidesCloud,
+  stubLanguages,
   stubLocations,
-  stubPlus,
   stubPrivacyNoticesCrud,
+  stubProperties,
   stubTranslationConfig,
 } from "cypress/support/stubs";
 
@@ -15,13 +18,13 @@ const DISABLED_EXPERIENCE_ID = "pri_8fd9d334-e625-4365-ba25-9c368f0b1231";
 describe("Privacy experiences", () => {
   beforeEach(() => {
     cy.login();
-    cy.intercept("GET", "/api/v1/experience-config*", {
-      fixture: "privacy-experiences/list.json",
-    }).as("getExperiences");
-    cy.intercept("GET", "/api/v1/experience-config/pri*", {
-      fixture: "privacy-experiences/experienceConfig.json",
-    }).as("getExperienceDetail");
-    stubPlus(true);
+    stubProperties();
+    stubExperienceConfig();
+    stubFidesCloud();
+    stubLanguages();
+    stubPrivacyNoticesCrud();
+    stubTranslationConfig(false);
+    stubLocations();
   });
 
   describe("permissions", () => {
@@ -72,7 +75,7 @@ describe("Privacy experiences", () => {
 
   it("can show an empty state", () => {
     cy.intercept("GET", "/api/v1/experience-config*", {
-      body: { items: [], page: 1, size: 10, total: 0 },
+      fixture: "empty-pagination.json",
     }).as("getEmptyExperiences");
     cy.visit(PRIVACY_EXPERIENCE_ROUTE);
     cy.wait("@getEmptyExperiences");
@@ -177,27 +180,20 @@ describe("Privacy experiences", () => {
   describe("forms", () => {
     describe("creating a new experience config", () => {
       beforeEach(() => {
-        stubPrivacyNoticesCrud();
-        stubLocations();
         cy.visit(`${PRIVACY_EXPERIENCE_ROUTE}/new`);
         cy.wait("@getNotices");
       });
 
       it("can create an experience", () => {
         cy.getByTestId("input-name").type("Test experience name");
-        cy.selectOption("input-component", "Banner and modal");
+        cy.getByTestId("controlled-select-component").antSelect(
+          "Banner and modal",
+        );
         cy.getByTestId("add-privacy-notice").click();
-        cy.getByTestId("select-privacy-notice").click();
-        cy.get(".select-privacy-notice__menu")
-          .find(".select-privacy-notice__option")
-          .first()
-          .click();
+        cy.getByTestId("select-privacy-notice").antSelect(0);
         cy.getByTestId("add-location").click();
-        cy.getByTestId("select-location").click();
-        cy.get(".select-location__menu")
-          .find(".select-location__option")
-          .first()
-          .click();
+
+        cy.getByTestId("select-location").antSelect("France");
         cy.intercept("POST", "/api/v1/experience-config", {
           statusCode: 200,
         }).as("postExperience");
@@ -236,13 +232,20 @@ describe("Privacy experiences", () => {
       });
 
       it("doesn't allow component type to be changed after selection", () => {
-        cy.selectOption("input-component", "Banner and modal");
-        cy.getByTestId("input-component").find("input").should("be.disabled");
+        cy.getByTestId("controlled-select-component").antSelect(
+          "Banner and modal",
+        );
+        cy.getByTestId("controlled-select-component").should(
+          "have.class",
+          "ant-select-disabled",
+        );
         cy.getByTestId("input-dismissable").should("be.visible");
       });
 
       it("doesn't show a preview for a privacy center", () => {
-        cy.selectOption("input-component", "Privacy center");
+        cy.getByTestId("controlled-select-component").antSelect(
+          "Privacy center",
+        );
         cy.getByTestId("input-dismissable").should("not.be.visible");
         cy.getByTestId("no-preview-notice").contains(
           "Privacy center preview not available",
@@ -250,30 +253,25 @@ describe("Privacy experiences", () => {
       });
 
       it("doesn't show preview until privacy notice is added", () => {
-        cy.selectOption("input-component", "Banner and modal");
+        cy.getByTestId("controlled-select-component").antSelect(
+          "Banner and modal",
+        );
         cy.getByTestId("no-preview-notice").contains(
           "No privacy notices added",
         );
         cy.getByTestId("add-privacy-notice").click();
-        cy.getByTestId("select-privacy-notice").click();
-        cy.get(".select-privacy-notice__menu")
-          .find(".select-privacy-notice__option")
-          .first()
-          .click();
+        cy.getByTestId("select-privacy-notice").antSelect(0);
         cy.getByTestId("no-preview-notice").should("not.exist");
         cy.get(`#${PREVIEW_CONTAINER_ID}`).should("be.visible");
       });
 
       it("shows option to display privacy notices in banner and updates preview when clicked", () => {
         cy.getByTestId("input-show_layer1_notices").should("not.be.visible");
-        cy.selectOption("input-component", "Banner and modal");
+        cy.getByTestId("controlled-select-component").antSelect(
+          "Banner and modal",
+        );
         cy.getByTestId("add-privacy-notice").click();
-        cy.getByTestId("select-privacy-notice").click();
-        cy.get(".select-privacy-notice__menu")
-          .find(".select-privacy-notice__option")
-          .first()
-          .as("SelectedPrivacyNotice")
-          .click();
+        cy.getByTestId("select-privacy-notice").antSelect(0);
         cy.getByTestId("input-show_layer1_notices").click();
         cy.get("#preview-container")
           .find("#fides-banner")
@@ -282,13 +280,11 @@ describe("Privacy experiences", () => {
       });
 
       it("allows editing experience text and shows updated text in the preview", () => {
-        cy.selectOption("input-component", "Banner and modal");
+        cy.getByTestId("controlled-select-component").antSelect(
+          "Banner and modal",
+        );
         cy.getByTestId("add-privacy-notice").click();
-        cy.getByTestId("select-privacy-notice").click();
-        cy.get(".select-privacy-notice__menu")
-          .find(".select-privacy-notice__option")
-          .first()
-          .click();
+        cy.getByTestId("select-privacy-notice").antSelect(0);
         cy.getByTestId("edit-experience-btn").click();
         cy.getByTestId("input-translations.0.title")
           .clear()
@@ -302,13 +298,15 @@ describe("Privacy experiences", () => {
 
     describe("editing an existing experience config", () => {
       beforeEach(() => {
-        stubPrivacyNoticesCrud();
         cy.visit(`${PRIVACY_EXPERIENCE_ROUTE}/pri_001`);
       });
 
       it("populates the form and shows the preview with the existing values", () => {
         cy.wait("@getExperienceDetail");
-        cy.getByTestId("input-component").find("input").should("be.disabled");
+        cy.getByTestId("controlled-select-component").should(
+          "have.class",
+          "ant-select-disabled",
+        );
         cy.getByTestId("input-name").should(
           "have.value",
           "Example modal experience",

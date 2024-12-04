@@ -19,6 +19,7 @@ from fides.api.graph.config import (
 )
 from fides.api.graph.data_type import parse_data_type_string
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType
+from fides.api.service.masking.strategy.masking_strategy import MaskingStrategy
 from fides.api.util.saas_util import merge_datasets
 
 from fides.api.models.sql_models import (  # type: ignore[attr-defined] # isort: skip
@@ -72,6 +73,7 @@ class DatasetConfig(Base):
             """
             ctl_dataset_data = data.copy()
             validated_data = Dataset(**ctl_dataset_data.get("dataset", {}))
+
             if ctl_dataset_obj:
                 # It's possible this updates the ctl_dataset.fides_key and this causes a conflict
                 # with another ctl_dataset, if we fetched the datasetconfig.ctl_dataset.
@@ -205,6 +207,7 @@ def to_graph_field(
     data_type_name = None
     read_only = None
     custom_request_field = None
+    masking_strategy_override = None
 
     if meta_section:
         identity = meta_section.identity
@@ -252,6 +255,9 @@ def to_graph_field(
             # here in case we decide to allow it in the future.
             length = meta_section.length
 
+        if meta_section.masking_strategy_override:
+            masking_strategy_override = meta_section.masking_strategy_override
+
         (data_type_name, is_array) = parse_data_type_string(meta_section.data_type)
 
         if meta_section.return_all_elements:
@@ -277,6 +283,7 @@ def to_graph_field(
         return_all_elements=return_all_elements,
         read_only=read_only,
         custom_request_field=custom_request_field,
+        masking_strategy_override=masking_strategy_override,
     )
 
 
@@ -284,7 +291,7 @@ def convert_dataset_to_graph(
     dataset: Dataset, connection_key: FidesKey
 ) -> GraphDataset:
     """
-    Converts the given Fides dataset dataset into the concrete graph
+    Converts the given Fides dataset into the concrete graph
     representation needed for query execution
     """
 
@@ -403,3 +410,33 @@ def validate_dataset_reference(
         raise ValidationError(
             f"Unknown field '{dataset_reference.field}' in dataset '{dataset_config.fides_key}' referenced by external reference"
         )
+
+
+def validate_masking_strategy_override(dataset: Dataset) -> None:
+    """
+    Validates that field-level masking overrides do not require secret keys.
+    When handling a privacy request, we use the `cache_data` function to review the policies and identify which masking strategies need secret keys generated and cached.
+    Currently, we are avoiding the additional complexity of scanning datasets for masking overrides.
+    """
+
+    def validate_field(dataset_field: DatasetField) -> None:
+        if dataset_field.fields:
+            for subfield in dataset_field.fields:
+                validate_field(subfield)
+        else:
+            if (
+                dataset_field.fides_meta
+                and dataset_field.fides_meta.masking_strategy_override
+            ):
+                strategy: MaskingStrategy = MaskingStrategy.get_strategy(
+                    dataset_field.fides_meta.masking_strategy_override.strategy,
+                    dataset_field.fides_meta.masking_strategy_override.configuration,  # type: ignore[arg-type]
+                )
+                if strategy.secrets_required():
+                    raise ValidationError(
+                        f"Masking strategy '{strategy.name}' with required secrets not allowed as an override."
+                    )
+
+    for collection in dataset.collections:
+        for field in collection.fields:
+            validate_field(field)

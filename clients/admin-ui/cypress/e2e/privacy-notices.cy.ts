@@ -14,13 +14,10 @@ const ESSENTIAL_NOTICE_ID = "pri_a518b4d0-9cbc-48b1-94dc-2fe911537b8e";
 describe("Privacy notices", () => {
   beforeEach(() => {
     cy.login();
-    cy.intercept("GET", "/api/v1/privacy-notice*", {
-      fixture: "privacy-notices/list.json",
-    }).as("getNotices");
-    cy.intercept("GET", "/api/v1/languages", {
-      fixture: "languages.json",
-    }).as("getLanguages");
+    stubPrivacyNoticesCrud();
+    stubTranslationConfig(true);
     stubPlus(true);
+    stubLanguages();
   });
 
   describe("permissions", () => {
@@ -129,9 +126,11 @@ describe("Privacy notices", () => {
       beforeEach(() => {});
 
       it("can enable a notice", () => {
-        cy.intercept("PATCH", "/api/v1/privacy-notice/*/limited_update*").as(
-          "toggleEnabled",
-        );
+        cy.intercept(
+          "PATCH",
+          "/api/v1/privacy-notice/*/limited_update*",
+          {},
+        ).as("toggleEnabled");
         cy.get("table")
           .contains("tr", "Data Sales")
           .within(() => {
@@ -150,9 +149,11 @@ describe("Privacy notices", () => {
       });
 
       it("can disable a notice with a warning", () => {
-        cy.intercept("PATCH", "/api/v1/privacy-notice/*/limited_update*").as(
-          "toggleEnabled",
-        );
+        cy.intercept(
+          "PATCH",
+          "/api/v1/privacy-notice/*/limited_update*",
+          {},
+        ).as("toggleEnabled");
         cy.get("table")
           .contains("tr", "Essential")
           .within(() => {
@@ -237,17 +238,11 @@ describe("Privacy notices", () => {
         cy.getByTestId("input-name").should("have.value", notice.name);
 
         // consent mechanism section
-        cy.getSelectValueContainer("input-consent_mechanism").contains(
+        cy.getByTestId("controlled-select-consent_mechanism").contains(
           "Notice only",
         );
 
-        cy.getByTestId("notice-locations").within(() => {
-          cy.get(".notice-locations--is-disabled");
-          cy.get(".notice-locations__value-container").should(
-            "contain",
-            "United States",
-          );
-        });
+        cy.getByTestId("notice-locations").should("contain", "United States");
 
         cy.getByTestId("input-has_gpc_flag").within(() => {
           cy.get("span").should("not.have.attr", "data-checked");
@@ -255,11 +250,11 @@ describe("Privacy notices", () => {
 
         // configuration section
         notice.data_uses.forEach((dataUse) => {
-          cy.getSelectValueContainer("input-data_uses").contains(dataUse);
+          cy.getByTestId("controlled-select-data_uses").contains(dataUse);
         });
 
         // enforcement level
-        cy.getSelectValueContainer("input-enforcement_level").contains(
+        cy.getByTestId("controlled-select-enforcement_level").contains(
           "Not applicable",
         );
 
@@ -276,7 +271,7 @@ describe("Privacy notices", () => {
     });
 
     it("can make an edit", () => {
-      cy.intercept("PATCH", "/api/v1/privacy-notice/*").as("patchNotices");
+      cy.intercept("PATCH", "/api/v1/privacy-notice/*", {}).as("patchNotices");
       cy.fixture("privacy-notices/notice.json").then((notice) => {
         cy.visit(`${PRIVACY_NOTICES_ROUTE}/${ESSENTIAL_NOTICE_ID}`);
         cy.wait("@getNoticeDetail");
@@ -309,17 +304,14 @@ describe("Privacy notices", () => {
     });
 
     it("can link other notices as children", () => {
-      cy.intercept("PATCH", "/api/v1/privacy-notice/*").as("patchNotices");
+      cy.intercept("PATCH", "/api/v1/privacy-notice/*", {}).as("patchNotices");
       cy.fixture("privacy-notices/notice.json").then((notice) => {
         cy.visit(`${PRIVACY_NOTICES_ROUTE}/${ESSENTIAL_NOTICE_ID}`);
         cy.wait("@getNoticeDetail");
 
         cy.getByTestId("add-children").click();
         cy.getByTestId("select-children").click();
-        cy.get(".select-children__menu")
-          .find(".select-children__option")
-          .first()
-          .click();
+        cy.get(".ant-select-dropdown").find(".ant-select-item").first().click();
 
         cy.getByTestId("save-btn").click();
         cy.wait("@patchNotices").then((interception) => {
@@ -376,11 +368,13 @@ describe("Privacy notices", () => {
       cy.getByTestId("input-name").type(notice.name);
 
       // consent mechanism section
-      cy.selectOption("input-consent_mechanism", "Opt in");
+      cy.getByTestId("controlled-select-consent_mechanism").antSelect("Opt in");
       cy.getByTestId("input-has_gpc_flag").click();
 
       // configuration section
-      cy.selectOption("input-data_uses", notice.data_uses[0]);
+      cy.getByTestId("controlled-select-data_uses").antSelect(
+        notice.data_uses[0],
+      );
 
       // translations
       cy.getByTestId("input-translations.0.title").type("Title");
@@ -390,8 +384,7 @@ describe("Privacy notices", () => {
 
       // add a new translation
       cy.getByTestId("add-language-btn").click();
-      cy.getByTestId("select-language").click();
-      cy.get(".select-language__menu").find(".select-language__option").click();
+      cy.getByTestId("select-language").antSelect("French");
       cy.getByTestId("input-translations.1.title").type("Le titre");
       cy.getByTestId("input-translations.1.description").type(
         "Un description français",
@@ -428,6 +421,7 @@ describe("Privacy notices", () => {
     it("shows the translation interface when translations are enabled", () => {
       stubLanguages();
       stubTranslationConfig(true);
+      stubTaxonomyEntities();
       cy.visit(`${PRIVACY_NOTICES_ROUTE}/new`);
       cy.wait("@getTranslationConfig");
       cy.getByTestId("add-language-btn").should("exist");
@@ -435,6 +429,7 @@ describe("Privacy notices", () => {
 
     it("doesn't show the translation interface when translations are disabled", () => {
       stubTranslationConfig(false);
+      stubTaxonomyEntities();
       cy.visit(`${PRIVACY_NOTICES_ROUTE}/new`);
       cy.wait("@getTranslationConfig");
       cy.getByTestId("add-language-btn").should("not.exist");

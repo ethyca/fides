@@ -1,7 +1,7 @@
 import { Flex, Text } from "fidesui";
 import React from "react";
 
-const ConnectionsEmptyState = () => (
+const ConnectionsEmptyState = ({ hasFilters }: { hasFilters: boolean }) => (
   <Flex
     bg="gray.50"
     width="100%"
@@ -18,10 +18,14 @@ const ConnectionsEmptyState = () => (
       fontWeight="600"
       mb="7px"
     >
-      All of your connections have been linked!
+      {hasFilters
+        ? "No connections found"
+        : "All of your connections have been linked!"}
     </Text>
     <Text color="gray.600" fontSize="sm" lineHeight="20px" mb="11px">
-      You are ready to upgrade Fides
+      {hasFilters
+        ? "Modify your search parameters"
+        : "You are ready to upgrade Fides"}
     </Text>
   </Flex>
 );

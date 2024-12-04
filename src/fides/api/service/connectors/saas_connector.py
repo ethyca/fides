@@ -527,7 +527,9 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
 
         self.set_privacy_request_state(privacy_request, node, request_task)
         query_config = self.query_config(node)
-        masking_request = query_config.get_masking_request()
+
+        session = Session.object_session(privacy_request)
+        masking_request = query_config.get_masking_request(session)
         if not masking_request:
             raise Exception(
                 f"Either no masking request configured or no valid masking request for {node.address.collection}. "

@@ -59,6 +59,7 @@ from fides.api.util.collection_util import (
 )
 from fides.api.util.consent_util import add_errored_system_status_for_consent_reporting
 from fides.api.util.logger import Pii
+from fides.api.util.logger_context_utils import LoggerContextKeys
 from fides.api.util.saas_util import FIDESOPS_GROUPED_INPUTS
 from fides.config import CONFIG
 
@@ -390,7 +391,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
 
     def log_start(self, action_type: ActionType) -> None:
         """Task start activities"""
-        logger.info("Starting {}, node {}", self.resources.request.id, self.key)
+        logger.info("Starting node {}", self.key)
 
         self.update_status(
             "starting", [], action_type, ExecutionLogStatus.in_processing
@@ -398,7 +399,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
 
     def log_retry(self, action_type: ActionType) -> None:
         """Task retry activities"""
-        logger.info("Retrying {}, node {}", self.resources.request.id, self.key)
+        logger.info("Retrying node {}", self.key)
 
         self.update_status("retrying", [], action_type, ExecutionLogStatus.retrying)
 
@@ -406,7 +407,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         self, action_type: ActionType, ex: Optional[BaseException]
     ) -> None:
         """On paused activities"""
-        logger.info("Pausing {}, node {}", self.resources.request.id, self.key)
+        logger.info("Pausing node {}", self.key)
 
         self.update_status(
             str(ex), [], action_type, ExecutionLogStatus.awaiting_processing
@@ -414,7 +415,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
 
     def log_skipped(self, action_type: ActionType, ex: str) -> None:
         """Log that a collection was skipped.  For now, this is because a collection has been disabled."""
-        logger.info("Skipping {}, node {}", self.resources.request.id, self.key)
+        logger.info("Skipping node {}", self.key)
         if action_type == ActionType.consent and self.request_task.id:
             self.request_task.consent_sent = False
         self.update_status(str(ex), [], action_type, ExecutionLogStatus.skipped)
@@ -575,21 +576,25 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
     @retry(action_type=ActionType.access, default_return=[])
     def access_request(self, *inputs: List[Row]) -> List[Row]:
         """Run an access request on a single node."""
-        formatted_input_data: NodeInput = self.pre_process_input_data(
-            *inputs, group_dependent_fields=True
-        )
-        output: List[Row] = self.connector.retrieve_data(
-            self.execution_node,
-            self.resources.policy,
-            self.resources.request,
-            self.resources.privacy_request_task,
-            formatted_input_data,
-        )
-        filtered_output: List[Row] = self.access_results_post_processing(
-            self.pre_process_input_data(*inputs, group_dependent_fields=False), output
-        )
-        self.log_end(ActionType.access)
-        return filtered_output
+        with logger.contextualize(
+            **{LoggerContextKeys.privacy_request_id.value: self.resources.request.id}
+        ):
+            formatted_input_data: NodeInput = self.pre_process_input_data(
+                *inputs, group_dependent_fields=True
+            )
+            output: List[Row] = self.connector.retrieve_data(
+                self.execution_node,
+                self.resources.policy,
+                self.resources.request,
+                self.resources.privacy_request_task,
+                formatted_input_data,
+            )
+            filtered_output: List[Row] = self.access_results_post_processing(
+                self.pre_process_input_data(*inputs, group_dependent_fields=False),
+                output,
+            )
+            self.log_end(ActionType.access)
+            return filtered_output
 
     @retry(action_type=ActionType.erasure, default_return=0)
     def erasure_request(

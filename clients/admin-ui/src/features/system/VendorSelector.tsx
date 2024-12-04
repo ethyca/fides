@@ -1,7 +1,5 @@
 import {
-  AntFlex as Flex,
   AntSelect as Select,
-  AntTypography as Typography,
   Box,
   CloseButton,
   FormControl,
@@ -26,13 +24,11 @@ import {
 } from "~/features/common/form/inputs";
 import { CompassIcon } from "~/features/common/Icon/CompassIcon";
 import QuestionTooltip from "~/features/common/QuestionTooltip";
-import { DictOption } from "~/features/plus/plus.slice";
+import { DictOption as VendorOption } from "~/features/plus/plus.slice";
 import { selectSuggestions } from "~/features/system/dictionary-form/dict-suggestion.slice";
 import { FormValues } from "~/features/system/form";
 
 import { AutosuggestSuffix } from "../common/AutosuggestSuffix";
-
-const { Text } = Typography;
 
 const NEW_SYSTEM_PREFIX = "Create new system";
 
@@ -80,21 +76,10 @@ interface VendorSelectorProps {
   label: string;
   isCreate: boolean;
   lockedForGVL: boolean;
-  options: DictOption[];
+  options: VendorOption[];
   isLoading?: boolean;
   onVendorSelected: (vendorId?: string | null) => void;
 }
-
-const CustomDictionaryOption = ({ data }: { data: DictOption }) => (
-  <Flex vertical className="p-1 leading-tight">
-    <Text strong>{data.label}</Text>
-    {data.description && (
-      <Text type="secondary" className="text-wrap text-sm leading-tight">
-        {data.description}
-      </Text>
-    )}
-  </Flex>
-);
 
 const VendorSelector = ({
   label,
@@ -118,7 +103,7 @@ const VendorSelector = ({
     description: "",
   };
 
-  const filterFunction = (searchParam: string, option?: DictOption) =>
+  const filterFunction = (searchParam: string, option?: VendorOption) =>
     !!option?.label.toLowerCase().startsWith(searchParam.toLowerCase());
 
   const [searchParam, setSearchParam] = useState<string>("");
@@ -160,7 +145,7 @@ const VendorSelector = ({
     onVendorSelected(undefined);
   };
 
-  const handleChange = async (newValue: DictOption) => {
+  const handleChange = async (newValue: VendorOption) => {
     if (newValue) {
       const newVendorId = options.some((opt) => opt.value === newValue.value)
         ? newValue.value
@@ -186,12 +171,15 @@ const VendorSelector = ({
   };
 
   // complete the autosuggest
-  const handleTabPressed = async (event: KeyboardEvent<HTMLDivElement>) => {
+  const handleTabPressed = async (
+    event: KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => {
     if (suggestions.length > 0 && searchParam !== suggestions[0].label) {
       event.preventDefault();
       setSearchParam(suggestions[0].label);
       setFieldValue("vendor_id", suggestions[0].value);
       await setValue(suggestions[0].label);
+      onVendorSelected(suggestions[0].value);
     } else {
       setFieldValue("vendor_id", undefined);
       await setValue(searchParam);
@@ -200,7 +188,7 @@ const VendorSelector = ({
   };
 
   // we have to build the typeahead from scratch, too much context-specific
-  // is needed to use the existing CustomCreatableSelect component
+  // is needed to use the existing ControlledSelect component
   const typeaheadSelect = (
     <FormControl isInvalid={isInvalid} isRequired width="100%">
       <VStack alignItems="start" position="relative" width="100%">
@@ -210,8 +198,8 @@ const VendorSelector = ({
           </Label>
           <QuestionTooltip label="Enter the system name" />
         </HStack>
-        <Box width="100%" data-testid="input-name" className="relative">
-          <Select<DictOption, DictOption>
+        <Box width="100%" className="relative">
+          <Select<VendorOption, VendorOption>
             id="vendorName"
             showSearch
             labelInValue
@@ -227,18 +215,17 @@ const VendorSelector = ({
             value={selected}
             placeholder="Enter system name..."
             disabled={nameFieldLockedForGVL}
-            optionRender={CustomDictionaryOption}
             onChange={handleChange}
             onSearch={setSearchParam}
             onClear={handleClear}
             onBlur={handleBlur}
-            onKeyDown={(e) => {
+            onInputKeyDown={(e) => {
               if (searchParam && e.key === "Tab") {
                 handleTabPressed(e);
               }
             }}
             status={isInvalid ? "error" : undefined}
-            className="w-full"
+            data-testid="vendor-name-select"
           />
           <AutosuggestSuffix
             searchText={searchParam}

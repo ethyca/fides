@@ -1,31 +1,56 @@
-from typing import List, Optional, Union
+from typing import Dict, List, Optional, Type, Union
 
-from fastapi import APIRouter, Depends, Query, Security
+from fastapi import APIRouter, Depends, HTTPException, Query, Security
 from fastapi_pagination import Page, Params
 from fastapi_pagination.ext.async_sqlalchemy import paginate as async_paginate
 from fideslang.models import Dataset
 from sqlalchemy import not_
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import Session
 from sqlalchemy.sql.expression import select
+from starlette import status
+from starlette.status import HTTP_422_UNPROCESSABLE_ENTITY
 
+from fides.api.api.deps import get_db
+from fides.api.common_exceptions import KeyOrNameAlreadyExists
+from fides.api.db.base_class import get_key_from_data
 from fides.api.db.crud import list_resource_query
 from fides.api.db.ctl_session import get_async_db
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.oauth.utils import verify_oauth_client
 from fides.api.schemas.filter_params import FilterParams
+from fides.api.schemas.taxonomy_extensions import (
+    DataCategory,
+    DataCategoryCreate,
+    DataSubject,
+    DataSubjectCreate,
+    DataUse,
+    DataUseCreate,
+)
 from fides.api.util.filter_utils import apply_filters_to_query
-from fides.common.api.scope_registry import DATASET_READ
+from fides.common.api.scope_registry import (
+    DATA_CATEGORY_CREATE,
+    DATA_SUBJECT_CREATE,
+    DATA_USE_CREATE,
+    DATASET_READ,
+)
 from fides.common.api.v1.urn_registry import V1_URL_PREFIX
 
 from fides.api.models.sql_models import (  # type: ignore[attr-defined] # isort: skip
     Dataset as CtlDataset,
+    DataCategory as DataCategoryDbModel,
+    DataSubject as DataSubjectDbModel,
+    DataUse as DataUseDbModel,
 )
 
 # We create routers to override specific methods in those defined in generic.py
 # when we need more custom implementations for only some of the methods in a router.
 
 dataset_router = APIRouter(tags=["Dataset"], prefix=V1_URL_PREFIX)
+data_use_router = APIRouter(tags=["DataUse"], prefix=V1_URL_PREFIX)
+data_category_router = APIRouter(tags=["DataCategory"], prefix=V1_URL_PREFIX)
+data_subject_router = APIRouter(tags=["DataSubject"], prefix=V1_URL_PREFIX)
 
 
 @dataset_router.get(
@@ -85,5 +110,161 @@ async def list_dataset_paginated(
     return await async_paginate(db, filtered_query, pagination_params)
 
 
+def validate_and_create_taxonomy(
+    db: Session,
+    model: Union[
+        Type[DataCategoryDbModel], Type[DataUseDbModel], Type[DataSubjectDbModel]
+    ],
+    validation_schema: type,
+    data: Union[DataCategoryCreate, DataUseCreate, DataSubjectCreate],
+) -> Dict:
+    """
+    Validate and create a taxonomy element.
+    """
+    validated_taxonomy = validation_schema(**data.model_dump(mode="json"))
+    return model.create(db=db, data=validated_taxonomy.model_dump(mode="json"))
+
+
+def validate_and_update_taxonomy(
+    db: Session,
+    resource: Union[DataCategoryDbModel, DataUseDbModel, DataSubjectDbModel],
+    validation_schema: type,
+    data: Union[DataCategoryCreate, DataUseCreate, DataSubjectCreate],
+) -> Dict:
+    """
+    Validate and update a taxonomy element.
+    """
+    validated_taxonomy = validation_schema(**data.model_dump(mode="json"))
+    return resource.update(db=db, data=validated_taxonomy.model_dump(mode="json"))
+
+
+def create_or_update_taxonomy(
+    db: Session,
+    data: Union[DataCategoryCreate, DataUseCreate, DataSubjectCreate],
+    model: Union[
+        Type[DataCategoryDbModel], Type[DataUseDbModel], Type[DataSubjectDbModel]
+    ],
+    validation_schema: type,
+) -> Dict:
+    """
+    Create or update a taxonomy element. If the element is disabled, it will be updated and re-enabled.
+    """
+    if data.fides_key is None:
+        disabled_resource_with_name = (
+            db.query(model)
+            .filter(
+                model.active.is_(False),
+                model.name == data.name,
+            )
+            .first()
+        )
+        data.fides_key = get_key_from_data(
+            {"key": data.fides_key, "name": data.name}, validation_schema.__name__
+        )
+        if data.parent_key if hasattr(data, "parent_key") else None:
+            data.fides_key = f"{data.parent_key}.{data.fides_key}"  # type: ignore[union-attr]
+        if disabled_resource_with_name:
+            data.active = True
+            return validate_and_update_taxonomy(
+                db, disabled_resource_with_name, validation_schema, data
+            )
+        return validate_and_create_taxonomy(db, model, validation_schema, data)
+
+    return validate_and_create_taxonomy(db, model, validation_schema, data)
+
+
+@data_use_router.post(
+    "/data_use",
+    dependencies=[Security(verify_oauth_client, scopes=[DATA_USE_CREATE])],
+    response_model=DataUse,
+    status_code=status.HTTP_201_CREATED,
+    name="Create",
+)
+async def create_data_use(
+    data_use: DataUseCreate,
+    db: Session = Depends(get_db),
+) -> Dict:
+    """
+    Create a data use. Updates existing data use if data use with name already exists and is disabled.
+    """
+    try:
+        return create_or_update_taxonomy(db, data_use, DataUseDbModel, DataUse)
+    except KeyOrNameAlreadyExists:
+        raise HTTPException(
+            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"Data use with key {data_use.fides_key} or name {data_use.name} already exists.",
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"Error creating data use: {e}",
+        )
+
+
+@data_category_router.post(
+    "/data_category",
+    dependencies=[Security(verify_oauth_client, scopes=[DATA_CATEGORY_CREATE])],
+    response_model=DataCategory,
+    status_code=status.HTTP_201_CREATED,
+    name="Create",
+)
+async def create_data_category(
+    data_category: DataCategoryCreate,
+    db: Session = Depends(get_db),
+) -> Dict:
+    """
+    Create a data category
+    """
+
+    try:
+        return create_or_update_taxonomy(
+            db, data_category, DataCategoryDbModel, DataCategory
+        )
+    except KeyOrNameAlreadyExists:
+        raise HTTPException(
+            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"Data category with key {data_category.fides_key} or name {data_category.name} already exists.",
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"Error creating data category: {e}",
+        )
+
+
+@data_subject_router.post(
+    "/data_subject",
+    dependencies=[Security(verify_oauth_client, scopes=[DATA_SUBJECT_CREATE])],
+    response_model=DataSubject,
+    status_code=status.HTTP_201_CREATED,
+    name="Create",
+)
+async def create_data_subject(
+    data_subject: DataSubjectCreate,
+    db: Session = Depends(get_db),
+) -> Dict:
+    """
+    Create a data subject
+    """
+
+    try:
+        return create_or_update_taxonomy(
+            db, data_subject, DataSubjectDbModel, DataSubject
+        )
+    except KeyOrNameAlreadyExists:
+        raise HTTPException(
+            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"Data subject with key {data_subject.fides_key} or name {data_subject.name} already exists.",
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"Error creating data subject: {e}",
+        )
+
+
 GENERIC_OVERRIDES_ROUTER = APIRouter()
 GENERIC_OVERRIDES_ROUTER.include_router(dataset_router)
+GENERIC_OVERRIDES_ROUTER.include_router(data_use_router)
+GENERIC_OVERRIDES_ROUTER.include_router(data_category_router)
+GENERIC_OVERRIDES_ROUTER.include_router(data_subject_router)

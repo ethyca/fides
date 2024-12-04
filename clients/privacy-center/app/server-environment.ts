@@ -51,6 +51,7 @@ export type PrivacyCenterClientSettings = Pick<
   | "OVERLAY_PARENT_ID"
   | "MODAL_LINK_ID"
   | "PRIVACY_CENTER_URL"
+  | "SHOW_BRAND_LINK"
   | "FIDES_EMBED"
   | "FIDES_DISABLE_SAVE_API"
   | "FIDES_DISABLE_NOTICES_SERVED_API"
@@ -65,6 +66,7 @@ export type PrivacyCenterClientSettings = Pick<
   | "BASE_64_COOKIE"
   | "FIDES_PRIMARY_COLOR"
   | "FIDES_CLEAR_COOKIE"
+  | "FIDES_CONSENT_OVERRIDE"
 >;
 
 export type Styles = string;
@@ -284,7 +286,7 @@ export const loadServerSettings = (): PrivacyCenterServerSettings => {
 // eslint-disable-next-line no-underscore-dangle,@typescript-eslint/naming-convention
 
 export const loadPrivacyCenterEnvironment = async ({
-  customPropertyPath = undefined,
+  customPropertyPath,
 }: { customPropertyPath?: string } = {}): Promise<PrivacyCenterEnvironment> => {
   if (typeof window !== "undefined") {
     throw new Error(
@@ -301,6 +303,14 @@ export const loadPrivacyCenterEnvironment = async ({
   if (settings.CUSTOM_PROPERTIES && customPropertyPath) {
     const result = await getPropertyFromUrl({
       customPropertyPath,
+      fidesApiUrl: settings.SERVER_SIDE_FIDES_API_URL || settings.FIDES_API_URL,
+    });
+    if (result) {
+      property = result;
+    }
+  } else if (settings.FIDES_PRIVACY_CENTER__ROOT_PROPERTY_PATH) {
+    const result = await getPropertyFromUrl({
+      customPropertyPath: settings.FIDES_PRIVACY_CENTER__ROOT_PROPERTY_PATH,
       fidesApiUrl: settings.SERVER_SIDE_FIDES_API_URL || settings.FIDES_API_URL,
     });
     if (result) {
@@ -328,6 +338,7 @@ export const loadPrivacyCenterEnvironment = async ({
     OVERLAY_PARENT_ID: settings.OVERLAY_PARENT_ID,
     MODAL_LINK_ID: settings.MODAL_LINK_ID,
     PRIVACY_CENTER_URL: settings.PRIVACY_CENTER_URL,
+    SHOW_BRAND_LINK: settings.SHOW_BRAND_LINK,
     FIDES_EMBED: settings.FIDES_EMBED,
     FIDES_DISABLE_SAVE_API: settings.FIDES_DISABLE_SAVE_API,
     FIDES_DISABLE_NOTICES_SERVED_API: settings.FIDES_DISABLE_NOTICES_SERVED_API,
@@ -342,6 +353,7 @@ export const loadPrivacyCenterEnvironment = async ({
     BASE_64_COOKIE: settings.BASE_64_COOKIE,
     FIDES_PRIMARY_COLOR: settings.FIDES_PRIMARY_COLOR,
     FIDES_CLEAR_COOKIE: settings.FIDES_CLEAR_COOKIE,
+    FIDES_CONSENT_OVERRIDE: settings.FIDES_CONSENT_OVERRIDE,
   };
 
   // For backwards-compatibility, override FIDES_API_URL with the value from the config file if present

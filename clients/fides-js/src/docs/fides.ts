@@ -328,4 +328,9 @@ export interface Fides {
    * @internal
    */
   shopify: (options: any) => void;
+
+  /**
+   * @internal
+   */
+  blueconic: (options?: { approach: "onetrust" }) => void;
 }

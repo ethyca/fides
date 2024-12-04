@@ -1,24 +1,21 @@
-import { stubPlus, stubSystemCrud } from "cypress/support/stubs";
+import {
+  stubDatasetCrud,
+  stubPlus,
+  stubSystemCrud,
+  stubSystemIntegrations,
+  stubTaxonomyEntities,
+} from "cypress/support/stubs";
 
 import { SYSTEM_ROUTE } from "~/features/common/nav/v2/routes";
 
 describe("System integrations", () => {
   beforeEach(() => {
     cy.login();
-    cy.intercept("GET", "/api/v1/system*", {
-      fixture: "systems/systems_paginated.json",
-    }).as("getSystems");
-    cy.intercept("GET", "/api/v1/connection_type*", {
-      fixture: "connectors/connection_types.json",
-    }).as("getConnectionTypes");
-    cy.intercept("GET", "/api/v1/connection_type/postgres/secret", {
-      fixture: "connectors/postgres_secret.json",
-    }).as("getPostgresConnectorSecret");
-    cy.intercept("GET", "/api/v1/plus/dictionary/system?size=2000", {
-      fixture: "dictionary-entries.json",
-    }).as("getDict");
     stubPlus(true);
+    stubSystemIntegrations();
     stubSystemCrud();
+    stubTaxonomyEntities();
+    stubDatasetCrud();
     cy.visit(SYSTEM_ROUTE);
   });
 
@@ -105,30 +102,10 @@ describe("System integrations", () => {
       cy.getByTestId("consentable-item-label").should("have.length", 5);
       cy.getByTestId("consentable-item-label-child").should("have.length", 6);
       cy.getByTestId("consentable-item-select").should("have.length", 11);
-      cy.getByTestId("consentable-item-select")
-        .first()
-        .within(() => {
-          cy.get(".custom-select__input").focus().realPress(" ");
-        });
-      cy.get(".custom-select__menu").first().should("exist");
-      cy.get(".custom-select__menu")
-        .first()
-        .within(() => {
-          cy.get(".custom-select__option").should("have.length", 5);
-        });
     });
     it("should save the consent automation settings", () => {
       cy.getByTestId("accordion-consent-automation").click();
-      cy.getByTestId("consentable-item-select")
-        .first()
-        .within(() => {
-          cy.get(".custom-select__input").focus().realPress(" ");
-        });
-      cy.get(".custom-select__menu")
-        .first()
-        .within(() => {
-          cy.get(".custom-select__option").first().click();
-        });
+      cy.getByTestId("consentable-item-select").antSelect(0);
       cy.getByTestId("save-consent-automation").click();
       cy.wait("@putConsentableItems").then((interception) => {
         cy.fixture("connectors/consentable_items.json").then((expected) => {
