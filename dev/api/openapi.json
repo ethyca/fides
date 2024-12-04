@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.49.2b0.post0.dev29"
+    "version": "2.50.1b0.post0.dev1"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -3285,6 +3285,23 @@
               ],
               "default": false,
               "title": "Show Hidden"
+            }
+          },
+          {
+            "name": "show_deleted",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": false,
+              "title": "Show Deleted"
             }
           }
         ],
