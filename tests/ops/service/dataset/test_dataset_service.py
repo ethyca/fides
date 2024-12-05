@@ -111,6 +111,7 @@ class TestGetIdentitiesAndReferences:
         assert required_identities == expected_required_identities
 
 
+@pytest.mark.integration
 @pytest.mark.integration_postgres
 class TestRunTestAccessRequest:
     """

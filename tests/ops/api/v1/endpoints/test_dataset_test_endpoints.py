@@ -194,6 +194,7 @@ class TestDatasetReachability:
         assert set(response.json().keys()) == {"reachable", "details"}
 
 
+@pytest.mark.integration
 @pytest.mark.integration_postgres
 class TestDatasetTest:
     @pytest.fixture(scope="function")
