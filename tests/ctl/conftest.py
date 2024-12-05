@@ -52,6 +52,11 @@ def setup_ctl_db(test_config, test_client, config):
     assert (
         requests.post == test_client.post
     )  # Sanity check to make sure monkeypatch_requests fixture has run
+    from loguru import logger
+
+    logger.info("Setting up the database for testing.")
+    logger.info("test_config.cli.server_url: {}", test_config.cli.server_url)
+    logger.info("config.user.auth_header: {}", config.user.auth_header)
     yield api.db_action(
         server_url=test_config.cli.server_url,
         headers=config.user.auth_header,
