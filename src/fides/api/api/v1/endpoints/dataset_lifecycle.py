@@ -14,6 +14,7 @@ from fides.api.api.deps import get_db
 from fides.api.api.v1.endpoints import API_PREFIX
 from fides.api.db.ctl_session import get_async_db
 from fides.api.models.detection_discovery import (
+    annotate_resource_query_with_data_uses,
     fetch_staged_resources_by_type_query,
     mark_resources_hidden,
 )
@@ -68,12 +69,11 @@ async def get_datasets(
     A "dataset" for lifecycle experience is a stagedresource "schema"
     """
     query = fetch_staged_resources_by_type_query(
-        resource_type="schema",
+        resource_type="Schema",
         monitor_config_ids=monitor_config_ids,
         show_hidden=show_hidden,
     )
-    results = paginate(db, query, params)
-    return results
+    return paginate(db, query, params)
 
 
 @LIFECYCLE_ROUTER.patch("/hide/", status_code=HTTP_200_OK)

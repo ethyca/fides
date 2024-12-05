@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Optional
 
 from pydantic import BaseModel
 
@@ -8,7 +9,7 @@ class StagedResourceResponse(BaseModel):
 
     urn: str
     name: str
-    description: str
+    description: Optional[str]
     created_at: datetime
     updated_at: datetime
     diff_status: str

@@ -15,6 +15,7 @@ from sqlalchemy.orm.query import Query
 
 from fides.api.db.base_class import Base, FidesBase
 from fides.api.models.connectionconfig import ConnectionConfig
+from fides.api.models.sql_models import PrivacyDeclaration
 
 # class MonitorExecution(BaseModel):
 #     id: str
@@ -383,3 +384,25 @@ async def mark_resources_hidden(
     for resource in resources:
         resource.hidden = hidden
     await db.commit()
+
+
+def annotate_resource_query_with_data_uses(
+    query: Query,
+) -> Query:
+    """
+    Returns a Query that will also fetch each data_use attached to a StagedResource
+    via StagedResource.monitor_config_id -> monitorconfig.id, monitorconfig.connection_config_id -> connectionconfig.id,
+    connectionconfig.system_id -> privacydeclaration.system_id, privacydeclaration.data_use
+    """
+
+    query = query.outerjoin(
+        MonitorConfig, StagedResource.monitor_config_id == MonitorConfig.id
+    )
+    query = query.outerjoin(
+        ConnectionConfig, MonitorConfig.connection_config_id == ConnectionConfig.id
+    )
+    query = query.outerjoin(
+        PrivacyDeclaration, ConnectionConfig.system_id == PrivacyDeclaration.system_id
+    )
+    query = query.add_columns(PrivacyDeclaration.data_use)
+    return query
