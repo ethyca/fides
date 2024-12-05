@@ -1,13 +1,18 @@
 # pylint: disable=too-many-lines
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, cast
 
 from sqlalchemy.sql.elements import TextClause
 
+from fides.api.schemas.namespace_meta.snowflake_namespace_meta import (
+    SnowflakeNamespaceMeta,
+)
 from fides.api.service.connectors.query_configs.query_config import SQLQueryConfig
 
 
 class SnowflakeQueryConfig(SQLQueryConfig):
     """Generates SQL in Snowflake's custom dialect."""
+
+    namespace_meta_schema = SnowflakeNamespaceMeta
 
     def generate_raw_query(
         self, field_list: List[str], filters: Dict[str, List[Any]]
@@ -25,13 +30,34 @@ class SnowflakeQueryConfig(SQLQueryConfig):
         """Returns field names in clauses surrounded by quotation marks as required by Snowflake syntax."""
         return f'"{string_path}" {operator} (:{operand})'
 
+    def _generate_table_name(self) -> str:
+        """
+        Prepends the dataset name and schema to the base table name
+        if the Snowflake namespace meta is provided.
+        """
+
+        table_name = (
+            f'"{self.node.collection.name}"'  # Always quote the base table name
+        )
+
+        if not self.namespace_meta:
+            return table_name
+
+        snowflake_meta = cast(SnowflakeNamespaceMeta, self.namespace_meta)
+        qualified_name = f'"{snowflake_meta.schema}".{table_name}'
+
+        if database_name := snowflake_meta.database_name:
+            return f'"{database_name}".{qualified_name}'
+
+        return qualified_name
+
     def get_formatted_query_string(
         self,
         field_list: str,
         clauses: List[str],
     ) -> str:
         """Returns a query string with double quotation mark formatting as required by Snowflake syntax."""
-        return f'SELECT {field_list} FROM "{self.node.collection.name}" WHERE ({" OR ".join(clauses)})'
+        return f'SELECT {field_list} FROM {self._generate_table_name()} WHERE ({" OR ".join(clauses)})'
 
     def format_key_map_for_update_stmt(self, fields: List[str]) -> List[str]:
         """Adds the appropriate formatting for update statements in this datastore."""
@@ -43,5 +69,5 @@ class SnowflakeQueryConfig(SQLQueryConfig):
         update_clauses: List[str],
         pk_clauses: List[str],
     ) -> str:
-        """Returns a parameterised update statement in Snowflake dialect."""
-        return f'UPDATE "{self.node.address.collection}" SET {",".join(update_clauses)} WHERE  {" AND ".join(pk_clauses)}'
+        """Returns a parameterized update statement in Snowflake dialect."""
+        return f'UPDATE {self._generate_table_name()} SET {", ".join(update_clauses)} WHERE {" AND ".join(pk_clauses)}'
