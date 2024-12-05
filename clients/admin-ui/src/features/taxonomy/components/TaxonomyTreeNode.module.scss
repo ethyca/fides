@@ -2,7 +2,7 @@
   position: relative;
 }
 .button {
-  @apply max-w-[300px] cursor-pointer truncate rounded px-4 py-1 transition-colors duration-300;
+  @apply max-w-[300px] cursor-pointer truncate rounded px-4 py-1 transition-colors duration-300 box-border border border-transparent;
 }
 
 // .button {
@@ -28,7 +28,7 @@
 }
 
 .button-path-hover {
-  @apply bg-neutral-100 border border-neutral-100;
+  @apply bg-neutral-100 border-neutral-100;
 }
 
 .button-inactive {
