@@ -43,14 +43,13 @@ from fides.api.util.logger_context_utils import LoggerContextKeys, log_context
 # DSR 3.0 task functions
 
 
-def run_prerequisite_task_checks(
+def get_privacy_request_and_task(
     session: Session, privacy_request_id: str, privacy_request_task_id: str
-) -> Tuple[PrivacyRequest, RequestTask, Query]:
+) -> Tuple[PrivacyRequest, RequestTask]:
     """
-    Upfront checks that run as soon as the RequestTask is executed by the worker.
+    Retrieves and validates a privacy request and its associated task
+    """
 
-    Returns resources for use in executing a task
-    """
     privacy_request: Optional[PrivacyRequest] = PrivacyRequest.get(
         db=session, object_id=privacy_request_id
     )
@@ -72,6 +71,22 @@ def run_prerequisite_task_checks(
         raise RequestTaskNotFound(
             f"Request Task with id {privacy_request_task_id} not found for privacy request {privacy_request_id}"
         )
+
+    return privacy_request, request_task
+
+
+def run_prerequisite_task_checks(
+    session: Session, privacy_request_id: str, privacy_request_task_id: str
+) -> Tuple[PrivacyRequest, RequestTask, Query]:
+    """
+    Upfront checks that run as soon as the RequestTask is executed by the worker.
+
+    Returns resources for use in executing a task
+    """
+
+    privacy_request, request_task = get_privacy_request_and_task(
+        session, privacy_request_id, privacy_request_task_id
+    )
 
     assert request_task  # For mypy
 
@@ -172,13 +187,17 @@ def log_retry_attempt(retry_state: RetryCallState) -> None:
 )
 def queue_downstream_tasks_with_retries(
     database_task: DatabaseTask,
-    request_task: RequestTask,
-    privacy_request: PrivacyRequest,
+    privacy_request_id: str,
+    privacy_request_task_id: str,
     current_step: CurrentStep,
     privacy_request_proceed: bool,
 ) -> None:
     with database_task.get_new_session() as session:
         logger.info(f"Session ID - queue_downstream_tasks_with_retries: {id(session)}")
+        privacy_request, request_task = get_privacy_request_and_task(
+            session, privacy_request_id, privacy_request_task_id
+        )
+        log_task_complete(request_task)
         queue_downstream_tasks(
             session,
             request_task,
@@ -276,13 +295,12 @@ def run_access_node(
                 ]
                 # Run the main access function
                 graph_task.access_request(*upstream_access_data)
-                log_task_complete(request_task)
         logger.info(f"Session ID - After get access data: {id(session)}")
 
     queue_downstream_tasks_with_retries(
         self,
-        request_task,
-        privacy_request,
+        privacy_request_id,
+        privacy_request_task_id,
         CurrentStep.upload_access,
         privacy_request_proceed,
     )
@@ -328,12 +346,10 @@ def run_erasure_node(
                 # Run the main erasure function!
                 graph_task.erasure_request(retrieved_data)
 
-                log_task_complete(request_task)
-
     queue_downstream_tasks_with_retries(
         self,
-        request_task,
-        privacy_request,
+        privacy_request_id,
+        privacy_request_task_id,
         CurrentStep.finalize_erasure,
         privacy_request_proceed,
     )
@@ -381,12 +397,10 @@ def run_consent_node(
 
                 graph_task.consent_request(access_data[0] if access_data else {})
 
-                log_task_complete(request_task)
-
     queue_downstream_tasks_with_retries(
         self,
-        request_task,
-        privacy_request,
+        privacy_request_id,
+        privacy_request_task_id,
         CurrentStep.finalize_consent,
         privacy_request_proceed,
     )
