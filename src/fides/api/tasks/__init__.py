@@ -65,6 +65,7 @@ class DatabaseTask(Task):  # pylint: disable=W0223
             keepalives_count=CONFIG.database.task_engine_keepalives_count,
             disable_pooling=True,
         )
+        logger.info(f"Engine ID: {id(engine)}")
 
         return get_db_session(
             config=CONFIG,

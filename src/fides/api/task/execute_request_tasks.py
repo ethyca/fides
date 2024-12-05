@@ -2,7 +2,15 @@ from typing import Callable, List, Optional, Tuple
 
 from celery.app.task import Task
 from loguru import logger
+from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import Query, Session
+from tenacity import (
+    RetryCallState,
+    retry,
+    retry_if_exception_type,
+    stop_after_attempt,
+    wait_exponential,
+)
 
 from fides.api.common_exceptions import (
     PrivacyRequestCanceled,
@@ -146,6 +154,40 @@ def can_run_task_body(
     return True
 
 
+def log_retry_attempt(retry_state: RetryCallState) -> None:
+    """Log queue_downstream_tasks retry attempts."""
+
+    logger.warning(
+        "queue_downstream_tasks attempt {} failed. Retrying in {} seconds...",
+        retry_state.attempt_number,
+        retry_state.next_action.sleep,  # type: ignore[union-attr]
+    )
+
+
+@retry(
+    stop=stop_after_attempt(5),
+    wait=wait_exponential(multiplier=1, min=1),
+    retry=retry_if_exception_type(OperationalError),
+    before_sleep=log_retry_attempt,
+)
+def queue_downstream_tasks_with_retries(
+    database_task: DatabaseTask,
+    request_task: RequestTask,
+    privacy_request: PrivacyRequest,
+    current_step: CurrentStep,
+    privacy_request_proceed: bool,
+) -> None:
+    with database_task.get_new_session() as session:
+        logger.info(f"Session ID - queue_downstream_tasks_with_retries: {id(session)}")
+        queue_downstream_tasks(
+            session,
+            request_task,
+            privacy_request,
+            current_step,
+            privacy_request_proceed,
+        )
+
+
 def queue_downstream_tasks(
     session: Session,
     request_task: RequestTask,
@@ -201,6 +243,7 @@ def run_access_node(
     """Run an individual task in the access graph for DSR 3.0 and queue downstream nodes
     upon completion if applicable"""
     with self.get_new_session() as session:
+        logger.info(f"Session ID - Start of run_access_node: {id(session)}")
         privacy_request, request_task, upstream_results = run_prerequisite_task_checks(
             session, privacy_request_id, privacy_request_task_id
         )
@@ -234,15 +277,15 @@ def run_access_node(
                 # Run the main access function
                 graph_task.access_request(*upstream_access_data)
                 log_task_complete(request_task)
+        logger.info(f"Session ID - After get access data: {id(session)}")
 
-    with self.get_new_session() as session:
-        queue_downstream_tasks(
-            session,
-            request_task,
-            privacy_request,
-            CurrentStep.upload_access,
-            privacy_request_proceed,
-        )
+    queue_downstream_tasks_with_retries(
+        self,
+        request_task,
+        privacy_request,
+        CurrentStep.upload_access,
+        privacy_request_proceed,
+    )
 
 
 @celery_app.task(base=DatabaseTask, bind=True)
@@ -287,14 +330,13 @@ def run_erasure_node(
 
                 log_task_complete(request_task)
 
-    with self.get_new_session() as session:
-        queue_downstream_tasks(
-            session,
-            request_task,
-            privacy_request,
-            CurrentStep.finalize_erasure,
-            privacy_request_proceed,
-        )
+    queue_downstream_tasks_with_retries(
+        self,
+        request_task,
+        privacy_request,
+        CurrentStep.finalize_erasure,
+        privacy_request_proceed,
+    )
 
 
 @celery_app.task(base=DatabaseTask, bind=True)
@@ -341,14 +383,13 @@ def run_consent_node(
 
                 log_task_complete(request_task)
 
-    with self.get_new_session() as session:
-        queue_downstream_tasks(
-            session,
-            request_task,
-            privacy_request,
-            CurrentStep.finalize_consent,
-            privacy_request_proceed,
-        )
+    queue_downstream_tasks_with_retries(
+        self,
+        request_task,
+        privacy_request,
+        CurrentStep.finalize_consent,
+        privacy_request_proceed,
+    )
 
 
 def logger_method(request_task: RequestTask) -> Callable:
