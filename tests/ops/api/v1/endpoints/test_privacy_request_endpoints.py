@@ -8364,7 +8364,6 @@ class TestGetAccessResults:
         assert response.status_code == 403
 
 
-@pytest.mark.integration_external
 @pytest.mark.integration_postgres
 class TestPrivacyRequestFilteredResults:
     @pytest.fixture(scope="function")
