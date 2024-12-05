@@ -113,6 +113,10 @@ class TestGetIdentitiesAndReferences:
 
 @pytest.mark.integration_postgres
 class TestRunTestAccessRequest:
+    """
+    Run test requests against the postgres_example database
+    """
+
     @pytest.mark.usefixtures("postgres_integration_db")
     def test_run_test_access_request(
         self,
