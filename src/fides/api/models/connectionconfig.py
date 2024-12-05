@@ -220,7 +220,6 @@ class ConnectionConfig(Base):
             return False
 
         # hard-coding to avoid cyclic dependency
-        #TODO: Check what do they mean by cyclic dependency
         if authentication.strategy not in ["oauth2_authorization_code", "oauth2_client_credentials"]:
             return False
 
