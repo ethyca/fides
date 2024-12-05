@@ -522,11 +522,13 @@ export const ConnectorParametersForm = ({
                     {testButtonLabel}
                   </Button>
                 ) : null}
-                {isPlusEnabled && !_.isEmpty(initialDatasets) && (
-                  <Button onClick={() => onTestDatasetsClick()}>
-                    Test datasets
-                  </Button>
-                )}
+                {isPlusEnabled &&
+                  SystemType.DATABASE === connectionOption.type &&
+                  !_.isEmpty(initialDatasets) && (
+                    <Button onClick={() => onTestDatasetsClick()}>
+                      Test datasets
+                    </Button>
+                  )}
                 {connectionOption.authorization_required && !authorized ? (
                   <Button
                     loading={isAuthorizing}
