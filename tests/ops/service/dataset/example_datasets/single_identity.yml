@@ -1,0 +1,25 @@
+dataset:
+  - fides_key: single_identity
+    name: Single identity
+    description: A dataset with a single collection that relies on an identity
+    collections:
+      - name: customer
+        fields:
+          - name: address_id
+            data_categories: [system.operations]
+          - name: created
+            data_categories: [system.operations]
+          - name: email
+            data_categories: [user.contact.email]
+            fides_meta:
+              identity: email
+              data_type: string
+          - name: id
+            data_categories: [user.unique_id]
+            fides_meta:
+              primary_key: True
+          - name: name
+            data_categories: [user.name]
+            fides_meta:
+              data_type: string
+              length: 40

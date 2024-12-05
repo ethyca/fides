@@ -8,6 +8,7 @@ from fideslang.models import DataCategory as BaseDataCategory
 from fideslang.models import DataSubject as BaseDataSubject
 from fideslang.models import DataSubjectRights
 from fideslang.models import DataUse as BaseDataUse
+from fideslang.models import DefaultModel
 from fideslang.validation import FidesKey
 from pydantic import BaseModel, Field
 
@@ -28,12 +29,11 @@ class DataSubject(BaseDataSubject):
     active: bool = active_field
 
 
-class TaxonomyCreateBase(BaseModel):
+class TaxonomyCreateBase(DefaultModel, BaseModel):
     name: Optional[str] = None
     description: str
     active: bool = True
     fides_key: Optional[FidesKey] = None
-    is_default: bool = False
     tags: Optional[List[str]] = None
     organization_fides_key: Optional[FidesKey] = "default_organization"
 

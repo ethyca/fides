@@ -29,9 +29,12 @@ const configureObjectives = () => {
   }
 
   const profile = window.blueConicClient?.profile?.getProfile();
+
   const { consent } = window.Fides;
+  const hasConsentFlags =
+    consent !== undefined && Object.entries(consent).length > 0;
   const optedIn = MARKETING_CONSENT_KEYS.some((key) => consent[key]);
-  if (optedIn) {
+  if (!hasConsentFlags || optedIn) {
     profile.setConsentedObjectives([
       "iab_purpose_1",
       "iab_purpose_2",
@@ -52,7 +55,9 @@ const configureObjectives = () => {
 };
 
 export const blueconic = (
-  { approach }: { approach: "onetrust" } = { approach: "onetrust" },
+  { approach = "onetrust" }: { approach: "onetrust" | undefined } = {
+    approach: "onetrust",
+  },
 ) => {
   if (approach !== "onetrust") {
     throw new Error("Unsupported approach");
