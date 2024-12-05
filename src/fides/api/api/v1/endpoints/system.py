@@ -412,8 +412,10 @@ async def ls(  # pylint: disable=invalid-name
     ):
         # if no advanced parameters are passed, we return a very basic list of all System resources
         # to maintain backward compatibility of the original API, which backs some important client usages, e.g. the fides CLI
-        
+
         return await list_resource(System, db)
+
+    query = select(System)
 
     pagination_params = Params(page=page or 1, size=size or 50)
     # Need to join with PrivacyDeclaration in order to be able to filter
