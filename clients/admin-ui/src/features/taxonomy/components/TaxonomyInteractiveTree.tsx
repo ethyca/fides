@@ -15,6 +15,7 @@ import {
 import palette from "fidesui/src/palette/palette.module.scss";
 import { useEffect, useMemo } from "react";
 
+import { TAXONOMY_ROOT_NODE_ID } from "../constants";
 import { TaxonomyTreeHoverProvider } from "../context/TaxonomyTreeHoverContext";
 import useTreeLayout from "../hooks/useTreeLayout";
 import { TaxonomyEntity } from "../types";
@@ -49,13 +50,14 @@ const TaxonomyInteractiveTree = ({
   }, [fitView, taxonomyType]);
 
   // Root node (the taxonomy type)
-  const ROOT_NODE_ID = "root";
   const rootNode: Node = {
-    id: ROOT_NODE_ID,
+    id: TAXONOMY_ROOT_NODE_ID,
     position: { x: 0, y: 0 },
     data: {
       label: taxonomyType,
-      taxonomyItem: null,
+      taxonomyItem: {
+        fides_key: TAXONOMY_ROOT_NODE_ID,
+      },
       onTaxonomyItemClick: null,
       onAddButtonClick,
     },
@@ -85,7 +87,7 @@ const TaxonomyInteractiveTree = ({
 
   // Add lines between each label and their parent (if it has one)
   taxonomyItems.forEach((taxonomyItem) => {
-    const parentKey = taxonomyItem.parent_key || ROOT_NODE_ID;
+    const parentKey = taxonomyItem.parent_key || TAXONOMY_ROOT_NODE_ID;
     edges.push({
       id: `${parentKey}-${taxonomyItem.fides_key}`,
       source: parentKey,
@@ -96,7 +98,7 @@ const TaxonomyInteractiveTree = ({
 
   // Add the special input node and line for when we're adding a new label
   if (draftNewItem) {
-    const parentKey = draftNewItem.parent_key || ROOT_NODE_ID;
+    const parentKey = draftNewItem.parent_key || TAXONOMY_ROOT_NODE_ID;
     const newLabelNode: TextInputNodeType = {
       id: "draft-node",
       position: { x: 0, y: 0 },

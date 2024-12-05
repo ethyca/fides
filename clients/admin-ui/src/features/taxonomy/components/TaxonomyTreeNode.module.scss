@@ -1,0 +1,36 @@
+.container {
+  position: relative;
+}
+.button {
+  @apply max-w-[300px] cursor-pointer truncate rounded px-4 py-1 transition-colors duration-300;
+}
+
+// .button {
+//   max-width: 300px;
+//   transition-duration: 300ms;
+//   transition-property: color, background-color;
+//   cursor: pointer;
+//   border-radius: 0.25rem /* 4px */;
+//   padding: 0.25rem 1rem; // 4px 16px
+
+//   //truncate text
+//   overflow: hidden;
+//   text-overflow: ellipsis;
+//   white-space: nowrap;
+// }
+// .button:hover {
+//   background-color: var(--fidesui-full-black);
+//   color: var(--fidesui-full-white);
+// }
+
+.button-hover {
+  @apply bg-black text-white;
+}
+
+.button-path-hover {
+  @apply bg-neutral-100  border border-neutral-100;
+}
+
+.button-inactive {
+  @apply text-gray-400;
+}

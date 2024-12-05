@@ -1,9 +1,10 @@
 import { Handle, Node, NodeProps, Position } from "@xyflow/react";
 import { AntButton, SmallAddIcon } from "fidesui";
-import { useContext } from "react";
+import { useCallback, useContext } from "react";
 
 import { TaxonomyTreeHoverContext } from "../context/TaxonomyTreeHoverContext";
 import { TaxonomyEntity } from "../types";
+import styles from "./TaxonomyTreeNode.module.scss";
 
 export type TaxonomyTreeNodeType = Node<
   {
@@ -16,19 +17,35 @@ export type TaxonomyTreeNodeType = Node<
 >;
 
 const TaxonomyTreeNode = ({ data }: NodeProps<TaxonomyTreeNodeType>) => {
-  const { onMouseEnter, onMouseLeave } = useContext(TaxonomyTreeHoverContext);
+  const { onMouseEnter, onMouseLeave, getNodeHoverStatus } = useContext(
+    TaxonomyTreeHoverContext,
+  );
   const { taxonomyItem, onAddButtonClick, onTaxonomyItemClick, label } = data;
 
   const handleRadius = 8;
+
+  const getNodeHoverStatusClass = useCallback(() => {
+    switch (getNodeHoverStatus(taxonomyItem?.fides_key!)) {
+      case "ACTIVE_HOVER":
+        return styles["button-hover"];
+      case "PATH_HOVER":
+        return styles["button-path-hover"];
+      case "INACTIVE":
+        return styles["button-inactive"];
+      default:
+        return "";
+    }
+  }, [getNodeHoverStatus, taxonomyItem]);
+
   return (
     <div
-      className="group relative"
+      className="text- relative"
       onMouseEnter={() => onMouseEnter(taxonomyItem?.fides_key!)}
       onMouseLeave={() => onMouseLeave(taxonomyItem?.fides_key!)}
     >
       <button
         type="button"
-        className="max-w-[300px] cursor-pointer truncate rounded px-4 py-1 transition-colors duration-300 group-hover:bg-black group-hover:text-white"
+        className={`${styles.button} ${getNodeHoverStatusClass()}`}
         onClick={() => onTaxonomyItemClick?.(taxonomyItem!)}
         disabled={!onTaxonomyItemClick}
       >
