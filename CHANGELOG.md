@@ -17,7 +17,8 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.51.0...main)
 
-
+### Added
+- New page in the Cookie House sample app to demonstrate the use of embedding the FidesJS SDK on the page [#5564](https://github.com/ethyca/fides/pull/5564)
 
 
 
