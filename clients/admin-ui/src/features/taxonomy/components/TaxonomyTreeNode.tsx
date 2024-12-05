@@ -5,6 +5,7 @@ import { useCallback, useContext } from "react";
 import { TaxonomyTreeHoverContext } from "../context/TaxonomyTreeHoverContext";
 import { TaxonomyEntity } from "../types";
 import styles from "./TaxonomyTreeNode.module.scss";
+import TaxonomyTreeNodeHandle from "./TaxonomyTreeNodeHandle";
 
 export type TaxonomyTreeNodeType = Node<
   {
@@ -22,10 +23,9 @@ const TaxonomyTreeNode = ({ data }: NodeProps<TaxonomyTreeNodeType>) => {
   );
   const { taxonomyItem, onAddButtonClick, onTaxonomyItemClick, label } = data;
 
-  const handleRadius = 8;
-
+  const nodeHoverStatus = getNodeHoverStatus(taxonomyItem?.fides_key!);
   const getNodeHoverStatusClass = useCallback(() => {
-    switch (getNodeHoverStatus(taxonomyItem?.fides_key!)) {
+    switch (nodeHoverStatus) {
       case "ACTIVE_HOVER":
         return styles["button-hover"];
       case "PATH_HOVER":
@@ -35,11 +35,11 @@ const TaxonomyTreeNode = ({ data }: NodeProps<TaxonomyTreeNodeType>) => {
       default:
         return "";
     }
-  }, [getNodeHoverStatus, taxonomyItem]);
+  }, [nodeHoverStatus]);
 
   return (
     <div
-      className="text- relative"
+      className="relative"
       onMouseEnter={() => onMouseEnter(taxonomyItem?.fides_key!)}
       onMouseLeave={() => onMouseLeave(taxonomyItem?.fides_key!)}
     >
@@ -53,16 +53,15 @@ const TaxonomyTreeNode = ({ data }: NodeProps<TaxonomyTreeNodeType>) => {
         {label}
       </button>
 
-      <Handle
-        type="target"
-        position={Position.Left}
-        style={{ width: handleRadius, height: handleRadius }}
-      />
-      <Handle
+      <TaxonomyTreeNodeHandle
         type="source"
-        position={Position.Right}
-        style={{ width: handleRadius, height: handleRadius }}
+        inactive={nodeHoverStatus === "INACTIVE"}
       />
+      <TaxonomyTreeNodeHandle
+        type="target"
+        inactive={nodeHoverStatus === "INACTIVE"}
+      />
+
       <div className=" absolute left-full top-0 pl-2 opacity-0 transition duration-300 group-hover:opacity-100">
         <AntButton
           type="default"
