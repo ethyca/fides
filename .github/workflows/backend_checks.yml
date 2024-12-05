@@ -92,7 +92,6 @@ jobs:
             '"pytest(nox)"',
           ]
     runs-on: ubuntu-latest
-    continue-on-error: true
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -118,7 +117,6 @@ jobs:
   Performance-Checks:
     needs: Check-Container-Startup
     runs-on: ubuntu-latest
-    continue-on-error: true
     steps:
       - name: Download container
         uses: actions/download-artifact@v4
@@ -206,7 +204,6 @@ jobs:
 
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    continue-on-error: true
     steps:
       - name: Download container
         uses: actions/download-artifact@v4
@@ -255,7 +252,6 @@ jobs:
 
     runs-on: ubuntu-latest
     timeout-minutes: 45
-    continue-on-error: true
     steps:
       - name: Download container
         uses: actions/download-artifact@v4
