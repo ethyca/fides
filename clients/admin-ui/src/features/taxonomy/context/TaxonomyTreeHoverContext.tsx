@@ -62,7 +62,7 @@ export const TaxonomyTreeHoverProvider = ({
       }
 
       if (
-        activeNodeKey.startsWith(fidesKey) ||
+        activeNodeKey.startsWith(`${fidesKey}.`) ||
         fidesKey === TAXONOMY_ROOT_NODE_ID
       ) {
         return TreeNodeHoverStatus.PATH_HOVER;
