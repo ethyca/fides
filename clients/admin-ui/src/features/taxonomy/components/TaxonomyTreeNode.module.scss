@@ -9,7 +9,9 @@
 
   transition:
     background-color 300ms ease-in 0s,
-    color 300ms ease 0s;
+    color 300ms ease 0s,
+    border-color 300ms ease 0s,
+    box-shadow 300ms ease 0s;
 
   height: 28px !important;
   max-width: 240px;
