@@ -3454,6 +3454,14 @@ def subject_request_download_ui_enabled():
 
 
 @pytest.fixture(scope="function")
+def subject_request_download_ui_disabled():
+    original_value = CONFIG.security.subject_request_download_ui_enabled
+    CONFIG.security.subject_request_download_ui_enabled = False
+    yield
+    CONFIG.security.subject_request_download_ui_enabled = original_value
+
+
+@pytest.fixture(scope="function")
 def system_with_no_uses(db: Session) -> Generator[System, None, None]:
     system = System.create(
         db=db,

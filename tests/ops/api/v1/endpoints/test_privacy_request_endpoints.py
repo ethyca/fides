@@ -8462,6 +8462,47 @@ class TestPrivacyRequestFilteredResults:
             "results",
         }
 
+    @pytest.mark.integration_postgres
+    @pytest.mark.usefixtures(
+        "default_access_policy",
+        "postgres_integration_db",
+        "subject_request_download_ui_disabled",
+    )
+    def test_filtered_results_postgres_access_results_disabled(
+        self,
+        connection_config,
+        postgres_example_test_dataset_config,
+        api_client: TestClient,
+        generate_auth_header,
+    ) -> None:
+        dataset_url = get_connection_dataset_url(
+            connection_config, postgres_example_test_dataset_config
+        )
+        auth_header = generate_auth_header(scopes=[DATASET_TEST])
+        response = api_client.post(
+            dataset_url + "/test",
+            headers=auth_header,
+            json={"email": "jane@example.com"},
+        )
+        assert response.status_code == HTTP_200_OK
+
+        privacy_request_id = response.json()["privacy_request_id"]
+        url = V1_URL_PREFIX + PRIVACY_REQUEST_FILTERED_RESULTS.format(
+            privacy_request_id=privacy_request_id
+        )
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ_ACCESS_RESULTS])
+        response = api_client.get(
+            url,
+            headers=auth_header,
+        )
+        assert response.status_code == HTTP_200_OK
+        assert set(response.json().keys()) == {
+            "privacy_request_id",
+            "status",
+            "results",
+        }
+        assert response.json()["results"] == "Access results download is disabled."
+
     @pytest.mark.integration_mongo
     @pytest.mark.usefixtures("default_access_policy")
     def test_filtered_results_mongo(
