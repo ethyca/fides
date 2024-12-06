@@ -19,7 +19,7 @@ The types of changes are:
 
 
 ### Fixed
-- saas connections based on `oauth_client_credentials` are properly updating their access token when we edit their secrets.
+- SaaS integrations using `oauth_client_credentials` now properly update their access token when editing the secrets.
 
 
 ## [2.51.0](https://github.com/ethyca/fides/compare/2.50.0...2.51.0)
