@@ -485,7 +485,7 @@ div#fides-consent-content .fides-modal-description {
   justify-content: center;
 }
 
-.fides-modal-container .fides-button-group-brand {
+.fides-modal-footer .fides-button-group-brand {
   min-height: var(--fides-overlay-modal-secondary-button-group-height);
 }
 
@@ -1023,13 +1023,13 @@ div#fides-overlay-wrapper .fides-toggle .fides-toggle-display {
   position: relative;
 }
 
-.fides-modal-container .fides-i18n-menu {
+.fides-modal-footer .fides-i18n-menu {
   position: absolute;
   left: var(--fides-overlay-padding);
   bottom: var(--fides-overlay-padding);
 }
 
-.fides-modal-container .fides-button-group-i18n {
+.fides-modal-footer .fides-button-group-i18n {
   min-height: var(--fides-overlay-modal-secondary-button-group-height);
 }
 
