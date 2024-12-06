@@ -13,6 +13,8 @@
 
   height: 28px !important;
   max-width: 240px;
+
+  --ant-color-text-disabled: var(--ant-color-text);
 }
 
 .button-default {
