@@ -1,5 +1,5 @@
-import { Handle, Node, NodeProps, Position } from "@xyflow/react";
-import { AntButton, AntTypography, Icons, SmallAddIcon } from "fidesui";
+import { Node, NodeProps } from "@xyflow/react";
+import { AntButton, AntTypography, Icons } from "fidesui";
 import { useCallback, useContext } from "react";
 
 import {
