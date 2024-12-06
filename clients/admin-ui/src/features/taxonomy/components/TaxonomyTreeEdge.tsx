@@ -30,12 +30,22 @@ const TaxonomyTreeEdge = (props: TaxonomyTreeEdgeProps) => {
     }
   }, [targetNodeHoverStatus]);
 
+  const getStrokeWidth = useCallback(() => {
+    switch (targetNodeHoverStatus) {
+      case TreeNodeHoverStatus.ACTIVE_HOVER:
+      case TreeNodeHoverStatus.PARENT_OF_HOVER:
+        return 2;
+      default:
+        return 1;
+    }
+  }, [targetNodeHoverStatus]);
+
   return (
     <BezierEdge
       {...props}
       style={{
         stroke: getStrokeColor(),
-        strokeWidth: 1,
+        strokeWidth: getStrokeWidth(),
         transition: "stroke 0.3s ease 0s",
       }}
     />
