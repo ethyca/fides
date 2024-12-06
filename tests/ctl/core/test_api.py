@@ -1669,9 +1669,9 @@ class TestSystemList:
         "vendor_deleted_date, expected_systems_count, show_deleted",
         [
             (datetime.now() - timedelta(days=1), 1, True),
-            (datetime.now() - timedelta(days=1), 0, None),
-            (datetime.now() + timedelta(days=1), 1, None),
-            (None, 1, None),
+            (datetime.now() - timedelta(days=1), 0, False),
+            (datetime.now() + timedelta(days=1), 1, False),
+            (None, 1, False),
         ],
     )
     def test_vendor_deleted_systems(
@@ -1691,13 +1691,13 @@ class TestSystemList:
             url=test_config.cli.server_url,
             headers=test_config.user.auth_header,
             resource_type="system",
-            query_params={"show_deleted": True} if show_deleted else {},
+            query_params={"show_deleted": show_deleted, "size": 50},
         )
 
         assert result.status_code == 200
         result_json = result.json()
 
-        assert len(result_json) == expected_systems_count
+        assert len(result_json["items"]) == expected_systems_count
 
 
 @pytest.mark.unit
