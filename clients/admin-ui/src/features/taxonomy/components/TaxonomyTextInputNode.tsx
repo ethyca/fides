@@ -25,6 +25,7 @@ const TaxonomyTextInputNode = ({ data }: NodeProps<TextInputNodeType>) => {
     const focusOnInput = () => {
       inputRef.current!.focus({
         cursor: "start",
+        preventScroll: true,
       });
     };
     setTimeout(focusOnInput, 200);
