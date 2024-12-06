@@ -1,4 +1,5 @@
 import {
+  act,
   createContext,
   ReactNode,
   useCallback,
@@ -19,7 +20,9 @@ interface TaxonomyTreeHoverContextType {
 export enum TreeNodeHoverStatus {
   DEFAULT = "DEFAULT", // Node in default state, no hover in any node
   ACTIVE_HOVER = "ACTIVE_HOVER", // This node is hovered
-  PATH_HOVER = "PATH_HOVER", // This node is in the path of the hovered node
+  PARENT_OF_HOVER = "PARENT_OF_HOVER", // This node is a child of the active hovered node
+  CHILD_OF_HOVER = "CHILD_OF_HOVER", // This node is a parent of the active hovered node
+  SIBLING_OF_HOVER = "SIBLING_OF_HOVER", // This node is a sibling of the active hovered node
   INACTIVE = "INACTIVE", // There's an active hover, but it's not this node and this node is not in the path
 }
 
@@ -65,7 +68,22 @@ export const TaxonomyTreeHoverProvider = ({
         activeNodeKey.startsWith(`${fidesKey}.`) ||
         fidesKey === TAXONOMY_ROOT_NODE_ID
       ) {
-        return TreeNodeHoverStatus.PATH_HOVER;
+        return TreeNodeHoverStatus.PARENT_OF_HOVER;
+      }
+
+      if (
+        fidesKey.startsWith(`${activeNodeKey}.`) ||
+        activeNodeKey === TAXONOMY_ROOT_NODE_ID
+      ) {
+        return TreeNodeHoverStatus.CHILD_OF_HOVER;
+      }
+
+      const activeNodeKeyParts = activeNodeKey.split(".");
+      if (
+        activeNodeKeyParts.slice(0, -1).join(".") ===
+        fidesKey.split(".").slice(0, -1).join(".")
+      ) {
+        return TreeNodeHoverStatus.SIBLING_OF_HOVER;
       }
 
       return TreeNodeHoverStatus.INACTIVE;

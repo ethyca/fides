@@ -21,7 +21,7 @@ const TaxonomyTreeEdge = (props: TaxonomyTreeEdgeProps) => {
   const getStrokeColor = useCallback(() => {
     switch (targetNodeHoverStatus) {
       case TreeNodeHoverStatus.ACTIVE_HOVER:
-      case TreeNodeHoverStatus.PATH_HOVER:
+      case TreeNodeHoverStatus.PARENT_OF_HOVER:
         return palette.FIDESUI_MINOS;
       case TreeNodeHoverStatus.INACTIVE:
         return palette.NEUTRAL_400;
