@@ -20,7 +20,8 @@ The types of changes are:
 ### Added
 - New page in the Cookie House sample app to demonstrate the use of embedding the FidesJS SDK on the page [#5564](https://github.com/ethyca/fides/pull/5564)
 
-
+### Fixed
+- SaaS integrations using `oauth_client_credentials` now properly update their access token when editing the secrets.
 
 ## [2.51.0](https://github.com/ethyca/fides/compare/2.50.0...2.51.0)
 
