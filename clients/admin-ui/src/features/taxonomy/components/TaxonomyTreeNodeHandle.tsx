@@ -2,12 +2,12 @@ import { Handle, HandleType, Position } from "@xyflow/react";
 
 interface TaxonomyTreeNodeHandleProps {
   type: HandleType;
-  inactive: boolean;
+  inactive?: boolean;
 }
 
 const TaxonomyTreeNodeHandle = ({
   type,
-  inactive,
+  inactive = false,
 }: TaxonomyTreeNodeHandleProps) => {
   const handleRadius = 8;
 

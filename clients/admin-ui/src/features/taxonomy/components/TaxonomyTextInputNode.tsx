@@ -1,6 +1,8 @@
-import { Handle, Node, NodeProps, Position } from "@xyflow/react";
+import { Node, NodeProps } from "@xyflow/react";
 import { AntInput, InputRef } from "fidesui";
 import { useEffect, useRef, useState } from "react";
+
+import TaxonomyTreeNodeHandle from "./TaxonomyTreeNodeHandle";
 
 export type TextInputNodeType = Node<
   {
@@ -44,7 +46,7 @@ const TaxonomyTextInputNode = ({ data }: NodeProps<TextInputNodeType>) => {
         }}
         onPressEnter={() => onSubmit(value)}
       />
-      <Handle type="target" position={Position.Left} />
+      <TaxonomyTreeNodeHandle type="target" />
     </div>
   );
 };
