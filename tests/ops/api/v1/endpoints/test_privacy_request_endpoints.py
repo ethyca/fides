@@ -8365,7 +8365,6 @@ class TestGetAccessResults:
 
 
 @pytest.mark.integration
-@pytest.mark.integration_postgres
 class TestPrivacyRequestFilteredResults:
     @pytest.fixture(scope="function")
     def default_access_policy(self, db) -> None:
@@ -8427,20 +8426,62 @@ class TestPrivacyRequestFilteredResults:
         )
         assert response.status_code == expected_status
 
+    @pytest.mark.integration_postgres
     @pytest.mark.usefixtures("default_access_policy", "postgres_integration_db")
-    def test_filtered_results(
+    def test_filtered_results_postgres(
         self,
         connection_config,
-        dataset_config,
+        postgres_example_test_dataset_config,
         api_client: TestClient,
         generate_auth_header,
     ) -> None:
-        dataset_url = get_connection_dataset_url(connection_config, dataset_config)
+        dataset_url = get_connection_dataset_url(
+            connection_config, postgres_example_test_dataset_config
+        )
         auth_header = generate_auth_header(scopes=[DATASET_TEST])
         response = api_client.post(
             dataset_url + "/test",
             headers=auth_header,
             json={"email": "jane@example.com"},
+        )
+        assert response.status_code == HTTP_200_OK
+
+        privacy_request_id = response.json()["privacy_request_id"]
+        url = V1_URL_PREFIX + PRIVACY_REQUEST_FILTERED_RESULTS.format(
+            privacy_request_id=privacy_request_id
+        )
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ_ACCESS_RESULTS])
+        response = api_client.get(
+            url,
+            headers=auth_header,
+        )
+        assert response.status_code == HTTP_200_OK
+        assert set(response.json().keys()) == {
+            "privacy_request_id",
+            "status",
+            "results",
+        }
+
+    @pytest.mark.integration_mongo
+    @pytest.mark.usefixtures("default_access_policy")
+    def test_filtered_results_mongo(
+        self,
+        mongo_connection_config,
+        mongo_dataset_config,
+        api_client: TestClient,
+        generate_auth_header,
+    ) -> None:
+        dataset_url = get_connection_dataset_url(
+            mongo_connection_config, mongo_dataset_config
+        )
+        auth_header = generate_auth_header(scopes=[DATASET_TEST])
+        response = api_client.post(
+            dataset_url + "/test",
+            headers=auth_header,
+            json={
+                "email": "employee-1@example.com",
+                "postgres_example_test_dataset:customer:id": 1,
+            },
         )
         assert response.status_code == HTTP_200_OK
 
