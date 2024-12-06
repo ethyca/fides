@@ -2,6 +2,7 @@ import { Node, NodeProps } from "@xyflow/react";
 import { AntButton, AntTypography, Icons } from "fidesui";
 import { useCallback, useContext } from "react";
 
+import { TAXONOMY_ROOT_NODE_ID } from "../constants";
 import {
   TaxonomyTreeHoverContext,
   TreeNodeHoverStatus,
@@ -42,6 +43,8 @@ const TaxonomyTreeNode = ({ data }: NodeProps<TaxonomyTreeNodeType>) => {
     }
   }, [nodeHoverStatus]);
 
+  const isRootNode = taxonomyItem?.fides_key === TAXONOMY_ROOT_NODE_ID;
+
   return (
     <div
       className="group relative"
@@ -60,12 +63,14 @@ const TaxonomyTreeNode = ({ data }: NodeProps<TaxonomyTreeNodeType>) => {
         </AntTypography.Text>
       </AntButton>
 
+      {!isRootNode && (
+        <TaxonomyTreeNodeHandle
+          type="target"
+          inactive={nodeHoverStatus === "INACTIVE"}
+        />
+      )}
       <TaxonomyTreeNodeHandle
         type="source"
-        inactive={nodeHoverStatus === "INACTIVE"}
-      />
-      <TaxonomyTreeNodeHandle
-        type="target"
         inactive={nodeHoverStatus === "INACTIVE"}
       />
 
