@@ -138,3 +138,4 @@ async def configure_db(
         error_type = get_full_exception_name(error)
         log.error("Unable to configure database: {}: {}", error_type, error)
         log.opt(exception=True).error(error)
+        raise
