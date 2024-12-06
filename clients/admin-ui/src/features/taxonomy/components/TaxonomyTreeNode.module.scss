@@ -40,26 +40,3 @@
     0px 1px 2px 0px rgba(0, 0, 0, 0.06),
     0px 1px 3px 0px rgba(0, 0, 0, 0.1);
 }
-
-// .button {
-//   @apply max-w-[300px] cursor-pointer truncate rounded px-4 py-1 transition-colors duration-300 box-border border border-transparent;
-// }
-
-// .button {
-//   max-width: 300px;
-//   transition-duration: 300ms;
-//   transition-property: color, background-color;
-//   cursor: pointer;
-//   border-radius: 0.25rem /* 4px */;
-//   padding: 0.25rem 1rem; // 4px 16px
-//   border: 1px solid transparent;
-
-//   //truncate text
-//   overflow: hidden;
-//   text-overflow: ellipsis;
-//   white-space: nowrap;
-// }
-// .button:hover {
-//   background-color: var(--fidesui-full-black);
-//   color: var(--fidesui-full-white);
-// }
