@@ -35,3 +35,25 @@ class OAuth2ClientCredentialsAuthenticationStrategy(OAuth2AuthenticationStrategy
         # add access_token to request
         request.headers["Authorization"] = "Bearer " + access_token
         return request
+
+    def _refresh_token(self, connection_config: ConnectionConfig) -> str:
+
+        """
+        Persists and returns a refreshed access_token if the token is close to expiring.
+        Otherwise just returns the existing access_token.
+        For Client Credentials OAuth we are not using a refresh request
+        """
+
+        logger.info("Checking if the access token for {} needs to be refreshed for a Client Credentials", connection_config.key)
+        logger.info('Value of Expires at is {}', connection_config.secrets.get("expires_at"))
+
+        expires_at = connection_config.secrets.get("expires_at")  # type: ignore
+        if self._close_to_expiration(expires_at, connection_config):
+            refresh_response = self._call_token_request(
+                "refresh", self.token_request, connection_config
+            )
+            return self._validate_and_store_response(
+                refresh_response, connection_config
+            )
+
+        return connection_config.secrets.get("access_token")  # type: ignore
