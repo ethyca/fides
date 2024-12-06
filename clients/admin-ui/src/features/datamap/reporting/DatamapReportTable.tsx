@@ -239,6 +239,19 @@ export const DatamapReportTable = () => {
       ...reportQuery,
       format: downloadType,
       report_id: savedCustomReportId,
+      report: JSON.stringify({
+        name: "temporary report",
+        type: "datamap",
+        config: {
+          column_map: columnNameMapOverrides,
+          table_state: {
+            groupBy,
+            filters: selectedFilters,
+            columnOrder,
+            columnVisibility,
+          },
+        },
+      }),
     }).then(() => {
       if (isExportReportSuccess) {
         onExportReportClose();
