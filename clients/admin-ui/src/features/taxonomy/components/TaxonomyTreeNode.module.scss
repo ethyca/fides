@@ -1,9 +1,49 @@
 .container {
   position: relative;
 }
+
+// can't transition changes from different ant buttons,
+// so we'll need to style them here
 .button {
-  @apply max-w-[300px] cursor-pointer truncate rounded px-4 py-1 transition-colors duration-300 box-border border border-transparent;
+  --ant-button-text-hover-bg: transparent !important;
+
+  transition:
+    background-color 300ms ease 0s,
+    color 300ms ease 0s;
+
+  height: 28px !important;
+  max-width: 240px;
 }
+
+.button-default {
+}
+
+.button-hover {
+  color: var(--ant-button-primary-color) !important;
+  background-color: var(--fidesui-full-black) !important;
+}
+
+.button-path-hover {
+  background-color: var(--fidesui-neutral-50) !important;
+}
+
+.button-inactive {
+  color: var(--fidesui-neutral-400) !important;
+}
+
+.add-button {
+  height: 28px !important;
+  width: 28px !important;
+  --ant-button-default-border-color: transparent !important;
+
+  box-shadow:
+    0px 1px 2px 0px rgba(0, 0, 0, 0.06),
+    0px 1px 3px 0px rgba(0, 0, 0, 0.1);
+}
+
+// .button {
+//   @apply max-w-[300px] cursor-pointer truncate rounded px-4 py-1 transition-colors duration-300 box-border border border-transparent;
+// }
 
 // .button {
 //   max-width: 300px;
@@ -12,6 +52,7 @@
 //   cursor: pointer;
 //   border-radius: 0.25rem /* 4px */;
 //   padding: 0.25rem 1rem; // 4px 16px
+//   border: 1px solid transparent;
 
 //   //truncate text
 //   overflow: hidden;
@@ -22,15 +63,3 @@
 //   background-color: var(--fidesui-full-black);
 //   color: var(--fidesui-full-white);
 // }
-
-.button-hover {
-  @apply bg-black text-white;
-}
-
-.button-path-hover {
-  @apply bg-neutral-100 border-neutral-100;
-}
-
-.button-inactive {
-  @apply text-gray-400;
-}

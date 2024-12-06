@@ -1,8 +1,11 @@
 import { Handle, Node, NodeProps, Position } from "@xyflow/react";
-import { AntButton, SmallAddIcon } from "fidesui";
+import { AntButton, AntTypography, Icons, SmallAddIcon } from "fidesui";
 import { useCallback, useContext } from "react";
 
-import { TaxonomyTreeHoverContext } from "../context/TaxonomyTreeHoverContext";
+import {
+  TaxonomyTreeHoverContext,
+  TreeNodeHoverStatus,
+} from "../context/TaxonomyTreeHoverContext";
 import { TaxonomyEntity } from "../types";
 import styles from "./TaxonomyTreeNode.module.scss";
 import TaxonomyTreeNodeHandle from "./TaxonomyTreeNodeHandle";
@@ -26,12 +29,14 @@ const TaxonomyTreeNode = ({ data }: NodeProps<TaxonomyTreeNodeType>) => {
   const nodeHoverStatus = getNodeHoverStatus(taxonomyItem?.fides_key!);
   const getNodeHoverStatusClass = useCallback(() => {
     switch (nodeHoverStatus) {
-      case "ACTIVE_HOVER":
+      case TreeNodeHoverStatus.ACTIVE_HOVER:
         return styles["button-hover"];
-      case "PATH_HOVER":
+      case TreeNodeHoverStatus.PATH_HOVER:
         return styles["button-path-hover"];
-      case "INACTIVE":
+      case TreeNodeHoverStatus.INACTIVE:
         return styles["button-inactive"];
+      case TreeNodeHoverStatus.DEFAULT:
+        return styles["button-default"];
       default:
         return "";
     }
@@ -39,19 +44,21 @@ const TaxonomyTreeNode = ({ data }: NodeProps<TaxonomyTreeNodeType>) => {
 
   return (
     <div
-      className="relative"
+      className="group relative"
       onMouseEnter={() => onMouseEnter(taxonomyItem?.fides_key!)}
       onMouseLeave={() => onMouseLeave(taxonomyItem?.fides_key!)}
     >
-      <button
-        type="button"
+      <AntButton
         className={`${styles.button} ${getNodeHoverStatusClass()}`}
         onClick={() => onTaxonomyItemClick?.(taxonomyItem!)}
         disabled={!onTaxonomyItemClick}
+        type="text"
       >
-        {taxonomyItem?.active === false ? "(disabled) " : ""}
-        {label}
-      </button>
+        <AntTypography.Text ellipsis style={{ color: "inherit" }}>
+          {taxonomyItem?.active === false ? "(disabled) " : ""}
+          {label}
+        </AntTypography.Text>
+      </AntButton>
 
       <TaxonomyTreeNodeHandle
         type="source"
@@ -62,12 +69,13 @@ const TaxonomyTreeNode = ({ data }: NodeProps<TaxonomyTreeNodeType>) => {
         inactive={nodeHoverStatus === "INACTIVE"}
       />
 
-      <div className=" absolute left-full top-0 pl-2 opacity-0 transition duration-300 group-hover:opacity-100">
+      <div className="absolute left-full top-0 pl-2 opacity-0 transition duration-300 group-hover:opacity-100">
         <AntButton
           type="default"
-          className="bg-white pt-0.5 shadow-[0_1px_3px_0px_rgba(0,0,0,0.1)] "
-          icon={<SmallAddIcon className="text-xl" />}
+          className={styles["add-button"]}
+          icon={<Icons.Add size={20} />}
           onClick={() => onAddButtonClick?.(taxonomyItem)}
+          size="middle"
         />
       </div>
     </div>
