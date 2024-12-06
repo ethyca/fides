@@ -322,6 +322,15 @@ describe("discovery and detection", () => {
           "test_dataset_1",
         );
       });
+
+      it("should be able to reclassify", () => {
+        cy.getByTestId(
+          "row-my_bigquery_monitor.prj-bigquery-418515.test_dataset_1",
+        ).within(() => {
+          cy.getByTestId("action-Reclassify").click();
+          cy.wait("@confirmResource");
+        });
+      });
     });
 
     describe("table-level view", () => {
