@@ -123,6 +123,7 @@ const TaxonomyInteractiveTree = ({
       id: "draft-line",
       source: parentKey,
       target: "draft-node",
+      animated: true,
     });
 
     // Update hasChildren for parent to true
