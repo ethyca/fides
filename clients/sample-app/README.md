@@ -31,6 +31,13 @@ This will automatically bring up a Docker Compose project to create a sample app
 
 Once running successfully, open http://localhost:3000 to see the Cookie House!
 
+Note: If you are already running a database on port 5432 locally, you can override the default port by setting the `FIDES_SAMPLE_APP__DATABASE_PORT` environment variable and ALSO changing the **host** port number in the `docker-compose.yml` file. For example:
+
+```yaml
+ports:
+  - "5433:5432"
+```
+
 ## Pre-commit
 
 Before committing any changes, run the following:
