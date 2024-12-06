@@ -5,6 +5,7 @@ import {
   BackgroundVariant,
   Controls,
   Edge,
+  EdgeTypes,
   MiniMap,
   Node,
   NodeTypes,
@@ -12,7 +13,6 @@ import {
   ReactFlowProvider,
   useReactFlow,
 } from "@xyflow/react";
-import palette from "fidesui/src/palette/palette.module.scss";
 import { useEffect, useMemo } from "react";
 
 import { TAXONOMY_ROOT_NODE_ID } from "../constants";
@@ -23,6 +23,7 @@ import { CoreTaxonomiesEnum } from "../types/CoreTaxonomiesEnum";
 import TaxonomyTextInputNode, {
   TextInputNodeType,
 } from "./TaxonomyTextInputNode";
+import TaxonomyTreeEdge from "./TaxonomyTreeEdge";
 import TaxonomyTreeNode, { TaxonomyTreeNodeType } from "./TaxonomyTreeNode";
 
 interface TaxonomyInteractiveTreeProps {
@@ -94,7 +95,7 @@ const TaxonomyInteractiveTree = ({
       id: `${parentKey}-${taxonomyItem.fides_key}`,
       source: parentKey,
       target: taxonomyItem.fides_key,
-      style: { stroke: palette.FIDESUI_SANDSTONE, strokeWidth: 1 },
+      type: "taxonomyTreeEdge",
     });
 
     // Update hasChildren for parent to true
@@ -151,6 +152,13 @@ const TaxonomyInteractiveTree = ({
     [],
   );
 
+  const edgeTypes: EdgeTypes = useMemo(
+    () => ({
+      taxonomyTreeEdge: TaxonomyTreeEdge,
+    }),
+    [],
+  );
+
   return (
     <div className="size-full bg-[#fafafa]">
       <TaxonomyTreeHoverProvider>
@@ -158,6 +166,7 @@ const TaxonomyInteractiveTree = ({
           nodes={nodesAfterLayout}
           edges={edgesAfterLayout}
           nodeTypes={nodeTypes}
+          edgeTypes={edgeTypes}
           maxZoom={2}
           minZoom={0.3}
           edgesFocusable={false}
