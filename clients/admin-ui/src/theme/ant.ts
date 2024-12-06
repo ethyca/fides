@@ -58,8 +58,7 @@ export const antTheme: AntThemeConfig = {
     },
     Menu: {
       itemHeight: 36,
-      itemSelectedBg: palette.FIDESUI_BG_SANDSTONE,
-      itemHoverBg: palette.FIDESUI_BG_CORINTH,
+      itemHoverBg: palette.FIDESUI_NEUTRAL_50,
     },
     Tooltip: {
       colorBgSpotlight: palette.FIDESUI_MINOS,
