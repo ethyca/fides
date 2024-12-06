@@ -17,6 +17,7 @@ export type TaxonomyTreeNodeType = Node<
     taxonomyItem?: TaxonomyEntity;
     onTaxonomyItemClick: (taxonomyItem: TaxonomyEntity) => void | null;
     onAddButtonClick: (taxonomyItem: TaxonomyEntity | undefined) => void;
+    hasChildren: boolean;
   },
   "taxonomyTreeNode"
 >;
@@ -25,7 +26,13 @@ const TaxonomyTreeNode = ({ data }: NodeProps<TaxonomyTreeNodeType>) => {
   const { onMouseEnter, onMouseLeave, getNodeHoverStatus } = useContext(
     TaxonomyTreeHoverContext,
   );
-  const { taxonomyItem, onAddButtonClick, onTaxonomyItemClick, label } = data;
+  const {
+    taxonomyItem,
+    onAddButtonClick,
+    onTaxonomyItemClick,
+    label,
+    hasChildren,
+  } = data;
 
   const nodeHoverStatus = getNodeHoverStatus(taxonomyItem?.fides_key!);
   const getNodeHoverStatusClass = useCallback(() => {
@@ -69,10 +76,12 @@ const TaxonomyTreeNode = ({ data }: NodeProps<TaxonomyTreeNodeType>) => {
           inactive={nodeHoverStatus === "INACTIVE"}
         />
       )}
-      <TaxonomyTreeNodeHandle
-        type="source"
-        inactive={nodeHoverStatus === "INACTIVE"}
-      />
+      {hasChildren && (
+        <TaxonomyTreeNodeHandle
+          type="source"
+          inactive={nodeHoverStatus === "INACTIVE"}
+        />
+      )}
 
       <div className="absolute left-full top-0 pl-2 opacity-0 transition duration-300 group-hover:opacity-100">
         <AntButton

@@ -60,6 +60,7 @@ const TaxonomyInteractiveTree = ({
       },
       onTaxonomyItemClick: null,
       onAddButtonClick,
+      hasChildren: taxonomyItems.length !== 0,
     },
     type: "taxonomyTreeNode",
   };
@@ -79,6 +80,7 @@ const TaxonomyInteractiveTree = ({
         taxonomyItem,
         onTaxonomyItemClick,
         onAddButtonClick,
+        hasChildren: false,
       },
       type: "taxonomyTreeNode",
     };
@@ -94,6 +96,12 @@ const TaxonomyInteractiveTree = ({
       target: taxonomyItem.fides_key,
       style: { stroke: palette.FIDESUI_SANDSTONE, strokeWidth: 1 },
     });
+
+    // Update hasChildren for parent to true
+    const parentNode = nodes.find((node) => node.id === parentKey);
+    if (parentNode) {
+      parentNode.data.hasChildren = true;
+    }
   });
 
   // Add the special input node and line for when we're adding a new label
@@ -116,6 +124,12 @@ const TaxonomyInteractiveTree = ({
       source: parentKey,
       target: "draft-node",
     });
+
+    // Update hasChildren for parent to true
+    const parentNode = nodes.find((node) => node.id === parentKey);
+    if (parentNode) {
+      parentNode.data.hasChildren = true;
+    }
   }
 
   // use the layout library to place all nodes nicely on the screen as a tree
