@@ -85,6 +85,7 @@ def reset_db(database_url: str) -> None:
     Drops all tables/metadata from the database.
     """
     log.info("Resetting database...")
+    log.info("Database URL: {}", database_url)
     engine = get_db_engine(database_url)
     with engine.connect() as connection:
         log.info("Dropping tables...")
