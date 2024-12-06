@@ -1,11 +1,4 @@
-import {
-  AntButton,
-  AntInput,
-  AntMenu,
-  AntSpace,
-  FloatingMenu,
-  useToast,
-} from "fidesui";
+import { AntButton, AntInput, AntSpace, FloatingMenu, useToast } from "fidesui";
 import { filter } from "lodash";
 import type { NextPage } from "next";
 import { useSearchParams } from "next/navigation";
@@ -19,7 +12,6 @@ import {
 import Layout from "~/features/common/Layout";
 import PageHeader from "~/features/common/PageHeader";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
-import TaxonomiesMenu from "~/features/taxonomy/components/TaxonomiesMenu";
 import TaxonomyEditDrawer from "~/features/taxonomy/components/TaxonomyEditDrawer";
 import TaxonomyInteractiveTree from "~/features/taxonomy/components/TaxonomyInteractiveTree";
 import useTaxonomySlices from "~/features/taxonomy/hooks/useTaxonomySlices";
@@ -110,7 +102,7 @@ const TaxonomyPage: NextPage = () => {
           </div>
         </div>
         <div className="relative grow">
-          <div className="absolute left-2 top-2 z-[1000] rounded-md shadow-lg">
+          <div className="absolute left-2 top-2 z-[1000]">
             <FloatingMenu
               selectedKeys={[taxonomyType]}
               onSelect={({ key }) => setTaxonomyType(key as CoreTaxonomiesEnum)}
