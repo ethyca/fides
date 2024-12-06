@@ -8365,7 +8365,6 @@ class TestGetAccessResults:
 
 
 @pytest.mark.integration
-@pytest.mark.integration_postgres
 class TestPrivacyRequestFilteredResults:
     @pytest.fixture(scope="function")
     def default_access_policy(self, db) -> None:
@@ -8427,15 +8426,18 @@ class TestPrivacyRequestFilteredResults:
         )
         assert response.status_code == expected_status
 
+    @pytest.mark.integration_postgres
     @pytest.mark.usefixtures("default_access_policy", "postgres_integration_db")
-    def test_filtered_results(
+    def test_filtered_results_postgres(
         self,
         connection_config,
-        dataset_config,
+        postgres_example_test_dataset_config,
         api_client: TestClient,
         generate_auth_header,
     ) -> None:
-        dataset_url = get_connection_dataset_url(connection_config, dataset_config)
+        dataset_url = get_connection_dataset_url(
+            connection_config, postgres_example_test_dataset_config
+        )
         auth_header = generate_auth_header(scopes=[DATASET_TEST])
         response = api_client.post(
             dataset_url + "/test",
@@ -8458,4 +8460,200 @@ class TestPrivacyRequestFilteredResults:
             "privacy_request_id",
             "status",
             "results",
+        }
+        assert response.json()["results"] == {
+            "postgres_example_test_dataset:customer": [
+                {
+                    "address_id": 4,
+                    "created": "2020-04-01T11:47:42",
+                    "email": "jane@example.com",
+                    "id": 3,
+                    "name": "Jane Customer",
+                }
+            ],
+            "postgres_example_test_dataset:employee": [],
+            "postgres_example_test_dataset:report": [],
+            "postgres_example_test_dataset:visit": [],
+            "postgres_example_test_dataset:login": [
+                {"customer_id": 3, "id": 8, "time": "2021-01-06T01:00:00"}
+            ],
+            "postgres_example_test_dataset:orders": [
+                {"customer_id": 3, "id": "ord_ddd-eee", "shipping_address_id": 4}
+            ],
+            "postgres_example_test_dataset:payment_card": [
+                {
+                    "billing_address_id": 4,
+                    "ccn": 373719391,
+                    "code": 222,
+                    "customer_id": 3,
+                    "id": "pay_ccc-ccc",
+                    "name": "Example Card 3",
+                    "preferred": False,
+                }
+            ],
+            "postgres_example_test_dataset:service_request": [],
+            "postgres_example_test_dataset:order_item": [],
+            "postgres_example_test_dataset:address": [
+                {
+                    "city": "Example Mountain",
+                    "house": 1111,
+                    "id": 4,
+                    "state": "TX",
+                    "street": "Example Place",
+                    "zip": "54321",
+                }
+            ],
+            "postgres_example_test_dataset:product": [],
+        }
+
+    @pytest.mark.integration_mongo
+    @pytest.mark.usefixtures("default_access_policy")
+    def test_filtered_results_mongo(
+        self,
+        mongo_connection_config,
+        mongo_dataset_config,
+        api_client: TestClient,
+        generate_auth_header,
+    ) -> None:
+        dataset_url = get_connection_dataset_url(
+            mongo_connection_config, mongo_dataset_config
+        )
+        auth_header = generate_auth_header(scopes=[DATASET_TEST])
+        response = api_client.post(
+            dataset_url + "/test",
+            headers=auth_header,
+            json={
+                "email": "employee-1@example.com",
+                "postgres_example_test_dataset:customer:id": 1,
+            },
+        )
+        assert response.status_code == HTTP_200_OK
+
+        privacy_request_id = response.json()["privacy_request_id"]
+        url = V1_URL_PREFIX + PRIVACY_REQUEST_FILTERED_RESULTS.format(
+            privacy_request_id=privacy_request_id
+        )
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ_ACCESS_RESULTS])
+        response = api_client.get(
+            url,
+            headers=auth_header,
+        )
+        assert response.status_code == HTTP_200_OK
+        assert set(response.json().keys()) == {
+            "privacy_request_id",
+            "status",
+            "results",
+        }
+        assert response.json()["results"] == {
+            "mongo_test:customer_details": [
+                {
+                    "_id": {"$oid": "67525147dadb505a0d1751c6"},
+                    "customer_id": 1.0,
+                    "customer_uuid": "3b241101-e2bb-4255-8caf-4136c566a962",
+                    "gender": "male",
+                    "birthday": "1988-01-10T00:00:00",
+                    "workplace_info": {
+                        "employer": "Mountain Baking Company",
+                        "position": "Chief Strategist",
+                        "direct_reports": ["Robbie Margo", "Sully Hunter"],
+                    },
+                    "emergency_contacts": [
+                        {
+                            "name": "June Customer",
+                            "relationship": "mother",
+                            "phone": "444-444-4444",
+                        },
+                        {
+                            "name": "Josh Customer",
+                            "relationship": "brother",
+                            "phone": "111-111-111",
+                        },
+                    ],
+                    "children": ["Christopher Customer", "Courtney Customer"],
+                    "travel_identifiers": ["A111-11111", "B111-11111"],
+                    "comments": [
+                        {"comment_id": "com_0001"},
+                        {"comment_id": "com_0003"},
+                        {"comment_id": "com_0005"},
+                    ],
+                }
+            ],
+            "mongo_test:customer_feedback": [],
+            "mongo_test:conversations": [
+                {
+                    "_id": {"$oid": "67525147dadb505a0d1751ce"},
+                    "thread": [
+                        {
+                            "comment": "com_0001",
+                            "message": "hello, testing in-flight chat feature",
+                            "chat_name": "John C",
+                            "ccn": "123456789",
+                        }
+                    ],
+                },
+                {
+                    "_id": {"$oid": "67525147dadb505a0d1751cf"},
+                    "thread": [
+                        {
+                            "comment": "com_0003",
+                            "message": "can I borrow your headphones?",
+                            "chat_name": "John C",
+                            "ccn": "123456789",
+                        },
+                        {
+                            "comment": "com_0005",
+                            "message": "did you bring anything to read?",
+                            "chat_name": "John C",
+                            "ccn": "123456789",
+                        },
+                    ],
+                },
+            ],
+            "mongo_test:flights": [
+                {
+                    "_id": {"$oid": "67525147dadb505a0d1751d1"},
+                    "passenger_information": {
+                        "passenger_ids": ["A111-11111"],
+                        "full_name": "John Customer",
+                    },
+                    "flight_no": "AA230",
+                    "date": "2021-01-01",
+                    "pilots": ["1", "2"],
+                    "plane": 10002,
+                }
+            ],
+            "mongo_test:internal_customer_profile": [],
+            "mongo_test:payment_card": [
+                {
+                    "_id": {"$oid": "67525147dadb505a0d1751dd"},
+                    "id": "pay_aaa-aaa",
+                    "name": "Example Card 1",
+                    "ccn": "123456789",
+                    "code": "321",
+                    "preferred": True,
+                    "customer_id": 1,
+                }
+            ],
+            "mongo_test:employee": [
+                {
+                    "_id": {"$oid": "67525147dadb505a0d1751d5"},
+                    "email": "employee-1@example.com",
+                    "name": "Jack Employee",
+                    "id": "1",
+                },
+                {
+                    "_id": {"$oid": "67525147dadb505a0d1751d6"},
+                    "email": "employee-2@example.com",
+                    "name": "Jane Employee",
+                    "id": "2",
+                },
+            ],
+            "mongo_test:aircraft": [
+                {
+                    "_id": {"$oid": "67525147dadb505a0d1751d3"},
+                    "model": "Airbus A350",
+                    "planes": ["10002"],
+                }
+            ],
+            "mongo_test:rewards": [],
         }

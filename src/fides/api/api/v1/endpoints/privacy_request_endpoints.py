@@ -2,6 +2,7 @@
 
 import csv
 import io
+import json
 from collections import defaultdict
 from datetime import datetime
 from typing import (
@@ -148,6 +149,7 @@ from fides.api.util.endpoint_utils import validate_start_and_end_filters
 from fides.api.util.enums import ColumnSort
 from fides.api.util.fuzzy_search_utils import get_decrypted_identities_automaton
 from fides.api.util.logger import Pii
+from fides.api.util.storage_util import storage_json_encoder
 from fides.common.api.scope_registry import (
     PRIVACY_REQUEST_CALLBACK_RESUME,
     PRIVACY_REQUEST_CREATE,
@@ -2657,8 +2659,13 @@ def get_test_privacy_request_results(
         )
         privacy_request.save(db=db)
 
+    # Escape datetime and ObjectId values
+    raw_data = privacy_request.get_raw_access_results()
+    escaped_json = json.dumps(raw_data, indent=2, default=storage_json_encoder)
+    escaped_data = json.loads(escaped_json)
+
     return {
         "privacy_request_id": privacy_request.id,
         "status": privacy_request.status,
-        "results": privacy_request.get_raw_access_results(),
+        "results": escaped_data,
     }
