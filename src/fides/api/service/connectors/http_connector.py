@@ -12,7 +12,7 @@ from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest, RequestTask
 from fides.api.schemas.connection_configuration import HttpsSchema
 from fides.api.service.connectors.base_connector import BaseConnector
-from fides.api.service.connectors.query_config import QueryConfig
+from fides.api.service.connectors.query_configs.query_config import QueryConfig
 from fides.api.util.collection_util import Row
 
 
