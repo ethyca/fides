@@ -8392,7 +8392,7 @@ class TestPrivacyRequestFilteredResults:
         response = api_client.get(url, headers=auth_header)
         assert response.status_code == 403
 
-    @pytest.mark.usefixtures("default_access_policy")
+    @pytest.mark.usefixtures("default_access_policy", "dsr_testing_tools_enabled")
     @pytest.mark.parametrize(
         "auth_header,expected_status",
         [
@@ -8427,7 +8427,9 @@ class TestPrivacyRequestFilteredResults:
         assert response.status_code == expected_status
 
     @pytest.mark.integration_postgres
-    @pytest.mark.usefixtures("default_access_policy", "postgres_integration_db")
+    @pytest.mark.usefixtures(
+        "default_access_policy", "postgres_integration_db", "dsr_testing_tools_enabled"
+    )
     def test_filtered_results_postgres(
         self,
         connection_config,
@@ -8466,9 +8468,9 @@ class TestPrivacyRequestFilteredResults:
     @pytest.mark.usefixtures(
         "default_access_policy",
         "postgres_integration_db",
-        "subject_request_download_ui_disabled",
+        "dsr_testing_tools_enabled",
     )
-    def test_filtered_results_postgres_access_results_disabled(
+    def test_filtered_results_postgres_access_testing_disabled(
         self,
         connection_config,
         postgres_example_test_dataset_config,
@@ -8486,6 +8488,9 @@ class TestPrivacyRequestFilteredResults:
         )
         assert response.status_code == HTTP_200_OK
 
+        original_value = CONFIG.security.dsr_testing_tools_enabled
+        CONFIG.security.dsr_testing_tools_enabled = False
+
         privacy_request_id = response.json()["privacy_request_id"]
         url = V1_URL_PREFIX + PRIVACY_REQUEST_FILTERED_RESULTS.format(
             privacy_request_id=privacy_request_id
@@ -8501,10 +8506,15 @@ class TestPrivacyRequestFilteredResults:
             "status",
             "results",
         }
-        assert response.json()["results"] == "Access results download is disabled."
+        assert (
+            response.json()["results"]
+            == "DSR testing tools are not enabled, results will not be shown."
+        )
+
+        CONFIG.security.dsr_testing_tools_enabled = original_value
 
     @pytest.mark.integration_mongo
-    @pytest.mark.usefixtures("default_access_policy")
+    @pytest.mark.usefixtures("default_access_policy", "dsr_testing_tools_enabled")
     def test_filtered_results_mongo(
         self,
         mongo_connection_config,

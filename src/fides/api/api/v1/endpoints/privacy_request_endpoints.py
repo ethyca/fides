@@ -2669,7 +2669,7 @@ def get_test_privacy_request_results(
         "status": privacy_request.status,
         "results": (
             results
-            if CONFIG.security.subject_request_download_ui_enabled
-            else "Access results download is disabled."
+            if CONFIG.security.dsr_testing_tools_enabled
+            else "DSR testing tools are not enabled, results will not be shown."
         ),
     }

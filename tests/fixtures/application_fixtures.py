@@ -3454,11 +3454,19 @@ def subject_request_download_ui_enabled():
 
 
 @pytest.fixture(scope="function")
-def subject_request_download_ui_disabled():
-    original_value = CONFIG.security.subject_request_download_ui_enabled
-    CONFIG.security.subject_request_download_ui_enabled = False
+def dsr_testing_tools_enabled():
+    original_value = CONFIG.security.dsr_testing_tools_enabled
+    CONFIG.security.dsr_testing_tools_enabled = True
     yield
-    CONFIG.security.subject_request_download_ui_enabled = original_value
+    CONFIG.security.dsr_testing_tools_enabled = original_value
+
+
+@pytest.fixture(scope="function")
+def dsr_testing_tools_disabled():
+    original_value = CONFIG.security.dsr_testing_tools_enabled
+    CONFIG.security.dsr_testing_tools_enabled = False
+    yield
+    CONFIG.security.dsr_testing_tools_enabled = original_value
 
 
 @pytest.fixture(scope="function")
