@@ -13,7 +13,9 @@ from fides.api.schemas.namespace_meta.snowflake_namespace_meta import (
     SnowflakeNamespaceMeta,
 )
 from fides.api.service.connectors import SnowflakeConnector
-from fides.api.service.connectors.query_config import SnowflakeQueryConfig
+from fides.api.service.connectors.query_configs.snowflake_query_config import (
+    SnowflakeQueryConfig,
+)
 
 
 @pytest.mark.integration_external

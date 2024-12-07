@@ -3,7 +3,7 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from fides.api.graph.config import Field
 from fides.api.models.policy import Policy
-from fides.api.service.connectors.query_config import SQLLikeQueryConfig
+from fides.api.service.connectors.query_configs.query_config import SQLLikeQueryConfig
 
 ScyllaDBStatement = Tuple[str, Dict[str, Any]]
 """
