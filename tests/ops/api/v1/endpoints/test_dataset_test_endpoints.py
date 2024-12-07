@@ -208,6 +208,7 @@ class TestDatasetTest:
         response = api_client.post(dataset_url + "/test", headers={})
         assert response.status_code == 401
 
+    @pytest.mark.usefixtures("dsr_testing_tools_enabled")
     def test_dataset_test_wrong_scope(
         self,
         dataset_config,
@@ -220,7 +221,6 @@ class TestDatasetTest:
         response = api_client.post(dataset_url + "/test", headers=auth_header)
         assert response.status_code == 403
 
-    @pytest.mark.usefixtures("default_access_policy")
     @pytest.mark.parametrize(
         "auth_header,expected_status",
         [
@@ -231,6 +231,7 @@ class TestDatasetTest:
             ("approver_auth_header", HTTP_403_FORBIDDEN),
         ],
     )
+    @pytest.mark.usefixtures("default_access_policy", "dsr_testing_tools_enabled")
     def test_dataset_test_with_roles(
         self,
         dataset_config,
@@ -249,6 +250,7 @@ class TestDatasetTest:
         )
         assert response.status_code == expected_status
 
+    @pytest.mark.usefixtures("dsr_testing_tools_enabled")
     def test_dataset_test_connection_does_not_exist(
         self,
         api_client: TestClient,
@@ -263,6 +265,7 @@ class TestDatasetTest:
         )
         assert response.status_code == 404
 
+    @pytest.mark.usefixtures("dsr_testing_tools_enabled")
     def test_dataset_test_dataset_does_not_exist(
         self,
         connection_config,
@@ -290,7 +293,7 @@ class TestDatasetTest:
             ),
         ],
     )
-    @pytest.mark.usefixtures("default_access_policy")
+    @pytest.mark.usefixtures("default_access_policy", "dsr_testing_tools_enabled")
     def test_dataset_test_invalid_payloads(
         self,
         connection_config,
@@ -310,7 +313,9 @@ class TestDatasetTest:
         assert response.status_code == HTTP_400_BAD_REQUEST
         assert response.json()["detail"] == expected_response
 
-    @pytest.mark.usefixtures("default_access_policy", "postgres_integration_db")
+    @pytest.mark.usefixtures(
+        "default_access_policy", "postgres_integration_db", "dsr_testing_tools_enabled"
+    )
     def test_dataset_test(
         self,
         connection_config,
@@ -327,3 +332,23 @@ class TestDatasetTest:
         )
         assert response.status_code == HTTP_200_OK
         assert "privacy_request_id" in response.json().keys()
+
+    @pytest.mark.usefixtures(
+        "default_access_policy", "postgres_integration_db", "dsr_testing_tools_disabled"
+    )
+    def test_dataset_test_disabled(
+        self,
+        connection_config,
+        dataset_config,
+        api_client: TestClient,
+        generate_auth_header,
+    ) -> None:
+        dataset_url = get_connection_dataset_url(connection_config, dataset_config)
+        auth_header = generate_auth_header(scopes=[DATASET_TEST])
+        response = api_client.post(
+            dataset_url + "/test",
+            headers=auth_header,
+            json={"email": "jane@example.com"},
+        )
+        assert response.status_code == HTTP_403_FORBIDDEN
+        assert response.json()["detail"] == "DSR testing tools are not enabled."

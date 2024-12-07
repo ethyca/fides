@@ -401,4 +401,4 @@ class FilteredPrivacyRequestResults(FidesSchema):
 
     privacy_request_id: str
     status: PrivacyRequestStatus
-    results: Dict[str, Any]
+    results: Union[Dict[str, Any], str]
