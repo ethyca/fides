@@ -9,7 +9,7 @@ celery[pytest]==5.2.7
 click_default_group==1.2.2
 cloud-sql-python-connector==1.9.2
 colorama>=0.4.3
-cryptography==43.0.1
+cryptography==44.0.0
 dask==2022.9.2
 deepdiff==6.3.0
 defusedxml==0.7.1
