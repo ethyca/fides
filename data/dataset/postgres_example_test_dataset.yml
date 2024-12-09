@@ -12,7 +12,7 @@ dataset:
           - name: house
             data_categories: [user.contact.address.street]
             fides_meta:
-              data_type: string
+              data_type: integer
           - name: id
             data_categories: [system.operations]
             fides_meta:
