@@ -151,7 +151,7 @@ class TestDB:
             cli, ["-f", test_config_path, "db", "reset", "-y"]
         )
         print(result.output)
-        assert result.exit_code == 0
+        assert result.exit_code == 0, result.output
 
     @pytest.mark.integration
     def test_init_db(self, test_config_path: str, test_cli_runner: CliRunner) -> None:

@@ -163,9 +163,12 @@ async def run_database_startup(app: FastAPI) -> None:
         raise FidesError("No database uri provided")
 
     if CONFIG.database.automigrate:
-        await configure_db(
-            CONFIG.database.sync_database_uri, samples=CONFIG.database.load_samples
-        )
+        try:
+            await configure_db(
+                CONFIG.database.sync_database_uri, samples=CONFIG.database.load_samples
+            )
+        except Exception as e:
+            logger.error("Error occurred during database configuration: {}", str(e))
     else:
         logger.info("Skipping auto-migration due to 'automigrate' configuration value.")
 
