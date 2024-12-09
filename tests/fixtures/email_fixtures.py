@@ -192,29 +192,23 @@ def dynamic_email_address_config_dataset(
                         {
                             "name": "id",
                             "data_categories": ["system.operations"],
-                            "fides_meta": {
-                                "data_type": "string"
-                            },
+                            "fides_meta": {"data_type": "string"},
                         },
                         {
                             "name": "email_address",
                             "data_categories": ["system.operations"],
-                            "fides_meta": {
-                                "data_type": "string"
-                            },
+                            "fides_meta": {"data_type": "string"},
                         },
                         {
                             "name": "vendor_name",
                             "data_categories": ["system.operations"],
-                            "fides_meta": {
-                                "data_type": "string"
-                            },
+                            "fides_meta": {"data_type": "string"},
                         },
                         {
                             "name": "site_id",
                             "data_categories": ["system.operations"],
                             "fides_meta": {
-                                "data_type": "string"
+                                "data_type": "string",
                                 "custom_request_field": "tenant_id",
                             },
                         },
@@ -244,29 +238,23 @@ def dynamic_email_address_config_second_dataset(
                         {
                             "name": "id",
                             "data_categories": ["system.operations"],
-                            "fides_meta": {
-                                "data_type": "string"
-                            },
+                            "fides_meta": {"data_type": "string"},
                         },
                         {
                             "name": "email_address",
                             "data_categories": ["system.operations"],
-                            "fides_meta": {
-                                "data_type": "string"
-                            },
+                            "fides_meta": {"data_type": "string"},
                         },
                         {
                             "name": "vendor_name",
                             "data_categories": ["system.operations"],
-                            "fides_meta": {
-                                "data_type": "string"
-                            },
+                            "fides_meta": {"data_type": "string"},
                         },
                         {
                             "name": "custom_field",
                             "data_categories": ["system.operations"],
                             "fides_meta": {
-                                "data_type": "string"
+                                "data_type": "string",
                                 "custom_request_field": "custom_field",
                             },
                         },
@@ -278,29 +266,23 @@ def dynamic_email_address_config_second_dataset(
                         {
                             "name": "id2",
                             "data_categories": ["system.operations"],
-                            "fides_meta": {
-                                "data_type": "string"
-                            },
+                            "fides_meta": {"data_type": "string"},
                         },
                         {
                             "name": "email_address2",
                             "data_categories": ["system.operations"],
-                            "fides_meta": {
-                                "data_type": "string"
-                            },
+                            "fides_meta": {"data_type": "string"},
                         },
                         {
                             "name": "vendor_name2",
                             "data_categories": ["system.operations"],
-                            "fides_meta": {
-                                "data_type": "string"
-                            },
+                            "fides_meta": {"data_type": "string"},
                         },
                         {
                             "name": "site_id2",
                             "data_categories": ["system.operations"],
                             "fides_meta": {
-                                "data_type": "string"
+                                "data_type": "string",
                                 "custom_request_field": "tenant_id",
                             },
                         },

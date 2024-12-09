@@ -75,14 +75,16 @@ class ScyllaDBQueryConfig(SQLLikeQueryConfig[ScyllaDBStatement]):
         return [f"{k} = %({v})s" for k, v in sorted(param_map.items())]
 
     def get_update_clauses(
-        self, update_value_map: Dict[str, Any], non_empty_primary_keys: Dict[str, Field]
+        self,
+        update_value_map: Dict[str, Any],
+        non_empty_reference_fields: Dict[str, Field],
     ) -> List[str]:
         """Returns a list of update clauses for the update statement."""
         return self.format_key_map_for_update_stmt(
             {
                 key: value
-                for key, value in update_value_map.keys()
-                if key not in non_empty_primary_keys
+                for key, value in update_value_map.items()
+                if key not in non_empty_reference_fields
             }
         )
 

@@ -428,7 +428,9 @@ class SQLLikeQueryConfig(QueryConfig[T], ABC):
 
     @abstractmethod
     def get_update_clauses(
-        self, update_value_map: Dict[str, Any], non_empty_primary_keys: Dict[str, Field]
+        self,
+        update_value_map: Dict[str, Any],
+        non_empty_reference_fields: Dict[str, Field],
     ) -> List[str]:
         """Returns a list of update clauses for the update statement."""
 
@@ -553,7 +555,9 @@ class SQLQueryConfig(SQLLikeQueryConfig[Executable]):
         return [f"{k} = :{v}" for k, v in sorted(param_map.items())]
 
     def get_update_clauses(
-        self, update_value_map: Dict[str, Any], non_empty_primary_keys: Dict[str, Field]
+        self,
+        update_value_map: Dict[str, Any],
+        non_empty_reference_fields: Dict[str, Field],
     ) -> List[str]:
         """Returns a list of update clauses for the update statement."""
         return self.format_key_map_for_update_stmt(update_value_map)
