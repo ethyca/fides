@@ -111,6 +111,8 @@ def connections():
 
 
 class TestPatchSystemConnections:
+    ## Add this with the other connection config.
+    ## But where is it getting the connection config from?
     @pytest.fixture(scope="function")
     def system_linked_with_connection_config(
         self, system: System, oauth2_authorization_code_connection_config, db: Session
