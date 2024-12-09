@@ -173,6 +173,7 @@ const TaxonomyInteractiveTree = ({
           edgeTypes={edgeTypes}
           maxZoom={2}
           minZoom={0.3}
+          nodesConnectable={false}
           edgesFocusable={false}
           elementsSelectable={false}
           proOptions={{ hideAttribution: true }}
