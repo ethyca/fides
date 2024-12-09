@@ -63,6 +63,10 @@ type ConnectorParametersFormProps = {
    */
   onTestConnectionClick: (value: TestConnectionResponse) => void;
   /**
+   * Parent callback when Test Dataset is clicked
+   */
+  onTestDatasetsClick: () => void;
+  /**
    * Text for the test button. Defaults to "Test connection"
    */
   testButtonLabel?: string;
@@ -86,6 +90,7 @@ export const ConnectorParametersForm = ({
   isAuthorizing = false,
   onSaveClick,
   onTestConnectionClick,
+  onTestDatasetsClick,
   onAuthorizeConnectionClick,
   testButtonLabel = "Test integration",
   connectionOption,
@@ -161,15 +166,18 @@ export const ConnectorParametersForm = ({
         const error = form.errors.secrets && form.errors.secrets[key];
         const touch = form.touched.secrets ? form.touched.secrets[key] : false;
 
+        const isBoolean = item.type === "boolean";
+        const isInteger = item.type === "integer";
+
         return (
           <FormControl
             display="flex"
-            isRequired={isRequiredSecretValue(key)}
+            isRequired={isRequiredSecretValue(key) && !isBoolean}
             isInvalid={error && touch}
           >
             {getFormLabel(key, item.title)}
             <VStack align="flex-start" w="inherit">
-              {item.type !== "integer" && (
+              {!isInteger && !isBoolean && (
                 <Input
                   {...field}
                   type={item.sensitive ? "password" : "text"}
@@ -179,7 +187,17 @@ export const ConnectorParametersForm = ({
                   size="sm"
                 />
               )}
-              {item.type === "integer" && (
+              {isBoolean && (
+                <Select
+                  value={!!field.value}
+                  onChange={(value) => form.setFieldValue(field.name, value)}
+                  options={[
+                    { label: "False", value: false },
+                    { label: "True", value: true },
+                  ]}
+                />
+              )}
+              {isInteger && (
                 <NumberInput
                   allowMouseWheel
                   color="gray.700"
@@ -504,6 +522,13 @@ export const ConnectorParametersForm = ({
                     {testButtonLabel}
                   </Button>
                 ) : null}
+                {isPlusEnabled &&
+                  SystemType.DATABASE === connectionOption.type &&
+                  !_.isEmpty(initialDatasets) && (
+                    <Button onClick={() => onTestDatasetsClick()}>
+                      Test datasets
+                    </Button>
+                  )}
                 {connectionOption.authorization_required && !authorized ? (
                   <Button
                     loading={isAuthorizing}

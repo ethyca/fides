@@ -86,6 +86,9 @@ REQUEST_TASKS = "/privacy-request/{privacy_request_id}/tasks"
 PRIVACY_REQUEST_REQUEUE = "/privacy-request/{privacy_request_id}/requeue"
 REQUEST_TASK_CALLBACK = "/request-task/callback"
 PRIVACY_REQUEST_ACCESS_RESULTS = "/privacy-request/{privacy_request_id}/access-results"
+PRIVACY_REQUEST_FILTERED_RESULTS = (
+    "/privacy-request/{privacy_request_id}/filtered-results"
+)
 
 PRIVACY_REQUEST_VERIFY_IDENTITY = "/privacy-request/{privacy_request_id}/verify"
 PRIVACY_REQUEST_RESUME = "/privacy-request/{privacy_request_id}/resume"
@@ -158,7 +161,10 @@ DATASET_VALIDATE = CONNECTION_BY_KEY + "/validate_dataset"
 CONNECTION_DATASETS = CONNECTION_BY_KEY + DATASETS
 DATASET_CONFIGS = CONNECTION_BY_KEY + DATASET_CONFIG
 DATASET_BY_KEY = CONNECTION_BY_KEY + DATASETS + "/{fides_key}"
-DATASETCONFIG_BY_KEY = CONNECTION_BY_KEY + DATASET_CONFIG + "/{fides_key}"
+DATASET_CONFIG_BY_KEY = CONNECTION_BY_KEY + DATASET_CONFIG + "/{fides_key}"
+DATASET_INPUTS = DATASET_BY_KEY + "/inputs"
+DATASET_REACHABILITY = DATASET_BY_KEY + "/reachability"
+TEST_DATASET = DATASET_BY_KEY + "/test"
 
 # YAML Collection URLs
 YAML_DATASETS = YAML + CONNECTION_DATASETS

@@ -12,6 +12,7 @@ import {
   DatastoreConnectionSecretsResponse,
 } from "datastore-connections/types";
 import { Box, Flex, Spacer, useToast, UseToastOptions } from "fidesui";
+import router from "next/router";
 import { useMemo, useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
@@ -112,7 +113,6 @@ export const patchConnectionConfig = async (
         ? connectionOption.type
         : connectionOption.identifier) as ConnectionType,
       description: values.description,
-      disabled: false,
       key,
       ...(values.enabled_actions
         ? { enabled_actions: values.enabled_actions as ActionType[] }
@@ -392,6 +392,10 @@ export const ConnectorParameters = ({
     },
   );
 
+  const handleTestDatasetsClick = () => {
+    router.push(`/systems/configure/${systemFidesKey}/test-datasets`);
+  };
+
   const {
     isSubmitting,
     isAuthorizing,
@@ -451,6 +455,7 @@ export const ConnectorParameters = ({
         isAuthorizing={isAuthorizing}
         onSaveClick={handleSubmit}
         onTestConnectionClick={handleTestConnectionClick}
+        onTestDatasetsClick={handleTestDatasetsClick}
         onAuthorizeConnectionClick={handleAuthorization}
         connectionOption={connectionOption}
         connectionConfig={connectionConfig}

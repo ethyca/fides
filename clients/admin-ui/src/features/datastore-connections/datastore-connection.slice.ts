@@ -380,6 +380,40 @@ export const datastoreConnectionApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: () => ["Datastore Connection"],
     }),
+    testDatastoreConnectionDatasets: build.mutation<
+      { privacy_request_id: string },
+      {
+        connection_key: string;
+        dataset_key: string;
+        input_data: Record<string, any>;
+      }
+    >({
+      query: (params) => ({
+        url: `${CONNECTION_ROUTE}/${params.connection_key}/dataset/${params.dataset_key}/test`,
+        method: "POST",
+        body: params.input_data,
+      }),
+    }),
+    getDatasetInputs: build.query<
+      any,
+      { connectionKey: string; datasetKey: string }
+    >({
+      query: ({ connectionKey, datasetKey }) => ({
+        url: `${CONNECTION_ROUTE}/${connectionKey}/dataset/${datasetKey}/inputs`,
+        method: "GET",
+      }),
+      providesTags: () => ["Datastore Connection"],
+    }),
+    getDatasetReachability: build.query<
+      { reachable: boolean; details: string },
+      { connectionKey: string; datasetKey: string }
+    >({
+      query: ({ connectionKey, datasetKey }) => ({
+        url: `${CONNECTION_ROUTE}/${connectionKey}/dataset/${datasetKey}/reachability`,
+        method: "GET",
+      }),
+      providesTags: () => ["Datastore Connection"],
+    }),
   }),
 });
 
@@ -402,6 +436,9 @@ export const {
   usePatchDatastoreConnectionsMutation,
   useUpdateDatastoreConnectionSecretsMutation,
   usePatchDatastoreConnectionSecretsMutation,
+  useTestDatastoreConnectionDatasetsMutation,
+  useGetDatasetInputsQuery,
+  useGetDatasetReachabilityQuery,
 } = datastoreConnectionApi;
 
 /**

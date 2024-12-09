@@ -15,10 +15,28 @@ The types of changes are:
 - `Fixed` for any bug fixes.
 - `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.50.0...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.51.0...main)
+
+### Added
+- New page in the Cookie House sample app to demonstrate the use of embedding the FidesJS SDK on the page [#5564](https://github.com/ethyca/fides/pull/5564)
+
+### Fixed
+- SaaS integrations using `oauth_client_credentials` now properly update their access token when editing the secrets.
+
+## [2.51.0](https://github.com/ethyca/fides/compare/2.50.0...2.51.0)
+
+### Added
+- Added new column for Action Type in privacy request event logs [#5546](https://github.com/ethyca/fides/pull/5546)
+- Added `fides_consent_override` option in FidesJS SDK [#5541](https://github.com/ethyca/fides/pull/5541)
+- Added new `script` ConsentMethod in FidesJS SDK for tracking automated consent [#5541](https://github.com/ethyca/fides/pull/5541)
+- Added a new page under system integrations to run standalone dataset tests (Fidesplus) [#5549](https://github.com/ethyca/fides/pull/5549)
+- Added new erasure tests for BigQuery Enterprise [#5554](https://github.com/ethyca/fides/pull/5554)
 
 ### Changed
 - Adding hashes to system tab URLs [#5535](https://github.com/ethyca/fides/pull/5535)
+- Boolean inputs will now show as a select with true/false values in the connection form [#5555](https://github.com/ethyca/fides/pull/5555)
+- Updated Cookie House to be responsive [#5541](https://github.com/ethyca/fides/pull/5541)
+- Updated `/system` endpoint to filter vendor deleted systems [#5553](https://github.com/ethyca/fides/pull/5553)
 
 ### Developer Experience
 - Migrated remaining instances of Chakra's Select component to use Ant's Select component [#5502](https://github.com/ethyca/fides/pull/5502)
@@ -26,6 +44,8 @@ The types of changes are:
 ### Fixed
 - Updating dataset PUT to allow deleting all datasets [#5524](https://github.com/ethyca/fides/pull/5524)
 - Adds support for fides_key generation when parent_key is provided in Taxonomy create endpoints [#5542](https://github.com/ethyca/fides/pull/5542)
+- An integration will no longer re-enable after saving the connection form [#5555](https://github.com/ethyca/fides/pull/5555)
+- Fixed positioning of Fides brand link in privacy center [#5572](https://github.com/ethyca/fides/pull/5572)
 
 ### Removed
 - Removed unnecessary debug logging from the load_file config helper [#5544](https://github.com/ethyca/fides/pull/5544)
