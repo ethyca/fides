@@ -22,111 +22,123 @@ class TestStripeConnector:
     def test_stripe_connection_test(self, stripe_runner: ConnectorRunner) -> None:
         stripe_runner.test_connection()
 
-    # @pytest.mark.parametrize(
-    #     "dsr_version",
-    #     ["use_dsr_3_0", "use_dsr_2_0"],
-    # )
-    # async def test_stripe_access_request_task_with_email(
-    #     self,
-    #     stripe_runner: ConnectorRunner,
-    #     policy: Policy,
-    #     dsr_version,
-    #     request,
-    #     stripe_identity_email,
-    # ) -> None:
-    #     """Full access request based on the Stripe SaaS config"""
-    #     request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+    @pytest.mark.parametrize(
+        "dsr_version",
+        ["use_dsr_3_0", "use_dsr_2_0"],
+    )
+    async def test_stripe_access_request_task_with_email(
+        self,
+        stripe_runner: ConnectorRunner,
+        policy: Policy,
+        dsr_version,
+        request,
+        stripe_identity_email,
+        stripe_create_data,
+    ) -> None:
+        """Full access request based on the Stripe SaaS config"""
+        request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
 
-    #     dataset_name = stripe_runner.dataset_config.fides_key
+        dataset_name = stripe_runner.dataset_config.fides_key
 
-    #     access_results = await stripe_runner.access_request(
-    #             access_policy=policy, identities={"email": stripe_identity_email}
-    #         )
+        access_results = await stripe_runner.access_request(
+            access_policy=policy, identities={"email": stripe_identity_email}
+        )
 
-    #     # verify we only returned data for our identity email
+        # verify we only returned data for our identity email
 
-    #     assert len(access_results[f"{dataset_name}:customer"]) == 1
+        assert len(access_results[f"{dataset_name}:customer"]) == 1
 
-    #     assert access_results[f"{dataset_name}:customer"][0]["email"] == stripe_identity_email
-    #     customer_id: str = access_results[f"{dataset_name}:customer"][0]["id"]
+        assert (
+            access_results[f"{dataset_name}:customer"][0]["email"]
+            == stripe_identity_email
+        )
+        customer_id: str = access_results[f"{dataset_name}:customer"][0]["id"]
 
-    #     for bank_account in access_results[f"{dataset_name}:bank_account"]:
-    #         assert bank_account["customer"] == customer_id
+        for bank_account in access_results[f"{dataset_name}:bank_account"]:
+            assert bank_account["customer"] == customer_id
 
-    #     for card in access_results[f"{dataset_name}:card"]:
-    #         assert card["customer"] == customer_id
+        for card in access_results[f"{dataset_name}:card"]:
+            assert card["customer"] == customer_id
 
-    #     charge_ids: List[str] = []
-    #     for charge in access_results[f"{dataset_name}:charge"]:
-    #         assert charge["customer"] == customer_id
-    #         charge_ids.append(charge["id"])
+        charge_ids: List[str] = []
+        for charge in access_results[f"{dataset_name}:charge"]:
+            assert charge["customer"] == customer_id
+            charge_ids.append(charge["id"])
 
-    #     payment_intent_ids: List[str] = []
-    #     for payment_intent in access_results[f"{dataset_name}:payment_intent"]:
-    #         assert payment_intent["customer"] == customer_id
-    #         payment_intent_ids.append(payment_intent["id"])
+        payment_intent_ids: List[str] = []
+        for payment_intent in access_results[f"{dataset_name}:payment_intent"]:
+            assert payment_intent["customer"] == customer_id
+            payment_intent_ids.append(payment_intent["id"])
 
-    #     for credit_note in access_results[f"{dataset_name}:credit_note"]:
-    #         assert credit_note["customer"] == customer_id
+        for credit_note in access_results[f"{dataset_name}:credit_note"]:
+            assert credit_note["customer"] == customer_id
 
-    #     for bank_account in access_results[f"{dataset_name}:bank_account"]:
-    #         assert bank_account["customer"] == customer_id
+        for bank_account in access_results[f"{dataset_name}:bank_account"]:
+            assert bank_account["customer"] == customer_id
 
-    #     for customer_balance_transaction in access_results[
-    #         f"{dataset_name}:customer_balance_transaction"
-    #     ]:
-    #         assert customer_balance_transaction["customer"] == customer_id
+        for customer_balance_transaction in access_results[
+            f"{dataset_name}:customer_balance_transaction"
+        ]:
+            assert customer_balance_transaction["customer"] == customer_id
 
-    #     # disputes are retrieved by charge.id or payment_intent.id
-    #     for dispute in access_results[f"{dataset_name}:dispute"]:
-    #         assert (
-    #             dispute["charge"] in charge_ids
-    #             or dispute["payment_intent"] in payment_intent_ids
-    #         )
+        # disputes are retrieved by charge.id or payment_intent.id
+        for dispute in access_results[f"{dataset_name}:dispute"]:
+            assert (
+                dispute["charge"] in charge_ids
+                or dispute["payment_intent"] in payment_intent_ids
+            )
 
-    #     for invoice in access_results[f"{dataset_name}:invoice"]:
-    #         assert invoice["customer"] == customer_id
+        for invoice in access_results[f"{dataset_name}:invoice"]:
+            assert invoice["customer"] == customer_id
 
-    #     for invoice_item in access_results[f"{dataset_name}:invoice_item"]:
-    #         assert invoice_item["customer"] == customer_id
+        for invoice_item in access_results[f"{dataset_name}:invoice_item"]:
+            assert invoice_item["customer"] == customer_id
 
-    #     for payment_method in access_results[f"{dataset_name}:payment_method"]:
-    #         assert payment_method["customer"] == customer_id
+        for payment_method in access_results[f"{dataset_name}:payment_method"]:
+            assert payment_method["customer"] == customer_id
 
-    #     for subscription in access_results[f"{dataset_name}:subscription"]:
-    #         assert subscription["customer"] == customer_id
+        for subscription in access_results[f"{dataset_name}:subscription"]:
+            assert subscription["customer"] == customer_id
 
-    #     for tax_id in access_results[f"{dataset_name}:tax_id"]:
-    #         assert tax_id["customer"] == customer_id
+        for tax_id in access_results[f"{dataset_name}:tax_id"]:
+            assert tax_id["customer"] == customer_id
 
-    # @pytest.mark.parametrize(
-    #     "dsr_version",
-    #     ["use_dsr_3_0", "use_dsr_2_0"],
-    # )
-    # async def test_stripe_access_request_task_with_phone_number(
-    #     self,
-    #     stripe_runner: ConnectorRunner,
-    #     policy: Policy,
-    #     dsr_version,
-    #     request,
-    #     stripe_identity_email,
-    #     stripe_identity_phone_number,
-    # ) -> None:
-    #     """Full access request based on the Stripe SaaS config"""
-    #     request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-    #     # The Privacy request fixture we're using already has an email/phone cached
-    #     # so I'm clearing that first
-    #     dataset_name = stripe_runner.dataset_config.fides_key
+    @pytest.mark.parametrize(
+        "dsr_version",
+        ["use_dsr_3_0", "use_dsr_2_0"],
+    )
+    async def test_stripe_access_request_task_with_phone_number(
+        self,
+        stripe_runner: ConnectorRunner,
+        policy: Policy,
+        dsr_version,
+        request,
+        stripe_identity_email,
+        stripe_identity_phone_number,
+    ) -> None:
+        """Full access request based on the Stripe SaaS config"""
+        request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+        # The Privacy request fixture we're using already has an email/phone cached
+        # so I'm clearing that first
+        dataset_name = stripe_runner.dataset_config.fides_key
 
-    #     access_results = await stripe_runner.access_request(
-    #         access_policy=policy, identities={"phone_number": stripe_identity_phone_number}
-    #     )
+        access_results = await stripe_runner.access_request(
+            access_policy=policy,
+            identities={"phone_number": stripe_identity_phone_number},
+        )
 
-    #     # verify we only returned data for our identity phone number and that
-    #     # it is the same customer that we retrieved using the identity email
-    #     assert access_results[f"{dataset_name}:customer"][0]["phone"] == stripe_identity_phone_number
-    #     assert access_results[f"{dataset_name}:customer"][0]["email"] == stripe_identity_email
+        # verify we only returned data for our identity phone number and that
+        # it is the same customer that we retrieved using the identity email
+        assert (
+            access_results[f"{dataset_name}:customer"][0]["phone"]
+            == stripe_identity_phone_number
+        )
+        assert (
+            access_results[f"{dataset_name}:customer"][0]["email"]
+            == stripe_identity_email
+        )
 
+    @pytest.mark.skip
     @pytest.mark.integration_saas
     @pytest.mark.asyncio
     @pytest.mark.parametrize(
@@ -140,9 +152,9 @@ class TestStripeConnector:
         dsr_version,
         request,
         erasure_policy_string_rewrite,
-        stripe_erasure_identity_email,
+        stripe_identity_email,
         stripe_test_client,
-        stripe_create_erasure_data,
+        stripe_create_data,
     ) -> None:
         """Full erasure request based on the Stripe SaaS config"""
         request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
@@ -155,7 +167,7 @@ class TestStripeConnector:
         ) = await stripe_runner.non_strict_erasure_request(
             access_policy=policy,
             erasure_policy=erasure_policy_string_rewrite,
-            identities={"email": stripe_erasure_identity_email},
+            identities={"email": stripe_identity_email},
         )
 
         # verify masking request was issued for endpoints with both update/delete actions

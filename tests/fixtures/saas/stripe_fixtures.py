@@ -40,8 +40,8 @@ def stripe_secrets(saas_config):
 
 
 @pytest.fixture
-def stripe_identity_email(saas_config):
-    return pydash.get(saas_config, "stripe.identity_email") or secrets["identity_email"]
+def stripe_identity_email():
+    return generate_random_email()
 
 
 @pytest.fixture
@@ -439,8 +439,8 @@ def stripe_test_client(
 
 
 @pytest.fixture(scope="function")
-def stripe_create_erasure_data(
-    stripe_test_client: StripeTestClient, stripe_erasure_identity_email: str
+def stripe_create_data(
+    stripe_test_client: StripeTestClient, stripe_identity_email: str
 ) -> Generator:
 
     # customer
@@ -455,7 +455,7 @@ def stripe_create_erasure_data(
         },
         "balance": 0,
         "description": "RTF Test Customer",
-        "email": stripe_erasure_identity_email,
+        "email": stripe_identity_email,
         "name": "Ethyca RTF",
         "preferred_locales": ["en-US"],
         "shipping": {
