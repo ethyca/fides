@@ -22,8 +22,9 @@ The types of changes are:
 - Adding `dsr_testing_tools_enabled` security setting [#5573](https://github.com/ethyca/fides/pull/5573)
 
 ### Fixed
-- SaaS integrations using `oauth_client_credentials` now properly update their access token when editing the secrets.
-- Saas integrations using `oauth_client_credentials` now properly refresh their access token when the current token expires
+- SaaS integrations using `oauth_client_credentials` now properly update their access token when editing the secrets [#5548](https://github.com/ethyca/fides/pull/5548)
+- Saas integrations using `oauth_client_credentials` now properly refresh their access token when the current token expires [#5569](https://github.com/ethyca/fides/pull/5569)
+- Fixing quickstart.py script [#5585](https://github.com/ethyca/fides/pull/5585)
 
 ## [2.51.0](https://github.com/ethyca/fides/compare/2.50.0...2.51.0)
 
