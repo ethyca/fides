@@ -437,7 +437,7 @@ class SQLLikeQueryConfig(QueryConfig[T], ABC):
         """Returns a formatted update statement in the appropriate dialect."""
 
     @abstractmethod
-    def format_key_map_for_update_stmt(self, fields: List[str]) -> List[str]:
+    def format_key_map_for_update_stmt(self, param_map: Dict[str, Any]) -> List[str]:
         """Adds the appropriate formatting for update statements in this datastore."""
 
     def generate_update_stmt(
@@ -445,15 +445,6 @@ class SQLLikeQueryConfig(QueryConfig[T], ABC):
     ) -> Optional[T]:
         """Returns an update statement in generic SQL-ish dialect."""
         update_value_map: Dict[str, Any] = self.update_value_map(row, policy, request)
-
-        non_empty_primary_keys: Dict[str, Field] = filter_nonempty_values(
-            {
-                fpath.string_path: fld.cast(row[fpath.string_path])
-                for fpath, fld in self.primary_key_field_paths.items()
-                if fpath.string_path in row
-            }
-        )
-
         non_empty_reference_fields: Dict[str, Field] = filter_nonempty_values(
             {
                 fpath.string_path: fld.cast(row[fpath.string_path])
@@ -462,11 +453,27 @@ class SQLLikeQueryConfig(QueryConfig[T], ABC):
             }
         )
 
+        # Identify overlapping fields and create parameter mappings
+        overlapping_keys = set(update_value_map.keys()) & set(
+            non_empty_reference_fields.keys()
+        )
+        param_map = {
+            **{k: v for k, v in update_value_map.items()},  # SET values
+            **{
+                f"where_{k}" if k in overlapping_keys else k: v
+                for k, v in non_empty_reference_fields.items()
+            },  # WHERE values
+        }
+
+        # Generate SQL clauses using parameter names
         update_clauses = self.get_update_clauses(
-            update_value_map, non_empty_reference_fields
+            {k: k for k in update_value_map}, non_empty_reference_fields
         )
         where_clauses = self.format_key_map_for_update_stmt(
-            list(non_empty_reference_fields.keys())
+            {
+                k: f"where_{k}" if k in overlapping_keys else k
+                for k in non_empty_reference_fields
+            }
         )
 
         for k, v in non_empty_reference_fields.items():
@@ -480,12 +487,9 @@ class SQLLikeQueryConfig(QueryConfig[T], ABC):
             )
             return None
 
-        query_str = self.get_update_stmt(
-            update_clauses,
-            where_clauses,
-        )
-        logger.info("query = {}, params = {}", Pii(query_str), Pii(update_value_map))
-        return self.format_query_stmt(query_str, update_value_map)
+        query_str = self.get_update_stmt(update_clauses, where_clauses)
+        logger.info("query = {}, params = {}", Pii(query_str), Pii(param_map))
+        return self.format_query_stmt(query_str, param_map)
 
 
 class SQLQueryConfig(SQLLikeQueryConfig[Executable]):
@@ -556,16 +560,15 @@ class SQLQueryConfig(SQLLikeQueryConfig[Executable]):
         )
         return None
 
-    def format_key_map_for_update_stmt(self, fields: List[str]) -> List[str]:
+    def format_key_map_for_update_stmt(self, param_map: Dict[str, Any]) -> List[str]:
         """Adds the appropriate formatting for update statements in this datastore."""
-        fields.sort()
-        return [f"{k} = :{k}" for k in fields]
+        return [f"{k} = :{v}" for k, v in param_map.items()]
 
     def get_update_clauses(
         self, update_value_map: Dict[str, Any], non_empty_primary_keys: Dict[str, Field]
     ) -> List[str]:
         """Returns a list of update clauses for the update statement."""
-        return self.format_key_map_for_update_stmt(list(update_value_map.keys()))
+        return self.format_key_map_for_update_stmt(update_value_map)
 
     def format_query_stmt(
         self, query_str: str, update_value_map: Dict[str, Any]
