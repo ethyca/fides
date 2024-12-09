@@ -15,7 +15,6 @@ from fides.api.graph.config import (
     ROOT_COLLECTION_ADDRESS,
     CollectionAddress,
     Field,
-    FieldAddress,
     FieldPath,
     MaskingTruncation,
 )
@@ -470,8 +469,8 @@ class SQLLikeQueryConfig(QueryConfig[T], ABC):
             list(non_empty_reference_fields.keys())
         )
 
-        # for k, v in non_empty_reference_fields.items():
-        #     update_value_map[k] = v
+        for k, v in non_empty_reference_fields.items():
+            update_value_map[k] = v
 
         valid = len(where_clauses) > 0 and len(update_clauses) > 0
         if not valid:
