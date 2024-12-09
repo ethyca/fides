@@ -21,6 +21,7 @@ from starlette.status import (
     HTTP_200_OK,
     HTTP_204_NO_CONTENT,
     HTTP_400_BAD_REQUEST,
+    HTTP_403_FORBIDDEN,
     HTTP_404_NOT_FOUND,
     HTTP_415_UNSUPPORTED_MEDIA_TYPE,
     HTTP_422_UNPROCESSABLE_ENTITY,
@@ -82,6 +83,7 @@ from fides.common.api.v1.urn_registry import (
     V1_URL_PREFIX,
     YAML_DATASETS,
 )
+from fides.config import CONFIG
 
 from fides.api.models.sql_models import (  # type: ignore[attr-defined] # isort: skip
     Dataset as CtlDataset,
@@ -856,6 +858,13 @@ def test_connection_datasets(
     fides_key: FidesKey,
     unlabeled_identities: UnlabeledIdentities,
 ) -> Dict[str, Any]:
+
+    if not CONFIG.security.dsr_testing_tools_enabled:
+        raise HTTPException(
+            status_code=HTTP_403_FORBIDDEN,
+            detail="DSR testing tools are not enabled.",
+        )
+
     dataset_config = DatasetConfig.filter(
         db=db,
         conditions=(
