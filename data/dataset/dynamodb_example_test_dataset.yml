@@ -19,8 +19,6 @@ dataset:
             data_categories: [system.operations]
           - name: email
             data_categories: [user.contact.email]
-            fides_meta:
-              primary_key: True
               identity: email
               data_type: string
           - name: name
@@ -33,8 +31,6 @@ dataset:
             data_categories: [user.contact.address.street]
           - name: id
             data_categories: [system.operations]
-            fides_meta:
-              primary_key: True
           - name: state
             data_categories: [user.contact.address.state]
           - name: street
@@ -59,16 +55,12 @@ dataset:
               data_type: string
           - name: id
             data_categories: [user.unique_id]
-            fides_meta:
-              primary_key: True
           - name: name
             data_categories: [user.name]
       - name: login
         fields:
           - name: customer_id
             data_categories: [user.unique_id]
-            fides_meta:
-              primary_key: True
           - name: login_date
             data_categories: [system.operations]
           - name: name

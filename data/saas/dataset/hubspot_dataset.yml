@@ -8,7 +8,6 @@ dataset:
           - name: id
             data_categories: [user.unique_id]
             fidesops_meta:
-              primary_key: True
               data_type: string
           - name: properties
             fidesops_meta:
@@ -117,7 +116,6 @@ dataset:
               - name: id
                 data_categories: [system.operations]
                 fidesops_meta:
-                  primary_key: True
                   data_type: string
               - name: name
                 data_categories: [system.operations]
@@ -152,7 +150,6 @@ dataset:
           - name: id
             data_categories: [user.unique_id]
             fidesops_meta:
-              primary_key: True
               data_type: string
           - name: email
             data_categories: [user.contact.email]

@@ -9,35 +9,30 @@ dataset:
             data_categories: [system.operations]
             fidesops_meta:
               data_type: integer
-              primary_key: True
       - name: refunds
         fields:
           - name: id
             data_categories: [system.operations]
             fidesops_meta:
               data_type: integer
-              primary_key: True
       - name: labels
         fields:
           - name: id
             data_categories: [system.operations]
             fidesops_meta:
               data_type: integer
-              primary_key: True
       - name: orders_to_refunds
         fields:
           - name: id
             data_categories: [system.operations]
             fidesops_meta:
               data_type: integer
-              primary_key: True
       - name: refunds_to_orders
         fields:
           - name: id
             data_categories: [system.operations]
             fidesops_meta:
               data_type: integer
-              primary_key: True
       - name: products
         fields:
           - name: id

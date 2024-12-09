@@ -41,8 +41,6 @@ dataset:
         fields:
           - name: id
             data_categories: [user.unique_id]
-            fidesops_meta:
-              primary_key: True
           - name: list_id
             data_categories: [system.operations]
           - name: email_address
