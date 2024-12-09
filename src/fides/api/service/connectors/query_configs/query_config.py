@@ -562,7 +562,7 @@ class SQLQueryConfig(SQLLikeQueryConfig[Executable]):
 
     def format_key_map_for_update_stmt(self, param_map: Dict[str, Any]) -> List[str]:
         """Adds the appropriate formatting for update statements in this datastore."""
-        return [f"{k} = :{v}" for k, v in param_map.items()]
+        return [f"{k} = :{v}" for k, v in sorted(param_map.items())]
 
     def get_update_clauses(
         self, update_value_map: Dict[str, Any], non_empty_primary_keys: Dict[str, Field]
