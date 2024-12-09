@@ -20,8 +20,11 @@ from fides.api.util.saas_util import (
     load_config_with_replacement,
     load_dataset_with_replacement,
 )
+from tests.ops.integration_tests.saas.connector_runner import (
+    ConnectorRunner,
+    generate_random_email,
+)
 from tests.ops.test_helpers.vault_client import get_secrets
-from tests.ops.integration_tests.saas.connector_runner import ConnectorRunner, generate_random_email
 
 secrets = get_secrets("stripe")
 
@@ -154,7 +157,6 @@ class StripeTestClient:
         )
         assert response.ok
 
-
         # charge
         response = requests.post(
             url=f"{self.base_url}/v1/charges",
@@ -184,6 +186,8 @@ class StripeTestClient:
             ),
         )
         assert response.ok
+
+        return card_id
 
     def create_bank_account(self, customer_id, customer_data):
         response = requests.post(
@@ -198,7 +202,9 @@ class StripeTestClient:
         response = requests.post(
             url=f"{self.base_url}/v1/customers/{customer_id}/sources/{bank_account_id}",
             headers=self.headers,
-            data=multidimensional_urlencode({"account_holder_name": customer_data["name"]}),
+            data=multidimensional_urlencode(
+                {"account_holder_name": customer_data["name"]}
+            ),
         )
         assert response.ok
 
@@ -224,7 +230,8 @@ class StripeTestClient:
 
         # finalize invoice
         response = requests.post(
-            url=f"{self.base_url}/v1/invoices/{invoice_id}/finalize", headers=self.headers
+            url=f"{self.base_url}/v1/invoices/{invoice_id}/finalize",
+            headers=self.headers,
         )
         assert response.ok
 
@@ -324,6 +331,8 @@ class StripeTestClient:
             ),
         )
         assert response.ok
+        subscription = response.json()
+        return subscription["id"]
 
     def create_tax(self, customer_id):
         # tax id
@@ -333,12 +342,31 @@ class StripeTestClient:
             data=multidimensional_urlencode({"type": "us_ein", "value": "000000000"}),
         )
         assert response.ok
+        tax = response.json()
+        return tax["id"]
 
     def delete_customer(self, customer_id):
-        response = requests.delete(
-        url=f"{self.base_url}/v1/customers/{customer_id}", headers=self.headers
+        requests.delete(
+            url=f"{self.base_url}/v1/customers/{customer_id}", headers=self.headers
         )
-        assert response.ok
+
+    def delete_card(self, customer_id, card_id):
+        requests.get(
+            url=f"{self.base_url}/v1/customers/{customer_id}/sources/{card_id}",
+            headers=self.headers,
+        )
+
+    def delete_tax_id(self, customer_id, tax_id):
+        requests.get(
+            url=f"{self.base_url}/v1/customers/{customer_id}/tax_ids/{tax_id}",
+            headers=self.headers,
+        )
+
+    def delete_subscription(self, subscription_id):
+        requests.get(
+            url=f"{self.base_url}/v1/subscriptions/{subscription_id}",
+            headers=self.headers,
+        )
 
     def get_customer(self, email):
         response = requests.get(
@@ -378,7 +406,8 @@ class StripeTestClient:
 
     def get_tax_ids(self, customer_id):
         response = requests.get(
-            url=f"{self.base_url}/v1/customers/{customer_id}/tax_ids", headers=self.headers
+            url=f"{self.base_url}/v1/customers/{customer_id}/tax_ids",
+            headers=self.headers,
         )
         tax_ids = response.json()["data"]
         return tax_ids
@@ -394,10 +423,12 @@ class StripeTestClient:
 
     def get_subscription(self, customer_id):
         response = requests.get(
-            url=f"{self.base_url}/v1/customers/{customer_id}/subscriptions", headers=self.headers
+            url=f"{self.base_url}/v1/customers/{customer_id}/subscriptions",
+            headers=self.headers,
         )
         subscriptions = response.json()["data"]
         return subscriptions
+
 
 @pytest.fixture(scope="function")
 def stripe_test_client(
@@ -405,6 +436,7 @@ def stripe_test_client(
 ) -> Generator:
     test_client = StripeTestClient(stripe_secrets)
     yield test_client
+
 
 @pytest.fixture(scope="function")
 def stripe_create_erasure_data(
@@ -439,11 +471,10 @@ def stripe_create_erasure_data(
         },
     }
 
-
     customer = stripe_test_client.create_customer(customer_data)
     customer_id = customer["id"]
 
-    stripe_test_client.create_dispute(customer_id, customer_data)
+    card_id = stripe_test_client.create_dispute(customer_id, customer_data)
 
     stripe_test_client.create_bank_account(customer_id, customer_data)
 
@@ -457,13 +488,17 @@ def stripe_create_erasure_data(
 
     stripe_test_client.create_payment_method(customer_id, customer_data["name"])
 
-    stripe_test_client.create_subscription(customer_id)
+    subscription_id = stripe_test_client.create_subscription(customer_id)
 
-    stripe_test_client.create_tax(customer_id)
+    tax_id = stripe_test_client.create_tax(customer_id)
 
     yield customer
 
     stripe_test_client.delete_customer(customer_id)
+    stripe_test_client.delete_card(customer_id, card_id)
+    stripe_test_client.delete_subscription(subscription_id)
+    stripe_test_client.delete_tax_id(customer_id, tax_id)
+
 
 # @pytest.fixture(scope="function")
 # def stripe_create_erasure_data(
@@ -700,6 +735,7 @@ def stripe_create_erasure_data(
 #         url=f"{base_url}/v1/customers/{customer_id}", headers=headers
 #     )
 #     assert response.ok
+
 
 @pytest.fixture
 def stripe_runner(

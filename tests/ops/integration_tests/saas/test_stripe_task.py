@@ -4,6 +4,7 @@ import pytest
 import requests
 
 from fides.api.graph.graph import DatasetGraph
+from fides.api.models.policy import Policy
 from fides.api.schemas.redis_cache import Identity
 from fides.api.service.connectors import get_connector
 from fides.api.task.filter_results import filter_data_categories
@@ -11,9 +12,8 @@ from fides.api.task.graph_task import get_cached_data_for_erasures
 from fides.config import CONFIG
 from tests.conftest import access_runner_tester, erasure_runner_tester
 from tests.ops.graph.graph_test_util import assert_rows_match
-from tests.ops.test_helpers.cache_secrets_helper import clear_cache_identities
 from tests.ops.integration_tests.saas.connector_runner import ConnectorRunner
-from fides.api.models.policy import Policy
+from tests.ops.test_helpers.cache_secrets_helper import clear_cache_identities
 
 
 @pytest.mark.integration_saas
@@ -99,7 +99,6 @@ class TestStripeConnector:
     #     for tax_id in access_results[f"{dataset_name}:tax_id"]:
     #         assert tax_id["customer"] == customer_id
 
-
     # @pytest.mark.parametrize(
     #     "dsr_version",
     #     ["use_dsr_3_0", "use_dsr_2_0"],
@@ -127,7 +126,6 @@ class TestStripeConnector:
     #     # it is the same customer that we retrieved using the identity email
     #     assert access_results[f"{dataset_name}:customer"][0]["phone"] == stripe_identity_phone_number
     #     assert access_results[f"{dataset_name}:customer"][0]["email"] == stripe_identity_email
-
 
     @pytest.mark.integration_saas
     @pytest.mark.asyncio
@@ -159,7 +157,6 @@ class TestStripeConnector:
             erasure_policy=erasure_policy_string_rewrite,
             identities={"email": stripe_erasure_identity_email},
         )
-
 
         # verify masking request was issued for endpoints with both update/delete actions
         assert erasure_results == {

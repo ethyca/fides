@@ -8,6 +8,7 @@ from fides.api.cryptography import cryptographic_util
 from fides.api.graph.config import CollectionAddress, GraphDataset
 from fides.api.graph.graph import DatasetGraph
 from fides.api.graph.traversal import Traversal, TraversalNode
+from fides.api.models.application_config import ApplicationConfig
 from fides.api.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
@@ -49,7 +50,6 @@ from fides.api.util.saas_util import (
     load_dataset_with_replacement,
 )
 from fides.config import get_config
-from fides.api.models.application_config import ApplicationConfig
 
 CONFIG = get_config()
 
