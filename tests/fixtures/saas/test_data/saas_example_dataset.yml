@@ -185,6 +185,7 @@ dataset:
         fields:
           - name: id
             data_categories: [system.operations]
+            fidesops_meta:
               read_only: True
           - name: name
             fields:
