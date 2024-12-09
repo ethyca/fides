@@ -23,6 +23,7 @@ from fides.api.util.saas_util import (
 from tests.ops.integration_tests.saas.connector_runner import (
     ConnectorRunner,
     generate_random_email,
+    generate_random_phone_number,
 )
 from tests.ops.test_helpers.vault_client import get_secrets
 
@@ -45,14 +46,11 @@ def stripe_identity_email():
 
 
 @pytest.fixture
-def stripe_identity_phone_number(saas_config):
-    return (
-        pydash.get(saas_config, "stripe.identity_phone_number")
-        or secrets["identity_phone_number"]
-    )
+def stripe_identity_phone_number():
+    return generate_random_phone_number()
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture
 def stripe_erasure_identity_email():
     return generate_random_email()
 
@@ -440,7 +438,9 @@ def stripe_test_client(
 
 @pytest.fixture(scope="function")
 def stripe_create_data(
-    stripe_test_client: StripeTestClient, stripe_identity_email: str
+    stripe_test_client: StripeTestClient,
+    stripe_identity_email: str,
+    stripe_identity_phone_number: str,
 ) -> Generator:
 
     # customer
@@ -456,6 +456,7 @@ def stripe_create_data(
         "balance": 0,
         "description": "RTF Test Customer",
         "email": stripe_identity_email,
+        "phone": stripe_identity_phone_number,
         "name": "Ethyca RTF",
         "preferred_locales": ["en-US"],
         "shipping": {
@@ -472,6 +473,7 @@ def stripe_create_data(
     }
 
     customer = stripe_test_client.create_customer(customer_data)
+
     customer_id = customer["id"]
 
     card_id = stripe_test_client.create_dispute(customer_id, customer_data)
@@ -498,243 +500,6 @@ def stripe_create_data(
     stripe_test_client.delete_card(customer_id, card_id)
     stripe_test_client.delete_subscription(subscription_id)
     stripe_test_client.delete_tax_id(customer_id, tax_id)
-
-
-# @pytest.fixture(scope="function")
-# def stripe_create_erasure_data(
-#     stripe_connection_config: ConnectionConfig, stripe_erasure_identity_email
-# ) -> Generator:
-#     stripe_secrets = stripe_connection_config.secrets
-
-#     base_url = f"https://{stripe_secrets['domain']}"
-
-#     headers = {
-#         "Content-Type": "application/x-www-form-urlencoded",
-#         "Authorization": f"Bearer {stripe_secrets['api_key']}",
-#     }
-
-#     # customer
-#     customer_data = {
-#         "address": {
-#             "city": "Anaheim",
-#             "country": "US",
-#             "line1": "123 Fake St",
-#             "line2": "Apt 1",
-#             "postal_code": "92882",
-#             "state": "CA",
-#         },
-#         "balance": 0,
-#         "description": "RTF Test Customer",
-#         "email": stripe_erasure_identity_email,
-#         "name": "Ethyca RTF",
-#         "preferred_locales": ["en-US"],
-#         "shipping": {
-#             "address": {
-#                 "city": "Anaheim",
-#                 "country": "US",
-#                 "line1": "123 Fake St",
-#                 "line2": "Apt 1",
-#                 "postal_code": "92882",
-#                 "state": "CA",
-#             },
-#             "name": "Ethyca RTF",
-#         },
-#     }
-
-#     response = requests.post(
-#         url=f"{base_url}/v1/customers",
-#         headers=headers,
-#         data=multidimensional_urlencode(customer_data),
-#     )
-#     assert response.ok
-#     customer = response.json()
-#     customer_id = customer["id"]
-
-#     # create dispute by adding a fraudulent card and charging it
-#     response = requests.post(
-#         url=f"{base_url}/v1/customers/{customer['id']}",
-#         headers=headers,
-#         data=multidimensional_urlencode({"source": "tok_createDispute"}),
-#     )
-#     assert response.ok
-#     card = response.json()["sources"]["data"][0]
-#     card_id = card["id"]
-
-#     # update card name to have something to mask
-#     response = requests.post(
-#         url=f"{base_url}/v1/customers/{customer_id}/sources/{card_id}",
-#         headers=headers,
-#         data=multidimensional_urlencode({"name": customer_data["name"]}),
-#     )
-#     assert response.ok
-
-#     # charge
-#     response = requests.post(
-#         url=f"{base_url}/v1/charges",
-#         headers=headers,
-#         data=multidimensional_urlencode(
-#             {
-#                 "customer": customer_id,
-#                 "source": card_id,
-#                 "amount": 1000,
-#                 "currency": "usd",
-#             }
-#         ),
-#     )
-#     assert response.ok
-
-#     # bank account
-#     response = requests.post(
-#         url=f"{base_url}/v1/customers/{customer_id}/sources",
-#         headers=headers,
-#         data=multidimensional_urlencode({"source": "btok_us_verified"}),
-#     )
-#     assert response.ok
-#     bank_account = response.json()
-#     bank_account_id = bank_account["id"]
-#     # update bank account holder name to have something to mask
-#     response = requests.post(
-#         url=f"{base_url}/v1/customers/{customer_id}/sources/{bank_account_id}",
-#         headers=headers,
-#         data=multidimensional_urlencode({"account_holder_name": customer_data["name"]}),
-#     )
-#     assert response.ok
-
-#     # invoice item
-#     response = requests.post(
-#         url=f"{base_url}/v1/invoiceitems",
-#         headers=headers,
-#         params={"customer": customer_id},
-#         data=multidimensional_urlencode({"amount": 200, "currency": "usd"}),
-#     )
-#     assert response.ok
-
-#     # pulls in the previously created invoice item automatically to create the invoice
-#     response = requests.post(
-#         url=f"{base_url}/v1/invoices",
-#         headers=headers,
-#         params={"customer": customer_id},
-#     )
-#     assert response.ok
-#     invoice = response.json()
-#     invoice_id = invoice["id"]
-
-#     # finalize invoice
-#     response = requests.post(
-#         url=f"{base_url}/v1/invoices/{invoice_id}/finalize", headers=headers
-#     )
-#     assert response.ok
-
-#     # credit note
-#     response = requests.post(
-#         url=f"{base_url}/v1/credit_notes",
-#         headers=headers,
-#         params={"invoice": invoice_id},
-#         data=multidimensional_urlencode(
-#             {
-#                 "lines[0]": {
-#                     "type": "invoice_line_item",
-#                     "invoice_line_item": invoice["lines"]["data"][0]["id"],
-#                     "quantity": 1,
-#                 }
-#             }
-#         ),
-#     )
-#     assert response.ok
-
-#     # customer balance transaction
-#     response = requests.post(
-#         url=f"{base_url}/v1/customers/{customer_id}/balance_transactions",
-#         headers=headers,
-#         data=multidimensional_urlencode({"amount": -500, "currency": "usd"}),
-#     )
-#     assert response.ok
-
-#     # payment intent
-#     response = requests.post(
-#         url=f"{base_url}/v1/payment_intents",
-#         headers=headers,
-#         data=multidimensional_urlencode(
-#             {
-#                 "customer": customer_id,
-#                 "amount": 2000,
-#                 "currency": "usd",
-#                 "payment_method_types[]": "card",
-#                 "confirm": True,
-#             }
-#         ),
-#     )
-#     assert response.ok
-
-#     # create and attach payment method to customer
-#     response = requests.post(
-#         url=f"{base_url}/v1/payment_methods",
-#         headers=headers,
-#         data=multidimensional_urlencode(
-#             {
-#                 "type": "card",
-#                 "card": {
-#                     "number": 4242424242424242,
-#                     "exp_month": 4,
-#                     "exp_year": datetime.today().year + 1,
-#                     "cvc": 314,
-#                 },
-#                 "billing_details": {"name": customer_data["name"]},
-#             }
-#         ),
-#     )
-#     assert response.ok
-#     payment_method = response.json()
-#     payment_method_id = payment_method["id"]
-
-#     response = requests.post(
-#         url=f"{base_url}/v1/payment_methods/{payment_method_id}/attach",
-#         params={"customer": customer_id},
-#         headers=headers,
-#     )
-#     assert response.ok
-
-#     # setup intent
-#     response = requests.post(
-#         url=f"{base_url}/v1/setup_intents",
-#         params={"customer": customer_id, "payment_method_types[]": "card"},
-#         headers=headers,
-#     )
-#     assert response.ok
-
-#     # get an existing price and use it to create a subscription
-#     response = requests.get(
-#         url=f"{base_url}/v1/prices",
-#         params={"type": "recurring"},
-#         headers=headers,
-#     )
-#     assert response.ok
-#     price = response.json()["data"][0]
-#     price_id = price["id"]
-
-#     response = requests.post(
-#         url=f"{base_url}/v1/subscriptions",
-#         headers=headers,
-#         data=multidimensional_urlencode(
-#             {"customer": customer_id, "items[0]": {"price": price_id}}
-#         ),
-#     )
-#     assert response.ok
-
-#     # tax id
-#     response = requests.post(
-#         url=f"{base_url}/v1/customers/{customer_id}/tax_ids",
-#         headers=headers,
-#         data=multidimensional_urlencode({"type": "us_ein", "value": "000000000"}),
-#     )
-#     assert response.ok
-
-#     yield customer
-
-#     response = requests.delete(
-#         url=f"{base_url}/v1/customers/{customer_id}", headers=headers
-#     )
-#     assert response.ok
 
 
 @pytest.fixture

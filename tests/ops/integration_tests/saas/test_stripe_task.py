@@ -115,6 +115,7 @@ class TestStripeConnector:
         request,
         stripe_identity_email,
         stripe_identity_phone_number,
+        stripe_create_data,
     ) -> None:
         """Full access request based on the Stripe SaaS config"""
         request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
@@ -138,7 +139,6 @@ class TestStripeConnector:
             == stripe_identity_email
         )
 
-    @pytest.mark.skip
     @pytest.mark.integration_saas
     @pytest.mark.asyncio
     @pytest.mark.parametrize(
