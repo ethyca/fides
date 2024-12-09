@@ -98,6 +98,15 @@ const IndexPage = ({ gtmContainerId, privacyCenterUrl, products }: Props) => {
           `}
         </Script>
       ) : null}
+      {/* Support for Flutter InAppWebView communication https://inappwebview.dev/docs/webview/javascript/communication */}
+      {/* eslint-disable-next-line @next/next/no-before-interactive-script-outside-document */}
+      <Script id="flutter-inappwebview" strategy="beforeInteractive">
+        {`window.addEventListener("FidesInitialized", function() {
+            Fides.onFidesEvent("FidesUpdated", (detail) => {
+              window.flutter_inappwebview?.callHandler('FidesUpdated', detail);
+            });
+          }, {once: true});`}
+      </Script>
       <Home privacyCenterUrl={privacyCenterUrl} products={products} />
     </>
   );

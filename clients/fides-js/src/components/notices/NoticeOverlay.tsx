@@ -258,12 +258,12 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
     if (isConsentOverride(options) && experience.privacy_notices) {
       if (options.fidesConsentOverride === ConsentMethod.ACCEPT) {
         fidesDebugger(
-          "Consent automatically accepted by fides_accept_all override!",
+          "Consent automatically accepted by fides_consent_override!",
         );
         handleAcceptAll(true);
       } else if (options.fidesConsentOverride === ConsentMethod.REJECT) {
         fidesDebugger(
-          "Consent automatically rejected by fides_reject_all override!",
+          "Consent automatically rejected by fides_consent_override!",
         );
         handleRejectAll(true);
       }
