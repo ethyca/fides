@@ -129,8 +129,6 @@ class OAuth2AuthenticationStrategyBase(AuthenticationStrategy):
         Persists and returns the new access token.
         Also updates the refresh token if one is provided.
         """
-        logger.info("Validating the following response: {}", response)
-        logger.info("Response Values: {}", response.values())
 
         access_token = response.get("access_token")
 
@@ -158,7 +156,6 @@ class OAuth2AuthenticationStrategyBase(AuthenticationStrategy):
         # https://datatracker.ietf.org/doc/html/rfc6749#section-6
 
         refresh_token = response.get("refresh_token")
-        logger.info("Retrieved Refresh Token: {}", refresh_token)
         if refresh_token:
             data["refresh_token"] = refresh_token
 
@@ -171,8 +168,6 @@ class OAuth2AuthenticationStrategyBase(AuthenticationStrategy):
         # by the optional expires_in field of the OAuth2AuthenticationConfiguration
 
         expires_in = self.expires_in or response.get("expires_in")
-        logger.info("Retrieved Expires In: {}", expires_in)
-
         if expires_in:
             data["expires_at"] = int(datetime.utcnow().timestamp()) + expires_in
 
@@ -208,10 +203,6 @@ class OAuth2AuthenticationStrategyBase(AuthenticationStrategy):
         Persists and returns a refreshed access_token if the token is close to expiring.
         Otherwise just returns the existing access_token.
         """
-
-        logger.info("Checking if the access token for {} needs to be refreshed", connection_config.key)
-        logger.info("Value of refresh Request is {}", self.refresh_request)
-        logger.info('Value of Expires at is {}', connection_config.secrets.get("expires_at"))
 
         if self.refresh_request:
             expires_at = connection_config.secrets.get("expires_at")  # type: ignore

@@ -2,7 +2,6 @@ from typing import List, Optional
 from urllib.parse import urlencode
 from uuid import uuid4
 
-from loguru import logger
 from requests import PreparedRequest
 from sqlalchemy.orm import Session
 
@@ -39,12 +38,11 @@ class OAuth2AuthorizationCodeAuthenticationStrategy(OAuth2AuthenticationStrategy
         Checks the expiration date on the existing access token and refreshes if necessary.
         The existing/updated access token is then added to the request as a bearer token.
         """
-        logger.info("Adding OAuth2 authorization code authentication to request")
+
         # make sure required secrets have been provided
         self._check_required_secrets(connection_config)
 
         access_token = connection_config.secrets.get("access_token")  # type: ignore
-        logger.info("Current Access Token: {}", access_token)
         if not access_token:
             raise FidesopsException(
                 f"OAuth2 access token not found for {connection_config.key}, please "

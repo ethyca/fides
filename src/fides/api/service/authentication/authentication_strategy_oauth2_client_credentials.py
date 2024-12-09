@@ -1,4 +1,3 @@
-from loguru import logger
 from requests import PreparedRequest
 
 from fides.api.models.connectionconfig import ConnectionConfig
@@ -24,9 +23,8 @@ class OAuth2ClientCredentialsAuthenticationStrategy(OAuth2AuthenticationStrategy
         Checks the expiration date on the existing access token and refreshes if necessary.
         The existing/updated access token is then added to the request as a bearer token.
         """
-        logger.info("Adding OAuth2 client credentials authentication to request")
+
         access_token = connection_config.secrets.get("access_token")  # type: ignore
-        logger.info("Current Access Token: {}", access_token)
         if not access_token:
             access_token = self.get_access_token(connection_config)
         else:
