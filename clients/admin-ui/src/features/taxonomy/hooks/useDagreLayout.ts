@@ -14,11 +14,11 @@ interface UseTreeLayoutProps {
 const NODE_WIDTH = 220;
 const NODE_HEIGHT = 25;
 
-const useTreeLayout = ({ nodes, edges, options }: UseTreeLayoutProps) => {
+const useDagreLayout = ({ nodes, edges, options }: UseTreeLayoutProps) => {
   const layouted = useMemo(() => {
     const g = new Dagre.graphlib.Graph().setDefaultEdgeLabel(() => ({}));
     g.setGraph({
-      rankdir: options.direction,
+      rankdir: "LR",
       ranksep: 200,
       nodesep: 20,
     });
@@ -31,7 +31,6 @@ const useTreeLayout = ({ nodes, edges, options }: UseTreeLayoutProps) => {
         height: NODE_HEIGHT,
       });
     });
-
     Dagre.layout(g, {
       disableOptimalOrderHeuristic: options.stableOrder,
     });
@@ -52,4 +51,4 @@ const useTreeLayout = ({ nodes, edges, options }: UseTreeLayoutProps) => {
 
   return layouted;
 };
-export default useTreeLayout;
+export default useDagreLayout;

@@ -17,7 +17,7 @@ import { useEffect, useMemo } from "react";
 
 import { TAXONOMY_ROOT_NODE_ID } from "../constants";
 import { TaxonomyTreeHoverProvider } from "../context/TaxonomyTreeHoverContext";
-import useTreeLayout from "../hooks/useTreeLayout";
+import useD3HierarchyLayout from "../hooks/useD3HierarchyLayout";
 import { TaxonomyEntity } from "../types";
 import { CoreTaxonomiesEnum } from "../types/CoreTaxonomiesEnum";
 import TaxonomyTextInputNode, {
@@ -69,16 +69,21 @@ const TaxonomyInteractiveTree = ({
   const nodes: Node[] = [rootNode];
   const edges: Edge[] = [];
 
-  // Add one node for each label in the taxonomy
   taxonomyItems.forEach((taxonomyItem) => {
+    // Add one node for each label in the taxonomy
     const label =
       taxonomyItem.name || taxonomyItem.fides_key.split(".").pop() || "";
+    const parentKey = taxonomyItem.parent_key || TAXONOMY_ROOT_NODE_ID;
+
     const node: TaxonomyTreeNodeType = {
       id: taxonomyItem.fides_key,
       position: { x: 0, y: 0 },
       data: {
         label,
-        taxonomyItem,
+        taxonomyItem: {
+          ...taxonomyItem,
+          parent_key: parentKey,
+        },
         onTaxonomyItemClick,
         onAddButtonClick,
         hasChildren: false,
@@ -86,20 +91,18 @@ const TaxonomyInteractiveTree = ({
       type: "taxonomyTreeNode",
     };
     nodes.push(node);
-  });
 
-  // Add lines between each label and their parent (if it has one)
-  taxonomyItems.forEach((taxonomyItem) => {
-    const parentKey = taxonomyItem.parent_key || TAXONOMY_ROOT_NODE_ID;
-    edges.push({
+    // Add lines between each label and their parent (if it has one)
+    const newEdge = {
       id: `${parentKey}-${taxonomyItem.fides_key}`,
       source: parentKey,
       target: taxonomyItem.fides_key,
       type: "taxonomyTreeEdge",
-    });
+    };
+    edges.push(newEdge);
 
     // Update hasChildren for parent to true
-    const parentNode = nodes.find((node) => node.id === parentKey);
+    const parentNode = nodes.find((n) => n.id === parentKey);
     if (parentNode) {
       parentNode.data.hasChildren = true;
     }
@@ -135,14 +138,15 @@ const TaxonomyInteractiveTree = ({
   }
 
   // use the layout library to place all nodes nicely on the screen as a tree
-  const { nodes: nodesAfterLayout, edges: edgesAfterLayout } = useTreeLayout({
-    nodes,
-    edges,
-    options: {
-      direction: "LR",
-      stableOrder: true,
-    },
-  });
+  const { nodes: nodesAfterLayout, edges: edgesAfterLayout } =
+    useD3HierarchyLayout({
+      nodes,
+      edges,
+      options: {
+        direction: "LR",
+        stableOrder: true,
+      },
+    });
 
   const nodeTypes: NodeTypes = useMemo(
     () => ({
