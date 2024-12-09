@@ -42,8 +42,6 @@ class OAuth2ClientCredentialsAuthenticationStrategy(OAuth2AuthenticationStrategy
         For Client Credentials OAuth we are not using a refresh request
         """
 
-        logger.info("Checking if the access token for {} needs to be refreshed for a Client Credentials", connection_config.key)
-        logger.info('Value of Expires at is {}', connection_config.secrets.get("expires_at"))
 
         expires_at = connection_config.secrets.get("expires_at")  # type: ignore
         if self._close_to_expiration(expires_at, connection_config):
