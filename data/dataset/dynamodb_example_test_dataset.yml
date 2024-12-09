@@ -19,6 +19,7 @@ dataset:
             data_categories: [system.operations]
           - name: email
             data_categories: [user.contact.email]
+            fides_meta:
               identity: email
               data_type: string
           - name: name

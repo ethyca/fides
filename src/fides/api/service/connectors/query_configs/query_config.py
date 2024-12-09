@@ -453,31 +453,19 @@ class SQLLikeQueryConfig(QueryConfig[T], ABC):
             }
         )
 
-        # Identify overlapping fields and create parameter mappings
-        overlapping_keys = set(update_value_map.keys()) & set(
-            non_empty_reference_fields.keys()
-        )
+        # Create parameter mappings with masked_ prefix for SET values
         param_map = {
-            **{k: v for k, v in update_value_map.items()},  # SET values
-            **{
-                f"where_{k}" if k in overlapping_keys else k: v
-                for k, v in non_empty_reference_fields.items()
-            },  # WHERE values
+            **{f"masked_{k}": v for k, v in update_value_map.items()},
+            **non_empty_reference_fields,
         }
 
-        # Generate SQL clauses using parameter names
         update_clauses = self.get_update_clauses(
-            {k: k for k in update_value_map}, non_empty_reference_fields
+            {k: f"masked_{k}" for k in update_value_map},
+            non_empty_reference_fields,
         )
         where_clauses = self.format_key_map_for_update_stmt(
-            {
-                k: f"where_{k}" if k in overlapping_keys else k
-                for k in non_empty_reference_fields
-            }
+            {k: k for k in non_empty_reference_fields}
         )
-
-        for k, v in non_empty_reference_fields.items():
-            update_value_map[k] = v
 
         valid = len(where_clauses) > 0 and len(update_clauses) > 0
         if not valid:

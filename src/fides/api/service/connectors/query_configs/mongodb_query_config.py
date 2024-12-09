@@ -72,7 +72,7 @@ class MongoQueryConfig(QueryConfig[MongoStatement]):
         where_clauses: Dict[str, Any] = filter_nonempty_values(
             {
                 field_path.string_path: field.cast(row[field_path.string_path])
-                for field_path, field in self.primary_key_field_paths.items()
+                for field_path, field in self.identity_or_reference_field_paths.items()
             }
         )
 

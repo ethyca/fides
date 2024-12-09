@@ -79,6 +79,7 @@ dataset:
         fields:
           - name: _id
             data_categories: [system.operations]
+            fides_meta:
               data_type: object_id
           - name: customer_identifiers
             fields:
@@ -108,6 +109,7 @@ dataset:
         fields:
           - name: _id
             data_categories: [system.operations]
+            fides_meta:
               data_type: object_id
           - name: customer_information
             fields:
@@ -139,6 +141,7 @@ dataset:
         fields:
           - name: _id
             data_categories: [system.operations]
+            fides_meta:
               data_type: object_id
           - name: passenger_information
             fields:
@@ -167,6 +170,7 @@ dataset:
         fields:
           - name: _id
             data_categories: [system.operations]
+            fides_meta:
               data_type: object_id
           - name: thread
             fides_meta:
@@ -190,6 +194,7 @@ dataset:
         fields:
           - name: _id
             data_categories: [system.operations]
+            fides_meta:
               data_type: object_id
           - name: email
             data_categories: [user.contact.email]
@@ -198,10 +203,10 @@ dataset:
               data_type: string
           - name: id
             data_categories: [user.unique_id]
-              references:
-                - dataset: mongo_test
-                  field: flights.pilots
-                  direction: from
+            references:
+              - dataset: mongo_test
+                field: flights.pilots
+                direction: from
           - name: name
             data_categories: [user.name]
             fides_meta:
@@ -210,6 +215,7 @@ dataset:
         fields:
           - name: _id
             data_categories: [system.operations]
+            fides_meta:
               data_type: object_id
           - name: planes
             data_categories: [system.operations]
@@ -227,6 +233,7 @@ dataset:
         fields:
           - name: _id
             data_categories: [system.operations]
+            fides_meta:
               data_type: object_id
           - name: billing_address_id
             data_categories: [system.operations]
@@ -250,6 +257,7 @@ dataset:
       - name: rewards
         fields:
           - name: _id
+            fides_meta:
               data_type: object_id
           - name: owner
             fides_meta:
