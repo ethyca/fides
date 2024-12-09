@@ -38,7 +38,8 @@ class OAuth2ClientCredentialsAuthenticationStrategy(OAuth2AuthenticationStrategy
         """
         Persists and returns a refreshed access_token if the token is close to expiring.
         Otherwise just returns the existing access_token.
-        For Client Credentials OAuth we are not using a refresh request
+
+        For the Client Credentials OAuth flow we reuse the access request to get a new token.
         """
 
         expires_at = connection_config.secrets.get("expires_at")  # type: ignore
