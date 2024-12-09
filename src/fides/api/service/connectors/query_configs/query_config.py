@@ -101,8 +101,8 @@ class QueryConfig(Generic[T], ABC):
         }
 
     @property
-    def identity_or_reference_field_paths(self) -> Dict[FieldPath, Field]:
-        """Mapping of FieldPaths to Fields that have identity or dataset references"""
+    def incoming_field_paths(self) -> Dict[FieldPath, Field]:
+        """Mapping of FieldPaths to Fields that have incoming identity or dataset references"""
         return {
             field_path: field
             for field_path, field in self.field_map().items()
@@ -450,7 +450,7 @@ class SQLLikeQueryConfig(QueryConfig[T], ABC):
         non_empty_reference_fields: Dict[str, Field] = filter_nonempty_values(
             {
                 fpath.string_path: fld.cast(row[fpath.string_path])
-                for fpath, fld in self.identity_or_reference_field_paths.items()
+                for fpath, fld in self.incoming_field_paths.items()
                 if fpath.string_path in row
             }
         )
