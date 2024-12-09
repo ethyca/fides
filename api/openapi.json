@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.50.0"
+    "version": "2.51.0"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -3286,6 +3286,23 @@
               "default": false,
               "title": "Show Hidden"
             }
+          },
+          {
+            "name": "show_deleted",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": false,
+              "title": "Show Deleted"
+            }
           }
         ],
         "responses": {
@@ -5685,6 +5702,193 @@
             ]
           }
         ]
+      }
+    },
+    "/api/v1/connection/{connection_key}/dataset/{fides_key}/inputs": {
+      "get": {
+        "tags": [
+          "Dataset Configs"
+        ],
+        "summary": "Dataset Identities And References",
+        "description": "Returns a dictionary containing the immediate identity and dataset reference\ndependencies for the given dataset.",
+        "operationId": "dataset_identities_and_references_api_v1_connection__connection_key__dataset__fides_key__inputs_get",
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "dataset:read"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "name": "fides_key",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Fides Key"
+            }
+          },
+          {
+            "name": "connection_key",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Connection Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "title": "Response Dataset Identities And References Api V1 Connection  Connection Key  Dataset  Fides Key  Inputs Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/connection/{connection_key}/dataset/{fides_key}/reachability": {
+      "get": {
+        "tags": [
+          "Dataset Configs"
+        ],
+        "summary": "Dataset Reachability",
+        "description": "Returns a dictionary containing the immediate identity and dataset reference\ndependencies for the given dataset.",
+        "operationId": "dataset_reachability_api_v1_connection__connection_key__dataset__fides_key__reachability_get",
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "dataset:read"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "name": "fides_key",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Fides Key"
+            }
+          },
+          {
+            "name": "connection_key",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Connection Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DatasetReachability"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/connection/{connection_key}/dataset/{fides_key}/test": {
+      "post": {
+        "tags": [
+          "Dataset Configs"
+        ],
+        "summary": "Test Connection Datasets",
+        "operationId": "test_connection_datasets_api_v1_connection__connection_key__dataset__fides_key__test_post",
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "dataset:test"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "name": "fides_key",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Fides Key"
+            }
+          },
+          {
+            "name": "connection_key",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Connection Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UnlabeledIdentities"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TestPrivacyRequest"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/api/v1/drp/exercise": {
@@ -9938,6 +10142,56 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/PrivacyRequestAccessResults"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/privacy-request/{privacy_request_id}/filtered-results": {
+      "get": {
+        "tags": [
+          "Privacy Requests"
+        ],
+        "summary": "Get Test Privacy Request Results",
+        "description": "Get filtered results for a test privacy request and update its status if complete.",
+        "operationId": "get_test_privacy_request_results_api_v1_privacy_request__privacy_request_id__filtered_results_get",
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "privacy-request-access-results:read"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "name": "privacy_request_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Privacy Request Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FilteredPrivacyRequestResults"
                 }
               }
             }
@@ -15859,6 +16113,48 @@
       },
       "DataCategoryCreate": {
         "properties": {
+          "version_added": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Version Added",
+            "description": "The version of Fideslang in which this label was added."
+          },
+          "version_deprecated": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Version Deprecated",
+            "description": "The version of Fideslang in which this label was deprecated."
+          },
+          "replaced_by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Replaced By",
+            "description": "The new name, if applicable, for this label after deprecation."
+          },
+          "is_default": {
+            "type": "boolean",
+            "title": "Is Default",
+            "description": "Denotes whether the resource is part of the default taxonomy or not.",
+            "default": false
+          },
           "name": {
             "anyOf": [
               {
@@ -15889,11 +16185,6 @@
               }
             ],
             "title": "Fides Key"
-          },
-          "is_default": {
-            "type": "boolean",
-            "title": "Is Default",
-            "default": false
           },
           "tags": {
             "anyOf": [
@@ -16116,6 +16407,48 @@
       },
       "DataSubjectCreate": {
         "properties": {
+          "version_added": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Version Added",
+            "description": "The version of Fideslang in which this label was added."
+          },
+          "version_deprecated": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Version Deprecated",
+            "description": "The version of Fideslang in which this label was deprecated."
+          },
+          "replaced_by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Replaced By",
+            "description": "The new name, if applicable, for this label after deprecation."
+          },
+          "is_default": {
+            "type": "boolean",
+            "title": "Is Default",
+            "description": "Denotes whether the resource is part of the default taxonomy or not.",
+            "default": false
+          },
           "name": {
             "anyOf": [
               {
@@ -16146,11 +16479,6 @@
               }
             ],
             "title": "Fides Key"
-          },
-          "is_default": {
-            "type": "boolean",
-            "title": "Is Default",
-            "default": false
           },
           "tags": {
             "anyOf": [
@@ -16388,6 +16716,48 @@
       },
       "DataUseCreate": {
         "properties": {
+          "version_added": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Version Added",
+            "description": "The version of Fideslang in which this label was added."
+          },
+          "version_deprecated": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Version Deprecated",
+            "description": "The version of Fideslang in which this label was deprecated."
+          },
+          "replaced_by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Replaced By",
+            "description": "The new name, if applicable, for this label after deprecation."
+          },
+          "is_default": {
+            "type": "boolean",
+            "title": "Is Default",
+            "description": "Denotes whether the resource is part of the default taxonomy or not.",
+            "default": false
+          },
           "name": {
             "anyOf": [
               {
@@ -16418,11 +16788,6 @@
               }
             ],
             "title": "Fides Key"
-          },
-          "is_default": {
-            "type": "boolean",
-            "title": "Is Default",
-            "default": false
           },
           "tags": {
             "anyOf": [
@@ -16853,6 +17218,32 @@
         "type": "object",
         "title": "DatasetMetadata",
         "description": "The DatasetMetadata resource model.\n\nObject used to hold application specific metadata for a dataset"
+      },
+      "DatasetReachability": {
+        "properties": {
+          "reachable": {
+            "type": "boolean",
+            "title": "Reachable"
+          },
+          "details": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Details"
+          }
+        },
+        "type": "object",
+        "required": [
+          "reachable",
+          "details"
+        ],
+        "title": "DatasetReachability",
+        "description": "Response containing reachability details for a single dataset"
       },
       "DatasetTraversalDetails": {
         "properties": {
@@ -17916,6 +18307,29 @@
         ],
         "title": "FieldsAffectedResponse",
         "description": "Schema detailing the individual fields affected by a particular query detailed in the ExecutionLog"
+      },
+      "FilteredPrivacyRequestResults": {
+        "properties": {
+          "privacy_request_id": {
+            "type": "string",
+            "title": "Privacy Request Id"
+          },
+          "status": {
+            "$ref": "#/components/schemas/PrivacyRequestStatus"
+          },
+          "results": {
+            "type": "object",
+            "title": "Results"
+          }
+        },
+        "type": "object",
+        "required": [
+          "privacy_request_id",
+          "status",
+          "results"
+        ],
+        "title": "FilteredPrivacyRequestResults",
+        "description": "Schema representing the status and results of a test privacy request"
       },
       "Generate": {
         "properties": {
@@ -22293,10 +22707,11 @@
           "Privacy Center",
           "Request Manager",
           "Consent Webhook",
-          "Fides.js"
+          "Fides.js",
+          "Dataset Test"
         ],
         "title": "PrivacyRequestSource",
-        "description": "The source where the privacy request originated from\n\n- Privacy Center: Request created from the Privacy Center\n- Request Manager: Request submitted from the Admin UI's Request manager page\n- Consent Webhook: Request created as a side-effect of a consent webhook request (bidirectional consent)\n- Fides.js: Request created as a side-effect of a privacy preference update from Fides.js"
+        "description": "The source where the privacy request originated from\n\n- Privacy Center: Request created from the Privacy Center\n- Request Manager: Request submitted from the Admin UI's Request manager page\n- Consent Webhook: Request created as a side-effect of a consent webhook request (bidirectional consent)\n- Fides.js: Request created as a side-effect of a privacy preference update from Fides.js\n- Dataset Test: Standalone dataset test"
       },
       "PrivacyRequestStatus": {
         "type": "string",
@@ -24161,6 +24576,7 @@
           "dataset:create_or_update",
           "dataset:delete",
           "dataset:read",
+          "dataset:test",
           "encryption:exec",
           "messaging-template:update",
           "evaluation:create",
@@ -25718,6 +26134,20 @@
         "title": "TestMessagingStatusMessage",
         "description": "A schema for testing functionality of a messaging config."
       },
+      "TestPrivacyRequest": {
+        "properties": {
+          "privacy_request_id": {
+            "type": "string",
+            "title": "Privacy Request Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "privacy_request_id"
+        ],
+        "title": "TestPrivacyRequest",
+        "description": "Schema containing the data for a test privacy request"
+      },
       "TestStatus": {
         "type": "string",
         "enum": [
@@ -25831,6 +26261,20 @@
         ],
         "title": "TimescaleDocsSchema",
         "description": "TimescaleDB Secrets Schema for API Docs"
+      },
+      "UnlabeledIdentities": {
+        "properties": {
+          "data": {
+            "type": "object",
+            "title": "Data"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "title": "UnlabeledIdentities",
+        "description": "A model for validating identity dictionaries where standard fields use Identity's validation\nbut custom fields just need to be valued."
       },
       "UserCreate": {
         "properties": {
