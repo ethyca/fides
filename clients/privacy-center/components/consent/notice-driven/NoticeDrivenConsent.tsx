@@ -25,6 +25,7 @@ import { inspectForBrowserIdentities } from "~/common/browser-identities";
 import { useLocalStorage } from "~/common/hooks";
 import useI18n from "~/common/hooks/useI18n";
 import { ErrorToastOptions, SuccessToastOptions } from "~/common/toast-options";
+import BrandLink from "~/components/BrandLink";
 import { useProperty } from "~/features/common/property.slice";
 import {
   selectPrivacyExperience,
@@ -400,7 +401,10 @@ const NoticeDrivenConsent = ({ base64Cookie }: { base64Cookie: boolean }) => {
         onCancel={handleCancel}
         justifyContent="center"
       />
-      <PrivacyPolicyLink alignSelf="center" experience={experience} />
+      <Stack flexDirection="row" alignItems="center">
+        <PrivacyPolicyLink experience={experience} />
+        <BrandLink />
+      </Stack>
     </Box>
   );
 };
