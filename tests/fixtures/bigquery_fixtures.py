@@ -482,14 +482,14 @@ def bigquery_enterprise_resources(
         """
         connection.execute(stmt)
 
-        # Create test stackoverflow_posts data. Posts are responses to questions on Stackoverflow, and does not include original question.
+        # Create test stackoverflow_posts_partitioned data. Posts are responses to questions on Stackoverflow, and does not include original question.
         post_body = "For me, the solution was to adopt 3 cats and dance with them under the full moon at midnight."
-        stmt = "select max(id) from enterprise_dsr_testing.stackoverflow_posts;"
+        stmt = "select max(id) from enterprise_dsr_testing.stackoverflow_posts_partitioned;"
         res = connection.execute(stmt)
         random_increment = random.randint(0, 99999)
         post_id = res.all()[0][0] + random_increment
         stmt = f"""
-            insert into enterprise_dsr_testing.stackoverflow_posts (body, creation_date, id, owner_user_id, owner_display_name)
+            insert into enterprise_dsr_testing.stackoverflow_posts_partitioned (body, creation_date, id, owner_user_id, owner_display_name)
             values ('{post_body}', '{creation_date}', {post_id}, {user_id}, '{display_name}');
         """
         connection.execute(stmt)
@@ -539,7 +539,7 @@ def bigquery_enterprise_resources(
         stmt = f"delete from enterprise_dsr_testing.comments where id = {comment_id};"
         connection.execute(stmt)
 
-        stmt = f"delete from enterprise_dsr_testing.stackoverflow_posts where id = {post_id};"
+        stmt = f"delete from enterprise_dsr_testing.stackoverflow_posts_partitioned where id = {post_id};"
         connection.execute(stmt)
 
         stmt = f"delete from enterprise_dsr_testing.users where id = {user_id};"
@@ -569,6 +569,28 @@ def bigquery_test_engine(bigquery_keyfile_creds) -> Generator:
     connector.test_connection()
     yield engine
     engine.dispose()
+
+
+def seed_bigquery_enterprise_integration_db(bigquery_enterprise_test_dataset_config) -> None:
+    """
+    Currently unused.
+    This helper function has already been run once, and data has been populated in the test BigQuery enterprise dataset.
+    We may need this later in case tables are accidentally removed.
+    """
+    bigquery_connection_config = (
+        bigquery_enterprise_test_dataset_config.connection_config
+    )
+    connector = BigQueryConnector(bigquery_connection_config)
+    bigquery_client = connector.client()
+    with bigquery_client.connect() as connection:
+
+        stmt = f"CREATE TABLE enterprise_dsr_testing.stackoverflow_posts_partitioned partition by date(creation_date) as select * from enterprise_dsr_testing.stackoverflow_posts;"
+        connection.execute(stmt)
+
+    print(
+        f"Created table enterprise_dsr_testing.stackoverflow_posts_partitioned, "
+        f"partitioned on column creation_date."
+    )
 
 
 def seed_bigquery_integration_db(bigquery_integration_engine) -> None:
