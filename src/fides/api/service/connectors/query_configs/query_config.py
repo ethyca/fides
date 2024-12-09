@@ -15,6 +15,7 @@ from fides.api.graph.config import (
     ROOT_COLLECTION_ADDRESS,
     CollectionAddress,
     Field,
+    FieldAddress,
     FieldPath,
     MaskingTruncation,
 )
@@ -98,6 +99,15 @@ class QueryConfig(Generic[T], ABC):
             field_path: field
             for field_path, field in self.field_map().items()
             if field.primary_key
+        }
+
+    @property
+    def identity_or_reference_field_paths(self) -> Dict[FieldPath, Field]:
+        """Mapping of FieldPaths to Fields that have identity or dataset references"""
+        return {
+            field_path: field
+            for field_path, field in self.field_map().items()
+            if field_path in {edge.f2.field_path for edge in self.node.incoming_edges}
         }
 
     def query_sources(self) -> Dict[str, List[CollectionAddress]]:
@@ -412,10 +422,10 @@ class SQLLikeQueryConfig(QueryConfig[T], ABC):
     def get_update_stmt(
         self,
         update_clauses: List[str],
-        pk_clauses: List[str],
+        where_clauses: List[str],
     ) -> str:
         """Returns a SQL UPDATE statement to fit SQL syntax."""
-        return f"UPDATE {self.node.address.collection} SET {', '.join(update_clauses)} WHERE {' AND '.join(pk_clauses)}"
+        return f"UPDATE {self.node.address.collection} SET {', '.join(update_clauses)} WHERE {' AND '.join(where_clauses)}"
 
     @abstractmethod
     def get_update_clauses(
@@ -436,6 +446,7 @@ class SQLLikeQueryConfig(QueryConfig[T], ABC):
     ) -> Optional[T]:
         """Returns an update statement in generic SQL-ish dialect."""
         update_value_map: Dict[str, Any] = self.update_value_map(row, policy, request)
+
         non_empty_primary_keys: Dict[str, Field] = filter_nonempty_values(
             {
                 fpath.string_path: fld.cast(row[fpath.string_path])
@@ -444,17 +455,25 @@ class SQLLikeQueryConfig(QueryConfig[T], ABC):
             }
         )
 
+        non_empty_reference_fields: Dict[str, Field] = filter_nonempty_values(
+            {
+                fpath.string_path: fld.cast(row[fpath.string_path])
+                for fpath, fld in self.identity_or_reference_field_paths.items()
+                if fpath.string_path in row
+            }
+        )
+
         update_clauses = self.get_update_clauses(
-            update_value_map, non_empty_primary_keys
+            update_value_map, non_empty_reference_fields
         )
-        pk_clauses = self.format_key_map_for_update_stmt(
-            list(non_empty_primary_keys.keys())
+        where_clauses = self.format_key_map_for_update_stmt(
+            list(non_empty_reference_fields.keys())
         )
 
-        for k, v in non_empty_primary_keys.items():
-            update_value_map[k] = v
+        # for k, v in non_empty_reference_fields.items():
+        #     update_value_map[k] = v
 
-        valid = len(pk_clauses) > 0 and len(update_clauses) > 0
+        valid = len(where_clauses) > 0 and len(update_clauses) > 0
         if not valid:
             logger.warning(
                 "There is not enough data to generate a valid update statement for {}",
@@ -464,7 +483,7 @@ class SQLLikeQueryConfig(QueryConfig[T], ABC):
 
         query_str = self.get_update_stmt(
             update_clauses,
-            pk_clauses,
+            where_clauses,
         )
         logger.info("query = {}, params = {}", Pii(query_str), Pii(update_value_map))
         return self.format_query_stmt(query_str, update_value_map)

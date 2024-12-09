@@ -286,9 +286,40 @@ class TestSQLQueryConfig:
             "id": 1,
         }
         text_clause = config.generate_update_stmt(row, erasure_policy, privacy_request)
-        assert text_clause.text == """UPDATE customer SET name = :name WHERE id = :id"""
+        assert (
+            text_clause.text
+            == """UPDATE customer SET name = :name WHERE email = :email"""
+        )
         assert text_clause._bindparams["name"].key == "name"
         assert text_clause._bindparams["name"].value is None  # Null masking strategy
+
+    def test_generate_update_stmt_one_field_inbound_reference(
+        self, erasure_policy_address_city, example_datasets, connection_config
+    ):
+        dataset = Dataset(**example_datasets[0])
+        graph = convert_dataset_to_graph(dataset, connection_config.key)
+        dataset_graph = DatasetGraph(*[graph])
+        traversal = Traversal(dataset_graph, {"email": "customer-1@example.com"})
+
+        address_node = traversal.traversal_node_dict[
+            CollectionAddress("postgres_example_test_dataset", "address")
+        ].to_mock_execution_node()
+
+        config = SQLQueryConfig(address_node)
+        row = {
+            "id": 1,
+            "house": "123",
+            "street": "Main St",
+            "city": "San Francisco",
+            "state": "CA",
+            "zip": "94105",
+        }
+        text_clause = config.generate_update_stmt(
+            row, erasure_policy_address_city, privacy_request
+        )
+        assert text_clause.text == """UPDATE address SET city = :city WHERE id = :id"""
+        assert text_clause._bindparams["city"].key == "city"
+        assert text_clause._bindparams["city"].value is None  # Null masking strategy
 
     def test_generate_update_stmt_length_truncation(
         self,
@@ -316,7 +347,10 @@ class TestSQLQueryConfig:
         text_clause = config.generate_update_stmt(
             row, erasure_policy_string_rewrite_long, privacy_request
         )
-        assert text_clause.text == """UPDATE customer SET name = :name WHERE id = :id"""
+        assert (
+            text_clause.text
+            == """UPDATE customer SET name = :name WHERE email = :email"""
+        )
         assert text_clause._bindparams["name"].key == "name"
         # length truncation on name field
         assert (
@@ -365,7 +399,7 @@ class TestSQLQueryConfig:
         text_clause = config.generate_update_stmt(row, erasure_policy, privacy_request)
         assert (
             text_clause.text
-            == "UPDATE customer SET email = :email, name = :name WHERE id = :id"
+            == "UPDATE customer SET email = :email, name = :name WHERE email = :email"
         )
         assert text_clause._bindparams["name"].key == "name"
         # since length is set to 40 in dataset.yml, we expect only first 40 chars of masked val
@@ -409,7 +443,7 @@ class TestSQLQueryConfig:
 
         assert (
             text_clause.text
-            == "UPDATE customer SET email = :email, name = :name WHERE id = :id"
+            == "UPDATE customer SET email = :email, name = :name WHERE email = :email"
         )
         # Two different masking strategies used for name and email
         assert text_clause._bindparams["name"].value is None  # Null masking strategy

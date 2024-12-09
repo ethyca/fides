@@ -67,7 +67,7 @@ class SnowflakeQueryConfig(SQLQueryConfig):
     def get_update_stmt(
         self,
         update_clauses: List[str],
-        pk_clauses: List[str],
+        where_clauses: List[str],
     ) -> str:
         """Returns a parameterized update statement in Snowflake dialect."""
-        return f'UPDATE {self._generate_table_name()} SET {", ".join(update_clauses)} WHERE {" AND ".join(pk_clauses)}'
+        return f'UPDATE {self._generate_table_name()} SET {", ".join(update_clauses)} WHERE {" AND ".join(where_clauses)}'

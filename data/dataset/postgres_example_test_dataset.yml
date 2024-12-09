@@ -7,18 +7,29 @@ dataset:
         fields:
           - name: city
             data_categories: [user.contact.address.city]
+            fides_meta:
+              data_type: string
           - name: house
             data_categories: [user.contact.address.street]
+            fides_meta:
+              data_type: string
           - name: id
             data_categories: [system.operations]
             fides_meta:
+              data_type: string
               primary_key: True
           - name: state
             data_categories: [user.contact.address.state]
+            fides_meta:
+              data_type: string
           - name: street
             data_categories: [user.contact.address.street]
+            fides_meta:
+              data_type: string
           - name: zip
             data_categories: [user.contact.address.postal_code]
+            fides_meta:
+              data_type: string
 
       - name: customer
         fields:

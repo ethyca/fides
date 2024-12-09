@@ -140,7 +140,7 @@ class BigQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
             return []
 
         table = Table(self._generate_table_name(), MetaData(bind=client), autoload=True)
-        pk_clauses: List[ColumnElement] = [
+        where_clauses: List[ColumnElement] = [
             getattr(table.c, k) == v for k, v in non_empty_primary_keys.items()
         ]
 
@@ -153,13 +153,13 @@ class BigQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
             for partition_clause in partition_clauses:
                 partitioned_queries.append(
                     table.update()
-                    .where(*(pk_clauses + [text(partition_clause)]))
+                    .where(*(where_clauses + [text(partition_clause)]))
                     .values(**update_value_map)
                 )
 
             return partitioned_queries
 
-        return [table.update().where(*pk_clauses).values(**update_value_map)]
+        return [table.update().where(*where_clauses).values(**update_value_map)]
 
     def generate_delete(self, row: Row, client: Engine) -> List[Delete]:
         """Returns a List of SQLAlchemy DELETE statements for BigQuery. Does not actually execute the delete statement.
@@ -189,7 +189,7 @@ class BigQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
             return []
 
         table = Table(self._generate_table_name(), MetaData(bind=client), autoload=True)
-        pk_clauses: List[ColumnElement] = [
+        where_clauses: List[ColumnElement] = [
             getattr(table.c, k) == v for k, v in non_empty_primary_keys.items()
         ]
 
@@ -202,9 +202,9 @@ class BigQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
 
             for partition_clause in partition_clauses:
                 partitioned_queries.append(
-                    table.delete().where(*(pk_clauses + [text(partition_clause)]))
+                    table.delete().where(*(where_clauses + [text(partition_clause)]))
                 )
 
             return partitioned_queries
 
-        return [table.delete().where(*pk_clauses)]
+        return [table.delete().where(*where_clauses)]
