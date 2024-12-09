@@ -108,6 +108,7 @@ const datamapApi = baseApi.injectEndpoints({
         dataSubjects?: string;
         format?: ExportFormat;
         report_id?: string;
+        report?: string;
       }
     >({
       query: ({
@@ -120,6 +121,7 @@ const datamapApi = baseApi.injectEndpoints({
         dataSubjects,
         format,
         report_id,
+        report,
       }) => {
         let queryString = `page=${pageIndex}&size=${pageSize}&group_by=${groupBy}`;
         if (dataUses) {
@@ -136,6 +138,9 @@ const datamapApi = baseApi.injectEndpoints({
         }
         if (report_id) {
           queryString += `&report_id=${report_id}`;
+        }
+        if (report) {
+          queryString += `&report=${report}`;
         }
         return {
           url: `plus/datamap/minimal/${format}?${queryString}`,
