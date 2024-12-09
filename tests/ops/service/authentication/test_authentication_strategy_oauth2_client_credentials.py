@@ -40,23 +40,7 @@ def oauth2_client_credentials_configuration() -> (
                 {"name": "client_secret", "value": "<client_secret>"},
                 {"name": "grant_type", "value": "client_credentials"},
             ],
-        },
-        "refresh_request": {
-            "method": "POST",
-            "path": "/oauth/token",
-            "headers": [
-                {
-                    "name": "Content-Type",
-                    "value": "application/x-www-form-urlencoded",
-                }
-            ],
-            "query_params": [
-                {"name": "client_id", "value": "<client_id>"},
-                {"name": "client_secret", "value": "<client_secret>"},
-                {"name": "grant_type", "value": "refresh_token"},
-                {"name": "refresh_token", "value": "<refresh_token>"},
-            ],
-        },
+        }
     }
 
 
@@ -69,7 +53,6 @@ def oauth2_client_credentials_connection_config(
         "client_id": "client",
         "client_secret": "secret",
         "access_token": "access",
-        "refresh_token": "refresh",
     }
     saas_config = {
         "fides_key": "oauth2_client_credentials_connector",
@@ -249,7 +232,6 @@ class TestAddAuthentication:
                     "client_id": "client",
                     "client_secret": "secret",
                     "access_token": "new_access",
-                    "refresh_token": "refresh",
                     "expires_at": 0,
                 }
             },
@@ -327,7 +309,6 @@ class TestAccessTokenRequest:
         expires_in = 7200
         mock_send().json.return_value = {
             "access_token": "new_access",
-            "refresh_token": "new_refresh",
             "expires_in": expires_in,
         }
 
@@ -347,7 +328,6 @@ class TestAccessTokenRequest:
                     "client_id": "client",
                     "client_secret": "secret",
                     "access_token": "new_access",
-                    "refresh_token": "new_refresh",
                     "expires_at": int(datetime.utcnow().timestamp()) + expires_in,
                 }
             },
@@ -376,7 +356,6 @@ class TestAccessTokenRequest:
         # mock the json response from calling the access token request
         mock_send().json.return_value = {
             "access_token": "new_access",
-            "refresh_token": "new_refresh",
         }
 
         oauth2_client_credentials_configuration["expires_in"] = 3600
@@ -396,7 +375,6 @@ class TestAccessTokenRequest:
                     "client_id": "client",
                     "client_secret": "secret",
                     "access_token": "new_access",
-                    "refresh_token": "new_refresh",
                     "expires_at": int(datetime.utcnow().timestamp())
                     + oauth2_client_credentials_configuration["expires_in"],
                 }
