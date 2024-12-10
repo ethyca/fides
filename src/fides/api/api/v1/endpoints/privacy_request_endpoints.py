@@ -2662,10 +2662,14 @@ def get_test_privacy_request_results(
     # Escape datetime and ObjectId values
     raw_data = privacy_request.get_raw_access_results()
     escaped_json = json.dumps(raw_data, indent=2, default=storage_json_encoder)
-    escaped_data = json.loads(escaped_json)
+    results = json.loads(escaped_json)
 
     return {
         "privacy_request_id": privacy_request.id,
         "status": privacy_request.status,
-        "results": escaped_data,
+        "results": (
+            results
+            if CONFIG.security.dsr_testing_tools_enabled
+            else "DSR testing tools are not enabled, results will not be shown."
+        ),
     }
