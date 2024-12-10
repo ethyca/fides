@@ -60,7 +60,17 @@ const IndexPage = ({ gtmContainerId, privacyCenterUrl }: Props) => {
         {/* Require FidesJS to "embed" it's UI onto the page, instead of as an overlay over the <body> itself. (see https://ethyca.com/docs/dev-docs/js/reference/interfaces/FidesOptions#fides_embed) */}
         <script>{`window.fides_overrides = { fides_embed: true, fides_disable_banner: true }`}</script>
         {/* Allow the embedded consent modal to fill the screen */}
-        <style>{`#fides-embed-container { --fides-overlay-width: 'auto' }`}</style>
+        <style>{`
+          #fides-embed-container {
+            --fides-overlay-width: 'auto'
+          }
+
+          body {
+            font-family: "Inter", sans-serif;
+            color: #171923;
+            font-size: 14px;
+          }
+        `}</style>
       </Head>
       {/**
       Insert the fides.js script and run the GTM integration once ready

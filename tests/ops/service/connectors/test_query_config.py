@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-from typing import Any, Dict, Generator, Set
+from typing import Any, Dict, Set
 from unittest import mock
 
 import pytest
@@ -22,9 +22,13 @@ from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.masking.masking_configuration import HashMaskingConfiguration
 from fides.api.schemas.masking.masking_secrets import MaskingSecretCache, SecretType
 from fides.api.schemas.namespace_meta.namespace_meta import NamespaceMeta
-from fides.api.service.connectors.query_config import (
+from fides.api.service.connectors.query_configs.dynamodb_query_config import (
     DynamoDBQueryConfig,
+)
+from fides.api.service.connectors.query_configs.mongodb_query_config import (
     MongoQueryConfig,
+)
+from fides.api.service.connectors.query_configs.query_config import (
     QueryConfig,
     SQLQueryConfig,
 )

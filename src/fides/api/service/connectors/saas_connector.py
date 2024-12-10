@@ -39,8 +39,8 @@ from fides.api.schemas.saas.shared_schemas import (
     SaaSRequestParams,
 )
 from fides.api.service.connectors.base_connector import BaseConnector
+from fides.api.service.connectors.query_configs.saas_query_config import SaaSQueryConfig
 from fides.api.service.connectors.saas.authenticated_client import AuthenticatedClient
-from fides.api.service.connectors.saas_query_config import SaaSQueryConfig
 from fides.api.service.pagination.pagination_strategy import PaginationStrategy
 from fides.api.service.processors.post_processor_strategy.post_processor_strategy import (
     PostProcessorStrategy,
