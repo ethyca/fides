@@ -191,7 +191,7 @@ class TestMongoQueryConfig:
             row, erasure_policy, privacy_request
         )
 
-        expected_result_0 = {"customer_id": 1}
+        expected_result_0 = {"_id": 1}
         expected_result_1 = {
             "$set": {
                 "birthday": None,
@@ -273,7 +273,7 @@ class TestMongoQueryConfig:
         mongo_statement = config.generate_update_stmt(
             row, erasure_policy_two_rules, privacy_request
         )
-        assert mongo_statement[0] == {"customer_id": 1}
+        assert mongo_statement[0] == {"_id": 1}
         assert len(mongo_statement[1]["$set"]["gender"]) == 30
         assert (
             mongo_statement[1]["$set"]["birthday"]

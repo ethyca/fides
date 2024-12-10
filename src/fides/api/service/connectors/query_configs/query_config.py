@@ -467,6 +467,7 @@ class SQLLikeQueryConfig(QueryConfig[T], ABC):
         # Create parameter mappings with masked_ prefix for SET values
         param_map = {
             **{f"masked_{k}": v for k, v in update_value_map.items()},
+            **non_empty_primary_key_fields,
             **non_empty_reference_fields,
         }
 

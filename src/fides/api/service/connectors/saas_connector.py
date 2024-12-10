@@ -72,6 +72,9 @@ from fides.api.util.saas_util import (
 class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
     """A connector type to integrate with third-party SaaS APIs"""
 
+    def requires_primary_keys(self) -> bool:
+        return False
+
     def get_log_context(self) -> Dict[LoggerContextKeys, Any]:
         return {
             LoggerContextKeys.system_key: (
