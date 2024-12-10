@@ -19,6 +19,7 @@ The types of changes are:
 
 ### Added
 - New page in the Cookie House sample app to demonstrate the use of embedding the FidesJS SDK on the page [#5564](https://github.com/ethyca/fides/pull/5564)
+- Adds "reclassify" button to discovery result tables [#5574](https://github.com/ethyca/fides/pull/5574)
 
 ### Fixed
 - Fixing quickstart.py script [#5585](https://github.com/ethyca/fides/pull/5585)

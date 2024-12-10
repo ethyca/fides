@@ -1,11 +1,13 @@
-import { CheckIcon, HStack, ViewOffIcon } from "fidesui";
+import { CheckIcon, HStack, RepeatIcon, ViewOffIcon } from "fidesui";
 
 import { useAlert } from "~/features/common/hooks";
 import { DiscoveryMonitorItem } from "~/features/data-discovery-and-detection/types/DiscoveryMonitorItem";
+import getResourceName from "~/features/data-discovery-and-detection/utils/getResourceName";
 import { DiffStatus } from "~/types/api";
 
 import ActionButton from "../../ActionButton";
 import {
+  useConfirmResourceMutation,
   useMuteResourceMutation,
   usePromoteResourceMutation,
 } from "../../discovery-detection.slice";
@@ -15,12 +17,15 @@ interface DiscoveryItemActionsProps {
 }
 
 const DiscoveryItemActionsCell = ({ resource }: DiscoveryItemActionsProps) => {
+  const [confirmResourceMutation, { isLoading: confirmIsLoading }] =
+    useConfirmResourceMutation();
   const [promoteResourceMutation, { isLoading: promoteIsLoading }] =
     usePromoteResourceMutation();
   const [muteResourceMutation, { isLoading: muteIsLoading }] =
     useMuteResourceMutation();
 
-  const anyActionIsLoading = promoteIsLoading || muteIsLoading;
+  const anyActionIsLoading =
+    promoteIsLoading || muteIsLoading || confirmIsLoading;
 
   const {
     diff_status: diffStatus,
@@ -85,6 +90,24 @@ const DiscoveryItemActionsCell = ({ resource }: DiscoveryItemActionsProps) => {
           loading={muteIsLoading}
         />
       )}
+      <ActionButton
+        title="Reclassify"
+        icon={<RepeatIcon />}
+        onClick={async () => {
+          await confirmResourceMutation({
+            staged_resource_urn: resource.urn,
+            monitor_config_id: resource.monitor_config_id!,
+            start_classification: true,
+            classify_monitored_resources: true,
+          });
+          successAlert(
+            `Reclassification of ${getResourceName(resource) || "the resource"} has begun.  The results may take some time to appear in the “Data discovery“ tab.`,
+            `Reclassification started`,
+          );
+        }}
+        disabled={anyActionIsLoading}
+        loading={confirmIsLoading}
+      />
     </HStack>
   );
 };
