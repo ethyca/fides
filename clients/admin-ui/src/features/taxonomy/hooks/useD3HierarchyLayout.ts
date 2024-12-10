@@ -11,6 +11,8 @@ interface UseTreeLayoutProps {
   };
 }
 
+// The dimensions of the node are larger than the actual
+// node size to add spacing between the different nodes
 const NODE_WIDTH = 320;
 const NODE_HEIGHT = 35;
 

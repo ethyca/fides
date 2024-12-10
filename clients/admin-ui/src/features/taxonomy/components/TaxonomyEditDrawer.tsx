@@ -13,15 +13,11 @@ import {
 
 import { useCustomFields } from "~/features/common/custom-fields";
 import { getErrorMessage } from "~/features/common/helpers";
-import { PlayIcon } from "~/features/common/Icon/Play";
 import { TrashCanOutlineIcon } from "~/features/common/Icon/TrashCanOutlineIcon";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { isErrorResult } from "~/types/errors";
 
-import EditDrawer, {
-  EditDrawerFooter,
-  EditDrawerHeader,
-} from "../../common/EditDrawer";
+import EditDrawer, { EditDrawerHeader } from "../../common/EditDrawer";
 import { taxonomyTypeToResourceType } from "../helpers";
 import useTaxonomySlices from "../hooks/useTaxonomySlices";
 import { TaxonomyEntity } from "../types";
