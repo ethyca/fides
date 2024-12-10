@@ -74,17 +74,13 @@ const TaxonomyInteractiveTree = ({
     // Add one node for each label in the taxonomy
     const label =
       taxonomyItem.name || taxonomyItem.fides_key.split(".").pop() || "";
-    const parentKey = taxonomyItem.parent_key || TAXONOMY_ROOT_NODE_ID;
 
     const node: TaxonomyTreeNodeType = {
       id: taxonomyItem.fides_key,
       position: { x: 0, y: 0 },
       data: {
         label,
-        taxonomyItem: {
-          ...taxonomyItem,
-          parent_key: parentKey,
-        },
+        taxonomyItem,
         onTaxonomyItemClick,
         onAddButtonClick,
         hasChildren: false,
@@ -93,19 +89,28 @@ const TaxonomyInteractiveTree = ({
     };
     nodes.push(node);
 
-    // Add lines between each label and their parent (if it has one)
+    // Add lines between each label and it's parent.
+    // If it doesn't have a parent node, connect it to the root node.
+    const parentTaxonomyItem = taxonomyItem.parent_key
+      ? nodes.find((n) => n.id === taxonomyItem.parent_key)
+      : null;
+    const source = parentTaxonomyItem
+      ? parentTaxonomyItem.id
+      : TAXONOMY_ROOT_NODE_ID;
+
+    const target = taxonomyItem.fides_key;
+
     const newEdge = {
-      id: `${parentKey}-${taxonomyItem.fides_key}`,
-      source: parentKey,
-      target: taxonomyItem.fides_key,
+      id: `${source}-${target}`,
+      source,
+      target,
       type: "taxonomyTreeEdge",
     };
     edges.push(newEdge);
 
     // Update hasChildren for parent to true
-    const parentNode = nodes.find((n) => n.id === parentKey);
-    if (parentNode) {
-      parentNode.data.hasChildren = true;
+    if (parentTaxonomyItem) {
+      parentTaxonomyItem.data.hasChildren = true;
     }
   });
 
@@ -145,7 +150,6 @@ const TaxonomyInteractiveTree = ({
       edges,
       options: {
         direction: "LR",
-        stableOrder: true,
       },
     });
 
