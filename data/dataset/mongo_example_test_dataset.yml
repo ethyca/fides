@@ -7,6 +7,8 @@ dataset:
         fields:
           - name: _id
             data_categories: [system.operations]
+            fides_meta:
+              primary_key: True
           - name: customer_id
             data_categories: [user.unique_id]
             fides_meta:
@@ -203,10 +205,11 @@ dataset:
               data_type: string
           - name: id
             data_categories: [user.unique_id]
-            references:
-              - dataset: mongo_test
-                field: flights.pilots
-                direction: from
+            fides_meta:
+              references:
+                - dataset: mongo_test
+                  field: flights.pilots
+                  direction: from
           - name: name
             data_categories: [user.name]
             fides_meta:

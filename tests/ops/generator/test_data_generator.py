@@ -31,6 +31,7 @@ f = """dataset:
       - name: address
         fields:
           - name: id
+            fides_meta:
               data_type: integer
           - name: user_id
           - name: street
