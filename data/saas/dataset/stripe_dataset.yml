@@ -7,6 +7,7 @@ dataset:
         fields:
           - name: id
             data_categories: [system.operations]
+            fidesops_meta:
               read_only: True
               data_type: string
           - name: object
@@ -615,6 +616,7 @@ dataset:
         fields:
           - name: id
             data_categories: [system.operations]
+            fidesops_meta:
               data_type: string
           - name: object
             data_categories: [system.operations]
@@ -710,6 +712,7 @@ dataset:
         fields:
           - name: id
             data_categories: [system.operations]
+            fidesops_meta:
               data_type: string
           - name: object
             data_categories: [system.operations]
@@ -748,6 +751,7 @@ dataset:
         fields:
           - name: id
             data_categories: [system.operations]
+            fidesops_meta:
               data_type: string
           - name: object
             data_categories: [system.operations]
@@ -915,6 +919,7 @@ dataset:
         fields:
           - name: id
             data_categories: [system.operations]
+            fidesops_meta:
               data_type: string
           - name: object
             data_categories: [system.operations]
@@ -948,6 +953,7 @@ dataset:
         fields:
           - name: id
             data_categories: [system.operations]
+            fidesops_meta:
               data_type: string
           - name: object
             data_categories: [system.operations]
@@ -1223,6 +1229,7 @@ dataset:
         fields:
           - name: id
             data_categories: [system.operations]
+            fidesops_meta:
               data_type: string
           - name: object
             data_categories: [system.operations]
@@ -1310,6 +1317,7 @@ dataset:
         fields:
           - name: id
             data_categories: [system.operations]
+            fidesops_meta:
               data_type: string
           - name: object
             data_categories: [system.operations]
