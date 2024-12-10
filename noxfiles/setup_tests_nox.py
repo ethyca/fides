@@ -95,7 +95,6 @@ def pytest_ctl(session: Session, mark: str, coverage_arg: str) -> None:
             "pytest",
             coverage_arg,
             "tests/ctl/",
-            "-x",
             "-m",
             mark,
         )
