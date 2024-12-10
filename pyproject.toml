@@ -176,7 +176,6 @@ addopts = [
     "-ra",
     "-vv",
     "--disable-pytest-warnings",
-    "--timeout=300"
 ]
 markers = [
     "unit: only runs tests that don't require non-python dependencies (i.e. a database)",

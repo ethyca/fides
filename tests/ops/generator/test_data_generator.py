@@ -19,6 +19,7 @@ f = """dataset:
       - name: user
         fields:
           - name: id
+            fides_meta:
               data_type: integer
               references:
                 - dataset: db
