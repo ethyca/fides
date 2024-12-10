@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import Any, Dict, Optional, Set
 
-from pydantic import Field
+from pydantic import Field, computed_field
 
 from fides.api.schemas.base_class import FidesSchema
 
@@ -34,3 +34,13 @@ class CustomReportConfig(FidesSchema):
     column_map: Dict[str, ColumnMapItem] = Field(
         default_factory=dict, description="A map between column keys and custom labels"
     )
+
+    @computed_field
+    @property
+    def columns_to_skip(self) -> Set[str]:
+        return {key for key, value in self.column_map.items() if value.enabled is False}
+
+    @computed_field
+    @property
+    def custom_column_labels(self) -> Dict[str, str]:
+        return {key: value.label for key, value in self.column_map.items() if value.label}
