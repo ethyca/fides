@@ -156,7 +156,7 @@ def mongo_dataset_dict(mongo_db_name: str, postgres_db_name: str) -> GraphDatase
             {
                 "name": "address",
                 "fields": [
-                    {"name": "_id"},
+                    {"name": "_id", "fides_meta": {"primary_key": True}},
                     {
                         "name": "id",
                         "fides_meta": {
@@ -178,7 +178,7 @@ def mongo_dataset_dict(mongo_db_name: str, postgres_db_name: str) -> GraphDatase
             {
                 "name": "orders",
                 "fields": [
-                    {"name": "_id"},
+                    {"name": "_id", "fides_meta": {"primary_key": True}},
                     {
                         "name": "customer_id",
                         "fides_meta": {
@@ -200,6 +200,7 @@ def mongo_dataset_dict(mongo_db_name: str, postgres_db_name: str) -> GraphDatase
                     {
                         "name": "_id",
                         "fides_meta": {
+                            "primary_key": True,
                             "data_type": "object_id",
                         },
                     },
@@ -228,6 +229,7 @@ def mongo_dataset_dict(mongo_db_name: str, postgres_db_name: str) -> GraphDatase
                     {
                         "name": "_id",
                         "fides_meta": {
+                            "primary_key": True,
                             "data_type": "object_id",
                         },
                     },
@@ -237,19 +239,27 @@ def mongo_dataset_dict(mongo_db_name: str, postgres_db_name: str) -> GraphDatase
                         "fields": [
                             {
                                 "name": "comment",
-                                "fides_meta": {"data_type": "string"},
+                                "fides_meta": {
+                                    "data_type": "string",
+                                },
                             },
                             {
                                 "name": "message",
-                                "fides_meta": {"data_type": "string"},
+                                "fides_meta": {
+                                    "data_type": "string",
+                                },
                             },
                             {
                                 "name": "chat_name",
-                                "fides_meta": {"data_type": "string"},
+                                "fides_meta": {
+                                    "data_type": "string",
+                                },
                             },
                             {
                                 "name": "ccn",
-                                "fides_meta": {"data_type": "string"},
+                                "fides_meta": {
+                                    "data_type": "string",
+                                },
                             },
                         ],
                     },
@@ -258,7 +268,12 @@ def mongo_dataset_dict(mongo_db_name: str, postgres_db_name: str) -> GraphDatase
             {
                 "name": "customer_details",
                 "fields": [
-                    {"name": "_id", "fides_meta": {"primary_key": True}},
+                    {
+                        "name": "_id",
+                        "fides_meta": {
+                            "primary_key": True,
+                        },
+                    },
                     {
                         "name": "birthday",
                         "fides_meta": {"data_type": "string"},
@@ -304,15 +319,21 @@ def mongo_dataset_dict(mongo_db_name: str, postgres_db_name: str) -> GraphDatase
                         "fields": [
                             {
                                 "name": "name",
-                                "fides_meta": {"data_type": "string"},
+                                "fides_meta": {
+                                    "data_type": "string",
+                                },
                             },
                             {
                                 "name": "relationship",
-                                "fides_meta": {"data_type": "string"},
+                                "fides_meta": {
+                                    "data_type": "string",
+                                },
                             },
                             {
                                 "name": "phone",
-                                "fides_meta": {"data_type": "string"},
+                                "fides_meta": {
+                                    "data_type": "string",
+                                },
                             },
                         ],
                     },
@@ -330,11 +351,15 @@ def mongo_dataset_dict(mongo_db_name: str, postgres_db_name: str) -> GraphDatase
                         "fields": [
                             {
                                 "name": "employer",
-                                "fides_meta": {"data_type": "string"},
+                                "fides_meta": {
+                                    "data_type": "string",
+                                },
                             },
                             {
                                 "name": "position",
-                                "fides_meta": {"data_type": "string"},
+                                "fides_meta": {
+                                    "data_type": "string",
+                                },
                             },
                             {
                                 "name": "direct_reports",
@@ -350,6 +375,7 @@ def mongo_dataset_dict(mongo_db_name: str, postgres_db_name: str) -> GraphDatase
                     {
                         "name": "_id",
                         "fides_meta": {
+                            "primary_key": True,
                             "data_type": "object_id",
                         },
                     },
@@ -366,11 +392,15 @@ def mongo_dataset_dict(mongo_db_name: str, postgres_db_name: str) -> GraphDatase
                             },
                             {
                                 "name": "phone",
-                                "fides_meta": {"data_type": "string"},
+                                "fides_meta": {
+                                    "data_type": "string",
+                                },
                             },
                             {
                                 "name": "internal_customer_id",
-                                "fides_meta": {"data_type": "string"},
+                                "fides_meta": {
+                                    "data_type": "string",
+                                },
                             },
                         ],
                     },
@@ -394,6 +424,7 @@ def mongo_dataset_dict(mongo_db_name: str, postgres_db_name: str) -> GraphDatase
                     {
                         "name": "_id",
                         "fides_meta": {
+                            "primary_key": True,
                             "data_type": "object_id",
                         },
                     },
@@ -407,6 +438,7 @@ def mongo_dataset_dict(mongo_db_name: str, postgres_db_name: str) -> GraphDatase
                     {
                         "name": "id",
                         "fides_meta": {
+                            "primary_key": True,
                             "references": [
                                 {
                                     "dataset": mongo_db_name,
@@ -427,7 +459,10 @@ def mongo_dataset_dict(mongo_db_name: str, postgres_db_name: str) -> GraphDatase
                 "fields": [
                     {
                         "name": "_id",
-                        "fides_meta": {"data_type": "object_id"},
+                        "fides_meta": {
+                            "primary_key": True,
+                            "data_type": "object_id",
+                        },
                     },
                     {
                         "name": "date",
@@ -454,7 +489,9 @@ def mongo_dataset_dict(mongo_db_name: str, postgres_db_name: str) -> GraphDatase
                             },
                             {
                                 "name": "full_name",
-                                "fides_meta": {"data_type": "string"},
+                                "fides_meta": {
+                                    "data_type": "string",
+                                },
                             },
                         ],
                     },
@@ -473,7 +510,10 @@ def mongo_dataset_dict(mongo_db_name: str, postgres_db_name: str) -> GraphDatase
                 "fields": [
                     {
                         "name": "_id",
-                        "fides_meta": {"data_type": "object_id"},
+                        "fides_meta": {
+                            "primary_key": True,
+                            "data_type": "object_id",
+                        },
                     },
                     {
                         "name": "customer_identifiers",
@@ -520,7 +560,10 @@ def mongo_dataset_dict(mongo_db_name: str, postgres_db_name: str) -> GraphDatase
                 "fields": [
                     {
                         "name": "_id",
-                        "fides_meta": {"data_type": "object_id"},
+                        "fides_meta": {
+                            "primary_key": True,
+                            "data_type": "object_id",
+                        },
                     },
                     {
                         "name": "owner",

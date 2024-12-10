@@ -101,7 +101,7 @@ class QueryConfig(Generic[T], ABC):
         }
 
     @property
-    def incoming_field_paths(self) -> Dict[FieldPath, Field]:
+    def reference_field_paths(self) -> Dict[FieldPath, Field]:
         """Mapping of FieldPaths to Fields that have incoming identity or dataset references"""
         return {
             field_path: field
@@ -447,10 +447,19 @@ class SQLLikeQueryConfig(QueryConfig[T], ABC):
     ) -> Optional[T]:
         """Returns an update statement in generic SQL-ish dialect."""
         update_value_map: Dict[str, Any] = self.update_value_map(row, policy, request)
+
+        non_empty_primary_key_fields: Dict[str, Field] = filter_nonempty_values(
+            {
+                fpath.string_path: fld.cast(row[fpath.string_path])
+                for fpath, fld in self.primary_key_field_paths.items()
+                if fpath.string_path in row
+            }
+        )
+
         non_empty_reference_fields: Dict[str, Field] = filter_nonempty_values(
             {
                 fpath.string_path: fld.cast(row[fpath.string_path])
-                for fpath, fld in self.incoming_field_paths.items()
+                for fpath, fld in self.reference_field_paths.items()
                 if fpath.string_path in row
             }
         )
@@ -463,10 +472,10 @@ class SQLLikeQueryConfig(QueryConfig[T], ABC):
 
         update_clauses = self.get_update_clauses(
             {k: f"masked_{k}" for k in update_value_map},
-            non_empty_reference_fields,
+            non_empty_primary_key_fields or non_empty_reference_fields,
         )
         where_clauses = self.format_key_map_for_update_stmt(
-            {k: k for k in non_empty_reference_fields}
+            {k: k for k in non_empty_primary_key_fields or non_empty_reference_fields}
         )
 
         valid = len(where_clauses) > 0 and len(update_clauses) > 0
