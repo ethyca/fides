@@ -13,6 +13,7 @@ import {
   ReactFlowProvider,
   useReactFlow,
 } from "@xyflow/react";
+import palette from "fidesui/src/palette/palette.module.scss";
 import { useEffect, useMemo } from "react";
 
 import { TAXONOMY_ROOT_NODE_ID } from "../constants";
@@ -164,7 +165,10 @@ const TaxonomyInteractiveTree = ({
   );
 
   return (
-    <div className="size-full bg-[#fafafa]">
+    <div
+      className="size-full"
+      style={{ backgroundColor: palette.FIDESUI_BG_CORINTH }}
+    >
       <TaxonomyTreeHoverProvider>
         <ReactFlow
           nodes={nodesAfterLayout}
@@ -178,7 +182,11 @@ const TaxonomyInteractiveTree = ({
           elementsSelectable={false}
           proOptions={{ hideAttribution: true }}
         >
-          <Background color="#eee" variant={BackgroundVariant.Dots} size={3} />
+          <Background
+            color={palette.FIDESUI_NEUTRAL_100}
+            variant={BackgroundVariant.Dots}
+            size={3}
+          />
           <MiniMap nodeStrokeWidth={3} pannable />
           <Controls showInteractive={false} />
         </ReactFlow>
