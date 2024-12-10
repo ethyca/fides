@@ -59,58 +59,20 @@
         "uses_profiling",
         "system_lorem"
       ],
-      "columnVisibility": {
-        "dpo": true,
-        "egress": true,
-        "cookies": true,
-        "ingress": true,
-        "features": true,
-        "fides_key": true,
-        "legal_name": true,
-        "dpa_location": true,
-        "system_lorem": true,
-        "uses_cookies": true,
-        "data_stewards": true,
-        "data_subjects": false,
-        "legal_address": true,
-        "third_parties": true,
-        "cookie_refresh": true,
-        "privacy_policy": true,
-        "responsibility": true,
-        "uses_profiling": true,
-        "data_categories": true,
-        "declaration_name": true,
-        "retention_period": true,
-        "shared_categories": true,
-        "system_dependencies": true,
-        "reason_for_exemption": true,
-        "joint_controller_info": true,
-        "cookie_max_age_seconds": true,
-        "uses_non_cookie_access": true,
-        "data_security_practices": true,
-        "processes_personal_data": true,
-        "third_country_safeguards": true,
-        "administrating_department": true,
-        "legal_basis_for_profiling": true,
-        "legal_basis_for_transfers": true,
-        "impact_assessment_location": true,
-        "legal_basis_for_processing": true,
-        "link_to_processor_contract": true,
-        "does_international_transfers": true,
-        "special_category_legal_basis": true,
-        "DATA_SHARED_WITH_THIRD_PARTIES": true,
-        "exempt_from_privacy_regulations": true,
-        "system_undeclared_data_categories": false,
-        "legitimate_interest_disclosure_url": true,
-        "data_use_undeclared_data_categories": false,
-        "flexible_legal_basis_for_processing": true,
-        "requires_data_protection_assessments": true
-      }
     },
     "column_map": {
       "data_categories": {
         "label": "My Data Category Map"
-      }
+      },
+      "data_subjects": {
+        "enabled": false,
+      },
+      "system_undeclared_data_categories": {
+        "enabled": false,
+      },
+      "data_use_undeclared_data_categories": {
+        "enabled": false,
+      },
     }
   }
 }
