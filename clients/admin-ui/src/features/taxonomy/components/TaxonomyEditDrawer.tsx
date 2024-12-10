@@ -136,11 +136,6 @@ const TaxonomyEditDrawer = ({
               </Button>
             </div>
           </DrawerFooter>
-          // <EditDrawerFooter
-          //   onClose={closeDrawer}
-          //   onDelete={onDeleteOpen}
-          //   formId={TAXONOMY_FORM_ID}
-          // />
         }
       >
         <div className="mb-4">
