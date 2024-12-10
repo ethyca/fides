@@ -107,6 +107,10 @@
         "requires_data_protection_assessments": true
       }
     },
-    "column_map": { "data_categories": "My Data Category Map" }
+    "column_map": {
+      "data_categories": {
+        "label": "My Data Category Map"
+      }
+    }
   }
 }
