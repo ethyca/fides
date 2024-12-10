@@ -10,7 +10,6 @@ dataset:
             data_categories: [system.operations]
             fides_meta:
               data_type: string
-              primary_key: True
           - name: email_address
             data_categories: [system.operations]
             fides_meta:

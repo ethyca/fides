@@ -8,13 +8,7 @@ from fideslang import Dataset
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
-from fides.api.graph.config import (
-    Collection,
-    CollectionAddress,
-    FieldAddress,
-    GraphDataset,
-    ScalarField,
-)
+from fides.api.graph.config import Collection, FieldAddress, GraphDataset, ScalarField
 from fides.api.graph.data_type import DataType, StringTypeConverter
 from fides.api.graph.graph import DatasetGraph, Edge, Node
 from fides.api.graph.traversal import TraversalNode
@@ -25,7 +19,6 @@ from fides.api.models.privacy_request import (
     ExecutionLog,
     ExecutionLogStatus,
     PrivacyRequest,
-    PrivacyRequestStatus,
     RequestTask,
 )
 from fides.api.service.connectors import get_connector
@@ -57,7 +50,7 @@ from ..task.traversal_data import (
     "dsr_version",
     ["use_dsr_3_0", "use_dsr_2_0"],
 )
-async def test_sql_erasure_ignores_collections_without_pk(
+async def test_sql_erasure_does_not_ignore_collections_without_pk(
     db,
     postgres_inserts,
     integration_postgres_config,
@@ -116,7 +109,7 @@ async def test_sql_erasure_ignores_collections_without_pk(
         .all()
     )
     logs = [log.__dict__ for log in logs]
-    # since address has no primary_key=True field, it's erasure is skipped
+    # erasure is not skipped since primary_key is not required
     assert (
         len(
             records_matching_fields(
@@ -126,13 +119,13 @@ async def test_sql_erasure_ignores_collections_without_pk(
                 message="No values were erased since no primary key was defined for this collection",
             )
         )
-        == 1
+        == 0
     )
     assert v == {
         "postgres_example:customer": 1,
         "postgres_example:payment_card": 0,
         "postgres_example:orders": 0,
-        "postgres_example:address": 0,
+        "postgres_example:address": 2,
     }
 
 

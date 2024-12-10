@@ -14,8 +14,6 @@ dataset:
               data_type: string
           - name: id
             data_categories: [user.unique_id]
-            fides_meta:
-              primary_key: True
           - name: name
             data_categories: [user.name]
             fides_meta:
@@ -31,8 +29,6 @@ dataset:
               data_type: string
           - name: id
             data_categories: [user.unique_id]
-            fides_meta:
-              primary_key: True
           - name: name
             data_categories: [user.name]
             fides_meta:

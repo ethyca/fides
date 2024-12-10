@@ -82,7 +82,6 @@ dataset:
           - name: _id
             data_categories: [system.operations]
             fides_meta:
-              primary_key: True
               data_type: object_id
           - name: customer_identifiers
             fields:
@@ -113,7 +112,6 @@ dataset:
           - name: _id
             data_categories: [system.operations]
             fides_meta:
-              primary_key: True
               data_type: object_id
           - name: customer_information
             fields:
@@ -146,7 +144,6 @@ dataset:
           - name: _id
             data_categories: [system.operations]
             fides_meta:
-              primary_key: True
               data_type: object_id
           - name: passenger_information
             fields:
@@ -176,7 +173,6 @@ dataset:
           - name: _id
             data_categories: [system.operations]
             fides_meta:
-              primary_key: True
               data_type: object_id
           - name: thread
             fides_meta:
@@ -201,7 +197,6 @@ dataset:
           - name: _id
             data_categories: [system.operations]
             fides_meta:
-              primary_key: True
               data_type: object_id
           - name: email
             data_categories: [user.contact.email]
@@ -211,7 +206,6 @@ dataset:
           - name: id
             data_categories: [user.unique_id]
             fides_meta:
-              primary_key: True
               references:
                 - dataset: mongo_test
                   field: flights.pilots
@@ -225,7 +219,6 @@ dataset:
           - name: _id
             data_categories: [system.operations]
             fides_meta:
-              primary_key: True
               data_type: object_id
           - name: planes
             data_categories: [system.operations]
@@ -244,7 +237,6 @@ dataset:
           - name: _id
             data_categories: [system.operations]
             fides_meta:
-              primary_key: True
               data_type: object_id
           - name: billing_address_id
             data_categories: [system.operations]
@@ -261,8 +253,6 @@ dataset:
             data_categories: [user.unique_id]
           - name: id
             data_categories: [system.operations]
-            fides_meta:
-              primary_key: True
           - name: name
             data_categories: [user.financial]
           - name: preferred
@@ -271,7 +261,6 @@ dataset:
         fields:
           - name: _id
             fides_meta:
-              primary_key: True
               data_type: object_id
           - name: owner
             fides_meta:

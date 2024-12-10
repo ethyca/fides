@@ -286,9 +286,47 @@ class TestSQLQueryConfig:
             "id": 1,
         }
         text_clause = config.generate_update_stmt(row, erasure_policy, privacy_request)
-        assert text_clause.text == """UPDATE customer SET name = :name WHERE id = :id"""
-        assert text_clause._bindparams["name"].key == "name"
-        assert text_clause._bindparams["name"].value is None  # Null masking strategy
+        assert (
+            text_clause.text
+            == """UPDATE customer SET name = :masked_name WHERE email = :email"""
+        )
+        assert text_clause._bindparams["masked_name"].key == "masked_name"
+        assert (
+            text_clause._bindparams["masked_name"].value is None
+        )  # Null masking strategy
+
+    def test_generate_update_stmt_one_field_inbound_reference(
+        self, erasure_policy_address_city, example_datasets, connection_config
+    ):
+        dataset = Dataset(**example_datasets[0])
+        graph = convert_dataset_to_graph(dataset, connection_config.key)
+        dataset_graph = DatasetGraph(*[graph])
+        traversal = Traversal(dataset_graph, {"email": "customer-1@example.com"})
+
+        address_node = traversal.traversal_node_dict[
+            CollectionAddress("postgres_example_test_dataset", "address")
+        ].to_mock_execution_node()
+
+        config = SQLQueryConfig(address_node)
+        row = {
+            "id": 1,
+            "house": "123",
+            "street": "Main St",
+            "city": "San Francisco",
+            "state": "CA",
+            "zip": "94105",
+        }
+        text_clause = config.generate_update_stmt(
+            row, erasure_policy_address_city, privacy_request
+        )
+        assert (
+            text_clause.text
+            == """UPDATE address SET city = :masked_city WHERE id = :id"""
+        )
+        assert text_clause._bindparams["masked_city"].key == "masked_city"
+        assert (
+            text_clause._bindparams["masked_city"].value is None
+        )  # Null masking strategy
 
     def test_generate_update_stmt_length_truncation(
         self,
@@ -316,11 +354,14 @@ class TestSQLQueryConfig:
         text_clause = config.generate_update_stmt(
             row, erasure_policy_string_rewrite_long, privacy_request
         )
-        assert text_clause.text == """UPDATE customer SET name = :name WHERE id = :id"""
-        assert text_clause._bindparams["name"].key == "name"
+        assert (
+            text_clause.text
+            == """UPDATE customer SET name = :masked_name WHERE email = :email"""
+        )
+        assert text_clause._bindparams["masked_name"].key == "masked_name"
         # length truncation on name field
         assert (
-            text_clause._bindparams["name"].value
+            text_clause._bindparams["masked_name"].value
             == "some rewrite value that is very long and"
         )
 
@@ -365,22 +406,23 @@ class TestSQLQueryConfig:
         text_clause = config.generate_update_stmt(row, erasure_policy, privacy_request)
         assert (
             text_clause.text
-            == "UPDATE customer SET email = :email, name = :name WHERE id = :id"
+            == "UPDATE customer SET email = :masked_email, name = :masked_name WHERE email = :email"
         )
-        assert text_clause._bindparams["name"].key == "name"
+        assert text_clause._bindparams["masked_name"].key == "masked_name"
         # since length is set to 40 in dataset.yml, we expect only first 40 chars of masked val
         assert (
-            text_clause._bindparams["name"].value
+            text_clause._bindparams["masked_name"].value
             == HashMaskingStrategy(HashMaskingConfiguration(algorithm="SHA-512")).mask(
                 ["John Customer"], request_id=privacy_request.id
             )[0][0:40]
         )
         assert (
-            text_clause._bindparams["email"].value
+            text_clause._bindparams["masked_email"].value
             == HashMaskingStrategy(HashMaskingConfiguration(algorithm="SHA-512")).mask(
                 ["customer-1@example.com"], request_id=privacy_request.id
             )[0]
         )
+        assert text_clause._bindparams["email"].value == "customer-1@example.com"
         clear_cache_secrets(privacy_request.id)
 
     def test_generate_update_stmts_from_multiple_rules(
@@ -409,12 +451,14 @@ class TestSQLQueryConfig:
 
         assert (
             text_clause.text
-            == "UPDATE customer SET email = :email, name = :name WHERE id = :id"
+            == "UPDATE customer SET email = :masked_email, name = :masked_name WHERE email = :email"
         )
         # Two different masking strategies used for name and email
-        assert text_clause._bindparams["name"].value is None  # Null masking strategy
         assert (
-            text_clause._bindparams["email"].value == "*****"
+            text_clause._bindparams["masked_name"].value is None
+        )  # Null masking strategy
+        assert (
+            text_clause._bindparams["masked_email"].value == "*****"
         )  # String rewrite masking strategy
 
 
@@ -583,7 +627,7 @@ class TestMongoQueryConfig:
             row, erasure_policy, privacy_request
         )
 
-        expected_result_0 = {"_id": 1}
+        expected_result_0 = {"customer_id": 1}
         expected_result_1 = {
             "$set": {
                 "birthday": None,
@@ -665,7 +709,7 @@ class TestMongoQueryConfig:
         mongo_statement = config.generate_update_stmt(
             row, erasure_policy_two_rules, privacy_request
         )
-        assert mongo_statement[0] == {"_id": 1}
+        assert mongo_statement[0] == {"customer_id": 1}
         assert len(mongo_statement[1]["$set"]["gender"]) == 30
         assert (
             mongo_statement[1]["$set"]["birthday"]
