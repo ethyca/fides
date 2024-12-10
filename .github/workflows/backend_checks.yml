@@ -244,6 +244,7 @@ jobs:
   Safe-Tests:
     needs: Check-Container-Startup
     strategy:
+      fail-fast: false
       matrix:
         python_version: ["3.9.18", "3.10.13"]
         test_selection:
