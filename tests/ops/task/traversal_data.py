@@ -258,9 +258,7 @@ def mongo_dataset_dict(mongo_db_name: str, postgres_db_name: str) -> GraphDatase
             {
                 "name": "customer_details",
                 "fields": [
-                    {
-                        "name": "_id",
-                    },
+                    {"name": "_id", "fides_meta": {"primary_key": True}},
                     {
                         "name": "birthday",
                         "fides_meta": {"data_type": "string"},
