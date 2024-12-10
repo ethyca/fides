@@ -33,7 +33,7 @@ def postgres_dataset_dict(db_name: str) -> Dict[str, Any]:
                 "fields": [
                     {
                         "name": "id",
-                        "fides_meta": {"data_type": "integer"},
+                        "fides_meta": {"primary_key": True, "data_type": "integer"},
                     },
                     {"name": "name", "fides_meta": {"data_type": "string"}},
                     {
@@ -58,7 +58,7 @@ def postgres_dataset_dict(db_name: str) -> Dict[str, Any]:
                 "name": "address",
                 "after": [f"{db_name}.customer", f"{db_name}.orders"],
                 "fields": [
-                    {"name": "id"},
+                    {"name": "id", "fides_meta": {"primary_key": True}},
                     {"name": "street", "fides_meta": {"data_type": "string"}},
                     {"name": "city", "fides_meta": {"data_type": "string"}},
                     {"name": "state", "fides_meta": {"data_type": "string"}},
@@ -68,7 +68,7 @@ def postgres_dataset_dict(db_name: str) -> Dict[str, Any]:
             {
                 "name": "orders",
                 "fields": [
-                    {"name": "id"},
+                    {"name": "id", "fides_meta": {"primary_key": True}},
                     {
                         "name": "customer_id",
                         "fides_meta": {
@@ -113,7 +113,7 @@ def postgres_dataset_dict(db_name: str) -> Dict[str, Any]:
                 "fields": [
                     {
                         "name": "id",
-                        "fides_meta": {"data_type": "string"},
+                        "fides_meta": {"primary_key": True, "data_type": "string"},
                     },
                     {"name": "name", "fides_meta": {"data_type": "string"}},
                     {"name": "ccn"},
@@ -657,7 +657,7 @@ def scylladb_dataset_dict(db_name: str) -> Dict[str, Any]:
                     {
                         "name": "user_id",
                         "data_categories": ["user.unique_id"],
-                        "fides_meta": {"data_type": "integer"},
+                        "fides_meta": {"data_type": "integer", "primary_key": True},
                     },
                     {"name": "uuid", "data_categories": ["user.government_id"]},
                 ],
@@ -677,12 +677,13 @@ def scylladb_dataset_dict(db_name: str) -> Dict[str, Any]:
                                 }
                             ],
                             "data_type": "integer",
+                            "primary_key": True,
                         },
                     },
                     {
                         "name": "timestamp",
                         "data_categories": ["user.behavior"],
-                        "fides_meta": {"data_type": "string"},
+                        "fides_meta": {"data_type": "string", "primary_key": True},
                     },
                     {
                         "name": "user_agent",
@@ -702,7 +703,7 @@ def scylladb_dataset_dict(db_name: str) -> Dict[str, Any]:
                     {
                         "name": "payment_method_id",
                         "data_categories": ["system.operations"],
-                        "fides_meta": {"data_type": "integer"},
+                        "fides_meta": {"data_type": "integer", "primary_key": True},
                     },
                     {
                         "name": "user_id",
@@ -732,7 +733,7 @@ def scylladb_dataset_dict(db_name: str) -> Dict[str, Any]:
                     {
                         "name": "order_id",
                         "data_categories": ["system.operations"],
-                        "fides_meta": {"data_type": "integer"},
+                        "fides_meta": {"data_type": "integer", "primary_key": True},
                     },
                     {
                         "name": "payment_method_id",

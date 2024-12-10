@@ -33,6 +33,7 @@ example_dataset_yaml = """dataset:
           - name: id
             data_categories: [system.operations]
             fidesops_meta:
+              primary_key: True
               data_type: integer
 """
 
@@ -46,6 +47,7 @@ example_dataset_nested_yaml = """dataset:
           - name: _id
             data_categories: [system.operations]
             fidesops_meta:
+              primary_key: True
               data_type: object_id
           - name: photo_id
             data_categories: [user.unique_id]
@@ -221,6 +223,7 @@ example_postgres_yaml = """dataset:
           - name: id
             data_categories: [system.operations]
             fidesops_meta:
+              primary_key: True
               data_type: integer
       - name: users
         fields:

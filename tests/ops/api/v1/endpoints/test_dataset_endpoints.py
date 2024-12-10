@@ -232,7 +232,9 @@ class TestValidateDataset:
         invalid_dataset = example_datasets[0]
 
         # string is properly read:
-        invalid_dataset["collections"][0]["fields"][0]["fides_meta"] = {"length": 123}
+        invalid_dataset["collections"][0]["fields"][0]["fidesops_meta"] = {
+            "length": 123
+        }
         response = api_client.put(
             validate_dataset_url, headers=auth_header, json=invalid_dataset
         )
@@ -245,7 +247,7 @@ class TestValidateDataset:
         )
 
         # fails with an invalid value
-        invalid_dataset["collections"][0]["fields"][0]["fides_meta"] = {"length": -1}
+        invalid_dataset["collections"][0]["fields"][0]["fidesops_meta"] = {"length": -1}
         response = api_client.put(
             validate_dataset_url, headers=auth_header, json=invalid_dataset
         )
@@ -267,7 +269,7 @@ class TestValidateDataset:
         invalid_dataset = example_datasets[0]
 
         # string is properly read:
-        invalid_dataset["collections"][0]["fields"][0]["fides_meta"] = {
+        invalid_dataset["collections"][0]["fields"][0]["fidesops_meta"] = {
             "data_type": "string"
         }
         response = api_client.put(
@@ -282,7 +284,7 @@ class TestValidateDataset:
         )
 
         # fails with an invalid value
-        invalid_dataset["collections"][0]["fields"][0]["fides_meta"] = {
+        invalid_dataset["collections"][0]["fields"][0]["fidesops_meta"] = {
             "data_type": "stringsssssss"
         }
 
@@ -296,7 +298,7 @@ class TestValidateDataset:
             == "Value error, The data type stringsssssss is not supported."
         )
 
-    def test_put_validate_dataset_invalid_fides_meta(
+    def test_put_validate_dataset_invalid_fidesops_meta(
         self,
         example_datasets: List,
         validate_dataset_url,
@@ -305,8 +307,8 @@ class TestValidateDataset:
     ) -> None:
         auth_header = generate_auth_header(scopes=[DATASET_READ])
         invalid_dataset = example_datasets[0]
-        # Add an invalid fides_meta annotation to ensure our type-checking is comprehensive
-        invalid_dataset["collections"][0]["fields"][0]["fides_meta"] = {
+        # Add an invalid fidesops_meta annotation to ensure our type-checking is comprehensive
+        invalid_dataset["collections"][0]["fields"][0]["fidesops_meta"] = {
             "references": [
                 {
                     "dataset": "postgres_example_test_dataset",

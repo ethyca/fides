@@ -7,6 +7,8 @@ dataset:
         fields:
           - name: id
             data_categories: [system.operations]
+            fides_meta:
+              primary_key: true
           - name: authorized_user
             data_categories: [user]
             fides_meta:
@@ -29,6 +31,8 @@ dataset:
         fields:
           - name: box_id
             data_categories: [user]
+            fides_meta:
+              primary_key: true
           - name: email
             data_categories: [user.contact.email]
             fides_meta:

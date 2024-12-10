@@ -20,6 +20,7 @@ f = """dataset:
         fields:
           - name: id
             fides_meta:
+              primary_key: True
               data_type: integer
               references:
                 - dataset: db
@@ -33,6 +34,7 @@ f = """dataset:
         fields:
           - name: id
             fides_meta:
+              primary_key: True
               data_type: integer
           - name: user_id
           - name: street

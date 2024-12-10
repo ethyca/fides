@@ -38,7 +38,7 @@
                 "fides_meta": {
                   "references": null,
                   "identity": null,
-                  "primary_key": null,
+                  "primary_key": true,
                   "data_type": null,
                   "length": null,
                   "return_all_elements": null,
@@ -125,7 +125,7 @@
                 "fides_meta": {
                   "references": null,
                   "identity": null,
-                  "primary_key": null,
+                  "primary_key": true,
                   "data_type": null,
                   "length": null,
                   "return_all_elements": null,
@@ -199,7 +199,7 @@
                 "fides_meta": {
                   "references": null,
                   "identity": null,
-                  "primary_key": null,
+                  "primary_key": true,
                   "data_type": null,
                   "length": null,
                   "return_all_elements": null,
@@ -258,7 +258,7 @@
                 "fides_meta": {
                   "references": null,
                   "identity": null,
-                  "primary_key": null,
+                  "primary_key": true,
                   "data_type": null,
                   "length": null,
                   "return_all_elements": null,
@@ -366,7 +366,7 @@
                 "fides_meta": {
                   "references": null,
                   "identity": null,
-                  "primary_key": null,
+                  "primary_key": true,
                   "data_type": null,
                   "length": null,
                   "return_all_elements": null,
@@ -466,7 +466,7 @@
                 "fides_meta": {
                   "references": null,
                   "identity": null,
-                  "primary_key": null,
+                  "primary_key": true,
                   "data_type": null,
                   "length": null,
                   "return_all_elements": null,
@@ -503,7 +503,7 @@
                 "fides_meta": {
                   "references": null,
                   "identity": null,
-                  "primary_key": null,
+                  "primary_key": true,
                   "data_type": null,
                   "length": null,
                   "return_all_elements": null,
@@ -555,7 +555,7 @@
                 "fides_meta": {
                   "references": null,
                   "identity": null,
-                  "primary_key": null,
+                  "primary_key": true,
                   "data_type": null,
                   "length": null,
                   "return_all_elements": null,
@@ -664,7 +664,7 @@
                 "fides_meta": {
                   "references": null,
                   "identity": null,
-                  "primary_key": null,
+                  "primary_key": true,
                   "data_type": null,
                   "length": null,
                   "return_all_elements": null,

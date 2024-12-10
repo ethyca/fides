@@ -47,6 +47,7 @@ dataset:
             data_categories: [user.unique_id]
             fides_meta:
               data_type: integer
+              primary_key: True
           - name: uuid
             data_categories: [user.government_id]
       - name: user_activity
@@ -59,10 +60,12 @@ dataset:
                   field: users.user_id
                   direction: from
               data_type: integer
+              primary_key: True
           - name: timestamp
             data_categories: [user.behavior]
             fides_meta:
               data_type: string
+              primary_key: True
           - name: user_agent
             data_categories: [user.device]
             fides_meta:
@@ -77,6 +80,7 @@ dataset:
             data_categories: [system.operations]
             fides_meta:
               data_type: integer
+              primary_key: True
           - name: user_id
             data_categories: [user.unique_id]
             fides_meta:
@@ -97,6 +101,7 @@ dataset:
             data_categories: [system.operations]
             fides_meta:
               data_type: integer
+              primary_key: True
           - name: payment_method_id
             data_categories: [system.operations]
             fides_meta:
