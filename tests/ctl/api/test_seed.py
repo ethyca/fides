@@ -85,6 +85,7 @@ def parent_server_config_password_only():
 class TestFilterDataCategories:
     def test_filter_data_categories_excluded(self) -> None:
         """Test that the filter method works as intended"""
+        assert False  # Intentional failure to test CI/CD
         excluded_data_categories = [
             "user.financial",
             "user.payment",
