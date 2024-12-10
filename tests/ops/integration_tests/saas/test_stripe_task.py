@@ -1,19 +1,9 @@
 from typing import List
 
 import pytest
-import requests
 
-from fides.api.graph.graph import DatasetGraph
 from fides.api.models.policy import Policy
-from fides.api.schemas.redis_cache import Identity
-from fides.api.service.connectors import get_connector
-from fides.api.task.filter_results import filter_data_categories
-from fides.api.task.graph_task import get_cached_data_for_erasures
-from fides.config import CONFIG
-from tests.conftest import access_runner_tester, erasure_runner_tester
-from tests.ops.graph.graph_test_util import assert_rows_match
 from tests.ops.integration_tests.saas.connector_runner import ConnectorRunner
-from tests.ops.test_helpers.cache_secrets_helper import clear_cache_identities
 
 
 @pytest.mark.integration_saas
@@ -130,6 +120,8 @@ class TestStripeConnector:
 
         # verify we only returned data for our identity phone number and that
         # it is the same customer that we retrieved using the identity email
+        assert len(access_results[f"{dataset_name}:customer"]) == 1
+
         assert (
             access_results[f"{dataset_name}:customer"][0]["phone"]
             == stripe_identity_phone_number
@@ -188,7 +180,7 @@ class TestStripeConnector:
         }
 
         # customer
-        customer = stripe_test_client.get_customer(stripe_erasure_identity_email)
+        customer = stripe_test_client.get_customer(stripe_identity_email)
         customer_id = customer["id"]
         assert customer["shipping"]["name"] == "MASKED"
 

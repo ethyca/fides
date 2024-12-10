@@ -436,12 +436,7 @@ def stripe_test_client(
     yield test_client
 
 
-@pytest.fixture(scope="function")
-def stripe_create_data(
-    stripe_test_client: StripeTestClient,
-    stripe_identity_email: str,
-    stripe_identity_phone_number: str,
-) -> Generator:
+def stripe_generate_data(client, email, phone_number):
 
     # customer
     customer_data = {
@@ -455,8 +450,8 @@ def stripe_create_data(
         },
         "balance": 0,
         "description": "RTF Test Customer",
-        "email": stripe_identity_email,
-        "phone": stripe_identity_phone_number,
+        "email": email,
+        "phone": phone_number,
         "name": "Ethyca RTF",
         "preferred_locales": ["en-US"],
         "shipping": {
@@ -472,34 +467,56 @@ def stripe_create_data(
         },
     }
 
-    customer = stripe_test_client.create_customer(customer_data)
+    customer = client.create_customer(customer_data)
 
     customer_id = customer["id"]
 
-    card_id = stripe_test_client.create_dispute(customer_id, customer_data)
+    card_id = client.create_dispute(customer_id, customer_data)
 
-    stripe_test_client.create_bank_account(customer_id, customer_data)
+    client.create_bank_account(customer_id, customer_data)
 
-    invoice = stripe_test_client.create_invoice(customer_id)
+    invoice = client.create_invoice(customer_id)
 
-    stripe_test_client.create_credit_note(invoice)
+    client.create_credit_note(invoice)
 
-    stripe_test_client.create_balance_transaction(customer_id)
+    client.create_balance_transaction(customer_id)
 
-    stripe_test_client.create_payment_intent(customer_id)
+    client.create_payment_intent(customer_id)
 
-    stripe_test_client.create_payment_method(customer_id, customer_data["name"])
+    client.create_payment_method(customer_id, customer_data["name"])
 
-    subscription_id = stripe_test_client.create_subscription(customer_id)
+    subscription_id = client.create_subscription(customer_id)
 
-    tax_id = stripe_test_client.create_tax(customer_id)
+    tax_id = client.create_tax(customer_id)
 
-    yield customer
+    return {
+        "customer_id": customer_id,
+        "card_id": card_id,
+        "subscription_id": subscription_id,
+        "tax_id": tax_id,
+    }
 
-    stripe_test_client.delete_customer(customer_id)
-    stripe_test_client.delete_card(customer_id, card_id)
-    stripe_test_client.delete_subscription(subscription_id)
-    stripe_test_client.delete_tax_id(customer_id, tax_id)
+
+@pytest.fixture(scope="function")
+def stripe_create_data(
+    stripe_test_client: StripeTestClient,
+    stripe_identity_email: str,
+    stripe_identity_phone_number: str,
+) -> Generator:
+    customer = stripe_generate_data(
+        stripe_test_client, stripe_identity_email, stripe_identity_phone_number
+    )
+    random_customer = stripe_generate_data(
+        stripe_test_client, generate_random_email(), generate_random_phone_number()
+    )
+
+    yield
+
+    for data in [customer, random_customer]:
+        stripe_test_client.delete_customer(data["customer_id"])
+        stripe_test_client.delete_card(data["customer_id"], data["card_id"])
+        stripe_test_client.delete_subscription(data["subscription_id"])
+        stripe_test_client.delete_tax_id(data["customer_id"], data["tax_id"])
 
 
 @pytest.fixture
