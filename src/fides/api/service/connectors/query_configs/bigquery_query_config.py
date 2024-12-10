@@ -123,15 +123,15 @@ class BigQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
         TODO: DRY up this method and `generate_delete` a bit
         """
         update_value_map: Dict[str, Any] = self.update_value_map(row, policy, request)
-        non_empty_primary_keys: Dict[str, Field] = filter_nonempty_values(
+        non_empty_reference_field_keys: Dict[str, Field] = filter_nonempty_values(
             {
                 fpath.string_path: fld.cast(row[fpath.string_path])
-                for fpath, fld in self.primary_key_field_paths.items()
+                for fpath, fld in self.reference_field_paths.items()
                 if fpath.string_path in row
             }
         )
 
-        valid = len(non_empty_primary_keys) > 0 and update_value_map
+        valid = len(non_empty_reference_field_keys) > 0 and update_value_map
         if not valid:
             logger.warning(
                 "There is not enough data to generate a valid update statement for {}",
@@ -141,7 +141,7 @@ class BigQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
 
         table = Table(self._generate_table_name(), MetaData(bind=client), autoload=True)
         where_clauses: List[ColumnElement] = [
-            getattr(table.c, k) == v for k, v in non_empty_primary_keys.items()
+            getattr(table.c, k) == v for k, v in non_empty_reference_field_keys.items()
         ]
 
         if self.partitioning:
@@ -172,15 +172,15 @@ class BigQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
         TODO: DRY up this method and `generate_update` a bit
         """
 
-        non_empty_primary_keys: Dict[str, Field] = filter_nonempty_values(
+        non_empty_reference_field_keys: Dict[str, Field] = filter_nonempty_values(
             {
                 fpath.string_path: fld.cast(row[fpath.string_path])
-                for fpath, fld in self.primary_key_field_paths.items()
+                for fpath, fld in self.reference_field_paths.items()
                 if fpath.string_path in row
             }
         )
 
-        valid = len(non_empty_primary_keys) > 0
+        valid = len(non_empty_reference_field_keys) > 0
         if not valid:
             logger.warning(
                 "There is not enough data to generate a valid DELETE statement for {}",
@@ -190,7 +190,7 @@ class BigQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
 
         table = Table(self._generate_table_name(), MetaData(bind=client), autoload=True)
         where_clauses: List[ColumnElement] = [
-            getattr(table.c, k) == v for k, v in non_empty_primary_keys.items()
+            getattr(table.c, k) == v for k, v in non_empty_reference_field_keys.items()
         ]
 
         if self.partitioning:

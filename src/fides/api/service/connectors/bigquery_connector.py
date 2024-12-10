@@ -33,6 +33,10 @@ class BigQueryConnector(SQLConnector):
 
     secrets_schema = BigQuerySchema
 
+    @property
+    def requires_primary_keys(self) -> bool:
+        return False
+
     # Overrides BaseConnector.build_uri
     def build_uri(self) -> str:
         """Build URI of format"""
