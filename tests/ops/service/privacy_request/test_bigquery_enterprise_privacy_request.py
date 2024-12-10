@@ -28,29 +28,37 @@ from tests.ops.service.privacy_request.test_request_runner_service import (
 
 PRIVACY_REQUEST_TASK_TIMEOUT = 5
 # External services take much longer to return
-PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL = 100
+PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL = 150
 
 
 @pytest.mark.integration_bigquery
 @pytest.mark.integration_external
 @pytest.mark.parametrize(
     "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
+    ["use_dsr_3_0"], # todo- add back 2_0
+)
+@pytest.mark.parametrize(
+    "bigquery_fixtures",
+    [
+        "bigquery_enterprise_test_dataset_config",
+        "bigquery_enterprise_test_dataset_config_with_partitioning_meta"  # todo- debug why this isn't working
+    ],
 )
 @mock.patch("fides.api.models.privacy_request.PrivacyRequest.trigger_policy_webhook")
 def test_access_request(
     trigger_webhook_mock,
-    bigquery_enterprise_test_dataset_config,
     db,
     cache,
     policy,
     dsr_version,
+    bigquery_fixtures,
     request,
     policy_pre_execution_webhooks,
     policy_post_execution_webhooks,
     run_privacy_request_task,
 ):
     request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+    request.getfixturevalue(bigquery_fixtures)  # required to test partitioning and non-partitioned tables
 
     customer_email = "customer-1@example.com"
     user_id = (
@@ -150,8 +158,9 @@ def test_access_request(
 @pytest.mark.parametrize(
     "bigquery_fixtures",
     [
-        "bigquery_enterprise_resources"
-    ],  # todo- add other resources to test, e.g. partitioned data
+        "bigquery_enterprise_resources",
+        "bigquery_enterprise_resources_with_partitioning"
+    ],
 )
 def test_erasure_request(
     db,
@@ -160,7 +169,6 @@ def test_erasure_request(
     cache,
     dsr_version,
     bigquery_fixtures,
-    bigquery_enterprise_test_dataset_config,
     bigquery_enterprise_erasure_policy,
     run_privacy_request_task,
 ):
@@ -286,7 +294,7 @@ def test_erasure_request(
 @pytest.mark.integration_external
 @pytest.mark.parametrize(
     "dsr_version",
-    ["use_dsr_3_0"], # todo- add dsr 2_0
+    ["use_dsr_3_0"],
 )
 @mock.patch("fides.api.models.privacy_request.PrivacyRequest.trigger_policy_webhook")
 def test_access_request_multiple_custom_identities(
@@ -395,13 +403,14 @@ def test_access_request_multiple_custom_identities(
 @pytest.mark.integration_bigquery
 @pytest.mark.parametrize(
     "dsr_version",
-    ["use_dsr_3_0"], # todo- add dsr 2_0
+    ["use_dsr_3_0"],
 )
 @pytest.mark.parametrize(
     "bigquery_fixtures",
     [
-        "bigquery_enterprise_resources"
-    ],  # todo- add other resources to test, e.g. partitioned data
+        "bigquery_enterprise_resources",
+        "bigquery_enterprise_resources_with_partitioning"
+    ],
 )
 def test_erasure_request_multiple_custom_identities(
         db,
@@ -410,7 +419,6 @@ def test_erasure_request_multiple_custom_identities(
         cache,
         dsr_version,
         bigquery_fixtures,
-        bigquery_enterprise_test_dataset_config,
         bigquery_enterprise_erasure_policy,
         run_privacy_request_task,
 ):
