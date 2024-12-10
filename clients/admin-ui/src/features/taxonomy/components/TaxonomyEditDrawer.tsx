@@ -1,7 +1,10 @@
 import {
+  AntButton as Button,
   AntForm,
   AntTooltip,
   ConfirmationModal,
+  DrawerFooter,
+  EyeIcon,
   Stack,
   Text,
   useDisclosure,
@@ -10,6 +13,8 @@ import {
 
 import { useCustomFields } from "~/features/common/custom-fields";
 import { getErrorMessage } from "~/features/common/helpers";
+import { PlayIcon } from "~/features/common/Icon/Play";
+import { TrashCanOutlineIcon } from "~/features/common/Icon/TrashCanOutlineIcon";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { isErrorResult } from "~/types/errors";
 
@@ -89,6 +94,15 @@ const TaxonomyEditDrawer = ({
     closeDrawer();
   };
 
+  const handleEnable = async () => {
+    await updateTrigger({
+      ...taxonomyItem!,
+      active: true,
+    });
+    onDeleteClose();
+    closeDrawer();
+  };
+
   return (
     <>
       <EditDrawer
@@ -96,11 +110,41 @@ const TaxonomyEditDrawer = ({
         onClose={closeDrawer}
         header={<EditDrawerHeader title={taxonomyItem?.name || ""} />}
         footer={
-          <EditDrawerFooter
-            onClose={closeDrawer}
-            onDelete={onDeleteOpen}
-            formId={TAXONOMY_FORM_ID}
-          />
+          <DrawerFooter justifyContent="space-between">
+            {taxonomyItem?.active ? (
+              <Button
+                aria-label="delete"
+                icon={<TrashCanOutlineIcon fontSize="small" />}
+                onClick={onDeleteOpen}
+                data-testid="delete-btn"
+              />
+            ) : (
+              <AntTooltip title="Enable label">
+                <Button
+                  aria-label="enable"
+                  onClick={handleEnable}
+                  data-testid="enable-btn"
+                  icon={<EyeIcon fontSize="small" />}
+                />
+              </AntTooltip>
+            )}
+
+            <div className="flex gap-2">
+              <Button
+                htmlType="submit"
+                type="primary"
+                data-testid="save-btn"
+                form={TAXONOMY_FORM_ID}
+              >
+                Save
+              </Button>
+            </div>
+          </DrawerFooter>
+          // <EditDrawerFooter
+          //   onClose={closeDrawer}
+          //   onDelete={onDeleteOpen}
+          //   formId={TAXONOMY_FORM_ID}
+          // />
         }
       >
         <div className="mb-4">
