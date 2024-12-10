@@ -18,7 +18,8 @@ from fides.api.models.sql_models import Dataset as CtlDataset
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.saas.saas_config import ParamValue
 from fides.api.schemas.saas.strategy_configuration import (
-    OAuth2AuthorizationCodeConfiguration, OAuth2ClientCredentialsConfiguration
+    OAuth2AuthorizationCodeConfiguration,
+    OAuth2ClientCredentialsConfiguration,
 )
 from fides.api.service.masking.strategy.masking_strategy_nullify import (
     NullMaskingStrategy,
@@ -389,12 +390,12 @@ def oauth2_authorization_code_connection_config(
     yield connection_config
     connection_config.delete(db)
 
+
 ## TODO: base on the previous connection config to set up a new improved
 
+
 @pytest.fixture(scope="function")
-def oauth2_client_credentials_configuration() -> (
-    OAuth2ClientCredentialsConfiguration
-):
+def oauth2_client_credentials_configuration() -> OAuth2ClientCredentialsConfiguration:
     return {
         "token_request": {
             "method": "POST",

@@ -8,7 +8,6 @@ from requests import PreparedRequest, Request
 from sqlalchemy.orm import Session
 
 from fides.api.common_exceptions import FidesopsException, OAuth2TokenException
-
 from fides.api.service.authentication.authentication_strategy import (
     AuthenticationStrategy,
 )

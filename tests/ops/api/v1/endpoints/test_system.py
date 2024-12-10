@@ -127,7 +127,6 @@ class TestPatchSystemConnections:
         db.commit()
         return system
 
-
     def test_patch_connections_valid_system(
         self, api_client: TestClient, generate_auth_header, url, payload
     ):
@@ -508,7 +507,9 @@ class TestDeleteSystemConnectionConfig:
     ) -> None:
         auth_header = generate_auth_header(scopes=[CONNECTION_DELETE])
         # the key needs to be cached before the delete
-        key = system_linked_with_oauth2_authorization_code_connection_config.connection_configs.key
+        key = (
+            system_linked_with_oauth2_authorization_code_connection_config.connection_configs.key
+        )
         resp = api_client.delete(url, headers=auth_header)
         assert resp.status_code == HTTP_204_NO_CONTENT
         assert db.query(ConnectionConfig).filter_by(key=key).first() is None
@@ -634,7 +635,9 @@ class TestDeleteSystemConnectionConfig:
             api_client.put(
                 assign_url,
                 headers=system_manager_auth_header,
-                json=[system_linked_with_oauth2_authorization_code_connection_config.fides_key],
+                json=[
+                    system_linked_with_oauth2_authorization_code_connection_config.fides_key
+                ],
             )
             auth_header = generate_system_manager_header(
                 [system_linked_with_oauth2_authorization_code_connection_config.id]

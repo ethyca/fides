@@ -161,10 +161,12 @@ class OAuth2AuthorizationCodeConfiguration(OAuth2BaseConfiguration):
 
     authorization_request: SaaSRequest
 
+
 class OAuth2ClientCredentialsConfiguration(OAuth2BaseConfiguration):
     """
     Ouath authorization that does not require manual user interation to get authorization
     The standard OAuth2 configuration, but excluding the refresh token during logging
     since the client credentials flow does not require a refresh token.
     """
+
     refresh_request: Optional[SaaSRequest] = Field(exclude=True)
