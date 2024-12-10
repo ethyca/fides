@@ -245,6 +245,7 @@ jobs:
     needs: Check-Container-Startup
     strategy:
       matrix:
+        fail-fast: false
         python_version: ["3.9.18", "3.10.13"]
         test_selection:
           - "ctl-not-external"
