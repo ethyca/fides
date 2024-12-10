@@ -17,6 +17,10 @@ from fides.api.util.saas_util import (
     load_config_with_replacement,
     load_dataset_with_replacement,
 )
+from tests.ops.integration_tests.saas.connector_runner import (
+    ConnectorRunner,
+    generate_random_email,
+)
 from tests.ops.test_helpers.saas_test_utils import poll_for_existence
 from tests.ops.test_helpers.vault_client import get_secrets
 
@@ -41,7 +45,7 @@ def hubspot_identity_email(saas_config):
 
 @pytest.fixture(scope="session")
 def hubspot_erasure_identity_email():
-    return f"{cryptographic_util.generate_secure_random_string(13)}@email.com"
+    return generate_random_email()
 
 
 @pytest.fixture
@@ -115,8 +119,7 @@ class HubspotTestClient:
     headers: object = {}
     base_url: str = ""
 
-    def __init__(self, connection_config_hubspot: ConnectionConfig):
-        hubspot_secrets = connection_config_hubspot.secrets
+    def __init__(self, hubspot_secrets: Dict[str, str]):
         self.headers = {
             "Authorization": f"Bearer {hubspot_secrets['private_app_token']}",
         }
@@ -202,9 +205,9 @@ class HubspotTestClient:
 
 @pytest.fixture(scope="function")
 def hubspot_test_client(
-    connection_config_hubspot: HubspotTestClient,
+    hubspot_secrets,
 ) -> Generator:
-    test_client = HubspotTestClient(connection_config_hubspot=connection_config_hubspot)
+    test_client = HubspotTestClient(hubspot_secrets)
     yield test_client
 
 
@@ -292,4 +295,18 @@ def hubspot_erasure_data(
         (contact_id, hubspot_erasure_identity_email, hubspot_test_client),
         error_message=error_message,
         existence_desired=False,
+    )
+
+
+@pytest.fixture
+def hubspot_runner(
+    db,
+    cache,
+    hubspot_secrets,
+) -> ConnectorRunner:
+    return ConnectorRunner(
+        db,
+        cache,
+        "hubspot",
+        hubspot_secrets,
     )
