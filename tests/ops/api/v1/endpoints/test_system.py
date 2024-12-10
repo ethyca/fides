@@ -111,15 +111,22 @@ def connections():
 
 
 class TestPatchSystemConnections:
-    ## Add this with the other connection config.
-    ## But where is it getting the connection config from?
     @pytest.fixture(scope="function")
-    def system_linked_with_connection_config(
+    def system_linked_with_oauth2_authorization_code_connection_config(
         self, system: System, oauth2_authorization_code_connection_config, db: Session
     ):
         system.connection_configs = oauth2_authorization_code_connection_config
         db.commit()
         return system
+
+    @pytest.fixture(scope="function")
+    def system_linked_with_oauth2_client_credentials_connection_config(
+        self, system: System, oauth2_client_credentials_connection_config, db: Session
+    ):
+        system.connection_configs = oauth2_client_credentials_connection_config
+        db.commit()
+        return system
+
 
     def test_patch_connections_valid_system(
         self, api_client: TestClient, generate_auth_header, url, payload
@@ -212,7 +219,7 @@ class TestPatchSystemConnections:
         api_client: TestClient,
         generate_auth_header,
         url,
-        system_linked_with_connection_config,
+        system_linked_with_oauth_authorization_code_connection_config,
     ):
         auth_header = generate_auth_header(
             scopes=[CONNECTION_READ, CONNECTION_CREATE_OR_UPDATE]
@@ -431,7 +438,7 @@ class TestDeleteSystemConnectionConfig:
         return V1_URL_PREFIX + f"/system/{system.fides_key}/connection"
 
     @pytest.fixture(scope="function")
-    def system_linked_with_connection_config(
+    def system_linked_with_oauth_authorization_code_connection_config(
         self, system: System, connection_config, db: Session
     ):
         system.connection_configs = connection_config
@@ -467,11 +474,11 @@ class TestDeleteSystemConnectionConfig:
         api_client: TestClient,
         db: Session,
         generate_auth_header,
-        system_linked_with_connection_config,
+        system_linked_with_oauth_authorization_code_connection_config,
     ) -> None:
         auth_header = generate_auth_header(scopes=[CONNECTION_DELETE])
         # the key needs to be cached before the delete
-        key = system_linked_with_connection_config.connection_configs.key
+        key = system_linked_with_oauth_authorization_code_connection_config.connection_configs.key
         resp = api_client.delete(url, headers=auth_header)
         assert resp.status_code == HTTP_204_NO_CONTENT
         assert db.query(ConnectionConfig).filter_by(key=key).first() is None
@@ -578,13 +585,13 @@ class TestDeleteSystemConnectionConfig:
         acting_user_role,
         expected_status_code,
         assign_system,
-        system_linked_with_connection_config,
+        system_linked_with_oauth_authorization_code_connection_config,
         request,
         db: Session,
     ) -> None:
         url = (
             V1_URL_PREFIX
-            + f"/system/{system_linked_with_connection_config.fides_key}/connection"
+            + f"/system/{system_linked_with_oauth_authorization_code_connection_config.fides_key}/connection"
         )
 
         acting_user_role = request.getfixturevalue(acting_user_role)
@@ -597,10 +604,10 @@ class TestDeleteSystemConnectionConfig:
             api_client.put(
                 assign_url,
                 headers=system_manager_auth_header,
-                json=[system_linked_with_connection_config.fides_key],
+                json=[system_linked_with_oauth_authorization_code_connection_config.fides_key],
             )
             auth_header = generate_system_manager_header(
-                [system_linked_with_connection_config.id]
+                [system_linked_with_oauth_authorization_code_connection_config.id]
             )
         else:
             auth_header = generate_role_header_for_user(
@@ -624,13 +631,13 @@ class TestDeleteSystemConnectionConfig:
         generate_auth_header,
         acting_user_role,
         expected_status_code,
-        system_linked_with_connection_config,
+        system_linked_with_oauth_authorization_code_connection_config,
         request,
         db: Session,
     ) -> None:
         url = (
             V1_URL_PREFIX
-            + f"/system/{system_linked_with_connection_config.fides_key}/connection"
+            + f"/system/{system_linked_with_oauth_authorization_code_connection_config.fides_key}/connection"
         )
 
         acting_user_role = request.getfixturevalue(acting_user_role)
