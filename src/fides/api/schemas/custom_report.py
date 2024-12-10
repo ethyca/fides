@@ -35,12 +35,20 @@ class CustomReportConfig(FidesSchema):
         default_factory=dict, description="A map between column keys and custom labels"
     )
 
-    @computed_field
+    @computed_field  # type: ignore[misc]
     @property
     def columns_to_skip(self) -> Set[str]:
-        return {key for key, value in self.column_map.items() if value.enabled is False}
+        return {
+            key
+            for key, value in self.column_map.items()  # pylint: disable=no-member
+            if value.enabled is False
+        }
 
-    @computed_field
+    @computed_field  # type: ignore[misc]
     @property
     def custom_column_labels(self) -> Dict[str, str]:
-        return {key: value.label for key, value in self.column_map.items() if value.label}
+        return {
+            key: value.label
+            for key, value in self.column_map.items()  # pylint: disable=no-member
+            if value.label
+        }
