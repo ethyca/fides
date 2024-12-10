@@ -10,7 +10,7 @@ from fides.api.models.datasetconfig import DatasetConfig, convert_dataset_to_gra
 from fides.api.schemas.namespace_meta.snowflake_namespace_meta import (
     SnowflakeNamespaceMeta,
 )
-from fides.api.service.connectors.sql_connector import SnowflakeConnector
+from fides.api.service.connectors.snowflake_connector import SnowflakeConnector
 
 
 @pytest.mark.integration_external
