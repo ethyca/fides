@@ -81,7 +81,6 @@ def pytest_ctl(session: Session, mark: str, coverage_arg: str) -> None:
             CONTAINER_NAME,
             "pytest",
             coverage_arg,
-            "-x",
             "-m",
             "external",
             "tests/ctl",
@@ -96,6 +95,7 @@ def pytest_ctl(session: Session, mark: str, coverage_arg: str) -> None:
             "pytest",
             coverage_arg,
             "tests/ctl/",
+            "-x",
             "-m",
             mark,
         )
