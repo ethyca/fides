@@ -89,10 +89,6 @@ const TaxonomyEditDrawer = ({
     closeDrawer();
   };
 
-  if (customFields.isEnabled && customFields.isLoading) {
-    return null;
-  }
-
   return (
     <>
       <EditDrawer
@@ -131,7 +127,7 @@ const TaxonomyEditDrawer = ({
             taxonomyType={taxonomyType}
           />
         )}
-        {customFields.isEnabled && (
+        {customFields.isEnabled && !customFields.isLoading && (
           <TaxonomyCustomFieldsForm
             form={customFieldsForm}
             formId={CUSTOM_FIELDS_FORM_ID}
