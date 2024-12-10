@@ -52,20 +52,23 @@ const TaxonomyInteractiveTree = ({
   }, [fitView, taxonomyType]);
 
   // Root node (the taxonomy type)
-  const rootNode: Node = {
-    id: TAXONOMY_ROOT_NODE_ID,
-    position: { x: 0, y: 0 },
-    data: {
-      label: taxonomyType,
-      taxonomyItem: {
-        fides_key: TAXONOMY_ROOT_NODE_ID,
+  const rootNode: Node = useMemo(
+    () => ({
+      id: TAXONOMY_ROOT_NODE_ID,
+      position: { x: 0, y: 0 },
+      data: {
+        label: taxonomyType,
+        taxonomyItem: {
+          fides_key: TAXONOMY_ROOT_NODE_ID,
+        },
+        onTaxonomyItemClick: null,
+        onAddButtonClick,
+        hasChildren: taxonomyItems.length !== 0,
       },
-      onTaxonomyItemClick: null,
-      onAddButtonClick,
-      hasChildren: taxonomyItems.length !== 0,
-    },
-    type: "taxonomyTreeNode",
-  };
+      type: "taxonomyTreeNode",
+    }),
+    [taxonomyType, taxonomyItems.length, onAddButtonClick],
+  );
 
   const nodes: Node[] = [rootNode];
   const edges: Edge[] = [];
