@@ -30,6 +30,7 @@ The types of changes are:
 - SaaS integrations using `oauth_client_credentials` now properly update their access token when editing the secrets. [#5548](https://github.com/ethyca/fides/pull/5548)
 - Saas integrations using `oauth_client_credentials` now properly refresh their access token when the current token expires [#5569](https://github.com/ethyca/fides/pull/5569)
 - Adding `dsr_testing_tools_enabled` security setting [#5573](https://github.com/ethyca/fides/pull/5573)
+- Reverted elimination of connection pool in worker tasks to prevent DB performance issues [#5592](https://github.com/ethyca/fides/pull/5592)
 
 ## [2.51.0](https://github.com/ethyca/fides/compare/2.50.0...2.51.0)
 
