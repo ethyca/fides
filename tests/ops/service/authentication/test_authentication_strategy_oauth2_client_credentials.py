@@ -16,8 +16,6 @@ from fides.api.service.authentication.authentication_strategy_oauth2_client_cred
 )
 
 
-
-
 class TestAddAuthentication:
     # happy path, being able to use the existing access token
     def test_oauth2_authentication(
