@@ -24,6 +24,9 @@ The types of changes are:
 ### Fixed
 - Fixing quickstart.py script [#5585](https://github.com/ethyca/fides/pull/5585)
 
+### Changed
+- Adjusted Ant's Select component colors and icon [#5594](https://github.com/ethyca/fides/pull/5594)
+
 ## [2.51.1](https://github.com/ethyca/fides/compare/2.51.0...2.51.1)
 
 ### Fixed
