@@ -422,14 +422,9 @@ class System(Base, FidesBase):
         lazy="selectin",
     )
 
-    monitor_config_keys = relationship(
-        "MonitorConfig.key",
-        secondary="connectionconfig",
-        primaryjoin="System.id == ConnectionConfig.system_id",
-        secondaryjoin="ConnectionConfig.id == MonitorConfig.connection_config_id",
-        viewonly=True,
-        lazy="selectin",
-    )
+    @property
+    def monitor_config_keys(self) -> List[str]:
+        return [monitor_config.key for monitor_config in self.monitor_configs]
 
     @classmethod
     def get_data_uses(
