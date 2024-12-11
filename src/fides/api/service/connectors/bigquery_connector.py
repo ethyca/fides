@@ -35,6 +35,7 @@ class BigQueryConnector(SQLConnector):
 
     @property
     def requires_primary_keys(self) -> bool:
+        """BigQuery does not have the concept of primary keys so they're not required for erasures."""
         return False
 
     # Overrides BaseConnector.build_uri

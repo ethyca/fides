@@ -72,7 +72,9 @@ from fides.api.util.saas_util import (
 class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
     """A connector type to integrate with third-party SaaS APIs"""
 
+    @property
     def requires_primary_keys(self) -> bool:
+        """SaaS connectors work with HTTP requests, so the database concept of primary keys does not apply."""
         return False
 
     def get_log_context(self) -> Dict[LoggerContextKeys, Any]:

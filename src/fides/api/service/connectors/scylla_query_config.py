@@ -77,14 +77,19 @@ class ScyllaDBQueryConfig(SQLLikeQueryConfig[ScyllaDBStatement]):
     def get_update_clauses(
         self,
         update_value_map: Dict[str, Any],
-        non_empty_reference_fields: Dict[str, Field],
+        where_clause_fields: Dict[str, Field],
     ) -> List[str]:
-        """Returns a list of update clauses for the update statement."""
+        """Returns a list of update clauses for the update statement.
+
+        Omits primary key fields from updates since ScyllaDB prohibits
+        updating primary key fields.
+        """
+
         return self.format_key_map_for_update_stmt(
             {
                 key: value
                 for key, value in update_value_map.items()
-                if key not in non_empty_reference_fields
+                if key not in where_clause_fields
             }
         )
 
