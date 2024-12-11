@@ -37,14 +37,7 @@ def hubspot_secrets(saas_config):
 
 
 @pytest.fixture(scope="function")
-def hubspot_identity_email(saas_config):
-    return (
-        pydash.get(saas_config, "hubspot.identity_email") or secrets["identity_email"]
-    )
-
-
-@pytest.fixture(scope="session")
-def hubspot_erasure_identity_email():
+def hubspot_identity_email():
     return generate_random_email()
 
 
@@ -195,6 +188,13 @@ class HubspotTestClient:
         )
         return contact_response
 
+    def delete_user(self, user_id: str) -> requests.Response:
+        user_response: requests.Response = requests.delete(
+            url=f"{self.base_url}/settings/v3/users/{user_id}",
+            headers=self.headers,
+        )
+        return user_response
+
     def get_email_subscriptions(self, email: str) -> requests.Response:
         email_subscriptions: requests.Response = requests.get(
             url=f"{self.base_url}/communication-preferences/v3/status/email/{email}",
@@ -239,26 +239,14 @@ def user_exists(user_id: str, hubspot_test_client: HubspotTestClient) -> Any:
         return user_body
 
 
-@pytest.fixture(scope="function")
-def hubspot_erasure_data(
-    hubspot_test_client: HubspotTestClient,
-    hubspot_erasure_identity_email: str,
-) -> Generator:
-    """
-    Gets the current value of the resource and restores it after the test is complete.
-    Used for erasure tests.
-    """
+def create_hubspot_data(test_client, email):
     # create contact
-    contacts_response = hubspot_test_client.create_contact(
-        email=hubspot_erasure_identity_email
-    )
+    contacts_response = test_client.create_contact(email=email)
     contacts_body = contacts_response.json()
     contact_id = contacts_body["id"]
 
     # create user
-    users_response = hubspot_test_client.create_user(
-        email=hubspot_erasure_identity_email
-    )
+    users_response = test_client.create_user(email=email)
     users_body = users_response.json()
     user_id = users_body["id"]
 
@@ -269,7 +257,7 @@ def hubspot_erasure_data(
     )
     poll_for_existence(
         _contact_exists,
-        (contact_id, hubspot_erasure_identity_email, hubspot_test_client),
+        (contact_id, email, test_client),
         error_message=error_message,
         interval=60,
     )
@@ -277,14 +265,32 @@ def hubspot_erasure_data(
     error_message = f"User with user id {user_id} could not be added to Hubspot"
     poll_for_existence(
         user_exists,
-        (user_id, hubspot_test_client),
+        (user_id, test_client),
         error_message=error_message,
+    )
+
+    return contact_id, user_id
+
+
+@pytest.fixture(scope="function")
+def hubspot_data(
+    hubspot_test_client: HubspotTestClient,
+    hubspot_identity_email: str,
+) -> Generator:
+
+    contact_id, user_id = create_hubspot_data(
+        hubspot_test_client, email=hubspot_identity_email
+    )
+    random_email = generate_random_email()
+    random_contact_id, random_user_id = create_hubspot_data(
+        hubspot_test_client, email=random_email
     )
 
     yield contact_id, user_id
 
     # delete contact
     hubspot_test_client.delete_contact(contact_id=contact_id)
+    hubspot_test_client.delete_user(user_id=user_id)
 
     # verify contact is deleted
     error_message = (
@@ -292,7 +298,22 @@ def hubspot_erasure_data(
     )
     poll_for_existence(
         _contact_exists,
-        (contact_id, hubspot_erasure_identity_email, hubspot_test_client),
+        (contact_id, hubspot_identity_email, hubspot_test_client),
+        error_message=error_message,
+        existence_desired=False,
+    )
+
+    # delete random contact
+    hubspot_test_client.delete_contact(contact_id=random_contact_id)
+    hubspot_test_client.delete_user(user_id=random_user_id)
+
+    # verify random contact is deleted
+    error_message = (
+        f"Contact with contact id {random_contact_id} could not be deleted from Hubspot"
+    )
+    poll_for_existence(
+        _contact_exists,
+        (random_contact_id, random_email, hubspot_test_client),
         error_message=error_message,
         existence_desired=False,
     )

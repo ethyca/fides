@@ -23,6 +23,7 @@ class TestHubspotConnector:
         request,
         policy: Policy,
         hubspot_identity_email,
+        hubspot_data,
     ) -> None:
         """Full access request based on the Hubspot SaaS config"""
         request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
@@ -32,6 +33,8 @@ class TestHubspotConnector:
         access_results = await hubspot_runner.access_request(
             access_policy=policy, identities={"email": hubspot_identity_email}
         )
+
+        assert len(access_results[f"{dataset_name}:users"]) == 1
 
         assert (
             access_results[f"{dataset_name}:subscription_preferences"][0]["recipient"]
@@ -54,13 +57,13 @@ class TestHubspotConnector:
         hubspot_runner: ConnectorRunner,
         policy: Policy,
         erasure_policy_string_rewrite_name_and_email,
-        hubspot_erasure_identity_email,
-        hubspot_erasure_data,
+        hubspot_identity_email,
+        hubspot_data,
         hubspot_test_client: HubspotTestClient,
     ) -> None:
         """Full erasure request based on the Hubspot SaaS config"""
 
-        contact_id, user_id = hubspot_erasure_data
+        contact_id, user_id = hubspot_data
 
         (
             _,
@@ -68,7 +71,7 @@ class TestHubspotConnector:
         ) = await hubspot_runner.non_strict_erasure_request(
             access_policy=policy,
             erasure_policy=erasure_policy_string_rewrite_name_and_email,
-            identities={"email": hubspot_erasure_identity_email},
+            identities={"email": hubspot_identity_email},
         )
 
         # Masking request only issued to "contacts", "subscription_preferences", and "users" endpoints
@@ -87,7 +90,7 @@ class TestHubspotConnector:
 
         # verify user is unsubscribed
         email_subscription_response = hubspot_test_client.get_email_subscriptions(
-            email=hubspot_erasure_identity_email
+            email=hubspot_identity_email
         )
         subscription_body = email_subscription_response.json()
         for subscription_status in subscription_body["subscriptionStatuses"]:
