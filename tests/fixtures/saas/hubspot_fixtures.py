@@ -5,7 +5,6 @@ import pytest
 import requests
 from sqlalchemy.orm import Session
 
-from fides.api.cryptography import cryptographic_util
 from fides.api.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
