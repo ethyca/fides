@@ -20,7 +20,6 @@ from fides.api.api.deps import get_api_session
 from fides.api.api.v1 import CTL_ROUTER
 from fides.api.api.v1.api import api_router
 from fides.api.api.v1.endpoints.admin import ADMIN_ROUTER
-from fides.api.api.v1.endpoints.dataset_lifecycle import LIFECYCLE_ROUTER
 from fides.api.api.v1.endpoints.generic_overrides import GENERIC_OVERRIDES_ROUTER
 from fides.api.api.v1.endpoints.health import HEALTH_ROUTER
 from fides.api.api.v1.exception_handlers import ExceptionHandlers
