@@ -1,4 +1,5 @@
 from datetime import datetime
+from time import sleep
 from typing import Any, Dict, Generator
 
 import pydash
@@ -488,6 +489,8 @@ def stripe_generate_data(client, email, phone_number):
     subscription_id = client.create_subscription(customer_id)
 
     tax_id = client.create_tax(customer_id)
+
+    sleep(3)
 
     return {
         "customer_id": customer_id,

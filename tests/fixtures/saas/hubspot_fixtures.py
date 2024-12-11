@@ -1,3 +1,4 @@
+from time import sleep
 from typing import Any, Dict, Generator
 
 import pydash
@@ -267,7 +268,7 @@ def create_hubspot_data(test_client, email):
         (user_id, test_client),
         error_message=error_message,
     )
-
+    sleep(3)
     return contact_id, user_id
 
 
