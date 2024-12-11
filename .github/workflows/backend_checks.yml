@@ -244,6 +244,7 @@ jobs:
   Safe-Tests:
     needs: Check-Container-Startup
     strategy:
+      fail-fast: false
       matrix:
         python_version: ["3.9.18", "3.10.13"]
         test_selection:
@@ -255,7 +256,6 @@ jobs:
 
     runs-on: ubuntu-latest
     timeout-minutes: 45
-    continue-on-error: true
     steps:
       - name: Download container
         uses: actions/download-artifact@v4
@@ -397,8 +397,8 @@ jobs:
           # Secrets to pull from 1Password
           BIGQUERY_DATASET: op://github-actions/bigquery/BIGQUERY_DATASET
           BIGQUERY_KEYFILE_CREDS: op://github-actions/bigquery/BIGQUERY_KEYFILE_CREDS
-          BIGQUERY_ENTERPRISE_DATASET: op://github-actions/bigquery-enterprise/BIGQUERY_DATASET
-          BIGQUERY_ENTERPRISE_KEYFILE_CREDS: op://github-actions/bigquery-enterprise/BIGQUERY_KEYFILE_CREDS
+          BIGQUERY_ENTERPRISE_DATASET: op://github-actions/bigquery-enterprise/BIGQUERY_ENTERPRISE_DATASET
+          BIGQUERY_ENTERPRISE_KEYFILE_CREDS: op://github-actions/bigquery-enterprise/BIGQUERY_ENTERPRISE_KEYFILE_CREDS
           DYNAMODB_ACCESS_KEY_ID: op://github-actions/dynamodb/DYNAMODB_ACCESS_KEY_ID
           DYNAMODB_ACCESS_KEY: op://github-actions/dynamodb/DYNAMODB_ACCESS_KEY
           DYNAMODB_ASSUME_ROLE_ARN: op://github-actions/dynamodb/DYNAMODB_ASSUME_ROLE_ARN

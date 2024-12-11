@@ -255,9 +255,9 @@ class Traversal:
                 )
             )
 
-        self.__verify_traversal()
+        self._verify_traversal()
 
-    def __verify_traversal(self) -> None:
+    def _verify_traversal(self) -> None:
         """Verify that a valid traversal exists. This method simply assembles a traversal
         and raises an error on any traversal failure conditions."""
         self.traverse(

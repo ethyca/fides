@@ -69,7 +69,7 @@ class TestCreateDataUse:
         response = api_client.post(url, headers=auth_header, json=payload)
         assert 403 == response.status_code
 
-    def test_create_data_use_with_fides_key(
+    def test_create_data_use_with_fides_key_and_parent_key(
         self,
         db: Session,
         api_client: TestClient,
@@ -78,15 +78,31 @@ class TestCreateDataUse:
         generate_auth_header,
     ):
         auth_header = generate_auth_header([DATA_USE_CREATE])
-        payload["fides_key"] = "test_data_use"
+        payload["fides_key"] = "analytics.test_data_use"
+        payload["parent_key"] = "analytics"
         response = api_client.post(url, headers=auth_header, json=payload)
 
         assert 201 == response.status_code
         response_body = json.loads(response.text)
 
-        assert response_body["fides_key"] == "test_data_use"
-        data_use = db.query(DataUse).filter_by(fides_key="test_data_use")[0]
+        assert response_body["fides_key"] == "analytics.test_data_use"
+        data_use = db.query(DataUse).filter_by(fides_key="analytics.test_data_use")[0]
         data_use.delete(db)
+
+    def test_create_data_use_with_fides_key_and_non_matching_parent_key(
+        self,
+        db: Session,
+        api_client: TestClient,
+        payload,
+        url,
+        generate_auth_header,
+    ):
+        payload["fides_key"] = "analytics.test_data_use"
+        payload["parent_key"] = "invalid_parent"
+        auth_header = generate_auth_header([DATA_USE_CREATE])
+        response = api_client.post(url, headers=auth_header, json=payload)
+
+        assert 422 == response.status_code
 
     def test_create_data_use_with_no_fides_key(
         self,
@@ -104,6 +120,25 @@ class TestCreateDataUse:
 
         assert response_body["fides_key"] == "test_data_use"
         data_use = db.query(DataUse).filter_by(fides_key="test_data_use")[0]
+        data_use.delete(db)
+
+    def test_create_data_use_with_no_fides_key_and_has_parent_key(
+        self,
+        db: Session,
+        api_client: TestClient,
+        payload,
+        url,
+        generate_auth_header,
+    ):
+        auth_header = generate_auth_header([DATA_USE_CREATE])
+        payload["parent_key"] = "analytics"
+        response = api_client.post(url, headers=auth_header, json=payload)
+
+        assert 201 == response.status_code
+        response_body = json.loads(response.text)
+
+        assert response_body["fides_key"] == "analytics.test_data_use"
+        data_use = db.query(DataUse).filter_by(fides_key="analytics.test_data_use")[0]
         data_use.delete(db)
 
     def test_create_data_use_with_conflicting_key(

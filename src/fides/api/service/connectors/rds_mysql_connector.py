@@ -14,7 +14,10 @@ from fides.api.models.privacy_request import PrivacyRequest, RequestTask
 from fides.api.schemas.connection_configuration.connection_secrets_rds_mysql import (
     RDSMySQLSchema,
 )
-from fides.api.service.connectors.query_config import MySQLQueryConfig, SQLQueryConfig
+from fides.api.service.connectors.query_configs.mysql_query_config import (
+    MySQLQueryConfig,
+)
+from fides.api.service.connectors.query_configs.query_config import SQLQueryConfig
 from fides.api.service.connectors.rds_connector_mixin import RDSConnectorMixin
 from fides.api.service.connectors.sql_connector import SQLConnector
 from fides.api.util.collection_util import Row
