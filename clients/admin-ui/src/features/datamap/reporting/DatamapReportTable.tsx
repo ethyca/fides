@@ -235,23 +235,30 @@ export const DatamapReportTable = () => {
   } = useDisclosure();
 
   const onExport = (downloadType: ExportFormat) => {
+    const columnMap: Record<string, { label: string; enabled: boolean }> = {};
+    Object.keys(columnNameMapOverrides).forEach((key) => {
+      columnMap[key] = {
+        label: columnNameMapOverrides[key],
+        enabled: columnVisibility[key],
+      };
+    });
+
     exportMinimalDatamapReport({
       ...reportQuery,
       format: downloadType,
       report_id: savedCustomReportId,
-      // report: JSON.stringify({
-      //   name: "temporary report",
-      //   type: "datamap",
-      //   config: {
-      //     column_map: columnNameMapOverrides,
-      //     table_state: {
-      //       groupBy,
-      //       filters: selectedFilters,
-      //       columnOrder,
-      //       columnVisibility,
-      //     },
-      //   },
-      // }),
+      report: {
+        name: "temporary report",
+        type: "datamap",
+        config: {
+          column_map: columnMap,
+          table_state: {
+            groupBy,
+            filters: selectedFilters,
+            columnOrder,
+          },
+        },
+      },
     }).then(() => {
       if (isExportReportSuccess) {
         onExportReportClose();

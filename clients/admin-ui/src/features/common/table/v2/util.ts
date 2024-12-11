@@ -26,7 +26,7 @@ export const columnExpandedVersion = (
 
 interface GetColumnHeaderTextProps {
   columnId: string | undefined;
-  columnNameMap?: Record<string, string>;
+  columnNameMap?: Record<string, Record<string, any>>;
 }
 /**
  * Get the header text for a column.
@@ -56,5 +56,5 @@ export const getColumnHeaderText = ({
     "",
   );
   const nameFromId = _.upperFirst(keyWithoutPrefix.replaceAll("_", " "));
-  return columnNameMap?.[columnId] || nameFromId;
+  return columnNameMap?.[columnId]?.label || nameFromId;
 };

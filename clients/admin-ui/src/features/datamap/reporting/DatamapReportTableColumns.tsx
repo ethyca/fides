@@ -27,25 +27,22 @@ export const getDefaultColumn: (
   isRenamingColumns,
 ) => ({
   cell: (props) => <DefaultCell value={props.getValue() as string} />,
-  header: (props) => {
-    console.log("props", props);
-    console.log("columnNameMap", columnNameMap);
-    return null;
-    // <EditableHeaderCell
-    //   value={getColumnHeaderText({
-    //     columnId: props.column.id,
-    //     columnNameMap,
-    //   })}
-    //   defaultValue={
-    //     DEFAULT_COLUMN_NAMES[props.column.id as COLUMN_IDS] ||
-    //     getColumnHeaderText({
-    //       columnId: props.column.id,
-    //     })
-    //   }
-    //   isEditing={isRenamingColumns}
-    //   {...props}
-    // />
-  },
+  header: (props) => (
+    <EditableHeaderCell
+      value={getColumnHeaderText({
+        columnId: props.column.id,
+        columnNameMap,
+      })}
+      defaultValue={
+        DEFAULT_COLUMN_NAMES[props.column.id as COLUMN_IDS] ||
+        getColumnHeaderText({
+          columnId: props.column.id,
+        })
+      }
+      isEditing={isRenamingColumns}
+      {...props}
+    />
+  ),
 });
 
 const getCustomFieldColumns = (
