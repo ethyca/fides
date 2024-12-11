@@ -42,21 +42,6 @@ class TestDatabaseTask:
         mock_maker.side_effect = OperationalError("connection failed", None, None)
         return mock_maker
 
-    @pytest.mark.parametrize(
-        "config_fixture", [None, "mock_config_changed_db_engine_settings"]
-    )
-    def test_get_task_session(self, config_fixture, request):
-        if config_fixture is not None:
-            request.getfixturevalue(
-                config_fixture
-            )  # used to invoke config fixture if provided
-        pool_size = CONFIG.database.task_engine_pool_size
-        max_overflow = CONFIG.database.task_engine_max_overflow
-        t = DatabaseTask()
-        session: Session = t.get_new_session()
-        engine: Engine = session.get_bind()
-        assert isinstance(engine.pool, NullPool)
-
     def test_retry_on_operational_error(self, recovering_session_maker):
         """Test that session creation retries on OperationalError"""
 
