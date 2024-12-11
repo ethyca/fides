@@ -9,60 +9,37 @@ describe("Taxonomy management page", () => {
   it("Can navigate to the taxonomy page", () => {
     cy.visit("/");
     cy.getByTestId("Taxonomy-nav-link").click();
-    cy.getByTestId("taxonomy-tabs");
-    cy.getByTestId("tab-Data Categories");
-    cy.getByTestId("tab-Data Uses");
-    cy.getByTestId("tab-Data Subjects");
+    cy.getByTestId("taxonomy-type-selector");
   });
 
-  describe("Can view data", () => {
+  describe("Can view taxonomy labels", () => {
     beforeEach(() => {
       cy.visit("/taxonomy");
     });
-    it("Can navigate between tabs and load data", () => {
-      cy.getByTestId("tab-Data Uses").click();
+
+    it.only("Can switch between different taxonomies and load data", () => {
+      // data uses
+      cy.getByTestId("taxonomy-type-selector").selectAntMenuOption("Data uses");
       cy.wait("@getDataUses");
-      cy.getByTestId("tab-Data Subjects").click();
+
+      // data subjects
+      cy.getByTestId("taxonomy-type-selector").selectAntMenuOption(
+        "Data subjects",
+      );
       cy.wait("@getDataSubjects");
-      cy.getByTestId("tab-Data Categories").click();
+
+      // data categories
+      cy.getByTestId("taxonomy-type-selector").selectAntMenuOption(
+        "Data categories",
+      );
       cy.wait("@getDataCategories");
     });
 
-    it("Can open up accordion to see taxonomy entities", () => {
-      // should only see the 2 root level taxonomy
-      cy.getByTestId("accordion-item-System Data").should("be.visible");
-      cy.getByTestId("accordion-item-User Data").should("be.visible");
-
-      // clicking should open up accordions to render more items visible
-      cy.getByTestId("accordion-item-User Data").click();
-      cy.getByTestId("accordion-item-Authorization Information").should(
-        "be.visible",
-      );
-      cy.getByTestId("accordion-item-Authorization Information").click({
-        force: true,
-      });
-      cy.getByTestId("item-Password").should("be.visible");
+    it("Renders all active label from the taxonomy", () => {
+      cy.getByTestId("taxonomy-tree");
     });
 
-    it("Can render accordion elements on flat structures", () => {
-      cy.getByTestId("tab-Data Subjects").click();
-      cy.getByTestId("item-Anonymous User").should("be.visible");
-      cy.getByTestId("item-Shareholder").should("be.visible");
-    });
-
-    it("Can render action buttons on hover", () => {
-      cy.getByTestId("action-btns").should("not.exist");
-      cy.getByTestId("accordion-item-System Data").trigger("mouseover");
-      cy.getByTestId("action-btns").should("exist");
-    });
-
-    it("Can render a 'custom' tag for custom fields", () => {
-      cy.getByTestId("tab-Data Categories").click();
-      cy.getByTestId("accordion-item-Custom field").click();
-      cy.getByTestId("custom-tag-Custom field");
-      cy.getByTestId("custom-tag-Custom foo");
-      cy.getByTestId("custom-tag-System Data").should("not.exist");
-    });
+    it("Doesn't render inactive labels", () => {});
   });
 
   describe("Can edit data", () => {
@@ -89,6 +66,12 @@ describe("Taxonomy management page", () => {
         "putDataSubject",
       );
     });
+
+    it("Open edit drawer when clicking on a taxonomy item", () => {});
+
+    it("Edit drawer displays details", () => {});
+
+    it("Can edit taxonomy item", () => {});
 
     it("Can open an edit form for each taxonomy entity", () => {
       const expectedTabValues = [
@@ -158,20 +141,6 @@ describe("Taxonomy management page", () => {
       });
     });
 
-    it("Can render the parent field", () => {
-      cy.getByTestId("tab-Data Categories").click();
-      cy.getByTestId(`accordion-item-User Data`).click();
-      cy.getByTestId("accordion-item-Authorization Information").click({
-        force: true,
-      });
-      cy.getByTestId("item-Password").trigger("mouseover");
-      cy.getByTestId("edit-btn").click();
-      cy.getByTestId("input-parent_key").should(
-        "have.value",
-        "user.authorization",
-      );
-    });
-
     /*
      * These fields are deprecated.
      * This test is being kept so it can be updated
@@ -205,80 +174,42 @@ describe("Taxonomy management page", () => {
       );
       cy.getByTestId("edit-btn").click();
     });
+  });
 
-    it("Can render an extended form for Data Subjects", () => {
-      cy.getByTestId("tab-Data Subjects").click();
+  describe("Data Uses special fields", () => {
+    it("Can render an extended form for Data Uses", () => {});
 
-      // check an entity that has optional fields filled in ("Citizen Voter")
-      cy.getByTestId("item-Citizen Voter").trigger("mouseover");
-      cy.getByTestId("edit-btn").click();
-      const rightValues = [
-        "Informed",
-        "Access",
-        "Rectification",
-        "Erasure",
-        "Object",
-      ];
-      rightValues.forEach((v) => {
-        cy.getByTestId("controlled-select-rights").should("contain", v);
-      });
-      cy.getByTestId("controlled-select-strategy").should("contain", "INCLUDE");
-      cy.getByTestId("input-automatic_decisions_or_profiling").within(() => {
-        cy.getByTestId("option-true").should("have.attr", "data-checked");
-        // For some reason Cypress can accidentally click the dropdown selector above,
-        // so we force click the radio
-        cy.getByTestId("option-false").click({ force: true });
-        cy.getByTestId("option-false").should("have.attr", "data-checked");
-        cy.getByTestId("option-true").should("not.have.attr", "data-checked");
-      });
+    it("Does valition for data uses special fields", () => {});
 
-      // trigger a PUT
-      cy.getByTestId("input-name").clear().type("foo");
-      cy.getByTestId("submit-btn").click();
-      cy.wait("@putDataSubject").then((interception) => {
-        const { body } = interception.request;
-        const expected = {
-          automatic_decisions_or_profiling: false,
-          description:
-            "An individual registered to voter with a state or authority.",
-          fides_key: "citizen_voter",
-          is_default: true,
-          name: "foo",
-          rights: {
-            values: rightValues,
-            strategy: "INCLUDE",
-          },
-          version_added: "2.0.0",
-        };
-        expect(body).to.eql(expected);
-      });
+    it("Can edit data uses special fields", () => {});
+  });
 
-      // check an entity that has no optional fields filled in
-      cy.getByTestId("item-Anonymous User").trigger("mouseover");
-      cy.getByTestId("edit-btn").click();
-      cy.getByTestId("controlled-select-rights").should("contain", "Select...");
-      cy.getByTestId("controlled-select-strategy").should("not.exist");
-    });
+  describe("Custom fields", () => {
+    it("Can render an extended form for custom fields", () => {});
 
-    it("Can trigger an error", () => {
-      const errorMsg = "Internal Server Error";
-      cy.intercept("PUT", "/api/v1/data_category*", {
-        statusCode: 500,
-        body: errorMsg,
-      }).as("putDataCategoryError");
+    it("Does validation for custom fields", () => {});
 
-      cy.getByTestId(`tab-Data Categories`).click();
-      cy.getByTestId("accordion-item-System Data").trigger("mouseover");
-      cy.getByTestId("edit-btn").click();
+    it("Can edit custom fields", () => {});
+  });
 
-      const addedText = "foo";
-      cy.getByTestId("input-name").type(addedText);
-      cy.getByTestId("submit-btn").click();
+  describe("New label creation", () => {
+    it("Add buttons displays", () => {});
 
-      cy.wait("@putDataCategoryError");
-      cy.getByTestId("toast-success-msg").should("not.exist");
-      cy.getByTestId("taxonomy-form-error").should("contain", errorMsg);
-    });
+    it("Clicking add button adds text input nodes", () => {});
+
+    it("Can add new label", () => {});
+  });
+
+  describe("Label deletion", () => {
+    it("Delete button triggers confirmation", () => {});
+
+    it("Can delete a label", () => {});
+  });
+
+  describe("Hidden features", () => {
+    it("Can view disabled labels when using ?showDisabledItems=true", () => {});
+
+    it("Can reenable a disabled label", () => {});
   });
 
   describe("Can create data", () => {

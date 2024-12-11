@@ -110,6 +110,7 @@ const TaxonomyPage: NextPage = () => {
                 label: e.label,
                 key: e.value,
               }))}
+              data-testid="taxonomy-type-selector"
             />
           </div>
 

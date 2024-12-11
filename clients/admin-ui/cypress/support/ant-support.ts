@@ -24,6 +24,16 @@ declare global {
        * Ant Desitn Select component dropdown is visible
        */
       antSelectDropdownVisible: () => void;
+
+      getAntMenuOption: (optionLabel: string | number) => Chainable;
+      /**
+       * Select an option from an Ant Design Menu component
+       * @param option The label of the option to select or the index of the option
+       */
+      selectAntMenuOption: (
+        optionLabel: string | number,
+        clickOptions?: { force?: boolean },
+      ) => void;
     }
   }
 }
@@ -96,5 +106,19 @@ Cypress.Commands.add("antSelectDropdownVisible", () => {
     "be.visible",
   );
 });
+
+Cypress.Commands.add("getAntMenuOption", (option: string | number) =>
+  typeof option === "string"
+    ? cy.get(`li.ant-menu-item`).filter(`:contains("${option}")`)
+    : cy.get(`li.ant-menu-item`).eq(option),
+);
+Cypress.Commands.add(
+  "selectAntMenuOption",
+  {
+    prevSubject: "element",
+  },
+  (subject, option) =>
+    cy.get(subject.selector).getAntMenuOption(option).click(),
+);
 
 export {};
