@@ -33,6 +33,11 @@ class BigQueryConnector(SQLConnector):
 
     secrets_schema = BigQuerySchema
 
+    @property
+    def requires_primary_keys(self) -> bool:
+        """BigQuery does not have the concept of primary keys so they're not required for erasures."""
+        return False
+
     # Overrides BaseConnector.build_uri
     def build_uri(self) -> str:
         """Build URI of format"""
