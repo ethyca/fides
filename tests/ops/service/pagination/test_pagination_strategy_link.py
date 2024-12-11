@@ -48,6 +48,7 @@ def response_with_empty_string_link():
     )
     return response
 
+
 @pytest.fixture(scope="function")
 def response_with_has_next_conditional_true():
     response = Response()
@@ -57,13 +58,14 @@ def response_with_has_next_conditional_true():
                 "customers": [{"id": 1}, {"id": 2}, {"id": 3}],
                 "links": {
                     "next": "https://domain.com/customers?page=def",
-                    "hasNext": "true"
+                    "hasNext": "true",
                 },
             }
         ),
         "utf-8",
     )
     return response
+
 
 @pytest.fixture(scope="function")
 def response_with_has_next_conditional_false():
@@ -74,7 +76,7 @@ def response_with_has_next_conditional_false():
                 "customers": [{"id": 1}, {"id": 2}, {"id": 3}],
                 "links": {
                     "next": "https://domain.com/customers?page=abc",
-                    "hasNext": "false"
+                    "hasNext": "false",
                 },
             }
         ),
@@ -165,9 +167,14 @@ def test_link_in_body_empty_string(response_with_empty_string_link):
     )
     assert next_request is None
 
+
 ## TODO: Tests for when the link exists but there is a conditional boolean that checks if there is a next page
-def test_link_in_body_with_conditional_boolean_true(response_with_has_next_conditional_true):
-    config = LinkPaginationConfiguration(source="body", path="links.next", has_next="links.hasNext")
+def test_link_in_body_with_conditional_boolean_true(
+    response_with_has_next_conditional_true,
+):
+    config = LinkPaginationConfiguration(
+        source="body", path="links.next", has_next="links.hasNext"
+    )
     request_params: SaaSRequestParams = SaaSRequestParams(
         method=HTTPMethod.GET,
         path="/customers",
@@ -185,8 +192,13 @@ def test_link_in_body_with_conditional_boolean_true(response_with_has_next_condi
         query_params={"page": "def"},
     )
 
-def test_link_in_body_with_conditional_boolean_false(response_with_has_next_conditional_false):
-    config = LinkPaginationConfiguration(source="body", path="links.next", has_next="links.hasNext")
+
+def test_link_in_body_with_conditional_boolean_false(
+    response_with_has_next_conditional_false,
+):
+    config = LinkPaginationConfiguration(
+        source="body", path="links.next", has_next="links.hasNext"
+    )
     request_params: SaaSRequestParams = SaaSRequestParams(
         method=HTTPMethod.GET,
         path="/customers",
@@ -198,6 +210,7 @@ def test_link_in_body_with_conditional_boolean_false(response_with_has_next_cond
         request_params, {}, response_with_has_next_conditional_false, "customers"
     )
     assert next_request is None
+
 
 def test_wrong_source():
     with pytest.raises(ValueError) as exc:

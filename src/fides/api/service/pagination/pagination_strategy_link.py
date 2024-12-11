@@ -41,10 +41,10 @@ class LinkPaginationStrategy(PaginationStrategy):
         if not response_data:
             return None
 
-        if(self.has_next):
+        if self.has_next:
             has_next = pydash.get(response.json(), self.has_next)
             logger.info("The hasNext value is {}", has_next)
-            if str(has_next).lower() != "true"  :
+            if str(has_next).lower() != "true":
                 return None
 
         # read the next_link from the correct location based on the source value
