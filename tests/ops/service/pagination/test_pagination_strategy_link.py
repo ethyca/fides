@@ -167,7 +167,7 @@ def test_link_in_body_empty_string(response_with_empty_string_link):
 
 ## TODO: Tests for when the link exists but there is a conditional boolean that checks if there is a next page
 def test_link_in_body_with_conditional_boolean_true(response_with_has_next_conditional_true):
-    config = LinkPaginationConfiguration(source="body", path="links.next", next_page_conditional_path="links.hasNext")
+    config = LinkPaginationConfiguration(source="body", path="links.next", has_next="links.hasNext")
     request_params: SaaSRequestParams = SaaSRequestParams(
         method=HTTPMethod.GET,
         path="/customers",
@@ -186,7 +186,7 @@ def test_link_in_body_with_conditional_boolean_true(response_with_has_next_condi
     )
 
 def test_link_in_body_with_conditional_boolean_false(response_with_has_next_conditional_false):
-    config = LinkPaginationConfiguration(source="body", path="links.next", next_page_conditional_path="links.hasNext")
+    config = LinkPaginationConfiguration(source="body", path="links.next", has_next="links.hasNext")
     request_params: SaaSRequestParams = SaaSRequestParams(
         method=HTTPMethod.GET,
         path="/customers",
