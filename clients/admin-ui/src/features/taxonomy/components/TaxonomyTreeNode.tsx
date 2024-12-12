@@ -56,7 +56,7 @@ const TaxonomyTreeNode = ({ data }: NodeProps<TaxonomyTreeNodeType>) => {
 
   return (
     <div
-      className="group relative"
+      className="group relative transition-transform"
       onMouseEnter={() => onMouseEnter(taxonomyItem?.fides_key!)}
       onMouseLeave={() => onMouseLeave(taxonomyItem?.fides_key!)}
       data-testid={`taxonomy-node-${taxonomyItem?.fides_key}`}

@@ -1,4 +1,4 @@
-import { Node, NodeProps } from "@xyflow/react";
+import { Node, NodeProps, useReactFlow } from "@xyflow/react";
 import { AntInput, InputRef } from "fidesui";
 import { useEffect, useRef, useState } from "react";
 
@@ -13,26 +13,42 @@ export type TextInputNodeType = Node<
   "textInputNode"
 >;
 
-const TaxonomyTextInputNode = ({ data }: NodeProps<TextInputNodeType>) => {
+const TaxonomyTextInputNode = ({
+  data,
+  positionAbsoluteX,
+  positionAbsoluteY,
+}: NodeProps<TextInputNodeType>) => {
   const { onCancel, onSubmit, parentKey } = data;
   const inputRef = useRef<InputRef>(null);
   const [value, setValue] = useState("");
+  const inputWidth = 200;
 
-  // Reset state and autofocus when the node is mounted
+  const { setCenter, getZoom } = useReactFlow();
+
+  // Reset state and autofocus / center screen around the node when it is mounted
   // or when the parent key changes (it's being added to somewhere else in the tree)
   useEffect(() => {
     setValue("");
-    const focusOnInput = () => {
+    const focusOnInput = () =>
       inputRef.current!.focus({
         cursor: "start",
         preventScroll: true,
       });
+    const centerScreenOnNode = () =>
+      setCenter(positionAbsoluteX + inputWidth / 2, positionAbsoluteY, {
+        duration: 500,
+        zoom: getZoom(),
+      });
+    const centerAndFocus = async () => {
+      await centerScreenOnNode();
+      focusOnInput();
     };
-    setTimeout(focusOnInput, 200);
-  }, [parentKey]);
+
+    centerAndFocus();
+  }, [parentKey, getZoom, positionAbsoluteX, positionAbsoluteY, setCenter]);
 
   return (
-    <div className=" w-[200px]">
+    <div style={{ width: inputWidth }}>
       <AntInput
         placeholder="Type label name..."
         ref={inputRef}
