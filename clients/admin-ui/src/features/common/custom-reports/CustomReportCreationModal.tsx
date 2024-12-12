@@ -26,7 +26,7 @@ interface CustomReportCreationModalProps {
   isOpen: boolean;
   handleClose: () => void;
   tableStateToSave: CustomReportTableState | undefined;
-  columnMapToSave: Record<string, string> | undefined;
+  columnMapToSave: Record<string, Record<string, any>> | undefined;
   unavailableNames?: string[];
   onCreateCustomReport: (newReport: CustomReportResponse) => void;
 }
@@ -35,7 +35,7 @@ export const CustomReportCreationModal = ({
   isOpen,
   handleClose,
   tableStateToSave,
-  columnMapToSave,
+  columnMapToSave = {},
   unavailableNames,
   onCreateCustomReport,
 }: CustomReportCreationModalProps) => {
@@ -63,7 +63,7 @@ export const CustomReportCreationModal = ({
   );
 
   const handleCreateReport = async (reportName: string) => {
-    const columnMap: Record<string, { label: string; enabled: boolean }> = {};
+    const columnMap: Record<string, any> = {};
     const columnVisibility: Record<string, boolean> =
       tableStateToSave?.columnVisibility || {};
     Object.keys(columnMapToSave).forEach((key) => {

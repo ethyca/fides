@@ -195,7 +195,9 @@ export const DatamapReportTable = () => {
 
   // Column renaming
   const [isRenamingColumns, setIsRenamingColumns] = useState(false);
-  const handleColumnRenaming = (values: Record<string, string>) => {
+  const handleColumnRenaming = (
+    values: Record<string, Record<string, any>>,
+  ) => {
     setSavedCustomReportId("");
     setColumnNameMapOverrides(values);
     setIsRenamingColumns(false);
@@ -235,7 +237,7 @@ export const DatamapReportTable = () => {
   } = useDisclosure();
 
   const onExport = (downloadType: ExportFormat) => {
-    const columnMap: Record<string, { label: string; enabled: boolean }> = {};
+    const columnMap: Record<string, Record<string, any>> = {};
     Object.keys(columnNameMapOverrides).forEach((key) => {
       columnMap[key] = {
         label: columnNameMapOverrides[key],
@@ -328,7 +330,7 @@ export const DatamapReportTable = () => {
   const handleSavedReport = (
     savedReport: CustomReportResponse | null,
     resetForm: (
-      nextState?: Partial<FormikState<Record<string, string>>> | undefined,
+      nextState?: Partial<FormikState<Record<string, any>>> | undefined,
     ) => void,
   ) => {
     if (!savedReport) {
@@ -380,10 +382,17 @@ export const DatamapReportTable = () => {
     return <TableSkeletonLoader rowHeight={36} numRows={15} />;
   }
 
+  const x: Record<string, string> = {};
+  Object.keys(columnNameMapOverrides).forEach((key) => {
+    if (columnNameMapOverrides[key].label) {
+      x[key] = columnNameMapOverrides[key].label;
+    }
+  });
+
   return (
     <Flex flex={1} direction="column" overflow="auto">
       <DatamapReportFilterModal
-        columnNameMap={{ ...DEFAULT_COLUMN_NAMES, ...columnNameMapOverrides }}
+        columnNameMap={{ ...DEFAULT_COLUMN_NAMES, ...x }}
         selectedFilters={selectedFilters}
         isOpen={isFilterModalOpen}
         onClose={onFilterModalClose}
@@ -396,7 +405,7 @@ export const DatamapReportTable = () => {
         isOpen={isColumnSettingsOpen}
         onClose={onColumnSettingsClose}
         headerText="Data map settings"
-        columnNameMap={{ ...DEFAULT_COLUMN_NAMES, ...columnNameMapOverrides }}
+        columnNameMap={{ ...DEFAULT_COLUMN_NAMES, ...x }}
         prefixColumns={getPrefixColumns(groupBy)}
         tableInstance={tableInstance}
         savedCustomReportId={savedCustomReportId}

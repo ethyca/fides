@@ -58,21 +58,21 @@
         "uses_non_cookie_access",
         "uses_profiling",
         "system_lorem"
-      ],
+      ]
     },
     "column_map": {
       "data_categories": {
         "label": "My Data Category Map"
       },
       "data_subjects": {
-        "enabled": false,
+        "enabled": false
       },
       "system_undeclared_data_categories": {
-        "enabled": false,
+        "enabled": false
       },
       "data_use_undeclared_data_categories": {
-        "enabled": false,
-      },
+        "enabled": false
+      }
     }
   }
 }
