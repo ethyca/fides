@@ -24,6 +24,14 @@ updates:
       - dependencies
       - javascript
       - dependabot
+  - package-ecosystem: npm
+    directory: "/clients/fides-js"
+    schedule:
+      interval: weekly
+    labels:
+      - dependencies
+      - javascript
+      - dependabot
   - package-ecosystem: github-actions
     directory: "/"
     schedule:
