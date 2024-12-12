@@ -1522,13 +1522,19 @@ dataset:
       - system.operations
       fides_meta: null
       fields: null
-    fides_meta: null
     - name: hidden
       description: null
       data_categories:
       - system.operations
       fides_meta: null
       fields: null
+    - name: data_use
+      description: null
+      data_categories:
+      - system.operations
+      fides_meta: null
+      fields: null
+    fides_meta: null
   - name: currentprivacypreferencev2
     description: Stores the latest saved preferences for a given user
     data_categories:
