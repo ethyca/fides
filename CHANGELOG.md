@@ -19,6 +19,7 @@ The types of changes are:
 
 ### Added
 - New page in the Cookie House sample app to demonstrate the use of embedding the FidesJS SDK on the page [#5564](https://github.com/ethyca/fides/pull/5564)
+- Added event based communication example to the Cookie House sample app [#5597](https://github.com/ethyca/fides/pull/5597)
 - Added new erasure tests for BigQuery Enterprise [#5554](https://github.com/ethyca/fides/pull/5554)
 
 ### Fixed
