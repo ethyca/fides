@@ -42,9 +42,14 @@ const TaxonomyPage: NextPage = () => {
   const [draftNewItem, setDraftNewItem] =
     useState<Partial<TaxonomyEntity> | null>(null);
 
+  const [lastCreatedItemKey, setLastCreatedItemKey] = useState<string | null>(
+    null,
+  );
+
   // reset state when changing taxonomy type
   useEffect(() => {
     setDraftNewItem(null);
+    setLastCreatedItemKey(null);
     setTaxonomyItemToEdit(null);
   }, [taxonomyType]);
 
@@ -65,6 +70,7 @@ const TaxonomyPage: NextPage = () => {
         toast(errorToastParams(getErrorMessage(result.error)));
         return;
       }
+      setLastCreatedItemKey(result.data.fides_key);
       toast(successToastParams("New label successfully created"));
       setTimeout(() => setDraftNewItem(null));
     },
@@ -120,6 +126,8 @@ const TaxonomyPage: NextPage = () => {
                 showDisabledItems ? taxonomyItems : activeTaxonomyItems
               }
               draftNewItem={draftNewItem}
+              lastCreatedItemKey={lastCreatedItemKey}
+              resetLastCreatedItemKey={() => setLastCreatedItemKey(null)}
               onTaxonomyItemClick={(taxonomyItem) => {
                 setTaxonomyItemToEdit(taxonomyItem);
               }}

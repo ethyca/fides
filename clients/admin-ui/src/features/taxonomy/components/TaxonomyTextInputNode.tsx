@@ -1,7 +1,8 @@
-import { Node, NodeProps, useReactFlow } from "@xyflow/react";
+import { Node, NodeProps } from "@xyflow/react";
 import { AntInput, InputRef } from "fidesui";
 import { useEffect, useRef, useState } from "react";
 
+import useCenterScreenOnNode from "../hooks/useCenterScreenOnNode";
 import TaxonomyTreeNodeHandle from "./TaxonomyTreeNodeHandle";
 
 export type TextInputNodeType = Node<
@@ -23,29 +24,29 @@ const TaxonomyTextInputNode = ({
   const [value, setValue] = useState("");
   const inputWidth = 200;
 
-  const { setCenter, getZoom } = useReactFlow();
+  const { centerScreenOnNode } = useCenterScreenOnNode({
+    positionAbsoluteX,
+    positionAbsoluteY,
+    nodeWidth: inputWidth,
+  });
 
   // Reset state and autofocus / center screen around the node when it is mounted
   // or when the parent key changes (it's being added to somewhere else in the tree)
   useEffect(() => {
     setValue("");
     const focusOnInput = () =>
-      inputRef.current!.focus({
+      inputRef.current?.focus({
         cursor: "start",
         preventScroll: true,
       });
-    const centerScreenOnNode = () =>
-      setCenter(positionAbsoluteX + inputWidth / 2, positionAbsoluteY, {
-        duration: 500,
-        zoom: getZoom(),
-      });
+
     const centerAndFocus = async () => {
       await centerScreenOnNode();
       focusOnInput();
     };
 
     centerAndFocus();
-  }, [parentKey, getZoom, positionAbsoluteX, positionAbsoluteY, setCenter]);
+  }, [parentKey, centerScreenOnNode, positionAbsoluteX, positionAbsoluteY]);
 
   return (
     <div style={{ width: inputWidth }}>

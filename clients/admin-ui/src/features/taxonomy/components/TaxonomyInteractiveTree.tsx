@@ -31,6 +31,8 @@ interface TaxonomyInteractiveTreeProps {
   taxonomyType: CoreTaxonomiesEnum;
   taxonomyItems: TaxonomyEntity[];
   draftNewItem: Partial<TaxonomyEntity> | null;
+  lastCreatedItemKey: string | null;
+  resetLastCreatedItemKey: () => void;
   onTaxonomyItemClick: (taxonomyItem: TaxonomyEntity) => void;
   onAddButtonClick: (taxonomyItem: TaxonomyEntity | undefined) => void;
   onCancelDraftItem: () => void;
@@ -41,6 +43,8 @@ const TaxonomyInteractiveTree = ({
   taxonomyType,
   taxonomyItems,
   draftNewItem,
+  lastCreatedItemKey,
+  resetLastCreatedItemKey,
   onTaxonomyItemClick,
   onAddButtonClick,
   onCancelDraftItem,
@@ -87,6 +91,8 @@ const TaxonomyInteractiveTree = ({
         onTaxonomyItemClick,
         onAddButtonClick,
         hasChildren: false,
+        isLastCreatedItem: lastCreatedItemKey === taxonomyItem.fides_key,
+        resetLastCreatedItemKey,
       },
       type: "taxonomyTreeNode",
     };

@@ -1,12 +1,13 @@
 import { Node, NodeProps } from "@xyflow/react";
 import { AntButton, AntTypography, Icons } from "fidesui";
-import { useCallback, useContext } from "react";
+import { useCallback, useContext, useEffect } from "react";
 
 import { TAXONOMY_ROOT_NODE_ID } from "../constants";
 import {
   TaxonomyTreeHoverContext,
   TreeNodeHoverStatus,
 } from "../context/TaxonomyTreeHoverContext";
+import useCenterScreenOnNode from "../hooks/useCenterScreenOnNode";
 import { TaxonomyEntity } from "../types";
 import styles from "./TaxonomyTreeNode.module.scss";
 import TaxonomyTreeNodeHandle from "./TaxonomyTreeNodeHandle";
@@ -18,11 +19,17 @@ export type TaxonomyTreeNodeType = Node<
     onTaxonomyItemClick: (taxonomyItem: TaxonomyEntity) => void | null;
     onAddButtonClick: (taxonomyItem: TaxonomyEntity | undefined) => void;
     hasChildren: boolean;
+    isLastCreatedItem: boolean;
+    resetLastCreatedItemKey: () => void;
   },
   "taxonomyTreeNode"
 >;
 
-const TaxonomyTreeNode = ({ data }: NodeProps<TaxonomyTreeNodeType>) => {
+const TaxonomyTreeNode = ({
+  data,
+  positionAbsoluteX,
+  positionAbsoluteY,
+}: NodeProps<TaxonomyTreeNodeType>) => {
   const { onMouseEnter, onMouseLeave, getNodeHoverStatus } = useContext(
     TaxonomyTreeHoverContext,
   );
@@ -32,7 +39,33 @@ const TaxonomyTreeNode = ({ data }: NodeProps<TaxonomyTreeNodeType>) => {
     onTaxonomyItemClick,
     label,
     hasChildren,
+    isLastCreatedItem,
+    resetLastCreatedItemKey,
   } = data;
+
+  const { centerScreenOnNode } = useCenterScreenOnNode({
+    positionAbsoluteX,
+    positionAbsoluteY,
+    nodeWidth: 200,
+  });
+
+  useEffect(() => {
+    const centerScreenAndSimulateHover = async () => {
+      await centerScreenOnNode();
+      onMouseEnter(taxonomyItem?.fides_key!);
+    };
+
+    if (isLastCreatedItem) {
+      centerScreenAndSimulateHover();
+      resetLastCreatedItemKey();
+    }
+  }, [
+    isLastCreatedItem,
+    onMouseEnter,
+    taxonomyItem?.fides_key,
+    resetLastCreatedItemKey,
+    centerScreenOnNode,
+  ]);
 
   const nodeHoverStatus = getNodeHoverStatus(taxonomyItem?.fides_key!);
   const getNodeHoverStatusClass = useCallback(() => {
