@@ -51,7 +51,7 @@ export const antTheme: AntThemeConfig = {
       bodyBg: palette.FIDESUI_NEUTRAL_50,
     },
     Select: {
-      optionActiveBg: palette.FIDESUI_SANDSTONE,
+      optionActiveBg: palette.FIDESUI_NEUTRAL_50,
     },
     Tooltip: {
       colorBgSpotlight: palette.FIDESUI_MINOS,
