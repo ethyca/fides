@@ -63,6 +63,7 @@ class LinkPaginationConfiguration(StrategyConfiguration):
     source: LinkSource
     rel: Optional[str] = None
     path: Optional[str] = None
+    has_next: Optional[str] = None
 
     @model_validator(mode="before")
     @classmethod
