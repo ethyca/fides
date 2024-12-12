@@ -123,10 +123,6 @@ class SecuritySettings(FidesSettings):
         default=False,
         description="If set to True, the user interface will display a download button for subject requests.",
     )
-    dsr_testing_tools_enabled: bool = Field(
-        default=False,
-        description="If set to True, contributor and owner roles will be able to run test privacy requests.",
-    )
     subject_request_download_link_ttl_seconds: int = Field(
         default=432000,
         description="The number of seconds that a pre-signed download URL when using S3 storage will be valid. The default is equal to 5 days.",

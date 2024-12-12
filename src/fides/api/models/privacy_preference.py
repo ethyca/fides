@@ -55,7 +55,6 @@ class ConsentMethod(Enum):
     button = "button"  # deprecated- keeping for backwards-compatibility
     reject = "reject"
     accept = "accept"
-    script = "script"
     save = "save"
     dismiss = "dismiss"
     gpc = "gpc"

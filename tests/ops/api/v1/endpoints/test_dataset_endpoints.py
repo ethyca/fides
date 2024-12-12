@@ -27,9 +27,9 @@ from fides.common.api.scope_registry import (
 from fides.common.api.v1.urn_registry import (
     CONNECTION_DATASETS,
     DATASET_BY_KEY,
-    DATASET_CONFIG_BY_KEY,
     DATASET_CONFIGS,
     DATASET_VALIDATE,
+    DATASETCONFIG_BY_KEY,
     DATASETS,
     V1_URL_PREFIX,
     YAML_DATASETS,
@@ -2261,8 +2261,8 @@ def get_dataset_config_url(
     connection_config: Optional[ConnectionConfig] = None,
     dataset_config: Optional[DatasetConfig] = None,
 ) -> str:
-    """Helper to construct the DATASET_CONFIG_BY_KEY URL, substituting valid/invalid keys in the path"""
-    path = V1_URL_PREFIX + DATASET_CONFIG_BY_KEY
+    """Helper to construct the DATASETCONFIG_BY_KEY URL, substituting valid/invalid keys in the path"""
+    path = V1_URL_PREFIX + DATASETCONFIG_BY_KEY
     connection_key = "nonexistent_key"
     if connection_config:
         connection_key = connection_config.key

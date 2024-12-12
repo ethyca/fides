@@ -20,11 +20,11 @@ from fides.api.service.connectors import (
     ScyllaConnector,
     get_connector,
 )
-from fides.api.service.connectors.mariadb_connector import MariaDBConnector
-from fides.api.service.connectors.microsoft_sql_server_connector import (
+from fides.api.service.connectors.sql_connector import (
+    MariaDBConnector,
     MicrosoftSQLServerConnector,
+    MySQLConnector,
 )
-from fides.api.service.connectors.mysql_connector import MySQLConnector
 from fides.common.api.scope_registry import (
     CONNECTION_CREATE_OR_UPDATE,
     CONNECTION_READ,

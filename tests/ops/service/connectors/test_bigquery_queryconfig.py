@@ -13,9 +13,7 @@ from fides.api.schemas.namespace_meta.bigquery_namespace_meta import (
     BigQueryNamespaceMeta,
 )
 from fides.api.service.connectors import BigQueryConnector
-from fides.api.service.connectors.query_configs.bigquery_query_config import (
-    BigQueryQueryConfig,
-)
+from fides.api.service.connectors.query_config import BigQueryQueryConfig
 
 
 @pytest.mark.integration_external

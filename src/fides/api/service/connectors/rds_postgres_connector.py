@@ -14,10 +14,10 @@ from fides.api.models.privacy_request import PrivacyRequest, RequestTask
 from fides.api.schemas.connection_configuration.connection_secrets_rds_postgres import (
     RDSPostgresSchema,
 )
-from fides.api.service.connectors.query_configs.postgres_query_config import (
+from fides.api.service.connectors.query_config import (
     PostgresQueryConfig,
+    SQLQueryConfig,
 )
-from fides.api.service.connectors.query_configs.query_config import SQLQueryConfig
 from fides.api.service.connectors.rds_connector_mixin import RDSConnectorMixin
 from fides.api.service.connectors.sql_connector import SQLConnector
 from fides.api.util.collection_util import Row

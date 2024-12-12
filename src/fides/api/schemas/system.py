@@ -5,8 +5,10 @@ from fideslang.models import Cookies, PrivacyDeclaration, System
 from pydantic import ConfigDict, Field
 from pydantic.main import BaseModel
 
+from fides.api.models.detection_discovery import MonitorConfig
 from fides.api.schemas.connection_configuration.connection_config import (
     ConnectionConfigurationResponse,
+    ConnectionConfigurationResponseWithMonitors,
 )
 from fides.api.schemas.user import UserResponse
 

@@ -220,13 +220,10 @@ class ConnectionConfig(Base):
             return False
 
         # hard-coding to avoid cyclic dependency
-        if authentication.strategy not in [
-            "oauth2_authorization_code",
-            "oauth2_client_credentials",
-        ]:
+        if authentication.strategy != "oauth2_authorization_code":
             return False
 
-        return bool(self.secrets and "access_token" in self.secrets.keys())
+        return bool(self.secrets and self.secrets.get("access_token"))
 
     @property
     def name_or_key(self) -> str:

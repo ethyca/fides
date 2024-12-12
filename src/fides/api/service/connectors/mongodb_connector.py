@@ -13,10 +13,7 @@ from fides.api.schemas.connection_configuration.connection_secrets_mongodb impor
     MongoDBSchema,
 )
 from fides.api.service.connectors.base_connector import BaseConnector
-from fides.api.service.connectors.query_configs.mongodb_query_config import (
-    MongoQueryConfig,
-)
-from fides.api.service.connectors.query_configs.query_config import QueryConfig
+from fides.api.service.connectors.query_config import MongoQueryConfig, QueryConfig
 from fides.api.util.collection_util import Row
 from fides.api.util.logger import Pii
 

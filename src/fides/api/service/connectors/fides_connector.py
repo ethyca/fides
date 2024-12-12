@@ -17,7 +17,7 @@ from fides.api.schemas.policy import ActionType
 from fides.api.schemas.redis_cache import Identity
 from fides.api.service.connectors.base_connector import BaseConnector
 from fides.api.service.connectors.fides.fides_client import FidesClient
-from fides.api.service.connectors.query_configs.query_config import QueryConfig
+from fides.api.service.connectors.query_config import QueryConfig
 from fides.api.util.collection_util import Row
 from fides.api.util.errors import FidesError
 

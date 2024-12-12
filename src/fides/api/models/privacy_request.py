@@ -183,14 +183,12 @@ class PrivacyRequestSource(str, EnumType):
     - Request Manager: Request submitted from the Admin UI's Request manager page
     - Consent Webhook: Request created as a side-effect of a consent webhook request (bidirectional consent)
     - Fides.js: Request created as a side-effect of a privacy preference update from Fides.js
-    - Dataset Test: Standalone dataset test
     """
 
     privacy_center = "Privacy Center"
     request_manager = "Request Manager"
     consent_webhook = "Consent Webhook"
     fides_js = "Fides.js"
-    dataset_test = "Dataset Test"
 
 
 class CallbackType(EnumType):

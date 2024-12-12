@@ -2,7 +2,7 @@ from uuid import uuid4
 
 import pytest
 
-from fides.api.service.connectors.snowflake_connector import SnowflakeConnector
+from fides.api.service.connectors.sql_connector import SnowflakeConnector
 from tests.ops.service.privacy_request.test_request_runner_service import (
     PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL,
     get_privacy_request_results,
