@@ -43,7 +43,7 @@ class LinkPaginationStrategy(PaginationStrategy):
 
         if self.has_next:
             has_next = pydash.get(response.json(), self.has_next)
-            logger.info("The hasNext value is {}", has_next)
+            logger.info(f"The {self.has_next} field has a value of {has_next}")
             if str(has_next).lower() != "true":
                 return None
 
