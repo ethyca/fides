@@ -45,10 +45,13 @@ const TaxonomyEditForm = ({
       form={form}
     >
       <AntForm.Item<string> label="Name" name="name">
-        <AntInput />
+        <AntInput data-testid="edit-taxonomy-form_name" />
       </AntForm.Item>
       <AntForm.Item<string> label="Description" name="description">
-        <AntInput.TextArea rows={4} />
+        <AntInput.TextArea
+          rows={4}
+          data-testid="edit-taxonomy-form_description"
+        />
       </AntForm.Item>
 
       {isDataSubjectType && <DataSubjectSpecialFields />}

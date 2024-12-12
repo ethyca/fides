@@ -145,7 +145,12 @@ const TaxonomyEditDrawer = ({
               Fides key:
             </span>
             <AntTooltip title={taxonomyItem?.fides_key} trigger="click">
-              <span className="flex-1 truncate">{taxonomyItem?.fides_key}</span>
+              <span
+                className="flex-1 truncate"
+                data-testid="edit-drawer-fides-key"
+              >
+                {taxonomyItem?.fides_key}
+              </span>
             </AntTooltip>
           </div>
           {/* <div className="flex">

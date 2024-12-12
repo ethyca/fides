@@ -59,6 +59,7 @@ const TaxonomyTreeNode = ({ data }: NodeProps<TaxonomyTreeNodeType>) => {
       className="group relative"
       onMouseEnter={() => onMouseEnter(taxonomyItem?.fides_key!)}
       onMouseLeave={() => onMouseLeave(taxonomyItem?.fides_key!)}
+      data-testid={`taxonomy-node-${taxonomyItem?.fides_key}`}
     >
       <AntButton
         className={`${styles.button} ${getNodeHoverStatusClass()}`}

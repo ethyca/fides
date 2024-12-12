@@ -1,5 +1,7 @@
 import { stubTaxonomyEntities } from "cypress/support/stubs";
 
+const dataCategoriesFixture = require("../fixtures/taxonomy/data_categories.json");
+
 describe("Taxonomy management page", () => {
   beforeEach(() => {
     cy.login();
@@ -17,7 +19,7 @@ describe("Taxonomy management page", () => {
       cy.visit("/taxonomy");
     });
 
-    it.only("Can switch between different taxonomies and load data", () => {
+    it("Can switch between different taxonomies and load data", () => {
       // data uses
       cy.getByTestId("taxonomy-type-selector").selectAntMenuOption("Data uses");
       cy.wait("@getDataUses");
@@ -36,10 +38,30 @@ describe("Taxonomy management page", () => {
     });
 
     it("Renders all active label from the taxonomy", () => {
-      cy.getByTestId("taxonomy-tree");
+      console.log("dataCategoriesFixture", dataCategoriesFixture);
+
+      cy.getByTestId("taxonomy-interactive-tree").within(() => {
+        dataCategoriesFixture
+          .filter((c) => c.active)
+          .forEach((category) => {
+            cy.getByTestId(`taxonomy-node-${category.fides_key}`).should(
+              "exist",
+            );
+          });
+      });
     });
 
-    it("Doesn't render inactive labels", () => {});
+    it("Doesn't render inactive labels", () => {
+      cy.getByTestId("taxonomy-interactive-tree").within(() => {
+        dataCategoriesFixture
+          .filter((c) => !c.active)
+          .forEach((category) => {
+            cy.getByTestId(`taxonomy-node-${category.fides_key}`).should(
+              "not.exist",
+            );
+          });
+      });
+    });
   });
 
   describe("Can edit data", () => {
@@ -67,11 +89,54 @@ describe("Taxonomy management page", () => {
       );
     });
 
-    it("Open edit drawer when clicking on a taxonomy item", () => {});
+    it("Open edit drawer when clicking on a taxonomy item", () => {
+      cy.getByTestId(`taxonomy-node-user.content`).click();
+      cy.getByTestId("edit-drawer-content").should("be.visible");
+    });
 
-    it("Edit drawer displays details", () => {});
+    it("Edit drawer displays details", () => {
+      cy.getByTestId(`taxonomy-node-user.content`).click();
+      cy.getByTestId("edit-drawer-content").within(() => {
+        cy.contains("header", "User Content");
+        cy.getByTestId("edit-drawer-fides-key").should(
+          "contain",
+          "user.content",
+        );
+        cy.getByTestId("edit-taxonomy-form_name");
+        cy.getByTestId("edit-taxonomy-form_description").should(
+          "have.value",
+          "Content related to, or created by the subject.",
+        );
+      });
+    });
 
-    it("Can edit taxonomy item", () => {});
+    it.only("Can edit taxonomy item", () => {
+      const taxonomyiesTestData = [
+        {
+          menuItemName: "Data categories",
+        },
+        {
+          menuItemName: "Data subjects",
+        },
+        {
+          menuItemName: "Data categories",
+        },
+      ];
+
+      cy.getByTestId(`taxonomy-node-user.content`).click();
+      cy.getByTestId("edit-drawer-content").within(() => {
+        cy.getByTestId("edit-taxonomy-form_name").clear().type("New name");
+        cy.getByTestId("edit-taxonomy-form_description")
+          .clear()
+          .type("New description");
+        cy.getByTestId("save-btn").click();
+      });
+      cy.wait("@putDataCategory").then((interception) => {
+        const { body } = interception.request;
+        expect(body.name).to.eql("New name");
+        expect(body.description).to.eql("New description");
+      });
+    });
 
     it("Can open an edit form for each taxonomy entity", () => {
       const expectedTabValues = [

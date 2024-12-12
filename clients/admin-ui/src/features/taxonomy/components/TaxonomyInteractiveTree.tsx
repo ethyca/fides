@@ -175,6 +175,7 @@ const TaxonomyInteractiveTree = ({
     <div
       className="size-full"
       style={{ backgroundColor: palette.FIDESUI_BG_CORINTH }}
+      data-testid="taxonomy-interactive-tree"
     >
       <TaxonomyTreeHoverProvider>
         <ReactFlow

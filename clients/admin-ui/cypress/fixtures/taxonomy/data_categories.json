@@ -868,7 +868,7 @@
     "name": "Cookie ID",
     "description": "Cookie unique identification number.",
     "parent_key": "user.device",
-    "active": true
+    "active": false
   },
   {
     "version_added": "2.0.0",
