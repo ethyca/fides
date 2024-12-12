@@ -26,8 +26,10 @@ interface DatamapReportContextProps {
   setColumnVisibility: Dispatch<SetStateAction<Record<string, boolean>>>;
   columnSizing: Record<string, number>;
   setColumnSizing: Dispatch<SetStateAction<Record<string, number>>>;
-  columnNameMapOverrides: Record<string, string>;
-  setColumnNameMapOverrides: Dispatch<SetStateAction<Record<string, string>>>;
+  columnNameMapOverrides: Record<string, Record<string, any>>;
+  setColumnNameMapOverrides: Dispatch<
+    SetStateAction<Record<string, Record<string, any>>>
+  >;
 }
 
 export const DatamapReportContext = createContext<DatamapReportContextProps>(
@@ -76,7 +78,7 @@ export const DatamapReportProvider = ({
   >(DATAMAP_LOCAL_STORAGE_KEYS.COLUMN_SIZING, {});
 
   const [columnNameMapOverrides, setColumnNameMapOverrides] = useLocalStorage<
-    Record<string, string>
+    Record<string, Record<string, any>>
   >(DATAMAP_LOCAL_STORAGE_KEYS.COLUMN_NAMES, {});
 
   const contextValue: DatamapReportContextProps = useMemo(

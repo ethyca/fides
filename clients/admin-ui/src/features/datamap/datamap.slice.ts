@@ -108,6 +108,7 @@ const datamapApi = baseApi.injectEndpoints({
         dataSubjects?: string;
         format?: ExportFormat;
         report_id?: string;
+        report?: object;
       }
     >({
       query: ({
@@ -120,6 +121,7 @@ const datamapApi = baseApi.injectEndpoints({
         dataSubjects,
         format,
         report_id,
+        report,
       }) => {
         let queryString = `page=${pageIndex}&size=${pageSize}&group_by=${groupBy}`;
         if (dataUses) {
@@ -139,6 +141,8 @@ const datamapApi = baseApi.injectEndpoints({
         }
         return {
           url: `plus/datamap/minimal/${format}?${queryString}`,
+          method: "POST",
+          body: { report },
           responseHandler: async (response) => {
             const filename = await getFileNameFromContentDisposition(
               response.headers.get("content-disposition"),

@@ -13,5 +13,5 @@ export type CustomReportConfig = {
   /**
    * A map between column keys and custom labels
    */
-  column_map?: Record<string, string>;
+  column_map?: Record<string, any>;
 };
