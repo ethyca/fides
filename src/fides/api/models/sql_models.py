@@ -25,8 +25,10 @@ from sqlalchemy import (
     Text,
     TypeDecorator,
     UniqueConstraint,
+    any_,
     case,
     cast,
+    func,
     select,
     text,
     type_coerce,
@@ -35,8 +37,8 @@ from sqlalchemy.dialects.postgresql import ARRAY, BIGINT, BYTEA
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession, async_object_session
 from sqlalchemy.ext.hybrid import hybrid_property
-from sqlalchemy.orm import Session, relationship
-from sqlalchemy.sql import Select, func
+from sqlalchemy.orm import Session, column_property, relationship
+from sqlalchemy.sql import Select
 from sqlalchemy.sql.elements import Case
 from sqlalchemy.sql.sqltypes import DateTime
 from typing_extensions import Protocol, runtime_checkable
@@ -326,6 +328,36 @@ class PolicyCtl(Base, FidesBase):
     rules = Column(JSON)
 
 
+def create_data_categories_property(dataset_references):
+    """
+    Creates a column property that extracts a unique set of data categories from multiple datasets.
+
+    Takes a list of dataset references and returns a column property containing a single array of
+    all unique data categories found across all the specified datasets. This combines and deduplicates
+    data categories from every level of the JSON structure in each dataset's collections.
+    """
+
+    subquery = (
+        select(
+            [
+                func.jsonb_array_elements_text(
+                    text(
+                        "jsonb_path_query(collections::jsonb, '$.** ? (@.data_categories != null).data_categories')"
+                    )
+                ).label("category")
+            ]
+        )
+        .select_from(Dataset)
+        .where(Dataset.fides_key == any_(dataset_references))
+    ).cte()
+
+    return column_property(
+        select([func.array_agg(func.distinct(subquery.c.category))])
+        .select_from(subquery)
+        .scalar_subquery()
+    )
+
+
 # System
 class System(Base, FidesBase):
     """
@@ -404,13 +436,8 @@ class System(Base, FidesBase):
         "Cookies", back_populates="system", lazy="selectin", uselist=True, viewonly=True
     )
 
-    # index scan using ix_ctl_datasets_fides_key on ctl_datasets
-    datasets = relationship(
-        "Dataset",
-        primaryjoin="foreign(Dataset.fides_key)==any_(System.dataset_references)",
-        lazy="selectin",
-        uselist=True,
-        viewonly=True,
+    dataset_data_categories: List[str] = create_data_categories_property(
+        dataset_references
     )
 
     @classmethod
@@ -443,9 +470,7 @@ class System(Base, FidesBase):
                 privacy_declaration.data_categories
             )
 
-        system_dataset_data_categories = set()
-        for dataset in self.datasets:
-            system_dataset_data_categories.update(dataset.field_data_categories)
+        system_dataset_data_categories = set(self.dataset_data_categories)
 
         return find_undeclared_categories(
             system_dataset_data_categories, privacy_declaration_data_categories
@@ -501,12 +526,9 @@ class PrivacyDeclaration(Base):
     cookies = relationship(
         "Cookies", back_populates="privacy_declaration", lazy="joined", uselist=True
     )
-    datasets = relationship(
-        "Dataset",
-        primaryjoin="foreign(Dataset.fides_key)==any_(PrivacyDeclaration.dataset_references)",
-        lazy="selectin",
-        uselist=True,
-        viewonly=True,
+
+    dataset_data_categories: List[str] = create_data_categories_property(
+        dataset_references
     )
 
     @classmethod
@@ -559,9 +581,7 @@ class PrivacyDeclaration(Base):
         # data categories across this privacy declaration and its sibling privacy declarations.
 
         # all data categories from the datasets
-        dataset_data_categories = set()
-        for dataset in self.datasets:
-            dataset_data_categories.update(dataset.field_data_categories)
+        dataset_data_categories = set(self.dataset_data_categories)
 
         # all data categories specified directly on this and sibling privacy declarations
         declared_data_categories = set()

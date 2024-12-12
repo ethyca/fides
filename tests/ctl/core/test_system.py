@@ -60,8 +60,14 @@ def test_get_system_data_uses(db, system) -> None:
     assert sql_System.get_data_uses([system]) == set()
 
 
-def test_system_datasets(system_with_dataset_references: System) -> None:
-    assert len(system_with_dataset_references.datasets) == 1
+def test_system_dataset_data_categories(
+    system_with_a_single_dataset_reference: System,
+) -> None:
+    assert set(system_with_a_single_dataset_reference.dataset_data_categories) == {
+        "user.behavior",
+        "user.contact.address.street",
+        "user.unique_id",
+    }
 
 
 def test_system_undeclared_data_categories(

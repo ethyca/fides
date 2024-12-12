@@ -1400,7 +1400,78 @@ def system_with_undeclared_data_categories(db: Session) -> System:
 
 
 @pytest.fixture(scope="function")
-def privacy_declaration_with_dataset_references(db: Session) -> System:
+def system_with_a_single_dataset_reference(db: Session) -> System:
+    first_dataset = CtlDataset.create_from_dataset_dict(
+        db,
+        {
+            "fides_key": f"dataset_key-f{uuid4()}",
+            "collections": [
+                {
+                    "name": "loyalty",
+                    "fields": [
+                        {
+                            "name": "id",
+                            "data_categories": ["user.unique_id"],
+                        },
+                    ],
+                }
+            ],
+        },
+    )
+    second_dataset = CtlDataset.create_from_dataset_dict(
+        db,
+        {
+            "fides_key": f"dataset_key-f{uuid4()}",
+            "collections": [
+                {
+                    "name": "customer",
+                    "fields": [
+                        {
+                            "name": "shipping_info",
+                            "fields": [
+                                {
+                                    "name": "street",
+                                    "data_categories": ["user.contact.address.street"],
+                                }
+                            ],
+                        },
+                        {
+                            "name": "first_name",
+                            "data_categories": ["user.contact.address.street"],
+                        },
+                    ],
+                },
+                {
+                    "name": "activity",
+                    "fields": [
+                        {
+                            "name": "last_login",
+                            "data_categories": ["user.behavior"],
+                        },
+                    ],
+                },
+            ],
+        },
+    )
+    system = System.create(
+        db=db,
+        data={
+            "fides_key": f"system_key-f{uuid4()}",
+            "name": f"system-{uuid4()}",
+            "description": "fixture-made-system",
+            "organization_fides_key": "default_organization",
+            "system_type": "Service",
+            "dataset_references": [first_dataset.fides_key, second_dataset.fides_key],
+        },
+    )
+
+    return system
+
+
+@pytest.fixture(scope="function")
+def privacy_declaration_with_single_dataset_reference(
+    db: Session,
+) -> PrivacyDeclaration:
     ctl_dataset = CtlDataset.create_from_dataset_dict(
         db,
         {
@@ -1439,6 +1510,90 @@ def privacy_declaration_with_dataset_references(db: Session) -> System:
             "data_use": "third_party_sharing",
             "data_subjects": ["customer"],
             "dataset_references": [ctl_dataset.fides_key],
+            "egress": None,
+            "ingress": None,
+        },
+    )
+
+    return privacy_declaration
+
+
+@pytest.fixture(scope="function")
+def privacy_declaration_with_multiple_dataset_references(
+    db: Session,
+) -> PrivacyDeclaration:
+    first_dataset = CtlDataset.create_from_dataset_dict(
+        db,
+        {
+            "fides_key": f"dataset_key-f{uuid4()}",
+            "collections": [
+                {
+                    "name": "loyalty",
+                    "fields": [
+                        {
+                            "name": "id",
+                            "data_categories": ["user.unique_id"],
+                        },
+                    ],
+                }
+            ],
+        },
+    )
+    second_dataset = CtlDataset.create_from_dataset_dict(
+        db,
+        {
+            "fides_key": f"dataset_key-f{uuid4()}",
+            "collections": [
+                {
+                    "name": "customer",
+                    "fields": [
+                        {
+                            "name": "shipping_info",
+                            "fields": [
+                                {
+                                    "name": "street",
+                                    "data_categories": ["user.contact.address.street"],
+                                }
+                            ],
+                        },
+                        {
+                            "name": "first_name",
+                            "data_categories": ["user.contact.address.street"],
+                        },
+                    ],
+                },
+                {
+                    "name": "activity",
+                    "fields": [
+                        {
+                            "name": "last_login",
+                            "data_categories": ["user.behavior"],
+                        },
+                    ],
+                },
+            ],
+        },
+    )
+    system = System.create(
+        db=db,
+        data={
+            "fides_key": f"system_key-f{uuid4()}",
+            "name": f"system-{uuid4()}",
+            "description": "fixture-made-system",
+            "organization_fides_key": "default_organization",
+            "system_type": "Service",
+        },
+    )
+
+    privacy_declaration = PrivacyDeclaration.create(
+        db=db,
+        data={
+            "name": "Collect data for third party sharing",
+            "system_id": system.id,
+            "data_categories": ["user.device.cookie_id"],
+            "data_use": "third_party_sharing",
+            "data_subjects": ["customer"],
+            "dataset_references": [first_dataset.fides_key, second_dataset.fides_key],
             "egress": None,
             "ingress": None,
         },
