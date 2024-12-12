@@ -58,7 +58,7 @@ def response_with_has_next_conditional_true():
                 "customers": [{"id": 1}, {"id": 2}, {"id": 3}],
                 "links": {
                     "next": "https://domain.com/customers?page=def",
-                    "hasNext": "true",
+                    "hasNext": True,
                 },
             }
         ),
@@ -76,7 +76,7 @@ def response_with_has_next_conditional_false():
                 "customers": [{"id": 1}, {"id": 2}, {"id": 3}],
                 "links": {
                     "next": "https://domain.com/customers?page=abc",
-                    "hasNext": "false",
+                    "hasNext": False,
                 },
             }
         ),
