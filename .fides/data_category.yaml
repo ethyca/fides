@@ -1,0 +1,12 @@
+data_category:
+- version_added: 2.0.0
+  version_deprecated: null
+  replaced_by: null
+  is_default: true
+  fides_key: system
+  organization_fides_key: default_organization
+  tags: null
+  name: System Data
+  description: Data unique to, and under control of the system.
+  parent_key: null
+  active: true
