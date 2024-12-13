@@ -16,12 +16,13 @@ const DataSubjectSpecialFields = () => {
         layout="horizontal"
         valuePropName="checked"
       >
-        <AntCheckbox />
+        <AntCheckbox data-testid="edit-taxonomy-form_automated-decisions" />
       </AntForm.Item>
       <AntForm.Item<string[]> name={["rights", "values"]} label="Rights">
         <AntSelect
           mode="multiple"
           options={enumToOptions(DataSubjectRightsEnum)}
+          data-testid="edit-taxonomy-form_rights"
         />
       </AntForm.Item>
       {rightsValues && !isEmpty(rightsValues) && (
@@ -31,7 +32,10 @@ const DataSubjectSpecialFields = () => {
           required
           rules={[{ required: true, message: "Please select a strategy" }]}
         >
-          <AntSelect options={enumToOptions(IncludeExcludeEnum)} />
+          <AntSelect
+            options={enumToOptions(IncludeExcludeEnum)}
+            data-testid="edit-taxonomy-form_strategy"
+          />
         </AntForm.Item>
       )}
     </>

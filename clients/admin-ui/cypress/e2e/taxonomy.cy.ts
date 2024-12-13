@@ -110,143 +110,112 @@ describe("Taxonomy management page", () => {
       });
     });
 
-    it.only("Can edit taxonomy item", () => {
+    it("Can edit taxonomy item", () => {
       const taxonomyiesTestData = [
         {
           menuItemName: "Data categories",
+          nodeToEdit: "user.content",
+          updateRequest: "@putDataCategory",
+        },
+        {
+          menuItemName: "Data uses",
+          nodeToEdit: "functional.service",
+          updateRequest: "@putDataUse",
         },
         {
           menuItemName: "Data subjects",
-        },
-        {
-          menuItemName: "Data categories",
+          nodeToEdit: "customer",
+          updateRequest: "@putDataSubject",
         },
       ];
 
-      cy.getByTestId(`taxonomy-node-user.content`).click();
-      cy.getByTestId("edit-drawer-content").within(() => {
-        cy.getByTestId("edit-taxonomy-form_name").clear().type("New name");
-        cy.getByTestId("edit-taxonomy-form_description")
-          .clear()
-          .type("New description");
-        cy.getByTestId("save-btn").click();
-      });
-      cy.wait("@putDataCategory").then((interception) => {
-        const { body } = interception.request;
-        expect(body.name).to.eql("New name");
-        expect(body.description).to.eql("New description");
-      });
-    });
-
-    it("Can open an edit form for each taxonomy entity", () => {
-      const expectedTabValues = [
-        {
-          tab: "Data Categories",
-          name: "System Data",
-          key: "system",
-          description: "Data unique to, and under control of the system.",
-          parentKey: "",
-          isParent: true,
-          request: "@putDataCategory",
-        },
-        {
-          tab: "Data Uses",
-          name: "Functional",
-          key: "functional",
-          description: "Used for specific, necessary, and legitimate purposes",
-          parentKey: "",
-          isParent: true,
-          request: "@putDataUse",
-        },
-        {
-          tab: "Data Subjects",
-          name: "Commuter",
-          key: "commuter",
-          description:
-            "An individual that is traveling or transiting in the context of location tracking.",
-          parentKey: "",
-          isParent: false,
-          request: "@putDataSubject",
-        },
-      ];
-      expectedTabValues.forEach((tabValue) => {
-        cy.getByTestId(`tab-${tabValue.tab}`).click();
-        const testId = tabValue.isParent
-          ? `accordion-item-${tabValue.name}`
-          : `item-${tabValue.name}`;
-        cy.getByTestId(testId).trigger("mouseover");
-        cy.getByTestId("edit-taxonomy-form").should("not.exist");
-        cy.getByTestId("edit-btn").click();
-        cy.getByTestId("edit-taxonomy-form").should("exist");
-        cy.getByTestId(`taxonomy-entity-${tabValue.key}`).should("exist");
-        cy.getByTestId("input-name").should("have.value", tabValue.name);
-        cy.getByTestId("input-description").should(
-          "have.value",
-          tabValue.description,
+      taxonomyiesTestData.forEach((data) => {
+        cy.getByTestId("taxonomy-type-selector").selectAntMenuOption(
+          data.menuItemName,
         );
-        if (tabValue.tab !== "Data Subjects") {
-          cy.getByTestId("input-parent_key").should(
-            "have.value",
-            tabValue.parentKey,
-          );
-          cy.getByTestId("input-parent_key").should("be.disabled");
-        }
-        cy.getByTestId("submit-btn").should("be.disabled");
-
-        // make an edit
-        const addedText = "foo";
-        cy.getByTestId("input-name").type(addedText);
-        cy.getByTestId("submit-btn").should("be.enabled");
-        cy.getByTestId("submit-btn").click();
-        cy.wait(tabValue.request).then((interception) => {
-          const { body } = interception.request;
-          expect(body.name).to.eql(`${tabValue.name}${addedText}`);
+        cy.getByTestId(`taxonomy-node-${data.nodeToEdit}`).click();
+        cy.getByTestId("edit-drawer-content").within(() => {
+          cy.getByTestId("edit-taxonomy-form_name").clear().type("New name");
+          cy.getByTestId("edit-taxonomy-form_description")
+            .clear()
+            .type("New description");
+          cy.getByTestId("save-btn").click();
         });
-        cy.getByTestId("toast-success-msg").should("exist");
+        cy.wait(data.updateRequest).then((interception) => {
+          const { body } = interception.request;
+          expect(body.name).to.eql("New name");
+          expect(body.description).to.eql("New description");
+          expect(body.fides_key).to.eql(data.nodeToEdit);
+        });
       });
     });
 
-    /*
-     * These fields are deprecated.
-     * This test is being kept so it can be updated
-     * with new fields in the future
-     */
-    it.skip("Can render an extended form for Data Uses", () => {
-      cy.getByTestId("tab-Data Uses").click();
+    describe("Data Subject special fields", () => {
+      it("Can render an extended form for Data Subject", () => {
+        cy.getByTestId("taxonomy-type-selector").selectAntMenuOption(
+          "Data subjects",
+        );
+        cy.getByTestId(`taxonomy-node-customer`).click();
 
-      // check an entity that has optional fields filled in ("provides")
-      cy.getByTestId("accordion-item-Provide the capability").trigger(
-        "mouseover",
-      );
-      cy.getByTestId("edit-btn").click();
-      // trigger a PUT
-      cy.getByTestId("submit-btn").click();
-      cy.wait("@putDataUse").then((interception) => {
-        const { body } = interception.request;
-        const expected = {
-          fides_key: "provide",
-          name: "Provide the capability",
-          description:
-            "Provide, give, or make available the product, service, application or system.",
-          is_default: true,
-        };
-        expect(body).to.eql(expected);
+        cy.getByTestId("edit-taxonomy-form_automated-decisions").should(
+          "exist",
+        );
+        cy.getByTestId("edit-taxonomy-form_rights").should("be.visible");
+        cy.getByTestId("edit-taxonomy-form_strategy").should("not.exist");
+        cy.getByTestId("edit-taxonomy-form_rights").antSelect("Erasure");
+        cy.getByTestId("edit-taxonomy-form_strategy").should("be.visible");
       });
 
-      // check an entity that has no optional fields filled in
-      cy.getByTestId("accordion-item-Improve the capability").trigger(
-        "mouseover",
-      );
-      cy.getByTestId("edit-btn").click();
+      describe("Does valition for data uses special fields", () => {
+        it("Can submit without filling any fields", () => {
+          cy.getByTestId("taxonomy-type-selector").selectAntMenuOption(
+            "Data subjects",
+          );
+          cy.getByTestId(`taxonomy-node-customer`).click();
+          cy.getByTestId("save-btn").click();
+          cy.wait("@putDataSubject");
+        });
+        it("Throws validation error if only Rights is selected", () => {
+          cy.getByTestId("taxonomy-type-selector").selectAntMenuOption(
+            "Data subjects",
+          );
+          cy.getByTestId(`taxonomy-node-customer`).click();
+          cy.getByTestId("edit-taxonomy-form_rights").antSelect("Erasure");
+          cy.getByTestId("save-btn").click();
+          cy.getByTestId("edit-taxonomy-form_strategy").should(
+            "contain",
+            "Please select a strategy",
+          );
+        });
+        it("Can submit when Rights and Strategy are selected", () => {
+          cy.getByTestId("taxonomy-type-selector").selectAntMenuOption(
+            "Data subjects",
+          );
+          cy.getByTestId(`taxonomy-node-customer`).click();
+          cy.getByTestId("edit-taxonomy-form_rights").antSelect("Erasure");
+          cy.getByTestId("edit-taxonomy-form_strategy").antSelect("INCLUDE");
+          cy.getByTestId("save-btn").click();
+          cy.wait("@putDataSubject");
+        });
+      });
+
+      it("Can edit data uses special fields", () => {
+        cy.getByTestId("taxonomy-type-selector").selectAntMenuOption(
+          "Data subjects",
+        );
+        cy.getByTestId(`taxonomy-node-customer`).click();
+        cy.getByTestId("edit-taxonomy-form_automated-decisions").click();
+        cy.getByTestId("edit-taxonomy-form_rights").antSelect("Erasure");
+        cy.getByTestId("edit-taxonomy-form_strategy").antSelect("INCLUDE");
+        cy.getByTestId("save-btn").click();
+        cy.wait("@putDataSubject").then((interception) => {
+          const { body } = interception.request;
+          expect(body.automated_decisions_or_profiling).to.equal(true);
+          expect(body.rights.values).to.eql(["Erasure"]);
+          expect(body.rights.strategy).to.equal("INCLUDE");
+        });
+      });
     });
-  });
-
-  describe("Data Uses special fields", () => {
-    it("Can render an extended form for Data Uses", () => {});
-
-    it("Does valition for data uses special fields", () => {});
-
-    it("Can edit data uses special fields", () => {});
   });
 
   describe("Custom fields", () => {
