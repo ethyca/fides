@@ -3,6 +3,7 @@ import { AntInput, InputRef } from "fidesui";
 import { useEffect, useRef, useState } from "react";
 
 import useCenterScreenOnNode from "../hooks/useCenterScreenOnNode";
+import styles from "./TaxonomyTextInputNode.module.scss";
 import TaxonomyTreeNodeHandle from "./TaxonomyTreeNodeHandle";
 
 export type TextInputNodeType = Node<
@@ -63,6 +64,7 @@ const TaxonomyTextInputNode = ({
           }
         }}
         onPressEnter={() => onSubmit(value)}
+        className={styles.input}
       />
       <TaxonomyTreeNodeHandle type="target" />
     </div>
