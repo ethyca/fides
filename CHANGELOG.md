@@ -22,7 +22,6 @@ The types of changes are:
 
 ### Fixed
 - SaaS integrations using `oauth_client_credentials` now properly update their access token when editing the secrets.
-- Adds support for fides_key generation when parent_key is provided in Taxonomy create endpoints [#5542](https://github.com/ethyca/fides/pull/5542)
 
 ## [2.51.0](https://github.com/ethyca/fides/compare/2.50.0...2.51.0)
 
