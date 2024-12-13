@@ -43,6 +43,18 @@
   color: var(--fidesui-neutral-400) !important;
 }
 
+.add-button-container {
+  position: absolute;
+  left: 100%;
+  top: 0;
+  padding-left: 0.5rem;
+  opacity: 0;
+  transition: opacity 0.3s ease-in 0s;
+}
+.add-button-container--visible {
+  opacity: 1;
+}
+
 .add-button {
   height: 28px !important;
   width: 28px !important;

@@ -89,7 +89,7 @@ const TaxonomyTreeNode = ({
 
   return (
     <div
-      className="group relative transition-transform"
+      className={styles.container}
       onMouseEnter={() => onMouseEnter(taxonomyItem?.fides_key!)}
       onMouseLeave={() => onMouseLeave(taxonomyItem?.fides_key!)}
       data-testid={`taxonomy-node-${taxonomyItem?.fides_key}`}
@@ -109,17 +109,21 @@ const TaxonomyTreeNode = ({
       {!isRootNode && (
         <TaxonomyTreeNodeHandle
           type="target"
-          inactive={nodeHoverStatus === "INACTIVE"}
+          inactive={nodeHoverStatus === TreeNodeHoverStatus.INACTIVE}
         />
       )}
       {hasChildren && (
         <TaxonomyTreeNodeHandle
           type="source"
-          inactive={nodeHoverStatus === "INACTIVE"}
+          inactive={nodeHoverStatus === TreeNodeHoverStatus.INACTIVE}
         />
       )}
 
-      <div className="absolute left-full top-0 pl-2 opacity-0 transition duration-300 group-hover:opacity-100">
+      <div
+        className={`
+          ${styles["add-button-container"]}
+          ${nodeHoverStatus === TreeNodeHoverStatus.ACTIVE_HOVER ? styles["add-button-container--visible"] : ""}`}
+      >
         <AntButton
           type="default"
           className={styles["add-button"]}
