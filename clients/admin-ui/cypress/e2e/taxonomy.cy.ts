@@ -229,7 +229,11 @@ describe("Taxonomy management page", () => {
           .should("exist")
           .should("not.be.visible");
       });
-      cy.getByTestId(`taxonomy-node-user.content`).realMouseMove(0, 0);
+      cy.getByTestId(`taxonomy-node-user.content`)
+        .realMouseMove(-100, -100, { position: "topLeft" })
+        .realMouseMove(0, 0, {
+          position: "center",
+        });
       cy.getByTestId(`taxonomy-node-user.content`).within(() => {
         cy.getByTestId("taxonomy-add-child-label-button")
           .should("exist")
@@ -256,7 +260,8 @@ describe("Taxonomy management page", () => {
 
       cy.getByTestId("taxonomy-text-input-node")
         .find("input")
-        .type("My new label{enter}");
+        .clear()
+        .type("My new label{enter}", { delay: 50, waitForAnimations: true });
 
       cy.wait("@postDataCategory").then((interception) => {
         const { body } = interception.request;
@@ -296,14 +301,48 @@ describe("Taxonomy management page", () => {
 
       cy.wait("@deleteDataCategory").then((interception) => {
         const { body } = interception.request;
+        expect(body.fides_key).to.equal("user.content");
         expect(body.active).to.equal(false);
       });
     });
   });
 
   describe("Hidden features", () => {
-    it("Can view disabled labels when using ?showDisabledItems=true", () => {});
+    beforeEach(() => {
+      cy.visit("/taxonomy?showDisabledItems=true");
+    });
 
-    it("Can reenable a disabled label", () => {});
+    it("Can view disabled labels when using ?showDisabledItems=true", () => {
+      cy.getByTestId("taxonomy-interactive-tree").within(() => {
+        dataCategoriesFixture.forEach((category) => {
+          cy.getByTestId(`taxonomy-node-${category.fides_key}`).should("exist");
+
+          if (category.active === false) {
+            cy.getByTestId(`taxonomy-node-${category.fides_key}`).should(
+              "contain",
+              "(disabled)",
+            );
+          }
+        });
+      });
+    });
+
+    it("Can reenable a disabled label", () => {
+      cy.intercept("PUT", "/api/v1/data_category*", {
+        fides_key: "user.device.cookie_id",
+        active: true,
+      }).as("putDataCategory");
+
+      cy.getByTestId(`taxonomy-node-user.device.cookie_id`).click();
+      cy.getByTestId("edit-drawer-content").within(() => {
+        cy.getByTestId("enable-btn").click();
+      });
+
+      cy.wait("@putDataCategory").then((interception) => {
+        const { body } = interception.request;
+        expect(body.fides_key).to.equal("user.device.cookie_id");
+        expect(body.active).to.equal(true);
+      });
+    });
   });
 });
