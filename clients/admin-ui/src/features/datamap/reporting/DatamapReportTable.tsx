@@ -237,14 +237,6 @@ export const DatamapReportTable = () => {
   } = useDisclosure();
 
   const onExport = (downloadType: ExportFormat) => {
-    const columnMap: Record<string, Record<string, any>> = {};
-    Object.keys(columnNameMapOverrides).forEach((key) => {
-      columnMap[key] = {
-        label: columnNameMapOverrides[key],
-        enabled: columnVisibility[key],
-      };
-    });
-
     exportMinimalDatamapReport({
       ...reportQuery,
       format: downloadType,
@@ -253,7 +245,7 @@ export const DatamapReportTable = () => {
         name: "temporary report",
         type: "datamap",
         config: {
-          column_map: columnMap,
+          column_map: columnNameMapOverrides,
           table_state: {
             groupBy,
             filters: selectedFilters,
@@ -382,17 +374,10 @@ export const DatamapReportTable = () => {
     return <TableSkeletonLoader rowHeight={36} numRows={15} />;
   }
 
-  const x: Record<string, string> = {};
-  Object.keys(columnNameMapOverrides).forEach((key) => {
-    if (columnNameMapOverrides[key].label) {
-      x[key] = columnNameMapOverrides[key].label;
-    }
-  });
-
   return (
     <Flex flex={1} direction="column" overflow="auto">
       <DatamapReportFilterModal
-        columnNameMap={{ ...DEFAULT_COLUMN_NAMES, ...x }}
+        columnNameMap={{ ...DEFAULT_COLUMN_NAMES, ...columnNameMapOverrides }}
         selectedFilters={selectedFilters}
         isOpen={isFilterModalOpen}
         onClose={onFilterModalClose}
@@ -405,7 +390,7 @@ export const DatamapReportTable = () => {
         isOpen={isColumnSettingsOpen}
         onClose={onColumnSettingsClose}
         headerText="Data map settings"
-        columnNameMap={{ ...DEFAULT_COLUMN_NAMES, ...x }}
+        columnNameMap={{ ...DEFAULT_COLUMN_NAMES, ...columnNameMapOverrides }}
         prefixColumns={getPrefixColumns(groupBy)}
         tableInstance={tableInstance}
         savedCustomReportId={savedCustomReportId}

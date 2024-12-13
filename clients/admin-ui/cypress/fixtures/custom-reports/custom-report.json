@@ -62,7 +62,8 @@
     },
     "column_map": {
       "data_categories": {
-        "label": "My Data Category Map"
+        "label": "My Data Category Map",
+        "enabled": true
       },
       "data_subjects": {
         "enabled": false

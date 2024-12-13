@@ -20,29 +20,38 @@ const CUSTOM_FIELD_SYSTEM_PREFIX = "system_";
 const CUSTOM_FIELD_DATA_USE_PREFIX = "privacy_declaration_";
 
 export const getDefaultColumn: (
-  columnNameMap: Record<string, string>,
+  columnNameMap: Record<string, any>,
   isRenamingColumns: boolean,
 ) => Partial<ColumnDef<DatamapReport>> = (
   columnNameMap,
   isRenamingColumns,
 ) => ({
   cell: (props) => <DefaultCell value={props.getValue() as string} />,
-  header: (props) => (
-    <EditableHeaderCell
-      value={getColumnHeaderText({
-        columnId: props.column.id,
-        columnNameMap,
-      })}
-      defaultValue={
-        DEFAULT_COLUMN_NAMES[props.column.id as COLUMN_IDS] ||
-        getColumnHeaderText({
-          columnId: props.column.id,
-        })
+  header: (props) => {
+    const newColumnNameMap: Record<string, string> = {};
+    Object.keys(columnNameMap).forEach((key) => {
+      newColumnNameMap[key] = columnNameMap[key];
+      if (columnNameMap[key].label) {
+        newColumnNameMap[key] = columnNameMap[key].label;
       }
-      isEditing={isRenamingColumns}
-      {...props}
-    />
-  ),
+    });
+    return (
+      <EditableHeaderCell
+        value={getColumnHeaderText({
+          columnId: props.column.id,
+          columnNameMap: newColumnNameMap,
+        })}
+        defaultValue={
+          DEFAULT_COLUMN_NAMES[props.column.id as COLUMN_IDS] ||
+          getColumnHeaderText({
+            columnId: props.column.id,
+          })
+        }
+        isEditing={isRenamingColumns}
+        {...props}
+      />
+    );
+  },
 });
 
 const getCustomFieldColumns = (
