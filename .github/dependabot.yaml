@@ -32,6 +32,12 @@ updates:
       - dependencies
       - javascript
       - dependabot
+    allow:
+      - dependency-name: "@iabtechlabtcf*"
+        dependency-type: "direct"
+      - dependency-name: "@iabgpp*"
+        dependency-type: "direct"
+
   - package-ecosystem: github-actions
     directory: "/"
     schedule:
