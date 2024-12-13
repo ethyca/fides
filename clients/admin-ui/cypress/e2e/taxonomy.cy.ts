@@ -182,7 +182,7 @@ describe("Taxonomy management page", () => {
           cy.getByTestId(`taxonomy-node-customer`).click();
           cy.getByTestId("edit-taxonomy-form_rights").antSelect("Erasure");
           cy.getByTestId("save-btn").click();
-          cy.getByTestId("edit-taxonomy-form_strategy").should(
+          cy.get("#edit-taxonomy-form_rights_strategy_help").should(
             "contain",
             "Please select a strategy",
           );
@@ -218,249 +218,92 @@ describe("Taxonomy management page", () => {
     });
   });
 
-  describe("Custom fields", () => {
-    it("Can render an extended form for custom fields", () => {});
-
-    it("Does validation for custom fields", () => {});
-
-    it("Can edit custom fields", () => {});
-  });
-
   describe("New label creation", () => {
-    it("Add buttons displays", () => {});
+    beforeEach(() => {
+      cy.visit("/taxonomy");
+    });
 
-    it("Clicking add button adds text input nodes", () => {});
+    it("Add buttons displays", () => {
+      cy.getByTestId(`taxonomy-node-user.content`).within(() => {
+        cy.getByTestId("taxonomy-add-child-label-button")
+          .should("exist")
+          .should("not.be.visible");
+      });
+      cy.getByTestId(`taxonomy-node-user.content`).realMouseMove(0, 0);
+      cy.getByTestId(`taxonomy-node-user.content`).within(() => {
+        cy.getByTestId("taxonomy-add-child-label-button")
+          .should("exist")
+          .should("be.visible");
+      });
+    });
 
-    it("Can add new label", () => {});
+    it("Clicking add button adds text input nodes", () => {
+      cy.getByTestId("taxonomy-text-input-node").should("not.exist");
+      cy.getByTestId(`taxonomy-node-user.content`).within(() => {
+        cy.getByTestId("taxonomy-add-child-label-button").click();
+      });
+      cy.getByTestId("taxonomy-text-input-node").should("exist");
+    });
+
+    it("Can add new label", () => {
+      cy.intercept("POST", "/api/v1/data_category*", {
+        fides_key: "user.content.mynewlabel",
+      }).as("postDataCategory");
+
+      cy.getByTestId(`taxonomy-node-user.content`).within(() => {
+        cy.getByTestId("taxonomy-add-child-label-button").click();
+      });
+
+      cy.getByTestId("taxonomy-text-input-node")
+        .find("input")
+        .type("My new label{enter}");
+
+      cy.wait("@postDataCategory").then((interception) => {
+        const { body } = interception.request;
+        console.log("body", body);
+        expect(body.name).to.equal("My new label");
+        expect(body.parent_key).to.equal("user.content");
+      });
+    });
   });
 
   describe("Label deletion", () => {
-    it("Delete button triggers confirmation", () => {});
+    beforeEach(() => {
+      cy.visit("/taxonomy");
+    });
 
-    it("Can delete a label", () => {});
+    it("Delete button triggers confirmation", () => {
+      cy.getByTestId(`taxonomy-node-user.content`).click();
+      cy.getByTestId("edit-drawer-content").within(() => {
+        cy.getByTestId("delete-btn").click();
+      });
+      cy.getByTestId("confirmation-modal").should("be.visible");
+    });
+
+    it("Can (soft) delete a label", () => {
+      cy.intercept("PUT", "/api/v1/data_category*", {
+        fides_key: "user.content",
+        active: false,
+      }).as("deleteDataCategory");
+
+      cy.getByTestId(`taxonomy-node-user.content`).click();
+      cy.getByTestId("edit-drawer-content").within(() => {
+        cy.getByTestId("delete-btn").click();
+      });
+      cy.getByTestId("confirmation-modal").within(() => {
+        cy.getByTestId("continue-btn").click();
+      });
+
+      cy.wait("@deleteDataCategory").then((interception) => {
+        const { body } = interception.request;
+        expect(body.active).to.equal(false);
+      });
+    });
   });
 
   describe("Hidden features", () => {
     it("Can view disabled labels when using ?showDisabledItems=true", () => {});
 
     it("Can reenable a disabled label", () => {});
-  });
-
-  describe("Can create data", () => {
-    beforeEach(() => {
-      cy.visit("/taxonomy");
-      const taxonomyPayload = {
-        statusCode: 200,
-        body: {
-          fides_key: "key",
-          organization_fides_key: "default_organization",
-          name: "name",
-          description: "description",
-          parent_key: undefined,
-        },
-      };
-      cy.intercept("POST", "/api/v1/data_category*", taxonomyPayload).as(
-        "postDataCategory",
-      );
-      cy.intercept("POST", "/api/v1/data_use*", taxonomyPayload).as(
-        "postDataUse",
-      );
-      cy.intercept("POST", "/api/v1/data_subject*", taxonomyPayload).as(
-        "postDataSubject",
-      );
-    });
-
-    it("Can open a create form for each taxonomy entity", () => {
-      const expectedTabValues = [
-        {
-          tab: "Data Categories",
-          name: "Data category",
-          request: "@postDataCategory",
-        },
-        {
-          tab: "Data Uses",
-          name: "Data use",
-          request: "@postDataUse",
-        },
-        {
-          tab: "Data Subjects",
-          name: "Data subject",
-          request: "@postDataSubject",
-        },
-      ];
-      expectedTabValues.forEach((tabValue) => {
-        cy.getByTestId(`tab-${tabValue.tab}`).click();
-        cy.getByTestId("add-taxonomy-btn").click();
-        cy.getByTestId("create-taxonomy-form");
-        cy.getByTestId("form-heading").should("contain", tabValue.name);
-
-        // add a root value
-        cy.getByTestId("input-fides_key").type("foo");
-        if (tabValue.tab !== "Data Subjects") {
-          cy.getByTestId("input-parent_key").should("have.value", "");
-        }
-        cy.getByTestId("submit-btn").click();
-        cy.wait(tabValue.request).then((interception) => {
-          const { body } = interception.request;
-          expect(body.fides_key).to.eql("foo");
-          expect(body.parent_key).to.equal(undefined);
-          expect(body.is_default).to.equal(false);
-        });
-        cy.getByTestId("toast-success-msg").should("exist");
-
-        // add a child value
-        cy.getByTestId("add-taxonomy-btn").click();
-        cy.getByTestId("input-fides_key").type("foo.bar.baz");
-        if (tabValue.tab !== "Data Subjects") {
-          cy.getByTestId("input-parent_key").should("have.value", "foo.bar");
-        }
-        cy.getByTestId("submit-btn").click();
-        cy.wait(tabValue.request).then((interception) => {
-          const { body } = interception.request;
-          expect(body.fides_key).to.eql("foo.bar.baz");
-          expect(body.parent_key).to.equal("foo.bar");
-          expect(body.is_default).to.equal(false);
-        });
-        cy.getByTestId("toast-success-msg").should("exist");
-      });
-    });
-
-    it("Can trigger an error", () => {
-      const errorMsg = "Internal Server Error";
-      cy.intercept("POST", "/api/v1/data_category*", {
-        statusCode: 500,
-        body: errorMsg,
-      }).as("postDataCategoryError");
-
-      cy.getByTestId(`tab-Data Categories`).click();
-      cy.getByTestId("add-taxonomy-btn").click();
-
-      cy.getByTestId("input-fides_key").type("foo");
-      cy.getByTestId("submit-btn").click();
-
-      cy.wait("@postDataCategoryError");
-      cy.getByTestId("toast-success-msg").should("not.exist");
-      cy.getByTestId("taxonomy-form-error").should("contain", errorMsg);
-    });
-
-    it("Will only show either the add or the edit form", () => {
-      cy.getByTestId(`tab-Data Categories`).click();
-      const openEditForm = () => {
-        cy.getByTestId("accordion-item-System Data").trigger("mouseover");
-        cy.getByTestId("edit-btn").click();
-      };
-      const openCreateForm = () => {
-        cy.getByTestId("add-taxonomy-btn").click();
-      };
-      openEditForm();
-      cy.getByTestId("edit-taxonomy-form");
-      cy.getByTestId("create-taxonomy-form").should("not.exist");
-      openCreateForm();
-      cy.getByTestId("edit-taxonomy-form").should("not.exist");
-      cy.getByTestId("create-taxonomy-form");
-      openEditForm();
-      cy.getByTestId("edit-taxonomy-form");
-      cy.getByTestId("create-taxonomy-form").should("not.exist");
-    });
-  });
-
-  describe("Can delete data", () => {
-    beforeEach(() => {
-      cy.visit("/taxonomy");
-
-      const taxonomyPayload = {
-        statusCode: 200,
-        body: {
-          message: "resource deleted",
-          resource: {
-            fides_key: "key",
-            organization_fides_key: "default_organization",
-            tags: null,
-            name: "name",
-            description: "description",
-            parent_key: null,
-            is_default: false,
-          },
-        },
-      };
-      cy.intercept("DELETE", "/api/v1/data_category/*", taxonomyPayload).as(
-        "deleteDataCategory",
-      );
-      cy.intercept("DELETE", "/api/v1/data_use/*", taxonomyPayload).as(
-        "deleteDataUse",
-      );
-      cy.intercept("DELETE", "/api/v1/data_subject/*", taxonomyPayload).as(
-        "deleteDataSubject",
-      );
-    });
-
-    it("Only renders delete button on custom fields", () => {
-      cy.getByTestId(`tab-Data Categories`).click();
-      // try default fields first
-      cy.getByTestId("accordion-item-User Data").trigger("mouseover");
-      cy.getByTestId("delete-btn").should("not.exist");
-      cy.getByTestId("accordion-item-User Data").click();
-      cy.getByTestId("item-Job Title").trigger("mouseover");
-      cy.getByTestId("delete-btn").should("not.exist");
-
-      // now try custom fields
-      cy.getByTestId("accordion-item-Custom field").trigger("mouseover");
-      cy.getByTestId("delete-btn").click();
-      // parent custom fields should render with a warning
-      cy.getByTestId("delete-children-warning");
-      cy.getByTestId("cancel-btn").click();
-      cy.getByTestId("accordion-item-Custom field").click();
-      cy.getByTestId("item-Custom foo").trigger("mouseover");
-      cy.getByTestId("delete-btn").click();
-      // leaf nodes do not need a warning though
-      cy.getByTestId("delete-children-warning").should("not.exist");
-    });
-
-    it("Can delete from each taxonomy type (except Data Subject)", () => {
-      // Data Subject is slightly different than the others since it doesn't have
-      // a parent field, so easiest to split it out into its own test
-      const tabValues = [
-        { tab: "Data Categories", request: "@deleteDataCategory" },
-        { tab: "Data Uses", request: "@deleteDataUse" },
-      ];
-      tabValues.forEach((tabValue) => {
-        cy.getByTestId(`tab-${tabValue.tab}`).click();
-        cy.getByTestId("accordion-item-Custom field").click();
-        cy.getByTestId("item-Custom foo").trigger("mouseover");
-        cy.getByTestId("delete-btn").click();
-        cy.getByTestId("continue-btn").click();
-        cy.wait(tabValue.request).then((interception) => {
-          const { url } = interception.request;
-          expect(url).to.contain("custom.foo");
-        });
-        cy.getByTestId("toast-success-msg");
-      });
-    });
-
-    it("Can delete taxonomy field from Data Subject", () => {
-      cy.getByTestId(`tab-Data Subjects`).click();
-      cy.getByTestId("item-Custom field").trigger("mouseover");
-      cy.getByTestId("delete-btn").click();
-      cy.getByTestId("continue-btn").click();
-      cy.wait("@deleteDataSubject").then((interception) => {
-        const { url } = interception.request;
-        expect(url).to.contain("custom");
-      });
-      cy.getByTestId("toast-success-msg");
-    });
-
-    it("Can render an error on delete", () => {
-      cy.intercept("DELETE", "/api/v1/data_category/*", {
-        statusCode: 500,
-        body: "Internal Server Error",
-      }).as("deleteDataCategoryError");
-      cy.getByTestId(`tab-Data Categories`).click();
-      cy.getByTestId("accordion-item-Custom field").click();
-      cy.getByTestId("item-Custom foo").trigger("mouseover");
-      cy.getByTestId("delete-btn").click();
-      cy.getByTestId("continue-btn").click();
-      cy.wait("@deleteDataCategoryError");
-      cy.getByTestId("toast-error-msg");
-    });
   });
 });

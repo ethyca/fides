@@ -50,7 +50,7 @@ const TaxonomyTextInputNode = ({
   }, [parentKey, centerScreenOnNode, positionAbsoluteX, positionAbsoluteY]);
 
   return (
-    <div style={{ width: inputWidth }}>
+    <div style={{ width: inputWidth }} data-testid="taxonomy-text-input-node">
       <AntInput
         placeholder="Type label name..."
         ref={inputRef}

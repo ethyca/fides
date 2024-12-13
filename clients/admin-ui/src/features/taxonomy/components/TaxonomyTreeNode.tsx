@@ -126,6 +126,7 @@ const TaxonomyTreeNode = ({
           icon={<Icons.Add size={20} />}
           onClick={() => onAddButtonClick?.(taxonomyItem)}
           size="middle"
+          data-testid="taxonomy-add-child-label-button"
         />
       </div>
     </div>

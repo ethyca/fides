@@ -216,6 +216,13 @@ describe("Taxonomy management with Plus features", () => {
         cy.getByTestId(testIdMulti).contains(value);
       });
     });
+    describe("Custom fields", () => {
+      it("Can render an extended form for custom fields", () => {});
+
+      it("Does validation for custom fields", () => {});
+
+      it("Can edit custom fields", () => {});
+    });
 
     it("allows choosing and changing selections", () => {
       cy.getByTestId("custom-fields-list");
