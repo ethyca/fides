@@ -23,7 +23,7 @@ const TaxonomyTreeNodeHandle = ({
           ? palette.FIDESUI_NEUTRAL_400
           : palette.FIDESUI_MINOS,
       }}
-      className="transition-colors duration-300"
+      className="transition-colors duration-300 ease-in"
     />
   );
 };
