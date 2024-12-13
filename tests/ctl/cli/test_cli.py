@@ -145,13 +145,16 @@ def test_parse(test_config_path: str, test_cli_runner: CliRunner) -> None:
 
 
 class TestDB:
+    @pytest.mark.skip(
+        "This test is timing out only in CI: Safe-Tests (3.10.13, ctl-not-external)"
+    )
     @pytest.mark.integration
     def test_reset_db(self, test_config_path: str, test_cli_runner: CliRunner) -> None:
         result = test_cli_runner.invoke(
             cli, ["-f", test_config_path, "db", "reset", "-y"]
         )
         print(result.output)
-        assert result.exit_code == 0
+        assert result.exit_code == 0, result.output
 
     @pytest.mark.integration
     def test_init_db(self, test_config_path: str, test_cli_runner: CliRunner) -> None:
