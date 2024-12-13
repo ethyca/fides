@@ -21,20 +21,20 @@ def upgrade():
         """
         CREATE OR REPLACE FUNCTION get_unique_data_categories(dataset_refs text[])
         RETURNS text[] AS $$
-        BEGIN
-            RETURN COALESCE((
-                SELECT array_agg(DISTINCT category)
-                FROM (
-                    SELECT jsonb_array_elements_text(
-                        jsonb_path_query(collections::jsonb, '$.** ? (@.data_categories != null).data_categories')
-                    ) AS category
-                    FROM ctl_datasets
-                    WHERE fides_key = ANY(dataset_refs)
-                ) extracted_categories
-            ), ARRAY[]::text[]);
-        END;
-        $$ LANGUAGE plpgsql STABLE;
-    """
+            WITH categories AS (
+                SELECT jsonb_array_elements_text(
+                    jsonb_path_query(collections::jsonb, '$.** ? (@.data_categories != null).data_categories')
+                ) AS category
+                FROM ctl_datasets
+                WHERE fides_key = ANY(dataset_refs)
+            )
+            SELECT COALESCE(
+                array_agg(DISTINCT category),
+                ARRAY[]::text[]
+            )
+            FROM categories;
+        $$ LANGUAGE sql STABLE;
+        """
     )
 
 

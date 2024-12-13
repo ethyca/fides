@@ -1,14 +1,16 @@
 from enum import Enum as EnumType
-from typing import List, Type
+from typing import Dict, List, Set, Type
 
 from fideslang.default_taxonomy import DEFAULT_TAXONOMY
 from fideslang.validation import FidesKey
+from sqlalchemy import func, select, text
 from sqlalchemy.orm import Session
 
 from fides.api import common_exceptions
 
 from fides.api.models.sql_models import (  # type: ignore[attr-defined] # isort: skip
     DataCategory as DataCategoryDbModel,
+    Dataset,
 )
 
 
@@ -89,3 +91,19 @@ def filter_data_categories(
         }
         return sorted(list(default_categories))
     return sorted(user_categories)
+
+
+def get_data_categories_map(db: Session) -> Dict[str, Set[str]]:
+    """
+    Returns a map of all datasets, where the keys are the fides keys
+    of each dataset and the value is a set of data categories associated with each dataset
+    """
+
+    query = select(
+        Dataset.fides_key,
+        func.get_unique_data_categories(text("ARRAY[fides_key]")).label(
+            "data_categories"
+        ),
+    )
+    result = db.execute(query)
+    return {key: set(value) if value else set() for key, value in result.all()}
