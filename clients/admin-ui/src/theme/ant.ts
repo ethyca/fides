@@ -54,7 +54,7 @@ export const antTheme: AntThemeConfig = {
       bodyBg: palette.FIDESUI_NEUTRAL_50,
     },
     Select: {
-      optionActiveBg: palette.FIDESUI_SANDSTONE,
+      optionActiveBg: palette.FIDESUI_NEUTRAL_50,
     },
     Menu: {
       itemHeight: 36,
