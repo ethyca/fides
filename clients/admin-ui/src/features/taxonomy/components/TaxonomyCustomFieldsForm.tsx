@@ -36,6 +36,7 @@ const TaxonomyCustomFieldsForm = ({
       name={formId}
       initialValues={customFields.customFieldValues}
       layout="vertical"
+      data-testid="custom-fields-form"
     >
       <h3 className="mb-3 font-semibold text-gray-700">Custom fields</h3>
       {isLoading ? (

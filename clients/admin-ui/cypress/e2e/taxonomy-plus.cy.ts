@@ -19,147 +19,14 @@ describe("Taxonomy management with Plus features", () => {
     label: "Data Categories",
     key: ResourceTypes.DATA_CATEGORY,
   };
-  const RESOURCE_PARENT = {
-    label: "User Data",
-    key: "user",
-  };
   const RESOURCE_CHILD = {
     label: "Job Title",
     key: "user.job_title",
   };
 
   const navigateToEditor = () => {
-    cy.getByTestId(`accordion-item-${RESOURCE_PARENT.label}`).click();
-    cy.getByTestId(`item-${RESOURCE_CHILD.label}`).click({ force: true });
-    cy.getByTestId("edit-btn").click();
+    cy.getByTestId(`taxonomy-node-${RESOURCE_CHILD.key}`).click({});
   };
-
-  // TODO: Inputs are no longer created on this screen.
-  // This should eventually be migrated to the custom fields tests
-  describe.skip("Defining custom lists", () => {
-    beforeEach(() => {
-      navigateToEditor();
-      cy.getByTestId("add-custom-field-btn").click();
-      cy.getByTestId("tab-Create custom lists").click();
-    });
-
-    it("can create a list", () => {
-      const listValues = ["such", "metadata", "so", "custom"];
-
-      cy.getByTestId("create-custom-lists-form").within(() => {
-        cy.getByTestId("custom-input-name").type("Custom list");
-
-        listValues.forEach((value, index) => {
-          cy.getByTestId("add-list-value-btn").click();
-          cy.getByTestId(`custom-input-allowed_values[${index}]`).type(value);
-        });
-
-        // Loop above adds an extra blank input, so remove it while also testing the button.
-        cy.getByTestIdPrefix("remove-list-value-btn").last().click();
-      });
-
-      cy.intercept("PUT", "/api/v1/plus/custom-metadata/allow-list", {
-        fixture: "taxonomy/custom-metadata/allow-list/create.json",
-      }).as("createAllowList");
-
-      cy.getByTestId("custom-fields-modal-submit-btn").click();
-
-      cy.wait("@createAllowList").its("request.body").should("eql", {
-        name: "Custom list",
-        allowed_values: listValues,
-      });
-    });
-
-    it("validates required form fields", () => {
-      cy.getByTestId("custom-fields-modal-submit-btn").click();
-      cy.getByTestId("create-custom-lists-form")
-        .should("contain", "Name is required")
-        .should("contain", "List item is required");
-    });
-  });
-
-  // TODO: Inputs are no longer created on this screen.
-  // This should eventually be migrated to the custom fields tests
-  describe.skip("Defining custom fields", () => {
-    beforeEach(() => {
-      cy.intercept(
-        {
-          method: "GET",
-          pathname: "/api/v1/plus/custom-metadata/allow-list",
-          query: {
-            show_values: "false",
-          },
-        },
-        {
-          fixture: "taxonomy/custom-metadata/allow-list/list.json",
-        },
-      ).as("getAllowLists");
-
-      navigateToEditor();
-      cy.getByTestId("add-custom-field-btn").click();
-      cy.getByTestId("tab-Create custom fields").click();
-
-      cy.wait("@getAllowLists");
-    });
-
-    it("can create a single-select custom field", () => {
-      cy.getByTestId("create-custom-fields-form").within(() => {
-        cy.getByTestId("custom-input-name").type("Single-select");
-      });
-
-      cy.intercept(
-        "POST",
-        "/api/v1/plus/custom-metadata/custom-field-definition",
-        {
-          fixture:
-            "taxonomy/custom-metadata/custom-field-definition/create.json",
-        },
-      ).as("createCustomField");
-
-      cy.getByTestId("custom-fields-modal-submit-btn").click();
-
-      cy.wait("@createCustomField").its("request.body").should("include", {
-        active: true,
-        field_type: "string",
-        name: "Single-select",
-        resource_type: ResourceTypes.DATA_CATEGORY,
-      });
-    });
-
-    it("can create a multi-select custom field", () => {
-      cy.getByTestId("create-custom-fields-form").within(() => {
-        cy.getByTestId("custom-input-name").type("Multi-select");
-        cy.getByTestId("input-field_type").antSelect("Multiple select");
-        cy.getByTestId("input-allow_list_id").antSelect("Prime numbers");
-      });
-
-      cy.intercept(
-        "POST",
-        "/api/v1/plus/custom-metadata/custom-field-definition",
-        {
-          fixture:
-            "taxonomy/custom-metadata/custom-field-definition/create.json",
-        },
-      ).as("createCustomField");
-
-      cy.getByTestId("custom-fields-modal-submit-btn").click();
-
-      cy.wait("@createCustomField").its("request.body").should("include", {
-        active: true,
-        field_type: "string[]",
-        name: "Multi-select",
-        resource_type: RESOURCE_TYPE.key,
-      });
-    });
-
-    it("validates required form fields", () => {
-      cy.getByTestId("custom-fields-modal-submit-btn").click();
-      cy.getByTestId("create-custom-fields-form").should(
-        "contain",
-        "Name is required",
-      );
-    });
-  });
 
   describe("Using custom fields", () => {
     beforeEach(() => {
@@ -204,28 +71,21 @@ describe("Taxonomy management with Plus features", () => {
     });
 
     const testIdSingle =
-      "controlled-select-customFieldValues.id-custom-field-definition-starter-pokemon";
+      "select-custom-fields-form_id-custom-field-definition-starter-pokemon";
     const testIdMulti =
-      "controlled-select-customFieldValues.id-custom-field-definition-pokemon-party";
+      "select-custom-fields-form_id-custom-field-definition-pokemon-party";
 
     it("initializes form fields with values returned by the API", () => {
-      cy.getByTestId("custom-fields-list");
+      cy.getByTestId("custom-fields-form");
       cy.getByTestId(testIdSingle).contains("Squirtle");
 
       ["Charmander", "Eevee", "Snorlax"].forEach((value) => {
         cy.getByTestId(testIdMulti).contains(value);
       });
     });
-    describe("Custom fields", () => {
-      it("Can render an extended form for custom fields", () => {});
-
-      it("Does validation for custom fields", () => {});
-
-      it("Can edit custom fields", () => {});
-    });
 
     it("allows choosing and changing selections", () => {
-      cy.getByTestId("custom-fields-list");
+      cy.getByTestId("custom-fields-form");
 
       cy.getByTestId(testIdSingle).antClearSelect();
       cy.getByTestId(testIdSingle).antSelect("Snorlax");
@@ -245,7 +105,7 @@ describe("Taxonomy management with Plus features", () => {
         body: {},
       }).as("bulkUpdateCustomField");
 
-      cy.getByTestId("submit-btn").click();
+      cy.getByTestId("save-btn").click();
 
       cy.wait("@bulkUpdateCustomField").then((interception) => {
         const { body } = interception.request;
