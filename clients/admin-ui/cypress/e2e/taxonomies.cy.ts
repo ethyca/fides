@@ -38,8 +38,6 @@ describe("Taxonomy management page", () => {
     });
 
     it("Renders all active label from the taxonomy", () => {
-      console.log("dataCategoriesFixture", dataCategoriesFixture);
-
       cy.getByTestId("taxonomy-interactive-tree").within(() => {
         dataCategoriesFixture
           .filter((c) => c.active)
@@ -265,7 +263,6 @@ describe("Taxonomy management page", () => {
 
       cy.wait("@postDataCategory").then((interception) => {
         const { body } = interception.request;
-        console.log("body", body);
         expect(body.name).to.equal("My new label");
         expect(body.parent_key).to.equal("user.content");
       });
