@@ -9,7 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
 from sqlalchemy.sql.expression import select
 from starlette import status
-from starlette.status import HTTP_422_UNPROCESSABLE_ENTITY
+from starlette.status import HTTP_422_UNPROCESSABLE_ENTITY, HTTP_404_NOT_FOUND
 
 from fides.api.api.deps import get_db
 from fides.api.common_exceptions import KeyOrNameAlreadyExists
@@ -28,12 +28,13 @@ from fides.api.schemas.taxonomy_extensions import (
     DataUse,
     DataUseCreate,
 )
+from fides.api.util.errors import ForbiddenIsDefaultTaxonomyError
 from fides.api.util.filter_utils import apply_filters_to_query
 from fides.common.api.scope_registry import (
     DATA_CATEGORY_CREATE,
     DATA_SUBJECT_CREATE,
     DATA_USE_CREATE,
-    DATASET_READ,
+    DATASET_READ, DATA_USE_UPDATE,
 )
 from fides.common.api.v1.urn_registry import V1_URL_PREFIX
 
@@ -41,7 +42,7 @@ from fides.api.models.sql_models import (  # type: ignore[attr-defined] # isort:
     Dataset as CtlDataset,
     DataCategory as DataCategoryDbModel,
     DataSubject as DataSubjectDbModel,
-    DataUse as DataUseDbModel,
+    DataUse as DataUseDbModel, ModelWithDefaultField,
 )
 
 # We create routers to override specific methods in those defined in generic.py
@@ -110,6 +111,67 @@ async def list_dataset_paginated(
     return await async_paginate(db, filtered_query, pagination_params)
 
 
+def activate_taxonomy_parents(
+    db: Session,
+    model: Union[Type[DataCategoryDbModel], Type[DataUseDbModel], Type[DataSubjectDbModel]],
+    data: Union[DataCategoryCreate, DataUseCreate, DataSubjectCreate],
+) -> None:
+    all_parents: List[str] = get_cumulative_parts_of_fides_key(data.fides_key)
+    # Cascade up - enable parents to match newly-active taxonomy item
+    if all_parents:
+        deactivated_parents: Optional[List[model]] = db.query(model).filter(
+            model.fides_key.in_(all_parents),
+            model.active.is_(False),
+        ).all()
+        for parent in deactivated_parents:
+            parent.active = True
+            parent.update(db=db, data=parent.model_dump(mode="json"))
+
+
+def deactivate_taxonomy_recursive(
+    db: Session,
+    model: Union[
+        Type[DataCategoryDbModel], Type[DataUseDbModel], Type[DataSubjectDbModel]
+    ],
+    parent_key: str
+) -> None:
+    """
+    Recursively deactivate all descendants of a given parent taxonomy node.
+    """
+    # Get all immediate children
+    children = db.query(model).filter(
+        model.parent_key == parent_key
+    ).all()
+
+    for child in children:
+        # Deactivate current child
+        child.active = False
+        child.update(db=db, data=child.model_dump(mode="json"))
+
+        # Recursively deactivate all descendants of this child
+        deactivate_taxonomy_recursive(db, model, child.fides_key)
+
+
+
+def get_cumulative_parts_of_fides_key(fides_key: str) -> List[str]:
+    """
+    Given a parent key, returns the cumulative parts of the key. Useful for obtaining all parents of a given key.
+
+    e.g. if parent key is test.hello.something, we return ["test", "test.hello", "test.hello.something"]
+    """
+    #
+    parts = fides_key.split('.')
+    result = []
+    current = parts[0]
+    result.append(current)
+
+    for part in parts[1:]:
+        current = current + '.' + part
+        result.append(current)
+
+    return result
+
+
 def validate_and_create_taxonomy(
     db: Session,
     model: Union[
@@ -121,12 +183,19 @@ def validate_and_create_taxonomy(
     """
     Validate and create a taxonomy element.
     """
+    if isinstance(model, ModelWithDefaultField) and data.is_default:
+        raise ForbiddenIsDefaultTaxonomyError(
+            model.__name__, data.fides_key, action="create"
+        )
     validated_taxonomy = validation_schema(**data.model_dump(mode="json"))
     return model.create(db=db, data=validated_taxonomy.model_dump(mode="json"))
 
 
 def validate_and_update_taxonomy(
     db: Session,
+    model: Union[
+        Type[DataCategoryDbModel], Type[DataUseDbModel], Type[DataSubjectDbModel]
+    ],
     resource: Union[DataCategoryDbModel, DataUseDbModel, DataSubjectDbModel],
     validation_schema: type,
     data: Union[DataCategoryCreate, DataUseCreate, DataSubjectCreate],
@@ -134,6 +203,18 @@ def validate_and_update_taxonomy(
     """
     Validate and update a taxonomy element.
     """
+    if isinstance(resource, ModelWithDefaultField) and data.is_default:
+        raise ForbiddenIsDefaultTaxonomyError(
+            resource.__name__, data.fides_key, action="update"
+        )
+    # If active field is being updated, cascade change either up or down
+    if hasattr(data, "active"):
+        if data.active:
+            activate_taxonomy_parents(db, model, data)
+        else:
+            # Cascade down - deactivate children to match newly-deactivated taxonomy item
+            deactivate_taxonomy_recursive(db, model, data.fides_key)
+
     validated_taxonomy = validation_schema(**data.model_dump(mode="json"))
     return resource.update(db=db, data=validated_taxonomy.model_dump(mode="json"))
 
@@ -147,7 +228,8 @@ def create_or_update_taxonomy(
     validation_schema: type,
 ) -> Dict:
     """
-    Create or update a taxonomy element. If the element is disabled, it will be updated and re-enabled.
+    Create or update a taxonomy element.
+    If the element is deactivated, it will be updated and re-activated, along with its parents.
     """
     if data.fides_key is None:
         disabled_resource_with_name = (
@@ -165,8 +247,9 @@ def create_or_update_taxonomy(
             data.fides_key = f"{data.parent_key}.{data.fides_key}"  # type: ignore[union-attr]
         if disabled_resource_with_name:
             data.active = True
+            activate_taxonomy_parents(db, model, data)
             return validate_and_update_taxonomy(
-                db, disabled_resource_with_name, validation_schema, data
+                db, model, disabled_resource_with_name, validation_schema, data
             )
         return validate_and_create_taxonomy(db, model, validation_schema, data)
 
@@ -198,6 +281,36 @@ async def create_data_use(
         raise HTTPException(
             status_code=HTTP_422_UNPROCESSABLE_ENTITY,
             detail=f"Error creating data use: {e}",
+        )
+
+
+@data_use_router.put(
+    "/data_use",
+    dependencies=[Security(verify_oauth_client, scopes=[DATA_USE_UPDATE])],
+    response_model=DataUse,
+    status_code=status.HTTP_201_CREATED,
+    name="Update",
+)
+async def update_data_use(
+        data_use: DataUseCreate, # todo- update with DataUseUpdate model
+        db: Session = Depends(get_db),
+) -> Dict:
+    """
+    Update a data use. Ensures all children of data use are appropriately enabled/disabled to match parent
+    """
+    try:
+        resource = DataUseDbModel.get_by(db, field="fides_key", value=data_use.fides_key)
+        if not resource:
+            raise HTTPException(
+                status_code=HTTP_404_NOT_FOUND, detail=f"Data use not found with key: {data_use.fides_key}"
+            )
+        return validate_and_update_taxonomy(
+            db, DataUseDbModel, resource, DataUse, data_use
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"Error updating data use: {e}",
         )
 
 
