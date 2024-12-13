@@ -25,7 +25,6 @@ from sqlalchemy import (
     Text,
     TypeDecorator,
     UniqueConstraint,
-    any_,
     case,
     cast,
     func,
@@ -328,36 +327,6 @@ class PolicyCtl(Base, FidesBase):
     rules = Column(JSON)
 
 
-def create_data_categories_property(dataset_references):
-    """
-    Creates a column property that extracts a unique set of data categories from multiple datasets.
-
-    Takes a list of dataset references and returns a column property containing a single array of
-    all unique data categories found across all the specified datasets. This combines and deduplicates
-    data categories from every level of the JSON structure in each dataset's collections.
-    """
-
-    subquery = (
-        select(
-            [
-                func.jsonb_array_elements_text(
-                    text(
-                        "jsonb_path_query(collections::jsonb, '$.** ? (@.data_categories != null).data_categories')"
-                    )
-                ).label("category")
-            ]
-        )
-        .select_from(Dataset)
-        .where(Dataset.fides_key == any_(dataset_references))
-    ).cte()
-
-    return column_property(
-        select([func.array_agg(func.distinct(subquery.c.category))])
-        .select_from(subquery)
-        .scalar_subquery()
-    )
-
-
 # System
 class System(Base, FidesBase):
     """
@@ -436,8 +405,8 @@ class System(Base, FidesBase):
         "Cookies", back_populates="system", lazy="selectin", uselist=True, viewonly=True
     )
 
-    dataset_data_categories: List[str] = create_data_categories_property(
-        dataset_references
+    dataset_data_categories: List[str] = column_property(
+        func.get_unique_data_categories(dataset_references)
     )
 
     @classmethod
@@ -527,8 +496,8 @@ class PrivacyDeclaration(Base):
         "Cookies", back_populates="privacy_declaration", lazy="joined", uselist=True
     )
 
-    dataset_data_categories: List[str] = create_data_categories_property(
-        dataset_references
+    dataset_data_categories: List[str] = column_property(
+        func.get_unique_data_categories(dataset_references)
     )
 
     @classmethod
