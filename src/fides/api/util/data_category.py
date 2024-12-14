@@ -99,11 +99,23 @@ def get_data_categories_map(db: Session) -> Dict[str, Set[str]]:
     of each dataset and the value is a set of data categories associated with each dataset
     """
 
-    query = select(
-        Dataset.fides_key,
-        func.get_unique_data_categories(text("ARRAY[fides_key]")).label(
-            "data_categories"
-        ),
+    subquery = (
+        select(
+            Dataset.fides_key,
+            func.jsonb_array_elements_text(
+                text(
+                    "jsonb_path_query(collections::jsonb, '$.** ? (@.data_categories != null).data_categories')"
+                )
+            ).label("category"),
+        ).select_from(Dataset)
+    ).cte()
+
+    query = (
+        select(
+            [subquery.c.fides_key, func.array_agg(func.distinct(subquery.c.category))]
+        )
+        .select_from(subquery)
+        .group_by(subquery.c.fides_key)
     )
     result = db.execute(query)
     return {key: set(value) if value else set() for key, value in result.all()}
