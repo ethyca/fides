@@ -22,11 +22,11 @@ from fides.api.oauth.utils import verify_oauth_client
 from fides.api.schemas.filter_params import FilterParams
 from fides.api.schemas.taxonomy_extensions import (
     DataCategory,
-    DataCategoryCreate,
+    DataCategoryCreateOrUpdate,
     DataSubject,
-    DataSubjectCreate,
+    DataSubjectCreateOrUpdate,
     DataUse,
-    DataUseCreate,
+    DataUseCreateOrUpdate,
 )
 from fides.api.util.errors import ForbiddenIsDefaultTaxonomyError
 from fides.api.util.filter_utils import apply_filters_to_query
@@ -114,10 +114,12 @@ async def list_dataset_paginated(
 def activate_taxonomy_parents(
     db: Session,
     model: Union[Type[DataCategoryDbModel], Type[DataUseDbModel], Type[DataSubjectDbModel]],
-    data: Union[DataCategoryCreate, DataUseCreate, DataSubjectCreate],
+    data: Union[DataCategoryCreateOrUpdate, DataUseCreateOrUpdate, DataSubjectCreateOrUpdate],
 ) -> None:
+    """
+    Activates parents to match newly-active taxonomy node.
+    """
     all_parents: List[str] = get_cumulative_parts_of_fides_key(data.fides_key)
-    # Cascade up - enable parents to match newly-active taxonomy item
     if all_parents:
         deactivated_parents: Optional[List[model]] = db.query(model).filter(
             model.fides_key.in_(all_parents),
@@ -128,7 +130,7 @@ def activate_taxonomy_parents(
             parent.update(db=db, data=parent.model_dump(mode="json"))
 
 
-def deactivate_taxonomy_recursive(
+def deactivate_taxonomy_descendants(
     db: Session,
     model: Union[
         Type[DataCategoryDbModel], Type[DataUseDbModel], Type[DataSubjectDbModel]
@@ -136,7 +138,7 @@ def deactivate_taxonomy_recursive(
     parent_key: str
 ) -> None:
     """
-    Recursively deactivate all descendants of a given parent taxonomy node.
+    Recursively de-activates all descendants of a given taxonomy node.
     """
     # Get all immediate children
     children = db.query(model).filter(
@@ -149,7 +151,7 @@ def deactivate_taxonomy_recursive(
         child.update(db=db, data=child.model_dump(mode="json"))
 
         # Recursively deactivate all descendants of this child
-        deactivate_taxonomy_recursive(db, model, child.fides_key)
+        deactivate_taxonomy_descendants(db, model, child.fides_key)
 
 
 
@@ -157,19 +159,19 @@ def get_cumulative_parts_of_fides_key(fides_key: str) -> List[str]:
     """
     Given a parent key, returns the cumulative parts of the key. Useful for obtaining all parents of a given key.
 
-    e.g. if parent key is test.hello.something, we return ["test", "test.hello", "test.hello.something"]
+    e.g. If parent key is test.hello.something, this method returns ["test", "test.hello", "test.hello.something"]
     """
     #
     parts = fides_key.split('.')
-    result = []
+    cumulative_parts = []
     current = parts[0]
-    result.append(current)
+    cumulative_parts.append(current)
 
     for part in parts[1:]:
         current = current + '.' + part
-        result.append(current)
+        cumulative_parts.append(current)
 
-    return result
+    return cumulative_parts
 
 
 def validate_and_create_taxonomy(
@@ -178,7 +180,7 @@ def validate_and_create_taxonomy(
         Type[DataCategoryDbModel], Type[DataUseDbModel], Type[DataSubjectDbModel]
     ],
     validation_schema: type,
-    data: Union[DataCategoryCreate, DataUseCreate, DataSubjectCreate],
+    data: Union[DataCategoryCreateOrUpdate, DataUseCreateOrUpdate, DataSubjectCreateOrUpdate],
 ) -> Dict:
     """
     Validate and create a taxonomy element.
@@ -198,7 +200,7 @@ def validate_and_update_taxonomy(
     ],
     resource: Union[DataCategoryDbModel, DataUseDbModel, DataSubjectDbModel],
     validation_schema: type,
-    data: Union[DataCategoryCreate, DataUseCreate, DataSubjectCreate],
+    data: Union[DataCategoryCreateOrUpdate, DataUseCreateOrUpdate, DataSubjectCreateOrUpdate],
 ) -> Dict:
     """
     Validate and update a taxonomy element.
@@ -213,7 +215,7 @@ def validate_and_update_taxonomy(
             activate_taxonomy_parents(db, model, data)
         else:
             # Cascade down - deactivate children to match newly-deactivated taxonomy item
-            deactivate_taxonomy_recursive(db, model, data.fides_key)
+            deactivate_taxonomy_descendants(db, model, data.fides_key)
 
     validated_taxonomy = validation_schema(**data.model_dump(mode="json"))
     return resource.update(db=db, data=validated_taxonomy.model_dump(mode="json"))
@@ -221,7 +223,7 @@ def validate_and_update_taxonomy(
 
 def create_or_update_taxonomy(
     db: Session,
-    data: Union[DataCategoryCreate, DataUseCreate, DataSubjectCreate],
+    data: Union[DataCategoryCreateOrUpdate, DataUseCreateOrUpdate, DataSubjectCreateOrUpdate],
     model: Union[
         Type[DataCategoryDbModel], Type[DataUseDbModel], Type[DataSubjectDbModel]
     ],
@@ -244,6 +246,7 @@ def create_or_update_taxonomy(
             {"key": data.fides_key, "name": data.name}, validation_schema.__name__
         )
         if data.parent_key if hasattr(data, "parent_key") else None:
+            # Updates fides_key if it is not the root level taxonomy node
             data.fides_key = f"{data.parent_key}.{data.fides_key}"  # type: ignore[union-attr]
         if disabled_resource_with_name:
             data.active = True
@@ -264,7 +267,7 @@ def create_or_update_taxonomy(
     name="Create",
 )
 async def create_data_use(
-    data_use: DataUseCreate,
+    data_use: DataUseCreateOrUpdate,
     db: Session = Depends(get_db),
 ) -> Dict:
     """
@@ -292,11 +295,11 @@ async def create_data_use(
     name="Update",
 )
 async def update_data_use(
-        data_use: DataUseCreate, # todo- update with DataUseUpdate model
+        data_use: DataUseCreateOrUpdate,
         db: Session = Depends(get_db),
 ) -> Dict:
     """
-    Update a data use. Ensures all children of data use are appropriately enabled/disabled to match parent
+    Update a data use. Ensures updates to "active" are appropriately cascaded.
     """
     try:
         resource = DataUseDbModel.get_by(db, field="fides_key", value=data_use.fides_key)
@@ -322,7 +325,7 @@ async def update_data_use(
     name="Create",
 )
 async def create_data_category(
-    data_category: DataCategoryCreate,
+    data_category: DataCategoryCreateOrUpdate,
     db: Session = Depends(get_db),
 ) -> Dict:
     """
@@ -353,7 +356,7 @@ async def create_data_category(
     name="Create",
 )
 async def create_data_subject(
-    data_subject: DataSubjectCreate,
+    data_subject: DataSubjectCreateOrUpdate,
     db: Session = Depends(get_db),
 ) -> Dict:
     """

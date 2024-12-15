@@ -29,7 +29,7 @@ class DataSubject(BaseDataSubject):
     active: bool = active_field
 
 
-class TaxonomyCreateBase(DefaultModel, BaseModel):
+class TaxonomyCreateOrUpdateBase(DefaultModel, BaseModel):
     name: Optional[str] = None
     description: str
     active: bool = True
@@ -38,14 +38,14 @@ class TaxonomyCreateBase(DefaultModel, BaseModel):
     organization_fides_key: Optional[FidesKey] = "default_organization"
 
 
-class DataUseCreate(TaxonomyCreateBase):
+class DataUseCreateOrUpdate(TaxonomyCreateOrUpdateBase):
     parent_key: Optional[FidesKey] = None
 
 
-class DataCategoryCreate(TaxonomyCreateBase):
+class DataCategoryCreateOrUpdate(TaxonomyCreateOrUpdateBase):
     parent_key: Optional[FidesKey] = None
 
 
-class DataSubjectCreate(TaxonomyCreateBase):
+class DataSubjectCreateOrUpdate(TaxonomyCreateOrUpdateBase):
     rights: Optional[DataSubjectRights] = None
     automated_decisions_or_profiling: Optional[bool] = None
