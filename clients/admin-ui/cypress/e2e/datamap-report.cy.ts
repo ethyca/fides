@@ -118,10 +118,16 @@ describe("Data map report table", () => {
       cy.getByTestId("save-button").click();
 
       cy.getByTestId("row-0-col-system_undeclared_data_categories").contains(
-        "2 system undeclared data categories",
+        "User Contact Email",
+      );
+      cy.getByTestId("row-0-col-system_undeclared_data_categories").contains(
+        "Cookie ID",
       );
       cy.getByTestId("row-0-col-data_use_undeclared_data_categories").contains(
-        "2 data use undeclared data categories",
+        "User Contact Email",
+      );
+      cy.getByTestId("row-0-col-data_use_undeclared_data_categories").contains(
+        "Cookie ID",
       );
     });
   });
