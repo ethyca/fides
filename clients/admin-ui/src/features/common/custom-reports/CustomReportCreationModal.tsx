@@ -63,12 +63,27 @@ export const CustomReportCreationModal = ({
   );
 
   const handleCreateReport = async (reportName: string) => {
+    const newColumnMap: Record<string, any> = {};
+    Object.entries(columnMapToSave).forEach(([key, value]) => {
+      newColumnMap[key] = {
+        label: value,
+        enabled: true,
+      };
+    });
+    Object.entries(tableStateToSave?.columnVisibility ?? {}).forEach(
+      ([key, value]) => {
+        if (!newColumnMap[key]) {
+          newColumnMap[key] = {};
+        }
+        newColumnMap[key].enabled = value;
+      },
+    );
     try {
       const newReportTemplate = {
         name: reportName.trim(),
         type: ReportType.DATAMAP,
         config: {
-          column_map: columnMapToSave,
+          column_map: newColumnMap,
           table_state: tableStateToSave,
         },
       };

@@ -237,15 +237,30 @@ export const DatamapReportTable = () => {
   } = useDisclosure();
 
   const onExport = (downloadType: ExportFormat) => {
+    const newColumnMap: Record<string, any> = {};
+    Object.entries(columnNameMapOverrides).forEach(([key, value]) => {
+      newColumnMap[key] = {
+        label: value,
+        enabled: true,
+      };
+    });
+    Object.entries(columnNameMapOverrides?.columnVisibility ?? {}).forEach(
+      ([key, value]) => {
+        if (!newColumnMap[key]) {
+          newColumnMap[key] = {};
+        }
+        newColumnMap[key].enabled = value;
+      },
+    );
     exportMinimalDatamapReport({
       ...reportQuery,
       format: downloadType,
       report_id: savedCustomReportId,
       report: {
-        name: "temporary report",
+        name: "",
         type: "datamap",
         config: {
-          column_map: columnNameMapOverrides,
+          column_map: newColumnMap,
           table_state: {
             groupBy,
             filters: selectedFilters,
