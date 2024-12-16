@@ -24,6 +24,7 @@ The types of changes are:
 
 ### Fixed
 - Fixing quickstart.py script [#5585](https://github.com/ethyca/fides/pull/5585)
+- Fixed miscellaneous performance issues with Systems and PrivacyDeclarations [#5601](https://github.com/ethyca/fides/pull/5601)
 
 ### Changed
 - Adjusted Ant's Select component colors and icon [#5594](https://github.com/ethyca/fides/pull/5594)
