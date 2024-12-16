@@ -30,8 +30,9 @@ export const getDefaultColumn: (
   header: (props) => {
     const newColumnNameMap: Record<string, string> = {};
     Object.keys(columnNameMap).forEach((key) => {
-      newColumnNameMap[key] = columnNameMap[key];
-      if (columnNameMap[key].label) {
+      if (typeof columnNameMap[key] === "string") {
+        newColumnNameMap[key] = columnNameMap[key];
+      } else if (columnNameMap[key].label) {
         newColumnNameMap[key] = columnNameMap[key].label;
       }
     });

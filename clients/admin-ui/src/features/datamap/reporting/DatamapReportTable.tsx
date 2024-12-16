@@ -335,8 +335,15 @@ export const DatamapReportTable = () => {
           groupBy: savedGroupBy,
           filters: savedFilters,
           columnOrder: savedColumnOrder,
-          columnVisibility: savedColumnVisibility,
         } = savedReport.config.table_state;
+        const savedColumnVisibility: Record<string, boolean> = {};
+
+        Object.entries(savedReport.config.column_map ?? {}).forEach(
+          ([key, value]) => {
+            savedColumnVisibility[key] = value.enabled || false;
+          },
+        );
+
         if (savedGroupBy) {
           setGroupBy(savedGroupBy);
           tableInstance.setGrouping(getGrouping(savedGroupBy));
@@ -354,8 +361,16 @@ export const DatamapReportTable = () => {
         }
       }
       if (savedReport.config?.column_map) {
-        setColumnNameMapOverrides(savedReport.config.column_map);
-        resetForm({ values: savedReport.config.column_map });
+        const columnNameMapOverrides = {};
+        Object.entries(savedReport.config.column_map ?? {}).forEach(
+          ([key, value]) => {
+            if (value.label) {
+              columnNameMapOverrides[key] = value.label;
+            }
+          },
+        );
+        setColumnNameMapOverrides(columnNameMapOverrides);
+        resetForm({ values: columnNameMapOverrides });
       }
       setSavedCustomReportId(savedReport.id);
       toast({
