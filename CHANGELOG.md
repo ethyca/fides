@@ -28,7 +28,7 @@ The types of changes are:
 ### Changed
 - Adjusted Ant's Select component colors and icon [#5594](https://github.com/ethyca/fides/pull/5594)
 
-## [2.51.1](https://github.com/ethyca/fides/compare/2.51.1...2.51.2)
+## [2.51.2](https://github.com/ethyca/fides/compare/2.51.1...2.51.2)
 
 ### Fixed
 - Fixed miscellaneous performance issues with Systems and PrivacyDeclarations [#5601](https://github.com/ethyca/fides/pull/5601)
