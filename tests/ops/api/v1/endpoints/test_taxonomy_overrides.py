@@ -176,7 +176,7 @@ class TestCreateDataUse:
         data_use.delete(db)
 
 
-class TesUpdateDataUse:
+class TestUpdateDataUse:
     @pytest.fixture(scope="function")
     def url(self, oauth_client: ClientDetail) -> str:
         return V1_URL_PREFIX + "/" + DATA_USE

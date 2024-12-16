@@ -119,7 +119,10 @@ def activate_taxonomy_parents(
     """
     Activates parents to match newly-active taxonomy node.
     """
+    from loguru import logger
+    logger.info("here")
     all_parents: List[str] = get_cumulative_parts_of_fides_key(data.fides_key)
+    logger.info(f"all_parents: {all_parents}")
     if all_parents:
         deactivated_parents: Optional[List[model]] = db.query(model).filter(
             model.fides_key.in_(all_parents),
@@ -291,7 +294,7 @@ async def create_data_use(
     "/data_use",
     dependencies=[Security(verify_oauth_client, scopes=[DATA_USE_UPDATE])],
     response_model=DataUse,
-    status_code=status.HTTP_201_CREATED,
+    status_code=status.HTTP_200_OK,
     name="Update",
 )
 async def update_data_use(
