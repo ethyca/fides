@@ -423,6 +423,35 @@ async def ls(  # pylint: disable=invalid-name
     return await async_paginate(db, duplicates_removed, pagination_params)
 
 
+@SYSTEM_ROUTER.patch(
+    "/hidden",
+    response_model=Dict,
+    dependencies=[
+        Security(
+            verify_oauth_client_prod,
+            scopes=[SYSTEM_UPDATE],
+        )
+    ],
+)
+async def patch_hidden(
+    fides_keys: List[str],
+    hidden: bool,
+    db: AsyncSession = Depends(get_async_db),
+) -> Dict:
+    """
+    Patch the hidden status of a list of systems. Request body must be a list of system Fides keys.
+    """
+    systems = await db.execute(select(System).filter(System.fides_key.in_(fides_keys)))
+    systems = systems.scalars().all()
+    for system in systems:
+        system.hidden = hidden
+    await db.commit()
+    return {
+        "message": "Updated hidden status for systems",
+        "updated": len(systems),
+    }
+
+
 @SYSTEM_ROUTER.get(
     "/{fides_key}",
     dependencies=[

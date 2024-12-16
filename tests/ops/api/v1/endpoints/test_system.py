@@ -31,6 +31,7 @@ from fides.common.api.scope_registry import (
     SAAS_CONNECTION_INSTANTIATE,
     STORAGE_DELETE,
     SYSTEM_MANAGER_UPDATE,
+    SYSTEM_UPDATE,
 )
 from fides.common.api.v1.urn_registry import V1_URL_PREFIX
 from tests.conftest import generate_role_header_for_user
@@ -272,6 +273,26 @@ class TestPatchSystemConnections:
 
         assert resp.status_code == HTTP_200_OK
         assert resp.json()["items"][0]["authorized"] is False
+
+    def test_system_patch_hidden(
+        self,
+        system,
+        api_client: TestClient,
+        generate_auth_header,
+    ):
+        url = V1_URL_PREFIX + f"/system/hidden"
+        auth_header = generate_auth_header(scopes=[SYSTEM_UPDATE])
+
+        result = api_client.patch(
+            url=f"{url}?hidden=true",
+            headers=auth_header,
+            json=[system.fides_key],
+        )
+        assert result.status_code == HTTP_200_OK
+        assert result.json() == {
+            "message": "Updated hidden status for systems",
+            "updated": 1,
+        }
 
 
 class TestGetConnections:
