@@ -376,16 +376,16 @@ export const DatamapReportTable = () => {
         }
       }
       if (savedReport.config?.column_map) {
-        const columnNameMapOverrides = {};
+        const columnNameMap: Record<string, Record<string, any>> = {};
         Object.entries(savedReport.config.column_map ?? {}).forEach(
           ([key, value]) => {
             if (value.label) {
-              columnNameMapOverrides[key] = value.label;
+              columnNameMap[key] = value.label;
             }
           },
         );
-        setColumnNameMapOverrides(columnNameMapOverrides);
-        resetForm({ values: columnNameMapOverrides });
+        setColumnNameMapOverrides(columnNameMap);
+        resetForm({ values: columnNameMap });
       }
       setSavedCustomReportId(savedReport.id);
       toast({
