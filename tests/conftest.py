@@ -1437,7 +1437,7 @@ def system_with_a_single_dataset_reference(db: Session) -> System:
                         },
                         {
                             "name": "first_name",
-                            "data_categories": ["user.contact.address.street"],
+                            "data_categories": ["user.name.first"],
                         },
                     ],
                 },
@@ -1558,7 +1558,7 @@ def privacy_declaration_with_multiple_dataset_references(
                         },
                         {
                             "name": "first_name",
-                            "data_categories": ["user.contact.address.street"],
+                            "data_categories": ["user.name.first"],
                         },
                     ],
                 },

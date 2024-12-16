@@ -62,11 +62,17 @@ def test_get_system_data_uses(db, system) -> None:
 
 
 def test_system_dataset_data_categories(
+    db,
     system_with_a_single_dataset_reference: System,
 ) -> None:
-    assert set(system_with_a_single_dataset_reference.dataset_data_categories) == {
+    assert set(
+        system_with_a_single_dataset_reference.dataset_data_categories(
+            get_data_categories_map(db)
+        )
+    ) == {
         "user.behavior",
         "user.contact.address.street",
+        "user.name.first",
         "user.unique_id",
     }
 

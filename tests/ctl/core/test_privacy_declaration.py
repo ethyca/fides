@@ -23,6 +23,7 @@ class TestPrivacyDeclaration:
             )
         ) == {
             "user.behavior",
+            "user.name.first",
             "user.unique_id",
             "user.contact.address.street",
         }
