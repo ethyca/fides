@@ -1,54 +1,75 @@
-import { Box, BoxProps, Flex } from "fidesui";
-import { isArray } from "lodash";
-import { isValidElement, ReactElement } from "react";
+import { AntFlex as Flex, AntFlexProps as FlexProps, Heading } from "fidesui";
+import { ReactNode } from "react";
 
-import Breadcrumbs, { BreadcrumbsProps } from "~/features/common/Breadcrumbs";
+import { NextBreadcrumb, NextBreadcrumbProps } from "./nav/v2/NextBreadcrumb";
 
-interface PageHeaderProps extends BoxProps {
-  breadcrumbs: BreadcrumbsProps["breadcrumbs"] | ReactElement | false;
+interface PageHeaderProps extends Omit<FlexProps, "children"> {
+  heading?: ReactNode;
+  breadcrumbItems?: NextBreadcrumbProps["items"];
   isSticky?: boolean;
-  rightContent?: ReactElement;
+  rightContent?: ReactNode;
+  children?: ReactNode;
 }
 
 /**
  * A header component for pages.
  *
- * @param breadcrumbs - The breadcrumbs to display in the page header.
+ * @param heading - The main heading to display in the page header. Can be a string or a React element. String will be rendered as an H1.
+ * @param breadcrumbItems - Extends Ant Design Breadcrumb component `items` property. If an item has a `href` property, it will be wrapped in a Next.js link.
  * Can be an array of breadcrumb items (more information on Breadcrumbs component), a React element
  * if you want to render something else, or false to not show any breadcrumbs.
  * @param isSticky - Whether the page header should stick to the top of the page while scrolling. Defaults to true.
- * @param children - Additional content to display in the header at the bottom.
+ * @param children - Additional content to display in the header below the heading and breadcrumb.
  * @param rightContent - Additional content to display in the header on the right side. Usually for displaying buttons.
  */
 const PageHeader = ({
-  breadcrumbs,
-  isSticky = true,
+  heading,
+  breadcrumbItems,
+  isSticky,
   children,
   rightContent,
-  ...otherProps
+  style,
+  ...props
 }: PageHeaderProps): JSX.Element => (
-  <Box
-    bgColor="white"
-    paddingY={5}
-    {...(isSticky ? { position: "sticky", top: 0, left: 0, zIndex: 10 } : {})}
-    {...otherProps}
+  <Flex
+    className="pb-6"
+    {...props}
+    style={
+      isSticky
+        ? {
+            position: "sticky",
+            top: 0,
+            left: 0,
+            zIndex: 20,
+            backgroundColor: "white",
+            ...style,
+          }
+        : style
+    }
   >
-    <Flex alignItems="flex-start">
-      <Box flex={1}>
-        {/* If breadcrumbs is an array, render the Breadcrumbs component. */}
-        {isArray(breadcrumbs) && (
-          <Box marginBottom={children ? 4 : 0}>
-            <Breadcrumbs breadcrumbs={breadcrumbs} />
-          </Box>
-        )}
-        {/* If breadcrumbs is a React element, render it. */}
-        {isValidElement(breadcrumbs) && breadcrumbs}
-      </Box>
-      {rightContent && <Box>{rightContent}</Box>}
+    <Flex justify="space-between">
+      {typeof heading === "string" ? (
+        <Heading
+          className={!!breadcrumbItems || !!children ? "pb-4" : undefined}
+          fontSize="2xl"
+        >
+          {heading}
+        </Heading>
+      ) : (
+        heading
+      )}
+      {rightContent && <div>{rightContent}</div>}
     </Flex>
 
+    {!!breadcrumbItems && (
+      <NextBreadcrumb
+        className={children ? "pb-4" : undefined}
+        items={breadcrumbItems}
+      />
+    )}
+
     {children}
-  </Box>
+  </Flex>
 );
 
 export default PageHeader;

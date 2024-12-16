@@ -20,12 +20,8 @@ import type { NextPage } from "next";
 import { useRouter } from "next/router";
 import { useCallback, useMemo, useState } from "react";
 
-import { BreadcrumbsProps } from "~/features/common/Breadcrumbs";
-import { DatabaseIcon } from "~/features/common/Icon/database/DatabaseIcon";
-import { DatasetIcon } from "~/features/common/Icon/database/DatasetIcon";
-import { FieldIcon } from "~/features/common/Icon/database/FieldIcon";
-import { TableIcon } from "~/features/common/Icon/database/TableIcon";
 import Layout from "~/features/common/Layout";
+import { NextBreadcrumbProps } from "~/features/common/nav/v2/NextBreadcrumb";
 import {
   DATASET_COLLECTION_DETAIL_ROUTE,
   DATASET_COLLECTION_SUBFIELD_DETAIL_ROUTE,
@@ -43,11 +39,11 @@ import {
   TableSkeletonLoader,
 } from "~/features/common/table/v2";
 import TaxonomiesPicker from "~/features/common/TaxonomiesPicker";
+import { DATA_BREADCRUMB_ICONS } from "~/features/data-discovery-and-detection/DiscoveryMonitorBreadcrumbs";
 import {
   useGetDatasetByKeyQuery,
   useUpdateDatasetMutation,
 } from "~/features/dataset";
-import DatasetBreadcrumbs from "~/features/dataset/DatasetBreadcrumbs";
 import EditFieldDrawer from "~/features/dataset/EditFieldDrawer";
 import { getDatasetPath } from "~/features/dataset/helpers";
 import { DatasetField } from "~/types/api";
@@ -275,24 +271,24 @@ const FieldsDetailPage: NextPage = () => {
   >();
 
   const breadcrumbs = useMemo(() => {
-    const baseBreadcrumbs: BreadcrumbsProps["breadcrumbs"] = [
+    const baseBreadcrumbs: NextBreadcrumbProps["items"] = [
       {
         title: "All datasets",
-        icon: <DatabaseIcon boxSize={4} />,
-        link: DATASET_ROUTE,
+        icon: DATA_BREADCRUMB_ICONS[0],
+        href: DATASET_ROUTE,
       },
       {
         title: datasetId,
-        link: {
+        href: {
           pathname: DATASET_DETAIL_ROUTE,
           query: { datasetId },
         },
-        icon: <DatasetIcon boxSize={5} />,
+        icon: DATA_BREADCRUMB_ICONS[1],
       },
       {
         title: collectionName,
-        icon: <TableIcon boxSize={5} />,
-        link: {
+        icon: DATA_BREADCRUMB_ICONS[2],
+        href: {
           pathname: DATASET_COLLECTION_DETAIL_ROUTE,
           query: { datasetId, collectionName },
         },
@@ -301,7 +297,7 @@ const FieldsDetailPage: NextPage = () => {
     subfieldNames.forEach((subfield, index) => {
       baseBreadcrumbs.push({
         title: subfield,
-        link:
+        href:
           index < subfieldNames.length - 1
             ? {
                 pathname: DATASET_COLLECTION_SUBFIELD_DETAIL_ROUTE,
@@ -314,17 +310,15 @@ const FieldsDetailPage: NextPage = () => {
                 },
               }
             : undefined,
-        icon: <FieldIcon boxSize={5} />,
+        icon: DATA_BREADCRUMB_ICONS[3],
       });
     });
     return baseBreadcrumbs;
   }, [datasetId, collectionName, subfieldNames]);
 
   return (
-    <Layout title={`Dataset - ${datasetId}`} mainProps={{ paddingTop: 0 }}>
-      <PageHeader breadcrumbs={[{ title: "Datasets" }]}>
-        <DatasetBreadcrumbs breadcrumbs={breadcrumbs} />
-      </PageHeader>
+    <Layout title={`Dataset - ${datasetId}`}>
+      <PageHeader heading="Datasets" breadcrumbItems={breadcrumbs} />
 
       {isLoading ? (
         <TableSkeletonLoader rowHeight={36} numRows={15} />

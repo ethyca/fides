@@ -1,9 +1,9 @@
-import { Heading } from "fidesui";
 import React from "react";
 
 import Layout from "~/features/common/Layout";
-import BackButton from "~/features/common/nav/v2/BackButton";
 import { USER_MANAGEMENT_ROUTE } from "~/features/common/nav/v2/routes";
+
+import PageHeader from "../common/PageHeader";
 
 interface Props {
   children: React.ReactNode;
@@ -11,10 +11,16 @@ interface Props {
 
 const Profile = ({ children }: Props) => (
   <Layout title="User Management">
-    <BackButton backPath={USER_MANAGEMENT_ROUTE} />
-    <Heading fontSize="2xl" fontWeight="semibold">
-      User Management
-    </Heading>
+    <PageHeader
+      heading="Users"
+      breadcrumbItems={[
+        {
+          title: "All users",
+          href: USER_MANAGEMENT_ROUTE,
+        },
+        { title: "New User" },
+      ]}
+    />
     {children}
   </Layout>
 );

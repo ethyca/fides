@@ -7,6 +7,7 @@ import Layout from "~/features/common/Layout";
 import { DATASET_ROUTE } from "~/features/common/nav/v2/routes";
 import PageHeader from "~/features/common/PageHeader";
 import QuestionTooltip from "~/features/common/QuestionTooltip";
+import { DATA_BREADCRUMB_ICONS } from "~/features/data-discovery-and-detection/DiscoveryMonitorBreadcrumbs";
 import DatabaseConnectForm from "~/features/dataset/DatabaseConnectForm";
 import DatasetYamlForm from "~/features/dataset/DatasetYamlForm";
 
@@ -16,10 +17,15 @@ const NewDataset: NextPage = () => {
     "yaml" | "database" | "manual" | null
   >(null);
   return (
-    <Layout title="Create New Dataset" mainProps={{ paddingTop: 0 }}>
+    <Layout title="Create New Dataset">
       <PageHeader
-        breadcrumbs={[
-          { title: "Datasets", link: DATASET_ROUTE },
+        heading="Datasets"
+        breadcrumbItems={[
+          {
+            title: "All datasets",
+            href: DATASET_ROUTE,
+            icon: DATA_BREADCRUMB_ICONS[0],
+          },
           { title: "Create new" },
         ]}
       />

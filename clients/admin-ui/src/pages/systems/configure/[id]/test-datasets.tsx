@@ -6,7 +6,6 @@ import { useEffect } from "react";
 import { useAppDispatch } from "~/app/hooks";
 import FidesSpinner from "~/features/common/FidesSpinner";
 import Layout from "~/features/common/Layout";
-import { SYSTEM_ROUTE } from "~/features/common/nav/v2/routes";
 import PageHeader from "~/features/common/PageHeader";
 import {
   setActiveSystem,
@@ -58,15 +57,15 @@ const TestDatasetPage: NextPage = () => {
       }}
     >
       <PageHeader
-        breadcrumbs={[
-          { title: "System inventory", link: SYSTEM_ROUTE },
-          {
-            title: system?.name || "",
-            link: `/systems/configure/${systemId}#integrations`,
-          },
-          { title: "Test datasets" },
-        ]}
-        isSticky
+        heading="System inventory"
+        // breadcrumbs={[
+        //   { title: "System inventory", link: SYSTEM_ROUTE },
+        //   {
+        //     title: system?.name || "",
+        //     link: `/systems/configure/${systemId}#integrations`,
+        //   },
+        //   { title: "Test datasets" },
+        // ]}
       >
         <Box position="relative" />
       </PageHeader>

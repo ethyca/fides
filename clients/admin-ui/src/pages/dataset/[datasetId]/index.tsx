@@ -19,8 +19,6 @@ import type { NextPage } from "next";
 import { useRouter } from "next/router";
 import { useMemo, useState } from "react";
 
-import { DatabaseIcon } from "~/features/common/Icon/database/DatabaseIcon";
-import { DatasetIcon } from "~/features/common/Icon/database/DatasetIcon";
 import Layout from "~/features/common/Layout";
 import {
   DATASET_COLLECTION_DETAIL_ROUTE,
@@ -35,8 +33,8 @@ import {
   TableActionBar,
   TableSkeletonLoader,
 } from "~/features/common/table/v2";
+import { DATA_BREADCRUMB_ICONS } from "~/features/data-discovery-and-detection/DiscoveryMonitorBreadcrumbs";
 import { useGetDatasetByKeyQuery } from "~/features/dataset";
-import DatasetBreadcrumbs from "~/features/dataset/DatasetBreadcrumbs";
 import EditCollectionDrawer from "~/features/dataset/EditCollectionDrawer";
 import { DatasetCollection } from "~/types/api";
 
@@ -140,21 +138,19 @@ const DatasetDetailPage: NextPage = () => {
     return [
       {
         title: "All datasets",
-        icon: <DatabaseIcon boxSize={4} />,
-        link: DATASET_ROUTE,
+        icon: DATA_BREADCRUMB_ICONS[0],
+        href: DATASET_ROUTE,
       },
       {
         title: datasetId,
-        icon: <DatasetIcon boxSize={5} />,
+        icon: DATA_BREADCRUMB_ICONS[1],
       },
     ];
   }, [datasetId]);
 
   return (
-    <Layout title={`Dataset - ${datasetId}`} mainProps={{ paddingTop: 0 }}>
-      <PageHeader breadcrumbs={[{ title: "Datasets" }]}>
-        <DatasetBreadcrumbs breadcrumbs={breadcrumbs} />
-      </PageHeader>
+    <Layout title={`Dataset - ${datasetId}`}>
+      <PageHeader heading="Datasets" breadcrumbItems={breadcrumbs} />
 
       {isLoading ? (
         <TableSkeletonLoader rowHeight={36} numRows={15} />

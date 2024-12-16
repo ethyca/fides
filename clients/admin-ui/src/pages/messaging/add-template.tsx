@@ -1,10 +1,11 @@
 import { getErrorMessage } from "common/helpers";
 import { MESSAGING_ROUTE } from "common/nav/v2/routes";
-import { Box, Heading, Spinner, Text, useToast } from "fidesui";
+import { Box, Spinner, useToast } from "fidesui";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
 
 import Layout from "~/features/common/Layout";
+import PageHeader from "~/features/common/PageHeader";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import {
   MessagingTemplateCreateOrUpdate,
@@ -60,12 +61,14 @@ const AddMessagingTemplatePage: NextPage = () => {
 
   return (
     <Layout title="Configure Message">
-      <Box data-testid="add-messaging-template">
-        <Heading marginBottom={2} fontSize="2xl">
-          Configure message
-        </Heading>
+      <PageHeader
+        heading="Messaging"
+        breadcrumbItems={[
+          { title: "Messaging", href: MESSAGING_ROUTE },
+          { title: "Configure message" },
+        ]}
+      >
         <Box maxWidth="720px">
-          <Text fontSize="sm">Configure this message</Text>
           <Box padding={2}>
             <PropertySpecificMessagingTemplateForm
               template={messagingTemplate}
@@ -73,7 +76,7 @@ const AddMessagingTemplatePage: NextPage = () => {
             />
           </Box>
         </Box>
-      </Box>
+      </PageHeader>
     </Layout>
   );
 };

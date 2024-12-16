@@ -98,7 +98,7 @@ const TaxonomyPage: NextPage = () => {
     >
       <Flex vertical className="h-full">
         <div>
-          <PageHeader breadcrumbs={[{ title: "Taxonomy" }]} />
+          <PageHeader heading="Taxonomy" />
 
           {/* hide search bar until functionality is implemented */}
           <div className="hidden">

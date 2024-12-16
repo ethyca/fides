@@ -24,13 +24,8 @@ const DataDiscoveryAndDetectionActivityPage = () => {
   };
 
   return (
-    <FixedLayout
-      title="Data discovery"
-      mainProps={{
-        padding: "0 40px 48px",
-      }}
-    >
-      <PageHeader breadcrumbs={[{ title: "All activity" }]} />
+    <FixedLayout title="Data discovery">
+      <PageHeader heading="All activity" />
       <ActivityTable
         onRowClick={navigateToResourceResults}
         statusFilters={[
