@@ -280,6 +280,13 @@ class StagedResource(Base):
         default=dict,
     )
 
+    data_uses = Column(
+        ARRAY(String),
+        nullable=False,
+        server_default="{}",
+        default=dict,
+    )
+
     # hidden flag, used by some parts of the dataset lifecycle experience
     hidden = Column(Boolean, default=False, nullable=False)
 
@@ -361,25 +368,7 @@ def fetch_staged_resources_by_type_query(
         query = query.filter(StagedResource.monitor_config_id.in_(monitor_config_ids))
     if not show_hidden:
         query = query.where(
-            StagedResource.hidden == False  # pylint: disable=singleton-comparison
+            StagedResource.muted == False  # pylint: disable=singleton-comparison
         )
 
     return query
-
-
-async def mark_resources_hidden(
-    db: AsyncSession,
-    urns: List[str],
-    hidden: bool,
-) -> None:
-    """
-    Marks the resources with the given URNs as hidden or not hidden
-    """
-    logger.info(f"Marking {len(urns)} resources as hidden={hidden}")
-    resources = await StagedResource.get_urn_list_async(db, urns)
-    if not resources:
-        logger.warning("No resources found with the given URNs")
-        return
-    for resource in resources:
-        resource.hidden = hidden
-    await db.commit()

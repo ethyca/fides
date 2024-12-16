@@ -17,12 +17,12 @@ depends_on = None
 
 
 def upgrade():
-    op.add_column("stagedresource", sa.Column("hidden", sa.Boolean(), nullable=False))
-    op.add_column("stagedresource", sa.Column("data_use", sa.String(), nullable=True))
+    op.add_column(
+        "stagedresource", sa.Column("data_uses", sa.ARRAY(sa.String), nullable=True)
+    )
     # ### end Alembic commands ###
 
 
 def downgrade():
-    op.drop_column("stagedresource", "hidden")
-    op.drop_column("stagedresource", "data_use")
+    op.drop_column("stagedresource", "data_uses")
     # ### end Alembic commands ###

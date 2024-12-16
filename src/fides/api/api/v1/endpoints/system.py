@@ -1,3 +1,4 @@
+import datetime
 from typing import Annotated, Dict, List, Optional, Union
 
 from fastapi import Depends, HTTPException, Query, Response, Security
@@ -9,6 +10,7 @@ from fideslang.models import System as SystemSchema
 from fideslang.validation import FidesKey
 from loguru import logger
 from pydantic import Field
+from sqlalchemy import or_
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy.orm import Session
@@ -389,6 +391,7 @@ async def ls(  # pylint: disable=invalid-name
     data_uses: Optional[List[FidesKey]] = Query(None),
     data_categories: Optional[List[FidesKey]] = Query(None),
     data_subjects: Optional[List[FidesKey]] = Query(None),
+    show_deleted: Optional[bool] = Query(False),
 ) -> List:
     """Get a list of all of the Systems.
     If any parameters or filters are provided the response will be paginated and/or filtered.
@@ -404,6 +407,15 @@ async def ls(  # pylint: disable=invalid-name
     query = select(System).outerjoin(
         PrivacyDeclaration, System.id == PrivacyDeclaration.system_id
     )
+
+    # Filter out any vendor deleted systems, unless explicitly asked for
+    if not show_deleted:
+        query = query.filter(
+            or_(
+                System.vendor_deleted_date.is_(None),
+                System.vendor_deleted_date >= datetime.datetime.now(),
+            )
+        )
 
     filter_params = FilterParams(
         search=search,

@@ -2227,9 +2227,7 @@ dataset:
       data_categories: [system]
     - name: user_assigned_data_categories
       data_categories: [system]
-    - name: hidden
-      data_categories: [system]
-    - name: data_use
+    - name: data_uses
       data_categories: [system]
   - name: fides_user_invite
     fields:
