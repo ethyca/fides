@@ -15,7 +15,7 @@ The types of changes are:
 - `Fixed` for any bug fixes.
 - `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.51.1...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.51.2...main)
 
 ### Added
 - New page in the Cookie House sample app to demonstrate the use of embedding the FidesJS SDK on the page [#5564](https://github.com/ethyca/fides/pull/5564)
@@ -23,11 +23,18 @@ The types of changes are:
 - Added new erasure tests for BigQuery Enterprise [#5554](https://github.com/ethyca/fides/pull/5554)
 - Migration to add the `hidden` and `data_use` columns to `stagedresource` table, prereqs for Data Catalog work in Fidesplus [#5600](https://github.com/ethyca/fides/pull/5600/)
 
+### Changed
+- Adjusted Ant's Select component colors and icon [#5594](https://github.com/ethyca/fides/pull/5594)
+- Replaced taxonomies page with new UI based on an interactive tree visualization [#5602](https://github.com/ethyca/fides/pull/5602)
+
+
 ### Fixed
 - Fixing quickstart.py script [#5585](https://github.com/ethyca/fides/pull/5585)
 
-### Changed
-- Adjusted Ant's Select component colors and icon [#5594](https://github.com/ethyca/fides/pull/5594)
+## [2.51.2](https://github.com/ethyca/fides/compare/2.51.1...2.51.2)
+
+### Fixed
+- Fixed miscellaneous performance issues with Systems and PrivacyDeclarations [#5601](https://github.com/ethyca/fides/pull/5601)
 
 ## [2.51.1](https://github.com/ethyca/fides/compare/2.51.0...2.51.1)
 

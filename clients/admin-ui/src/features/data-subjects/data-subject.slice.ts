@@ -24,7 +24,7 @@ const dataSubjectsApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Data Subjects"],
     }),
-    createDataSubject: build.mutation<DataSubject, DataSubject>({
+    createDataSubject: build.mutation<DataSubject, Partial<DataSubject>>({
       query: (dataSubject) => ({
         url: `data_subject`,
         method: "POST",
@@ -45,6 +45,7 @@ const dataSubjectsApi = baseApi.injectEndpoints({
 
 export const {
   useGetAllDataSubjectsQuery,
+  useLazyGetAllDataSubjectsQuery,
   useUpdateDataSubjectMutation,
   useCreateDataSubjectMutation,
   useDeleteDataSubjectMutation,
