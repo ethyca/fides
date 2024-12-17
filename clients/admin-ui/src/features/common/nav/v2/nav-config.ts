@@ -42,7 +42,7 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         title: "Action center",
         path: routes.ACTION_CENTER_ROUTE,
         scopes: [],
-        requiresFlag: "dataDiscoveryAndDetection",
+        requiresFlag: "webMonitor",
         requiresPlus: true,
       },
       {
