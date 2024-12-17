@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Any, Optional
+from typing import ByteString, Optional
 
 from sqlalchemy import Column, String
 from sqlalchemy.dialects.postgresql import BYTEA
@@ -28,19 +28,55 @@ class DBCache(Base):
     cache_value = Column(BYTEA, nullable=False)
 
     @classmethod
+    def get_cache_entry(
+        cls,
+        db: Session,
+        namespace: DBCacheNamespace,
+        cache_key: str,
+    ) -> Optional["DBCache"]:
+        """
+        Retrieves the cache entry for the given cache_key
+        """
+        return (
+            db.query(cls)
+            .filter(cls.namespace == namespace.value, cls.cache_key == cache_key)
+            .first()
+        )
+
+    @classmethod
     def get_cache_value(
         cls,
         db: Session,
         namespace: DBCacheNamespace,
         cache_key: str,
-    ) -> Optional[Any]:
+    ) -> Optional[ByteString]:
         """
         Retrieves the cache value for the given cache_key
         """
-        cache_entry = (
-            db.query(cls)
-            .filter(cls.namespace == namespace, cls.cache_key == cache_key)
-            .first()
-        )
+        cache_entry = cls.get_cache_entry(db, namespace, cache_key)
 
         return cache_entry.cache_value if cache_entry else None
+
+    @classmethod
+    def set_cache_value(
+        cls,
+        db: Session,
+        namespace: DBCacheNamespace,
+        cache_key: str,
+        cache_value: ByteString,
+    ) -> "DBCache":
+        """
+        Upserts the cache value for the given cache_key
+        """
+        db_cache_entry = cls.get_cache_entry(db, namespace, cache_key)
+        if db_cache_entry:
+            db_cache_entry.cache_value = cache_value
+        else:
+            db_cache_entry = cls(
+                namespace=namespace.value, cache_key=cache_key, cache_value=cache_value
+            )
+
+        db.add(db_cache_entry)
+        db.commit()
+        db.refresh(db_cache_entry)
+        return db_cache_entry
