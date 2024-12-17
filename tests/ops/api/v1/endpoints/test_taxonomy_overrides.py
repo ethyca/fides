@@ -270,7 +270,7 @@ class TestUpdateDataUse:
         Tree: A----B----C
                    \
                     ----D
-        Current Active Fields: A (true), B (false), C (false), D (false)
+        Current Active Fields: A (false), B (false), C (false), D (false)
         Payload: C: active=True
         Result Active Fields: A (true), B (true), C (true), D (false)
         """
@@ -278,28 +278,31 @@ class TestUpdateDataUse:
         payload_a = {
             "name": "Data Use A",
             "fides_key": "data_use_a",
-            "active": True,
+            "active": False,
             "is_default": False,
             "description": "Data Use A",
         }
         payload_b = {
             "name": "Data Use B",
-            "fides_key": "data_use_b",
+            "fides_key": "data_use_a.data_use_b",
+            "parent_key": "data_use_a",
             "active": False,
             "is_default": False,
             "description": "Data Use B",
         }
         payload_c = {
             "name": "Data Use C",
-            "fides_key": "data_use_c",
+            "fides_key": "data_use_a.data_use_b.data_use_c",
+            "parent_key": "data_use_a.data_use_b",
             "active": False,
             "is_default": False,
             "description": "Data Use C",
         }
         payload_d = {
             "name": "Data Use D",
-            "fides_key": "data_use_d",
-            "active": True,
+            "fides_key": "data_use_a.data_use_b.data_use_d",
+            "parent_key": "data_use_a.data_use_b",
+            "active": False,
             "is_default": False,
             "description": "Data Use D",
         }
@@ -312,7 +315,8 @@ class TestUpdateDataUse:
         auth_header = generate_auth_header([DATA_USE_UPDATE])
         payload = {
             "name": "Data Use C",
-            "fides_key": "data_use_c",
+            "fides_key": "data_use_a.data_use_b.data_use_c",
+            "parent_key": "data_use_a.data_use_b",
             "active": True,
             "description": "Data Use C",
         }
@@ -360,21 +364,24 @@ class TestUpdateDataUse:
         }
         payload_b = {
             "name": "Data Use B",
-            "fides_key": "data_use_b",
+            "fides_key": "data_use_a.data_use_b",
+            "parent_key": "data_use_a",
             "active": True,
             "is_default": False,
             "description": "Data Use B",
         }
         payload_c = {
             "name": "Data Use C",
-            "fides_key": "data_use_c",
+            "fides_key": "data_use_a.data_use_b.data_use_c",
+            "parent_key": "data_use_a.data_use_b",
             "active": True,
             "is_default": False,
             "description": "Data Use C",
         }
         payload_d = {
             "name": "Data Use D",
-            "fides_key": "data_use_d",
+            "fides_key": "data_use_a.data_use_b.data_use_d",
+            "parent_key": "data_use_a.data_use_b",
             "active": True,
             "is_default": False,
             "description": "Data Use D",
@@ -388,12 +395,17 @@ class TestUpdateDataUse:
         auth_header = generate_auth_header([DATA_USE_UPDATE])
         payload = {
             "name": "Data Use B",
-            "fides_key": "data_use_b",
+            "fides_key": "data_use_a.data_use_b",
+            "parent_key": "data_use_a",
             "active": False,
             "description": "Data Use B",
         }
         response = api_client.put(url, headers=auth_header, json=payload)
         assert 200 == response.status_code
+        db.refresh(data_use_a)
+        db.refresh(data_use_b)
+        db.refresh(data_use_c)
+        db.refresh(data_use_d)
 
         # Assert
         a_result = DataUse.get_by(db, field="fides_key", value=data_use_a.fides_key)

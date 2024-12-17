@@ -777,6 +777,7 @@ class TestPrivacyNoticeModel:
 
 
 class TestHierarchicalNotices:
+    # todo- replicate this for taxonomy updates
     @pytest.fixture(scope="function")
     def child_privacy_notice(self, db: Session) -> Generator:
         privacy_notice = PrivacyNotice.create(

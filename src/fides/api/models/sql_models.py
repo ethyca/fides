@@ -171,8 +171,9 @@ class DataCategory(Base, FidesBase):
     """
 
     __tablename__ = "ctl_data_categories"
+    fides_key = Column(String, primary_key=True, index=True, unique=True)
 
-    parent_key = Column(Text)
+    parent_key = Column(Text, ForeignKey("ctl_data_categories.fides_key", ondelete="SET NULL"))
     active = Column(BOOLEAN, default=True, nullable=False)
 
     # Default Fields
@@ -180,6 +181,19 @@ class DataCategory(Base, FidesBase):
     version_added = Column(Text)
     version_deprecated = Column(Text)
     replaced_by = Column(Text)
+
+    children: "RelationshipProperty[List[DataCategory]]" = relationship(
+        "DataCategory",
+        back_populates="parent",
+        cascade="all",
+        passive_deletes=True,
+    )
+
+    parent: "RelationshipProperty[Optional[DataCategory]]" = relationship(
+        "DataCategory",
+        back_populates="children",
+        remote_side=[fides_key],
+    )
 
     @classmethod
     def from_fideslang_obj(
@@ -219,8 +233,9 @@ class DataUse(Base, FidesBase):
     """
 
     __tablename__ = "ctl_data_uses"
+    fides_key = Column(String, primary_key=True, index=True, unique=True)
 
-    parent_key = Column(Text)
+    parent_key = Column(Text, ForeignKey("ctl_data_uses.fides_key", ondelete="SET NULL")) # todo- prevent deletion if it has children
     active = Column(BOOLEAN, default=True, nullable=False)
 
     # Default Fields
@@ -228,6 +243,19 @@ class DataUse(Base, FidesBase):
     version_added = Column(Text)
     version_deprecated = Column(Text)
     replaced_by = Column(Text)
+
+    children: "RelationshipProperty[List[DataUse]]" = relationship(
+        "DataUse",
+        back_populates="parent",
+        cascade="all",
+        passive_deletes=True,
+    )
+
+    parent: "RelationshipProperty[Optional[DataUse]]" = relationship(
+        "DataUse",
+        back_populates="children",
+        remote_side=[fides_key],
+    )
 
     @staticmethod
     def get_parent_uses_from_key(data_use_key: str) -> Set[str]:

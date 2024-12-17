@@ -34,7 +34,7 @@ from fides.common.api.scope_registry import (
     DATA_CATEGORY_CREATE,
     DATA_SUBJECT_CREATE,
     DATA_USE_CREATE,
-    DATASET_READ, DATA_USE_UPDATE,
+    DATASET_READ, DATA_USE_UPDATE, DATA_CATEGORY_UPDATE,
 )
 from fides.common.api.v1.urn_registry import V1_URL_PREFIX
 
@@ -112,49 +112,39 @@ async def list_dataset_paginated(
 
 
 def activate_taxonomy_parents(
+    resource: Union[DataCategoryDbModel, DataUseDbModel, DataSubjectDbModel],
     db: Session,
-    model: Union[Type[DataCategoryDbModel], Type[DataUseDbModel], Type[DataSubjectDbModel]],
-    data: Union[DataCategoryCreateOrUpdate, DataUseCreateOrUpdate, DataSubjectCreateOrUpdate],
 ) -> None:
     """
     Activates parents to match newly-active taxonomy node.
     """
-    from loguru import logger
-    logger.info("here")
-    all_parents: List[str] = get_cumulative_parts_of_fides_key(data.fides_key)
-    logger.info(f"all_parents: {all_parents}")
-    if all_parents:
-        deactivated_parents: Optional[List[model]] = db.query(model).filter(
-            model.fides_key.in_(all_parents),
-            model.active.is_(False),
-        ).all()
-        for parent in deactivated_parents:
-            parent.active = True
-            parent.update(db=db, data=parent.model_dump(mode="json"))
+    parent = resource.parent
+    if parent:
+        parent.active = True
+        db.commit()
+
+        activate_taxonomy_parents(parent, db)
 
 
-def deactivate_taxonomy_descendants(
+
+def deactivate_taxonomy_node_and_descendants(
+    resource: Union[DataCategoryDbModel, DataUseDbModel, DataSubjectDbModel],
     db: Session,
-    model: Union[
-        Type[DataCategoryDbModel], Type[DataUseDbModel], Type[DataSubjectDbModel]
-    ],
-    parent_key: str
 ) -> None:
     """
     Recursively de-activates all descendants of a given taxonomy node.
     """
-    # Get all immediate children
-    children = db.query(model).filter(
-        model.parent_key == parent_key
-    ).all()
+    resource.active = False
+    db.commit()
+    children = resource.children
 
     for child in children:
         # Deactivate current child
         child.active = False
-        child.update(db=db, data=child.model_dump(mode="json"))
+        db.commit()
 
         # Recursively deactivate all descendants of this child
-        deactivate_taxonomy_descendants(db, model, child.fides_key)
+        deactivate_taxonomy_node_and_descendants(child, db)
 
 
 
@@ -198,9 +188,6 @@ def validate_and_create_taxonomy(
 
 def validate_and_update_taxonomy(
     db: Session,
-    model: Union[
-        Type[DataCategoryDbModel], Type[DataUseDbModel], Type[DataSubjectDbModel]
-    ],
     resource: Union[DataCategoryDbModel, DataUseDbModel, DataSubjectDbModel],
     validation_schema: type,
     data: Union[DataCategoryCreateOrUpdate, DataUseCreateOrUpdate, DataSubjectCreateOrUpdate],
@@ -215,13 +202,14 @@ def validate_and_update_taxonomy(
     # If active field is being updated, cascade change either up or down
     if hasattr(data, "active"):
         if data.active:
-            activate_taxonomy_parents(db, model, data)
+            activate_taxonomy_parents(resource, db)
         else:
-            # Cascade down - deactivate children to match newly-deactivated taxonomy item
-            deactivate_taxonomy_descendants(db, model, data.fides_key)
+            # Cascade down - deactivate current node and children to match newly-deactivated taxonomy item
+            deactivate_taxonomy_node_and_descendants(resource, db)
 
     validated_taxonomy = validation_schema(**data.model_dump(mode="json"))
     return resource.update(db=db, data=validated_taxonomy.model_dump(mode="json"))
+    #commit?
 
 
 def create_or_update_taxonomy(
@@ -253,9 +241,9 @@ def create_or_update_taxonomy(
             data.fides_key = f"{data.parent_key}.{data.fides_key}"  # type: ignore[union-attr]
         if disabled_resource_with_name:
             data.active = True
-            activate_taxonomy_parents(db, model, data)
+            activate_taxonomy_parents(disabled_resource_with_name, db)
             return validate_and_update_taxonomy(
-                db, model, disabled_resource_with_name, validation_schema, data
+                db, disabled_resource_with_name, validation_schema, data
             )
         return validate_and_create_taxonomy(db, model, validation_schema, data)
 
@@ -287,36 +275,6 @@ async def create_data_use(
         raise HTTPException(
             status_code=HTTP_422_UNPROCESSABLE_ENTITY,
             detail=f"Error creating data use: {e}",
-        )
-
-
-@data_use_router.put(
-    "/data_use",
-    dependencies=[Security(verify_oauth_client, scopes=[DATA_USE_UPDATE])],
-    response_model=DataUse,
-    status_code=status.HTTP_200_OK,
-    name="Update",
-)
-async def update_data_use(
-        data_use: DataUseCreateOrUpdate,
-        db: Session = Depends(get_db),
-) -> Dict:
-    """
-    Update a data use. Ensures updates to "active" are appropriately cascaded.
-    """
-    try:
-        resource = DataUseDbModel.get_by(db, field="fides_key", value=data_use.fides_key)
-        if not resource:
-            raise HTTPException(
-                status_code=HTTP_404_NOT_FOUND, detail=f"Data use not found with key: {data_use.fides_key}"
-            )
-        return validate_and_update_taxonomy(
-            db, DataUseDbModel, resource, DataUse, data_use
-        )
-    except Exception as e:
-        raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=f"Error updating data use: {e}",
         )
 
 
@@ -366,6 +324,7 @@ async def create_data_subject(
     Create a data subject
     """
 
+
     try:
         return create_or_update_taxonomy(
             db, data_subject, DataSubjectDbModel, DataSubject
@@ -379,6 +338,68 @@ async def create_data_subject(
         raise HTTPException(
             status_code=HTTP_422_UNPROCESSABLE_ENTITY,
             detail=f"Error creating data subject: {e}",
+        )
+
+
+@data_use_router.put(
+    "/data_use",
+    dependencies=[Security(verify_oauth_client, scopes=[DATA_USE_UPDATE])],
+    response_model=DataUse,
+    status_code=status.HTTP_200_OK,
+    name="Update",
+)
+async def update_data_use(
+        data_use: DataUseCreateOrUpdate,
+        db: Session = Depends(get_db),
+) -> Dict:
+    """
+    Update a data use. Ensures updates to "active" are appropriately cascaded.
+    """
+
+    resource = DataUseDbModel.get_by(db, field="fides_key", value=data_use.fides_key)
+    if not resource:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND, detail=f"Data use not found with key: {data_use.fides_key}"
+        )
+    try:
+        return validate_and_update_taxonomy(
+            db, resource, DataUse, data_use
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"Error updating data use: {e}",
+        )
+
+
+@data_category_router.put(
+    "/data_category",
+    dependencies=[Security(verify_oauth_client, scopes=[DATA_CATEGORY_UPDATE])],
+    response_model=DataCategory,
+    status_code=status.HTTP_200_OK,
+    name="Update",
+)
+async def update_data_category(
+        data_category: DataCategoryCreateOrUpdate,
+        db: Session = Depends(get_db),
+) -> Dict:
+    """
+    Update a data category. Ensures updates to "active" are appropriately cascaded.
+    """
+
+    resource = DataCategoryDbModel.get_by(db, field="fides_key", value=data_category.fides_key)
+    if not resource:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND, detail=f"Data category not found with key: {data_category.fides_key}"
+        )
+    try:
+        return validate_and_update_taxonomy(
+            db, resource, DataCategory, data_category
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"Error updating data category: {e}",
         )
 
 
