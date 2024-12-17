@@ -1,5 +1,9 @@
 import { Node, NodeProps } from "@xyflow/react";
-import { AntButton, AntTypography, Icons } from "fidesui";
+import {
+  AntButton as Button,
+  AntTypography as Typography,
+  Icons,
+} from "fidesui";
 import { useCallback, useContext, useEffect } from "react";
 
 import { TAXONOMY_ROOT_NODE_ID } from "../constants";
@@ -93,17 +97,17 @@ const TaxonomyTreeNode = ({
       onMouseLeave={() => onMouseLeave(taxonomyItem?.fides_key!)}
       data-testid={`taxonomy-node-${taxonomyItem?.fides_key}`}
     >
-      <AntButton
+      <Button
         className={`${styles.button} ${getNodeHoverStatusClass()}`}
         onClick={() => onTaxonomyItemClick?.(taxonomyItem!)}
         disabled={!onTaxonomyItemClick}
         type="text"
       >
-        <AntTypography.Text ellipsis style={{ color: "inherit" }}>
+        <Typography.Text ellipsis style={{ color: "inherit" }}>
           {taxonomyItem?.active === false ? "(disabled) " : ""}
           {label}
-        </AntTypography.Text>
-      </AntButton>
+        </Typography.Text>
+      </Button>
 
       {!isRootNode && (
         <TaxonomyTreeNodeHandle
@@ -123,7 +127,7 @@ const TaxonomyTreeNode = ({
           ${styles["add-button-container"]}
           ${nodeHoverStatus === TreeNodeHoverStatus.ACTIVE_HOVER ? styles["add-button-container--visible"] : ""}`}
       >
-        <AntButton
+        <Button
           type="default"
           className={styles["add-button"]}
           icon={<Icons.Add size={20} />}
