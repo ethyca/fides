@@ -24,6 +24,7 @@ The types of changes are:
 
 ### Fixed
 - Fixing quickstart.py script [#5585](https://github.com/ethyca/fides/pull/5585)
+- Removed unnecessary toast when no updates to datasets have been made [#5612](https://github.com/ethyca/fides/pull/5612)
 
 ### Changed
 - Adjusted Ant's Select component colors and icon [#5594](https://github.com/ethyca/fides/pull/5594)
