@@ -1,19 +1,20 @@
 import {
+  AntAlert as Alert,
   AntButton as Button,
   AntDivider as Divider,
   AntEmpty as Empty,
   AntFlex as Flex,
   AntList as List,
-  AntTypography as Typography,
   Breadcrumb,
   BreadcrumbItem,
   BreadcrumbLink,
+  Spinner,
   useToast,
 } from "fidesui";
 import NextLink from "next/link";
 import { useEffect, useState } from "react";
 
-import FixedLayout from "~/features/common/FixedLayout";
+import Layout from "~/features/common/Layout";
 import {
   ACTION_CENTER_ROUTE,
   INTEGRATION_MANAGEMENT_ROUTE,
@@ -27,8 +28,7 @@ import { useGetMonitorSummaryQuery } from "~/features/data-discovery-and-detecti
 import { MonitorResult } from "~/features/data-discovery-and-detection/action-center/MonitorResult";
 import { MonitorSummary } from "~/features/data-discovery-and-detection/action-center/types";
 import { SearchInput } from "~/features/data-discovery-and-detection/SearchInput";
-
-const { Text } = Typography;
+import { useGetConfigurationSettingsQuery } from "~/features/privacy-requests";
 
 const ActionCenterPage = () => {
   const toast = useToast();
@@ -47,26 +47,35 @@ const ActionCenterPage = () => {
     resetPageIndexToDefault,
   } = useServerSidePagination();
   const [searchQuery, setSearchQuery] = useState("");
+  const { data: appConfig, isLoading: isConfigLoading } =
+    useGetConfigurationSettingsQuery({
+      api_set: false,
+    });
+  const webMonitorEnabled =
+    !!appConfig?.detection_discovery?.website_monitor_enabled;
 
   useEffect(() => {
     resetPageIndexToDefault();
   }, [searchQuery, resetPageIndexToDefault]);
 
-  const { data, isError, isLoading, isFetching } = useGetMonitorSummaryQuery({
-    pageIndex,
-    pageSize,
-    search: searchQuery,
-  });
+  const { data, isError, isLoading, isFetching } = useGetMonitorSummaryQuery(
+    {
+      pageIndex,
+      pageSize,
+      search: searchQuery,
+    },
+    { skip: isConfigLoading || !webMonitorEnabled },
+  );
 
   useEffect(() => {
-    if (isError && !!toast) {
+    if (isError && !!toast && webMonitorEnabled) {
       toast({
         title: "Error fetching data",
         description: "Please try again later",
         status: "error",
       });
     }
-  }, [isError, toast]);
+  }, [isError, toast, webMonitorEnabled]);
 
   useEffect(() => {
     if (data) {
@@ -74,7 +83,7 @@ const ActionCenterPage = () => {
     }
   }, [data, setTotalPages]);
 
-  let results = data?.items || [];
+  const results = data?.items || [];
   const loadingResults = isFetching
     ? (Array.from({ length: pageSize }, (_, index) => ({
         monitor_config_id: index.toString(),
@@ -83,37 +92,32 @@ const ActionCenterPage = () => {
       })) as any[])
     : [];
 
-  // TASK: Remove this block
-  if (!isLoading && !isFetching && !data) {
-    results = [
-      {
-        monitor_config_id: "1",
-        name: "Ethyca's Website Monitor",
-        hostname: "ethyca.com",
-        total_assets: 140,
-        asset_counts: [
-          { type: "cookies", count: 100 },
-          { type: "pixels", count: 40 },
-          { type: "tags", count: 3 },
-        ],
-        last_monitored: "2024-12-12T00:00:00Z",
-        warning: "One or more sytems were found without consent",
-      },
-    ];
-  }
-
-  const handleIgnore = (reportId: string) => {
+  const handleIgnore = (monidorId: string) => {
     // TASK: hook up ignore action to API
-    console.log("Ignoring report", reportId);
+    console.log("Ignoring report", monidorId);
   };
 
+  if (!webMonitorEnabled) {
+    return (
+      <Layout title="Action center" mainProps={{ className: "h-full" }}>
+        <Flex justify="center" align="center" className="h-full">
+          {isConfigLoading ? (
+            <Spinner color="minos.500" />
+          ) : (
+            <Alert
+              message="Coming soon..."
+              description="Action center is currently disabled."
+              type="info"
+              showIcon
+            />
+          )}
+        </Flex>
+      </Layout>
+    );
+  }
+
   return (
-    <FixedLayout
-      title="Action center"
-      mainProps={{
-        padding: "0 40px 48px",
-      }}
-    >
+    <Layout title="Action center">
       {/* TASK: migrate to ANT */}
       <PageHeader breadcrumbs={[{ title: "Action center" }]}>
         <Breadcrumb
@@ -161,12 +165,12 @@ const ActionCenterPage = () => {
         renderItem={(summary: MonitorSummary) => (
           <MonitorResult
             showSkeleton={isFetching}
-            key={summary.monitor_config_id}
+            key={summary.key}
             monitorSummary={summary}
             actions={[
               <NextLink
                 key="review"
-                href={`${ACTION_CENTER_ROUTE}/${summary.monitor_config_id}`}
+                href={`${ACTION_CENTER_ROUTE}/${summary.key}`}
                 passHref
                 legacyBehavior
               >
@@ -179,7 +183,7 @@ const ActionCenterPage = () => {
                 type="link"
                 className="p-0"
                 onClick={() => {
-                  handleIgnore(summary.monitor_config_id);
+                  handleIgnore(summary.key);
                 }}
               >
                 Ignore
@@ -205,7 +209,7 @@ const ActionCenterPage = () => {
           />
         </>
       )}
-    </FixedLayout>
+    </Layout>
   );
 };
 
