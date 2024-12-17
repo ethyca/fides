@@ -109,12 +109,14 @@ const TaxonomyEditDrawer = ({
         footer={
           <DrawerFooter justifyContent="space-between">
             {taxonomyItem?.active ? (
-              <Button
-                aria-label="delete"
-                icon={<TrashCanOutlineIcon fontSize="small" />}
-                onClick={onDeleteOpen}
-                data-testid="delete-btn"
-              />
+              <Tooltip title="Delete label">
+                <Button
+                  aria-label="delete"
+                  icon={<TrashCanOutlineIcon fontSize="small" />}
+                  onClick={onDeleteOpen}
+                  data-testid="delete-btn"
+                />
+              </Tooltip>
             ) : (
               <Tooltip title="Enable label">
                 <Button
