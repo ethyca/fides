@@ -1,10 +1,9 @@
-from typing import Dict, Optional
 from enum import Enum
+from typing import Any, Optional
 
 from sqlalchemy import Column, String
 from sqlalchemy.dialects.postgresql import BYTEA
 from sqlalchemy.orm import Session
-
 
 from fides.api.db.base_class import Base
 
@@ -34,7 +33,7 @@ class DBCache(Base):
         db: Session,
         namespace: DBCacheNamespace,
         cache_key: str,
-    ) -> Optional[Dict]:
+    ) -> Optional[Any]:
         """
         Retrieves the cache value for the given cache_key
         """
