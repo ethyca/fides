@@ -335,7 +335,7 @@ export const DatamapReportTable = () => {
   const handleSavedReport = (
     savedReport: CustomReportResponse | null,
     resetForm: (
-      nextState?: Partial<FormikState<Record<string, any>>> | undefined,
+      nextState?: Partial<FormikState<Record<string, string>>> | undefined,
     ) => void,
   ) => {
     if (!savedReport) {

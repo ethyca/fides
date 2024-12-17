@@ -2,6 +2,8 @@
 /* tslint:disable */
 /* eslint-disable */
 
+import type { CustomReportColumn } from "~/features/common/custom-reports/CustomReportColumn";
+
 /**
  * The configuration for a custom report.
  */
@@ -13,5 +15,5 @@ export type CustomReportConfig = {
   /**
    * A map between column keys and custom labels
    */
-  column_map?: Record<string, any>;
+  column_map?: Record<string, CustomReportColumn>;
 };
