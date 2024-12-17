@@ -71,15 +71,14 @@ const TaxonomyTreeNode = ({
   const getNodeHoverStatusClass = useCallback(() => {
     switch (nodeHoverStatus) {
       case TreeNodeHoverStatus.ACTIVE_HOVER:
-        return styles["button-hover"];
+        return styles["button--hover"];
       case TreeNodeHoverStatus.PARENT_OF_HOVER:
-        return styles["button-hover-parent"];
+        return styles["button--parent-hover"];
       case TreeNodeHoverStatus.INACTIVE:
-        return styles["button-inactive"];
+        return styles["button--inactive"];
       case TreeNodeHoverStatus.DEFAULT:
       case TreeNodeHoverStatus.CHILD_OF_HOVER:
       case TreeNodeHoverStatus.SIBLING_OF_HOVER:
-        return styles["button-default"];
       default:
         return "";
     }

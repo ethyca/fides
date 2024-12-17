@@ -17,30 +17,27 @@
   max-width: 240px;
 
   --ant-color-text-disabled: var(--ant-color-text);
-}
 
-.button-default {
-}
+  &--hover {
+    color: var(--ant-button-primary-color) !important;
+    background-color: var(--fidesui-minos) !important;
 
-.button-hover {
-  color: var(--ant-button-primary-color) !important;
-  background-color: var(--fidesui-minos) !important;
+    box-shadow:
+      0px 1px 2px 0px rgba(0, 0, 0, 0.06),
+      0px 1px 3px 0px rgba(0, 0, 0, 0.1);
+  }
 
-  box-shadow:
-    0px 1px 2px 0px rgba(0, 0, 0, 0.06),
-    0px 1px 3px 0px rgba(0, 0, 0, 0.1);
-}
+  &--parent-hover {
+    background-color: var(--fidesui-neutral-50) !important;
+    border-color: var(--ant-button-default-border-color) !important;
+    box-shadow:
+      0px 1px 2px 0px rgba(0, 0, 0, 0.06),
+      0px 1px 3px 0px rgba(0, 0, 0, 0.1);
+  }
 
-.button-hover-parent {
-  background-color: var(--fidesui-neutral-50) !important;
-  border-color: var(--ant-button-default-border-color) !important;
-  box-shadow:
-    0px 1px 2px 0px rgba(0, 0, 0, 0.06),
-    0px 1px 3px 0px rgba(0, 0, 0, 0.1);
-}
-
-.button-inactive {
-  color: var(--fidesui-neutral-400) !important;
+  &--inactive {
+    color: var(--fidesui-neutral-400) !important;
+  }
 }
 
 .add-button-container {
@@ -50,9 +47,10 @@
   padding-left: 0.5rem;
   opacity: 0;
   transition: opacity 0.3s ease-in 0s;
-}
-.add-button-container--visible {
-  opacity: 1;
+
+  &--visible {
+    opacity: 1;
+  }
 }
 
 .add-button {

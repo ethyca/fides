@@ -1,5 +1,5 @@
 import { Node, NodeProps } from "@xyflow/react";
-import { AntInput, InputRef } from "fidesui";
+import { AntInput as Input, InputRef } from "fidesui";
 import { useEffect, useRef, useState } from "react";
 
 import useCenterScreenOnNode from "../hooks/useCenterScreenOnNode";
@@ -51,7 +51,7 @@ const TaxonomyTextInputNode = ({
 
   return (
     <div style={{ width: inputWidth }} data-testid="taxonomy-text-input-node">
-      <AntInput
+      <Input
         placeholder="Type label name..."
         ref={inputRef}
         onBlur={onCancel}
