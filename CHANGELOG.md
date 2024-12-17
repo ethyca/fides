@@ -30,6 +30,7 @@ The types of changes are:
 
 ### Fixed
 - Fixing quickstart.py script [#5585](https://github.com/ethyca/fides/pull/5585)
+- Removed unnecessary double notification when updating database integrations [#5612](https://github.com/ethyca/fides/pull/5612)
 
 ## [2.51.2](https://github.com/ethyca/fides/compare/2.51.1...2.51.2)
 
