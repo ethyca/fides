@@ -13,7 +13,7 @@ from sqlalchemy.orm import Session, relationship
 
 from fides.api.db.base_class import Base, FidesBase
 from fides.api.models.connectionconfig import ConnectionConfig
-from fides.api.models.sql_models import System
+from fides.api.models.sql_models import System  # type: ignore[attr-defined]
 
 # class MonitorExecution(BaseModel):
 #     id: str
