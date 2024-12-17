@@ -12,7 +12,6 @@ import {
   DatastoreConnectionSecretsResponse,
 } from "datastore-connections/types";
 import { Box, Flex, Spacer, useToast, UseToastOptions } from "fidesui";
-import { isEqual } from "lodash";
 import router from "next/router";
 import { useMemo, useState } from "react";
 
@@ -291,14 +290,14 @@ export const useConnectorForm = ({
         }
       }
 
-      const hasDatasetArrayChanged = !isEqual(values.dataset, initialDatasets);
       if (
         connectionConfig &&
         values.dataset &&
-        hasDatasetArrayChanged &&
         connectionOption.type === SystemType.DATABASE
       ) {
-        await patchConnectionDatasetConfig(values, connectionConfig.key);
+        await patchConnectionDatasetConfig(values, connectionConfig.key, {
+          showSuccessAlert: false,
+        });
       }
 
       successAlert(
