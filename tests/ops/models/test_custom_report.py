@@ -53,7 +53,7 @@ class TestCustomReport:
         assert custom_report.config == {
             "column_map": {
                 "system": {
-                    "enabled": None,
+                    "enabled": True,
                     "label": "Vendor",
                 },
             },
@@ -100,7 +100,7 @@ class TestCustomReport:
         assert updated_report.config == {
             "column_map": {
                 "system": {
-                    "enabled": None,
+                    "enabled": True,
                     "label": "System",
                 },
             },

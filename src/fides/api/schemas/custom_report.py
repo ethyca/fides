@@ -20,7 +20,7 @@ class ColumnMapItem(FidesSchema):
         default=None, description="The custom label for the column"
     )
     enabled: Optional[bool] = Field(
-        default=None, description="Whether the column is shown"
+        default=True, description="Whether the column is shown"
     )
 
 
