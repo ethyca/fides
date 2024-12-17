@@ -50,7 +50,11 @@ const TaxonomyInteractiveTree = ({
   onSubmitDraftItem,
 }: TaxonomyInteractiveTreeProps) => {
   const { fitView } = useReactFlow();
+
+  // Reset the zoom level and center the view when the taxonomy type changes
   useEffect(() => {
+    // Timeout is needed because fitView doesn't work if it's
+    // called before the nodes are rendered
     setTimeout(() => fitView(), 0);
   }, [fitView, taxonomyType]);
 
