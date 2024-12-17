@@ -1,9 +1,9 @@
-import { AntFlex as Flex, AntFlexProps as FlexProps, Heading } from "fidesui";
-import { ReactNode } from "react";
+import { AntFlex as Flex, Heading } from "fidesui";
+import { ComponentProps, ReactNode } from "react";
 
 import { NextBreadcrumb, NextBreadcrumbProps } from "./nav/v2/NextBreadcrumb";
 
-interface PageHeaderProps extends Omit<FlexProps, "children"> {
+interface PageHeaderProps extends ComponentProps<"div"> {
   heading?: ReactNode;
   breadcrumbItems?: NextBreadcrumbProps["items"];
   isSticky?: boolean;
@@ -31,9 +31,9 @@ const PageHeader = ({
   style,
   ...props
 }: PageHeaderProps): JSX.Element => (
-  <Flex
-    className="pb-6"
+  <div
     {...props}
+    className={`pb-6 ${props.className}`}
     style={
       isSticky
         ? {
@@ -69,7 +69,7 @@ const PageHeader = ({
     )}
 
     {children}
-  </Flex>
+  </div>
 );
 
 export default PageHeader;
