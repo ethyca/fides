@@ -130,7 +130,6 @@ const TaxonomyTreeNode = ({
           onClick={() => onAddButtonClick?.(taxonomyItem)}
           size="middle"
           data-testid="taxonomy-add-child-label-button"
-          tabIndex={0}
           aria-label={`Add child label to ${label}`}
         />
       </div>
