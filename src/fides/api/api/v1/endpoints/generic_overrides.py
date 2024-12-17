@@ -147,26 +147,6 @@ def deactivate_taxonomy_node_and_descendants(
         deactivate_taxonomy_node_and_descendants(child, db)
 
 
-
-def get_cumulative_parts_of_fides_key(fides_key: str) -> List[str]:
-    """
-    Given a parent key, returns the cumulative parts of the key. Useful for obtaining all parents of a given key.
-
-    e.g. If parent key is test.hello.something, this method returns ["test", "test.hello", "test.hello.something"]
-    """
-    #
-    parts = fides_key.split('.')
-    cumulative_parts = []
-    current = parts[0]
-    cumulative_parts.append(current)
-
-    for part in parts[1:]:
-        current = current + '.' + part
-        cumulative_parts.append(current)
-
-    return cumulative_parts
-
-
 def validate_and_create_taxonomy(
     db: Session,
     model: Union[
@@ -209,7 +189,6 @@ def validate_and_update_taxonomy(
 
     validated_taxonomy = validation_schema(**data.model_dump(mode="json"))
     return resource.update(db=db, data=validated_taxonomy.model_dump(mode="json"))
-    #commit?
 
 
 def create_or_update_taxonomy(
