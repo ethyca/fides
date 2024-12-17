@@ -122,18 +122,16 @@ const TaxonomyTreeNode = ({
         />
       )}
 
-      <div
-        className={`
-          ${styles["add-button-container"]}
-          ${nodeHoverStatus === TreeNodeHoverStatus.ACTIVE_HOVER ? styles["add-button-container--visible"] : ""}`}
-      >
+      <div className={styles["add-button-container"]}>
         <Button
           type="default"
-          className={styles["add-button"]}
+          className={`${styles["add-button"]} ${nodeHoverStatus === TreeNodeHoverStatus.ACTIVE_HOVER ? styles["add-button--visible"] : ""}`}
           icon={<Icons.Add size={20} />}
           onClick={() => onAddButtonClick?.(taxonomyItem)}
           size="middle"
           data-testid="taxonomy-add-child-label-button"
+          tabIndex={0}
+          aria-label={`Add child label to ${label}`}
         />
       </div>
     </div>
