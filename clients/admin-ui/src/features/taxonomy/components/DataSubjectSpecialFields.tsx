@@ -1,42 +1,46 @@
-import { AntCheckbox, AntForm, AntSelect } from "fidesui";
+import {
+  AntCheckbox as Checkbox,
+  AntForm as Form,
+  AntSelect as Select,
+} from "fidesui";
 import { isEmpty } from "lodash";
 
 import { enumToOptions } from "~/features/common/helpers";
 import { DataSubjectRightsEnum, IncludeExcludeEnum } from "~/types/api";
 
 const DataSubjectSpecialFields = () => {
-  const form = AntForm.useFormInstance();
-  const rightsValues = AntForm.useWatch(["rights", "values"], form);
+  const form = Form.useFormInstance();
+  const rightsValues = Form.useWatch(["rights", "values"], form);
 
   return (
     <>
-      <AntForm.Item<boolean>
+      <Form.Item<boolean>
         label="Automated Decisions or Profiling"
         name="automated_decisions_or_profiling"
         layout="horizontal"
         valuePropName="checked"
       >
-        <AntCheckbox data-testid="edit-taxonomy-form_automated-decisions" />
-      </AntForm.Item>
-      <AntForm.Item<string[]> name={["rights", "values"]} label="Rights">
-        <AntSelect
+        <Checkbox data-testid="edit-taxonomy-form_automated-decisions" />
+      </Form.Item>
+      <Form.Item<string[]> name={["rights", "values"]} label="Rights">
+        <Select
           mode="multiple"
           options={enumToOptions(DataSubjectRightsEnum)}
           data-testid="edit-taxonomy-form_rights"
         />
-      </AntForm.Item>
+      </Form.Item>
       {rightsValues && !isEmpty(rightsValues) && (
-        <AntForm.Item<string>
+        <Form.Item<string>
           name={["rights", "strategy"]}
           label="Strategy"
           required
           rules={[{ required: true, message: "Please select a strategy" }]}
         >
-          <AntSelect
+          <Select
             options={enumToOptions(IncludeExcludeEnum)}
             data-testid="edit-taxonomy-form_strategy"
           />
-        </AntForm.Item>
+        </Form.Item>
       )}
     </>
   );

@@ -16,11 +16,10 @@ import {
 import palette from "fidesui/src/palette/palette.module.scss";
 import { useEffect, useMemo } from "react";
 
-import { TAXONOMY_ROOT_NODE_ID } from "../constants";
+import { CoreTaxonomiesEnum, TAXONOMY_ROOT_NODE_ID } from "../constants";
 import { TaxonomyTreeHoverProvider } from "../context/TaxonomyTreeHoverContext";
 import useD3HierarchyLayout from "../hooks/useD3HierarchyLayout";
 import { TaxonomyEntity } from "../types";
-import { CoreTaxonomiesEnum } from "../types/CoreTaxonomiesEnum";
 import TaxonomyTextInputNode, {
   TextInputNodeType,
 } from "./TaxonomyTextInputNode";

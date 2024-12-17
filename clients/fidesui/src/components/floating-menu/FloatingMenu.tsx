@@ -7,7 +7,6 @@ type AntMenuProps = ComponentProps<typeof AntMenu>;
 
 export const FloatingMenu = ({ className, ...props }: AntMenuProps) => (
   <AntMenu
-    mode="vertical"
     {...props}
     className={`${styles.menu} ${className}`}
     style={{ width: 220 }}

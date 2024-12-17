@@ -1,8 +1,8 @@
 import { AntForm, AntFormInstance, AntInput } from "fidesui";
 import { isEmpty, unset } from "lodash";
 
+import { CoreTaxonomiesEnum } from "../constants";
 import { FormValues, TaxonomyEntity } from "../types";
-import { CoreTaxonomiesEnum } from "../types/CoreTaxonomiesEnum";
 import DataSubjectSpecialFields from "./DataSubjectSpecialFields";
 
 interface TaxonomyEditFormProps {

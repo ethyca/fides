@@ -1,7 +1,7 @@
 import { ResourceTypes } from "~/types/api";
 
+import { CoreTaxonomiesEnum } from "./constants";
 import { TaxonomyEntity, TaxonomyEntityNode } from "./types";
-import { CoreTaxonomiesEnum } from "./types/CoreTaxonomiesEnum";
 
 export const transformTaxonomyEntityToNodes = (
   entities: TaxonomyEntity[],

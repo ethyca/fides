@@ -1,4 +1,11 @@
-import { AntButton, AntInput, AntSpace, FloatingMenu, useToast } from "fidesui";
+import {
+  AntButton as Button,
+  AntFlex as Flex,
+  AntInput as Input,
+  AntSpace as Space,
+  FloatingMenu,
+  useToast,
+} from "fidesui";
 import { filter } from "lodash";
 import type { NextPage } from "next";
 import { useSearchParams } from "next/navigation";
@@ -14,9 +21,9 @@ import PageHeader from "~/features/common/PageHeader";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import TaxonomyEditDrawer from "~/features/taxonomy/components/TaxonomyEditDrawer";
 import TaxonomyInteractiveTree from "~/features/taxonomy/components/TaxonomyInteractiveTree";
+import { CoreTaxonomiesEnum } from "~/features/taxonomy/constants";
 import useTaxonomySlices from "~/features/taxonomy/hooks/useTaxonomySlices";
 import { TaxonomyEntity } from "~/features/taxonomy/types";
-import { CoreTaxonomiesEnum } from "~/features/taxonomy/types/CoreTaxonomiesEnum";
 
 const TaxonomyPage: NextPage = () => {
   const [taxonomyType, setTaxonomyType] = useState<CoreTaxonomiesEnum>(
@@ -89,26 +96,26 @@ const TaxonomyPage: NextPage = () => {
         padding: "0 40px 48px",
       }}
     >
-      <div className="flex h-full flex-col">
+      <Flex vertical className="h-full">
         <div>
           <PageHeader breadcrumbs={[{ title: "Taxonomy" }]} />
 
           {/* hide search bar until functionality is implemented */}
           <div className="hidden">
             <div className="mb-5 flex justify-between">
-              <AntSpace.Compact>
-                <AntInput
+              <Space.Compact>
+                <Input
                   className="min-w-[350px]"
                   placeholder="Search"
                   allowClear
                 />
-                <AntButton type="default">Clear</AntButton>
-              </AntSpace.Compact>
+                <Button type="default">Clear</Button>
+              </Space.Compact>
             </div>
           </div>
         </div>
         <div className="relative grow">
-          <div className="absolute left-2 top-2 z-[1000]">
+          <div className="absolute left-2 top-2 z-[1]">
             <FloatingMenu
               selectedKeys={[taxonomyType]}
               onSelect={({ key }) => setTaxonomyType(key as CoreTaxonomiesEnum)}
@@ -146,7 +153,7 @@ const TaxonomyPage: NextPage = () => {
             />
           )}
         </div>
-      </div>
+      </Flex>
       {taxonomyItemToEdit && (
         <TaxonomyEditDrawer
           taxonomyItem={taxonomyItemToEdit}

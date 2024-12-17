@@ -11,8 +11,6 @@ import palette from "fidesui/src/palette/palette.module.scss";
  * 6. SCSS modules (for custom-component-specific styles)
  */
 
-// Ant theme overrides
-// Check out comments below before replacing with new version
 export const antTheme: AntThemeConfig = {
   cssVar: true,
   token: {
@@ -46,7 +44,6 @@ export const antTheme: AntThemeConfig = {
       dangerShadow: undefined,
       defaultBg: palette.FIDESUI_FULL_WHITE,
     },
-
     Input: {
       colorBgContainer: palette.FIDESUI_FULL_WHITE,
     },

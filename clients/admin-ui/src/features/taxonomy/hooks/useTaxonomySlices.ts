@@ -11,13 +11,13 @@ import {
   useUpdateDataUseMutation,
 } from "~/features/data-use/data-use.slice";
 
+import { CoreTaxonomiesEnum } from "../constants";
 import {
   useCreateDataCategoryMutation,
   useDeleteDataCategoryMutation,
   useLazyGetAllDataCategoriesQuery,
   useUpdateDataCategoryMutation,
 } from "../taxonomy.slice";
-import { CoreTaxonomiesEnum } from "../types/CoreTaxonomiesEnum";
 
 const useTaxonomySlices = ({
   taxonomyType,

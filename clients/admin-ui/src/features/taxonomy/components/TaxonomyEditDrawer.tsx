@@ -18,10 +18,10 @@ import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { isErrorResult } from "~/types/errors";
 
 import EditDrawer, { EditDrawerHeader } from "../../common/EditDrawer";
+import { CoreTaxonomiesEnum } from "../constants";
 import { taxonomyTypeToResourceType } from "../helpers";
 import useTaxonomySlices from "../hooks/useTaxonomySlices";
 import { TaxonomyEntity } from "../types";
-import { CoreTaxonomiesEnum } from "../types/CoreTaxonomiesEnum";
 import TaxonomyCustomFieldsForm from "./TaxonomyCustomFieldsForm";
 import TaxonomyEditForm from "./TaxonomyEditForm";
 
