@@ -1,4 +1,8 @@
-import { AntForm, AntFormInstance, AntInput } from "fidesui";
+import {
+  AntForm as Form,
+  AntFormInstance as FormInstance,
+  AntInput,
+} from "fidesui";
 import { isEmpty, unset } from "lodash";
 
 import { CoreTaxonomiesEnum } from "../constants";
@@ -9,7 +13,7 @@ interface TaxonomyEditFormProps {
   initialValues: TaxonomyEntity;
   onSubmit: (updatedTaxonomy: TaxonomyEntity) => void;
   formId: string;
-  form: AntFormInstance;
+  form: FormInstance;
   taxonomyType: CoreTaxonomiesEnum;
 }
 
@@ -37,25 +41,25 @@ const TaxonomyEditForm = ({
   const isDataSubjectType = taxonomyType === CoreTaxonomiesEnum.DATA_SUBJECTS;
 
   return (
-    <AntForm
+    <Form
       name={formId}
       initialValues={initialValues}
       onFinish={handleFinish}
       layout="vertical"
       form={form}
     >
-      <AntForm.Item<string> label="Name" name="name">
+      <Form.Item<string> label="Name" name="name">
         <AntInput data-testid="edit-taxonomy-form_name" />
-      </AntForm.Item>
-      <AntForm.Item<string> label="Description" name="description">
+      </Form.Item>
+      <Form.Item<string> label="Description" name="description">
         <AntInput.TextArea
           rows={4}
           data-testid="edit-taxonomy-form_description"
         />
-      </AntForm.Item>
+      </Form.Item>
 
       {isDataSubjectType && <DataSubjectSpecialFields />}
-    </AntForm>
+    </Form>
   );
 };
 export default TaxonomyEditForm;
