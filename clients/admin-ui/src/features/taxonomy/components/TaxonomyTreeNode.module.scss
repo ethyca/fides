@@ -5,15 +5,13 @@
 // can't transition changes from different ant buttons,
 // so we'll need to style them here
 .button {
-  --ant-button-text-hover-bg: transparent !important;
-
   transition:
     background-color 300ms ease-in 0s,
     color 300ms ease 0s,
     border-color 300ms ease 0s,
     box-shadow 300ms ease 0s;
 
-  height: 28px !important;
+  height: 28px;
   max-width: 240px;
 
   --ant-color-text-disabled: var(--ant-color-text);
