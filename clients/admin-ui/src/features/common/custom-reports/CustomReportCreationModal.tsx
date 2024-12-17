@@ -13,6 +13,7 @@ import { Form, Formik } from "formik";
 import { useMemo } from "react";
 import * as Yup from "yup";
 
+import { CustomReportColumn } from "~/features/common/custom-reports/CustomReportColumn";
 import { CustomTextInput } from "~/features/common/form/inputs";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { CustomReportResponse, ReportType } from "~/types/api";
@@ -26,7 +27,7 @@ interface CustomReportCreationModalProps {
   isOpen: boolean;
   handleClose: () => void;
   tableStateToSave: CustomReportTableState | undefined;
-  columnMapToSave: Record<string, Record<string, any>> | undefined;
+  columnMapToSave: Record<string, string> | undefined;
   unavailableNames?: string[];
   onCreateCustomReport: (newReport: CustomReportResponse) => void;
 }
@@ -63,7 +64,7 @@ export const CustomReportCreationModal = ({
   );
 
   const handleCreateReport = async (reportName: string) => {
-    const newColumnMap: Record<string, any> = {};
+    const newColumnMap: Record<string, CustomReportColumn> = {};
     Object.entries(columnMapToSave).forEach(([key, value]) => {
       newColumnMap[key] = {
         label: value,

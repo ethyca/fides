@@ -195,9 +195,7 @@ export const DatamapReportTable = () => {
 
   // Column renaming
   const [isRenamingColumns, setIsRenamingColumns] = useState(false);
-  const handleColumnRenaming = (
-    values: Record<string, Record<string, any>>,
-  ) => {
+  const handleColumnRenaming = (values: Record<string, string>) => {
     setSavedCustomReportId("");
     setColumnNameMapOverrides(values);
     setIsRenamingColumns(false);
@@ -376,7 +374,7 @@ export const DatamapReportTable = () => {
         }
       }
       if (savedReport.config?.column_map) {
-        const columnNameMap: Record<string, Record<string, any>> = {};
+        const columnNameMap: Record<string, string> = {};
         Object.entries(savedReport.config.column_map ?? {}).forEach(
           ([key, value]) => {
             if (value.label) {

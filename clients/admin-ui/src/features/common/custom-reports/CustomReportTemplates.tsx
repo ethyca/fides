@@ -54,7 +54,7 @@ interface CustomReportTemplatesProps {
   reportType: ReportType;
   savedReportId: string; // from local storage
   tableStateToSave: CustomReportTableState | undefined;
-  currentColumnMap?: Record<string, Record<string, any>> | undefined;
+  currentColumnMap?: Record<string, string>;
   onCustomReportSaved: (customReport: CustomReportResponse | null) => void;
   onSavedReportDeleted: () => void;
 }
