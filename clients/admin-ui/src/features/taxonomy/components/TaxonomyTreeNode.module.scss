@@ -19,6 +19,8 @@
   --ant-color-text-disabled: var(--ant-color-text);
 
   &--hover {
+    // important used here because ant default :hover state
+    // would otherwise override this
     color: var(--ant-button-primary-color) !important;
     background-color: var(--fidesui-minos) !important;
 
@@ -28,15 +30,15 @@
   }
 
   &--parent-hover {
-    background-color: var(--fidesui-neutral-50) !important;
-    border-color: var(--ant-button-default-border-color) !important;
+    background-color: var(--fidesui-neutral-50);
+    border-color: var(--ant-button-default-border-color);
     box-shadow:
       0px 1px 2px 0px rgba(0, 0, 0, 0.06),
       0px 1px 3px 0px rgba(0, 0, 0, 0.1);
   }
 
   &--inactive {
-    color: var(--fidesui-neutral-400) !important;
+    color: var(--fidesui-neutral-400);
   }
 }
 
@@ -54,9 +56,8 @@
 }
 
 .add-button {
-  height: 28px !important;
-  width: 28px !important;
-  --ant-button-default-border-color: transparent !important;
+  --ant-control-height: 28px;
+  border-color: transparent;
 
   box-shadow:
     0px 1px 2px 0px rgba(0, 0, 0, 0.06),
