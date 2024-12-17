@@ -2,6 +2,7 @@ import {
   AntButton as Button,
   AntForm as Form,
   AntTooltip as Tooltip,
+  AntTypography as Typography,
   ConfirmationModal,
   DrawerFooter,
   EyeIcon,
@@ -139,7 +140,7 @@ const TaxonomyEditDrawer = ({
         }
       >
         <div className="mb-4">
-          <h3 className="mb-3 font-semibold text-gray-700">Details</h3>
+          <Typography.Title level={5}>Details</Typography.Title>
           <div className="flex">
             <span className="w-1/3 shrink-0 text-sm text-gray-500">
               Fides key:

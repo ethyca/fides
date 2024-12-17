@@ -3,6 +3,7 @@ import {
   AntFormInstance as FormInstance,
   AntInput as Input,
   AntSelect as Select,
+  AntTypography as Typography,
 } from "fidesui";
 import { isEmpty } from "lodash";
 
@@ -41,7 +42,8 @@ const TaxonomyCustomFieldsForm = ({
       layout="vertical"
       data-testid="custom-fields-form"
     >
-      <h3 className="mb-3 font-semibold text-gray-700">Custom fields</h3>
+      <Typography.Title level={5}>Custom fields</Typography.Title>
+
       {isLoading ? (
         <FidesSpinner />
       ) : (
