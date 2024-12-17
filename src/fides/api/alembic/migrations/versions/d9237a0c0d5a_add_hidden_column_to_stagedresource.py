@@ -1,4 +1,4 @@
-"""add `hidden` and `data_use` columns to stagedresource
+"""add `data_uses` columns to stagedresource
 
 Revision ID: d9237a0c0d5a
 Revises: c90d46f6d3f2

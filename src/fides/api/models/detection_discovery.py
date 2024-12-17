@@ -287,9 +287,6 @@ class StagedResource(Base):
         default=dict,
     )
 
-    # hidden flag, used by some parts of the dataset lifecycle experience
-    hidden = Column(Boolean, default=False, nullable=False)
-
     @classmethod
     def get_urn(cls, db: Session, urn: str) -> Optional[StagedResource]:
         """Utility to retrieve the staged resource with the given URN"""
@@ -357,7 +354,7 @@ def fetch_staged_resources_by_type_query(
     show_hidden: bool = False,
 ) -> Query[StagedResource]:
     """
-    Fetches staged resources by type and monitor config ID. Optionally filters out hidden resources.
+    Fetches staged resources by type and monitor config ID. Optionally filters out muted staged resources ("hidden").
     """
     logger.info(
         f"Fetching staged resources of type {resource_type}, show_hidden={show_hidden}, monitor_config_ids={monitor_config_ids}"
@@ -367,8 +364,6 @@ def fetch_staged_resources_by_type_query(
     if monitor_config_ids:
         query = query.filter(StagedResource.monitor_config_id.in_(monitor_config_ids))
     if not show_hidden:
-        query = query.where(
-            StagedResource.muted == False  # pylint: disable=singleton-comparison
-        )
+        query = query.where(StagedResource.diff_status != "muted")
 
     return query
