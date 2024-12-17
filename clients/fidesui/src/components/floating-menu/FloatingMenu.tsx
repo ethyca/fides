@@ -1,12 +1,12 @@
-import { AntMenu } from "fidesui";
+import { Menu } from "antd/lib";
 import { ComponentProps } from "react";
 
 import styles from "./FloatingMenu.module.scss";
 
-type AntMenuProps = ComponentProps<typeof AntMenu>;
+type MenuProps = ComponentProps<typeof Menu>;
 
-export const FloatingMenu = ({ className, ...props }: AntMenuProps) => (
-  <AntMenu
+export const FloatingMenu = ({ className, ...props }: MenuProps) => (
+  <Menu
     {...props}
     className={`${styles.menu} ${className}`}
     style={{ width: 220 }}
