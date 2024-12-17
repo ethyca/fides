@@ -1,4 +1,9 @@
-import { AntForm, AntFormInstance, AntInput, AntSelect } from "fidesui";
+import {
+  AntForm as Form,
+  AntFormInstance as FormInstance,
+  AntInput as Input,
+  AntSelect as Select,
+} from "fidesui";
 import { isEmpty } from "lodash";
 
 import { useCustomFields } from "~/features/common/custom-fields";
@@ -8,7 +13,7 @@ import { AllowedTypes } from "~/types/api";
 interface TaxonomyCustomFieldsFormProps {
   customFields: ReturnType<typeof useCustomFields>;
   formId: string;
-  form: AntFormInstance;
+  form: FormInstance;
 }
 
 const TaxonomyCustomFieldsForm = ({
@@ -29,7 +34,7 @@ const TaxonomyCustomFieldsForm = ({
   }
 
   return (
-    <AntForm
+    <Form
       form={form}
       name={formId}
       initialValues={customFields.customFieldValues}
@@ -61,14 +66,14 @@ const TaxonomyCustomFieldsForm = ({
 
                 if (!allowListId && fieldType === AllowedTypes.STRING) {
                   return (
-                    <AntForm.Item
+                    <Form.Item
                       key={definitionId}
                       name={id}
                       label={name}
                       tooltip={description}
                     >
-                      <AntInput />
-                    </AntForm.Item>
+                      <Input />
+                    </Form.Item>
                   );
                 }
 
@@ -83,25 +88,25 @@ const TaxonomyCustomFieldsForm = ({
 
                 const { options } = allowList;
                 return (
-                  <AntForm.Item
+                  <Form.Item
                     key={definitionId}
                     name={id}
                     label={name}
                     tooltip={description}
                   >
-                    <AntSelect
+                    <Select
                       mode={fieldType !== "string" ? "multiple" : undefined}
                       allowClear
                       options={options}
                     />
-                  </AntForm.Item>
+                  </Form.Item>
                 );
               })}
             </div>
           )}
         </div>
       )}
-    </AntForm>
+    </Form>
   );
 };
 export default TaxonomyCustomFieldsForm;

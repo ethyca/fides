@@ -1,7 +1,7 @@
 import {
   AntButton as Button,
-  AntForm,
-  AntTooltip,
+  AntForm as Form,
+  AntTooltip as Tooltip,
   ConfirmationModal,
   DrawerFooter,
   EyeIcon,
@@ -40,10 +40,10 @@ const TaxonomyEditDrawer = ({
   // because custom fields are not part of the taxonomy and
   // uses dedicated endpoints
   const TAXONOMY_FORM_ID = "edit-taxonomy-form";
-  const [taxonomyForm] = AntForm.useForm();
+  const [taxonomyForm] = Form.useForm();
 
   const CUSTOM_FIELDS_FORM_ID = "custom-fields-form";
-  const [customFieldsForm] = AntForm.useForm();
+  const [customFieldsForm] = Form.useForm();
 
   const toast = useToast();
 
@@ -115,14 +115,14 @@ const TaxonomyEditDrawer = ({
                 data-testid="delete-btn"
               />
             ) : (
-              <AntTooltip title="Enable label">
+              <Tooltip title="Enable label">
                 <Button
                   aria-label="enable"
                   onClick={handleEnable}
                   data-testid="enable-btn"
                   icon={<EyeIcon fontSize="small" />}
                 />
-              </AntTooltip>
+              </Tooltip>
             )}
 
             <div className="flex gap-2">
@@ -144,21 +144,17 @@ const TaxonomyEditDrawer = ({
             <span className="w-1/3 shrink-0 text-sm text-gray-500">
               Fides key:
             </span>
-            <AntTooltip title={taxonomyItem?.fides_key} trigger="click">
+            <Tooltip title={taxonomyItem?.fides_key} trigger="click">
               <span
                 className="flex-1 truncate"
                 data-testid="edit-drawer-fides-key"
               >
                 {taxonomyItem?.fides_key}
               </span>
-            </AntTooltip>
+            </Tooltip>
           </div>
-          {/* <div className="flex">
-            <span className=" w-1/3 text-sm text-gray-500">Qualifiers:</span>
-            <span />
-          </div> */}
         </div>
-        {taxonomyItem && (
+        {!!taxonomyItem && (
           <TaxonomyEditForm
             initialValues={taxonomyItem}
             onSubmit={handleEdit}
