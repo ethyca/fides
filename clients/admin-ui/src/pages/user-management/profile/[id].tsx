@@ -1,17 +1,21 @@
 import { Spinner } from "fidesui";
 import { useRouter } from "next/router";
-import React, { useEffect } from "react";
+import React, { ReactNode, useEffect } from "react";
 import EditUserForm from "user-management/EditUserForm";
 import {
   setActiveUserId,
   useGetUserByIdQuery,
 } from "user-management/user-management.slice";
-import UserManagementLayout from "user-management/UserManagementLayout";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { selectUser } from "~/features/auth";
+import Layout from "~/features/common/Layout";
 import { useHasPermission } from "~/features/common/Restrict";
 import { ScopeRegistryEnum } from "~/types/api";
+
+const UserManagementLayout = ({ children }: { children: ReactNode }) => (
+  <Layout title="Users">{children}</Layout>
+);
 
 const Profile = () => {
   const router = useRouter();

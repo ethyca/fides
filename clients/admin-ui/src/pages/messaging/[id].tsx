@@ -14,6 +14,7 @@ import Layout from "~/features/common/Layout";
 import { MESSAGING_ROUTE } from "~/features/common/nav/v2/routes";
 import PageHeader from "~/features/common/PageHeader";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
+import CustomizableMessagingTemplatesLabelEnum from "~/features/messaging-templates/CustomizableMessagingTemplatesLabelEnum";
 import {
   MessagingTemplateCreateOrUpdate,
   useDeleteMessagingTemplateByIdMutation,
@@ -95,7 +96,13 @@ const EditPropertyPage: NextPage = () => {
         heading="Messaging"
         breadcrumbItems={[
           { title: "Messaging", href: MESSAGING_ROUTE },
-          { title: "Configure message" },
+          {
+            title: `${
+              CustomizableMessagingTemplatesLabelEnum[
+                messagingTemplate.type as keyof typeof CustomizableMessagingTemplatesLabelEnum
+              ]
+            }`,
+          },
         ]}
       >
         <Box data-testid="add-messaging-template">

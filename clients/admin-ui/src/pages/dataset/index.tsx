@@ -37,7 +37,6 @@ import {
   TableSkeletonLoader,
   useServerSidePagination,
 } from "~/features/common/table/v2";
-import { DATA_BREADCRUMB_ICONS } from "~/features/data-discovery-and-detection/DiscoveryMonitorBreadcrumbs";
 import {
   setActiveDatasetFidesKey,
   useGetDatasetsQuery,
@@ -206,7 +205,6 @@ const DataSets: NextPage = () => {
           breadcrumbItems={[
             {
               title: "All datasets",
-              icon: DATA_BREADCRUMB_ICONS[0],
             },
           ]}
           rightContent={

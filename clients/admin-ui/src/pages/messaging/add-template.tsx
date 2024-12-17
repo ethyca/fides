@@ -7,6 +7,7 @@ import { useRouter } from "next/router";
 import Layout from "~/features/common/Layout";
 import PageHeader from "~/features/common/PageHeader";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
+import CustomizableMessagingTemplatesLabelEnum from "~/features/messaging-templates/CustomizableMessagingTemplatesLabelEnum";
 import {
   MessagingTemplateCreateOrUpdate,
   useGetMessagingTemplateDefaultQuery,
@@ -65,7 +66,13 @@ const AddMessagingTemplatePage: NextPage = () => {
         heading="Messaging"
         breadcrumbItems={[
           { title: "Messaging", href: MESSAGING_ROUTE },
-          { title: "Configure message" },
+          {
+            title: `${
+              CustomizableMessagingTemplatesLabelEnum[
+                messagingTemplate.type as keyof typeof CustomizableMessagingTemplatesLabelEnum
+              ]
+            }`,
+          },
         ]}
       >
         <Box maxWidth="720px">

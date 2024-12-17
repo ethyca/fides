@@ -274,7 +274,6 @@ const FieldsDetailPage: NextPage = () => {
     const baseBreadcrumbs: NextBreadcrumbProps["items"] = [
       {
         title: "All datasets",
-        icon: DATA_BREADCRUMB_ICONS[0],
         href: DATASET_ROUTE,
       },
       {
