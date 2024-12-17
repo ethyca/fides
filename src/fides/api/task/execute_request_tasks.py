@@ -193,7 +193,6 @@ def queue_downstream_tasks_with_retries(
     privacy_request_proceed: bool,
 ) -> None:
     with database_task.get_new_session() as session:
-        logger.info(f"Session ID - queue_downstream_tasks_with_retries: {id(session)}")
         privacy_request, request_task = get_privacy_request_and_task(
             session, privacy_request_id, privacy_request_task_id
         )
@@ -262,7 +261,6 @@ def run_access_node(
     """Run an individual task in the access graph for DSR 3.0 and queue downstream nodes
     upon completion if applicable"""
     with self.get_new_session() as session:
-        logger.info(f"Session ID - Start of run_access_node: {id(session)}")
         privacy_request, request_task, upstream_results = run_prerequisite_task_checks(
             session, privacy_request_id, privacy_request_task_id
         )
