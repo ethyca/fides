@@ -11,8 +11,6 @@ interface TaxonomyCustomFieldsFormProps {
   form: AntFormInstance;
 }
 
-export const customFieldsFormBaseName = "customFieldValues";
-
 const TaxonomyCustomFieldsForm = ({
   customFields,
   formId,
