@@ -35,40 +35,38 @@ export const MonitorResult = ({
   const {
     name,
     hostname,
-    total_assets: totalAssets,
-    asset_counts: assetCounts,
+    total_updates: totalUpdates,
+    updates,
     last_monitored: lastMonitored,
     warning,
-    monitor_config_id: monitorConfigId,
+    key,
   } = monitorSummary;
 
-  const assetCountString = assetCounts
-    .map(({ type, count }) => {
-      return `${count} ${type}`;
+  const assetCountString = Object.entries(updates)
+    .map((update) => {
+      return `${update[1]} ${update[0]}s`;
     })
     .join(", ");
 
-  const lastMonitoredDistance = formatDistance(
-    new Date(lastMonitored),
-    new Date(),
-    {
-      addSuffix: true,
-    },
-  );
+  const lastMonitoredDistance = lastMonitored
+    ? formatDistance(new Date(lastMonitored), new Date(), {
+        addSuffix: true,
+      })
+    : undefined;
 
-  const iconUrl = getWebsiteIconUrl(hostname);
+  const iconUrl = hostname ? getWebsiteIconUrl(hostname) : undefined;
 
   return (
     <List.Item {...props}>
       <Skeleton avatar title={false} loading={showSkeleton} active>
         <List.Item.Meta
-          avatar={<Avatar src={iconUrl} size="small" />}
+          avatar={!!iconUrl && <Avatar src={iconUrl} size="small" />}
           title={
             <NextLink
-              href={`${ACTION_CENTER_ROUTE}/${monitorConfigId}`}
+              href={`${ACTION_CENTER_ROUTE}/${key}`}
               className="whitespace-nowrap"
             >
-              {`${totalAssets} assets detected on ${hostname}`}
+              {`${totalUpdates} assets detected on ${hostname || "this monitor"}`}
               {!!warning && (
                 <Tooltip
                   title={typeof warning === "string" ? warning : undefined}
@@ -87,9 +85,11 @@ export const MonitorResult = ({
           <Text style={{ maxWidth: 300 }} ellipsis={{ tooltip: name }}>
             {name}
           </Text>
-          <Tooltip title={formatDate(lastMonitored)}>
-            <Text>{lastMonitoredDistance}</Text>
-          </Tooltip>
+          {!!lastMonitoredDistance && (
+            <Tooltip title={formatDate(lastMonitored)}>
+              <Text>{lastMonitoredDistance}</Text>
+            </Tooltip>
+          )}
         </Flex>
       </Skeleton>
     </List.Item>

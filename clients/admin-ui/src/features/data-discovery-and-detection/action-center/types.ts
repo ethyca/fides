@@ -1,13 +1,10 @@
 export interface MonitorSummary {
-  asset_counts: {
-    type: string;
-    count: number;
-  }[];
-  hostname: string;
+  updates: Record<string, number>;
+  hostname?: string;
   last_monitored: string | number;
-  monitor_config_id: string;
+  key: string;
   name: string;
-  total_assets: number;
+  total_updates: number;
   warning?: boolean | string;
 }
 

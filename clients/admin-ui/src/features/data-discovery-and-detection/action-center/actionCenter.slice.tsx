@@ -13,7 +13,7 @@ const actionCenterApi = baseApi.injectEndpoints({
       }
     >({
       query: ({ pageIndex = 1, pageSize = 20, search }) => ({
-        url: `/plus/discovery-monitor/results`,
+        url: `/plus/discovery-monitor/aggregate-results`,
         params: { page: pageIndex, size: pageSize, search },
       }),
       providesTags: ["Monitor Summary"],
