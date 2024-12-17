@@ -52,19 +52,23 @@ const PageHeader = ({
         <Heading
           className={!!breadcrumbItems || !!children ? "pb-4" : undefined}
           fontSize="2xl"
+          data-testid="page-heading"
         >
           {heading}
         </Heading>
       ) : (
         heading
       )}
-      {rightContent && <div>{rightContent}</div>}
+      {rightContent && (
+        <div data-testid="page-header-right-content">{rightContent}</div>
+      )}
     </Flex>
 
     {!!breadcrumbItems && (
       <NextBreadcrumb
         className={children ? "pb-4" : undefined}
         items={breadcrumbItems}
+        data-testid="page-breadcrumb"
       />
     )}
 
