@@ -15,6 +15,7 @@ from sqlalchemy.orm.query import Query
 
 from fides.api.db.base_class import Base, FidesBase
 from fides.api.models.connectionconfig import ConnectionConfig
+from fides.api.models.sql_models import System
 
 # class MonitorExecution(BaseModel):
 #     id: str
@@ -236,11 +237,29 @@ class StagedResource(Base):
     urn = Column(String, index=True, unique=True, nullable=False)
     resource_type = Column(String, index=True, nullable=True)
     description = Column(String, nullable=True)
-    monitor_config_id = Column(String, nullable=True)  # just a "soft" pointer, for now
+    monitor_config_id = Column(
+        String,
+        index=True,  # indexed because we frequently need to slice by monitor config ID
+        nullable=True,
+    )  # just a "soft" pointer, for now TODO: make this a FK
+
+    system_id = Column(
+        String,
+        ForeignKey(System.id_field_path),
+        nullable=True,
+        index=True,
+    )
+    system = relationship(System)
+    vendor_id = Column(
+        String,
+        nullable=True,
+        index=True,  # indexed because we frequently need to slice by vendor ID
+    )  # the Compass vendor ID associated with the StagedResource
+
     source_modified = Column(
         DateTime(timezone=True),
         nullable=True,
-    )  # when the table was modified in the datasource
+    )  # when the resource was modified in the datasource
     classifications = Column(
         ARRAY(JSONB),
         nullable=False,
