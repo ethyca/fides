@@ -5,6 +5,7 @@ Revises: 10c6b7709be3
 Create Date: 2024-12-18 12:27:47.239489
 
 """
+
 import sqlalchemy as sa
 from alembic import op
 
@@ -13,8 +14,8 @@ from sqlalchemy.engine import Connection
 
 
 # revision identifiers, used by Alembic.
-revision = 'ae65da77c468'
-down_revision = '10c6b7709be3'
+revision = "ae65da77c468"
+down_revision = "10c6b7709be3"
 branch_labels = None
 depends_on = None
 
@@ -67,7 +68,6 @@ def upgrade() -> None:
         )
     )
 
-
     # Update ctl_data_uses
     bind.execute(
         text(
@@ -102,7 +102,6 @@ def upgrade() -> None:
             """
         )
     )
-
 
 
 def downgrade() -> None:

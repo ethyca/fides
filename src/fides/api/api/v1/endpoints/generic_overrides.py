@@ -34,7 +34,9 @@ from fides.common.api.scope_registry import (
     DATA_CATEGORY_CREATE,
     DATA_SUBJECT_CREATE,
     DATA_USE_CREATE,
-    DATASET_READ, DATA_USE_UPDATE, DATA_CATEGORY_UPDATE,
+    DATASET_READ,
+    DATA_USE_UPDATE,
+    DATA_CATEGORY_UPDATE,
 )
 from fides.common.api.v1.urn_registry import V1_URL_PREFIX
 
@@ -42,7 +44,8 @@ from fides.api.models.sql_models import (  # type: ignore[attr-defined] # isort:
     Dataset as CtlDataset,
     DataCategory as DataCategoryDbModel,
     DataSubject as DataSubjectDbModel,
-    DataUse as DataUseDbModel, ModelWithDefaultField,
+    DataUse as DataUseDbModel,
+    ModelWithDefaultField,
 )
 
 # We create routers to override specific methods in those defined in generic.py
@@ -126,7 +129,6 @@ def activate_taxonomy_parents(
         activate_taxonomy_parents(parent, db)
 
 
-
 def deactivate_taxonomy_node_and_descendants(
     resource: Union[DataCategoryDbModel, DataUseDbModel, DataSubjectDbModel],
     db: Session,
@@ -153,7 +155,9 @@ def validate_and_create_taxonomy(
         Type[DataCategoryDbModel], Type[DataUseDbModel], Type[DataSubjectDbModel]
     ],
     validation_schema: type,
-    data: Union[DataCategoryCreateOrUpdate, DataUseCreateOrUpdate, DataSubjectCreateOrUpdate],
+    data: Union[
+        DataCategoryCreateOrUpdate, DataUseCreateOrUpdate, DataSubjectCreateOrUpdate
+    ],
 ) -> Dict:
     """
     Validate and create a taxonomy element.
@@ -170,7 +174,9 @@ def validate_and_update_taxonomy(
     db: Session,
     resource: Union[DataCategoryDbModel, DataUseDbModel, DataSubjectDbModel],
     validation_schema: type,
-    data: Union[DataCategoryCreateOrUpdate, DataUseCreateOrUpdate, DataSubjectCreateOrUpdate],
+    data: Union[
+        DataCategoryCreateOrUpdate, DataUseCreateOrUpdate, DataSubjectCreateOrUpdate
+    ],
 ) -> Dict:
     """
     Validate and update a taxonomy element.
@@ -193,7 +199,9 @@ def validate_and_update_taxonomy(
 
 def create_or_update_taxonomy(
     db: Session,
-    data: Union[DataCategoryCreateOrUpdate, DataUseCreateOrUpdate, DataSubjectCreateOrUpdate],
+    data: Union[
+        DataCategoryCreateOrUpdate, DataUseCreateOrUpdate, DataSubjectCreateOrUpdate
+    ],
     model: Union[
         Type[DataCategoryDbModel], Type[DataUseDbModel], Type[DataSubjectDbModel]
     ],
@@ -303,7 +311,6 @@ async def create_data_subject(
     Create a data subject
     """
 
-
     try:
         return create_or_update_taxonomy(
             db, data_subject, DataSubjectDbModel, DataSubject
@@ -328,8 +335,8 @@ async def create_data_subject(
     name="Update",
 )
 async def update_data_use(
-        data_use: DataUseCreateOrUpdate,
-        db: Session = Depends(get_db),
+    data_use: DataUseCreateOrUpdate,
+    db: Session = Depends(get_db),
 ) -> Dict:
     """
     Update a data use. Ensures updates to "active" are appropriately cascaded.
@@ -338,12 +345,11 @@ async def update_data_use(
     resource = DataUseDbModel.get_by(db, field="fides_key", value=data_use.fides_key)
     if not resource:
         raise HTTPException(
-            status_code=HTTP_404_NOT_FOUND, detail=f"Data use not found with key: {data_use.fides_key}"
+            status_code=HTTP_404_NOT_FOUND,
+            detail=f"Data use not found with key: {data_use.fides_key}",
         )
     try:
-        return validate_and_update_taxonomy(
-            db, resource, DataUse, data_use
-        )
+        return validate_and_update_taxonomy(db, resource, DataUse, data_use)
     except Exception as e:
         raise HTTPException(
             status_code=HTTP_422_UNPROCESSABLE_ENTITY,
@@ -359,22 +365,23 @@ async def update_data_use(
     name="Update",
 )
 async def update_data_category(
-        data_category: DataCategoryCreateOrUpdate,
-        db: Session = Depends(get_db),
+    data_category: DataCategoryCreateOrUpdate,
+    db: Session = Depends(get_db),
 ) -> Dict:
     """
     Update a data category. Ensures updates to "active" are appropriately cascaded.
     """
 
-    resource = DataCategoryDbModel.get_by(db, field="fides_key", value=data_category.fides_key)
+    resource = DataCategoryDbModel.get_by(
+        db, field="fides_key", value=data_category.fides_key
+    )
     if not resource:
         raise HTTPException(
-            status_code=HTTP_404_NOT_FOUND, detail=f"Data category not found with key: {data_category.fides_key}"
+            status_code=HTTP_404_NOT_FOUND,
+            detail=f"Data category not found with key: {data_category.fides_key}",
         )
     try:
-        return validate_and_update_taxonomy(
-            db, resource, DataCategory, data_category
-        )
+        return validate_and_update_taxonomy(db, resource, DataCategory, data_category)
     except Exception as e:
         raise HTTPException(
             status_code=HTTP_422_UNPROCESSABLE_ENTITY,

@@ -6,7 +6,12 @@ from starlette.testclient import TestClient
 
 from fides.api.models.client import ClientDetail
 from fides.api.models.sql_models import DataUse
-from fides.common.api.scope_registry import DATA_USE, DATA_USE_CREATE, STORAGE_READ, DATA_USE_UPDATE
+from fides.common.api.scope_registry import (
+    DATA_USE,
+    DATA_USE_CREATE,
+    STORAGE_READ,
+    DATA_USE_UPDATE,
+)
 from fides.common.api.v1.urn_registry import V1_URL_PREFIX
 
 
@@ -204,35 +209,35 @@ class TestUpdateDataUse:
         dataUse.delete(db)
 
     def test_update_data_use_not_authenticated(
-            self,
-            api_client: TestClient,
-            data_use,
-            payload,
-            url,
+        self,
+        api_client: TestClient,
+        data_use,
+        payload,
+        url,
     ):
         response = api_client.put(url, headers={}, json=payload)
         assert 401 == response.status_code
 
     def test_update_data_use_incorrect_scope(
-            self,
-            api_client: TestClient,
-            payload,
-            data_use,
-            url,
-            generate_auth_header,
+        self,
+        api_client: TestClient,
+        payload,
+        data_use,
+        url,
+        generate_auth_header,
     ):
         auth_header = generate_auth_header([STORAGE_READ])
         response = api_client.put(url, headers=auth_header, json=payload)
         assert 403 == response.status_code
 
     def test_update_data_use_not_found(
-            self,
-            db: Session,
-            api_client: TestClient,
-            payload,
-            data_use,
-            url,
-            generate_auth_header,
+        self,
+        db: Session,
+        api_client: TestClient,
+        payload,
+        data_use,
+        url,
+        generate_auth_header,
     ):
         auth_header = generate_auth_header([DATA_USE_UPDATE])
         payload["fides_key"] = "does_not_exist"
@@ -241,12 +246,12 @@ class TestUpdateDataUse:
         assert 404 == response.status_code
 
     def test_update_data_use_name_and_description(
-            self,
-            api_client: TestClient,
-            payload,
-            data_use,
-            url,
-            generate_auth_header,
+        self,
+        api_client: TestClient,
+        payload,
+        data_use,
+        url,
+        generate_auth_header,
     ):
         auth_header = generate_auth_header([DATA_USE_UPDATE])
         payload["name"] = "New name"
@@ -260,11 +265,11 @@ class TestUpdateDataUse:
         assert response_body["description"] == "New description"
 
     def test_update_data_use_activate_propagates_up(
-            self,
-            db: Session,
-            api_client: TestClient,
-            url,
-            generate_auth_header,
+        self,
+        db: Session,
+        api_client: TestClient,
+        url,
+        generate_auth_header,
     ):
         """
         Tree: A----B----C
@@ -340,11 +345,11 @@ class TestUpdateDataUse:
         d_result.delete(db)
 
     def test_update_data_use_deactivate_propagates_down(
-            self,
-            db: Session,
-            api_client: TestClient,
-            url,
-            generate_auth_header,
+        self,
+        db: Session,
+        api_client: TestClient,
+        url,
+        generate_auth_header,
     ):
         """
         Tree: A----B----C

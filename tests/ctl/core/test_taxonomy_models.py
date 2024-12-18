@@ -41,9 +41,7 @@ class TestHierarchicalTaxonomy:
         data_use_c.delete(db)
 
     @pytest.fixture(scope="function")
-    def parent_data_use_a(
-            self, db
-    ) -> Generator:
+    def parent_data_use_a(self, db) -> Generator:
 
         payload_a = {
             "name": "Data Use A",
@@ -73,7 +71,9 @@ class TestHierarchicalTaxonomy:
             DataUse.create(db=db, data=payload)
         assert "violates foreign key" in str(exc)
 
-    def test_update_with_invalid_parent_key(self, db, parent_data_use_a, child_data_use_b, child_data_use_c):
+    def test_update_with_invalid_parent_key(
+        self, db, parent_data_use_a, child_data_use_b, child_data_use_c
+    ):
         with pytest.raises(IntegrityError) as exc:
             payload = {
                 "name": "Data Use update",
@@ -86,7 +86,7 @@ class TestHierarchicalTaxonomy:
         assert "violates foreign key" in str(exc)
 
     def test_create_with_parent_key(
-            self, db, parent_data_use_a, child_data_use_b, child_data_use_c
+        self, db, parent_data_use_a, child_data_use_b, child_data_use_c
     ):
         new_key = "new_data_use_with_b_parent"
         payload = {
@@ -106,7 +106,7 @@ class TestHierarchicalTaxonomy:
         db.commit()
 
     def test_update_with_parent_key(
-            self, db, parent_data_use_a, child_data_use_b, child_data_use_c
+        self, db, parent_data_use_a, child_data_use_b, child_data_use_c
     ):
         """
         Tree: A----B
@@ -127,7 +127,7 @@ class TestHierarchicalTaxonomy:
         assert child_data_use_b.description == "updating this"
 
     def test_update_no_parent_key(
-            self, db, parent_data_use_a, child_data_use_b, child_data_use_c
+        self, db, parent_data_use_a, child_data_use_b, child_data_use_c
     ):
         """
         Tree: A----B
@@ -146,18 +146,15 @@ class TestHierarchicalTaxonomy:
         db.commit()
         assert child_data_use_b.description == "updating this"
 
-    @pytest.mark.skip(reason="We never update the parent key from the FE, but we should evaluate what we want to do here")
+    @pytest.mark.skip(
+        reason="We never update the parent key from the FE, but we should evaluate what we want to do here"
+    )
     def test_update_new_parent_key(
-            self, db, parent_data_use_a, child_data_use_b, child_data_use_c
+        self, db, parent_data_use_a, child_data_use_b, child_data_use_c
     ):
         pass
 
-
-    def test_delete_child_data_use(
-            self,
-            db,
-            parent_data_use_a, child_data_use_b
-    ):
+    def test_delete_child_data_use(self, db, parent_data_use_a, child_data_use_b):
         """
         Tree: A----B
                \
@@ -185,8 +182,8 @@ class TestHierarchicalTaxonomy:
         assert parent_data_use_a.children[0].fides_key == child_data_use_b.fides_key
 
     def test_delete_parent_notice(
-            self,
-            db,
+        self,
+        db,
     ):
         """
         Tree: A----B
@@ -216,6 +213,11 @@ class TestHierarchicalTaxonomy:
 
         parent_data_use.delete(db)
 
-        assert DataUse.get_by(db, field="fides_key", value=parent_data_use.fides_key) is None
-        assert DataUse.get_by(db, field="fides_key", value=child_data_use.fides_key) is None
-
+        assert (
+            DataUse.get_by(db, field="fides_key", value=parent_data_use.fides_key)
+            is None
+        )
+        assert (
+            DataUse.get_by(db, field="fides_key", value=child_data_use.fides_key)
+            is None
+        )
