@@ -204,9 +204,9 @@ def bigquery_enterprise_test_dataset_config(
 
 @pytest.fixture
 def bigquery_enterprise_test_dataset_config_with_partitioning_meta(
-        bigquery_enterprise_connection_config: ConnectionConfig,
-        db: Session,
-        example_datasets: List[Dict],
+    bigquery_enterprise_connection_config: ConnectionConfig,
+    db: Session,
+    example_datasets: List[Dict],
 ) -> Generator:
     bigquery_enterprise_dataset = example_datasets[16]
     fides_key = bigquery_enterprise_dataset["fides_key"]
@@ -220,7 +220,9 @@ def bigquery_enterprise_test_dataset_config_with_partitioning_meta(
         for collection in bigquery_enterprise_dataset["collections"]
         if collection["name"] == "stackoverflow_posts_partitioned"
     )
-    bigquery_enterprise_dataset["collections"].remove(stackoverflow_posts_partitioned_collection)
+    bigquery_enterprise_dataset["collections"].remove(
+        stackoverflow_posts_partitioned_collection
+    )
     stackoverflow_posts_partitioned_collection["fides_meta"] = {
         "partitioning": {
             "where_clauses": [
@@ -229,7 +231,9 @@ def bigquery_enterprise_test_dataset_config_with_partitioning_meta(
             ]
         }
     }
-    bigquery_enterprise_dataset["collections"].append(stackoverflow_posts_partitioned_collection)
+    bigquery_enterprise_dataset["collections"].append(
+        stackoverflow_posts_partitioned_collection
+    )
 
     bigquery_enterprise_connection_config.save(db=db)
 
@@ -594,7 +598,7 @@ def bigquery_enterprise_resources(
 
 @pytest.fixture(scope="function")
 def bigquery_enterprise_resources_with_partitioning(
-        bigquery_enterprise_test_dataset_config_with_partitioning_meta,
+    bigquery_enterprise_test_dataset_config_with_partitioning_meta,
 ):
     bigquery_connection_config = (
         bigquery_enterprise_test_dataset_config_with_partitioning_meta.connection_config
@@ -712,7 +716,9 @@ def bigquery_test_engine(bigquery_keyfile_creds) -> Generator:
     engine.dispose()
 
 
-def seed_bigquery_enterprise_integration_db(bigquery_enterprise_test_dataset_config) -> None:
+def seed_bigquery_enterprise_integration_db(
+    bigquery_enterprise_test_dataset_config,
+) -> None:
     """
     Currently unused.
     This helper function has already been run once, and data has been populated in the test BigQuery enterprise dataset.

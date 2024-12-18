@@ -57,7 +57,9 @@ def test_access_request(
     run_privacy_request_task,
 ):
     request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-    request.getfixturevalue(bigquery_fixtures)  # required to test partitioning and non-partitioned tables
+    request.getfixturevalue(
+        bigquery_fixtures
+    )  # required to test partitioning and non-partitioned tables
 
     customer_email = "customer-1@example.com"
     user_id = (
@@ -114,7 +116,9 @@ def test_access_request(
         len(
             [
                 post["title"]
-                for post in results["enterprise_dsr_testing:stackoverflow_posts_partitioned"]
+                for post in results[
+                    "enterprise_dsr_testing:stackoverflow_posts_partitioned"
+                ]
             ]
         )
         == 30
@@ -158,7 +162,7 @@ def test_access_request(
     "bigquery_fixtures",
     [
         "bigquery_enterprise_resources",
-        "bigquery_enterprise_resources_with_partitioning"
+        "bigquery_enterprise_resources_with_partitioning",
     ],
 )
 def test_erasure_request(
@@ -229,7 +233,9 @@ def test_erasure_request(
         len(
             [
                 post["title"]
-                for post in results["enterprise_dsr_testing:stackoverflow_posts_partitioned"]
+                for post in results[
+                    "enterprise_dsr_testing:stackoverflow_posts_partitioned"
+                ]
             ]
         )
         == 1
@@ -297,16 +303,16 @@ def test_erasure_request(
 )
 @mock.patch("fides.api.models.privacy_request.PrivacyRequest.trigger_policy_webhook")
 def test_access_request_multiple_custom_identities(
-        trigger_webhook_mock,
-        bigquery_enterprise_test_dataset_config,
-        db,
-        cache,
-        policy,
-        dsr_version,
-        request,
-        policy_pre_execution_webhooks,
-        policy_post_execution_webhooks,
-        run_privacy_request_task,
+    trigger_webhook_mock,
+    bigquery_enterprise_test_dataset_config,
+    db,
+    cache,
+    policy,
+    dsr_version,
+    request,
+    policy_pre_execution_webhooks,
+    policy_post_execution_webhooks,
+    run_privacy_request_task,
 ):
     request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
 
@@ -346,28 +352,30 @@ def test_access_request_multiple_custom_identities(
     assert user_details["id"] == user_id
 
     assert (
-            len(
-                [
-                    comment["user_id"]
-                    for comment in results["enterprise_dsr_testing:comments"]
-                ]
-            )
-            == 16
+        len(
+            [
+                comment["user_id"]
+                for comment in results["enterprise_dsr_testing:comments"]
+            ]
+        )
+        == 16
     )
     assert (
-            len(
-                [post["user_id"] for post in results["enterprise_dsr_testing:post_history"]]
-            )
-            == 39
+        len(
+            [post["user_id"] for post in results["enterprise_dsr_testing:post_history"]]
+        )
+        == 39
     )
     assert (
-            len(
-                [
-                    post["title"]
-                    for post in results["enterprise_dsr_testing:stackoverflow_posts_partitioned"]
+        len(
+            [
+                post["title"]
+                for post in results[
+                    "enterprise_dsr_testing:stackoverflow_posts_partitioned"
                 ]
-            )
-            == 30
+            ]
+        )
+        == 30
     )
 
     log_id = pr.execution_logs[0].id
@@ -376,8 +384,8 @@ def test_access_request_multiple_custom_identities(
     finished_audit_log: AuditLog = AuditLog.filter(
         db=db,
         conditions=(
-                (AuditLog.privacy_request_id == pr_id)
-                & (AuditLog.action == AuditLogAction.finished)
+            (AuditLog.privacy_request_id == pr_id)
+            & (AuditLog.action == AuditLogAction.finished)
         ),
     ).first()
 
@@ -408,18 +416,18 @@ def test_access_request_multiple_custom_identities(
     "bigquery_fixtures",
     [
         "bigquery_enterprise_resources",
-        "bigquery_enterprise_resources_with_partitioning"
+        "bigquery_enterprise_resources_with_partitioning",
     ],
 )
 def test_erasure_request_multiple_custom_identities(
-        db,
-        request,
-        policy,
-        cache,
-        dsr_version,
-        bigquery_fixtures,
-        bigquery_enterprise_erasure_policy,
-        run_privacy_request_task,
+    db,
+    request,
+    policy,
+    cache,
+    dsr_version,
+    bigquery_fixtures,
+    bigquery_enterprise_erasure_policy,
+    run_privacy_request_task,
 ):
     request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
     bigquery_enterprise_resources = request.getfixturevalue(bigquery_fixtures)
@@ -460,28 +468,30 @@ def test_erasure_request_multiple_custom_identities(
     assert user_details["id"] == user_id
 
     assert (
-            len(
-                [
-                    comment["user_id"]
-                    for comment in results["enterprise_dsr_testing:comments"]
-                ]
-            )
-            == 1
+        len(
+            [
+                comment["user_id"]
+                for comment in results["enterprise_dsr_testing:comments"]
+            ]
+        )
+        == 1
     )
     assert (
-            len(
-                [post["user_id"] for post in results["enterprise_dsr_testing:post_history"]]
-            )
-            == 1
+        len(
+            [post["user_id"] for post in results["enterprise_dsr_testing:post_history"]]
+        )
+        == 1
     )
     assert (
-            len(
-                [
-                    post["title"]
-                    for post in results["enterprise_dsr_testing:stackoverflow_posts_partitioned"]
+        len(
+            [
+                post["title"]
+                for post in results[
+                    "enterprise_dsr_testing:stackoverflow_posts_partitioned"
                 ]
-            )
-            == 1
+            ]
+        )
+        == 1
     )
 
     data = {
@@ -525,7 +535,7 @@ def test_erasure_request_multiple_custom_identities(
         res = connection.execute(stmt).all()
         for row in res:
             assert (
-                    row.owner_user_id == bigquery_enterprise_resources["user_id"]
+                row.owner_user_id == bigquery_enterprise_resources["user_id"]
             )  # not targeted by policy
             assert row.owner_display_name is None
             assert row.body is None
