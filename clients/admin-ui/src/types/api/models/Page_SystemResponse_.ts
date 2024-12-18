@@ -2,10 +2,10 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { CatalogSystemResponse } from "./CatalogSystemResponse";
+import type { SystemResponse } from "./SystemResponse";
 
-export type Page_CatalogSystemResponse_ = {
-  items: Array<CatalogSystemResponse>;
+export type Page_SystemResponse_ = {
+  items: Array<SystemResponse>;
   total: number | null;
   page: number | null;
   size: number | null;
