@@ -15,7 +15,11 @@ The types of changes are:
 - `Fixed` for any bug fixes.
 - `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.51.2...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.52.0...main)
+
+
+
+## [2.52.0](https://github.com/ethyca/fides/compare/2.51.2...2.52.0)
 
 ### Added
 - New page in the Cookie House sample app to demonstrate the use of embedding the FidesJS SDK on the page [#5564](https://github.com/ethyca/fides/pull/5564)
