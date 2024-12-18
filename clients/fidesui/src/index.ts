@@ -8,6 +8,7 @@ export * from "@chakra-ui/utils";
 export type { ThemeConfig as AntThemeConfig } from "antd/es";
 export type {
   ButtonProps as AntButtonProps,
+  FlexProps as AntFlexProps,
   FormInstance as AntFormInstance,
   InputProps as AntInputProps,
   SelectProps as AntSelectProps,
@@ -17,6 +18,7 @@ export type {
 } from "antd/lib";
 export {
   Alert as AntAlert,
+  Breadcrumb as AntBreadcrumb,
   Button as AntButton,
   Card as AntCard,
   Checkbox as AntCheckbox,
@@ -35,6 +37,10 @@ export {
   Tooltip as AntTooltip,
   Typography as AntTypography,
 } from "antd/lib";
+export type {
+  BreadcrumbItemType as AntBreadcrumbItemType,
+  BreadcrumbProps as AntBreadcrumbProps,
+} from "antd/lib/breadcrumb/Breadcrumb";
 export type {
   BaseOptionType as AntBaseOptionType,
   DefaultOptionType as AntDefaultOptionType,

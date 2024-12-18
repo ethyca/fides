@@ -51,22 +51,21 @@ const TestDatasetPage: NextPage = () => {
     <Layout
       title="System inventory"
       mainProps={{
-        paddingTop: 0,
         height: "100vh",
         display: "flex",
         flexDirection: "column",
       }}
     >
       <PageHeader
-        breadcrumbs={[
-          { title: "System inventory", link: SYSTEM_ROUTE },
+        heading="System inventory"
+        breadcrumbItems={[
+          { title: "System inventory", href: SYSTEM_ROUTE },
           {
             title: system?.name || "",
-            link: `/systems/configure/${systemId}#integrations`,
+            href: `/systems/configure/${systemId}#integrations`,
           },
           { title: "Test datasets" },
         ]}
-        isSticky
       >
         <Box position="relative" />
       </PageHeader>
