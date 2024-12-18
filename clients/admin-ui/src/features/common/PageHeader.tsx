@@ -25,7 +25,7 @@ interface PageHeaderProps extends ComponentProps<"div"> {
 const PageHeader = ({
   heading,
   breadcrumbItems,
-  isSticky,
+  isSticky = true,
   children,
   rightContent,
   style,
@@ -33,18 +33,26 @@ const PageHeader = ({
 }: PageHeaderProps): JSX.Element => (
   <div
     {...props}
-    className={`pb-6${props.className ? ` ${props.className}` : ""}`}
     style={
       isSticky
         ? {
             position: "sticky",
-            top: 0,
+            top: "-24px",
+            paddingTop: "24px",
+            paddingLeft: "40px",
+            marginLeft: "-40px",
+            paddingRight: "40px",
+            marginRight: "-40px",
+            marginTop: "-24px",
             left: 0,
-            zIndex: 20,
+            zIndex: 20, // needs to be above Table header but below popovers, modals, drawers, etc.
             backgroundColor: "white",
             ...style,
           }
-        : style
+        : {
+            paddingBottom: "24px",
+            ...style,
+          }
     }
   >
     <Flex justify="space-between">
