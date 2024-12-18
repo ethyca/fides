@@ -10,7 +10,7 @@ test_db = "fides_test"
 app_postgres = {connection_string="postgresql+psycopg2://postgres:fides@fides-db:5432/fides"}
 
 [logging]
-level = "DEBUG"
+level = "INFO"
 log_pii = true
 
 [cli]
