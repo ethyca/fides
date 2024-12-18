@@ -47,6 +47,8 @@ describe("Action center", () => {
   });
 
   describe("Action center monitor results", () => {
+    const webMonitorKey = "my_web_monitor_2";
+    const integrationMonitorKey = "My_New_BQ_Monitor";
     beforeEach(() => {
       cy.visit(ACTION_CENTER_ROUTE);
     });
@@ -62,31 +64,53 @@ describe("Action center", () => {
         cy.wrap(result)
           .contains("assets detected on")
           .should("have.attr", "href", `${ACTION_CENTER_ROUTE}/${monitorKey}`);
-        // Review button
+        // last monitored relative date with real date in tooltip
         cy.wrap(result)
-          .contains("Review")
-          .should("have.attr", "href", `${ACTION_CENTER_ROUTE}/${monitorKey}`);
-        // Ignore button
-        cy.wrap(result)
-          .find(`button[data-testid="ignore-button-${monitorKey}"]`)
-          .should("exist");
+          .find("[data-testid='monitor-date']")
+          .contains(" ago")
+          .realHover();
+        cy.get(".ant-tooltip-inner").should("contain", "December");
       });
       // description
-      cy.get("[data-testid='monitor-result-my_web_monitor_2']").should(
+      cy.getByTestId(`monitor-result-${webMonitorKey}`).should(
         "contain",
         "92 Browser Requests, 5 Cookies detected.",
       );
       // monitor name
-      cy.get("[data-testid='monitor-result-my_web_monitor_2']").should(
+      cy.getByTestId(`monitor-result-${webMonitorKey}`).should(
         "contain",
         "my web monitor 2",
       );
-      // last monitored relative date with real date in tooltip
-      cy.getByTestId("monitor-result-my_web_monitor_2")
-        .find("[data-testid='monitor-date']")
-        .contains(" ago")
-        .realHover();
-      cy.get(".ant-tooltip-inner").should("contain", "December");
+    });
+    it("should have appropriate actions for web monitors", () => {
+      cy.wait("@getMonitorResults");
+      // Add button
+      // TODO: [HJ-337] uncomment when Add button is implemented
+      // cy.getByTestId(`add-button-${webMonitorKey}`).should("exist");
+      // Review button
+      cy.getByTestId(`review-button-${webMonitorKey}`).should(
+        "have.attr",
+        "href",
+        `${ACTION_CENTER_ROUTE}/${webMonitorKey}`,
+      );
+    });
+    it.skip("Should have appropriate actions for Integrations monitors", () => {
+      cy.wait("@getMonitorResults");
+      // Classify button
+      cy.getByTestId(`review-button-${integrationMonitorKey}`).should(
+        "have.attr",
+        "href",
+        `${ACTION_CENTER_ROUTE}/${integrationMonitorKey}`,
+      );
+      // Ignore button
+      cy.getByTestId(`ignore-button-${integrationMonitorKey}`).should("exist");
+    });
+    it.skip("Should have appropriate actions for SSO monitors", () => {
+      cy.wait("@getMonitorResults");
+      // Add button
+      cy.getByTestId(`add-button-${webMonitorKey}`).should("exist");
+      // Ignore button
+      cy.getByTestId(`ignore-button-${webMonitorKey}`).should("exist");
     });
   });
 });

@@ -9,7 +9,7 @@ import {
   useToast,
 } from "fidesui";
 import NextLink from "next/link";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import Layout from "~/features/common/Layout";
 import { ACTION_CENTER_ROUTE } from "~/features/common/nav/v2/routes";
@@ -88,16 +88,46 @@ const ActionCenterPage = () => {
       })) as any[])
     : [];
 
-  const handleIgnore = (monidorId: string) => {
-    // TASK: hook up ignore action to API
-    console.log("Ignoring report", monidorId);
-  };
+  // TODO: [HJ-337] Add button functionality
+
+  // const handleAdd = (monidorId: string) => {
+  //   console.log("Add report", monidorId);
+  // };
+
+  const getWebsiteMonitorActions = useCallback(
+    (monitorKey: string) => [
+      // <Button
+      //   key="add"
+      //   type="link"
+      //   className="p-0"
+      //   onClick={() => {
+      //     handleAdd(monitorKey);
+      //   }}
+      //   data-testid={`add-button-${monitorKey}`}
+      // >
+      //   Add
+      // </Button>,
+      <NextLink
+        key="review"
+        href={`${ACTION_CENTER_ROUTE}/${monitorKey}`}
+        passHref
+        legacyBehavior
+      >
+        <Button
+          type="link"
+          className="p-0"
+          data-testid={`review-button-${monitorKey}`}
+        >
+          Review
+        </Button>
+      </NextLink>,
+    ],
+    [],
+  );
 
   if (!webMonitorEnabled) {
     return <DisabledMonitorPage isConfigLoading={isConfigLoading} />;
   }
-
-  console.log("==>", pageSize, data?.total);
 
   return (
     <Layout title="Action center">
@@ -132,29 +162,7 @@ const ActionCenterPage = () => {
             showSkeleton={isFetching}
             key={summary.key}
             monitorSummary={summary}
-            actions={[
-              <NextLink
-                key="review"
-                href={`${ACTION_CENTER_ROUTE}/${summary.key}`}
-                passHref
-                legacyBehavior
-              >
-                <Button type="link" className="p-0">
-                  Review
-                </Button>
-              </NextLink>,
-              <Button
-                key="ignore"
-                type="link"
-                className="p-0"
-                onClick={() => {
-                  handleIgnore(summary.key);
-                }}
-                data-testid={`ignore-button-${summary.key}`}
-              >
-                Ignore
-              </Button>,
-            ]}
+            actions={getWebsiteMonitorActions(summary.key)} // TODO: when monitor type becomes available, use it to determine actions. Defaulting to website monitor actions for now.
           />
         )}
       />
