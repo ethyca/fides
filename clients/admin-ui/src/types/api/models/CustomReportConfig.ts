@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { CustomReportColumn } from "~/features/common/custom-reports/CustomReportColumn";
+import type { CustomReportColumn } from "~/features/common/custom-reports/types";
 
 /**
  * The configuration for a custom report.

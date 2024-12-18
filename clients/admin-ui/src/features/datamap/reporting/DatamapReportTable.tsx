@@ -31,7 +31,7 @@ import { debounce } from "lodash";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
-import { CustomReportColumn } from "~/features/common/custom-reports/CustomReportColumn";
+import { CustomReportColumn } from "~/features/common/custom-reports/types";
 import useTaxonomies from "~/features/common/hooks/useTaxonomies";
 import { DownloadLightIcon } from "~/features/common/Icon";
 import { useHasPermission } from "~/features/common/Restrict";
