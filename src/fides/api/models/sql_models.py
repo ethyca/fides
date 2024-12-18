@@ -235,7 +235,7 @@ class DataUse(Base, FidesBase):
     __tablename__ = "ctl_data_uses"
     fides_key = Column(String, primary_key=True, index=True, unique=True)
 
-    parent_key = Column(Text, ForeignKey("ctl_data_uses.fides_key", ondelete="SET NULL")) # todo- prevent deletion if it has children
+    parent_key = Column(Text, ForeignKey("ctl_data_uses.fides_key", ondelete="SET NULL"))
     active = Column(BOOLEAN, default=True, nullable=False)
 
     # Default Fields
