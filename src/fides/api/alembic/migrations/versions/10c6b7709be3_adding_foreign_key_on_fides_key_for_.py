@@ -1,7 +1,7 @@
 """adding foreign key on fides key for taxonomy
 
 Revision ID: 10c6b7709be3
-Revises: c90d46f6d3f2
+Revises: e5ec30dfcd87
 Create Date: 2024-12-17 14:54:02.325442
 
 """
@@ -11,7 +11,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "10c6b7709be3"
-down_revision = "c90d46f6d3f2"
+down_revision = "e5ec30dfcd87"
 branch_labels = None
 depends_on = None
 
