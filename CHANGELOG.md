@@ -23,11 +23,12 @@ The types of changes are:
 - Added new erasure tests for BigQuery Enterprise [#5554](https://github.com/ethyca/fides/pull/5554)
 - Added new `has_next` parameter for the `link` pagination strategy [#5596](https://github.com/ethyca/fides/pull/5596)
 - Added a `DBCache` model for database-backed caching [#5613](https://github.com/ethyca/fides/pull/5613)
+- Adds partitioning, custom identities, multiple identities to test coverage for BigQuery Enterprise [#5618](https://github.com/ethyca/fides/pull/5618)
 
 ### Changed
 - Adjusted Ant's Select component colors and icon [#5594](https://github.com/ethyca/fides/pull/5594)
 - Replaced taxonomies page with new UI based on an interactive tree visualization [#5602](https://github.com/ethyca/fides/pull/5602)
-
+f
 
 ### Fixed
 - Fixing quickstart.py script [#5585](https://github.com/ethyca/fides/pull/5585)
