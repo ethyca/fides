@@ -38,8 +38,8 @@
   },
   "webMonitor": {
     "description": "Monitor websites for activity",
-    "development": false,
-    "test": false,
+    "development": true,
+    "test": true,
     "production": false
   },
   "ssoAuthentication": {

@@ -57,7 +57,7 @@ export const MonitorResult = ({
   const iconUrl = hostname ? getWebsiteIconUrl(hostname) : undefined;
 
   return (
-    <List.Item {...props}>
+    <List.Item data-testid={`monitor-result-${key}`} {...props}>
       <Skeleton avatar title={false} loading={showSkeleton} active>
         <List.Item.Meta
           avatar={!!iconUrl && <Avatar src={iconUrl} size="small" />}
@@ -87,7 +87,7 @@ export const MonitorResult = ({
           </Text>
           {!!lastMonitoredDistance && (
             <Tooltip title={formatDate(lastMonitored)}>
-              <Text>{lastMonitoredDistance}</Text>
+              <Text data-testid="monitor-date">{lastMonitoredDistance}</Text>
             </Tooltip>
           )}
         </Flex>
