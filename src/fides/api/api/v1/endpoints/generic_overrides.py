@@ -183,12 +183,6 @@ def validate_and_update_taxonomy(
     """
     Validate and update a taxonomy element.
     """
-    if not data.fides_key:
-        raise FidesError(f"Fides key is required to update {resource.__name__}")
-    if isinstance(resource, ModelWithDefaultField) and data.is_default:
-        raise ForbiddenIsDefaultTaxonomyError(
-            resource.__name__, data.fides_key, action="update"
-        )
     # If active field is being updated, cascade change either up or down
     if hasattr(data, "active"):
         if data.active:
@@ -262,10 +256,10 @@ async def create_data_use(
             status_code=HTTP_422_UNPROCESSABLE_ENTITY,
             detail=f"Data use with key {data_use.fides_key} or name {data_use.name} already exists.",
         )
-    except Exception as e:
+    except Exception:
         raise HTTPException(
             status_code=HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=f"Error creating data use: {e}",
+            detail="Error creating data use. Try a different name or key",
         )
 
 
@@ -293,10 +287,10 @@ async def create_data_category(
             status_code=HTTP_422_UNPROCESSABLE_ENTITY,
             detail=f"Data category with key {data_category.fides_key} or name {data_category.name} already exists.",
         )
-    except Exception as e:
+    except Exception:
         raise HTTPException(
             status_code=HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=f"Error creating data category: {e}",
+            detail="Error creating data category. Try a different name or key.",
         )
 
 
@@ -324,10 +318,10 @@ async def create_data_subject(
             status_code=HTTP_422_UNPROCESSABLE_ENTITY,
             detail=f"Data subject with key {data_subject.fides_key} or name {data_subject.name} already exists.",
         )
-    except Exception as e:
+    except Exception:
         raise HTTPException(
             status_code=HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=f"Error creating data subject: {e}",
+            detail="Error creating data subject. Try a different name or key.",
         )
 
 
@@ -354,10 +348,10 @@ async def update_data_use(
         )
     try:
         return validate_and_update_taxonomy(db, resource, DataUse, data_use)
-    except Exception as e:
+    except Exception:
         raise HTTPException(
             status_code=HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=f"Error updating data use: {e}",
+            detail="Error updating data use",
         )
 
 
@@ -386,10 +380,10 @@ async def update_data_category(
         )
     try:
         return validate_and_update_taxonomy(db, resource, DataCategory, data_category)
-    except Exception as e:
+    except Exception:
         raise HTTPException(
             status_code=HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=f"Error updating data category: {e}",
+            detail="Error updating data category",
         )
 
 
