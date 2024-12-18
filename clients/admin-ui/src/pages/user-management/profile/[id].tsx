@@ -1,6 +1,6 @@
-import { Spinner } from "fidesui";
+import { AntAlert as Alert, AntFlex as Flex, Spinner } from "fidesui";
 import { useRouter } from "next/router";
-import React, { ReactNode, useEffect } from "react";
+import React, { useEffect } from "react";
 import EditUserForm from "user-management/EditUserForm";
 import {
   setActiveUserId,
@@ -12,10 +12,6 @@ import { selectUser } from "~/features/auth";
 import Layout from "~/features/common/Layout";
 import { useHasPermission } from "~/features/common/Restrict";
 import { ScopeRegistryEnum } from "~/types/api";
-
-const UserManagementLayout = ({ children }: { children: ReactNode }) => (
-  <Layout title="Users">{children}</Layout>
-);
 
 const Profile = () => {
   const router = useRouter();
@@ -51,24 +47,24 @@ const Profile = () => {
     }
   }, [router, canAccess, existingUser]);
 
-  if (isLoadingUser) {
-    return (
-      <UserManagementLayout>
-        <Spinner />
-      </UserManagementLayout>
-    );
-  }
-
-  if (existingUser == null) {
-    return (
-      <UserManagementLayout>Could not find profile ID.</UserManagementLayout>
-    );
-  }
-
   return (
-    <UserManagementLayout>
-      <EditUserForm user={existingUser} />
-    </UserManagementLayout>
+    <Layout title="Users - Edit a user">
+      {isLoadingUser && (
+        <Flex justify="center" align="center" className="h-full">
+          <Spinner color="minos.500" />
+        </Flex>
+      )}
+      {!isLoadingUser && !existingUser && (
+        <Flex justify="center">
+          <Alert
+            message="Could not find user with this profile ID."
+            type="warning"
+            showIcon
+          />
+        </Flex>
+      )}
+      {!!existingUser && <EditUserForm user={existingUser} />}
+    </Layout>
   );
 };
 

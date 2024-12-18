@@ -67,11 +67,7 @@ const AddMessagingTemplatePage: NextPage = () => {
         breadcrumbItems={[
           { title: "Messaging", href: MESSAGING_ROUTE },
           {
-            title: `${
-              CustomizableMessagingTemplatesLabelEnum[
-                messagingTemplate.type as keyof typeof CustomizableMessagingTemplatesLabelEnum
-              ]
-            }`,
+            title: `${CustomizableMessagingTemplatesLabelEnum[messagingTemplate.type]}`,
           },
         ]}
       >

@@ -33,7 +33,7 @@ const PageHeader = ({
 }: PageHeaderProps): JSX.Element => (
   <div
     {...props}
-    className={`pb-6 ${props.className}`}
+    className={`pb-6${props.className ? ` ${props.className}` : ""}`}
     style={
       isSticky
         ? {

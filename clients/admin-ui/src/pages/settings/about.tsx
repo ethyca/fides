@@ -54,13 +54,14 @@ const About: NextPage = () => {
         <Heading as="h2" fontSize="xl">
           Beta Features
         </Heading>
-        <Button onClick={() => reset()}>Reset</Button>
+        <Button onClick={reset}>Reset</Button>
       </Flex>
       <Grid
         gridTemplateColumns="1fr 2fr 6fr"
         gridColumnGap={4}
         gridRowGap={2}
         alignItems="center"
+        className="py-6"
       >
         {FLAG_NAMES.map((flag) => (
           <FlagControl

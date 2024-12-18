@@ -1,5 +1,4 @@
 /* eslint-disable tailwindcss/no-custom-classname */
-/* eslint-disable no-param-reassign */
 import {
   AntBreadcrumb as Breadcrumb,
   AntBreadcrumbItemType as BreadcrumbItemType,
@@ -36,9 +35,10 @@ export const NextBreadcrumb = ({ items, ...props }: NextBreadcrumbProps) => {
     () =>
       items?.map((item, i) => {
         const isCurrentPage = i === items.length - 1;
-        if (typeof item.title === "string") {
+        const modifiedItem = { ...item };
+        if (typeof modifiedItem.title === "string") {
           // for everything except the current page, truncate the title if it's too long
-          item.title = (
+          modifiedItem.title = (
             <Text
               style={{
                 color: "inherit",
@@ -46,28 +46,30 @@ export const NextBreadcrumb = ({ items, ...props }: NextBreadcrumbProps) => {
               }}
               ellipsis={!isCurrentPage}
             >
-              {item.title}
+              {modifiedItem.title}
             </Text>
           );
         }
-        if (item.icon) {
-          item.title = (
+        if (modifiedItem.icon) {
+          modifiedItem.title = (
             <>
-              <span className="anticon align-text-bottom">{item.icon}</span>
-              {item.title}
+              <span className="anticon align-text-bottom">
+                {modifiedItem.icon}
+              </span>
+              {modifiedItem.title}
             </>
           );
         }
-        if (item.href && item.title) {
+        if (modifiedItem.href && modifiedItem.title) {
           // repeat the ant breadcrumb link class to match the style and margin of the ant breadcrumb item
-          item.title = (
-            <NextLink href={item.href} className="ant-breadcrumb-link">
-              {item.title}
+          modifiedItem.title = (
+            <NextLink href={modifiedItem.href} className="ant-breadcrumb-link">
+              {modifiedItem.title}
             </NextLink>
           );
-          delete item.href;
+          delete modifiedItem.href;
         }
-        return item;
+        return modifiedItem;
       }),
     [items],
   );
