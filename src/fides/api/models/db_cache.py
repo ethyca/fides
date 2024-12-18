@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import ByteString, Optional
 
-from sqlalchemy import Column, String, Index
+from sqlalchemy import Column, Index, String
 from sqlalchemy.dialects.postgresql import BYTEA
 from sqlalchemy.orm import Session
 
