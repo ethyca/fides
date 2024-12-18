@@ -163,9 +163,7 @@ def validate_and_create_taxonomy(
     Validate and create a taxonomy element.
     """
     if not data.fides_key:
-        raise FidesError(
-            f"Fides key is required to create a {model.__name__} resource"
-        )
+        raise FidesError(f"Fides key is required to create a {model.__name__} resource")
     if isinstance(model, ModelWithDefaultField) and data.is_default:
         raise ForbiddenIsDefaultTaxonomyError(
             model.__name__, data.fides_key, action="create"
@@ -186,9 +184,7 @@ def validate_and_update_taxonomy(
     Validate and update a taxonomy element.
     """
     if not data.fides_key:
-        raise FidesError(
-            f"Fides key is required to update {resource.__name__}"
-        )
+        raise FidesError(f"Fides key is required to update {resource.__name__}")
     if isinstance(resource, ModelWithDefaultField) and data.is_default:
         raise ForbiddenIsDefaultTaxonomyError(
             resource.__name__, data.fides_key, action="update"
