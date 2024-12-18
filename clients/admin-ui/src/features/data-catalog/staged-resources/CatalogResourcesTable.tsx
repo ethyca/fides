@@ -8,8 +8,10 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { AntButton, Box, Flex, Text, VStack } from "fidesui";
+import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";
 
+import { DATA_CATALOG_ROUTE } from "~/features/common/nav/v2/routes";
 import {
   DefaultCell,
   FidesTableV2,
@@ -19,9 +21,10 @@ import {
   TableSkeletonLoader,
   useServerSidePagination,
 } from "~/features/common/table/v2";
+import { RelativeTimestampCell } from "~/features/common/table/v2/cells";
 import { useGetMonitorResultsQuery } from "~/features/data-discovery-and-detection/discovery-detection.slice";
 import { SearchInput } from "~/features/data-discovery-and-detection/SearchInput";
-import { StagedResourceAPIResponse } from "~/types/api";
+import { StagedResourceAPIResponse, SystemResponse } from "~/types/api";
 
 const EMPTY_RESPONSE = {
   items: [],
@@ -53,8 +56,15 @@ const EmptyTableNotice = () => (
 
 const columnHelper = createColumnHelper<StagedResourceAPIResponse>();
 
-const CatalogResourcesTable = ({ resourceUrn }: { resourceUrn: string }) => {
+const CatalogResourcesTable = ({
+  resourceUrn,
+  system,
+}: {
+  resourceUrn: string;
+  system: SystemResponse;
+}) => {
   const [searchQuery, setSearchQuery] = useState("");
+  const router = useRouter();
 
   const {
     PAGE_SIZES,
@@ -128,6 +138,30 @@ const CatalogResourcesTable = ({ resourceUrn }: { resourceUrn: string }) => {
         cell: (props) => <DefaultCell value={props.getValue()} />,
         header: "Name",
       }),
+      columnHelper.display({
+        id: "status",
+        cell: () => <DefaultCell value="TODO" />,
+        header: "Status",
+      }),
+      columnHelper.accessor((row) => row.description, {
+        id: "description",
+        cell: (props) => <DefaultCell value={props.getValue()} />,
+        header: "Description",
+      }),
+      columnHelper.accessor((row) => row.updated_at, {
+        id: "lastUpdated",
+        cell: (props) => <RelativeTimestampCell time={props.getValue()} />,
+        header: "Updated",
+      }),
+      columnHelper.display({
+        id: "actions",
+        cell: () => (
+          <AntButton size="small" disabled>
+            Actions
+          </AntButton>
+        ),
+        header: "Actions",
+      }),
     ],
     [],
   );
@@ -159,7 +193,9 @@ const CatalogResourcesTable = ({ resourceUrn }: { resourceUrn: string }) => {
       <FidesTableV2
         tableInstance={tableInstance}
         emptyTableNotice={<EmptyTableNotice />}
-        onRowClick={(row) => console.log(`row ${row.urn} clicked!`)}
+        onRowClick={(row) =>
+          router.push(`${DATA_CATALOG_ROUTE}/${system.fides_key}/${row.urn}`)
+        }
       />
       <PaginationBar
         totalRows={totalRows || 0}

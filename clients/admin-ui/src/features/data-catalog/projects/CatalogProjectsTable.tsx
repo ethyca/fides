@@ -103,7 +103,7 @@ const CatalogProjectsTable = ({
   } = useGetCatalogProjectsQuery({
     page: pageIndex,
     size: pageSize,
-    monitor_config_ids: monitorConfigIds,
+    monitor_config_ids: ["bq-monitor", "bq-monitor-2"],
   });
 
   const router = useRouter();
@@ -149,8 +149,10 @@ const CatalogProjectsTable = ({
       }),
       columnHelper.accessor((row) => row.name, {
         id: "name",
-        cell: (props) => <DefaultCell value={props.getValue()} />,
-        header: "Name",
+        cell: (props) => (
+          <DefaultCell value={props.getValue()} fontWeight="semibold" />
+        ),
+        header: "Project",
       }),
       columnHelper.display({
         id: "status",
@@ -250,7 +252,7 @@ const CatalogProjectsTable = ({
         tableInstance={tableInstance}
         emptyTableNotice={<EmptyTableNotice />}
         onRowClick={(row) =>
-          router.push(`${DATA_CATALOG_ROUTE}/${systemKey}/${row.urn}`)
+          router.push(`${DATA_CATALOG_ROUTE}/${systemKey}/projects/${row.urn}`)
         }
       />
       <PaginationBar

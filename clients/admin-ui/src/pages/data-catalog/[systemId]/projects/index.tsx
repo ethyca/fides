@@ -8,7 +8,7 @@ import { useGetSystemByFidesKeyQuery } from "~/features/system";
 
 const CatalogProjectView = () => {
   const { query } = useRouter();
-  const systemKey = query["system-id"] as string;
+  const systemKey = query.systemId as string;
   const monitorConfigIds = query.monitor_config_ids as string[];
   const { data: system, isLoading } = useGetSystemByFidesKeyQuery(systemKey);
 

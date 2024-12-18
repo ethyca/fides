@@ -1,8 +1,10 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 import { baseApi } from "~/features/common/api.slice";
-import { Page_StagedResourceAPIResponse_ } from "~/types/api";
-import { Page_CatalogSystemResponse_ } from "~/types/api/models/Page_CatalogSystemResponse_";
+import {
+  Page_StagedResourceAPIResponse_,
+  Page_SystemResponse_,
+} from "~/types/api";
 import { PaginationQueryParams } from "~/types/common/PaginationQueryParams";
 
 const initialState = {
@@ -14,7 +16,7 @@ interface CatalogSystemQueryParams extends PaginationQueryParams {
   show_hidden?: boolean;
 }
 
-interface CatalogProjectQueryParams extends PaginationQueryParams {
+interface CatalogResourceQueryParams extends PaginationQueryParams {
   monitor_config_ids?: string[];
   show_hidden?: boolean;
 }
@@ -22,7 +24,7 @@ interface CatalogProjectQueryParams extends PaginationQueryParams {
 const dataCatalogApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
     getCatalogSystems: build.query<
-      Page_CatalogSystemResponse_,
+      Page_SystemResponse_,
       CatalogSystemQueryParams
     >({
       query: (params) => ({
@@ -34,11 +36,23 @@ const dataCatalogApi = baseApi.injectEndpoints({
     }),
     getCatalogProjects: build.query<
       Page_StagedResourceAPIResponse_,
-      CatalogProjectQueryParams
+      CatalogResourceQueryParams
     >({
       query: ({ monitor_config_ids, ...params }) => ({
         method: "POST",
         url: `/plus/data-catalog/project`,
+        body: monitor_config_ids,
+        params,
+      }),
+      providesTags: ["Discovery Monitor Results"],
+    }),
+    getCatalogDatasets: build.query<
+      Page_StagedResourceAPIResponse_,
+      CatalogResourceQueryParams
+    >({
+      query: ({ monitor_config_ids, ...params }) => ({
+        method: "POST",
+        url: `/plus/data-catalog/dataset`,
         body: monitor_config_ids,
         params,
       }),
@@ -50,7 +64,7 @@ const dataCatalogApi = baseApi.injectEndpoints({
 export const {
   useGetCatalogSystemsQuery,
   useGetCatalogProjectsQuery,
-  useLazyGetCatalogProjectsQuery,
+  useGetCatalogDatasetsQuery,
 } = dataCatalogApi;
 
 export const dataCatalogApiSlice = createSlice({

@@ -34,15 +34,12 @@ import {
   useServerSidePagination,
 } from "~/features/common/table/v2";
 import { IndeterminateCheckboxCell } from "~/features/common/table/v2/cells";
-import { getQueryParamsFromArray } from "~/features/common/utils";
-import {
-  useGetCatalogSystemsQuery,
-  useLazyGetCatalogProjectsQuery,
-} from "~/features/data-catalog/data-catalog.slice";
+import { useGetCatalogSystemsQuery } from "~/features/data-catalog/data-catalog.slice";
 import SystemActionsCell from "~/features/data-catalog/systems/SystemActionCell";
+import { useLazyGetAvailableDatabasesByConnectionQuery } from "~/features/data-discovery-and-detection/discovery-detection.slice";
 import IconLegendTooltip from "~/features/data-discovery-and-detection/IndicatorLegend";
 import { SearchInput } from "~/features/data-discovery-and-detection/SearchInput";
-import { CatalogSystemResponse } from "~/types/api/models/CatalogSystemResponse";
+import { SystemResponse } from "~/types/api";
 
 const EMPTY_RESPONSE = {
   items: [],
@@ -52,7 +49,7 @@ const EMPTY_RESPONSE = {
   pages: 1,
 };
 
-const columnHelper = createColumnHelper<CatalogSystemResponse>();
+const columnHelper = createColumnHelper<SystemResponse>();
 
 const EmptyTableNotice = () => (
   <VStack
@@ -106,7 +103,8 @@ const SystemsTable = () => {
     show_hidden: false,
   });
 
-  const [getProjects] = useLazyGetCatalogProjectsQuery();
+  // const [getProjects] = useLazyGetCatalogProjectsQuery();
+  const [getProjects] = useLazyGetAvailableDatabasesByConnectionQuery();
 
   const {
     items: data,
@@ -118,26 +116,21 @@ const SystemsTable = () => {
     setTotalPages(totalPages);
   }, [totalPages, setTotalPages]);
 
-  const handleRowClicked = async (row: CatalogSystemResponse) => {
+  const handleRowClicked = async (row: SystemResponse) => {
     // if there are projects, go to project view; otherwise go to datasets view
     const projectsResponse = await getProjects({
-      monitor_config_ids: row.monitor_config_keys,
+      connection_config_key: row.connection_configs!.key,
       page: 1,
       size: 1,
     });
-    if (!projectsResponse?.data?.total) {
-      router.push(`${DATA_CATALOG_ROUTE}/${row.fides_key}/all`);
-      return;
-    }
-    const monitorIdQueryString = getQueryParamsFromArray(
-      row.monitor_config_keys ?? [],
-      "monitor_config_ids",
-    );
-    const url = `${DATA_CATALOG_ROUTE}/${row.fides_key}?${monitorIdQueryString}`;
+
+    const hasProjects = !!projectsResponse?.data?.total;
+
+    const url = `${DATA_CATALOG_ROUTE}/${row.fides_key}${hasProjects ? "/projects" : ""}`;
     router.push(url);
   };
 
-  const columns: ColumnDef<CatalogSystemResponse, any>[] = useMemo(
+  const columns: ColumnDef<SystemResponse, any>[] = useMemo(
     () => [
       columnHelper.display({
         id: "select",
@@ -232,7 +225,7 @@ const SystemsTable = () => {
     [router],
   );
 
-  const tableInstance = useReactTable<CatalogSystemResponse>({
+  const tableInstance = useReactTable<SystemResponse>({
     getCoreRowModel: getCoreRowModel(),
     getGroupedRowModel: getGroupedRowModel(),
     getExpandedRowModel: getExpandedRowModel(),
@@ -286,6 +279,7 @@ const SystemsTable = () => {
         tableInstance={tableInstance}
         emptyTableNotice={<EmptyTableNotice />}
         onRowClick={handleRowClicked}
+        getRowIsClickable={(row) => !!row.connection_configs?.key}
       />
       <PaginationBar
         totalRows={totalRows || 0}
