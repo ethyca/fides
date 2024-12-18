@@ -36,7 +36,7 @@ from sqlalchemy.dialects.postgresql import ARRAY, BIGINT, BYTEA
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession, async_object_session
 from sqlalchemy.ext.hybrid import hybrid_property
-from sqlalchemy.orm import Session, relationship
+from sqlalchemy.orm import RelationshipProperty, Session, relationship
 from sqlalchemy.sql import Select
 from sqlalchemy.sql.elements import Case
 from sqlalchemy.sql.sqltypes import DateTime

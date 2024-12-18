@@ -9,8 +9,8 @@ from fides.api.models.sql_models import DataUse
 from fides.common.api.scope_registry import (
     DATA_USE,
     DATA_USE_CREATE,
-    STORAGE_READ,
     DATA_USE_UPDATE,
+    STORAGE_READ,
 )
 from fides.common.api.v1.urn_registry import V1_URL_PREFIX
 

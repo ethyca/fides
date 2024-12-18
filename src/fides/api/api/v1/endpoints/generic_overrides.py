@@ -9,7 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
 from sqlalchemy.sql.expression import select
 from starlette import status
-from starlette.status import HTTP_422_UNPROCESSABLE_ENTITY, HTTP_404_NOT_FOUND
+from starlette.status import HTTP_404_NOT_FOUND, HTTP_422_UNPROCESSABLE_ENTITY
 
 from fides.api.api.deps import get_db
 from fides.api.common_exceptions import KeyOrNameAlreadyExists
@@ -28,15 +28,15 @@ from fides.api.schemas.taxonomy_extensions import (
     DataUse,
     DataUseCreateOrUpdate,
 )
-from fides.api.util.errors import ForbiddenIsDefaultTaxonomyError
+from fides.api.util.errors import FidesError, ForbiddenIsDefaultTaxonomyError
 from fides.api.util.filter_utils import apply_filters_to_query
 from fides.common.api.scope_registry import (
     DATA_CATEGORY_CREATE,
+    DATA_CATEGORY_UPDATE,
     DATA_SUBJECT_CREATE,
     DATA_USE_CREATE,
-    DATASET_READ,
     DATA_USE_UPDATE,
-    DATA_CATEGORY_UPDATE,
+    DATASET_READ,
 )
 from fides.common.api.v1.urn_registry import V1_URL_PREFIX
 
@@ -162,6 +162,10 @@ def validate_and_create_taxonomy(
     """
     Validate and create a taxonomy element.
     """
+    if not data.fides_key:
+        raise FidesError(
+            f"Fides key is required to create a {model.__name__} resource"
+        )
     if isinstance(model, ModelWithDefaultField) and data.is_default:
         raise ForbiddenIsDefaultTaxonomyError(
             model.__name__, data.fides_key, action="create"
@@ -181,6 +185,10 @@ def validate_and_update_taxonomy(
     """
     Validate and update a taxonomy element.
     """
+    if not data.fides_key:
+        raise FidesError(
+            f"Fides key is required to update {resource.__name__}"
+        )
     if isinstance(resource, ModelWithDefaultField) and data.is_default:
         raise ForbiddenIsDefaultTaxonomyError(
             resource.__name__, data.fides_key, action="update"

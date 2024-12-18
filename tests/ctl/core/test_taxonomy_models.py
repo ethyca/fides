@@ -3,6 +3,7 @@ from typing import Generator
 import pytest
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
+
 from fides.api.models.sql_models import DataUse
 
 
