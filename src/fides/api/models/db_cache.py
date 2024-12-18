@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import ByteString, Optional
 
-from sqlalchemy import Column, String
+from sqlalchemy import Column, String, Index
 from sqlalchemy.dialects.postgresql import BYTEA
 from sqlalchemy.orm import Session
 
@@ -19,13 +19,20 @@ class DBCache(Base):
     Cache table for storing arbitrary data, useful when in-memory caches aren't enough.
     For example if cache contents need to be persisted across server restarts,
     or if the cache needs to be shared across different Fides instances.
+
+    Warning: Cache contents are NOT encrypted, this shouldn't be used for storing
+    any sort of personal data or sensitive information.
     """
 
     namespace = Column(
         String, nullable=False, index=True
     )  # Add a namespace since the same cache key could technically be used for different contexts
-    cache_key = Column(String, nullable=False, index=True)
+    cache_key = Column(String, nullable=False)
     cache_value = Column(BYTEA, nullable=False)
+
+    __table_args__ = (
+        Index("ix_dbcache_namespace_cache_key", "namespace", "cache_key"),
+    )
 
     @classmethod
     def get_cache_entry(
