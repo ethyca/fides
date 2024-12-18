@@ -151,7 +151,7 @@ dataset:
               custom_request_field: null
             fields: null
         fides_meta: null
-      - name: stackoverflow_posts
+      - name: stackoverflow_posts_partitioned
         description: null
         data_categories: null
         fields:
