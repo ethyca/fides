@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Any, Dict, List, Optional, cast
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, cast
 
 from fideslang.models import Dataset
 from fideslang.validation import FidesKey
@@ -13,6 +13,9 @@ from fides.api.schemas.connection_configuration import connection_secrets_schema
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.saas.saas_config import SaaSConfigBase
 from fides.api.util.connection_type import get_connection_type_secret_schema
+
+if TYPE_CHECKING:
+    from fides.api.models.detection_discovery import MonitorConfig
 
 
 class CreateConnectionConfiguration(BaseModel):
@@ -117,6 +120,12 @@ class ConnectionConfigurationResponse(BaseModel):
         return self
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class ConnectionConfigurationWithMonitorConfigResponse(ConnectionConfigurationResponse):
+    """Schema for ConnectionConfiguration with MonitorConfigs associated with it."""
+
+    monitors: List["MonitorConfig"] = None
 
 
 class BulkPutConnectionConfiguration(BulkResponse):
