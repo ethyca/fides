@@ -3,6 +3,7 @@ import { DefaultCell, GroupCountBadgeCell } from "common/table/v2";
 import { isArray, map, snakeCase } from "lodash";
 import { ReactNode } from "react";
 
+import { CustomReportColumn } from "~/features/common/custom-reports/types";
 import {
   BadgeCellExpandable,
   EditableHeaderCell,
@@ -20,7 +21,7 @@ const CUSTOM_FIELD_SYSTEM_PREFIX = "system_";
 const CUSTOM_FIELD_DATA_USE_PREFIX = "privacy_declaration_";
 
 export const getDefaultColumn: (
-  columnNameMap: Record<string, any>,
+  columnNameMap: Record<string, CustomReportColumn | string>,
   isRenamingColumns: boolean,
 ) => Partial<ColumnDef<DatamapReport>> = (
   columnNameMap,
@@ -31,9 +32,10 @@ export const getDefaultColumn: (
     const newColumnNameMap: Record<string, string> = {};
     Object.keys(columnNameMap).forEach((key) => {
       if (typeof columnNameMap[key] === "string") {
-        newColumnNameMap[key] = columnNameMap[key];
-      } else if (columnNameMap[key].label) {
-        newColumnNameMap[key] = columnNameMap[key].label;
+        newColumnNameMap[key] = columnNameMap[key] as string;
+      } else if ((columnNameMap[key] as CustomReportColumn).label) {
+        newColumnNameMap[key] =
+          (columnNameMap[key] as CustomReportColumn).label || "";
       }
     });
     return (
