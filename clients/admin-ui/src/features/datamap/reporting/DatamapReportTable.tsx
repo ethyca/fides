@@ -31,6 +31,7 @@ import { debounce } from "lodash";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
+import { CustomReportColumn } from "~/features/common/custom-reports/types";
 import useTaxonomies from "~/features/common/hooks/useTaxonomies";
 import { DownloadLightIcon } from "~/features/common/Icon";
 import { useHasPermission } from "~/features/common/Restrict";
@@ -235,10 +236,39 @@ export const DatamapReportTable = () => {
   } = useDisclosure();
 
   const onExport = (downloadType: ExportFormat) => {
+    const columnMap: Record<string, CustomReportColumn> = {};
+    Object.entries(columnVisibility).forEach(([key, isVisible]) => {
+      columnMap[key] = {
+        enabled: isVisible,
+      };
+    });
+
+    Object.entries(columnNameMapOverrides).forEach(([key, label]) => {
+      if (columnMap[key]) {
+        columnMap[key].label = label;
+      } else {
+        columnMap[key] = {
+          label,
+          enabled: columnVisibility[key] ?? true,
+        };
+      }
+    });
     exportMinimalDatamapReport({
       ...reportQuery,
       format: downloadType,
       report_id: savedCustomReportId,
+      report: {
+        name: "",
+        type: "datamap",
+        config: {
+          column_map: columnMap,
+          table_state: {
+            groupBy,
+            filters: selectedFilters,
+            columnOrder,
+          },
+        },
+      },
     }).then(() => {
       if (isExportReportSuccess) {
         onExportReportClose();
@@ -321,8 +351,15 @@ export const DatamapReportTable = () => {
           groupBy: savedGroupBy,
           filters: savedFilters,
           columnOrder: savedColumnOrder,
-          columnVisibility: savedColumnVisibility,
         } = savedReport.config.table_state;
+        const savedColumnVisibility: Record<string, boolean> = {};
+
+        Object.entries(savedReport.config.column_map ?? {}).forEach(
+          ([key, value]) => {
+            savedColumnVisibility[key] = value.enabled || false;
+          },
+        );
+
         if (savedGroupBy) {
           setGroupBy(savedGroupBy);
           tableInstance.setGrouping(getGrouping(savedGroupBy));
@@ -340,8 +377,16 @@ export const DatamapReportTable = () => {
         }
       }
       if (savedReport.config?.column_map) {
-        setColumnNameMapOverrides(savedReport.config.column_map);
-        resetForm({ values: savedReport.config.column_map });
+        const columnNameMap: Record<string, string> = {};
+        Object.entries(savedReport.config.column_map ?? {}).forEach(
+          ([key, value]) => {
+            if (value.label) {
+              columnNameMap[key] = value.label;
+            }
+          },
+        );
+        setColumnNameMapOverrides(columnNameMap);
+        resetForm({ values: columnNameMap });
       }
       setSavedCustomReportId(savedReport.id);
       toast({
