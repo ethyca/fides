@@ -1,30 +1,26 @@
 import {
-  AntAlert as Alert,
   AntButton as Button,
   AntDivider as Divider,
-  AntEmpty as Empty,
   AntFlex as Flex,
   AntList as List,
   Breadcrumb,
   BreadcrumbItem,
   BreadcrumbLink,
-  Spinner,
   useToast,
 } from "fidesui";
 import NextLink from "next/link";
 import { useEffect, useState } from "react";
 
 import Layout from "~/features/common/Layout";
-import {
-  ACTION_CENTER_ROUTE,
-  INTEGRATION_MANAGEMENT_ROUTE,
-} from "~/features/common/nav/v2/routes";
+import { ACTION_CENTER_ROUTE } from "~/features/common/nav/v2/routes";
 import PageHeader from "~/features/common/PageHeader";
 import {
   PaginationBar,
   useServerSidePagination,
 } from "~/features/common/table/v2";
 import { useGetMonitorSummaryQuery } from "~/features/data-discovery-and-detection/action-center/actionCenter.slice";
+import { DisabledMonitorPage } from "~/features/data-discovery-and-detection/action-center/DisabledMonitorPage";
+import { EmptyMonitorResult } from "~/features/data-discovery-and-detection/action-center/EmptyMonitorResult";
 import { MonitorResult } from "~/features/data-discovery-and-detection/action-center/MonitorResult";
 import { MonitorSummary } from "~/features/data-discovery-and-detection/action-center/types";
 import { SearchInput } from "~/features/data-discovery-and-detection/SearchInput";
@@ -86,8 +82,8 @@ const ActionCenterPage = () => {
   const results = data?.items || [];
   const loadingResults = isFetching
     ? (Array.from({ length: pageSize }, (_, index) => ({
-        monitor_config_id: index.toString(),
-        asset_counts: [],
+        key: index.toString(),
+        updates: [],
         last_monitored: null,
       })) as any[])
     : [];
@@ -98,23 +94,10 @@ const ActionCenterPage = () => {
   };
 
   if (!webMonitorEnabled) {
-    return (
-      <Layout title="Action center" mainProps={{ className: "h-full" }}>
-        <Flex justify="center" align="center" className="h-full">
-          {isConfigLoading ? (
-            <Spinner color="minos.500" />
-          ) : (
-            <Alert
-              message="Coming soon..."
-              description="Action center is currently disabled."
-              type="info"
-              showIcon
-            />
-          )}
-        </Flex>
-      </Layout>
-    );
+    return <DisabledMonitorPage isConfigLoading={isConfigLoading} />;
   }
+
+  console.log("==>", pageSize, data?.total);
 
   return (
     <Layout title="Action center">
@@ -136,31 +119,13 @@ const ActionCenterPage = () => {
 
       <Flex className="justify-between py-6">
         <SearchInput value={searchQuery} onChange={setSearchQuery} />
-
-        {/* TASK: filter */}
-        <Button data-testid="monitors-filter" size="small">
-          Filter
-        </Button>
       </Flex>
 
       <List
         loading={isLoading}
         dataSource={results || loadingResults}
         locale={{
-          emptyText: (
-            <Empty
-              image={Empty.PRESENTED_IMAGE_SIMPLE}
-              description="All caught up! Set up an integration monitor to track your infrastructure in greater detail."
-            >
-              <NextLink
-                href={INTEGRATION_MANAGEMENT_ROUTE}
-                passHref
-                legacyBehavior
-              >
-                <Button type="primary">Visit integrations</Button>
-              </NextLink>
-            </Empty>
-          ),
+          emptyText: <EmptyMonitorResult />,
         }}
         renderItem={(summary: MonitorSummary) => (
           <MonitorResult
@@ -185,6 +150,7 @@ const ActionCenterPage = () => {
                 onClick={() => {
                   handleIgnore(summary.key);
                 }}
+                data-testid={`ignore-button-${summary.key}`}
               >
                 Ignore
               </Button>,
@@ -193,7 +159,7 @@ const ActionCenterPage = () => {
         )}
       />
 
-      {!!results && !!data?.total && pageSize > data.total && (
+      {!!results && !!data?.total && data.total > pageSize && (
         <>
           <Divider className="mb-6 mt-0" />
           <PaginationBar
