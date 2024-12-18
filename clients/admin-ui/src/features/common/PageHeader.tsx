@@ -39,6 +39,7 @@ const PageHeader = ({
             position: "sticky",
             top: "-24px",
             paddingTop: "24px",
+            paddingBottom: "24px",
             paddingLeft: "40px",
             marginLeft: "-40px",
             paddingRight: "40px",
