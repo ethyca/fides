@@ -112,5 +112,8 @@ describe("Action center", () => {
       // Ignore button
       cy.getByTestId(`ignore-button-${webMonitorKey}`).should("exist");
     });
+    it.skip("Should paginate results", () => {
+      // TODO: mock pagination and also test skeleton loading state
+    });
   });
 });

@@ -103,7 +103,6 @@ const RegulationManagement = ({
           placeholder="Search"
           search={search}
           onClear={() => setSearch("")}
-          data-testid="search-bar"
         />
       </Box>
       <SimpleGrid columns={{ base: 1, md: 2, xl: 3 }} spacing={6} width="100%">
