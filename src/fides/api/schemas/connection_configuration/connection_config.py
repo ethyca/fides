@@ -125,7 +125,7 @@ class ConnectionConfigurationResponse(BaseModel):
 class ConnectionConfigurationWithMonitorConfigResponse(ConnectionConfigurationResponse):
     """Schema for ConnectionConfiguration with MonitorConfigs associated with it."""
 
-    monitors: List["MonitorConfig"] = None
+    monitors: Optional[List["MonitorConfig"]] = None
 
 
 class BulkPutConnectionConfiguration(BulkResponse):
