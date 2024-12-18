@@ -426,49 +426,65 @@ export const getDatamapReportColumns = ({
     columnHelper.accessor((row) => row.system_undeclared_data_categories, {
       id: COLUMN_IDS.SYSTEM_UNDECLARED_DATA_CATEGORIES,
       cell: (props) => {
-        const value = props.getValue();
-
+        const cellValues = props.getValue();
+        if (!cellValues || cellValues.length === 0) {
+          return null;
+        }
+        const values = isArray(cellValues)
+          ? cellValues.map((value) => {
+              return { label: getDataCategoryDisplayName(value), key: value };
+            })
+          : [
+              {
+                label: getDataCategoryDisplayName(cellValues),
+                key: cellValues,
+              },
+            ];
         return (
-          <GroupCountBadgeCell
-            ignoreZero
-            suffix="system undeclared data categories"
-            value={
-              isArray(value)
-                ? map(value, getDataCategoryDisplayName)
-                : getDataCategoryDisplayName(value || "")
-            }
-            badgeProps={{ variant: "outline" }}
-            {...props}
+          <BadgeCellExpandable
+            values={values}
+            cellProps={props as any}
+            variant="outline"
           />
         );
       },
       meta: {
         showHeaderMenu: !isRenaming,
+        showHeaderMenuWrapOption: true,
         width: "auto",
+        overflow: "hidden",
       },
     }),
     columnHelper.accessor((row) => row.data_use_undeclared_data_categories, {
       id: COLUMN_IDS.DATA_USE_UNDECLARED_DATA_CATEGORIES,
       cell: (props) => {
-        const value = props.getValue();
-
+        const cellValues = props.getValue();
+        if (!cellValues || cellValues.length === 0) {
+          return null;
+        }
+        const values = isArray(cellValues)
+          ? cellValues.map((value) => {
+              return { label: getDataCategoryDisplayName(value), key: value };
+            })
+          : [
+              {
+                label: getDataCategoryDisplayName(cellValues),
+                key: cellValues,
+              },
+            ];
         return (
-          <GroupCountBadgeCell
-            ignoreZero
-            suffix="data use undeclared data categories"
-            value={
-              isArray(value)
-                ? map(value, getDataCategoryDisplayName)
-                : getDataCategoryDisplayName(value || "")
-            }
-            badgeProps={{ variant: "outline" }}
-            {...props}
+          <BadgeCellExpandable
+            values={values}
+            cellProps={props as any}
+            variant="outline"
           />
         );
       },
       meta: {
         showHeaderMenu: !isRenaming,
+        showHeaderMenuWrapOption: true,
         width: "auto",
+        overflow: "hidden",
       },
     }),
     columnHelper.accessor((row) => row.cookies, {

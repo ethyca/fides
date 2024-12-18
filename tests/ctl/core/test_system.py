@@ -13,6 +13,7 @@ from sqlalchemy.exc import InvalidRequestError
 from fides.api.db.system import create_system, upsert_cookies
 from fides.api.models.sql_models import Cookies, PrivacyDeclaration
 from fides.api.models.sql_models import System as sql_System
+from fides.api.util.data_category import get_data_categories_map
 from fides.config import FidesConfig
 from fides.connectors.models import OktaConfig
 from fides.core import api
@@ -60,16 +61,28 @@ def test_get_system_data_uses(db, system) -> None:
     assert sql_System.get_data_uses([system]) == set()
 
 
-def test_system_datasets(system_with_dataset_references: System) -> None:
-    assert len(system_with_dataset_references.datasets) == 1
+def test_system_dataset_data_categories(
+    db,
+    system_with_a_single_dataset_reference: System,
+) -> None:
+    assert set(
+        system_with_a_single_dataset_reference.dataset_data_categories(
+            get_data_categories_map(db)
+        )
+    ) == {
+        "user.behavior",
+        "user.contact.address.street",
+        "user.name.first",
+        "user.unique_id",
+    }
 
 
 def test_system_undeclared_data_categories(
-    system_with_undeclared_data_categories: System,
+    db, system_with_undeclared_data_categories: System
 ) -> None:
-    assert system_with_undeclared_data_categories.undeclared_data_categories == {
-        "user.contact.email"
-    }
+    assert system_with_undeclared_data_categories.undeclared_data_categories(
+        get_data_categories_map(db)
+    ) == {"user.contact.email"}
 
 
 @pytest.fixture(scope="function")

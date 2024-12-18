@@ -8,6 +8,7 @@ from fides.api.cryptography import cryptographic_util
 from fides.api.graph.config import CollectionAddress, GraphDataset
 from fides.api.graph.graph import DatasetGraph
 from fides.api.graph.traversal import Traversal, TraversalNode
+from fides.api.models.application_config import ApplicationConfig
 from fides.api.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
@@ -168,6 +169,7 @@ class ConnectorRunner:
         # store the existing masking_strict value so we can reset it at the end of the test
         masking_strict = CONFIG.execution.masking_strict
         CONFIG.execution.masking_strict = True
+        ApplicationConfig.update_config_set(self.db, CONFIG)
 
         access_results, erasure_results = await self._base_erasure_request(
             access_policy, erasure_policy, identities, privacy_request_id
@@ -175,6 +177,7 @@ class ConnectorRunner:
 
         # reset masking_strict value
         CONFIG.execution.masking_strict = masking_strict
+        ApplicationConfig.update_config_set(self.db, CONFIG)
         return access_results, erasure_results
 
     async def non_strict_erasure_request(
@@ -194,6 +197,7 @@ class ConnectorRunner:
         # store the existing masking_strict value so we can reset it at the end of the test
         masking_strict = CONFIG.execution.masking_strict
         CONFIG.execution.masking_strict = False
+        ApplicationConfig.update_config_set(self.db, CONFIG)
 
         access_results, erasure_results = await self._base_erasure_request(
             access_policy,
@@ -205,6 +209,7 @@ class ConnectorRunner:
 
         # reset masking_strict value
         CONFIG.execution.masking_strict = masking_strict
+        ApplicationConfig.update_config_set(self.db, CONFIG)
         return access_results, erasure_results
 
     async def old_consent_request(

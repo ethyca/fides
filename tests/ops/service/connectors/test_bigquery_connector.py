@@ -12,7 +12,7 @@ from fides.api.models.privacy_request import PrivacyRequest, RequestTask
 from fides.api.schemas.namespace_meta.bigquery_namespace_meta import (
     BigQueryNamespaceMeta,
 )
-from fides.api.service.connectors.sql_connector import BigQueryConnector
+from fides.api.service.connectors.bigquery_connector import BigQueryConnector
 
 
 @pytest.mark.integration_external

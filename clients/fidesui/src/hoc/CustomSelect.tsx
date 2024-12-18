@@ -1,4 +1,4 @@
-import { ChevronDown } from "@carbon/icons-react";
+import { Checkmark, ChevronDown } from "@carbon/icons-react";
 import { Flex, Select, SelectProps, Typography } from "antd/lib";
 import { BaseOptionType, DefaultOptionType } from "antd/lib/select";
 import React from "react";
@@ -37,6 +37,7 @@ const withCustomProps = (WrappedComponent: typeof Select) => {
     optionRender = optionDescriptionRender,
     className = "w-full",
     suffixIcon = <ChevronDown />,
+    menuItemSelectedIcon = <Checkmark />,
     ...props
   }: SelectProps<ValueType, OptionType>) => {
     const customProps = {
@@ -44,6 +45,7 @@ const withCustomProps = (WrappedComponent: typeof Select) => {
       optionRender,
       className,
       suffixIcon,
+      menuItemSelectedIcon,
       "data-testid": `select${props.id ? `-${props.id}` : ""}`,
       ...props,
     };

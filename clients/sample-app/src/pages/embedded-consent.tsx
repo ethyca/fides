@@ -60,7 +60,20 @@ const IndexPage = ({ gtmContainerId, privacyCenterUrl }: Props) => {
         {/* Require FidesJS to "embed" it's UI onto the page, instead of as an overlay over the <body> itself. (see https://ethyca.com/docs/dev-docs/js/reference/interfaces/FidesOptions#fides_embed) */}
         <script>{`window.fides_overrides = { fides_embed: true, fides_disable_banner: true }`}</script>
         {/* Allow the embedded consent modal to fill the screen */}
-        <style>{`#fides-embed-container { --fides-overlay-width: 'auto' }`}</style>
+        <style>{`
+          /* Embedded overlay is set to inherit page styling, but in this case there is no other page information so we'll set these styles the modal defaults. */
+          body {
+            font-family: var(--fides-overlay-font-family);
+            color: var(--fides-overlay-font-color-dark);
+            font-size: var(--fides-overlay-font-size-body);
+            background-color: var(--fides-overlay-background-color);
+          }
+
+          /* Allow the embedded consent modal to fill the width of the screen */
+          #fides-embed-container {
+            --fides-overlay-width: 'auto'
+          }
+        `}</style>
       </Head>
       {/**
       Insert the fides.js script and run the GTM integration once ready
@@ -91,6 +104,15 @@ const IndexPage = ({ gtmContainerId, privacyCenterUrl }: Props) => {
           `}
         </Script>
       ) : null}
+      {/* Support for Flutter InAppWebView communication https://inappwebview.dev/docs/webview/javascript/communication */}
+      {/* eslint-disable-next-line @next/next/no-before-interactive-script-outside-document */}
+      <Script id="flutter-inappwebview" strategy="beforeInteractive">
+        {`window.addEventListener("FidesInitialized", function() {
+            Fides.onFidesEvent("FidesUpdated", (detail) => {
+              window.flutter_inappwebview?.callHandler('FidesUpdated', detail);
+            });
+          }, {once: true});`}
+      </Script>
       <div id="fides-embed-container" />
     </>
   );
