@@ -35,13 +35,12 @@ PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL = 150
 @pytest.mark.integration_external
 @pytest.mark.parametrize(
     "dsr_version",
-    ["use_dsr_3_0"], # todo- add back 2_0
+    ["use_dsr_2_0", "use_dsr_3_0"],
 )
 @pytest.mark.parametrize(
     "bigquery_fixtures",
     [
         "bigquery_enterprise_test_dataset_config",
-        "bigquery_enterprise_test_dataset_config_with_partitioning_meta"  # todo- debug why this isn't working
     ],
 )
 @mock.patch("fides.api.models.privacy_request.PrivacyRequest.trigger_policy_webhook")
