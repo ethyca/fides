@@ -1,7 +1,7 @@
 import {
   DatasetLifecycleStatusEnum,
   DatasetLifecycleStatusResult,
-} from "~/features/dataset-lifecycle/types";
+} from "~/features/data-catalog/types";
 import {
   AccessLevel,
   ConnectionConfigurationResponse,

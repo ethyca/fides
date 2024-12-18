@@ -5,20 +5,9 @@ import {
   getCoreRowModel,
   getExpandedRowModel,
   getGroupedRowModel,
-  RowSelectionState,
   useReactTable,
 } from "@tanstack/react-table";
-import {
-  AntButton,
-  Box,
-  Flex,
-  Menu,
-  MenuButton,
-  MenuItem,
-  MenuList,
-  Text,
-  VStack,
-} from "fidesui";
+import { AntButton, Box, Flex, Text, VStack } from "fidesui";
 import { useEffect, useMemo, useState } from "react";
 
 import {
@@ -30,15 +19,9 @@ import {
   TableSkeletonLoader,
   useServerSidePagination,
 } from "~/features/common/table/v2";
-import { RelativeTimestampCell } from "~/features/common/table/v2/cells";
-import { useGetProjectsQuery } from "~/features/data-discovery-and-detection/discovery-detection.slice";
-import IconLegendTooltip from "~/features/data-discovery-and-detection/IndicatorLegend";
+import { useGetMonitorResultsQuery } from "~/features/data-discovery-and-detection/discovery-detection.slice";
 import { SearchInput } from "~/features/data-discovery-and-detection/SearchInput";
-import useSpoofGetProjectsQuery, {
-  DatasetLifecycleProject,
-} from "~/features/dataset-lifecycle/projects/useSpoofGetProjectsQuery";
-import StatusBadgeCell from "~/features/dataset-lifecycle/StatusBadgeCell";
-import SystemActionsCell from "~/features/dataset-lifecycle/systems/SystemActionCell";
+import { StagedResourceAPIResponse } from "~/types/api";
 
 const EMPTY_RESPONSE = {
   items: [],
@@ -61,24 +44,17 @@ const EmptyTableNotice = () => (
   >
     <VStack>
       <Text fontSize="md" fontWeight="600">
-        No systems found
+        No resources found
       </Text>
       <Text fontSize="sm">You&apos;re up to date!</Text>
     </VStack>
   </VStack>
 );
 
-const columnHelper = createColumnHelper<DatasetLifecycleProject>();
+const columnHelper = createColumnHelper<StagedResourceAPIResponse>();
 
-const ProjectsTable = ({
-  monitor_config_id,
-}: {
-  monitor_config_id?: string;
-}) => {
-  const [searchQuery, setSearchQuery] = useState<string>("");
-  const [rowSelectionState, setRowSelectionState] = useState<RowSelectionState>(
-    {},
-  );
+const CatalogResourcesTable = ({ resourceUrn }: { resourceUrn: string }) => {
+  const [searchQuery, setSearchQuery] = useState("");
 
   const {
     PAGE_SIZES,
@@ -92,29 +68,35 @@ const ProjectsTable = ({
     endRange,
     pageIndex,
     setTotalPages,
+    resetPageIndexToDefault,
   } = useServerSidePagination();
+
+  // do we need this in this context?
+  useEffect(() => {
+    resetPageIndexToDefault();
+  }, [resourceUrn, resetPageIndexToDefault]);
 
   const {
     isFetching,
     isLoading,
-    data: queryResult,
-  } = useGetProjectsQuery({
+    data: resources,
+  } = useGetMonitorResultsQuery({
+    staged_resource_urn: resourceUrn,
     page: pageIndex,
     size: pageSize,
-    monitor_config_id: "bq-monitor",
   });
 
   const {
     items: data,
     total: totalRows,
     pages: totalPages,
-  } = useMemo(() => queryResult ?? EMPTY_RESPONSE, [queryResult]);
+  } = useMemo(() => resources ?? EMPTY_RESPONSE, [resources]);
 
   useEffect(() => {
     setTotalPages(totalPages);
   }, [totalPages, setTotalPages]);
 
-  const columns: ColumnDef<DatasetLifecycleProject, any>[] = useMemo(
+  const columns: ColumnDef<StagedResourceAPIResponse, any>[] = useMemo(
     () => [
       columnHelper.display({
         id: "select",
@@ -138,6 +120,7 @@ const ProjectsTable = ({
           cellProps: {
             borderRight: "none",
           },
+          disableRowClick: true,
         },
       }),
       columnHelper.accessor((row) => row.name, {
@@ -145,62 +128,19 @@ const ProjectsTable = ({
         cell: (props) => <DefaultCell value={props.getValue()} />,
         header: "Name",
       }),
-      columnHelper.accessor((row) => row.status, {
-        id: "status",
-        cell: (props) => <StatusBadgeCell statusResult={props.getValue()} />,
-        header: "Status",
-      }),
-      columnHelper.accessor((row) => row.lastUpdated, {
-        id: "lastUpdated",
-        cell: (props) => <RelativeTimestampCell time={props.getValue()} />,
-        header: "Last Updated",
-        meta: {
-          cellProps: {
-            borderRight: "none",
-          },
-        },
-      }),
-      columnHelper.display({
-        id: "actions",
-        cell: (props) => (
-          <SystemActionsCell
-            onHideClick={() =>
-              console.log(`hiding project ${props.row.original.urn}...`)
-            }
-          />
-        ),
-        maxSize: 20,
-        enableResizing: false,
-        meta: {
-          cellProps: {
-            borderLeft: "none",
-          },
-        },
-      }),
     ],
     [],
   );
 
-  const tableInstance = useReactTable<DatasetLifecycleProject>({
+  const tableInstance = useReactTable<StagedResourceAPIResponse>({
     getCoreRowModel: getCoreRowModel(),
     getGroupedRowModel: getGroupedRowModel(),
     getExpandedRowModel: getExpandedRowModel(),
-    manualPagination: true,
-    columnResizeMode: "onChange",
     columns,
+    manualPagination: true,
     data,
-    onRowSelectionChange: setRowSelectionState,
-    state: {
-      rowSelection: rowSelectionState,
-    },
+    columnResizeMode: "onChange",
   });
-
-  const selectedRowIds = Object.keys(rowSelectionState);
-
-  const handleBulkHide = () => {
-    console.log(`hiding projects ${selectedRowIds.join(", ")}...`);
-    setRowSelectionState({});
-  };
 
   if (isLoading || isFetching) {
     return <TableSkeletonLoader rowHeight={36} numRows={36} />;
@@ -213,25 +153,13 @@ const ProjectsTable = ({
           <Box flexShrink={0}>
             <SearchInput value={searchQuery} onChange={setSearchQuery} />
           </Box>
-          <IconLegendTooltip />
         </Flex>
-        <Menu size="xs">
-          <MenuButton
-            as={AntButton}
-            size="small"
-            disabled={!selectedRowIds.length}
-          >
-            Actions
-          </MenuButton>
-          <MenuList>
-            <MenuItem onClick={handleBulkHide}>Hide</MenuItem>
-          </MenuList>
-        </Menu>
+        <AntButton disabled>Actions</AntButton>
       </TableActionBar>
       <FidesTableV2
         tableInstance={tableInstance}
         emptyTableNotice={<EmptyTableNotice />}
-        onRowClick={() => console.log("row clicked")}
+        onRowClick={(row) => console.log(`row ${row.urn} clicked!`)}
       />
       <PaginationBar
         totalRows={totalRows || 0}
@@ -248,4 +176,4 @@ const ProjectsTable = ({
   );
 };
 
-export default ProjectsTable;
+export default CatalogResourcesTable;

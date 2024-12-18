@@ -4,7 +4,7 @@ import ResultStatusBadge from "~/features/common/ResultStatusBadge";
 import {
   DatasetLifecycleStatusEnum,
   DatasetLifecycleStatusResult,
-} from "~/features/dataset-lifecycle/types";
+} from "~/features/data-catalog/types";
 
 const STATUS_COLOR_MAP: Record<DatasetLifecycleStatusEnum, string> = {
   [DatasetLifecycleStatusEnum.ADDED]: "green",

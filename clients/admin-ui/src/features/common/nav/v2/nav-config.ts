@@ -60,8 +60,8 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         requiresPlus: true,
       },
       {
-        title: "E2E datasets (WIP)",
-        path: routes.E2E_DATASETS_ROUTE,
+        title: "Data catalog",
+        path: routes.DATA_CATALOG_ROUTE,
         scopes: [],
       },
     ],

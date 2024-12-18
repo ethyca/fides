@@ -23,7 +23,7 @@ import {
 import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";
 
-import { E2E_DATASETS_ROUTE } from "~/features/common/nav/v2/routes";
+import { DATA_CATALOG_ROUTE } from "~/features/common/nav/v2/routes";
 import {
   DefaultCell,
   DefaultHeaderCell,
@@ -34,13 +34,15 @@ import {
   useServerSidePagination,
 } from "~/features/common/table/v2";
 import { IndeterminateCheckboxCell } from "~/features/common/table/v2/cells";
+import { getQueryParamsFromArray } from "~/features/common/utils";
+import {
+  useGetCatalogSystemsQuery,
+  useLazyGetCatalogProjectsQuery,
+} from "~/features/data-catalog/data-catalog.slice";
+import SystemActionsCell from "~/features/data-catalog/systems/SystemActionCell";
 import IconLegendTooltip from "~/features/data-discovery-and-detection/IndicatorLegend";
-import EditDataUseCell from "~/features/data-discovery-and-detection/new-dataset-lifecycle/EditDataUseCell";
 import { SearchInput } from "~/features/data-discovery-and-detection/SearchInput";
-import SystemActionsCell from "~/features/dataset-lifecycle/systems/SystemActionCell";
-import { useGetSystemsQuery } from "~/features/system";
-import useShowHideSystems from "~/features/system/hooks/useShowHideSystems";
-import { BasicSystemResponse } from "~/types/api";
+import { CatalogSystemResponse } from "~/types/api/models/CatalogSystemResponse";
 
 const EMPTY_RESPONSE = {
   items: [],
@@ -50,7 +52,7 @@ const EMPTY_RESPONSE = {
   pages: 1,
 };
 
-const columnHelper = createColumnHelper<BasicSystemResponse>();
+const columnHelper = createColumnHelper<CatalogSystemResponse>();
 
 const EmptyTableNotice = () => (
   <VStack
@@ -78,10 +80,6 @@ const SystemsTable = () => {
     {},
   );
 
-  // const [showHidden, setShowHidden] = useState(false);
-
-  const { showSystem, hideSystem } = useShowHideSystems();
-
   const router = useRouter();
 
   const {
@@ -102,13 +100,13 @@ const SystemsTable = () => {
     data: queryResult,
     isLoading,
     isFetching,
-  } = useGetSystemsQuery({
+  } = useGetCatalogSystemsQuery({
     page: pageIndex,
     size: pageSize,
-    search: searchQuery,
-    dnd_relevant: true,
     show_hidden: false,
   });
+
+  const [getProjects] = useLazyGetCatalogProjectsQuery();
 
   const {
     items: data,
@@ -120,7 +118,26 @@ const SystemsTable = () => {
     setTotalPages(totalPages);
   }, [totalPages, setTotalPages]);
 
-  const columns: ColumnDef<BasicSystemResponse, any>[] = useMemo(
+  const handleRowClicked = async (row: CatalogSystemResponse) => {
+    // if there are projects, go to project view; otherwise go to datasets view
+    const projectsResponse = await getProjects({
+      monitor_config_ids: row.monitor_config_keys,
+      page: 1,
+      size: 1,
+    });
+    if (!projectsResponse?.data?.total) {
+      router.push(`${DATA_CATALOG_ROUTE}/${row.fides_key}/all`);
+      return;
+    }
+    const monitorIdQueryString = getQueryParamsFromArray(
+      row.monitor_config_keys ?? [],
+      "monitor_config_ids",
+    );
+    const url = `${DATA_CATALOG_ROUTE}/${row.fides_key}?${monitorIdQueryString}`;
+    router.push(url);
+  };
+
+  const columns: ColumnDef<CatalogSystemResponse, any>[] = useMemo(
     () => [
       columnHelper.display({
         id: "select",
@@ -155,17 +172,44 @@ const SystemsTable = () => {
         ),
         header: (props) => <DefaultHeaderCell value="Name" {...props} />,
       }),
-      columnHelper.accessor((row) => row.privacy_declarations, {
-        id: "data-uses",
-        cell: ({ row }) => <EditDataUseCell system={row.original} />,
-        header: (props) => <DefaultHeaderCell value="Data uses" {...props} />,
+      // TODO
+      columnHelper.display({
+        id: "status",
+        cell: () => <DefaultCell value="Status cell goes here" />,
+        header: (props) => <DefaultHeaderCell value="Status" {...props} />,
+      }),
+      // TODO
+      // columnHelper.display({
+      //   id: "changes",
+      //   cell: () => <DefaultCell value="Change count cell goes here" />,
+      //   header: (props) => <DefaultHeaderCell value="Changes" {...props} />,
+      //   maxSize: 100,
+      // }),
+      // TODO
+      columnHelper.display({
+        id: "last-updated",
+        cell: () => <DefaultCell value="Last updated cell goes here" />,
+        header: (props) => (
+          <DefaultHeaderCell value="Last updated" {...props} />
+        ),
         meta: {
           cellProps: {
             borderRight: "none",
           },
-          disableRowClick: true,
         },
       }),
+      // TODO
+      // columnHelper.accessor((row) => row.privacy_declarations, {
+      //   id: "data-uses",
+      //   cell: ({ row }) => <EditDataUseCell system={row.original} />,
+      //   header: (props) => <DefaultHeaderCell value="Data uses" {...props} />,
+      //   meta: {
+      //     cellProps: {
+      //       borderRight: "none",
+      //     },
+      //     disableRowClick: true,
+      //   },
+      // }),
       columnHelper.display({
         id: "actions",
         cell: (props) => (
@@ -173,7 +217,6 @@ const SystemsTable = () => {
             onDetailClick={() =>
               router.push(`/systems/configure/${props.row.original.fides_key}`)
             }
-            onHideClick={() => hideSystem(props.row.original)}
           />
         ),
         maxSize: 20,
@@ -186,10 +229,10 @@ const SystemsTable = () => {
         },
       }),
     ],
-    [],
+    [router],
   );
 
-  const tableInstance = useReactTable<BasicSystemResponse>({
+  const tableInstance = useReactTable<CatalogSystemResponse>({
     getCoreRowModel: getCoreRowModel(),
     getGroupedRowModel: getGroupedRowModel(),
     getExpandedRowModel: getExpandedRowModel(),
@@ -210,11 +253,6 @@ const SystemsTable = () => {
 
   const handleBulkAddDataUse = () => {
     console.log(`adding a data use to systems ${selectedRowIds.join(", ")}...`);
-    setRowSelectionState({});
-  };
-
-  const handleBulkHide = () => {
-    console.log(`hiding systems ${selectedRowIds.join(", ")}...`);
     setRowSelectionState({});
   };
 
@@ -241,16 +279,13 @@ const SystemsTable = () => {
           </MenuButton>
           <MenuList>
             <MenuItem onClick={handleBulkAddDataUse}>Add data use</MenuItem>
-            <MenuItem onClick={handleBulkHide}>Hide</MenuItem>
           </MenuList>
         </Menu>
       </TableActionBar>
       <FidesTableV2
         tableInstance={tableInstance}
         emptyTableNotice={<EmptyTableNotice />}
-        onRowClick={(row) =>
-          router.push(`${E2E_DATASETS_ROUTE}/${row.fides_key}`)
-        }
+        onRowClick={handleRowClicked}
       />
       <PaginationBar
         totalRows={totalRows || 0}

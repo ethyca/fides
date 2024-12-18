@@ -30,7 +30,7 @@ export const DATA_DISCOVERY_ROUTE_DETAIL =
   "/data-discovery/discovery/[resourceUrn]";
 
 // End-to-end datasets
-export const E2E_DATASETS_ROUTE = "/e2e-datasets";
+export const DATA_CATALOG_ROUTE = "/data-catalog";
 
 // Privacy requests group
 export const DATASTORE_CONNECTION_ROUTE = "/datastore-connection";
