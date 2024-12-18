@@ -10,7 +10,7 @@ from fides.api.alembic.migrations.helpers.database_functions import generate_rec
 from fides.api.schemas.custom_report import ReportType
 
 
-class TestCustomReportyMigrationFunctions:
+class TestCustomReportMigrationFunctions:
 
     def test_upgrade_custom_reports(self, db):
         db.execute(
