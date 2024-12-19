@@ -34,7 +34,7 @@ export const MonitorResult = ({
 
   const {
     name,
-    hostname,
+    property,
     total_updates: totalUpdates,
     updates,
     last_monitored: lastMonitored,
@@ -54,7 +54,7 @@ export const MonitorResult = ({
       })
     : undefined;
 
-  const iconUrl = hostname ? getWebsiteIconUrl(hostname) : undefined;
+  const iconUrl = property ? getWebsiteIconUrl(property) : undefined;
 
   return (
     <List.Item data-testid={`monitor-result-${key}`} {...props}>
@@ -66,7 +66,7 @@ export const MonitorResult = ({
               href={`${ACTION_CENTER_ROUTE}/${key}`}
               className="whitespace-nowrap"
             >
-              {`${totalUpdates} assets detected on ${hostname || "this monitor"}`}
+              {`${totalUpdates} assets detected${property ? `on ${property}` : ""}`}
               {!!warning && (
                 <Tooltip
                   title={typeof warning === "string" ? warning : undefined}
