@@ -339,10 +339,11 @@ class TestUpdateDataUse:
         assert d_result.active is False
 
         # Clean up
-        a_result.delete(db)
-        b_result.delete(db)
-        c_result.delete(db)
         d_result.delete(db)
+        c_result.delete(db)
+        b_result.delete(db)
+        a_result.delete(db)
+
 
     def test_update_data_use_deactivate_propagates_down(
         self,
@@ -423,7 +424,7 @@ class TestUpdateDataUse:
         assert d_result.active is False
 
         # Clean up
-        a_result.delete(db)
-        b_result.delete(db)
-        c_result.delete(db)
         d_result.delete(db)
+        c_result.delete(db)
+        b_result.delete(db)
+        a_result.delete(db)
