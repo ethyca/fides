@@ -15,14 +15,36 @@ The types of changes are:
 - `Fixed` for any bug fixes.
 - `Security` in case of vulnerabilities.
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.51.1...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.52.0...main)
+
+
+
+## [2.52.0](https://github.com/ethyca/fides/compare/2.51.2...2.52.0)
 
 ### Added
 - New page in the Cookie House sample app to demonstrate the use of embedding the FidesJS SDK on the page [#5564](https://github.com/ethyca/fides/pull/5564)
+- Added event based communication example to the Cookie House sample app [#5597](https://github.com/ethyca/fides/pull/5597)
 - Added new erasure tests for BigQuery Enterprise [#5554](https://github.com/ethyca/fides/pull/5554)
+- Added new `has_next` parameter for the `link` pagination strategy [#5596](https://github.com/ethyca/fides/pull/5596)
+- Added a `DBCache` model for database-backed caching [#5613](https://github.com/ethyca/fides/pull/5613)
+- Adds "reclassify" button to discovery result tables [#5574](https://github.com/ethyca/fides/pull/5574)
+- Added support for exporting datamaps with column renaming, reordering and visibility options [#5543](https://github.com/ethyca/fides/pull/5543)
+
+### Changed
+- Adjusted Ant's Select component colors and icon [#5594](https://github.com/ethyca/fides/pull/5594)
+- Replaced taxonomies page with new UI based on an interactive tree visualization [#5602](https://github.com/ethyca/fides/pull/5602)
+- Adjusted functionality around updating taxonomy active field, includes data migration to re-activate taxonomy nodes [#5617](https://github.com/ethyca/fides/pull/5617)
+- Migrated breadcrumbs to Ant Design [#5610](https://github.com/ethyca/fides/pull/5610)
+- Updated `CustomReportConfig` to be more intuitive on its contents [#5543](https://github.com/ethyca/fides/pull/5543)
 
 ### Fixed
 - Fixing quickstart.py script [#5585](https://github.com/ethyca/fides/pull/5585)
+- Removed unnecessary double notification when updating database integrations [#5612](https://github.com/ethyca/fides/pull/5612)
+
+## [2.51.2](https://github.com/ethyca/fides/compare/2.51.1...2.51.2)
+
+### Fixed
+- Fixed miscellaneous performance issues with Systems and PrivacyDeclarations [#5601](https://github.com/ethyca/fides/pull/5601)
 
 ## [2.51.1](https://github.com/ethyca/fides/compare/2.51.0...2.51.1)
 
@@ -30,6 +52,7 @@ The types of changes are:
 - SaaS integrations using `oauth_client_credentials` now properly update their access token when editing the secrets. [#5548](https://github.com/ethyca/fides/pull/5548)
 - Saas integrations using `oauth_client_credentials` now properly refresh their access token when the current token expires [#5569](https://github.com/ethyca/fides/pull/5569)
 - Adding `dsr_testing_tools_enabled` security setting [#5573](https://github.com/ethyca/fides/pull/5573)
+- Reverted elimination of connection pool in worker tasks to prevent DB performance issues [#5592](https://github.com/ethyca/fides/pull/5592)
 
 ## [2.51.0](https://github.com/ethyca/fides/compare/2.50.0...2.51.0)
 

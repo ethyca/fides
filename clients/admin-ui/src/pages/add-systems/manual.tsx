@@ -6,8 +6,8 @@ import React, { useMemo } from "react";
 import { useAppSelector } from "~/app/hooks";
 import DataTabs from "~/features/common/DataTabs";
 import Layout from "~/features/common/Layout";
-import BackButton from "~/features/common/nav/v2/BackButton";
 import { ADD_SYSTEMS_ROUTE } from "~/features/common/nav/v2/routes";
+import PageHeader from "~/features/common/PageHeader";
 import ConnectionTypeLogo from "~/features/datastore-connections/ConnectionTypeLogo";
 import { selectLockedForGVL } from "~/features/system/dictionary-form/dict-suggestion.slice";
 import GVLNotice from "~/features/system/GVLNotice";
@@ -20,7 +20,7 @@ const DESCRIBE_SYSTEM_COPY =
 const Header = ({ connector }: { connector?: ConnectionSystemTypeMap }) => (
   <Box display="flex" mb={4} alignItems="center" data-testid="header">
     <ConnectionTypeLogo data={connector ?? "ethyca"} mr={2} />
-    <Heading fontSize="2xl" fontWeight="semibold">
+    <Heading fontSize="md">
       Describe your {connector ? connector.human_readable : "new"} system
     </Heading>
   </Box>
@@ -49,7 +49,16 @@ const NewManualSystem: NextPage = () => {
 
   return (
     <Layout title="Describe your system">
-      <BackButton backPath={ADD_SYSTEMS_ROUTE} />
+      <PageHeader
+        heading="Add systems"
+        breadcrumbItems={[
+          {
+            title: "Add systems",
+            href: ADD_SYSTEMS_ROUTE,
+          },
+          { title: "New system" },
+        ]}
+      />
       <Header connector={connector} />
 
       {lockedForGVL ? <GVLNotice /> : null}

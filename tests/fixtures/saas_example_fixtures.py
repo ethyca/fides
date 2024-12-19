@@ -19,6 +19,7 @@ from fides.api.schemas.policy import ActionType
 from fides.api.schemas.saas.saas_config import ParamValue
 from fides.api.schemas.saas.strategy_configuration import (
     OAuth2AuthorizationCodeConfiguration,
+    OAuth2ClientCredentialsConfiguration,
 )
 from fides.api.service.masking.strategy.masking_strategy_nullify import (
     NullMaskingStrategy,
@@ -384,6 +385,75 @@ def oauth2_authorization_code_connection_config(
             "secrets": secrets,
             "saas_config": saas_config,
             "system_id": system.id,
+        },
+    )
+    yield connection_config
+    connection_config.delete(db)
+
+
+## TODO: base on the previous connection config to set up a new improved
+
+
+@pytest.fixture(scope="function")
+def oauth2_client_credentials_configuration() -> OAuth2ClientCredentialsConfiguration:
+    return {
+        "token_request": {
+            "method": "POST",
+            "path": "/oauth/token",
+            "headers": [
+                {
+                    "name": "Content-Type",
+                    "value": "application/x-www-form-urlencoded",
+                }
+            ],
+            "query_params": [
+                {"name": "client_id", "value": "<client_id>"},
+                {"name": "client_secret", "value": "<client_secret>"},
+                {"name": "grant_type", "value": "client_credentials"},
+            ],
+        },
+    }
+
+
+@pytest.fixture(scope="function")
+def oauth2_client_credentials_connection_config(
+    db: Session, oauth2_client_credentials_configuration
+) -> Generator:
+    secrets = {
+        "domain": "localhost",
+        "client_id": "client",
+        "client_secret": "secret",
+        "access_token": "access",
+    }
+    saas_config = {
+        "fides_key": "oauth2_client_credentials_connector",
+        "name": "OAuth2 Client Credentials Connector",
+        "type": "custom",
+        "description": "Generic OAuth2 connector for testing",
+        "version": "0.0.1",
+        "connector_params": [{"name": item} for item in secrets.keys()],
+        "client_config": {
+            "protocol": "https",
+            "host": secrets["domain"],
+            "authentication": {
+                "strategy": "oauth2_client_credentials",
+                "configuration": oauth2_client_credentials_configuration,
+            },
+        },
+        "endpoints": [],
+        "test_request": {"method": "GET", "path": "/test"},
+    }
+
+    fides_key = saas_config["fides_key"]
+    connection_config = ConnectionConfig.create(
+        db=db,
+        data={
+            "key": fides_key,
+            "name": fides_key,
+            "connection_type": ConnectionType.saas,
+            "access": AccessLevel.write,
+            "secrets": secrets,
+            "saas_config": saas_config,
         },
     )
     yield connection_config

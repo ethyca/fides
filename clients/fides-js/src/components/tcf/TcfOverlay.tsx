@@ -362,12 +362,12 @@ export const TcfOverlay = ({
   useEffect(() => {
     if (options.fidesConsentOverride === ConsentMethod.ACCEPT) {
       fidesDebugger(
-        "Consent automatically accepted by fides_accept_all override!",
+        "Consent automatically accepted by fides_consent_override!",
       );
       handleAcceptAll(true);
     } else if (options.fidesConsentOverride === ConsentMethod.REJECT) {
       fidesDebugger(
-        "Consent automatically rejected by fides_reject_all override!",
+        "Consent automatically rejected by fides_consent_override!",
       );
       handleRejectAll(true);
     }
@@ -389,7 +389,7 @@ export const TcfOverlay = ({
   }, [cookie, options.debug]);
 
   const handleDismiss = useCallback(() => {
-    handleUpdateAllPreferences(ConsentMethod.DISMISS, draftIds!);
+    handleUpdateAllPreferences(ConsentMethod.DISMISS, draftIds);
   }, [handleUpdateAllPreferences, draftIds]);
 
   const experienceConfig =
@@ -461,7 +461,7 @@ export const TcfOverlay = ({
           : () => (
               <TcfTabs
                 experience={experience}
-                enabledIds={draftIds!}
+                enabledIds={draftIds}
                 onChange={(updatedIds) => {
                   setDraftIds(updatedIds);
                   dispatchFidesEvent("FidesUIChanged", cookie, options.debug);
