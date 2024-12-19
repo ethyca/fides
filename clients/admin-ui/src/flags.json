@@ -36,6 +36,12 @@
     "test": true,
     "production": false
   },
+  "webMonitor": {
+    "description": "Monitor websites for activity",
+    "development": true,
+    "test": true,
+    "production": false
+  },
   "ssoAuthentication": {
     "description": "SSO Authentication Providers (OpenID)",
     "development": true,

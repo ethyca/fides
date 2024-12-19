@@ -1,0 +1,40 @@
+{
+  "items": [
+    {
+      "name": "my web monitor 2",
+      "key": "my_web_monitor_2",
+      "last_monitored": "2024-12-17T17:31:20.791014Z",
+      "updates": {
+        "Browser Request": 92,
+        "Cookie": 5
+      },
+      "total_updates": 97
+    },
+    {
+      "name": "my web monitor 1",
+      "key": "my_web_monitor_1",
+      "last_monitored": "2024-12-17T17:31:02.319068Z",
+      "updates": {
+        "Browser Request": 201,
+        "Cookie": 24
+      },
+      "total_updates": 225
+    },
+    {
+      "name": "My New BQ Monitor",
+      "key": "My_New_BQ_Monitor",
+      "last_monitored": "2024-12-16T20:04:16.824025Z",
+      "updates": {
+        "Database": 2,
+        "Field": 216,
+        "Schema": 13,
+        "Table": 22
+      },
+      "total_updates": 253
+    }
+  ],
+  "total": 3,
+  "page": 1,
+  "size": 25,
+  "pages": 1
+}

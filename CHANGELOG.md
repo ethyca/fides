@@ -17,6 +17,8 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.52.0...main)
 
+### Added
+- Added Action Center MVP behind new feature flag [#5622](https://github.com/ethyca/fides/pull/5622)
 
 
 ## [2.52.0](https://github.com/ethyca/fides/compare/2.51.2...2.52.0)
