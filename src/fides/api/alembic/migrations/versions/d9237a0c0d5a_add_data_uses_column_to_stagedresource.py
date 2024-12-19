@@ -1,7 +1,7 @@
 """add `data_uses` column to stagedresource
 
 Revision ID: d9237a0c0d5a
-Revises: e5ec30dfcd87
+Revises: b63ecb007556
 Create Date: 2024-11-21 13:18:24.085858
 
 """
@@ -11,7 +11,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "d9237a0c0d5a"
-down_revision = "e5ec30dfcd87"
+down_revision = "b63ecb007556"
 branch_labels = None
 depends_on = None
 
