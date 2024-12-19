@@ -364,6 +364,13 @@ def fetch_staged_resources_by_type_query(
     if monitor_config_ids:
         query = query.filter(StagedResource.monitor_config_id.in_(monitor_config_ids))
     if not show_hidden:
-        query = query.filter(StagedResource.diff_status != DiffStatus.MUTED.value)
+        from sqlalchemy import or_
+
+        query = query.filter(
+            or_(
+                StagedResource.diff_status != DiffStatus.MUTED.value,
+                StagedResource.diff_status.is_(None),
+            )
+        )
 
     return query

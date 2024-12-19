@@ -279,9 +279,12 @@ class TestPatchSystemConnections:
         system,
         api_client: TestClient,
         generate_auth_header,
+        db: Session,
     ):
         url = V1_URL_PREFIX + f"/system/hidden"
-        auth_header = generate_auth_header(scopes=[SYSTEM_UPDATE])
+        auth_header = generate_auth_header(
+            scopes=[SYSTEM_UPDATE, SYSTEM_MANAGER_UPDATE]
+        )
 
         result = api_client.patch(
             url=f"{url}?hidden=true",
@@ -294,9 +297,9 @@ class TestPatchSystemConnections:
             "updated": 1,
         }
 
-        # fetch the system row from db
-        system = System.filter(system.id)
-        assert system.hidden is True
+        query = "SELECT hidden FROM ctl_systems WHERE fides_key = :fides_key"
+        result = db.execute(query, {"fides_key": system.fides_key}).fetchone()
+        assert result[0] is True
 
 
 class TestGetConnections:
