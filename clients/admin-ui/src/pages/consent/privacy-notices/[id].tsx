@@ -50,19 +50,16 @@ const PrivacyNoticeDetailPage = () => {
           { title: "All privacy Notices", href: PRIVACY_NOTICES_ROUTE },
           { title: data.name },
         ]}
-      >
-        <Box width={{ base: "100%", lg: "70%" }}>
-          <Text fontSize="sm" mb={8}>
-            Configure your privacy notice including consent mechanism,
-            associated data uses and the locations in which this should be
-            displayed to users.
-          </Text>
-        </Box>
-      </PageHeader>
+      />
       <Box
         width={{ base: "100%", lg: "70%" }}
         data-testid="privacy-notice-detail-page"
       >
+        <Text fontSize="sm" mb={8}>
+          Configure your privacy notice including consent mechanism, associated
+          data uses and the locations in which this should be displayed to
+          users.
+        </Text>
         <PrivacyNoticeForm
           privacyNotice={data}
           availableTranslations={availableTranslations}

@@ -104,19 +104,14 @@ const EditPropertyPage: NextPage = () => {
             }`,
           },
         ]}
-      >
-        <Box data-testid="add-messaging-template">
-          <Box maxWidth="720px">
-            <Box padding={2}>
-              <PropertySpecificMessagingTemplateForm
-                template={messagingTemplate}
-                handleSubmit={handleSubmit}
-                handleDelete={onDeleteOpen}
-              />
-            </Box>
-          </Box>
-        </Box>
-      </PageHeader>
+      />
+      <Box data-testid="add-messaging-template" maxWidth="720px">
+        <PropertySpecificMessagingTemplateForm
+          template={messagingTemplate}
+          handleSubmit={handleSubmit}
+          handleDelete={onDeleteOpen}
+        />
+      </Box>
       <ConfirmationModal
         isOpen={deleteIsOpen}
         onClose={onDeleteClose}
