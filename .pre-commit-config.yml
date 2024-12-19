@@ -1,0 +1,23 @@
+minimum_pre_commit_version: "2"
+
+# To use hooks on the pre-commit stage only, run
+# pre-commit install --hook-type pre-commit
+
+repos:
+  - repo: local
+    hooks:
+      - id: gitleaks-pre-commit
+        name: gitleaks-pre-commit
+        description: Detect hardcoded secrets pre-commit using Gitleaks
+        entry: gitleaks protect --verbose --no-banner --redact --staged
+        language: system
+        stages: [pre-commit]
+
+      - id: gitleaks-pre-push
+        # To use this pre-push hook, run
+        # pre-commit install --hook-type pre-push
+        name: gitleaks-pre-push
+        description: Detect hardcoded secrets pre-push using Gitleaks
+        entry: gitleaks detect --verbose --no-banner --redact --log-opts "origin..HEAD"
+        language: system
+        stages: [pre-push]
