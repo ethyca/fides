@@ -2,10 +2,10 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { SystemResponse } from "./SystemResponse";
+import type { SystemWithMonitorKeys } from "./SystemWithMonitorKeys";
 
-export type Page_SystemResponse_ = {
-  items: Array<SystemResponse>;
+export type Page_SystemWithMonitorKeys_ = {
+  items: Array<SystemWithMonitorKeys>;
   total: number | null;
   page: number | null;
   size: number | null;

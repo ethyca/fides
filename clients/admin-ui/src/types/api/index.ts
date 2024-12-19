@@ -310,8 +310,8 @@ export type { Page_StagedResourceAPIResponse_ } from "./models/Page_StagedResour
 export type { Page_StorageDestinationResponse_ } from "./models/Page_StorageDestinationResponse_";
 export type { Page_str_ } from "./models/Page_str_";
 export type { Page_SystemHistoryResponse_ } from "./models/Page_SystemHistoryResponse_";
-export type { Page_SystemResponse_ } from "./models/Page_SystemResponse_";
 export type { Page_SystemSummary_ } from "./models/Page_SystemSummary_";
+export type { Page_SystemWithMonitorKeys_ } from "./models/Page_SystemWithMonitorKeys_";
 export type { Page_Union_PrivacyExperienceResponse__TCFBannerExperienceMinimalResponse__ } from "./models/Page_Union_PrivacyExperienceResponse__TCFBannerExperienceMinimalResponse__";
 export type { Page_Union_PrivacyRequestVerboseResponse__PrivacyRequestResponse__ } from "./models/Page_Union_PrivacyRequestVerboseResponse__PrivacyRequestResponse__";
 export type { Page_UserResponse_ } from "./models/Page_UserResponse_";
@@ -445,6 +445,7 @@ export type { SystemScanResponse } from "./models/SystemScanResponse";
 export type { SystemsDiff } from "./models/SystemsDiff";
 export type { SystemSummary } from "./models/SystemSummary";
 export { SystemType } from "./models/SystemType";
+export type { SystemWithMonitorKeys } from "./models/SystemWithMonitorKeys";
 export type { Table } from "./models/Table";
 export type { TCDecode } from "./models/TCDecode";
 export type { TCFBannerExperienceMinimalResponse } from "./models/TCFBannerExperienceMinimalResponse";
