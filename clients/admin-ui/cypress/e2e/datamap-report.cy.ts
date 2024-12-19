@@ -118,10 +118,16 @@ describe("Data map report table", () => {
       cy.getByTestId("save-button").click();
 
       cy.getByTestId("row-0-col-system_undeclared_data_categories").contains(
-        "2 system undeclared data categories",
+        "User Contact Email",
+      );
+      cy.getByTestId("row-0-col-system_undeclared_data_categories").contains(
+        "Cookie ID",
       );
       cy.getByTestId("row-0-col-data_use_undeclared_data_categories").contains(
-        "2 data use undeclared data categories",
+        "User Contact Email",
+      );
+      cy.getByTestId("row-0-col-data_use_undeclared_data_categories").contains(
+        "Cookie ID",
       );
     });
   });
@@ -276,36 +282,36 @@ describe("Data map report table", () => {
       it("should cancel renaming columns", () => {
         cy.getByTestId("more-menu").click();
         cy.getByTestId("rename-columns-btn").click();
-        cy.getByTestId("column-data_use-input")
+        cy.getByTestId("column-data_uses-input")
           .clear()
           .then(() => {
-            cy.getByTestId("column-data_use-input").type("Custom Title");
+            cy.getByTestId("column-data_uses-input").type("Custom Title");
           });
         cy.getByTestId("rename-columns-cancel-btn").click({ force: true });
         cy.getByTestId("rename-columns-reset-btn").should("not.exist");
         cy.getByTestId("rename-columns-cancel-btn").should("not.exist");
         cy.getByTestId("rename-columns-apply-btn").should("not.exist");
-        cy.getByTestId("column-data_use").should("contain.text", "Data use");
+        cy.getByTestId("column-data_uses").should("contain.text", "Data use");
       });
       it("should reset columns", () => {
         cy.getByTestId("more-menu").click();
         cy.getByTestId("rename-columns-btn").click();
-        cy.getByTestId("column-data_use-input")
+        cy.getByTestId("column-data_uses-input")
           .clear()
           .then(() => {
-            cy.getByTestId("column-data_use-input").type("Custom Title");
+            cy.getByTestId("column-data_uses-input").type("Custom Title");
           });
         cy.getByTestId("rename-columns-apply-btn").click({ force: true });
         cy.getByTestId("more-menu").click();
         cy.getByTestId("rename-columns-btn").click();
         cy.getByTestId("rename-columns-reset-btn").click({ force: true });
-        cy.getByTestId("column-data_use").should("contain.text", "Data use");
+        cy.getByTestId("column-data_uses").should("contain.text", "Data use");
       });
       it("should support pressing the Enter key to apply renamed columns", () => {
         cy.getByTestId("more-menu").click();
         cy.getByTestId("rename-columns-btn").click();
-        cy.getByTestId("column-data_use-input").type("Custom Title{enter}");
-        cy.getByTestId("column-data_use").should(
+        cy.getByTestId("column-data_uses-input").type("Custom Title{enter}");
+        cy.getByTestId("column-data_uses").should(
           "contain.text",
           "Custom Title",
         );

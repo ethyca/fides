@@ -31,7 +31,7 @@ dataset:
               references: null
               identity: null
               primary_key: true
-              data_type: null
+              data_type: integer
               length: null
               return_all_elements: null
               read_only: null
@@ -103,7 +103,7 @@ dataset:
               references: null
               identity: null
               primary_key: true
-              data_type: null
+              data_type: integer
               length: null
               return_all_elements: null
               read_only: null
@@ -119,18 +119,7 @@ dataset:
             description: null
             data_categories:
               - system.operations
-            fides_meta:
-              references:
-                - dataset: enterprise_dsr_testing
-                  field: stackoverflow_posts.id
-                  direction: from
-              identity: null
-              primary_key: null
-              data_type: null
-              length: null
-              return_all_elements: null
-              read_only: null
-              custom_request_field: null
+            fides_meta: null
             fields: null
           - name: revision_guid
             description: null
@@ -147,7 +136,7 @@ dataset:
           - name: user_id
             description: null
             data_categories:
-              - user.contact
+              - system.operations
             fides_meta:
               references:
                 - dataset: enterprise_dsr_testing
@@ -216,7 +205,7 @@ dataset:
               references: null
               identity: null
               primary_key: true
-              data_type: null
+              data_type: integer
               length: null
               return_all_elements: null
               read_only: null
@@ -260,7 +249,7 @@ dataset:
           - name: owner_display_name
             description: null
             data_categories:
-              - system.operations
+              - user.contact
             fides_meta: null
             fields: null
           - name: owner_user_id
@@ -274,7 +263,7 @@ dataset:
                   direction: from
               identity: null
               primary_key: null
-              data_type: null
+              data_type: integer
               length: null
               return_all_elements: null
               read_only: null

@@ -940,6 +940,57 @@ def biquery_erasure_policy(
 
 
 @pytest.fixture(scope="function")
+def bigquery_enterprise_erasure_policy(
+    db: Session,
+    oauth_client: ClientDetail,
+) -> Generator:
+    erasure_policy = Policy.create(
+        db=db,
+        data={
+            "name": "example enterprise erasure policy",
+            "key": "example_enterprise_erasure_policy",
+            "client_id": oauth_client.id,
+        },
+    )
+
+    erasure_rule = Rule.create(
+        db=db,
+        data={
+            "action_type": ActionType.erasure.value,
+            "client_id": oauth_client.id,
+            "name": "Erasure Rule Enterprise",
+            "policy_id": erasure_policy.id,
+            "masking_strategy": {
+                "strategy": "null_rewrite",
+                "configuration": {},
+            },
+        },
+    )
+
+    user_target = RuleTarget.create(
+        db=db,
+        data={
+            "client_id": oauth_client.id,
+            "data_category": DataCategory("user.contact").value,
+            "rule_id": erasure_rule.id,
+        },
+    )
+    yield erasure_policy
+    try:
+        user_target.delete(db)
+    except ObjectDeletedError:
+        pass
+    try:
+        erasure_rule.delete(db)
+    except ObjectDeletedError:
+        pass
+    try:
+        erasure_policy.delete(db)
+    except ObjectDeletedError:
+        pass
+
+
+@pytest.fixture(scope="function")
 def erasure_policy_aes(
     db: Session,
     oauth_client: ClientDetail,
@@ -3400,6 +3451,22 @@ def subject_request_download_ui_enabled():
     CONFIG.security.subject_request_download_ui_enabled = True
     yield
     CONFIG.security.subject_request_download_ui_enabled = original_value
+
+
+@pytest.fixture(scope="function")
+def dsr_testing_tools_enabled():
+    original_value = CONFIG.security.dsr_testing_tools_enabled
+    CONFIG.security.dsr_testing_tools_enabled = True
+    yield
+    CONFIG.security.dsr_testing_tools_enabled = original_value
+
+
+@pytest.fixture(scope="function")
+def dsr_testing_tools_disabled():
+    original_value = CONFIG.security.dsr_testing_tools_enabled
+    CONFIG.security.dsr_testing_tools_enabled = False
+    yield
+    CONFIG.security.dsr_testing_tools_enabled = original_value
 
 
 @pytest.fixture(scope="function")

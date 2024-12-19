@@ -135,6 +135,7 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
       ResourceActionQueryParams & {
         monitor_config_id: string;
         unmute_children?: boolean;
+        start_classification?: boolean;
         classify_monitored_resources?: boolean;
       }
     >({

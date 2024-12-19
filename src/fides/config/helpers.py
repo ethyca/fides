@@ -7,7 +7,6 @@ from re import compile as regex
 from typing import Any, Dict, List, Union
 
 from click import echo
-from loguru import logger
 from toml import dump, load
 
 DEFAULT_CONFIG_PATH = ".fides/fides.toml"
@@ -42,7 +41,6 @@ def load_file(file_names: Union[List[Path], List[str]]) -> str:
         for file_name in file_names:
             possible_location = os.path.join(dir_str, file_name)
             if possible_location and os.path.isfile(possible_location):
-                logger.debug("Loading file {} from {}", file_name, dir_str)
                 return possible_location
 
     raise FileNotFoundError

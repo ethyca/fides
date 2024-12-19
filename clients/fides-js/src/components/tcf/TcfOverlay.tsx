@@ -25,8 +25,13 @@ import {
 } from "../../lib/i18n";
 import { useI18n } from "../../lib/i18n/i18n-context";
 import { updateConsentPreferences } from "../../lib/preferences";
+import { EMPTY_ENABLED_IDS } from "../../lib/tcf/constants";
 import { useGvl } from "../../lib/tcf/gvl-context";
-import type { EnabledIds, TcfSavePreferences } from "../../lib/tcf/types";
+import type {
+  EnabledIds,
+  TcfModels,
+  TcfSavePreferences,
+} from "../../lib/tcf/types";
 import {
   buildTcfEntitiesFromCookieAndFidesString as buildUserPrefs,
   constructTCFNoticesServedProps,
@@ -45,6 +50,13 @@ import { OverlayProps } from "../types";
 import { TCFBannerSupplemental } from "./TCFBannerSupplemental";
 import { TcfConsentButtons } from "./TcfConsentButtons";
 import TcfTabs from "./TcfTabs";
+
+const getAllIds = (modelList: TcfModels) => {
+  if (!modelList) {
+    return [];
+  }
+  return modelList.map((m) => `${m.id}`);
+};
 
 interface TcfOverlayProps extends Omit<OverlayProps, "experience"> {
   experienceMinimal: PrivacyExperienceMinimal;
@@ -159,19 +171,11 @@ export const TcfOverlay = ({
 
   const { setVendorCount } = useVendorButton();
 
-  const [draftIds, setDraftIds] = useState<EnabledIds>();
+  const [draftIds, setDraftIds] = useState<EnabledIds>(EMPTY_ENABLED_IDS);
 
   useEffect(() => {
     if (!experience) {
-      setDraftIds({
-        purposesConsent: [],
-        purposesLegint: [],
-        specialPurposes: [],
-        features: [],
-        specialFeatures: [],
-        vendorsConsent: [],
-        vendorsLegint: [],
-      });
+      setDraftIds(EMPTY_ENABLED_IDS);
     } else {
       const {
         tcf_purpose_consents: consentPurposes = [],
@@ -293,6 +297,83 @@ export const TcfOverlay = ({
     ],
   );
 
+  const handleAcceptAll = useCallback(
+    (wasAutomated?: boolean) => {
+      let allIds: EnabledIds;
+      let exp = experience || experienceMinimal;
+      if (!exp.minimal_tcf) {
+        exp = experience as PrivacyExperience;
+        allIds = {
+          purposesConsent: getAllIds(exp.tcf_purpose_consents),
+          purposesLegint: getAllIds(exp.tcf_purpose_legitimate_interests),
+          specialPurposes: getAllIds(exp.tcf_special_purposes),
+          features: getAllIds(exp.tcf_features),
+          specialFeatures: getAllIds(exp.tcf_special_features),
+          vendorsConsent: getAllIds([
+            ...(exp.tcf_vendor_consents || []),
+            ...(exp.tcf_system_consents || []),
+          ]),
+          vendorsLegint: getAllIds([
+            ...(exp.tcf_vendor_legitimate_interests || []),
+            ...(exp.tcf_system_legitimate_interests || []),
+          ]),
+        };
+      } else {
+        // eslint-disable-next-line no-param-reassign
+        exp = experienceMinimal as PrivacyExperienceMinimal;
+        allIds = {
+          purposesConsent:
+            exp.tcf_purpose_consent_ids?.map((id) => `${id}`) || [],
+          purposesLegint:
+            exp.tcf_purpose_legitimate_interest_ids?.map((id) => `${id}`) || [],
+          specialPurposes:
+            exp.tcf_special_purpose_ids?.map((id) => `${id}`) || [],
+          features: exp.tcf_feature_ids?.map((id) => `${id}`) || [],
+          specialFeatures:
+            exp.tcf_special_feature_ids?.map((id) => `${id}`) || [],
+          vendorsConsent: [
+            ...(exp.tcf_vendor_consent_ids || []),
+            ...(exp.tcf_system_consent_ids || []),
+          ],
+          vendorsLegint: [
+            ...(exp.tcf_vendor_legitimate_interest_ids || []),
+            ...(exp.tcf_system_legitimate_interest_ids || []),
+          ],
+        };
+      }
+      handleUpdateAllPreferences(
+        wasAutomated ? ConsentMethod.SCRIPT : ConsentMethod.ACCEPT,
+        allIds,
+      );
+    },
+    [experience, experienceMinimal, handleUpdateAllPreferences],
+  );
+
+  const handleRejectAll = useCallback(
+    (wasAutomated?: boolean) => {
+      handleUpdateAllPreferences(
+        wasAutomated ? ConsentMethod.SCRIPT : ConsentMethod.REJECT,
+        EMPTY_ENABLED_IDS,
+      );
+    },
+    [handleUpdateAllPreferences],
+  );
+
+  useEffect(() => {
+    if (options.fidesConsentOverride === ConsentMethod.ACCEPT) {
+      fidesDebugger(
+        "Consent automatically accepted by fides_consent_override!",
+      );
+      handleAcceptAll(true);
+    } else if (options.fidesConsentOverride === ConsentMethod.REJECT) {
+      fidesDebugger(
+        "Consent automatically rejected by fides_consent_override!",
+      );
+      handleRejectAll(true);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [options.fidesConsentOverride]);
+
   const [activeTabIndex, setActiveTabIndex] = useState(0);
 
   const dispatchOpenBannerEvent = useCallback(() => {
@@ -308,7 +389,7 @@ export const TcfOverlay = ({
   }, [cookie, options.debug]);
 
   const handleDismiss = useCallback(() => {
-    handleUpdateAllPreferences(ConsentMethod.DISMISS, draftIds!);
+    handleUpdateAllPreferences(ConsentMethod.DISMISS, draftIds);
   }, [handleUpdateAllPreferences, draftIds]);
 
   const experienceConfig =
@@ -336,7 +417,6 @@ export const TcfOverlay = ({
         isEmbedded,
         isOpen,
         onClose,
-        onSave,
         onManagePreferencesClick,
       }) => {
         const goToVendorTab = () => {
@@ -350,17 +430,21 @@ export const TcfOverlay = ({
             isEmbedded={isEmbedded}
             onOpen={dispatchOpenBannerEvent}
             onClose={() => {
-              onClose();
               handleDismiss();
+              onClose();
             }}
             onVendorPageClick={goToVendorTab}
             renderButtonGroup={() => (
               <TcfConsentButtons
                 experience={experience || experienceMinimal}
                 onManagePreferencesClick={onManagePreferencesClick}
-                onSave={(consentMethod: ConsentMethod, keys: EnabledIds) => {
-                  handleUpdateAllPreferences(consentMethod, keys);
-                  onSave();
+                onAcceptAll={() => {
+                  handleAcceptAll();
+                  onClose();
+                }}
+                onRejectAll={() => {
+                  handleRejectAll();
+                  onClose();
                 }}
                 options={options}
               />
@@ -377,7 +461,7 @@ export const TcfOverlay = ({
           : () => (
               <TcfTabs
                 experience={experience}
-                enabledIds={draftIds!}
+                enabledIds={draftIds}
                 onChange={(updatedIds) => {
                   setDraftIds(updatedIds);
                   dispatchFidesEvent("FidesUIChanged", cookie, options.debug);
@@ -401,12 +485,19 @@ export const TcfOverlay = ({
               return (
                 <TcfConsentButtons
                   experience={experience}
-                  onSave={onSave}
+                  onAcceptAll={() => {
+                    handleAcceptAll();
+                    onClose();
+                  }}
+                  onRejectAll={() => {
+                    handleRejectAll();
+                    onClose();
+                  }}
                   renderFirstButton={() => (
                     <Button
                       buttonType={ButtonType.SECONDARY}
                       label={i18n.t("exp.save_button_label")}
-                      onClick={() => onSave(ConsentMethod.SAVE, draftIds!)}
+                      onClick={() => onSave(ConsentMethod.SAVE, draftIds)}
                       className="fides-save-button"
                     />
                   )}
