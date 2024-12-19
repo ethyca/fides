@@ -62,7 +62,7 @@ describe("Action center", () => {
           .replace("monitor-result-", "");
         // linked title
         cy.wrap(result)
-          .contains("assets detected on")
+          .contains("assets detected")
           .should("have.attr", "href", `${ACTION_CENTER_ROUTE}/${monitorKey}`);
         // last monitored relative date with real date in tooltip
         cy.wrap(result)
