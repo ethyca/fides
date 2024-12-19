@@ -3,9 +3,6 @@ import {
   AntDivider as Divider,
   AntFlex as Flex,
   AntList as List,
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
   useToast,
 } from "fidesui";
 import NextLink from "next/link";
@@ -131,21 +128,10 @@ const ActionCenterPage = () => {
 
   return (
     <Layout title="Action center">
-      {/* TASK: migrate to ANT */}
-      <PageHeader breadcrumbs={[{ title: "Action center" }]}>
-        <Breadcrumb
-          separator="/"
-          data-testid="results-breadcrumb"
-          fontSize="sm"
-          fontWeight="semibold"
-          mt={-1}
-          mb={0}
-        >
-          <BreadcrumbItem isCurrentPage>
-            <BreadcrumbLink ml={1}>All activity</BreadcrumbLink>
-          </BreadcrumbItem>
-        </Breadcrumb>
-      </PageHeader>
+      <PageHeader
+        heading="Action center"
+        breadcrumbItems={[{ title: "All activity" }]}
+      />
 
       <Flex className="justify-between py-6">
         <SearchInput value={searchQuery} onChange={setSearchQuery} />
