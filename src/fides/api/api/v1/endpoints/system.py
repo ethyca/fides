@@ -1,4 +1,3 @@
-import datetime
 from typing import Annotated, Dict, List, Optional, Union
 
 from fastapi import Depends, HTTPException, Query, Response, Security
@@ -10,7 +9,6 @@ from fideslang.models import System as SystemSchema
 from fideslang.validation import FidesKey
 from loguru import logger
 from pydantic import Field
-from sqlalchemy import or_
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy.orm import Session
