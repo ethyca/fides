@@ -6,15 +6,10 @@ import { DatamapReportProvider } from "~/features/datamap/reporting/datamap-repo
 import { DatamapReportTable } from "~/features/datamap/reporting/DatamapReportTable";
 
 const DatamapReportingPage = () => (
-  <FixedLayout
-    title="Datamap Report"
-    mainProps={{
-      padding: "0 40px 24px",
-    }}
-  >
+  <FixedLayout title="Datamap Report">
     <PageHeader
       data-testid="datamap-report-heading"
-      breadcrumbs={[{ title: "Data map report" }]}
+      heading="Data map report"
     />
     <DatamapReportProvider>
       <DatamapReportTable />

@@ -1,8 +1,9 @@
-import { Box, Heading, Spinner, Text } from "fidesui";
+import { Box, Spinner, Text } from "fidesui";
 import type { NextPage } from "next";
 
 import { useAppSelector } from "~/app/hooks";
 import Layout from "~/features/common/Layout";
+import PageHeader from "~/features/common/PageHeader";
 import LocationManagement from "~/features/locations/LocationManagement";
 import {
   selectLocationsRegulations,
@@ -18,22 +19,19 @@ const LocationsPage: NextPage = () => {
   return (
     <Layout title="Locations">
       <Box data-testid="location-management">
-        <Heading marginBottom={2} fontSize="2xl">
-          Locations
-        </Heading>
-        <Box>
-          <Text marginBottom={4} fontSize="sm" maxWidth="720px">
+        <PageHeader heading="Locations">
+          <Text fontSize="sm" maxWidth="720px">
             Select the locations that you operate in and Fides will make sure
             that you are automatically presented with the relevant regulatory
             guidelines and global frameworks for your locations.
           </Text>
-          <Box>
-            {isLoading ? (
-              <Spinner />
-            ) : (
-              <LocationManagement data={locationsRegulations} />
-            )}
-          </Box>
+        </PageHeader>
+        <Box>
+          {isLoading ? (
+            <Spinner />
+          ) : (
+            <LocationManagement data={locationsRegulations} />
+          )}
         </Box>
       </Box>
     </Layout>
