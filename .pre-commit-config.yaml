@@ -20,4 +20,4 @@ repos:
         description: Detect hardcoded secrets pre-push using Gitleaks
         entry: gitleaks detect --verbose --no-banner --redact --log-opts "origin..HEAD"
         language: system
-        stages: [pre-push]
+        stages: [push]
