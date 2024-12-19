@@ -143,14 +143,18 @@ const ActionCenterPage = () => {
         locale={{
           emptyText: <EmptyMonitorResult />,
         }}
-        renderItem={(summary: MonitorSummary) => (
-          <MonitorResult
-            showSkeleton={isFetching}
-            key={summary.key}
-            monitorSummary={summary}
-            actions={getWebsiteMonitorActions(summary.key)} // TODO: when monitor type becomes available, use it to determine actions. Defaulting to website monitor actions for now.
-          />
-        )}
+        renderItem={(summary: MonitorSummary) => {
+          return (
+            !!summary && (
+              <MonitorResult
+                showSkeleton={isFetching}
+                key={summary.key}
+                monitorSummary={summary}
+                actions={getWebsiteMonitorActions(summary.key)} // TODO: when monitor type becomes available, use it to determine actions. Defaulting to website monitor actions for now.
+              />
+            )
+          );
+        }}
       />
 
       {!!results && !!data?.total && data.total > pageSize && (
