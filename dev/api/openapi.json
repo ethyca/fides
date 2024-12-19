@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.51.3b2.post0.dev4"
+    "version": "2.51.3b2.post0.dev5"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -42,13 +42,13 @@
           "DataCategory"
         ],
         "summary": "Update",
-        "description": "Update a resource by its fides_key.\n\nThe `is_default` field cannot be updated and will respond\nwith a `403 Forbidden` if attempted.",
-        "operationId": "update_api_v1_data_category_put",
+        "description": "Update a data category. Ensures updates to \"active\" are appropriately cascaded.",
+        "operationId": "Update_api_v1_data_category_put",
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/DataCategory"
+                "$ref": "#/components/schemas/DataCategoryCreateOrUpdate"
               }
             }
           },
@@ -61,20 +61,6 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/DataCategory"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "example": {
-                  "detail": {
-                    "error": "user does not have permission to modify this resource",
-                    "resource_type": "data_category",
-                    "fides_key": "example.key"
-                  }
                 }
               }
             }
@@ -109,7 +95,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/DataCategoryCreate"
+                "$ref": "#/components/schemas/DataCategoryCreateOrUpdate"
               }
             }
           },
@@ -449,7 +435,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/DataSubjectCreate"
+                "$ref": "#/components/schemas/DataSubjectCreateOrUpdate"
               }
             }
           },
@@ -722,13 +708,13 @@
           "DataUse"
         ],
         "summary": "Update",
-        "description": "Update a resource by its fides_key.\n\nThe `is_default` field cannot be updated and will respond\nwith a `403 Forbidden` if attempted.",
-        "operationId": "update_api_v1_data_use_put",
+        "description": "Update a data use. Ensures updates to \"active\" are appropriately cascaded.",
+        "operationId": "Update_api_v1_data_use_put",
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/DataUse"
+                "$ref": "#/components/schemas/DataUseCreateOrUpdate"
               }
             }
           },
@@ -741,20 +727,6 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/DataUse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "example": {
-                  "detail": {
-                    "error": "user does not have permission to modify this resource",
-                    "resource_type": "data_use",
-                    "fides_key": "example.key"
-                  }
                 }
               }
             }
@@ -789,7 +761,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/DataUseCreate"
+                "$ref": "#/components/schemas/DataUseCreateOrUpdate"
               }
             }
           },
@@ -16111,7 +16083,7 @@
         ],
         "title": "DataCategory"
       },
-      "DataCategoryCreate": {
+      "DataCategoryCreateOrUpdate": {
         "properties": {
           "version_added": {
             "anyOf": [
@@ -16167,11 +16139,25 @@
             "title": "Name"
           },
           "description": {
-            "type": "string",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Description"
           },
           "active": {
-            "type": "boolean",
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Active",
             "default": true
           },
@@ -16228,7 +16214,7 @@
         "required": [
           "description"
         ],
-        "title": "DataCategoryCreate"
+        "title": "DataCategoryCreateOrUpdate"
       },
       "DataFlow": {
         "properties": {
@@ -16405,7 +16391,7 @@
         ],
         "title": "DataSubject"
       },
-      "DataSubjectCreate": {
+      "DataSubjectCreateOrUpdate": {
         "properties": {
           "version_added": {
             "anyOf": [
@@ -16461,11 +16447,25 @@
             "title": "Name"
           },
           "description": {
-            "type": "string",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Description"
           },
           "active": {
-            "type": "boolean",
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Active",
             "default": true
           },
@@ -16532,7 +16532,7 @@
         "required": [
           "description"
         ],
-        "title": "DataSubjectCreate"
+        "title": "DataSubjectCreateOrUpdate"
       },
       "DataSubjectRights": {
         "properties": {
@@ -16714,7 +16714,7 @@
         ],
         "title": "DataUse"
       },
-      "DataUseCreate": {
+      "DataUseCreateOrUpdate": {
         "properties": {
           "version_added": {
             "anyOf": [
@@ -16770,11 +16770,25 @@
             "title": "Name"
           },
           "description": {
-            "type": "string",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Description"
           },
           "active": {
-            "type": "boolean",
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Active",
             "default": true
           },
@@ -16831,7 +16845,7 @@
         "required": [
           "description"
         ],
-        "title": "DataUseCreate"
+        "title": "DataUseCreateOrUpdate"
       },
       "DatabaseConfig": {
         "properties": {
