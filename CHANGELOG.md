@@ -29,11 +29,14 @@ The types of changes are:
 - Added new `has_next` parameter for the `link` pagination strategy [#5596](https://github.com/ethyca/fides/pull/5596)
 - Added a `DBCache` model for database-backed caching [#5613](https://github.com/ethyca/fides/pull/5613)
 - Adds "reclassify" button to discovery result tables [#5574](https://github.com/ethyca/fides/pull/5574)
+- Added support for exporting datamaps with column renaming, reordering and visibility options [#5543](https://github.com/ethyca/fides/pull/5543)
 
 ### Changed
 - Adjusted Ant's Select component colors and icon [#5594](https://github.com/ethyca/fides/pull/5594)
 - Replaced taxonomies page with new UI based on an interactive tree visualization [#5602](https://github.com/ethyca/fides/pull/5602)
+- Adjusted functionality around updating taxonomy active field, includes data migration to re-activate taxonomy nodes [#5617](https://github.com/ethyca/fides/pull/5617)
 - Migrated breadcrumbs to Ant Design [#5610](https://github.com/ethyca/fides/pull/5610)
+- Updated `CustomReportConfig` to be more intuitive on its contents [#5543](https://github.com/ethyca/fides/pull/5543)
 
 ### Fixed
 - Fixing quickstart.py script [#5585](https://github.com/ethyca/fides/pull/5585)
