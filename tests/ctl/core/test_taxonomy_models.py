@@ -70,7 +70,7 @@ class TestHierarchicalTaxonomy:
             }
 
             DataUse.create(db=db, data=payload)
-        assert "violates foreign key" in str(exc)
+            assert "violates foreign key" in str(exc)
 
     def test_update_with_invalid_parent_key(
         self, db, parent_data_use_a, child_data_use_b, child_data_use_c
@@ -182,43 +182,18 @@ class TestHierarchicalTaxonomy:
         assert len(parent_data_use_a.children) == 1
         assert parent_data_use_a.children[0].fides_key == child_data_use_b.fides_key
 
-    def test_delete_parent_notice(
-        self,
-        db,
+    def test_cannot_delete_parent_notice_with_children(
+        self, db, parent_data_use_a, child_data_use_c
     ):
         """
-        Tree: A----B
-               \
-                ----C
+        Tree: A----C
         """
-        # Manually create data uses a so that we can delete it safely outside the fixture
-        payload = {
-            "name": "parent",
-            "fides_key": "parent",
-            "active": True,
-            "is_default": False,
-            "description": "parent",
-        }
-        parent_data_use = DataUse.create(db=db, data=payload)
-        payload = {
-            "name": "Child",
-            "fides_key": "parent.child",
-            "parent_key": "parent",
-            "active": True,
-            "is_default": False,
-            "description": "child",
-        }
-        child_data_use = DataUse.create(db=db, data=payload)
-        assert len(parent_data_use.children) == 1
-        assert child_data_use.parent.fides_key == parent_data_use.fides_key
+        assert len(parent_data_use_a.children) == 1
+        assert child_data_use_c.parent.fides_key == parent_data_use_a.fides_key
 
-        parent_data_use.delete(db)
+        with pytest.raises(IntegrityError) as exc:
+            parent_data_use_a.delete(db)
+            assert "violates foreign key" in str(exc)
 
-        assert (
-            DataUse.get_by(db, field="fides_key", value=parent_data_use.fides_key)
-            is None
-        )
-        assert (
-            DataUse.get_by(db, field="fides_key", value=child_data_use.fides_key)
-            is None
-        )
+        assert DataUse.get_by(db, field="fides_key", value=parent_data_use_a.fides_key)
+        assert DataUse.get_by(db, field="fides_key", value=child_data_use_c.fides_key)

@@ -10,6 +10,7 @@ import sqlalchemy as sa
 from alembic import op
 from sqlalchemy import text
 from sqlalchemy.engine import Connection
+from sqlalchemy.sql.elements import TextClause
 
 # revision identifiers, used by Alembic.
 revision = "ae65da77c468"
@@ -31,75 +32,75 @@ def upgrade() -> None:
     """
     bind: Connection = op.get_bind()
 
-    # Update ctl_data_categories
-    bind.execute(
-        text(
-            """
-            WITH RECURSIVE leaf_nodes AS (
-                SELECT DISTINCT dc.fides_key
-                FROM ctl_data_categories dc
-                WHERE dc.fides_key NOT IN (
-                    SELECT DISTINCT parent_key 
-                    FROM ctl_data_categories 
-                    WHERE parent_key IS NOT NULL
-                )
-                AND dc.active = true
-            ),
-            parent_hierarchy AS (
-                SELECT dc.fides_key, dc.parent_key
-                FROM ctl_data_categories dc
-                INNER JOIN leaf_nodes ln ON dc.fides_key = ln.fides_key
-                
-                UNION
-                
-                SELECT dc.fides_key, dc.parent_key
-                FROM ctl_data_categories dc
-                INNER JOIN parent_hierarchy ph ON dc.fides_key = ph.parent_key
+    reactivate_data_categories_query: TextClause = text(
+        """
+        WITH RECURSIVE leaf_nodes AS (
+            SELECT DISTINCT dc.fides_key
+            FROM ctl_data_categories dc
+            WHERE dc.fides_key NOT IN (
+                SELECT DISTINCT parent_key 
+                FROM ctl_data_categories 
+                WHERE parent_key IS NOT NULL
             )
-            UPDATE ctl_data_categories
-            SET active = true
-            WHERE fides_key IN (
-                SELECT fides_key FROM parent_hierarchy
-            )
-            AND active = false;
-            """
+            AND dc.active = true
+        ),
+        parent_hierarchy AS (
+            SELECT dc.fides_key, dc.parent_key
+            FROM ctl_data_categories dc
+            INNER JOIN leaf_nodes ln ON dc.fides_key = ln.fides_key
+            
+            UNION
+            
+            SELECT dc.fides_key, dc.parent_key
+            FROM ctl_data_categories dc
+            INNER JOIN parent_hierarchy ph ON dc.fides_key = ph.parent_key
         )
+        UPDATE ctl_data_categories
+        SET active = true
+        WHERE fides_key IN (
+            SELECT fides_key FROM parent_hierarchy
+        )
+        AND active = false;
+        """
     )
 
-    # Update ctl_data_uses
-    bind.execute(
-        text(
-            """
-            WITH RECURSIVE leaf_nodes AS (
-                SELECT DISTINCT dc.fides_key
-                FROM ctl_data_uses dc
-                WHERE dc.fides_key NOT IN (
-                    SELECT DISTINCT parent_key 
-                    FROM ctl_data_uses 
-                    WHERE parent_key IS NOT NULL
-                )
-                AND dc.active = true
-            ),
-            parent_hierarchy AS (
-                SELECT dc.fides_key, dc.parent_key
-                FROM ctl_data_uses dc
-                INNER JOIN leaf_nodes ln ON dc.fides_key = ln.fides_key
-                
-                UNION
-                
-                SELECT dc.fides_key, dc.parent_key
-                FROM ctl_data_uses dc
-                INNER JOIN parent_hierarchy ph ON dc.fides_key = ph.parent_key
+    reactivate_data_uses_query: TextClause = text(
+        """
+        WITH RECURSIVE leaf_nodes AS (
+            SELECT DISTINCT dc.fides_key
+            FROM ctl_data_uses dc
+            WHERE dc.fides_key NOT IN (
+                SELECT DISTINCT parent_key 
+                FROM ctl_data_uses 
+                WHERE parent_key IS NOT NULL
             )
-            UPDATE ctl_data_uses
-            SET active = true
-            WHERE fides_key IN (
-                SELECT fides_key FROM parent_hierarchy
-            )
-            AND active = false;
-            """
+            AND dc.active = true
+        ),
+        parent_hierarchy AS (
+            SELECT dc.fides_key, dc.parent_key
+            FROM ctl_data_uses dc
+            INNER JOIN leaf_nodes ln ON dc.fides_key = ln.fides_key
+            
+            UNION
+            
+            SELECT dc.fides_key, dc.parent_key
+            FROM ctl_data_uses dc
+            INNER JOIN parent_hierarchy ph ON dc.fides_key = ph.parent_key
         )
+        UPDATE ctl_data_uses
+        SET active = true
+        WHERE fides_key IN (
+            SELECT fides_key FROM parent_hierarchy
+        )
+        AND active = false;
+        """
     )
+
+    # Update ctl_data_categories
+    bind.execute(reactivate_data_categories_query)
+
+    # Update ctl_data_uses
+    bind.execute(reactivate_data_uses_query)
 
 
 def downgrade() -> None:

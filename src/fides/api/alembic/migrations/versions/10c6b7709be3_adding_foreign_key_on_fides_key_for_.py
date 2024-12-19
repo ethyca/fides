@@ -24,7 +24,7 @@ def upgrade():
         "ctl_data_categories",
         ["parent_key"],
         ["fides_key"],
-        ondelete="SET NULL",
+        ondelete="RESTRICT",
     )
     op.create_foreign_key(
         "ctl_data_uses_parent_key_fkey",
@@ -32,7 +32,7 @@ def upgrade():
         "ctl_data_uses",
         ["parent_key"],
         ["fides_key"],
-        ondelete="SET NULL",
+        ondelete="RESTRICT",
     )
     # ### end Alembic commands ###
 

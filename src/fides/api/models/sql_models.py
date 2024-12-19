@@ -174,7 +174,7 @@ class DataCategory(Base, FidesBase):
     fides_key = Column(String, primary_key=True, index=True, unique=True)
 
     parent_key = Column(
-        Text, ForeignKey("ctl_data_categories.fides_key", ondelete="SET NULL")
+        Text, ForeignKey("ctl_data_categories.fides_key", ondelete="RESTRICT")
     )
     active = Column(BOOLEAN, default=True, nullable=False)
 
@@ -187,8 +187,8 @@ class DataCategory(Base, FidesBase):
     children: "RelationshipProperty[List[DataCategory]]" = relationship(
         "DataCategory",
         back_populates="parent",
-        cascade="all",
-        passive_deletes=True,
+        cascade="save-update, merge, refresh-expire",  # intentionally do not cascade deletes
+        passive_deletes="all",
     )
 
     parent: "RelationshipProperty[Optional[DataCategory]]" = relationship(
@@ -238,7 +238,7 @@ class DataUse(Base, FidesBase):
     fides_key = Column(String, primary_key=True, index=True, unique=True)
 
     parent_key = Column(
-        Text, ForeignKey("ctl_data_uses.fides_key", ondelete="SET NULL")
+        Text, ForeignKey("ctl_data_uses.fides_key", ondelete="RESTRICT")
     )
     active = Column(BOOLEAN, default=True, nullable=False)
 
@@ -251,8 +251,8 @@ class DataUse(Base, FidesBase):
     children: "RelationshipProperty[List[DataUse]]" = relationship(
         "DataUse",
         back_populates="parent",
-        cascade="all",
-        passive_deletes=True,
+        cascade="save-update, merge, refresh-expire",  # intentionally do not cascade deletes
+        passive_deletes="all",
     )
 
     parent: "RelationshipProperty[Optional[DataUse]]" = relationship(
