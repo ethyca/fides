@@ -294,6 +294,10 @@ class TestPatchSystemConnections:
             "updated": 1,
         }
 
+        # fetch the system row from db
+        system = System.filter(system.id)
+        assert system.hidden is True
+
 
 class TestGetConnections:
     def test_get_connections_not_authenticated(

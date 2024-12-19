@@ -391,48 +391,37 @@ async def ls(  # pylint: disable=invalid-name
     data_uses: Optional[List[FidesKey]] = Query(None),
     data_categories: Optional[List[FidesKey]] = Query(None),
     data_subjects: Optional[List[FidesKey]] = Query(None),
-    show_deleted: Optional[bool] = Query(False),
 ) -> List:
     """Get a list of all of the Systems.
-    If any parameters or filters are provided the response will be paginated and/or filtered.
+    If any pagination parameters (size or page) are provided, then the response will be paginated
+    & provided filters (search, taxonomy fields) will be applied.
     Otherwise all Systems will be returned (this may be a slow operation if there are many systems,
     so using the pagination parameters is recommended).
     """
-    if not (size or page or search or data_uses or data_categories or data_subjects):
-        return await list_resource(System, db)
-
-    pagination_params = Params(page=page or 1, size=size or 50)
-    # Need to join with PrivacyDeclaration in order to be able to filter
-    # by data use, data category, and data subject
-    query = select(System).outerjoin(
-        PrivacyDeclaration, System.id == PrivacyDeclaration.system_id
-    )
-
-    # Filter out any vendor deleted systems, unless explicitly asked for
-    if not show_deleted:
-        query = query.filter(
-            or_(
-                System.vendor_deleted_date.is_(None),
-                System.vendor_deleted_date >= datetime.datetime.now(),
-            )
+    if size or page:
+        pagination_params = Params(page=page or 1, size=size or 50)
+        # Need to join with PrivacyDeclaration in order to be able to filter
+        # by data use, data category, and data subject
+        query = select(System).outerjoin(
+            PrivacyDeclaration, System.id == PrivacyDeclaration.system_id
         )
+        filter_params = FilterParams(
+            search=search,
+            data_uses=data_uses,
+            data_categories=data_categories,
+            data_subjects=data_subjects,
+        )
+        filtered_query = apply_filters_to_query(
+            query=query,
+            filter_params=filter_params,
+            search_model=System,
+            taxonomy_model=PrivacyDeclaration,
+        )
+        # Add a distinct so we only get one row per system
+        duplicates_removed = filtered_query.distinct(System.id)
+        return await async_paginate(db, duplicates_removed, pagination_params)
 
-    filter_params = FilterParams(
-        search=search,
-        data_uses=data_uses,
-        data_categories=data_categories,
-        data_subjects=data_subjects,
-    )
-    filtered_query = apply_filters_to_query(
-        query=query,
-        filter_params=filter_params,
-        search_model=System,
-        taxonomy_model=PrivacyDeclaration,
-    )
-
-    # Add a distinct so we only get one row per system
-    duplicates_removed = filtered_query.distinct(System.id)
-    return await async_paginate(db, duplicates_removed, pagination_params)
+    return await list_resource(System, db)
 
 
 @SYSTEM_ROUTER.patch(

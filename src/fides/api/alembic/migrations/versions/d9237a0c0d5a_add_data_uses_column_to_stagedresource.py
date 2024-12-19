@@ -1,4 +1,4 @@
-"""add `data_uses` columns to stagedresource
+"""add `data_uses` column to stagedresource
 
 Revision ID: d9237a0c0d5a
 Revises: e5ec30dfcd87
