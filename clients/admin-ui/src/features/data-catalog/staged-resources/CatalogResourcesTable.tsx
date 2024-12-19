@@ -22,6 +22,9 @@ import {
   useServerSidePagination,
 } from "~/features/common/table/v2";
 import { RelativeTimestampCell } from "~/features/common/table/v2/cells";
+import CatalogResourceActionsCell from "~/features/data-catalog/CatalogResourceActionsCell";
+import CatalogStatusCell from "~/features/data-catalog/CatalogStatusCell";
+import { getCatalogResourceStatus } from "~/features/data-catalog/utils";
 import { useGetMonitorResultsQuery } from "~/features/data-discovery-and-detection/discovery-detection.slice";
 import { SearchInput } from "~/features/data-discovery-and-detection/SearchInput";
 import { StagedResourceAPIResponse, SystemResponse } from "~/types/api";
@@ -140,7 +143,9 @@ const CatalogResourcesTable = ({
       }),
       columnHelper.display({
         id: "status",
-        cell: () => <DefaultCell value="TODO" />,
+        cell: ({ row }) => (
+          <CatalogStatusCell status={getCatalogResourceStatus(row.original)} />
+        ),
         header: "Status",
       }),
       columnHelper.accessor((row) => row.description, {
@@ -155,12 +160,13 @@ const CatalogResourcesTable = ({
       }),
       columnHelper.display({
         id: "actions",
-        cell: () => (
-          <AntButton size="small" disabled>
-            Actions
-          </AntButton>
+        cell: ({ row }) => (
+          <CatalogResourceActionsCell resource={row.original} />
         ),
         header: "Actions",
+        meta: {
+          disableRowClick: true,
+        },
       }),
     ],
     [],

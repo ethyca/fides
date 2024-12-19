@@ -34,12 +34,13 @@ import {
   useServerSidePagination,
 } from "~/features/common/table/v2";
 import { IndeterminateCheckboxCell } from "~/features/common/table/v2/cells";
+import { getQueryParamsFromArray } from "~/features/common/utils";
 import { useGetCatalogSystemsQuery } from "~/features/data-catalog/data-catalog.slice";
 import SystemActionsCell from "~/features/data-catalog/systems/SystemActionCell";
 import { useLazyGetAvailableDatabasesByConnectionQuery } from "~/features/data-discovery-and-detection/discovery-detection.slice";
 import IconLegendTooltip from "~/features/data-discovery-and-detection/IndicatorLegend";
 import { SearchInput } from "~/features/data-discovery-and-detection/SearchInput";
-import { SystemResponse } from "~/types/api";
+import { SystemWithMonitorKeys } from "~/types/api";
 
 const EMPTY_RESPONSE = {
   items: [],
@@ -49,7 +50,7 @@ const EMPTY_RESPONSE = {
   pages: 1,
 };
 
-const columnHelper = createColumnHelper<SystemResponse>();
+const columnHelper = createColumnHelper<SystemWithMonitorKeys>();
 
 const EmptyTableNotice = () => (
   <VStack
@@ -116,7 +117,7 @@ const SystemsTable = () => {
     setTotalPages(totalPages);
   }, [totalPages, setTotalPages]);
 
-  const handleRowClicked = async (row: SystemResponse) => {
+  const handleRowClicked = async (row: SystemWithMonitorKeys) => {
     // if there are projects, go to project view; otherwise go to datasets view
     const projectsResponse = await getProjects({
       connection_config_key: row.connection_configs!.key,
@@ -125,12 +126,16 @@ const SystemsTable = () => {
     });
 
     const hasProjects = !!projectsResponse?.data?.total;
+    const queryString = getQueryParamsFromArray(
+      row.monitor_config_keys ?? [],
+      "monitor_config_ids",
+    );
 
-    const url = `${DATA_CATALOG_ROUTE}/${row.fides_key}${hasProjects ? "/projects" : ""}`;
+    const url = `${DATA_CATALOG_ROUTE}/${row.fides_key}${hasProjects ? "/projects" : ""}?${queryString}`;
     router.push(url);
   };
 
-  const columns: ColumnDef<SystemResponse, any>[] = useMemo(
+  const columns: ColumnDef<SystemWithMonitorKeys, any>[] = useMemo(
     () => [
       columnHelper.display({
         id: "select",
@@ -225,7 +230,7 @@ const SystemsTable = () => {
     [router],
   );
 
-  const tableInstance = useReactTable<SystemResponse>({
+  const tableInstance = useReactTable<SystemWithMonitorKeys>({
     getCoreRowModel: getCoreRowModel(),
     getGroupedRowModel: getGroupedRowModel(),
     getExpandedRowModel: getExpandedRowModel(),

@@ -35,7 +35,8 @@ const EMPTY_RESPONSE = {
 
 const CatalogDatasetViewNoProjects = () => {
   const { query, push } = useRouter();
-  const systemKey = query["system-id"] as string;
+  const systemKey = query.systemId as string;
+  const monitorConfigKeys = query.monitor_config_ids as string[];
 
   const {
     PAGE_SIZES,
@@ -58,7 +59,8 @@ const CatalogDatasetViewNoProjects = () => {
   } = useGetCatalogDatasetsQuery({
     page: pageIndex,
     size: pageSize,
-    monitor_config_ids: ["dynamo-monitor"],
+    // TODO: get monitor ids from system
+    monitor_config_ids: monitorConfigKeys ?? ["dynamo-monitor"],
   });
 
   const {

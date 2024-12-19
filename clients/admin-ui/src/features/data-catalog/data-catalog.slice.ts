@@ -3,7 +3,7 @@ import { createSlice } from "@reduxjs/toolkit";
 import { baseApi } from "~/features/common/api.slice";
 import {
   Page_StagedResourceAPIResponse_,
-  Page_SystemResponse_,
+  Page_SystemWithMonitorKeys_,
 } from "~/types/api";
 import { PaginationQueryParams } from "~/types/common/PaginationQueryParams";
 
@@ -24,7 +24,7 @@ interface CatalogResourceQueryParams extends PaginationQueryParams {
 const dataCatalogApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
     getCatalogSystems: build.query<
-      Page_SystemResponse_,
+      Page_SystemWithMonitorKeys_,
       CatalogSystemQueryParams
     >({
       query: (params) => ({
@@ -38,10 +38,9 @@ const dataCatalogApi = baseApi.injectEndpoints({
       Page_StagedResourceAPIResponse_,
       CatalogResourceQueryParams
     >({
-      query: ({ monitor_config_ids, ...params }) => ({
-        method: "POST",
+      query: ({ ...params }) => ({
+        method: "GET",
         url: `/plus/data-catalog/project`,
-        body: monitor_config_ids,
         params,
       }),
       providesTags: ["Discovery Monitor Results"],
@@ -50,10 +49,9 @@ const dataCatalogApi = baseApi.injectEndpoints({
       Page_StagedResourceAPIResponse_,
       CatalogResourceQueryParams
     >({
-      query: ({ monitor_config_ids, ...params }) => ({
-        method: "POST",
+      query: ({ ...params }) => ({
+        method: "GET",
         url: `/plus/data-catalog/dataset`,
-        body: monitor_config_ids,
         params,
       }),
       providesTags: ["Discovery Monitor Results"],

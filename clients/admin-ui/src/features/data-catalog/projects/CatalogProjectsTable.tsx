@@ -103,7 +103,7 @@ const CatalogProjectsTable = ({
   } = useGetCatalogProjectsQuery({
     page: pageIndex,
     size: pageSize,
-    monitor_config_ids: ["bq-monitor", "bq-monitor-2"],
+    monitor_config_ids: monitorConfigIds ?? ["bq-monitor"],
   });
 
   const router = useRouter();

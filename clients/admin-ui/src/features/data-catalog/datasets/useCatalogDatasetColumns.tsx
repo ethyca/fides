@@ -1,7 +1,6 @@
 /* eslint-disable react/no-unstable-nested-components */
 
 import { ColumnDef, createColumnHelper } from "@tanstack/react-table";
-import { AntButton } from "fidesui";
 import { useMemo } from "react";
 
 import {
@@ -9,6 +8,9 @@ import {
   IndeterminateCheckboxCell,
 } from "~/features/common/table/v2";
 import { RelativeTimestampCell } from "~/features/common/table/v2/cells";
+import CatalogResourceActionsCell from "~/features/data-catalog/CatalogResourceActionsCell";
+import CatalogStatusCell from "~/features/data-catalog/CatalogStatusCell";
+import { getCatalogResourceStatus } from "~/features/data-catalog/utils";
 import { StagedResourceAPIResponse } from "~/types/api";
 
 const columnHelper = createColumnHelper<StagedResourceAPIResponse>();
@@ -50,7 +52,9 @@ const useCatalogDatasetColumns = () => {
       }),
       columnHelper.display({
         id: "status",
-        cell: () => <DefaultCell value="TODO" />,
+        cell: ({ row }) => (
+          <CatalogStatusCell status={getCatalogResourceStatus(row.original)} />
+        ),
         header: "Status",
       }),
       columnHelper.accessor((row) => row.description, {
@@ -65,12 +69,13 @@ const useCatalogDatasetColumns = () => {
       }),
       columnHelper.display({
         id: "actions",
-        cell: () => (
-          <AntButton size="small" disabled>
-            Actions
-          </AntButton>
+        cell: ({ row }) => (
+          <CatalogResourceActionsCell resource={row.original} />
         ),
         header: "Actions",
+        meta: {
+          disableRowClick: true,
+        },
       }),
     ],
     [],
