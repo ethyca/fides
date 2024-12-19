@@ -28,6 +28,7 @@ The types of changes are:
 - Added new `has_next` parameter for the `link` pagination strategy [#5596](https://github.com/ethyca/fides/pull/5596)
 - Added a `DBCache` model for database-backed caching [#5613](https://github.com/ethyca/fides/pull/5613)
 - Adds "reclassify" button to discovery result tables [#5574](https://github.com/ethyca/fides/pull/5574)
+- Added support for exporting datamaps with column renaming, reordering and visibility options [#5543](https://github.com/ethyca/fides/pull/5543)
 
 ### Changed
 - Adjusted Ant's Select component colors and icon [#5594](https://github.com/ethyca/fides/pull/5594)
