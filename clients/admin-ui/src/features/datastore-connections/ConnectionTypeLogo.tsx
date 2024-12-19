@@ -12,11 +12,18 @@ import {
   CONNECTOR_LOGOS_PATH,
   FALLBACK_CONNECTOR_LOGOS_PATH,
 } from "./constants";
-import { isConnectionSystemTypeMap, isDatastoreConnection } from "./types";
 
 type ConnectionTypeLogoProps = {
   data: string | ConnectionConfigurationResponse | ConnectionSystemTypeMap;
 };
+
+const isDatastoreConnection = (
+  obj: any,
+): obj is ConnectionConfigurationResponse =>
+  (obj as ConnectionConfigurationResponse).connection_type !== undefined;
+
+const isConnectionSystemTypeMap = (obj: any): obj is ConnectionSystemTypeMap =>
+  (obj as ConnectionSystemTypeMap).encoded_icon !== undefined;
 
 const ConnectionTypeLogo = ({
   data,
