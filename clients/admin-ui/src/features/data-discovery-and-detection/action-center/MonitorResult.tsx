@@ -10,6 +10,7 @@ import {
   Icons,
 } from "fidesui";
 import NextLink from "next/link";
+import { useEffect, useState } from "react";
 
 import { ACTION_CENTER_ROUTE } from "~/features/common/nav/v2/routes";
 import { formatDate, getWebsiteIconUrl } from "~/features/common/utils";
@@ -28,9 +29,7 @@ export const MonitorResult = ({
   showSkeleton,
   ...props
 }: MonitorResultProps) => {
-  if (!monitorSummary) {
-    return null;
-  }
+  const [iconUrl, setIconUrl] = useState<string | undefined>(undefined);
 
   const {
     name,
@@ -54,7 +53,11 @@ export const MonitorResult = ({
       })
     : undefined;
 
-  const iconUrl = property ? getWebsiteIconUrl(property) : undefined;
+  useEffect(() => {
+    if (property) {
+      setIconUrl(getWebsiteIconUrl(property));
+    }
+  }, [property]);
 
   return (
     <List.Item data-testid={`monitor-result-${key}`} {...props}>
