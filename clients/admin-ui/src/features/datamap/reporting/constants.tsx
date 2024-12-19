@@ -15,7 +15,7 @@ export enum DATAMAP_LOCAL_STORAGE_KEYS {
 
 export enum COLUMN_IDS {
   SYSTEM_NAME = "system_name",
-  DATA_USE = "data_use",
+  DATA_USE = "data_uses",
   DATA_CATEGORY = "data_categories",
   DATA_SUBJECT = "data_subjects",
   LEGAL_NAME = "legal_name",

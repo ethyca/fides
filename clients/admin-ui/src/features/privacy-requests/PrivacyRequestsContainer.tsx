@@ -1,4 +1,4 @@
-import { Flex, Heading, Spacer } from "fidesui";
+import { AntSpace as Space } from "fidesui";
 import dynamic from "next/dynamic";
 import * as React from "react";
 import { useEffect } from "react";
@@ -9,6 +9,7 @@ import { RequestTable } from "~/features/privacy-requests/RequestTable";
 import SubmitPrivacyRequest from "~/features/privacy-requests/SubmitPrivacyRequest";
 import { ScopeRegistryEnum } from "~/types/api";
 
+import PageHeader from "../common/PageHeader";
 import { useDSRErrorAlert } from "./hooks/useDSRErrorAlert";
 
 const ActionButtons = dynamic(
@@ -27,18 +28,22 @@ const PrivacyRequestsContainer = () => {
 
   return (
     <>
-      <Flex data-testid="privacy-requests" gap={2}>
-        <Heading mb={8} fontSize="2xl" fontWeight="semibold">
-          Privacy Requests
-        </Heading>
-        <Spacer />
-        {hasPlus && (
-          <Restrict scopes={[ScopeRegistryEnum.PRIVACY_REQUEST_CREATE]}>
-            <SubmitPrivacyRequest />
-          </Restrict>
-        )}
-        <ActionButtons />
-      </Flex>
+      <PageHeader
+        heading="Privacy Requests"
+        breadcrumbItems={[{ title: "All requests" }]}
+        rightContent={
+          <Space>
+            {hasPlus && (
+              <Restrict scopes={[ScopeRegistryEnum.PRIVACY_REQUEST_CREATE]}>
+                <SubmitPrivacyRequest />
+              </Restrict>
+            )}
+            <ActionButtons />
+          </Space>
+        }
+        data-testid="privacy-requests"
+      />
+
       <RequestTable />
     </>
   );

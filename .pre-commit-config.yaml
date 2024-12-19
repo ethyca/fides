@@ -11,7 +11,7 @@ repos:
         description: Detect hardcoded secrets pre-commit using Gitleaks
         entry: gitleaks protect --verbose --no-banner --redact --staged
         language: system
-        stages: [commit]
+        stages: [pre-commit]
 
       - id: gitleaks-pre-push
         # To use this pre-push hook, run
@@ -20,4 +20,4 @@ repos:
         description: Detect hardcoded secrets pre-push using Gitleaks
         entry: gitleaks detect --verbose --no-banner --redact --log-opts "origin..HEAD"
         language: system
-        stages: [push]
+        stages: [pre-push]

@@ -90,15 +90,10 @@ const TaxonomyPage: NextPage = () => {
   ) as TaxonomyEntity[];
 
   return (
-    <Layout
-      title="Taxonomy"
-      mainProps={{
-        padding: "0 40px 48px",
-      }}
-    >
+    <Layout title="Taxonomy">
       <Flex vertical className="h-full">
         <div>
-          <PageHeader breadcrumbs={[{ title: "Taxonomy" }]} />
+          <PageHeader heading="Taxonomy" />
 
           {/* hide search bar until functionality is implemented */}
           <div className="hidden">

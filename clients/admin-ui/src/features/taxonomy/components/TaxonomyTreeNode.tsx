@@ -6,7 +6,7 @@ import {
 } from "fidesui";
 import { useCallback, useContext, useEffect } from "react";
 
-import { TAXONOMY_ROOT_NODE_ID } from "../constants";
+import { CoreTaxonomiesEnum, TAXONOMY_ROOT_NODE_ID } from "../constants";
 import {
   TaxonomyTreeHoverContext,
   TreeNodeHoverStatus,
@@ -20,6 +20,7 @@ export type TaxonomyTreeNodeType = Node<
   {
     label: string;
     taxonomyItem?: TaxonomyEntity;
+    taxonomyType: CoreTaxonomiesEnum;
     onTaxonomyItemClick: (taxonomyItem: TaxonomyEntity) => void | null;
     onAddButtonClick: (taxonomyItem: TaxonomyEntity | undefined) => void;
     hasChildren: boolean;
@@ -38,6 +39,7 @@ const TaxonomyTreeNode = ({
     TaxonomyTreeHoverContext,
   );
   const {
+    taxonomyType,
     taxonomyItem,
     onAddButtonClick,
     onTaxonomyItemClick,
@@ -89,6 +91,10 @@ const TaxonomyTreeNode = ({
   }, [nodeHoverStatus]);
 
   const isRootNode = taxonomyItem?.fides_key === TAXONOMY_ROOT_NODE_ID;
+  const isDataSubjectNode = taxonomyType === CoreTaxonomiesEnum.DATA_SUBJECTS;
+
+  // Data subjects don't support child nodes, so we only show the add button for root node
+  const shouldDisplayAddChildButton = !isDataSubjectNode || isRootNode;
 
   return (
     <div
@@ -122,17 +128,19 @@ const TaxonomyTreeNode = ({
         />
       )}
 
-      <div className={styles["add-button-container"]}>
-        <Button
-          type="default"
-          className={`${styles["add-button"]} ${nodeHoverStatus === TreeNodeHoverStatus.ACTIVE_HOVER ? styles["add-button--visible"] : ""}`}
-          icon={<Icons.Add size={20} />}
-          onClick={() => onAddButtonClick?.(taxonomyItem)}
-          size="middle"
-          data-testid="taxonomy-add-child-label-button"
-          aria-label={`Add child label to ${label}`}
-        />
-      </div>
+      {shouldDisplayAddChildButton && (
+        <div className={styles["add-button-container"]}>
+          <Button
+            type="default"
+            className={`${styles["add-button"]} ${nodeHoverStatus === TreeNodeHoverStatus.ACTIVE_HOVER ? styles["add-button--visible"] : ""}`}
+            icon={<Icons.Add size={20} />}
+            onClick={() => onAddButtonClick?.(taxonomyItem)}
+            size="middle"
+            data-testid="taxonomy-add-child-label-button"
+            aria-label={`Add child label to ${label}`}
+          />
+        </div>
+      )}
     </div>
   );
 };
