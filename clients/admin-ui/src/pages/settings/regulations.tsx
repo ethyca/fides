@@ -21,20 +21,15 @@ const RegulationsPage: NextPage = () => {
   return (
     <Layout title="Regulations">
       <Box data-testid="regulation-management">
-        <PageHeader heading="Regulations">
-          <Text marginBottom={4} fontSize="sm" maxWidth="600px">
-            Select the regulations that apply to your organizations compliance
-            requirements. The selections you make here will automatically update
-            your location selections.{" "}
-            <Link
-              as={NextLink}
-              href={LOCATIONS_ROUTE}
-              color="complimentary.500"
-            >
-              You can view your location settings here.
-            </Link>
-          </Text>
-        </PageHeader>
+        <PageHeader heading="Regulations" />
+        <Text pb={6} fontSize="sm" maxWidth="600px">
+          Select the regulations that apply to your organizations compliance
+          requirements. The selections you make here will automatically update
+          your location selections.{" "}
+          <Link as={NextLink} href={LOCATIONS_ROUTE} color="complimentary.500">
+            You can view your location settings here.
+          </Link>
+        </Text>
         <Box>
           {isLoading ? (
             <Spinner />
