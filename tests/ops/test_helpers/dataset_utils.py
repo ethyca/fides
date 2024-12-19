@@ -13,7 +13,11 @@ from fides.api.graph.config import (
 )
 from fides.api.graph.data_type import DataType, get_data_type, to_data_type_string
 from fides.api.models.connectionconfig import ConnectionConfig
-from fides.api.models.datasetconfig import DatasetConfig, convert_dataset_to_graph
+from fides.api.models.datasetconfig import (
+    DatasetConfig,
+    DatasetField,
+    convert_dataset_to_graph,
+)
 from fides.api.util.collection_util import Row
 
 SAAS_DATASET_DIRECTORY = "data/saas/dataset/"
@@ -231,3 +235,27 @@ def get_simple_fields(fields: Iterable[Field]) -> List[Dict[str, Any]]:
             object["fields"] = get_simple_fields(field.fields.values())
         object_list.append(object)
     return object_list
+
+
+def remove_primary_keys(dataset: Dataset) -> Dataset:
+    """Returns a copy of the dataset with primary key fields removed from fides_meta."""
+    dataset_copy = dataset.model_copy(deep=True)
+
+    for collection in dataset_copy.collections:
+        for field in collection.fields:
+            if field.fides_meta:
+                if field.fides_meta.primary_key:
+                    field.fides_meta.primary_key = None
+                if field.fields:
+                    _remove_nested_primary_keys(field.fields)
+
+    return dataset_copy
+
+
+def _remove_nested_primary_keys(fields: List[DatasetField]) -> None:
+    """Helper function to recursively remove primary keys from nested fields."""
+    for field in fields:
+        if field.fides_meta and field.fides_meta.primary_key:
+            field.fides_meta.primary_key = None
+        if field.fields:
+            _remove_nested_primary_keys(field.fields)
