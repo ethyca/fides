@@ -14,6 +14,7 @@ import palette from "fidesui/src/palette/palette.module.scss";
 export const antTheme: AntThemeConfig = {
   cssVar: true,
   token: {
+    fontFamily: `Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"`,
     colorPrimary: palette.FIDESUI_MINOS,
     colorInfo: palette.FIDESUI_MINOS,
     colorSuccess: palette.FIDESUI_SUCCESS,
@@ -51,7 +52,11 @@ export const antTheme: AntThemeConfig = {
       bodyBg: palette.FIDESUI_NEUTRAL_50,
     },
     Select: {
-      optionActiveBg: palette.FIDESUI_SANDSTONE,
+      optionActiveBg: palette.FIDESUI_NEUTRAL_50,
+    },
+    Menu: {
+      itemHeight: 36,
+      itemHoverBg: palette.FIDESUI_NEUTRAL_50,
     },
     Tooltip: {
       colorBgSpotlight: palette.FIDESUI_MINOS,

@@ -7,8 +7,8 @@ import HomeBanner from "./HomeBanner";
 import HomeContent from "./HomeContent";
 
 const HomeContainer = () => (
-  <Layout title="Home" mainProps={{ padding: 0 }}>
-    <Flex direction="column" gap={10}>
+  <Layout title="Home" padded={false}>
+    <Flex direction="column" gap={10} pb={6}>
       <HomeBanner />
       <HomeContent />
     </Flex>

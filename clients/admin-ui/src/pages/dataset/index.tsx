@@ -17,13 +17,13 @@ import {
   VStack,
 } from "fidesui";
 import type { NextPage } from "next";
+import NextLink from "next/link";
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useDispatch } from "react-redux";
 
 import { usePollForClassifications } from "~/features/common/classifications";
 import { useFeatures } from "~/features/common/features";
-import { DatabaseIcon } from "~/features/common/Icon/database/DatabaseIcon";
 import Layout from "~/features/common/Layout";
 import { DATASET_DETAIL_ROUTE } from "~/features/common/nav/v2/routes";
 import PageHeader from "~/features/common/PageHeader";
@@ -41,7 +41,6 @@ import {
   setActiveDatasetFidesKey,
   useGetDatasetsQuery,
 } from "~/features/dataset/dataset.slice";
-import DatasetBreadcrumbs from "~/features/dataset/DatasetBreadcrumbs";
 import EditDatasetDrawer from "~/features/dataset/EditDatasetDrawer";
 import { Dataset, GenerateTypes } from "~/types/api";
 
@@ -199,25 +198,21 @@ const DataSets: NextPage = () => {
   });
 
   return (
-    <Layout title="Datasets" mainProps={{ paddingTop: 0 }}>
+    <Layout title="Datasets">
       <Box data-testid="system-management">
         <PageHeader
-          breadcrumbs={[{ title: "Datasets" }]}
+          heading="Datasets"
+          breadcrumbItems={[
+            {
+              title: "All datasets",
+            },
+          ]}
           rightContent={
-            <Button href="/dataset/new" data-testid="create-dataset-btn">
-              + Add dataset
-            </Button>
+            <NextLink href="/dataset/new" passHref legacyBehavior>
+              <Button data-testid="create-dataset-btn">+ Add dataset</Button>
+            </NextLink>
           }
-        >
-          <DatasetBreadcrumbs
-            breadcrumbs={[
-              { title: "All datasets", icon: <DatabaseIcon boxSize={4} /> },
-            ]}
-            fontSize="md"
-            fontWeight="normal"
-            mb={5}
-          />
-        </PageHeader>
+        />
 
         {isLoading ? (
           <TableSkeletonLoader rowHeight={36} numRows={15} />
