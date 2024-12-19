@@ -79,7 +79,7 @@ const TaxonomyPage: NextPage = () => {
       }
       setLastCreatedItemKey(result.data.fides_key);
       toast(successToastParams("New label successfully created"));
-      setTimeout(() => setDraftNewItem(null));
+      setDraftNewItem(null);
     },
     [createTrigger, draftNewItem, toast],
   );

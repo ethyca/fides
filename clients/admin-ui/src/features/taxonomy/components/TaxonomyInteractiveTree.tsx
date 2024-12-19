@@ -53,9 +53,9 @@ const TaxonomyInteractiveTree = ({
 
   // Reset the zoom level and center the view when the taxonomy type changes
   useEffect(() => {
-    // Timeout is needed because fitView doesn't work if it's
+    // A small delay is needed because fitView doesn't work if it's
     // called before the nodes are rendered
-    setTimeout(() => fitView(), 0);
+    setTimeout(() => fitView(), 150);
   }, [fitView, taxonomyType]);
 
   // Root node (the taxonomy type)
