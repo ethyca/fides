@@ -344,7 +344,6 @@ class TestUpdateDataUse:
         b_result.delete(db)
         a_result.delete(db)
 
-
     def test_update_data_use_deactivate_propagates_down(
         self,
         db: Session,
