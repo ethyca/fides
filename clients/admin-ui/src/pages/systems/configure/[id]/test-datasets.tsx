@@ -1,4 +1,4 @@
-import { Box, HStack } from "fidesui";
+import { HStack } from "fidesui";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
@@ -66,9 +66,7 @@ const TestDatasetPage: NextPage = () => {
           },
           { title: "Test datasets" },
         ]}
-      >
-        <Box position="relative" />
-      </PageHeader>
+      />
       <HStack
         alignItems="stretch"
         flex="1"

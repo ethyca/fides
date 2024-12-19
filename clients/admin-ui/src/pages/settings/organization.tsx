@@ -25,14 +25,13 @@ const OrganizationPage: NextPage = () => {
   return (
     <Layout title="Organization">
       <Box data-testid="organization-management">
-        <PageHeader heading="Organization Management">
-          <Text maxWidth="600px" fontSize="sm">
+        <PageHeader heading="Organization Management" />
+        <Box maxWidth="600px">
+          <Text pb={6} fontSize="sm">
             Please use this section to manage your organization&lsquo;s details,
             including key information that will be recorded in the RoPA (Record
             of Processing Activities).
           </Text>
-        </PageHeader>
-        <Box maxWidth="600px">
           <Box background="gray.50" padding={2}>
             <OrganizationForm organization={organization} />
           </Box>
