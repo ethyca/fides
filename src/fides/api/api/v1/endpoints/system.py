@@ -11,7 +11,6 @@ from loguru import logger
 from pydantic import Field
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from sqlalchemy.sql import text, update
 from sqlalchemy.orm import Session
 from starlette import status
 from starlette.status import HTTP_200_OK, HTTP_204_NO_CONTENT, HTTP_404_NOT_FOUND
