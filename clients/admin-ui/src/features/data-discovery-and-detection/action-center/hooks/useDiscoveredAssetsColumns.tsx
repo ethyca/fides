@@ -4,6 +4,7 @@ import { DefaultCell } from "~/features/common/table/v2";
 import { StagedResourceAPIResponse } from "~/types/api";
 
 import { DiscoveredAssetActionsCell } from "../tables/cells/DiscoveredAssetActionsCell";
+import { DiscoveryStatusBadgeCell } from "../tables/cells/DiscoveryStatusBadgeCell";
 
 export const useDiscoveredAssetsColumns = ({
   systemName,
@@ -55,7 +56,9 @@ export const useDiscoveredAssetsColumns = ({
     }),
     columnHelper.accessor((row) => row.with_consent, {
       id: "with_consent",
-      cell: (props) => <DefaultCell value={props.getValue()} />,
+      cell: (props) => (
+        <DiscoveryStatusBadgeCell withConsent={props.getValue()} />
+      ),
       header: "Discovery",
     }),
     columnHelper.display({
