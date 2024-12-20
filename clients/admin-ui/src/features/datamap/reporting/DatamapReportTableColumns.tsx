@@ -414,21 +414,6 @@ export const getDatamapReportColumns = ({
     columnHelper.accessor((row) => row.special_category_legal_basis, {
       id: COLUMN_IDS.SPECIAL_CATEGORY_LEGAL_BASIS,
     }),
-    columnHelper.accessor((row) => row.system_dependencies, {
-      id: COLUMN_IDS.SYSTEM_DEPENDENCIES,
-      cell: (props) => (
-        <GroupCountBadgeCell
-          suffix="dependencies"
-          ignoreZero
-          value={props.getValue()}
-          {...props}
-        />
-      ),
-      meta: {
-        showHeaderMenu: !isRenaming,
-        width: "auto",
-      },
-    }),
     columnHelper.accessor((row) => row.third_country_safeguards, {
       id: COLUMN_IDS.THIRD_COUNTRY_SAFEGUARDS,
     }),

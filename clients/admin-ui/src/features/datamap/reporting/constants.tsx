@@ -27,7 +27,7 @@ export enum COLUMN_IDS {
   LEGAL_ADDRESS = "legal_address",
   COOKIE_REFRESH = "cookie_refresh",
   DATA_SECURITY_PRACTICES = "data_security_practices",
-  DATA_SHARED_WITH_THIRD_PARTIES = "DATA_SHARED_WITH_THIRD_PARTIES",
+  DATA_SHARED_WITH_THIRD_PARTIES = "data_shared_with_third_parties",
   DATA_STEWARDS = "data_stewards",
   DECLARATION_NAME = "declaration_name",
   DOES_INTERNATIONAL_TRANSFERS = "does_international_transfers",
@@ -51,7 +51,6 @@ export enum COLUMN_IDS {
   RETENTION_PERIOD = "retention_period",
   SHARED_CATEGORIES = "shared_categories",
   SPECIAL_CATEGORY_LEGAL_BASIS = "special_category_legal_basis",
-  SYSTEM_DEPENDENCIES = "system_dependencies",
   THIRD_COUNTRY_SAFEGUARDS = "third_country_safeguards",
   THIRD_PARTIES = "third_parties",
   COOKIES = "cookies",
@@ -81,7 +80,7 @@ export const DEFAULT_COLUMN_NAMES: Record<COLUMN_IDS, string> = {
   [COLUMN_IDS.DECLARATION_NAME]: "Declaration name",
   [COLUMN_IDS.DOES_INTERNATIONAL_TRANSFERS]: "Does international transfers",
   [COLUMN_IDS.DPA_LOCATION]: "DPA location",
-  [COLUMN_IDS.DESTINATIONS]: "Destinations",
+  [COLUMN_IDS.DESTINATIONS]: "Destinations (Egress)",
   [COLUMN_IDS.EXEMPT_FROM_PRIVACY_REGULATIONS]:
     "Exempt from privacy regulations",
   [COLUMN_IDS.FEATURES]: "Features",
@@ -89,7 +88,7 @@ export const DEFAULT_COLUMN_NAMES: Record<COLUMN_IDS, string> = {
   [COLUMN_IDS.FLEXIBLE_LEGAL_BASIS_FOR_PROCESSING]:
     "Flexible legal basis for processing",
   [COLUMN_IDS.IMPACT_ASSESSMENT_LOCATION]: "Impact assessment location",
-  [COLUMN_IDS.SOURCES]: "Sources",
+  [COLUMN_IDS.SOURCES]: "Sources (Ingress)",
   [COLUMN_IDS.JOINT_CONTROLLER_INFO]: "Joint controller info",
   [COLUMN_IDS.LEGAL_BASIS_FOR_PROFILING]: "Legal basis for profiling",
   [COLUMN_IDS.LEGAL_BASIS_FOR_TRANSFERS]: "Legal basis for transfers",
@@ -104,7 +103,6 @@ export const DEFAULT_COLUMN_NAMES: Record<COLUMN_IDS, string> = {
   [COLUMN_IDS.RETENTION_PERIOD]: "Retention period",
   [COLUMN_IDS.SHARED_CATEGORIES]: "Shared categories",
   [COLUMN_IDS.SPECIAL_CATEGORY_LEGAL_BASIS]: "Special category legal basis",
-  [COLUMN_IDS.SYSTEM_DEPENDENCIES]: "System dependencies",
   [COLUMN_IDS.THIRD_COUNTRY_SAFEGUARDS]: "Third country safeguards",
   [COLUMN_IDS.THIRD_PARTIES]: "Third parties",
   [COLUMN_IDS.SYSTEM_UNDECLARED_DATA_CATEGORIES]:
