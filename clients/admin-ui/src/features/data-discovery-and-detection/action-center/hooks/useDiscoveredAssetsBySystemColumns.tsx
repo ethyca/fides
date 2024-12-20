@@ -1,4 +1,4 @@
-import { createColumnHelper } from "@tanstack/react-table";
+import { ColumnDef, createColumnHelper } from "@tanstack/react-table";
 
 import { DefaultCell } from "~/features/common/table/v2";
 
@@ -9,7 +9,7 @@ import { MonitorAssetsBySystem } from "../types";
 export const useDiscoveredAssetsBySystemColumns = () => {
   const columnHelper = createColumnHelper<MonitorAssetsBySystem>();
 
-  const columns = [
+  const columns: ColumnDef<MonitorAssetsBySystem, any>[] = [
     columnHelper.accessor((row) => row.system_name, {
       id: "system_name",
       cell: (props) => (
@@ -67,6 +67,7 @@ export const useDiscoveredAssetsBySystemColumns = () => {
       header: "Actions",
       meta: {
         width: "auto",
+        disableRowClick: true,
       },
     }),
   ];

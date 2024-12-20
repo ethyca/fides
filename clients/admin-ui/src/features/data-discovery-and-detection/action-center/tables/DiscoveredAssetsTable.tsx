@@ -1,9 +1,7 @@
 import { getCoreRowModel, useReactTable } from "@tanstack/react-table";
 import { Box, Flex } from "fidesui";
-import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 
-import { ACTION_CENTER_ROUTE } from "~/features/common/nav/v2/routes";
 import {
   FidesTableV2,
   PaginationBar,
@@ -11,20 +9,20 @@ import {
   TableSkeletonLoader,
   useServerSidePagination,
 } from "~/features/common/table/v2";
-import { useGetDiscoveredAssetsBySystemQuery } from "~/features/data-discovery-and-detection/action-center/actionCenter.slice";
+import { useGetDiscoveredAssetsQuery } from "~/features/data-discovery-and-detection/action-center/actionCenter.slice";
 
 import { SearchInput } from "../../SearchInput";
-import { useDiscoveredAssetsBySystemColumns } from "../hooks/useDiscoveredAssetsBySystemColumns";
-import { MonitorAssetsBySystem } from "../types";
+import { useDiscoveredAssetsColumns } from "../hooks/useDiscoveredAssetsColumns";
 
-interface DiscoveredAssetsBySystemsTableProps {
+interface DiscoveredAssetsTableProps {
   monitorId: string;
+  systemId: string;
 }
 
-export const DiscoveredAssetsBySystemsTable = ({
+export const DiscoveredAssetsTable = ({
   monitorId,
-}: DiscoveredAssetsBySystemsTableProps) => {
-  const router = useRouter();
+  systemId,
+}: DiscoveredAssetsTableProps) => {
   const {
     PAGE_SIZES,
     pageSize,
@@ -45,8 +43,9 @@ export const DiscoveredAssetsBySystemsTable = ({
     resetPageIndexToDefault();
   }, [monitorId, searchQuery, resetPageIndexToDefault]);
 
-  const { data, isLoading, isFetching } = useGetDiscoveredAssetsBySystemQuery({
+  const { data, isLoading, isFetching } = useGetDiscoveredAssetsQuery({
     key: monitorId,
+    system: systemId,
     page: pageIndex,
     size: pageSize,
     search: searchQuery,
@@ -58,7 +57,7 @@ export const DiscoveredAssetsBySystemsTable = ({
     }
   }, [data, setTotalPages]);
 
-  const { columns } = useDiscoveredAssetsBySystemColumns();
+  const { columns } = useDiscoveredAssetsColumns({ systemName: systemId });
 
   const tableInstance = useReactTable({
     getCoreRowModel: getCoreRowModel(),
@@ -71,10 +70,6 @@ export const DiscoveredAssetsBySystemsTable = ({
   if (isLoading) {
     return <TableSkeletonLoader rowHeight={36} numRows={36} />;
   }
-
-  const handleRowClick = (row: MonitorAssetsBySystem) => {
-    router.push(`${ACTION_CENTER_ROUTE}/${monitorId}/${row.vendor_id}`);
-  };
 
   return (
     <>
@@ -92,7 +87,7 @@ export const DiscoveredAssetsBySystemsTable = ({
           </Flex>
         </Flex>
       </TableActionBar>
-      <FidesTableV2 tableInstance={tableInstance} onRowClick={handleRowClick} />
+      <FidesTableV2 tableInstance={tableInstance} />
       <PaginationBar
         totalRows={data?.items.length || 0}
         pageSizes={PAGE_SIZES}
