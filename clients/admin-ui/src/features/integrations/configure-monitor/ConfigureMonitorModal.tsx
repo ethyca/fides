@@ -5,7 +5,7 @@ import useQueryResultToast from "~/features/common/form/useQueryResultToast";
 import FormModal from "~/features/common/modals/FormModal";
 import { DEFAULT_TOAST_PARAMS } from "~/features/common/toast";
 import {
-  useGetDatabasesByConnectionQuery,
+  useGetAvailableDatabasesByConnectionQuery,
   usePutDiscoveryMonitorMutation,
 } from "~/features/data-discovery-and-detection/discovery-detection.slice";
 import ConfigureMonitorDatabasesForm from "~/features/integrations/configure-monitor/ConfigureMonitorDatabasesForm";
@@ -41,7 +41,7 @@ const ConfigureMonitorModal = ({
   const [putMonitorMutationTrigger, { isLoading: isSubmitting }] =
     usePutDiscoveryMonitorMutation();
 
-  const { data: databases } = useGetDatabasesByConnectionQuery({
+  const { data: databases } = useGetAvailableDatabasesByConnectionQuery({
     page: 1,
     size: 25,
     connection_config_key: integration.key,

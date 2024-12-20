@@ -59,6 +59,11 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         requiresFlag: "dataDiscoveryAndDetection",
         requiresPlus: true,
       },
+      {
+        title: "Data catalog",
+        path: routes.DATA_CATALOG_ROUTE,
+        scopes: [],
+      },
     ],
   },
   {

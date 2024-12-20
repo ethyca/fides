@@ -4,11 +4,11 @@ import {
   Box,
   CloseIcon,
   SmallAddIcon,
-  Wrap,
 } from "fidesui";
 import { useState } from "react";
 
-import { TaxonomySelect } from "~/features/common/dropdown/TaxonomySelect";
+import DataCategorySelect from "~/features/common/dropdown/DataCategorySelect";
+import TaxonomyCellContainer from "~/features/data-discovery-and-detection/tables/cells/TaxonomyCellContainer";
 
 import useTaxonomies from "./hooks/useTaxonomies";
 
@@ -27,14 +27,7 @@ const TaxonomiesPicker = ({
   const { getDataCategoryDisplayName } = useTaxonomies();
 
   return (
-    <Wrap
-      py={2}
-      alignItems="center"
-      position="relative"
-      width="100%"
-      gap={2}
-      overflowX="auto"
-    >
+    <TaxonomyCellContainer>
       {selectedTaxonomies.map((category) => (
         <Badge
           fontWeight="normal"
@@ -76,7 +69,7 @@ const TaxonomiesPicker = ({
           height="max"
           bgColor="#fff"
         >
-          <TaxonomySelect
+          <DataCategorySelect
             selectedTaxonomies={selectedTaxonomies}
             onChange={(o) => {
               setIsAdding(false);
@@ -87,7 +80,7 @@ const TaxonomiesPicker = ({
           />
         </Box>
       )}
-    </Wrap>
+    </TaxonomyCellContainer>
   );
 };
 export default TaxonomiesPicker;

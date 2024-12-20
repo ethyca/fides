@@ -19,6 +19,8 @@ export const baseApi = createApi({
   tagTypes: [
     "Allow List",
     "Auth",
+    "Catalog Systems",
+    "Catalog Projects",
     "Classify Instances Datasets",
     "Classify Instances Systems",
     "Connection Type",
