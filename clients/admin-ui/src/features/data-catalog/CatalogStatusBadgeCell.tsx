@@ -8,7 +8,11 @@ const STATUS_COLOR_MAP: Record<CatalogResourceStatus, string> = {
   [CatalogResourceStatus.CLASSIFYING]: "blue",
 };
 
-const CatalogStatusCell = ({ status }: { status: CatalogResourceStatus }) => {
+const CatalogStatusBadgeCell = ({
+  status,
+}: {
+  status: CatalogResourceStatus;
+}) => {
   return (
     <ResultStatusBadge colorScheme={STATUS_COLOR_MAP[status]}>
       {status}
@@ -16,4 +20,4 @@ const CatalogStatusCell = ({ status }: { status: CatalogResourceStatus }) => {
   );
 };
 
-export default CatalogStatusCell;
+export default CatalogStatusBadgeCell;

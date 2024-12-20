@@ -33,7 +33,8 @@ import {
   useServerSidePagination,
 } from "~/features/common/table/v2";
 import { RelativeTimestampCell } from "~/features/common/table/v2/cells";
-import CatalogStatusCell from "~/features/data-catalog/CatalogStatusCell";
+import CatalogResourceNameCell from "~/features/data-catalog/CatalogResourceNameCell";
+import CatalogStatusBadgeCell from "~/features/data-catalog/CatalogStatusBadgeCell";
 import { useGetCatalogProjectsQuery } from "~/features/data-catalog/data-catalog.slice";
 import SystemActionsCell from "~/features/data-catalog/systems/SystemActionCell";
 import { getCatalogResourceStatus } from "~/features/data-catalog/utils";
@@ -105,7 +106,7 @@ const CatalogProjectsTable = ({
   } = useGetCatalogProjectsQuery({
     page: pageIndex,
     size: pageSize,
-    monitor_config_ids: monitorConfigIds ?? ["bq-monitor"],
+    monitor_config_ids: monitorConfigIds,
   });
 
   const router = useRouter();
@@ -152,14 +153,16 @@ const CatalogProjectsTable = ({
       columnHelper.accessor((row) => row.name, {
         id: "name",
         cell: (props) => (
-          <DefaultCell value={props.getValue()} fontWeight="semibold" />
+          <CatalogResourceNameCell resource={props.row.original} />
         ),
         header: "Project",
       }),
       columnHelper.display({
         id: "status",
         cell: ({ row }) => (
-          <CatalogStatusCell status={getCatalogResourceStatus(row.original)} />
+          <CatalogStatusBadgeCell
+            status={getCatalogResourceStatus(row.original)}
+          />
         ),
         header: "Status",
       }),

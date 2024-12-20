@@ -26,7 +26,7 @@ const DeleteCategoryButton = ({ onClick }: { onClick: () => void }) => (
   />
 );
 
-const EditCategoriesCell = ({ resource }: EditCategoryCellProps) => {
+const EditCategoryCell = ({ resource }: EditCategoryCellProps) => {
   const [isAdding, setIsAdding] = useState(false);
   const { getDataCategoryDisplayName } = useTaxonomies();
   const [updateResourceCategoryMutation] = useUpdateResourceCategoryMutation();
@@ -132,4 +132,4 @@ const EditCategoriesCell = ({ resource }: EditCategoryCellProps) => {
     </TaxonomyCellContainer>
   );
 };
-export default EditCategoriesCell;
+export default EditCategoryCell;

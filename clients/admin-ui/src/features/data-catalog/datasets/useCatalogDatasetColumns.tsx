@@ -9,7 +9,8 @@ import {
 } from "~/features/common/table/v2";
 import { RelativeTimestampCell } from "~/features/common/table/v2/cells";
 import CatalogResourceActionsCell from "~/features/data-catalog/CatalogResourceActionsCell";
-import CatalogStatusCell from "~/features/data-catalog/CatalogStatusCell";
+import CatalogResourceNameCell from "~/features/data-catalog/CatalogResourceNameCell";
+import CatalogStatusBadgeCell from "~/features/data-catalog/CatalogStatusBadgeCell";
 import { getCatalogResourceStatus } from "~/features/data-catalog/utils";
 import { StagedResourceAPIResponse } from "~/types/api";
 
@@ -46,14 +47,16 @@ const useCatalogDatasetColumns = () => {
       columnHelper.accessor((row) => row.name, {
         id: "name",
         cell: (props) => (
-          <DefaultCell value={props.getValue()} fontWeight="semibold" />
+          <CatalogResourceNameCell resource={props.row.original} />
         ),
-        header: "Name",
+        header: "Dataset",
       }),
       columnHelper.display({
         id: "status",
         cell: ({ row }) => (
-          <CatalogStatusCell status={getCatalogResourceStatus(row.original)} />
+          <CatalogStatusBadgeCell
+            status={getCatalogResourceStatus(row.original)}
+          />
         ),
         header: "Status",
       }),

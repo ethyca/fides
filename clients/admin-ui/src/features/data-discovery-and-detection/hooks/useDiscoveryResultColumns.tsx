@@ -14,7 +14,7 @@ import findProjectFromUrn from "~/features/data-discovery-and-detection/utils/fi
 import { DiffStatus } from "~/types/api";
 
 import DiscoveryItemActionsCell from "../tables/cells/DiscoveryItemActionsCell";
-import EditCategoriesCell from "../tables/cells/EditCategoryCell";
+import EditCategoryCell from "../tables/cells/EditCategoryCell";
 import ResultStatusCell from "../tables/cells/ResultStatusCell";
 
 const useDiscoveryResultColumns = ({
@@ -177,7 +177,7 @@ const useDiscoveryResultColumns = ({
       columnHelper.display({
         id: "classifications",
         cell: ({ row }) => {
-          return <EditCategoriesCell resource={row.original} />;
+          return <EditCategoryCell resource={row.original} />;
         },
         meta: { overflow: "visible", disableRowClick: true },
         header: "Data category",

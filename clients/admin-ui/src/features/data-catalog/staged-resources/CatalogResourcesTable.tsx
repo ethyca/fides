@@ -1,7 +1,5 @@
 /* eslint-disable react/no-unstable-nested-components */
 import {
-  ColumnDef,
-  createColumnHelper,
   getCoreRowModel,
   getExpandedRowModel,
   getGroupedRowModel,
@@ -13,22 +11,36 @@ import { useEffect, useMemo, useState } from "react";
 
 import { DATA_CATALOG_ROUTE } from "~/features/common/nav/v2/routes";
 import {
-  DefaultCell,
   FidesTableV2,
-  IndeterminateCheckboxCell,
   PaginationBar,
   TableActionBar,
   TableSkeletonLoader,
   useServerSidePagination,
 } from "~/features/common/table/v2";
-import { RelativeTimestampCell } from "~/features/common/table/v2/cells";
-import CatalogResourceActionsCell from "~/features/data-catalog/CatalogResourceActionsCell";
-import CatalogStatusCell from "~/features/data-catalog/CatalogStatusCell";
-import { getCatalogResourceStatus } from "~/features/data-catalog/utils";
+import useCatalogResourceColumns from "~/features/data-catalog/useCatalogResourceColumns";
 import { useGetMonitorResultsQuery } from "~/features/data-discovery-and-detection/discovery-detection.slice";
 import { SearchInput } from "~/features/data-discovery-and-detection/SearchInput";
+import { StagedResourceType } from "~/features/data-discovery-and-detection/types/StagedResourceType";
+import { findResourceType } from "~/features/data-discovery-and-detection/utils/findResourceType";
 import resourceHasChildren from "~/features/data-discovery-and-detection/utils/resourceHasChildren";
-import { StagedResourceAPIResponse, SystemResponse } from "~/types/api";
+import {
+  DiffStatus,
+  StagedResourceAPIResponse,
+  SystemResponse,
+} from "~/types/api";
+
+// everything except muted
+const DIFF_STATUS_FILTERS = [
+  DiffStatus.ADDITION,
+  DiffStatus.CLASSIFYING,
+  DiffStatus.CLASSIFICATION_ADDITION,
+  DiffStatus.CLASSIFICATION_QUEUED,
+  DiffStatus.CLASSIFICATION_UPDATE,
+  DiffStatus.MONITORED,
+  DiffStatus.PROMOTING,
+  DiffStatus.REMOVAL,
+  DiffStatus.REMOVING,
+];
 
 const EMPTY_RESPONSE = {
   items: [],
@@ -57,8 +69,6 @@ const EmptyTableNotice = () => (
     </VStack>
   </VStack>
 );
-
-const columnHelper = createColumnHelper<StagedResourceAPIResponse>();
 
 const CatalogResourcesTable = ({
   resourceUrn,
@@ -97,6 +107,7 @@ const CatalogResourcesTable = ({
     staged_resource_urn: resourceUrn,
     page: pageIndex,
     size: pageSize,
+    diff_status: DIFF_STATUS_FILTERS,
   });
 
   const {
@@ -109,75 +120,9 @@ const CatalogResourcesTable = ({
     setTotalPages(totalPages);
   }, [totalPages, setTotalPages]);
 
-  const columns: ColumnDef<StagedResourceAPIResponse, any>[] = useMemo(
-    () => [
-      columnHelper.display({
-        id: "select",
-        cell: ({ row }) => (
-          <IndeterminateCheckboxCell
-            isChecked={row.getIsSelected()}
-            onChange={row.getToggleSelectedHandler()}
-            dataTestId={`select-row-${row.id}`}
-          />
-        ),
-        header: ({ table }) => (
-          <IndeterminateCheckboxCell
-            isChecked={table.getIsAllPageRowsSelected()}
-            onChange={table.getToggleAllPageRowsSelectedHandler()}
-            dataTestId="select-all-rows"
-          />
-        ),
-        maxSize: 25,
-        enableResizing: false,
-        meta: {
-          cellProps: {
-            borderRight: "none",
-          },
-          disableRowClick: true,
-        },
-      }),
-      columnHelper.accessor((row) => row.name, {
-        id: "name",
-        cell: (props) => (
-          <DefaultCell
-            value={props.getValue()}
-            fontWeight={
-              resourceHasChildren(props.row.original) ? "semibold" : "normal"
-            }
-          />
-        ),
-        header: "Name",
-      }),
-      columnHelper.display({
-        id: "status",
-        cell: ({ row }) => (
-          <CatalogStatusCell status={getCatalogResourceStatus(row.original)} />
-        ),
-        header: "Status",
-      }),
-      columnHelper.accessor((row) => row.description, {
-        id: "description",
-        cell: (props) => <DefaultCell value={props.getValue()} />,
-        header: "Description",
-      }),
-      columnHelper.accessor((row) => row.updated_at, {
-        id: "lastUpdated",
-        cell: (props) => <RelativeTimestampCell time={props.getValue()} />,
-        header: "Updated",
-      }),
-      columnHelper.display({
-        id: "actions",
-        cell: ({ row }) => (
-          <CatalogResourceActionsCell resource={row.original} />
-        ),
-        header: "Actions",
-        meta: {
-          disableRowClick: true,
-        },
-      }),
-    ],
-    [],
-  );
+  const type = findResourceType(data[0] ?? StagedResourceType.NONE);
+
+  const columns = useCatalogResourceColumns(type);
 
   const tableInstance = useReactTable<StagedResourceAPIResponse>({
     getCoreRowModel: getCoreRowModel(),

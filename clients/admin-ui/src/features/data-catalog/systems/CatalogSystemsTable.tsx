@@ -168,7 +168,7 @@ const SystemsTable = () => {
           <DefaultCell
             value={getValue()}
             fontWeight={
-              !!row.original.connection_configs?.key ? "semibold" : "normal"
+              row.original.connection_configs?.key ? "semibold" : "normal"
             }
           />
         ),

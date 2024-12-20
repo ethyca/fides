@@ -1,4 +1,14 @@
-import { AntButton as Button } from "fidesui";
+import {
+  AntButton,
+  AntButton as Button,
+  Flex,
+  Menu,
+  MenuButton,
+  MenuItem,
+  MenuList,
+  MoreIcon,
+  Spacer,
+} from "fidesui";
 
 import { useAlert } from "~/features/common/hooks";
 import {
@@ -7,6 +17,7 @@ import {
 } from "~/features/data-catalog/utils";
 import {
   useConfirmResourceMutation,
+  useMuteResourceMutation,
   usePromoteResourceMutation,
 } from "~/features/data-discovery-and-detection/discovery-detection.slice";
 import { StagedResourceAPIResponse } from "~/types/api";
@@ -22,6 +33,8 @@ const CatalogResourceActionsCell = ({
     useConfirmResourceMutation();
   const [promoteResource, { isLoading: approveIsLoading }] =
     usePromoteResourceMutation();
+  const [muteResource, { isLoading: muteIsLoading }] =
+    useMuteResourceMutation();
 
   const classifyResource = async () => {
     await confirmResource({
@@ -39,13 +52,21 @@ const CatalogResourceActionsCell = ({
     await promoteResource({
       staged_resource_urn: resource.urn,
     });
-    successAlert(`Approved ${resource.name ?? "this resource"}`);
+    successAlert(`Approved ${resource.name ?? " resource"}`);
   };
 
-  const anyActionIsLoading = classifyIsLoading || approveIsLoading;
+  const hideResource = async () => {
+    await muteResource({
+      staged_resource_urn: resource.urn,
+    });
+    successAlert(`Hid ${resource.name ?? " resource"}`);
+  };
+
+  const anyActionIsLoading =
+    classifyIsLoading || approveIsLoading || muteIsLoading;
 
   return (
-    <>
+    <Flex gap={2} justify="space-between">
       {status === CatalogResourceStatus.ATTENTION_REQUIRED && (
         <Button
           size="small"
@@ -66,7 +87,23 @@ const CatalogResourceActionsCell = ({
           Approve
         </Button>
       )}
-    </>
+      <Spacer />
+      <Menu>
+        <MenuButton
+          as={AntButton}
+          size="small"
+          // Chakra is expecting the Chakra "type" prop, i.e. HTML type,
+          // but Ant buttons use "type" for styling
+          // @ts-ignore
+          type="text"
+          className="max-w-4"
+          icon={<MoreIcon transform="rotate(90deg)" ml={2} />}
+        />
+        <MenuList>
+          <MenuItem onClick={hideResource}>Hide</MenuItem>
+        </MenuList>
+      </Menu>
+    </Flex>
   );
 };
 
