@@ -2,15 +2,15 @@ import { AntAlert as Alert, AntFlex as Flex, Spinner } from "fidesui";
 
 import Layout from "~/features/common/Layout";
 
-interface DisabledMonitorPageProps {
+interface DisabledMonitorsPageProps {
   isConfigLoading: boolean;
 }
 
-const DISABLED_MONITOR_MESSAGE = "Action center is currently disabled.";
+const DISABLED_MONITORS_MESSAGE = "Action center is currently disabled.";
 
-export const DisabledMonitorPage = ({
+export const DisabledMonitorsPage = ({
   isConfigLoading,
-}: DisabledMonitorPageProps) => (
+}: DisabledMonitorsPageProps) => (
   <Layout title="Action center" mainProps={{ className: "h-full" }}>
     <Flex justify="center" align="center" className="h-full">
       {isConfigLoading ? (
@@ -18,7 +18,7 @@ export const DisabledMonitorPage = ({
       ) : (
         <Alert
           message="Coming soon..."
-          description={DISABLED_MONITOR_MESSAGE}
+          description={DISABLED_MONITORS_MESSAGE}
           type="info"
           showIcon
         />

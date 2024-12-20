@@ -15,12 +15,12 @@ import { useEffect, useState } from "react";
 import { ACTION_CENTER_ROUTE } from "~/features/common/nav/v2/routes";
 import { formatDate, getWebsiteIconUrl } from "~/features/common/utils";
 
-import { MonitorSummary } from "./types";
+import { MonitorAggregatedResults } from "./types";
 
 const { Text } = Typography;
 
 interface MonitorResultProps extends ListItemProps {
-  monitorSummary: MonitorSummary;
+  monitorSummary: MonitorAggregatedResults;
   showSkeleton?: boolean;
 }
 
