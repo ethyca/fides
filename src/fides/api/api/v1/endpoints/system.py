@@ -11,6 +11,7 @@ from loguru import logger
 from pydantic import Field
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+from sqlalchemy.sql import text, update
 from sqlalchemy.orm import Session
 from starlette import status
 from starlette.status import HTTP_200_OK, HTTP_204_NO_CONTENT, HTTP_404_NOT_FOUND
@@ -432,19 +433,21 @@ async def ls(  # pylint: disable=invalid-name
         )
     ],
 )
-async def patch_hidden(
+def patch_hidden(
     fides_keys: List[str],
     hidden: bool,
-    db: AsyncSession = Depends(get_async_db),
+    db: Session = Depends(deps.get_db),
 ) -> Dict:
     """
     Patch the hidden status of a list of systems. Request body must be a list of system Fides keys.
     """
-    systems = await db.execute(select(System).filter(System.fides_key.in_(fides_keys)))
+    systems = db.execute(select(System).filter(System.fides_key.in_(fides_keys)))
     systems = systems.scalars().all()
+
     for system in systems:
         system.hidden = hidden
-    await db.commit()
+    db.commit()
+
     return {
         "message": "Updated hidden status for systems",
         "updated": len(systems),
