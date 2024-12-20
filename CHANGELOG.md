@@ -17,6 +17,9 @@ The types of changes are:
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.52.0...main)
 
+### Added
+- Added cache-clearing methods to the `DBCache` model to allow deleting cache entries [#5629](https://github.com/ethyca/fides/pull/5629)
+
 
 
 ## [2.52.0](https://github.com/ethyca/fides/compare/2.51.2...2.52.0)
