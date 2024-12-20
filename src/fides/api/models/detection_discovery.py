@@ -4,12 +4,14 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, Iterable, List, Optional, Type
 
+from loguru import logger
 from sqlalchemy import ARRAY, Boolean, Column, DateTime, ForeignKey, String
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.future import select
 from sqlalchemy.orm import Session, relationship
+from sqlalchemy.orm.query import Query
 
 from fides.api.db.base_class import Base, FidesBase
 from fides.api.models.connectionconfig import ConnectionConfig
@@ -278,6 +280,13 @@ class StagedResource(Base):
         default=dict,
     )
 
+    data_uses = Column(
+        ARRAY(String),
+        nullable=False,
+        server_default="{}",
+        default=dict,
+    )
+
     @classmethod
     def get_urn(cls, db: Session, urn: str) -> Optional[StagedResource]:
         """Utility to retrieve the staged resource with the given URN"""
@@ -337,3 +346,31 @@ class StagedResource(Base):
             )
             if parent_resource:
                 parent_resource.add_child_diff_status(DiffStatus.ADDITION)
+
+
+def fetch_staged_resources_by_type_query(
+    resource_type: str,
+    monitor_config_ids: Optional[List[str]] = None,
+    show_hidden: bool = False,
+) -> Query[StagedResource]:
+    """
+    Fetches staged resources by type and monitor config ID. Optionally filters out muted staged resources ("hidden").
+    """
+    logger.info(
+        f"Fetching staged resources of type {resource_type}, show_hidden={show_hidden}, monitor_config_ids={monitor_config_ids}"
+    )
+    query = select(StagedResource).where(StagedResource.resource_type == resource_type)
+
+    if monitor_config_ids:
+        query = query.filter(StagedResource.monitor_config_id.in_(monitor_config_ids))
+    if not show_hidden:
+        from sqlalchemy import or_
+
+        query = query.filter(
+            or_(
+                StagedResource.diff_status != DiffStatus.MUTED.value,
+                StagedResource.diff_status.is_(None),
+            )
+        )
+
+    return query
