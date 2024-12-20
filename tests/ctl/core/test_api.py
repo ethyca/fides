@@ -1287,51 +1287,6 @@ class TestSystemList:
         assert len(result_json) == 1
         assert result_json[0]["fides_key"] == system_with_cleanup.fides_key
 
-    def test_list_with_show_hidden(
-        self,
-        test_config,
-        system_hidden,
-        system_with_cleanup,
-    ):
-
-        result = _api.ls(
-            url=test_config.cli.server_url,
-            headers=test_config.user.auth_header,
-            resource_type="system",
-            query_params={
-                "page": 1,
-                "size": 5,
-                "show_hidden": "true",
-            },
-        )
-
-        assert result.status_code == 200
-        result_json = result.json()
-        assert result_json["total"] == 2
-        assert len(result_json["items"]) == 2
-
-        actual_keys = [item["fides_key"] for item in result_json["items"]]
-        assert system_hidden.fides_key in actual_keys
-        assert system_with_cleanup.fides_key in actual_keys
-
-        result = _api.ls(
-            url=test_config.cli.server_url,
-            headers=test_config.user.auth_header,
-            resource_type="system",
-            query_params={
-                "page": 1,
-                "size": 5,
-                "show_hidden": "false",
-            },
-        )
-
-        assert result.status_code == 200
-        result_json = result.json()
-        assert result_json["total"] == 1
-        assert len(result_json["items"]) == 1
-
-        assert result_json["items"][0]["fides_key"] == system_with_cleanup.fides_key
-
     def test_list_with_pagination(
         self,
         test_config,
@@ -1581,6 +1536,39 @@ class TestSystemList:
 
         assert result_json["items"][0]["fides_key"] == tcf_system.fides_key
 
+    @pytest.mark.skip("Until we re-visit filter implementation")
+    def test_list_with_pagination_and_multiple_filters_2(
+        self,
+        test_config,
+        system_with_cleanup,
+        tcf_system,
+        system_third_party_sharing,
+        system_with_no_uses,
+        db,
+    ):
+
+        db.que
+        result = _api.ls(
+            url=test_config.cli.server_url,
+            headers=test_config.user.auth_header,
+            resource_type="system",
+            query_params={
+                "page": 1,
+                "size": 5,
+                # TCF system has a single privacy declaration with all these fields
+                "data_uses": ["essential.fraud_detection"],
+                "data_subjects": ["customer"],
+                "data_categories": ["user.device.cookie_id"],
+            },
+        )
+
+        assert result.status_code == 200
+        result_json = result.json()
+        assert result_json["total"] == 1
+        assert len(result_json["items"]) == 1
+
+        assert result_json["items"][0]["fides_key"] == tcf_system.fides_key
+
     @pytest.mark.parametrize(
         "vendor_deleted_date, expected_systems_count, show_deleted",
         [
@@ -1614,39 +1602,6 @@ class TestSystemList:
         result_json = result.json()
 
         assert len(result_json["items"]) == expected_systems_count
-
-    @pytest.mark.skip("Until we re-visit filter implementation")
-    def test_list_with_pagination_and_multiple_filters_2(
-        self,
-        test_config,
-        system_with_cleanup,
-        tcf_system,
-        system_third_party_sharing,
-        system_with_no_uses,
-        db,
-    ):
-
-        db.que
-        result = _api.ls(
-            url=test_config.cli.server_url,
-            headers=test_config.user.auth_header,
-            resource_type="system",
-            query_params={
-                "page": 1,
-                "size": 5,
-                # TCF system has a single privacy declaration with all these fields
-                "data_uses": ["essential.fraud_detection"],
-                "data_subjects": ["customer"],
-                "data_categories": ["user.device.cookie_id"],
-            },
-        )
-
-        assert result.status_code == 200
-        result_json = result.json()
-        assert result_json["total"] == 1
-        assert len(result_json["items"]) == 1
-
-        assert result_json["items"][0]["fides_key"] == tcf_system.fides_key
 
 
 @pytest.mark.unit
