@@ -1,24 +1,48 @@
 import { baseApi } from "~/features/common/api.slice";
+import { PaginationQueryParams } from "~/types/common/PaginationQueryParams";
 
-import { MonitorSummaryPaginatedResponse } from "./types";
+import {
+  MonitorAssetsBySystemPaginatedResponse,
+  MonitorSummaryPaginatedResponse,
+} from "./types";
 
 const actionCenterApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
-    getMonitorSummary: build.query<
+    getAggregateMonitorResults: build.query<
       MonitorSummaryPaginatedResponse,
       {
-        pageIndex?: number;
-        pageSize?: number;
         search?: string;
-      }
+      } & PaginationQueryParams
     >({
-      query: ({ pageIndex = 1, pageSize = 20, search }) => ({
+      query: ({ page = 1, size = 20, search }) => ({
         url: `/plus/discovery-monitor/aggregate-results`,
-        params: { page: pageIndex, size: pageSize, search },
+        params: { page, size, search, diff_status: "addition" },
       }),
-      providesTags: ["Monitor Summary"],
+      providesTags: ["Monitor Aggregate Results"],
+    }),
+    getDiscoveredAssetsBySystem: build.query<
+      MonitorAssetsBySystemPaginatedResponse,
+      {
+        key: string;
+        search?: string;
+      } & PaginationQueryParams
+    >({
+      query: ({ key, page = 1, size = 20, search }) => ({
+        url: `/plus/discovery-monitor/system-aggregate-results`,
+        params: {
+          monitor_config_id: key,
+          page,
+          size,
+          search,
+          diff_status: "addition",
+        },
+      }),
+      providesTags: ["Monitor Assets By System"],
     }),
   }),
 });
 
-export const { useGetMonitorSummaryQuery } = actionCenterApi;
+export const {
+  useGetAggregateMonitorResultsQuery,
+  useGetDiscoveredAssetsBySystemQuery,
+} = actionCenterApi;
