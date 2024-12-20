@@ -111,6 +111,35 @@ def connections():
     ]
 
 
+class TestPatchSystem:
+    def test_system_patch_hidden(
+        self,
+        system,
+        api_client: TestClient,
+        generate_auth_header,
+        db: Session,
+    ):
+        url = V1_URL_PREFIX + f"/system/hidden"
+        auth_header = generate_auth_header(
+            scopes=[SYSTEM_UPDATE, SYSTEM_MANAGER_UPDATE]
+        )
+
+        result = api_client.patch(
+            url=f"{url}?hidden=true",
+            headers=auth_header,
+            json=[system.fides_key],
+        )
+        assert result.status_code == HTTP_200_OK
+        assert result.json() == {
+            "message": "Updated hidden status for systems",
+            "updated": 1,
+        }
+
+        query = "SELECT hidden FROM ctl_systems WHERE fides_key = :fides_key"
+        result = db.execute(query, {"fides_key": system.fides_key}).fetchone()
+        assert result[0] is True
+
+
 class TestPatchSystemConnections:
     @pytest.fixture(scope="function")
     def system_linked_with_oauth2_authorization_code_connection_config(
@@ -273,33 +302,6 @@ class TestPatchSystemConnections:
 
         assert resp.status_code == HTTP_200_OK
         assert resp.json()["items"][0]["authorized"] is False
-
-    def test_system_patch_hidden(
-        self,
-        system,
-        api_client: TestClient,
-        generate_auth_header,
-        db: Session,
-    ):
-        url = V1_URL_PREFIX + f"/system/hidden"
-        auth_header = generate_auth_header(
-            scopes=[SYSTEM_UPDATE, SYSTEM_MANAGER_UPDATE]
-        )
-
-        result = api_client.patch(
-            url=f"{url}?hidden=true",
-            headers=auth_header,
-            json=[system.fides_key],
-        )
-        assert result.status_code == HTTP_200_OK
-        assert result.json() == {
-            "message": "Updated hidden status for systems",
-            "updated": 1,
-        }
-
-        query = "SELECT hidden FROM ctl_systems WHERE fides_key = :fides_key"
-        result = db.execute(query, {"fides_key": system.fides_key}).fetchone()
-        assert result[0] is True
 
 
 class TestGetConnections:
