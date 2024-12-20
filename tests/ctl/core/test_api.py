@@ -2,7 +2,7 @@
 """Integration tests for the API module."""
 import json
 import typing
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from json import loads
 from typing import Dict, List, Tuple
 from uuid import uuid4
@@ -1287,6 +1287,51 @@ class TestSystemList:
         assert len(result_json) == 1
         assert result_json[0]["fides_key"] == system_with_cleanup.fides_key
 
+    def test_list_with_show_hidden(
+        self,
+        test_config,
+        system_hidden,
+        system_with_cleanup,
+    ):
+
+        result = _api.ls(
+            url=test_config.cli.server_url,
+            headers=test_config.user.auth_header,
+            resource_type="system",
+            query_params={
+                "page": 1,
+                "size": 5,
+                "show_hidden": "true",
+            },
+        )
+
+        assert result.status_code == 200
+        result_json = result.json()
+        assert result_json["total"] == 2
+        assert len(result_json["items"]) == 2
+
+        actual_keys = [item["fides_key"] for item in result_json["items"]]
+        assert system_hidden.fides_key in actual_keys
+        assert system_with_cleanup.fides_key in actual_keys
+
+        result = _api.ls(
+            url=test_config.cli.server_url,
+            headers=test_config.user.auth_header,
+            resource_type="system",
+            query_params={
+                "page": 1,
+                "size": 5,
+                "show_hidden": "false",
+            },
+        )
+
+        assert result.status_code == 200
+        result_json = result.json()
+        assert result_json["total"] == 1
+        assert len(result_json["items"]) == 1
+
+        assert result_json["items"][0]["fides_key"] == system_with_cleanup.fides_key
+
     def test_list_with_pagination(
         self,
         test_config,
@@ -1535,6 +1580,40 @@ class TestSystemList:
         assert len(result_json["items"]) == 1
 
         assert result_json["items"][0]["fides_key"] == tcf_system.fides_key
+
+    @pytest.mark.parametrize(
+        "vendor_deleted_date, expected_systems_count, show_deleted",
+        [
+            (datetime.now() - timedelta(days=1), 1, True),
+            (datetime.now() - timedelta(days=1), 0, False),
+            (datetime.now() + timedelta(days=1), 1, False),
+            (None, 1, False),
+        ],
+    )
+    def test_vendor_deleted_systems(
+        self,
+        db,
+        test_config,
+        system_with_cleanup,
+        vendor_deleted_date,
+        expected_systems_count,
+        show_deleted,
+    ):
+
+        system_with_cleanup.vendor_deleted_date = vendor_deleted_date
+        db.commit()
+
+        result = _api.ls(
+            url=test_config.cli.server_url,
+            headers=test_config.user.auth_header,
+            resource_type="system",
+            query_params={"show_deleted": show_deleted, "size": 50},
+        )
+
+        assert result.status_code == 200
+        result_json = result.json()
+
+        assert len(result_json["items"]) == expected_systems_count
 
     @pytest.mark.skip("Until we re-visit filter implementation")
     def test_list_with_pagination_and_multiple_filters_2(
