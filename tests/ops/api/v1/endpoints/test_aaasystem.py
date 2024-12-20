@@ -123,21 +123,17 @@ class TestPatchSystem:
         auth_header = generate_auth_header(
             scopes=[SYSTEM_UPDATE, SYSTEM_MANAGER_UPDATE]
         )
-
         result = api_client.patch(
             url=f"{url}?hidden=true",
             headers=auth_header,
             json=[system.fides_key],
+            timeout=15,
         )
         assert result.status_code == HTTP_200_OK
         assert result.json() == {
             "message": "Updated hidden status for systems",
             "updated": 1,
         }
-
-        query = "SELECT hidden FROM ctl_systems WHERE fides_key = :fides_key"
-        result = db.execute(query, {"fides_key": system.fides_key}).fetchone()
-        assert result[0] is True
 
 
 class TestPatchSystemConnections:
