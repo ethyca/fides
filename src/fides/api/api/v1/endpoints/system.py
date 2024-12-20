@@ -1,3 +1,4 @@
+import datetime
 from typing import Annotated, Dict, List, Optional, Union
 
 from fastapi import Depends, HTTPException, Query, Response, Security
@@ -9,6 +10,7 @@ from fideslang.models import System as SystemSchema
 from fideslang.validation import FidesKey
 from loguru import logger
 from pydantic import Field
+from sqlalchemy import or_
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy.orm import Session
@@ -389,37 +391,55 @@ async def ls(  # pylint: disable=invalid-name
     data_uses: Optional[List[FidesKey]] = Query(None),
     data_categories: Optional[List[FidesKey]] = Query(None),
     data_subjects: Optional[List[FidesKey]] = Query(None),
+    show_deleted: Optional[bool] = Query(False),
 ) -> List:
     """Get a list of all of the Systems.
-    If any pagination parameters (size or page) are provided, then the response will be paginated
-    & provided filters (search, taxonomy fields) will be applied.
+    If any parameters or filters are provided the response will be paginated and/or filtered.
     Otherwise all Systems will be returned (this may be a slow operation if there are many systems,
     so using the pagination parameters is recommended).
     """
-    if size or page:
-        pagination_params = Params(page=page or 1, size=size or 50)
-        # Need to join with PrivacyDeclaration in order to be able to filter
-        # by data use, data category, and data subject
-        query = select(System).outerjoin(
+    if not (size or page or search or data_uses or data_categories or data_subjects):
+        # if no advanced parameters are passed, we return a very basic list of all System resources
+        # to maintain backward compatibility of the original API, which backs some important client usages, e.g. the fides CLI
+
+        return await list_resource(System, db)
+
+    query = select(System)
+
+    pagination_params = Params(page=page or 1, size=size or 50)
+    # Need to join with PrivacyDeclaration in order to be able to filter
+    # by data use, data category, and data subject
+    if any([data_uses, data_categories, data_subjects]):
+        query = query.outerjoin(
             PrivacyDeclaration, System.id == PrivacyDeclaration.system_id
         )
-        filter_params = FilterParams(
-            search=search,
-            data_uses=data_uses,
-            data_categories=data_categories,
-            data_subjects=data_subjects,
-        )
-        filtered_query = apply_filters_to_query(
-            query=query,
-            filter_params=filter_params,
-            search_model=System,
-            taxonomy_model=PrivacyDeclaration,
-        )
-        # Add a distinct so we only get one row per system
-        duplicates_removed = filtered_query.distinct(System.id)
-        return await async_paginate(db, duplicates_removed, pagination_params)
 
-    return await list_resource(System, db)
+    # Filter out any vendor deleted systems, unless explicitly asked for
+    if not show_deleted:
+        query = query.filter(
+            or_(
+                System.vendor_deleted_date.is_(None),
+                System.vendor_deleted_date >= datetime.datetime.now(),
+            )
+        )
+
+    filter_params = FilterParams(
+        search=search,
+        data_uses=data_uses,
+        data_categories=data_categories,
+        data_subjects=data_subjects,
+    )
+    filtered_query = apply_filters_to_query(
+        query=query,
+        filter_params=filter_params,
+        search_model=System,
+        taxonomy_model=PrivacyDeclaration,
+    )
+
+    # Add a distinct so we only get one row per system
+    duplicates_removed = filtered_query.distinct(System.id)
+
+    return await async_paginate(db, duplicates_removed, pagination_params)
 
 
 @SYSTEM_ROUTER.patch(
