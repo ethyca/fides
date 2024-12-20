@@ -4,7 +4,7 @@ import {
   getGroupedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { AntButton, Flex } from "fidesui";
+import { AntButton } from "fidesui";
 import { useRouter } from "next/router";
 import { useEffect, useMemo } from "react";
 
@@ -21,9 +21,8 @@ import {
 import { useGetCatalogDatasetsQuery } from "~/features/data-catalog/data-catalog.slice";
 import EmptyCatalogTableNotice from "~/features/data-catalog/datasets/EmptyCatalogTableNotice";
 import useCatalogDatasetColumns from "~/features/data-catalog/datasets/useCatalogDatasetColumns";
+import { useGetSystemByFidesKeyQuery } from "~/features/system";
 import { StagedResourceAPIResponse } from "~/types/api";
-
-// REPLACE: dataset view, system has no projects
 
 const EMPTY_RESPONSE = {
   items: [],
@@ -37,6 +36,9 @@ const CatalogDatasetViewNoProjects = () => {
   const { query, push } = useRouter();
   const systemKey = query.systemId as string;
   const monitorConfigKeys = query.monitor_config_ids as string[];
+
+  const { data: system, isLoading: systemIsLoading } =
+    useGetSystemByFidesKeyQuery(systemKey);
 
   const {
     PAGE_SIZES,
@@ -59,8 +61,7 @@ const CatalogDatasetViewNoProjects = () => {
   } = useGetCatalogDatasetsQuery({
     page: pageIndex,
     size: pageSize,
-    // TODO: get monitor ids from system
-    monitor_config_ids: monitorConfigKeys ?? ["dynamo-monitor"],
+    monitor_config_ids: monitorConfigKeys,
   });
 
   const {
@@ -85,39 +86,45 @@ const CatalogDatasetViewNoProjects = () => {
     columnResizeMode: "onChange",
   });
 
-  if (isLoading || isFetching) {
-    return <TableSkeletonLoader rowHeight={36} numRows={36} />;
-  }
+  const showContent = !isLoading && !systemIsLoading && !isFetching;
 
   return (
     <Layout title="Data catalog">
-      <PageHeader breadcrumbs={[{ title: "Data catalog" }]} />
-      <TableActionBar>
-        <Flex gap={6} align="center">
-          {/* <Box flexShrink={0}>
-            <SearchInput value={searchQuery} onChange={setSearchQuery} />
-          </Box> */}
-        </Flex>
-        <AntButton disabled>Actions</AntButton>
-      </TableActionBar>
-      <FidesTableV2
-        tableInstance={tableInstance}
-        emptyTableNotice={<EmptyCatalogTableNotice />}
-        onRowClick={(row) =>
-          push(`${DATA_CATALOG_ROUTE}/${systemKey}/${row.urn}`)
-        }
+      <PageHeader
+        heading="Data catalog"
+        breadcrumbItems={[
+          { title: "All systems", href: DATA_CATALOG_ROUTE },
+          {
+            title: system?.name || systemKey,
+          },
+        ]}
       />
-      <PaginationBar
-        totalRows={totalRows || 0}
-        pageSizes={PAGE_SIZES}
-        setPageSize={setPageSize}
-        onPreviousPageClick={onPreviousPageClick}
-        isPreviousPageDisabled={isPreviousPageDisabled}
-        onNextPageClick={onNextPageClick}
-        isNextPageDisabled={isNextPageDisabled}
-        startRange={startRange}
-        endRange={endRange}
-      />
+      {!showContent && <TableSkeletonLoader rowHeight={36} numRows={36} />}
+      {showContent && (
+        <>
+          <TableActionBar>
+            <AntButton disabled>Actions</AntButton>
+          </TableActionBar>
+          <FidesTableV2
+            tableInstance={tableInstance}
+            emptyTableNotice={<EmptyCatalogTableNotice />}
+            onRowClick={(row) =>
+              push(`${DATA_CATALOG_ROUTE}/${systemKey}/${row.urn}`)
+            }
+          />
+          <PaginationBar
+            totalRows={totalRows || 0}
+            pageSizes={PAGE_SIZES}
+            setPageSize={setPageSize}
+            onPreviousPageClick={onPreviousPageClick}
+            isPreviousPageDisabled={isPreviousPageDisabled}
+            onNextPageClick={onNextPageClick}
+            isNextPageDisabled={isNextPageDisabled}
+            startRange={startRange}
+            endRange={endRange}
+          />
+        </>
+      )}
     </Layout>
   );
 };

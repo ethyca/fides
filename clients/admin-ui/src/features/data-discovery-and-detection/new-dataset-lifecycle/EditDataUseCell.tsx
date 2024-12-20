@@ -49,10 +49,8 @@ const EditDataUseCell = ({ system }: EditDataUseCellProps) => {
   const { getDataUseDisplayName } = useTaxonomies();
   const { isOpen, onOpen, onClose } = useDisclosure();
 
-  const handleOpenEditForm = async (
-    declaration: PrivacyDeclarationResponse,
-  ) => {
-    await setDeclarationToEdit(declaration);
+  const handleOpenEditForm = (declaration: PrivacyDeclarationResponse) => {
+    setDeclarationToEdit(declaration);
     onOpen();
   };
 

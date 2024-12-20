@@ -33,8 +33,10 @@ import {
   useServerSidePagination,
 } from "~/features/common/table/v2";
 import { RelativeTimestampCell } from "~/features/common/table/v2/cells";
+import CatalogStatusCell from "~/features/data-catalog/CatalogStatusCell";
 import { useGetCatalogProjectsQuery } from "~/features/data-catalog/data-catalog.slice";
 import SystemActionsCell from "~/features/data-catalog/systems/SystemActionCell";
+import { getCatalogResourceStatus } from "~/features/data-catalog/utils";
 import { useMuteResourcesMutation } from "~/features/data-discovery-and-detection/discovery-detection.slice";
 import IconLegendTooltip from "~/features/data-discovery-and-detection/IndicatorLegend";
 import { SearchInput } from "~/features/data-discovery-and-detection/SearchInput";
@@ -156,7 +158,9 @@ const CatalogProjectsTable = ({
       }),
       columnHelper.display({
         id: "status",
-        cell: () => <DefaultCell value="TODO" />,
+        cell: ({ row }) => (
+          <CatalogStatusCell status={getCatalogResourceStatus(row.original)} />
+        ),
         header: "Status",
       }),
       columnHelper.accessor((row) => row.monitor_config_id, {

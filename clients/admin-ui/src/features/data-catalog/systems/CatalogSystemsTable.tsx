@@ -104,7 +104,6 @@ const SystemsTable = () => {
     show_hidden: false,
   });
 
-  // const [getProjects] = useLazyGetCatalogProjectsQuery();
   const [getProjects] = useLazyGetAvailableDatabasesByConnectionQuery();
 
   const {
@@ -165,48 +164,24 @@ const SystemsTable = () => {
       }),
       columnHelper.accessor((row) => row.name, {
         id: "name",
-        cell: ({ getValue }) => (
-          <DefaultCell value={getValue()} fontWeight="semibold" />
+        cell: ({ getValue, row }) => (
+          <DefaultCell
+            value={getValue()}
+            fontWeight={
+              !!row.original.connection_configs?.key ? "semibold" : "normal"
+            }
+          />
         ),
         header: (props) => <DefaultHeaderCell value="Name" {...props} />,
       }),
-      // TODO
-      columnHelper.display({
-        id: "status",
-        cell: () => <DefaultCell value="Status cell goes here" />,
-        header: (props) => <DefaultHeaderCell value="Status" {...props} />,
-      }),
-      // TODO
       // columnHelper.display({
-      //   id: "changes",
-      //   cell: () => <DefaultCell value="Change count cell goes here" />,
-      //   header: (props) => <DefaultHeaderCell value="Changes" {...props} />,
-      //   maxSize: 100,
-      // }),
-      // TODO
-      columnHelper.display({
-        id: "last-updated",
-        cell: () => <DefaultCell value="Last updated cell goes here" />,
-        header: (props) => (
-          <DefaultHeaderCell value="Last updated" {...props} />
-        ),
-        meta: {
-          cellProps: {
-            borderRight: "none",
-          },
-        },
-      }),
-      // TODO
-      // columnHelper.accessor((row) => row.privacy_declarations, {
       //   id: "data-uses",
       //   cell: ({ row }) => <EditDataUseCell system={row.original} />,
       //   header: (props) => <DefaultHeaderCell value="Data uses" {...props} />,
       //   meta: {
-      //     cellProps: {
-      //       borderRight: "none",
-      //     },
       //     disableRowClick: true,
       //   },
+      //   minSize: 280,
       // }),
       columnHelper.display({
         id: "actions",
@@ -267,7 +242,7 @@ const SystemsTable = () => {
           </Box>
           <IconLegendTooltip />
         </Flex>
-        <Menu size="xs">
+        {/* <Menu size="xs">
           <MenuButton
             as={AntButton}
             size="small"
@@ -278,7 +253,7 @@ const SystemsTable = () => {
           <MenuList>
             <MenuItem onClick={handleBulkAddDataUse}>Add data use</MenuItem>
           </MenuList>
-        </Menu>
+        </Menu> */}
       </TableActionBar>
       <FidesTableV2
         tableInstance={tableInstance}

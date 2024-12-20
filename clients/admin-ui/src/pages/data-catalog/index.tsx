@@ -5,7 +5,10 @@ import SystemsTable from "~/features/data-catalog/systems/CatalogSystemsTable";
 const DataCatalogMainPage = () => {
   return (
     <Layout title="Data catalog">
-      <PageHeader breadcrumbs={[{ title: "Data catalog" }]} />
+      <PageHeader
+        heading="Data catalog"
+        breadcrumbItems={[{ title: "All systems" }]}
+      />
       <SystemsTable />
     </Layout>
   );

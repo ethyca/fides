@@ -27,6 +27,7 @@ import CatalogStatusCell from "~/features/data-catalog/CatalogStatusCell";
 import { getCatalogResourceStatus } from "~/features/data-catalog/utils";
 import { useGetMonitorResultsQuery } from "~/features/data-discovery-and-detection/discovery-detection.slice";
 import { SearchInput } from "~/features/data-discovery-and-detection/SearchInput";
+import resourceHasChildren from "~/features/data-discovery-and-detection/utils/resourceHasChildren";
 import { StagedResourceAPIResponse, SystemResponse } from "~/types/api";
 
 const EMPTY_RESPONSE = {
@@ -84,7 +85,6 @@ const CatalogResourcesTable = ({
     resetPageIndexToDefault,
   } = useServerSidePagination();
 
-  // do we need this in this context?
   useEffect(() => {
     resetPageIndexToDefault();
   }, [resourceUrn, resetPageIndexToDefault]);
@@ -138,7 +138,14 @@ const CatalogResourcesTable = ({
       }),
       columnHelper.accessor((row) => row.name, {
         id: "name",
-        cell: (props) => <DefaultCell value={props.getValue()} />,
+        cell: (props) => (
+          <DefaultCell
+            value={props.getValue()}
+            fontWeight={
+              resourceHasChildren(props.row.original) ? "semibold" : "normal"
+            }
+          />
+        ),
         header: "Name",
       }),
       columnHelper.display({
@@ -199,6 +206,7 @@ const CatalogResourcesTable = ({
       <FidesTableV2
         tableInstance={tableInstance}
         emptyTableNotice={<EmptyTableNotice />}
+        getRowIsClickable={(row) => resourceHasChildren(row)}
         onRowClick={(row) =>
           router.push(`${DATA_CATALOG_ROUTE}/${system.fides_key}/${row.urn}`)
         }

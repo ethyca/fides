@@ -32,7 +32,7 @@ const dataCatalogApi = baseApi.injectEndpoints({
         url: `/plus/data-catalog/system`,
         params,
       }),
-      providesTags: ["Catalog Systems"],
+      providesTags: ["Catalog Systems", "System"],
     }),
     getCatalogProjects: build.query<
       Page_StagedResourceAPIResponse_,
