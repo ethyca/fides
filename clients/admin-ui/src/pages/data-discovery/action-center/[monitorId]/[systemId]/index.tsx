@@ -4,24 +4,26 @@ import { useRouter } from "next/router";
 import FixedLayout from "~/features/common/FixedLayout";
 import { ACTION_CENTER_ROUTE } from "~/features/common/nav/v2/routes";
 import PageHeader from "~/features/common/PageHeader";
-import { DiscoveredSystemAggregateTable } from "~/features/data-discovery-and-detection/action-center/tables/DiscoveredSystemAggregateTable";
+import { DiscoveredAssetsTable } from "~/features/data-discovery-and-detection/action-center/tables/DiscoveredAssetsTable";
 
-const MonitorResultSystems: NextPage = () => {
+const MonitorResultAssets: NextPage = () => {
   const router = useRouter();
   const monitorId = decodeURIComponent(router.query.monitorId as string);
+  const systemId = decodeURIComponent(router.query.systemId as string);
 
   return (
-    <FixedLayout title="Action center - Discovered assets by system">
+    <FixedLayout title="Action center - Discovered assets">
       <PageHeader
         heading="Action center"
         breadcrumbItems={[
           { title: "All activity", href: ACTION_CENTER_ROUTE },
-          { title: monitorId },
+          { title: monitorId, href: `${ACTION_CENTER_ROUTE}/${monitorId}` },
+          { title: systemId },
         ]}
       />
-      <DiscoveredSystemAggregateTable monitorId={monitorId} />
+      <DiscoveredAssetsTable monitorId={monitorId} systemId={systemId} />
     </FixedLayout>
   );
 };
 
-export default MonitorResultSystems;
+export default MonitorResultAssets;

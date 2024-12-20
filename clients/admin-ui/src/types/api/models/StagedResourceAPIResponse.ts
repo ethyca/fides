@@ -48,4 +48,7 @@ export type StagedResourceAPIResponse = {
   schemas?: Array<string>;
   resource_type?: string | null;
   system?: string | null;
+  locations?: Array<string>;
+  domain?: string | null;
+  with_consent?: boolean | null;
 };

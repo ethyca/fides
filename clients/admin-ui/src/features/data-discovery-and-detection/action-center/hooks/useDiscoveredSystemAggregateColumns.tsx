@@ -1,4 +1,4 @@
-import { createColumnHelper } from "@tanstack/react-table";
+import { ColumnDef, createColumnHelper } from "@tanstack/react-table";
 
 import { DefaultCell } from "~/features/common/table/v2";
 
@@ -9,7 +9,7 @@ import { MonitorSystemAggregate } from "../types";
 export const useDiscoveredSystemAggregateColumns = () => {
   const columnHelper = createColumnHelper<MonitorSystemAggregate>();
 
-  const columns = [
+  const columns: ColumnDef<MonitorSystemAggregate, any>[] = [
     columnHelper.accessor((row) => row.name, {
       id: "system_name",
       cell: (props) => (
@@ -67,6 +67,7 @@ export const useDiscoveredSystemAggregateColumns = () => {
       header: "Actions",
       meta: {
         width: "auto",
+        disableRowClick: true,
       },
     }),
   ];

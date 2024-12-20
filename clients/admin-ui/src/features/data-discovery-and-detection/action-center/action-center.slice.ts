@@ -1,4 +1,5 @@
 import { baseApi } from "~/features/common/api.slice";
+import { Page_StagedResourceAPIResponse_ } from "~/types/api";
 import { PaginationQueryParams } from "~/types/common/PaginationQueryParams";
 
 import {
@@ -39,10 +40,29 @@ const actionCenterApi = baseApi.injectEndpoints({
       }),
       providesTags: ["Discovery Monitor Results"],
     }),
+    getDiscoveredAssets: build.query<
+      Page_StagedResourceAPIResponse_,
+      { key: string; system: string; search: string } & PaginationQueryParams
+    >({
+      query: ({ key, system, page = 1, size = 20, search }) => ({
+        method: "GET",
+        url: "/plus/discovery-monitor/results",
+        params: {
+          monitor_config_id: key,
+          vendor_id: system,
+          page,
+          size,
+          search,
+          diff_status: "addition",
+        },
+      }),
+      providesTags: () => ["Discovery Monitor Results"],
+    }),
   }),
 });
 
 export const {
   useGetAggregateMonitorResultsQuery,
   useGetDiscoveredSystemAggregateQuery,
+  useGetDiscoveredAssetsQuery,
 } = actionCenterApi;
