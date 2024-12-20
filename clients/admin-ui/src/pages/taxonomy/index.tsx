@@ -21,7 +21,10 @@ import PageHeader from "~/features/common/PageHeader";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import TaxonomyEditDrawer from "~/features/taxonomy/components/TaxonomyEditDrawer";
 import TaxonomyInteractiveTree from "~/features/taxonomy/components/TaxonomyInteractiveTree";
-import { CoreTaxonomiesEnum } from "~/features/taxonomy/constants";
+import {
+  CoreTaxonomiesEnum,
+  TAXONOMY_ROOT_NODE_ID,
+} from "~/features/taxonomy/constants";
 import useTaxonomySlices from "~/features/taxonomy/hooks/useTaxonomySlices";
 import { TaxonomyEntity } from "~/features/taxonomy/types";
 
@@ -67,9 +70,11 @@ const TaxonomyPage: NextPage = () => {
         return;
       }
 
+      const isChildOfRoot = draftNewItem?.parent_key === TAXONOMY_ROOT_NODE_ID;
       const newItem = {
         ...draftNewItem,
         name: labelName,
+        parent_key: isChildOfRoot ? null : draftNewItem.parent_key,
       };
 
       const result = await createTrigger(newItem);
