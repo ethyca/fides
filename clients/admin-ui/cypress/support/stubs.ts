@@ -502,3 +502,16 @@ export const stubFidesCloud = () => {
     domain_verification_records: [],
   }).as("getFidesCloud");
 };
+
+export const stubActionCenter = () => {
+  cy.intercept("GET", "/api/v1/config*", {
+    body: {
+      detection_discovery: {
+        website_monitor_enabled: true,
+      },
+    },
+  }).as("getTranslationConfig");
+  cy.intercept("GET", "/api/v1/plus/discovery-monitor/aggregate-results*", {
+    fixture: "detection-discovery/results/aggregate-results",
+  }).as("getMonitorResults");
+};
