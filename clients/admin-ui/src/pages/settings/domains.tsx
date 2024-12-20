@@ -161,22 +161,18 @@ const CORSConfigurationPage: NextPage = () => {
   return (
     <Layout title="Domains">
       <Box data-testid="management-domains">
-        <PageHeader heading="Domains">
-          <Box maxWidth="600px">
-            <Text fontSize="sm">
-              For Fides to work on your website(s), each of your domains must be
-              listed below. You can add and remove domains at any time up to the
-              quantity included in your license. For more information on
-              managing domains{" "}
-              <DocsLink href="https://fid.es/domain-configuration">
-                read here
-              </DocsLink>
-              .
-            </Text>
-          </Box>
-        </PageHeader>
-
-        <Box maxW="600px" paddingY={3}>
+        <PageHeader heading="Domains" />
+        <Box maxW="600px">
+          <Text fontSize="sm" pb={6}>
+            For Fides to work on your website(s), each of your domains must be
+            listed below. You can add and remove domains at any time up to the
+            quantity included in your license. For more information on managing
+            domains{" "}
+            <DocsLink href="https://fid.es/domain-configuration">
+              read here
+            </DocsLink>
+            .
+          </Text>
           <FormSection
             data-testid="api-set-domains-form"
             title="Organization domains"

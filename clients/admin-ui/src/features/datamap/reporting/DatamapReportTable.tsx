@@ -224,7 +224,7 @@ export const DatamapReportTable = () => {
   );
 
   useEffect(() => {
-    if (datamapReport) {
+    if (datamapReport?.items?.length) {
       const columnIDs = Object.keys(datamapReport.items[0]);
       setColumnOrder(getColumnOrder(groupBy, columnIDs));
     }
