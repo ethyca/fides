@@ -301,6 +301,96 @@ def test_resume_privacy_request_from_erasure(
     assert mock_email_dispatch.call_count == 1
 
 
+@pytest.mark.parametrize(
+    "policy_fixture, expected_status",
+    [
+        ("erasure_policy", PrivacyRequestStatus.complete),
+        ("erasure_policy_aes", PrivacyRequestStatus.error),
+    ],
+)
+@mock.patch("fides.api.service.privacy_request.request_runner_service.dispatch_message")
+@mock.patch(
+    "fides.api.service.privacy_request.request_runner_service.run_webhooks_and_report_status",
+)
+@mock.patch("fides.api.service.privacy_request.request_runner_service.access_runner")
+@mock.patch("fides.api.service.privacy_request.request_runner_service.erasure_runner")
+def test_resume_privacy_request_from_erasure_with_expired_masking_secrets(
+    run_erasure,
+    run_access,
+    run_webhooks,
+    mock_email_dispatch,
+    db: Session,
+    privacy_request: PrivacyRequest,
+    run_privacy_request_task,
+    privacy_request_complete_email_notification_enabled,
+    policy_fixture,
+    expected_status,
+    request,
+) -> None:
+    """
+    Verifies that resuming a privacy request from the erasure step will result in an error status
+    if the given policy requires masking secrets and they have expired from the cache.
+    """
+
+    policy = request.getfixturevalue(policy_fixture)
+    privacy_request.policy = policy
+    privacy_request.save(db)
+
+    run_privacy_request_task.delay(
+        privacy_request_id=privacy_request.id,
+        from_step=CurrentStep.erasure.value,
+    ).get(timeout=PRIVACY_REQUEST_TASK_TIMEOUT)
+
+    db.refresh(privacy_request)
+    assert privacy_request.status == expected_status
+
+
+@pytest.mark.parametrize(
+    "policy_fixture, expected_status",
+    [
+        ("erasure_policy", PrivacyRequestStatus.complete),
+        ("erasure_policy_aes", PrivacyRequestStatus.complete),
+    ],
+)
+@mock.patch("fides.api.service.privacy_request.request_runner_service.dispatch_message")
+@mock.patch(
+    "fides.api.service.privacy_request.request_runner_service.run_webhooks_and_report_status",
+)
+@mock.patch("fides.api.service.privacy_request.request_runner_service.access_runner")
+@mock.patch("fides.api.service.privacy_request.request_runner_service.erasure_runner")
+def test_resume_privacy_request_from_erasure_with_available_masking_secrets(
+    run_erasure,
+    run_access,
+    run_webhooks,
+    mock_email_dispatch,
+    db: Session,
+    privacy_request: PrivacyRequest,
+    run_privacy_request_task,
+    privacy_request_complete_email_notification_enabled,
+    policy_fixture,
+    expected_status,
+    request,
+) -> None:
+    """
+    Verifies that resuming a privacy request from the erasure step will complete if the masking secrets
+    are still in the database or not needed for the given policy.
+    """
+
+    policy = request.getfixturevalue(policy_fixture)
+    privacy_request.policy = policy
+    privacy_request.save(db)
+
+    privacy_request.persist_masking_secrets(policy.generate_masking_secrets())
+
+    run_privacy_request_task.delay(
+        privacy_request_id=privacy_request.id,
+        from_step=CurrentStep.erasure.value,
+    ).get(timeout=PRIVACY_REQUEST_TASK_TIMEOUT)
+
+    db.refresh(privacy_request)
+    assert privacy_request.status == expected_status
+
+
 def get_privacy_request_results(
     db,
     policy,
@@ -346,8 +436,7 @@ def get_privacy_request_results(
             masking_secrets: List[MaskingSecretCache] = (
                 masking_strategy.generate_secrets_for_cache()
             )
-            for masking_secret in masking_secrets:
-                privacy_request.cache_masking_secret(masking_secret)
+            privacy_request.persist_masking_secrets(masking_secrets)
 
     run_privacy_request_task.delay(privacy_request.id).get(
         timeout=task_timeout,

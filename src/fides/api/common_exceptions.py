@@ -283,6 +283,10 @@ class MalisciousUrlException(Exception):
     """Fides has detected a potentially maliscious URL."""
 
 
+class MaskingSecretsExpired(BaseException):
+    """The cached masking secrets have expired for the given privacy request."""
+
+
 class AuthenticationError(HTTPException):
     """To be raised when attempting to fetch an access token using
     invalid credentials.

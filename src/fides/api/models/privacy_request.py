@@ -54,6 +54,7 @@ from fides.api.models.audit_log import AuditLog
 from fides.api.models.client import ClientDetail
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.manual_webhook import AccessManualWebhook
+from fides.api.models.masking_secret import MaskingSecret
 from fides.api.models.policy import (
     CurrentStep,
     Policy,
@@ -95,7 +96,6 @@ from fides.api.util.cache import (
     get_drp_request_body_cache_key,
     get_encryption_cache_key,
     get_identity_cache_key,
-    get_masking_secret_cache_key,
 )
 from fides.api.util.collection_util import Row, extract_key_for_address
 from fides.api.util.constants import API_DATE_FORMAT
@@ -409,6 +409,10 @@ class PrivacyRequest(
         order_by="RequestTask.created_at",
     )
 
+    masking_secrets: "RelationshipProperty[List[MaskingSecret]]" = relationship(
+        "MaskingSecret", back_populates="privacy_request", uselist=True
+    )
+
     @property
     def days_left(self: PrivacyRequest) -> Union[int, None]:
         if self.due_date is None:
@@ -665,19 +669,24 @@ class PrivacyRequest(
             encryption_key,
         )
 
-    def cache_masking_secret(self, masking_secret: MaskingSecretCache) -> None:
-        """Sets masking encryption secrets in the Fides app cache if provided"""
-        if not masking_secret:
+    def persist_masking_secrets(
+        self, masking_secrets: List[MaskingSecretCache]
+    ) -> None:
+        """Persists masking encryption secrets to database."""
+        if not masking_secrets:
             return
-        cache: FidesopsRedis = get_cache()
-        cache.set_with_autoexpire(
-            get_masking_secret_cache_key(
-                self.id,
-                masking_strategy=masking_secret.masking_strategy,
-                secret_type=masking_secret.secret_type,
-            ),
-            FidesopsRedis.encode_obj(masking_secret.secret),
-        )
+
+        session = Session.object_session(self)
+        for masking_secret in masking_secrets:
+            MaskingSecret.create(
+                db=session,
+                data={
+                    "privacy_request_id": self.id,
+                    "secret": masking_secret.secret,
+                    "masking_strategy": masking_secret.masking_strategy,
+                    "secret_type": masking_secret.secret_type,
+                },
+            )
 
     def get_cached_identity_data(self) -> Dict[str, Any]:
         """Retrieves any identity data pertaining to this request from the cache"""

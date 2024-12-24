@@ -124,7 +124,13 @@ async def create_drp_privacy_request(
             "Decrypting identity for DRP privacy request {}", privacy_request.id
         )
 
-        cache_data(privacy_request, policy, mapped_identity, None, data)
+        cache_data(privacy_request, mapped_identity, None, data)
+
+        if masking_secrets := policy.generate_masking_secrets():
+            logger.info(
+                "Caching masking secrets for privacy request {}", privacy_request.id
+            )
+            privacy_request.persist_masking_secrets(masking_secrets)
 
         queue_privacy_request(privacy_request.id)
 

@@ -12,7 +12,7 @@ import pytest
 from dateutil.parser import parse
 from fastapi import HTTPException, status
 from fastapi_pagination import Params
-from starlette.status import HTTP_200_OK, HTTP_401_UNAUTHORIZED, HTTP_403_FORBIDDEN
+from starlette.status import HTTP_200_OK, HTTP_403_FORBIDDEN
 from starlette.testclient import TestClient
 
 from fides.api.api.v1.endpoints.privacy_request_endpoints import (
@@ -45,7 +45,7 @@ from fides.api.models.privacy_request import (
     generate_request_task_callback_jwe,
 )
 from fides.api.oauth.jwt import generate_jwe
-from fides.api.oauth.roles import APPROVER, OWNER, VIEWER
+from fides.api.oauth.roles import APPROVER, VIEWER
 from fides.api.schemas.dataset import DryRunDatasetResponse
 from fides.api.schemas.masking.masking_secrets import SecretType
 from fides.api.schemas.messaging.messaging import (
@@ -59,8 +59,9 @@ from fides.api.schemas.policy import ActionType, PolicyResponse
 from fides.api.schemas.redis_cache import Identity, LabeledIdentity
 from fides.api.task.graph_runners import access_runner
 from fides.api.tasks import MESSAGING_QUEUE_NAME
-from fides.api.util.cache import get_encryption_cache_key, get_masking_secret_cache_key
+from fides.api.util.cache import get_encryption_cache_key
 from fides.api.util.data_category import get_user_data_categories
+from fides.api.util.encryption.secrets_util import SecretsUtil
 from fides.api.util.fuzzy_search_utils import (
     get_should_refresh_automaton,
     manually_reset_automaton,
@@ -605,7 +606,6 @@ class TestCreatePrivacyRequest:
         db,
         api_client: TestClient,
         erasure_policy_aes,
-        cache,
     ):
         identity = {"email": "test@example.com"}
         data = [
@@ -620,12 +620,17 @@ class TestCreatePrivacyRequest:
         response_data = resp.json()["succeeded"]
         assert len(response_data) == 1
         pr = PrivacyRequest.get(db=db, object_id=response_data[0]["id"])
-        secret_key = get_masking_secret_cache_key(
-            privacy_request_id=pr.id,
-            masking_strategy="aes_encrypt",
-            secret_type=SecretType.key,
+
+        assert len(pr.masking_secrets) == 3
+        assert (
+            SecretsUtil.get_masking_secret(
+                privacy_request_id=pr.id,
+                masking_strategy="aes_encrypt",
+                secret_type=SecretType.key,
+            )
+            is not None
         )
-        assert cache.get_encoded_by_key(secret_key) is not None
+
         pr.delete(db=db)
         assert run_erasure_request_mock.called
 
@@ -7021,7 +7026,6 @@ class TestCreatePrivacyRequestAuthenticated:
         generate_auth_header,
         api_client: TestClient,
         erasure_policy_aes,
-        cache,
     ):
         identity = {"email": "test@example.com"}
         data = [
@@ -7037,12 +7041,17 @@ class TestCreatePrivacyRequestAuthenticated:
         response_data = resp.json()["succeeded"]
         assert len(response_data) == 1
         pr = PrivacyRequest.get(db=db, object_id=response_data[0]["id"])
-        secret_key = get_masking_secret_cache_key(
-            privacy_request_id=pr.id,
-            masking_strategy="aes_encrypt",
-            secret_type=SecretType.key,
+
+        assert len(pr.masking_secrets) == 3
+        assert (
+            SecretsUtil.get_masking_secret(
+                privacy_request_id=pr.id,
+                masking_strategy="aes_encrypt",
+                secret_type=SecretType.key,
+            )
+            is not None
         )
-        assert cache.get_encoded_by_key(secret_key) is not None
+
         assert run_erasure_request_mock.called
 
     def test_create_privacy_request_invalid_encryption_values(

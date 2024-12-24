@@ -1,6 +1,6 @@
 # pylint: disable=E1101
 from enum import Enum as EnumType
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Set, Tuple, Union
 
 from fideslang.default_taxonomy import DEFAULT_TAXONOMY
 from fideslang.models import DataCategory as FideslangDataCategory
@@ -25,7 +25,9 @@ from fides.api.models.client import ClientDetail
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.sql_models import DataCategory  # type: ignore
 from fides.api.models.storage import StorageConfig, get_active_default_storage_config
+from fides.api.schemas.masking.masking_secrets import MaskingSecretCache
 from fides.api.schemas.policy import ActionType, DrpAction
+from fides.api.service.masking.strategy.masking_strategy import MaskingStrategy
 from fides.api.util.data_category import _validate_data_category
 from fides.config import CONFIG
 
@@ -139,6 +141,27 @@ class Policy(Base):
             return self.rules[0].action_type  # type: ignore[attr-defined]
         except IndexError:
             return None
+
+    def generate_masking_secrets(self) -> Optional[List[MaskingSecretCache]]:
+        """
+        Returns a list of masking secrets for the masking strategies in the policy.
+        """
+
+        masking_secrets: List[MaskingSecretCache] = []
+        erasure_rules = self.get_rules_for_action(action_type=ActionType.erasure)
+        unique_masking_strategies_by_name: Set[str] = set()
+        for rule in erasure_rules:
+            strategy_name: str = rule.masking_strategy["strategy"]  # type: ignore
+            configuration = rule.masking_strategy["configuration"]  # type: ignore
+            if strategy_name in unique_masking_strategies_by_name:
+                continue
+            unique_masking_strategies_by_name.add(strategy_name)
+            masking_strategy = MaskingStrategy.get_strategy(
+                strategy_name, configuration
+            )
+            if masking_strategy.secrets_required():
+                masking_secrets = masking_strategy.generate_secrets_for_cache()
+        return masking_secrets
 
 
 def _get_ref_from_taxonomy(

@@ -2215,12 +2215,17 @@ def create_privacy_request_func(
 
             cache_data(
                 privacy_request,
-                policy,
                 privacy_request_data.identity,
                 privacy_request_data.encryption_key,
                 None,
                 privacy_request_data.custom_privacy_request_fields,
             )
+
+            if masking_secrets := policy.generate_masking_secrets():
+                logger.info(
+                    "Caching masking secrets for privacy request {}", privacy_request.id
+                )
+                privacy_request.persist_masking_secrets(masking_secrets)
 
             check_and_dispatch_error_notifications(db=db)
 

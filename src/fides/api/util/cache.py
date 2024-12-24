@@ -280,3 +280,8 @@ def get_queue_counts() -> Dict[str, int]:
         logger.critical(exception)
         queue_counts = {}
     return queue_counts
+
+
+def get_all_masking_secret_keys(privacy_request_id: str) -> List[str]:
+    cache: FidesopsRedis = get_cache()
+    return cache.keys(f"id-{privacy_request_id}-masking-secret-*")
