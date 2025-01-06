@@ -927,7 +927,7 @@ class TestPersistErasureRequestTasks:
                 "is_array": False,
                 "read_only": None,
                 "references": [],
-                "primary_key": False,
+                "primary_key": True,
                 "data_categories": ["system.operations"],
                 "data_type_converter": "integer",
                 "return_all_elements": None,
