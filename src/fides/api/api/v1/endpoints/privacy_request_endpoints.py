@@ -708,7 +708,7 @@ def _shared_privacy_request_search(
     POST version of the endpoint.
     """
 
-    logger.info("Finding all request statuses with pagination params {}", params)
+    logger.debug("Finding all request statuses with pagination params {}", params)
 
     query = db.query(PrivacyRequest)
     query = _filter_privacy_request_queryset(
@@ -734,7 +734,7 @@ def _shared_privacy_request_search(
         include_deleted_requests,
     )
 
-    logger.info(
+    logger.debug(
         "Sorting requests by field: {} and direction: {}", sort_field, sort_direction
     )
     query = _sort_privacy_request_queryset(query, sort_field, sort_direction)
