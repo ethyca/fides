@@ -50,7 +50,7 @@ task_retry_backoff = 1
 subject_identity_verification_required = false
 task_retry_count = 0
 task_retry_delay = 1
-use_dsr_3_0 = false
+use_dsr_3_0 = true
 
 [admin_ui]
 enabled = true
@@ -58,7 +58,7 @@ enabled = true
 [celery]
 event_queue_prefix = "fides_worker"
 task_default_queue = "fides"
-task_always_eager = true
+task_always_eager = false
 
 [notifications]
 notification_service_type = "mailgun"
