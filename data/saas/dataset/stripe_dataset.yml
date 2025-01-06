@@ -8,6 +8,7 @@ dataset:
           - name: id
             data_categories: [system.operations]
             fidesops_meta:
+              primary_key: True
               read_only: True
               data_type: string
           - name: object
@@ -617,6 +618,7 @@ dataset:
           - name: id
             data_categories: [system.operations]
             fidesops_meta:
+              primary_key: True
               data_type: string
           - name: object
             data_categories: [system.operations]
@@ -713,6 +715,7 @@ dataset:
           - name: id
             data_categories: [system.operations]
             fidesops_meta:
+              primary_key: True
               data_type: string
           - name: object
             data_categories: [system.operations]
@@ -752,6 +755,7 @@ dataset:
           - name: id
             data_categories: [system.operations]
             fidesops_meta:
+              primary_key: True
               data_type: string
           - name: object
             data_categories: [system.operations]
@@ -920,6 +924,7 @@ dataset:
           - name: id
             data_categories: [system.operations]
             fidesops_meta:
+              primary_key: True
               data_type: string
           - name: object
             data_categories: [system.operations]
@@ -954,6 +959,7 @@ dataset:
           - name: id
             data_categories: [system.operations]
             fidesops_meta:
+              primary_key: True
               data_type: string
           - name: object
             data_categories: [system.operations]
@@ -1230,6 +1236,7 @@ dataset:
           - name: id
             data_categories: [system.operations]
             fidesops_meta:
+              primary_key: True
               data_type: string
           - name: object
             data_categories: [system.operations]
@@ -1318,6 +1325,7 @@ dataset:
           - name: id
             data_categories: [system.operations]
             fidesops_meta:
+              primary_key: true
               data_type: string
           - name: object
             data_categories: [system.operations]

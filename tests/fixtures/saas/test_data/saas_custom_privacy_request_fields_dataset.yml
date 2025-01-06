@@ -9,3 +9,4 @@ dataset:
             data_categories: [system.operations]
             fidesops_meta:
               data_type: integer
+              primary_key: True

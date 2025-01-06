@@ -41,6 +41,8 @@ dataset:
         fields:
           - name: id
             data_categories: [user.unique_id]
+            fidesops_meta:
+              primary_key: True
           - name: list_id
             data_categories: [system.operations]
           - name: email_address
@@ -186,6 +188,7 @@ dataset:
           - name: id
             data_categories: [system.operations]
             fidesops_meta:
+              primary_key: True
               read_only: True
           - name: name
             fields:
@@ -230,31 +233,37 @@ dataset:
           - name: id
             fidesops_meta:
               data_type: integer
+              primary_key: True
       - name: skipped_collection
         fields:
           - name: id
             fides_meta:
               data_type: integer
+              primary_key: True
       - name: request_with_output_template
         fields:
           - name: id
             fides_meta:
               data_type: integer
+              primary_key: True
       - name: request_with_invalid_output_template
         fields:
           - name: id
             fides_meta:
               data_type: integer
+              primary_key: True
       - name: standalone_output_template
         fields:
           - name: id
             fides_meta:
               data_type: integer
+              primary_key: True
       - name: complex_template_example
         fields:
           - name: id
             fides_meta:
               data_type: integer
+              primary_key: True
 
   - fides_key: saas_connector_external_example
     name: An Example External SaaS Dataset
