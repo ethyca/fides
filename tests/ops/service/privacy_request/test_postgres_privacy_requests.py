@@ -739,7 +739,7 @@ def test_create_and_process_erasure_request_read_access(
         data,
     )
     errored_execution_logs = pr.execution_logs.filter_by(status="error")
-    assert errored_execution_logs.count() == 9
+    assert errored_execution_logs.count() == 11
     assert (
         errored_execution_logs[0].message
         == "No values were erased since this connection "

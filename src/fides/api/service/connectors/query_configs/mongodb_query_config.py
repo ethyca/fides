@@ -69,21 +69,21 @@ class MongoQueryConfig(QueryConfig[MongoStatement]):
         """Generate a SQL update statement in the form of Mongo update statement components"""
         update_clauses = self.update_value_map(row, policy, request)
 
-        where_clauses: Dict[str, Any] = filter_nonempty_values(
+        pk_clauses: Dict[str, Any] = filter_nonempty_values(
             {
                 field_path.string_path: field.cast(row[field_path.string_path])
                 for field_path, field in self.primary_key_field_paths.items()
             }
         )
 
-        valid = len(where_clauses) > 0 and len(update_clauses) > 0
+        valid = len(pk_clauses) > 0 and len(update_clauses) > 0
         if not valid:
             logger.warning(
                 "There is not enough data to generate a valid update for {}",
                 self.node.address,
             )
             return None
-        return where_clauses, {"$set": update_clauses}
+        return pk_clauses, {"$set": update_clauses}
 
     def query_to_str(self, t: MongoStatement, input_data: Dict[str, List[Any]]) -> str:
         """string representation of a query for logging/dry-run"""
