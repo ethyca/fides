@@ -509,7 +509,7 @@ def get_user(*, db: Session = Depends(get_db), user_id: str) -> FidesUser:
     if user is None:
         raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="User not found")
 
-    logger.info("Returning user with id: '{}'.", user_id)
+    logger.debug("Returning user with id: '{}'.", user_id)
     return user
 
 
@@ -529,7 +529,7 @@ def get_users(
     if username:
         query = query.filter(FidesUser.username.ilike(f"%{escape_like(username)}%"))
 
-    logger.info("Returning a paginated list of users.")
+    logger.debug("Returning a paginated list of users.")
 
     return paginate(query.order_by(FidesUser.created_at.desc()), params=params)
 
