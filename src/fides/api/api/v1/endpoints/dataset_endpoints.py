@@ -631,7 +631,7 @@ def delete_dataset(
 ) -> None:
     """Removes the DatasetConfig based on the given key."""
 
-    logger.debug(
+    logger.info(
         "Finding dataset '{}' for connection '{}'", fides_key, connection_config.key
     )
     dataset_config = DatasetConfig.filter(
