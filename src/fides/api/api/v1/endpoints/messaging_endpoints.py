@@ -358,7 +358,7 @@ def put_config_secrets(
     """
     Add or update secrets for messaging config.
     """
-    logger.debug("Finding messaging config with key '{}'", config_key)
+    logger.info("Finding messaging config with key '{}'", config_key)
     messaging_config = MessagingConfig.get_by(db=db, field="key", value=config_key)
     if not messaging_config:
         raise HTTPException(
