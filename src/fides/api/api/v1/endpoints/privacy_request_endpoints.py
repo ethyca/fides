@@ -203,7 +203,7 @@ def get_privacy_request_or_error(
     db: Session, privacy_request_id: str, error_if_deleted: Optional[bool] = True
 ) -> PrivacyRequest:
     """Load the privacy request or throw a 404"""
-    logger.info("Finding privacy request with id '{}'", privacy_request_id)
+    logger.debug("Finding privacy request with id '{}'", privacy_request_id)
 
     privacy_request = PrivacyRequest.get(db, object_id=privacy_request_id)
 
@@ -921,7 +921,7 @@ def get_request_status_logs(
 
     get_privacy_request_or_error(db, privacy_request_id, error_if_deleted=False)
 
-    logger.info(
+    logger.debug(
         "Finding all execution logs for privacy request {} with params '{}'",
         privacy_request_id,
         params,
@@ -2157,7 +2157,7 @@ def create_privacy_request_func(
                 failed.append(failure)
                 continue
 
-        logger.info("Finding policy with key '{}'", privacy_request_data.policy_key)
+        logger.debug("Finding policy with key '{}'", privacy_request_data.policy_key)
         policy: Optional[Policy] = Policy.get_by(
             db=db,
             field="key",
