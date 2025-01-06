@@ -1,20 +1,21 @@
 import { extendTheme as extendChakraTheme } from "@chakra-ui/react";
 import { Dict } from "@chakra-ui/utils";
+import palette from "fidesui/src/palette/palette.module.scss";
 
 // eslint-disable-next-line import/prefer-default-export
 export const theme: Dict = extendChakraTheme({
   colors: {
     primary: {
-      50: "#E2E3E7",
-      100: "#B8B9C4",
-      200: "#888A9C",
-      300: "#62668F",
-      400: "#464B83",
-      500: "#2B2E5C",
-      600: "#272B53",
-      700: "#20244B",
-      800: "#111439",
-      900: "#0D1031",
+      50: palette.FIDESUI_BG_MINOS,
+      100: palette.FIDESUI_BG_MINOS,
+      200: palette.FIDESUI_BG_MINOS,
+      300: palette.FIDESUI_MINOS,
+      400: palette.FIDESUI_MINOS,
+      500: palette.FIDESUI_MINOS,
+      600: palette.FIDESUI_MINOS,
+      700: palette.FIDESUI_MINOS,
+      800: palette.FIDESUI_MINOS,
+      900: palette.FIDESUI_MINOS,
     },
     secondary: {
       50: "#E4FBF2",
@@ -29,19 +30,31 @@ export const theme: Dict = extendChakraTheme({
       900: "#0ACA60",
     },
     complimentary: {
-      50: "#F0EAFD",
-      100: "#DACAFB",
-      200: "#C1A7F9",
-      300: "#A883F6",
-      400: "#9569F4",
-      500: "#824EF2",
-      600: "#7A47F0",
-      700: "#6F3DEE",
-      800: "#6535EC",
-      900: "#5225E8",
+      50: palette.FIDESUI_BG_MINOS,
+      100: palette.FIDESUI_BG_MINOS,
+      200: palette.FIDESUI_BG_MINOS,
+      300: palette.FIDESUI_MINOS,
+      400: palette.FIDESUI_MINOS,
+      500: palette.FIDESUI_MINOS,
+      600: palette.FIDESUI_MINOS,
+      700: palette.FIDESUI_MINOS,
+      800: palette.FIDESUI_MINOS,
+      900: palette.FIDESUI_MINOS,
     },
     minos: {
       500: "#2b2e35",
+    },
+    gray: {
+      50: palette.FIDESUI_NEUTRAL_50,
+      100: palette.FIDESUI_NEUTRAL_100,
+      200: palette.FIDESUI_NEUTRAL_200,
+      300: palette.FIDESUI_NEUTRAL_300,
+      400: palette.FIDESUI_NEUTRAL_400,
+      500: palette.FIDESUI_NEUTRAL_500,
+      600: palette.FIDESUI_NEUTRAL_600,
+      700: palette.FIDESUI_NEUTRAL_700,
+      800: palette.FIDESUI_NEUTRAL_800,
+      900: palette.FIDESUI_NEUTRAL_900,
     },
   },
   fonts: {
