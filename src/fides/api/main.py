@@ -99,7 +99,9 @@ async def lifespan(wrapped_app: FastAPI) -> AsyncGenerator[None, None]:
 
     await send_analytics_event(
         AnalyticsEvent(
-            docker=in_docker_container(), event=Event.server_start.value, event_created_at=datetime.now(tz=timezone.utc),
+            docker=in_docker_container(),
+            event=Event.server_start.value,
+            event_created_at=datetime.now(tz=timezone.utc),
         )
     )
 
