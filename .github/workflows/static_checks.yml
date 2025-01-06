@@ -1,0 +1,53 @@
+name: Backend Code Checks
+
+on:
+  pull_request:
+  push:
+    branches:
+      - "main"
+      - "release-**"
+
+env:
+  IMAGE: ethyca/fides:local
+  DEFAULT_PYTHON_VERSION: "3.10.13"
+  # Docker auth with read-only permissions.
+  DOCKER_USER: ${{ secrets.DOCKER_USER }}
+  DOCKER_RO_TOKEN: ${{ secrets.DOCKER_RO_TOKEN }}
+
+jobs:
+  ###################
+  ## Static Checks ##
+  ###################
+  Static-Checks:
+    strategy:
+      matrix:
+        session_name:
+          [
+            '"isort(check)"',
+            '"black(check)"',
+            "mypy",
+            "pylint",
+            "xenon",
+            "check_install",
+            '"pytest(nox)"',
+          ]
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set Up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
+          cache: "pip"
+
+      - name: Install Nox
+        run: pip install nox>=2022
+
+      - name: Install Dev Requirements
+        run: pip install -r dev-requirements.txt
+
+      - name: Run Static Check
+        run: nox -s ${{ matrix.session_name }}
