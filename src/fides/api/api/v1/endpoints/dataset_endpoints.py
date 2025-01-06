@@ -98,7 +98,7 @@ router = APIRouter(tags=["Dataset Configs"], prefix=V1_URL_PREFIX)
 def _get_connection_config(
     connection_key: FidesKey, db: Session = Depends(deps.get_db)
 ) -> ConnectionConfig:
-    logger.info("Finding connection config with key '{}'", connection_key)
+    logger.debug("Finding connection config with key '{}'", connection_key)
     connection_config = ConnectionConfig.get_by(db, field="key", value=connection_key)
     if not connection_config:
         raise HTTPException(
@@ -509,7 +509,7 @@ def get_datasets(
     Soon to be deprecated.
     """
 
-    logger.info(
+    logger.debug(
         "Finding all datasets for connection '{}' with pagination params {}",
         connection_config.key,
         params,
@@ -544,7 +544,7 @@ def get_dataset(
     Soon to be deprecated
     """
 
-    logger.info(
+    logger.debug(
         "Finding dataset '{}' for connection '{}'", fides_key, connection_config.key
     )
     dataset_config = DatasetConfig.filter(
@@ -574,7 +574,7 @@ def get_dataset_configs(
 ) -> AbstractPage[DatasetConfig]:
     """Returns all Dataset Configs attached to current Connection Config."""
 
-    logger.info(
+    logger.debug(
         "Finding all dataset configs for connection '{}' with pagination params {}",
         connection_config.key,
         params,
@@ -598,7 +598,7 @@ def get_dataset_config(
 ) -> DatasetConfig:
     """Returns the specific Dataset Config linked to the Connection Config."""
 
-    logger.info(
+    logger.debug(
         "Finding dataset config '{}' for connection '{}'",
         fides_key,
         connection_config.key,
@@ -631,7 +631,7 @@ def delete_dataset(
 ) -> None:
     """Removes the DatasetConfig based on the given key."""
 
-    logger.info(
+    logger.debug(
         "Finding dataset '{}' for connection '{}'", fides_key, connection_config.key
     )
     dataset_config = DatasetConfig.filter(
@@ -669,7 +669,7 @@ def get_ctl_datasets(
     Returns all CTL datasets .
     """
 
-    logger.info(
+    logger.debug(
         f"Finding all datasets {remove_saas_datasets=} {only_unlinked_datasets=}"
     )
     filters = []

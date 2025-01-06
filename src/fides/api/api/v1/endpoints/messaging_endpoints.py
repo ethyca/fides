@@ -421,7 +421,7 @@ def get_configs(
     """
     Retrieves configs for messaging.
     """
-    logger.info(
+    logger.debug(
         "Finding all messaging configurations with pagination params {}", params
     )
     return paginate(
