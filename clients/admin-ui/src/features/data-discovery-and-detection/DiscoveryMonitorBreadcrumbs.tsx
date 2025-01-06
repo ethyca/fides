@@ -28,7 +28,6 @@ const DiscoveryMonitorBreadcrumbs = ({
   if (!resourceUrn) {
     breadcrumbItems.push({
       title: "All activity",
-      icon: DATA_BREADCRUMB_ICONS[0],
     });
   }
 

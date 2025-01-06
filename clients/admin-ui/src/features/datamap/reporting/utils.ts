@@ -12,24 +12,23 @@ export const getGrouping = (groupBy?: DATAMAP_GROUPING) => {
   }
 };
 
-export const getColumnOrder = (groupBy: DATAMAP_GROUPING) => {
+export const getColumnOrder = (
+  groupBy: DATAMAP_GROUPING,
+  columnIDs: string[],
+) => {
   let columnOrder: string[] = [];
   if (DATAMAP_GROUPING.SYSTEM_DATA_USE === groupBy) {
-    columnOrder = [
-      COLUMN_IDS.SYSTEM_NAME,
-      COLUMN_IDS.DATA_USE,
-      COLUMN_IDS.DATA_CATEGORY,
-      COLUMN_IDS.DATA_SUBJECT,
-    ];
+    columnOrder = [COLUMN_IDS.SYSTEM_NAME, COLUMN_IDS.DATA_USE];
   }
   if (DATAMAP_GROUPING.DATA_USE_SYSTEM === groupBy) {
-    columnOrder = [
-      COLUMN_IDS.DATA_USE,
-      COLUMN_IDS.SYSTEM_NAME,
-      COLUMN_IDS.DATA_CATEGORY,
-      COLUMN_IDS.DATA_SUBJECT,
-    ];
+    columnOrder = [COLUMN_IDS.DATA_USE, COLUMN_IDS.SYSTEM_NAME];
   }
+  columnOrder = columnOrder.concat(
+    columnIDs.filter(
+      (columnID) =>
+        columnID !== COLUMN_IDS.SYSTEM_NAME && columnID !== COLUMN_IDS.DATA_USE,
+    ),
+  );
   return columnOrder;
 };
 

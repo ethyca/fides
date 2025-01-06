@@ -65,7 +65,7 @@ import {
   getDatamapReportColumns,
   getDefaultColumn,
 } from "./DatamapReportTableColumns";
-import { getGrouping, getPrefixColumns } from "./utils";
+import { getColumnOrder, getGrouping, getPrefixColumns } from "./utils";
 
 const emptyMinimalDatamapReportResponse: Page_DatamapReport_ = {
   items: [],
@@ -222,6 +222,14 @@ export const DatamapReportTable = () => {
       isRenamingColumns,
     ],
   );
+
+  useEffect(() => {
+    if (datamapReport?.items?.length) {
+      const columnIDs = Object.keys(datamapReport.items[0]);
+      setColumnOrder(getColumnOrder(groupBy, columnIDs));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [groupBy, datamapReport]);
 
   const {
     isOpen: isColumnSettingsOpen,

@@ -36,7 +36,7 @@ from sqlalchemy.dialects.postgresql import ARRAY, BIGINT, BYTEA
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession, async_object_session
 from sqlalchemy.ext.hybrid import hybrid_property
-from sqlalchemy.orm import Session, relationship
+from sqlalchemy.orm import RelationshipProperty, Session, relationship
 from sqlalchemy.sql import Select
 from sqlalchemy.sql.elements import Case
 from sqlalchemy.sql.sqltypes import DateTime
@@ -171,8 +171,11 @@ class DataCategory(Base, FidesBase):
     """
 
     __tablename__ = "ctl_data_categories"
+    fides_key = Column(String, primary_key=True, index=True, unique=True)
 
-    parent_key = Column(Text)
+    parent_key = Column(
+        Text, ForeignKey("ctl_data_categories.fides_key", ondelete="RESTRICT")
+    )
     active = Column(BOOLEAN, default=True, nullable=False)
 
     # Default Fields
@@ -180,6 +183,19 @@ class DataCategory(Base, FidesBase):
     version_added = Column(Text)
     version_deprecated = Column(Text)
     replaced_by = Column(Text)
+
+    children: "RelationshipProperty[List[DataCategory]]" = relationship(
+        "DataCategory",
+        back_populates="parent",
+        cascade="save-update, merge, refresh-expire",  # intentionally do not cascade deletes
+        passive_deletes="all",
+    )
+
+    parent: "RelationshipProperty[Optional[DataCategory]]" = relationship(
+        "DataCategory",
+        back_populates="children",
+        remote_side=[fides_key],
+    )
 
     @classmethod
     def from_fideslang_obj(
@@ -219,8 +235,11 @@ class DataUse(Base, FidesBase):
     """
 
     __tablename__ = "ctl_data_uses"
+    fides_key = Column(String, primary_key=True, index=True, unique=True)
 
-    parent_key = Column(Text)
+    parent_key = Column(
+        Text, ForeignKey("ctl_data_uses.fides_key", ondelete="RESTRICT")
+    )
     active = Column(BOOLEAN, default=True, nullable=False)
 
     # Default Fields
@@ -228,6 +247,19 @@ class DataUse(Base, FidesBase):
     version_added = Column(Text)
     version_deprecated = Column(Text)
     replaced_by = Column(Text)
+
+    children: "RelationshipProperty[List[DataUse]]" = relationship(
+        "DataUse",
+        back_populates="parent",
+        cascade="save-update, merge, refresh-expire",  # intentionally do not cascade deletes
+        passive_deletes="all",
+    )
+
+    parent: "RelationshipProperty[Optional[DataUse]]" = relationship(
+        "DataUse",
+        back_populates="children",
+        remote_side=[fides_key],
+    )
 
     @staticmethod
     def get_parent_uses_from_key(data_use_key: str) -> Set[str]:
