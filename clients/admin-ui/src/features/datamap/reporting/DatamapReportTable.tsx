@@ -223,14 +223,6 @@ export const DatamapReportTable = () => {
     ],
   );
 
-  useEffect(() => {
-    if (datamapReport?.items?.length) {
-      const columnIDs = Object.keys(datamapReport.items[0]);
-      setColumnOrder(getColumnOrder(groupBy, columnIDs));
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [groupBy, datamapReport]);
-
   const {
     isOpen: isColumnSettingsOpen,
     onOpen: onColumnSettingsOpen,
@@ -305,6 +297,20 @@ export const DatamapReportTable = () => {
       grouping: getGrouping(groupBy),
     },
   });
+
+  useEffect(() => {
+    if (groupBy && !!tableInstance) {
+      if (tableInstance.getState().columnOrder.length === 0) {
+        const tableColumnIds = tableInstance.getAllColumns().map((c) => c.id);
+        setColumnOrder(getColumnOrder(groupBy, tableColumnIds));
+      } else {
+        setColumnOrder(
+          getColumnOrder(groupBy, tableInstance.getState().columnOrder),
+        );
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [groupBy, tableInstance]);
 
   useEffect(() => {
     // changing the groupBy should wait until the data is loaded to update the grouping
