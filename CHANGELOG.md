@@ -102,7 +102,7 @@ Changes can also be flagged with various tags for tracking purposes. The tags sh
 - Allow hiding systems via a `hidden` parameter and add two flags on the `/system` api endpoint; `show_hidden` and `dnd_relevant`, to display only systems with integrations [#5484](https://github.com/ethyca/fides/pull/5484)
 - The CMP override `fides_privacy_policy_url` will now apply even if the `fides_override_language` doesn't match [#5515](https://github.com/ethyca/fides/pull/5515)
 - Updated POST taxonomy endpoints to handle creating resources without specifying fides_key [#5468](https://github.com/ethyca/fides/pull/5468)
-- Disabled connection pooling for task workers and added retries and keep-alive configurations for database connections [#5448](https://github.com/ethyca/fides/pull/5448) [`high-risk`]
+- Disabled connection pooling for task workers and added retries and keep-alive configurations for database connections [#5448](https://github.com/ethyca/fides/pull/5448) [https://github.com/ethyca/fides/labels/high-risk]
 - Added timeout handling in the UI for async discovery monitor-related queries [#5519](https://github.com/ethyca/fides/pull/5519)
 
 ### Developer Experience
