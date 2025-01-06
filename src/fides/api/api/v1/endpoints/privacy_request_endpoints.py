@@ -2157,7 +2157,7 @@ def create_privacy_request_func(
                 failed.append(failure)
                 continue
 
-        logger.debug("Finding policy with key '{}'", privacy_request_data.policy_key)
+        logger.info("Finding policy with key '{}'", privacy_request_data.policy_key)
         policy: Optional[Policy] = Policy.get_by(
             db=db,
             field="key",

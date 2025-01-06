@@ -240,7 +240,7 @@ def create_or_update_rules(
     Given a list of Rule data elements, create or update corresponding Rule objects
     or report failure
     """
-    logger.debug("Finding policy with key '{}'", policy_key)
+    logger.info("Finding policy with key '{}'", policy_key)
 
     policy = get_policy_or_error(db, policy_key)
 
@@ -357,7 +357,7 @@ def delete_rule(
     """
     policy = get_policy_or_error(db, policy_key)
 
-    logger.debug("Finding rule with key '{}'", rule_key)
+    logger.info("Finding rule with key '{}'", rule_key)
 
     rule = Rule.filter(
         db=db, conditions=(Rule.key == rule_key and Rule.policy_id == policy.id)  # type: ignore[arg-type]
@@ -492,7 +492,7 @@ def create_or_update_rule_targets(
     """
     policy = get_policy_or_error(db, policy_key)
 
-    logger.debug("Finding rule with key '{}'", rule_key)
+    logger.info("Finding rule with key '{}'", rule_key)
     rule = Rule.filter(
         db=db, conditions=(Rule.key == rule_key and Rule.policy_id == policy.id)  # type: ignore[arg-type]
     ).first()
@@ -591,7 +591,7 @@ def delete_rule_target(
     """
     policy = get_policy_or_error(db, policy_key)
 
-    logger.debug("Finding rule with key '{}'", rule_key)
+    logger.info("Finding rule with key '{}'", rule_key)
     rule = Rule.filter(
         db=db, conditions=(Rule.key == rule_key and Rule.policy_id == policy.id)  # type: ignore[arg-type]
     ).first()
@@ -601,7 +601,7 @@ def delete_rule_target(
             detail=f"No Rule found for key {rule_key} on Policy {policy_key}.",
         )
 
-    logger.debug("Finding rule target with key '{}'", rule_target_key)
+    logger.info("Finding rule target with key '{}'", rule_target_key)
     target = RuleTarget.filter(
         db=db,
         conditions=(
