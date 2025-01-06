@@ -1079,7 +1079,7 @@ You should also import your model in <code>src/fides/api/db/base.py</code> so it
 <span class="normal">4</span>
 <span class="normal">5</span>
 <span class="normal">6</span>
-<span class="normal">7</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">Book</span><span class="p">(</span><span class="n">Base</span><span class="p">):</span>
+<span class="normal">7</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Book</span><span class="p">(</span><span class="n">Base</span><span class="p">):</span>
     <span class="n">__tablename__</span> <span class="o">=</span> <span class="s1">&#39;book&#39;</span>
 
     <span class="nb">id</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="n">Integer</span><span class="p">,</span> <span class="n">primary_key</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -1162,11 +1162,11 @@ You should also import your model in <code>src/fides/api/db/base.py</code> so it
 <span class="normal">3</span>
 <span class="normal">4</span>
 <span class="normal">5</span>
-<span class="normal">6</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">SomeException</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">):</span>
+<span class="normal">6</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">SomeException</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">):</span>
     <span class="s2">&quot;a docstring&quot;</span>
 
 
-<span class="k">def</span> <span class="nf">some_method</span><span class="p">():</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">some_method</span><span class="p">():</span>
     <span class="k">raise</span> <span class="n">SomeException</span><span class="p">(</span><span class="s2">&quot;a message&quot;</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
 <h2 id="general-debugging-pdb">General debugging -- pdb</h2>
