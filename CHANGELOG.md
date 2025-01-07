@@ -15,6 +15,10 @@ The types of changes are:
 - `Fixed` for any bug fixes.
 - `Security` in case of vulnerabilities.
 
+Changes can also be flagged with a GitHub label for tracking purposes. The URL of the label should be put at the end of the entry. The possible labels are:
+- https://github.com/ethyca/fides/labels/high-risk: to indicate that a change is a "high-risk" change that could potentially lead to unanticipated regressions or degradations
+- https://github.com/ethyca/fides/labels/db-migration: to indicate that a given change includes a DB migration
+
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.52.0...main)
 
 ### Added
@@ -29,7 +33,7 @@ The types of changes are:
 - Added event based communication example to the Cookie House sample app [#5597](https://github.com/ethyca/fides/pull/5597)
 - Added new erasure tests for BigQuery Enterprise [#5554](https://github.com/ethyca/fides/pull/5554)
 - Added new `has_next` parameter for the `link` pagination strategy [#5596](https://github.com/ethyca/fides/pull/5596)
-- Added a `DBCache` model for database-backed caching [#5613](https://github.com/ethyca/fides/pull/5613)
+- Added a `DBCache` model for database-backed caching [#5613](https://github.com/ethyca/fides/pull/5613) https://github.com/ethyca/fides/labels/db-migration
 - Adds "reclassify" button to discovery result tables [#5574](https://github.com/ethyca/fides/pull/5574)
 - Added support for exporting datamaps with column renaming, reordering and visibility options [#5543](https://github.com/ethyca/fides/pull/5543)
 
@@ -98,7 +102,7 @@ The types of changes are:
 - Allow hiding systems via a `hidden` parameter and add two flags on the `/system` api endpoint; `show_hidden` and `dnd_relevant`, to display only systems with integrations [#5484](https://github.com/ethyca/fides/pull/5484)
 - The CMP override `fides_privacy_policy_url` will now apply even if the `fides_override_language` doesn't match [#5515](https://github.com/ethyca/fides/pull/5515)
 - Updated POST taxonomy endpoints to handle creating resources without specifying fides_key [#5468](https://github.com/ethyca/fides/pull/5468)
-- Disabled connection pooling for task workers and added retries and keep-alive configurations for database connections [#5448](https://github.com/ethyca/fides/pull/5448)
+- Disabled connection pooling for task workers and added retries and keep-alive configurations for database connections [#5448](https://github.com/ethyca/fides/pull/5448) https://github.com/ethyca/fides/labels/high-risk
 - Added timeout handling in the UI for async discovery monitor-related queries [#5519](https://github.com/ethyca/fides/pull/5519)
 
 ### Developer Experience
