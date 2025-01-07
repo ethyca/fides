@@ -42,7 +42,7 @@ const NAV_WIDTH = "200px";
 const FidesLogoHomeLink = () => (
   <Box px={2}>
     <Link as={NextLink} href={INDEX_ROUTE} display="flex">
-      <Image src={logoImage} alt="Fides Logo" />
+      <Image src={logoImage} alt="Fides Logo" width={116} />
     </Link>
   </Box>
 );
