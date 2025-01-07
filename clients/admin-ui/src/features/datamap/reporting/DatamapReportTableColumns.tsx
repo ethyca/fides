@@ -241,6 +241,9 @@ export const getDatamapReportColumns = ({
     columnHelper.accessor((row) => row.data_shared_with_third_parties, {
       id: COLUMN_IDS.DATA_SHARED_WITH_THIRD_PARTIES,
     }),
+    columnHelper.accessor((row) => row.processes_special_category_data, {
+      id: COLUMN_IDS.PROCESSES_SPECIAL_CATEGORY_DATA,
+    }),
     columnHelper.accessor((row) => row.data_stewards, {
       id: COLUMN_IDS.DATA_STEWARDS,
       cell: (props) => (
@@ -364,9 +367,6 @@ export const getDatamapReportColumns = ({
     columnHelper.accessor((row) => row.legitimate_interest_disclosure_url, {
       id: COLUMN_IDS.LEGITIMATE_INTEREST_DISCLOSURE_URL,
     }),
-    columnHelper.accessor((row) => row.link_to_processor_contract, {
-      id: COLUMN_IDS.LINK_TO_PROCESSOR_CONTRACT,
-    }),
     columnHelper.accessor((row) => row.processes_personal_data, {
       id: COLUMN_IDS.PROCESSES_PERSONAL_DATA,
     }),
@@ -413,9 +413,6 @@ export const getDatamapReportColumns = ({
     }),
     columnHelper.accessor((row) => row.special_category_legal_basis, {
       id: COLUMN_IDS.SPECIAL_CATEGORY_LEGAL_BASIS,
-    }),
-    columnHelper.accessor((row) => row.third_country_safeguards, {
-      id: COLUMN_IDS.THIRD_COUNTRY_SAFEGUARDS,
     }),
     columnHelper.accessor((row) => row.third_parties, {
       id: COLUMN_IDS.THIRD_PARTIES,
