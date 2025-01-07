@@ -1,8 +1,34 @@
-import { extendTheme as extendChakraTheme } from "@chakra-ui/react";
+import {
+  defineStyle,
+  defineStyleConfig,
+  extendTheme as extendChakraTheme,
+} from "@chakra-ui/react";
 import { Dict } from "@chakra-ui/utils";
 import palette from "fidesui/src/palette/palette.module.scss";
 
 // eslint-disable-next-line import/prefer-default-export
+
+const subtleBadge = defineStyle({
+  bg: palette.FIDESUI_NEUTRAL_100,
+});
+const taxonomyBadge = defineStyle({
+  bg: "transparent",
+  border: `1px solid ${palette.FIDESUI_NEUTRAL_75}`,
+});
+
+const badgeTheme = defineStyleConfig({
+  variants: {
+    // default badge for most use cases
+    subtle: subtleBadge,
+    // to be used in when displaying taxonomy labels (data categories, uses and subjects)
+    taxonomy: taxonomyBadge,
+  },
+  baseStyle: {
+    borderRadius: "4px",
+    color: palette.FIDESUI_MINOS,
+  },
+});
+
 export const theme: Dict = extendChakraTheme({
   colors: {
     primary: {
@@ -67,6 +93,9 @@ export const theme: Dict = extendChakraTheme({
         bg: "gray.100",
       },
     },
+  },
+  components: {
+    Badge: badgeTheme,
   },
 });
 

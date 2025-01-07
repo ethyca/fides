@@ -63,7 +63,6 @@ const FidesBadge = ({ children, ...props }: BadgeProps) => (
     fontWeight="400"
     fontSize="xs"
     lineHeight={4}
-    color="gray.600"
     px={2}
     py={1}
     boxShadow={
