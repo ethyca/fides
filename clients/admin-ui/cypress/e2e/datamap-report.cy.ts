@@ -323,6 +323,15 @@ describe("Data map report table", () => {
     it("should filter the table by making a selection", () => {
       cy.getByTestId("filter-multiple-systems-btn").click();
       cy.getByTestId("datamap-report-filter-modal").should("be.visible");
+      cy.getByTestId("filter-modal-accordion-button")
+        .eq(0)
+        .should("have.text", "Data use");
+      cy.getByTestId("filter-modal-accordion-button")
+        .eq(1)
+        .should("have.text", "Data categories");
+      cy.getByTestId("filter-modal-accordion-button")
+        .eq(2)
+        .should("have.text", "Data subject");
       cy.getByTestId("filter-modal-accordion-button").eq(1).click();
       cy.getByTestId("filter-modal-checkbox-tree-categories").should(
         "be.visible",
