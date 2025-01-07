@@ -45,7 +45,6 @@ const actionCenterApi = baseApi.injectEndpoints({
       { key: string; system: string; search: string } & PaginationQueryParams
     >({
       query: ({ key, system, page = 1, size = 20, search }) => ({
-        method: "GET",
         url: "/plus/discovery-monitor/results",
         params: {
           monitor_config_id: key,
@@ -58,6 +57,34 @@ const actionCenterApi = baseApi.injectEndpoints({
       }),
       providesTags: () => ["Discovery Monitor Results"],
     }),
+    addMonitorResults: build.mutation<
+      any,
+      { urnList?: string[]; systemId?: string }
+    >({
+      query: (params) => ({
+        method: "POST",
+        url: `/plus/discovery-monitor/promote`,
+        params: {
+          staged_resource_urns: params.urnList,
+          system_key: params.systemId,
+        },
+      }),
+      invalidatesTags: ["Discovery Monitor Results"],
+    }),
+    ignoreMonitorResults: build.mutation<
+      any,
+      { urnList?: string[]; systemId?: string }
+    >({
+      query: (params) => ({
+        method: "POST",
+        url: `/plus/discovery-monitor/mute`,
+        params: {
+          staged_resource_urns: params.urnList,
+          system_key: params.systemId,
+        },
+      }),
+      invalidatesTags: ["Discovery Monitor Results"],
+    }),
   }),
 });
 
@@ -65,4 +92,6 @@ export const {
   useGetAggregateMonitorResultsQuery,
   useGetDiscoveredSystemAggregateQuery,
   useGetDiscoveredAssetsQuery,
+  useAddMonitorResultsMutation,
+  useIgnoreMonitorResultsMutation,
 } = actionCenterApi;

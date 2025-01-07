@@ -1,6 +1,9 @@
 import { ColumnDef, createColumnHelper } from "@tanstack/react-table";
 
-import { DefaultCell } from "~/features/common/table/v2";
+import {
+  DefaultCell,
+  IndeterminateCheckboxCell,
+} from "~/features/common/table/v2";
 import { StagedResourceAPIResponse } from "~/types/api";
 
 import { DiscoveredAssetActionsCell } from "../tables/cells/DiscoveredAssetActionsCell";
@@ -14,6 +17,25 @@ export const useDiscoveredAssetsColumns = ({
   const columnHelper = createColumnHelper<StagedResourceAPIResponse>();
 
   const columns: ColumnDef<StagedResourceAPIResponse, any>[] = [
+    columnHelper.display({
+      id: "select",
+      cell: ({ row }) => (
+        <IndeterminateCheckboxCell
+          isChecked={row.getIsSelected()}
+          onChange={row.getToggleSelectedHandler()}
+          dataTestId={`select-${row.original.name || row.id}`}
+        />
+      ),
+      header: ({ table }) => (
+        <IndeterminateCheckboxCell
+          isChecked={table.getIsAllPageRowsSelected()}
+          isIndeterminate={table.getIsSomeRowsSelected()}
+          onChange={table.getToggleAllRowsSelectedHandler()}
+          dataTestId="select-all-rows"
+        />
+      ),
+      maxSize: 25,
+    }),
     columnHelper.accessor((row) => row.name, {
       id: "name",
       cell: (props) => <DefaultCell value={props.getValue()} />,

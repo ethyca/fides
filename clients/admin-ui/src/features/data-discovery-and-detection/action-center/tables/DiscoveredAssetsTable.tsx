@@ -1,7 +1,25 @@
-import { getCoreRowModel, useReactTable } from "@tanstack/react-table";
-import { Box, Flex } from "fidesui";
+import {
+  getCoreRowModel,
+  RowSelectionState,
+  useReactTable,
+} from "@tanstack/react-table";
+import {
+  AntButton as Button,
+  Flex,
+  HStack,
+  Icons,
+  Menu,
+  MenuButton,
+  MenuDivider,
+  MenuItem,
+  MenuList,
+  Text,
+} from "fidesui";
+import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 
+import { useAlert } from "~/features/common/hooks";
+import { ACTION_CENTER_ROUTE } from "~/features/common/nav/v2/routes";
 import {
   FidesTableV2,
   PaginationBar,
@@ -9,7 +27,11 @@ import {
   TableSkeletonLoader,
   useServerSidePagination,
 } from "~/features/common/table/v2";
-import { useGetDiscoveredAssetsQuery } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
+import {
+  useAddMonitorResultsMutation,
+  useGetDiscoveredAssetsQuery,
+  useIgnoreMonitorResultsMutation,
+} from "~/features/data-discovery-and-detection/action-center/action-center.slice";
 
 import { SearchInput } from "../../SearchInput";
 import { useDiscoveredAssetsColumns } from "../hooks/useDiscoveredAssetsColumns";
@@ -23,6 +45,15 @@ export const DiscoveredAssetsTable = ({
   monitorId,
   systemId,
 }: DiscoveredAssetsTableProps) => {
+  const router = useRouter();
+  const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
+  const [addMonitorResultsMutation, { isLoading: isAddingResults }] =
+    useAddMonitorResultsMutation();
+  const [ignoreMonitorResultsMutation, { isLoading: isIgnoringResults }] =
+    useIgnoreMonitorResultsMutation();
+
+  const anyBulkActionIsLoading = isAddingResults || isIgnoringResults;
+
   const {
     PAGE_SIZES,
     pageSize,
@@ -38,6 +69,8 @@ export const DiscoveredAssetsTable = ({
     resetPageIndexToDefault,
   } = useServerSidePagination();
   const [searchQuery, setSearchQuery] = useState("");
+  const [isAddingAll, setIsAddingAll] = useState(false);
+  const { successAlert } = useAlert();
 
   useEffect(() => {
     resetPageIndexToDefault();
@@ -65,7 +98,48 @@ export const DiscoveredAssetsTable = ({
     manualPagination: true,
     data: data?.items || [],
     columnResizeMode: "onChange",
+    onRowSelectionChange: setRowSelection,
+    state: {
+      rowSelection,
+    },
   });
+
+  const selectedUrns = Object.keys(rowSelection).filter((k) => rowSelection[k]);
+
+  const handleBulkAdd = async () => {
+    await addMonitorResultsMutation({
+      urnList: selectedUrns,
+    });
+    // TODO: Add "view" button which will bring users to the system inventory with an asset tab open (not yet developed)
+    successAlert(
+      `${selectedUrns.length} assets from ${systemId} have been added to the system inventory.`,
+      `Confirmed`,
+    );
+  };
+
+  const handleBulkIgnore = async () => {
+    await ignoreMonitorResultsMutation({
+      urnList: selectedUrns,
+    });
+    successAlert(
+      `${selectedUrns.length} assets from ${systemId} have been ignored and will not be added to the system inventory.`,
+      `Confirmed`,
+    );
+  };
+
+  const handleAddAll = async () => {
+    setIsAddingAll(true);
+    await addMonitorResultsMutation({
+      systemId,
+    });
+    setIsAddingAll(false);
+    router.push(`${ACTION_CENTER_ROUTE}/${monitorId}`);
+    // TODO: Add "view" button which will bring users to the system inventory with an asset tab open (not yet developed)
+    successAlert(
+      `All assets from ${systemId} have been added to the system inventory.`,
+      `Confirmed`,
+    );
+  };
 
   if (isLoading) {
     return <TableSkeletonLoader rowHeight={36} numRows={36} />;
@@ -74,17 +148,54 @@ export const DiscoveredAssetsTable = ({
   return (
     <>
       <TableActionBar>
-        <Flex
-          direction="row"
-          alignItems="center"
-          justifyContent="space-between"
-          width="full"
-        >
-          <Flex gap={6} align="center">
-            <Box flexShrink={0}>
-              <SearchInput value={searchQuery} onChange={setSearchQuery} />
-            </Box>
-          </Flex>
+        <SearchInput value={searchQuery} onChange={setSearchQuery} />
+        <Flex alignItems="center">
+          {!!selectedUrns.length && (
+            <Text
+              fontSize="xs"
+              fontWeight="semibold"
+              minW={16}
+              mr={6}
+            >{`${selectedUrns.length} selected`}</Text>
+          )}
+          <HStack>
+            <Menu>
+              <MenuButton
+                as={Button}
+                size="small"
+                icon={<Icons.ChevronDown />}
+                iconPosition="end"
+                loading={anyBulkActionIsLoading}
+                data-testid="bulk-actions-menu"
+                disabled={!selectedUrns.length || anyBulkActionIsLoading}
+                // @ts-ignore - `type` prop is for Ant button, not Chakra MenuButton
+                type="primary"
+              >
+                Actions
+              </MenuButton>
+              <MenuList>
+                <MenuItem fontSize="small" onClick={handleBulkAdd}>
+                  Add
+                </MenuItem>
+                <MenuDivider />
+                <MenuItem fontSize="small" onClick={handleBulkIgnore}>
+                  Ignore
+                </MenuItem>
+              </MenuList>
+            </Menu>
+            <Button
+              size="small"
+              onClick={handleAddAll}
+              disabled={anyBulkActionIsLoading}
+              loading={isAddingAll}
+              type="primary"
+              icon={<Icons.Checkmark />}
+              iconPosition="end"
+              data-testid="add-all"
+            >
+              Add all
+            </Button>
+          </HStack>
         </Flex>
       </TableActionBar>
       <FidesTableV2 tableInstance={tableInstance} />
