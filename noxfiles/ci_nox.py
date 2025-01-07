@@ -102,10 +102,10 @@ def xenon(session: nox.Session) -> None:
         "--exclude=src/fides/_version.py",
     )
     session.run(*command, success_codes=[0, 1])
-    session.log(
+    session.warn(
         "Note: This command was malformed so it's been failing to report complexity issues."
     )
-    session.log(
+    session.warn(
         "Intentionally suppressing the error status code for now to slowly work through the issues."
     )
 
