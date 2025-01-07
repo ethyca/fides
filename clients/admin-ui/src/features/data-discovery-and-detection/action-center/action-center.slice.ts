@@ -56,6 +56,34 @@ const actionCenterApi = baseApi.injectEndpoints({
       }),
       providesTags: () => ["Discovery Monitor Results"],
     }),
+    addMonitorResults: build.mutation<
+      any,
+      { urnList?: string[]; systemId?: string }
+    >({
+      query: (params) => ({
+        method: "POST",
+        url: `/plus/discovery-monitor/promote`,
+        params: {
+          staged_resource_urns: params.urnList,
+          system_key: params.systemId,
+        },
+      }),
+      invalidatesTags: ["Discovery Monitor Results"],
+    }),
+    ignoreMonitorResults: build.mutation<
+      any,
+      { urnList?: string[]; systemId?: string }
+    >({
+      query: (params) => ({
+        method: "POST",
+        url: `/plus/discovery-monitor/mute`,
+        params: {
+          staged_resource_urns: params.urnList,
+          system_key: params.systemId,
+        },
+      }),
+      invalidatesTags: ["Discovery Monitor Results"],
+    }),
   }),
 });
 
@@ -63,4 +91,6 @@ export const {
   useGetAggregateMonitorResultsQuery,
   useGetDiscoveredSystemAggregateQuery,
   useGetDiscoveredAssetsQuery,
+  useAddMonitorResultsMutation,
+  useIgnoreMonitorResultsMutation,
 } = actionCenterApi;

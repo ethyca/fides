@@ -1,14 +1,17 @@
 import { ColumnDef, createColumnHelper } from "@tanstack/react-table";
 
-import { DefaultCell } from "~/features/common/table/v2";
+import {
+  DefaultCell,
+  IndeterminateCheckboxCell,
+} from "~/features/common/table/v2";
 import { StagedResourceAPIResponse } from "~/types/api";
+
+import { DiscoveredAssetActionsCell } from "../tables/cells/DiscoveredAssetActionsCell";
 
 export const useDiscoveredAssetsColumns = () => {
   const columnHelper = createColumnHelper<StagedResourceAPIResponse>();
 
   const columns: ColumnDef<StagedResourceAPIResponse, any>[] = [
-    /*
-    // TODO: [HJ-354] uncomment when actions are implemented
     columnHelper.display({
       id: "select",
       cell: ({ row }) => (
@@ -27,7 +30,7 @@ export const useDiscoveredAssetsColumns = () => {
         />
       ),
       maxSize: 25,
-    }), */
+    }),
     columnHelper.accessor((row) => row.name, {
       id: "name",
       cell: (props) => <DefaultCell value={props.getValue()} />,
@@ -85,8 +88,6 @@ export const useDiscoveredAssetsColumns = () => {
       ),
       header: "Discovery",
     }), */
-    /*
-    // TODO: [HJ-354] uncomment when actions are implemented
     columnHelper.display({
       id: "actions",
       cell: (props) => (
@@ -97,7 +98,7 @@ export const useDiscoveredAssetsColumns = () => {
         width: "auto",
         disableRowClick: true,
       },
-    }), */
+    }),
   ];
   return { columns };
 };
