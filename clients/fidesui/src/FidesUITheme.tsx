@@ -11,6 +11,10 @@ import palette from "fidesui/src/palette/palette.module.scss";
 const subtleBadge = defineStyle({
   bg: palette.FIDESUI_NEUTRAL_100,
 });
+const solidBadge = defineStyle({
+  bg: palette.FIDESUI_MINOS,
+  color: palette.FIDESUI_CORINTH,
+});
 const taxonomyBadge = defineStyle({
   bg: "transparent",
   border: `1px solid ${palette.FIDESUI_NEUTRAL_75}`,
@@ -22,6 +26,8 @@ const badgeTheme = defineStyleConfig({
     subtle: subtleBadge,
     // to be used in when displaying taxonomy labels (data categories, uses and subjects)
     taxonomy: taxonomyBadge,
+    // for backwards compatibility with previous styles
+    solid: solidBadge,
   },
   baseStyle: {
     borderRadius: "4px",
@@ -69,6 +75,18 @@ export const theme: Dict = extendChakraTheme({
     },
     minos: {
       500: "#2b2e35",
+    },
+    terracotta: {
+      50: palette.FIDESUI_BG_TERRACOTTA,
+      100: palette.FIDESUI_BG_TERRACOTTA,
+      200: palette.FIDESUI_BG_TERRACOTTA,
+      300: palette.FIDESUI_TERRACOTTA,
+      400: palette.FIDESUI_TERRACOTTA,
+      500: palette.FIDESUI_TERRACOTTA,
+      600: palette.FIDESUI_TERRACOTTA,
+      700: palette.FIDESUI_TERRACOTTA,
+      800: palette.FIDESUI_TERRACOTTA,
+      900: palette.FIDESUI_TERRACOTTA,
     },
     gray: {
       50: palette.FIDESUI_NEUTRAL_50,

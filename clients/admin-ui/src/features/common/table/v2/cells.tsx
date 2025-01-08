@@ -299,11 +299,7 @@ export const IndeterminateCheckboxCell = ({
     justifyContent="center"
     onClick={(e) => e.stopPropagation()}
   >
-    <Checkbox
-      data-testid={dataTestId || undefined}
-      {...rest}
-      colorScheme="purple"
-    />
+    <Checkbox data-testid={dataTestId || undefined} {...rest} />
   </Flex>
 );
 

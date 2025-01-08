@@ -89,7 +89,6 @@ export const PickerCheckboxList = <T extends { id: string; name: string }>({
       {numSelected > 0 ? (
         <Badge
           colorScheme="primary"
-          variant="solid"
           width="fit-content"
           data-testid="num-selected-badge"
         >
