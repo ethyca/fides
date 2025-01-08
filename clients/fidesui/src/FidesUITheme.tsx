@@ -8,9 +8,11 @@ import palette from "fidesui/src/palette/palette.module.scss";
 
 // eslint-disable-next-line import/prefer-default-export
 
-const subtleBadge = defineStyle({
-  bg: palette.FIDESUI_NEUTRAL_100,
-});
+const subtleBadge = defineStyle((props) => ({
+  bg: props.colorScheme
+    ? `${props.colorScheme}.100`
+    : palette.FIDESUI_NEUTRAL_100,
+}));
 const solidBadge = defineStyle({
   bg: palette.FIDESUI_MINOS,
   color: palette.FIDESUI_CORINTH,
@@ -99,6 +101,39 @@ export const theme: Dict = extendChakraTheme({
       700: palette.FIDESUI_NEUTRAL_700,
       800: palette.FIDESUI_NEUTRAL_800,
       900: palette.FIDESUI_NEUTRAL_900,
+    },
+    warn: {
+      100: palette.FIDESUI_BG_WARNING,
+      200: palette.FIDESUI_BG_WARNING,
+      300: palette.FIDESUI_WARNING,
+      400: palette.FIDESUI_WARNING,
+      500: palette.FIDESUI_WARNING,
+      600: palette.FIDESUI_WARNING,
+      700: palette.FIDESUI_WARNING,
+      800: palette.FIDESUI_WARNING,
+      900: palette.FIDESUI_WARNING,
+    },
+    success: {
+      100: palette.FIDESUI_BG_SUCCESS,
+      200: palette.FIDESUI_BG_SUCCESS,
+      300: palette.FIDESUI_SUCCESS,
+      400: palette.FIDESUI_SUCCESS,
+      500: palette.FIDESUI_SUCCESS,
+      600: palette.FIDESUI_SUCCESS,
+      700: palette.FIDESUI_SUCCESS,
+      800: palette.FIDESUI_SUCCESS,
+      900: palette.FIDESUI_SUCCESS,
+    },
+    info: {
+      100: palette.FIDESUI_BG_INFO,
+      200: palette.FIDESUI_BG_INFO,
+      300: palette.FIDESUI_INFO,
+      400: palette.FIDESUI_INFO,
+      500: palette.FIDESUI_INFO,
+      600: palette.FIDESUI_INFO,
+      700: palette.FIDESUI_INFO,
+      800: palette.FIDESUI_INFO,
+      900: palette.FIDESUI_INFO,
     },
   },
   fonts: {
