@@ -1,11 +1,11 @@
-import { Center, Heading, Spinner, Text } from "fidesui";
+import { Center, Spinner, Text } from "fidesui";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
 import { ReactNode } from "react";
 
 import Layout from "~/features/common/Layout";
-import BackButton from "~/features/common/nav/v2/BackButton";
 import { PRIVACY_REQUESTS_ROUTE } from "~/features/common/nav/v2/routes";
+import PageHeader from "~/features/common/PageHeader";
 import { useGetAllPrivacyRequestsQuery } from "~/features/privacy-requests";
 import PrivacyRequest from "~/features/privacy-requests/PrivacyRequest";
 
@@ -39,11 +39,14 @@ const PrivacyRequests: NextPage = () => {
   }
 
   return (
-    <Layout title={`Privacy Requests - ${id}`}>
-      <BackButton backPath={PRIVACY_REQUESTS_ROUTE} />
-      <Heading fontSize="2xl" fontWeight="semibold">
-        Privacy Request
-      </Heading>
+    <Layout title={`Privacy Request - ${id}`}>
+      <PageHeader
+        heading="Privacy Requests"
+        breadcrumbItems={[
+          { title: "All requests", href: PRIVACY_REQUESTS_ROUTE },
+          { title: "Request details" },
+        ]}
+      />
       {content}
     </Layout>
   );

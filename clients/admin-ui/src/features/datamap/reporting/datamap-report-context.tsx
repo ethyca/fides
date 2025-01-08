@@ -11,7 +11,6 @@ import { DATAMAP_GROUPING } from "~/types/api";
 
 import { DatamapReportFilterSelections } from "../types";
 import { COLUMN_IDS, DATAMAP_LOCAL_STORAGE_KEYS } from "./constants";
-import { getColumnOrder } from "./utils";
 
 interface DatamapReportContextProps {
   savedCustomReportId: string;
@@ -61,7 +60,7 @@ export const DatamapReportProvider = ({
 
   const [columnOrder, setColumnOrder] = useLocalStorage<string[]>(
     DATAMAP_LOCAL_STORAGE_KEYS.COLUMN_ORDER,
-    getColumnOrder(groupBy),
+    [],
   );
 
   const [columnVisibility, setColumnVisibility] = useLocalStorage<

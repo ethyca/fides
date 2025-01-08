@@ -3,8 +3,8 @@ import React, { useEffect, useMemo, useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import DataTabs, { TabData } from "~/features/common/DataTabs";
-import BackButton from "~/features/common/nav/v2/BackButton";
 import { DATASTORE_CONNECTION_ROUTE } from "~/features/common/nav/v2/routes";
+import PageHeader from "~/features/common/PageHeader";
 import {
   reset,
   selectConnectionTypeState,
@@ -91,9 +91,15 @@ const EditConnection = () => {
 
   return connection && connectionOption ? (
     <>
-      <BackButton backPath={DATASTORE_CONNECTION_ROUTE} />
+      <PageHeader
+        heading="Connection manager"
+        breadcrumbItems={[
+          { title: "All connections", href: DATASTORE_CONNECTION_ROUTE },
+          { title: connection.name },
+        ]}
+      />
       <Heading
-        fontSize="2xl"
+        fontSize="md"
         fontWeight="semibold"
         maxHeight="40px"
         mb="4px"

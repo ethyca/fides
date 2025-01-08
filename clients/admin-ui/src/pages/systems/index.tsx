@@ -231,13 +231,12 @@ const Systems: NextPage = () => {
   });
 
   return (
-    <Layout title="System inventory" mainProps={{ paddingTop: 0 }}>
+    <Layout title="System inventory">
       <Box data-testid="system-management">
-        <PageHeader breadcrumbs={[{ title: "System inventory" }]}>
-          <Text fontSize="sm" mb={1}>
-            View and manage recently detected systems and vendors here.
-          </Text>
-        </PageHeader>
+        <PageHeader
+          heading="System inventory"
+          breadcrumbItems={[{ title: "All systems" }]}
+        />
         {isLoading ? (
           <TableSkeletonLoader rowHeight={36} numRows={15} />
         ) : (

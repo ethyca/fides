@@ -78,13 +78,13 @@ const ConfigureSystem: NextPage = () => {
   }
 
   return (
-    <Layout title="System inventory" mainProps={{ paddingTop: 0 }}>
+    <Layout title="System inventory">
       <PageHeader
-        breadcrumbs={[
-          { title: "System inventory", link: SYSTEM_ROUTE },
+        heading="System inventory"
+        breadcrumbItems={[
+          { title: "All systems", href: SYSTEM_ROUTE },
           { title: system?.name || "" },
         ]}
-        isSticky
       >
         <Box position="relative">
           <DataTabsHeader

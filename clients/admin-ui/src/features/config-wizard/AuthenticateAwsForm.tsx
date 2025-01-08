@@ -1,4 +1,4 @@
-import { AntButton as Button, Heading, HStack, Stack } from "fidesui";
+import { AntButton as Button, Box, HStack, Stack, Text } from "fidesui";
 import { Form, Formik } from "formik";
 import { useState } from "react";
 import * as Yup from "yup";
@@ -20,6 +20,7 @@ import {
 import { RTKErrorResult } from "~/types/errors";
 
 import { ControlledSelect } from "../common/form/ControlledSelect";
+import { NextBreadcrumb } from "../common/nav/v2/NextBreadcrumb";
 import {
   changeStep,
   selectOrganizationFidesKey,
@@ -129,12 +130,27 @@ const AuthenticateAwsForm = () => {
             ) : null}
             {!isSubmitting && !scannerError ? (
               <>
-                <Heading size="lg">Authenticate AWS Scanner</Heading>
-                <h2>
-                  To use the scanner to inventory systems in AWS, you must first
-                  authenticate to your AWS cloud by providing the following
-                  information:
-                </h2>
+                <Box>
+                  <NextBreadcrumb
+                    className="mb-4"
+                    items={[
+                      {
+                        title: "Add systems",
+                        href: "",
+                        onClick: (e) => {
+                          e.preventDefault();
+                          handleCancel();
+                        },
+                      },
+                      { title: "Authenticate AWS Scanner" },
+                    ]}
+                  />
+                  <Text>
+                    To use the scanner to inventory systems in AWS, you must
+                    first authenticate to your AWS cloud by providing the
+                    following information:
+                  </Text>
+                </Box>
                 <Stack>
                   <CustomTextInput
                     name="aws_access_key_id"
