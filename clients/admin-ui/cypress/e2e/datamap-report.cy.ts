@@ -331,6 +331,15 @@ describe("Data map report table", () => {
     it("should filter the table by making a selection", () => {
       cy.getByTestId("filter-multiple-systems-btn").click();
       cy.getByTestId("datamap-report-filter-modal").should("be.visible");
+      cy.getByTestId("filter-modal-accordion-button")
+        .eq(0)
+        .should("have.text", "Data use");
+      cy.getByTestId("filter-modal-accordion-button")
+        .eq(1)
+        .should("have.text", "Data categories");
+      cy.getByTestId("filter-modal-accordion-button")
+        .eq(2)
+        .should("have.text", "Data subject");
       cy.getByTestId("filter-modal-accordion-button").eq(1).click();
       cy.getByTestId("filter-modal-checkbox-tree-categories").should(
         "be.visible",
@@ -397,16 +406,17 @@ describe("Data map report table", () => {
       cy.get("#toast-datamap-report-toast")
         .should("be.visible")
         .should("have.attr", "data-status", "success");
-      cy.getByTestId("custom-reports-trigger")
-        .should("contain.text", "My Custom Report")
-        .click();
+      cy.getByTestId("custom-reports-trigger").should(
+        "contain.text",
+        "My Custom Report",
+      );
       cy.getByTestId("fidesTable").within(() => {
         // reordering applied to report
         cy.get("thead th")
           .eq(2)
           .should("contain.text", "Administrating department");
         // column visibility applied to report
-        cy.get("thead th").eq(4).should("not.contain.text", "Data subject");
+        cy.getByTestId("column-data_subjects").should("not.exist");
       });
       cy.getByTestId("group-by-menu").should(
         "contain.text",
@@ -452,10 +462,36 @@ describe("Data map report table", () => {
       cy.getByTestId("custom-reports-reset-button").click();
       cy.getByTestId("apply-report-button").click();
       cy.getByTestId("custom-reports-popover").should("not.be.visible");
+
       cy.getByTestId("custom-reports-trigger").should(
         "contain.text",
         "Reports",
       );
+      cy.getByTestId("fidesTable").within(() => {
+        // reordering reverted
+        cy.get("thead th").eq(2).should("contain.text", "Data categories");
+        // column visibility restored
+        cy.getByTestId("column-data_subjects").should("exist");
+      });
+      cy.getByTestId("group-by-menu").should("contain.text", "Group by system");
+      cy.getByTestId("more-menu").click();
+      cy.getByTestId("edit-columns-btn").click();
+      cy.get("button#data_subjects").should(
+        "have.attr",
+        "aria-checked",
+        "true",
+      );
+      cy.getByTestId("column-settings-close-button").click();
+      cy.getByTestId("filter-multiple-systems-btn").click();
+      cy.getByTestId("datamap-report-filter-modal")
+        .should("be.visible")
+        .within(() => {
+          cy.getByTestId("filter-modal-accordion-button").eq(0).click();
+          cy.getByTestId("checkbox-Analytics").within(() => {
+            cy.get("[data-checked]").should("not.exist");
+          });
+          cy.getByTestId("standard-dialog-close-btn").click();
+        });
     });
     it("should allow the user cancel a report selection", () => {
       cy.wait("@getCustomReportsMinimal");
