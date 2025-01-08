@@ -178,23 +178,15 @@ describe("Data map report table", () => {
 
       // Verify the new order
       cy.getByTestId("fidesTable").within(() => {
-        cy.get("thead th")
-          .eq(2)
-          .should("contain.text", "Administrating department");
-        cy.get("thead th")
-          .eq(3)
-          .should("contain.text", "Cookie max age seconds");
+        cy.get("thead th").eq(2).should("contain.text", "Legal name");
+        cy.get("thead th").eq(3).should("contain.text", "Data categories");
       });
 
       // Reload and verify the order persists
       cy.reload();
       cy.getByTestId("fidesTable").within(() => {
-        cy.get("thead th")
-          .eq(2)
-          .should("contain.text", "Administrating department");
-        cy.get("thead th")
-          .eq(3)
-          .should("contain.text", "Cookie max age seconds");
+        cy.get("thead th").eq(2).should("contain.text", "Legal name");
+        cy.get("thead th").eq(3).should("contain.text", "Data categories");
       });
     });
 
@@ -412,9 +404,7 @@ describe("Data map report table", () => {
       );
       cy.getByTestId("fidesTable").within(() => {
         // reordering applied to report
-        cy.get("thead th")
-          .eq(2)
-          .should("contain.text", "Administrating department");
+        cy.get("thead th").eq(2).should("contain.text", "Legal name");
         // column visibility applied to report
         cy.getByTestId("column-data_subjects").should("not.exist");
       });
