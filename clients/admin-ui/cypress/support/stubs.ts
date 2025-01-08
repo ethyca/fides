@@ -516,9 +516,18 @@ export const stubActionCenter = () => {
   }).as("getMonitorResults");
   cy.intercept(
     "GET",
-    "/api/v1//plus/discovery-monitor/system-aggregate-results*",
+    "/api/v1/plus/discovery-monitor/system-aggregate-results*",
     {
       fixture: "detection-discovery/activity-center/system-aggregate-results",
     },
   ).as("getSystemAggregateResults");
+  cy.intercept("GET", "/api/v1/plus/discovery-monitor/results*", {
+    fixture: "detection-discovery/activity-center/system-asset-results",
+  }).as("getSystemAssetResults");
+  cy.intercept("POST", "/api/v1/plus/discovery-monitor/mute*", {
+    response: 200,
+  }).as("ignoreAssets");
+  cy.intercept("POST", "/api/v1/plus/discovery-monitor/promote*", {
+    response: 200,
+  }).as("addAssets");
 };
