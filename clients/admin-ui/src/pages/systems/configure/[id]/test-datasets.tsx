@@ -1,4 +1,4 @@
-import { Box, HStack } from "fidesui";
+import { HStack } from "fidesui";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
@@ -51,25 +51,22 @@ const TestDatasetPage: NextPage = () => {
     <Layout
       title="System inventory"
       mainProps={{
-        paddingTop: 0,
         height: "100vh",
         display: "flex",
         flexDirection: "column",
       }}
     >
       <PageHeader
-        breadcrumbs={[
-          { title: "System inventory", link: SYSTEM_ROUTE },
+        heading="System inventory"
+        breadcrumbItems={[
+          { title: "System inventory", href: SYSTEM_ROUTE },
           {
             title: system?.name || "",
-            link: `/systems/configure/${systemId}#integrations`,
+            href: `/systems/configure/${systemId}#integrations`,
           },
           { title: "Test datasets" },
         ]}
-        isSticky
-      >
-        <Box position="relative" />
-      </PageHeader>
+      />
       <HStack
         alignItems="stretch"
         flex="1"

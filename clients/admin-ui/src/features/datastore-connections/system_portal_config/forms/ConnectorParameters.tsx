@@ -295,7 +295,9 @@ export const useConnectorForm = ({
         values.dataset &&
         connectionOption.type === SystemType.DATABASE
       ) {
-        await patchConnectionDatasetConfig(values, connectionConfig.key);
+        await patchConnectionDatasetConfig(values, connectionConfig.key, {
+          showSuccessAlert: false,
+        });
       }
 
       successAlert(

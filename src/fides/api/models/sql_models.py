@@ -27,6 +27,7 @@ from sqlalchemy import (
     UniqueConstraint,
     case,
     cast,
+    func,
     select,
     text,
     type_coerce,
@@ -35,8 +36,8 @@ from sqlalchemy.dialects.postgresql import ARRAY, BIGINT, BYTEA
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession, async_object_session
 from sqlalchemy.ext.hybrid import hybrid_property
-from sqlalchemy.orm import Session, relationship
-from sqlalchemy.sql import Select, func
+from sqlalchemy.orm import RelationshipProperty, Session, relationship
+from sqlalchemy.sql import Select
 from sqlalchemy.sql.elements import Case
 from sqlalchemy.sql.sqltypes import DateTime
 from typing_extensions import Protocol, runtime_checkable
@@ -170,8 +171,11 @@ class DataCategory(Base, FidesBase):
     """
 
     __tablename__ = "ctl_data_categories"
+    fides_key = Column(String, primary_key=True, index=True, unique=True)
 
-    parent_key = Column(Text)
+    parent_key = Column(
+        Text, ForeignKey("ctl_data_categories.fides_key", ondelete="RESTRICT")
+    )
     active = Column(BOOLEAN, default=True, nullable=False)
 
     # Default Fields
@@ -179,6 +183,19 @@ class DataCategory(Base, FidesBase):
     version_added = Column(Text)
     version_deprecated = Column(Text)
     replaced_by = Column(Text)
+
+    children: "RelationshipProperty[List[DataCategory]]" = relationship(
+        "DataCategory",
+        back_populates="parent",
+        cascade="save-update, merge, refresh-expire",  # intentionally do not cascade deletes
+        passive_deletes="all",
+    )
+
+    parent: "RelationshipProperty[Optional[DataCategory]]" = relationship(
+        "DataCategory",
+        back_populates="children",
+        remote_side=[fides_key],
+    )
 
     @classmethod
     def from_fideslang_obj(
@@ -218,8 +235,11 @@ class DataUse(Base, FidesBase):
     """
 
     __tablename__ = "ctl_data_uses"
+    fides_key = Column(String, primary_key=True, index=True, unique=True)
 
-    parent_key = Column(Text)
+    parent_key = Column(
+        Text, ForeignKey("ctl_data_uses.fides_key", ondelete="RESTRICT")
+    )
     active = Column(BOOLEAN, default=True, nullable=False)
 
     # Default Fields
@@ -227,6 +247,19 @@ class DataUse(Base, FidesBase):
     version_added = Column(Text)
     version_deprecated = Column(Text)
     replaced_by = Column(Text)
+
+    children: "RelationshipProperty[List[DataUse]]" = relationship(
+        "DataUse",
+        back_populates="parent",
+        cascade="save-update, merge, refresh-expire",  # intentionally do not cascade deletes
+        passive_deletes="all",
+    )
+
+    parent: "RelationshipProperty[Optional[DataUse]]" = relationship(
+        "DataUse",
+        back_populates="children",
+        remote_side=[fides_key],
+    )
 
     @staticmethod
     def get_parent_uses_from_key(data_use_key: str) -> Set[str]:
@@ -404,15 +437,6 @@ class System(Base, FidesBase):
         "Cookies", back_populates="system", lazy="selectin", uselist=True, viewonly=True
     )
 
-    # index scan using ix_ctl_datasets_fides_key on ctl_datasets
-    datasets = relationship(
-        "Dataset",
-        primaryjoin="foreign(Dataset.fides_key)==any_(System.dataset_references)",
-        lazy="selectin",
-        uselist=True,
-        viewonly=True,
-    )
-
     @classmethod
     def get_data_uses(
         cls: Type[System], systems: List[System], include_parents: bool = True
@@ -430,11 +454,21 @@ class System(Base, FidesBase):
                         data_uses.add(data_use)
         return data_uses
 
-    @property
-    def undeclared_data_categories(self) -> Set[str]:
+    def dataset_data_categories(self, data_categories: Dict[str, Set[str]]) -> Set[str]:
+        aggregate = set()
+        for dataset_key in self.dataset_references or []:
+            aggregate.update(data_categories.get(dataset_key, set()))
+        return aggregate
+
+    def undeclared_data_categories(
+        self, data_categories: Dict[str, Set[str]]
+    ) -> Set[str]:
         """
         Returns a set of data categories defined on the system's datasets
         that are not associated with any data use (privacy declaration).
+
+        Looks up the unique set of data categories for a given dataset from the pre-computed data_categories map.
+        This is done to improve performance.
         """
 
         privacy_declaration_data_categories = set()
@@ -443,9 +477,9 @@ class System(Base, FidesBase):
                 privacy_declaration.data_categories
             )
 
-        system_dataset_data_categories = set()
-        for dataset in self.datasets:
-            system_dataset_data_categories.update(dataset.field_data_categories)
+        system_dataset_data_categories = set(
+            self.dataset_data_categories(data_categories)
+        )
 
         return find_undeclared_categories(
             system_dataset_data_categories, privacy_declaration_data_categories
@@ -501,13 +535,6 @@ class PrivacyDeclaration(Base):
     cookies = relationship(
         "Cookies", back_populates="privacy_declaration", lazy="joined", uselist=True
     )
-    datasets = relationship(
-        "Dataset",
-        primaryjoin="foreign(Dataset.fides_key)==any_(PrivacyDeclaration.dataset_references)",
-        lazy="selectin",
-        uselist=True,
-        viewonly=True,
-    )
 
     @classmethod
     def create(
@@ -547,11 +574,21 @@ class PrivacyDeclaration(Base):
             else_=None,
         )
 
-    @property
-    def undeclared_data_categories(self) -> Set[str]:
+    def dataset_data_categories(self, data_categories: Dict[str, Set[str]]) -> Set[str]:
+        aggregate = set()
+        for dataset_key in self.dataset_references or []:
+            aggregate.update(data_categories.get(dataset_key, set()))
+        return aggregate
+
+    def undeclared_data_categories(
+        self, data_categories: Dict[str, Set[str]]
+    ) -> Set[str]:
         """
         Aggregates a unique set of data categories across the collections in the associated datasets and
         returns the data categories that are not defined directly on this or any sibling privacy declarations.
+
+        Looks up the unique set of data categories for a given dataset from the pre-computed data_categories map.
+        This is done to improve performance.
         """
 
         # Note: This property evaluates the data categories attached to the datasets associated with this specific
@@ -559,9 +596,7 @@ class PrivacyDeclaration(Base):
         # data categories across this privacy declaration and its sibling privacy declarations.
 
         # all data categories from the datasets
-        dataset_data_categories = set()
-        for dataset in self.datasets:
-            dataset_data_categories.update(dataset.field_data_categories)
+        dataset_data_categories = set(self.dataset_data_categories(data_categories))
 
         # all data categories specified directly on this and sibling privacy declarations
         declared_data_categories = set()

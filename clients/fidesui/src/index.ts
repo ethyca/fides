@@ -8,29 +8,45 @@ export * from "@chakra-ui/utils";
 export type { ThemeConfig as AntThemeConfig } from "antd/es";
 export type {
   ButtonProps as AntButtonProps,
+  FlexProps as AntFlexProps,
+  FormInstance as AntFormInstance,
   InputProps as AntInputProps,
+  ListProps as AntListProps,
   SelectProps as AntSelectProps,
   SwitchProps as AntSwitchProps,
   GetProps,
+  InputRef,
 } from "antd/lib";
 export {
   Alert as AntAlert,
+  Avatar as AntAvatar,
+  Breadcrumb as AntBreadcrumb,
   Button as AntButton,
   Card as AntCard,
   Checkbox as AntCheckbox,
   Col as AntCol,
   Divider as AntDivider,
+  Empty as AntEmpty,
   Flex as AntFlex,
+  Form as AntForm,
   Input as AntInput,
   Layout as AntLayout,
+  List as AntList,
+  Menu as AntMenu,
   Radio as AntRadio,
   Row as AntRow,
+  Skeleton as AntSkeleton,
   Space as AntSpace,
   Switch as AntSwitch,
   Tag as AntTag,
   Tooltip as AntTooltip,
   Typography as AntTypography,
 } from "antd/lib";
+export type {
+  BreadcrumbItemType as AntBreadcrumbItemType,
+  BreadcrumbProps as AntBreadcrumbProps,
+} from "antd/lib/breadcrumb/Breadcrumb";
+export type { ListItemProps as AntListItemProps } from "antd/lib/list";
 export type {
   BaseOptionType as AntBaseOptionType,
   DefaultOptionType as AntDefaultOptionType,
@@ -70,5 +86,6 @@ export { ColumnDropdown } from "./components/column-dropdown";
 export { ConfirmationModal } from "./components/confirmation-modal";
 export { DataCategoryDropdown } from "./components/data-category-dropdown";
 export { ExampleComponent } from "./components/example-component";
+export { FloatingMenu } from "./components/floating-menu";
 export { PrimaryLink, SecondaryLink } from "./components/links";
 export { SystemsCheckboxTable } from "./components/systems-checkbox-table";

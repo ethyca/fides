@@ -6,7 +6,6 @@ import {
   Box,
   DeleteIcon,
   Flex,
-  Heading,
   Spinner,
   Text,
   useToast,
@@ -21,6 +20,7 @@ import FormSection from "~/features/common/form/FormSection";
 import { CustomTextInput, TextInput } from "~/features/common/form/inputs";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import Layout from "~/features/common/Layout";
+import PageHeader from "~/features/common/PageHeader";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import {
   CORSOrigins,
@@ -161,11 +161,9 @@ const CORSConfigurationPage: NextPage = () => {
   return (
     <Layout title="Domains">
       <Box data-testid="management-domains">
-        <Heading marginBottom={4} fontSize="2xl">
-          Domains
-        </Heading>
-        <Box maxWidth="600px">
-          <Text marginBottom={3} fontSize="sm">
+        <PageHeader heading="Domains" />
+        <Box maxW="600px">
+          <Text fontSize="sm" pb={6}>
             For Fides to work on your website(s), each of your domains must be
             listed below. You can add and remove domains at any time up to the
             quantity included in your license. For more information on managing
@@ -175,9 +173,6 @@ const CORSConfigurationPage: NextPage = () => {
             </DocsLink>
             .
           </Text>
-        </Box>
-
-        <Box maxW="600px" paddingY={3}>
           <FormSection
             data-testid="api-set-domains-form"
             title="Organization domains"

@@ -2340,3 +2340,17 @@ dataset:
         data_categories: [system.operations]
       - name: updated_at
         data_categories: [system.operations]
+  - name: dbcache
+    fields:
+      - name: id
+        data_categories: [system.operations]
+      - name: namespace
+        data_categories: [system.operations]
+      - name: cache_key
+        data_categories: [system.operations]
+      - name: cache_value
+        data_categories: [system.operations]
+      - name: created_at
+        data_categories: [system.operations]
+      - name: updated_at
+        data_categories: [system.operations]

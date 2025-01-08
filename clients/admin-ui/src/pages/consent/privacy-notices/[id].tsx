@@ -1,9 +1,9 @@
-import { Box, Center, Heading, Spinner, Text } from "fidesui";
+import { Box, Center, Spinner, Text } from "fidesui";
 import { useRouter } from "next/router";
 
 import Layout from "~/features/common/Layout";
-import BackButton from "~/features/common/nav/v2/BackButton";
 import { PRIVACY_NOTICES_ROUTE } from "~/features/common/nav/v2/routes";
+import PageHeader from "~/features/common/PageHeader";
 import {
   useGetAvailableNoticeTranslationsQuery,
   useGetPrivacyNoticeByIdQuery,
@@ -44,23 +44,26 @@ const PrivacyNoticeDetailPage = () => {
 
   return (
     <Layout title={`Privacy notice ${data.name}`}>
-      <BackButton backPath={PRIVACY_NOTICES_ROUTE} />
-      <Heading fontSize="2xl" fontWeight="semibold" mb={4} data-testid="header">
-        {data.name}
-      </Heading>
-
-      <Box width={{ base: "100%", lg: "70%" }}>
+      <PageHeader
+        heading="Privacy Notices"
+        breadcrumbItems={[
+          { title: "All privacy Notices", href: PRIVACY_NOTICES_ROUTE },
+          { title: data.name },
+        ]}
+      />
+      <Box
+        width={{ base: "100%", lg: "70%" }}
+        data-testid="privacy-notice-detail-page"
+      >
         <Text fontSize="sm" mb={8}>
           Configure your privacy notice including consent mechanism, associated
           data uses and the locations in which this should be displayed to
           users.
         </Text>
-        <Box data-testid="privacy-notice-detail-page">
-          <PrivacyNoticeForm
-            privacyNotice={data}
-            availableTranslations={availableTranslations}
-          />
-        </Box>
+        <PrivacyNoticeForm
+          privacyNotice={data}
+          availableTranslations={availableTranslations}
+        />
       </Box>
     </Layout>
   );
