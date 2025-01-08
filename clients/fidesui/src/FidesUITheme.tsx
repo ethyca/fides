@@ -91,6 +91,7 @@ export const theme: Dict = extendChakraTheme({
     global: {
       body: {
         bg: "gray.100",
+        color: palette.FIDESUI_MINOS,
       },
     },
   },
