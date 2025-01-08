@@ -51,10 +51,10 @@ describe("Action center", () => {
     const integrationMonitorKey = "My_New_BQ_Monitor";
     beforeEach(() => {
       cy.visit(ACTION_CENTER_ROUTE);
+      cy.wait("@getMonitorResults");
     });
     it("should render the current monitor results", () => {
       cy.get("[data-testid='Action center']").should("exist");
-      cy.wait("@getMonitorResults");
       cy.get("[data-testid*='monitor-result-']").should("have.length", 3);
       cy.get("[data-testid^='monitor-result-']").each((result) => {
         const monitorKey = result
@@ -83,7 +83,6 @@ describe("Action center", () => {
       );
     });
     it("should have appropriate actions for web monitors", () => {
-      cy.wait("@getMonitorResults");
       // Add button
       // TODO: [HJ-337] uncomment when Add button is implemented
       // cy.getByTestId(`add-button-${webMonitorKey}`).should("exist");
@@ -95,7 +94,6 @@ describe("Action center", () => {
       );
     });
     it.skip("Should have appropriate actions for Integrations monitors", () => {
-      cy.wait("@getMonitorResults");
       // Classify button
       cy.getByTestId(`review-button-${integrationMonitorKey}`).should(
         "have.attr",
@@ -106,7 +104,6 @@ describe("Action center", () => {
       cy.getByTestId(`ignore-button-${integrationMonitorKey}`).should("exist");
     });
     it.skip("Should have appropriate actions for SSO monitors", () => {
-      cy.wait("@getMonitorResults");
       // Add button
       cy.getByTestId(`add-button-${webMonitorKey}`).should("exist");
       // Ignore button
@@ -121,6 +118,7 @@ describe("Action center", () => {
     const webMonitorKey = "my_web_monitor_1";
     beforeEach(() => {
       cy.visit(`${ACTION_CENTER_ROUTE}/${webMonitorKey}`);
+      cy.wait("@getSystemAggregateResults");
     });
     it("should display a breadcrumb", () => {
       cy.getByTestId("page-breadcrumb").within(() => {
@@ -131,15 +129,14 @@ describe("Action center", () => {
       });
     });
     it("should render the aggregated system results in a table", () => {
-      cy.wait("@getSystemAggregateResults");
+      cy.getByTestId("search-bar").should("exist");
+      cy.getByTestId("pagination-btn").should("exist");
       cy.getByTestId("column-system_name").should("exist");
       cy.getByTestId("column-total_updates").should("exist");
       cy.getByTestId("column-data_use").should("exist");
       cy.getByTestId("column-locations").should("exist");
       cy.getByTestId("column-domains").should("exist");
       cy.getByTestId("column-actions").should("exist");
-      cy.getByTestId("search-bar").should("exist");
-      cy.getByTestId("pagination-btn").should("exist");
       cy.getByTestId("row-0-col-system_name").within(() => {
         cy.getByTestId("change-icon").should("exist"); // new result
         cy.contains("Uncategorized assets").should("exist");
@@ -166,10 +163,89 @@ describe("Action center", () => {
         "analytics.google.com",
       );
     });
-    // it("should navigate to table view on row click", () => {
-    //   cy.getByTestId("row-1").click();
-    //   cy.url().should("contain", "fds.1046");
-    //   cy.getByTestId("page-breadcrumb").should("contain", "fds.1046");
-    // });
+    it("should navigate to table view on row click", () => {
+      cy.getByTestId("row-1").click();
+      cy.url().should("contain", "fds.1046");
+      cy.getByTestId("page-breadcrumb").should("contain", "fds.1046");
+    });
+  });
+
+  describe("Action center system assets results", () => {
+    const webMonitorKey = "my_web_monitor_1";
+    const systemKey = "fds.1046";
+    beforeEach(() => {
+      cy.visit(`${ACTION_CENTER_ROUTE}/${webMonitorKey}/${systemKey}`);
+      cy.wait("@getSystemAssetResults");
+    });
+    it("should render asset results view", () => {
+      cy.getByTestId("page-breadcrumb").should("contain", "fds.1046");
+      cy.getByTestId("search-bar").should("exist");
+      cy.getByTestId("pagination-btn").should("exist");
+      cy.getByTestId("bulk-actions-menu").should("be.disabled");
+
+      // table columns
+      cy.getByTestId("column-select").should("exist");
+      cy.getByTestId("column-name").should("exist");
+      cy.getByTestId("column-resource_type").should("exist");
+      cy.getByTestId("column-system").should("exist");
+      cy.getByTestId("column-data_use").should("exist");
+      cy.getByTestId("column-locations").should("exist");
+      cy.getByTestId("column-domain").should("exist");
+      cy.getByTestId("column-with_consent").should("exist");
+      cy.getByTestId("column-actions").should("exist");
+      cy.getByTestId("row-0-col-actions").within(() => {
+        cy.getByTestId("add-btn").should("exist");
+        cy.getByTestId("ignore-btn").should("exist");
+      });
+      cy.getByTestId("row-4-col-with_consent")
+        .contains("Without consent")
+        .realHover();
+      cy.get(".ant-tooltip-inner").should("contain", "January");
+    });
+    it("should add individual assets", () => {
+      cy.getByTestId("row-0-col-actions").within(() => {
+        cy.getByTestId("add-btn").click({ force: true });
+      });
+      cy.wait("@addAssets");
+      cy.getByTestId("success-alert").should("exist");
+    });
+    it("should ignore individual assets", () => {
+      cy.getByTestId("row-0-col-actions").within(() => {
+        cy.getByTestId("ignore-btn").click({ force: true });
+      });
+      cy.wait("@ignoreAssets");
+      cy.getByTestId("success-alert").should("exist");
+    });
+    it("should bulk add assets", () => {
+      cy.getByTestId("bulk-actions-menu").should("be.disabled");
+      cy.getByTestId("row-0-col-select").find("label").click();
+      cy.getByTestId("row-2-col-select").find("label").click();
+      cy.getByTestId("row-3-col-select").find("label").click();
+      cy.getByTestId("selected-count").should("contain", "3 selected");
+      cy.getByTestId("bulk-actions-menu").should("not.be.disabled");
+      cy.getByTestId("bulk-actions-menu").click();
+      cy.getByTestId("bulk-add").click();
+      cy.wait("@addAssets");
+      cy.getByTestId("success-alert").should("exist");
+    });
+    it("should bulk ignore assets", () => {
+      cy.getByTestId("bulk-actions-menu").should("be.disabled");
+      cy.getByTestId("row-0-col-select").find("label").click();
+      cy.getByTestId("row-2-col-select").find("label").click();
+      cy.getByTestId("row-3-col-select").find("label").click();
+      cy.getByTestId("selected-count").should("contain", "3 selected");
+      cy.getByTestId("bulk-actions-menu").should("not.be.disabled");
+      cy.getByTestId("bulk-actions-menu").click();
+      cy.getByTestId("bulk-ignore").click();
+      cy.wait("@ignoreAssets");
+      cy.getByTestId("success-alert").should("exist");
+    });
+    it("should add all assets", () => {
+      cy.getByTestId("add-all").click();
+      cy.getByTestId("add-all").should("have.class", "ant-btn-loading");
+      cy.wait("@addAssets");
+      cy.url().should("not.contain", "fds.1046");
+      cy.getByTestId("success-alert").should("exist");
+    });
   });
 });

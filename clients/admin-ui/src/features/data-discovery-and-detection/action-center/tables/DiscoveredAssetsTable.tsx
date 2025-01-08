@@ -156,6 +156,7 @@ export const DiscoveredAssetsTable = ({
               fontWeight="semibold"
               minW={16}
               mr={6}
+              data-testid="selected-count"
             >{`${selectedUrns.length} selected`}</Text>
           )}
           <HStack>
@@ -174,11 +175,19 @@ export const DiscoveredAssetsTable = ({
                 Actions
               </MenuButton>
               <MenuList>
-                <MenuItem fontSize="small" onClick={handleBulkAdd}>
+                <MenuItem
+                  fontSize="small"
+                  onClick={handleBulkAdd}
+                  data-testid="bulk-add"
+                >
                   Add
                 </MenuItem>
                 <MenuDivider />
-                <MenuItem fontSize="small" onClick={handleBulkIgnore}>
+                <MenuItem
+                  fontSize="small"
+                  onClick={handleBulkIgnore}
+                  data-testid="bulk-ignore"
+                >
                   Ignore
                 </MenuItem>
               </MenuList>
