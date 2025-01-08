@@ -71,7 +71,7 @@
   },
   "devDependencies": {
     "@jest/globals": "^29.7.0",
-    "@next/bundle-analyzer": "^13.2.4",
+    "@next/bundle-analyzer": "^15.1.4",
     "@testing-library/jest-dom": "^6.4.6",
     "@testing-library/react": "^16.0.0",
     "@types/cytoscape": "^3.21.4",
