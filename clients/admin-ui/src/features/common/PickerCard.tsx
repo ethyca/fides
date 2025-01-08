@@ -87,11 +87,7 @@ export const PickerCheckboxList = <T extends { id: string; name: string }>({
         {toggle ?? null}
       </Flex>
       {numSelected > 0 ? (
-        <Badge
-          colorScheme="primary"
-          width="fit-content"
-          data-testid="num-selected-badge"
-        >
+        <Badge width="fit-content" data-testid="num-selected-badge">
           {numSelected} selected
         </Badge>
       ) : null}
