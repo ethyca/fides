@@ -40,6 +40,7 @@ export type Field = {
   sub_field_urns?: Array<string>;
   direct_child_urns?: Array<string>;
   top_level_field_name?: string | null;
+  top_level_field_urn?: string | null;
   source_data_type?: string | null;
   sub_fields?: Array<Field> | null;
 };

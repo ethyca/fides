@@ -41,6 +41,7 @@ import { propertySlice } from "~/features/properties";
 import { systemSlice } from "~/features/system";
 import { dictSuggestionsSlice } from "~/features/system/dictionary-form/dict-suggestion.slice";
 import { taxonomySlice } from "~/features/taxonomy";
+import { datasetTestSlice } from "~/features/test-datasets";
 import { userManagementSlice } from "~/features/user-management";
 
 /**
@@ -79,6 +80,7 @@ const reducer = {
   [dataSubjectsSlice.name]: dataSubjectsSlice.reducer,
   [dataUseSlice.name]: dataUseSlice.reducer,
   [datasetSlice.name]: datasetSlice.reducer,
+  [datasetTestSlice.name]: datasetTestSlice.reducer,
   [datastoreConnectionSlice.name]: datastoreConnectionSlice.reducer,
   [discoveryDetectionSlice.name]: discoveryDetectionSlice.reducer,
   [featuresSlice.name]: featuresSlice.reducer,

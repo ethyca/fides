@@ -66,7 +66,15 @@ async def db_action(action: DBActions, revision: Optional[str] = "head") -> Dict
             reset_db(CONFIG.database.sync_database_uri)
             action_text = "reset"
 
-        await configure_db(CONFIG.database.sync_database_uri, revision=revision)
+        try:
+            logger.info("Database being configured...")
+            await configure_db(CONFIG.database.sync_database_uri, revision=revision)
+        except Exception as e:
+            logger.exception("Database configuration failed: {e}")
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Database configuration failed: {e}. Check server logs for more details",
+            )
 
     return {
         "data": {

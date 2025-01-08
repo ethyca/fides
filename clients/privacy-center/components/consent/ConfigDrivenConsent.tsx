@@ -14,6 +14,7 @@ import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { inspectForBrowserIdentities } from "~/common/browser-identities";
 import { useLocalStorage } from "~/common/hooks";
 import { ErrorToastOptions, SuccessToastOptions } from "~/common/toast-options";
+import BrandLink from "~/components/BrandLink";
 import { useConfig } from "~/features/common/config.slice";
 import {
   changeConsent,
@@ -209,6 +210,7 @@ const ConfigDrivenConsent = ({
         cancelLabel="Cancel"
         saveLabel="Save"
       />
+      <BrandLink bottom={0} />
     </Stack>
   );
 };

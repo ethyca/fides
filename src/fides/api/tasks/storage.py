@@ -64,7 +64,7 @@ def write_to_in_memory_buffer(
     :param data: Dict
     :param request_id: str, The privacy request id
     """
-    logger.info("Writing data to in-memory buffer")
+    logger.debug("Writing data to in-memory buffer")
 
     if resp_format == ResponseFormat.json.value:
         json_str = json.dumps(data, indent=2, default=storage_json_encoder)

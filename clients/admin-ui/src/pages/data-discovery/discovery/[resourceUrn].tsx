@@ -11,13 +11,8 @@ const DataDiscoveryActivityPage = () => {
   const { resourceUrn, navigateToDiscoveryResults } = useDiscoveryRoutes();
 
   return (
-    <FixedLayout
-      title="Data discovery"
-      mainProps={{
-        padding: "0 40px 48px",
-      }}
-    >
-      <PageHeader breadcrumbs={[{ title: "Data discovery" }]}>
+    <FixedLayout title="Data discovery">
+      <PageHeader heading="Data discovery">
         <DiscoveryMonitorBreadcrumbs
           parentLink={DATA_DISCOVERY_ROUTE}
           resourceUrn={resourceUrn}

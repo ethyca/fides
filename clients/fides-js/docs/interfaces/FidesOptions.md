@@ -1,7 +1,7 @@
 # Interface: FidesOptions
 
 FidesJS supports a variety of custom options to modify it's behavior or
-enabled more advanced usage. For example, the `fides_locale` option can be
+enable more advanced usage. For example, the `fides_locale` option can be
 provided to override the browser locale. See the properties list below for
 the supported options and example usage for each.
 
@@ -160,3 +160,17 @@ overriden at the page-level as needed. Only applicable to a TCF experience.
 For more details, see the [TCF CMP API technical specification](https://github.com/InteractiveAdvertisingBureau/GDPR-Transparency-and-Consent-Framework/blob/master/TCFv2/IAB%20Tech%20Lab%20-%20CMP%20API%20v2.md#what-does-the-gdprapplies-value-mean)  *
 
 Defaults to `true`.
+
+***
+
+### fides\_consent\_override
+
+> **fides\_consent\_override**: `"accept"` \| `"reject"`
+
+FidesJS will automatically opt in or out of all notices with this option and
+only show the consent modal upon user request. This is useful for any
+scenario where the user has previously provided consent in a different
+context (e.g. a native app, another website, etc.) and you want to ensure
+that those preferences are respected.
+
+Defaults to `undefined`.

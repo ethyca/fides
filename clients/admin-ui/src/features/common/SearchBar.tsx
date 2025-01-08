@@ -24,24 +24,16 @@ const SearchBar = ({
     onChange(event.target.value);
 
   return (
-    <Space.Compact className="w-96">
+    <Space.Compact className="w-96" data-testid="search-bar">
       <Input
         autoComplete="off"
         value={search}
         onChange={handleSearchChange}
         placeholder={placeholder || "Search..."}
         prefix={withIcon ? <SearchLineIcon boxSize={4} /> : undefined}
-        className="border-neutral-2"
         {...props}
       />
-      {onClear ? (
-        <Button
-          onClick={onClear}
-          className="border-neutral-2 bg-[#f5f5f5] hover:!border-neutral-2 hover:!bg-neutral-2"
-        >
-          Clear
-        </Button>
-      ) : null}
+      {onClear ? <Button onClick={onClear}>Clear</Button> : null}
     </Space.Compact>
   );
 };

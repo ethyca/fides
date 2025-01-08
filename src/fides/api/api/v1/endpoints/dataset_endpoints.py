@@ -1,9 +1,11 @@
-from typing import Annotated, Callable, List
+from datetime import datetime, timezone
+from typing import Annotated, Any, Callable, Dict, List
 
 import yaml
 from fastapi import Depends, HTTPException, Request
 from fastapi.encoders import jsonable_encoder
 from fastapi.params import Security
+from fastapi.responses import JSONResponse
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
@@ -19,6 +21,7 @@ from starlette.status import (
     HTTP_200_OK,
     HTTP_204_NO_CONTENT,
     HTTP_400_BAD_REQUEST,
+    HTTP_403_FORBIDDEN,
     HTTP_404_NOT_FOUND,
     HTTP_415_UNSUPPORTED_MEDIA_TYPE,
     HTTP_422_UNPROCESSABLE_ENTITY,
@@ -37,16 +40,26 @@ from fides.api.models.datasetconfig import (
     DatasetConfig,
     convert_dataset_to_graph,
     to_graph_field,
+    validate_masking_strategy_override,
 )
+from fides.api.models.policy import Policy
 from fides.api.oauth.utils import verify_oauth_client
 from fides.api.schemas.api import BulkUpdateFailed
 from fides.api.schemas.dataset import (
     BulkPutDataset,
     DatasetConfigCtlDataset,
     DatasetConfigSchema,
+    DatasetReachability,
     DatasetTraversalDetails,
     ValidateDatasetResponse,
     validate_data_categories_against_db,
+)
+from fides.api.schemas.privacy_request import TestPrivacyRequest
+from fides.api.schemas.redis_cache import UnlabeledIdentities
+from fides.api.service.dataset.dataset_service import (
+    get_dataset_reachability,
+    get_identities_and_references,
+    run_test_access_request,
 )
 from fides.api.util.api_router import APIRouter
 from fides.api.util.data_category import get_data_categories_from_db
@@ -55,17 +68,22 @@ from fides.common.api.scope_registry import (
     DATASET_CREATE_OR_UPDATE,
     DATASET_DELETE,
     DATASET_READ,
+    DATASET_TEST,
 )
 from fides.common.api.v1.urn_registry import (
     CONNECTION_DATASETS,
     DATASET_BY_KEY,
+    DATASET_CONFIG_BY_KEY,
     DATASET_CONFIGS,
+    DATASET_INPUTS,
+    DATASET_REACHABILITY,
     DATASET_VALIDATE,
-    DATASETCONFIG_BY_KEY,
     DATASETS,
+    TEST_DATASET,
     V1_URL_PREFIX,
     YAML_DATASETS,
 )
+from fides.config import CONFIG
 
 from fides.api.models.sql_models import (  # type: ignore[attr-defined] # isort: skip
     Dataset as CtlDataset,
@@ -80,7 +98,7 @@ router = APIRouter(tags=["Dataset Configs"], prefix=V1_URL_PREFIX)
 def _get_connection_config(
     connection_key: FidesKey, db: Session = Depends(deps.get_db)
 ) -> ConnectionConfig:
-    logger.info("Finding connection config with key '{}'", connection_key)
+    logger.debug("Finding connection config with key '{}'", connection_key)
     connection_config = ConnectionConfig.get_by(db, field="key", value=connection_key)
     if not connection_config:
         raise HTTPException(
@@ -211,7 +229,8 @@ def put_dataset_configs(
         db.query(DatasetConfig).filter(
             DatasetConfig.connection_config_id == connection_config.id,
             DatasetConfig.fides_key.in_(config_keys_to_remove),
-        ).delete()
+        ).delete(synchronize_session=False)
+        db.commit()
 
     # reuse the existing patch logic once we've removed the unused dataset configs
     return patch_dataset_configs(dataset_pairs, db, connection_config)
@@ -415,6 +434,7 @@ def create_or_update_dataset(
             # when a ctl_dataset is being linked to a Saas Connector.
             _validate_saas_dataset(connection_config, dataset)  # type: ignore
         # Try to find an existing DatasetConfig matching the given connection & key
+        validate_masking_strategy_override(dataset)
         dataset_config = create_method(db, data=data)
         created_or_updated.append(dataset_config.ctl_dataset)
     except (
@@ -489,7 +509,7 @@ def get_datasets(
     Soon to be deprecated.
     """
 
-    logger.info(
+    logger.debug(
         "Finding all datasets for connection '{}' with pagination params {}",
         connection_config.key,
         params,
@@ -524,7 +544,7 @@ def get_dataset(
     Soon to be deprecated
     """
 
-    logger.info(
+    logger.debug(
         "Finding dataset '{}' for connection '{}'", fides_key, connection_config.key
     )
     dataset_config = DatasetConfig.filter(
@@ -554,7 +574,7 @@ def get_dataset_configs(
 ) -> AbstractPage[DatasetConfig]:
     """Returns all Dataset Configs attached to current Connection Config."""
 
-    logger.info(
+    logger.debug(
         "Finding all dataset configs for connection '{}' with pagination params {}",
         connection_config.key,
         params,
@@ -567,7 +587,7 @@ def get_dataset_configs(
 
 
 @router.get(
-    DATASETCONFIG_BY_KEY,
+    DATASET_CONFIG_BY_KEY,
     dependencies=[Security(verify_oauth_client, scopes=[DATASET_READ])],
     response_model=DatasetConfigSchema,
 )
@@ -578,7 +598,7 @@ def get_dataset_config(
 ) -> DatasetConfig:
     """Returns the specific Dataset Config linked to the Connection Config."""
 
-    logger.info(
+    logger.debug(
         "Finding dataset config '{}' for connection '{}'",
         fides_key,
         connection_config.key,
@@ -649,7 +669,7 @@ def get_ctl_datasets(
     Returns all CTL datasets .
     """
 
-    logger.info(
+    logger.debug(
         f"Finding all datasets {remove_saas_datasets=} {only_unlinked_datasets=}"
     )
     filters = []
@@ -677,3 +697,198 @@ def get_ctl_datasets(
     datasets = query.all()
 
     return datasets
+
+
+def recursive_clean_fields(fields: List[dict]) -> List[dict]:
+    """
+    Recursively clean the fields of a dataset.
+    """
+    cleaned_fields = []
+    for field in fields:
+        field["name"] = field["name"].split(".")[-1]
+        if field["fields"]:
+            field["fields"] = recursive_clean_fields(field["fields"])
+        cleaned_fields.append(field)
+    return cleaned_fields
+
+
+def run_clean_datasets(
+    db: Session, datasets: List[Dataset]
+) -> tuple[List[str], List[str]]:
+    """
+    Clean the dataset name and structure to remove any malformed data possibly present from nested field regressions.
+    Changes dot separated positional names to source names (ie. `user.address.street` -> `street`).
+    """
+
+    for dataset in datasets:
+        logger.info(f"Cleaning field names for dataset: {dataset.fides_key}")
+        for collection in dataset.collections:
+            collection["fields"] = recursive_clean_fields(collection["fields"])  # type: ignore # pylint: disable=unsupported-assignment-operation
+
+        # manually upsert the dataset
+
+        logger.info(f"Upserting dataset: {dataset.fides_key}")
+        failed = []
+        try:
+            dataset_ctl_obj = (
+                db.query(CtlDataset)
+                .filter(CtlDataset.fides_key == dataset.fides_key)
+                .first()
+            )
+            if dataset_ctl_obj:
+                db.query(CtlDataset).filter(
+                    CtlDataset.fides_key == dataset.fides_key
+                ).update(
+                    {
+                        "collections": dataset.collections,
+                        "updated_at": datetime.now(timezone.utc),
+                    },
+                    synchronize_session=False,
+                )
+                db.commit()
+            else:
+                logger.error(f"Dataset with fides_key {dataset.fides_key} not found.")
+        except Exception as e:
+            logger.error(f"Error upserting dataset: {dataset.fides_key} {e}")
+            db.rollback()
+            failed.append(dataset.fides_key)
+
+    succeeded = [dataset.fides_key for dataset in datasets]
+    return succeeded, failed
+
+
+@router.get(
+    "/datasets/clean",
+    dependencies=[Security(verify_oauth_client, scopes=[DATASET_READ])],
+    response_model=List[Dataset],
+    deprecated=True,
+)
+def clean_datasets(
+    db: Session = Depends(deps.get_db),
+) -> JSONResponse:
+    """
+    Clean up names of datasets and upsert them.
+    """
+    datasets = db.execute(select([CtlDataset])).scalars().all()
+    succeeded, failed = run_clean_datasets(db, datasets)
+    return JSONResponse(
+        status_code=HTTP_200_OK,
+        content={
+            "succeded": succeeded,
+            "failed": failed,
+        },
+    )
+
+
+@router.get(
+    DATASET_INPUTS,
+    dependencies=[Security(verify_oauth_client, scopes=[DATASET_READ])],
+)
+def dataset_identities_and_references(
+    *,
+    db: Session = Depends(deps.get_db),
+    connection_config: ConnectionConfig = Depends(_get_connection_config),
+    fides_key: FidesKey,
+) -> Dict[str, Any]:
+    """
+    Returns a dictionary containing the immediate identity and dataset reference
+    dependencies for the given dataset.
+    """
+
+    dataset_config = DatasetConfig.filter(
+        db=db,
+        conditions=(
+            (DatasetConfig.connection_config_id == connection_config.id)
+            & (DatasetConfig.fides_key == fides_key)
+        ),
+    ).first()
+    if not dataset_config:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail=f"No dataset config with fides_key '{fides_key}'",
+        )
+
+    inputs = get_identities_and_references(dataset_config)
+    return {input: None for input in inputs}
+
+
+@router.get(
+    DATASET_REACHABILITY,
+    dependencies=[Security(verify_oauth_client, scopes=[DATASET_READ])],
+    response_model=DatasetReachability,
+)
+def dataset_reachability(
+    *,
+    db: Session = Depends(deps.get_db),
+    connection_config: ConnectionConfig = Depends(_get_connection_config),
+    fides_key: FidesKey,
+) -> Dict[str, Any]:
+    """
+    Returns a dictionary containing the immediate identity and dataset reference
+    dependencies for the given dataset.
+    """
+
+    dataset_config = DatasetConfig.filter(
+        db=db,
+        conditions=(
+            (DatasetConfig.connection_config_id == connection_config.id)
+            & (DatasetConfig.fides_key == fides_key)
+        ),
+    ).first()
+    if not dataset_config:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail=f"No dataset config with fides_key '{fides_key}'",
+        )
+
+    reachable, details = get_dataset_reachability(db, dataset_config)
+    return {"reachable": reachable, "details": details}
+
+
+@router.post(
+    TEST_DATASET,
+    status_code=HTTP_200_OK,
+    dependencies=[Security(verify_oauth_client, scopes=[DATASET_TEST])],
+    response_model=TestPrivacyRequest,
+)
+def test_connection_datasets(
+    *,
+    db: Session = Depends(deps.get_db),
+    connection_config: ConnectionConfig = Depends(_get_connection_config),
+    fides_key: FidesKey,
+    unlabeled_identities: UnlabeledIdentities,
+) -> Dict[str, Any]:
+
+    if not CONFIG.security.dsr_testing_tools_enabled:
+        raise HTTPException(
+            status_code=HTTP_403_FORBIDDEN,
+            detail="DSR testing tools are not enabled.",
+        )
+
+    dataset_config = DatasetConfig.filter(
+        db=db,
+        conditions=(
+            (DatasetConfig.connection_config_id == connection_config.id)
+            & (DatasetConfig.fides_key == fides_key)
+        ),
+    ).first()
+    if not dataset_config:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail=f"No dataset config with fides_key '{fides_key}'",
+        )
+
+    access_policy = Policy.get_by(db, field="key", value="default_access_policy")
+    if not access_policy:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail='Policy with key "default_access_policy" not found',
+        )
+
+    privacy_request = run_test_access_request(
+        db,
+        access_policy,
+        dataset_config,
+        input_data=unlabeled_identities.data,
+    )
+    return {"privacy_request_id": privacy_request.id}

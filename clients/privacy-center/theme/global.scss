@@ -1,0 +1,10 @@
+@import "fidesui/src/palette/palette.module.scss";
+
+/**
+ * Adds the color variables from the palette to the root element
+ */
+:root {
+  @each $color, $value in $colors {
+    #{getPrefixedColor("--fidesui-", unquote($color))}: $value;
+  }
+}

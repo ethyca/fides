@@ -392,7 +392,11 @@ class TestSaasConnector:
 
     @mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
     def test_skip_missing_param_values_masking(
-        self, mock_send: Mock, saas_example_config, saas_example_connection_config
+        self,
+        mock_send: Mock,
+        privacy_request,
+        saas_example_config,
+        saas_example_connection_config,
     ):
         """
         Verifies skip_missing_param_values behavior for Connector.mask_data.
@@ -424,7 +428,7 @@ class TestSaasConnector:
             connector.mask_data(
                 execution_node,
                 Policy(),
-                PrivacyRequest(id="123"),
+                privacy_request,
                 request_task,
                 [{"customer_id": 1}],
             )
@@ -441,7 +445,7 @@ class TestSaasConnector:
             connector.mask_data(
                 execution_node,
                 Policy(),
-                PrivacyRequest(id="123"),
+                privacy_request,
                 request_task,
                 [{"customer_id": 1}],
             )
@@ -454,7 +458,7 @@ class TestSaasConnector:
             connector.mask_data(
                 execution_node,
                 Policy(),
-                PrivacyRequest(id="123"),
+                privacy_request,
                 request_task,
                 [{"customer_id": 1}],
             )

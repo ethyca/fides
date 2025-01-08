@@ -255,9 +255,9 @@ class Traversal:
                 )
             )
 
-        self.__verify_traversal()
+        self._verify_traversal()
 
-    def __verify_traversal(self) -> None:
+    def _verify_traversal(self) -> None:
         """Verify that a valid traversal exists. This method simply assembles a traversal
         and raises an error on any traversal failure conditions."""
         self.traverse(
@@ -322,7 +322,7 @@ class Traversal:
         """
         if environment:
             logger.info(
-                "starting traversal",
+                "Starting traversal",
             )
         remaining_node_keys: Set[CollectionAddress] = set(
             self.traversal_node_dict.keys()
@@ -442,8 +442,7 @@ def log_traversal_error_and_update_privacy_request(
     for each node / edge on the "errors" list of the exception.
     """
     logger.error(
-        "TraversalError encountered for privacy request {}. Error: {}",
-        privacy_request.id,
+        "TraversalError encountered for privacy request. Error: {}",
         err,
     )
 
@@ -454,7 +453,7 @@ def log_traversal_error_and_update_privacy_request(
         privacy_request.add_error_execution_log(
             session,
             connection_key=None,
-            dataset_name=None,
+            dataset_name="Dataset traversal",
             collection_name=None,
             message=str(err),
             action_type=ActionType.access,
@@ -473,8 +472,8 @@ def log_traversal_error_and_update_privacy_request(
         privacy_request.add_error_execution_log(
             session,
             connection_key=None,
-            dataset_name=dataset,
-            collection_name=collection,
+            dataset_name="Dataset traversal",
+            collection_name=f"{dataset}.{collection}",
             message=message,
             action_type=ActionType.access,
         )

@@ -173,17 +173,8 @@ const MessagingPage: NextPage = () => {
   });
 
   return (
-    <FixedLayout
-      title="Messaging"
-      mainProps={{
-        padding: "0 40px 10px",
-      }}
-    >
-      <PageHeader breadcrumbs={[{ title: "Messaging" }]}>
-        <Text fontWeight={500} color="gray.700">
-          Configure Fides messaging.
-        </Text>
-      </PageHeader>
+    <FixedLayout title="Messaging">
+      <PageHeader heading="Messaging" />
 
       <FeatureNotEnabledInfoBox />
       <MissingMessagesInfoBox />

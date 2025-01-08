@@ -4,7 +4,8 @@ import { isEmpty, isUndefined, mapValues, omitBy } from "lodash";
 import * as Yup from "yup";
 
 import FidesSpinner from "~/features/common/FidesSpinner";
-import { CustomSelect, CustomTextInput } from "~/features/common/form/inputs";
+import { ControlledSelect } from "~/features/common/form/ControlledSelect";
+import { CustomTextInput } from "~/features/common/form/inputs";
 import { getErrorMessage } from "~/features/common/helpers";
 import { useGetConnectionTypeSecretSchemaQuery } from "~/features/connection-type";
 import type { ConnectionTypeSecretSchemaResponse } from "~/features/connection-type/types";
@@ -238,13 +239,13 @@ const ConfigureIntegrationForm = ({
             />
             {generateFields(secrets!)}
             {!isEditing && (
-              <CustomSelect
+              <ControlledSelect
                 id="system_fides_key"
                 name="system_fides_key"
                 options={systemOptions ?? []}
                 label="System"
                 tooltip="The system to associate with the integration"
-                variant="stacked"
+                layout="stacked"
               />
             )}
             <div className="flex w-full justify-between">

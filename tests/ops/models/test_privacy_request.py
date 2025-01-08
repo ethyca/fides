@@ -15,6 +15,7 @@ from fides.api.common_exceptions import (
     PrivacyRequestPaused,
 )
 from fides.api.graph.config import CollectionAddress
+from fides.api.models import privacy_request
 from fides.api.models.policy import CurrentStep, Policy
 from fides.api.models.privacy_request import (
     CheckpointActionRequired,
@@ -269,6 +270,23 @@ def test_delete_privacy_request_removes_cached_data(
     from_db = PrivacyRequest.get(db=db, object_id=privacy_request.id)
     assert from_db is None
     assert cache.get(key) is None
+
+
+@pytest.mark.parametrize(
+    "privacy_request,expected_status",
+    [
+        ("privacy_request_status_approved", PrivacyRequestStatus.in_processing),
+        ("privacy_request_status_pending", PrivacyRequestStatus.in_processing),
+        ("privacy_request_status_canceled", PrivacyRequestStatus.canceled),
+    ],
+)
+def test_privacy_request_moves_to_in_processing(
+    db: Session, request, privacy_request, expected_status
+):
+    pr: PrivacyRequest = request.getfixturevalue(privacy_request)
+    pr.start_processing(db)
+    db.refresh(pr)
+    assert pr.status == expected_status
 
 
 class TestPrivacyRequestTriggerWebhooks:

@@ -15,7 +15,10 @@ from fides.api.schemas.connection_configuration.connection_secrets_dynamodb impo
     DynamoDBSchema,
 )
 from fides.api.service.connectors.base_connector import BaseConnector
-from fides.api.service.connectors.query_config import DynamoDBQueryConfig, QueryConfig
+from fides.api.service.connectors.query_configs.dynamodb_query_config import (
+    DynamoDBQueryConfig,
+)
+from fides.api.service.connectors.query_configs.query_config import QueryConfig
 from fides.api.util.aws_util import get_aws_session
 from fides.api.util.collection_util import Row
 from fides.api.util.logger import Pii

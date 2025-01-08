@@ -4,6 +4,7 @@ import type {
   FidesExperienceConfig,
   FidesOptions,
 } from "../docs";
+import { blueconic } from "../integrations/blueconic";
 import type { gtm } from "../integrations/gtm";
 import type { meta } from "../integrations/meta";
 import type { shopify } from "../integrations/shopify";
@@ -135,6 +136,12 @@ export interface FidesInitOptions {
 
   // Shows fides.js overlay UI on load deleting the fides_consent cookie as if no preferences have been saved
   fidesClearCookie: boolean;
+
+  // Whether to render the brand link in the footer of the modal
+  showFidesBrandLink: boolean;
+
+  // Whether to reject all consent preferences by default
+  fidesConsentOverride: ConsentMethod.ACCEPT | ConsentMethod.REJECT | null;
 }
 
 /**
@@ -161,6 +168,7 @@ export interface FidesGlobal extends Fides {
   options: FidesInitOptions;
   saved_consent: NoticeConsent;
   tcf_consent: TcfOtherConsent;
+  blueconic: typeof blueconic;
   gtm: typeof gtm;
   init: (config?: FidesConfig) => Promise<void>;
   meta: typeof meta;
@@ -664,7 +672,7 @@ export type OverrideExperienceTranslations = {
 };
 
 /**
- * Select the subset of FidesInitOptions that can be overriden at runtime using
+ * Select the subset of FidesInitOptions that can be overridden at runtime using
  * one of the customer-provided FidesOptions properties above. There's a 1:1
  * correspondence here, but note that we use snake_case for the runtime options
  * and then convert to camelCase variables for the `Fides.init({ options })`
@@ -681,6 +689,7 @@ export type FidesInitOptionsOverrides = Pick<
   | "fidesLocale"
   | "fidesPrimaryColor"
   | "fidesClearCookie"
+  | "fidesConsentOverride"
 >;
 
 export type FidesExperienceTranslationOverrides = {
@@ -717,6 +726,7 @@ export enum ConsentMethod {
   BUTTON = "button", // deprecated- keeping for backwards-compatibility
   REJECT = "reject",
   ACCEPT = "accept",
+  SCRIPT = "script",
   SAVE = "save",
   DISMISS = "dismiss",
   GPC = "gpc",

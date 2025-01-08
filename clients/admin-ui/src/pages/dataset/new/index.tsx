@@ -16,10 +16,14 @@ const NewDataset: NextPage = () => {
     "yaml" | "database" | "manual" | null
   >(null);
   return (
-    <Layout title="Create New Dataset" mainProps={{ paddingTop: 0 }}>
+    <Layout title="Create New Dataset">
       <PageHeader
-        breadcrumbs={[
-          { title: "Datasets", link: DATASET_ROUTE },
+        heading="Datasets"
+        breadcrumbItems={[
+          {
+            title: "All datasets",
+            href: DATASET_ROUTE,
+          },
           { title: "Create new" },
         ]}
       />

@@ -83,6 +83,7 @@ Full name of the configured experience (e.g. `"US Modal"`)
 > `optional` **regions**: `string`[]
 
 List of region codes that apply.
+For more information on valid values see [PrivacyNoticeRegion](../enumerations/PrivacyNoticeRegion.md)
 
 #### Example
 

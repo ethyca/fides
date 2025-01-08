@@ -141,6 +141,7 @@ serialized_collection = {
             "is_array": False,
             "read_only": None,
             "custom_request_field": None,
+            "masking_strategy_override": None,
         },
         {
             "name": "f2",
@@ -154,6 +155,7 @@ serialized_collection = {
             "is_array": False,
             "read_only": None,
             "custom_request_field": None,
+            "masking_strategy_override": None,
         },
         {
             "name": "f3",
@@ -167,6 +169,7 @@ serialized_collection = {
             "is_array": True,
             "read_only": False,
             "custom_request_field": None,
+            "masking_strategy_override": None,
         },
         {
             "name": "f4",
@@ -180,6 +183,7 @@ serialized_collection = {
             "is_array": False,
             "read_only": None,
             "custom_request_field": None,
+            "masking_strategy_override": None,
             "fields": {
                 "f5": {
                     "name": "f5",
@@ -193,6 +197,7 @@ serialized_collection = {
                     "is_array": False,
                     "read_only": None,
                     "custom_request_field": None,
+                    "masking_strategy_override": None,
                 }
             },
         },
@@ -500,6 +505,7 @@ class TestField:
             return_all_elements=None,
             read_only=None,
             custom_request_field=None,
+            masking_strategy_override=None,
         )
         array_field = generate_field(
             name="arr",
@@ -514,6 +520,7 @@ class TestField:
             return_all_elements=True,
             read_only=None,
             custom_request_field=None,
+            masking_strategy_override=None,
         )
         object_field = generate_field(
             name="obj",
@@ -528,6 +535,7 @@ class TestField:
             return_all_elements=None,
             read_only=None,
             custom_request_field=None,
+            masking_strategy_override=None,
         )
         object_array_field = generate_field(
             name="obj_a",
@@ -542,6 +550,7 @@ class TestField:
             return_all_elements=None,
             read_only=None,
             custom_request_field=None,
+            masking_strategy_override=None,
         )
         custom_request_field = generate_field(
             name="custom_field",
@@ -556,6 +565,7 @@ class TestField:
             return_all_elements=None,
             read_only=None,
             custom_request_field="site_id",
+            masking_strategy_override=None,
         )
 
         assert _is_string_field(string_field)
@@ -659,21 +669,22 @@ class TestField:
             data_categories=["user.contact.address.street"],
         )
 
-        with pytest.raises(pydantic.ValidationError):
-            generate_field(
-                name="obj",
-                data_categories=["A.B.C"],
-                identity="identity",
-                data_type_name="object",
-                references=[],
-                is_pk=False,
-                length=0,
-                is_array=False,
-                sub_fields=[apt_no_sub_field],
-                return_all_elements=None,
-                read_only=False,
-                custom_request_field=None,
-            )
+        field = generate_field(
+            name="obj",
+            data_categories=["A.B.C"],
+            identity="identity",
+            data_type_name="object",
+            references=[],
+            is_pk=False,
+            length=0,
+            is_array=False,
+            sub_fields=[apt_no_sub_field],
+            return_all_elements=None,
+            read_only=False,
+            custom_request_field=None,
+            masking_strategy_override=None,
+        )
+        assert field
 
     def test_generate_read_only_scalar_field(self):
         field = generate_field(
@@ -689,6 +700,7 @@ class TestField:
             return_all_elements=None,
             read_only=True,
             custom_request_field=None,
+            masking_strategy_override=None,
         )
         assert isinstance(field, ScalarField)
         assert field.read_only

@@ -1,7 +1,7 @@
-import MultiSelectDropdown from "common/dropdown/MultiSelectDropdown";
-import React, { useCallback, useMemo } from "react";
+import { useCallback, useMemo } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
+import { FilterSelect } from "~/features/common/dropdown/FilterSelect";
 import { selectConnectionTypeState } from "~/features/connection-type";
 
 import {
@@ -9,11 +9,7 @@ import {
   setConnectionType,
 } from "../datastore-connection.slice";
 
-export type ConnectionTypeFilterProps = {
-  width?: string;
-};
-
-const ConnectionTypeFilter = ({ width }: ConnectionTypeFilterProps) => {
+const ConnectionTypeFilter = () => {
   const { connectionOptions } = useAppSelector(selectConnectionTypeState);
 
   // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -33,7 +29,7 @@ const ConnectionTypeFilter = ({ width }: ConnectionTypeFilterProps) => {
   }, [connectionOptions, connection_type]);
 
   const list = useMemo(() => loadList(), [loadList]);
-  const selectedList = new Map([...list].filter(([, v]) => v === true));
+  const options = [...list].map(([key]) => ({ value: key, label: key }));
 
   // Hooks
   const dispatch = useAppDispatch();
@@ -47,13 +43,14 @@ const ConnectionTypeFilter = ({ width }: ConnectionTypeFilterProps) => {
   };
 
   return (
-    <MultiSelectDropdown
-      label="Connection Type"
-      list={list}
+    <FilterSelect
+      mode="multiple"
+      placeholder="Connection Type"
+      options={options}
       onChange={handleChange}
-      selectedList={selectedList}
-      tooltipDisabled
-      width={width}
+      defaultValue={connection_type?.length ? connection_type : []}
+      className="w-60"
+      data-testid="connection-type-filter"
     />
   );
 };

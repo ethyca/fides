@@ -1,9 +1,11 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import {
   useGetDatabasesByConnectionQuery,
   useLazyGetDatabasesByConnectionQuery,
 } from "~/features/data-discovery-and-detection/discovery-detection.slice";
+
+const TIMEOUT_DELAY = 5000;
 
 const EMPTY_RESPONSE = {
   items: [] as string[],
@@ -13,8 +15,12 @@ const EMPTY_RESPONSE = {
   pages: 0,
 };
 
-const useCumulativeGetDatabases = (integrationKey: string) => {
+const useCumulativeGetDatabases = (
+  integrationKey: string,
+  onTimeout?: () => void,
+) => {
   const [nextPage, setNextPage] = useState(2);
+
   const { data: initialResult, isLoading: initialIsLoading } =
     useGetDatabasesByConnectionQuery({
       page: 1,
@@ -22,12 +28,31 @@ const useCumulativeGetDatabases = (integrationKey: string) => {
       connection_config_key: integrationKey,
     });
 
+  const initialLoadingRef = useRef(initialIsLoading);
+
   const { items: initialDatabases, total: totalDatabases } =
     initialResult ?? EMPTY_RESPONSE;
 
   const reachedEnd = !!initialResult?.pages && nextPage > initialResult.pages;
 
   const [databases, setDatabases] = useState<string[]>(initialDatabases);
+
+  useEffect(() => {
+    initialLoadingRef.current = initialIsLoading;
+    // this needs to be in this hook or else it will be set to [] instead of the actual result
+    setDatabases(initialDatabases);
+  }, [initialIsLoading, initialDatabases]);
+
+  useEffect(() => {
+    const t = setTimeout(() => {
+      if (initialLoadingRef.current && onTimeout) {
+        onTimeout();
+      }
+    }, TIMEOUT_DELAY);
+    return () => clearTimeout(t);
+    // this should only run once on mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const [
     refetchTrigger,
@@ -52,7 +77,14 @@ const useCumulativeGetDatabases = (integrationKey: string) => {
     setDatabases([...databases, ...(result.data?.items ?? [])]);
   };
 
-  return { databases, totalDatabases, fetchMore, isLoading, reachedEnd };
+  return {
+    databases,
+    totalDatabases,
+    fetchMore,
+    initialIsLoading,
+    isLoading,
+    reachedEnd,
+  };
 };
 
 export default useCumulativeGetDatabases;

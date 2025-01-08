@@ -145,4 +145,9 @@ def db_action(
     """
     Tell the API to perform a database action.
     """
-    return requests.post(f"{server_url}{API_PREFIX}/admin/db/{action}", headers=headers)
+    return requests.post(
+        f"{server_url}{API_PREFIX}/admin/db/{action}",
+        headers=headers,
+        allow_redirects=False,
+        timeout=30,
+    )

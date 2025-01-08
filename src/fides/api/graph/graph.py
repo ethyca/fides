@@ -200,7 +200,8 @@ class DatasetGraph:
                             "Referenced object {} does not exist", dest_field_address
                         )
                         raise ValidationError(
-                            f"Referred to object {dest_field_address} does not exist"
+                            f"Referred to object {dest_field_address} does not exist",
+                            errors=[dest_field_address.value],
                         )
                     self.edges.add(
                         Edge.create_edge(

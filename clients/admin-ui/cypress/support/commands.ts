@@ -36,10 +36,6 @@ Cypress.Commands.add("login", () => {
 const getSelectOptionList = (selectorId: string) =>
   cy.getByTestId(selectorId).click().find(`.custom-select__menu-list`);
 
-Cypress.Commands.add("getSelectValueContainer", (selectorId) =>
-  cy.getByTestId(selectorId).find(`.custom-select__value-container`),
-);
-
 Cypress.Commands.add("selectOption", (selectorId, optionText) => {
   getSelectOptionList(selectorId).contains(optionText).click();
 });
@@ -48,7 +44,7 @@ Cypress.Commands.add(
   "removeMultiValue",
   (selectorId: string, optionText: string) =>
     cy
-      .getSelectValueContainer(selectorId)
+      .getByTestId(selectorId)
       .contains(optionText)
       .siblings(".custom-select__multi-value__remove")
       .click(),
@@ -126,16 +122,9 @@ declare global {
        */
       assumeRole(role: RoleRegistryEnum): void;
       /**
-       * Get the container of a CustomSelect
-       * @example cy.selectValueContainer("input-allow_list_id")
-       */
-      getSelectValueContainer(
-        selectorId: string,
-      ): Chainable<JQuery<HTMLElement>>;
-      /**
-       * Selects an option from a CustomSelect component
+       * @deprecated Selects an option from a CustomSelect component
        *
-       * @example cy.selectOption("input-allow_list_id", "Prime numbers");
+       * @example cy.getByTestId("input-allow_list_id").antSelect("Prime numbers")
        */
       selectOption(
         selectorId: string,

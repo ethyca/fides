@@ -1,4 +1,4 @@
-from fides.api.service.connectors.sql_connector import PostgreSQLConnector
+from fides.api.service.connectors.postgres_connector import PostgreSQLConnector
 
 
 class TimescaleConnector(PostgreSQLConnector):

@@ -3,6 +3,7 @@
 /* eslint-disable */
 
 export enum GPPUSApproach {
+  ALL = "all",
   NATIONAL = "national",
   STATE = "state",
 }

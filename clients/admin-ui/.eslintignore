@@ -6,3 +6,5 @@ next.config.js
 jest.config.js
 cypress.config.ts
 .eslintrc*
+postcss.config.js
+tailwind.config.js

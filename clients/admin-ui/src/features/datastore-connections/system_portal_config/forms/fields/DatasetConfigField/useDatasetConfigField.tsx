@@ -50,6 +50,7 @@ export const useDatasetConfigField = ({
   const patchConnectionDatasetConfig = async (
     values: ConnectionConfigFormValues,
     connectionConfigKey: string,
+    { showSuccessAlert = true }: { showSuccessAlert?: boolean } = {},
   ) => {
     const newDatasetPairs: DatasetConfigCtlDataset[] =
       values.dataset?.map((datasetKey) => ({
@@ -65,7 +66,7 @@ export const useDatasetConfigField = ({
     const payload = await putDatasetConfig(params).unwrap();
     if (payload.failed?.length > 0) {
       errorAlert(payload.failed[0].message);
-    } else {
+    } else if (showSuccessAlert) {
       successAlert("Dataset successfully updated!");
     }
   };

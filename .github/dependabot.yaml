@@ -24,6 +24,20 @@ updates:
       - dependencies
       - javascript
       - dependabot
+  - package-ecosystem: npm
+    directory: "/clients/fides-js"
+    schedule:
+      interval: weekly
+    labels:
+      - dependencies
+      - javascript
+      - dependabot
+    allow:
+      - dependency-name: "@iabtechlabtcf*"
+        dependency-type: "direct"
+      - dependency-name: "@iabgpp*"
+        dependency-type: "direct"
+
   - package-ecosystem: github-actions
     directory: "/"
     schedule:

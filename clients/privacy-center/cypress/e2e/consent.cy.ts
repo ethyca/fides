@@ -1,4 +1,6 @@
 import { CONSENT_COOKIE_NAME, FidesCookie, GpcStatus } from "fides-js";
+import { mockPrivacyNotice } from "support/mocks";
+import { stubConfig } from "support/stubs";
 
 import { ConsentPreferencesWithVerificationCode } from "../../types/api";
 import { API_URL } from "../support/constants";
@@ -455,10 +457,23 @@ describe("Consent settings", () => {
 
     describe("when globalPrivacyControl is enabled", () => {
       it("uses the globalPrivacyControl default", () => {
-        cy.visit("/fides-js-demo.html?globalPrivacyControl=true");
+        cy.on("window:before:load", (win) => {
+          // eslint-disable-next-line no-param-reassign
+          win.navigator.globalPrivacyControl = true;
+        });
+        cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
+        stubConfig({
+          experience: {
+            privacy_notices: [
+              mockPrivacyNotice({
+                title: "Advertising with gpc enabled",
+                id: "pri_notice-advertising",
+                has_gpc_flag: true,
+              }),
+            ],
+          },
+        });
         cy.get("#consent-json");
-        // eslint-disable-next-line cypress/no-unnecessary-waiting
-        cy.wait(2000);
         cy.waitUntilFidesInitialized().then(() => {
           cy.window({ timeout: 500 }).should("have.property", "dataLayer");
           cy.window().then((win) => {

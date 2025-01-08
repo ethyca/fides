@@ -3,6 +3,7 @@ import {
   AntButton as Button,
   ConfirmationModal,
   Flex,
+  HStack,
   Text,
   useDisclosure,
   VStack,
@@ -112,7 +113,7 @@ const YamlEditorForm = ({
           }}
           theme="light"
         />
-        <div>
+        <HStack justifyContent="flex-end" pr={6}>
           {onCancel && <Button onClick={onCancel}>Cancel</Button>}
           <Button
             type="primary"
@@ -124,7 +125,7 @@ const YamlEditorForm = ({
           >
             Save
           </Button>
-        </div>
+        </HStack>
       </VStack>
       {isTouched && (isEmptyState || yamlError) && (
         <YamlError isEmptyState={isEmptyState} yamlError={yamlError} />

@@ -105,10 +105,11 @@ const IntegrationDetailView: NextPage = () => {
   return (
     <Layout title="Integrations">
       <PageHeader
-        breadcrumbs={[
+        heading="Integrations"
+        breadcrumbItems={[
           {
-            title: "Integrations",
-            link: INTEGRATION_MANAGEMENT_ROUTE,
+            title: "All integrations",
+            href: INTEGRATION_MANAGEMENT_ROUTE,
           },
           {
             title: connection?.name ?? connection?.key ?? "",

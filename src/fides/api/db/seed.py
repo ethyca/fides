@@ -38,6 +38,7 @@ from fides.api.schemas.connection_configuration.saas_config_template_values impo
 from fides.api.schemas.dataset import DatasetConfigCtlDataset
 from fides.api.schemas.policy import ActionType, DrpAction
 from fides.api.util.connection_util import patch_connection_configs
+from fides.api.util.data_category import get_user_data_categories
 from fides.api.util.errors import AlreadyExistsError, QueryError
 from fides.api.util.text import to_snake_case
 from fides.config import CONFIG
@@ -112,36 +113,6 @@ def create_or_update_parent_user() -> None:
             db=db_session,
             data={"user_id": user.id, "roles": [OWNER]},
         )
-
-
-def filter_data_categories(
-    categories: List[str], excluded_categories: List[str]
-) -> List[str]:
-    """
-    Filter data categories and their children out of a list of categories.
-
-    We only want user-related data categories, but not the parent category
-    We also only want 2nd level categories, otherwise there are policy conflicts
-    """
-    user_categories = [
-        category
-        for category in categories
-        if category.startswith("user.") and len(category.split(".")) < 3
-    ]
-    if excluded_categories:
-        duplicated_categories = [
-            category
-            for excluded_category in excluded_categories
-            for category in user_categories
-            if not category.startswith(excluded_category)
-        ]
-        default_categories = {
-            category
-            for category in duplicated_categories
-            if duplicated_categories.count(category) == len(excluded_categories)
-        }
-        return sorted(list(default_categories))
-    return sorted(user_categories)
 
 
 def get_client_id(db_session: Session) -> str:
@@ -325,18 +296,9 @@ def load_default_dsr_policies() -> None:
         # organizations need to be extra careful about how these are used -
         # especially for erasure! Therefore, a safe default for "out of the
         # box" behaviour is to exclude these
-        excluded_data_categories = [
-            "user.financial",
-            "user.payment",
-            "user.authorization",
-        ]
-        all_data_categories = [
-            str(category.fides_key)
-            for category in DEFAULT_TAXONOMY.data_category  # pylint:disable=not-an-iterable
-        ]
-        default_data_categories = filter_data_categories(
-            all_data_categories, excluded_data_categories
-        )
+
+        default_data_categories = get_user_data_categories()
+
         log.debug(
             f"Preparing to create default rules for the following Data Categories: {default_data_categories} if they do not already exist"
         )

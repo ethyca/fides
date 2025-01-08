@@ -48,6 +48,7 @@ from fides.config.config_proxy import ConfigProxy
 from tests.fixtures.application_fixtures import *
 from tests.fixtures.bigquery_fixtures import *
 from tests.fixtures.datahub_fixtures import *
+from tests.fixtures.detection_discovery_fixtures import *
 from tests.fixtures.dynamodb_fixtures import *
 from tests.fixtures.email_fixtures import *
 from tests.fixtures.fides_connector_example_fixtures import *
@@ -412,6 +413,26 @@ def resources_dict():
                             description="User's Email",
                             path="another.another.path",
                             data_categories=["user.contact.email"],
+                        ),
+                        models.DatasetField(
+                            name="address",
+                            description="example top level field for nesting",
+                            path="table.address",
+                            data_categories=["user.contact.address"],
+                            fields=[
+                                models.DatasetField(
+                                    name="city",
+                                    description="example city field",
+                                    path="table.address.city",
+                                    data_categories=["user.contact.address.city"],
+                                ),
+                                models.DatasetField(
+                                    name="state",
+                                    description="example state field",
+                                    path="table.address.state",
+                                    data_categories=["user.contact.address.state"],
+                                ),
+                            ],
                         ),
                     ],
                 )
@@ -1251,6 +1272,25 @@ def system(db: Session) -> System:
 
 
 @pytest.fixture(scope="function")
+def system_hidden(db: Session) -> Generator[System, None, None]:
+    system = System.create(
+        db=db,
+        data={
+            "fides_key": f"system_key-f{uuid4()}",
+            "name": f"system-{uuid4()}",
+            "description": "fixture-made-system set as hidden",
+            "organization_fides_key": "default_organization",
+            "system_type": "Service",
+            "hidden": True,
+        },
+    )
+
+    db.refresh(system)
+    yield system
+    db.delete(system)
+
+
+@pytest.fixture(scope="function")
 def system_with_cleanup(db: Session) -> Generator[System, None, None]:
     system = System.create(
         db=db,
@@ -1286,6 +1326,17 @@ def system_with_cleanup(db: Session) -> Generator[System, None, None]:
             "system_id": system.id,
         },
         check_name=False,
+    )
+
+    ConnectionConfig.create(
+        db=db,
+        data={
+            "system_id": system.id,
+            "connection_type": "bigquery",
+            "name": "test_connection",
+            "secrets": {"password": "test_password"},
+            "access": "write",
+        },
     )
 
     db.refresh(system)
@@ -1349,7 +1400,78 @@ def system_with_undeclared_data_categories(db: Session) -> System:
 
 
 @pytest.fixture(scope="function")
-def privacy_declaration_with_dataset_references(db: Session) -> System:
+def system_with_a_single_dataset_reference(db: Session) -> System:
+    first_dataset = CtlDataset.create_from_dataset_dict(
+        db,
+        {
+            "fides_key": f"dataset_key-f{uuid4()}",
+            "collections": [
+                {
+                    "name": "loyalty",
+                    "fields": [
+                        {
+                            "name": "id",
+                            "data_categories": ["user.unique_id"],
+                        },
+                    ],
+                }
+            ],
+        },
+    )
+    second_dataset = CtlDataset.create_from_dataset_dict(
+        db,
+        {
+            "fides_key": f"dataset_key-f{uuid4()}",
+            "collections": [
+                {
+                    "name": "customer",
+                    "fields": [
+                        {
+                            "name": "shipping_info",
+                            "fields": [
+                                {
+                                    "name": "street",
+                                    "data_categories": ["user.contact.address.street"],
+                                }
+                            ],
+                        },
+                        {
+                            "name": "first_name",
+                            "data_categories": ["user.name.first"],
+                        },
+                    ],
+                },
+                {
+                    "name": "activity",
+                    "fields": [
+                        {
+                            "name": "last_login",
+                            "data_categories": ["user.behavior"],
+                        },
+                    ],
+                },
+            ],
+        },
+    )
+    system = System.create(
+        db=db,
+        data={
+            "fides_key": f"system_key-f{uuid4()}",
+            "name": f"system-{uuid4()}",
+            "description": "fixture-made-system",
+            "organization_fides_key": "default_organization",
+            "system_type": "Service",
+            "dataset_references": [first_dataset.fides_key, second_dataset.fides_key],
+        },
+    )
+
+    return system
+
+
+@pytest.fixture(scope="function")
+def privacy_declaration_with_single_dataset_reference(
+    db: Session,
+) -> PrivacyDeclaration:
     ctl_dataset = CtlDataset.create_from_dataset_dict(
         db,
         {
@@ -1388,6 +1510,90 @@ def privacy_declaration_with_dataset_references(db: Session) -> System:
             "data_use": "third_party_sharing",
             "data_subjects": ["customer"],
             "dataset_references": [ctl_dataset.fides_key],
+            "egress": None,
+            "ingress": None,
+        },
+    )
+
+    return privacy_declaration
+
+
+@pytest.fixture(scope="function")
+def privacy_declaration_with_multiple_dataset_references(
+    db: Session,
+) -> PrivacyDeclaration:
+    first_dataset = CtlDataset.create_from_dataset_dict(
+        db,
+        {
+            "fides_key": f"dataset_key-f{uuid4()}",
+            "collections": [
+                {
+                    "name": "loyalty",
+                    "fields": [
+                        {
+                            "name": "id",
+                            "data_categories": ["user.unique_id"],
+                        },
+                    ],
+                }
+            ],
+        },
+    )
+    second_dataset = CtlDataset.create_from_dataset_dict(
+        db,
+        {
+            "fides_key": f"dataset_key-f{uuid4()}",
+            "collections": [
+                {
+                    "name": "customer",
+                    "fields": [
+                        {
+                            "name": "shipping_info",
+                            "fields": [
+                                {
+                                    "name": "street",
+                                    "data_categories": ["user.contact.address.street"],
+                                }
+                            ],
+                        },
+                        {
+                            "name": "first_name",
+                            "data_categories": ["user.name.first"],
+                        },
+                    ],
+                },
+                {
+                    "name": "activity",
+                    "fields": [
+                        {
+                            "name": "last_login",
+                            "data_categories": ["user.behavior"],
+                        },
+                    ],
+                },
+            ],
+        },
+    )
+    system = System.create(
+        db=db,
+        data={
+            "fides_key": f"system_key-f{uuid4()}",
+            "name": f"system-{uuid4()}",
+            "description": "fixture-made-system",
+            "organization_fides_key": "default_organization",
+            "system_type": "Service",
+        },
+    )
+
+    privacy_declaration = PrivacyDeclaration.create(
+        db=db,
+        data={
+            "name": "Collect data for third party sharing",
+            "system_id": system.id,
+            "data_categories": ["user.device.cookie_id"],
+            "data_use": "third_party_sharing",
+            "data_subjects": ["customer"],
+            "dataset_references": [first_dataset.fides_key, second_dataset.fides_key],
             "egress": None,
             "ingress": None,
         },
@@ -1551,3 +1757,32 @@ def load_default_data_uses(db):
         # loaded, in which case the create will throw an error. so we first check existence.
         if DataUse.get_by(db, field="name", value=data_use.name) is None:
             DataUse.create(db=db, data=data_use.model_dump(mode="json"))
+
+
+@pytest.fixture
+def owner_auth_header(owner_user):
+    return generate_role_header_for_user(owner_user, owner_user.client.roles)
+
+
+@pytest.fixture
+def contributor_auth_header(contributor_user):
+    return generate_role_header_for_user(
+        contributor_user, contributor_user.client.roles
+    )
+
+
+@pytest.fixture
+def viewer_auth_header(viewer_user):
+    return generate_role_header_for_user(viewer_user, viewer_user.client.roles)
+
+
+@pytest.fixture
+def approver_auth_header(approver_user):
+    return generate_role_header_for_user(approver_user, approver_user.client.roles)
+
+
+@pytest.fixture
+def viewer_and_approver_auth_header(viewer_and_approver_user):
+    return generate_role_header_for_user(
+        viewer_and_approver_user, viewer_and_approver_user.client.roles
+    )

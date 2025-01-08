@@ -4,8 +4,11 @@ import { useEffect, useState } from "react";
 import { isErrorResult } from "~/features/common/helpers";
 import { useAlert, useAPIHelper } from "~/features/common/hooks";
 import Layout from "~/features/common/Layout";
-import BackButton from "~/features/common/nav/v2/BackButton";
-import { PRIVACY_REQUESTS_CONFIGURATION_ROUTE } from "~/features/common/nav/v2/routes";
+import {
+  PRIVACY_REQUESTS_CONFIGURATION_ROUTE,
+  PRIVACY_REQUESTS_ROUTE,
+} from "~/features/common/nav/v2/routes";
+import PageHeader from "~/features/common/PageHeader";
 import { storageTypes } from "~/features/privacy-requests/constants";
 import {
   useCreateStorageMutation,
@@ -63,8 +66,18 @@ const StorageConfiguration = () => {
 
   return (
     <Layout title="Configure Privacy Requests - Storage">
-      <BackButton backPath={PRIVACY_REQUESTS_CONFIGURATION_ROUTE} />
-      <Heading mb={5} fontSize="2xl" fontWeight="semibold">
+      <PageHeader
+        heading="Privacy Requests"
+        breadcrumbItems={[
+          { title: "All requests", href: PRIVACY_REQUESTS_ROUTE },
+          {
+            title: "Configure requests",
+            href: PRIVACY_REQUESTS_CONFIGURATION_ROUTE,
+          },
+          { title: "Storage" },
+        ]}
+      />
+      <Heading mb={5} fontSize="md" fontWeight="semibold">
         Configure storage
       </Heading>
 

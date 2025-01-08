@@ -1,4 +1,13 @@
-import { stubPlus } from "cypress/support/stubs";
+import {
+  stubDatamap,
+  stubDatasetCrud,
+  stubLocations,
+  stubOpenIdProviders,
+  stubOrganizationCrud,
+  stubPlus,
+  stubPrivacyRequests,
+  stubTaxonomyEntities,
+} from "cypress/support/stubs";
 
 import {
   ADD_SYSTEMS_ROUTE,
@@ -11,12 +20,17 @@ import { RoleRegistryEnum } from "~/types/api";
 describe("Routes", () => {
   beforeEach(() => {
     cy.login();
+    stubOpenIdProviders();
+    stubPrivacyRequests();
+    stubTaxonomyEntities();
+    stubLocations();
+    stubDatamap();
   });
 
   describe("permissions", () => {
     beforeEach(() => {
       // For these tests, let's say we always have systems and connectors
-      cy.intercept("GET", "/api/v1/system*", {
+      cy.intercept("GET", "/api/v1/system", {
         fixture: "systems/systems.json",
       }).as("getSystems");
       cy.intercept("GET", "/api/v1/connection*", {
@@ -27,7 +41,6 @@ describe("Routes", () => {
 
     it("admins can access many routes", () => {
       cy.assumeRole(RoleRegistryEnum.OWNER);
-      cy.visit("/");
       cy.visit(ADD_SYSTEMS_ROUTE);
       cy.getByTestId("add-systems");
       cy.visit("/privacy-requests");

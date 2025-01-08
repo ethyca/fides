@@ -20,7 +20,11 @@ class TestCustomReport:
                 "type": ReportType.datamap,
                 "created_by": user.id,
                 "config": CustomReportConfig(
-                    column_map={"system": "Vendor"}
+                    column_map={
+                        "system": {
+                            "label": "Vendor",
+                        },
+                    }
                 ).model_dump(mode="json"),
             },
         )
@@ -35,7 +39,11 @@ class TestCustomReport:
                 "type": ReportType.datamap,
                 "created_by": user.id,
                 "config": CustomReportConfig(
-                    column_map={"system": "Vendor"}
+                    column_map={
+                        "system": {
+                            "label": "Vendor",
+                        },
+                    }
                 ).model_dump(mode="json"),
             },
         )
@@ -43,7 +51,12 @@ class TestCustomReport:
         assert custom_report.type == ReportType.datamap
         assert custom_report.created_by == user.id
         assert custom_report.config == {
-            "column_map": {"system": "Vendor"},
+            "column_map": {
+                "system": {
+                    "enabled": True,
+                    "label": "Vendor",
+                },
+            },
             "table_state": {},
         }
 
@@ -57,7 +70,11 @@ class TestCustomReport:
                     "type": ReportType.datamap,
                     "created_by": user.id,
                     "config": CustomReportConfig(
-                        column_map={"system": "Vendor"}
+                        column_map={
+                            "system": {
+                                "label": "Vendor",
+                            },
+                        }
                     ).model_dump(mode="json"),
                 },
             )
@@ -69,7 +86,11 @@ class TestCustomReport:
             db=db,
             data={
                 "config": CustomReportConfig(
-                    column_map={"system": "System"}
+                    column_map={
+                        "system": {
+                            "label": "System",
+                        },
+                    }
                 ).model_dump(mode="json"),
             },
         )
@@ -77,7 +98,12 @@ class TestCustomReport:
         assert updated_report.type == ReportType.datamap
         assert updated_report.created_by == user.id
         assert updated_report.config == {
-            "column_map": {"system": "System"},
+            "column_map": {
+                "system": {
+                    "enabled": True,
+                    "label": "System",
+                },
+            },
             "table_state": {},
         }
 
@@ -90,7 +116,11 @@ class TestCustomReport:
                 "type": ReportType.datamap,
                 "created_by": user.id,
                 "config": CustomReportConfig(
-                    column_map={"system": "Vendor"}
+                    column_map={
+                        "system": {
+                            "label": "Vendor",
+                        },
+                    }
                 ).model_dump(mode="json"),
             },
         )

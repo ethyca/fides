@@ -1,6 +1,11 @@
+import { stubOpenIdProviders, stubUserManagement } from "cypress/support/stubs";
+
 import { SYSTEM_ROUTE } from "~/features/common/nav/v2/routes";
 
 describe("User Authentication", () => {
+  beforeEach(() => {
+    stubOpenIdProviders();
+  });
   const login = () => {
     cy.fixture("login.json").then((body) => {
       cy.intercept("POST", "/api/v1/login", body).as("postLogin");
@@ -37,6 +42,7 @@ describe("User Authentication", () => {
     });
 
     it("can persist URL after logging in", () => {
+      stubUserManagement();
       cy.visit("/user-management");
       cy.location("pathname").should("eq", "/login");
       cy.location("search").should("eq", "?redirect=%2Fuser-management");
@@ -53,6 +59,7 @@ describe("User Authentication", () => {
     });
 
     it("lets them navigate to protected routes", () => {
+      stubUserManagement();
       cy.visit("/");
       cy.getByTestId("Home");
 
@@ -72,7 +79,7 @@ describe("User Authentication", () => {
       });
 
       cy.getByTestId("header-menu-button").click();
-      cy.getByTestId("header-menu-sign-out").click();
+      cy.getByTestId("header-menu-sign-out").click({ force: true });
 
       cy.location("pathname").should("eq", "/login");
       cy.getByTestId("Login");

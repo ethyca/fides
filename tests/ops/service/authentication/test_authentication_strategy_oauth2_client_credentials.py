@@ -8,102 +8,12 @@ from requests import PreparedRequest, Request
 from sqlalchemy.orm import Session
 
 from fides.api.common_exceptions import FidesopsException, OAuth2TokenException
-from fides.api.models.connectionconfig import (
-    AccessLevel,
-    ConnectionConfig,
-    ConnectionType,
-)
 from fides.api.service.authentication.authentication_strategy import (
     AuthenticationStrategy,
 )
 from fides.api.service.authentication.authentication_strategy_oauth2_client_credentials import (
     OAuth2ClientCredentialsAuthenticationStrategy,
 )
-
-
-@pytest.fixture(scope="function")
-def oauth2_client_credentials_configuration() -> (
-    OAuth2ClientCredentialsAuthenticationStrategy
-):
-    return {
-        "token_request": {
-            "method": "POST",
-            "path": "/oauth/token",
-            "headers": [
-                {
-                    "name": "Content-Type",
-                    "value": "application/x-www-form-urlencoded",
-                }
-            ],
-            "query_params": [
-                {"name": "client_id", "value": "<client_id>"},
-                {"name": "client_secret", "value": "<client_secret>"},
-                {"name": "grant_type", "value": "client_credentials"},
-            ],
-        },
-        "refresh_request": {
-            "method": "POST",
-            "path": "/oauth/token",
-            "headers": [
-                {
-                    "name": "Content-Type",
-                    "value": "application/x-www-form-urlencoded",
-                }
-            ],
-            "query_params": [
-                {"name": "client_id", "value": "<client_id>"},
-                {"name": "client_secret", "value": "<client_secret>"},
-                {"name": "grant_type", "value": "refresh_token"},
-                {"name": "refresh_token", "value": "<refresh_token>"},
-            ],
-        },
-    }
-
-
-@pytest.fixture(scope="function")
-def oauth2_client_credentials_connection_config(
-    db: Session, oauth2_client_credentials_configuration
-) -> Generator:
-    secrets = {
-        "domain": "localhost",
-        "client_id": "client",
-        "client_secret": "secret",
-        "access_token": "access",
-        "refresh_token": "refresh",
-    }
-    saas_config = {
-        "fides_key": "oauth2_client_credentials_connector",
-        "name": "OAuth2 Client Credentials Connector",
-        "type": "custom",
-        "description": "Generic OAuth2 connector for testing",
-        "version": "0.0.1",
-        "connector_params": [{"name": item} for item in secrets.keys()],
-        "client_config": {
-            "protocol": "https",
-            "host": secrets["domain"],
-            "authentication": {
-                "strategy": "oauth2_client_credentials",
-                "configuration": oauth2_client_credentials_configuration,
-            },
-        },
-        "endpoints": [],
-        "test_request": {"method": "GET", "path": "/test"},
-    }
-
-    fides_key = saas_config["fides_key"]
-    connection_config = ConnectionConfig.create(
-        db=db,
-        data={
-            "key": fides_key,
-            "name": fides_key,
-            "connection_type": ConnectionType.saas,
-            "access": AccessLevel.write,
-            "secrets": secrets,
-            "saas_config": saas_config,
-        },
-    )
-    yield connection_config
-    connection_config.delete(db)
 
 
 class TestAddAuthentication:
@@ -249,7 +159,6 @@ class TestAddAuthentication:
                     "client_id": "client",
                     "client_secret": "secret",
                     "access_token": "new_access",
-                    "refresh_token": "refresh",
                     "expires_at": 0,
                 }
             },
@@ -327,7 +236,6 @@ class TestAccessTokenRequest:
         expires_in = 7200
         mock_send().json.return_value = {
             "access_token": "new_access",
-            "refresh_token": "new_refresh",
             "expires_in": expires_in,
         }
 
@@ -347,7 +255,6 @@ class TestAccessTokenRequest:
                     "client_id": "client",
                     "client_secret": "secret",
                     "access_token": "new_access",
-                    "refresh_token": "new_refresh",
                     "expires_at": int(datetime.utcnow().timestamp()) + expires_in,
                 }
             },
@@ -376,7 +283,6 @@ class TestAccessTokenRequest:
         # mock the json response from calling the access token request
         mock_send().json.return_value = {
             "access_token": "new_access",
-            "refresh_token": "new_refresh",
         }
 
         oauth2_client_credentials_configuration["expires_in"] = 3600
@@ -396,7 +302,6 @@ class TestAccessTokenRequest:
                     "client_id": "client",
                     "client_secret": "secret",
                     "access_token": "new_access",
-                    "refresh_token": "new_refresh",
                     "expires_at": int(datetime.utcnow().timestamp())
                     + oauth2_client_credentials_configuration["expires_in"],
                 }

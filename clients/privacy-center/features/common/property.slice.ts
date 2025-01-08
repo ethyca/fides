@@ -27,7 +27,8 @@ export const propertySlice = createSlice({
 });
 
 const selectProperty = (state: RootState) => state.property;
-
+export const selectPropertyId = (state: RootState) =>
+  state.property?.property?.id;
 export const { reducer } = propertySlice;
 export const { loadProperty } = propertySlice.actions;
 export const useProperty = (): Property | undefined => {

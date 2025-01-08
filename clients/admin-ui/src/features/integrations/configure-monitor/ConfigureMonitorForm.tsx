@@ -4,9 +4,9 @@ import { Form, Formik } from "formik";
 import { useRouter } from "next/router";
 import * as Yup from "yup";
 
+import { ControlledSelect } from "~/features/common/form/ControlledSelect";
 import {
   CustomDateTimeInput,
-  CustomSelect,
   CustomTextInput,
 } from "~/features/common/form/inputs";
 import { enumToOptions } from "~/features/common/helpers";
@@ -123,13 +123,13 @@ const ConfigureMonitorForm = ({
               isRequired
               variant="stacked"
             />
-            <CustomSelect
+            <ControlledSelect
               name="execution_frequency"
               id="execution_frequency"
               tooltip="Interval to run the monitor automatically after the start date"
               options={frequencyOptions}
               label="Automatic execution frequency"
-              variant="stacked"
+              layout="stacked"
             />
             <CustomDateTimeInput
               name="execution_start_date"

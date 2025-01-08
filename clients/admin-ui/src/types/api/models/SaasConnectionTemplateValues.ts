@@ -3,6 +3,7 @@
 /* eslint-disable */
 
 import type { BigQueryDocsSchema } from "./BigQueryDocsSchema";
+import type { DatahubDocsSchema } from "./DatahubDocsSchema";
 import type { DynamicErasureEmailDocsSchema } from "./DynamicErasureEmailDocsSchema";
 import type { DynamoDBDocsSchema } from "./DynamoDBDocsSchema";
 import type { EmailDocsSchema } from "./EmailDocsSchema";
@@ -34,6 +35,7 @@ export type SaasConnectionTemplateValues = {
   description?: string | null;
   secrets:
     | BigQueryDocsSchema
+    | DatahubDocsSchema
     | DynamicErasureEmailDocsSchema
     | DynamoDBDocsSchema
     | EmailDocsSchema

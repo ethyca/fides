@@ -199,5 +199,5 @@ class TaskResources:
         self.connections.close() to close connections to External Databases.  This is
         really important to avoid opening up too many connections.
         """
-        logger.debug("Closing all task resources for {}", self.request.id)
+        logger.debug("Closing all task resources")
         self.connections.close()

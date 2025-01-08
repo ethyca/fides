@@ -6,6 +6,7 @@ import {
   Text,
 } from "fidesui";
 import NextLink from "next/link";
+import { useRouter } from "next/navigation";
 
 /**
  * A back button meant to send the user to the upper level of the nav
@@ -14,20 +15,23 @@ import NextLink from "next/link";
 const BackButton = ({
   backPath,
   ...props
-}: { backPath: string } & FlexProps) => (
-  <Flex alignItems="center" mb={6} {...props}>
-    <Button
-      href={backPath}
-      aria-label="Back"
-      icon={<ArrowBackIcon />}
-      className="mr-2"
-      size="small"
-    />
-    <Text as={NextLink} href={backPath} fontSize="sm" fontWeight="500">
-      Back
-    </Text>
-  </Flex>
-);
+}: { backPath: string } & FlexProps) => {
+  const nextRouter = useRouter();
+  return (
+    <Flex alignItems="center" mb={6} {...props}>
+      <Button
+        onClick={() => nextRouter.push(backPath)}
+        aria-label="Back"
+        icon={<ArrowBackIcon />}
+        className="mr-2"
+        size="small"
+      />
+      <Text as={NextLink} href={backPath} fontSize="sm" fontWeight="500">
+        Back
+      </Text>
+    </Flex>
+  );
+};
 
 export const BackButtonNonLink = ({
   onClick,

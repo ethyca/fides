@@ -4,7 +4,7 @@ import FixedLayout from "~/features/common/FixedLayout";
 import PrivacyRequestsContainer from "~/features/privacy-requests/PrivacyRequestsContainer";
 
 const PrivacyRequests: NextPage = () => (
-  <FixedLayout title="Privacy Requests" mainProps={{ px: 10 }}>
+  <FixedLayout title="Privacy Requests">
     <PrivacyRequestsContainer />
   </FixedLayout>
 );

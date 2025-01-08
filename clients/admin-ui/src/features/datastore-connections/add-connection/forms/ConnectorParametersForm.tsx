@@ -63,7 +63,7 @@ const ConnectorParametersForm = ({
   isSubmitting = false,
   onSaveClick,
   onTestConnectionClick,
-  testButtonLabel = "Test connection",
+  testButtonLabel = "Test integration",
 }: ConnectorParametersFormProps) => {
   const mounted = useRef(false);
   const { handleError } = useAPIHelper();

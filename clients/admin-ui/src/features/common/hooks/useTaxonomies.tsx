@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
 import { find } from "lodash";
-import { ReactNode } from "react";
+import { Fragment, ReactNode } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import {
@@ -25,6 +25,42 @@ const useTaxonomies = () => {
     return tokens.join(delimiter);
   };
 
+  interface DataDisplayNameProps {
+    primaryName?: string;
+    name?: string;
+  }
+
+  const getDataDisplayNameProps = (
+    fidesLangKey: string,
+    getDataFunction: (fidesLangKey: string) =>
+      | {
+          parent_key?: string | null;
+          name?: string | null;
+        }
+      | undefined,
+    primaryLevel = 1,
+  ): DataDisplayNameProps => {
+    const data = getDataFunction(fidesLangKey);
+    if (!data) {
+      // Fallback to return key without changes
+      return {};
+    }
+
+    const primaryLevelData = getDataFunction(
+      getPrimaryKey(fidesLangKey, primaryLevel),
+    );
+
+    const isChild = !!data.parent_key;
+
+    return {
+      name: data.name || undefined,
+      primaryName:
+        isChild && primaryLevelData?.name !== data.name
+          ? primaryLevelData?.name || undefined
+          : undefined,
+    };
+  };
+
   /**
    * getDataDisplayName
    * Used to convert a fideslang key for Data Use or Data Category into
@@ -41,28 +77,24 @@ const useTaxonomies = () => {
       | undefined,
     primaryLevel = 1,
   ): string | JSX.Element => {
-    const data = getDataFunction(fidesLangKey);
-    if (!data) {
+    const { name, primaryName } = getDataDisplayNameProps(
+      fidesLangKey,
+      getDataFunction,
+      primaryLevel,
+    );
+
+    if (!name) {
       // Fallback to return key without changes
       return fidesLangKey;
     }
 
-    const primaryLevelData = getDataFunction(
-      getPrimaryKey(fidesLangKey, primaryLevel),
-    );
-
-    const isChild = !!data.parent_key;
-
-    if (!isChild || primaryLevelData?.name === data.name) {
+    return primaryName ? (
       // must include a key since this function is used as an iterator
-      return <strong key={fidesLangKey}>{data.name}</strong>;
-    }
-
-    return (
-      // must include a key since this function is used as an iterator
-      <span key={fidesLangKey}>
-        <strong>{primaryLevelData?.name}:</strong> {data.name}
-      </span>
+      <Fragment key={fidesLangKey}>
+        <strong>{primaryName}:</strong> {name}
+      </Fragment>
+    ) : (
+      <strong key={fidesLangKey}>{name}</strong>
     );
   };
 
@@ -86,6 +118,10 @@ const useTaxonomies = () => {
     dataCategoryKey: string,
   ): JSX.Element | string =>
     getDataDisplayName(dataCategoryKey, getDataCategoryByKey, 2);
+  const getDataCategoryDisplayNameProps = (
+    dataCategoryKey: string,
+  ): DataDisplayNameProps =>
+    getDataDisplayNameProps(dataCategoryKey, getDataCategoryByKey, 2);
 
   /*
     Data Subjects
@@ -110,6 +146,7 @@ const useTaxonomies = () => {
     getDataCategories,
     getDataCategoryByKey,
     getDataCategoryDisplayName,
+    getDataCategoryDisplayNameProps,
     getDataSubjects,
     getDataSubjectByKey,
     getDataSubjectDisplayName,

@@ -23,7 +23,7 @@ describe("Config Wizard", () => {
       cy.getByTestId("authenticate-aws-form");
       cy.getByTestId("input-aws_access_key_id").type("fakeAccessKey");
       cy.getByTestId("input-aws_secret_access_key").type("fakeSecretAccessKey");
-      cy.getByTestId("input-region_name").type("us-east-1{Enter}");
+      cy.getByTestId("controlled-select-region_name").type("us-east-1{Enter}");
     });
 
     it("Allows submitting the form and reviewing the results", () => {
@@ -82,16 +82,10 @@ describe("Config Wizard", () => {
     });
 
     it("Allows stepping back to the previous step during an in-progress scan", () => {
-      cy.intercept(
-        "POST",
-        "/api/v1/generate",
-
-        (req) => {
-          req.continue((res) => {
-            res.setDelay(1000);
-          });
-        },
-      ).as("postGenerate");
+      cy.intercept("POST", "/api/v1/generate", {
+        delay: 1000,
+        statusCode: 503,
+      }).as("postGenerateDelayedAndCanceled");
       cy.getByTestId("submit-btn")
         .click()
         .then(() => {

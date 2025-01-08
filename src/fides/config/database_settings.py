@@ -31,6 +31,18 @@ class DatabaseSettings(FidesSettings):
         default=50,
         description="Number of additional 'overflow' concurrent database connections Fides will use for API requests if the pool reaches the limit. These overflow connections are discarded afterwards and not maintained.",
     )
+    api_engine_keepalives_idle: int = Field(
+        default=30,
+        description="Number of seconds of inactivity before the client sends a TCP keepalive packet to verify the database connection is still alive.",
+    )
+    api_engine_keepalives_interval: int = Field(
+        default=10,
+        description="Number of seconds between TCP keepalive retries if the initial keepalive packet receives no response. These are client-side retries.",
+    )
+    api_engine_keepalives_count: int = Field(
+        default=5,
+        description="Maximum number of TCP keepalive retries before the client considers the connection dead and closes it.",
+    )
     db: str = Field(
         default="default_db", description="The name of the application database."
     )
@@ -60,6 +72,18 @@ class DatabaseSettings(FidesSettings):
     task_engine_max_overflow: int = Field(
         default=50,
         description="Number of additional 'overflow' concurrent database connections Fides will use for executing privacy request tasks, either locally or on each worker, if the pool reaches the limit. These overflow connections are discarded afterwards and not maintained.",
+    )
+    task_engine_keepalives_idle: int = Field(
+        default=30,
+        description="Number of seconds of inactivity before the client sends a TCP keepalive packet to verify the database connection is still alive.",
+    )
+    task_engine_keepalives_interval: int = Field(
+        default=10,
+        description="Number of seconds between TCP keepalive retries if the initial keepalive packet receives no response. These are client-side retries.",
+    )
+    task_engine_keepalives_count: int = Field(
+        default=5,
+        description="Maximum number of TCP keepalive retries before the client considers the connection dead and closes it.",
     )
     test_db: str = Field(
         default="default_test_db",

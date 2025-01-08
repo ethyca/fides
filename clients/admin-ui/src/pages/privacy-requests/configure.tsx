@@ -1,21 +1,35 @@
-import { Box, Heading, LinkBox, LinkOverlay } from "fidesui";
+import {
+  AntTypography as Typography,
+  Box,
+  Heading,
+  LinkBox,
+  LinkOverlay,
+} from "fidesui";
 import type { NextPage } from "next";
 import NextLink from "next/link";
 
 import Layout from "~/features/common/Layout";
-import BackButton from "~/features/common/nav/v2/BackButton";
 import { PRIVACY_REQUESTS_ROUTE } from "~/features/common/nav/v2/routes";
+import PageHeader from "~/features/common/PageHeader";
+
+const { Text } = Typography;
 
 const ConfigurePrivacyRequests: NextPage = () => (
   <Layout title="Configure Privacy Requests">
-    <BackButton backPath={PRIVACY_REQUESTS_ROUTE} />
-    <Heading mb={5} fontSize="2xl" fontWeight="semibold">
-      Configure your privacy requests
-    </Heading>
+    <PageHeader
+      heading="Privacy Requests"
+      breadcrumbItems={[
+        { title: "All requests", href: PRIVACY_REQUESTS_ROUTE },
+        { title: "Configure requests" },
+      ]}
+    />
+
+    <Text strong>Configure your privacy requests:</Text>
+
     <Box
       display="flex"
       alignItems="center"
-      mb={5}
+      my={5}
       data-testid="privacy-requests-configure"
     >
       <LinkBox

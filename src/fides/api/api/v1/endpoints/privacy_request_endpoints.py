@@ -2,6 +2,7 @@
 
 import csv
 import io
+import json
 from collections import defaultdict
 from datetime import datetime
 from typing import (
@@ -72,6 +73,7 @@ from fides.api.models.pre_approval_webhook import (
 )
 from fides.api.models.privacy_preference import PrivacyPreferenceHistory
 from fides.api.models.privacy_request import (
+    EXITED_EXECUTION_LOG_STATUSES,
     CheckpointActionRequired,
     ConsentRequest,
     CustomPrivacyRequestField,
@@ -107,6 +109,7 @@ from fides.api.schemas.privacy_request import (
     BulkSoftDeletePrivacyRequests,
     DenyPrivacyRequests,
     ExecutionLogDetailResponse,
+    FilteredPrivacyRequestResults,
     ManualWebhookData,
     PrivacyRequestAccessResults,
     PrivacyRequestCreate,
@@ -146,6 +149,7 @@ from fides.api.util.endpoint_utils import validate_start_and_end_filters
 from fides.api.util.enums import ColumnSort
 from fides.api.util.fuzzy_search_utils import get_decrypted_identities_automaton
 from fides.api.util.logger import Pii
+from fides.api.util.storage_util import storage_json_encoder
 from fides.common.api.scope_registry import (
     PRIVACY_REQUEST_CALLBACK_RESUME,
     PRIVACY_REQUEST_CREATE,
@@ -166,6 +170,7 @@ from fides.common.api.v1.urn_registry import (
     PRIVACY_REQUEST_BULK_RETRY,
     PRIVACY_REQUEST_BULK_SOFT_DELETE,
     PRIVACY_REQUEST_DENY,
+    PRIVACY_REQUEST_FILTERED_RESULTS,
     PRIVACY_REQUEST_MANUAL_WEBHOOK_ACCESS_INPUT,
     PRIVACY_REQUEST_MANUAL_WEBHOOK_ERASURE_INPUT,
     PRIVACY_REQUEST_NOTIFICATIONS,
@@ -198,7 +203,7 @@ def get_privacy_request_or_error(
     db: Session, privacy_request_id: str, error_if_deleted: Optional[bool] = True
 ) -> PrivacyRequest:
     """Load the privacy request or throw a 404"""
-    logger.info("Finding privacy request with id '{}'", privacy_request_id)
+    logger.debug("Finding privacy request with id '{}'", privacy_request_id)
 
     privacy_request = PrivacyRequest.get(db, object_id=privacy_request_id)
 
@@ -297,7 +302,7 @@ def _send_privacy_request_receipt_message_to_user(
                 body_params=RequestReceiptBodyParams(request_types=request_types),
             ).model_dump(mode="json"),
             "service_type": service_type,
-            "to_identity": to_identity.model_dump(mode="json"),
+            "to_identity": to_identity.labeled_dict(),
             "property_id": property_id,
         },
     )
@@ -602,6 +607,14 @@ def _filter_privacy_request_queryset(
             )
         )
 
+    # Filter out test privacy requests
+    query = query.filter(
+        or_(
+            PrivacyRequest.source != PrivacyRequestSource.dataset_test,
+            PrivacyRequest.source.is_(None),
+        )
+    )
+
     # Filter out deleted requests
     if not include_deleted_requests:
         query = query.filter(PrivacyRequest.deleted_at.is_(None))
@@ -695,7 +708,7 @@ def _shared_privacy_request_search(
     POST version of the endpoint.
     """
 
-    logger.info("Finding all request statuses with pagination params {}", params)
+    logger.debug("Finding all request statuses with pagination params {}", params)
 
     query = db.query(PrivacyRequest)
     query = _filter_privacy_request_queryset(
@@ -721,7 +734,7 @@ def _shared_privacy_request_search(
         include_deleted_requests,
     )
 
-    logger.info(
+    logger.debug(
         "Sorting requests by field: {} and direction: {}", sort_field, sort_direction
     )
     query = _sort_privacy_request_queryset(query, sort_field, sort_direction)
@@ -908,7 +921,7 @@ def get_request_status_logs(
 
     get_privacy_request_or_error(db, privacy_request_id, error_if_deleted=False)
 
-    logger.info(
+    logger.debug(
         "Finding all execution logs for privacy request {} with params '{}'",
         privacy_request_id,
         params,
@@ -2592,6 +2605,11 @@ def get_access_results_urls(
     """
     Endpoint for retrieving access results URLs for a privacy request.
     """
+    if not CONFIG.security.subject_request_download_ui_enabled:
+        raise HTTPException(
+            status_code=HTTP_403_FORBIDDEN,
+            detail="Access results download is disabled.",
+        )
     privacy_request: PrivacyRequest = get_privacy_request_or_error(
         db, privacy_request_id
     )
@@ -2606,3 +2624,52 @@ def get_access_results_urls(
         return PrivacyRequestAccessResults(access_result_urls=[])
 
     return privacy_request.access_result_urls
+
+
+@router.get(
+    PRIVACY_REQUEST_FILTERED_RESULTS,
+    dependencies=[
+        Security(verify_oauth_client, scopes=[PRIVACY_REQUEST_READ_ACCESS_RESULTS])
+    ],
+    status_code=HTTP_200_OK,
+    response_model=FilteredPrivacyRequestResults,
+)
+def get_test_privacy_request_results(
+    privacy_request_id: str,
+    db: Session = Depends(deps.get_db),
+) -> Dict[str, Any]:
+    """Get filtered results for a test privacy request and update its status if complete."""
+    privacy_request = get_privacy_request_or_error(db, privacy_request_id)
+
+    if privacy_request.source != PrivacyRequestSource.dataset_test:
+        raise HTTPException(
+            status_code=HTTP_403_FORBIDDEN,
+            detail="Results can only be retrieved for test privacy requests.",
+        )
+
+    # Check completion status of all tasks
+    statuses = [task.status for task in privacy_request.access_tasks]
+    all_completed = all(status in EXITED_EXECUTION_LOG_STATUSES for status in statuses)
+
+    # Update request status if all tasks are done
+    if all_completed:
+        has_errors = ExecutionLogStatus.error in statuses
+        privacy_request.status = (
+            PrivacyRequestStatus.error if has_errors else PrivacyRequestStatus.complete
+        )
+        privacy_request.save(db=db)
+
+    # Escape datetime and ObjectId values
+    raw_data = privacy_request.get_raw_access_results()
+    escaped_json = json.dumps(raw_data, indent=2, default=storage_json_encoder)
+    results = json.loads(escaped_json)
+
+    return {
+        "privacy_request_id": privacy_request.id,
+        "status": privacy_request.status,
+        "results": (
+            results
+            if CONFIG.security.dsr_testing_tools_enabled
+            else "DSR testing tools are not enabled, results will not be shown."
+        ),
+    }

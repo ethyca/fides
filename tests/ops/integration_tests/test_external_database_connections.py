@@ -169,18 +169,18 @@ def test_bigquery_example_data(bigquery_test_engine):
     inspector = inspect(bigquery_test_engine)
     assert sorted(inspector.get_table_names(schema="fidesopstest")) == sorted(
         [
-            "fidesopstest.address",
-            "fidesopstest.customer",
-            "fidesopstest.employee",
-            "fidesopstest.login",
-            "fidesopstest.order_item",
-            "fidesopstest.orders",
-            "fidesopstest.payment_card",
-            "fidesopstest.product",
-            "fidesopstest.report",
-            "fidesopstest.service_request",
-            "fidesopstest.visit",
-            "fidesopstest.visit_partitioned",
+            "address",
+            "customer",
+            "employee",
+            "login",
+            "order_item",
+            "orders",
+            "payment_card",
+            "product",
+            "report",
+            "service_request",
+            "visit",
+            "visit_partitioned",
         ]
     )
 

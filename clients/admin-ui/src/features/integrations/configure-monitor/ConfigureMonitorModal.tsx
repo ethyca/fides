@@ -1,8 +1,9 @@
-import { UseDisclosureReturn } from "fidesui";
+import { UseDisclosureReturn, useToast } from "fidesui";
 
 import FidesSpinner from "~/features/common/FidesSpinner";
 import useQueryResultToast from "~/features/common/form/useQueryResultToast";
 import FormModal from "~/features/common/modals/FormModal";
+import { DEFAULT_TOAST_PARAMS } from "~/features/common/toast";
 import {
   useGetDatabasesByConnectionQuery,
   usePutDiscoveryMonitorMutation,
@@ -14,7 +15,11 @@ import {
   ConnectionSystemTypeMap,
   MonitorConfig,
 } from "~/types/api";
-import { isErrorResult } from "~/types/errors";
+import { isErrorResult, RTKResult } from "~/types/errors";
+
+const TIMEOUT_DELAY = 5000;
+const TIMEOUT_COPY =
+  "Saving this monitor is taking longer than expected. Fides will continue processing it in the background, and you can check back later to view the updates.";
 
 const ConfigureMonitorModal = ({
   isOpen,
@@ -44,6 +49,8 @@ const ConfigureMonitorModal = ({
 
   const databasesAvailable = !!databases && !!databases.total;
 
+  const toast = useToast();
+
   const { toastResult } = useQueryResultToast({
     defaultSuccessMsg: `Monitor ${
       isEditing ? "updated" : "created"
@@ -54,10 +61,24 @@ const ConfigureMonitorModal = ({
   });
 
   const handleSubmit = async (values: MonitorConfig) => {
-    const result = await putMonitorMutationTrigger(values);
-    toastResult(result);
-    if (!isErrorResult(result)) {
-      onClose();
+    let result: RTKResult | undefined;
+    const timeout = setTimeout(() => {
+      if (!result) {
+        toast({
+          ...DEFAULT_TOAST_PARAMS,
+          status: "info",
+          description: TIMEOUT_COPY,
+        });
+        onClose();
+      }
+    }, TIMEOUT_DELAY);
+    result = await putMonitorMutationTrigger(values);
+    if (result) {
+      clearTimeout(timeout);
+      toastResult(result);
+      if (!isErrorResult(result)) {
+        onClose();
+      }
     }
   };
 

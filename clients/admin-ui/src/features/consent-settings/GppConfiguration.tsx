@@ -61,6 +61,12 @@ const GppConfiguration = () => {
                     tooltip:
                       "When state-by-state is selected, Fides will only present consent to consumers and save their preferences if they are located in a state that is supported by the GPP. The consent options presented to consumers will vary depending on the regulations in each state.",
                   },
+                  {
+                    label: "Enable US National and State-by-State notices",
+                    value: GPPUSApproach.ALL,
+                    tooltip:
+                      "When enabled, Fides can be configured to serve the National and U.S. state notices. This mode is intended to provide consent coverage to U.S. states with new privacy laws where GPP support lags behind the effective date of state laws.",
+                  },
                 ]}
               />
             </Section>

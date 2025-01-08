@@ -781,8 +781,8 @@ class TestGetConnectionSecretSchema:
                     "allOf": [{"$ref": "#/definitions/KeyfileCreds"}],
                 },
                 "dataset": {
-                    "title": "Default dataset",
-                    "description": "The default BigQuery dataset that will be used if one isn't provided in the associated Fides datasets.",
+                    "title": "Dataset",
+                    "description": "Only provide a dataset to scope discovery monitors and privacy request automation to a specific BigQuery dataset. In most cases, this can be left blank.",
                     "type": "string",
                 },
             },
@@ -796,16 +796,16 @@ class TestGetConnectionSecretSchema:
                         "type": {"title": "Type", "type": "string"},
                         "project_id": {"title": "Project ID", "type": "string"},
                         "private_key_id": {
-                            "title": "Private Key ID",
+                            "title": "Private key ID",
                             "type": "string",
                         },
                         "private_key": {
-                            "title": "Private Key",
+                            "title": "Private key",
                             "sensitive": True,
                             "type": "string",
                         },
                         "client_email": {
-                            "title": "Client Email",
+                            "title": "Client email",
                             "type": "string",
                             "format": "email",
                         },
@@ -813,11 +813,11 @@ class TestGetConnectionSecretSchema:
                         "auth_uri": {"title": "Auth URI", "type": "string"},
                         "token_uri": {"title": "Token URI", "type": "string"},
                         "auth_provider_x509_cert_url": {
-                            "title": "Auth Provider X509 Cert URL",
+                            "title": "Auth provider X509 cert URL",
                             "type": "string",
                         },
                         "client_x509_cert_url": {
-                            "title": "Client X509 Cert URL",
+                            "title": "Client X509 cert URL",
                             "type": "string",
                         },
                     },
@@ -1477,24 +1477,22 @@ class TestGetConnectionSecretSchema:
             base_url.format(connection_type="snowflake"), headers=auth_header
         )
         assert resp.json() == {
-            "title": "SnowflakeSchema",
             "description": "Schema to validate the secrets needed to connect to Snowflake",
-            "type": "object",
             "properties": {
                 "account_identifier": {
-                    "title": "Account Name",
                     "description": "The unique identifier for your Snowflake account.",
+                    "title": "Account Name",
                     "type": "string",
                 },
                 "user_login_name": {
-                    "title": "Username",
                     "description": "The user account used to authenticate and access the database.",
+                    "title": "Username",
                     "type": "string",
                 },
                 "password": {
-                    "title": "Password",
                     "description": "The password used to authenticate and access the database. You can use a password or a private key, but not both.",
                     "sensitive": True,
+                    "title": "Password",
                     "type": "string",
                 },
                 "private_key": {
@@ -1510,33 +1508,29 @@ class TestGetConnectionSecretSchema:
                     "type": "string",
                 },
                 "warehouse_name": {
-                    "title": "Warehouse",
                     "description": "The name of the Snowflake warehouse where your queries will be executed.",
+                    "title": "Warehouse",
                     "type": "string",
                 },
                 "database_name": {
+                    "description": "Only provide a database name to scope discovery monitors and privacy request automation to a specific database. In most cases, this can be left blank.",
                     "title": "Database",
-                    "description": "The name of the Snowflake database you want to connect to.",
                     "type": "string",
                 },
                 "schema_name": {
+                    "description": "Only provide a schema to scope discovery monitors and privacy request automation to a specific schema. In most cases, this can be left blank.",
                     "title": "Schema",
-                    "description": "The name of the Snowflake schema within the selected database.",
                     "type": "string",
                 },
                 "role_name": {
-                    "title": "Role",
                     "description": "The Snowflake role to assume for the session, if different than Username.",
+                    "title": "Role",
                     "type": "string",
                 },
             },
-            "required": [
-                "account_identifier",
-                "user_login_name",
-                "warehouse_name",
-                "database_name",
-                "schema_name",
-            ],
+            "required": ["account_identifier", "user_login_name", "warehouse_name"],
+            "title": "SnowflakeSchema",
+            "type": "object",
         }
 
     def test_get_connection_secret_schema_hubspot(

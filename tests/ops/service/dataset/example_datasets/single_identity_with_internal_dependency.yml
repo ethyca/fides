@@ -1,0 +1,44 @@
+dataset:
+  - fides_key: single_identity_with_internal_dependency
+    name: Single identity with internal dependency
+    description: A dataset with a collection that relies on an identity, and another collection with an internal dependency on the first collection
+    collections:
+      - name: customer
+        fields:
+          - name: address_id
+            data_categories: [system.operations]
+          - name: created
+            data_categories: [system.operations]
+          - name: email
+            data_categories: [user.contact.email]
+            fides_meta:
+              identity: email
+              data_type: string
+          - name: id
+            data_categories: [user.unique_id]
+            fides_meta:
+              primary_key: True
+          - name: name
+            data_categories: [user.name]
+            fides_meta:
+              data_type: string
+              length: 40
+      - name: address
+        fields:
+          - name: city
+            data_categories: [user.contact.address.city]
+          - name: house
+            data_categories: [user.contact.address.street]
+          - name: id
+            data_categories: [system.operations]
+            fides_meta:
+              references:
+                - dataset: single_identity_with_internal_dependency
+                  field: customer.address_id
+                  direction: from
+          - name: state
+            data_categories: [user.contact.address.state]
+          - name: street
+            data_categories: [user.contact.address.street]
+          - name: zip
+            data_categories: [user.contact.address.postal_code]

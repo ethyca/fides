@@ -1,0 +1,85 @@
+$colors: (
+  "full-black": #000000,
+  "full-white": #ffffff,
+
+  // Neutral //
+  "neutral-50": #fafafa,
+  "neutral-75": #f5f5f5,
+  "neutral-100": #e6e6e8,
+  "neutral-200": #d1d2d4,
+  "neutral-300": #bcbec1,
+  "neutral-400": #a8aaad,
+  "neutral-500": #93969a,
+  "neutral-600": #7e8185,
+  "neutral-700": #696c71,
+  "neutral-800": #53575c,
+  "neutral-900": #2b2e35,
+
+  // Brand //
+  "corinth": #fafafa,
+  "bg-corinth": #fafafa,
+  "limestone": #f1efee,
+  "minos": #2b2e35,
+  "bg-minos": #4f525b,
+  "terracotta": #b9704b,
+  "bg-terracotta": #f1b193,
+  "olive": #999b83,
+  "bg-olive": #d4d5c8,
+  "marble": #cdd2d3,
+  "bg-marble": #e1e5e6,
+  "sandstone": #cecac2,
+  "bg-sandstone": #e3e0d9,
+  "nectar": #f0ebc1,
+  "bg-nectar": #f5f2d7,
+
+  // Functional //
+  "error": #d9534f,
+  "bg-error": #f7c2c2,
+  "warning": #e59d47,
+  "bg-warning": #fbddb5,
+  "bg-caution": #f6e3a4,
+  "success": #5a9a68,
+  "bg-success": #c3e6b2,
+  "info": #4a90e2,
+  "bg-info": #a5d6f3,
+  "alert": #7b4ea9,
+  "bg-alert": #d9b0d7,
+
+  // Type //
+  "error-text": #d32f2f,
+  "success-text": #388e3c,
+  "link": #2272ce,
+);
+
+@function getPrefixedColor($prefix, $name) {
+  @return $prefix + $name;
+}
+
+@function str-replace($string, $search, $replace: "") {
+  $index: str-index($string, $search);
+
+  @if $index {
+    @return str-slice($string, 1, $index - 1) + $replace +
+      str-replace(
+        str-slice($string, $index + str-length($search)),
+        $search,
+        $replace
+      );
+  }
+
+  @return $string;
+}
+
+/**
+ * exports a typescript object with the colors
+ * @example
+ * ```tsx
+ * import { palette } from 'fidesui/src/palette/palette.module.scss';
+ * console.log(palette.FIDESUI_MINOS);
+ * ```
+ */
+:export {
+  @each $color, $value in $colors {
+    #{to-upper-case(getPrefixedColor("FIDESUI_", str-replace(unquote($color), '-', '_')))}: $value;
+  }
+}

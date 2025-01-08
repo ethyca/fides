@@ -182,7 +182,7 @@ def get_active_default_config(*, db: Session = Depends(deps.get_db)) -> Messagin
     """
     Retrieves the active default messaging config.
     """
-    logger.info("Finding active default messaging config")
+    logger.debug("Finding active default messaging config")
     try:
         messaging_config = MessagingConfig.get_active_default(db)
     except ValueError:
@@ -421,7 +421,7 @@ def get_configs(
     """
     Retrieves configs for messaging.
     """
-    logger.info(
+    logger.debug(
         "Finding all messaging configurations with pagination params {}", params
     )
     return paginate(
@@ -441,7 +441,7 @@ def get_config_by_key(
     """
     Retrieves configs for messaging service by key.
     """
-    logger.info("Finding messaging config with key '{}'", config_key)
+    logger.debug("Finding messaging config with key '{}'", config_key)
 
     try:
         return get_messaging_config_by_key(db=db, key=config_key)
@@ -463,7 +463,7 @@ def get_default_config_by_type(
     """
     Retrieves default config for messaging service by type.
     """
-    logger.info("Finding default messaging config of type '{}'", service_type)
+    logger.debug("Finding default messaging config of type '{}'", service_type)
 
     messaging_config = MessagingConfig.get_by_type(db, service_type)
     if not messaging_config:
@@ -620,7 +620,7 @@ def get_default_messaging_template(
     """
     Retrieves default messaging template by template type.
     """
-    logger.info(
+    logger.debug(
         "Finding default messaging template of template type '{}'", template_type
     )
     try:
@@ -645,7 +645,7 @@ def get_messaging_template_by_id(
     """
     Retrieves messaging template by template tid.
     """
-    logger.info("Finding messaging template with id '{}'", template_id)
+    logger.debug("Finding messaging template with id '{}'", template_id)
 
     try:
         messaging_template = get_template_by_id(db, template_id)

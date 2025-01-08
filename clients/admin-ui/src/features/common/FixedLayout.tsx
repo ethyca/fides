@@ -32,7 +32,8 @@ const FixedLayout = ({
       <link rel="icon" href="/favicon.ico" />
     </Head>
     <Flex
-      pt={6}
+      px={10}
+      py={6}
       as="main"
       overflow="auto"
       direction="column"

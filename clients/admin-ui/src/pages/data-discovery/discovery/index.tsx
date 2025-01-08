@@ -7,13 +7,8 @@ import DiscoveryMonitorBreadcrumbs from "~/features/data-discovery-and-detection
 import DiscoveryResultTable from "~/features/data-discovery-and-detection/tables/DiscoveryResultTable";
 
 const DataDiscoveryActivityPage = () => (
-  <FixedLayout
-    title="Data discovery"
-    mainProps={{
-      padding: "0 40px 48px",
-    }}
-  >
-    <PageHeader breadcrumbs={[{ title: "Data discovery" }]}>
+  <FixedLayout title="Data discovery">
+    <PageHeader heading="Data discovery">
       <DiscoveryMonitorBreadcrumbs parentLink={DATA_DISCOVERY_ROUTE} />
     </PageHeader>
     <DiscoveryResultTable />

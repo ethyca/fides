@@ -9,6 +9,9 @@ from typing import Any, Dict
 from fides.api.models.connectionconfig import ConnectionConfig as ConnectionConfig
 from fides.api.models.connectionconfig import ConnectionType as ConnectionType
 from fides.api.service.connectors.base_connector import BaseConnector as BaseConnector
+from fides.api.service.connectors.bigquery_connector import (
+    BigQueryConnector as BigQueryConnector,
+)
 from fides.api.service.connectors.consent_email_connector import (
     GenericConsentEmailConnector,
 )
@@ -29,12 +32,30 @@ from fides.api.service.connectors.erasure_email_connector import (
 from fides.api.service.connectors.fides_connector import (
     FidesConnector as FidesConnector,
 )
+from fides.api.service.connectors.google_cloud_mysql_connector import (
+    GoogleCloudSQLMySQLConnector as GoogleCloudSQLMySQLConnector,
+)
+from fides.api.service.connectors.google_cloud_postgres_connector import (
+    GoogleCloudSQLPostgresConnector as GoogleCloudSQLPostgresConnector,
+)
 from fides.api.service.connectors.http_connector import HTTPSConnector as HTTPSConnector
 from fides.api.service.connectors.manual_webhook_connector import (
     ManualWebhookConnector as ManualWebhookConnector,
 )
+from fides.api.service.connectors.mariadb_connector import (
+    MariaDBConnector as MariaDBConnector,
+)
+from fides.api.service.connectors.microsoft_sql_server_connector import (
+    MicrosoftSQLServerConnector as MicrosoftSQLServerConnector,
+)
 from fides.api.service.connectors.mongodb_connector import (
     MongoDBConnector as MongoDBConnector,
+)
+from fides.api.service.connectors.mysql_connector import (
+    MySQLConnector as MySQLConnector,
+)
+from fides.api.service.connectors.postgres_connector import (
+    PostgreSQLConnector as PostgreSQLConnector,
 )
 from fides.api.service.connectors.rds_mysql_connector import (
     RDSMySQLConnector as RDSMySQLConnector,
@@ -42,34 +63,15 @@ from fides.api.service.connectors.rds_mysql_connector import (
 from fides.api.service.connectors.rds_postgres_connector import (
     RDSPostgresConnector as RDSPostgresConnector,
 )
+from fides.api.service.connectors.redshift_connector import (
+    RedshiftConnector as RedshiftConnector,
+)
 from fides.api.service.connectors.s3_connector import S3Connector
 from fides.api.service.connectors.saas_connector import SaaSConnector as SaaSConnector
 from fides.api.service.connectors.scylla_connector import (
     ScyllaConnector as ScyllaConnector,
 )
-from fides.api.service.connectors.sql_connector import (
-    BigQueryConnector as BigQueryConnector,
-)
-from fides.api.service.connectors.sql_connector import (
-    GoogleCloudSQLMySQLConnector as GoogleCloudSQLMySQLConnector,
-)
-from fides.api.service.connectors.sql_connector import (
-    GoogleCloudSQLPostgresConnector as GoogleCloudSQLPostgresConnector,
-)
-from fides.api.service.connectors.sql_connector import (
-    MariaDBConnector as MariaDBConnector,
-)
-from fides.api.service.connectors.sql_connector import (
-    MicrosoftSQLServerConnector as MicrosoftSQLServerConnector,
-)
-from fides.api.service.connectors.sql_connector import MySQLConnector as MySQLConnector
-from fides.api.service.connectors.sql_connector import (
-    PostgreSQLConnector as PostgreSQLConnector,
-)
-from fides.api.service.connectors.sql_connector import (
-    RedshiftConnector as RedshiftConnector,
-)
-from fides.api.service.connectors.sql_connector import (
+from fides.api.service.connectors.snowflake_connector import (
     SnowflakeConnector as SnowflakeConnector,
 )
 from fides.api.service.connectors.timescale_connector import (

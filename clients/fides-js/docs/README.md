@@ -26,6 +26,10 @@ Google Tag Manager, IAB TCF, etc.
 See [Fides](interfaces/Fides.md) for how to use the `window.Fides` JavaScript API, [FidesOptions](interfaces/FidesOptions.md) for supported options to customize it's behavior, and [FidesEvent](interfaces/FidesEvent.md) for how to use `window.addEventListener(...)` to subscribe to
 custom Fides events for real-time updates.
 
+## Enumerations
+
+- [PrivacyNoticeRegion](enumerations/PrivacyNoticeRegion.md)
+
 ## Interfaces
 
 - [FidesEvent](interfaces/FidesEvent.md)

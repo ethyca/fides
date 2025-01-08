@@ -178,6 +178,7 @@ export const getTranslationFormFields = (
       acknowledge_button_label: { included: true, required: true },
       privacy_policy_link_label: { included: true },
       privacy_policy_url: { included: true },
+      privacy_preferences_link_label: { included: true, required: true },
       modal_link_label: { included: true },
     };
   }
