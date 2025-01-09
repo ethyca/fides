@@ -87,3 +87,41 @@ class DBCache(Base):
         db.commit()
         db.refresh(db_cache_entry)
         return db_cache_entry
+
+    @classmethod
+    def delete_cache_entry(
+        cls,
+        db: Session,
+        namespace: DBCacheNamespace,
+        cache_key: str,
+    ) -> None:
+        """
+        Deletes the cache entry for the given cache_key
+        """
+        db.query(cls).filter(
+            cls.namespace == namespace.value, cls.cache_key == cache_key
+        ).delete()
+        db.commit()
+
+    @classmethod
+    def clear_cache_for_namespace(
+        cls,
+        db: Session,
+        namespace: DBCacheNamespace,
+    ) -> None:
+        """
+        Deletes all cache entries for the given namespace
+        """
+        db.query(cls).filter(cls.namespace == namespace.value).delete()
+        db.commit()
+
+    @classmethod
+    def clear_cache(
+        cls,
+        db: Session,
+    ) -> None:
+        """
+        Deletes all cache entries
+        """
+        db.query(cls).delete()
+        db.commit()
