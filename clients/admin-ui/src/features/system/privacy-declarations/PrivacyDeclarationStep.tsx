@@ -44,7 +44,7 @@ const PrivacyDeclarationStep = ({ system }: Props) => {
         of personal information are collected for this purpose and for which
         categories of data subjects. To update the available categories and
         uses, please visit{" "}
-        <Link as={NextLink} href="/taxonomy" color="complimentary.600">
+        <Link as={NextLink} href="/taxonomy" color="terracotta.900">
           Manage taxonomy
         </Link>
         .
