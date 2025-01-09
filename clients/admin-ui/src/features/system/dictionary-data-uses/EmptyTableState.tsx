@@ -34,7 +34,7 @@ const EmptyTableState = ({ title, description, handleAdd }: Props) => (
           {title}
         </Text>
 
-        <Text fontSize="sm" color="gray.600" lineHeight="5">
+        <Text fontSize="sm" color="gray.800" lineHeight="5">
           {description}
         </Text>
         <HStack mt={4}>
