@@ -136,6 +136,9 @@ export const theme: Dict = extendChakraTheme({
       800: palette.FIDESUI_INFO,
       900: palette.FIDESUI_INFO,
     },
+    link: {
+      900: palette.FIDESUI_LINK,
+    },
   },
   fonts: {
     heading: `Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"`,

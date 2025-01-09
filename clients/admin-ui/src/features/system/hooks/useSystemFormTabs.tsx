@@ -315,10 +315,7 @@ const useSystemFormTabs = ({
                 <>
                   Add an integration to start managing privacy requests and
                   consent. Visit{" "}
-                  <Link
-                    href={INTEGRATION_MANAGEMENT_ROUTE}
-                    color="terracotta.500"
-                  >
+                  <Link href={INTEGRATION_MANAGEMENT_ROUTE} color="link.900">
                     Integration Management
                   </Link>{" "}
                   to set up monitoring on databases.
