@@ -143,9 +143,14 @@ const DiscoveryItemActionsCell = ({ resource }: DiscoveryItemActionsProps) => {
             type="text"
             icon={<MoreIcon transform="rotate(90deg)" />}
             className="w-6 gap-0"
+            data-testid="actions-overflow-btn"
           />
           <MenuList>
-            <MenuItem onClick={handleReclassify} icon={<RepeatIcon />}>
+            <MenuItem
+              onClick={handleReclassify}
+              icon={<RepeatIcon />}
+              data-testid="action-Reclassify"
+            >
               Reclassify
             </MenuItem>
           </MenuList>
