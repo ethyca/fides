@@ -351,14 +351,14 @@ const PrivacyRequestForm = ({
       <ModalHeader pt={6} pb={0}>
         {action.title}
       </ModalHeader>
-      <Text fontSize="sm" color="gray.600" mb={4} ml={6}>
+      <Text fontSize="sm" color="gray.800" mb={4} ml={6}>
         {action.description}
       </Text>
       <chakra.form onSubmit={handleSubmit} data-testid="privacy-request-form">
         <ModalBody maxHeight={400} overflowY="auto">
           {action.description_subtext?.map((paragraph, index) => (
             // eslint-disable-next-line react/no-array-index-key
-            <Text fontSize="sm" color="gray.600" mb={4} key={index}>
+            <Text fontSize="sm" color="gray.800" mb={4} key={index}>
               {paragraph}
             </Text>
           ))}
