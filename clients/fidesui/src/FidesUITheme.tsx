@@ -93,7 +93,6 @@ export const theme: Dict = extendChakraTheme({
     gray: {
       50: palette.FIDESUI_NEUTRAL_50,
       75: palette.FIDESUI_NEUTRAL_75,
-
       100: palette.FIDESUI_NEUTRAL_100,
       200: palette.FIDESUI_NEUTRAL_200,
       300: palette.FIDESUI_NEUTRAL_300,
