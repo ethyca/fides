@@ -1,7 +1,6 @@
 import {
   AntButton as Button,
   CheckIcon,
-  Flex,
   HStack,
   Menu,
   MenuButton,
@@ -105,7 +104,7 @@ const DiscoveryItemActionsCell = ({ resource }: DiscoveryItemActionsProps) => {
   const showReclassifyInOverflow = showPromoteAction && showMuteAction;
 
   return (
-    <Flex onClick={(e) => e.stopPropagation()} gap={2}>
+    <HStack onClick={(e) => e.stopPropagation()} gap={2}>
       {showPromoteAction && (
         <ActionButton
           title="Confirm"
@@ -152,7 +151,7 @@ const DiscoveryItemActionsCell = ({ resource }: DiscoveryItemActionsProps) => {
           </MenuList>
         </Menu>
       )}
-    </Flex>
+    </HStack>
   );
 };
 
