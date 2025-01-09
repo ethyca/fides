@@ -66,6 +66,10 @@ const DiscoveryItemActionsCell = ({ resource }: DiscoveryItemActionsProps) => {
   const showMuteAction =
     itemHasClassificationChanges || childItemsHaveClassificationChanges;
 
+  // if promote and mute are both shown, show "Reclassify" in an overflow menu
+  // to avoid having too many buttons in the cell
+  const showReclassifyInOverflow = showPromoteAction && showMuteAction;
+
   const handlePromote = async () => {
     await promoteResourceMutation({
       staged_resource_urn: resource.urn,
@@ -98,10 +102,6 @@ const DiscoveryItemActionsCell = ({ resource }: DiscoveryItemActionsProps) => {
       `Reclassification started`,
     );
   };
-
-  // if promote and mute are both shown, show "Reclassify" in an overflow menu
-  // to avoid having too many buttons in the cell
-  const showReclassifyInOverflow = showPromoteAction && showMuteAction;
 
   return (
     <HStack onClick={(e) => e.stopPropagation()} gap={2}>
