@@ -525,7 +525,6 @@ export const DatamapReportTable = () => {
                 <Menu>
                   <MenuButton
                     as={Button}
-                    size="small"
                     icon={<ChevronDownIcon />}
                     iconPosition="end"
                     loading={groupChangeStarted}
@@ -558,7 +557,6 @@ export const DatamapReportTable = () => {
                 </Menu>
                 <Button
                   data-testid="filter-multiple-systems-btn"
-                  size="small"
                   onClick={onFilterModalOpen}
                 >
                   Filter
@@ -566,14 +564,12 @@ export const DatamapReportTable = () => {
                 <Button
                   aria-label="Export report"
                   data-testid="export-btn"
-                  size="small"
                   onClick={onExportReportOpen}
                   icon={<DownloadLightIcon ml="1.5px" />}
                 />
                 <Menu placement="bottom-end">
                   <MenuButton
                     as={Button}
-                    size="small"
                     icon={<MoreIcon className="rotate-90" />}
                     data-testid="more-menu"
                     aria-label="More options"

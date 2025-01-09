@@ -369,7 +369,6 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
                 <Button
                   onClick={onOpen}
                   data-testid="add-multiple-systems-btn"
-                  size="small"
                   disabled={!anyNewSelectedRows}
                   className="ml-4"
                 >
@@ -380,10 +379,7 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
           ) : null}
         </Flex>
         <HStack spacing={4} alignItems="center">
-          <AddVendor
-            buttonLabel="Add custom vendor"
-            buttonProps={{ size: "small" }}
-          />
+          <AddVendor buttonLabel="Add custom vendor" />
           {isTcfEnabled ? (
             // Wrap in a span so it is consistent height with the add button, whose
             // Tooltip wraps a span
