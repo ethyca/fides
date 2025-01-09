@@ -256,7 +256,6 @@ jobs:
 
     runs-on: ubuntu-latest
     timeout-minutes: 45
-    continue-on-error: true
     steps:
       - name: Download container
         uses: actions/download-artifact@v4
