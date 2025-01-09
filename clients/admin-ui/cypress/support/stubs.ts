@@ -512,6 +512,13 @@ export const stubActionCenter = () => {
     },
   }).as("getTranslationConfig");
   cy.intercept("GET", "/api/v1/plus/discovery-monitor/aggregate-results*", {
-    fixture: "detection-discovery/results/aggregate-results",
+    fixture: "detection-discovery/activity-center/aggregate-results",
   }).as("getMonitorResults");
+  cy.intercept(
+    "GET",
+    "/api/v1//plus/discovery-monitor/system-aggregate-results*",
+    {
+      fixture: "detection-discovery/activity-center/system-aggregate-results",
+    },
+  ).as("getSystemAggregateResults");
 };

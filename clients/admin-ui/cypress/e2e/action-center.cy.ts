@@ -46,7 +46,7 @@ describe("Action center", () => {
     });
   });
 
-  describe("Action center monitor results", () => {
+  describe("Action center monitor aggregate results", () => {
     const webMonitorKey = "my_web_monitor_2";
     const integrationMonitorKey = "My_New_BQ_Monitor";
     beforeEach(() => {
@@ -115,5 +115,61 @@ describe("Action center", () => {
     it.skip("Should paginate results", () => {
       // TODO: mock pagination and also test skeleton loading state
     });
+  });
+
+  describe("Action center system aggregate results", () => {
+    const webMonitorKey = "my_web_monitor_1";
+    beforeEach(() => {
+      cy.visit(`${ACTION_CENTER_ROUTE}/${webMonitorKey}`);
+    });
+    it("should display a breadcrumb", () => {
+      cy.getByTestId("page-breadcrumb").within(() => {
+        cy.get("a.ant-breadcrumb-link")
+          .should("contain", "All activity")
+          .should("have.attr", "href", ACTION_CENTER_ROUTE);
+        cy.contains("my_web_monitor_1").should("exist");
+      });
+    });
+    it("should render the aggregated system results in a table", () => {
+      cy.wait("@getSystemAggregateResults");
+      cy.getByTestId("column-system_name").should("exist");
+      cy.getByTestId("column-total_updates").should("exist");
+      cy.getByTestId("column-data_use").should("exist");
+      cy.getByTestId("column-locations").should("exist");
+      cy.getByTestId("column-domains").should("exist");
+      cy.getByTestId("column-actions").should("exist");
+      cy.getByTestId("search-bar").should("exist");
+      cy.getByTestId("pagination-btn").should("exist");
+      cy.getByTestId("row-0-col-system_name").within(() => {
+        cy.getByTestId("change-icon").should("exist"); // new result
+        cy.contains("Uncategorized assets").should("exist");
+      });
+      // data use column should be empty for uncategorized assets
+      cy.getByTestId("row-0-col-data_use").children().should("have.length", 0);
+      cy.getByTestId("row-1-col-system_name").within(() => {
+        cy.getByTestId("change-icon").should("not.exist"); // existing result
+        cy.contains("Google Tag Manager").should("exist");
+      });
+      // TODO: data use column should not be empty for other assets
+      // cy.getByTestId("row-1-col-data_use").children().should("not.have.length", 0);
+
+      // multiple locations
+      cy.getByTestId("row-2-col-locations").should("contain", "2 locations");
+      // single location
+      cy.getByTestId("row-3-col-locations").should("contain", "USA");
+
+      // multiple domains
+      cy.getByTestId("row-0-col-domains").should("contain", "29 domains");
+      // single domain
+      cy.getByTestId("row-3-col-domains").should(
+        "contain",
+        "analytics.google.com",
+      );
+    });
+    // it("should navigate to table view on row click", () => {
+    //   cy.getByTestId("row-1").click();
+    //   cy.url().should("contain", "fds.1046");
+    //   cy.getByTestId("page-breadcrumb").should("contain", "fds.1046");
+    // });
   });
 });
