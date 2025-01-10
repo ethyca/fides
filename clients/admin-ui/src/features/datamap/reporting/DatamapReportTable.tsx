@@ -60,7 +60,11 @@ import {
 import { CustomReportTemplates } from "../../common/custom-reports/CustomReportTemplates";
 import { DATAMAP_LOCAL_STORAGE_KEYS, DEFAULT_COLUMN_NAMES } from "./constants";
 import { DatamapReportWithCustomFields as DatamapReport } from "./datamap-report";
-import { useDatamapReport } from "./datamap-report-context";
+import {
+  DEFAULT_COLUMN_FILTERS,
+  DEFAULT_COLUMN_VISIBILITY,
+  useDatamapReport,
+} from "./datamap-report-context";
 import {
   getDatamapReportColumns,
   getDefaultColumn,
@@ -169,7 +173,7 @@ export const DatamapReportTable = () => {
 
   const [
     exportMinimalDatamapReport,
-    { isLoading: isExportingReport, isSuccess: isExportReportSuccess },
+    { isLoading: isExportingReport, isError: isExportReportError },
   ] = useExportMinimalDatamapReportMutation();
 
   const { data, totalRows } = useMemo(() => {
@@ -204,15 +208,17 @@ export const DatamapReportTable = () => {
 
   const columns = useMemo(
     () =>
-      getDatamapReportColumns({
-        onSelectRow: (row) => setSelectedSystemId(row.fides_key),
-        getDataUseDisplayName,
-        getDataCategoryDisplayName,
-        getDataSubjectDisplayName,
-        datamapReport,
-        customFields,
-        isRenaming: isRenamingColumns,
-      }),
+      datamapReport
+        ? getDatamapReportColumns({
+            onSelectRow: (row) => setSelectedSystemId(row.fides_key),
+            getDataUseDisplayName,
+            getDataCategoryDisplayName,
+            getDataSubjectDisplayName,
+            datamapReport,
+            customFields,
+            isRenaming: isRenamingColumns,
+          })
+        : [],
     [
       getDataUseDisplayName,
       getDataSubjectDisplayName,
@@ -222,14 +228,6 @@ export const DatamapReportTable = () => {
       isRenamingColumns,
     ],
   );
-
-  useEffect(() => {
-    if (datamapReport?.items?.length) {
-      const columnIDs = Object.keys(datamapReport.items[0]);
-      setColumnOrder(getColumnOrder(groupBy, columnIDs));
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [groupBy, datamapReport]);
 
   const {
     isOpen: isColumnSettingsOpen,
@@ -278,7 +276,7 @@ export const DatamapReportTable = () => {
         },
       },
     }).then(() => {
-      if (isExportReportSuccess) {
+      if (!isExportReportError) {
         onExportReportClose();
       }
     });
@@ -305,6 +303,20 @@ export const DatamapReportTable = () => {
       grouping: getGrouping(groupBy),
     },
   });
+
+  useEffect(() => {
+    if (groupBy && !!tableInstance && !!datamapReport) {
+      if (tableInstance.getState().columnOrder.length === 0) {
+        const tableColumnIds = tableInstance.getAllColumns().map((c) => c.id);
+        setColumnOrder(getColumnOrder(groupBy, tableColumnIds));
+      } else {
+        setColumnOrder(
+          getColumnOrder(groupBy, tableInstance.getState().columnOrder),
+        );
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [groupBy, tableInstance, datamapReport]);
 
   useEffect(() => {
     // changing the groupBy should wait until the data is loaded to update the grouping
@@ -345,12 +357,41 @@ export const DatamapReportTable = () => {
 
   const handleSavedReport = (
     savedReport: CustomReportResponse | null,
-    resetForm: (
+    resetColumnNameForm: (
       nextState?: Partial<FormikState<Record<string, string>>> | undefined,
     ) => void,
   ) => {
+    if (!savedReport && !savedCustomReportId) {
+      return;
+    }
     if (!savedReport) {
-      setSavedCustomReportId("");
+      try {
+        setSavedCustomReportId("");
+
+        /* NOTE: we can't just use tableInstance.reset() here because it will reset the table to the initial state, which is likely to include report settings that were saved in the user's local storage. Instead, we need to reset each individual setting to its default value. */
+
+        // reset column visibility (must happen before updating order)
+        setColumnVisibility(DEFAULT_COLUMN_VISIBILITY);
+        tableInstance.toggleAllColumnsVisible(true);
+        tableInstance.setColumnVisibility(DEFAULT_COLUMN_VISIBILITY);
+
+        // reset column order (must happen prior to updating groupBy)
+        setColumnOrder([]);
+        tableInstance.setColumnOrder([]);
+
+        // reset groupBy and filters (will automatically update the tableinstance)
+        setGroupBy(DATAMAP_GROUPING.SYSTEM_DATA_USE);
+        setSelectedFilters(DEFAULT_COLUMN_FILTERS);
+
+        // reset column names
+        setColumnNameMapOverrides({});
+        resetColumnNameForm({ values: {} });
+      } catch (error: any) {
+        toast({
+          status: "error",
+          description: "There was a problem resetting the report.",
+        });
+      }
       return;
     }
     try {
@@ -369,8 +410,8 @@ export const DatamapReportTable = () => {
         );
 
         if (savedGroupBy) {
+          // No need to manually update the tableInstance here; setting the groupBy will trigger the useEffect to update the grouping.
           setGroupBy(savedGroupBy);
-          tableInstance.setGrouping(getGrouping(savedGroupBy));
         }
         if (savedFilters) {
           setSelectedFilters(savedFilters);
@@ -394,7 +435,7 @@ export const DatamapReportTable = () => {
           },
         );
         setColumnNameMapOverrides(columnNameMap);
-        resetForm({ values: columnNameMap });
+        resetColumnNameForm({ values: columnNameMap });
       }
       setSavedCustomReportId(savedReport.id);
       toast({
