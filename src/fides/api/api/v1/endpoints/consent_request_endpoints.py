@@ -257,6 +257,7 @@ def create_consent_request(
     CONSENT_REQUEST_VERIFY,
     status_code=HTTP_200_OK,
     response_model=ConsentPreferences,
+    tags=[PUBLIC_INTERNET],
 )
 def consent_request_verify(
     *,
