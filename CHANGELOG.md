@@ -22,12 +22,16 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.52.0...main)
 
 ### Added
+- Added Action Center MVP behind new feature flag [#5622](https://github.com/ethyca/fides/pull/5622)
 - Added cache-clearing methods to the `DBCache` model to allow deleting cache entries [#5629](https://github.com/ethyca/fides/pull/5629)
 
 ### Changed
 - Updated brand link url [#5656](https://github.com/ethyca/fides/pull/5656)
 
-
+### Fixed
+- Fixed issue where the custom report "reset" button was not working as expected [#5649](https://github.com/ethyca/fides/pull/5649)
+- Fixed column ordering issue in the Data Map report [#5649](https://github.com/ethyca/fides/pull/5649)
+- Fixed issue where the Data Map report filter dialog was missing an Accordion item label [#5649](https://github.com/ethyca/fides/pull/5649)
 
 ## [2.52.0](https://github.com/ethyca/fides/compare/2.51.2...2.52.0)
 
