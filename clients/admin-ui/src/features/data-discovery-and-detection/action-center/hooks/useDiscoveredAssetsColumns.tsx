@@ -8,6 +8,7 @@ import { StagedResourceAPIResponse } from "~/types/api";
 
 import { DiscoveredAssetActionsCell } from "../tables/cells/DiscoveredAssetActionsCell";
 import { DiscoveryStatusBadgeCell } from "../tables/cells/DiscoveryStatusBadgeCell";
+import { SystemCell } from "../tables/cells/SystemCell";
 
 export const useDiscoveredAssetsColumns = ({
   systemName,
@@ -46,10 +47,20 @@ export const useDiscoveredAssetsColumns = ({
       cell: (props) => <DefaultCell value={props.getValue()} />,
       header: "Type",
     }),
-    columnHelper.accessor((row) => row.system, {
+    columnHelper.accessor((row) => row.system_id, {
       id: "system",
-      cell: () => <DefaultCell value={systemName} />,
+      cell: (props) =>
+        !!props.row.original.monitor_config_id && (
+          <SystemCell
+            systemName={systemName}
+            monitorConfigId={props.row.original.monitor_config_id}
+            urn={props.row.original.urn}
+          />
+        ),
       header: "System",
+      meta: {
+        noPadding: true,
+      },
     }),
     columnHelper.display({
       id: "data_use",

@@ -25,11 +25,18 @@ export const DiscoveryStatusBadgeCell = ({
 }: DiscoveryStatusBadgeCellProps) => {
   return (
     <Tooltip title={dateDiscovered ? formatDate(dateDiscovered) : undefined}>
-      {withConsent ? (
-        <ResultStatusBadge colorScheme="green">With consent</ResultStatusBadge>
-      ) : (
-        <ResultStatusBadge colorScheme="red">Without consent</ResultStatusBadge>
-      )}
+      {/* tooltip throws errors if immediate child is not available or changes after render so this div wrapper helps keep it stable */}
+      <div>
+        {withConsent ? (
+          <ResultStatusBadge colorScheme="green">
+            With consent
+          </ResultStatusBadge>
+        ) : (
+          <ResultStatusBadge colorScheme="red">
+            Without consent
+          </ResultStatusBadge>
+        )}
+      </div>
     </Tooltip>
   );
 };

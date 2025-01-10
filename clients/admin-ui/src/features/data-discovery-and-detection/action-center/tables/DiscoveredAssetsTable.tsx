@@ -141,6 +141,10 @@ export const DiscoveredAssetsTable = ({
     );
   };
 
+  if (!monitorId || !systemId) {
+    return null;
+  }
+
   if (isLoading) {
     return <TableSkeletonLoader rowHeight={36} numRows={36} />;
   }

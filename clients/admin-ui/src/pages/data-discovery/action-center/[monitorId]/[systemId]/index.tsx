@@ -13,15 +13,19 @@ const MonitorResultAssets: NextPage = () => {
 
   return (
     <FixedLayout title="Action center - Discovered assets">
-      <PageHeader
-        heading="Action center"
-        breadcrumbItems={[
-          { title: "All activity", href: ACTION_CENTER_ROUTE },
-          { title: monitorId, href: `${ACTION_CENTER_ROUTE}/${monitorId}` },
-          { title: systemId },
-        ]}
-      />
-      <DiscoveredAssetsTable monitorId={monitorId} systemId={systemId} />
+      {monitorId && systemId && (
+        <>
+          <PageHeader
+            heading="Action center"
+            breadcrumbItems={[
+              { title: "All activity", href: ACTION_CENTER_ROUTE },
+              { title: monitorId, href: `${ACTION_CENTER_ROUTE}/${monitorId}` },
+              { title: systemId },
+            ]}
+          />
+          <DiscoveredAssetsTable monitorId={monitorId} systemId={systemId} />
+        </>
+      )}
     </FixedLayout>
   );
 };

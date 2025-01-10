@@ -3,8 +3,8 @@ import _ from "lodash";
 
 export const COLUMN_VERSION_DELIMITER = "::";
 
-export const getTableTHandTDStyles = (cellId: string) =>
-  cellId === "select"
+export const getTableTHandTDStyles = (noPadding?: boolean) =>
+  noPadding
     ? { padding: "0px" }
     : {
         paddingLeft: theme.space[3],
