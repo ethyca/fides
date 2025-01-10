@@ -1,27 +1,14 @@
-import time
 from datetime import datetime, timezone
-from typing import Any, Dict, List, Set
 from unittest import mock
-from unittest.mock import ANY, Mock, call
+from unittest.mock import ANY, Mock
 from uuid import uuid4
 
-import pydash
 import pytest
 
 from fides.api.models.audit_log import AuditLog, AuditLogAction
 from fides.api.models.privacy_request import (
-    ActionType,
-    CheckpointActionRequired,
     ExecutionLog,
-    ExecutionLogStatus,
-    PolicyPreWebhook,
-    PrivacyRequest,
-    PrivacyRequestStatus,
 )
-from fides.api.schemas.masking.masking_configuration import MaskingConfiguration
-from fides.api.schemas.masking.masking_secrets import MaskingSecretCache
-from fides.api.schemas.policy import Rule
-from fides.api.service.masking.strategy.masking_strategy import MaskingStrategy
 from tests.ops.service.privacy_request.test_request_runner_service import (
     get_privacy_request_results,
 )
