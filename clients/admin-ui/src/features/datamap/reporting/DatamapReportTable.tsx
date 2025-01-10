@@ -173,7 +173,7 @@ export const DatamapReportTable = () => {
 
   const [
     exportMinimalDatamapReport,
-    { isLoading: isExportingReport, isSuccess: isExportReportSuccess },
+    { isLoading: isExportingReport, isError: isExportReportError },
   ] = useExportMinimalDatamapReportMutation();
 
   const { data, totalRows } = useMemo(() => {
@@ -208,15 +208,17 @@ export const DatamapReportTable = () => {
 
   const columns = useMemo(
     () =>
-      getDatamapReportColumns({
-        onSelectRow: (row) => setSelectedSystemId(row.fides_key),
-        getDataUseDisplayName,
-        getDataCategoryDisplayName,
-        getDataSubjectDisplayName,
-        datamapReport,
-        customFields,
-        isRenaming: isRenamingColumns,
-      }),
+      datamapReport
+        ? getDatamapReportColumns({
+            onSelectRow: (row) => setSelectedSystemId(row.fides_key),
+            getDataUseDisplayName,
+            getDataCategoryDisplayName,
+            getDataSubjectDisplayName,
+            datamapReport,
+            customFields,
+            isRenaming: isRenamingColumns,
+          })
+        : [],
     [
       getDataUseDisplayName,
       getDataSubjectDisplayName,
@@ -274,7 +276,7 @@ export const DatamapReportTable = () => {
         },
       },
     }).then(() => {
-      if (isExportReportSuccess) {
+      if (!isExportReportError) {
         onExportReportClose();
       }
     });
@@ -303,7 +305,7 @@ export const DatamapReportTable = () => {
   });
 
   useEffect(() => {
-    if (groupBy && !!tableInstance) {
+    if (groupBy && !!tableInstance && !!datamapReport) {
       if (tableInstance.getState().columnOrder.length === 0) {
         const tableColumnIds = tableInstance.getAllColumns().map((c) => c.id);
         setColumnOrder(getColumnOrder(groupBy, tableColumnIds));
@@ -314,7 +316,7 @@ export const DatamapReportTable = () => {
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [groupBy, tableInstance]);
+  }, [groupBy, tableInstance, datamapReport]);
 
   useEffect(() => {
     // changing the groupBy should wait until the data is loaded to update the grouping

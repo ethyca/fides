@@ -15,11 +15,11 @@ import {
   PaginationBar,
   useServerSidePagination,
 } from "~/features/common/table/v2";
-import { useGetMonitorSummaryQuery } from "~/features/data-discovery-and-detection/action-center/actionCenter.slice";
-import { DisabledMonitorPage } from "~/features/data-discovery-and-detection/action-center/DisabledMonitorPage";
-import { EmptyMonitorResult } from "~/features/data-discovery-and-detection/action-center/EmptyMonitorResult";
+import { useGetAggregateMonitorResultsQuery } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
+import { DisabledMonitorsPage } from "~/features/data-discovery-and-detection/action-center/DisabledMonitorsPage";
+import { EmptyMonitorsResult } from "~/features/data-discovery-and-detection/action-center/EmptyMonitorsResult";
 import { MonitorResult } from "~/features/data-discovery-and-detection/action-center/MonitorResult";
-import { MonitorSummary } from "~/features/data-discovery-and-detection/action-center/types";
+import { MonitorAggregatedResults } from "~/features/data-discovery-and-detection/action-center/types";
 import { SearchInput } from "~/features/data-discovery-and-detection/SearchInput";
 import { useGetConfigurationSettingsQuery } from "~/features/privacy-requests";
 
@@ -51,14 +51,15 @@ const ActionCenterPage = () => {
     resetPageIndexToDefault();
   }, [searchQuery, resetPageIndexToDefault]);
 
-  const { data, isError, isLoading, isFetching } = useGetMonitorSummaryQuery(
-    {
-      pageIndex,
-      pageSize,
-      search: searchQuery,
-    },
-    { skip: isConfigLoading || !webMonitorEnabled },
-  );
+  const { data, isError, isLoading, isFetching } =
+    useGetAggregateMonitorResultsQuery(
+      {
+        page: pageIndex,
+        size: pageSize,
+        search: searchQuery,
+      },
+      { skip: isConfigLoading || !webMonitorEnabled },
+    );
 
   useEffect(() => {
     if (isError && !!toast && webMonitorEnabled) {
@@ -123,7 +124,7 @@ const ActionCenterPage = () => {
   );
 
   if (!webMonitorEnabled) {
-    return <DisabledMonitorPage isConfigLoading={isConfigLoading} />;
+    return <DisabledMonitorsPage isConfigLoading={isConfigLoading} />;
   }
 
   return (
@@ -141,16 +142,20 @@ const ActionCenterPage = () => {
         loading={isLoading}
         dataSource={results || loadingResults}
         locale={{
-          emptyText: <EmptyMonitorResult />,
+          emptyText: <EmptyMonitorsResult />,
         }}
-        renderItem={(summary: MonitorSummary) => (
-          <MonitorResult
-            showSkeleton={isFetching}
-            key={summary.key}
-            monitorSummary={summary}
-            actions={getWebsiteMonitorActions(summary.key)} // TODO: when monitor type becomes available, use it to determine actions. Defaulting to website monitor actions for now.
-          />
-        )}
+        renderItem={(summary: MonitorAggregatedResults) => {
+          return (
+            !!summary && (
+              <MonitorResult
+                showSkeleton={isFetching}
+                key={summary.key}
+                monitorSummary={summary}
+                actions={getWebsiteMonitorActions(summary.key)} // TODO: when monitor type becomes available, use it to determine actions. Defaulting to website monitor actions for now.
+              />
+            )
+          );
+        }}
       />
 
       {!!results && !!data?.total && data.total > pageSize && (
