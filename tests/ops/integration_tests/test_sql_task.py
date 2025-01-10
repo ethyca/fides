@@ -1085,18 +1085,17 @@ class TestRetryIntegration:
             execution_logs = db.query(ExecutionLog).filter_by(
                 privacy_request_id=privacy_request.id, action_type=ActionType.erasure
             )
-            assert 40 == execution_logs.count()
+            assert 44 == execution_logs.count()
 
-            # These nodes were able to complete because they didn't have a PK - nothing to erase
             visit_logs = execution_logs.filter_by(collection_name="visit")
-            assert {"in_processing", "complete"} == {
+            assert ["in_processing", "retrying", "retrying", "error"] == [
                 el.status.value for el in visit_logs
-            }
+            ]
 
             order_item_logs = execution_logs.filter_by(collection_name="order_item")
-            assert {"in_processing", "complete"} == {
+            assert ["in_processing", "retrying", "retrying", "error"] == [
                 el.status.value for el in order_item_logs
-            }
+            ]
             # Address log mask data couldn't run, attempted to retry twice per configuration
             address_logs = execution_logs.filter_by(collection_name="address").order_by(
                 ExecutionLog.created_at
@@ -1105,20 +1104,19 @@ class TestRetryIntegration:
                 el.status.value for el in address_logs
             ]
 
-            # Downstream request tasks were marked as error. Some tasks completed because there is no PK
-            # on their collection and we can't erase
-            assert {rt.status.value for rt in privacy_request.erasure_tasks} == {
-                "complete",
-                "error",
-                "error",
-                "error",
+            # Downstream request tasks (other than __ROOT__) were marked as error.
+            assert [rt.status.value for rt in privacy_request.erasure_tasks] == [
                 "complete",
                 "error",
                 "error",
                 "error",
                 "error",
                 "error",
-                "complete",
                 "error",
                 "error",
-            }
+                "error",
+                "error",
+                "error",
+                "error",
+                "error",
+            ]
