@@ -22,6 +22,7 @@ from fides.api.api.v1.api import api_router
 from fides.api.api.v1.endpoints.admin import ADMIN_ROUTER
 from fides.api.api.v1.endpoints.generic_overrides import GENERIC_OVERRIDES_ROUTER
 from fides.api.api.v1.endpoints.health import HEALTH_ROUTER
+from fides.common.api.v1.tag_registry import tags_metadata
 from fides.api.api.v1.exception_handlers import ExceptionHandlers
 from fides.api.common_exceptions import FunctionalityNotConfigured, RedisConnectionError
 from fides.api.db.database import configure_db
@@ -75,7 +76,7 @@ def create_fides_app(
         "Logger configuration options in use"
     )
 
-    fastapi_app = FastAPI(title="fides", version=app_version, lifespan=lifespan, separate_input_output_schemas=False)  # type: ignore
+    fastapi_app = FastAPI(title="fides", version=app_version, lifespan=lifespan, separate_input_output_schemas=False, openapi_tags=tags_metadata)  # type: ignore
     fastapi_app.state.limiter = fides_limiter
     # Starlette bug causing this to fail mypy
     fastapi_app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)  # type: ignore
