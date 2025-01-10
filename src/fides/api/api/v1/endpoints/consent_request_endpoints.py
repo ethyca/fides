@@ -71,6 +71,7 @@ from fides.common.api.v1.urn_registry import (
     CONSENT_REQUEST_VERIFY,
     V1_URL_PREFIX,
 )
+from fides.common.api.v1.tag_registry import PUBLIC_INTERNET
 from fides.config import CONFIG
 from fides.config.config_proxy import ConfigProxy
 
@@ -178,6 +179,7 @@ def report_consent_requests(
     CONSENT_REQUEST,
     status_code=HTTP_200_OK,
     response_model=ConsentRequestResponse,
+    tags=[PUBLIC_INTERNET],
 )
 def create_consent_request(
     *,
@@ -309,6 +311,7 @@ def consent_request_verify(
             "only supported with disable_consent_identity_verification set to true"
         },
     },
+    tags=[PUBLIC_INTERNET],
 )
 def get_consent_preferences_no_id(
     *,
@@ -451,6 +454,7 @@ def queue_privacy_request_to_propagate_consent_old_workflow(
     CONSENT_REQUEST_PREFERENCES_WITH_ID,
     status_code=HTTP_200_OK,
     response_model=ConsentPreferences,
+    tags=[PUBLIC_INTERNET],
 )
 def set_consent_preferences(
     *,
