@@ -134,6 +134,7 @@ from fides.common.api.scope_registry import (
     PRIVACY_REQUEST_UPLOAD_DATA,
     PRIVACY_REQUEST_VIEW_DATA,
 )
+from fides.common.api.v1.tag_registry import PUBLIC_INTERNET
 from fides.common.api.v1.urn_registry import (
     PRIVACY_REQUEST_ACCESS_RESULTS,
     PRIVACY_REQUEST_APPROVE,
@@ -163,7 +164,6 @@ from fides.common.api.v1.urn_registry import (
     REQUEST_TASKS,
     V1_URL_PREFIX,
 )
-from fides.common.api.v1.tag_registry import PUBLIC_INTERNET
 from fides.config import CONFIG
 from fides.config.config_proxy import ConfigProxy
 from fides.service.dataset.dataset_config_service import (

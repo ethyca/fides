@@ -22,7 +22,6 @@ from fides.api.api.v1.api import api_router
 from fides.api.api.v1.endpoints.admin import ADMIN_ROUTER
 from fides.api.api.v1.endpoints.generic_overrides import GENERIC_OVERRIDES_ROUTER
 from fides.api.api.v1.endpoints.health import HEALTH_ROUTER
-from fides.common.api.v1.tag_registry import tags_metadata
 from fides.api.api.v1.exception_handlers import ExceptionHandlers
 from fides.api.common_exceptions import RedisConnectionError, RedisNotConfigured
 from fides.api.db.database import configure_db
@@ -47,6 +46,7 @@ from fides.api.util.consent_util import create_default_tcf_purpose_overrides_on_
 from fides.api.util.endpoint_utils import fides_limiter
 from fides.api.util.errors import FidesError
 from fides.api.util.logger import setup as setup_logging
+from fides.common.api.v1.tag_registry import tags_metadata
 from fides.config import CONFIG
 from fides.config.config_proxy import ConfigProxy
 

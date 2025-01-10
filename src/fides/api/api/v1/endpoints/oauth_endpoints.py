@@ -46,6 +46,7 @@ from fides.common.api.scope_registry import (
     SCOPE_REGISTRY,
     ScopeRegistryEnum,
 )
+from fides.common.api.v1.tag_registry import PUBLIC_INTERNET
 from fides.common.api.v1.urn_registry import (
     CLIENT,
     CLIENT_BY_ID,
@@ -56,7 +57,6 @@ from fides.common.api.v1.urn_registry import (
     TOKEN,
     V1_URL_PREFIX,
 )
-from fides.common.api.v1.tag_registry import PUBLIC_INTERNET
 from fides.config import CONFIG
 
 router = APIRouter(tags=["OAuth"], prefix=V1_URL_PREFIX)

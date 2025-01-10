@@ -58,6 +58,7 @@ from fides.api.util.consent_util import (
 from fides.api.util.endpoint_utils import validate_start_and_end_filters
 from fides.api.util.logger import Pii
 from fides.common.api.scope_registry import CONSENT_READ
+from fides.common.api.v1.tag_registry import PUBLIC_INTERNET
 from fides.common.api.v1.urn_registry import (
     CONSENT_REQUEST,
     CONSENT_REQUEST_PREFERENCES,
@@ -65,7 +66,6 @@ from fides.common.api.v1.urn_registry import (
     CONSENT_REQUEST_VERIFY,
     V1_URL_PREFIX,
 )
-from fides.common.api.v1.tag_registry import PUBLIC_INTERNET
 from fides.config import CONFIG
 from fides.config.config_proxy import ConfigProxy
 from fides.service.messaging.messaging_service import MessagingService
