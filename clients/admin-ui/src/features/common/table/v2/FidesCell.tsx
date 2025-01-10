@@ -78,7 +78,9 @@ export const FidesCell = <T,>({
           borderTopWidth: "2x",
           borderTopColor: "red",
         },
-        ...getTableTHandTDStyles(cell.column.id),
+        ...getTableTHandTDStyles(
+          cell.column.id === "select" || cell.column.columnDef.meta?.noPadding,
+        ),
         // Fancy CSS memoization magic https://tanstack.com/table/v8/docs/framework/react/examples/column-resizing-performant
         maxWidth: `calc(var(--col-${cell.column.id}-size) * 1px)`,
         minWidth: `calc(var(--col-${cell.column.id}-size) * 1px)`,

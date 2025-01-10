@@ -7,6 +7,7 @@ import {
 import { StagedResourceAPIResponse } from "~/types/api";
 
 import { DiscoveredAssetActionsCell } from "../tables/cells/DiscoveredAssetActionsCell";
+import { SystemCell } from "../tables/cells/SystemCell";
 
 export const useDiscoveredAssetsColumns = () => {
   const columnHelper = createColumnHelper<StagedResourceAPIResponse>();
@@ -43,9 +44,17 @@ export const useDiscoveredAssetsColumns = () => {
     }),
     columnHelper.accessor((row) => row.system, {
       id: "system",
-      cell: (props) => <DefaultCell value={props.getValue()} />,
+      cell: (props) =>
+        !!props.row.original.monitor_config_id && (
+          <SystemCell
+            systemName={props.getValue()}
+            monitorConfigId={props.row.original.monitor_config_id}
+            urn={props.row.original.urn}
+          />
+        ),
       header: "System",
       meta: {
+        noPadding: true,
         width: "auto",
       },
     }),
