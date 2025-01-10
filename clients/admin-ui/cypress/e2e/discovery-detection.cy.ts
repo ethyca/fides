@@ -328,7 +328,7 @@ describe("discovery and detection", () => {
           "row-my_bigquery_monitor.prj-bigquery-418515.test_dataset_1",
         ).within(() => {
           cy.getByTestId("actions-overflow-btn").click();
-          cy.getByTestId("action-Reclassify").click({ force: true });
+          cy.getByTestId("action-reclassify").click({ force: true });
           cy.wait("@confirmResource");
         });
       });

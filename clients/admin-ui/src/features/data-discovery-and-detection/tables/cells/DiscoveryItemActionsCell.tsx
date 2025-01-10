@@ -149,7 +149,7 @@ const DiscoveryItemActionsCell = ({ resource }: DiscoveryItemActionsProps) => {
             <MenuItem
               onClick={handleReclassify}
               icon={<RepeatIcon />}
-              data-testid="action-Reclassify"
+              data-testid="action-reclassify"
             >
               Reclassify
             </MenuItem>
