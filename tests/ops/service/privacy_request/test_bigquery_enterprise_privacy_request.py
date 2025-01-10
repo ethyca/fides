@@ -6,9 +6,7 @@ from uuid import uuid4
 import pytest
 
 from fides.api.models.audit_log import AuditLog, AuditLogAction
-from fides.api.models.privacy_request import (
-    ExecutionLog,
-)
+from fides.api.models.privacy_request import ExecutionLog
 from tests.ops.service.privacy_request.test_request_runner_service import (
     get_privacy_request_results,
 )
