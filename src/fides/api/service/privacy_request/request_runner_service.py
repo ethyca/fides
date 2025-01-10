@@ -271,23 +271,6 @@ def upload_access_results(  # pylint: disable=R0912
     return download_urls
 
 
-@log_context(capture_args={"privacy_request_id": LoggerContextKeys.privacy_request_id})
-def queue_privacy_request(
-    privacy_request_id: str,
-    from_webhook_id: Optional[str] = None,
-    from_step: Optional[str] = None,
-) -> str:
-    logger.info("Queueing privacy request from step {}", from_step)
-    task = run_privacy_request.delay(
-        privacy_request_id=privacy_request_id,
-        from_webhook_id=from_webhook_id,
-        from_step=from_step,
-    )
-    cache_task_tracking_key(privacy_request_id, task.task_id)
-
-    return task.task_id
-
-
 @celery_app.task(base=DatabaseTask, bind=True)
 @log_context(capture_args={"privacy_request_id": LoggerContextKeys.privacy_request_id})
 def run_privacy_request(
@@ -672,13 +655,6 @@ def mark_paused_privacy_request_as_expired(privacy_request_id: str) -> None:
         )
         privacy_request.error_processing(db=db)
     db.close()
-
-
-def generate_id_verification_code() -> str:
-    """
-    Generate one-time identity verification code
-    """
-    return str(secrets.choice(range(100000, 999999)))
 
 
 def _retrieve_child_results(  # pylint: disable=R0911

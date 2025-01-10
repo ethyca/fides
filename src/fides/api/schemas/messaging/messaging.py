@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from enum import Enum
-from typing import Any, Dict, List, Optional, Tuple, Type, Union
+from typing import Any, Dict, List, Optional, Tuple, Type, Union, Set
 
 from fideslang.default_taxonomy import DEFAULT_TAXONOMY
 from fideslang.validation import FidesKey
@@ -101,7 +101,7 @@ class SubjectIdentityVerificationBodyParams(BaseModel):
 class RequestReceiptBodyParams(BaseModel):
     """Body params required for privacy request receipt template"""
 
-    request_types: List[SafeStr]
+    request_types: Set[SafeStr]
 
 
 class AccessRequestCompleteBodyParams(BaseModel):

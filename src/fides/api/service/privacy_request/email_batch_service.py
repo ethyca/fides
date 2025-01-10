@@ -1,5 +1,9 @@
 from enum import Enum
 
+from fides.api.service.privacy_request.request_runner_service import (
+    get_consent_email_connection_configs,
+    get_erasure_email_connection_configs,
+)
 from loguru import logger
 from sqlalchemy.orm import Query, Session
 
@@ -8,9 +12,7 @@ from fides.api.models.policy import CurrentStep, Policy, Rule
 from fides.api.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
 from fides.api.schemas.policy import ActionType
 from fides.api.service.connectors import get_connector
-from fides.api.service.privacy_request.request_runner_service import (
-    get_consent_email_connection_configs,
-    get_erasure_email_connection_configs,
+from fides.services.privacy_request.privacy_request_service import (
     queue_privacy_request,
 )
 from fides.api.tasks import DatabaseTask, celery_app

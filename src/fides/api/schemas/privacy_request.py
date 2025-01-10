@@ -75,6 +75,7 @@ class ConsentReport(Consent):
 class PrivacyRequestCreate(FidesSchema):
     """Data required to create a PrivacyRequest"""
 
+    id: Optional[str] = None
     external_id: Optional[str] = None
     started_processing_at: Optional[datetime] = None
     finished_processing_at: Optional[datetime] = None

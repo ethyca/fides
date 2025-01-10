@@ -2,6 +2,9 @@ from contextlib import contextmanager
 from typing import Generator
 
 from fastapi import Depends
+
+from fides.services.messaging.messaging_service import MessagingService
+from fides.services.privacy_request.privacy_request_service import PrivacyRequestService
 from sqlalchemy.orm import Session
 
 from fides.api.common_exceptions import FunctionalityNotConfigured
@@ -66,3 +69,19 @@ def get_cache() -> Generator:
             "Application redis cache required, but it is currently disabled! Please update your application configuration to enable integration with a redis cache."
         )
     yield get_redis_connection()
+
+
+def get_messaging_service(
+    db: Session = Depends(get_db),
+    config: FidesConfig = Depends(get_config),
+    config_proxy: ConfigProxy = Depends(get_config_proxy),
+) -> MessagingService:
+    return MessagingService(db, config, config_proxy)
+
+
+def get_privacy_request_service(
+    db: Session = Depends(get_db),
+    config_proxy: ConfigProxy = Depends(get_config_proxy),
+    messaging_service: MessagingService = Depends(get_messaging_service),
+) -> PrivacyRequestService:
+    return PrivacyRequestService(db, config_proxy, messaging_service)

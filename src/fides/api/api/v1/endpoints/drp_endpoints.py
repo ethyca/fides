@@ -1,5 +1,9 @@
 from typing import Any, Dict, List, Optional
 
+from fides.services.messaging.messaging_service import (
+    check_and_dispatch_error_notifications,
+)
+from fides.services.privacy_request.privacy_request_service import queue_privacy_request
 import jwt
 from fastapi import Depends, HTTPException, Security
 from loguru import logger
@@ -32,12 +36,6 @@ from fides.api.schemas.policy import DrpAction
 from fides.api.schemas.privacy_request import PrivacyRequestDRPStatusResponse
 from fides.api.schemas.redis_cache import Identity
 from fides.api.service.drp.drp_fidesops_mapper import DrpFidesopsMapper
-from fides.api.service.messaging.message_dispatch_service import (
-    check_and_dispatch_error_notifications,
-)
-from fides.api.service.privacy_request.request_runner_service import (
-    queue_privacy_request,
-)
 from fides.api.service.privacy_request.request_service import (
     build_required_privacy_request_kwargs,
     cache_data,

@@ -33,13 +33,7 @@ const RequestDetails = ({ subjectRequest }: RequestDetailsProps) => {
 
   return (
     <Flex direction="column" gap={4}>
-      <Heading
-        color="gray.900"
-        fontSize="lg"
-        fontWeight="semibold"
-        mt={4}
-        mb={4}
-      >
+      <Heading color="gray.900" fontSize="lg" fontWeight="semibold">
         Request details
       </Heading>
       <Divider />

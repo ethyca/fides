@@ -2,6 +2,7 @@ from typing import Annotated, List, Optional
 
 from fastapi import Depends, HTTPException
 from fastapi.encoders import jsonable_encoder
+from fides.services.privacy_request.privacy_request_service import queue_privacy_request
 from fideslang.validation import FidesKey
 from loguru import logger
 from pydantic import Field, ValidationError
@@ -56,9 +57,6 @@ from fides.api.service.connectors import get_connector
 from fides.api.service.connectors.saas.connector_registry_service import (
     ConnectorRegistry,
     create_connection_config_from_template_no_save,
-)
-from fides.api.service.privacy_request.request_runner_service import (
-    queue_privacy_request,
 )
 from fides.api.util.logger import Pii
 from fides.common.api.v1.urn_registry import CONNECTION_TYPES, SAAS_CONFIG

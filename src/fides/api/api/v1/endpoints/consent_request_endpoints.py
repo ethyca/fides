@@ -23,9 +23,6 @@ from starlette.status import (
 )
 
 from fides.api.api.deps import get_config_proxy, get_db
-from fides.api.api.v1.endpoints.privacy_request_endpoints import (
-    create_privacy_request_func,
-)
 from fides.api.common_exceptions import (
     FunctionalityNotConfigured,
     IdentityVerificationException,
@@ -55,7 +52,6 @@ from fides.api.schemas.privacy_request import (
     VerificationCode,
 )
 from fides.api.schemas.redis_cache import Identity
-from fides.api.service._verification import send_verification_code_to_user
 from fides.api.service.messaging.message_dispatch_service import message_send_enabled
 from fides.api.util.api_router import APIRouter
 from fides.api.util.consent_util import (
@@ -73,6 +69,8 @@ from fides.common.api.v1.urn_registry import (
 )
 from fides.config import CONFIG
 from fides.config.config_proxy import ConfigProxy
+from fides.services.messaging.messaging_service import send_verification_code_to_user
+from fides.services.privacy_request.privacy_request_service import PrivacyRequestService
 
 router = APIRouter(tags=["Consent"], prefix=V1_URL_PREFIX)
 
@@ -246,7 +244,6 @@ def create_consent_request(
             )
 
     return ConsentRequestResponse(
-        identity=identity,
         consent_request_id=consent_request.id,
     )
 
@@ -407,8 +404,8 @@ def queue_privacy_request_to_propagate_consent_old_workflow(
     ]
 
     # Restrict consent preferences to just those that are executable
-    executable_consent_preferences: List[Dict] = [
-        pref.model_dump(mode="json")
+    executable_consent_preferences: List[Consent] = [
+        pref
         for pref in consent_preferences.consent or []
         if pref.data_use in executable_data_uses
     ]
@@ -422,20 +419,21 @@ def queue_privacy_request_to_propagate_consent_old_workflow(
         return None
 
     logger.info("Executable consent options: {}", executable_data_uses)
-    privacy_request_results: BulkPostPrivacyRequests = create_privacy_request_func(
-        db=db,
-        config_proxy=ConfigProxy(db),
-        data=[
-            PrivacyRequestCreate(
-                identity=identity,
-                policy_key=policy,
-                consent_preferences=executable_consent_preferences,
-                consent_request_id=consent_request.id,
-                custom_privacy_request_fields=consent_request.get_persisted_custom_privacy_request_fields(),
-                source=consent_request.source,
-            )
-        ],
-        authenticated=True,
+    privacy_request_service = PrivacyRequestService(db, ConfigProxy(db))
+    privacy_request_results: BulkPostPrivacyRequests = (
+        privacy_request_service.create_bulk_privacy_requests(
+            [
+                PrivacyRequestCreate(
+                    identity=identity,
+                    policy_key=policy,
+                    consent_preferences=executable_consent_preferences,
+                    consent_request_id=consent_request.id,
+                    custom_privacy_request_fields=consent_request.get_persisted_custom_privacy_request_fields(),
+                    source=consent_request.source,
+                )
+            ],
+            authenticated=True,
+        )
     )
 
     if privacy_request_results.failed or not privacy_request_results.succeeded:
