@@ -25,6 +25,9 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Added Action Center MVP behind new feature flag [#5622](https://github.com/ethyca/fides/pull/5622)
 - Added cache-clearing methods to the `DBCache` model to allow deleting cache entries [#5629](https://github.com/ethyca/fides/pull/5629)
 
+### Changed
+- Removed primary key requirements for BigQuery and Postgres erasures [#5591](https://github.com/ethyca/fides/pull/5591)
+
 ### Fixed
 - Fixed issue where the custom report "reset" button was not working as expected [#5649](https://github.com/ethyca/fides/pull/5649)
 - Fixed column ordering issue in the Data Map report [#5649](https://github.com/ethyca/fides/pull/5649)
