@@ -2,7 +2,6 @@ from typing import Annotated, List, Optional
 
 from fastapi import Depends, HTTPException
 from fastapi.encoders import jsonable_encoder
-from fides.services.privacy_request.privacy_request_service import queue_privacy_request
 from fideslang.validation import FidesKey
 from loguru import logger
 from pydantic import Field, ValidationError
@@ -60,6 +59,7 @@ from fides.api.service.connectors.saas.connector_registry_service import (
 )
 from fides.api.util.logger import Pii
 from fides.common.api.v1.urn_registry import CONNECTION_TYPES, SAAS_CONFIG
+from fides.services.privacy_request.privacy_request_service import queue_privacy_request
 
 # pylint: disable=too-many-nested-blocks,too-many-branches,too-many-statements
 

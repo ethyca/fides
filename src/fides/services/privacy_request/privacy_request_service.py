@@ -1,5 +1,6 @@
 from datetime import datetime
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Set
+
 from fides.api.common_exceptions import (
     IdentityNotFoundException,
     MessageDispatchException,
@@ -16,8 +17,8 @@ from fides.api.models.privacy_request import (
     PrivacyRequestNotifications,
     PrivacyRequestSource,
     PrivacyRequestStatus,
-    ProvidedIdentityType,
     ProvidedIdentity,
+    ProvidedIdentityType,
     RequestTask,
 )
 from fides.api.models.property import Property
@@ -62,8 +63,9 @@ if TYPE_CHECKING:
     from fides.services.privacy_request.privacy_request_review_service import (
         PrivacyRequestReviewService,
     )
-from sqlalchemy.orm import Session
+
 from loguru import logger
+from sqlalchemy.orm import Session
 
 OPTIONAL_FIELDS = [
     "id",

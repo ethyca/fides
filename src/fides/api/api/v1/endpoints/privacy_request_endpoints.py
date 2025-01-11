@@ -17,16 +17,6 @@ from typing import (
     Union,
 )
 
-from fides.api.api.deps import get_privacy_request_service
-from fides.services.messaging.messaging_service import (
-    check_and_dispatch_error_notifications,
-    send_verification_code_to_user,
-)
-from fides.services.privacy_request.privacy_request_service import (
-    PrivacyRequestService,
-    _trigger_pre_approval_webhooks,
-    queue_privacy_request,
-)
 import sqlalchemy
 from fastapi import Body, Depends, HTTPException, Security
 from fastapi.encoders import jsonable_encoder
@@ -52,6 +42,7 @@ from starlette.status import (
 
 from fides.api import common_exceptions
 from fides.api.api import deps
+from fides.api.api.deps import get_privacy_request_service
 from fides.api.api.v1.endpoints.dataset_endpoints import _get_connection_config
 from fides.api.api.v1.endpoints.manual_webhook_endpoints import (
     get_access_manual_webhook_or_404,
@@ -101,9 +92,7 @@ from fides.api.oauth.utils import (
 )
 from fides.api.schemas.dataset import CollectionAddressResponse, DryRunDatasetResponse
 from fides.api.schemas.external_https import PrivacyRequestResumeFormat
-from fides.api.schemas.messaging.messaging import (
-    MessagingActionType,
-)
+from fides.api.schemas.messaging.messaging import MessagingActionType
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.privacy_request import (
     BulkPostPrivacyRequests,
@@ -171,6 +160,7 @@ from fides.common.api.v1.urn_registry import (
     PRIVACY_REQUEST_PRE_APPROVE_ELIGIBLE,
     PRIVACY_REQUEST_PRE_APPROVE_NOT_ELIGIBLE,
     PRIVACY_REQUEST_REQUEUE,
+    PRIVACY_REQUEST_RESUBMIT,
     PRIVACY_REQUEST_RESUME,
     PRIVACY_REQUEST_RESUME_FROM_REQUIRES_INPUT,
     PRIVACY_REQUEST_RETRY,
@@ -184,10 +174,18 @@ from fides.common.api.v1.urn_registry import (
     REQUEST_TASK_CALLBACK,
     REQUEST_TASKS,
     V1_URL_PREFIX,
-    PRIVACY_REQUEST_RESUBMIT,
 )
 from fides.config import CONFIG
 from fides.config.config_proxy import ConfigProxy
+from fides.services.messaging.messaging_service import (
+    check_and_dispatch_error_notifications,
+    send_verification_code_to_user,
+)
+from fides.services.privacy_request.privacy_request_service import (
+    PrivacyRequestService,
+    _trigger_pre_approval_webhooks,
+    queue_privacy_request,
+)
 
 router = APIRouter(tags=["Privacy Requests"], prefix=V1_URL_PREFIX)
 

@@ -1,9 +1,5 @@
 from typing import Any, Dict, List, Optional
 
-from fides.services.messaging.messaging_service import (
-    check_and_dispatch_error_notifications,
-)
-from fides.services.privacy_request.privacy_request_service import queue_privacy_request
 import jwt
 from fastapi import Depends, HTTPException, Security
 from loguru import logger
@@ -47,6 +43,10 @@ from fides.common.api import scope_registry as scopes
 from fides.common.api.v1 import urn_registry as urls
 from fides.config import CONFIG
 from fides.config.config_proxy import ConfigProxy
+from fides.services.messaging.messaging_service import (
+    check_and_dispatch_error_notifications,
+)
+from fides.services.privacy_request.privacy_request_service import queue_privacy_request
 
 router = APIRouter(tags=["DRP"], prefix=urls.V1_URL_PREFIX)
 
