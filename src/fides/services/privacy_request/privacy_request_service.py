@@ -55,16 +55,6 @@ from fides.services.messaging.messaging_service import (
     send_verification_code_to_user,
 )
 
-OPTIONAL_FIELDS = [
-    "id",
-    "external_id",
-    "started_processing_at",
-    "finished_processing_at",
-    "consent_preferences",
-    "property_id",
-    "source",
-]
-
 
 class PrivacyRequestError(Exception):
     """Base exception for privacy request operations."""
@@ -150,6 +140,16 @@ class PrivacyRequestService:
             self.config_proxy.execution.subject_identity_verification_required,
             authenticated,
         )
+
+        OPTIONAL_FIELDS = [
+            "id",
+            "external_id",
+            "started_processing_at",
+            "finished_processing_at",
+            "consent_preferences",
+            "property_id",
+            "source",
+        ]
 
         for field in OPTIONAL_FIELDS:
             attr = getattr(privacy_request_data, field)
