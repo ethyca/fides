@@ -84,6 +84,7 @@ class PrivacyRequestService:
             logger.info(f"Privacy request with ID {privacy_request_id} was not found.")
         return privacy_request
 
+    # pylint: disable=too-many-branches
     def create_privacy_request(
         self,
         privacy_request_data: PrivacyRequestCreate,

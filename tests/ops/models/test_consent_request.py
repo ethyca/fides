@@ -179,29 +179,25 @@ class TestQueuePrivacyRequestToPropagateConsentHelper:
         )
         assert mock_create_privacy_request.called
 
+        call_args = mock_create_privacy_request.call_args[0][0]
         call_kwargs = mock_create_privacy_request.call_args[1]
-        assert call_kwargs["db"] == db
-        assert call_kwargs["data"][0].identity.email == "test@email.com"
-        assert len(call_kwargs["data"][0].consent_preferences) == 1
-        assert (
-            call_kwargs["data"][0].consent_preferences[0].data_use
-            == "marketing.advertising"
-        )
-        assert call_kwargs["data"][0].consent_preferences[0].opt_in is False
+
+        request_data = call_args[0]
+        assert request_data.identity.email == "test@email.com"
+        assert len(request_data.consent_preferences) == 1
+        assert request_data.consent_preferences[0].data_use == "marketing.advertising"
+        assert request_data.consent_preferences[0].opt_in is False
+
         assert (
             call_kwargs["authenticated"] is True
         ), "We already validated identity with a verification code earlier in the request"
 
-        for label, value in call_kwargs["data"][
-            0
-        ].custom_privacy_request_fields.items():
-            call_kwargs["data"][0].custom_privacy_request_fields[label] = (
-                value.model_dump(mode="json")
-            )
+        custom_fields = request_data.custom_privacy_request_fields
+        if custom_fields:
+            for label, value in custom_fields.items():
+                custom_fields[label] = value.model_dump(mode="json")
 
-        assert call_kwargs["data"][0].custom_privacy_request_fields == {
-            "first_name": {"label": "First name", "value": "John"}
-        }
+        assert custom_fields == {"first_name": {"label": "First name", "value": "John"}}
 
         provided_identity.delete(db)
 
@@ -304,19 +300,19 @@ class TestQueuePrivacyRequestToPropagateConsentHelper:
         )
 
         assert mock_create_privacy_request.called
-        call_kwargs = mock_create_privacy_request.call_args[1]
-        identity_of_privacy_request = call_kwargs["data"][0].identity
+
+        request_data = mock_create_privacy_request.call_args[0][0]
+        request = request_data[0]
+
+        identity_of_privacy_request = request.identity
         assert identity_of_privacy_request.email == "test@email.com"
         assert identity_of_privacy_request.ga_client_id == browser_identity.ga_client_id
 
-        for label, value in call_kwargs["data"][
-            0
-        ].custom_privacy_request_fields.items():
-            call_kwargs["data"][0].custom_privacy_request_fields[label] = (
-                value.model_dump(mode="json")
-            )
-        assert call_kwargs["data"][0].custom_privacy_request_fields == {
-            "first_name": {"label": "First name", "value": "John"}
-        }
+        custom_fields = request.custom_privacy_request_fields
+        if custom_fields:
+            for label, value in custom_fields.items():
+                custom_fields[label] = value.model_dump(mode="json")
+
+        assert custom_fields == {"first_name": {"label": "First name", "value": "John"}}
 
         provided_identity.delete(db)
