@@ -1,5 +1,8 @@
 from datetime import datetime
-from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Set
+from typing import Any, Dict, List, Optional, Set
+
+from loguru import logger
+from sqlalchemy.orm import Session
 
 from fides.api.common_exceptions import (
     IdentityNotFoundException,
@@ -14,22 +17,16 @@ from fides.api.models.privacy_request import (
     ConsentRequest,
     ExecutionLog,
     PrivacyRequest,
-    PrivacyRequestNotifications,
     PrivacyRequestSource,
     PrivacyRequestStatus,
-    ProvidedIdentity,
-    ProvidedIdentityType,
     RequestTask,
 )
 from fides.api.models.property import Property
 from fides.api.schemas.api import BulkUpdateFailed
 from fides.api.schemas.messaging.messaging import (
-    EMAIL_MESSAGING_SERVICES,
-    ErrorNotificationBodyParams,
     FidesopsMessage,
     MessagingActionType,
     RequestReceiptBodyParams,
-    RequestReviewDenyBodyParams,
 )
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.privacy_request import (
@@ -40,7 +37,6 @@ from fides.api.schemas.privacy_request import (
 )
 from fides.api.schemas.redis_cache import Identity
 from fides.api.service.messaging.message_dispatch_service import (
-    EMAIL_JOIN_STRING,
     dispatch_message_task,
     message_send_enabled,
 )
@@ -58,14 +54,6 @@ from fides.services.messaging.messaging_service import (
     check_and_dispatch_error_notifications,
     send_verification_code_to_user,
 )
-
-if TYPE_CHECKING:
-    from fides.services.privacy_request.privacy_request_review_service import (
-        PrivacyRequestReviewService,
-    )
-
-from loguru import logger
-from sqlalchemy.orm import Session
 
 OPTIONAL_FIELDS = [
     "id",
@@ -279,7 +267,7 @@ class PrivacyRequestService:
         )
 
         if not existing_privacy_request:
-            return
+            return None
 
         # Copy all needed data first
         create_data = PrivacyRequestCreate(
@@ -367,7 +355,7 @@ class PrivacyRequestService:
                 privacy_request.reviewed_at = now
                 privacy_request.reviewed_by = user_id
 
-                if privacy_request.custom_fields:
+                if privacy_request.custom_fields:  # type: ignore[attr-defined]
                     privacy_request.custom_privacy_request_fields_approved_at = now
                     privacy_request.custom_privacy_request_fields_approved_by = user_id
 
@@ -404,7 +392,7 @@ class PrivacyRequestService:
     def deny_privacy_requests(
         self,
         request_ids: List[str],
-        deny_reason: str,
+        deny_reason: Optional[str],
         *,
         user_id: Optional[str] = None,
     ) -> BulkReviewResponse:
@@ -451,13 +439,17 @@ class PrivacyRequestService:
                 privacy_request.reviewed_by = user_id
                 privacy_request.save(db=self.db)
 
-                self.audit_log_service.log_action(
-                    AuditLogAction.denied,
-                    privacy_request_id=privacy_request.id,
-                    message=deny_reason,
+                AuditLog.create(
+                    db=self.db,
+                    data={
+                        "user_id": user_id,
+                        "privacy_request_id": privacy_request.id,
+                        "action": AuditLogAction.denied,
+                        "message": deny_reason,
+                    },
                 )
 
-                self.messaging_service.send_request_denied(privacy_request)
+                self.messaging_service.send_request_denied(privacy_request, deny_reason)
 
                 succeeded.append(privacy_request)
             except Exception:

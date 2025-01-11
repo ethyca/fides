@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Dict, List, Optional, Set, Tuple, Union
+from typing import List, Optional, Set, Tuple, Union
 
 from fastapi import Depends, HTTPException, Security
 from fastapi_pagination import Page, Params
@@ -69,7 +69,10 @@ from fides.common.api.v1.urn_registry import (
 )
 from fides.config import CONFIG
 from fides.config.config_proxy import ConfigProxy
-from fides.services.messaging.messaging_service import send_verification_code_to_user
+from fides.services.messaging.messaging_service import (
+    MessagingService,
+    send_verification_code_to_user,
+)
 from fides.services.privacy_request.privacy_request_service import PrivacyRequestService
 
 router = APIRouter(tags=["Consent"], prefix=V1_URL_PREFIX)
@@ -404,7 +407,7 @@ def queue_privacy_request_to_propagate_consent_old_workflow(
     ]
 
     # Restrict consent preferences to just those that are executable
-    executable_consent_preferences: List[Consent] = [
+    executable_consent_preferences: List[ConsentSchema] = [
         pref
         for pref in consent_preferences.consent or []
         if pref.data_use in executable_data_uses
@@ -419,7 +422,13 @@ def queue_privacy_request_to_propagate_consent_old_workflow(
         return None
 
     logger.info("Executable consent options: {}", executable_data_uses)
-    privacy_request_service = PrivacyRequestService(db, ConfigProxy(db))
+
+    # It's a bit weird to initialize the privacy request service here,
+    # but this logic is slated for deprecation so it's not worth doing a larger refactor
+    privacy_request_service = PrivacyRequestService(
+        db, ConfigProxy(db), MessagingService(db, CONFIG, ConfigProxy(db))
+    )
+
     privacy_request_results: BulkPostPrivacyRequests = (
         privacy_request_service.create_bulk_privacy_requests(
             [

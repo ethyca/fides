@@ -44,7 +44,7 @@ class MessagingService:
         self.config = config
         self.config_proxy = config_proxy
 
-    def send_request_approved(self, privacy_request: PrivacyRequest):
+    def send_request_approved(self, privacy_request: PrivacyRequest) -> None:
         if message_send_enabled(
             self.db,
             privacy_request.property_id,
@@ -78,7 +78,9 @@ class MessagingService:
                 },
             )
 
-    def send_request_denied(self, privacy_request: PrivacyRequest):
+    def send_request_denied(
+        self, privacy_request: PrivacyRequest, deny_reason: Optional[str] = None
+    ) -> None:
         if message_send_enabled(
             self.db,
             privacy_request.property_id,
@@ -105,7 +107,7 @@ class MessagingService:
                     "message_meta": FidesopsMessage(
                         action_type=MessagingActionType.PRIVACY_REQUEST_REVIEW_DENY,
                         body_params=RequestReviewDenyBodyParams(
-                            rejection_reason=privacy_request.reason
+                            rejection_reason=deny_reason
                         ),
                     ).model_dump(mode="json"),
                     "service_type": self.config_proxy.notifications.notification_service_type,
@@ -120,6 +122,9 @@ class MessagingService:
         to_identity: Optional[Identity],
         property_id: Optional[str],
     ) -> Optional[str]:
+
+        verification_code = None
+
         if message_send_enabled(
             self.db,
             request.property_id,
@@ -133,7 +138,7 @@ class MessagingService:
                 self.db,
                 action_type=MessagingActionType.SUBJECT_IDENTITY_VERIFICATION,
                 to_identity=to_identity,
-                service_type=self.config.notifications.notification_service_type,
+                service_type=self.config_proxy.notifications.notification_service_type,
                 message_body_params=SubjectIdentityVerificationBodyParams(
                     verification_code=verification_code,
                     verification_code_ttl_seconds=self.config.redis.identity_verification_code_ttl_seconds,
@@ -141,11 +146,11 @@ class MessagingService:
                 property_id=property_id,
             )
 
-            return verification_code
+        return verification_code
 
     def send_privacy_request_receipt(
         self, policy: Policy, identity: Identity, privacy_request: PrivacyRequest
-    ):
+    ) -> None:
         if message_send_enabled(
             self.db,
             privacy_request.property_id,

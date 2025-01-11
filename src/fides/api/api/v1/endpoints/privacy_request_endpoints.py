@@ -37,10 +37,8 @@ from starlette.status import (
     HTTP_403_FORBIDDEN,
     HTTP_404_NOT_FOUND,
     HTTP_422_UNPROCESSABLE_ENTITY,
-    HTTP_424_FAILED_DEPENDENCY,
 )
 
-from fides.api import common_exceptions
 from fides.api.api import deps
 from fides.api.api.deps import get_privacy_request_service
 from fides.api.api.v1.endpoints.dataset_endpoints import _get_connection_config
@@ -48,10 +46,8 @@ from fides.api.api.v1.endpoints.manual_webhook_endpoints import (
     get_access_manual_webhook_or_404,
 )
 from fides.api.common_exceptions import (
-    FunctionalityNotConfigured,
     IdentityVerificationException,
     ManualWebhookFieldsUnset,
-    MessageDispatchException,
     NoCachedManualWebhookEntry,
     TraversalError,
     ValidationError,
@@ -69,7 +65,6 @@ from fides.api.models.pre_approval_webhook import (
     PreApprovalWebhook,
     PreApprovalWebhookReply,
 )
-from fides.api.models.privacy_preference import PrivacyPreferenceHistory
 from fides.api.models.privacy_request import (
     EXITED_EXECUTION_LOG_STATUSES,
     CheckpointActionRequired,
@@ -83,7 +78,6 @@ from fides.api.models.privacy_request import (
     ProvidedIdentity,
     RequestTask,
 )
-from fides.api.models.property import Property
 from fides.api.oauth.utils import (
     verify_callback_oauth_policy_pre_webhook,
     verify_callback_oauth_pre_approval_webhook,
@@ -117,10 +111,6 @@ from fides.api.service.messaging.message_dispatch_service import (
     EMAIL_JOIN_STRING,
     message_send_enabled,
 )
-from fides.api.service.privacy_request.request_service import (
-    build_required_privacy_request_kwargs,
-    cache_data,
-)
 from fides.api.task.execute_request_tasks import log_task_queued, queue_request_task
 from fides.api.task.filter_results import filter_data_categories
 from fides.api.task.graph_task import EMPTY_REQUEST, EMPTY_REQUEST_TASK, collect_queries
@@ -131,7 +121,6 @@ from fides.api.util.collection_util import Row
 from fides.api.util.endpoint_utils import validate_start_and_end_filters
 from fides.api.util.enums import ColumnSort
 from fides.api.util.fuzzy_search_utils import get_decrypted_identities_automaton
-from fides.api.util.logger import Pii
 from fides.api.util.storage_util import storage_json_encoder
 from fides.common.api.scope_registry import (
     PRIVACY_REQUEST_CALLBACK_RESUME,
@@ -177,12 +166,9 @@ from fides.common.api.v1.urn_registry import (
 )
 from fides.config import CONFIG
 from fides.config.config_proxy import ConfigProxy
-from fides.services.messaging.messaging_service import (
-    check_and_dispatch_error_notifications,
-    send_verification_code_to_user,
-)
 from fides.services.privacy_request.privacy_request_service import (
     PrivacyRequestService,
+    _send_privacy_request_receipt_message_to_user,
     _trigger_pre_approval_webhooks,
     queue_privacy_request,
 )
@@ -1295,12 +1281,12 @@ def verify_identification_code(
 )
 def approve_privacy_request(
     *,
-    privacy_request_service: PrivacyRequestService = Depends(
-        deps.get_privacy_request_service
-    ),
     client: ClientDetail = Security(
         verify_oauth_client,
         scopes=[PRIVACY_REQUEST_REVIEW],
+    ),
+    privacy_request_service: PrivacyRequestService = Depends(
+        deps.get_privacy_request_service
     ),
     privacy_requests: ReviewPrivacyRequestIds,
 ) -> BulkReviewResponse:
@@ -1318,24 +1304,19 @@ def approve_privacy_request(
 )
 def deny_privacy_request(
     *,
-    db: Session = Depends(deps.get_db),
-    config_proxy: ConfigProxy = Depends(deps.get_config_proxy),
     client: ClientDetail = Security(
         verify_oauth_client,
         scopes=[PRIVACY_REQUEST_REVIEW],
     ),
+    privacy_request_service: PrivacyRequestService = Depends(
+        deps.get_privacy_request_service
+    ),
     privacy_requests: DenyPrivacyRequests,
 ) -> BulkReviewResponse:
     """Deny a list of privacy requests and/or report failure"""
-    user_id = client.user_id
 
-    return review_privacy_request(
-        db=db,
-        config_proxy=config_proxy,
-        request_ids=privacy_requests.request_ids,
-        process_request_function=_deny_request,
-        user_id=user_id,
-        webhook_id=None,
+    return privacy_request_service.deny_privacy_requests(
+        privacy_requests.request_ids, privacy_requests.reason, user_id=client.user_id
     )
 
 
@@ -2195,7 +2176,7 @@ def resubmit_privacy_request(
     privacy_request_service: PrivacyRequestService = Depends(
         get_privacy_request_service
     ),
-) -> PrivacyRequestResponse:
+) -> PrivacyRequest:
     privacy_request = privacy_request_service.resubmit_privacy_request(
         privacy_request_id
     )
