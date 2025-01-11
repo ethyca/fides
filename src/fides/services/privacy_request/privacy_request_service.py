@@ -5,6 +5,7 @@ from loguru import logger
 from sqlalchemy.orm import Session
 
 from fides.api.common_exceptions import (
+    FunctionalityNotConfigured,
     IdentityNotFoundException,
     MessageDispatchException,
     PolicyNotFoundException,
@@ -46,7 +47,6 @@ from fides.api.service.privacy_request.request_service import (
 )
 from fides.api.tasks import MESSAGING_QUEUE_NAME
 from fides.api.util.cache import cache_task_tracking_key
-from fides.api.util.logger import Pii
 from fides.api.util.logger_context_utils import LoggerContextKeys, log_context
 from fides.config.config_proxy import ConfigProxy
 from fides.services.messaging.messaging_service import (
@@ -203,15 +203,16 @@ class PrivacyRequestService:
 
             return privacy_request
 
+        except FunctionalityNotConfigured as exc:
+            logger.error(f"{exc.__class__.__name__}: {str(exc)}")
+            raise exc
         except MessageDispatchException as exc:
             kwargs["privacy_request_id"] = privacy_request.id
             raise PrivacyRequestError(
                 "Verification message could not be sent.", kwargs
             ) from exc
         except Exception as exc:
-            as_string = Pii(str(exc))
-            error_cls = str(exc.__class__.__name__)
-            logger.error(f"Exception {error_cls}: {as_string}")
+            logger.error(f"{exc.__class__.__name__}: {str(exc)}")
             raise PrivacyRequestError("This record could not be added", kwargs) from exc
 
     def create_bulk_privacy_requests(
@@ -371,7 +372,7 @@ class PrivacyRequestService:
                     },
                 )
 
-                if suppress_notification:
+                if not suppress_notification:
                     self.messaging_service.send_request_approved(privacy_request)
                 queue_privacy_request(privacy_request.id)
 

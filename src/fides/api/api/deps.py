@@ -62,10 +62,10 @@ def get_config_proxy(db: Session = Depends(get_db)) -> ConfigProxy:
 
 
 def get_cache() -> Generator:
-    """Return a connection to our redis cache"""
+    """Return a connection to our Redis cache"""
     if not CONFIG.redis.enabled:
         raise FunctionalityNotConfigured(
-            "Application redis cache required, but it is currently disabled! Please update your application configuration to enable integration with a redis cache."
+            "Application redis cache required, but it is currently disabled! Please update your application configuration to enable integration with a Redis cache."
         )
     yield get_redis_connection()
 

@@ -33,11 +33,11 @@ class TestExceptionHandlers:
             {
                 "requested_at": "2021-08-30T16:09:37.359Z",
                 "identity": {"email": "customer-1@example.com"},
-                "policy_key": "my_separate_policy",
+                "policy_key": "default_access_policy",
             }
         ]
         expected_response = {
-            "message": "Application redis cache required, but it is currently disabled! Please update your application configuration to enable integration with a redis cache."
+            "message": "Application Redis cache required, but it is currently disabled! Please update your application configuration to enable integration with a Redis cache."
         }
         response = api_client.post(
             V1_URL_PREFIX + PRIVACY_REQUESTS, headers=auth_header, json=request_body
