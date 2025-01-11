@@ -26,14 +26,14 @@ def mock_config_redis_disabled():
 
 class TestExceptionHandlers:
     @pytest.mark.usefixtures("mock_config_redis_disabled")
-    def test_redis_disabled(self, api_client: TestClient, generate_auth_header):
+    def test_redis_disabled(self, api_client: TestClient, generate_auth_header, policy):
         auth_header = generate_auth_header([CLIENT_CREATE])
         # Privacy requests endpoint should not work
         request_body = [
             {
                 "requested_at": "2021-08-30T16:09:37.359Z",
                 "identity": {"email": "customer-1@example.com"},
-                "policy_key": "default_access_policy",
+                "policy_key": policy.key,
             }
         ]
         expected_response = {
