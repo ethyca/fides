@@ -86,7 +86,6 @@ from fides.api.oauth.utils import (
 )
 from fides.api.schemas.dataset import CollectionAddressResponse, DryRunDatasetResponse
 from fides.api.schemas.external_https import PrivacyRequestResumeFormat
-from fides.api.schemas.messaging.messaging import MessagingActionType
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.privacy_request import (
     BulkPostPrivacyRequests,
@@ -109,7 +108,6 @@ from fides.api.schemas.privacy_request import (
 )
 from fides.api.service.messaging.message_dispatch_service import (
     EMAIL_JOIN_STRING,
-    message_send_enabled,
 )
 from fides.api.task.execute_request_tasks import log_task_queued, queue_request_task
 from fides.api.task.filter_results import filter_data_categories
