@@ -23,7 +23,7 @@ from starlette.status import (
 
 from fides.api.api.deps import get_config_proxy, get_db, get_messaging_service
 from fides.api.common_exceptions import (
-    FunctionalityNotConfigured,
+    RedisNotConfigured,
     IdentityVerificationException,
 )
 from fides.api.db.seed import DEFAULT_CONSENT_POLICY
@@ -66,8 +66,8 @@ from fides.common.api.v1.urn_registry import (
 )
 from fides.config import CONFIG
 from fides.config.config_proxy import ConfigProxy
-from fides.services.messaging.messaging_service import MessagingService
-from fides.services.privacy_request.privacy_request_service import PrivacyRequestService
+from fides.service.messaging.messaging_service import MessagingService
+from fides.service.privacy_request.privacy_request_service import PrivacyRequestService
 
 router = APIRouter(tags=["Consent"], prefix=V1_URL_PREFIX)
 
@@ -183,7 +183,7 @@ def create_consent_request(
 ) -> ConsentRequestResponse:
     """Creates a verification code for the user to verify access to manage consent preferences."""
     if not CONFIG.redis.enabled:
-        raise FunctionalityNotConfigured(
+        raise RedisNotConfigured(
             "Application Redis cache required, but it is currently disabled! Please update your application configuration to enable integration with a Redis cache."
         )
     # TODO: (PROD-2142)- pass in property id here

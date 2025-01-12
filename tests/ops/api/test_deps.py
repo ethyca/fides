@@ -7,7 +7,7 @@ from sqlalchemy.pool import QueuePool
 
 import fides.api.api.deps
 from fides.api.api.deps import get_api_session, get_cache
-from fides.api.common_exceptions import FunctionalityNotConfigured
+from fides.api.common_exceptions import RedisNotConfigured
 from fides.config import CONFIG
 
 
@@ -32,7 +32,7 @@ def mock_config_changed_db_engine_settings():
 
 @pytest.mark.usefixtures("mock_config")
 def test_get_cache_not_enabled():
-    with pytest.raises(FunctionalityNotConfigured):
+    with pytest.raises(RedisNotConfigured):
         next(get_cache())
 
 

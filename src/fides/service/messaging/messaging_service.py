@@ -268,3 +268,43 @@ def send_verification_code_to_user(
     )
 
     return verification_code
+
+
+def send_privacy_request_receipt_message_to_user(
+    policy: Optional[Policy],
+    to_identity: Optional[Identity],
+    service_type: Optional[str],
+    property_id: Optional[str],
+) -> None:
+    """Helper function to send request receipt message to the user"""
+    if not to_identity:
+        logger.error(
+            IdentityNotFoundException(
+                "Identity was not found, so request receipt message could not be sent."
+            )
+        )
+        return
+    if not policy:
+        logger.error(
+            PolicyNotFoundException(
+                "Policy was not found, so request receipt message could not be sent."
+            )
+        )
+        return
+    request_types: Set[str] = set()
+    for action_type in ActionType:
+        if policy.get_rules_for_action(action_type=ActionType(action_type)):
+            request_types.add(action_type)
+
+    dispatch_message_task.apply_async(
+        queue=MESSAGING_QUEUE_NAME,
+        kwargs={
+            "message_meta": FidesopsMessage(
+                action_type=MessagingActionType.PRIVACY_REQUEST_RECEIPT,
+                body_params=RequestReceiptBodyParams(request_types=request_types),
+            ).model_dump(mode="json"),
+            "service_type": service_type,
+            "to_identity": to_identity.labeled_dict(),
+            "property_id": property_id,
+        },
+    )

@@ -1,14 +1,12 @@
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Set
+from typing import Any, Dict, List, Optional
 
 from loguru import logger
 from sqlalchemy.orm import Session
 
 from fides.api.common_exceptions import (
-    FunctionalityNotConfigured,
-    IdentityNotFoundException,
+    RedisNotConfigured,
     MessageDispatchException,
-    PolicyNotFoundException,
 )
 from fides.api.models.audit_log import AuditLog, AuditLogAction
 from fides.api.models.policy import Policy
@@ -25,33 +23,28 @@ from fides.api.models.privacy_request import (
 from fides.api.models.property import Property
 from fides.api.schemas.api import BulkUpdateFailed
 from fides.api.schemas.messaging.messaging import (
-    FidesopsMessage,
     MessagingActionType,
-    RequestReceiptBodyParams,
 )
-from fides.api.schemas.policy import ActionType
 from fides.api.schemas.privacy_request import (
     BulkPostPrivacyRequests,
     BulkReviewResponse,
     PrivacyRequestCreate,
     PrivacyRequestResponse,
 )
-from fides.api.schemas.redis_cache import Identity
 from fides.api.service.messaging.message_dispatch_service import (
-    dispatch_message_task,
     message_send_enabled,
 )
 from fides.api.service.privacy_request.request_service import (
     build_required_privacy_request_kwargs,
     cache_data,
 )
-from fides.api.tasks import MESSAGING_QUEUE_NAME
 from fides.api.util.cache import cache_task_tracking_key
 from fides.api.util.logger_context_utils import LoggerContextKeys, log_context
 from fides.config.config_proxy import ConfigProxy
-from fides.services.messaging.messaging_service import (
+from fides.service.messaging.messaging_service import (
     MessagingService,
     check_and_dispatch_error_notifications,
+    send_privacy_request_receipt_message_to_user,
     send_verification_code_to_user,
 )
 
@@ -204,7 +197,7 @@ class PrivacyRequestService:
 
             return privacy_request
 
-        except FunctionalityNotConfigured as exc:
+        except RedisNotConfigured as exc:
             logger.error(f"{exc.__class__.__name__}: {str(exc)}")
             raise exc
         except MessageDispatchException as exc:
@@ -545,7 +538,7 @@ def _handle_notifications_and_processing(
         MessagingActionType.PRIVACY_REQUEST_RECEIPT,
         config_proxy.notifications.send_request_receipt_notification,
     ):
-        _send_privacy_request_receipt_message_to_user(
+        send_privacy_request_receipt_message_to_user(
             policy,
             privacy_request_data.identity,
             config_proxy.notifications.notification_service_type,
@@ -565,46 +558,6 @@ def _handle_notifications_and_processing(
             },
         )
         queue_privacy_request(privacy_request.id)
-
-
-def _send_privacy_request_receipt_message_to_user(
-    policy: Optional[Policy],
-    to_identity: Optional[Identity],
-    service_type: Optional[str],
-    property_id: Optional[str],
-) -> None:
-    """Helper function to send request receipt message to the user"""
-    if not to_identity:
-        logger.error(
-            IdentityNotFoundException(
-                "Identity was not found, so request receipt message could not be sent."
-            )
-        )
-        return
-    if not policy:
-        logger.error(
-            PolicyNotFoundException(
-                "Policy was not found, so request receipt message could not be sent."
-            )
-        )
-        return
-    request_types: Set[str] = set()
-    for action_type in ActionType:
-        if policy.get_rules_for_action(action_type=ActionType(action_type)):
-            request_types.add(action_type)
-
-    dispatch_message_task.apply_async(
-        queue=MESSAGING_QUEUE_NAME,
-        kwargs={
-            "message_meta": FidesopsMessage(
-                action_type=MessagingActionType.PRIVACY_REQUEST_RECEIPT,
-                body_params=RequestReceiptBodyParams(request_types=request_types),
-            ).model_dump(mode="json"),
-            "service_type": service_type,
-            "to_identity": to_identity.labeled_dict(),
-            "property_id": property_id,
-        },
-    )
 
 
 def _trigger_pre_approval_webhooks(

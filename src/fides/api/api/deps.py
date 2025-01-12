@@ -4,14 +4,14 @@ from typing import Generator
 from fastapi import Depends
 from sqlalchemy.orm import Session
 
-from fides.api.common_exceptions import FunctionalityNotConfigured
+from fides.api.common_exceptions import RedisNotConfigured
 from fides.api.db.session import get_db_engine, get_db_session
 from fides.api.util.cache import get_cache as get_redis_connection
 from fides.config import CONFIG, FidesConfig
 from fides.config import get_config as get_app_config
 from fides.config.config_proxy import ConfigProxy
-from fides.services.messaging.messaging_service import MessagingService
-from fides.services.privacy_request.privacy_request_service import PrivacyRequestService
+from fides.service.messaging.messaging_service import MessagingService
+from fides.service.privacy_request.privacy_request_service import PrivacyRequestService
 
 _engine = None
 
@@ -64,7 +64,7 @@ def get_config_proxy(db: Session = Depends(get_db)) -> ConfigProxy:
 def get_cache() -> Generator:
     """Return a connection to our Redis cache"""
     if not CONFIG.redis.enabled:
-        raise FunctionalityNotConfigured(
+        raise RedisNotConfigured(
             "Application redis cache required, but it is currently disabled! Please update your application configuration to enable integration with a Redis cache."
         )
     yield get_redis_connection()

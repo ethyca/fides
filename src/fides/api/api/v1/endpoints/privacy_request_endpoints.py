@@ -17,6 +17,7 @@ from typing import (
     Union,
 )
 
+from fides.service.messaging.messaging_service import MessagingService
 import sqlalchemy
 from fastapi import Body, Depends, HTTPException, Security
 from fastapi.encoders import jsonable_encoder
@@ -166,9 +167,8 @@ from fides.common.api.v1.urn_registry import (
 )
 from fides.config import CONFIG
 from fides.config.config_proxy import ConfigProxy
-from fides.services.privacy_request.privacy_request_service import (
+from fides.service.privacy_request.privacy_request_service import (
     PrivacyRequestService,
-    _send_privacy_request_receipt_message_to_user,
     _trigger_pre_approval_webhooks,
     queue_privacy_request,
 )
@@ -1218,6 +1218,7 @@ def verify_identification_code(
     *,
     db: Session = Depends(deps.get_db),
     config_proxy: ConfigProxy = Depends(deps.get_config_proxy),
+    messaging_service: MessagingService = Depends(deps.get_messaging_service),
     provided_code: VerificationCode,
 ) -> PrivacyRequestResponse:
     """Verify the supplied identity verification code.
@@ -1236,18 +1237,9 @@ def verify_identification_code(
         policy: Optional[Policy] = Policy.get(
             db=db, object_id=privacy_request.policy_id
         )
-        if message_send_enabled(
-            db,
-            privacy_request.property_id,
-            MessagingActionType.PRIVACY_REQUEST_RECEIPT,
-            config_proxy.notifications.send_request_receipt_notification,
-        ):
-            _send_privacy_request_receipt_message_to_user(
-                policy,
-                privacy_request.get_persisted_identity(),
-                config_proxy.notifications.notification_service_type,
-                privacy_request.property_id,
-            )
+        messaging_service.send_privacy_request_receipt(
+            policy, privacy_request.get_persisted_identity(), privacy_request
+        )
 
     except IdentityVerificationException as exc:
         raise HTTPException(status_code=HTTP_400_BAD_REQUEST, detail=exc.message)

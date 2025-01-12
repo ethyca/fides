@@ -123,7 +123,7 @@ class TestQueuePrivacyRequestToPropagateConsentHelper:
 
     @pytest.mark.usefixtures("allow_custom_privacy_request_field_collection_enabled")
     @mock.patch(
-        "fides.services.privacy_request.privacy_request_service.PrivacyRequestService.create_bulk_privacy_requests"
+        "fides.service.privacy_request.privacy_request_service.PrivacyRequestService.create_bulk_privacy_requests"
     )
     def test_queue_privacy_request_to_propagate_consent(
         self, mock_create_privacy_request, db, consent_policy
@@ -202,7 +202,7 @@ class TestQueuePrivacyRequestToPropagateConsentHelper:
         provided_identity.delete(db)
 
     @mock.patch(
-        "fides.services.privacy_request.privacy_request_service.PrivacyRequestService.create_bulk_privacy_requests"
+        "fides.service.privacy_request.privacy_request_service.PrivacyRequestService.create_bulk_privacy_requests"
     )
     def test_do_not_queue_privacy_request_if_no_executable_preferences(
         self, mock_create_privacy_request, db, consent_policy
@@ -246,7 +246,7 @@ class TestQueuePrivacyRequestToPropagateConsentHelper:
 
     @pytest.mark.usefixtures("allow_custom_privacy_request_field_collection_enabled")
     @mock.patch(
-        "fides.services.privacy_request.privacy_request_service.PrivacyRequestService.create_bulk_privacy_requests"
+        "fides.service.privacy_request.privacy_request_service.PrivacyRequestService.create_bulk_privacy_requests"
     )
     def test_merge_in_browser_identity_with_provided_identity(
         self, mock_create_privacy_request, db, consent_policy

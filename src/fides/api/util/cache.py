@@ -123,7 +123,7 @@ def get_cache(should_log: Optional[bool] = False) -> FidesopsRedis:
     """Return a singleton connection to our Redis cache"""
 
     if not CONFIG.redis.enabled:
-        raise common_exceptions.FunctionalityNotConfigured(
+        raise common_exceptions.RedisNotConfigured(
             "Application Redis cache required, but it is currently disabled! Please update your application configuration to enable integration with a Redis cache."
         )
 
