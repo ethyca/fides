@@ -40,6 +40,7 @@ from fides.api.oauth.roles import APPROVER, CONTRIBUTOR, OWNER, VIEWER_AND_APPRO
 from fides.api.schemas.messaging.messaging import MessagingServiceType
 from fides.api.task.graph_runners import access_runner, consent_runner, erasure_runner
 from fides.api.tasks import celery_app
+from fides.api.tasks.scheduled.scheduler import async_scheduler, scheduler
 from fides.api.util.cache import get_cache
 from fides.api.util.collection_util import Row
 from fides.common.api.scope_registry import SCOPE_REGISTRY
@@ -77,6 +78,33 @@ CONFIG = get_config()
 TEST_CONFIG_PATH = "tests/ctl/test_config.toml"
 TEST_INVALID_CONFIG_PATH = "tests/ctl/test_invalid_config.toml"
 TEST_DEPRECATED_CONFIG_PATH = "tests/ctl/test_deprecated_config.toml"
+
+
+@pytest.fixture(scope="session")
+def db(api_client, config):
+    """Return a connection to the test DB"""
+    # Create the test DB engine
+    assert config.test_mode
+    assert requests.post != api_client.post
+    engine = get_db_engine(
+        database_uri=config.database.sqlalchemy_test_database_uri,
+    )
+
+    create_citext_extension(engine)
+
+    if not scheduler.running:
+        scheduler.start()
+    if not async_scheduler.running:
+        async_scheduler.start()
+
+    SessionLocal = get_db_session(config, engine=engine)
+    the_session = SessionLocal()
+    # Setup above...
+
+    yield the_session
+    # Teardown below...
+    the_session.close()
+    engine.dispose()
 
 
 @pytest.fixture(scope="session")

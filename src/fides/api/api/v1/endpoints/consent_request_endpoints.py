@@ -23,8 +23,8 @@ from starlette.status import (
 
 from fides.api.api.deps import get_config_proxy, get_db, get_messaging_service
 from fides.api.common_exceptions import (
-    RedisNotConfigured,
     IdentityVerificationException,
+    RedisNotConfigured,
 )
 from fides.api.db.seed import DEFAULT_CONSENT_POLICY
 from fides.api.models.messaging import get_messaging_method

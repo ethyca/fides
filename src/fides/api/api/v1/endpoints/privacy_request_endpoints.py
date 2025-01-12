@@ -17,7 +17,6 @@ from typing import (
     Union,
 )
 
-from fides.service.messaging.messaging_service import MessagingService
 import sqlalchemy
 from fastapi import Body, Depends, HTTPException, Security
 from fastapi.encoders import jsonable_encoder
@@ -167,6 +166,7 @@ from fides.common.api.v1.urn_registry import (
 )
 from fides.config import CONFIG
 from fides.config.config_proxy import ConfigProxy
+from fides.service.messaging.messaging_service import MessagingService
 from fides.service.privacy_request.privacy_request_service import (
     PrivacyRequestService,
     _trigger_pre_approval_webhooks,

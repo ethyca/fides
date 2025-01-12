@@ -5,8 +5,9 @@ from loguru import logger
 from sqlalchemy.orm import Session
 
 from fides.api.common_exceptions import (
-    RedisNotConfigured,
+    FidesopsException,
     MessageDispatchException,
+    RedisNotConfigured,
 )
 from fides.api.models.audit_log import AuditLog, AuditLogAction
 from fides.api.models.policy import Policy
@@ -22,18 +23,14 @@ from fides.api.models.privacy_request import (
 )
 from fides.api.models.property import Property
 from fides.api.schemas.api import BulkUpdateFailed
-from fides.api.schemas.messaging.messaging import (
-    MessagingActionType,
-)
+from fides.api.schemas.messaging.messaging import MessagingActionType
 from fides.api.schemas.privacy_request import (
     BulkPostPrivacyRequests,
     BulkReviewResponse,
     PrivacyRequestCreate,
     PrivacyRequestResponse,
 )
-from fides.api.service.messaging.message_dispatch_service import (
-    message_send_enabled,
-)
+from fides.api.service.messaging.message_dispatch_service import message_send_enabled
 from fides.api.service.privacy_request.request_service import (
     build_required_privacy_request_kwargs,
     cache_data,
@@ -113,7 +110,7 @@ class PrivacyRequestService:
             )
             if not valid_property:
                 raise PrivacyRequestError(
-                    "Property id must be valid to process",
+                    "Property ID must be valid to process",
                     privacy_request_data.model_dump(mode="json"),
                 )
 
@@ -264,6 +261,9 @@ class PrivacyRequestService:
         if not existing_privacy_request:
             return None
 
+        if existing_privacy_request.status == PrivacyRequestStatus.complete:
+            raise FidesopsException("Cannot resubmit a completed privacy request")
+
         # Copy all needed data first
         create_data = PrivacyRequestCreate(
             id=privacy_request_id,
@@ -295,7 +295,10 @@ class PrivacyRequestService:
             authenticated=True,
         )
 
-        self.approve_privacy_requests([privacy_request_id], user_id=user_id)
+        if self.config_proxy.execution.require_manual_request_approval:
+            self.approve_privacy_requests(
+                [privacy_request_id], user_id=user_id, suppress_notification=True
+            )
 
         return privacy_request
 
@@ -316,7 +319,7 @@ class PrivacyRequestService:
             if not privacy_request:
                 failed.append(
                     BulkUpdateFailed(
-                        message=f"No privacy request found with id '{request_id}'",
+                        message=f"No privacy request found with ID '{request_id}'",
                         data={"privacy_request_id": request_id},
                     )
                 )
