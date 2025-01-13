@@ -19,7 +19,7 @@ const solidBadge = defineStyle({
 });
 const taxonomyBadge = defineStyle({
   bg: "transparent",
-  border: `1px solid ${palette.FIDESUI_NEUTRAL_75}`,
+  border: `1px solid ${palette.FIDESUI_NEUTRAL_100}`,
 });
 
 const badgeTheme = defineStyleConfig({

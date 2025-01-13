@@ -64,12 +64,8 @@ const FidesBadge = ({ children, ...props }: BadgeProps) => (
     fontSize="xs"
     lineHeight={4}
     py={1}
-    boxShadow={
-      props.variant === "outline"
-        ? "inset 0 0 0px 1px var(--chakra-colors-gray-100)"
-        : undefined
-    }
     {...props}
+    variant="taxonomy"
   >
     {children}
   </Badge>
