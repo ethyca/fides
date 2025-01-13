@@ -22,9 +22,17 @@ const BrandLink = ({
       right={right}
       textDecoration="none"
       _hover={{ textDecoration: "none" }}
+      href="https://ethyca.com/"
       {...props}
     >
-      Powered by <EthycaLogo color="minos.500" h="20px" w="31px" />
+      Powered by{" "}
+      <EthycaLogo
+        color="minos.500"
+        h="20px"
+        w="31px"
+        role="img"
+        aria-label="Ethyca"
+      />
     </Link>
   );
 };
