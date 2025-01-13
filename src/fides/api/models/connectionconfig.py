@@ -24,6 +24,7 @@ from fides.config import CONFIG
 
 if TYPE_CHECKING:
     from fides.api.models.detection_discovery import MonitorConfig
+    from fides.api.schemas.connection_configuration.enums.system_type import SystemType
 
 
 class ConnectionTestStatus(enum.Enum):
@@ -109,15 +110,10 @@ class ConnectionType(enum.Enum):
             )
 
     @property
-    def is_fidesplus(self) -> bool:
-        fidesplus_only_mapping: list[str] = [
-            ConnectionType.datahub.value
-        ]
-        return self.value in fidesplus_only_mapping
-
-    @property
-    def system_type(self) -> SystemType:
-        from fides.api.schemas.connection_configuration.enums.system_type import SystemType
+    def system_type(self) -> "SystemType":
+        from fides.api.schemas.connection_configuration.enums.system_type import (
+            SystemType,
+        )
 
         system_type_mapping: dict[str, SystemType] = {
             ConnectionType.attentive_email.value: SystemType.email,

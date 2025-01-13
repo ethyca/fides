@@ -1,4 +1,3 @@
-from enum import Enum
 from typing import ClassVar, List
 
 from pydantic import Field

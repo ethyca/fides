@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import importlib
 from typing import Any, Dict, Set
 
 from fides.api.common_exceptions import NoSuchConnectionTypeSecretSchemaError
@@ -195,12 +194,6 @@ def get_connection_types(
     system_type: SystemType | None = None,
     action_types: Set[ActionType] = SUPPORTED_ACTION_TYPES,
 ) -> list[ConnectionSystemTypeMap]:
-
-    def check_fidesplus(conn_type: ConnectionType) -> bool:
-        """Check if the given connection type is a Fidesplus connector."""
-        fidesplus_found = importlib.util.find_spec("fidesplus")
-        return conn_type.is_fidesplus and fidesplus_found
-
     def is_match(elem: str) -> bool:
         """If a search query param was included, is it a substring of an available connector type?"""
         return search.lower() in elem.lower() if search else True
@@ -244,9 +237,10 @@ def get_connection_types(
                     ConnectionType.saas,
                     ConnectionType.sovrn,
                 ]
-                and is_match(conn_type.value) and check_fidesplus(conn_type)
-            ]
-        , key=lambda x: x.value)
+                and is_match(conn_type.value)
+            ],
+            key=lambda x: x.value,
+        )
         connection_system_types.extend(
             [
                 ConnectionSystemTypeMap(
