@@ -1,0 +1,84 @@
+{
+  "items": [
+    {
+      "id": null,
+      "name": null,
+      "system_key": null,
+      "vendor_id": null,
+      "total_updates": 108,
+      "locations": ["USA"],
+      "domains": [
+        "alb.reddit.com",
+        "api.hubapi.com",
+        "app.revenuehero.io",
+        ".ethyca.com",
+        "ethyca.com",
+        "ethyca.fides-cdn.ethyca.com",
+        "forms.hscollectedforms.net",
+        "forms.hubspot.com",
+        "forms-na1.hsforms.com",
+        "googleads.g.doubleclick.net",
+        ".hsadspixel.net",
+        ".hsforms.com",
+        ".hs-scripts.com",
+        ".hubspot.com",
+        "js.hsadspixel.net",
+        "js.hs-analytics.net",
+        "js.hs-banner.com",
+        "js.hscollectedforms.net",
+        "js.hs-scripts.com",
+        "kit.fontawesome.com",
+        ".linkedin.com",
+        "pixel-config.reddit.com",
+        "px.ads.linkedin.com",
+        "snap.licdn.com",
+        "stats.g.doubleclick.net",
+        "track.hubspot.com",
+        "www.clickcease.com",
+        ".www.linkedin.com",
+        "www.redditstatic.com"
+      ]
+    },
+    {
+      "id": "system_key-72649f03-7a30-4758-9772-e74fca3b6788",
+      "name": "Google Tag Manager",
+      "system_key": "system_key-72649f03-7a30-4758-9772-e74fca3b6788",
+      "vendor_id": "fds.1046",
+      "total_updates": 10,
+      "locations": ["USA"],
+      "domains": [
+        "td.doubleclick.net",
+        "www.google.com",
+        "www.googletagmanager.com"
+      ]
+    },
+    {
+      "id": "system_key-652c8984-ade7-470b-bce4-7e184621be9d",
+      "name": "Hubspot",
+      "system_key": "system_key-652c8984-ade7-470b-bce4-7e184621be9d",
+      "vendor_id": "fds.1053",
+      "total_updates": 6,
+      "locations": ["USA", "Canada"],
+      "domains": [
+        "forms.hsforms.com",
+        ".hs-analytics.net",
+        ".hs-banner.com",
+        ".hsforms.net",
+        "js.hsforms.net"
+      ]
+    },
+    {
+      "id": "fds.1047",
+      "name": "Google Analytics",
+      "system_key": null,
+      "vendor_id": "fds.1047",
+      "total_updates": 1,
+      "locations": ["USA"],
+      "domains": ["analytics.google.com"]
+    }
+  ],
+  "total": 4,
+  "page": 1,
+  "size": 25,
+  "pages": 1
+}
