@@ -100,6 +100,15 @@ class QueryConfig(Generic[T], ABC):
             if field.primary_key
         }
 
+    @property
+    def reference_field_paths(self) -> Dict[FieldPath, Field]:
+        """Mapping of FieldPaths to Fields that have incoming identity or dataset references"""
+        return {
+            field_path: field
+            for field_path, field in self.field_map().items()
+            if field_path in {edge.f2.field_path for edge in self.node.incoming_edges}
+        }
+
     def query_sources(self) -> Dict[str, List[CollectionAddress]]:
         """Display the input collection(s) for each query key for display purposes.
 
@@ -412,14 +421,16 @@ class SQLLikeQueryConfig(QueryConfig[T], ABC):
     def get_update_stmt(
         self,
         update_clauses: List[str],
-        pk_clauses: List[str],
+        where_clauses: List[str],
     ) -> str:
         """Returns a SQL UPDATE statement to fit SQL syntax."""
-        return f"UPDATE {self.node.address.collection} SET {', '.join(update_clauses)} WHERE {' AND '.join(pk_clauses)}"
+        return f"UPDATE {self.node.address.collection} SET {', '.join(update_clauses)} WHERE {' AND '.join(where_clauses)}"
 
     @abstractmethod
     def get_update_clauses(
-        self, update_value_map: Dict[str, Any], non_empty_primary_keys: Dict[str, Field]
+        self,
+        update_value_map: Dict[str, Any],
+        where_clause_fields: Dict[str, Field],
     ) -> List[str]:
         """Returns a list of update clauses for the update statement."""
 
@@ -428,7 +439,7 @@ class SQLLikeQueryConfig(QueryConfig[T], ABC):
         """Returns a formatted update statement in the appropriate dialect."""
 
     @abstractmethod
-    def format_key_map_for_update_stmt(self, fields: List[str]) -> List[str]:
+    def format_key_map_for_update_stmt(self, param_map: Dict[str, Any]) -> List[str]:
         """Adds the appropriate formatting for update statements in this datastore."""
 
     def generate_update_stmt(
@@ -436,7 +447,8 @@ class SQLLikeQueryConfig(QueryConfig[T], ABC):
     ) -> Optional[T]:
         """Returns an update statement in generic SQL-ish dialect."""
         update_value_map: Dict[str, Any] = self.update_value_map(row, policy, request)
-        non_empty_primary_keys: Dict[str, Field] = filter_nonempty_values(
+
+        non_empty_primary_key_fields: Dict[str, Field] = filter_nonempty_values(
             {
                 fpath.string_path: fld.cast(row[fpath.string_path])
                 for fpath, fld in self.primary_key_field_paths.items()
@@ -444,17 +456,30 @@ class SQLLikeQueryConfig(QueryConfig[T], ABC):
             }
         )
 
+        non_empty_reference_fields: Dict[str, Field] = filter_nonempty_values(
+            {
+                fpath.string_path: fld.cast(row[fpath.string_path])
+                for fpath, fld in self.reference_field_paths.items()
+                if fpath.string_path in row
+            }
+        )
+
+        # Create parameter mappings with masked_ prefix for SET values
+        param_map = {
+            **{f"masked_{k}": v for k, v in update_value_map.items()},
+            **non_empty_primary_key_fields,
+            **non_empty_reference_fields,
+        }
+
         update_clauses = self.get_update_clauses(
-            update_value_map, non_empty_primary_keys
+            {k: f"masked_{k}" for k in update_value_map},
+            non_empty_primary_key_fields or non_empty_reference_fields,
         )
-        pk_clauses = self.format_key_map_for_update_stmt(
-            list(non_empty_primary_keys.keys())
+        where_clauses = self.format_key_map_for_update_stmt(
+            {k: k for k in non_empty_primary_key_fields or non_empty_reference_fields}
         )
 
-        for k, v in non_empty_primary_keys.items():
-            update_value_map[k] = v
-
-        valid = len(pk_clauses) > 0 and len(update_clauses) > 0
+        valid = len(where_clauses) > 0 and len(update_clauses) > 0
         if not valid:
             logger.warning(
                 "There is not enough data to generate a valid update statement for {}",
@@ -462,12 +487,9 @@ class SQLLikeQueryConfig(QueryConfig[T], ABC):
             )
             return None
 
-        query_str = self.get_update_stmt(
-            update_clauses,
-            pk_clauses,
-        )
-        logger.info("query = {}, params = {}", Pii(query_str), Pii(update_value_map))
-        return self.format_query_stmt(query_str, update_value_map)
+        query_str = self.get_update_stmt(update_clauses, where_clauses)
+        logger.info("query = {}, params = {}", Pii(query_str), Pii(param_map))
+        return self.format_query_stmt(query_str, param_map)
 
 
 class SQLQueryConfig(SQLLikeQueryConfig[Executable]):
@@ -538,16 +560,17 @@ class SQLQueryConfig(SQLLikeQueryConfig[Executable]):
         )
         return None
 
-    def format_key_map_for_update_stmt(self, fields: List[str]) -> List[str]:
+    def format_key_map_for_update_stmt(self, param_map: Dict[str, Any]) -> List[str]:
         """Adds the appropriate formatting for update statements in this datastore."""
-        fields.sort()
-        return [f"{k} = :{k}" for k in fields]
+        return [f"{k} = :{v}" for k, v in sorted(param_map.items())]
 
     def get_update_clauses(
-        self, update_value_map: Dict[str, Any], non_empty_primary_keys: Dict[str, Field]
+        self,
+        update_value_map: Dict[str, Any],
+        where_clause_fields: Dict[str, Field],
     ) -> List[str]:
         """Returns a list of update clauses for the update statement."""
-        return self.format_key_map_for_update_stmt(list(update_value_map.keys()))
+        return self.format_key_map_for_update_stmt(update_value_map)
 
     def format_query_stmt(
         self, query_str: str, update_value_map: Dict[str, Any]

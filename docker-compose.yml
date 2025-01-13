@@ -136,7 +136,7 @@ services:
       - /fides/src/fides.egg-info
 
   redis:
-    image: "redis:6.2.5-alpine"
+    image: "redis:6.2-alpine"
     # AUTH option #1: no authentication at all
     # command: redis-server
     # AUTH option #2: require password
