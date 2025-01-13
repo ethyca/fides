@@ -202,6 +202,36 @@ describe("Action center", () => {
         .realHover();
       cy.get(".ant-tooltip-inner").should("contain", "January");
     });
+    it.skip("should allow adding a system on uncategorized assets", () => {
+      // TODO: uncategorized assets are not yet available for testing
+    });
+    it("should allow editing a system on categorized assets", () => {
+      cy.getByTestId("page-breadcrumb").should("contain", "fds.1046"); // little hack to make sure the systemId is available before proceeding
+      cy.getByTestId("row-3-col-system").within(() => {
+        cy.getByTestId("system-badge").click();
+      });
+      cy.wait("@getSystemsPaginated");
+      cy.getByTestId("system-select").antSelect("Fidesctl System");
+      cy.wait("@setAssetSystem");
+      cy.getByTestId("system-select").should("not.exist");
+
+      // Wait for previous UI animations to reset or Cypress chokes on the next part
+      // eslint-disable-next-line cypress/no-unnecessary-waiting
+      cy.wait(100);
+
+      // Now test with search
+      cy.getByTestId("row-2-col-system").within(() => {
+        cy.getByTestId("system-badge").click();
+        cy.getByTestId("system-select").find("input").type("demo m");
+        cy.wait("@getSystemsWithSearch").then((interception) => {
+          expect(interception.request.query.search).to.eq("demo m");
+        });
+      });
+      cy.wait("@getSystemsPaginated");
+      cy.getByTestId("system-select").antSelect("Demo Marketing System");
+      cy.wait("@setAssetSystem");
+      cy.getByTestId("system-select").should("not.exist");
+    });
     it("should add individual assets", () => {
       cy.getByTestId("row-0-col-actions").within(() => {
         cy.getByTestId("add-btn").click({ force: true });
