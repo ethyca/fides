@@ -333,7 +333,7 @@ describe("Consent overlay", () => {
               cy.get("a.fides-brand-link").should(
                 "have.attr",
                 "href",
-                "https://fid.es/powered",
+                "https://ethyca.com/",
               );
             });
           });
