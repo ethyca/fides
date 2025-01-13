@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import importlib
 from typing import Any, Dict, Set
 
 from fides.api.common_exceptions import NoSuchConnectionTypeSecretSchemaError
@@ -194,6 +195,12 @@ def get_connection_types(
     system_type: SystemType | None = None,
     action_types: Set[ActionType] = SUPPORTED_ACTION_TYPES,
 ) -> list[ConnectionSystemTypeMap]:
+
+    def check_fidesplus(conn_type: ConnectionType) -> bool:
+        """Check if the given connection type is a Fidesplus connector."""
+        fidesplus_found = importlib.util.find_spec("fidesplus")
+        return conn_type.is_fidesplus and fidesplus_found
+
     def is_match(elem: str) -> bool:
         """If a search query param was included, is it a substring of an available connector type?"""
         return search.lower() in elem.lower() if search else True
@@ -220,9 +227,9 @@ def get_connection_types(
     if (system_type == SystemType.database or system_type is None) and (
         ActionType.access in action_types or ActionType.erasure in action_types
     ):
-        database_types: list[str] = sorted(
+        database_types: list[ConnectionType] = sorted(
             [
-                conn_type.value
+                conn_type
                 for conn_type in ConnectionType
                 if conn_type
                 not in [
@@ -237,15 +244,15 @@ def get_connection_types(
                     ConnectionType.saas,
                     ConnectionType.sovrn,
                 ]
-                and is_match(conn_type.value)
+                and is_match(conn_type.value) and check_fidesplus(conn_type)
             ]
-        )
+        , key=lambda x: x.value)
         connection_system_types.extend(
             [
                 ConnectionSystemTypeMap(
                     identifier=item,
-                    type=SystemType.database,
-                    human_readable=ConnectionType(item).human_readable,
+                    type=item.system_type,
+                    human_readable=item.human_readable,
                     supported_actions=[ActionType.access, ActionType.erasure],
                 )
                 for item in database_types
@@ -336,4 +343,5 @@ def get_connection_types(
                 for email_type in email_types
             ]
         )
+
     return connection_system_types

@@ -2,7 +2,8 @@ from enum import Enum
 
 
 class SystemType(Enum):
-    saas = "saas"
+    data_catalog = "data_catalog"
     database = "database"
-    manual = "manual"
     email = "email"
+    manual = "manual"
+    saas = "saas"
