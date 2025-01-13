@@ -23,10 +23,11 @@ export const DatahubOverview = () => (
   <>
     <InfoHeading text="Overview" />
     <InfoText>
-      Datahub is a cloud-based data warehousing platform designed for handling
-      large-scale data storage and analytics. It enables organizations to store,
-      manage, and analyze massive amounts of data efficiently, offering features
-      like scalability, performance, and flexibility.
+      DataHub is a metadata platform designed to help organizations manage and
+      govern their data. It acts as a centralized repository for tracking and
+      discovering data assets across an organization, helping data teams
+      understand where their data resides, how it&apos;s used, and how it flows
+      through various systems.
     </InfoText>
     <ShowMoreContent>
       <InfoHeading text="Categories" />

@@ -53,5 +53,11 @@
     "development": true,
     "test": true,
     "production": false
+  },
+  "datahub": {
+    "description": "Use Datahub for data discovery and detection",
+    "development": true,
+    "test": true,
+    "production": false
   }
 }

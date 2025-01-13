@@ -1,6 +1,7 @@
 import { AntButton as Button, Flex, Spacer, TabList, Tabs } from "fidesui";
 
 import { FidesTab } from "~/features/common/DataTabs";
+import { useFlags } from "~/features/common/features";
 import FidesSpinner from "~/features/common/FidesSpinner";
 import {
   INTEGRATION_TYPE_LIST,
@@ -23,6 +24,10 @@ const SelectIntegrationType = ({
   const { tabIndex, onChangeFilter, isFiltering, filteredTypes, tabs } =
     useIntegrationFilterTabs(INTEGRATION_TYPE_LIST);
 
+  const {
+    flags: { datahub },
+  } = useFlags();
+
   return (
     <>
       <Tabs index={tabIndex} onChange={onChangeFilter} mb={4}>
@@ -36,16 +41,21 @@ const SelectIntegrationType = ({
         <FidesSpinner />
       ) : (
         <Flex direction="column">
-          {filteredTypes.map((i) => (
-            <IntegrationBox
-              integration={i.placeholder}
-              key={i.placeholder.key}
-              onConfigureClick={() => onConfigureClick(i)}
-              otherButtons={
-                <Button onClick={() => onDetailClick(i)}>Details</Button>
-              }
-            />
-          ))}
+          {filteredTypes.map((i) => {
+            if (!datahub && i.placeholder.connection_type == "datahub") {
+              return null;
+            }
+            return (
+              <IntegrationBox
+                integration={i.placeholder}
+                key={i.placeholder.key}
+                onConfigureClick={() => onConfigureClick(i)}
+                otherButtons={
+                  <Button onClick={() => onDetailClick(i)}>Details</Button>
+                }
+              />
+            );
+          })}
         </Flex>
       )}
       <Flex>
