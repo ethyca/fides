@@ -1,9 +1,8 @@
 import {
   AntButton as Button,
-  Box,
+  AntFlex as Flex,
   ChevronDownIcon,
   Collapse,
-  Flex,
   Stack,
   Text,
   useDisclosure,
@@ -18,6 +17,8 @@ import FormModal from "~/features/common/modals/FormModal";
 import useLegalBasisOptions from "~/features/system/system-form-declaration-tab/useLegalBasisOptions";
 import useSpecialCategoryLegalBasisOptions from "~/features/system/system-form-declaration-tab/useSpecialCategoryLegalBasisOptions";
 import { PrivacyDeclarationResponse } from "~/types/api";
+
+import styles from "./EditMinimalDataUseModal.module.scss";
 
 interface EditMinimalDataUseProps {
   isOpen: boolean;
@@ -75,7 +76,7 @@ const EditMinimalDataUseModal = ({
       {({ dirty, isValid, values, resetForm }) => (
         <FormModal title="Edit data use" isOpen={isOpen} onClose={onClose}>
           <Form>
-            <Flex py={4} gap={6} direction="column">
+            <Flex vertical className="gap-6 py-4">
               <ControlledSelect
                 name="data_use"
                 label="Data use"
@@ -103,15 +104,12 @@ const EditMinimalDataUseModal = ({
                 variant="stacked"
               />
               <Flex
-                p={4}
-                gap={6}
-                direction="column"
-                border="1px solid"
-                borderColor="gray.200"
+                vertical
+                // eslint-disable-next-line tailwindcss/no-custom-classname
+                className={`gap-6 p-4 ${styles.advancedSettings}`}
               >
                 <Flex
-                  justifyContent="space-between"
-                  cursor="pointer"
+                  className="cursor-pointer justify-between"
                   onClick={onToggleAdvancedSettings}
                 >
                   <Text fontSize="xs">Advanced settings</Text>
@@ -122,7 +120,7 @@ const EditMinimalDataUseModal = ({
                   />
                 </Flex>
                 <Collapse in={isAdvancedSettingsOpen}>
-                  <Flex direction="column" gap={4}>
+                  <Flex vertical className="gap-4">
                     <ControlledSelect
                       name="legal_basis_for_processing"
                       label="Legal basis for processing"
@@ -137,14 +135,14 @@ const EditMinimalDataUseModal = ({
                       animateOpacity
                       style={{ overflow: "visible" }}
                     >
-                      <Box mt={4}>
+                      <div className="mt-4">
                         <CustomTextInput
                           name="impact_assessment_location"
                           label="Impact assessment location"
                           tooltip="Where is the legitimate interest impact assessment stored?"
                           variant="stacked"
                         />
-                      </Box>
+                      </div>
                     </Collapse>
                     <CustomSwitch
                       name="flexible_legal_basis_for_processing"
@@ -171,7 +169,7 @@ const EditMinimalDataUseModal = ({
                         animateOpacity
                         style={{ overflow: "visible" }}
                       >
-                        <Box mt={4}>
+                        <div className="mt-4">
                           <ControlledSelect
                             isRequired
                             name="special_category_legal_basis"
@@ -180,7 +178,7 @@ const EditMinimalDataUseModal = ({
                             tooltip="What is the legal basis under which the special category data is processed?"
                             layout="stacked"
                           />
-                        </Box>
+                        </div>
                       </Collapse>
                     </Stack>
                   </Flex>

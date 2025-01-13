@@ -8,9 +8,8 @@ import {
 import { useState } from "react";
 
 import DataCategorySelect from "~/features/common/dropdown/DataCategorySelect";
-import TaxonomyCellContainer from "~/features/data-discovery-and-detection/tables/cells/TaxonomyCellContainer";
-
 import useTaxonomies from "~/features/common/hooks/useTaxonomies";
+import TaxonomyCellContainer from "~/features/data-discovery-and-detection/tables/cells/TaxonomyCellContainer";
 
 interface TaxonomyCellProps {
   selectedTaxonomies: string[];
