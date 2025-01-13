@@ -26,6 +26,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Added cache-clearing methods to the `DBCache` model to allow deleting cache entries [#5629](https://github.com/ethyca/fides/pull/5629)
 
 ### Changed
+- Updated brand link url [#5656](https://github.com/ethyca/fides/pull/5656)
 - Changed "Reclassify" D&D button to show in an overflow menu when row actions are overcrowded [#5655](https://github.com/ethyca/fides/pull/5655)
 
 ### Fixed
