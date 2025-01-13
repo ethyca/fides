@@ -149,7 +149,10 @@ class MessagingService:
         return verification_code
 
     def send_privacy_request_receipt(
-        self, policy: Policy, identity: Identity, privacy_request: PrivacyRequest
+        self,
+        policy: Optional[Policy],
+        identity: Identity,
+        privacy_request: PrivacyRequest,
     ) -> None:
         if message_send_enabled(
             self.db,

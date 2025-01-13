@@ -106,9 +106,7 @@ from fides.api.schemas.privacy_request import (
     ReviewPrivacyRequestIds,
     VerificationCode,
 )
-from fides.api.service.messaging.message_dispatch_service import (
-    EMAIL_JOIN_STRING,
-)
+from fides.api.service.messaging.message_dispatch_service import EMAIL_JOIN_STRING
 from fides.api.task.execute_request_tasks import log_task_queued, queue_request_task
 from fides.api.task.filter_results import filter_data_categories
 from fides.api.task.graph_task import EMPTY_REQUEST, EMPTY_REQUEST_TASK, collect_queries

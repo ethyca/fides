@@ -319,7 +319,7 @@ class PrivacyRequestService:
             if not privacy_request:
                 failed.append(
                     BulkUpdateFailed(
-                        message=f"No privacy request found with ID '{request_id}'",
+                        message=f"No privacy request found with id '{request_id}'",
                         data={"privacy_request_id": request_id},
                     )
                 )
