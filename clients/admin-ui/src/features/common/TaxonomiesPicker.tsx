@@ -42,6 +42,7 @@ const TaxonomiesPicker = ({
           data-testid={`classification-${category}`}
           px={1.5}
           key={category}
+          variant="taxonomy"
         >
           {getDataCategoryDisplayName(category)}
           <Button
@@ -56,10 +57,9 @@ const TaxonomiesPicker = ({
       ))}
       <Button
         size="small"
-        type="text"
         icon={<SmallAddIcon mb="1px" />}
         onClick={() => setIsAdding(true)}
-        className=" max-h-[20px] max-w-[20px] rounded-sm border-none bg-gray-100 hover:!bg-gray-200"
+        className="max-h-[22px] max-w-[22px]"
         data-testid="add-category-btn"
         aria-label="Add category"
       />
