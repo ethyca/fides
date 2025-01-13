@@ -25,12 +25,6 @@ interface UpsertResponse {
   updated: number;
 }
 
-type SystemListQueryParams = PaginationQueryParams &
-  SearchQueryParams & {
-    dnd_relevant?: boolean;
-    show_hidden?: boolean;
-  };
-
 export type ConnectionConfigSecretsRequest = {
   systemFidesKey: string;
   secrets: {
@@ -40,7 +34,10 @@ export type ConnectionConfigSecretsRequest = {
 
 const systemApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
-    getSystems: build.query<Page_BasicSystemResponse_, SystemListQueryParams>({
+    getSystems: build.query<
+      Page_BasicSystemResponse_,
+      PaginationQueryParams & SearchQueryParams
+    >({
       query: (params) => ({
         method: "GET",
         url: `system`,

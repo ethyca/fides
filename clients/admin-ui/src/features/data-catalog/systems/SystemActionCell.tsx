@@ -9,13 +9,9 @@ import {
 
 interface SystemActionsCellProps {
   onDetailClick?: () => void;
-  onHideClick?: () => void;
 }
 
-const SystemActionsCell = ({
-  onDetailClick,
-  onHideClick,
-}: SystemActionsCellProps) => {
+const SystemActionsCell = ({ onDetailClick }: SystemActionsCellProps) => {
   return (
     <Menu>
       <MenuButton
@@ -32,7 +28,6 @@ const SystemActionsCell = ({
         {onDetailClick && (
           <MenuItem onClick={onDetailClick}>View details</MenuItem>
         )}
-        {onHideClick && <MenuItem onClick={onHideClick}>Hide</MenuItem>}
       </MenuList>
     </Menu>
   );
