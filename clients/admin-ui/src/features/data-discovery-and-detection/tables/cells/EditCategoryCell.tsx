@@ -5,6 +5,7 @@ import {
   CloseIcon,
   EditIcon,
   SmallAddIcon,
+  Text,
   Wrap,
 } from "fidesui";
 import { useState } from "react";
@@ -21,7 +22,7 @@ const AddCategoryButton = (props: ButtonProps) => (
   <Button
     size="small"
     icon={<SmallAddIcon mb="1px" />}
-    className=" max-h-[20px] max-w-[20px] rounded-sm border-gray-200 bg-white hover:!bg-gray-100"
+    className="max-h-[20px] max-w-[20px]  border-gray-200 bg-white"
     data-testid="add-category-btn"
     aria-label="Add category"
     {...props}
@@ -98,15 +99,17 @@ const EditCategoriesCell = ({ resource }: EditCategoryCellProps) => {
               key={category}
               data-testid={`user-classification-${category}`}
             >
-              {getDataCategoryDisplayName(category)}
-              <Button
-                onClick={() => handleRemoveCategory(category)}
-                icon={<CloseIcon boxSize={2} mt={-0.5} />}
-                size="small"
-                type="text"
-                className="ml-1 max-h-4 max-w-4"
-                aria-label="Remove category"
-              />
+              <div className="flex items-center gap-1.5">
+                <Text>{getDataCategoryDisplayName(category)}</Text>
+                <Button
+                  onClick={() => handleRemoveCategory(category)}
+                  icon={<CloseIcon boxSize={2} mt={-0.5} />}
+                  size="small"
+                  type="text"
+                  className="ml-1 max-h-4 max-w-4"
+                  aria-label="Remove category"
+                />
+              </div>
             </ClassificationCategoryBadge>
           ))}
           <AddCategoryButton onClick={() => setIsAdding(true)} />
@@ -119,9 +122,11 @@ const EditCategoriesCell = ({ resource }: EditCategoryCellProps) => {
           cursor="pointer"
           data-testid={`classification-${bestClassifiedCategory}`}
         >
-          <SparkleIcon mt={0.5} />
-          {getDataCategoryDisplayName(bestClassifiedCategory)}
-          <EditIcon />
+          <div className="flex items-center gap-1.5">
+            <SparkleIcon mt={0.5} />
+            {getDataCategoryDisplayName(bestClassifiedCategory)}
+            <EditIcon />
+          </div>
         </ClassificationCategoryBadge>
       )}
 
