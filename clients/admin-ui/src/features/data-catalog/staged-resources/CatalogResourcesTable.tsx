@@ -5,7 +5,7 @@ import {
   getGroupedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { Box, Flex, Text, VStack } from "fidesui";
+import { Box, Flex } from "fidesui";
 import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";
 
@@ -17,6 +17,7 @@ import {
   TableSkeletonLoader,
   useServerSidePagination,
 } from "~/features/common/table/v2";
+import EmptyCatalogTableNotice from "~/features/data-catalog/datasets/EmptyCatalogTableNotice";
 import useCatalogResourceColumns from "~/features/data-catalog/useCatalogResourceColumns";
 import { useGetMonitorResultsQuery } from "~/features/data-discovery-and-detection/discovery-detection.slice";
 import { SearchInput } from "~/features/data-discovery-and-detection/SearchInput";
@@ -49,26 +50,6 @@ const EMPTY_RESPONSE = {
   size: 50,
   pages: 1,
 };
-
-const EmptyTableNotice = () => (
-  <VStack
-    mt={6}
-    p={10}
-    spacing={4}
-    borderRadius="base"
-    maxW="70%"
-    data-testid="empty-state"
-    alignSelf="center"
-    margin="auto"
-  >
-    <VStack>
-      <Text fontSize="md" fontWeight="600">
-        No resources found
-      </Text>
-      <Text fontSize="sm">You&apos;re up to date!</Text>
-    </VStack>
-  </VStack>
-);
 
 const CatalogResourcesTable = ({
   resourceUrn,
@@ -151,7 +132,7 @@ const CatalogResourcesTable = ({
       </TableActionBar>
       <FidesTableV2
         tableInstance={tableInstance}
-        emptyTableNotice={<EmptyTableNotice />}
+        emptyTableNotice={<EmptyCatalogTableNotice />}
         getRowIsClickable={(row) => resourceHasChildren(row)}
         onRowClick={(row) =>
           router.push(`${DATA_CATALOG_ROUTE}/${system.fides_key}/${row.urn}`)

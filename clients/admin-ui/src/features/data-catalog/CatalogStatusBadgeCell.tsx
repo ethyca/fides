@@ -1,4 +1,4 @@
-import ResultStatusBadge from "~/features/common/ResultStatusBadge";
+import { BadgeCell } from "~/features/common/table/v2";
 import { CatalogResourceStatus } from "~/features/data-catalog/utils";
 
 const STATUS_COLOR_MAP: Record<CatalogResourceStatus, string> = {
@@ -13,11 +13,7 @@ const CatalogStatusBadgeCell = ({
 }: {
   status: CatalogResourceStatus;
 }) => {
-  return (
-    <ResultStatusBadge colorScheme={STATUS_COLOR_MAP[status]}>
-      {status}
-    </ResultStatusBadge>
-  );
+  return <BadgeCell colorScheme={STATUS_COLOR_MAP[status]} value={status} />;
 };
 
 export default CatalogStatusBadgeCell;

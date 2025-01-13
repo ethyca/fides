@@ -7,7 +7,6 @@ import {
   MenuItem,
   MenuList,
   MoreIcon,
-  Spacer,
 } from "fidesui";
 
 import { useAlert } from "~/features/common/hooks";
@@ -87,7 +86,6 @@ const CatalogResourceActionsCell = ({
           Approve
         </Button>
       )}
-      <Spacer />
       <Menu>
         <MenuButton
           as={AntButton}

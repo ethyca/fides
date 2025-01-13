@@ -1,8 +1,16 @@
-import { AntButton as Button, Box, Collapse, Flex, Stack } from "fidesui";
+import {
+  AntButton as Button,
+  Box,
+  ChevronDownIcon,
+  Collapse,
+  Flex,
+  Stack,
+  Text,
+  useDisclosure,
+} from "fidesui";
 import { Form, Formik } from "formik";
 import * as Yup from "yup";
 
-import AdvancedSettings from "~/features/common/form/AdvancedSettings";
 import { ControlledSelect } from "~/features/common/form/ControlledSelect";
 import { CustomSwitch, CustomTextInput } from "~/features/common/form/inputs";
 import useTaxonomies from "~/features/common/hooks/useTaxonomies";
@@ -29,6 +37,9 @@ const EditMinimalDataUseModal = ({
   declaration,
 }: EditMinimalDataUseProps) => {
   const { getDataUses, getDataCategories, getDataSubjects } = useTaxonomies();
+
+  const { isOpen: isAdvancedSettingsOpen, onToggle: onToggleAdvancedSettings } =
+    useDisclosure();
 
   const handleSubmit = (values: PrivacyDeclarationResponse) => {
     onSave(values);
@@ -91,68 +102,90 @@ const EditMinimalDataUseModal = ({
                 label="Declaration name"
                 variant="stacked"
               />
-              <AdvancedSettings>
-                <ControlledSelect
-                  name="legal_basis_for_processing"
-                  label="Legal basis for processing"
-                  options={legalBasisOptions}
-                  layout="stacked"
-                />
-                <Collapse
-                  in={
-                    values?.legal_basis_for_processing ===
-                    "Legitimate interests"
-                  }
-                  animateOpacity
-                  style={{ overflow: "visible" }}
+              <Flex
+                p={4}
+                gap={6}
+                direction="column"
+                border="1px solid"
+                borderColor="gray.200"
+              >
+                <Flex
+                  justifyContent="space-between"
+                  cursor="pointer"
+                  onClick={onToggleAdvancedSettings}
                 >
-                  <Box mt={4}>
-                    <CustomTextInput
-                      name="impact_assessment_location"
-                      label="Impact assessment location"
-                      tooltip="Where is the legitimate interest impact assessment stored?"
+                  <Text fontSize="xs">Advanced settings</Text>
+                  <ChevronDownIcon
+                    className={
+                      isAdvancedSettingsOpen ? "rotate-180" : undefined
+                    }
+                  />
+                </Flex>
+                <Collapse in={isAdvancedSettingsOpen}>
+                  <Flex direction="column" gap={4}>
+                    <ControlledSelect
+                      name="legal_basis_for_processing"
+                      label="Legal basis for processing"
+                      options={legalBasisOptions}
+                      layout="stacked"
+                    />
+                    <Collapse
+                      in={
+                        values?.legal_basis_for_processing ===
+                        "Legitimate interests"
+                      }
+                      animateOpacity
+                      style={{ overflow: "visible" }}
+                    >
+                      <Box mt={4}>
+                        <CustomTextInput
+                          name="impact_assessment_location"
+                          label="Impact assessment location"
+                          tooltip="Where is the legitimate interest impact assessment stored?"
+                          variant="stacked"
+                        />
+                      </Box>
+                    </Collapse>
+                    <CustomSwitch
+                      name="flexible_legal_basis_for_processing"
+                      label="This legal basis is flexible"
+                      tooltip="Has the vendor declared that the legal basis may be overridden?"
                       variant="stacked"
                     />
-                  </Box>
-                </Collapse>
-                <CustomSwitch
-                  name="flexible_legal_basis_for_processing"
-                  label="This legal basis is flexible"
-                  tooltip="Has the vendor declared that the legal basis may be overridden?"
-                  variant="stacked"
-                />
-                <CustomTextInput
-                  name="retention_period"
-                  label="Retention period (days)"
-                  tooltip="How long is personal data retained for this purpose?"
-                  variant="stacked"
-                />
+                    <CustomTextInput
+                      name="retention_period"
+                      label="Retention period (days)"
+                      tooltip="How long is personal data retained for this purpose?"
+                      variant="stacked"
+                    />
 
-                <Stack spacing={0}>
-                  <CustomSwitch
-                    name="processes_special_category_data"
-                    label="This system processes special category data"
-                    tooltip="Is this system processing special category data as defined by GDPR Article 9?"
-                    variant="stacked"
-                  />
-                  <Collapse
-                    in={values?.processes_special_category_data}
-                    animateOpacity
-                    style={{ overflow: "visible" }}
-                  >
-                    <Box mt={4}>
-                      <ControlledSelect
-                        isRequired
-                        name="special_category_legal_basis"
-                        label="Legal basis for processing"
-                        options={specialCategoryLegalBasisOptions}
-                        tooltip="What is the legal basis under which the special category data is processed?"
-                        layout="stacked"
+                    <Stack spacing={0}>
+                      <CustomSwitch
+                        name="processes_special_category_data"
+                        label="This system processes special category data"
+                        tooltip="Is this system processing special category data as defined by GDPR Article 9?"
+                        variant="stacked"
                       />
-                    </Box>
-                  </Collapse>
-                </Stack>
-              </AdvancedSettings>
+                      <Collapse
+                        in={values?.processes_special_category_data}
+                        animateOpacity
+                        style={{ overflow: "visible" }}
+                      >
+                        <Box mt={4}>
+                          <ControlledSelect
+                            isRequired
+                            name="special_category_legal_basis"
+                            label="Legal basis for processing"
+                            options={specialCategoryLegalBasisOptions}
+                            tooltip="What is the legal basis under which the special category data is processed?"
+                            layout="stacked"
+                          />
+                        </Box>
+                      </Collapse>
+                    </Stack>
+                  </Flex>
+                </Collapse>
+              </Flex>
             </Flex>
             <div className="flex w-full justify-between">
               <Button

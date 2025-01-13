@@ -9,7 +9,6 @@ import {
   RowSelectionState,
   useReactTable,
 } from "@tanstack/react-table";
-import { Text, VStack } from "fidesui";
 import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";
 
@@ -25,6 +24,7 @@ import {
 import { IndeterminateCheckboxCell } from "~/features/common/table/v2/cells";
 import { getQueryParamsFromArray } from "~/features/common/utils";
 import { useGetCatalogSystemsQuery } from "~/features/data-catalog/data-catalog.slice";
+import EmptyCatalogTableNotice from "~/features/data-catalog/datasets/EmptyCatalogTableNotice";
 import EditDataUseCell from "~/features/data-catalog/systems/EditDataUseCell";
 import SystemActionsCell from "~/features/data-catalog/systems/SystemActionCell";
 import { useLazyGetAvailableDatabasesByConnectionQuery } from "~/features/data-discovery-and-detection/discovery-detection.slice";
@@ -39,26 +39,6 @@ const EMPTY_RESPONSE = {
 };
 
 const columnHelper = createColumnHelper<SystemWithMonitorKeys>();
-
-const EmptyTableNotice = () => (
-  <VStack
-    mt={6}
-    p={10}
-    spacing={4}
-    borderRadius="base"
-    maxW="70%"
-    data-testid="empty-state"
-    alignSelf="center"
-    margin="auto"
-  >
-    <VStack>
-      <Text fontSize="md" fontWeight="600">
-        No systems found
-      </Text>
-      <Text fontSize="sm">You&apos;re up to date!</Text>
-    </VStack>
-  </VStack>
-);
 
 const SystemsTable = () => {
   const [rowSelectionState, setRowSelectionState] = useState<RowSelectionState>(
@@ -215,7 +195,7 @@ const SystemsTable = () => {
     <>
       <FidesTableV2
         tableInstance={tableInstance}
-        emptyTableNotice={<EmptyTableNotice />}
+        emptyTableNotice={<EmptyCatalogTableNotice />}
         onRowClick={handleRowClicked}
         getRowIsClickable={(row) => !!row.connection_configs?.key}
       />

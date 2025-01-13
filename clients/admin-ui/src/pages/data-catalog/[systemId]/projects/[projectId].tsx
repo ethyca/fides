@@ -30,8 +30,6 @@ const EMPTY_RESPONSE = {
   pages: 1,
 };
 
-// dataset view when projects are present
-
 const CatalogDatasetView = () => {
   const { query, push } = useRouter();
   const systemKey = query.systemId as string;
@@ -85,11 +83,8 @@ const CatalogDatasetView = () => {
     data,
     columnResizeMode: "onChange",
   });
-  const showContent = !isLoading && !systemIsLoading && !isFetching;
 
-  if (isLoading || isFetching || systemIsLoading) {
-    return <TableSkeletonLoader rowHeight={36} numRows={36} />;
-  }
+  const showContent = !isLoading && !systemIsLoading && !isFetching;
 
   return (
     <Layout title="Data catalog">

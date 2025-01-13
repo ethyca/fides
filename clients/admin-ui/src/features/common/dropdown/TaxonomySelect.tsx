@@ -4,6 +4,8 @@ import {
   AntSelectProps as SelectProps,
 } from "fidesui";
 
+import styles from "./TaxonomySelect.module.scss";
+
 export interface TaxonomySelectOption {
   value: string;
   name?: string;
@@ -37,9 +39,14 @@ export const TaxonomySelect = ({
   options,
   ...props
 }: SelectProps<string, TaxonomySelectOption>) => {
+  const selectOptions = options?.map((opt) => ({
+    ...opt,
+    className: styles.option,
+  }));
+
   return (
     <Select<string, TaxonomySelectOption>
-      options={options}
+      options={selectOptions}
       autoFocus
       showSearch
       variant="borderless"

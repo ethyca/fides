@@ -11,12 +11,10 @@ const EmptyCatalogTableNotice = () => (
     alignSelf="center"
     margin="auto"
   >
-    <VStack>
-      <Text fontSize="md" fontWeight="600">
-        No resources found
-      </Text>
-      <Text fontSize="sm">You&apos;re up to date!</Text>
-    </VStack>
+    <Text fontSize="md" fontWeight="600">
+      No resources found
+    </Text>
+    <Text fontSize="sm">You&apos;re up to date!</Text>
   </VStack>
 );
 

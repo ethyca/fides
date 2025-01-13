@@ -10,9 +10,9 @@ import { useState } from "react";
 import DataUseSelect from "~/features/common/dropdown/DataUseSelect";
 import useTaxonomies from "~/features/common/hooks/useTaxonomies";
 import EditMinimalDataUseModal from "~/features/data-catalog/systems/EditMinimalDataUseModal";
-import TaxonomyBadge from "~/features/data-discovery-and-detection/ClassificationCategoryBadge";
 import TaxonomyAddButton from "~/features/data-discovery-and-detection/tables/cells/TaxonomyAddButton";
 import TaxonomyCellContainer from "~/features/data-discovery-and-detection/tables/cells/TaxonomyCellContainer";
+import TaxonomyBadge from "~/features/data-discovery-and-detection/TaxonomyBadge";
 import useSystemDataUseCrud from "~/features/data-use/useSystemDataUseCrud";
 import {
   PrivacyDeclaration,
@@ -27,10 +27,10 @@ interface EditDataUseCellProps {
 const DeleteDataUseButton = ({ onClick }: { onClick: () => void }) => (
   <Button
     onClick={onClick}
-    icon={<CloseIcon boxSize={2} mt={-0.5} />}
+    icon={<CloseIcon boxSize={2} />}
     size="small"
     type="text"
-    className="ml-1 max-h-4 max-w-4"
+    className="max-h-4 max-w-4"
     aria-label="Remove data use"
   />
 );

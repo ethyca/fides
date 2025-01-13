@@ -1,5 +1,4 @@
 import { createSlice } from "@reduxjs/toolkit";
-import queryString from "query-string";
 
 import { baseApi } from "~/features/common/api.slice";
 import {
@@ -41,7 +40,7 @@ const dataCatalogApi = baseApi.injectEndpoints({
     >({
       query: ({ ...params }) => ({
         method: "GET",
-        url: `/plus/data-catalog/project?${queryString.stringify(params, { arrayFormat: "none" })}`,
+        url: `/plus/data-catalog/project`,
         params,
       }),
       providesTags: ["Discovery Monitor Results"],

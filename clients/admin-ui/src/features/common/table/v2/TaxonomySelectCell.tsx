@@ -10,19 +10,19 @@ import { useState } from "react";
 import DataCategorySelect from "~/features/common/dropdown/DataCategorySelect";
 import TaxonomyCellContainer from "~/features/data-discovery-and-detection/tables/cells/TaxonomyCellContainer";
 
-import useTaxonomies from "./hooks/useTaxonomies";
+import useTaxonomies from "~/features/common/hooks/useTaxonomies";
 
-interface TaxonomiesPickerProps {
+interface TaxonomyCellProps {
   selectedTaxonomies: string[];
   onAddTaxonomy: (taxonomy: string) => void;
   onRemoveTaxonomy: (taxonomy: string) => void;
 }
 
-const TaxonomiesPicker = ({
+const TaxonomySelectCell = ({
   selectedTaxonomies,
   onAddTaxonomy,
   onRemoveTaxonomy,
-}: TaxonomiesPickerProps) => {
+}: TaxonomyCellProps) => {
   const [isAdding, setIsAdding] = useState(false);
   const { getDataCategoryDisplayName } = useTaxonomies();
 
@@ -83,4 +83,4 @@ const TaxonomiesPicker = ({
     </TaxonomyCellContainer>
   );
 };
-export default TaxonomiesPicker;
+export default TaxonomySelectCell;

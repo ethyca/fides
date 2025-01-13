@@ -41,6 +41,9 @@ const useCatalogResourceColumns = (type: StagedResourceType) => {
         cell: ({ row }) => <EditCategoryCell resource={row.original} />,
         header: "Data categories",
         minSize: 280,
+        meta: {
+          disableRowClick: true,
+        },
       }),
       columnHelper.accessor((row) => row.description, {
         id: "description",
@@ -92,6 +95,9 @@ const useCatalogResourceColumns = (type: StagedResourceType) => {
         cell: ({ row }) => <EditCategoryCell resource={row.original} />,
         header: "Data categories",
         minSize: 280,
+        meta: {
+          disableRowClick: true,
+        },
       }),
       columnHelper.accessor((row) => row.description, {
         id: "description",

@@ -20,13 +20,14 @@ const TaxonomyBadge = ({
       borderWidth="1px"
       borderColor="gray.200"
       borderRadius="sm"
+      gap={1}
       _hover={onClick ? { bg: "gray.100" } : undefined}
       {...props}
     >
       <Flex
         alignItems="center"
         gap={1.5}
-        cursor={onClick ? "pointer" : "default"}
+        as={onClick ? "button" : undefined}
         onClick={onClick}
       >
         {children}

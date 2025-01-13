@@ -4,9 +4,9 @@ import { useState } from "react";
 import DataCategorySelect from "~/features/common/dropdown/DataCategorySelect";
 import useTaxonomies from "~/features/common/hooks/useTaxonomies";
 import { SparkleIcon } from "~/features/common/Icon/SparkleIcon";
-import TaxonomyBadge from "~/features/data-discovery-and-detection/ClassificationCategoryBadge";
 import TaxonomyAddButton from "~/features/data-discovery-and-detection/tables/cells/TaxonomyAddButton";
 import TaxonomyCellContainer from "~/features/data-discovery-and-detection/tables/cells/TaxonomyCellContainer";
+import TaxonomyBadge from "~/features/data-discovery-and-detection/TaxonomyBadge";
 import { DiscoveryMonitorItem } from "~/features/data-discovery-and-detection/types/DiscoveryMonitorItem";
 
 import { useUpdateResourceCategoryMutation } from "../../discovery-detection.slice";
@@ -18,10 +18,10 @@ interface EditCategoryCellProps {
 const DeleteCategoryButton = ({ onClick }: { onClick: () => void }) => (
   <Button
     onClick={onClick}
-    icon={<CloseIcon boxSize={2} mt={-0.5} />}
+    icon={<CloseIcon boxSize={2} />}
     size="small"
     type="text"
-    className="ml-1 max-h-4 max-w-4"
+    className="max-h-4 max-w-4"
     aria-label="Remove category"
   />
 );

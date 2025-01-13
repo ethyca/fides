@@ -5,8 +5,6 @@ import {
 } from "~/features/common/dropdown/TaxonomySelect";
 import useTaxonomies from "~/features/common/hooks/useTaxonomies";
 
-import styles from "./TaxonomySelect.module.scss";
-
 const DataCategorySelect = ({
   selectedTaxonomies,
   showDisabled = false,
@@ -33,7 +31,6 @@ const DataCategorySelect = ({
         name,
         primaryName,
         description: category.description || "",
-        className: styles.option,
       };
     });
 
