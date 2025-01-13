@@ -23,6 +23,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ### Added
 - Added Action Center MVP behind new feature flag [#5622](https://github.com/ethyca/fides/pull/5622)
+- Added Data Catalog MVP behind new feature flag [#5628](https://github.com/ethyca/fides/pull/5628)
 - Added cache-clearing methods to the `DBCache` model to allow deleting cache entries [#5629](https://github.com/ethyca/fides/pull/5629)
 
 ### Changed
