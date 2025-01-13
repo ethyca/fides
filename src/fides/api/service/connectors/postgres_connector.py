@@ -19,6 +19,11 @@ class PostgreSQLConnector(SQLConnector):
 
     secrets_schema = PostgreSQLSchema
 
+    @property
+    def requires_primary_keys(self) -> bool:
+        """Postgres allows arbitrary columns in the WHERE clause for updates so primary keys are not required."""
+        return False
+
     def build_uri(self) -> str:
         """Build URI of format postgresql://[user[:password]@][netloc][:port][/dbname]"""
         config = self.secrets_schema(**self.configuration.secrets or {})
