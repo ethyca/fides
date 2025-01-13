@@ -26,6 +26,10 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Added cache-clearing methods to the `DBCache` model to allow deleting cache entries [#5629](https://github.com/ethyca/fides/pull/5629)
 - Adds partitioning, custom identities, multiple identities to test coverage for BigQuery Enterprise [#5618](https://github.com/ethyca/fides/pull/5618)
 
+### Changed
+- Updated brand link url [#5656](https://github.com/ethyca/fides/pull/5656)
+- Changed "Reclassify" D&D button to show in an overflow menu when row actions are overcrowded [#5655](https://github.com/ethyca/fides/pull/5655)
+
 ### Fixed
 - Fixed issue where the custom report "reset" button was not working as expected [#5649](https://github.com/ethyca/fides/pull/5649)
 - Fixed column ordering issue in the Data Map report [#5649](https://github.com/ethyca/fides/pull/5649)
