@@ -864,6 +864,59 @@ def erasure_policy(
             "rule_id": erasure_rule.id,
         },
     )
+
+    yield erasure_policy
+    try:
+        rule_target.delete(db)
+    except ObjectDeletedError:
+        pass
+    try:
+        erasure_rule.delete(db)
+    except ObjectDeletedError:
+        pass
+    try:
+        erasure_policy.delete(db)
+    except ObjectDeletedError:
+        pass
+
+
+@pytest.fixture(scope="function")
+def erasure_policy_address_city(
+    db: Session,
+    oauth_client: ClientDetail,
+) -> Generator:
+    erasure_policy = Policy.create(
+        db=db,
+        data={
+            "name": "example erasure policy",
+            "key": "example_erasure_policy",
+            "client_id": oauth_client.id,
+        },
+    )
+
+    erasure_rule = Rule.create(
+        db=db,
+        data={
+            "action_type": ActionType.erasure.value,
+            "client_id": oauth_client.id,
+            "name": "Erasure Rule",
+            "policy_id": erasure_policy.id,
+            "masking_strategy": {
+                "strategy": "null_rewrite",
+                "configuration": {},
+            },
+        },
+    )
+
+    rule_target = RuleTarget.create(
+        db=db,
+        data={
+            "client_id": oauth_client.id,
+            "data_category": DataCategory("user.contact.address.city").value,
+            "rule_id": erasure_rule.id,
+        },
+    )
+
     yield erasure_policy
     try:
         rule_target.delete(db)
