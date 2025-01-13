@@ -2,7 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-export type DataCategoryCreate = {
+export type DataUseCreateOrUpdate = {
   /**
    * The version of Fideslang in which this label was added.
    */
@@ -20,8 +20,8 @@ export type DataCategoryCreate = {
    */
   is_default?: boolean;
   name?: string | null;
-  description: string;
-  active?: boolean;
+  description: string | null;
+  active?: boolean | null;
   fides_key?: string | null;
   tags?: Array<string> | null;
   organization_fides_key?: string | null;

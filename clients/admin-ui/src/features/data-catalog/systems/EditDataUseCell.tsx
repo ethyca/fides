@@ -9,8 +9,8 @@ import { useState } from "react";
 
 import DataUseSelect from "~/features/common/dropdown/DataUseSelect";
 import useTaxonomies from "~/features/common/hooks/useTaxonomies";
+import EditMinimalDataUseModal from "~/features/data-catalog/systems/EditMinimalDataUseModal";
 import TaxonomyBadge from "~/features/data-discovery-and-detection/ClassificationCategoryBadge";
-import EditMinimalDataUseModal from "~/features/data-discovery-and-detection/new-dataset-lifecycle/EditMinimalDataUseModal";
 import TaxonomyAddButton from "~/features/data-discovery-and-detection/tables/cells/TaxonomyAddButton";
 import TaxonomyCellContainer from "~/features/data-discovery-and-detection/tables/cells/TaxonomyCellContainer";
 import useSystemDataUseCrud from "~/features/data-use/useSystemDataUseCrud";

@@ -3,11 +3,8 @@ import { Form, Formik } from "formik";
 import * as Yup from "yup";
 
 import AdvancedSettings from "~/features/common/form/AdvancedSettings";
-import {
-  CustomSelect,
-  CustomSwitch,
-  CustomTextInput,
-} from "~/features/common/form/inputs";
+import { ControlledSelect } from "~/features/common/form/ControlledSelect";
+import { CustomSwitch, CustomTextInput } from "~/features/common/form/inputs";
 import useTaxonomies from "~/features/common/hooks/useTaxonomies";
 import FormModal from "~/features/common/modals/FormModal";
 import useLegalBasisOptions from "~/features/system/system-form-declaration-tab/useLegalBasisOptions";
@@ -68,27 +65,26 @@ const EditMinimalDataUseModal = ({
         <FormModal title="Edit data use" isOpen={isOpen} onClose={onClose}>
           <Form>
             <Flex py={4} gap={6} direction="column">
-              <CustomSelect
+              <ControlledSelect
                 name="data_use"
                 label="Data use"
                 options={dataUseOptions}
-                variant="stacked"
-                singleValueBlock
+                layout="stacked"
                 isRequired
               />
-              <CustomSelect
+              <ControlledSelect
                 name="data_categories"
                 label="Data categories"
                 options={dataCategoryOptions}
-                variant="stacked"
-                isMulti
+                mode="multiple"
+                layout="stacked"
               />
-              <CustomSelect
+              <ControlledSelect
                 name="data_subjects"
                 label="Data subjects"
                 options={dataSubjectOptions}
-                variant="stacked"
-                isMulti
+                mode="multiple"
+                layout="stacked"
               />
               <CustomTextInput
                 name="name"
@@ -96,11 +92,11 @@ const EditMinimalDataUseModal = ({
                 variant="stacked"
               />
               <AdvancedSettings>
-                <CustomSelect
+                <ControlledSelect
                   name="legal_basis_for_processing"
                   label="Legal basis for processing"
                   options={legalBasisOptions}
-                  variant="stacked"
+                  layout="stacked"
                 />
                 <Collapse
                   in={
@@ -145,13 +141,13 @@ const EditMinimalDataUseModal = ({
                     style={{ overflow: "visible" }}
                   >
                     <Box mt={4}>
-                      <CustomSelect
+                      <ControlledSelect
                         isRequired
                         name="special_category_legal_basis"
                         label="Legal basis for processing"
                         options={specialCategoryLegalBasisOptions}
                         tooltip="What is the legal basis under which the special category data is processed?"
-                        variant="stacked"
+                        layout="stacked"
                       />
                     </Box>
                   </Collapse>

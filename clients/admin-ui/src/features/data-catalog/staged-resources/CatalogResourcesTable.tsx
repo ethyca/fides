@@ -5,7 +5,7 @@ import {
   getGroupedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { AntButton, Box, Flex, Text, VStack } from "fidesui";
+import { Box, Flex, Text, VStack } from "fidesui";
 import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";
 
@@ -77,7 +77,6 @@ const CatalogResourcesTable = ({
   resourceUrn: string;
   system: SystemResponse;
 }) => {
-  const [searchQuery, setSearchQuery] = useState("");
   const router = useRouter();
 
   const {
@@ -95,6 +94,8 @@ const CatalogResourcesTable = ({
     resetPageIndexToDefault,
   } = useServerSidePagination();
 
+  const [searchQuery, setSearchQuery] = useState("");
+
   useEffect(() => {
     resetPageIndexToDefault();
   }, [resourceUrn, resetPageIndexToDefault]);
@@ -108,6 +109,7 @@ const CatalogResourcesTable = ({
     page: pageIndex,
     size: pageSize,
     diff_status: DIFF_STATUS_FILTERS,
+    search: searchQuery,
   });
 
   const {
@@ -146,7 +148,6 @@ const CatalogResourcesTable = ({
             <SearchInput value={searchQuery} onChange={setSearchQuery} />
           </Box>
         </Flex>
-        <AntButton disabled>Actions</AntButton>
       </TableActionBar>
       <FidesTableV2
         tableInstance={tableInstance}

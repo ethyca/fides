@@ -9,17 +9,7 @@ import {
   RowSelectionState,
   useReactTable,
 } from "@tanstack/react-table";
-import {
-  AntButton,
-  Box,
-  Flex,
-  Menu,
-  MenuButton,
-  MenuItem,
-  MenuList,
-  Text,
-  VStack,
-} from "fidesui";
+import { Text, VStack } from "fidesui";
 import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";
 
@@ -29,17 +19,15 @@ import {
   DefaultHeaderCell,
   FidesTableV2,
   PaginationBar,
-  TableActionBar,
   TableSkeletonLoader,
   useServerSidePagination,
 } from "~/features/common/table/v2";
 import { IndeterminateCheckboxCell } from "~/features/common/table/v2/cells";
 import { getQueryParamsFromArray } from "~/features/common/utils";
 import { useGetCatalogSystemsQuery } from "~/features/data-catalog/data-catalog.slice";
+import EditDataUseCell from "~/features/data-catalog/systems/EditDataUseCell";
 import SystemActionsCell from "~/features/data-catalog/systems/SystemActionCell";
 import { useLazyGetAvailableDatabasesByConnectionQuery } from "~/features/data-discovery-and-detection/discovery-detection.slice";
-import IconLegendTooltip from "~/features/data-discovery-and-detection/IndicatorLegend";
-import { SearchInput } from "~/features/data-discovery-and-detection/SearchInput";
 import { SystemWithMonitorKeys } from "~/types/api";
 
 const EMPTY_RESPONSE = {
@@ -73,7 +61,6 @@ const EmptyTableNotice = () => (
 );
 
 const SystemsTable = () => {
-  const [searchQuery, setSearchQuery] = useState<string>("");
   const [rowSelectionState, setRowSelectionState] = useState<RowSelectionState>(
     {},
   );
@@ -174,15 +161,15 @@ const SystemsTable = () => {
         ),
         header: (props) => <DefaultHeaderCell value="Name" {...props} />,
       }),
-      // columnHelper.display({
-      //   id: "data-uses",
-      //   cell: ({ row }) => <EditDataUseCell system={row.original} />,
-      //   header: (props) => <DefaultHeaderCell value="Data uses" {...props} />,
-      //   meta: {
-      //     disableRowClick: true,
-      //   },
-      //   minSize: 280,
-      // }),
+      columnHelper.display({
+        id: "data-uses",
+        cell: ({ row }) => <EditDataUseCell system={row.original} />,
+        header: (props) => <DefaultHeaderCell value="Data uses" {...props} />,
+        meta: {
+          disableRowClick: true,
+        },
+        minSize: 280,
+      }),
       columnHelper.display({
         id: "actions",
         cell: (props) => (
@@ -220,41 +207,12 @@ const SystemsTable = () => {
     },
   });
 
-  const selectedRowIds = Object.keys(rowSelectionState).filter(
-    (k) => rowSelectionState[k],
-  );
-
-  const handleBulkAddDataUse = () => {
-    console.log(`adding a data use to systems ${selectedRowIds.join(", ")}...`);
-    setRowSelectionState({});
-  };
-
   if (isLoading || isFetching) {
     return <TableSkeletonLoader rowHeight={36} numRows={36} />;
   }
 
   return (
     <>
-      <TableActionBar>
-        <Flex gap={6} align="center">
-          <Box flexShrink={0}>
-            <SearchInput value={searchQuery} onChange={setSearchQuery} />
-          </Box>
-          <IconLegendTooltip />
-        </Flex>
-        {/* <Menu size="xs">
-          <MenuButton
-            as={AntButton}
-            size="small"
-            disabled={!selectedRowIds.length}
-          >
-            Actions
-          </MenuButton>
-          <MenuList>
-            <MenuItem onClick={handleBulkAddDataUse}>Add data use</MenuItem>
-          </MenuList>
-        </Menu> */}
-      </TableActionBar>
       <FidesTableV2
         tableInstance={tableInstance}
         emptyTableNotice={<EmptyTableNotice />}

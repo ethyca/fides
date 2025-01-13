@@ -4,7 +4,7 @@
 
 import type { DataSubjectRights } from "./DataSubjectRights";
 
-export type DataSubjectCreate = {
+export type DataSubjectCreateOrUpdate = {
   /**
    * The version of Fideslang in which this label was added.
    */
@@ -22,8 +22,8 @@ export type DataSubjectCreate = {
    */
   is_default?: boolean;
   name?: string | null;
-  description: string;
-  active?: boolean;
+  description: string | null;
+  active?: boolean | null;
   fides_key?: string | null;
   tags?: Array<string> | null;
   organization_fides_key?: string | null;

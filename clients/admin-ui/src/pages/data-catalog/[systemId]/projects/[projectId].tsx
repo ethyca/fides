@@ -4,7 +4,6 @@ import {
   getGroupedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { AntButton, Flex } from "fidesui";
 import { useRouter } from "next/router";
 import { useEffect, useMemo } from "react";
 
@@ -14,7 +13,6 @@ import PageHeader from "~/features/common/PageHeader";
 import {
   FidesTableV2,
   PaginationBar,
-  TableActionBar,
   TableSkeletonLoader,
   useServerSidePagination,
 } from "~/features/common/table/v2";
@@ -109,14 +107,6 @@ const CatalogDatasetView = () => {
       {!showContent && <TableSkeletonLoader rowHeight={36} numRows={36} />}
       {showContent && (
         <>
-          <TableActionBar>
-            <Flex gap={6} align="center">
-              {/* <Box flexShrink={0}>
-            <SearchInput value={searchQuery} onChange={setSearchQuery} />
-          </Box> */}
-            </Flex>
-            <AntButton disabled>Actions</AntButton>
-          </TableActionBar>
           <FidesTableV2
             tableInstance={tableInstance}
             emptyTableNotice={<EmptyCatalogTableNotice />}

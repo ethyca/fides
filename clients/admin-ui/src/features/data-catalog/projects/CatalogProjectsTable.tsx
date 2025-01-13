@@ -8,17 +8,7 @@ import {
   RowSelectionState,
   useReactTable,
 } from "@tanstack/react-table";
-import {
-  AntButton,
-  Box,
-  Flex,
-  Menu,
-  MenuButton,
-  MenuItem,
-  MenuList,
-  Text,
-  VStack,
-} from "fidesui";
+import { Text, VStack } from "fidesui";
 import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";
 
@@ -26,9 +16,7 @@ import { DATA_CATALOG_ROUTE } from "~/features/common/nav/v2/routes";
 import {
   DefaultCell,
   FidesTableV2,
-  IndeterminateCheckboxCell,
   PaginationBar,
-  TableActionBar,
   TableSkeletonLoader,
   useServerSidePagination,
 } from "~/features/common/table/v2";
@@ -36,11 +24,7 @@ import { RelativeTimestampCell } from "~/features/common/table/v2/cells";
 import CatalogResourceNameCell from "~/features/data-catalog/CatalogResourceNameCell";
 import CatalogStatusBadgeCell from "~/features/data-catalog/CatalogStatusBadgeCell";
 import { useGetCatalogProjectsQuery } from "~/features/data-catalog/data-catalog.slice";
-import SystemActionsCell from "~/features/data-catalog/systems/SystemActionCell";
 import { getCatalogResourceStatus } from "~/features/data-catalog/utils";
-import { useMuteResourcesMutation } from "~/features/data-discovery-and-detection/discovery-detection.slice";
-import IconLegendTooltip from "~/features/data-discovery-and-detection/IndicatorLegend";
-import { SearchInput } from "~/features/data-discovery-and-detection/SearchInput";
 import { StagedResourceAPIResponse } from "~/types/api";
 
 const EMPTY_RESPONSE = {
@@ -64,9 +48,8 @@ const EmptyTableNotice = () => (
   >
     <VStack>
       <Text fontSize="md" fontWeight="600">
-        No systems found
+        No resources found
       </Text>
-      <Text fontSize="sm">You&apos;re up to date!</Text>
     </VStack>
   </VStack>
 );
@@ -80,7 +63,6 @@ const CatalogProjectsTable = ({
   systemKey: string;
   monitorConfigIds: string[];
 }) => {
-  const [searchQuery, setSearchQuery] = useState<string>("");
   const [rowSelectionState, setRowSelectionState] = useState<RowSelectionState>(
     {},
   );
@@ -111,8 +93,6 @@ const CatalogProjectsTable = ({
 
   const router = useRouter();
 
-  const [hideProjects] = useMuteResourcesMutation();
-
   const {
     items: data,
     total: totalRows,
@@ -125,31 +105,6 @@ const CatalogProjectsTable = ({
 
   const columns: ColumnDef<StagedResourceAPIResponse, any>[] = useMemo(
     () => [
-      columnHelper.display({
-        id: "select",
-        cell: ({ row }) => (
-          <IndeterminateCheckboxCell
-            isChecked={row.getIsSelected()}
-            onChange={row.getToggleSelectedHandler()}
-            dataTestId={`select-row-${row.id}`}
-          />
-        ),
-        header: ({ table }) => (
-          <IndeterminateCheckboxCell
-            isChecked={table.getIsAllPageRowsSelected()}
-            onChange={table.getToggleAllPageRowsSelectedHandler()}
-            dataTestId="select-all-rows"
-          />
-        ),
-        maxSize: 25,
-        enableResizing: false,
-        meta: {
-          cellProps: {
-            borderRight: "none",
-          },
-          disableRowClick: true,
-        },
-      }),
       columnHelper.accessor((row) => row.name, {
         id: "name",
         cell: (props) => (
@@ -186,26 +141,8 @@ const CatalogProjectsTable = ({
           },
         },
       }),
-      columnHelper.display({
-        id: "actions",
-        cell: (props) => (
-          <SystemActionsCell
-            onHideClick={async () => {
-              await hideProjects({ staged_resource_urns: [props.row.id] });
-            }}
-          />
-        ),
-        maxSize: 20,
-        enableResizing: false,
-        meta: {
-          cellProps: {
-            borderLeft: "none",
-          },
-          disableRowClick: true,
-        },
-      }),
     ],
-    [hideProjects],
+    [],
   );
 
   const tableInstance = useReactTable<StagedResourceAPIResponse>({
@@ -222,39 +159,12 @@ const CatalogProjectsTable = ({
     },
   });
 
-  const selectedRowIds = Object.keys(rowSelectionState);
-
-  const handleBulkHide = async () => {
-    await hideProjects({ staged_resource_urns: selectedRowIds });
-    setRowSelectionState({});
-  };
-
   if (isLoading || isFetching) {
     return <TableSkeletonLoader rowHeight={36} numRows={36} />;
   }
 
   return (
     <>
-      <TableActionBar>
-        <Flex gap={6} align="center">
-          <Box flexShrink={0}>
-            <SearchInput value={searchQuery} onChange={setSearchQuery} />
-          </Box>
-          <IconLegendTooltip />
-        </Flex>
-        <Menu size="xs">
-          <MenuButton
-            as={AntButton}
-            size="small"
-            disabled={!selectedRowIds.length}
-          >
-            Actions
-          </MenuButton>
-          <MenuList>
-            <MenuItem onClick={handleBulkHide}>Hide</MenuItem>
-          </MenuList>
-        </Menu>
-      </TableActionBar>
       <FidesTableV2
         tableInstance={tableInstance}
         emptyTableNotice={<EmptyTableNotice />}
