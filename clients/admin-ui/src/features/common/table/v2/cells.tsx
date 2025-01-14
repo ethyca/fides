@@ -58,9 +58,7 @@ export const DefaultCell = <T,>({
 };
 
 const FidesBadge = ({ children, ...props }: BadgeProps) => (
-  <Badge {...props} variant="taxonomy">
-    {children}
-  </Badge>
+  <Badge {...props}>{children}</Badge>
 );
 
 export const RelativeTimestampCell = ({
