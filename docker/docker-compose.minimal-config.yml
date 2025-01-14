@@ -52,7 +52,7 @@ services:
           - node.labels.fides.app-db-data == true
 
   redis:
-    image: "redis:6.2-alpine"
+    image: "redis:6.2.5-alpine"
     command: redis-server --requirepass redispassword
     expose:
       - 6379

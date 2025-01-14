@@ -2,7 +2,7 @@ dataset:
   - fides_key: postgres_example_custom_request_field_dataset
     data_categories: []
     description: Postgres example dataset with a custom request field
-    name: Postgres Example Custom Request Field Dataset
+    name: Postgrex Example Custom Request Field Dataset
     collections:
       - name: dynamic_email_address_config
         fields:

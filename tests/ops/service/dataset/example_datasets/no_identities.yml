@@ -13,6 +13,8 @@ dataset:
             data_categories: [user.contact.email]
           - name: id
             data_categories: [user.unique_id]
+            fides_meta:
+              primary_key: True
           - name: name
             data_categories: [user.name]
             fides_meta:

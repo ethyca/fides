@@ -132,14 +132,3 @@ class BaseConnector(Generic[DB_CONNECTOR_TYPE], ABC):
         raise NotImplementedError(
             "execute_standalone_retrieval_query must be implemented in a concrete subclass"
         )
-
-    @property
-    def requires_primary_keys(self) -> bool:
-        """
-        Indicates if datasets linked to this connector require primary keys for erasures.
-        Defaults to True.
-        """
-
-        # Defaulting to true for now so we can keep the default behavior and
-        # incrementally determine the need for primary keys across all connectors
-        return True

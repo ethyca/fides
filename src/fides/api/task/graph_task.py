@@ -603,19 +603,12 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         *erasure_prereqs: int,  # TODO Remove when we stop support for DSR 2.0. DSR 3.0 enforces with downstream_tasks.
     ) -> int:
         """Run erasure request"""
-
         # if there is no primary key specified in the graph node configuration
         # note this in the execution log and perform no erasures on this node
-        if (
-            self.connector.requires_primary_keys
-            and not self.execution_node.collection.contains_field(
-                lambda f: f.primary_key
-            )
-        ):
+        if not self.execution_node.collection.contains_field(lambda f: f.primary_key):
             logger.warning(
-                'Skipping erasures on "{}" as the "{}" connector requires a primary key to be defined in one of the collection fields, but none was found.',
+                "No erasures on {} as there is no primary_key defined.",
                 self.execution_node.address,
-                self.connector.configuration.connection_type,
             )
             if self.request_task.id:
                 # For DSR 3.0, largely for testing. DSR 3.0 uses Request Task status
@@ -624,7 +617,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
             # TODO Remove when we stop support for DSR 2.0
             self.resources.cache_erasure(self.key.value, 0)
             self.update_status(
-                "No values were erased since no primary key was defined in any of the fields for this collection",
+                "No values were erased since no primary key was defined for this collection",
                 None,
                 ActionType.erasure,
                 ExecutionLogStatus.complete,

@@ -70,27 +70,21 @@ class ScyllaDBQueryConfig(SQLLikeQueryConfig[ScyllaDBStatement]):
     ) -> Optional[ScyllaDBStatement]:
         return self.generate_query_without_tuples(input_data, policy)
 
-    def format_key_map_for_update_stmt(self, param_map: Dict[str, Any]) -> List[str]:
+    def format_key_map_for_update_stmt(self, fields: List[str]) -> List[str]:
         """Adds the appropriate formatting for update statements in this datastore."""
-        return [f"{k} = %({v})s" for k, v in sorted(param_map.items())]
+        fields.sort()
+        return [f"{k} = %({k})s" for k in fields]
 
     def get_update_clauses(
-        self,
-        update_value_map: Dict[str, Any],
-        where_clause_fields: Dict[str, Field],
+        self, update_value_map: Dict[str, Any], non_empty_primary_keys: Dict[str, Field]
     ) -> List[str]:
-        """Returns a list of update clauses for the update statement.
-
-        Omits primary key fields from updates since ScyllaDB prohibits
-        updating primary key fields.
-        """
-
+        """Returns a list of update clauses for the update statement."""
         return self.format_key_map_for_update_stmt(
-            {
-                key: value
-                for key, value in update_value_map.items()
-                if key not in where_clause_fields
-            }
+            [
+                key
+                for key in update_value_map.keys()
+                if key not in non_empty_primary_keys
+            ]
         )
 
     def format_query_data_name(self, query_data_name: str) -> str:

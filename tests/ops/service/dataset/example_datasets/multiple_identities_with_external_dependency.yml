@@ -32,5 +32,7 @@ dataset:
                   direction: from
           - name: id
             data_categories: [system.operations]
+            fides_meta:
+              primary_key: True
           - name: shipping_address_id
             data_categories: [system.operations]

@@ -196,7 +196,7 @@ class TestBigQueryQueryConfig:
         )
         stmts = set(str(stmt) for stmt in delete_stmts)
         expected_stmts = {
-            "DELETE FROM `employee` WHERE `employee`.`address_id` = %(address_id_1:STRING)s AND `employee`.`email` = %(email_1:STRING)s"
+            "DELETE FROM `employee` WHERE `employee`.`id` = %(id_1:STRING)s"
         }
         assert stmts == expected_stmts
 
@@ -289,6 +289,6 @@ class TestBigQueryQueryConfig:
         )
         stmts = set(str(stmt) for stmt in delete_stmts)
         expected_stmts = {
-            "DELETE FROM `silken-precinct-284918.fidesopstest.employee` WHERE `silken-precinct-284918.fidesopstest.employee`.`address_id` = %(address_id_1:STRING)s AND `silken-precinct-284918.fidesopstest.employee`.`email` = %(email_1:STRING)s"
+            "DELETE FROM `silken-precinct-284918.fidesopstest.employee` WHERE `silken-precinct-284918.fidesopstest.employee`.`id` = %(id_1:STRING)s"
         }
         assert stmts == expected_stmts
