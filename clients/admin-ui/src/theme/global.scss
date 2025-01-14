@@ -1,6 +1,20 @@
 @import "fidesui/src/palette/palette.module.scss";
 
 /**
+  * Chakra removes heading font weight, wheras Ant assumes browser defaults.
+  * This sets the font weight for headings back to the browser default for Ant support.
+  * Remove this once Chakra has been removed.
+ */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-weight: bold;
+}
+
+/**
  * Adds the color variables from the palette to the root element
  */
 :root {

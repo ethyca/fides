@@ -1,4 +1,16 @@
-import { CheckIcon, HStack, RepeatIcon, ViewOffIcon } from "fidesui";
+import {
+  AntButton as Button,
+  CheckIcon,
+  HStack,
+  Menu,
+  MenuButton,
+  MenuItem,
+  MenuList,
+  MoreIcon,
+  RepeatIcon,
+  Spacer,
+  ViewOffIcon,
+} from "fidesui";
 
 import { useAlert } from "~/features/common/hooks";
 import { DiscoveryMonitorItem } from "~/features/data-discovery-and-detection/types/DiscoveryMonitorItem";
@@ -54,21 +66,50 @@ const DiscoveryItemActionsCell = ({ resource }: DiscoveryItemActionsProps) => {
   const showMuteAction =
     itemHasClassificationChanges || childItemsHaveClassificationChanges;
 
+  // if promote and mute are both shown, show "Reclassify" in an overflow menu
+  // to avoid having too many buttons in the cell
+  const showReclassifyInOverflow = showPromoteAction && showMuteAction;
+
+  const handlePromote = async () => {
+    await promoteResourceMutation({
+      staged_resource_urn: resource.urn,
+    });
+    successAlert(
+      `These changes have been added to a Fides dataset. To view, navigate to "Manage datasets".`,
+      `Table changes confirmed`,
+    );
+  };
+
+  const handleMute = async () => {
+    await muteResourceMutation({
+      staged_resource_urn: resource.urn,
+    });
+    successAlert(
+      `Ignored changes will not be added to a Fides dataset.`,
+      `${resource.name || "Changes"} ignored`,
+    );
+  };
+
+  const handleReclassify = async () => {
+    await confirmResourceMutation({
+      staged_resource_urn: resource.urn,
+      monitor_config_id: resource.monitor_config_id!,
+      start_classification: true,
+      classify_monitored_resources: true,
+    });
+    successAlert(
+      `Reclassification of ${getResourceName(resource) || "the resource"} has begun.  The results may take some time to appear in the “Data discovery“ tab.`,
+      `Reclassification started`,
+    );
+  };
+
   return (
-    <HStack onClick={(e) => e.stopPropagation()}>
+    <HStack onClick={(e) => e.stopPropagation()} gap={2}>
       {showPromoteAction && (
         <ActionButton
           title="Confirm"
           icon={<CheckIcon />}
-          onClick={async () => {
-            await promoteResourceMutation({
-              staged_resource_urn: resource.urn,
-            });
-            successAlert(
-              `These changes have been added to a Fides dataset. To view, navigate to "Manage datasets".`,
-              `Table changes confirmed`,
-            );
-          }}
+          onClick={handlePromote}
           disabled={anyActionIsLoading}
           loading={promoteIsLoading}
         />
@@ -77,37 +118,44 @@ const DiscoveryItemActionsCell = ({ resource }: DiscoveryItemActionsProps) => {
         <ActionButton
           title="Ignore"
           icon={<ViewOffIcon />}
-          onClick={async () => {
-            await muteResourceMutation({
-              staged_resource_urn: resource.urn,
-            });
-            successAlert(
-              `Ignored changes will not be added to a Fides dataset.`,
-              `${resource.name || "Changes"} ignored`,
-            );
-          }}
+          onClick={handleMute}
           disabled={anyActionIsLoading}
           loading={muteIsLoading}
         />
       )}
-      <ActionButton
-        title="Reclassify"
-        icon={<RepeatIcon />}
-        onClick={async () => {
-          await confirmResourceMutation({
-            staged_resource_urn: resource.urn,
-            monitor_config_id: resource.monitor_config_id!,
-            start_classification: true,
-            classify_monitored_resources: true,
-          });
-          successAlert(
-            `Reclassification of ${getResourceName(resource) || "the resource"} has begun.  The results may take some time to appear in the “Data discovery“ tab.`,
-            `Reclassification started`,
-          );
-        }}
-        disabled={anyActionIsLoading}
-        loading={confirmIsLoading}
-      />
+      {!showReclassifyInOverflow && (
+        <ActionButton
+          title="Reclassify"
+          icon={<RepeatIcon />}
+          onClick={handleReclassify}
+          disabled={anyActionIsLoading}
+          loading={confirmIsLoading}
+        />
+      )}
+      <Spacer />
+      {showReclassifyInOverflow && (
+        <Menu>
+          <MenuButton
+            as={Button}
+            size="small"
+            // TS expects Chakra's type prop (HTML type) but we want to assign the Ant type
+            // @ts-ignore
+            type="text"
+            icon={<MoreIcon transform="rotate(90deg)" />}
+            className="w-6 gap-0"
+            data-testid="actions-overflow-btn"
+          />
+          <MenuList>
+            <MenuItem
+              onClick={handleReclassify}
+              icon={<RepeatIcon />}
+              data-testid="action-reclassify"
+            >
+              Reclassify
+            </MenuItem>
+          </MenuList>
+        </Menu>
+      )}
     </HStack>
   );
 };
