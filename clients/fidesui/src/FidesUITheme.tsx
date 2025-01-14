@@ -36,6 +36,8 @@ const badgeTheme = defineStyleConfig({
     color: palette.FIDESUI_MINOS,
     paddingInlineStart: "var(--chakra-space-1-5)",
     paddingInlineEnd: "var(--chakra-space-1-5)",
+    textTransform: "none",
+    fontWeight: "normal",
   },
 });
 
@@ -141,6 +143,28 @@ export const theme: Dict = extendChakraTheme({
       700: palette.FIDESUI_SUCCESS,
       800: palette.FIDESUI_SUCCESS,
       900: palette.FIDESUI_SUCCESS,
+    },
+    "success-text": {
+      100: palette.FIDESUI_SUCCESS_TEXT,
+      200: palette.FIDESUI_SUCCESS_TEXT,
+      300: palette.FIDESUI_SUCCESS_TEXT,
+      400: palette.FIDESUI_SUCCESS_TEXT,
+      500: palette.FIDESUI_SUCCESS_TEXT,
+      600: palette.FIDESUI_SUCCESS_TEXT,
+      700: palette.FIDESUI_SUCCESS_TEXT,
+      800: palette.FIDESUI_SUCCESS_TEXT,
+      900: palette.FIDESUI_SUCCESS_TEXT,
+    },
+    "error-text": {
+      100: palette.FIDESUI_ERROR_TEXT,
+      200: palette.FIDESUI_ERROR_TEXT,
+      300: palette.FIDESUI_ERROR_TEXT,
+      400: palette.FIDESUI_ERROR_TEXT,
+      500: palette.FIDESUI_ERROR_TEXT,
+      600: palette.FIDESUI_ERROR_TEXT,
+      700: palette.FIDESUI_ERROR_TEXT,
+      800: palette.FIDESUI_ERROR_TEXT,
+      900: palette.FIDESUI_ERROR_TEXT,
     },
     info: {
       100: palette.FIDESUI_BG_INFO,

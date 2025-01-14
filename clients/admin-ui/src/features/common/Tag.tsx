@@ -6,7 +6,7 @@ const Tag = ({ children }: { children: ReactNode }) => (
     borderRadius="2px"
     padding="4px 8px"
     bg="gray.100"
-    color="gray.600"
+    color="primary.900"
     marginRight="4px"
     height="24px"
     fontWeight={400}
