@@ -43,6 +43,7 @@ const inputTheme = defineStyleConfig({
   variants: {
     outline: {
       field: {
+        // Remove blue highlight on focused inputs
         _focusVisible: {
           outline: 0,
           boxShadow: "none",
