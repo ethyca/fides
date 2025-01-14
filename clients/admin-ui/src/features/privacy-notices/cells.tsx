@@ -21,7 +21,6 @@ export const MechanismCell = (value: ConsentMechanism | undefined) => {
       data-testid="status-badge"
       textTransform="uppercase"
       fontWeight="400"
-      color="gray.600"
       px={2}
     >
       {innerText}
@@ -115,7 +114,6 @@ export const PrivacyNoticeStatusCell = (
         data-testid="status-badge"
         textTransform="uppercase"
         fontWeight="400"
-        color="gray.600"
         px={2}
       >
         {tagValue}
