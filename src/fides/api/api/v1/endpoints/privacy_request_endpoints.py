@@ -46,6 +46,7 @@ from fides.api.api.v1.endpoints.manual_webhook_endpoints import (
     get_access_manual_webhook_or_404,
 )
 from fides.api.common_exceptions import (
+    FidesopsException,
     IdentityVerificationException,
     ManualWebhookFieldsUnset,
     NoCachedManualWebhookEntry,
@@ -2165,13 +2166,18 @@ def resubmit_privacy_request(
         get_privacy_request_service
     ),
 ) -> PrivacyRequest:
-    privacy_request = privacy_request_service.resubmit_privacy_request(
-        privacy_request_id
-    )
+    try:
+        privacy_request = privacy_request_service.resubmit_privacy_request(
+            privacy_request_id
+        )
+    except FidesopsException as exc:
+        raise HTTPException(
+            status_code=HTTP_422_UNPROCESSABLE_ENTITY, detail=exc.message
+        )
 
     if not privacy_request:
         raise HTTPException(
-            status_code=HTTP_404_NOT_FOUND, detail="Privacy request not found."
+            status_code=HTTP_404_NOT_FOUND, detail="Privacy request not found"
         )
 
     return privacy_request

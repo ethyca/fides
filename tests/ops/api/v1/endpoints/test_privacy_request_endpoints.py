@@ -97,6 +97,7 @@ from fides.common.api.v1.urn_registry import (
     PRIVACY_REQUEST_PRE_APPROVE_ELIGIBLE,
     PRIVACY_REQUEST_PRE_APPROVE_NOT_ELIGIBLE,
     PRIVACY_REQUEST_REQUEUE,
+    PRIVACY_REQUEST_RESUBMIT,
     PRIVACY_REQUEST_RESUME,
     PRIVACY_REQUEST_RESUME_FROM_REQUIRES_INPUT,
     PRIVACY_REQUEST_RETRY,
@@ -8551,3 +8552,64 @@ class TestPrivacyRequestFilteredResults:
             "status",
             "results",
         }
+
+
+class TestResubmitPrivacyRequest:
+    @pytest.fixture(scope="function")
+    def url(self, privacy_request):
+        return V1_URL_PREFIX + PRIVACY_REQUEST_RESUBMIT.format(
+            privacy_request_id=privacy_request.id
+        )
+
+    def test_resubmit_privacy_request_not_authenticated(self, url, api_client) -> None:
+        response = api_client.post(url, headers={})
+        assert response.status_code == 401
+
+    def test_resubmit_privacy_request_wrong_scope(
+        self,
+        url,
+        api_client: TestClient,
+        generate_auth_header,
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[DATASET_CREATE_OR_UPDATE])
+        response = api_client.post(url, headers=auth_header)
+        assert response.status_code == 403
+
+    @pytest.mark.parametrize(
+        "auth_header,expected_status",
+        [
+            ("owner_auth_header", HTTP_200_OK),
+            ("contributor_auth_header", HTTP_200_OK),
+            ("viewer_and_approver_auth_header", HTTP_403_FORBIDDEN),
+            ("viewer_auth_header", HTTP_403_FORBIDDEN),
+            ("approver_auth_header", HTTP_403_FORBIDDEN),
+        ],
+    )
+    def test_resubmit_privacy_request_with_roles(
+        self,
+        url,
+        auth_header,
+        expected_status,
+        test_client: TestClient,
+        request,
+    ) -> None:
+
+        auth_header = request.getfixturevalue(auth_header)
+        response = test_client.post(
+            url,
+            headers=auth_header,
+        )
+        assert response.status_code == expected_status
+
+    def test_resubmit_privacy_request(
+        self,
+        url,
+        api_client: TestClient,
+        generate_auth_header,
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CREATE])
+        response = api_client.post(
+            url,
+            headers=auth_header,
+        )
+        assert response.status_code == HTTP_200_OK
