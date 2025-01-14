@@ -45,6 +45,7 @@ const HomeContent = () => {
                     borderRadius: "0px 6px 6px 0px",
                     borderLeft: "none",
                   }}
+                  data-testid={`tile-${item.name}`}
                 >
                   <AntTypography.Title level={5}>
                     {item.name}
