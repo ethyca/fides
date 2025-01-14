@@ -42,7 +42,7 @@ const SelectIntegrationType = ({
       ) : (
         <Flex direction="column">
           {filteredTypes.map((i) => {
-            if (!datahub && i.placeholder.connection_type == "datahub") {
+            if (!datahub && i.placeholder.connection_type === "datahub") {
               return null;
             }
             return (
