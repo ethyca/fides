@@ -84,7 +84,7 @@ const AssignSystemsModal = ({
           alignItems="center"
         >
           <Text>Assign systems</Text>
-          <Badge bg="green.500" color="white" px={1}>
+          <Badge bg="success.500" color="white">
             Assigned to {assignedSystems.length} systems
           </Badge>
         </ModalHeader>

@@ -279,7 +279,7 @@ export const DictSuggestionNumberInput = ({
               setFieldValue(field.name, v);
             }}
             w="100%"
-            colorScheme="purple"
+            colorScheme="terracotta"
             inputMode="numeric"
             data-testid={`input-${field.name}`}
             color={

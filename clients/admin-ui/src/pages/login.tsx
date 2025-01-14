@@ -234,9 +234,9 @@ const Login: NextPage = () => {
               <Box display={["none", "none", "block"]}>
                 <Image
                   src="/logo.svg"
-                  alt="FidesUI logo"
-                  width={156}
-                  height={48}
+                  alt="Fides logo"
+                  width={205}
+                  height={46}
                 />
               </Box>
               <Stack align="center" spacing={[0, 0, 6]}>
@@ -265,9 +265,9 @@ const Login: NextPage = () => {
                       <Flex justifyContent="center">
                         <Image
                           src="/logo.svg"
-                          alt="FidesUI logo"
-                          width={156}
-                          height={48}
+                          alt="Fides logo"
+                          width={205}
+                          height={46}
                         />
                       </Flex>
                       <Heading fontSize="3xl" colorScheme="primary">

@@ -21,6 +21,7 @@ import {
   UserIcon,
   VStack,
 } from "fidesui";
+import palette from "fidesui/src/palette/palette.module.scss";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
 
@@ -35,16 +36,13 @@ import { useNav } from "./hooks";
 import { ActiveNav, NavGroup, NavGroupChild } from "./nav-config";
 import { INDEX_ROUTE } from "./routes";
 
-const LINK_HOVER_BACKGROUND_COLOR = "#28303F";
-const LINK_ACTIVE_BACKGROUND_COLOR = "#7745F0";
-const LINK_COLOR = "#CBD5E0";
-const NAV_BACKGROUND_COLOR = "#191D27";
+const NAV_BACKGROUND_COLOR = palette.FIDESUI_MINOS;
 const NAV_WIDTH = "200px";
 
 const FidesLogoHomeLink = () => (
   <Box px={2}>
     <Link as={NextLink} href={INDEX_ROUTE} display="flex">
-      <Image src={logoImage} alt="Fides Logo" />
+      <Image src={logoImage} alt="Fides Logo" width={116} />
     </Link>
   </Box>
 );
@@ -70,14 +68,14 @@ export const NavSideBarLink = ({
         px={2}
         width="100%"
         justifyContent="start"
-        color={LINK_COLOR}
+        color={palette.FIDESUI_NEUTRAL_200}
         isActive={isActive}
         _hover={{
-          backgroundColor: LINK_HOVER_BACKGROUND_COLOR,
+          backgroundColor: palette.FIDESUI_NEUTRAL_800,
         }}
         _active={{
-          color: "white",
-          backgroundColor: LINK_ACTIVE_BACKGROUND_COLOR,
+          color: palette.FIDESUI_MINOS,
+          backgroundColor: palette.FIDESUI_SANDSTONE,
         }}
         _focus={{
           outline: "none",

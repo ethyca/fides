@@ -24,7 +24,9 @@ const ResultStatusBadgeCell = ({
   changeTypeOverride?: ResourceChangeType;
 }) => {
   if (result.user_assigned_data_categories?.length) {
-    return <ResultStatusBadge colorScheme="green">Reviewed</ResultStatusBadge>;
+    return (
+      <ResultStatusBadge colorScheme="success">Reviewed</ResultStatusBadge>
+    );
   }
   const changeType = changeTypeOverride ?? findResourceChangeType(result);
   switch (changeType) {
@@ -34,17 +36,15 @@ const ResultStatusBadgeCell = ({
       );
     case ResourceChangeType.MONITORED:
       return (
-        <ResultStatusBadge colorScheme="green">Monitoring</ResultStatusBadge>
+        <ResultStatusBadge colorScheme="success">Monitoring</ResultStatusBadge>
       );
     case ResourceChangeType.IN_PROGRESS:
       return (
-        <ResultStatusBadge colorScheme="blue">Classifying</ResultStatusBadge>
+        <ResultStatusBadge colorScheme="info">Classifying</ResultStatusBadge>
       );
     default:
       return (
-        <ResultStatusBadge colorScheme="orange">
-          Pending review
-        </ResultStatusBadge>
+        <ResultStatusBadge colorScheme="warn">Pending review</ResultStatusBadge>
       );
   }
 };

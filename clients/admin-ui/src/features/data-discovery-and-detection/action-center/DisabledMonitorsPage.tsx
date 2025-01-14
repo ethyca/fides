@@ -14,7 +14,7 @@ export const DisabledMonitorsPage = ({
   <Layout title="Action center" mainProps={{ className: "h-full" }}>
     <Flex justify="center" align="center" className="h-full">
       {isConfigLoading ? (
-        <Spinner color="minos.500" />
+        <Spinner color="primary.900" />
       ) : (
         <Alert
           message="Coming soon..."

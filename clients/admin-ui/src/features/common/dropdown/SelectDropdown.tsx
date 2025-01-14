@@ -72,7 +72,7 @@ const SelectDropdown = ({
     ([, option]) => option.value === selectedValue,
   )?.[0];
 
-  const colorClass = selectedText ? "text-purple-500" : "text-gray-500";
+  const colorClass = selectedText ? "text-primary-900" : "text-gray-500";
 
   return (
     <Menu isLazy onClose={handleClose} onOpen={handleOpen} strategy="fixed">

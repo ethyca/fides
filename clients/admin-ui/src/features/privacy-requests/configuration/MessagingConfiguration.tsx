@@ -103,7 +103,7 @@ const MessagingConfiguration = () => {
           onChange={handleChange}
           value={messagingValue}
           data-testid="privacy-requests-messaging-provider-selection"
-          colorScheme="secondary"
+          colorScheme="primary"
           p={3}
         >
           <Stack direction="row">

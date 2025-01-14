@@ -95,7 +95,7 @@ const DataUseCheckboxTable = ({
                 size="lg"
                 py={1}
                 color="white"
-                backgroundColor="purple.500"
+                backgroundColor="terracotta.500"
                 fontWeight="semibold"
               >
                 {declarationTitle(du)}

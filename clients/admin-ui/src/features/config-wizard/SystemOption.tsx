@@ -45,11 +45,11 @@ const SystemOption = ({
     >
       <Box as="span" display="flex" alignItems="center" mb={2}>
         {icon}
-        <Text fontWeight="semibold" color="gray.700" as="span" ml={3}>
+        <Text fontWeight="semibold" color="gray.900" as="span" ml={3}>
           {label}
         </Text>
       </Box>
-      <Text color="gray.500" as="span" fontWeight="medium">
+      <Text color="gray.700" as="span" fontWeight="medium">
         {description}
       </Text>
     </Box>

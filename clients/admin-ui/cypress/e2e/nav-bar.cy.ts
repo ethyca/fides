@@ -42,7 +42,7 @@ describe("Nav Bar", () => {
   });
 
   it("styles the active navigation link based on the current route", () => {
-    const ACTIVE_COLOR = "rgb(119, 69, 240)";
+    const ACTIVE_COLOR = "rgb(206, 202, 194)";
     // Start on the Home page
     cy.visit("/");
 
