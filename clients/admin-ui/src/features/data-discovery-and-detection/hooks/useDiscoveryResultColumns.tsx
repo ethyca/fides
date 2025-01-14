@@ -74,7 +74,9 @@ const useDiscoveryResultColumns = ({
             <DefaultCell value="--" />
           ),
         header: "Actions",
-        size: 180,
+        meta: {
+          width: "auto",
+        },
       }),
     ];
     return { columns };
@@ -137,6 +139,9 @@ const useDiscoveryResultColumns = ({
           <DiscoveryItemActionsCell resource={props.row.original} />
         ),
         header: "Actions",
+        meta: {
+          width: "auto",
+        },
       }),
     ];
     return { columns };
@@ -194,6 +199,9 @@ const useDiscoveryResultColumns = ({
           <DiscoveryItemActionsCell resource={props.row.original} />
         ),
         header: "Actions",
+        meta: {
+          width: "auto",
+        },
       }),
     ];
     return { columns };

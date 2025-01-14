@@ -1,27 +1,9 @@
-import time
-from datetime import datetime, timezone
-from typing import Any, Dict, List, Set
 from unittest import mock
-from unittest.mock import ANY, Mock, call
-from uuid import uuid4
 
-import pydash
 import pytest
 
 from fides.api.models.audit_log import AuditLog, AuditLogAction
-from fides.api.models.privacy_request import (
-    ActionType,
-    CheckpointActionRequired,
-    ExecutionLog,
-    ExecutionLogStatus,
-    PolicyPreWebhook,
-    PrivacyRequest,
-    PrivacyRequestStatus,
-)
-from fides.api.schemas.masking.masking_configuration import MaskingConfiguration
-from fides.api.schemas.masking.masking_secrets import MaskingSecretCache
-from fides.api.schemas.policy import Rule
-from fides.api.service.masking.strategy.masking_strategy import MaskingStrategy
+from fides.api.models.privacy_request import ExecutionLog
 from tests.ops.service.privacy_request.test_request_runner_service import (
     get_privacy_request_results,
 )
@@ -54,7 +36,7 @@ def test_create_and_process_access_request_bigquery_enterprise(
 
     customer_email = "customer-1@example.com"
     user_id = (
-        1754  # this is a real (not generated) user id in the Stackoverflow dataset
+        1754  # this is a real (not generated) user id in the Stack Overflow dataset
     )
     data = {
         "requested_at": "2024-08-30T16:09:37.359Z",
