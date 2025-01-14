@@ -99,7 +99,7 @@ const DataFlowSystemsModal = ({
           <Text fontSize="2xl" lineHeight={8} fontWeight="semibold">
             Configure {flowType.toLocaleLowerCase()} systems
           </Text>
-          <Badge bg="success.500" color="white" px={1}>
+          <Badge bg="success.500" color="white">
             Assigned to {selectedDataFlows.length} systems
           </Badge>
         </ModalHeader>
