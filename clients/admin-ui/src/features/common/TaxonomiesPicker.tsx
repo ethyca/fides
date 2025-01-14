@@ -59,9 +59,12 @@ const TaxonomiesPicker = ({
         size="small"
         icon={<SmallAddIcon mb="1px" />}
         onClick={() => setIsAdding(true)}
-        className="max-h-[22px] max-w-[22px]"
         data-testid="add-category-btn"
         aria-label="Add category"
+        style={{
+          height: "22px",
+          width: "22px",
+        }}
       />
 
       {isAdding && (

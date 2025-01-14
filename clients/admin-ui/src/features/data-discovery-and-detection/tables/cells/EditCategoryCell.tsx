@@ -22,7 +22,7 @@ const AddCategoryButton = (props: ButtonProps) => (
   <Button
     size="small"
     icon={<SmallAddIcon mb="1px" />}
-    className="max-h-[20px] max-w-[20px]  border-gray-200 bg-white"
+    className="max-h-[22px] max-w-[22px]  border-gray-200 bg-white"
     data-testid="add-category-btn"
     aria-label="Add category"
     {...props}
