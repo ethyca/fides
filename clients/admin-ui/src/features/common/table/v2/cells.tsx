@@ -58,15 +58,7 @@ export const DefaultCell = <T,>({
 };
 
 const FidesBadge = ({ children, ...props }: BadgeProps) => (
-  <Badge
-    textTransform="none"
-    fontWeight="400"
-    fontSize="xs"
-    lineHeight={4}
-    py={1}
-    {...props}
-    variant="taxonomy"
-  >
+  <Badge {...props} variant="taxonomy">
     {children}
   </Badge>
 );
