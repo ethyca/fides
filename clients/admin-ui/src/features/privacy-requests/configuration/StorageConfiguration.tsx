@@ -109,7 +109,7 @@ const StorageConfiguration = () => {
           onChange={handleChange}
           value={storageValue}
           data-testid="privacy-requests-storage-selection"
-          colorScheme="secondary"
+          colorScheme="primary"
           p={3}
         >
           <Stack direction="row">
