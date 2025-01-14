@@ -55,7 +55,7 @@
     "production": false
   },
   "datahub": {
-    "description": "Use Datahub for data discovery and detection",
+    "description": "Share Fides data categories with your Datahub instance",
     "development": true,
     "test": true,
     "production": false
