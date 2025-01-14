@@ -39,6 +39,20 @@ const badgeTheme = defineStyleConfig({
   },
 });
 
+const inputTheme = defineStyleConfig({
+  variants: {
+    outline: {
+      field: {
+        _focusVisible: {
+          outline: 0,
+          boxShadow: "none",
+          borderColor: "initial",
+        },
+      },
+    },
+  },
+});
+
 export const theme: Dict = extendChakraTheme({
   colors: {
     primary: {
@@ -156,6 +170,7 @@ export const theme: Dict = extendChakraTheme({
   },
   components: {
     Badge: badgeTheme,
+    Input: inputTheme,
   },
 });
 
