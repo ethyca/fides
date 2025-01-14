@@ -250,7 +250,7 @@ const useSystemFormTabs = ({
           {showSaveMessage ? (
             <Box backgroundColor="gray.100" px={6} py={3}>
               <Text
-                color="gray.500"
+                color="primary.900"
                 fontSize="sm"
                 data-testid="save-help-message"
               >
