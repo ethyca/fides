@@ -6,11 +6,11 @@ export const statusPropMap: {
   [key in PrivacyRequestStatus]: BadgeProps & { label?: string };
 } = {
   approved: {
-    bg: "yellow.500",
+    bg: "warn.500",
     label: "Approved",
   },
   complete: {
-    bg: "green.500",
+    bg: "success.500",
     label: "Completed",
   },
   awaiting_email_send: {
@@ -18,19 +18,19 @@ export const statusPropMap: {
     label: "Awaiting Email Send",
   },
   denied: {
-    bg: "red.500",
+    bg: "error.500",
     label: "Denied",
   },
   canceled: {
-    bg: "red.600",
+    bg: "error.600",
     label: "Canceled",
   },
   error: {
-    bg: "red.800",
+    bg: "error.800",
     label: "Error",
   },
   in_processing: {
-    bg: "orange.500",
+    bg: "warn.500",
     label: "In Progress",
   },
   paused: {
@@ -38,15 +38,15 @@ export const statusPropMap: {
     label: "Paused",
   },
   pending: {
-    bg: "blue.400",
+    bg: "info.400",
     label: "New",
   },
   identity_unverified: {
-    bg: "red.400",
+    bg: "error.400",
     label: "Unverified",
   },
   requires_input: {
-    bg: "yellow.400",
+    bg: "warn.400",
     label: "Requires Input",
   },
 };
@@ -61,7 +61,7 @@ const RequestStatusBadge = ({ status }: RequestBadgeProps) => (
     bg={statusPropMap[status].bg}
     width="100%"
     minWidth="120px"
-    lineHeight="18px"
+    lineHeight="22px"
     textAlign="center"
     data-testid="request-status-badge"
   >
