@@ -28,6 +28,11 @@ class ScyllaConnectorMissingKeyspace(Exception):
 class ScyllaConnector(BaseConnector[Cluster]):
     """Scylla Connector"""
 
+    @property
+    def requires_primary_keys(self) -> bool:
+        """ScyllaDB requires primary keys for erasures."""
+        return True
+
     def build_uri(self) -> str:
         """
         Builds URI - Not yet implemented

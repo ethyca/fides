@@ -1,7 +1,4 @@
-from datetime import datetime, timezone
 from unittest import mock
-from unittest.mock import ANY, Mock
-from uuid import uuid4
 
 import pytest
 
@@ -48,7 +45,7 @@ def test_access_request(
 
     customer_email = "customer-1@example.com"
     user_id = (
-        1754  # this is a real (not generated) user id in the Stackoverflow dataset
+        1754  # this is a real (not generated) user id in the Stack Overflow dataset
     )
     data = {
         "requested_at": "2024-08-30T16:09:37.359Z",
