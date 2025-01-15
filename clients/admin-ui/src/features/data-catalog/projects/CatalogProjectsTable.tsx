@@ -153,6 +153,7 @@ const CatalogProjectsTable = ({
     columnResizeMode: "onChange",
     columns,
     data,
+    getRowId: (row) => row.urn,
     onRowSelectionChange: setRowSelectionState,
     state: {
       rowSelection: rowSelectionState,

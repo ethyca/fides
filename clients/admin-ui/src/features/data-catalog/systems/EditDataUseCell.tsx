@@ -57,7 +57,7 @@ const EditDataUseCell = ({ system }: EditDataUseCellProps) => {
   const { createDataUse, deleteDeclarationByDataUse, updateDataUse } =
     useSystemDataUseCrud(system);
 
-  const dataUses = system.privacy_declarations.map((pd) => pd.data_use);
+  const dataUses = system.privacy_declarations?.map((pd) => pd.data_use) ?? [];
 
   const addDataUse = (use: string) => {
     const declaration = createMinimalDataUse(use);
@@ -86,7 +86,10 @@ const EditDataUseCell = ({ system }: EditDataUseCellProps) => {
               {getDataUseDisplayName(d)}
             </TaxonomyBadge>
           ))}
-          <TaxonomyAddButton onClick={() => setIsAdding(true)} />
+          <TaxonomyAddButton
+            onClick={() => setIsAdding(true)}
+            aria-label="Add data use"
+          />
           <EditMinimalDataUseModal
             isOpen={isOpen}
             onClose={onClose}

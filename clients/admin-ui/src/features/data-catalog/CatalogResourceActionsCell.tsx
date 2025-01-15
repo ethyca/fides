@@ -72,6 +72,7 @@ const CatalogResourceActionsCell = ({
           onClick={classifyResource}
           loading={classifyIsLoading}
           disabled={anyActionIsLoading}
+          data-testid="classify-btn"
         >
           Classify
         </Button>
@@ -82,6 +83,7 @@ const CatalogResourceActionsCell = ({
           onClick={approveResource}
           loading={approveIsLoading}
           disabled={anyActionIsLoading}
+          data-testid="approve-btn"
         >
           Approve
         </Button>
@@ -96,9 +98,12 @@ const CatalogResourceActionsCell = ({
           type="text"
           className="max-w-4"
           icon={<MoreIcon transform="rotate(90deg)" ml={2} />}
+          data-testid="resource-actions-menu"
         />
         <MenuList>
-          <MenuItem onClick={hideResource}>Hide</MenuItem>
+          <MenuItem onClick={hideResource} data-testid="hide-action">
+            Hide
+          </MenuItem>
         </MenuList>
       </Menu>
     </Flex>

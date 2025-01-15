@@ -9,8 +9,7 @@ const TaxonomyAddButton = (props: ButtonProps) => (
     size="small"
     icon={<Icons.Add />}
     className=" max-h-[20px] max-w-[20px]"
-    data-testid="add-category-btn"
-    aria-label="Add category"
+    data-testid="taxonomy-add-btn"
     {...props}
   />
 );

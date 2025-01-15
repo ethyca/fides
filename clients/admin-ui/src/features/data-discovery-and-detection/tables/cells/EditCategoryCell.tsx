@@ -70,7 +70,10 @@ const EditCategoryCell = ({ resource }: EditCategoryCellProps) => {
           <TaxonomyBadge data-testid="no-classifications">None</TaxonomyBadge>
           {/* resources with child fields can't have data categories */}
           {!hasSubfields && (
-            <TaxonomyAddButton onClick={() => setIsAdding(true)} />
+            <TaxonomyAddButton
+              onClick={() => setIsAdding(true)}
+              aria-label="Add category"
+            />
           )}
         </>
       )}
@@ -90,7 +93,10 @@ const EditCategoryCell = ({ resource }: EditCategoryCellProps) => {
               {getDataCategoryDisplayName(category)}
             </TaxonomyBadge>
           ))}
-          <TaxonomyAddButton onClick={() => setIsAdding(true)} />
+          <TaxonomyAddButton
+            onClick={() => setIsAdding(true)}
+            aria-label="Add category"
+          />
         </>
       )}
 

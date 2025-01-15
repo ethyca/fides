@@ -23,10 +23,13 @@ const SystemActionsCell = ({ onDetailClick }: SystemActionsCellProps) => {
         type="text"
         className="max-w-4"
         icon={<MoreIcon transform="rotate(90deg)" ml={2} />}
+        data-testid="system-actions-menu"
       />
       <MenuList>
         {onDetailClick && (
-          <MenuItem onClick={onDetailClick}>View details</MenuItem>
+          <MenuItem onClick={onDetailClick} data-testid="view-system-details">
+            View details
+          </MenuItem>
         )}
       </MenuList>
     </Menu>

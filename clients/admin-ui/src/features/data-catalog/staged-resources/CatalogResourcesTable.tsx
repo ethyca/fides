@@ -115,6 +115,7 @@ const CatalogResourcesTable = ({
     manualPagination: true,
     data,
     columnResizeMode: "onChange",
+    getRowId: (row) => row.urn,
   });
 
   if (isLoading || isFetching) {

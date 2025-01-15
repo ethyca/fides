@@ -21,7 +21,6 @@ import {
   TableSkeletonLoader,
   useServerSidePagination,
 } from "~/features/common/table/v2";
-import { IndeterminateCheckboxCell } from "~/features/common/table/v2/cells";
 import { getQueryParamsFromArray } from "~/features/common/utils";
 import { useGetCatalogSystemsQuery } from "~/features/data-catalog/data-catalog.slice";
 import EmptyCatalogTableNotice from "~/features/data-catalog/datasets/EmptyCatalogTableNotice";
@@ -103,32 +102,6 @@ const SystemsTable = () => {
 
   const columns: ColumnDef<SystemWithMonitorKeys, any>[] = useMemo(
     () => [
-      columnHelper.display({
-        id: "select",
-        cell: ({ row }) => (
-          <IndeterminateCheckboxCell
-            isChecked={row.getIsSelected()}
-            onChange={row.getToggleSelectedHandler()}
-            dataTestId={`select-row-${row.id}`}
-          />
-        ),
-        header: ({ table }) => (
-          <IndeterminateCheckboxCell
-            isChecked={table.getIsAllPageRowsSelected()}
-            isIndeterminate={table.getIsSomeRowsSelected()}
-            onChange={table.getToggleAllRowsSelectedHandler()}
-            dataTestId="select-all-rows"
-          />
-        ),
-        maxSize: 25,
-        enableResizing: false,
-        meta: {
-          cellProps: {
-            borderRight: "none",
-          },
-          disableRowClick: true,
-        },
-      }),
       columnHelper.accessor((row) => row.name, {
         id: "name",
         cell: ({ getValue, row }) => (
