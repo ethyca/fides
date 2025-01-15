@@ -71,6 +71,12 @@ jobs:
         with:
           fetch-depth: 0 # This is required to properly tag images
 
+      - name: Set Up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
+          cache: "pip"
+
       - name: Login to DockerHub
         uses: docker/login-action@v3
         with:
@@ -103,7 +109,6 @@ jobs:
       - name: Push Fides prerelease Tags
         if: needs.ParseTags.outputs.alpha_tag == 'true' || needs.ParseTags.outputs.beta_tag == 'true'
         run: nox -s "push(${{ matrix.application }},prerelease)" -- git_tag
-
 
   NotifyRedeploy:
     runs-on: ubuntu-latest
