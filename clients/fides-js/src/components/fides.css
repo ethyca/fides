@@ -56,11 +56,11 @@
 
   /* Everything else */
   --fides-overlay-font-family: Inter, sans-serif;
-  --8px: 0.5rem;
-  --12px: 0.75rem;
-  --14px: 0.875rem;
-  --15px: 0.9375rem;
-  --16px: 1rem;
+  --fides-base-font-size: 1rem;
+  --8px: calc(var(--fides-base-font-size) * 0.5);
+  --12px: calc(var(--fides-base-font-size) * 0.75);
+  --14px: calc(var(--fides-base-font-size) * 0.875);
+  --16px: calc(var(--fides-base-font-size) * 1);
   --fides-overlay-font-size-body-xs: var(--8px);
   --fides-overlay-font-size-body-small: var(--12px);
   --fides-overlay-font-size-body: var(--14px);
@@ -115,9 +115,7 @@ div#fides-overlay-wrapper * {
   font-family: var(--fides-overlay-font-family);
   font-size: var(--fides-overlay-font-size-body);
   white-space: pre-line;
-
-  /* CSS reset values, adapted from https://www.joshwcomeau.com/css/custom-css-reset/ */
-  line-height: calc(1em + 0.4rem);
+  line-height: 1.4em;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -737,7 +735,7 @@ div#fides-overlay-wrapper .fides-toggle .fides-toggle-display {
   display: inline-block;
   min-width: 8px;
   height: 8px;
-  margin-right: calc(0.5rem + 2px);
+  margin-right: calc(calc(var(--fides-base-font-size) * 0.5) + 2px);
   content: "";
   transition: transform 0.12s ease-in-out;
   transform: translateY(-2px) rotate(135deg);
@@ -1065,7 +1063,7 @@ div#fides-overlay-wrapper .fides-i18n-pseudo-button {
   display: flex;
   flex-direction: column;
   gap: 1px;
-  max-height: 7rem;
+  max-height: calc(var(--fides-base-font-size) * 7);
   transition: height 0.5s;
 }
 
@@ -1079,7 +1077,7 @@ div#fides-overlay-wrapper .fides-i18n-pseudo-button {
 
 .fides-i18n-menu:hover .fides-i18n-popover,
 .fides-i18n-menu:focus-within .fides-i18n-popover {
-  min-width: 9rem;
+  min-width: calc(var(--fides-base-font-size) * 9);
   height: auto;
   border: 1px solid var(--fides-overlay-primary-color);
   background-color: var(--fides-overlay-background-dark-color);
@@ -1095,7 +1093,7 @@ button.fides-banner-button.fides-menu-item {
   width: 100%;
   text-align: left;
   margin: 0;
-  padding-left: 1.5rem;
+  padding-left: calc(var(--fides-base-font-size) * 1.5);
 }
 
 button.fides-banner-button.fides-menu-item[aria-pressed="true"] {
@@ -1106,8 +1104,8 @@ button.fides-banner-button.fides-menu-item[aria-pressed="true"] {
 button.fides-banner-button.fides-menu-item[aria-pressed="true"]::before {
   content: "\2713";
   display: inline-block;
-  margin-right: 0.25rem;
-  margin-left: -1rem;
+  margin-right: calc(var(--fides-base-font-size) * 0.25);
+  margin-left: calc(var(--fides-base-font-size) * -1);
 }
 
 button.fides-banner-button.fides-menu-item:not([aria-pressed="true"]):hover {
