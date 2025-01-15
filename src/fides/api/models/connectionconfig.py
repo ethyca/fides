@@ -121,12 +121,12 @@ class ConnectionType(enum.Enum):
             ConnectionType.datahub.value: SystemType.data_catalog,
             ConnectionType.dynamic_erasure_email.value: SystemType.email,
             ConnectionType.dynamodb.value: SystemType.database,
-            ConnectionType.fides.value: SystemType.database,  # What's the actualy SystemType here?
+            ConnectionType.fides.value: SystemType.manual
             ConnectionType.generic_consent_email.value: SystemType.email,
             ConnectionType.generic_erasure_email.value: SystemType.email,
             ConnectionType.google_cloud_sql_mysql.value: SystemType.database,
             ConnectionType.google_cloud_sql_postgres.value: SystemType.database,
-            ConnectionType.https.value: SystemType.database,  # What's the actualy SystemType here?
+            ConnectionType.https.value: SystemType.manual
             ConnectionType.manual_webhook.value: SystemType.manual,
             ConnectionType.manual.value: SystemType.manual,
             ConnectionType.mariadb.value: SystemType.database,
