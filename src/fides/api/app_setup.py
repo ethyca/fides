@@ -23,7 +23,7 @@ from fides.api.api.v1.endpoints.admin import ADMIN_ROUTER
 from fides.api.api.v1.endpoints.generic_overrides import GENERIC_OVERRIDES_ROUTER
 from fides.api.api.v1.endpoints.health import HEALTH_ROUTER
 from fides.api.api.v1.exception_handlers import ExceptionHandlers
-from fides.api.common_exceptions import FunctionalityNotConfigured, RedisConnectionError
+from fides.api.common_exceptions import RedisConnectionError, RedisNotConfigured
 from fides.api.db.database import configure_db
 from fides.api.db.seed import create_or_update_parent_user
 from fides.api.models.application_config import ApplicationConfig
@@ -81,7 +81,7 @@ def create_fides_app(
     fastapi_app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)  # type: ignore
     for handler in ExceptionHandlers.get_handlers():
         # Starlette bug causing this to fail mypy
-        fastapi_app.add_exception_handler(FunctionalityNotConfigured, handler)  # type: ignore
+        fastapi_app.add_exception_handler(RedisNotConfigured, handler)  # type: ignore
     fastapi_app.add_middleware(SlowAPIMiddleware)
     fastapi_app.add_middleware(
         GZipMiddleware, minimum_size=1000, compresslevel=5

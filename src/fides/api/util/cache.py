@@ -121,6 +121,12 @@ class FidesopsRedis(Redis):
 
 def get_cache(should_log: Optional[bool] = False) -> FidesopsRedis:
     """Return a singleton connection to our Redis cache"""
+
+    if not CONFIG.redis.enabled:
+        raise common_exceptions.RedisNotConfigured(
+            "Application Redis cache required, but it is currently disabled! Please update your application configuration to enable integration with a Redis cache."
+        )
+
     global _connection  # pylint: disable=W0603
     if _connection is None:
         logger.debug("Creating new Redis connection...")
@@ -195,9 +201,7 @@ def get_masking_secret_cache_key(
 def get_all_cache_keys_for_privacy_request(privacy_request_id: str) -> List[Any]:
     """Returns all cache keys related to this privacy request's cached identities"""
     cache: FidesopsRedis = get_cache()
-    return cache.keys(f"{privacy_request_id}-*") + cache.keys(
-        f"id-{privacy_request_id}-*"
-    )
+    return cache.keys(f"*{privacy_request_id}*")
 
 
 def get_async_task_tracking_cache_key(privacy_request_id: str) -> str:

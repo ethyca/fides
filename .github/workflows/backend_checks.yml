@@ -284,6 +284,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Set Up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python_version }}
+          cache: "pip"
+
       - name: Install Nox
         run: pip install nox>=2022
 
@@ -339,6 +345,12 @@ jobs:
 
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Set Up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python_version }}
+          cache: "pip"
 
       - name: Install Nox
         run: pip install nox>=2022
@@ -431,6 +443,12 @@ jobs:
 
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Set Up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python_version }}
+          cache: "pip"
 
       - name: Get Vault Token
         uses: hashicorp/vault-action@v2.5.0

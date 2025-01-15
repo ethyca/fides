@@ -19,10 +19,6 @@ from fides.api.models.messaging import (  # type: ignore[attr-defined]
     get_messaging_method,
 )
 from fides.api.models.messaging_template import MessagingTemplate
-from fides.api.models.privacy_request import (
-    PrivacyRequestError,
-    PrivacyRequestNotifications,
-)
 from fides.api.schemas.messaging.messaging import (
     CONFIGURABLE_MESSAGING_ACTION_TYPES,
     AccessRequestCompleteBodyParams,
@@ -42,62 +38,17 @@ from fides.api.schemas.messaging.messaging import (
     UserInviteBodyParams,
 )
 from fides.api.schemas.redis_cache import Identity
-from fides.api.service.connectors.base_email_connector import (
-    get_email_messaging_config_service_type,
-)
 from fides.api.service.messaging.messaging_crud_service import (
     get_basic_messaging_template_by_type_or_default,
     get_enabled_messaging_template_by_type_and_property,
 )
-from fides.api.tasks import MESSAGING_QUEUE_NAME, DatabaseTask, celery_app
+from fides.api.tasks import DatabaseTask, celery_app
 from fides.api.util.logger import Pii
 from fides.config import CONFIG
 from fides.config.config_proxy import ConfigProxy
 
 EMAIL_JOIN_STRING = ", "
 EMAIL_TEMPLATE_NAME = "fides"
-
-
-def check_and_dispatch_error_notifications(db: Session) -> None:
-    config_proxy = ConfigProxy(db)
-    privacy_request_notifications = PrivacyRequestNotifications.all(db=db)
-    if not privacy_request_notifications:
-        return None
-
-    unsent_errors = PrivacyRequestError.filter(
-        db=db, conditions=(PrivacyRequestError.message_sent.is_(False))
-    ).all()
-    if not unsent_errors:
-        return None
-
-    email_config = (
-        config_proxy.notifications.notification_service_type in EMAIL_MESSAGING_SERVICES
-    )
-
-    if (
-        email_config
-        and len(unsent_errors) >= privacy_request_notifications[0].notify_after_failures
-    ):
-        for email in privacy_request_notifications[0].email.split(EMAIL_JOIN_STRING):
-            dispatch_message_task.apply_async(
-                queue=MESSAGING_QUEUE_NAME,
-                kwargs={
-                    "message_meta": FidesopsMessage(
-                        action_type=MessagingActionType.PRIVACY_REQUEST_ERROR_NOTIFICATION,
-                        body_params=ErrorNotificationBodyParams(
-                            unsent_errors=len(unsent_errors)
-                        ),
-                    ).model_dump(mode="json"),
-                    "service_type": config_proxy.notifications.notification_service_type,
-                    "to_identity": {"email": email},
-                    "property_id": None,
-                },
-            )
-
-        for error in unsent_errors:
-            error.update(db=db, data={"message_sent": True})
-
-    return None
 
 
 @celery_app.task(base=DatabaseTask, bind=True)
@@ -810,3 +761,64 @@ def _compose_twilio_mail(
         content = Content("text/html", message_body)
         mail = Mail(from_email, to_email, subject, content)
     return mail
+
+
+def get_email_messaging_config_service_type(db: Session) -> Optional[str]:
+    """
+    Email connectors require that an email messaging service has been configured.
+    Prefers Twilio if both Twilio email AND Mailgun has been configured.
+    """
+
+    # if there's a specified messaging service type, and it's an email service, we use that
+    if (
+        configured_service_type := ConfigProxy(
+            db
+        ).notifications.notification_service_type
+    ) is not None and configured_service_type in EMAIL_MESSAGING_SERVICES:
+        return configured_service_type
+
+    # if no specified messaging service type, fall back to hardcoded preference hierarchy
+    messaging_configs: Optional[List[MessagingConfig]] = MessagingConfig.query(
+        db=db
+    ).all()
+    if not messaging_configs:
+        # let messaging dispatch service handle non-existent service
+        return None
+
+    twilio_email_config = next(
+        (
+            config
+            for config in messaging_configs
+            if config.service_type == MessagingServiceType.twilio_email
+        ),
+        None,
+    )
+    if twilio_email_config:
+        # First choice: use Twilio
+        return MessagingServiceType.twilio_email.value
+
+    mailgun_config = next(
+        (
+            config
+            for config in messaging_configs
+            if config.service_type == MessagingServiceType.mailgun
+        ),
+        None,
+    )
+    if mailgun_config:
+        # Second choice: use Mailgun
+        return MessagingServiceType.mailgun.value
+
+    mailchimp_transactional_config = next(
+        (
+            config
+            for config in messaging_configs
+            if config.service_type == MessagingServiceType.mailchimp_transactional
+        ),
+        None,
+    )
+    if mailchimp_transactional_config:
+        # Third choice: use Mailchimp Transactional
+        return MessagingServiceType.mailchimp_transactional.value
+
+    return None
