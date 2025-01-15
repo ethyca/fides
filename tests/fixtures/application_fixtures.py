@@ -3499,6 +3499,14 @@ def allow_custom_privacy_request_fields_in_request_execution_disabled():
 
 
 @pytest.fixture(scope="function")
+def set_max_privacy_request_download_rows():
+    original_value = CONFIG.admin_ui.max_privacy_request_download_rows
+    CONFIG.admin_ui.max_privacy_request_download_rows = 1
+    yield
+    CONFIG.admin_ui.max_privacy_request_download_rows = original_value
+
+
+@pytest.fixture(scope="function")
 def subject_request_download_ui_enabled():
     original_value = CONFIG.security.subject_request_download_ui_enabled
     CONFIG.security.subject_request_download_ui_enabled = True
