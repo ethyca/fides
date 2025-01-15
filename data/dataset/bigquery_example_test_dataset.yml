@@ -13,8 +13,6 @@ dataset:
             data_categories: [user.contact.address.street]
           - name: id
             data_categories: [system.operations]
-            fides_meta:
-              primary_key: True
           - name: state
             data_categories: [user.contact.address.state]
           - name: street
@@ -53,8 +51,6 @@ dataset:
               data_type: string
           - name: id
             data_categories: [user.unique_id]
-            fides_meta:
-              primary_key: True
           - name: name
             data_categories: [user.name]
             fides_meta:
@@ -80,8 +76,6 @@ dataset:
               data_type: string
           - name: id
             data_categories: [user.unique_id]
-            fides_meta:
-              primary_key: True
           - name: name
             data_categories: [user.name]
             fides_meta:
@@ -98,8 +92,6 @@ dataset:
                   direction: from
           - name: id
             data_categories: [system.operations]
-            fides_meta:
-              primary_key: True
           - name: time
             data_categories: [user.sensor]
 
@@ -114,8 +106,6 @@ dataset:
                   direction: from
           - name: id
             data_categories: [system.operations]
-            fides_meta:
-              primary_key: True
           - name: shipping_address_id
             data_categories: [system.operations]
             fides_meta:
@@ -166,8 +156,6 @@ dataset:
                   direction: from
           - name: id
             data_categories: [system.operations]
-            fides_meta:
-              primary_key: True
           - name: name
             data_categories: [user.financial]
           - name: preferred
@@ -177,8 +165,6 @@ dataset:
         fields:
           - name: id
             data_categories: [system.operations]
-            fides_meta:
-              primary_key: True
           - name: name
             data_categories: [system.operations]
           - name: price
@@ -193,8 +179,6 @@ dataset:
               data_type: string
           - name: id
             data_categories: [system.operations]
-            fides_meta:
-              primary_key: True
           - name: month
             data_categories: [system.operations]
           - name: name
@@ -227,8 +211,6 @@ dataset:
                   direction: from
           - name: id
             data_categories: [system.operations]
-            fides_meta:
-              primary_key: True
           - name: opened
             data_categories: [system.operations]
 

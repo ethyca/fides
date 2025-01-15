@@ -103,7 +103,7 @@ services:
 
   redis:
     container_name: fides-redis
-    image: redis:6.2.5-alpine
+    image: redis:6.2-alpine
     command: redis-server --requirepass redispassword
     ports:
       - "7379:6379"
