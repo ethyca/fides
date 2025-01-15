@@ -1951,6 +1951,19 @@ class TestGetPrivacyRequests:
 
         privacy_request.delete(db)
 
+    def test_get_privacy_requests_csv_format_max_rows_limit(
+        self,
+        db,
+        generate_auth_header,
+        api_client,
+        url,
+        privacy_requests,
+        set_max_privacy_request_download_rows,
+    ):
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
+        response = api_client.get(url + f"?download_csv=True", headers=auth_header)
+        assert 400 == response.status_code
+
     def test_get_requires_input_privacy_request_resume_info(
         self, db, privacy_request, generate_auth_header, api_client, url
     ):
