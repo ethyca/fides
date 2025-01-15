@@ -229,7 +229,6 @@ const MonitorConfigTab = ({
         <Spacer />
         <Button
           onClick={modal.onOpen}
-          size="small"
           icon={<MonitorIcon />}
           iconPosition="end"
           data-testid="add-monitor-btn"
