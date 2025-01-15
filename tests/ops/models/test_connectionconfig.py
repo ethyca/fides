@@ -146,7 +146,7 @@ class TestConnectionConfigModel:
             connection.human_readable  # Makes sure all ConnectionTypes have been added to human_readable mapping
 
     def test_connection_type_human_readable_invalid(self):
-        with pytest.raises(ValueError):
+        with pytest.raises(NotImplementedError):
             ConnectionType("nonmapped_type").human_readable
 
     def test_connection_type_system_type(self):
@@ -154,7 +154,7 @@ class TestConnectionConfigModel:
             connection.system_type  # Makes sure all ConnectionTypes have been added to system_type mapping
 
     def test_connection_type_system_type_invalid(self):
-        with pytest.raises(ValueError):
+        with pytest.raises(NotImplementedError):
             ConnectionType("nonmapped_type").system_type
 
     def test_system_key(self, db, connection_config, system):
