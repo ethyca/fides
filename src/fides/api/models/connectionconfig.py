@@ -145,7 +145,12 @@ class ConnectionType(enum.Enum):
             ConnectionType.timescale.value: SystemType.database,
         }
 
-        return system_type_mapping[self.value]
+        try:
+            return system_type_mapping[self.value]
+        except KeyError:
+            raise NotImplementedError(
+                "Add new ConnectionType to human_readable mapping"
+            )
 
 
 class AccessLevel(enum.Enum):
