@@ -10,6 +10,7 @@ on:
 env:
   TAG: ${{ github.event.release.tag_name }}
   PROD_PUBLISH: true
+  DEFAULT_PYTHON_VERSION: "3.10.13"
 
 jobs:
   publish_docs:
