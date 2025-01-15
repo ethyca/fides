@@ -112,6 +112,61 @@ dataset:
            data_categories: [user.contact]
          - name: view_count
            data_categories: [system.operations]
+     - name: stackoverflow_posts_partitioned
+       fields:
+         - name: accepted_answer_id
+           data_categories: [ system.operations ]
+         - name: answer_count
+           data_categories: [ system.operations ]
+         - name: body
+           data_categories: [ user.contact ]
+         - name: comment_count
+           data_categories: [ system.operations ]
+         - name: community_owned_date
+           data_categories: [ system.operations ]
+         - name: creation_date
+           data_categories: [ system.operations ]
+         - name: favorite_count
+           data_categories: [ system.operations ]
+         - name: id
+           data_categories: [ system.operations ]
+           fides_meta:
+             data_type: integer
+         - name: last_activity_date
+           data_categories: [ system.operations ]
+         - name: last_edit_date
+           data_categories: [ system.operations ]
+         - name: last_editor_display_name
+           data_categories: [ system.operations ]
+         - name: last_editor_user_id
+           data_categories: [ system.operations ]
+           fides_meta:
+             references:
+               - dataset: enterprise_dsr_testing
+                 field: users.id
+                 direction: from
+         - name: owner_display_name
+           data_categories: [ user.contact ]
+         - name: owner_user_id
+           data_categories: [ system.operations ]
+           fides_meta:
+             references:
+               - dataset: enterprise_dsr_testing
+                 field: users.id
+                 direction: from
+             data_type: integer
+         - name: parent_id
+           data_categories: [ system.operations ]
+         - name: post_type_id
+           data_categories: [ system.operations ]
+         - name: score
+           data_categories: [ system.operations ]
+         - name: tags
+           data_categories: [ system.operations ]
+         - name: title
+           data_categories: [ user.contact ]
+         - name: view_count
+           data_categories: [ system.operations]
      - name: users
        fields:
          - name: about_me
