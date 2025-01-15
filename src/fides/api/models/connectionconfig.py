@@ -149,7 +149,7 @@ class ConnectionType(enum.Enum):
             return system_type_mapping[self.value]
         except KeyError:
             raise NotImplementedError(
-                "Add new ConnectionType to human_readable mapping"
+                "Add new ConnectionType to system_type mapping"
             )
 
 
