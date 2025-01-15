@@ -37,6 +37,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Fixed issue where the custom report "reset" button was not working as expected [#5649](https://github.com/ethyca/fides/pull/5649)
 - Fixed column ordering issue in the Data Map report [#5649](https://github.com/ethyca/fides/pull/5649)
 - Fixed issue where the Data Map report filter dialog was missing an Accordion item label [#5649](https://github.com/ethyca/fides/pull/5649)
+- Improved database session management for long running access request tasks [#5667](https://github.com/ethyca/fides/pull/5667)
 
 ## [2.52.0](https://github.com/ethyca/fides/compare/2.51.2...2.52.0)
 
