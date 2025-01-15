@@ -24,12 +24,14 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ### Added
 - Added Action Center MVP behind new feature flag [#5622](https://github.com/ethyca/fides/pull/5622)
 - Added cache-clearing methods to the `DBCache` model to allow deleting cache entries [#5629](https://github.com/ethyca/fides/pull/5629)
+- Adds partitioning, custom identities, multiple identities to test coverage for BigQuery Enterprise [#5618](https://github.com/ethyca/fides/pull/5618)
 - Added Datahub groundwork required by Fidesplus [#5666](https://github.com/ethyca/fides/pull/5666)
 
 ### Changed
 - Updated brand link url [#5656](https://github.com/ethyca/fides/pull/5656)
 - Changed "Reclassify" D&D button to show in an overflow menu when row actions are overcrowded [#5655](https://github.com/ethyca/fides/pull/5655)
 - Removed primary key requirements for BigQuery and Postgres erasures [#5591](https://github.com/ethyca/fides/pull/5591)
+- Updated `DBCache` model so setting cache value always updates the updated_at field [#5669](https://github.com/ethyca/fides/pull/5669)
 
 ### Fixed
 - Fixed issue where the custom report "reset" button was not working as expected [#5649](https://github.com/ethyca/fides/pull/5649)
