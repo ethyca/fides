@@ -32,27 +32,11 @@ export const DatahubOverview = () => (
     <ShowMoreContent>
       <InfoHeading text="Categories" />
       <InfoUnorderedList>
-        <ListItem>Database</ListItem>
-        <ListItem>SQL database</ListItem>
-        <ListItem>Storage system</ListItem>
-        <ListItem>Data detection</ListItem>
-        <ListItem>Data discovery</ListItem>
+        <ListItem>Data Catalog</ListItem>
       </InfoUnorderedList>
       <InfoHeading text="Permissions" />
       <InfoUnorderedList>
-        <ListItem>CREATE ROLE my_monitor_role;</ListItem>
-        <ListItem>
-          GRANT USAGE ON DATABASE DATABASE_1 TO ROLE my_monitor_role;
-        </ListItem>
-        <ListItem>
-          GRANT USAGE ON SCHEMA DATABASE_1.TEST_SCHEMA TO ROLE my_monitor_role;
-        </ListItem>
-        <ListItem>
-          GRANT SELECT ON ALL TABLES IN SCHEMA DATABASE_1.TEST_SCHEMA TO ROLE
-          my_monitor_role;
-        </ListItem>
-        <ListItem>CREATE USER test_user PASSWORD=&apos;***&apos;;</ListItem>
-        <ListItem>GRANT ROLE my_monitor_role TO USER test_user;</ListItem>
+        <ListItem>Placeholder</ListItem>
       </InfoUnorderedList>
     </ShowMoreContent>
   </>
