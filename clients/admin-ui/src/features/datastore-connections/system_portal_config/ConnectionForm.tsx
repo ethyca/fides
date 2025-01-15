@@ -95,8 +95,10 @@ const ConnectionForm = ({ connectionConfig, systemFidesKey }: Props) => {
           onClose={uploadTemplateModal.onClose}
         />
       </Flex>
-
-      {selectedConnectionOption?.type === SystemType.DATABASE ? (
+      {selectedConnectionOption?.type &&
+      [SystemType.DATABASE, SystemType.DATA_CATALOG].includes(
+        selectedConnectionOption.type,
+      ) ? (
         <ConnectorParameters
           connectionConfig={connectionConfig}
           setSelectedConnectionOption={setSelectedConnectionOption}
@@ -104,34 +106,10 @@ const ConnectionForm = ({ connectionConfig, systemFidesKey }: Props) => {
           systemFidesKey={systemFidesKey}
         />
       ) : null}
-      {selectedConnectionOption?.type === SystemType.DATA_CATALOG ? (
-        <ConnectorParameters
-          connectionConfig={connectionConfig}
-          setSelectedConnectionOption={setSelectedConnectionOption}
-          connectionOption={selectedConnectionOption}
-          systemFidesKey={systemFidesKey}
-        />
-      ) : null}
-      {selectedConnectionOption?.type === SystemType.SAAS &&
-      selectedConnectionOption ? (
-        <ConnectorParameters
-          connectionOption={selectedConnectionOption}
-          setSelectedConnectionOption={setSelectedConnectionOption}
-          connectionConfig={connectionConfig}
-          systemFidesKey={systemFidesKey}
-        />
-      ) : null}
-      {selectedConnectionOption?.type === SystemType.MANUAL &&
-      selectedConnectionOption ? (
-        <ConnectorParameters
-          connectionOption={selectedConnectionOption}
-          setSelectedConnectionOption={setSelectedConnectionOption}
-          connectionConfig={connectionConfig}
-          systemFidesKey={systemFidesKey}
-        />
-      ) : null}
-      {selectedConnectionOption?.type === SystemType.EMAIL &&
-      selectedConnectionOption ? (
+      {selectedConnectionOption?.type &&
+      [SystemType.SAAS, SystemType.MANUAL, SystemType.EMAIL].includes(
+        selectedConnectionOption.type,
+      ) ? (
         <ConnectorParameters
           connectionOption={selectedConnectionOption}
           setSelectedConnectionOption={setSelectedConnectionOption}
