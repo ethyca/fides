@@ -104,6 +104,14 @@ const ConnectionForm = ({ connectionConfig, systemFidesKey }: Props) => {
           systemFidesKey={systemFidesKey}
         />
       ) : null}
+      {selectedConnectionOption?.type === SystemType.DATA_CATALOG ? (
+        <ConnectorParameters
+          connectionConfig={connectionConfig}
+          setSelectedConnectionOption={setSelectedConnectionOption}
+          connectionOption={selectedConnectionOption}
+          systemFidesKey={systemFidesKey}
+        />
+      ) : null}
       {selectedConnectionOption?.type === SystemType.SAAS &&
       selectedConnectionOption ? (
         <ConnectorParameters
