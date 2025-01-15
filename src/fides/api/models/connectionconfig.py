@@ -148,9 +148,7 @@ class ConnectionType(enum.Enum):
         try:
             return system_type_mapping[self.value]
         except KeyError:
-            raise NotImplementedError(
-                "Add new ConnectionType to system_type mapping"
-            )
+            raise NotImplementedError("Add new ConnectionType to system_type mapping")
 
 
 class AccessLevel(enum.Enum):
