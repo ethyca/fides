@@ -410,9 +410,7 @@ describe("discovery and detection", () => {
         cy.intercept("PATCH", "/api/v1/plus/discovery-monitor/*/results").as(
           "patchClassification",
         );
-        cy.getByTestId("classification-user.device.device_id").click({
-          force: true,
-        });
+        cy.getByTestId("classification-user.contact.phone_number").click();
         cy.getByTestId("taxonomy-select").antSelect("system");
         cy.wait("@patchClassification");
       });
