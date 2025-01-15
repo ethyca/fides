@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.52.1b2.post0.dev3"
+    "version": "2.52.1b2.post0.dev4"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -16900,16 +16900,6 @@
             "title": "DataHub Token",
             "description": "The token used to authenticate with your DataHub server.",
             "sensitive": true
-          },
-          "frequency": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/PeriodicIntegrationFrequency"
-              }
-            ],
-            "title": "Frequency",
-            "description": "The frequency at which the integration should run. Defaults to daily.",
-            "default": "daily"
           }
         },
         "type": "object",
@@ -21023,16 +21013,6 @@
         ],
         "title": "ParamValue",
         "description": "A named variable which can be sourced from identities, dataset references, or connector params. These values\nare used to replace the placeholders in the path, header, query, and body param values."
-      },
-      "PeriodicIntegrationFrequency": {
-        "type": "string",
-        "enum": [
-          "daily",
-          "weekly",
-          "monthly"
-        ],
-        "title": "PeriodicIntegrationFrequency",
-        "description": "Enum for periodic integration frequency"
       },
       "PolicyMaskingSpec": {
         "properties": {
@@ -26113,10 +26093,11 @@
       "SystemType": {
         "type": "string",
         "enum": [
-          "saas",
+          "data_catalog",
           "database",
+          "email",
           "manual",
-          "email"
+          "saas"
         ],
         "title": "SystemType"
       },
