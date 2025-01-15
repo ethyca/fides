@@ -60,11 +60,7 @@ const SystemsTable = () => {
     setTotalPages,
   } = useServerSidePagination();
 
-  const {
-    data: queryResult,
-    isLoading,
-    isFetching,
-  } = useGetCatalogSystemsQuery({
+  const { data: queryResult, isLoading } = useGetCatalogSystemsQuery({
     page: pageIndex,
     size: pageSize,
     show_hidden: false,
@@ -160,7 +156,7 @@ const SystemsTable = () => {
     },
   });
 
-  if (isLoading || isFetching) {
+  if (isLoading) {
     return <TableSkeletonLoader rowHeight={36} numRows={36} />;
   }
 

@@ -8,7 +8,7 @@ const TaxonomyAddButton = (props: ButtonProps) => (
   <Button
     size="small"
     icon={<Icons.Add />}
-    className=" max-h-[20px] max-w-[20px]"
+    className=" max-h-5 max-w-5"
     data-testid="taxonomy-add-btn"
     {...props}
   />
