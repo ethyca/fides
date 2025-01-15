@@ -522,3 +522,22 @@ export const stubActionCenter = () => {
     },
   ).as("getSystemAggregateResults");
 };
+
+export const stubDataCatalog = () => {
+  cy.intercept("GET", "/api/v1/plus/data-catalog/system*", {
+    fixture: "data-catalog/catalog-systems",
+  }).as("getCatalogSystems");
+  cy.intercept("GET", "/api/v1/plus/data-catalog/project*", {
+    fixture: "data-catalog/catalog-projects",
+  }).as("getCatalogProjects");
+  cy.intercept("GET", "/api/v1/plus/discovery-monitor/results?*", {
+    fixture: "data-catalog/catalog-tables",
+  }).as("getCatalogTables");
+  cy.intercept("POST", "/api/v1/plus/discovery-monitor/databases*", {
+    items: ["test_project"],
+    page: 1,
+    size: 1,
+    total: 1,
+    pages: 1,
+  }).as("getAvailableDatabases");
+};

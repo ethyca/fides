@@ -33,6 +33,7 @@ export type DatamapReport = {
   legal_basis_for_transfers?: Array<string> | null;
   legal_name?: string | null;
   legitimate_interest_disclosure_url?: string | null;
+  link_to_processor_contract?: string | null;
   privacy_policy?: string | null;
   processes_personal_data: boolean;
   reason_for_exemption?: string | null;
@@ -41,7 +42,9 @@ export type DatamapReport = {
   retention_period?: string | null;
   shared_categories?: Array<string> | null;
   special_category_legal_basis?: string | null;
+  system_dependencies?: string | null;
   system_name: string;
+  third_country_safeguards?: string | null;
   third_parties?: string | null;
   uses_cookies: boolean;
   uses_non_cookie_access: boolean;

@@ -6,7 +6,7 @@ import {
   RelativeTimestampCell,
 } from "~/features/common/table/v2/cells";
 import FieldDataTypeCell from "~/features/data-discovery-and-detection/tables/cells/FieldDataTypeCell";
-import ResultStatusBadgeCell from "~/features/data-discovery-and-detection/tables/cells/ResultStatusBadgeCell";
+import ResultStatusBadgeCell from "~/features/data-discovery-and-detection/tables/cells/StagedResourceStatusBadgeCell";
 import { DiscoveryMonitorItem } from "~/features/data-discovery-and-detection/types/DiscoveryMonitorItem";
 import { ResourceChangeType } from "~/features/data-discovery-and-detection/types/ResourceChangeType";
 import { StagedResourceType } from "~/features/data-discovery-and-detection/types/StagedResourceType";
@@ -14,7 +14,7 @@ import findProjectFromUrn from "~/features/data-discovery-and-detection/utils/fi
 import { DiffStatus } from "~/types/api";
 
 import DiscoveryItemActionsCell from "../tables/cells/DiscoveryItemActionsCell";
-import EditCategoriesCell from "../tables/cells/EditCategoryCell";
+import EditCategoryCell from "../tables/cells/EditCategoryCell";
 import ResultStatusCell from "../tables/cells/ResultStatusCell";
 
 const useDiscoveryResultColumns = ({
@@ -182,7 +182,7 @@ const useDiscoveryResultColumns = ({
       columnHelper.display({
         id: "classifications",
         cell: ({ row }) => {
-          return <EditCategoriesCell resource={row.original} />;
+          return <EditCategoryCell resource={row.original} />;
         },
         meta: { overflow: "visible", disableRowClick: true },
         header: "Data category",

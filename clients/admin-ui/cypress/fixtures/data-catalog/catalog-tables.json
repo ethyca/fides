@@ -1,0 +1,28 @@
+{
+  "items": [
+    {
+      "urn": "monitor.project.dataset.table_1",
+      "name": "table_1",
+      "diff_status": "addition"
+    },
+    {
+      "urn": "monitor.project.dataset.table_2",
+      "name": "table_2",
+      "diff_status": "classifying"
+    },
+    {
+      "urn": "monitor.project.dataset.table_3",
+      "name": "table_3",
+      "diff_status": "classification_addition"
+    },
+    {
+      "urn": "monitor.project.dataset.table_4",
+      "name": "table_4",
+      "diff_status": "monitored"
+    }
+  ],
+  "total": 4,
+  "page": 1,
+  "size": 25,
+  "pages": 1
+}

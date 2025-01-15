@@ -31,13 +31,13 @@ export type SnowflakeDocsSchema = {
    */
   warehouse_name: string;
   /**
-   * The name of the Snowflake database you want to connect to.
+   * Only provide a database name to scope discovery monitors and privacy request automation to a specific database. In most cases, this can be left blank.
    */
-  database_name: string;
+  database_name?: string | null;
   /**
-   * The name of the Snowflake schema within the selected database.
+   * Only provide a schema to scope discovery monitors and privacy request automation to a specific schema. In most cases, this can be left blank.
    */
-  schema_name: string;
+  schema_name?: string | null;
   /**
    * The Snowflake role to assume for the session, if different than Username.
    */
