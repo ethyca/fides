@@ -9,6 +9,10 @@
 # Toggle whether the Admin UI is served.
 enabled = true # boolean
 
+# The maximum number of rows permitted to be returned in a privacy
+# request report download
+max_privacy_request_download_rows = 100000 # integer
+
 #------------#
 #-- CELERY --#
 #--------------------------------------------------------------------#
@@ -32,7 +36,7 @@ task_always_eager = true # boolean
 
 # A fully anonymized unique identifier that is automatically generated
 # by the application. Used for anonymous analytics when opted-in.
-analytics_id = "8d38a5741447dd47a9a2811240ada747" # string
+analytics_id = "e9903f8dae74f6cd61d2a4fb2a8b6f70" # string
 
 # When set to True, disables functionality that requires making calls
 # to a Fides webserver.
