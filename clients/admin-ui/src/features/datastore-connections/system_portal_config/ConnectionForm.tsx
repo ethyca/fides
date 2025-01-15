@@ -96,24 +96,17 @@ const ConnectionForm = ({ connectionConfig, systemFidesKey }: Props) => {
         />
       </Flex>
       {selectedConnectionOption?.type &&
-      [SystemType.DATABASE, SystemType.DATA_CATALOG].includes(
-        selectedConnectionOption.type,
-      ) ? (
+      [
+        SystemType.DATABASE,
+        SystemType.DATA_CATALOG,
+        SystemType.SAAS,
+        SystemType.MANUAL,
+        SystemType.EMAIL,
+      ].includes(selectedConnectionOption.type) ? (
         <ConnectorParameters
           connectionConfig={connectionConfig}
-          setSelectedConnectionOption={setSelectedConnectionOption}
-          connectionOption={selectedConnectionOption}
-          systemFidesKey={systemFidesKey}
-        />
-      ) : null}
-      {selectedConnectionOption?.type &&
-      [SystemType.SAAS, SystemType.MANUAL, SystemType.EMAIL].includes(
-        selectedConnectionOption.type,
-      ) ? (
-        <ConnectorParameters
           connectionOption={selectedConnectionOption}
           setSelectedConnectionOption={setSelectedConnectionOption}
-          connectionConfig={connectionConfig}
           systemFidesKey={systemFidesKey}
         />
       ) : null}
