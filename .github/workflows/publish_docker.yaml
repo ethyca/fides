@@ -11,6 +11,7 @@ env:
   # Docker auth with read-write (publish) permissions. Set as env in workflow root as auth is required in multiple jobs.
   DOCKER_USER: ${{ secrets.DOCKER_USER }}
   DOCKER_TOKEN: ${{ secrets.DOCKER_TOKEN }}
+  DEFAULT_PYTHON_VERSION: "3.10.13"
 
 jobs:
   ParseTags:
