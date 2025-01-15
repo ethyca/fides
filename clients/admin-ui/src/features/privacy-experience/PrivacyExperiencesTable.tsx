@@ -219,7 +219,7 @@ export const PrivacyExperiencesTable = () => {
       <Flex flex={1} direction="column" overflow="auto">
         {userCanUpdate && (
           <TableActionBar>
-            <HStack alignItems="center" spacing={4}>
+            <HStack alignItems="center" spacing={2}>
               <JavaScriptTag />
               <Restrict scopes={[ScopeRegistryEnum.CUSTOM_ASSET_UPDATE]}>
                 <CustomAssetUploadButton
@@ -229,7 +229,6 @@ export const PrivacyExperiencesTable = () => {
             </HStack>
             <Button
               onClick={() => router.push(`${PRIVACY_EXPERIENCE_ROUTE}/new`)}
-              size="small"
               type="primary"
               data-testid="add-privacy-experience-btn"
             >

@@ -232,11 +232,7 @@ export const PrivacyNoticesTable = () => {
                 passHref
                 legacyBehavior
               >
-                <Button
-                  size="small"
-                  type="primary"
-                  data-testid="add-privacy-notice-btn"
-                >
+                <Button type="primary" data-testid="add-privacy-notice-btn">
                   Add a privacy notice +
                 </Button>
               </NextLink>
