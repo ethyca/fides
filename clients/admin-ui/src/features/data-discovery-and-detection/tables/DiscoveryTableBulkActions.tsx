@@ -55,6 +55,7 @@ const DiscoveryTableBulkActions = ({
           disabled={anyActionIsLoading}
           loading={isPromoteLoading}
           type="primary"
+          size="middle"
         />
         <ActionButton
           title="Ignore"
@@ -62,6 +63,7 @@ const DiscoveryTableBulkActions = ({
           disabled={anyActionIsLoading}
           loading={isMuteLoading}
           onClick={() => handleIgnoreClicked(selectedUrns)}
+          size="middle"
         />
       </div>
     </Flex>
