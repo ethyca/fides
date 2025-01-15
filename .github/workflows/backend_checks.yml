@@ -438,6 +438,9 @@ jobs:
       - name: Load image
         run: docker load --input /tmp/python-${{ matrix.python_version }}.tar
 
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - name: Set Up Python
         uses: actions/setup-python@v5
         with:
@@ -446,9 +449,6 @@ jobs:
 
       - name: Install Nox
         run: pip install nox>=2022
-
-      - name: Checkout
-        uses: actions/checkout@v4
 
       - name: Get Vault Token
         uses: hashicorp/vault-action@v2.5.0
