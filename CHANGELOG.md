@@ -34,6 +34,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Updated `DBCache` model so setting cache value always updates the updated_at field [#5669](https://github.com/ethyca/fides/pull/5669)
 - Changed sizes of buttons in table headers [#5654](https://github.com/ethyca/fides/pull/5654)
 - Adds new config for max number of rows in DSR download through Admin-UI [#5671](https://github.com/ethyca/fides/pull/5671)
+- Added CSS variable to FidesJS: `--fides-base-font-size: 16px` for better consistency. Overriding this variable with "1rem" will mimic legacy behavior. [#5673](https://github.com/ethyca/fides/pull/5673) https://github.com/ethyca/fides/labels/high-risk
 
 ### Fixed
 - Fixed issue where the custom report "reset" button was not working as expected [#5649](https://github.com/ethyca/fides/pull/5649)
