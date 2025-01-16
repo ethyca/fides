@@ -16,11 +16,11 @@ import {
   MenuList,
   Text,
 } from "fidesui";
-import { useRouter } from "next/router";
+// import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 
 import { useAlert } from "~/features/common/hooks";
-import { ACTION_CENTER_ROUTE } from "~/features/common/nav/v2/routes";
+// import { ACTION_CENTER_ROUTE } from "~/features/common/nav/v2/routes";
 import {
   FidesTableV2,
   PaginationBar,
@@ -46,7 +46,7 @@ export const DiscoveredAssetsTable = ({
   monitorId,
   systemId,
 }: DiscoveredAssetsTableProps) => {
-  const router = useRouter();
+  // const router = useRouter();
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
   const [addMonitorResultsMutation, { isLoading: isAddingResults }] =
     useAddMonitorResultsMutation();
@@ -70,7 +70,7 @@ export const DiscoveredAssetsTable = ({
     resetPageIndexToDefault,
   } = useServerSidePagination();
   const [searchQuery, setSearchQuery] = useState("");
-  const [isAddingAll, setIsAddingAll] = useState(false);
+  // const [isAddingAll, setIsAddingAll] = useState(false);
   const { successAlert } = useAlert();
 
   useEffect(() => {
@@ -128,7 +128,8 @@ export const DiscoveredAssetsTable = ({
     );
   };
 
-  const handleAddAll = async () => {
+  // TODO: [HJ-343] Uncommend when system actions are implemented
+  /* const handleAddAll = async () => {
     setIsAddingAll(true);
     await addMonitorResultsMutation({
       systemId,
@@ -140,7 +141,7 @@ export const DiscoveredAssetsTable = ({
       `All assets from ${systemId} have been added to the system inventory.`,
       `Confirmed`,
     );
-  };
+  }; */
 
   if (!monitorId || !systemId) {
     return null;
@@ -197,6 +198,8 @@ export const DiscoveredAssetsTable = ({
                 </MenuItem>
               </MenuList>
             </Menu>
+            {/*
+            // TODO: [HJ-343] Uncommend when system actions are implemented
             <Button
               size="small"
               onClick={handleAddAll}
@@ -208,7 +211,7 @@ export const DiscoveredAssetsTable = ({
               data-testid="add-all"
             >
               Add all
-            </Button>
+            </Button> */}
           </HStack>
         </Flex>
       </TableActionBar>
