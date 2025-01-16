@@ -15,6 +15,7 @@ export interface MonitorSummaryPaginatedResponse
   extends PaginatedResponse<MonitorAggregatedResults> {}
 
 export interface MonitorSystemAggregate {
+  id: string;
   name: string;
   system_key: string | null; // null when the system is not a known system
   vendor_id: string;
