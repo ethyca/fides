@@ -11,7 +11,7 @@ const MonitorResultSystems: NextPage = () => {
   const monitorId = decodeURIComponent(router.query.monitorId as string);
 
   return (
-    <FixedLayout title="Action center - Assets by system">
+    <FixedLayout title="Action center - Discovered assets by system">
       <PageHeader
         heading="Action center"
         breadcrumbItems={[
