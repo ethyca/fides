@@ -19,7 +19,12 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - https://github.com/ethyca/fides/labels/high-risk: to indicate that a change is a "high-risk" change that could potentially lead to unanticipated regressions or degradations
 - https://github.com/ethyca/fides/labels/db-migration: to indicate that a given change includes a DB migration
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.52.0...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.53.0...main)
+
+
+
+
+## [2.53.0](https://github.com/ethyca/fides/compare/2.52.0...2.53.0)
 
 ### Added
 - Added Action Center MVP behind new feature flag [#5622](https://github.com/ethyca/fides/pull/5622)
@@ -34,6 +39,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Updated `DBCache` model so setting cache value always updates the updated_at field [#5669](https://github.com/ethyca/fides/pull/5669)
 - Changed sizes of buttons in table headers [#5654](https://github.com/ethyca/fides/pull/5654)
 - Adds new config for max number of rows in DSR download through Admin-UI [#5671](https://github.com/ethyca/fides/pull/5671)
+- Added CSS variable to FidesJS: `--fides-base-font-size: 16px` for better consistency. Overriding this variable with "1rem" will mimic legacy behavior. [#5673](https://github.com/ethyca/fides/pull/5673) https://github.com/ethyca/fides/labels/high-risk
 
 ### Fixed
 - Fixed issue where the custom report "reset" button was not working as expected [#5649](https://github.com/ethyca/fides/pull/5649)
