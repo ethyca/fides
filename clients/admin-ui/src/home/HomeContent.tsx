@@ -1,11 +1,11 @@
-import { AntCard, AntTypography, Box, Flex, SimpleGrid } from "fidesui";
-import palette from "fidesui/src/palette/palette.module.scss";
+import { Flex, SimpleGrid } from "fidesui";
 import NextLink from "next/link";
 import * as React from "react";
 import { useMemo } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import { useFeatures } from "~/features/common/features";
+import NavigationCard from "~/features/common/NavigationCard";
 import { selectThisUsersScopes } from "~/features/user-management";
 
 import { MODULE_CARD_ITEMS } from "./constants";
@@ -33,26 +33,11 @@ const HomeContent = () => {
           .sort((a, b) => (a.sortOrder > b.sortOrder ? 1 : -1))
           .map((item) => (
             <NextLink href={item.href} key={item.key} className="flex">
-              <Box
-                borderLeft={`9px solid ${item.color}`}
-                borderRadius="6px"
-                className="flex grow"
-              >
-                <AntCard
-                  className="grow"
-                  style={{
-                    backgroundColor: palette.FIDESUI_CORINTH,
-                    borderRadius: "0px 6px 6px 0px",
-                    borderLeft: "none",
-                  }}
-                  data-testid={`tile-${item.name}`}
-                >
-                  <AntTypography.Title level={5}>
-                    {item.name}
-                  </AntTypography.Title>
-                  <AntTypography.Text>{item.description}</AntTypography.Text>
-                </AntCard>
-              </Box>
+              <NavigationCard
+                title={item.name}
+                description={item.description}
+                color={item.color}
+              />
             </NextLink>
           ))}
       </SimpleGrid>
