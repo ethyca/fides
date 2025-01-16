@@ -241,6 +241,7 @@ describe("Action center", () => {
       cy.wait("@getSystemsPaginated");
       cy.getByTestId("system-select").antSelect("Demo Marketing System");
       cy.wait("@setAssetSystem");
+      cy.getByTestId("success-alert").should("exist");
       cy.getByTestId("system-select").should("not.exist");
     });
     it("should add individual assets", () => {
