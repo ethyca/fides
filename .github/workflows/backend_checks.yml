@@ -330,7 +330,7 @@ jobs:
       matrix:
         python_version: ["3.9.18", "3.10.13"]
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     # In PRs run with the "unsafe" label, or run on a "push" event to main
     if: contains(github.event.pull_request.labels.*.name, 'run unsafe ci checks') || github.event_name == 'push'
     steps:
