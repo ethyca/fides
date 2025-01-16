@@ -1,12 +1,7 @@
 import { getCoreRowModel, useReactTable } from "@tanstack/react-table";
 import { Box, Flex } from "fidesui";
-import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 
-import {
-  ACTION_CENTER_ROUTE,
-  UNCATEGORIZED_SEGMENT,
-} from "~/features/common/nav/v2/routes";
 import {
   FidesTableV2,
   PaginationBar,
@@ -14,20 +9,20 @@ import {
   TableSkeletonLoader,
   useServerSidePagination,
 } from "~/features/common/table/v2";
-import { useGetDiscoveredSystemAggregateQuery } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
+import { useGetDiscoveredAssetsQuery } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
 
 import { SearchInput } from "../../SearchInput";
-import { useDiscoveredSystemAggregateColumns } from "../hooks/useDiscoveredSystemAggregateColumns";
-import { MonitorSystemAggregate } from "../types";
+import { useDiscoveredAssetsColumns } from "../hooks/useDiscoveredAssetsColumns";
 
-interface DiscoveredSystemAggregateTableProps {
+interface DiscoveredAssetsTableProps {
   monitorId: string;
+  systemId: string;
 }
 
-export const DiscoveredSystemAggregateTable = ({
+export const DiscoveredAssetsTable = ({
   monitorId,
-}: DiscoveredSystemAggregateTableProps) => {
-  const router = useRouter();
+  systemId,
+}: DiscoveredAssetsTableProps) => {
   const {
     PAGE_SIZES,
     pageSize,
@@ -48,8 +43,9 @@ export const DiscoveredSystemAggregateTable = ({
     resetPageIndexToDefault();
   }, [monitorId, searchQuery, resetPageIndexToDefault]);
 
-  const { data, isLoading, isFetching } = useGetDiscoveredSystemAggregateQuery({
+  const { data, isLoading, isFetching } = useGetDiscoveredAssetsQuery({
     key: monitorId,
+    system: systemId,
     page: pageIndex,
     size: pageSize,
     search: searchQuery,
@@ -61,7 +57,7 @@ export const DiscoveredSystemAggregateTable = ({
     }
   }, [data, setTotalPages]);
 
-  const { columns } = useDiscoveredSystemAggregateColumns();
+  const { columns } = useDiscoveredAssetsColumns();
 
   const tableInstance = useReactTable({
     getCoreRowModel: getCoreRowModel(),
@@ -74,12 +70,6 @@ export const DiscoveredSystemAggregateTable = ({
   if (isLoading) {
     return <TableSkeletonLoader rowHeight={36} numRows={36} />;
   }
-
-  const handleRowClick = (row: MonitorSystemAggregate) => {
-    router.push(
-      `${ACTION_CENTER_ROUTE}/${monitorId}/${row.id ?? UNCATEGORIZED_SEGMENT}`,
-    );
-  };
 
   return (
     <>
@@ -97,7 +87,7 @@ export const DiscoveredSystemAggregateTable = ({
           </Flex>
         </Flex>
       </TableActionBar>
-      <FidesTableV2 tableInstance={tableInstance} onRowClick={handleRowClick} />
+      <FidesTableV2 tableInstance={tableInstance} />
       <PaginationBar
         totalRows={data?.items.length || 0}
         pageSizes={PAGE_SIZES}
