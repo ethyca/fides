@@ -133,21 +133,24 @@ describe("Action center", () => {
       cy.getByTestId("pagination-btn").should("exist");
       cy.getByTestId("column-system_name").should("exist");
       cy.getByTestId("column-total_updates").should("exist");
-      cy.getByTestId("column-data_use").should("exist");
+      // TODO: [HJ-356] uncomment when data use column is implemented
+      // cy.getByTestId("column-data_use").should("exist");
       cy.getByTestId("column-locations").should("exist");
       cy.getByTestId("column-domains").should("exist");
-      cy.getByTestId("column-actions").should("exist");
+      // TODO: [HJ-343] uncomment when actions column is implemented
+      // cy.getByTestId("column-actions").should("exist");
       cy.getByTestId("row-0-col-system_name").within(() => {
         cy.getByTestId("change-icon").should("exist"); // new result
         cy.contains("Uncategorized assets").should("exist");
       });
-      // data use column should be empty for uncategorized assets
+      // TODO: [HJ-356] uncomment when data use column is implemented
+      /* // data use column should be empty for uncategorized assets
       cy.getByTestId("row-0-col-data_use").children().should("have.length", 0);
       cy.getByTestId("row-1-col-system_name").within(() => {
         cy.getByTestId("change-icon").should("not.exist"); // existing result
         cy.contains("Google Tag Manager").should("exist");
-      });
-      // TODO: data use column should not be empty for other assets
+      }); */
+      // TODO: [HJ-356] data use column should not be empty for other assets
       // cy.getByTestId("row-1-col-data_use").children().should("not.have.length", 0);
 
       // multiple locations
@@ -165,20 +168,26 @@ describe("Action center", () => {
     });
     it("should navigate to table view on row click", () => {
       cy.getByTestId("row-1").click();
-      cy.url().should("contain", "fds.1046");
-      cy.getByTestId("page-breadcrumb").should("contain", "fds.1046");
+      cy.url().should(
+        "contain",
+        "system_key-8fe42cdb-af2e-4b9e-9b38-f75673180b88",
+      );
+      cy.getByTestId("page-breadcrumb").should(
+        "contain",
+        "system_key-8fe42cdb-af2e-4b9e-9b38-f75673180b88",
+      );
     });
   });
 
   describe("Action center system assets results", () => {
     const webMonitorKey = "my_web_monitor_1";
-    const systemKey = "fds.1046";
+    const systemId = "system_key-8fe42cdb-af2e-4b9e-9b38-f75673180b88";
     beforeEach(() => {
-      cy.visit(`${ACTION_CENTER_ROUTE}/${webMonitorKey}/${systemKey}`);
+      cy.visit(`${ACTION_CENTER_ROUTE}/${webMonitorKey}/${systemId}`);
       cy.wait("@getSystemAssetResults");
     });
     it("should render asset results view", () => {
-      cy.getByTestId("page-breadcrumb").should("contain", "fds.1046");
+      cy.getByTestId("page-breadcrumb").should("contain", systemId);
       cy.getByTestId("search-bar").should("exist");
       cy.getByTestId("pagination-btn").should("exist");
       cy.getByTestId("bulk-actions-menu").should("be.disabled");
@@ -188,25 +197,27 @@ describe("Action center", () => {
       cy.getByTestId("column-name").should("exist");
       cy.getByTestId("column-resource_type").should("exist");
       cy.getByTestId("column-system").should("exist");
-      cy.getByTestId("column-data_use").should("exist");
+      // TODO: [HJ-369] uncomment when data use column is implemented
+      // cy.getByTestId("column-data_use").should("exist");
       cy.getByTestId("column-locations").should("exist");
       cy.getByTestId("column-domain").should("exist");
-      cy.getByTestId("column-with_consent").should("exist");
+      // TODO: [HJ-344] uncomment when Discovery column is implemented
+      /* cy.getByTestId("column-with_consent").should("exist");
+      cy.getByTestId("row-4-col-with_consent")
+        .contains("Without consent")
+        .realHover();
+      cy.get(".ant-tooltip-inner").should("contain", "January"); */
       cy.getByTestId("column-actions").should("exist");
       cy.getByTestId("row-0-col-actions").within(() => {
         cy.getByTestId("add-btn").should("exist");
         cy.getByTestId("ignore-btn").should("exist");
       });
-      cy.getByTestId("row-4-col-with_consent")
-        .contains("Without consent")
-        .realHover();
-      cy.get(".ant-tooltip-inner").should("contain", "January");
     });
     it.skip("should allow adding a system on uncategorized assets", () => {
       // TODO: uncategorized assets are not yet available for testing
     });
     it("should allow editing a system on categorized assets", () => {
-      cy.getByTestId("page-breadcrumb").should("contain", "fds.1046"); // little hack to make sure the systemId is available before proceeding
+      cy.getByTestId("page-breadcrumb").should("contain", systemId); // little hack to make sure the systemId is available before proceeding
       cy.getByTestId("row-3-col-system").within(() => {
         cy.getByTestId("system-badge").click();
       });
@@ -270,11 +281,12 @@ describe("Action center", () => {
       cy.wait("@ignoreAssets");
       cy.getByTestId("success-alert").should("exist");
     });
-    it("should add all assets", () => {
+    it.skip("should add all assets", () => {
+      // TODO: [HJ-343] unskip when add all is implemented
       cy.getByTestId("add-all").click();
       cy.getByTestId("add-all").should("have.class", "ant-btn-loading");
       cy.wait("@addAssets");
-      cy.url().should("not.contain", "fds.1046");
+      cy.url().should("not.contain", systemId);
       cy.getByTestId("success-alert").should("exist");
     });
   });
