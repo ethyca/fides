@@ -1,5 +1,5 @@
 import { getCoreRowModel, useReactTable } from "@tanstack/react-table";
-import { Box, Flex } from "fidesui";
+import { AntEmpty as Empty, Box, Flex } from "fidesui";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 
@@ -97,7 +97,16 @@ export const DiscoveredSystemAggregateTable = ({
           </Flex>
         </Flex>
       </TableActionBar>
-      <FidesTableV2 tableInstance={tableInstance} onRowClick={handleRowClick} />
+      <FidesTableV2
+        tableInstance={tableInstance}
+        onRowClick={handleRowClick}
+        emptyTableNotice={
+          <Empty
+            image={Empty.PRESENTED_IMAGE_SIMPLE}
+            description="All caught up!"
+          />
+        }
+      />
       <PaginationBar
         totalRows={data?.items.length || 0}
         pageSizes={PAGE_SIZES}

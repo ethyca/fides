@@ -5,6 +5,7 @@ import {
 } from "@tanstack/react-table";
 import {
   AntButton as Button,
+  AntEmpty as Empty,
   Flex,
   HStack,
   Icons,
@@ -211,7 +212,15 @@ export const DiscoveredAssetsTable = ({
           </HStack>
         </Flex>
       </TableActionBar>
-      <FidesTableV2 tableInstance={tableInstance} />
+      <FidesTableV2
+        tableInstance={tableInstance}
+        emptyTableNotice={
+          <Empty
+            image={Empty.PRESENTED_IMAGE_SIMPLE}
+            description="All caught up!"
+          />
+        }
+      />
       <PaginationBar
         totalRows={data?.items.length || 0}
         pageSizes={PAGE_SIZES}
