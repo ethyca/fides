@@ -21,6 +21,8 @@ export const DATASET_COLLECTION_SUBFIELD_DETAIL_ROUTE =
 
 // Detection and discovery
 export const ACTION_CENTER_ROUTE = "/data-discovery/action-center";
+export const UNCATEGORIZED_SEGMENT = "[undefined]";
+
 export const DETECTION_DISCOVERY_ACTIVITY_ROUTE = "/data-discovery/activity";
 export const DATA_DETECTION_ROUTE = "/data-discovery/detection";
 export const DATA_DETECTION_ROUTE_DETAIL =

@@ -35,7 +35,7 @@ export const useAlert = () => {
       }: {
         onClose: MouseEventHandler<HTMLButtonElement> | undefined;
       }) => (
-        <Alert alignItems="normal" status="error">
+        <Alert alignItems="normal" status="error" data-testid="error-alert">
           <AlertIcon />
           <Box>
             {title && <AlertTitle>{title}</AlertTitle>}
@@ -76,7 +76,12 @@ export const useAlert = () => {
       }: {
         onClose: MouseEventHandler<HTMLButtonElement> | undefined;
       }) => (
-        <Alert alignItems="normal" status="success" variant="subtle">
+        <Alert
+          alignItems="normal"
+          status="success"
+          variant="subtle"
+          data-testid="success-alert"
+        >
           <AlertIcon />
           <Box>
             {title && <AlertTitle>{title}</AlertTitle>}
