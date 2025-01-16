@@ -1,5 +1,6 @@
 import { AntButton as Button, AntSpace as Space } from "fidesui";
 
+import { isErrorResult } from "~/features/common/helpers";
 import { useAlert } from "~/features/common/hooks";
 import { StagedResourceAPIResponse } from "~/types/api";
 
@@ -20,20 +21,24 @@ export const DiscoveredAssetActionsCell = ({
   const [ignoreMonitorResultsMutation, { isLoading: isIgnoringResults }] =
     useIgnoreMonitorResultsMutation();
 
-  const { successAlert } = useAlert();
+  const { successAlert, errorAlert } = useAlert();
 
   const anyActionIsLoading = isAddingResults || isIgnoringResults;
 
   const { urn, name, resource_type: type } = asset;
 
   const handleAdd = async () => {
-    await addMonitorResultsMutation({
+    const result = await addMonitorResultsMutation({
       urnList: [urn],
     });
-    successAlert(
-      `${type} "${name}" has been added to the system inventory.`,
-      `Confirmed`,
-    );
+    if (isErrorResult(result)) {
+      errorAlert("There was adding the asset to the system inventory");
+    } else {
+      successAlert(
+        `${type} "${name}" has been added to the system inventory.`,
+        `Confirmed`,
+      );
+    }
   };
 
   const handleIgnore = async () => {

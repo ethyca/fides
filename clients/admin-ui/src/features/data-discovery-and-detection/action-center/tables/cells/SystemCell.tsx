@@ -1,7 +1,9 @@
-import { AntButton, EditIcon, Icons } from "fidesui";
+import { AntButton, AntSelectProps, EditIcon, Icons } from "fidesui";
 import { useState } from "react";
 
 import { SystemSelect } from "~/features/common/dropdown/SystemSelect";
+import { isErrorResult } from "~/features/common/helpers";
+import { useAlert } from "~/features/common/hooks";
 import { getTableTHandTDStyles } from "~/features/common/table/v2/util";
 import ClassificationCategoryBadge from "~/features/data-discovery-and-detection/ClassificationCategoryBadge";
 import { useUpdateResourceCategoryMutation } from "~/features/data-discovery-and-detection/discovery-detection.slice";
@@ -21,12 +23,22 @@ export const SystemCell = ({
   const [updateResourceCategoryMutation, { isLoading }] =
     useUpdateResourceCategoryMutation();
 
-  const handleSelectSystem = async (fidesKey: string) => {
-    await updateResourceCategoryMutation({
+  const { successAlert, errorAlert } = useAlert();
+
+  const handleSelectSystem: AntSelectProps["onSelect"] = async (
+    fidesKey: string,
+    option,
+  ) => {
+    const result = await updateResourceCategoryMutation({
       staged_resource_urn: urn,
       monitor_config_id: monitorConfigId,
       system_key: fidesKey,
     });
+    if (isErrorResult(result)) {
+      errorAlert("There was a problem the system");
+    } else {
+      successAlert(`Asset has been assigned to ${option.label}.`, `Confirmed`);
+    }
     setIsEditing(false);
   };
 

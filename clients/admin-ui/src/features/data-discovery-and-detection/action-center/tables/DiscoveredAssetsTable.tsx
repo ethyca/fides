@@ -169,7 +169,6 @@ export const DiscoveredAssetsTable = ({
             <Menu>
               <MenuButton
                 as={Button}
-                size="small"
                 icon={<Icons.ChevronDown />}
                 iconPosition="end"
                 loading={anyBulkActionIsLoading}
@@ -201,7 +200,6 @@ export const DiscoveredAssetsTable = ({
             {/*
             // TODO: [HJ-343] Uncommend when system actions are implemented
             <Button
-              size="small"
               onClick={handleAddAll}
               disabled={anyBulkActionIsLoading}
               loading={isAddingAll}
