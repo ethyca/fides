@@ -89,12 +89,7 @@ const getCustomFieldColumns = (
         // Conditionally render the Group cell if we have more than one value.
         // Alternatively, could check the customField type
         Array.isArray(props.getValue()) ? (
-          <GroupCountBadgeCell
-            value={props.getValue()}
-            ignoreZero
-            badgeProps={{ variant: "outline" }}
-            {...props}
-          />
+          <GroupCountBadgeCell value={props.getValue()} ignoreZero {...props} />
         ) : (
           <DefaultCell value={props.getValue() as string} />
         ),
@@ -147,7 +142,7 @@ export const getDatamapReportColumns = ({
                 ? map(value, getDataUseDisplayName)
                 : getDataUseDisplayName(value || "")
             }
-            badgeProps={{ variant: "outline" }}
+            badgeProps={{ variant: "taxonomy" }}
             {...props}
           />
         );
@@ -177,7 +172,7 @@ export const getDatamapReportColumns = ({
           <BadgeCellExpandable
             values={values}
             cellProps={props as any}
-            variant="outline"
+            variant="taxonomy"
           />
         );
       },
@@ -202,7 +197,7 @@ export const getDatamapReportColumns = ({
                 ? map(value, getDataSubjectDisplayName)
                 : getDataSubjectDisplayName(value || "")
             }
-            badgeProps={{ variant: "outline" }}
+            badgeProps={{ variant: "taxonomy" }}
             {...props}
           />
         );
@@ -251,7 +246,6 @@ export const getDatamapReportColumns = ({
           suffix="data stewards"
           ignoreZero
           value={props.getValue()}
-          badgeProps={{ variant: "outline" }}
           {...props}
         />
       ),
@@ -276,7 +270,6 @@ export const getDatamapReportColumns = ({
           suffix="destinations"
           ignoreZero
           value={props.getValue()}
-          badgeProps={{ variant: "outline" }}
           {...props}
         />
       ),
@@ -295,7 +288,6 @@ export const getDatamapReportColumns = ({
           suffix="features"
           ignoreZero
           value={props.getValue()}
-          badgeProps={{ variant: "outline" }}
           {...props}
         />
       ),
@@ -320,7 +312,6 @@ export const getDatamapReportColumns = ({
           suffix="sources"
           ignoreZero
           value={props.getValue()}
-          badgeProps={{ variant: "outline" }}
           {...props}
         />
       ),
@@ -339,7 +330,6 @@ export const getDatamapReportColumns = ({
           suffix="profiles"
           ignoreZero
           value={props.getValue()}
-          badgeProps={{ variant: "outline" }}
           {...props}
         />
       ),
@@ -355,7 +345,6 @@ export const getDatamapReportColumns = ({
           suffix="transfers"
           ignoreZero
           value={props.getValue()}
-          badgeProps={{ variant: "outline" }}
           {...props}
         />
       ),
@@ -383,7 +372,6 @@ export const getDatamapReportColumns = ({
           suffix="responsibilities"
           ignoreZero
           value={props.getValue()}
-          badgeProps={{ variant: "outline" }}
           {...props}
         />
       ),
@@ -402,7 +390,7 @@ export const getDatamapReportColumns = ({
           suffix="shared categories"
           ignoreZero
           value={props.getValue()}
-          badgeProps={{ variant: "outline" }}
+          badgeProps={{ variant: "taxonomy" }}
           {...props}
         />
       ),
@@ -438,7 +426,7 @@ export const getDatamapReportColumns = ({
           <BadgeCellExpandable
             values={values}
             cellProps={props as any}
-            variant="outline"
+            variant="taxonomy"
           />
         );
       },
@@ -470,7 +458,7 @@ export const getDatamapReportColumns = ({
           <BadgeCellExpandable
             values={values}
             cellProps={props as any}
-            variant="outline"
+            variant="taxonomy"
           />
         );
       },
@@ -488,7 +476,6 @@ export const getDatamapReportColumns = ({
           ignoreZero
           suffix="cookies"
           value={props.getValue()}
-          badgeProps={{ variant: "outline" }}
           {...props}
         />
       ),

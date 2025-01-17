@@ -1,6 +1,6 @@
-import { Flex, FlexProps } from "fidesui";
+import { Badge, BadgeProps } from "fidesui";
 
-interface ClassificationCategoryBadgeProps extends FlexProps {
+interface ClassificationCategoryBadgeProps extends BadgeProps {
   classification?: string | JSX.Element;
   children: React.ReactNode;
 }
@@ -11,22 +11,17 @@ const ClassificationCategoryBadge = ({
   ...props
 }: ClassificationCategoryBadgeProps) => {
   return (
-    <Flex
-      fontSize="xs"
-      alignItems="center"
-      gap={1.5}
-      px={1.5}
-      h="20px"
-      borderWidth="1px"
-      borderColor="gray.200"
-      borderRadius="sm"
+    <Badge
+      variant="taxonomy"
+      textTransform="none"
+      fontWeight="normal"
       as={onClick ? "button" : undefined}
-      _hover={onClick ? { bg: "gray.100" } : undefined}
       onClick={onClick}
+      _hover={onClick ? { borderColor: "primary.900" } : undefined}
       {...props}
     >
       {children}
-    </Flex>
+    </Badge>
   );
 };
 

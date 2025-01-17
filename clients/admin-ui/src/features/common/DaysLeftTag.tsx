@@ -24,15 +24,15 @@ const DaysLeftTag = ({ daysLeft, includeText, status }: DaysLeftTagProps) => {
 
   switch (true) {
     case daysLeft >= 10:
-      backgroundColor = "green.500";
+      backgroundColor = "success.500";
       break;
 
     case daysLeft < 10 && daysLeft > 4:
-      backgroundColor = "orange.500";
+      backgroundColor = "warn.500";
       break;
 
     case daysLeft < 5:
-      backgroundColor = "red.400";
+      backgroundColor = "error.500";
       break;
 
     default:
