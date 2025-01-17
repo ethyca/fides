@@ -132,6 +132,7 @@ class DatahubConnector:
 
         if not dataset_namespace:
             logger.error(f"Cannot sync dataset without namespace: {dataset.fides_key}")
+            return
 
         try:
             fides_dataset_urn, platform = self.get_fides_dataset_urn_and_platform(
