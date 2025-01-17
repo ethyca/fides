@@ -318,7 +318,11 @@ export const CustomReportTemplates = ({
                         {searchResults?.map((customReport) => (
                           <Flex
                             key={customReport.id}
-                            className="justify-between"
+                            className={
+                              userCanDeleteReports
+                                ? "justify-between"
+                                : "justify-start"
+                            }
                           >
                             <Radio
                               value={customReport.id}
