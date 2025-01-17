@@ -296,6 +296,34 @@ class TestStagedResourceModel:
         resources = db.execute(query).all()
         assert len(resources) == 1
 
+    def test_fetch_staged_resources_by_type_query(
+        self,
+        db: Session,
+        create_staged_resource,
+        create_staged_schema,
+    ):
+        """
+        Tests that the fetch_staged_resources_by_type_query works as expected
+        """
+        query = fetch_staged_resources_by_type_query("Table")
+        resources = db.execute(query).all()
+        assert len(resources) == 1
+        assert resources[0][0].resource_type == "Table"
+        assert resources[0][0].urn == create_staged_resource.urn
+
+        query = fetch_staged_resources_by_type_query("Schema")
+        resources = db.execute(query).all()
+        assert len(resources) == 1
+        assert resources[0][0].urn == create_staged_schema.urn
+
+        query = fetch_staged_resources_by_type_query("Table", ["bq_monitor_1"])
+        resources = db.execute(query).all()
+        assert len(resources) == 1
+
+        query = fetch_staged_resources_by_type_query("Table", ["bq_monitor_2"])
+        resources = db.execute(query).all()
+        assert len(resources) == 0
+
 
 SAMPLE_START_DATE = datetime(2024, 5, 20, 0, 42, 5, 17137, tzinfo=timezone.utc)
 
