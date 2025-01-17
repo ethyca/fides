@@ -4,8 +4,8 @@ import * as React from "react";
 import { useMemo } from "react";
 
 import { useAppSelector } from "~/app/hooks";
+import CalloutNavCard from "~/features/common/CalloutNavCard";
 import { useFeatures } from "~/features/common/features";
-import NavigationCard from "~/features/common/NavigationCard";
 import { selectThisUsersScopes } from "~/features/user-management";
 
 import { MODULE_CARD_ITEMS } from "./constants";
@@ -33,7 +33,7 @@ const HomeContent = () => {
           .sort((a, b) => (a.sortOrder > b.sortOrder ? 1 : -1))
           .map((item) => (
             <NextLink href={item.href} key={item.key} className="flex">
-              <NavigationCard
+              <CalloutNavCard
                 title={item.name}
                 description={item.description}
                 color={item.color}

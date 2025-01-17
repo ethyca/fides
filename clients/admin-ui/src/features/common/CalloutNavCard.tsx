@@ -1,19 +1,19 @@
-import { AntCard, AntTypography, Box } from "fidesui";
+import { AntCard as Card, AntTypography as Typography, Box } from "fidesui";
 import palette from "fidesui/src/palette/palette.module.scss";
 
-interface NavigationCardProps {
+interface CalloutNavCardProps {
   color: string;
   title: string;
   description: string;
 }
 
-const NavigationCard = ({ color, description, title }: NavigationCardProps) => (
+const CalloutNavCard = ({ color, description, title }: CalloutNavCardProps) => (
   <Box
     borderLeft={`9px solid ${color}`}
     borderRadius="6px"
     className="flex grow"
   >
-    <AntCard
+    <Card
       className="grow"
       style={{
         backgroundColor: palette.FIDESUI_CORINTH,
@@ -22,9 +22,9 @@ const NavigationCard = ({ color, description, title }: NavigationCardProps) => (
       }}
       data-testid={`tile-${title}`}
     >
-      <AntTypography.Title level={5}>{title}</AntTypography.Title>
-      <AntTypography.Text>{description}</AntTypography.Text>
-    </AntCard>
+      <Typography.Title level={5}>{title}</Typography.Title>
+      <Typography.Text>{description}</Typography.Text>
+    </Card>
   </Box>
 );
-export default NavigationCard;
+export default CalloutNavCard;
