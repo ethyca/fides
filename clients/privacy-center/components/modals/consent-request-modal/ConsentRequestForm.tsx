@@ -257,19 +257,19 @@ const ConsentRequestForm = ({
       </ModalHeader>
       <chakra.form onSubmit={handleSubmit} data-testid="consent-request-form">
         <ModalBody>
-          <Text fontSize="sm" color="gray.600" mb={4}>
+          <Text fontSize="sm" color="gray.800" mb={4}>
             {config.consent?.button.description}
           </Text>
           {config.consent?.button.description_subtext?.map(
             (paragraph, index) => (
               // eslint-disable-next-line react/no-array-index-key
-              <Text fontSize="sm" color="gray.600" mb={4} key={index}>
+              <Text fontSize="sm" color="gray.800" mb={4} key={index}>
                 {paragraph}
               </Text>
             ),
           )}
           {isVerificationRequired ? (
-            <Text fontSize="sm" color="gray.600" mb={4}>
+            <Text fontSize="sm" color="gray.800" mb={4}>
               We will send you a verification code.
             </Text>
           ) : null}
