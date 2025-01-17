@@ -1,14 +1,16 @@
 import { AntFlex as Flex } from "fidesui";
 
-import { MonitorSystemAggregate } from "../../types";
+// import { MonitorSystemAggregate } from "../../types";
 
-interface DiscoveredSystemActionsCellProps {
-  system: MonitorSystemAggregate;
-}
+// interface DiscoveredSystemActionsCellProps {
+//   system: MonitorSystemAggregate;
+// }
 
-export const DiscoveredSystemActionsCell = ({
-  system,
-}: DiscoveredSystemActionsCellProps) => {
-  console.log(system);
-  return <Flex> </Flex>;
-};
+export const DiscoveredSystemActionsCell = () =>
+  // {
+  // system,
+  // }: DiscoveredSystemActionsCellProps,
+  {
+    // console.log(system);
+    return <Flex> </Flex>;
+  };
