@@ -64,19 +64,7 @@ const UserManagementRow = ({ user }: UserManagementRowProps) => {
         <Td pl={0} py={1} onClick={handleEditUser}>
           {user.username}{" "}
           {user.disabled && (
-            <Badge
-              bg="green.500"
-              color="white"
-              paddingLeft="2"
-              textTransform="none"
-              paddingRight="8px"
-              height="18px"
-              lineHeight="18px"
-              borderRadius="6px"
-              fontWeight="500"
-              textAlign="center"
-              data-testid="invite-sent-badge"
-            >
+            <Badge colorScheme="success" data-testid="invite-sent-badge">
               Invite sent
             </Badge>
           )}
@@ -92,38 +80,13 @@ const UserManagementRow = ({ user }: UserManagementRowProps) => {
         </Td>
         <Td pl={0} py={1} onClick={handleEditUser}>
           {permissionsLabels.map((permission) => (
-            <Badge
-              bg="gray.500"
-              color="white"
-              paddingLeft="2"
-              textTransform="none"
-              paddingRight="8px"
-              height="18px"
-              lineHeight="18px"
-              borderRadius="6px"
-              fontWeight="500"
-              textAlign="center"
-              data-testid="user-permissions-badge"
-              key={permission}
-            >
+            <Badge data-testid="user-permissions-badge" key={permission}>
               {permission}
             </Badge>
           ))}
         </Td>
         <Td pl={0} py={1} onClick={handleEditUser}>
-          <Badge
-            bg="gray.500"
-            color="white"
-            paddingLeft="2"
-            textTransform="none"
-            paddingRight="8px"
-            height="18px"
-            lineHeight="18px"
-            borderRadius="6px"
-            fontWeight="500"
-            textAlign="center"
-            data-testid="user-systems-badge"
-          >
+          <Badge textAlign="center" data-testid="user-systems-badge">
             {userSystems ? userSystems.length : 0}
           </Badge>
         </Td>
