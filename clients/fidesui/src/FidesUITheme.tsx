@@ -55,6 +55,11 @@ const inputTheme = defineStyleConfig({
     },
   },
 });
+const linkTheme = defineStyleConfig({
+  baseStyle: {
+    color: palette.FIDESUI_LINK,
+  },
+});
 
 export const theme: Dict = extendChakraTheme({
   colors: {
@@ -235,6 +240,7 @@ export const theme: Dict = extendChakraTheme({
   components: {
     Badge: badgeTheme,
     Input: inputTheme,
+    Link: linkTheme,
   },
 });
 
