@@ -1,405 +1,204 @@
 dataset:
-  - fides_key: enterprise_dsr_testing
-    organization_fides_key: default_organization
-    tags: null
-    name: Bigquery Enterprise Test Dataset
-    description: BigQuery dataset containing real data
-    meta: null
-    data_categories: null
-    fides_meta:
-      resource_id: enterprise_dsr_testing.prj-sandbox-55855.enterprise_dsr_testing
-      after: null
-      namespace:
-        dataset_id: enterprise_dsr_testing
-        project_id: prj-sandbox-55855
-    collections:
-      - name: comments
-        description: null
-        data_categories: null
-        fields:
-          - name: creation_date
-            description: null
-            data_categories:
-              - system.operations
-            fides_meta: null
-            fields: null
-          - name: id
-            description: null
-            data_categories:
-              - system.operations
-            fides_meta:
-              references: null
-              identity: null
-              primary_key: true
-              data_type: integer
-              length: null
-              return_all_elements: null
-              read_only: null
-              custom_request_field: null
-            fields: null
-          - name: post_id
-            description: null
-            data_categories:
-              - system.operations
-            fides_meta: null
-            fields: null
-          - name: score
-            description: null
-            data_categories:
-              - system.operations
-            fides_meta: null
-            fields: null
-          - name: text
-            description: null
-            data_categories:
-              - user.contact
-            fides_meta: null
-            fields: null
-          - name: user_display_name
-            description: null
-            data_categories:
-              - user.contact
-            fides_meta: null
-            fields: null
-          - name: user_id
-            description: null
-            data_categories:
-              - user.contact
-            fides_meta:
-              references:
-                - dataset: enterprise_dsr_testing
-                  field: users.id
-                  direction: from
-              identity: null
-              primary_key: null
-              data_type: null
-              length: null
-              return_all_elements: null
-              read_only: null
-              custom_request_field: null
-            fields: null
-        fides_meta: null
-      - name: post_history
-        description: null
-        data_categories: null
-        fields:
-          - name: comment
-            description: null
-            data_categories:
-              - user.contact
-            fides_meta: null
-            fields: null
-          - name: creation_date
-            description: null
-            data_categories:
-              - system.operations
-            fides_meta: null
-            fields: null
-          - name: id
-            description: null
-            data_categories:
-              - system.operations
-            fides_meta:
-              references: null
-              identity: null
-              primary_key: true
-              data_type: integer
-              length: null
-              return_all_elements: null
-              read_only: null
-              custom_request_field: null
-            fields: null
-          - name: post_history_type_id
-            description: null
-            data_categories:
-              - system.operations
-            fides_meta: null
-            fields: null
-          - name: post_id
-            description: null
-            data_categories:
-              - system.operations
-            fides_meta: null
-            fields: null
-          - name: revision_guid
-            description: null
-            data_categories:
-              - system.operations
-            fides_meta: null
-            fields: null
-          - name: text
-            description: null
-            data_categories:
-              - user.contact
-            fides_meta: null
-            fields: null
-          - name: user_id
-            description: null
-            data_categories:
-              - system.operations
-            fides_meta:
-              references:
-                - dataset: enterprise_dsr_testing
-                  field: users.id
-                  direction: from
-              identity: null
-              primary_key: null
-              data_type: null
-              length: null
-              return_all_elements: null
-              read_only: null
-              custom_request_field: null
-            fields: null
-        fides_meta: null
-      - name: stackoverflow_posts
-        description: null
-        data_categories: null
-        fields:
-          - name: accepted_answer_id
-            description: null
-            data_categories:
-              - system.operations
-            fides_meta: null
-            fields: null
-          - name: answer_count
-            description: null
-            data_categories:
-              - system.operations
-            fides_meta: null
-            fields: null
-          - name: body
-            description: null
-            data_categories:
-              - user.contact
-            fides_meta: null
-            fields: null
-          - name: comment_count
-            description: null
-            data_categories:
-              - system.operations
-            fides_meta: null
-            fields: null
-          - name: community_owned_date
-            description: null
-            data_categories:
-              - system.operations
-            fides_meta: null
-            fields: null
-          - name: creation_date
-            description: null
-            data_categories:
-              - system.operations
-            fides_meta: null
-            fields: null
-          - name: favorite_count
-            description: null
-            data_categories:
-              - system.operations
-            fides_meta: null
-            fields: null
-          - name: id
-            description: null
-            data_categories:
-              - system.operations
-            fides_meta:
-              references: null
-              identity: null
-              primary_key: true
-              data_type: integer
-              length: null
-              return_all_elements: null
-              read_only: null
-              custom_request_field: null
-            fields: null
-          - name: last_activity_date
-            description: null
-            data_categories:
-              - system.operations
-            fides_meta: null
-            fields: null
-          - name: last_edit_date
-            description: null
-            data_categories:
-              - system.operations
-            fides_meta: null
-            fields: null
-          - name: last_editor_display_name
-            description: null
-            data_categories:
-              - system.operations
-            fides_meta: null
-            fields: null
-          - name: last_editor_user_id
-            description: null
-            data_categories:
-              - system.operations
-            fides_meta:
-              references:
-                - dataset: enterprise_dsr_testing
-                  field: users.id
-                  direction: from
-              identity: null
-              primary_key: null
-              data_type: null
-              length: null
-              return_all_elements: null
-              read_only: null
-              custom_request_field: null
-            fields: null
-          - name: owner_display_name
-            description: null
-            data_categories:
-              - user.contact
-            fides_meta: null
-            fields: null
-          - name: owner_user_id
-            description: null
-            data_categories:
-              - system.operations
-            fides_meta:
-              references:
-                - dataset: enterprise_dsr_testing
-                  field: users.id
-                  direction: from
-              identity: null
-              primary_key: null
-              data_type: integer
-              length: null
-              return_all_elements: null
-              read_only: null
-              custom_request_field: null
-            fields: null
-          - name: parent_id
-            description: null
-            data_categories:
-              - system.operations
-            fides_meta: null
-            fields: null
-          - name: post_type_id
-            description: null
-            data_categories:
-              - system.operations
-            fides_meta: null
-            fields: null
-          - name: score
-            description: null
-            data_categories:
-              - system.operations
-            fides_meta: null
-            fields: null
-          - name: tags
-            description: null
-            data_categories:
-              - system.operations
-            fides_meta: null
-            fields: null
-          - name: title
-            description: null
-            data_categories:
-              - user.contact
-            fides_meta: null
-            fields: null
-          - name: view_count
-            description: null
-            data_categories:
-              - system.operations
-            fides_meta: null
-            fields: null
-        fides_meta: null
-      - name: users
-        description: null
-        data_categories: null
-        fields:
-          - name: about_me
-            description: null
-            data_categories:
-              - user.contact
-            fides_meta: null
-            fields: null
-          - name: age
-            description: null
-            data_categories:
-              - user
-            fides_meta: null
-            fields: null
-          - name: creation_date
-            description: null
-            data_categories:
-              - system.operations
-            fides_meta: null
-            fields: null
-          - name: display_name
-            description: null
-            data_categories:
-              - user.contact
-            fides_meta: null
-            fields: null
-          - name: down_votes
-            description: null
-            data_categories:
-              - system.operations
-            fides_meta: null
-            fields: null
-          - name: id
-            description: null
-            data_categories:
-              - user.contact
-            fides_meta:
-              references: null
-              identity: stackoverflow_user_id
-              primary_key: true
-              data_type: integer
-              length: null
-              return_all_elements: null
-              read_only: null
-              custom_request_field: null
-            fields: null
-          - name: last_access_date
-            description: null
-            data_categories:
-              - system.operations
-            fides_meta: null
-            fields: null
-          - name: location
-            description: null
-            data_categories:
-              - user.contact
-            fides_meta: null
-            fields: null
-          - name: profile_image_url
-            description: null
-            data_categories:
-              - user.contact
-            fides_meta: null
-            fields: null
-          - name: reputation
-            description: null
-            data_categories:
-              - system.operations
-            fides_meta: null
-            fields: null
-          - name: up_votes
-            description: null
-            data_categories:
-              - system.operations
-            fides_meta: null
-            fields: null
-          - name: views
-            description: null
-            data_categories:
-              - system.operations
-            fides_meta: null
-            fields: null
-          - name: website_url
-            description: null
-            data_categories:
-              - user
-            fides_meta: null
-            fields: null
-        fides_meta:
-          after: null
-          erase_after:
-            - enterprise_dsr_testing.comments
-          skip_processing: false
-          masking_strategy_override: null
-          partitioning: null
+ - fides_key: enterprise_dsr_testing
+   organization_fides_key: default_organization
+   name: Bigquery Enterprise Test Dataset
+   description: BigQuery dataset containing real data
+   fides_meta:
+     resource_id: enterprise_dsr_testing.prj-sandbox-55855.enterprise_dsr_testing
+     namespace:
+       dataset_id: enterprise_dsr_testing
+       project_id: prj-sandbox-55855
+   collections:
+     - name: comments
+       fields:
+         - name: creation_date
+           data_categories: [system.operations]
+         - name: id
+           data_categories: [system.operations]
+           fides_meta:
+             data_type: integer
+         - name: post_id
+           data_categories: [system.operations]
+         - name: score
+           data_categories: [system.operations]
+         - name: text
+           data_categories: [user.contact]
+         - name: user_display_name
+           data_categories: [user.contact]
+         - name: user_id
+           data_categories: [user.contact]
+           fides_meta:
+             references:
+               - dataset: enterprise_dsr_testing
+                 field: users.id
+                 direction: from
+     - name: post_history
+       fields:
+         - name: comment
+           data_categories: [user.contact]
+         - name: creation_date
+           data_categories: [system.operations]
+         - name: id
+           data_categories: [system.operations]
+           fides_meta:
+             data_type: integer
+         - name: post_history_type_id
+           data_categories: [system.operations]
+         - name: post_id
+           data_categories: [system.operations]
+         - name: revision_guid
+           data_categories: [system.operations]
+         - name: text
+           data_categories: [user.contact]
+         - name: user_id
+           data_categories: [system.operations]
+           fides_meta:
+             references:
+               - dataset: enterprise_dsr_testing
+                 field: users.id
+                 direction: from
+     - name: stackoverflow_posts
+       fields:
+         - name: accepted_answer_id
+           data_categories: [system.operations]
+         - name: answer_count
+           data_categories: [system.operations]
+         - name: body
+           data_categories: [user.contact]
+         - name: comment_count
+           data_categories: [system.operations]
+         - name: community_owned_date
+           data_categories: [system.operations]
+         - name: creation_date
+           data_categories: [system.operations]
+         - name: favorite_count
+           data_categories: [system.operations]
+         - name: id
+           data_categories: [system.operations]
+           fides_meta:
+             data_type: integer
+         - name: last_activity_date
+           data_categories: [system.operations]
+         - name: last_edit_date
+           data_categories: [system.operations]
+         - name: last_editor_display_name
+           data_categories: [system.operations]
+         - name: last_editor_user_id
+           data_categories: [system.operations]
+           fides_meta:
+             references:
+               - dataset: enterprise_dsr_testing
+                 field: users.id
+                 direction: from
+         - name: owner_display_name
+           data_categories: [user.contact]
+         - name: owner_user_id
+           data_categories: [system.operations]
+           fides_meta:
+             references:
+               - dataset: enterprise_dsr_testing
+                 field: users.id
+                 direction: from
+             data_type: integer
+         - name: parent_id
+           data_categories: [system.operations]
+         - name: post_type_id
+           data_categories: [system.operations]
+         - name: score
+           data_categories: [system.operations]
+         - name: tags
+           data_categories: [system.operations]
+         - name: title
+           data_categories: [user.contact]
+         - name: view_count
+           data_categories: [system.operations]
+     - name: stackoverflow_posts_partitioned
+       fields:
+         - name: accepted_answer_id
+           data_categories: [ system.operations ]
+         - name: answer_count
+           data_categories: [ system.operations ]
+         - name: body
+           data_categories: [ user.contact ]
+         - name: comment_count
+           data_categories: [ system.operations ]
+         - name: community_owned_date
+           data_categories: [ system.operations ]
+         - name: creation_date
+           data_categories: [ system.operations ]
+         - name: favorite_count
+           data_categories: [ system.operations ]
+         - name: id
+           data_categories: [ system.operations ]
+           fides_meta:
+             data_type: integer
+         - name: last_activity_date
+           data_categories: [ system.operations ]
+         - name: last_edit_date
+           data_categories: [ system.operations ]
+         - name: last_editor_display_name
+           data_categories: [ system.operations ]
+         - name: last_editor_user_id
+           data_categories: [ system.operations ]
+           fides_meta:
+             references:
+               - dataset: enterprise_dsr_testing
+                 field: users.id
+                 direction: from
+         - name: owner_display_name
+           data_categories: [ user.contact ]
+         - name: owner_user_id
+           data_categories: [ system.operations ]
+           fides_meta:
+             references:
+               - dataset: enterprise_dsr_testing
+                 field: users.id
+                 direction: from
+             data_type: integer
+         - name: parent_id
+           data_categories: [ system.operations ]
+         - name: post_type_id
+           data_categories: [ system.operations ]
+         - name: score
+           data_categories: [ system.operations ]
+         - name: tags
+           data_categories: [ system.operations ]
+         - name: title
+           data_categories: [ user.contact ]
+         - name: view_count
+           data_categories: [ system.operations]
+     - name: users
+       fields:
+         - name: about_me
+           data_categories: [user.contact]
+         - name: age
+           data_categories: [user]
+         - name: creation_date
+           data_categories: [system.operations]
+         - name: display_name
+           data_categories: [user.contact]
+         - name: down_votes
+           data_categories: [system.operations]
+         - name: id
+           data_categories: [user.contact]
+           fides_meta:
+             identity: stackoverflow_user_id
+             data_type: integer
+         - name: last_access_date
+           data_categories: [system.operations]
+         - name: location
+           data_categories: [user.contact]
+         - name: profile_image_url
+           data_categories: [user.contact]
+         - name: reputation
+           data_categories: [system.operations]
+         - name: up_votes
+           data_categories: [system.operations]
+         - name: views
+           data_categories: [system.operations]
+         - name: website_url
+           data_categories: [user]
+       fides_meta:
+         erase_after:
+           - enterprise_dsr_testing.comments
+         skip_processing: false

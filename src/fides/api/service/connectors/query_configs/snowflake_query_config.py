@@ -59,15 +59,14 @@ class SnowflakeQueryConfig(SQLQueryConfig):
         """Returns a query string with double quotation mark formatting as required by Snowflake syntax."""
         return f'SELECT {field_list} FROM {self._generate_table_name()} WHERE ({" OR ".join(clauses)})'
 
-    def format_key_map_for_update_stmt(self, fields: List[str]) -> List[str]:
+    def format_key_map_for_update_stmt(self, param_map: Dict[str, Any]) -> List[str]:
         """Adds the appropriate formatting for update statements in this datastore."""
-        fields.sort()
-        return [f'"{k}" = :{k}' for k in fields]
+        return [f'"{k}" = :{v}' for k, v in sorted(param_map.items())]
 
     def get_update_stmt(
         self,
         update_clauses: List[str],
-        pk_clauses: List[str],
+        where_clauses: List[str],
     ) -> str:
         """Returns a parameterized update statement in Snowflake dialect."""
-        return f'UPDATE {self._generate_table_name()} SET {", ".join(update_clauses)} WHERE {" AND ".join(pk_clauses)}'
+        return f'UPDATE {self._generate_table_name()} SET {", ".join(update_clauses)} WHERE {" AND ".join(where_clauses)}'
