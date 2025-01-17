@@ -1,7 +1,7 @@
+import type { AntRadioGroupProps as RadioGroupProps } from "fidesui";
 import {
   AntFlex as Flex,
   AntRadio as Radio,
-  AntRadioGroupProps as RadioGroupProps,
   FormControl,
   Grid,
   RadioChangeEvent,
