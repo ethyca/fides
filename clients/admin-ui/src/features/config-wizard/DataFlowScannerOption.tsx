@@ -52,7 +52,7 @@ const DataFlowScannerOption = ({ onClick }: { onClick: () => void }) => {
             title="Data flow scan"
             color={palette.FIDESUI_NECTAR}
             description="Automatically discover new systems in your Kubernetes infrastructure"
-            icon={<DataFlowScannerLogo boxSize={8} />}
+            icon={<DataFlowScannerLogo boxSize={6} />}
             data-testid="data-flow-scan-btn"
           />
         </button>
