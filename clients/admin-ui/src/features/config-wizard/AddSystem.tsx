@@ -80,13 +80,13 @@ const AddSystem = () => {
               dispatch(setAddSystemsMethod(SystemMethods.MANUAL));
               router.push(ADD_SYSTEMS_MANUAL_ROUTE);
             }}
+            data-testid="manual-btn"
           >
             <CalloutNavCard
               title="Add a system"
               color={palette.FIDESUI_SANDSTONE}
               icon={<ManualSetupIcon boxSize={6} />}
               description="Manually add a system for services not covered by automated scanners"
-              data-testid="manual-btn"
             />
           </button>
           <button
@@ -101,13 +101,13 @@ const AddSystem = () => {
                 onOpen();
               }
             }}
+            data-testid="multiple-btn"
           >
             <CalloutNavCard
               title="Add multiple systems"
               color={palette.FIDESUI_OLIVE}
               icon={<ManualSetupIcon boxSize={6} />}
               description="Choose vendors and automatically populate system details"
-              data-testid="multiple-btn"
             />
           </button>
         </SimpleGrid>
@@ -124,13 +124,13 @@ const AddSystem = () => {
               dispatch(setAddSystemsMethod(ValidTargets.AWS));
               dispatch(changeStep());
             }}
+            data-testid="aws-btn"
           >
             <CalloutNavCard
               title="Scan your infrastructure (AWS)"
               color={palette.FIDESUI_TERRACOTTA}
               description="Automatically discover new systems in your AWS infrastructure"
               icon={<AWSLogoIcon boxSize={6} />}
-              data-testid="aws-btn"
             />
           </button>
           <button
@@ -141,13 +141,13 @@ const AddSystem = () => {
               dispatch(setAddSystemsMethod(ValidTargets.OKTA));
               dispatch(changeStep());
             }}
+            data-testid="okta-btn"
           >
             <CalloutNavCard
               title="Scan your Sign On Provider (Okta)"
               color={palette.FIDESUI_MINOS}
               description="Automatically discover new systems in your Okta infrastructure"
               icon={<OktaLogoIcon boxSize={6} />}
-              data-testid="okta-btn"
             />
           </button>
           <DataFlowScannerOption
