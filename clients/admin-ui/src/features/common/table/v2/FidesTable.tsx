@@ -57,6 +57,7 @@ declare module "@tanstack/table-core" {
     showHeaderMenuWrapOption?: boolean;
     overflow?: "auto" | "visible" | "hidden";
     disableRowClick?: boolean;
+    noPadding?: boolean;
     onCellClick?: (row: TData) => void;
   }
 }
@@ -118,7 +119,7 @@ const HeaderContent = <T,>({
           variant="ghost"
           size="sm"
           sx={{
-            ...getTableTHandTDStyles(header.column.id),
+            ...getTableTHandTDStyles(header.column.id === "select"),
             ...tableHeaderButtonStyles,
           }}
         >
@@ -130,7 +131,7 @@ const HeaderContent = <T,>({
     return (
       <Box
         data-testid={`${header.id}-header`}
-        sx={{ ...getTableTHandTDStyles(header.column.id) }}
+        sx={{ ...getTableTHandTDStyles(header.column.id === "select") }}
         fontSize="xs"
         lineHeight={9} // same as table header height
         fontWeight="medium"
@@ -154,7 +155,7 @@ const HeaderContent = <T,>({
         variant="ghost"
         size="sm"
         sx={{
-          ...getTableTHandTDStyles(header.column.id),
+          ...getTableTHandTDStyles(header.column.id === "select"),
           ...tableHeaderButtonStyles,
         }}
         data-testid={`${header.id}-header-menu`}

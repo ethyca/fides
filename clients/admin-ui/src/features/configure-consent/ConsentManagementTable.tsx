@@ -280,16 +280,14 @@ export const ConsentManagementTable = () => {
           consentCategoryOptions={consentCategoryOptions}
           onConsentCategoryChange={onConsentCategoryChange}
         />
-        <HStack alignItems="center" spacing={4}>
+        <HStack alignItems="center" spacing={2}>
           <AddVendor
             buttonLabel="Add vendors"
-            buttonProps={{ size: "small" }}
             onButtonClick={dictionaryService ? goToAddMultiple : undefined}
           />
           <Button
             onClick={onOpenFilter}
             data-testid="filter-multiple-systems-btn"
-            size="small"
           >
             Filter
           </Button>

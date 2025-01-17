@@ -1,4 +1,4 @@
-Closes #<issue>
+Closes [<issue>]
 
 ### Description Of Changes
 

@@ -111,7 +111,6 @@ const ConfigureAlerts = () => {
     <>
       <Button
         onClick={onOpen}
-        size="small"
         title="Configure alerts"
         aria-label="Configure alerts"
         icon={<BellIcon />}

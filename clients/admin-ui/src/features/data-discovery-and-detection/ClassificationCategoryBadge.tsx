@@ -15,7 +15,7 @@ const ClassificationCategoryBadge = ({
       variant="taxonomy"
       textTransform="none"
       fontWeight="normal"
-      cursor={onClick ? "pointer" : "default"}
+      as={onClick ? "button" : undefined}
       onClick={onClick}
       _hover={onClick ? { borderColor: "primary.900" } : undefined}
       {...props}

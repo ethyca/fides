@@ -230,7 +230,6 @@ export const CustomReportTemplates = ({
       >
         <PopoverTrigger>
           <Button
-            size="small"
             className="max-w-40"
             icon={<ChevronDownIcon />}
             iconPosition="end"

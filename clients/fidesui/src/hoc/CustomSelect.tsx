@@ -36,7 +36,7 @@ const withCustomProps = (WrappedComponent: typeof Select) => {
     placeholder = "Select...",
     optionRender = optionDescriptionRender,
     className = "w-full",
-    suffixIcon = <ChevronDown />,
+    suffixIcon,
     menuItemSelectedIcon = <Checkmark />,
     ...props
   }: SelectProps<ValueType, OptionType>) => {
@@ -44,7 +44,7 @@ const withCustomProps = (WrappedComponent: typeof Select) => {
       placeholder,
       optionRender,
       className,
-      suffixIcon,
+      suffixIcon: props.loading ? undefined : suffixIcon || <ChevronDown />,
       menuItemSelectedIcon,
       "data-testid": `select${props.id ? `-${props.id}` : ""}`,
       ...props,
