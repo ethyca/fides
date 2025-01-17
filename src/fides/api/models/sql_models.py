@@ -416,6 +416,7 @@ class System(Base, FidesBase):
         cascade="all, delete",
         back_populates="system",
         lazy="selectin",
+        order_by="PrivacyDeclaration.name",
     )
 
     data_stewards = relationship(
