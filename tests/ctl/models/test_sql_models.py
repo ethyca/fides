@@ -1,5 +1,5 @@
-from fides.api.db.system import get_system
 from fides.api.models.sql_models import PrivacyDeclaration
+from fides.api.db.system import get_system
 
 
 def test_system_privacy_declarations_in_alphabetical_order(db, system):
@@ -17,7 +17,7 @@ def test_system_privacy_declarations_in_alphabetical_order(db, system):
             "data_use": "essential",
             "name": "Another Declaration Name",
             "system_id": system.id,
-        },
+        }
     ]
     for data in new_privacy_declarations:
         PrivacyDeclaration.create(db=db, data=data)
@@ -29,6 +29,4 @@ def test_system_privacy_declarations_in_alphabetical_order(db, system):
     privacy_declarations = updated_system.privacy_declarations
     sorted_privacy_declarations = sorted(privacy_declarations, key=lambda x: x.name)
 
-    assert (
-        privacy_declarations == sorted_privacy_declarations
-    ), "Privacy declarations are not in alphabetical order by name"
+    assert privacy_declarations == sorted_privacy_declarations, "Privacy declarations are not in alphabetical order by name"
