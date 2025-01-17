@@ -65,19 +65,19 @@ type TagNames = "available" | "enabled" | "inactive";
 const systemsApplicableTags: Record<TagNames, TagProps & { tooltip: string }> =
   {
     available: {
-      backgroundColor: "orange.100",
-      color: "orange.800",
+      backgroundColor: "warn.100",
+      color: "minos",
       tooltip:
         "This notice is associated with a system + data use and can be enabled",
     },
     enabled: {
-      backgroundColor: "green.100",
-      color: "green.800",
+      backgroundColor: "success.100",
+      color: "minos",
       tooltip: "This notice is active and available for consumers",
     },
     inactive: {
       backgroundColor: "gray.100",
-      color: "gray.800",
+      color: "minos",
       tooltip:
         "This privacy notice cannot be enabled because it either does not have a data use or the linked data use has not been assigned to a system",
     },
