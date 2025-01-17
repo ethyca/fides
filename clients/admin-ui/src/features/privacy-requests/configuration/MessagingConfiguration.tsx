@@ -1,4 +1,11 @@
-import { Box, Heading, Radio, RadioGroup, Stack, Text } from "fidesui";
+import {
+  AntFlex as Flex,
+  AntRadio as Radio,
+  Box,
+  Heading,
+  RadioChangeEvent,
+  Text,
+} from "fidesui";
 import { useEffect, useState } from "react";
 
 import { isErrorResult } from "~/features/common/helpers";
@@ -36,7 +43,8 @@ const MessagingConfiguration = () => {
     }
   }, [activeMessagingProvider]);
 
-  const handleChange = async (value: string) => {
+  const handleChange = async (e: RadioChangeEvent) => {
+    const { value } = e.target;
     const result = await saveActiveConfiguration({
       notifications: {
         notification_service_type: value,
@@ -99,19 +107,17 @@ const MessagingConfiguration = () => {
         <Heading fontSize="md" fontWeight="semibold" mt={10}>
           Choose service type to configure
         </Heading>
-        <RadioGroup
+        <Radio.Group
           onChange={handleChange}
           value={messagingValue}
           data-testid="privacy-requests-messaging-provider-selection"
-          colorScheme="secondary"
-          p={3}
+          className="p-3"
         >
-          <Stack direction="row">
+          <Flex>
             <Radio
               key={messagingProviders.mailgun}
               value={messagingProviders.mailgun}
               data-testid="option-mailgun"
-              mr={5}
             >
               Mailgun Email
             </Radio>
@@ -129,8 +135,8 @@ const MessagingConfiguration = () => {
             >
               Twilio SMS
             </Radio>
-          </Stack>
-        </RadioGroup>
+          </Flex>
+        </Radio.Group>
         {messagingValue === messagingProviders.mailgun ? (
           <MailgunEmailConfiguration />
         ) : null}
