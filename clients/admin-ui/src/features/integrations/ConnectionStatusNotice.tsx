@@ -17,12 +17,16 @@ const ConnectionStatusNotice = ({
   }
   const testDate = formatDate(testData.timestamp);
   return testData.succeeded ? (
-    <Flex color="green.400" align="center" data-testid="connection-status">
+    <Flex
+      color="success-text.900"
+      align="center"
+      data-testid="connection-status"
+    >
       <CheckCircleIcon mr={2} boxSize={4} />
       <Text>Last connected {testDate}</Text>
     </Flex>
   ) : (
-    <Flex color="red.400" align="center" data-testid="connection-status">
+    <Flex color="error-text.900" align="center" data-testid="connection-status">
       <WarningTwoIcon mr={2} boxSize={4} />
       <Text>Last connection failed {testDate}</Text>
     </Flex>

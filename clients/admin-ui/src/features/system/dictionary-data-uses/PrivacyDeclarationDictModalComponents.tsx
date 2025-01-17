@@ -57,10 +57,10 @@ const PrivacyDeclarationDictModalComponents = ({
         backgroundColor="gray.50"
         border="1px"
         borderRadius={4}
-        borderColor="purple.400"
+        borderColor="terracotta.500"
       >
         <HStack alignItems="start" spacing={3}>
-          <SparkleIcon color="purple.400" mt={2} />
+          <SparkleIcon color="terracotta.500" mt={2} />
           <Text>
             Fides has automatically generated the following data uses. These
             data uses are commonly assigned to this system type. You can accept

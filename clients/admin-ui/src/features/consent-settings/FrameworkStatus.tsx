@@ -19,15 +19,11 @@ const FrameworkStatus = ({
     <Text>
       {name} status{" "}
       {enabled ? (
-        <Badge
-          fontWeight="semibold"
-          color="green.800"
-          backgroundColor="green.100"
-        >
+        <Badge fontWeight="semibold" backgroundColor="success.100">
           Enabled
         </Badge>
       ) : (
-        <Badge fontWeight="semibold" backgroundColor="red.100">
+        <Badge fontWeight="semibold" backgroundColor="error.100">
           Disabled
         </Badge>
       )}
