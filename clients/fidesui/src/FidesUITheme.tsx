@@ -60,6 +60,11 @@ const linkTheme = defineStyleConfig({
     color: palette.FIDESUI_LINK,
   },
 });
+const checkboxTheme = defineStyleConfig({
+  defaultProps: {
+    colorScheme: "primary",
+  },
+});
 
 export const theme: Dict = extendChakraTheme({
   colors: {
@@ -241,6 +246,7 @@ export const theme: Dict = extendChakraTheme({
     Badge: badgeTheme,
     Input: inputTheme,
     Link: linkTheme,
+    Checkbox: checkboxTheme,
   },
 });
 
