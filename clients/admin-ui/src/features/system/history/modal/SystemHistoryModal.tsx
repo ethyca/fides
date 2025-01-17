@@ -10,6 +10,7 @@ import {
   ModalOverlay,
   Spacer,
 } from "fidesui";
+import palette from "fidesui/src/palette/palette.module.scss";
 
 import { SystemHistoryResponse } from "~/types/api";
 
@@ -59,7 +60,7 @@ const SystemHistoryModal = ({ selectedHistory, isOpen, onClose }: Props) => (
     <ModalOverlay />
     <ModalContent>
       <ModalHeader
-        backgroundColor="#F7FAFC"
+        backgroundColor={palette.FIDESUI_NEUTRAL_50}
         borderTopLeftRadius="8px"
         borderTopRightRadius="8px"
         borderBottom="1px solid #E2E8F0"

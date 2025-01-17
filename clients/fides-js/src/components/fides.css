@@ -3,7 +3,7 @@
 */
 :root {
   /* Colors */
-  --fides-overlay-primary-color: #8243f2;
+  --fides-overlay-primary-color: #2b2e35;
   --fides-overlay-background-color: #f7fafc;
   --fides-overlay-embed-background-color: transparent;
   --fides-overlay-font-color: #4a5568;
@@ -21,7 +21,7 @@
   --fides-overlay-primary-button-background-color: var(
     --fides-overlay-primary-color
   );
-  --fides-overlay-primary-button-background-hover-color: #9569f4;
+  --fides-overlay-primary-button-background-hover-color: #4f525b;
   --fides-overlay-primary-button-text-color: #ffffff;
   --fides-overlay-primary-button-border-color: transparent;
   --fides-overlay-secondary-button-background-color: var(

@@ -27,7 +27,7 @@ const BrandLink = ({
     >
       Powered by{" "}
       <EthycaLogo
-        color="minos.500"
+        color="primary.900"
         h="20px"
         w="31px"
         role="img"
