@@ -1,5 +1,6 @@
 import { AntCard as Card, AntTypography as Typography, Box } from "fidesui";
-import palette from "fidesui/src/palette/palette.module.scss";
+
+import styles from "./CalloutNavCard.module.scss";
 
 interface CalloutNavCardProps {
   color: string;
@@ -17,17 +18,9 @@ const CalloutNavCard = ({
   <Box
     borderLeft={`9px solid ${color}`}
     borderRadius="6px"
-    className="flex grow"
+    className={styles.container}
   >
-    <Card
-      className="grow"
-      style={{
-        backgroundColor: palette.FIDESUI_CORINTH,
-        borderRadius: "0px 6px 6px 0px",
-        borderLeft: "none",
-      }}
-      data-testid={`tile-${title}`}
-    >
+    <Card className={styles.card} data-testid={`tile-${title}`}>
       <div className="mb-1 flex items-center gap-1.5">
         {icon}
         <Typography.Title
