@@ -530,6 +530,12 @@ export const stubActionCenter = () => {
   cy.intercept("POST", "/api/v1/plus/discovery-monitor/promote*", {
     response: 200,
   }).as("addAssets");
+  cy.intercept("POST", "/api/v1/plus/discovery-monitor/*/mute*", {
+    response: 200,
+  }).as("ignoreMonitorResultSystem");
+  cy.intercept("POST", "/api/v1/plus/discovery-monitor/*/promote*", {
+    response: 200,
+  }).as("addMonitorResultSystem");
   cy.intercept("PATCH", "/api/v1/plus/discovery-monitor/*/results", {
     response: 200,
   }).as("setAssetSystem");

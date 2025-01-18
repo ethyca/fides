@@ -137,8 +137,7 @@ describe("Action center", () => {
       // cy.getByTestId("column-data_use").should("exist");
       cy.getByTestId("column-locations").should("exist");
       cy.getByTestId("column-domains").should("exist");
-      // TODO: [HJ-343] uncomment when actions column is implemented
-      // cy.getByTestId("column-actions").should("exist");
+      cy.getByTestId("column-actions").should("exist");
       cy.getByTestId("row-0-col-system_name").within(() => {
         cy.getByTestId("change-icon").should("exist"); // new result
         cy.contains("Uncategorized assets").should("exist");
@@ -165,6 +164,23 @@ describe("Action center", () => {
         "contain",
         "analytics.google.com",
       );
+      cy.getByTestId("row-0-col-actions").within(() => {
+        cy.getByTestId("add-btn").should("be.disabled");
+      });
+    });
+    it("should add all assets in a system", () => {
+      cy.getByTestId("row-1-col-actions").within(() => {
+        cy.getByTestId("add-btn").click({ force: true });
+      });
+      cy.wait("@addMonitorResultSystem");
+      cy.getByTestId("success-alert").should("exist");
+    });
+    it("should ignore all assets in a system", () => {
+      cy.getByTestId("row-1-col-actions").within(() => {
+        cy.getByTestId("ignore-btn").click({ force: true });
+      });
+      cy.wait("@ignoreMonitorResultSystem");
+      cy.getByTestId("success-alert").should("exist");
     });
     it("should navigate to table view on row click", () => {
       cy.getByTestId("row-1").click();
@@ -283,10 +299,9 @@ describe("Action center", () => {
       cy.getByTestId("success-alert").should("exist");
     });
     it.skip("should add all assets", () => {
-      // TODO: [HJ-343] unskip when add all is implemented
       cy.getByTestId("add-all").click();
       cy.getByTestId("add-all").should("have.class", "ant-btn-loading");
-      cy.wait("@addAssets");
+      cy.wait("@addMonitorResultSystem");
       cy.url().should("not.contain", systemId);
       cy.getByTestId("success-alert").should("exist");
     });
