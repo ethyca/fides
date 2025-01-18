@@ -56,21 +56,43 @@ const actionCenterApi = baseApi.injectEndpoints({
       }),
       providesTags: () => ["Discovery Monitor Results"],
     }),
-    addMonitorResults: build.mutation<
+    addMonitorResultSystem: build.mutation<
       any,
-      { urnList?: string[]; systemId?: string }
+      { monitor_config_key?: string; resolved_system_id?: string }
     >({
+      query: (params) => ({
+        method: "POST",
+        url: `/plus/discovery-monitor/${params.monitor_config_key}/promote`,
+        params: {
+          resolved_system_id: params.resolved_system_id,
+        },
+      }),
+      invalidatesTags: ["Discovery Monitor Results"],
+    }),
+    ignoreMonitorResultSystem: build.mutation<
+      any,
+      { monitor_config_key?: string; resolved_system_id?: string }
+    >({
+      query: (params) => ({
+        method: "POST",
+        url: `/plus/discovery-monitor/${params.monitor_config_key}/mute`,
+        params: {
+          resolved_system_id: params.resolved_system_id,
+        },
+      }),
+      invalidatesTags: ["Discovery Monitor Results"],
+    }),
+    addMonitorResultAssets: build.mutation<any, { urnList?: string[] }>({
       query: (params) => ({
         method: "POST",
         url: `/plus/discovery-monitor/promote`,
         params: {
           staged_resource_urns: params.urnList,
-          system_key: params.systemId,
         },
       }),
       invalidatesTags: ["Discovery Monitor Results"],
     }),
-    ignoreMonitorResults: build.mutation<
+    ignoreMonitorResultAssets: build.mutation<
       any,
       { urnList?: string[]; systemId?: string }
     >({
@@ -79,7 +101,6 @@ const actionCenterApi = baseApi.injectEndpoints({
         url: `/plus/discovery-monitor/mute`,
         params: {
           staged_resource_urns: params.urnList,
-          system_key: params.systemId,
         },
       }),
       invalidatesTags: ["Discovery Monitor Results"],
@@ -91,6 +112,8 @@ export const {
   useGetAggregateMonitorResultsQuery,
   useGetDiscoveredSystemAggregateQuery,
   useGetDiscoveredAssetsQuery,
-  useAddMonitorResultsMutation,
-  useIgnoreMonitorResultsMutation,
+  useAddMonitorResultSystemMutation,
+  useIgnoreMonitorResultSystemMutation,
+  useAddMonitorResultAssetsMutation,
+  useIgnoreMonitorResultAssetsMutation,
 } = actionCenterApi;

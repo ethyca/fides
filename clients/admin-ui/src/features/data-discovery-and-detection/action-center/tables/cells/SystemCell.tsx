@@ -63,6 +63,7 @@ export const SystemCell = ({
               aria-label="add"
               icon={<Icons.Add />}
               onClick={() => setIsEditing(true)}
+              data-testid="add-system-btn"
             />
           )}
         </div>

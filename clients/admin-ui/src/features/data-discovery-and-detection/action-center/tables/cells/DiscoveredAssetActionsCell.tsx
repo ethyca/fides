@@ -1,12 +1,16 @@
-import { AntButton as Button, AntSpace as Space } from "fidesui";
+import {
+  AntButton as Button,
+  AntSpace as Space,
+  AntTooltip as Tooltip,
+} from "fidesui";
 
-import { isErrorResult } from "~/features/common/helpers";
+import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { useAlert } from "~/features/common/hooks";
 import { StagedResourceAPIResponse } from "~/types/api";
 
 import {
-  useAddMonitorResultsMutation,
-  useIgnoreMonitorResultsMutation,
+  useAddMonitorResultAssetsMutation,
+  useIgnoreMonitorResultAssetsMutation,
 } from "../../action-center.slice";
 
 interface DiscoveredAssetActionsCellProps {
@@ -16,10 +20,10 @@ interface DiscoveredAssetActionsCellProps {
 export const DiscoveredAssetActionsCell = ({
   asset,
 }: DiscoveredAssetActionsCellProps) => {
-  const [addMonitorResultsMutation, { isLoading: isAddingResults }] =
-    useAddMonitorResultsMutation();
-  const [ignoreMonitorResultsMutation, { isLoading: isIgnoringResults }] =
-    useIgnoreMonitorResultsMutation();
+  const [addMonitorResultAssetsMutation, { isLoading: isAddingResults }] =
+    useAddMonitorResultAssetsMutation();
+  const [ignoreMonitorResultAssetsMutation, { isLoading: isIgnoringResults }] =
+    useIgnoreMonitorResultAssetsMutation();
 
   const { successAlert, errorAlert } = useAlert();
 
@@ -28,7 +32,7 @@ export const DiscoveredAssetActionsCell = ({
   const { urn, name, resource_type: type } = asset;
 
   const handleAdd = async () => {
-    const result = await addMonitorResultsMutation({
+    const result = await addMonitorResultAssetsMutation({
       urnList: [urn],
     });
     if (isErrorResult(result)) {
@@ -42,26 +46,39 @@ export const DiscoveredAssetActionsCell = ({
   };
 
   const handleIgnore = async () => {
-    await ignoreMonitorResultsMutation({
+    const result = await ignoreMonitorResultAssetsMutation({
       urnList: [urn],
     });
-    successAlert(
-      `${type} "${name}" has been ignored and will not be added to the system inventory.`,
-      `Ignored`,
-    );
+    if (isErrorResult(result)) {
+      errorAlert(getErrorMessage(result.error));
+    } else {
+      successAlert(
+        `${type} "${name}" has been ignored and will not be added to the system inventory.`,
+        `Ignored`,
+      );
+    }
   };
 
+  // TODO [HJ-369] update disabled and tooltip logic once the categories of consent feature is implemented
   return (
     <Space>
-      <Button
-        data-testid="add-btn"
-        size="small"
-        onClick={handleAdd}
-        disabled={anyActionIsLoading}
-        loading={isAddingResults}
+      <Tooltip
+        title={
+          !asset.system_id
+            ? `This asset requires a system before you can add it to the inventory.`
+            : undefined
+        }
       >
-        Add
-      </Button>
+        <Button
+          data-testid="add-btn"
+          size="small"
+          onClick={handleAdd}
+          disabled={!asset.system_id || anyActionIsLoading}
+          loading={isAddingResults}
+        >
+          Add
+        </Button>
+      </Tooltip>
       <Button
         data-testid="ignore-btn"
         size="small"

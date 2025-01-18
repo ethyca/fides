@@ -29,9 +29,9 @@ import {
   useServerSidePagination,
 } from "~/features/common/table/v2";
 import {
-  useAddMonitorResultsMutation,
+  useAddMonitorResultAssetsMutation,
   useGetDiscoveredAssetsQuery,
-  useIgnoreMonitorResultsMutation,
+  useIgnoreMonitorResultAssetsMutation,
 } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
 
 import { SearchInput } from "../../SearchInput";
@@ -48,10 +48,10 @@ export const DiscoveredAssetsTable = ({
 }: DiscoveredAssetsTableProps) => {
   // const router = useRouter();
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
-  const [addMonitorResultsMutation, { isLoading: isAddingResults }] =
-    useAddMonitorResultsMutation();
-  const [ignoreMonitorResultsMutation, { isLoading: isIgnoringResults }] =
-    useIgnoreMonitorResultsMutation();
+  const [addMonitorResultAssetsMutation, { isLoading: isAddingResults }] =
+    useAddMonitorResultAssetsMutation();
+  const [ignoreMonitorResultAssetsMutation, { isLoading: isIgnoringResults }] =
+    useIgnoreMonitorResultAssetsMutation();
 
   const anyBulkActionIsLoading = isAddingResults || isIgnoringResults;
 
@@ -108,7 +108,7 @@ export const DiscoveredAssetsTable = ({
   const selectedUrns = Object.keys(rowSelection).filter((k) => rowSelection[k]);
 
   const handleBulkAdd = async () => {
-    await addMonitorResultsMutation({
+    await addMonitorResultAssetsMutation({
       urnList: selectedUrns,
     });
     // TODO: Add "view" button which will bring users to the system inventory with an asset tab open (not yet developed)
@@ -119,7 +119,7 @@ export const DiscoveredAssetsTable = ({
   };
 
   const handleBulkIgnore = async () => {
-    await ignoreMonitorResultsMutation({
+    await ignoreMonitorResultAssetsMutation({
       urnList: selectedUrns,
     });
     successAlert(
@@ -131,8 +131,9 @@ export const DiscoveredAssetsTable = ({
   // TODO: [HJ-343] Uncommend when system actions are implemented
   /* const handleAddAll = async () => {
     setIsAddingAll(true);
-    await addMonitorResultsMutation({
-      systemId,
+    await addMonitorResultSystemMutation({
+      monitor_config_key: monitorId,
+      resolved_system_id: systemId,
     });
     setIsAddingAll(false);
     router.push(`${ACTION_CENTER_ROUTE}/${monitorId}`);
