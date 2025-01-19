@@ -9,7 +9,7 @@ from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.policy import Policy
 from fides.api.schemas.policy import ActionType
-from fides.api.service.dataset.dataset_service import (
+from fides.service.dataset.dataset_service import (
     get_dataset_reachability,
     get_identities_and_references,
     run_test_access_request,
@@ -46,7 +46,7 @@ class TestGetDatasetReachability:
                 "no_identities_dataset_config",
                 (
                     False,
-                    'The following collections are not reachable "single_identity:customer"',
+                    'The following nodes are unreachable but contain user data categories "single_identity:customer"',
                 ),
             ),
         ],

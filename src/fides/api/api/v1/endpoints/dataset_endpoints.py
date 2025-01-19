@@ -56,7 +56,7 @@ from fides.api.schemas.dataset import (
 )
 from fides.api.schemas.privacy_request import TestPrivacyRequest
 from fides.api.schemas.redis_cache import UnlabeledIdentities
-from fides.api.service.dataset.dataset_service import (
+from fides.service.dataset.dataset_service import (
     get_dataset_reachability,
     get_identities_and_references,
     run_test_access_request,

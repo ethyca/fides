@@ -1,6 +1,7 @@
 from copy import deepcopy
 from typing import Any, Dict, Optional, Set, Tuple
 
+from fides.api.graph.policy_aware_traversal import PolicyAwareTraversal
 from sqlalchemy.orm import Session
 
 from fides.api.common_exceptions import UnreachableNodesError, ValidationError
@@ -58,11 +59,11 @@ def get_dataset_reachability(
     }
 
     try:
-        Traversal(dataset_graph, identity_seed)
+        PolicyAwareTraversal(dataset_graph, identity_seed)
     except UnreachableNodesError as exc:
         return (
             False,
-            f'The following collections are not reachable "{", ".join(exc.errors)}"',
+            f'{exc.message} "{", ".join(exc.unreachable_node_keys)}"',
         )
 
     return True, None
@@ -98,7 +99,7 @@ def run_test_access_request(
 ) -> PrivacyRequest:
     """
     Creates a privacy request with a source of "Dataset test" that runs an access request for a single dataset.
-    The input data is used to mock any external dataset values referenced by our dataset so that it can run
+    The input data is used to mock any external dataset values referenced by our dataset so that it can run in
     complete isolation.
     """
 

@@ -116,6 +116,15 @@ class Policy(Base):
         _ = [rule.delete(db=db) for rule in self.rules]  # type: ignore[attr-defined]
         return super().delete(db=db)
 
+    def get_access_target_categories(self) -> List[str]:
+        """Returns all data categories that are the target of access rules."""
+        access_categories = []
+        for rule in self.rules:  # type: ignore[attr-defined]
+            if rule.action_type == ActionType.access:
+                access_categories.extend(rule.get_target_data_categories())
+
+        return access_categories
+
     def get_erasure_target_categories(self) -> List[str]:
         """Returns all data categories that are the target of erasure rules."""
         erasure_categories = []
