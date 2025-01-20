@@ -1301,7 +1301,6 @@ class TestSystemGet:
         ), "Privacy declarations are not in alphabetical order by name"
 
 
-
 @pytest.mark.unit
 class TestSystemList:
     @pytest.fixture(scope="function", autouse=True)
