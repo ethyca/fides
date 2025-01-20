@@ -1288,7 +1288,6 @@ class TestSystemGet:
         assert privacy_declarations[1]["name"] == "Collect data for marketing"
 
 
-
 @pytest.mark.unit
 class TestSystemList:
     @pytest.fixture(scope="function", autouse=True)
