@@ -102,6 +102,7 @@ describe("Smoke test", () => {
 
     cy.getByTestId("tab-Integrations").click();
     cy.getByTestId("test-connection-button").click();
+    cy.getByTestId("toast-success-msg");
 
     // Mongo
     cy.getByTestId("System inventory-nav-link").click();
@@ -110,6 +111,7 @@ describe("Smoke test", () => {
     });
     cy.getByTestId("tab-Integrations").click();
     cy.getByTestId("test-connection-button").click();
+    cy.getByTestId("toast-success-msg");
   });
 
   it("can manage consent preferences from the Privacy Center", () => {
