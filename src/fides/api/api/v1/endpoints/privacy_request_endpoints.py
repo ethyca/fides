@@ -672,6 +672,21 @@ def attach_resume_instructions(privacy_request: PrivacyRequest) -> None:
     )
 
 
+def _validate_result_size(query: Query) -> None:
+    """
+    Validates the result size is less than maximum allowed by settings.
+    Raises an HTTPException if result size is greater than maximum.
+    Result size is determined by running an up-front "count" query.
+    """
+    row_count = query.count()
+    max_rows = CONFIG.admin_ui.max_privacy_request_download_rows
+    if row_count > max_rows:
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail=f"Requested privacy request report would contain {row_count} rows. A maximum of {max_rows} rows is permitted. Please narrow your date range and try again.",
+        )
+
+
 def _shared_privacy_request_search(
     *,
     db: Session,
@@ -740,6 +755,7 @@ def _shared_privacy_request_search(
     query = _sort_privacy_request_queryset(query, sort_field, sort_direction)
 
     if download_csv:
+        _validate_result_size(query)
         # Returning here if download_csv param was specified
         logger.info("Downloading privacy requests as csv")
         return privacy_request_csv_download(db, query)

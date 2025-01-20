@@ -51,7 +51,7 @@ const Profile = () => {
     <Layout title="Users - Edit a user">
       {isLoadingUser && (
         <Flex justify="center" align="center" className="h-full">
-          <Spinner color="minos.500" />
+          <Spinner color="primary.900" />
         </Flex>
       )}
       {!isLoadingUser && !existingUser && (

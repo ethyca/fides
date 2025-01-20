@@ -441,7 +441,7 @@ export const CustomRadioGroup = ({
           onChange={handleChange}
           value={selected?.value}
           data-testid={`input-${field.name}`}
-          colorScheme="secondary"
+          colorScheme="primary"
         >
           <Stack direction="row">
             {options.map((o) => (

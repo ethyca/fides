@@ -110,8 +110,12 @@ export const requestCSVDownload = async ({
       },
     },
   )
-    .then((response) => {
+    .then(async (response) => {
       if (!response.ok) {
+        if (response.status === 400) {
+          const errorData = await response.json();
+          throw new Error(errorData.detail || "Bad request error");
+        }
         throw new Error("Got a bad response from the server");
       }
       return response.blob();

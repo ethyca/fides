@@ -19,7 +19,6 @@ const InfoBox = ({
   <HStack
     backgroundColor="gray.50"
     border="1px solid"
-    borderColor="blue.400"
     borderRadius="md"
     justifyContent="space-between"
     py={4}
@@ -41,7 +40,7 @@ const InfoBox = ({
         onClick={onClose}
       />
     )}
-    <WarningTwoIcon alignSelf="start" color="blue.400" mt={0.5} flexGrow={0} />
+    <WarningTwoIcon alignSelf="start" color="minos" mt={0.5} flexGrow={0} />
     <Flex direction="column" gap={2} flexGrow={1}>
       <Heading fontSize="md">{title}</Heading>
       <Text fontSize="sm" color="gray.600" lineHeight="5">

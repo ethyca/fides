@@ -1,7 +1,12 @@
 import { getCoreRowModel, useReactTable } from "@tanstack/react-table";
-import { Box, Flex } from "fidesui";
+import { AntEmpty as Empty, Box, Flex } from "fidesui";
+import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 
+import {
+  ACTION_CENTER_ROUTE,
+  UNCATEGORIZED_SEGMENT,
+} from "~/features/common/nav/v2/routes";
 import {
   FidesTableV2,
   PaginationBar,
@@ -13,6 +18,7 @@ import { useGetDiscoveredSystemAggregateQuery } from "~/features/data-discovery-
 
 import { SearchInput } from "../../SearchInput";
 import { useDiscoveredSystemAggregateColumns } from "../hooks/useDiscoveredSystemAggregateColumns";
+import { MonitorSystemAggregate } from "../types";
 
 interface DiscoveredSystemAggregateTableProps {
   monitorId: string;
@@ -21,6 +27,7 @@ interface DiscoveredSystemAggregateTableProps {
 export const DiscoveredSystemAggregateTable = ({
   monitorId,
 }: DiscoveredSystemAggregateTableProps) => {
+  const router = useRouter();
   const {
     PAGE_SIZES,
     pageSize,
@@ -68,6 +75,12 @@ export const DiscoveredSystemAggregateTable = ({
     return <TableSkeletonLoader rowHeight={36} numRows={36} />;
   }
 
+  const handleRowClick = (row: MonitorSystemAggregate) => {
+    router.push(
+      `${ACTION_CENTER_ROUTE}/${monitorId}/${row.id ?? UNCATEGORIZED_SEGMENT}`,
+    );
+  };
+
   return (
     <>
       <TableActionBar>
@@ -84,7 +97,16 @@ export const DiscoveredSystemAggregateTable = ({
           </Flex>
         </Flex>
       </TableActionBar>
-      <FidesTableV2 tableInstance={tableInstance} />
+      <FidesTableV2
+        tableInstance={tableInstance}
+        onRowClick={handleRowClick}
+        emptyTableNotice={
+          <Empty
+            image={Empty.PRESENTED_IMAGE_SIMPLE}
+            description="All caught up!"
+          />
+        }
+      />
       <PaginationBar
         totalRows={data?.items.length || 0}
         pageSizes={PAGE_SIZES}

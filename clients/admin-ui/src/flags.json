@@ -59,5 +59,11 @@
     "development": true,
     "test": true,
     "production": false
+  },
+  "datahub": {
+    "description": "Share Fides data categories with your Datahub instance",
+    "development": true,
+    "test": true,
+    "production": false
   }
 }
