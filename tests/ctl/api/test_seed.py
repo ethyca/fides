@@ -83,7 +83,7 @@ def parent_server_config_password_only():
 
 @pytest.mark.unit
 class TestFilterDataCategories:
-    @pytest.skip("Testing if this test is actually problematic")
+    @pytest.mark.skip("Testing if this test is actually problematic")
     def test_filter_data_categories_excluded(self) -> None:
         """Test that the filter method works as intended"""
         excluded_data_categories = [
