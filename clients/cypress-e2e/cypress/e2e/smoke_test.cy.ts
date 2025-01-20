@@ -96,12 +96,12 @@ describe("Smoke test", () => {
 
     // Postgres
     cy.getByTestId("System inventory-nav-link").click();
-    cy.getByTestId("system-cookie_house_postgresql_database").within(() => {
+    cy.getByTestId("system-dasdsa").within(() => {
       cy.getByTestId("edit-btn").click();
     });
 
     cy.getByTestId("tab-Integrations").click();
-    cy.get("button").contains("Test").click();
+    cy.getByTestId("test-connection-button").click();
 
     // Mongo
     cy.getByTestId("System inventory-nav-link").click();
@@ -109,7 +109,7 @@ describe("Smoke test", () => {
       cy.getByTestId("edit-btn").click();
     });
     cy.getByTestId("tab-Integrations").click();
-    cy.get("button").contains("Test").click();
+    cy.getByTestId("test-connection-button").click();
   });
 
   it("can manage consent preferences from the Privacy Center", () => {
