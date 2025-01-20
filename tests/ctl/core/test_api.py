@@ -1263,6 +1263,44 @@ class TestSystemGet:
         assert "first_name" in steward
         assert "last_name" in steward
 
+    def test_system_privacy_declarations_in_alphabetical_order(db, system, test_config):
+        """
+        Ensure that the system privacy declarations are in alphabetical order by name
+        """
+        # Add more privacy declarations to the system
+        new_privacy_declarations = [
+            {
+                "data_use": "marketing.advertising.profiling",
+                "name": "Declaration Name",
+                "system_id": system.id,
+            },
+            {
+                "data_use": "essential",
+                "name": "Another Declaration Name",
+                "system_id": system.id,
+            },
+        ]
+        for data in new_privacy_declarations:
+            PrivacyDeclaration.create(db=db, data=data)
+            db.commit()
+
+        db.refresh(system)
+
+        result = result = _api.get(
+            url=test_config.cli.server_url,
+            headers=test_config.user.auth_header,
+            resource_type="system",
+            resource_id=system.fides_key,
+        )
+
+        privacy_declarations = result.json()["privacy_declarations"]
+        sorted_privacy_declarations = sorted(privacy_declarations, key=lambda x: x.name)
+
+        assert (
+            privacy_declarations == sorted_privacy_declarations
+        ), "Privacy declarations are not in alphabetical order by name"
+
+
 
 @pytest.mark.unit
 class TestSystemList:
