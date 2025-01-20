@@ -32,6 +32,10 @@ const DiscoveryMonitorBreadcrumbs = ({
   }
 
   if (resourceUrn) {
+    breadcrumbItems.push({
+      title: "All activity",
+      href: parentLink,
+    });
     const urnParts = resourceUrn.split(".");
     urnParts.forEach((urnPart, index) => {
       // don't render anything at the monitor level because there's no view for it
