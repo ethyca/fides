@@ -57,7 +57,6 @@ jobs:
         with:
           builder: ${{ steps.buildx.outputs.name }}
           context: .
-          build-args: PYTHON_VERSION=${{ env.DEFAULT_PYTHON_VERSION }}
           target: prod
           push: false
           tags: ${{ env.IMAGE }}
