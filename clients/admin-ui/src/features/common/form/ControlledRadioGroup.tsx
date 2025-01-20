@@ -42,9 +42,7 @@ const ControlledRadioGroup = ({
     return (
       <FormControl isInvalid={isInvalid}>
         <Flex className="w-fit">
-          {label ? (
-            <Label htmlFor={props.id || props.name}>{label}</Label>
-          ) : null}
+          {label ? <Label>{label}</Label> : null}
           <Radio.Group
             onChange={handleChange}
             value={selected?.value}
@@ -84,7 +82,7 @@ const ControlledRadioGroup = ({
   return (
     <FormControl isInvalid={isInvalid}>
       <Grid templateColumns="1fr 3fr">
-        <Label htmlFor={props.id || props.name}>{label}</Label>
+        <Label>{label}</Label>
         <Radio.Group
           onChange={handleChange}
           value={selected?.value}
