@@ -13,7 +13,9 @@ const TestConnectionMessage = ({ status }: TestConnectionMessageProps) => (
       </Text>
     )}
     {status === "error" && (
-      <Text>Test failed: please check your connection info</Text>
+      <Text data-testid="toast-error-msg">
+        Test failed: please check your connection info
+      </Text>
     )}
   </>
 );
