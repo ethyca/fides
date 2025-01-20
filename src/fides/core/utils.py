@@ -205,7 +205,6 @@ def get_auth_header(verbose: bool = True) -> Dict[str, str]:
     Executes all of the logic required to form a valid auth header.
     """
     credentials_path = get_credentials_path()
-    print(credentials_path)
     try:
         credentials = read_credentials_file(credentials_path=credentials_path)
     except FileNotFoundError:
