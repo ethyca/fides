@@ -3,7 +3,7 @@ from typing import Any, Dict, List, Optional
 from loguru import logger
 from pymongo import MongoClient
 from pymongo.errors import OperationFailure, ServerSelectionTimeoutError
-import urllib
+from urllib.parse import quote_plus
 
 from fides.api.common_exceptions import ConnectionException
 from fides.api.graph.execution import ExecutionNode
@@ -35,14 +35,12 @@ class MongoDBConnector(BaseConnector[MongoClient]):
         user_pass: str = ""
         default_auth_db: str = ""
         if config.username and config.password:
-            user_pass = urllib.parse.quote_plus( f"{config.username}:{config.password}@")
-
+            user_pass = ( f"{quote_plus(config.username)}:{quote_plus(config.password)}@")
             if config.defaultauthdb:
                 default_auth_db = f"/{config.defaultauthdb}"
 
         port: str = f":{config.port}" if config.port else ""
         url = f"mongodb://{user_pass}{config.host}{port}{default_auth_db}"
-        logger.info("Built URI: {}", url)
         return url
 
     def create_client(self) -> MongoClient:
