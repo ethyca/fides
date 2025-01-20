@@ -28,9 +28,6 @@ import {
   NumberInput,
   NumberInputField,
   NumberInputStepper,
-  Radio,
-  RadioGroup,
-  Stack,
   Text,
   Textarea,
   TextareaProps,
@@ -361,106 +358,6 @@ export const CustomTextArea = ({
           fieldName={field.name}
         />
       </VStack>
-    </FormControl>
-  );
-};
-
-interface CustomRadioGroupProps {
-  label?: string;
-  options: Option[];
-  variant?: "inline" | "stacked";
-  defaultFirstSelected?: boolean;
-}
-export const CustomRadioGroup = ({
-  label,
-  options,
-  variant,
-  defaultFirstSelected = true,
-  ...props
-}: CustomRadioGroupProps & StringField) => {
-  const [initialField, meta] = useField(props);
-  const field = { ...initialField, value: initialField.value ?? "" };
-  const isInvalid = !!(meta.touched && meta.error);
-  const defaultSelected = defaultFirstSelected ? options[0] : undefined;
-  const selected =
-    options.find((o) => o.value === field.value) ?? defaultSelected;
-
-  const handleChange = (o: string) => {
-    field.onChange(props.name)(o);
-  };
-
-  if (variant === "stacked") {
-    return (
-      <FormControl isInvalid={isInvalid}>
-        <Stack width="fit-content">
-          {label ? (
-            <Label htmlFor={props.id || props.name}>{label}</Label>
-          ) : null}
-          <RadioGroup
-            onChange={handleChange}
-            value={selected?.value}
-            data-testid={`input-${field.name}`}
-            colorScheme="complimentary"
-          >
-            <Stack direction="column" spacing={3}>
-              {options.map(
-                ({ value, label: optionLabel, tooltip: optionTooltip }) => (
-                  <Radio
-                    key={value}
-                    value={value}
-                    data-testid={`option-${value}`}
-                  >
-                    <HStack alignItems="center" spacing={2}>
-                      <Text fontSize="sm" fontWeight="medium">
-                        {optionLabel}
-                      </Text>
-                      {optionTooltip ? (
-                        <QuestionTooltip label={optionTooltip} />
-                      ) : null}
-                    </HStack>
-                  </Radio>
-                ),
-              )}
-            </Stack>
-          </RadioGroup>
-        </Stack>
-        <ErrorMessage
-          isInvalid={isInvalid}
-          message={meta.error}
-          fieldName={field.name}
-        />
-      </FormControl>
-    );
-  }
-
-  return (
-    <FormControl isInvalid={isInvalid}>
-      <Grid templateColumns="1fr 3fr">
-        <Label htmlFor={props.id || props.name}>{label}</Label>
-        <RadioGroup
-          onChange={handleChange}
-          value={selected?.value}
-          data-testid={`input-${field.name}`}
-          colorScheme="primary"
-        >
-          <Stack direction="row">
-            {options.map((o) => (
-              <Radio
-                key={o.value}
-                value={o.value}
-                data-testid={`option-${o.value}`}
-              >
-                {o.label}
-              </Radio>
-            ))}
-          </Stack>
-        </RadioGroup>
-      </Grid>
-      <ErrorMessage
-        isInvalid={isInvalid}
-        message={meta.error}
-        fieldName={field.name}
-      />
     </FormControl>
   );
 };
