@@ -1,4 +1,11 @@
-import { Box, Heading, Radio, RadioGroup, Stack, Text } from "fidesui";
+import {
+  AntFlex as Flex,
+  AntRadio as Radio,
+  Box,
+  Heading,
+  RadioChangeEvent,
+  Text,
+} from "fidesui";
 import { useEffect, useState } from "react";
 
 import { isErrorResult } from "~/features/common/helpers";
@@ -37,7 +44,8 @@ const StorageConfiguration = () => {
     }
   }, [activeStorage]);
 
-  const handleChange = async (value: string) => {
+  const handleChange = async (e: RadioChangeEvent) => {
+    const { value } = e.target;
     if (value === storageTypes.local) {
       const storageDetailsResult = await saveStorageType({
         type: value,
@@ -104,23 +112,22 @@ const StorageConfiguration = () => {
         <Heading fontSize="md" fontWeight="semibold" mt={10}>
           Choose storage type to configure
         </Heading>
-        <RadioGroup
-          isDisabled={isLoading}
+        <Radio.Group
+          disabled={isLoading}
           onChange={handleChange}
           value={storageValue}
           data-testid="privacy-requests-storage-selection"
-          colorScheme="primary"
-          p={3}
+          className="p-3"
         >
-          <Stack direction="row">
-            <Radio key="local" value="local" data-testid="option-local" mr={5}>
+          <Flex>
+            <Radio key="local" value="local" data-testid="option-local">
               Local
             </Radio>
             <Radio key="s3" value="s3" data-testid="option-s3">
               S3
             </Radio>
-          </Stack>
-        </RadioGroup>
+          </Flex>
+        </Radio.Group>
         {storageValue === "s3" && storageDetails ? (
           <S3StorageConfiguration storageDetails={storageDetails} />
         ) : null}
