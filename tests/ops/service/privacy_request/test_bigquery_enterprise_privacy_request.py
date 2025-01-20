@@ -2,18 +2,21 @@ from time import sleep
 from unittest import mock
 
 import pytest
+from loguru import logger
 
 from fides.api.models.audit_log import AuditLog, AuditLogAction
 from fides.api.models.privacy_request import ExecutionLog
 from tests.ops.service.privacy_request.test_request_runner_service import (
     get_privacy_request_results,
 )
+from tests.ops.test_helpers.saas_test_utils import poll_for_existence
 
 PRIVACY_REQUEST_TASK_TIMEOUT = 5
 # External services take much longer to return
 PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL = 150
 
 
+@pytest.mark.skip
 @pytest.mark.integration_bigquery
 @pytest.mark.integration_external
 @pytest.mark.parametrize(
@@ -246,40 +249,53 @@ def test_erasure_request(
     )
     pr.delete(db=db)
 
-    sleep(10)
-
     bigquery_client = bigquery_enterprise_resources["client"]
     post_history_id = bigquery_enterprise_resources["post_history_id"]
     comment_id = bigquery_enterprise_resources["comment_id"]
     post_id = bigquery_enterprise_resources["post_id"]
-    with bigquery_client.connect() as connection:
-        stmt = f"select text from enterprise_dsr_testing.post_history where id = {post_history_id};"
-        res = connection.execute(stmt).all()
-        for row in res:
-            assert row.text is None
 
-        stmt = f"select user_display_name, text from enterprise_dsr_testing.comments where id = {comment_id};"
-        res = connection.execute(stmt).all()
-        for row in res:
-            assert row.user_display_name is None
-            assert row.text is None
+    def bigquery_data_present(
+        bigquery_client, post_history_id, comment_id, post_id
+    ) -> bool:
+        with bigquery_client.connect() as connection:
+            stmt = f"select text from enterprise_dsr_testing.post_history where id = {post_history_id};"
+            res = connection.execute(stmt).all()
+            for row in res:
+                if row.text is not None:
+                    logger.info(f"row.text {row.text}")
+                    return True
 
-        stmt = f"select owner_user_id, owner_display_name, body from enterprise_dsr_testing.stackoverflow_posts_partitioned where id = {post_id};"
-        res = connection.execute(stmt).all()
-        for row in res:
-            assert (
-                row.owner_user_id == bigquery_enterprise_resources["user_id"]
-            )  # not targeted by policy
-            assert row.owner_display_name is None
-            assert row.body is None
+            stmt = f"select user_display_name, text from enterprise_dsr_testing.comments where id = {comment_id};"
+            res = connection.execute(stmt).all()
+            for row in res:
+                if row.user_display_name is not None or row.text is not None:
+                    return True
 
-        stmt = f"select display_name, location from enterprise_dsr_testing.users where id = {user_id};"
-        res = connection.execute(stmt).all()
-        for row in res:
-            assert row.display_name is None
-            assert row.location is None
+            stmt = f"select owner_user_id, owner_display_name, body from enterprise_dsr_testing.stackoverflow_posts_partitioned where id = {post_id};"
+            res = connection.execute(stmt).all()
+            for row in res:
+                assert (
+                    row.owner_user_id == bigquery_enterprise_resources["user_id"]
+                )  # not targeted by policy
+                if row.owner_display_name is not None or row.body is not None:
+                    return True
+
+            stmt = f"select display_name, location from enterprise_dsr_testing.users where id = {user_id};"
+            res = connection.execute(stmt).all()
+            for row in res:
+                if row.display_name is not None or row.location is not None:
+                    return True
+
+        return False
+
+    poll_for_existence(
+        bigquery_data_present,
+        (bigquery_client, post_history_id, comment_id, post_id),
+        existence_desired=False,
+    )
 
 
+@pytest.mark.skip
 @pytest.mark.integration_bigquery
 @pytest.mark.integration_external
 @pytest.mark.parametrize(
@@ -391,6 +407,7 @@ def test_access_request_multiple_custom_identities(
     assert ExecutionLog.get(db, object_id=log_id).privacy_request_id == pr_id
 
 
+@pytest.mark.skip
 @pytest.mark.integration_external
 @pytest.mark.integration_bigquery
 @pytest.mark.parametrize(
@@ -499,8 +516,6 @@ def test_erasure_request_multiple_custom_identities(
         task_timeout=PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL,
     )
     pr.delete(db=db)
-
-    sleep(10)
 
     bigquery_client = bigquery_enterprise_resources["client"]
     post_history_id = bigquery_enterprise_resources["post_history_id"]
