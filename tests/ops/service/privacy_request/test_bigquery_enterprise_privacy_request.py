@@ -246,7 +246,7 @@ def test_erasure_request(
     )
     pr.delete(db=db)
 
-    sleep(5)
+    sleep(10)
 
     bigquery_client = bigquery_enterprise_resources["client"]
     post_history_id = bigquery_enterprise_resources["post_history_id"]
@@ -499,6 +499,8 @@ def test_erasure_request_multiple_custom_identities(
         task_timeout=PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL,
     )
     pr.delete(db=db)
+
+    sleep(10)
 
     bigquery_client = bigquery_enterprise_resources["client"]
     post_history_id = bigquery_enterprise_resources["post_history_id"]
