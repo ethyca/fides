@@ -24,7 +24,8 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ### Changed
 - Updated UI colors to new brand. Update logo, homepage cards. [#5668](https://github.com/ethyca/fides/pull/5668)
 
-
+### Fixed
+- Updating mongodb connectors so it can support usernames and password with URL encoded characters [#5682](https://github.com/ethyca/fides/pull/5682)
 
 ## [2.53.0](https://github.com/ethyca/fides/compare/2.52.0...2.53.0)
 
