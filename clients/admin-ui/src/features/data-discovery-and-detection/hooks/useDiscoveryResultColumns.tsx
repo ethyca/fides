@@ -101,7 +101,7 @@ const useDiscoveryResultColumns = ({
             dataTestId="select-all-rows"
           />
         ),
-        maxSize: 25,
+        maxSize: 40,
       }),
       columnHelper.accessor((row) => row.name, {
         id: "tables",
