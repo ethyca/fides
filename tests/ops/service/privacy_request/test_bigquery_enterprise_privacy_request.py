@@ -1,3 +1,4 @@
+from time import sleep
 from unittest import mock
 
 import pytest
@@ -68,7 +69,7 @@ def test_access_request(
     )
 
     results = pr.get_raw_access_results()
-    assert len(results.keys()) == 4
+    assert len(results.keys()) == 5
 
     for key in results.keys():
         assert results[key] is not None
@@ -185,7 +186,7 @@ def test_erasure_request(
     )
 
     results = pr.get_raw_access_results()
-    assert len(results.keys()) == 4
+    assert len(results.keys()) == 5
 
     for key in results.keys():
         assert results[key] is not None
@@ -244,6 +245,8 @@ def test_erasure_request(
         task_timeout=PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL,
     )
     pr.delete(db=db)
+
+    sleep(5)
 
     bigquery_client = bigquery_enterprise_resources["client"]
     post_history_id = bigquery_enterprise_resources["post_history_id"]
@@ -322,7 +325,7 @@ def test_access_request_multiple_custom_identities(
     )
 
     results = pr.get_raw_access_results()
-    assert len(results.keys()) == 4
+    assert len(results.keys()) == 5
 
     for key in results.keys():
         assert results[key] is not None
@@ -438,7 +441,7 @@ def test_erasure_request_multiple_custom_identities(
     )
 
     results = pr.get_raw_access_results()
-    assert len(results.keys()) == 4
+    assert len(results.keys()) == 5
 
     for key in results.keys():
         assert results[key] is not None
