@@ -96,7 +96,7 @@ describe("Smoke test", () => {
 
     // Postgres
     cy.getByTestId("System inventory-nav-link").click();
-    cy.getByTestId("system-dasdsa").within(() => {
+    cy.getByTestId("system-cookie_house_postgresql_database").within(() => {
       cy.getByTestId("edit-btn").click();
     });
 
