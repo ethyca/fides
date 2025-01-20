@@ -1,9 +1,9 @@
 from typing import Any, Dict, List, Optional
+from urllib.parse import quote_plus
 
 from loguru import logger
 from pymongo import MongoClient
 from pymongo.errors import OperationFailure, ServerSelectionTimeoutError
-from urllib.parse import quote_plus
 
 from fides.api.common_exceptions import ConnectionException
 from fides.api.graph.execution import ExecutionNode
@@ -35,7 +35,7 @@ class MongoDBConnector(BaseConnector[MongoClient]):
         user_pass: str = ""
         default_auth_db: str = ""
         if config.username and config.password:
-            user_pass = ( f"{quote_plus(config.username)}:{quote_plus(config.password)}@")
+            user_pass = f"{quote_plus(config.username)}:{quote_plus(config.password)}@"
             if config.defaultauthdb:
                 default_auth_db = f"/{config.defaultauthdb}"
 
