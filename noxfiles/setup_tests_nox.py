@@ -97,6 +97,7 @@ def pytest_ctl(session: Session, mark: str, coverage_arg: str) -> None:
             "tests/ctl/",
             "-m",
             mark,
+            "--full-trace",
         )
         session.run(*run_command, external=True)
 
