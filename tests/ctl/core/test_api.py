@@ -1287,7 +1287,6 @@ class TestSystemGet:
         assert privacy_declarations[0]["name"] == "Another Declaration Name"
         assert privacy_declarations[1]["name"] == "Collect data for marketing"
 
-        
 
 @pytest.mark.unit
 class TestSystemList:
