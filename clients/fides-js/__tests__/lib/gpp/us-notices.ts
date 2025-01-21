@@ -158,8 +158,8 @@ describe("setGppNoticesProvidedFromExperience", () => {
       SaleOptOut: 0,
       SharingOptOut: 0,
       TargetedAdvertisingOptOut: 0,
-      SensitiveDataProcessing: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-      KnownChildSensitiveDataConsents: [0, 0],
+      SensitiveDataProcessing: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      KnownChildSensitiveDataConsents: [0, 0, 0],
       PersonalDataConsents: 0,
       MspaCoveredTransaction: 1,
       MspaOptOutOptionMode: 1,
@@ -167,7 +167,7 @@ describe("setGppNoticesProvidedFromExperience", () => {
       GpcSegmentType: 1,
       Gpc: false,
     });
-    expect(cmpApi.getGppString()).toEqual("DBABLA~BAAAAAAAAWA.QA");
+    expect(cmpApi.getGppString()).toEqual("DBABLA~BAAAAAAAAABY.QA");
   });
 
   it("can set some to provided", () => {
@@ -207,8 +207,8 @@ describe("setGppNoticesProvidedFromExperience", () => {
       SaleOptOut: 0,
       SharingOptOut: 0,
       TargetedAdvertisingOptOut: 0,
-      SensitiveDataProcessing: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-      KnownChildSensitiveDataConsents: [0, 0],
+      SensitiveDataProcessing: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      KnownChildSensitiveDataConsents: [0, 0, 0],
       PersonalDataConsents: 0,
       MspaCoveredTransaction: 1,
       MspaOptOutOptionMode: 1,
@@ -216,8 +216,7 @@ describe("setGppNoticesProvidedFromExperience", () => {
       GpcSegmentType: 1,
       Gpc: false,
     });
-    // TODO [HJ-196] validate this errors out because of bad test data, not because of bugs
-    // expect(cmpApi.getGppString()).toEqual("DBABLA~BVAAAAAAAWA.QA");
+    expect(cmpApi.getGppString()).toEqual("DBABLA~BVAAAAAAAABY.QA");
   });
 
   it("can set all to provided", () => {
@@ -278,8 +277,8 @@ describe("setGppNoticesProvidedFromExperience", () => {
       SaleOptOut: 0,
       SharingOptOut: 0,
       TargetedAdvertisingOptOut: 0,
-      SensitiveDataProcessing: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-      KnownChildSensitiveDataConsents: [0, 0],
+      SensitiveDataProcessing: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      KnownChildSensitiveDataConsents: [0, 0, 0],
       PersonalDataConsents: 0,
       MspaCoveredTransaction: 1,
       MspaOptOutOptionMode: 1,
@@ -287,8 +286,7 @@ describe("setGppNoticesProvidedFromExperience", () => {
       GpcSegmentType: 1,
       Gpc: false,
     });
-    // TODO [HJ-196] validate this errors out because of bad test data, not because of bugs
-    // expect(cmpApi.getGppString()).toEqual("DBABLA~BVVAAAAAAWA.QA");
+    expect(cmpApi.getGppString()).toEqual("DBABLA~BVVAAAAAAABY.QA");
   });
 });
 
@@ -324,9 +322,9 @@ describe("setGppOptOutsFromCookieAndExperience", () => {
         mechanism: [
           mockGppMechanism({
             field: "SensitiveDataProcessing",
-            not_available: "000000000000",
-            opt_out: "111111111111",
-            not_opt_out: "222222222222",
+            not_available: "0000000000000000",
+            opt_out: "1111111111111111",
+            not_opt_out: "2222222222222222",
           }),
         ],
       }),
@@ -404,8 +402,8 @@ describe("setGppOptOutsFromCookieAndExperience", () => {
       SaleOptOut: 0,
       SharingOptOut: 0,
       TargetedAdvertisingOptOut: 0,
-      SensitiveDataProcessing: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-      KnownChildSensitiveDataConsents: [0, 0],
+      SensitiveDataProcessing: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      KnownChildSensitiveDataConsents: [0, 0, 0],
       PersonalDataConsents: 0,
       MspaCoveredTransaction: 1,
       MspaOptOutOptionMode: 1,
@@ -413,7 +411,7 @@ describe("setGppOptOutsFromCookieAndExperience", () => {
       GpcSegmentType: 1,
       Gpc: false,
     });
-    expect(cmpApi.getGppString()).toEqual("DBABLA~BAAAAAAAAWA.QA");
+    expect(cmpApi.getGppString()).toEqual("DBABLA~BAAAAAAAAABY.QA");
   });
 
   it("can set fields when there is a partial consent object in cookie", () => {
@@ -443,8 +441,8 @@ describe("setGppOptOutsFromCookieAndExperience", () => {
       SaleOptOut: 2,
       SharingOptOut: 2,
       TargetedAdvertisingOptOut: 0,
-      SensitiveDataProcessing: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-      KnownChildSensitiveDataConsents: [0, 0],
+      SensitiveDataProcessing: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      KnownChildSensitiveDataConsents: [0, 0, 0],
       PersonalDataConsents: 0,
       MspaCoveredTransaction: 1,
       MspaOptOutOptionMode: 1,
@@ -452,8 +450,7 @@ describe("setGppOptOutsFromCookieAndExperience", () => {
       GpcSegmentType: 1,
       Gpc: false,
     });
-    // TODO [HJ-196] validate this errors out because of bad test data, not because of bugs
-    // expect(cmpApi.getGppString()).toEqual("DBABLA~BAAoAAAAAWA.QA");
+    expect(cmpApi.getGppString()).toEqual("DBABLA~BAAoAAAAAABY.QA");
   });
 
   it("can set all fields to not opted out for consent object in cookie", () => {
@@ -495,8 +492,8 @@ describe("setGppOptOutsFromCookieAndExperience", () => {
       SaleOptOut: 2,
       SharingOptOut: 2,
       TargetedAdvertisingOptOut: 2,
-      SensitiveDataProcessing: [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2],
-      KnownChildSensitiveDataConsents: [2, 2],
+      SensitiveDataProcessing: [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2],
+      KnownChildSensitiveDataConsents: [2, 2, 2],
       PersonalDataConsents: 2,
       MspaCoveredTransaction: 1,
       MspaOptOutOptionMode: 1,
@@ -504,8 +501,7 @@ describe("setGppOptOutsFromCookieAndExperience", () => {
       GpcSegmentType: 1,
       Gpc: false,
     });
-    // TODO [HJ-196] validate this errors out because of bad test data, not because of bugs
-    // expect(cmpApi.getGppString()).toEqual("DBABLA~BAAqqqqqqWA.QA");
+    expect(cmpApi.getGppString()).toEqual("DBABLA~BAAqqqqqqqpY.QA");
   });
 
   it("can set all fields to opted out for consent object in cookie", () => {
@@ -547,8 +543,8 @@ describe("setGppOptOutsFromCookieAndExperience", () => {
       SaleOptOut: 1,
       SharingOptOut: 1,
       TargetedAdvertisingOptOut: 1,
-      SensitiveDataProcessing: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-      KnownChildSensitiveDataConsents: [1, 1],
+      SensitiveDataProcessing: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+      KnownChildSensitiveDataConsents: [1, 1, 1],
       PersonalDataConsents: 1,
       MspaCoveredTransaction: 1,
       MspaOptOutOptionMode: 1,
@@ -556,8 +552,7 @@ describe("setGppOptOutsFromCookieAndExperience", () => {
       GpcSegmentType: 1,
       Gpc: false,
     });
-    // TODO [HJ-196] validate this errors out because of bad test data, not because of bugs
-    // expect(cmpApi.getGppString()).toEqual("DBABLA~BAAVVVVVVWA.QA");
+    expect(cmpApi.getGppString()).toEqual("DBABLA~BAAVVVVVVVVY.QA");
   });
 
   it("can use US gpp fields when gpp is set to national", () => {
@@ -599,8 +594,8 @@ describe("setGppOptOutsFromCookieAndExperience", () => {
       SaleOptOut: 1,
       SharingOptOut: 1,
       TargetedAdvertisingOptOut: 1,
-      SensitiveDataProcessing: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-      KnownChildSensitiveDataConsents: [1, 1],
+      SensitiveDataProcessing: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+      KnownChildSensitiveDataConsents: [1, 1, 1],
       PersonalDataConsents: 1,
       MspaCoveredTransaction: 1,
       MspaOptOutOptionMode: 1,
@@ -608,8 +603,7 @@ describe("setGppOptOutsFromCookieAndExperience", () => {
       GpcSegmentType: 1,
       Gpc: false,
     });
-    // TODO [HJ-196] validate this errors out because of bad test data, not because of bugs
-    // expect(cmpApi.getGppString()).toEqual("DBABLA~BAAVVVVVVWA.QA");
+    expect(cmpApi.getGppString()).toEqual("DBABLA~BAAVVVVVVVVY.QA");
   });
 
   it("can use state gpp fields when gpp is set to state", () => {
@@ -707,7 +701,7 @@ describe("setGppOptOutsFromCookieAndExperience", () => {
       PERSONAL_DATA_NOTICE,
     ];
     const experience = mockPrivacyExperience({
-      region: "us_mt", // Set to a non-supported state
+      region: "us_id", // Set to a non-supported state
       privacy_notices: notices,
       gpp_settings: {
         enabled: true,
@@ -735,8 +729,8 @@ describe("setGppOptOutsFromCookieAndExperience", () => {
       SaleOptOut: 1,
       SharingOptOut: 1,
       TargetedAdvertisingOptOut: 1,
-      SensitiveDataProcessing: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-      KnownChildSensitiveDataConsents: [1, 1],
+      SensitiveDataProcessing: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+      KnownChildSensitiveDataConsents: [1, 1, 1],
       PersonalDataConsents: 1,
       MspaCoveredTransaction: 1,
       MspaOptOutOptionMode: 1,
@@ -744,8 +738,7 @@ describe("setGppOptOutsFromCookieAndExperience", () => {
       GpcSegmentType: 1,
       Gpc: false,
     });
-    // TODO [HJ-196] validate this errors out because of bad test data, not because of bugs
-    // expect(cmpApi.getGppString()).toEqual("DBABLA~BAAVVVVVVWA.QA");
+    expect(cmpApi.getGppString()).toEqual("DBABLA~BAAVVVVVVVVY.QA");
   });
 
   it("can use state gpp fields when gpp is set to all", () => {
