@@ -70,3 +70,9 @@ jobs:
 
       - name: Teardown
         run: nox -s teardown
+
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: cypress-videos-cypress-e2e
+          path: /home/runner/work/fides/fides/clients/cypress-e2e/cypress/videos/*.mp4
