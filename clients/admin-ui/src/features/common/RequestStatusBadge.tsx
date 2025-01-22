@@ -1,4 +1,4 @@
-import { Badge, BadgeProps, Spinner } from "fidesui";
+import { Badge, BadgeProps } from "fidesui";
 
 import { PrivacyRequestStatus } from "~/types/api";
 
@@ -14,15 +14,15 @@ export const statusPropMap: {
     label: "Completed",
   },
   awaiting_email_send: {
-    bg: "olive.100",
+    bg: "marble.100",
     label: "Awaiting Email Send",
   },
   denied: {
-    bg: "error.100",
+    bg: "warn.100",
     label: "Denied",
   },
   canceled: {
-    bg: "white.100",
+    bg: "marble.100",
     label: "Canceled",
   },
   error: {
@@ -30,23 +30,23 @@ export const statusPropMap: {
     label: "Error",
   },
   in_processing: {
-    bg: "nectar.100",
+    bg: "caution.100",
     label: "In Progress",
   },
   paused: {
-    bg: "sandstone.100",
+    bg: "marble.100",
     label: "Paused",
   },
   pending: {
-    bg: "alert.100",
+    bg: "info.100",
     label: "New",
   },
   identity_unverified: {
-    bg: "error.100",
+    bg: "marble.100",
     label: "Unverified",
   },
   requires_input: {
-    bg: "warn.100",
+    bg: "alert.100",
     label: "Requires Input",
   },
 };
@@ -72,9 +72,6 @@ const RequestStatusBadge = ({ status }: RequestBadgeProps) => (
       }}
     >
       {statusPropMap[status].label}
-      {status === PrivacyRequestStatus.IN_PROCESSING && (
-        <Spinner size="xs" color="white" ml={2} />
-      )}
     </span>
   </Badge>
 );
