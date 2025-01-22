@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.53.0"
+    "version": "2.52.1b2.post0.dev18"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -3227,39 +3227,6 @@
             }
           },
           {
-            "name": "dnd_relevant",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "boolean"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Dnd Relevant"
-            }
-          },
-          {
-            "name": "show_hidden",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "boolean"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "default": false,
-              "title": "Show Hidden"
-            }
-          },
-          {
             "name": "show_deleted",
             "in": "query",
             "required": false,
@@ -3465,6 +3432,71 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/SystemResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/system/hidden": {
+      "patch": {
+        "tags": [
+          "System"
+        ],
+        "summary": "Patch Hidden",
+        "description": "Patch the hidden status of a list of systems. Request body must be a list of system Fides keys.",
+        "operationId": "patch_hidden_api_v1_system_hidden_patch",
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "system:update"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "name": "hidden",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "boolean",
+              "title": "Hidden"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "title": "Fides Keys"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "title": "Response Patch Hidden Api V1 System Hidden Patch"
                 }
               }
             }
