@@ -4,19 +4,8 @@ from typing import Any, Dict, Generator
 import pydash
 import pytest
 import requests
-from sqlalchemy.orm import Session
+from loguru import logger
 
-from fides.api.models.connectionconfig import (
-    AccessLevel,
-    ConnectionConfig,
-    ConnectionType,
-)
-from fides.api.models.datasetconfig import DatasetConfig
-from fides.api.models.sql_models import Dataset as CtlDataset
-from fides.api.util.saas_util import (
-    load_config_with_replacement,
-    load_dataset_with_replacement,
-)
 from tests.ops.integration_tests.saas.connector_runner import (
     ConnectorRunner,
     generate_random_email,
@@ -27,7 +16,7 @@ from tests.ops.test_helpers.vault_client import get_secrets
 secrets = get_secrets("hubspot")
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="class")
 def hubspot_secrets(saas_config):
     return {
         "domain": pydash.get(saas_config, "hubspot.domain") or secrets["domain"],
@@ -39,73 +28,6 @@ def hubspot_secrets(saas_config):
 @pytest.fixture(scope="function")
 def hubspot_identity_email():
     return generate_random_email()
-
-
-@pytest.fixture
-def hubspot_config() -> Dict[str, Any]:
-    return load_config_with_replacement(
-        "data/saas/config/hubspot_config.yml",
-        "<instance_fides_key>",
-        "hubspot_instance",
-    )
-
-
-@pytest.fixture
-def hubspot_dataset() -> Dict[str, Any]:
-    return load_dataset_with_replacement(
-        "data/saas/dataset/hubspot_dataset.yml",
-        "<instance_fides_key>",
-        "hubspot_instance",
-    )[0]
-
-
-@pytest.fixture(scope="function")
-def connection_config_hubspot(
-    db: Session,
-    hubspot_config,
-    hubspot_secrets,
-) -> Generator:
-    fides_key = hubspot_config["fides_key"]
-    connection_config = ConnectionConfig.create(
-        db=db,
-        data={
-            "key": fides_key,
-            "name": fides_key,
-            "connection_type": ConnectionType.saas,
-            "access": AccessLevel.write,
-            "secrets": hubspot_secrets,
-            "saas_config": hubspot_config,
-        },
-    )
-    yield connection_config
-    connection_config.delete(db)
-
-
-@pytest.fixture
-def dataset_config_hubspot(
-    db: Session,
-    connection_config_hubspot: ConnectionConfig,
-    hubspot_dataset,
-    hubspot_config,
-) -> Generator:
-    fides_key = hubspot_config["fides_key"]
-    connection_config_hubspot.name = fides_key
-    connection_config_hubspot.key = fides_key
-    connection_config_hubspot.save(db=db)
-
-    ctl_dataset = CtlDataset.create_from_dataset_dict(db, hubspot_dataset)
-
-    dataset = DatasetConfig.create(
-        db=db,
-        data={
-            "connection_config_id": connection_config_hubspot.id,
-            "fides_key": fides_key,
-            "ctl_dataset_id": ctl_dataset.id,
-        },
-    )
-    yield dataset
-    dataset.delete(db=db)
-    ctl_dataset.delete(db=db)
 
 
 class HubspotTestClient:
@@ -195,12 +117,38 @@ class HubspotTestClient:
         )
         return user_response
 
+    def opt_in_subscription_preferences(
+        self, email: str, subscription_id: str
+    ) -> requests.Response:
+        body = {
+            "emailAddress": f"{email}",
+            "subscriptionId": f"{subscription_id}",
+            "statusState": "SUBSCRIBED",
+            "channel": "EMAIL",
+            "legalBasis": "LEGITIMATE_INTEREST_CLIENT",
+            "legalBasisExplanation": "At users request, we opted them in",
+        }
+        subscription_response: requests.Response = requests.post(
+            url=f"{self.base_url}/communication-preferences/v4/statuses/{email}",
+            headers=self.headers,
+            json=body,
+        )
+        assert subscription_response.ok
+        return subscription_response.json()
+
     def get_email_subscriptions(self, email: str) -> requests.Response:
         email_subscriptions: requests.Response = requests.get(
-            url=f"{self.base_url}/communication-preferences/v3/status/email/{email}",
+            url=f"{self.base_url}/communication-preferences/v4/statuses/{email}?channel=EMAIL",
             headers=self.headers,
         )
         return email_subscriptions
+
+    def get_all_subscriptions(self) -> requests.Response:
+        subscriptions_responses: requests.Response = requests.get(
+            url=f"{self.base_url}/communication-preferences/v4/definitions",
+            headers=self.headers,
+        )
+        return subscriptions_responses.json()
 
 
 @pytest.fixture(scope="function")
@@ -239,7 +187,7 @@ def user_exists(user_id: str, hubspot_test_client: HubspotTestClient) -> Any:
         return user_body
 
 
-def create_hubspot_data(test_client, email):
+def create_hubspot_data(test_client: HubspotTestClient, email):
     # create contact
     contacts_response = test_client.create_contact(email=email)
     contacts_body = contacts_response.json()
@@ -268,6 +216,11 @@ def create_hubspot_data(test_client, email):
         (user_id, test_client),
         error_message=error_message,
     )
+    subscriptions = test_client.get_all_subscriptions()
+    for subscription in subscriptions["results"]:
+        test_client.opt_in_subscription_preferences(
+            email=email, subscription_id=subscription["id"]
+        )
     sleep(3)
     return contact_id, user_id
 
@@ -319,15 +272,13 @@ def hubspot_data(
     )
 
 
-@pytest.fixture
+@pytest.fixture(scope="class")
 def hubspot_runner(
     db,
-    cache,
     hubspot_secrets,
 ) -> ConnectorRunner:
     return ConnectorRunner(
         db,
-        cache,
         "hubspot",
         hubspot_secrets,
     )
