@@ -1519,7 +1519,11 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 <span class="normal">404</span>
 <span class="normal">405</span>
 <span class="normal">406</span>
-<span class="normal">407</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># Fides Configuration File</span>
+<span class="normal">407</span>
+<span class="normal">408</span>
+<span class="normal">409</span>
+<span class="normal">410</span>
+<span class="normal">411</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># Fides Configuration File</span>
 <span class="c1"># Additional Documentation at : https://ethyca.github.io/fides/stable/config/</span>
 
 <span class="c1">#--------------#</span>
@@ -1529,6 +1533,10 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 
 <span class="c1"># Toggle whether the Admin UI is served.</span>
 <span class="n">enabled</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="w"> </span><span class="c1"># boolean</span>
+
+<span class="c1"># The maximum number of rows permitted to be returned in a privacy</span>
+<span class="c1"># request report download</span>
+<span class="n">max_privacy_request_download_rows</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">100000</span><span class="w"> </span><span class="c1"># integer</span>
 
 <span class="c1">#------------#</span>
 <span class="c1">#-- CELERY --#</span>
@@ -1553,7 +1561,7 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 
 <span class="c1"># A fully anonymized unique identifier that is automatically generated</span>
 <span class="c1"># by the application. Used for anonymous analytics when opted-in.</span>
-<span class="n">analytics_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;82d42d3c139a93d031986c66aeff04d1&quot;</span><span class="w"> </span><span class="c1"># string</span>
+<span class="n">analytics_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;83e461fce38269491e75fbea925a5934&quot;</span><span class="w"> </span><span class="c1"># string</span>
 
 <span class="c1"># When set to True, disables functionality that requires making calls</span>
 <span class="c1"># to a Fides webserver.</span>
