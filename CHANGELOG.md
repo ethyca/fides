@@ -27,8 +27,12 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ### Developer Experience
 - Migrated radio buttons and groups to Ant Design [#5681](https://github.com/ethyca/fides/pull/5681)
 
+### Added
+- Migration to add the `data_uses` column to `stagedresource` table, prereqs for Data Catalog work in Fidesplus [#5600](https://github.com/ethyca/fides/pull/5600/)
+
 ### Fixed
 - Updating mongodb connectors so it can support usernames and password with URL encoded characters [#5682](https://github.com/ethyca/fides/pull/5682)
+
 
 ## [2.53.0](https://github.com/ethyca/fides/compare/2.52.0...2.53.0)
 
