@@ -518,6 +518,7 @@ export const ConnectorParametersForm = ({
                     }
                     loading={isLoading || isFetching}
                     onClick={() => handleTestConnectionClick(props)}
+                    data-testid="test-connection-button"
                   >
                     {testButtonLabel}
                   </Button>
