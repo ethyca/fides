@@ -12,6 +12,7 @@ from fides.api.models.detection_discovery import (
     MonitorConfig,
     MonitorFrequency,
     StagedResource,
+    fetch_staged_resources_by_type_query,
 )
 
 
@@ -58,6 +59,84 @@ class TestStagedResourceModel:
                     "bq_monitor_1.prj-bigquery-418515.test_dataset_1.consent-reports-20.Phone_number",
                 ],
                 "parent": "bq_monitor_1.prj-bigquery-418515.test_dataset_1",
+                "meta": {"num_rows": 19},
+            },
+        )
+        return resource
+
+    @pytest.fixture
+    def create_staged_database(self, db: Session):
+        urn = "bq_monitor_1.prj-bigquery-418515.test_dataset_1"
+        resource = StagedResource.create(
+            db=db,
+            data={
+                "urn": urn,
+                "user_assigned_data_categories": ["user.contact.email"],
+                "name": "test_dataset_1",
+                "resource_type": "Database",
+                "description": "test description",
+                "monitor_config_id": "bq_monitor_1",
+                "source_modified": "2024-03-27T21:47:09.915000+00:00",
+                "classifications": [
+                    {
+                        "label": "user.authorization.credentials",
+                        "score": 0.4247,
+                        "aggregated_score": 0.2336,
+                        "classification_paradigm": "context",
+                    },
+                    {
+                        "label": "system",
+                        "score": 0.4,
+                        "aggregated_score": 0.18,
+                        "classification_paradigm": "content",
+                    },
+                ],
+                "diff_status": DiffStatus.MONITORED.value,
+                "child_diff_statuses": {DiffStatus.CLASSIFICATION_ADDITION.value: 9},
+                "children": [
+                    "bq_monitor_1.prj-bigquery-418515.test_dataset_1.consent-reports-20",
+                    "bq_monitor_1.prj-bigquery-418515.test_dataset_1.consent-reports-21",
+                ],
+                "parent": "bq_monitor_1.prj-bigquery-418515",
+                "meta": {"num_rows": 19},
+            },
+        )
+        return resource
+
+    @pytest.fixture
+    def create_staged_schema(self, db: Session):
+        urn = "bq_monitor_1.prj-bigquery-418515"
+        resource = StagedResource.create(
+            db=db,
+            data={
+                "urn": urn,
+                "user_assigned_data_categories": ["user.contact.email"],
+                "name": "prj-bigquery-418515",
+                "resource_type": "Schema",
+                "description": "test description",
+                "monitor_config_id": "bq_monitor_1",
+                "source_modified": "2024-03-27T21:47:09.915000+00:00",
+                "classifications": [
+                    {
+                        "label": "user.authorization.credentials",
+                        "score": 0.4247,
+                        "aggregated_score": 0.2336,
+                        "classification_paradigm": "context",
+                    },
+                    {
+                        "label": "system",
+                        "score": 0.4,
+                        "aggregated_score": 0.18,
+                        "classification_paradigm": "content",
+                    },
+                ],
+                "diff_status": DiffStatus.MONITORED.value,
+                "child_diff_statuses": {DiffStatus.CLASSIFICATION_ADDITION.value: 9},
+                "children": [
+                    "bq_monitor_1.prj-bigquery-418515.test_dataset_1",
+                    "bq_monitor_1.prj-bigquery-418515.test_dataset_2",
+                ],
+                "parent": "bq_monitor_1",
                 "meta": {"num_rows": 19},
             },
         )
@@ -184,6 +263,66 @@ class TestStagedResourceModel:
             DiffStatus.REMOVAL.value: 1,
             DiffStatus.CLASSIFICATION_ADDITION.value: 10,
         }
+
+    def test_fetch_staged_resources_by_type_query(
+        self,
+        db: Session,
+        create_staged_resource,
+        create_staged_database,
+        create_staged_schema,
+    ) -> None:
+        """
+        Tests that the fetch_staged_resources_by_type_query works as expected
+        """
+        query = fetch_staged_resources_by_type_query("Table")
+        resources = db.execute(query).all()
+        assert len(resources) == 1
+        assert resources[0][0].resource_type == "Table"
+        assert resources[0][0].urn == create_staged_resource.urn
+
+        query = fetch_staged_resources_by_type_query("Schema")
+        resources = db.execute(query).all()
+        assert len(resources) == 1
+
+        query = fetch_staged_resources_by_type_query("Database")
+        resources = db.execute(query).all()
+        assert len(resources) == 1
+        assert resources[0][0].urn == create_staged_database.urn
+
+        database = StagedResource.get_urn(db, create_staged_database.urn)
+        database.diff_status = None
+        database.save(db)
+        query = fetch_staged_resources_by_type_query("Database")
+        resources = db.execute(query).all()
+        assert len(resources) == 1
+
+    def test_fetch_staged_resources_by_type_query(
+        self,
+        db: Session,
+        create_staged_resource,
+        create_staged_schema,
+    ):
+        """
+        Tests that the fetch_staged_resources_by_type_query works as expected
+        """
+        query = fetch_staged_resources_by_type_query("Table")
+        resources = db.execute(query).all()
+        assert len(resources) == 1
+        assert resources[0][0].resource_type == "Table"
+        assert resources[0][0].urn == create_staged_resource.urn
+
+        query = fetch_staged_resources_by_type_query("Schema")
+        resources = db.execute(query).all()
+        assert len(resources) == 1
+        assert resources[0][0].urn == create_staged_schema.urn
+
+        query = fetch_staged_resources_by_type_query("Table", ["bq_monitor_1"])
+        resources = db.execute(query).all()
+        assert len(resources) == 1
+
+        query = fetch_staged_resources_by_type_query("Table", ["bq_monitor_2"])
+        resources = db.execute(query).all()
+        assert len(resources) == 0
 
 
 SAMPLE_START_DATE = datetime(2024, 5, 20, 0, 42, 5, 17137, tzinfo=timezone.utc)
