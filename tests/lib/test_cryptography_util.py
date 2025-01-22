@@ -104,7 +104,12 @@ def test_str_to_b64_str() -> None:
     "password, expected",
     [
         ("Testpassword1!", "Testpassword1!"),
+        (
+            "Test_1234",
+            "Test_1234",
+        ),  # this is actually valid base64 (but should be treated as plaintext), so this represents an edge case
         (str_to_b64_str("Testpassword1!"), "Testpassword1!"),
+        (str_to_b64_str("Test_1234"), "Test_1234"),
     ],
 )
 def test_decode_password(password, expected):
