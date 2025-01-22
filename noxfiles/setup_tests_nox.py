@@ -94,7 +94,7 @@ def pytest_ctl(session: Session, mark: str, coverage_arg: str) -> None:
             *EXEC,
             "timeout",
             "--signal=INT",
-            "60",
+            "3600",
             "pytest",
             coverage_arg,
             "tests/ctl/",
