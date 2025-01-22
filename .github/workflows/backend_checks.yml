@@ -451,7 +451,7 @@ jobs:
         run: pip install nox>=2022
 
       - name: Get Vault Token
-        uses: hashicorp/vault-action@v2.5.0
+        uses: hashicorp/vault-action@v3.1.0
         with:
           url: ${{ secrets.VAULT_ADDR }}
           namespace: ${{ secrets.VAULT_NAMESPACE }}
