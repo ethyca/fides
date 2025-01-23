@@ -1,7 +1,6 @@
 from copy import deepcopy
 from typing import Any, Dict, Optional, Set, Tuple
 
-from fides.api.graph.policy_aware_traversal import PolicyAwareTraversal
 from sqlalchemy.orm import Session
 
 from fides.api.common_exceptions import UnreachableNodesError, ValidationError
@@ -20,8 +19,7 @@ from fides.api.task.create_request_tasks import run_access_request
 
 
 def get_dataset_reachability(
-    db: Session,
-    dataset_config: DatasetConfig,
+    db: Session, dataset_config: DatasetConfig, policy: Optional[Policy] = None
 ) -> Tuple[bool, Optional[str]]:
     """
     Determines if the given dataset is reachable along with an error message
@@ -59,7 +57,7 @@ def get_dataset_reachability(
     }
 
     try:
-        PolicyAwareTraversal(dataset_graph, identity_seed)
+        Traversal(dataset_graph, identity_seed, policy)
     except UnreachableNodesError as exc:
         return (
             False,

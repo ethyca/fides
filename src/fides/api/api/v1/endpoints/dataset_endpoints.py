@@ -56,11 +56,6 @@ from fides.api.schemas.dataset import (
 )
 from fides.api.schemas.privacy_request import TestPrivacyRequest
 from fides.api.schemas.redis_cache import UnlabeledIdentities
-from fides.service.dataset.dataset_service import (
-    get_dataset_reachability,
-    get_identities_and_references,
-    run_test_access_request,
-)
 from fides.api.util.api_router import APIRouter
 from fides.api.util.data_category import get_data_categories_from_db
 from fides.api.util.saas_util import merge_datasets
@@ -84,6 +79,11 @@ from fides.common.api.v1.urn_registry import (
     YAML_DATASETS,
 )
 from fides.config import CONFIG
+from fides.service.dataset.dataset_service import (
+    get_dataset_reachability,
+    get_identities_and_references,
+    run_test_access_request,
+)
 
 from fides.api.models.sql_models import (  # type: ignore[attr-defined] # isort: skip
     Dataset as CtlDataset,
