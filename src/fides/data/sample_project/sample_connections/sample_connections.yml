@@ -11,6 +11,7 @@ connection:
       dbname: $FIDES_DEPLOY__CONNECTORS__POSTGRES__DBNAME
       username: $FIDES_DEPLOY__CONNECTORS__POSTGRES__USERNAME
       password: $FIDES_DEPLOY__CONNECTORS__POSTGRES__PASSWORD
+      ssh_required: $FIDES_DEPLOY__CONNECTORS__POSTGRES__SSH_REQUIRED
   - key: cookie_house_loyalty_database
     name: Postgres Connector (Loyalty)
     connection_type: postgres
