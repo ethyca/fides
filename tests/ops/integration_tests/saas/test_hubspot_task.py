@@ -1,6 +1,6 @@
 import pytest
-from fides.api.models.policy import Policy
 
+from fides.api.models.policy import Policy
 from tests.fixtures.saas.hubspot_fixtures import HubspotTestClient, user_exists
 from tests.ops.integration_tests.saas.connector_runner import ConnectorRunner
 from tests.ops.test_helpers.saas_test_utils import poll_for_existence
