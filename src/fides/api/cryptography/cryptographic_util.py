@@ -13,7 +13,7 @@ def decode_password(password: str) -> str:
     """
     try:
         return b64_str_to_str(password)
-    except Error:
+    except (Error, UnicodeDecodeError):
         return password
 
 
