@@ -2356,3 +2356,35 @@ dataset:
         data_categories: [system.operations]
       - name: updated_at
         data_categories: [system.operations]
+  - name: asset
+    fields:
+      - name: id
+        data_categories: [system.operations]
+      - name: name
+        data_categories: [system.operations]
+      - name: asset_type
+        data_categories: [system.operations]
+      - name: domain
+        data_categories: [system.operations]
+      - name: parent
+        data_categories: [system.operations]
+      - name: parent_domain
+        data_categories: [system.operations]
+      - name: locations
+        data_categories: [system.operations]
+      - name: with_consent
+        data_categories: [system.operations]
+      - name: data_uses
+        data_categories: [system.operations]
+      - name: meta
+        data_categories: [system.operations]
+      - name: path
+        data_categories: [system.operations]
+      - name: base_url
+        data_categories: [system.operations]
+      - name: system_id
+        data_categories: [system.operations]
+      - name: created_at
+        data_categories: [system.operations]
+      - name: updated_at
+        data_categories: [system.operations]
