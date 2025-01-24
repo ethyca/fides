@@ -20,7 +20,7 @@ depends_on = None
 def upgrade():
     # stored separately to be referenced in md5 expression on index
 
-    asset_table = op.create_table(
+    op.create_table(
         "asset",
         sa.Column("id", sa.String(length=255), nullable=False),
         sa.Column(
