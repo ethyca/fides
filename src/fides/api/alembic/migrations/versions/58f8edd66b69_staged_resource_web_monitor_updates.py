@@ -1,7 +1,7 @@
 """staged resource web monitor updates
 
 Revision ID: 58f8edd66b69
-Revises: ae65da77c468
+Revises: d9237a0c0d5a
 Create Date: 2024-12-17 19:25:36.184841
 
 """
@@ -11,7 +11,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "58f8edd66b69"
-down_revision = "ae65da77c468"
+down_revision = "d9237a0c0d5a"
 branch_labels = None
 depends_on = None
 
