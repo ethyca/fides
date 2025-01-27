@@ -25,6 +25,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Updated UI colors to new brand. Update logo, homepage cards. [#5668](https://github.com/ethyca/fides/pull/5668)
 - Privacy request status tags colors have been updated [#5699](https://github.com/ethyca/fides/pull/5699)
 - The privacy declarations for a system are now sorted alphabetically by name. [#5683](https://github.com/ethyca/fides/pull/5683)
+- Upgraded GPP library to `3.1.5` and added support for all available state sections (ustx, usde, usia, etc.) [#5696](https://github.com/ethyca/fides/pull/5696)
 
 ### Developer Experience
 - Migrated radio buttons and groups to Ant Design [#5681](https://github.com/ethyca/fides/pull/5681)
