@@ -62,6 +62,13 @@ class TestHubspotConnector:
 
         contact_id, user_id = hubspot_data
 
+        email_subscription_response = hubspot_test_client.get_email_subscriptions(
+            email=hubspot_identity_email
+        )
+        subscription_body = email_subscription_response.json()
+        for subscription_status in subscription_body["results"]:
+            assert subscription_status["status"] == "SUBSCRIBED"
+
         (
             _,
             erasure_results,
