@@ -119,6 +119,7 @@ describe("Action center", () => {
     beforeEach(() => {
       cy.visit(`${ACTION_CENTER_ROUTE}/${webMonitorKey}`);
       cy.wait("@getSystemAggregateResults");
+      cy.getByTestId("page-breadcrumb").should("contain", webMonitorKey); // little hack to make sure the webMonitorKey is available before proceeding
     });
     it("should display a breadcrumb", () => {
       cy.getByTestId("page-breadcrumb").within(() => {
@@ -168,14 +169,21 @@ describe("Action center", () => {
         cy.getByTestId("add-btn").should("be.disabled");
       });
     });
-    it("should add all assets in a system", () => {
+    it("should ignore all assets in an uncategorized system", () => {
+      cy.getByTestId("row-0-col-actions").within(() => {
+        cy.getByTestId("ignore-btn").click({ force: true });
+      });
+      cy.wait("@ignoreMonitorResultUncategorizedSystem");
+      cy.getByTestId("success-alert").should("exist");
+    });
+    it("should add all assets in a categorized system", () => {
       cy.getByTestId("row-1-col-actions").within(() => {
         cy.getByTestId("add-btn").click({ force: true });
       });
       cy.wait("@addMonitorResultSystem");
       cy.getByTestId("success-alert").should("exist");
     });
-    it("should ignore all assets in a system", () => {
+    it("should ignore all assets in a categorized system", () => {
       cy.getByTestId("row-1-col-actions").within(() => {
         cy.getByTestId("ignore-btn").click({ force: true });
       });
@@ -195,7 +203,53 @@ describe("Action center", () => {
     });
   });
 
-  describe("Action center system assets results", () => {
+  describe("Action center assets uncategorized results", () => {
+    const webMonitorKey = "my_web_monitor_1";
+    const systemId = "[undefined]";
+    beforeEach(() => {
+      cy.visit(`${ACTION_CENTER_ROUTE}/${webMonitorKey}/${systemId}`);
+      cy.wait("@getSystemAssetsUncategorized");
+      cy.getByTestId("page-breadcrumb").should("contain", "Uncategorized");
+    });
+    it("should render uncategorized asset results view", () => {
+      cy.getByTestId("search-bar").should("exist");
+      cy.getByTestId("pagination-btn").should("exist");
+      cy.getByTestId("bulk-actions-menu").should("be.disabled");
+      cy.getByTestId("add-all").should("be.disabled");
+
+      // table columns
+      cy.getByTestId("column-select").should("exist");
+      cy.getByTestId("column-name").should("exist");
+      cy.getByTestId("column-resource_type").should("exist");
+      cy.getByTestId("column-system").should("exist");
+      // TODO: [HJ-369] uncomment when data use column is implemented
+      // cy.getByTestId("column-data_use").should("exist");
+      cy.getByTestId("column-locations").should("exist");
+      cy.getByTestId("column-domain").should("exist");
+      // TODO: [HJ-344] uncomment when Discovery column is implemented
+      /* cy.getByTestId("column-with_consent").should("exist");
+      cy.getByTestId("row-4-col-with_consent")
+        .contains("Without consent")
+        .realHover();
+      cy.get(".ant-tooltip-inner").should("contain", "January"); */
+      cy.getByTestId("column-actions").should("exist");
+      cy.getByTestId("row-0-col-actions").within(() => {
+        cy.getByTestId("add-btn").should("be.disabled");
+        cy.getByTestId("ignore-btn").should("exist");
+      });
+    });
+    it("should allow adding a system on uncategorized assets", () => {
+      cy.getByTestId("row-0-col-system").within(() => {
+        cy.getByTestId("add-system-btn").click();
+      });
+      cy.wait("@getSystemsPaginated");
+      cy.getByTestId("system-select").antSelect("Fidesctl System");
+      cy.wait("@setAssetSystem");
+      cy.getByTestId("system-select").should("not.exist");
+    });
+  });
+
+  describe("Action center assets categorized results", () => {
     const webMonitorKey = "my_web_monitor_1";
     const systemId = "system_key-8fe42cdb-af2e-4b9e-9b38-f75673180b88";
     beforeEach(() => {
@@ -208,6 +262,7 @@ describe("Action center", () => {
       cy.getByTestId("search-bar").should("exist");
       cy.getByTestId("pagination-btn").should("exist");
       cy.getByTestId("bulk-actions-menu").should("be.disabled");
+      cy.getByTestId("add-all").should("exist");
 
       // table columns
       cy.getByTestId("column-select").should("exist");
@@ -229,9 +284,6 @@ describe("Action center", () => {
         cy.getByTestId("add-btn").should("exist");
         cy.getByTestId("ignore-btn").should("exist");
       });
-    });
-    it.skip("should allow adding a system on uncategorized assets", () => {
-      // TODO: uncategorized assets are not yet available for testing
     });
     it("should allow editing a system on categorized assets", () => {
       cy.getByTestId("row-3-col-system").within(() => {

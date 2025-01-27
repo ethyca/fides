@@ -22,7 +22,10 @@ import { useEffect, useState } from "react";
 
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { useAlert } from "~/features/common/hooks";
-import { ACTION_CENTER_ROUTE } from "~/features/common/nav/v2/routes";
+import {
+  ACTION_CENTER_ROUTE,
+  UNCATEGORIZED_SEGMENT,
+} from "~/features/common/nav/v2/routes";
 // import { ACTION_CENTER_ROUTE } from "~/features/common/nav/v2/routes";
 import {
   FidesTableV2,
@@ -217,7 +220,9 @@ export const DiscoveredAssetsTable = ({
             </Menu>
             <Button
               onClick={handleAddAll}
-              disabled={anyBulkActionIsLoading}
+              disabled={
+                anyBulkActionIsLoading || systemId === UNCATEGORIZED_SEGMENT
+              }
               loading={isAddingAllResults}
               type="primary"
               icon={<Icons.Checkmark />}

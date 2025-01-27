@@ -6,6 +6,7 @@ import {
 
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { useAlert } from "~/features/common/hooks";
+import { UNCATEGORIZED_SEGMENT } from "~/features/common/nav/v2/routes";
 
 import {
   useAddMonitorResultSystemMutation,
@@ -54,7 +55,7 @@ export const DiscoveredSystemActionsCell = ({
   const handleIgnore = async () => {
     const result = await ignoreMonitorResultSystemMutation({
       monitor_config_key: monitorId,
-      resolved_system_id: id,
+      resolved_system_id: id || UNCATEGORIZED_SEGMENT,
     });
     if (isErrorResult(result)) {
       errorAlert(getErrorMessage(result.error));
