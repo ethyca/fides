@@ -29,6 +29,7 @@ import {
   finishTest,
   selectCurrentDataset,
   selectCurrentPolicyKey,
+  selectIsReachable,
   selectIsTestRunning,
   selectPrivacyRequestId,
   selectTestInputs,
@@ -50,6 +51,7 @@ const TestResultsSection = ({ connectionKey }: TestResultsSectionProps) => {
   const [testDatasets] = useTestDatastoreConnectionDatasetsMutation();
 
   const currentDataset = useSelector(selectCurrentDataset);
+  const isReachable = useSelector(selectIsReachable);
   const testResults = useSelector(selectTestResults);
   const testInputs = useSelector(selectTestInputs);
   const currentPolicyKey = useSelector(selectCurrentPolicyKey);
@@ -253,7 +255,7 @@ const TestResultsSection = ({ connectionKey }: TestResultsSectionProps) => {
             data-testid="run-btn"
             onClick={handleTestRun}
             loading={isTestRunning}
-            disabled={!currentPolicyKey}
+            disabled={!currentPolicyKey || !isReachable}
           >
             Run
           </Button>

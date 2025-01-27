@@ -407,12 +407,18 @@ export const datastoreConnectionApi = baseApi.injectEndpoints({
     }),
     getDatasetReachability: build.query<
       { reachable: boolean; details: string },
-      { connectionKey: string; datasetKey: string }
+      { connectionKey: string; datasetKey: string; policyKey: string | null }
     >({
-      query: ({ connectionKey, datasetKey }) => ({
-        url: `${CONNECTION_ROUTE}/${connectionKey}/dataset/${datasetKey}/reachability`,
-        method: "GET",
-      }),
+      query: ({ connectionKey, datasetKey, policyKey }) => {
+        const baseUrl = `${CONNECTION_ROUTE}/${connectionKey}/dataset/${datasetKey}/reachability`;
+        const queryString = policyKey ? `?policy_key=${policyKey}` : "";
+        const url = baseUrl + queryString;
+
+        return {
+          url,
+          method: "GET",
+        };
+      },
       providesTags: () => ["Datastore Connection"],
     }),
   }),

@@ -55,7 +55,7 @@ from fides.api.schemas.dataset import (
     validate_data_categories_against_db,
 )
 from fides.api.schemas.privacy_request import TestPrivacyRequest
-from fides.api.schemas.redis_cache import DatasetTestRequest, UnlabeledIdentities
+from fides.api.schemas.redis_cache import DatasetTestRequest
 from fides.api.util.api_router import APIRouter
 from fides.api.util.data_category import get_data_categories_from_db
 from fides.api.util.saas_util import merge_datasets
@@ -535,7 +535,7 @@ def get_datasets(
     response_model=Dataset,
 )
 def get_dataset(
-    fides_key: FidesKey,
+    dataset_key: FidesKey,
     db: Session = Depends(deps.get_db),
     connection_config: ConnectionConfig = Depends(_get_connection_config),
 ) -> Dataset:
@@ -545,19 +545,19 @@ def get_dataset(
     """
 
     logger.debug(
-        "Finding dataset '{}' for connection '{}'", fides_key, connection_config.key
+        "Finding dataset '{}' for connection '{}'", dataset_key, connection_config.key
     )
     dataset_config = DatasetConfig.filter(
         db=db,
         conditions=(
             (DatasetConfig.connection_config_id == connection_config.id)
-            & (DatasetConfig.fides_key == fides_key)
+            & (DatasetConfig.fides_key == dataset_key)
         ),
     ).first()
     if not dataset_config:
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,
-            detail=f"No dataset with fides_key '{fides_key}' and connection key {connection_config.key}'",
+            detail=f"No dataset with fides_key '{dataset_key}' and connection key {connection_config.key}'",
         )
     return dataset_config.ctl_dataset
 
@@ -592,7 +592,7 @@ def get_dataset_configs(
     response_model=DatasetConfigSchema,
 )
 def get_dataset_config(
-    fides_key: FidesKey,
+    dataset_key: FidesKey,
     db: Session = Depends(deps.get_db),
     connection_config: ConnectionConfig = Depends(_get_connection_config),
 ) -> DatasetConfig:
@@ -600,20 +600,20 @@ def get_dataset_config(
 
     logger.debug(
         "Finding dataset config '{}' for connection '{}'",
-        fides_key,
+        dataset_key,
         connection_config.key,
     )
     dataset_config = DatasetConfig.filter(
         db=db,
         conditions=(
             (DatasetConfig.connection_config_id == connection_config.id)
-            & (DatasetConfig.fides_key == fides_key)
+            & (DatasetConfig.fides_key == dataset_key)
         ),
     ).first()
     if not dataset_config:
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,
-            detail=f"No dataset config with fides_key '{fides_key}' and connection key {connection_config.key}'",
+            detail=f"No dataset config with fides_key '{dataset_key}' and connection key {connection_config.key}'",
         )
     return dataset_config
 
@@ -624,7 +624,7 @@ def get_dataset_config(
     status_code=HTTP_204_NO_CONTENT,
 )
 def delete_dataset(
-    fides_key: FidesKey,
+    dataset_key: FidesKey,
     *,
     db: Session = Depends(deps.get_db),
     connection_config: ConnectionConfig = Depends(_get_connection_config),
@@ -632,23 +632,23 @@ def delete_dataset(
     """Removes the DatasetConfig based on the given key."""
 
     logger.info(
-        "Finding dataset '{}' for connection '{}'", fides_key, connection_config.key
+        "Finding dataset '{}' for connection '{}'", dataset_key, connection_config.key
     )
     dataset_config = DatasetConfig.filter(
         db=db,
         conditions=(
             (DatasetConfig.connection_config_id == connection_config.id)
-            & (DatasetConfig.fides_key == fides_key)
+            & (DatasetConfig.fides_key == dataset_key)
         ),
     ).first()
     if not dataset_config:
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,
-            detail=f"No dataset with fides_key '{fides_key}' and connection_key '{connection_config.key}'",
+            detail=f"No dataset with fides_key '{dataset_key}' and connection_key '{connection_config.key}'",
         )
 
     logger.info(
-        "Deleting dataset '{}' for connection '{}'", fides_key, connection_config.key
+        "Deleting dataset '{}' for connection '{}'", dataset_key, connection_config.key
     )
     dataset_config.delete(db)
 
@@ -821,7 +821,8 @@ def dataset_reachability(
     *,
     db: Session = Depends(deps.get_db),
     connection_config: ConnectionConfig = Depends(_get_connection_config),
-    fides_key: FidesKey,
+    dataset_key: FidesKey,
+    policy_key: FidesKey,
 ) -> Dict[str, Any]:
     """
     Returns a dictionary containing the immediate identity and dataset reference
@@ -832,16 +833,23 @@ def dataset_reachability(
         db=db,
         conditions=(
             (DatasetConfig.connection_config_id == connection_config.id)
-            & (DatasetConfig.fides_key == fides_key)
+            & (DatasetConfig.fides_key == dataset_key)
         ),
     ).first()
     if not dataset_config:
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,
-            detail=f"No dataset config with fides_key '{fides_key}'",
+            detail=f"No dataset config with fides_key '{dataset_key}'",
         )
 
-    reachable, details = get_dataset_reachability(db, dataset_config)
+    access_policy = Policy.get_by(db, field="key", value=policy_key)
+    if not access_policy:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail=f'Policy with key "{policy_key}" not found',
+        )
+
+    reachable, details = get_dataset_reachability(db, dataset_config, access_policy)
     return {"reachable": reachable, "details": details}
 
 
@@ -855,7 +863,7 @@ def test_connection_datasets(
     *,
     db: Session = Depends(deps.get_db),
     connection_config: ConnectionConfig = Depends(_get_connection_config),
-    fides_key: FidesKey,
+    dataset_key: FidesKey,
     test_request: DatasetTestRequest,
 ) -> Dict[str, Any]:
 
@@ -869,13 +877,13 @@ def test_connection_datasets(
         db=db,
         conditions=(
             (DatasetConfig.connection_config_id == connection_config.id)
-            & (DatasetConfig.fides_key == fides_key)
+            & (DatasetConfig.fides_key == dataset_key)
         ),
     ).first()
     if not dataset_config:
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,
-            detail=f"No dataset config with fides_key '{fides_key}'",
+            detail=f"No dataset config with fides_key '{dataset_key}'",
         )
 
     access_policy = Policy.get_by(db, field="key", value=test_request.policy_key)

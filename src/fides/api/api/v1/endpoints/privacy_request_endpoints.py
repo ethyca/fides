@@ -15,6 +15,7 @@ from typing import (
     Literal,
     Optional,
     Set,
+    Tuple,
     Union,
 )
 
@@ -2664,7 +2665,7 @@ def get_test_privacy_request_results(
         )
 
     # Check completion status of all tasks
-    statuses = [task.status for task in privacy_request.access_tasks]
+    dataset_key, statuses = get_task_info(privacy_request.access_tasks.all())
     all_completed = all(status in EXITED_EXECUTION_LOG_STATUSES for status in statuses)
 
     # Update request status if all tasks are done
@@ -2680,12 +2681,74 @@ def get_test_privacy_request_results(
     escaped_json = json.dumps(raw_data, indent=2, default=storage_json_encoder)
     results = json.loads(escaped_json)
 
+    filtered_results: Dict[str, Any] = filter_access_results(
+        db, results, dataset_key, privacy_request.policy_id  # type: ignore[arg-type]
+    )
+
     return {
         "privacy_request_id": privacy_request.id,
         "status": privacy_request.status,
         "results": (
-            results
+            filtered_results
             if CONFIG.security.dsr_testing_tools_enabled
             else "DSR testing tools are not enabled, results will not be shown."
         ),
     }
+
+
+def get_task_info(tasks: List[RequestTask]) -> Tuple[str, List[ExecutionLogStatus]]:
+    """Returns first dataset and list of statuses from tasks"""
+    statuses = []
+    dataset_key = None
+
+    for task in tasks:
+        statuses.append(task.status)
+        if dataset_key is None and task.dataset_name != "__ROOT__":
+            dataset_key = task.dataset_name
+
+    return dataset_key, statuses  # type: ignore[return-value]
+
+
+def filter_access_results(
+    db: Session,
+    access_results: Dict[str, Any],
+    dataset_key: str,
+    policy_id: str,
+) -> Dict[str, List[Dict[str, Optional[Any]]]]:
+    """Filter access results based on policy data categories.
+
+    Args:
+        access_results: Raw access results to filter
+        dataset_key: Key of the dataset to get the data categories from
+        policy_id: ID of the policy containing target data categories
+
+    Returns:
+        Filtered results containing only data matching policy target data categories
+    """
+    # Get dataset graph
+    dataset_config = DatasetConfig.filter(
+        db=db, conditions=(DatasetConfig.fides_key == dataset_key)
+    ).first()
+    if not dataset_config:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail=f"No dataset with fides_key '{dataset_key}'",
+        )
+
+    graph_dataset = dataset_config.get_graph()
+    dataset_graph = DatasetGraph(graph_dataset)
+
+    # Get policy target categories
+    policy = Policy.get_by(db, field="id", value=policy_id)
+    if not policy:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail=f"No policy with ID '{policy_id}'",
+        )
+
+    target_categories: Set[str] = set()
+    for rule in policy.get_rules_for_action(action_type=ActionType.access):
+        for target in rule.targets:  # type: ignore[attr-defined]
+            target_categories.add(target.data_category)
+
+    return filter_data_categories(access_results, target_categories, dataset_graph)

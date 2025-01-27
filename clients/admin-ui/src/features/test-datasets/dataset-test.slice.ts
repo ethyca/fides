@@ -6,6 +6,7 @@ import { DatasetConfigSchema } from "~/types/api";
 interface DatasetTestState {
   privacyRequestId: string | null;
   currentDataset: DatasetConfigSchema | null;
+  isReachable: boolean;
   testInputs: Record<string, Record<string, any>>;
   testResults: Record<string, string>;
   isTestRunning: boolean;
@@ -15,6 +16,7 @@ interface DatasetTestState {
 const initialState: DatasetTestState = {
   privacyRequestId: null,
   currentDataset: null,
+  isReachable: false,
   testInputs: {},
   currentPolicyKey: null,
   testResults: {},
@@ -88,6 +90,9 @@ export const datasetTestSlice = createSlice({
       draftState.currentDataset = action.payload;
       draftState.privacyRequestId = null;
     },
+    setReachability: (draftState, action: PayloadAction<boolean>) => {
+      draftState.isReachable = action.payload;
+    },
     setTestResults: (
       draftState,
       action: PayloadAction<{
@@ -110,6 +115,7 @@ export const {
   setTestInputs,
   setCurrentPolicyKey,
   setCurrentDataset,
+  setReachability,
   setTestResults,
 } = datasetTestSlice.actions;
 
@@ -119,6 +125,8 @@ export const selectDatasetTestPrivacyRequestId = (state: RootState) =>
   state.datasetTest.privacyRequestId;
 export const selectCurrentDataset = (state: RootState) =>
   state.datasetTest.currentDataset;
+export const selectIsReachable = (state: RootState) =>
+  state.datasetTest.isReachable;
 export const selectTestInputs = (state: RootState) => {
   const { currentDataset } = state.datasetTest;
   return currentDataset
