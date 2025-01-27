@@ -15,7 +15,7 @@ from tests.ops.test_helpers.vault_client import get_secrets
 secrets = get_secrets("hubspot")
 
 
-@pytest.fixture(scope="class")
+@pytest.fixture(scope="session")
 def hubspot_secrets(saas_config):
     return {
         "domain": pydash.get(saas_config, "hubspot.domain") or secrets["domain"],
@@ -24,7 +24,7 @@ def hubspot_secrets(saas_config):
     }
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture
 def hubspot_identity_email():
     return generate_random_email()
 
@@ -150,7 +150,7 @@ class HubspotTestClient:
         return subscriptions_responses.json()
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture
 def hubspot_test_client(
     hubspot_secrets,
 ) -> Generator:
@@ -224,7 +224,7 @@ def create_hubspot_data(test_client: HubspotTestClient, email):
     return contact_id, user_id
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture
 def hubspot_data(
     hubspot_test_client: HubspotTestClient,
     hubspot_identity_email: str,
@@ -271,13 +271,15 @@ def hubspot_data(
     )
 
 
-@pytest.fixture(scope="class")
+@pytest.fixture
 def hubspot_runner(
     db,
+    cache,
     hubspot_secrets,
 ) -> ConnectorRunner:
     return ConnectorRunner(
         db,
+        cache,
         "hubspot",
         hubspot_secrets,
     )
