@@ -1,4 +1,5 @@
 from typing import Any, Dict, List, Optional
+from urllib.parse import quote_plus
 
 from loguru import logger
 from pymongo import MongoClient
@@ -34,8 +35,7 @@ class MongoDBConnector(BaseConnector[MongoClient]):
         user_pass: str = ""
         default_auth_db: str = ""
         if config.username and config.password:
-            user_pass = f"{config.username}:{config.password}@"
-
+            user_pass = f"{quote_plus(config.username)}:{quote_plus(config.password)}@"
             if config.defaultauthdb:
                 default_auth_db = f"/{config.defaultauthdb}"
 
