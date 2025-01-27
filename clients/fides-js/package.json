@@ -31,7 +31,7 @@
     "directory": "clients/fides-js"
   },
   "dependencies": {
-    "@iabgpp/cmpapi": "^3.1.4",
+    "@iabgpp/cmpapi": "^3.1.5",
     "@iabtechlabtcf/cmpapi": "^1.5.8",
     "@iabtechlabtcf/core": "^1.5.7",
     "a11y-dialog": "^7.5.2",
