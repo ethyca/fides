@@ -4,7 +4,19 @@ from typing import Any, Dict, Generator
 import pydash
 import pytest
 import requests
+from sqlalchemy.orm import Session
 
+from fides.api.models.connectionconfig import (
+    AccessLevel,
+    ConnectionConfig,
+    ConnectionType,
+)
+from fides.api.models.datasetconfig import DatasetConfig
+from fides.api.models.sql_models import Dataset as CtlDataset
+from fides.api.util.saas_util import (
+    load_config_with_replacement,
+    load_dataset_with_replacement,
+)
 from tests.ops.integration_tests.saas.connector_runner import (
     ConnectorRunner,
     generate_random_email,
@@ -27,6 +39,73 @@ def hubspot_secrets(saas_config):
 @pytest.fixture
 def hubspot_identity_email():
     return generate_random_email()
+
+
+@pytest.fixture
+def hubspot_config() -> Dict[str, Any]:
+    return load_config_with_replacement(
+        "data/saas/config/hubspot_config.yml",
+        "<instance_fides_key>",
+        "hubspot_instance",
+    )
+
+
+@pytest.fixture
+def hubspot_dataset() -> Dict[str, Any]:
+    return load_dataset_with_replacement(
+        "data/saas/dataset/hubspot_dataset.yml",
+        "<instance_fides_key>",
+        "hubspot_instance",
+    )[0]
+
+
+@pytest.fixture(scope="function")
+def connection_config_hubspot(
+    db: Session,
+    hubspot_config,
+    hubspot_secrets,
+) -> Generator:
+    fides_key = hubspot_config["fides_key"]
+    connection_config = ConnectionConfig.create(
+        db=db,
+        data={
+            "key": fides_key,
+            "name": fides_key,
+            "connection_type": ConnectionType.saas,
+            "access": AccessLevel.write,
+            "secrets": hubspot_secrets,
+            "saas_config": hubspot_config,
+        },
+    )
+    yield connection_config
+    connection_config.delete(db)
+
+
+@pytest.fixture
+def dataset_config_hubspot(
+    db: Session,
+    connection_config_hubspot: ConnectionConfig,
+    hubspot_dataset,
+    hubspot_config,
+) -> Generator:
+    fides_key = hubspot_config["fides_key"]
+    connection_config_hubspot.name = fides_key
+    connection_config_hubspot.key = fides_key
+    connection_config_hubspot.save(db=db)
+
+    ctl_dataset = CtlDataset.create_from_dataset_dict(db, hubspot_dataset)
+
+    dataset = DatasetConfig.create(
+        db=db,
+        data={
+            "connection_config_id": connection_config_hubspot.id,
+            "fides_key": fides_key,
+            "ctl_dataset_id": ctl_dataset.id,
+        },
+    )
+    yield dataset
+    dataset.delete(db=db)
+    ctl_dataset.delete(db=db)
 
 
 class HubspotTestClient:
@@ -195,6 +274,7 @@ def create_hubspot_data(test_client: HubspotTestClient, email):
     # create user
     users_response = test_client.create_user(email=email)
     users_body = users_response.json()
+    pytest.set_trace()
     user_id = users_body["id"]
 
     # no need to subscribe contact, since creating a contact auto-subscribes them
