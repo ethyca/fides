@@ -201,6 +201,7 @@ describe("Action center", () => {
     beforeEach(() => {
       cy.visit(`${ACTION_CENTER_ROUTE}/${webMonitorKey}/${systemId}`);
       cy.wait("@getSystemAssetResults");
+      cy.getByTestId("page-breadcrumb").should("contain", systemId); // little hack to make sure the systemId is available before proceeding
     });
     it("should render asset results view", () => {
       cy.getByTestId("page-breadcrumb").should("contain", systemId);
@@ -233,7 +234,6 @@ describe("Action center", () => {
       // TODO: uncategorized assets are not yet available for testing
     });
     it("should allow editing a system on categorized assets", () => {
-      cy.getByTestId("page-breadcrumb").should("contain", systemId); // little hack to make sure the systemId is available before proceeding
       cy.getByTestId("row-3-col-system").within(() => {
         cy.getByTestId("system-badge").click();
       });
@@ -298,10 +298,19 @@ describe("Action center", () => {
       cy.wait("@ignoreAssets");
       cy.getByTestId("success-alert").should("exist");
     });
-    it.skip("should add all assets", () => {
+    it("should add all assets", () => {
+      cy.intercept(
+        "POST",
+        "/api/v1/plus/discovery-monitor/*/promote*",
+        (req) => {
+          req.on("response", (res) => {
+            res.setDelay(100); // slight delay allows us to check for the loading state below
+          });
+        },
+      ).as("slowRequest");
       cy.getByTestId("add-all").click();
       cy.getByTestId("add-all").should("have.class", "ant-btn-loading");
-      cy.wait("@addMonitorResultSystem");
+      cy.wait("@slowRequest");
       cy.url().should("not.contain", systemId);
       cy.getByTestId("success-alert").should("exist");
     });
