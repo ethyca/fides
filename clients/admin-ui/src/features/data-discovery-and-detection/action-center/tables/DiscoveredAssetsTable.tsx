@@ -100,12 +100,12 @@ export const DiscoveredAssetsTable = ({
 
   useEffect(() => {
     if (data) {
-      const firstSystemName = data.items[0]?.system || "";
+      const firstSystemName = data.items[0]?.system || systemId || "";
       setTotalPages(data.pages || 1);
       setSystemName(firstSystemName);
       onSystemName?.(firstSystemName);
     }
-  }, [data, onSystemName, setTotalPages]);
+  }, [data, systemId, onSystemName, setTotalPages]);
 
   const { columns } = useDiscoveredAssetsColumns();
 

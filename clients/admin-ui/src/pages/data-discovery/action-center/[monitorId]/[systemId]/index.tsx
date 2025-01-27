@@ -26,7 +26,10 @@ const MonitorResultAssets: NextPage = () => {
           { title: "All activity", href: ACTION_CENTER_ROUTE },
           { title: monitorId, href: `${ACTION_CENTER_ROUTE}/${monitorId}` },
           {
-            title: systemName,
+            title:
+              systemId === UNCATEGORIZED_SEGMENT
+                ? "Uncategorized assets"
+                : systemName,
           },
         ]}
       />
