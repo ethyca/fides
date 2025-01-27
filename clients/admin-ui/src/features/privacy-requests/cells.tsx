@@ -10,42 +10,47 @@ export const statusPropMap: {
   [key in PrivacyRequestStatus]: BadgeProps & { label: string };
 } = {
   approved: {
-    colorScheme: "green",
+    colorScheme: "success",
     label: "Approved",
   },
   complete: {
     label: "Completed",
+    colorScheme: "success",
   },
   awaiting_email_send: {
     label: "Awaiting Email Send",
+    colorScheme: "marble",
   },
   denied: {
     label: "Denied",
+    colorScheme: "warn",
   },
   canceled: {
     label: "Canceled",
+    colorScheme: "marble",
   },
   error: {
-    colorScheme: "red",
     label: "Error",
+    colorScheme: "error",
   },
   in_processing: {
-    colorScheme: "yellow",
     label: "In Progress",
+    colorScheme: "caution",
   },
   paused: {
     label: "Paused",
+    colorScheme: "marble",
   },
   pending: {
-    colorScheme: "blue",
     label: "New",
+    colorScheme: "info",
   },
   identity_unverified: {
-    colorScheme: "red",
     label: "Unverified",
+    colorScheme: "marble",
   },
   requires_input: {
-    colorScheme: "orange",
+    colorScheme: "alert",
     label: "Requires Input",
   },
 };

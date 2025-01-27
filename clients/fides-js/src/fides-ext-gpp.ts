@@ -14,7 +14,16 @@ import {
   UsCa,
   UsCo,
   UsCt,
+  UsDe,
+  UsFl,
+  UsIa,
+  UsMt,
   UsNat,
+  UsNe,
+  UsNh,
+  UsNj,
+  UsTn,
+  UsTx,
   UsUt,
   UsVa,
 } from "@iabgpp/cmpapi";
@@ -130,7 +139,22 @@ const getSupportedApis = () => {
         fidesDebugger("GPP: setting US State APIs");
         // TODO: include the states based off of locations/regulations.
         // For now, hard code all of them. https://ethyca.atlassian.net/browse/PROD-1595
-        [UsCa, UsCo, UsCt, UsUt, UsVa].forEach((state) => {
+        [
+          UsCa,
+          UsCo,
+          UsCt,
+          UsUt,
+          UsVa,
+          UsDe,
+          UsFl,
+          UsIa,
+          UsMt,
+          UsNe,
+          UsNh,
+          UsNj,
+          UsTn,
+          UsTx,
+        ].forEach((state) => {
           supportedApis.push(`${state.ID}:${state.NAME}`);
         });
       }

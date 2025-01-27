@@ -220,6 +220,17 @@ export const theme: Dict = extendChakraTheme({
       800: palette.FIDESUI_ERROR,
       900: palette.FIDESUI_ERROR,
     },
+    caution: {
+      100: palette.FIDESUI_BG_CAUTION,
+      200: palette.FIDESUI_BG_CAUTION,
+      300: palette.FIDESUI_BG_CAUTION,
+      400: palette.FIDESUI_BG_CAUTION,
+      500: palette.FIDESUI_BG_CAUTION,
+      600: palette.FIDESUI_BG_CAUTION,
+      700: palette.FIDESUI_BG_CAUTION,
+      800: palette.FIDESUI_BG_CAUTION,
+      900: palette.FIDESUI_BG_CAUTION,
+    },
     "success-text": {
       900: palette.FIDESUI_SUCCESS_TEXT,
     },
