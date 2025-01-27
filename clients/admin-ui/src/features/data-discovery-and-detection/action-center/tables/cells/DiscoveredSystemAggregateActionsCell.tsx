@@ -32,21 +32,25 @@ export const DiscoveredSystemActionsCell = ({
 
   const anyActionIsLoading = isAddingResults || isIgnoringResults;
 
-  const { id, name, system_key: systemKey } = system;
+  const {
+    id: resolvedSystemId,
+    name: systemName,
+    system_key: systemKey,
+    total_updates: totalUpdates,
+  } = system;
 
   const handleAdd = async () => {
     const result = await addMonitorResultSystemMutation({
       monitor_config_key: monitorId,
-      resolved_system_id: id,
+      resolved_system_id: resolvedSystemId,
     });
     if (isErrorResult(result)) {
       errorAlert(getErrorMessage(result.error));
     } else {
-      // TODO: Add "view" button which will bring users to the system inventory with an asset tab open (not yet developed)
       successAlert(
         !systemKey
-          ? `${name} has been added to the system inventory and all assets have been assigned to it.`
-          : `All assets from ${name} have been assigned.`,
+          ? `${systemName} and ${totalUpdates}assets have been added to the system inventory. ${systemName} is now configured for consent.`
+          : `${totalUpdates} assets from ${systemName} have been added to the system inventory.`,
         `Confirmed`,
       );
     }
@@ -55,15 +59,15 @@ export const DiscoveredSystemActionsCell = ({
   const handleIgnore = async () => {
     const result = await ignoreMonitorResultSystemMutation({
       monitor_config_key: monitorId,
-      resolved_system_id: id || UNCATEGORIZED_SEGMENT,
+      resolved_system_id: resolvedSystemId || UNCATEGORIZED_SEGMENT,
     });
     if (isErrorResult(result)) {
       errorAlert(getErrorMessage(result.error));
     } else {
       successAlert(
-        name
-          ? `All assets from ${name} have been ignored.`
-          : `All uncategorized assets have been ignored.`,
+        systemName
+          ? `${totalUpdates} assets from ${systemName} have been ignored and will not appear in future scans.`
+          : `${totalUpdates} uncategorized assets have been ignored and will not appear in future scans.`,
         `Confirmed`,
       );
     }

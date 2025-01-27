@@ -174,21 +174,30 @@ describe("Action center", () => {
         cy.getByTestId("ignore-btn").click({ force: true });
       });
       cy.wait("@ignoreMonitorResultUncategorizedSystem");
-      cy.getByTestId("success-alert").should("exist");
+      cy.getByTestId("success-alert").should(
+        "contain",
+        "108 uncategorized assets have been ignored and will not appear in future scans.",
+      );
     });
     it("should add all assets in a categorized system", () => {
       cy.getByTestId("row-1-col-actions").within(() => {
         cy.getByTestId("add-btn").click({ force: true });
       });
       cy.wait("@addMonitorResultSystem");
-      cy.getByTestId("success-alert").should("exist");
+      cy.getByTestId("success-alert").should(
+        "contain",
+        "10 assets from Google Tag Manager have been added to the system inventory.",
+      );
     });
     it("should ignore all assets in a categorized system", () => {
       cy.getByTestId("row-1-col-actions").within(() => {
         cy.getByTestId("ignore-btn").click({ force: true });
       });
       cy.wait("@ignoreMonitorResultSystem");
-      cy.getByTestId("success-alert").should("exist");
+      cy.getByTestId("success-alert").should(
+        "contain",
+        "10 assets from Google Tag Manager have been ignored and will not appear in future scans.",
+      );
     });
     it("should navigate to table view on row click", () => {
       cy.getByTestId("row-1").click();
@@ -246,6 +255,10 @@ describe("Action center", () => {
       cy.getByTestId("system-select").antSelect("Fidesctl System");
       cy.wait("@setAssetSystem");
       cy.getByTestId("system-select").should("not.exist");
+      cy.getByTestId("success-alert").should(
+        "contain",
+        'Browser Request "0d22c925-3a81-4f10-bfdc-69a5d67e93bc" has been assigned to Fidesctl System.',
+      );
     });
   });
 
@@ -293,6 +306,10 @@ describe("Action center", () => {
       cy.getByTestId("system-select").antSelect("Fidesctl System");
       cy.wait("@setAssetSystem");
       cy.getByTestId("system-select").should("not.exist");
+      cy.getByTestId("success-alert").should(
+        "contain",
+        'Browser Request "destination" has been assigned to Fidesctl System.',
+      );
 
       // Wait for previous UI animations to reset or Cypress chokes on the next part
       // eslint-disable-next-line cypress/no-unnecessary-waiting
@@ -311,20 +328,30 @@ describe("Action center", () => {
       cy.wait("@setAssetSystem");
       cy.getByTestId("success-alert").should("exist");
       cy.getByTestId("system-select").should("not.exist");
+      cy.getByTestId("success-alert").should(
+        "contain",
+        'Browser Request "collect" has been assigned to Demo Marketing System.',
+      );
     });
     it("should add individual assets", () => {
       cy.getByTestId("row-0-col-actions").within(() => {
         cy.getByTestId("add-btn").click({ force: true });
       });
       cy.wait("@addAssets");
-      cy.getByTestId("success-alert").should("exist");
+      cy.getByTestId("success-alert").should(
+        "contain",
+        'Browser Request "11020051272" has been added to the system inventory.',
+      );
     });
     it("should ignore individual assets", () => {
       cy.getByTestId("row-0-col-actions").within(() => {
         cy.getByTestId("ignore-btn").click({ force: true });
       });
       cy.wait("@ignoreAssets");
-      cy.getByTestId("success-alert").should("exist");
+      cy.getByTestId("success-alert").should(
+        "contain",
+        'Browser Request "11020051272" has been ignored and will not appear in future scans.',
+      );
     });
     it("should bulk add assets", () => {
       cy.getByTestId("bulk-actions-menu").should("be.disabled");
@@ -336,7 +363,10 @@ describe("Action center", () => {
       cy.getByTestId("bulk-actions-menu").click();
       cy.getByTestId("bulk-add").click();
       cy.wait("@addAssets");
-      cy.getByTestId("success-alert").should("exist");
+      cy.getByTestId("success-alert").should(
+        "contain",
+        "3 assets from Google Tag Manager have been added to the system inventory.",
+      );
     });
     it("should bulk ignore assets", () => {
       cy.getByTestId("bulk-actions-menu").should("be.disabled");
@@ -348,7 +378,10 @@ describe("Action center", () => {
       cy.getByTestId("bulk-actions-menu").click();
       cy.getByTestId("bulk-ignore").click();
       cy.wait("@ignoreAssets");
-      cy.getByTestId("success-alert").should("exist");
+      cy.getByTestId("success-alert").should(
+        "contain",
+        "3 assets from Google Tag Manager have been ignored and will not appear in future scans.",
+      );
     });
     it("should add all assets", () => {
       cy.intercept(
@@ -364,7 +397,10 @@ describe("Action center", () => {
       cy.getByTestId("add-all").should("have.class", "ant-btn-loading");
       cy.wait("@slowRequest");
       cy.url().should("not.contain", systemId);
-      cy.getByTestId("success-alert").should("exist");
+      cy.getByTestId("success-alert").should(
+        "contain",
+        "11 assets from Google Tag Manager have been added to the system inventory.",
+      );
     });
   });
 });

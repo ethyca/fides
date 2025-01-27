@@ -47,13 +47,16 @@ import { useDiscoveredAssetsColumns } from "../hooks/useDiscoveredAssetsColumns"
 interface DiscoveredAssetsTableProps {
   monitorId: string;
   systemId: string;
+  onSystemName?: (name: string) => void;
 }
 
 export const DiscoveredAssetsTable = ({
   monitorId,
   systemId,
+  onSystemName,
 }: DiscoveredAssetsTableProps) => {
   const router = useRouter();
+  const [systemName, setSystemName] = useState(systemId);
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
   const [addMonitorResultAssetsMutation, { isLoading: isAddingResults }] =
     useAddMonitorResultAssetsMutation();
@@ -97,9 +100,12 @@ export const DiscoveredAssetsTable = ({
 
   useEffect(() => {
     if (data) {
+      const firstSystemName = data.items[0]?.system || "";
       setTotalPages(data.pages || 1);
+      setSystemName(firstSystemName);
+      onSystemName?.(firstSystemName);
     }
-  }, [data, setTotalPages]);
+  }, [data, onSystemName, setTotalPages]);
 
   const { columns } = useDiscoveredAssetsColumns();
 
@@ -115,7 +121,8 @@ export const DiscoveredAssetsTable = ({
     },
   });
 
-  const selectedUrns = Object.keys(rowSelection).filter((k) => rowSelection[k]);
+  const selectedRows = tableInstance.getSelectedRowModel().rows;
+  const selectedUrns = selectedRows.map((row) => row.original.urn);
 
   const handleBulkAdd = async () => {
     const result = await addMonitorResultAssetsMutation({
@@ -124,9 +131,8 @@ export const DiscoveredAssetsTable = ({
     if (isErrorResult(result)) {
       errorAlert(getErrorMessage(result.error));
     } else {
-      // TODO: Add "view" button which will bring users to the system inventory with an asset tab open (not yet developed)
       successAlert(
-        `${selectedUrns.length} assets from ${systemId} have been added to the system inventory.`,
+        `${selectedUrns.length} assets from ${systemName} have been added to the system inventory.`,
         `Confirmed`,
       );
     }
@@ -140,13 +146,14 @@ export const DiscoveredAssetsTable = ({
       errorAlert(getErrorMessage(result.error));
     } else {
       successAlert(
-        `${selectedUrns.length} assets from ${systemId} have been ignored and will not be added to the system inventory.`,
+        `${selectedUrns.length} assets from ${systemName} have been ignored and will not appear in future scans.`,
         `Confirmed`,
       );
     }
   };
 
   const handleAddAll = async () => {
+    const assetCount = data?.items.length || 0;
     const result = await addMonitorResultSystemMutation({
       monitor_config_key: monitorId,
       resolved_system_id: systemId,
@@ -156,9 +163,8 @@ export const DiscoveredAssetsTable = ({
       errorAlert(getErrorMessage(result.error));
     } else {
       router.push(`${ACTION_CENTER_ROUTE}/${monitorId}`);
-      // TODO: Add "view" button which will bring users to the system inventory with an asset tab open (not yet developed)
       successAlert(
-        `All assets from ${systemId} have been added to the system inventory.`,
+        `${assetCount} assets from ${systemName} have been added to the system inventory.`,
         `Confirmed`,
       );
     }

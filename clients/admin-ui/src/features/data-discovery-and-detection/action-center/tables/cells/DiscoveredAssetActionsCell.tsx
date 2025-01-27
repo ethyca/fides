@@ -53,7 +53,7 @@ export const DiscoveredAssetActionsCell = ({
       errorAlert(getErrorMessage(result.error));
     } else {
       successAlert(
-        `${type} "${name}" has been ignored and will not be added to the system inventory.`,
+        `${type} "${name}" has been ignored and will not appear in future scans.`,
         `Ignored`,
       );
     }
@@ -64,7 +64,7 @@ export const DiscoveredAssetActionsCell = ({
     <Space>
       <Tooltip
         title={
-          !asset.system_id
+          !asset.system
             ? `This asset requires a system before you can add it to the inventory.`
             : undefined
         }
@@ -73,7 +73,7 @@ export const DiscoveredAssetActionsCell = ({
           data-testid="add-btn"
           size="small"
           onClick={handleAdd}
-          disabled={!asset.system_id || anyActionIsLoading}
+          disabled={!asset.system || anyActionIsLoading}
           loading={isAddingResults}
         >
           Add

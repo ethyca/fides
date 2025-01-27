@@ -7,18 +7,23 @@ import { useAlert } from "~/features/common/hooks";
 import { getTableTHandTDStyles } from "~/features/common/table/v2/util";
 import ClassificationCategoryBadge from "~/features/data-discovery-and-detection/ClassificationCategoryBadge";
 import { useUpdateResourceCategoryMutation } from "~/features/data-discovery-and-detection/discovery-detection.slice";
+import { StagedResourceAPIResponse } from "~/types/api";
 
 interface SystemCellProps {
-  urn: string;
-  systemName: string | undefined | null;
+  aggregateSystem: StagedResourceAPIResponse;
   monitorConfigId: string;
 }
 
 export const SystemCell = ({
-  urn,
-  systemName,
+  aggregateSystem,
   monitorConfigId,
 }: SystemCellProps) => {
+  const {
+    resource_type: assetType,
+    name: assetName,
+    urn,
+    system: systemName,
+  } = aggregateSystem;
   const [isEditing, setIsEditing] = useState(false);
   const [updateResourceCategoryMutation, { isLoading }] =
     useUpdateResourceCategoryMutation();
@@ -37,7 +42,10 @@ export const SystemCell = ({
     if (isErrorResult(result)) {
       errorAlert("There was a problem the system");
     } else {
-      successAlert(`Asset has been assigned to ${option.label}.`, `Confirmed`);
+      successAlert(
+        `${assetType} "${assetName}" has been assigned to ${option.label}.`,
+        `Confirmed`,
+      );
     }
     setIsEditing(false);
   };
