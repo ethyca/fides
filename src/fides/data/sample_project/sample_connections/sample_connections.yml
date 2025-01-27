@@ -15,7 +15,9 @@ connection:
   - key: cookie_house_loyalty_database
     name: Postgres Connector (Loyalty)
     connection_type: postgres
-    enabled_actions: ["access", "erasure"]
+    enabled_actions:
+      - access
+      - erasure
     access: write
     dataset: postgres_example_test_extended_dataset
     system_key: cookie_house_loyalty_database
@@ -29,7 +31,9 @@ connection:
   - key: cookie_house_customer_database_mongodb
     name: MongoDB Connector
     connection_type: mongodb
-    enabled_actions: ["access", "erasure"]
+    enabled_actions:
+      - access
+      - erasure
     access: write
     dataset: mongo_test
     system_key: cookie_house_customer_database
