@@ -385,13 +385,14 @@ export const datastoreConnectionApi = baseApi.injectEndpoints({
       {
         connection_key: string;
         dataset_key: string;
-        input_data: Record<string, any>;
+        identities: Record<string, any>;
+        policy_key: string;
       }
     >({
       query: (params) => ({
         url: `${CONNECTION_ROUTE}/${params.connection_key}/dataset/${params.dataset_key}/test`,
         method: "POST",
-        body: params.input_data,
+        body: { identities: params.identities, policy_key: params.policy_key },
       }),
     }),
     getDatasetInputs: build.query<

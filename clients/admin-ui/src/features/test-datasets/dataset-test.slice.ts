@@ -9,12 +9,14 @@ interface DatasetTestState {
   testInputs: Record<string, Record<string, any>>;
   testResults: Record<string, string>;
   isTestRunning: boolean;
+  currentPolicyKey: string | null;
 }
 
 const initialState: DatasetTestState = {
   privacyRequestId: null,
   currentDataset: null,
   testInputs: {},
+  currentPolicyKey: null,
   testResults: {},
   isTestRunning: false,
 };
@@ -76,6 +78,9 @@ export const datasetTestSlice = createSlice({
         [action.payload.datasetKey]: mergedValues,
       };
     },
+    setCurrentPolicyKey: (draftState, action: PayloadAction<string | null>) => {
+      draftState.currentPolicyKey = action.payload;
+    },
     setCurrentDataset: (
       draftState,
       action: PayloadAction<DatasetConfigSchema | null>,
@@ -103,6 +108,7 @@ export const {
   setPrivacyRequestId,
   finishTest,
   setTestInputs,
+  setCurrentPolicyKey,
   setCurrentDataset,
   setTestResults,
 } = datasetTestSlice.actions;
@@ -119,6 +125,8 @@ export const selectTestInputs = (state: RootState) => {
     ? state.datasetTest.testInputs[currentDataset.fides_key] || {}
     : {};
 };
+export const selectCurrentPolicyKey = (state: RootState) =>
+  state.datasetTest.currentPolicyKey;
 export const selectTestResults = (state: RootState) => {
   const { currentDataset } = state.datasetTest;
   return currentDataset

@@ -170,6 +170,13 @@ class UnlabeledIdentities(FidesSchema):
         return {"data": {**standard_fields, **custom_fields}}
 
 
+class DatasetTestRequest(FidesSchema):
+    """The policy key and inputs required to run a dataset test."""
+
+    policy_key: str
+    identities: UnlabeledIdentities
+
+
 class CustomPrivacyRequestField(FidesSchema):
     """Schema for custom privacy request fields."""
 

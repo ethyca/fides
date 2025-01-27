@@ -55,7 +55,7 @@ from fides.api.schemas.dataset import (
     validate_data_categories_against_db,
 )
 from fides.api.schemas.privacy_request import TestPrivacyRequest
-from fides.api.schemas.redis_cache import UnlabeledIdentities
+from fides.api.schemas.redis_cache import DatasetTestRequest, UnlabeledIdentities
 from fides.api.util.api_router import APIRouter
 from fides.api.util.data_category import get_data_categories_from_db
 from fides.api.util.saas_util import merge_datasets
@@ -856,7 +856,7 @@ def test_connection_datasets(
     db: Session = Depends(deps.get_db),
     connection_config: ConnectionConfig = Depends(_get_connection_config),
     fides_key: FidesKey,
-    unlabeled_identities: UnlabeledIdentities,
+    test_request: DatasetTestRequest,
 ) -> Dict[str, Any]:
 
     if not CONFIG.security.dsr_testing_tools_enabled:
@@ -878,17 +878,17 @@ def test_connection_datasets(
             detail=f"No dataset config with fides_key '{fides_key}'",
         )
 
-    access_policy = Policy.get_by(db, field="key", value="default_access_policy")
+    access_policy = Policy.get_by(db, field="key", value=test_request.policy_key)
     if not access_policy:
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,
-            detail='Policy with key "default_access_policy" not found',
+            detail=f'Policy with key "{test_request.policy_key}" not found',
         )
 
     privacy_request = run_test_access_request(
         db,
         access_policy,
         dataset_config,
-        input_data=unlabeled_identities.data,
+        input_data=test_request.identities.data,
     )
     return {"privacy_request_id": privacy_request.id}

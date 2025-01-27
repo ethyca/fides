@@ -12,7 +12,6 @@ from tests.fixtures.application_fixtures import load_dataset
 
 def load_example_dataset(filename: str) -> Dict[str, Any]:
     """Helper function specifically for loading example dataset files"""
-
     test_dir = os.path.dirname(__file__)
     file_path = os.path.join(test_dir, "example_datasets", filename)
 
@@ -25,43 +24,37 @@ def load_example_dataset(filename: str) -> Dict[str, Any]:
     return load_dataset(file_path)
 
 
-@pytest.fixture
-def directly_reachable_dataset_config(
-    db: Session,
-    connection_config: ConnectionConfig,
-) -> Generator:
-    dataset = load_example_dataset("directly_reachable.yml")[0]
-    ctl_dataset = CtlDataset.create_from_dataset_dict(db, dataset)
+def create_dataset_config_fixture(filename: str):
+    """Factory function to create dataset config fixtures"""
 
-    dataset_config = DatasetConfig.create(
-        db=db,
-        data={
-            "connection_config_id": connection_config.id,
-            "fides_key": dataset["fides_key"],
-            "ctl_dataset_id": ctl_dataset.id,
-        },
-    )
-    yield dataset_config
-    dataset_config.delete(db=db)
-    ctl_dataset.delete(db=db)
+    @pytest.fixture
+    def _dataset_config(db: Session, connection_config: ConnectionConfig) -> Generator:
+        dataset = load_example_dataset(filename)[0]
+        ctl_dataset = CtlDataset.create_from_dataset_dict(db, dataset)
+
+        dataset_config = DatasetConfig.create(
+            db=db,
+            data={
+                "connection_config_id": connection_config.id,
+                "fides_key": dataset["fides_key"],
+                "ctl_dataset_id": ctl_dataset.id,
+            },
+        )
+        yield dataset_config
+        dataset_config.delete(db=db)
+        ctl_dataset.delete(db=db)
+
+    return _dataset_config
 
 
-@pytest.fixture
-def unreachable_without_data_categories_dataset_config(
-    db: Session,
-    connection_config: ConnectionConfig,
-) -> Generator:
-    dataset = load_example_dataset("unreachable_without_data_categories.yml")[0]
-    ctl_dataset = CtlDataset.create_from_dataset_dict(db, dataset)
+directly_reachable_dataset_config = create_dataset_config_fixture(
+    "directly_reachable.yml"
+)
 
-    dataset_config = DatasetConfig.create(
-        db=db,
-        data={
-            "connection_config_id": connection_config.id,
-            "fides_key": dataset["fides_key"],
-            "ctl_dataset_id": ctl_dataset.id,
-        },
-    )
-    yield dataset_config
-    dataset_config.delete(db=db)
-    ctl_dataset.delete(db=db)
+unreachable_without_data_categories_dataset_config = create_dataset_config_fixture(
+    "unreachable_without_data_categories.yml"
+)
+
+unreachable_with_data_categories_dataset_config = create_dataset_config_fixture(
+    "unreachable_with_data_categories.yml"
+)
