@@ -1263,6 +1263,30 @@ class TestSystemGet:
         assert "first_name" in steward
         assert "last_name" in steward
 
+    def test_system_privacy_declarations_are_sorted(self, test_config, system, db):
+        """Test system Privacy Declarations are returned in alphabetical order by name."""
+        data = {
+            "data_use": "essential",
+            "name": "Another Declaration Name",
+            "system_id": system.id,
+            "data_subjects": [],
+            "data_categories": [],
+        }
+        new_pd = PrivacyDeclaration.create(db, data=data)
+
+        result = _api.get(
+            url=test_config.cli.server_url,
+            headers=test_config.user.auth_header,
+            resource_type="system",
+            resource_id=system.fides_key,
+        )
+        assert result.status_code == 200
+
+        privacy_declarations = result.json()["privacy_declarations"]
+        assert len(privacy_declarations) == 2
+        assert privacy_declarations[0]["name"] == "Another Declaration Name"
+        assert privacy_declarations[1]["name"] == "Collect data for marketing"
+
 
 @pytest.mark.unit
 class TestSystemList:
