@@ -274,7 +274,7 @@ def create_hubspot_data(test_client: HubspotTestClient, email):
     # create user
     users_response = test_client.create_user(email=email)
     users_body = users_response.json()
-    pytest.set_trace()
+
     user_id = users_body["id"]
 
     # no need to subscribe contact, since creating a contact auto-subscribes them
