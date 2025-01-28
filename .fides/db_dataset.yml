@@ -931,6 +931,10 @@ dataset:
       data_categories: [system.operations]
     - name: classification_instances
       data_categories: [system.operations]
+    - name: created_at
+      data_categories: [system.operations]
+    - name: updated_at
+      data_categories: [system.operations]
   - name: policy
     data_categories: []
     fields:
