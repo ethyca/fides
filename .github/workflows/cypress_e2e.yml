@@ -15,6 +15,7 @@ env:
   # Docker auth with read-only permissions.
   DOCKER_USER: ${{ secrets.DOCKER_USER }}
   DOCKER_RO_TOKEN: ${{ secrets.DOCKER_RO_TOKEN }}
+  DEFAULT_PYTHON_VERSION: "3.10.13"
 
 jobs:
   Cypress-E2E:
@@ -26,10 +27,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Python 3.10
+      - name: Set Up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.10"
+          python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
+          cache: "pip"
 
       - name: Install Nox
         run: pip install nox>=2022
@@ -68,3 +70,9 @@ jobs:
 
       - name: Teardown
         run: nox -s teardown
+
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: cypress-videos-cypress-e2e
+          path: /home/runner/work/fides/fides/clients/cypress-e2e/cypress/videos/*.mp4

@@ -1,7 +1,6 @@
-import { AntButton as Button, Box, Flex, Text, Wrap } from "fidesui";
+import { AntButton as Button, Badge, Box, Flex, Text, Wrap } from "fidesui";
 import { ReactNode } from "react";
 
-import Tag from "~/features/common/Tag";
 import ConnectionTypeLogo from "~/features/datastore-connections/ConnectionTypeLogo";
 import DeleteConnectionModal from "~/features/datastore-connections/DeleteConnectionModal";
 import useTestConnection from "~/features/datastore-connections/useTestConnection";
@@ -81,7 +80,7 @@ const IntegrationBox = ({
       </Flex>
       <Wrap marginTop="16px">
         {integrationTypeInfo.tags.map((item) => (
-          <Tag key={item}>{item}</Tag>
+          <Badge key={item}>{item}</Badge>
         ))}
       </Wrap>
     </Box>

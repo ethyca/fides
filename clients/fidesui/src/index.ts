@@ -12,10 +12,12 @@ export type {
   FormInstance as AntFormInstance,
   InputProps as AntInputProps,
   ListProps as AntListProps,
+  RadioGroupProps as AntRadioGroupProps,
   SelectProps as AntSelectProps,
   SwitchProps as AntSwitchProps,
   GetProps,
   InputRef,
+  RadioChangeEvent,
 } from "antd/lib";
 export {
   Alert as AntAlert,

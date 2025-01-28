@@ -48,11 +48,8 @@ describe("Consent settings", () => {
       cy.getByTestId("consent-configuration");
       cy.getByTestId("setting-Global Privacy Platform").within(() => {
         cy.get("p").contains("GPP status Enabled");
-        cy.getByTestId("option-national").should(
-          "not.have.attr",
-          "data-checked",
-        );
-        cy.getByTestId("option-state").should("have.attr", "data-checked");
+        cy.getByTestId("option-national").should("not.have.attr", "checked");
+        cy.getByTestId("option-state").should("have.attr", "checked");
         cy.getByTestId("input-gpp.mspa_covered_transactions").should(
           "not.have.attr",
           "data-checked",
@@ -78,8 +75,8 @@ describe("Consent settings", () => {
       cy.visit(GLOBAL_CONSENT_CONFIG_ROUTE);
       cy.getByTestId("setting-Global Privacy Platform").within(() => {
         cy.get("p").contains("GPP status Enabled");
-        cy.getByTestId("option-national").should("have.attr", "data-checked");
-        cy.getByTestId("option-state").should("not.have.attr", "data-checked");
+        cy.getByTestId("option-national").should("have.attr", "checked");
+        cy.getByTestId("option-state").should("not.have.attr", "checked");
         cy.getByTestId("input-gpp.mspa_covered_transactions").should(
           "have.attr",
           "data-checked",

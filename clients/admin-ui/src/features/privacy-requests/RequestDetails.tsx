@@ -1,4 +1,4 @@
-import { Box, Divider, Flex, Heading, HStack, Tag, Text } from "fidesui";
+import { Badge, Box, Divider, Flex, Heading, HStack, Text } from "fidesui";
 
 import ClipboardButton from "~/features/common/ClipboardButton";
 import DaysLeftTag from "~/features/common/DaysLeftTag";
@@ -47,19 +47,12 @@ const RequestDetails = ({ subjectRequest }: RequestDetailsProps) => {
         <ClipboardButton copyText={id} size="small" />
       </Flex>
       {hasPlus && subjectRequest.source && (
-        <Flex>
+        <Flex alignItems="center">
           <Text mr={2} fontSize="sm" color="gray.900" fontWeight="500">
             Source:
           </Text>
           <Box>
-            <Tag
-              color="white"
-              bg="primary.400"
-              fontWeight="medium"
-              fontSize="sm"
-            >
-              {subjectRequest.source}
-            </Tag>
+            <Badge>{subjectRequest.source}</Badge>
           </Box>
         </Flex>
       )}
@@ -71,14 +64,12 @@ const RequestDetails = ({ subjectRequest }: RequestDetailsProps) => {
           <RequestType rules={policy.rules} />
         </Box>
       </Flex>
-      <Flex>
+      <Flex alignItems="center">
         <Text mr={2} fontSize="sm" color="gray.900" fontWeight="500">
           Policy key:
         </Text>
         <Box>
-          <Tag color="white" bg="primary.400" fontWeight="medium" fontSize="sm">
-            {subjectRequest.policy.key}
-          </Tag>
+          <Badge>{subjectRequest.policy.key}</Badge>
         </Box>
       </Flex>
       <Flex alignItems="center">

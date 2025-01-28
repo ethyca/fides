@@ -182,7 +182,6 @@ const MessagingPage: NextPage = () => {
       <TableActionBar>
         <HStack alignItems="center" spacing={4} marginLeft="auto">
           <Button
-            size="small"
             type="primary"
             data-testid="add-message-btn"
             onClick={() => setIsAddTemplateModalOpen(true)}

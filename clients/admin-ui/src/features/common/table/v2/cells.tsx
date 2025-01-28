@@ -58,23 +58,7 @@ export const DefaultCell = <T,>({
 };
 
 const FidesBadge = ({ children, ...props }: BadgeProps) => (
-  <Badge
-    textTransform="none"
-    fontWeight="400"
-    fontSize="xs"
-    lineHeight={4}
-    color="gray.600"
-    px={2}
-    py={1}
-    boxShadow={
-      props.variant === "outline"
-        ? "inset 0 0 0px 1px var(--chakra-colors-gray-100)"
-        : undefined
-    }
-    {...props}
-  >
-    {children}
-  </Badge>
+  <Badge {...props}>{children}</Badge>
 );
 
 export const RelativeTimestampCell = ({
@@ -300,11 +284,7 @@ export const IndeterminateCheckboxCell = ({
     justifyContent="center"
     onClick={(e) => e.stopPropagation()}
   >
-    <Checkbox
-      data-testid={dataTestId || undefined}
-      {...rest}
-      colorScheme="purple"
-    />
+    <Checkbox data-testid={dataTestId || undefined} {...rest} />
   </Flex>
 );
 
