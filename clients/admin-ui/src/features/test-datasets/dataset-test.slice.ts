@@ -10,7 +10,7 @@ interface DatasetTestState {
   testInputs: Record<string, Record<string, any>>;
   testResults: Record<string, string>;
   isTestRunning: boolean;
-  currentPolicyKey: string | null;
+  currentPolicyKey?: string;
 }
 
 const initialState: DatasetTestState = {
@@ -18,7 +18,6 @@ const initialState: DatasetTestState = {
   currentDataset: null,
   isReachable: false,
   testInputs: {},
-  currentPolicyKey: null,
   testResults: {},
   isTestRunning: false,
 };
@@ -80,7 +79,7 @@ export const datasetTestSlice = createSlice({
         [action.payload.datasetKey]: mergedValues,
       };
     },
-    setCurrentPolicyKey: (draftState, action: PayloadAction<string | null>) => {
+    setCurrentPolicyKey: (draftState, action: PayloadAction<string>) => {
       draftState.currentPolicyKey = action.payload;
     },
     setCurrentDataset: (

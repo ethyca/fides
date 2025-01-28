@@ -103,10 +103,21 @@ const EditorSection = ({ connectionKey }: EditorSectionProps) => {
   }, [currentDataset]);
 
   useEffect(() => {
-    if (connectionKey && currentDataset?.fides_key) {
+    if (currentPolicyKey && currentDataset?.fides_key && connectionKey) {
       refetchReachability();
     }
-  }, [connectionKey, currentDataset, refetchReachability]);
+  }, [
+    currentPolicyKey,
+    currentDataset?.fides_key,
+    connectionKey,
+    refetchReachability,
+  ]);
+
+  useEffect(() => {
+    if (reachability) {
+      dispatch(setReachability(reachability.reachable));
+    }
+  }, [reachability, dispatch]);
 
   const handleDatasetChange = async (value: string) => {
     const selectedConfig = datasetConfigs?.items.find(
@@ -155,6 +166,7 @@ const EditorSection = ({ connectionKey }: EditorSectionProps) => {
     );
     toast(successToastParams("Successfully modified dataset"));
     await refetchDatasets();
+    await refetchReachability();
   };
 
   const handleRefresh = async () => {
