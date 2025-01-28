@@ -1,17 +1,16 @@
 """update privacy request relationships
 
 Revision ID: 1088e8353890
-Revises: ae65da77c468
+Revises: d9237a0c0d5a
 Create Date: 2024-12-26 22:38:37.905571
 
 """
 
-import sqlalchemy as sa
 from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "1088e8353890"
-down_revision = "ae65da77c468"
+down_revision = "d9237a0c0d5a"
 branch_labels = None
 depends_on = None
 
