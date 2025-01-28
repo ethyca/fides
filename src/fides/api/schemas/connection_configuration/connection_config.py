@@ -28,6 +28,7 @@ class CreateConnectionConfiguration(BaseModel):
     access: AccessLevel
     disabled: Optional[bool] = False
     description: Optional[str] = None
+    enabled_actions: Optional[List[ActionType]] = None
     model_config = ConfigDict(
         from_attributes=True, use_enum_values=True, extra="ignore"
     )
