@@ -1,6 +1,7 @@
 import uuid
 from typing import Any, Dict, List, Optional, Union
 
+from fideslang.validation import FidesKey
 from pydantic import (
     ConfigDict,
     EmailStr,
@@ -173,7 +174,7 @@ class UnlabeledIdentities(FidesSchema):
 class DatasetTestRequest(FidesSchema):
     """The policy key and inputs required to run a dataset test."""
 
-    policy_key: str
+    policy_key: FidesKey
     identities: UnlabeledIdentities
 
 

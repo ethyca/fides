@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-from typing import Annotated, Any, Callable, Dict, List
+from typing import Annotated, Any, Callable, Dict, List, Optional
 
 import yaml
 from fastapi import Depends, HTTPException, Request
@@ -788,41 +788,7 @@ def dataset_identities_and_references(
     *,
     db: Session = Depends(deps.get_db),
     connection_config: ConnectionConfig = Depends(_get_connection_config),
-    fides_key: FidesKey,
-) -> Dict[str, Any]:
-    """
-    Returns a dictionary containing the immediate identity and dataset reference
-    dependencies for the given dataset.
-    """
-
-    dataset_config = DatasetConfig.filter(
-        db=db,
-        conditions=(
-            (DatasetConfig.connection_config_id == connection_config.id)
-            & (DatasetConfig.fides_key == fides_key)
-        ),
-    ).first()
-    if not dataset_config:
-        raise HTTPException(
-            status_code=HTTP_404_NOT_FOUND,
-            detail=f"No dataset config with fides_key '{fides_key}'",
-        )
-
-    inputs = get_identities_and_references(dataset_config)
-    return {input: None for input in inputs}
-
-
-@router.get(
-    DATASET_REACHABILITY,
-    dependencies=[Security(verify_oauth_client, scopes=[DATASET_READ])],
-    response_model=DatasetReachability,
-)
-def dataset_reachability(
-    *,
-    db: Session = Depends(deps.get_db),
-    connection_config: ConnectionConfig = Depends(_get_connection_config),
     dataset_key: FidesKey,
-    policy_key: FidesKey,
 ) -> Dict[str, Any]:
     """
     Returns a dictionary containing the immediate identity and dataset reference
@@ -842,8 +808,44 @@ def dataset_reachability(
             detail=f"No dataset config with fides_key '{dataset_key}'",
         )
 
-    access_policy = Policy.get_by(db, field="key", value=policy_key)
-    if not access_policy:
+    inputs = get_identities_and_references(dataset_config)
+    return {input: None for input in inputs}
+
+
+@router.get(
+    DATASET_REACHABILITY,
+    dependencies=[Security(verify_oauth_client, scopes=[DATASET_READ])],
+    response_model=DatasetReachability,
+)
+def dataset_reachability(
+    *,
+    db: Session = Depends(deps.get_db),
+    connection_config: ConnectionConfig = Depends(_get_connection_config),
+    dataset_key: FidesKey,
+    policy_key: Optional[FidesKey] = None,
+) -> Dict[str, Any]:
+    """
+    Returns a dictionary containing the immediate identity and dataset reference
+    dependencies for the given dataset.
+    """
+
+    dataset_config = DatasetConfig.filter(
+        db=db,
+        conditions=(
+            (DatasetConfig.connection_config_id == connection_config.id)
+            & (DatasetConfig.fides_key == dataset_key)
+        ),
+    ).first()
+    if not dataset_config:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail=f"No dataset config with fides_key '{dataset_key}'",
+        )
+
+    access_policy = (
+        Policy.get_by(db, field="key", value=policy_key) if policy_key else None
+    )
+    if policy_key and not access_policy:
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,
             detail=f'Policy with key "{policy_key}" not found',
