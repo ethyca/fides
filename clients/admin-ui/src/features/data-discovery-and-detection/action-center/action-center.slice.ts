@@ -92,10 +92,7 @@ const actionCenterApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Discovery Monitor Results"],
     }),
-    ignoreMonitorResultAssets: build.mutation<
-      any,
-      { urnList?: string[]; systemId?: string }
-    >({
+    ignoreMonitorResultAssets: build.mutation<any, { urnList?: string[] }>({
       query: (params) => ({
         method: "POST",
         url: `/plus/discovery-monitor/mute`,

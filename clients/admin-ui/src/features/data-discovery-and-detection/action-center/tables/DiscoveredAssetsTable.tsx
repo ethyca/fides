@@ -111,6 +111,7 @@ export const DiscoveredAssetsTable = ({
 
   const tableInstance = useReactTable({
     getCoreRowModel: getCoreRowModel(),
+    getRowId: (row) => row.urn,
     columns,
     manualPagination: true,
     data: data?.items || [],
@@ -121,8 +122,7 @@ export const DiscoveredAssetsTable = ({
     },
   });
 
-  const selectedRows = tableInstance.getSelectedRowModel().rows;
-  const selectedUrns = selectedRows.map((row) => row.original.urn);
+  const selectedUrns = Object.keys(rowSelection).filter((k) => rowSelection[k]);
 
   const handleBulkAdd = async () => {
     const result = await addMonitorResultAssetsMutation({
