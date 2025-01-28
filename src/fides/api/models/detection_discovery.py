@@ -16,16 +16,6 @@ from sqlalchemy.orm.query import Query
 from fides.api.db.base_class import Base, FidesBase
 from fides.api.models.connectionconfig import ConnectionConfig
 
-# class MonitorExecution(BaseModel):
-#     id: str
-#     monitor_config_id: str
-#     status: Optional[str]
-#     started: Optional[datetime]
-#     completed: Optional[datetime]
-#     classification_instances: List[str] = PydanticField(
-#         default_factory=list
-#     )  # TODO: formalize to FK
-
 
 class DiffStatus(Enum):
     ADDITION = "addition"
