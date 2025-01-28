@@ -365,6 +365,17 @@ export const stubSystemVendors = () => {
   cy.intercept("GET", "/api/v1/plus/dictionary/system-vendors", {
     fixture: "systems/system-vendors.json",
   }).as("getSystemVendors");
+  cy.intercept("POST", "/api/v1/plus/dictionary/system-vendors", {
+    body: {
+      systems: [
+        {
+          id: "123",
+          name: "Test System",
+          fides_key: "test-system",
+        },
+      ],
+    },
+  }).as("postSystemVendors");
 };
 
 export const stubTranslationConfig = (enabled: boolean) => {
