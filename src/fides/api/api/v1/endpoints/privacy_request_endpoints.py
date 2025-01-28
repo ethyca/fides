@@ -194,6 +194,7 @@ from fides.common.api.v1.urn_registry import (
 )
 from fides.config import CONFIG
 from fides.config.config_proxy import ConfigProxy
+from fides.service.dataset.dataset_service import replace_references_with_identities
 
 router = APIRouter(tags=["Privacy Requests"], prefix=V1_URL_PREFIX)
 
@@ -2736,7 +2737,10 @@ def filter_access_results(
         )
 
     graph_dataset = dataset_config.get_graph()
-    dataset_graph = DatasetGraph(graph_dataset)
+    modified_graph_dataset = replace_references_with_identities(
+        dataset_config.fides_key, graph_dataset
+    )
+    dataset_graph = DatasetGraph(modified_graph_dataset)
 
     # Get policy target categories
     policy = Policy.get_by(db, field="id", value=policy_id)

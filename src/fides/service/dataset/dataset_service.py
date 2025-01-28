@@ -129,7 +129,7 @@ def run_test_access_request(
     privacy_request.cache_identity(input_identity)
 
     graph_dataset = dataset_config.get_graph()
-    modified_graph_dataset = _replace_references_with_identities(
+    modified_graph_dataset = replace_references_with_identities(
         dataset_config.fides_key, graph_dataset
     )
 
@@ -149,7 +149,7 @@ def run_test_access_request(
     return privacy_request
 
 
-def _replace_references_with_identities(
+def replace_references_with_identities(
     dataset_key: str, graph_dataset: GraphDataset
 ) -> GraphDataset:
     """
