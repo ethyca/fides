@@ -8,11 +8,7 @@ from starlette.status import (
 )
 from starlette.testclient import TestClient
 
-from fides.api.db.seed import (
-    DEFAULT_ACCESS_POLICY,
-    get_client_id,
-    load_default_access_policy,
-)
+from fides.api.db.seed import get_client_id, load_default_access_policy
 from fides.api.util.data_category import get_user_data_categories
 from fides.common.api.scope_registry import (
     DATASET_CREATE_OR_UPDATE,
@@ -208,7 +204,7 @@ class TestDatasetReachability:
         assert response.status_code == HTTP_200_OK
         assert set(response.json().keys()) == {"reachable", "details"}
 
-    @pytest.mark.usefixture("default_access_policy")
+    @pytest.mark.usefixtures("default_access_policy")
     def test_dataset_reachability_with_policy(
         self,
         connection_config,
@@ -220,7 +216,7 @@ class TestDatasetReachability:
         auth_header = generate_auth_header(scopes=[DATASET_READ])
         response = api_client.get(
             dataset_url + "/reachability",
-            params={"policy_key": DEFAULT_ACCESS_POLICY},
+            params={"policy_key": "default_access_policy"},
             headers=auth_header,
         )
         assert response.status_code == HTTP_200_OK

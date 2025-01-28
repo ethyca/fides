@@ -46,7 +46,7 @@ class TestGetDatasetReachability:
                 "no_identities_dataset_config",
                 (
                     False,
-                    "The following collections are not reachable single_identity:customer",
+                    'The following collections are not reachable "single_identity:customer"',
                 ),
             ),
         ],
