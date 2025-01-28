@@ -361,8 +361,7 @@ class MonitorExecution(Base):
         index=False,
         unique=False,
         nullable=False,
-        server_default=[],
-        default=ARRAY(String),
+        default=list,
     )
 
 
