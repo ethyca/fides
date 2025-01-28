@@ -47,9 +47,8 @@ export const useDiscoveredAssetsColumns = () => {
       cell: (props) =>
         !!props.row.original.monitor_config_id && (
           <SystemCell
-            systemName={props.getValue()}
+            aggregateSystem={props.row.original}
             monitorConfigId={props.row.original.monitor_config_id}
-            urn={props.row.original.urn}
           />
         ),
       header: "System",
