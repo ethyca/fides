@@ -1,8 +1,8 @@
-import { AntButton, AntSelectProps, EditIcon, Icons } from "fidesui";
+import { AntButton, EditIcon, Icons } from "fidesui";
 import { useState } from "react";
 
 import { SystemSelect } from "~/features/common/dropdown/SystemSelect";
-import { isErrorResult } from "~/features/common/helpers";
+import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { useAlert } from "~/features/common/hooks";
 import { getTableTHandTDStyles } from "~/features/common/table/v2/util";
 import ClassificationCategoryBadge from "~/features/data-discovery-and-detection/ClassificationCategoryBadge";
@@ -30,9 +30,10 @@ export const SystemCell = ({
 
   const { successAlert, errorAlert } = useAlert();
 
-  const handleSelectSystem: AntSelectProps["onSelect"] = async (
+  const handleSelectSystem = async (
     fidesKey: string,
-    option,
+    newSystemName: string,
+    isNewSystem?: boolean,
   ) => {
     const result = await updateResourceCategoryMutation({
       staged_resource_urn: urn,
@@ -40,10 +41,12 @@ export const SystemCell = ({
       system_key: fidesKey,
     });
     if (isErrorResult(result)) {
-      errorAlert("There was a problem the system");
+      errorAlert(getErrorMessage(result.error));
     } else {
       successAlert(
-        `${assetType} "${assetName}" has been assigned to ${option.label}.`,
+        isNewSystem
+          ? `${newSystemName} has been added to your system inventory and the ${assetType} "${assetName}" has been assigned to that system.`
+          : `${assetType} "${assetName}" has been assigned to ${newSystemName}.`,
         `Confirmed`,
       );
     }
@@ -83,7 +86,9 @@ export const SystemCell = ({
           autoFocus
           defaultOpen
           onBlur={() => setIsEditing(false)}
-          onSelect={handleSelectSystem}
+          onSelect={(fidesKey: string, option) =>
+            handleSelectSystem(fidesKey, option.label as string)
+          }
           loading={isLoading}
         />
       )}
