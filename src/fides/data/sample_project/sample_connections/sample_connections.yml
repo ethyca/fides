@@ -2,6 +2,9 @@ connection:
   - key: cookie_house_postgresql_database
     name: Postgres Connector
     connection_type: postgres
+    enabled_actions:
+      - access
+      - erasure
     access: write
     dataset: postgres_example_test_dataset
     system_key: cookie_house_postgresql_database
@@ -15,9 +18,6 @@ connection:
   - key: cookie_house_loyalty_database
     name: Postgres Connector (Loyalty)
     connection_type: postgres
-    enabled_actions:
-      - access
-      - erasure
     access: write
     dataset: postgres_example_test_extended_dataset
     system_key: cookie_house_loyalty_database
