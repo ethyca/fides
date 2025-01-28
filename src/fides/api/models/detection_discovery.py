@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, Iterable, List, Optional, Type
 
@@ -354,7 +354,9 @@ class MonitorExecution(Base):
         index=True,
     )
     status = Column(String, nullable=True)
-    started = Column(DateTime(timezone=True), nullable=True)
+    started = Column(
+        DateTime(timezone=True), nullable=True, default=datetime.now(timezone.utc)
+    )
     completed = Column(DateTime(timezone=True), nullable=True)
     classification_instances = Column(
         ARRAY(String),

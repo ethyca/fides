@@ -23,7 +23,7 @@ def upgrade():
         sa.Column("id", sa.String(), primary_key=True),
         sa.Column("monitor_config_key", sa.String(), nullable=False),
         sa.Column("status", sa.String(), nullable=True),
-        sa.Column("started", sa.DateTime(), nullable=True),
+        sa.Column("started", sa.DateTime(), nullable=True, default=sa.func.now()),
         sa.Column("completed", sa.DateTime(), nullable=True),
         sa.Column(
             "classification_instances",
