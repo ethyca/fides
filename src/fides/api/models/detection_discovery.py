@@ -348,6 +348,34 @@ class StagedResource(Base):
                 parent_resource.add_child_diff_status(DiffStatus.ADDITION)
 
 
+class MonitorExecution(Base):
+    """
+    Monitor execution record used for data detection and discovery.
+
+    Each monitor execution references `MonitorConfig`, which provide it with underlying
+    configuration details used in connecting to the external data store.
+    """
+
+    id = Column(String, primary_key=True)
+    monitor_config_key = Column(
+        String,
+        ForeignKey(MonitorConfig.key),
+        nullable=False,
+        index=True,
+    )
+    status = Column(String, nullable=True)
+    started = Column(DateTime(timezone=True), nullable=True)
+    completed = Column(DateTime(timezone=True), nullable=True)
+    classification_instances = Column(
+        ARRAY(String),
+        index=False,
+        unique=False,
+        nullable=False,
+        server_default=[],
+        default=ARRAY(String),
+    )
+
+
 def fetch_staged_resources_by_type_query(
     resource_type: str,
     monitor_config_ids: Optional[List[str]] = None,
