@@ -111,7 +111,6 @@ export const DiscoveredAssetsTable = ({
 
   const tableInstance = useReactTable({
     getCoreRowModel: getCoreRowModel(),
-    getRowId: (row) => row.urn,
     columns,
     manualPagination: true,
     data: data?.items || [],
@@ -122,7 +121,8 @@ export const DiscoveredAssetsTable = ({
     },
   });
 
-  const selectedUrns = Object.keys(rowSelection).filter((k) => rowSelection[k]);
+  const selectedRows = tableInstance.getSelectedRowModel().rows;
+  const selectedUrns = selectedRows.map((row) => row.original.urn);
 
   const handleBulkAdd = async () => {
     const result = await addMonitorResultAssetsMutation({
@@ -131,6 +131,7 @@ export const DiscoveredAssetsTable = ({
     if (isErrorResult(result)) {
       errorAlert(getErrorMessage(result.error));
     } else {
+      tableInstance.resetRowSelection();
       successAlert(
         `${selectedUrns.length} assets from ${systemName} have been added to the system inventory.`,
         `Confirmed`,
@@ -145,6 +146,7 @@ export const DiscoveredAssetsTable = ({
     if (isErrorResult(result)) {
       errorAlert(getErrorMessage(result.error));
     } else {
+      tableInstance.resetRowSelection();
       successAlert(
         `${selectedUrns.length} assets from ${systemName} have been ignored and will not appear in future scans.`,
         `Confirmed`,
