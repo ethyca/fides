@@ -365,6 +365,12 @@ class MonitorExecution(Base):
         nullable=False,
         default=list,
     )
+    created_at = Column(
+        DateTime(timezone=True), nullable=False, default=datetime.now(timezone.utc)
+    )
+    updated_at = Column(
+        DateTime(timezone=True), nullable=False, default=datetime.now(timezone.utc)
+    )
 
 
 def fetch_staged_resources_by_type_query(

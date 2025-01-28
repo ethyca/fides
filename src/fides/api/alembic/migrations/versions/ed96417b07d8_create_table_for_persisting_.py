@@ -31,6 +31,8 @@ def upgrade():
             nullable=False,
             default=[],
         ),
+        sa.Column("created_at", sa.DateTime(), nullable=False, default=sa.func.now()),
+        sa.Column("updated_at", sa.DateTime(), nullable=False, default=sa.func.now()),
         sa.ForeignKeyConstraint(["monitor_config_key"], ["monitorconfig.key"]),
         sa.PrimaryKeyConstraint("id"),
     )
