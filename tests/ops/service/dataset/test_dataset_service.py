@@ -46,7 +46,7 @@ class TestGetDatasetReachability:
                 "no_identities_dataset_config",
                 (
                     False,
-                    'The following nodes are unreachable but contain user data categories "single_identity:customer"',
+                    "Some nodes were not reachable: single_identity:customer",
                 ),
             ),
         ],

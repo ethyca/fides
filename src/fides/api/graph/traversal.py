@@ -404,11 +404,11 @@ class Traversal:
                 # traversal traversal_node dict diff finished nodes
                 logger.error(
                     "Node could not be reached given specified ordering [{}]",
-                    ",".join([str(tn.address) for tn in running_node_queue.data]),
+                    ", ".join([str(tn.address) for tn in running_node_queue.data]),
                 )
                 raise TraversalError(
                     f"""Node could not be reached given the specified ordering:
-                    [{','.join([str(tn.address) for tn in running_node_queue.data])}]""",
+                    [{', '.join([str(tn.address) for tn in running_node_queue.data])}]""",
                 )
 
         # Remove nodes that have custom request fields, since we don't care if these are reachable or not.
@@ -433,10 +433,10 @@ class Traversal:
         if remaining_node_keys:
             logger.error(
                 "Some nodes were not reachable: {}",
-                ",".join([str(x) for x in remaining_node_keys]),
+                ", ".join([str(x) for x in remaining_node_keys]),
             )
             raise UnreachableNodesError(
-                f"Some nodes were not reachable: {','.join([str(x) for x in remaining_node_keys])}",
+                f"Some nodes were not reachable: {', '.join([str(x) for x in remaining_node_keys])}",
                 [key.value for key in remaining_node_keys],
             )
 
@@ -444,10 +444,10 @@ class Traversal:
         if remaining_edges:
             logger.error(
                 "Some edges were not reachable: {}",
-                ",".join([str(x) for x in remaining_edges]),
+                ", ".join([str(x) for x in remaining_edges]),
             )
             raise UnreachableEdgesError(
-                f"Some edges were not reachable: {','.join([str(x) for x in remaining_edges])}",
+                f"Some edges were not reachable: {', '.join([str(x) for x in remaining_edges])}",
                 [f"{edge}" for edge in remaining_edges],
             )
 
@@ -488,16 +488,16 @@ def log_traversal_error_and_update_privacy_request(
             action_type=ActionType.access,
         )
 
-    # For specific ones, we iterate over each error in the list
-    for error in err.errors:
+    # For specific ones, we iterate over each unreachable node key in the list
+    for unreachable_node_key in err.unreachable_node_keys:  # type: ignore[attr-defined]
         dataset, collection = (
-            error.split(":")
+            unreachable_node_key.split(":")
             if isinstance(
                 err, UnreachableNodesError
             )  # For unreachable nodes, we can get the dataset and collection from the node
             else (None, None)  # But not for edges
         )
-        message = f"{'Node' if isinstance(err, UnreachableNodesError) else 'Edge'} {error} is not reachable"
+        message = f"{'Node' if isinstance(err, UnreachableNodesError) else 'Edge'} {unreachable_node_key} is not reachable"
         privacy_request.add_error_execution_log(
             session,
             connection_key=None,
