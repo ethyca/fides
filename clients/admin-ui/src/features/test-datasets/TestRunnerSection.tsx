@@ -241,6 +241,7 @@ const TestResultsSection = ({ connectionKey }: TestResultsSectionProps) => {
         <HStack>
           <Select
             id="policy"
+            aria-label="Policy selector"
             data-testid="policy-select"
             placeholder="Select policy"
             value={currentPolicyKeyValue}

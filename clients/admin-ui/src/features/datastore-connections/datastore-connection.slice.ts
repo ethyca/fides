@@ -407,7 +407,7 @@ export const datastoreConnectionApi = baseApi.injectEndpoints({
     }),
     getDatasetReachability: build.query<
       { reachable: boolean; details: string },
-      { connectionKey: string; datasetKey: string; policyKey: string | null }
+      { connectionKey: string; datasetKey: string; policyKey?: string }
     >({
       query: ({ connectionKey, datasetKey, policyKey }) => {
         const baseUrl = `${CONNECTION_ROUTE}/${connectionKey}/dataset/${datasetKey}/reachability`;

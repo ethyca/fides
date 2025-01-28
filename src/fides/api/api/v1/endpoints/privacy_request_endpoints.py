@@ -2704,7 +2704,10 @@ def get_task_info(tasks: List[RequestTask]) -> Tuple[str, List[ExecutionLogStatu
 
     for task in tasks:
         statuses.append(task.status)
-        if dataset_key is None and task.dataset_name != "__ROOT__":
+        if dataset_key is None and task.dataset_name not in [
+            "__ROOT__",
+            "__TERMINATE__",
+        ]:
             dataset_key = task.dataset_name
 
     return dataset_key, statuses  # type: ignore[return-value]
@@ -2726,7 +2729,7 @@ def filter_access_results(
     Returns:
         Filtered results containing only data matching policy target data categories
     """
-    # Get dataset graph
+    # Get dataset graph, we're assuming a 1-to-1 relationship between DatasetConfig and Dataset
     dataset_config = DatasetConfig.filter(
         db=db, conditions=(DatasetConfig.fides_key == dataset_key)
     ).first()
@@ -2736,6 +2739,7 @@ def filter_access_results(
             detail=f"No dataset with fides_key '{dataset_key}'",
         )
 
+    # Test privacy requests operate on one dataset at a time
     graph_dataset = dataset_config.get_graph()
     modified_graph_dataset = replace_references_with_identities(
         dataset_config.fides_key, graph_dataset

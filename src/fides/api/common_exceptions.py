@@ -28,10 +28,6 @@ class TraversalError(FidesopsException):
 class UnreachableNodesError(TraversalError):
     """Error with the names of all nodes that could not be reached, inherits from TraversalError."""
 
-    def __init__(self, message: str, unreachable_node_keys: List[str]):
-        super().__init__(message)
-        self.unreachable_node_keys = unreachable_node_keys
-
 
 class UnreachableEdgesError(TraversalError):
     """Error with the names of all edges that could not be reached, inherits from TraversalError."""

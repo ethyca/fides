@@ -59,7 +59,10 @@ def get_dataset_reachability(
     try:
         Traversal(dataset_graph, identity_seed, policy)
     except UnreachableNodesError as exc:
-        return False, exc.message
+        return (
+            False,
+            f'The following collections are not reachable "{", ".join(exc.errors)}"',
+        )
 
     return True, None
 

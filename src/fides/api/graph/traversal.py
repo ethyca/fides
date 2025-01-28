@@ -421,7 +421,8 @@ class Traversal:
             if not self.traversal_node_dict[key].node.collection.custom_request_fields()
         }
 
-        # More filtering if a policy is provided
+        # If a policy is provided, we will allow collections without relevant
+        # data categories to remain unreachable without raising any exceptions
         if self.policy:
             remaining_node_keys = {
                 key
@@ -489,15 +490,15 @@ def log_traversal_error_and_update_privacy_request(
         )
 
     # For specific ones, we iterate over each unreachable node key in the list
-    for unreachable_node_key in err.unreachable_node_keys:  # type: ignore[attr-defined]
+    for error in err.errors:
         dataset, collection = (
-            unreachable_node_key.split(":")
+            error.split(":")
             if isinstance(
                 err, UnreachableNodesError
             )  # For unreachable nodes, we can get the dataset and collection from the node
             else (None, None)  # But not for edges
         )
-        message = f"{'Node' if isinstance(err, UnreachableNodesError) else 'Edge'} {unreachable_node_key} is not reachable"
+        message = f"{'Node' if isinstance(err, UnreachableNodesError) else 'Edge'} {error} is not reachable"
         privacy_request.add_error_execution_log(
             session,
             connection_key=None,

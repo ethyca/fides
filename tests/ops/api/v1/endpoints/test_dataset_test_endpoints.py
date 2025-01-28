@@ -1,8 +1,18 @@
 import pytest
-from starlette.status import HTTP_200_OK, HTTP_400_BAD_REQUEST, HTTP_403_FORBIDDEN
+from starlette.status import (
+    HTTP_200_OK,
+    HTTP_400_BAD_REQUEST,
+    HTTP_403_FORBIDDEN,
+    HTTP_404_NOT_FOUND,
+    HTTP_422_UNPROCESSABLE_ENTITY,
+)
 from starlette.testclient import TestClient
 
-from fides.api.db.seed import get_client_id, load_default_access_policy
+from fides.api.db.seed import (
+    DEFAULT_ACCESS_POLICY,
+    get_client_id,
+    load_default_access_policy,
+)
 from fides.api.util.data_category import get_user_data_categories
 from fides.common.api.scope_registry import (
     DATASET_CREATE_OR_UPDATE,
@@ -104,6 +114,11 @@ class TestDatasetInputs:
 
 
 class TestDatasetReachability:
+
+    @pytest.fixture(scope="function")
+    def default_access_policy(self, db) -> None:
+        load_default_access_policy(db, get_client_id(db), get_user_data_categories())
+
     def test_dataset_reachability_not_authenticated(
         self, dataset_config, connection_config, api_client
     ) -> None:
@@ -188,6 +203,24 @@ class TestDatasetReachability:
         auth_header = generate_auth_header(scopes=[DATASET_READ])
         response = api_client.get(
             dataset_url + "/reachability",
+            headers=auth_header,
+        )
+        assert response.status_code == HTTP_200_OK
+        assert set(response.json().keys()) == {"reachable", "details"}
+
+    @pytest.mark.usefixture("default_access_policy")
+    def test_dataset_reachability_with_policy(
+        self,
+        connection_config,
+        dataset_config,
+        api_client: TestClient,
+        generate_auth_header,
+    ) -> None:
+        dataset_url = get_connection_dataset_url(connection_config, dataset_config)
+        auth_header = generate_auth_header(scopes=[DATASET_READ])
+        response = api_client.get(
+            dataset_url + "/reachability",
+            params={"policy_key": DEFAULT_ACCESS_POLICY},
             headers=auth_header,
         )
         assert response.status_code == HTTP_200_OK
@@ -289,10 +322,10 @@ class TestDatasetTest:
                 "identities": {"email": "user@example.com"},
             },
         )
-        assert response.status_code == 404
+        assert response.status_code == HTTP_404_NOT_FOUND
 
     @pytest.mark.parametrize(
-        "payload, expected_response",
+        "payload, expected_response, expected_status_code",
         [
             (
                 {
@@ -300,6 +333,7 @@ class TestDatasetTest:
                     "identities": "user@example.com",
                 },
                 "Inputs must be JSON formatted",
+                HTTP_400_BAD_REQUEST,
             ),
             (
                 {
@@ -307,6 +341,7 @@ class TestDatasetTest:
                     "identities": {},
                 },
                 "No inputs provided",
+                HTTP_400_BAD_REQUEST,
             ),
             (
                 {
@@ -314,6 +349,7 @@ class TestDatasetTest:
                     "identities": {"loyalty_id": None},
                 },
                 'Input "loyalty_id" cannot be empty',
+                HTTP_400_BAD_REQUEST,
             ),
             (
                 {
@@ -321,6 +357,7 @@ class TestDatasetTest:
                     "identities": {"email": "user"},
                 },
                 '"email" value is not a valid email address: An email address must have an @-sign.',
+                HTTP_400_BAD_REQUEST,
             ),
             (
                 {
@@ -328,6 +365,7 @@ class TestDatasetTest:
                     "identities": {"email": "user@example.com"},
                 },
                 'Policy with key "non-existent" not found',
+                HTTP_404_NOT_FOUND,
             ),
             (
                 {
@@ -341,6 +379,7 @@ class TestDatasetTest:
                         "msg": "Input should be a valid string",
                     }
                 ],
+                HTTP_422_UNPROCESSABLE_ENTITY,
             ),
             (
                 {
@@ -353,6 +392,7 @@ class TestDatasetTest:
                         "msg": "Field required",
                     }
                 ],
+                HTTP_422_UNPROCESSABLE_ENTITY,
             ),
         ],
     )
@@ -365,6 +405,7 @@ class TestDatasetTest:
         generate_auth_header,
         payload,
         expected_response,
+        expected_status_code,
     ) -> None:
         dataset_url = get_connection_dataset_url(connection_config, dataset_config)
         auth_header = generate_auth_header(scopes=[DATASET_TEST])
@@ -373,7 +414,7 @@ class TestDatasetTest:
             headers=auth_header,
             json=payload,
         )
-        assert response.status_code is not HTTP_200_OK
+        assert response.status_code == expected_status_code
         assert response.json()["detail"] == expected_response
 
     @pytest.mark.usefixtures(
