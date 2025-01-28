@@ -107,6 +107,25 @@ RUN pip install -e . --no-deps
 
 USER fidesuser
 
+# Install Node Version Manager and Node v22 -- GPP POC
+ENV NODE_VERSION=22.13.0
+RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
+ENV NVM_DIR="/home/fidesuser/.nvm"
+RUN . "$NVM_DIR/nvm.sh" && nvm install ${NODE_VERSION}
+RUN . "$NVM_DIR/nvm.sh" && nvm use v${NODE_VERSION}
+RUN . "$NVM_DIR/nvm.sh" && nvm alias default v${NODE_VERSION}
+ENV PATH="${NVM_DIR}/versions/node/v${NODE_VERSION}/bin/:${PATH}"
+
+# Ser working directory to GPP POC and install JS dependencies
+WORKDIR /fides/src/fides/gpp-js-integration-poc
+RUN ls
+RUN npm install
+RUN ls
+
+# Set working directory back to Fides
+WORKDIR /fides
+
+
 ###################
 ## Frontend Base ##
 ###################

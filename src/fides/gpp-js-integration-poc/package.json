@@ -1,0 +1,17 @@
+{
+    "name": "gpp-poc",
+    "private": true,
+    "type": "commonjs",
+    "scripts": {
+        "poc": "node -e 'require(\"./gpp-poc.js\").testCallCmpApi()'",
+        "poc2": "node gpp-poc.js"
+    },
+    "devDependencies": {
+        "@types/node": "22.10.7"
+    },
+    "dependencies": {
+        "@iabgpp/cmpapi": "^3.1.4",
+        "@iabgpp/stub": "^3.1.5"
+    },
+    "packageManager": "npm@10.8.3"
+}

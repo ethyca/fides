@@ -17,6 +17,9 @@ src/ui-build/
 **/npm-debug.log
 **/*__mocks__
 
+# Don't ignore GPP POC node_modules
+src/fides/gpp-js-integration-poc/node_modules
+
 # Ignore Python-Specific Files
 **/.mypy_cache/
 **/.nox/
