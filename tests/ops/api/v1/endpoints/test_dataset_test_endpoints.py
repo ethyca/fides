@@ -1,5 +1,11 @@
 import pytest
-from starlette.status import HTTP_200_OK, HTTP_400_BAD_REQUEST, HTTP_403_FORBIDDEN
+from starlette.status import (
+    HTTP_200_OK,
+    HTTP_400_BAD_REQUEST,
+    HTTP_403_FORBIDDEN,
+    HTTP_404_NOT_FOUND,
+    HTTP_422_UNPROCESSABLE_ENTITY,
+)
 from starlette.testclient import TestClient
 
 from fides.api.db.seed import get_client_id, load_default_access_policy
@@ -104,6 +110,11 @@ class TestDatasetInputs:
 
 
 class TestDatasetReachability:
+
+    @pytest.fixture(scope="function")
+    def default_access_policy(self, db) -> None:
+        load_default_access_policy(db, get_client_id(db), get_user_data_categories())
+
     def test_dataset_reachability_not_authenticated(
         self, dataset_config, connection_config, api_client
     ) -> None:
@@ -193,6 +204,24 @@ class TestDatasetReachability:
         assert response.status_code == HTTP_200_OK
         assert set(response.json().keys()) == {"reachable", "details"}
 
+    @pytest.mark.usefixtures("default_access_policy")
+    def test_dataset_reachability_with_policy(
+        self,
+        connection_config,
+        dataset_config,
+        api_client: TestClient,
+        generate_auth_header,
+    ) -> None:
+        dataset_url = get_connection_dataset_url(connection_config, dataset_config)
+        auth_header = generate_auth_header(scopes=[DATASET_READ])
+        response = api_client.get(
+            dataset_url + "/reachability",
+            params={"policy_key": "default_access_policy"},
+            headers=auth_header,
+        )
+        assert response.status_code == HTTP_200_OK
+        assert set(response.json().keys()) == {"reachable", "details"}
+
 
 @pytest.mark.integration
 @pytest.mark.integration_postgres
@@ -246,7 +275,11 @@ class TestDatasetTest:
         response = test_client.post(
             dataset_url + "/test",
             headers=auth_header,
-            json={"email": "user@example.com"},
+            params={"policy_key": "default_access_policy"},
+            json={
+                "policy_key": "default_access_policy",
+                "identities": {"email": "user@example.com"},
+            },
         )
         assert response.status_code == expected_status
 
@@ -261,7 +294,10 @@ class TestDatasetTest:
         response = api_client.post(
             dataset_url + "/test",
             headers=auth_header,
-            json={"email": "user@example.com"},
+            json={
+                "policy_key": "default_access_policy",
+                "identities": {"email": "user@example.com"},
+            },
         )
         assert response.status_code == 404
 
@@ -277,19 +313,82 @@ class TestDatasetTest:
         response = api_client.post(
             dataset_url + "/test",
             headers=auth_header,
-            json={"email": "user@example.com"},
+            json={
+                "policy_key": "default_access_policy",
+                "identities": {"email": "user@example.com"},
+            },
         )
-        assert response.status_code == 404
+        assert response.status_code == HTTP_404_NOT_FOUND
 
     @pytest.mark.parametrize(
-        "payload, expected_response",
+        "payload, expected_response, expected_status_code",
         [
-            ("user@example.com", "Inputs must be JSON formatted"),
-            ({}, "No inputs provided"),
-            ({"loyalty_id": None}, 'Input "loyalty_id" cannot be empty'),
             (
-                {"email": "user"},
+                {
+                    "policy_key": "default_access_policy",
+                    "identities": "user@example.com",
+                },
+                "Inputs must be JSON formatted",
+                HTTP_400_BAD_REQUEST,
+            ),
+            (
+                {
+                    "policy_key": "default_access_policy",
+                    "identities": {},
+                },
+                "No inputs provided",
+                HTTP_400_BAD_REQUEST,
+            ),
+            (
+                {
+                    "policy_key": "default_access_policy",
+                    "identities": {"loyalty_id": None},
+                },
+                'Input "loyalty_id" cannot be empty',
+                HTTP_400_BAD_REQUEST,
+            ),
+            (
+                {
+                    "policy_key": "default_access_policy",
+                    "identities": {"email": "user"},
+                },
                 '"email" value is not a valid email address: An email address must have an @-sign.',
+                HTTP_400_BAD_REQUEST,
+            ),
+            (
+                {
+                    "policy_key": "non-existent",
+                    "identities": {"email": "user@example.com"},
+                },
+                'Policy with key "non-existent" not found',
+                HTTP_404_NOT_FOUND,
+            ),
+            (
+                {
+                    "policy_key": None,
+                    "identities": {"email": "user@example.com"},
+                },
+                [
+                    {
+                        "type": "string_type",
+                        "loc": ["body", "policy_key"],
+                        "msg": "Input should be a valid string",
+                    }
+                ],
+                HTTP_422_UNPROCESSABLE_ENTITY,
+            ),
+            (
+                {
+                    "identities": {"email": "user@example.com"},
+                },
+                [
+                    {
+                        "type": "missing",
+                        "loc": ["body", "policy_key"],
+                        "msg": "Field required",
+                    }
+                ],
+                HTTP_422_UNPROCESSABLE_ENTITY,
             ),
         ],
     )
@@ -302,6 +401,7 @@ class TestDatasetTest:
         generate_auth_header,
         payload,
         expected_response,
+        expected_status_code,
     ) -> None:
         dataset_url = get_connection_dataset_url(connection_config, dataset_config)
         auth_header = generate_auth_header(scopes=[DATASET_TEST])
@@ -310,7 +410,7 @@ class TestDatasetTest:
             headers=auth_header,
             json=payload,
         )
-        assert response.status_code == HTTP_400_BAD_REQUEST
+        assert response.status_code == expected_status_code
         assert response.json()["detail"] == expected_response
 
     @pytest.mark.usefixtures(
@@ -328,7 +428,10 @@ class TestDatasetTest:
         response = api_client.post(
             dataset_url + "/test",
             headers=auth_header,
-            json={"email": "jane@example.com"},
+            json={
+                "policy_key": "default_access_policy",
+                "identities": {"email": "user@example.com"},
+            },
         )
         assert response.status_code == HTTP_200_OK
         assert "privacy_request_id" in response.json().keys()
@@ -348,7 +451,10 @@ class TestDatasetTest:
         response = api_client.post(
             dataset_url + "/test",
             headers=auth_header,
-            json={"email": "jane@example.com"},
+            json={
+                "policy_key": "default_access_policy",
+                "identities": {"email": "user@example.com"},
+            },
         )
         assert response.status_code == HTTP_403_FORBIDDEN
         assert response.json()["detail"] == "DSR testing tools are not enabled."

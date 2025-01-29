@@ -6,14 +6,17 @@ import { DatasetConfigSchema } from "~/types/api";
 interface DatasetTestState {
   privacyRequestId: string | null;
   currentDataset: DatasetConfigSchema | null;
+  isReachable: boolean;
   testInputs: Record<string, Record<string, any>>;
   testResults: Record<string, string>;
   isTestRunning: boolean;
+  currentPolicyKey?: string;
 }
 
 const initialState: DatasetTestState = {
   privacyRequestId: null,
   currentDataset: null,
+  isReachable: false,
   testInputs: {},
   testResults: {},
   isTestRunning: false,
@@ -76,12 +79,18 @@ export const datasetTestSlice = createSlice({
         [action.payload.datasetKey]: mergedValues,
       };
     },
+    setCurrentPolicyKey: (draftState, action: PayloadAction<string>) => {
+      draftState.currentPolicyKey = action.payload;
+    },
     setCurrentDataset: (
       draftState,
       action: PayloadAction<DatasetConfigSchema | null>,
     ) => {
       draftState.currentDataset = action.payload;
       draftState.privacyRequestId = null;
+    },
+    setReachability: (draftState, action: PayloadAction<boolean>) => {
+      draftState.isReachable = action.payload;
     },
     setTestResults: (
       draftState,
@@ -103,7 +112,9 @@ export const {
   setPrivacyRequestId,
   finishTest,
   setTestInputs,
+  setCurrentPolicyKey,
   setCurrentDataset,
+  setReachability,
   setTestResults,
 } = datasetTestSlice.actions;
 
@@ -113,12 +124,16 @@ export const selectDatasetTestPrivacyRequestId = (state: RootState) =>
   state.datasetTest.privacyRequestId;
 export const selectCurrentDataset = (state: RootState) =>
   state.datasetTest.currentDataset;
+export const selectIsReachable = (state: RootState) =>
+  state.datasetTest.isReachable;
 export const selectTestInputs = (state: RootState) => {
   const { currentDataset } = state.datasetTest;
   return currentDataset
     ? state.datasetTest.testInputs[currentDataset.fides_key] || {}
     : {};
 };
+export const selectCurrentPolicyKey = (state: RootState) =>
+  state.datasetTest.currentPolicyKey;
 export const selectTestResults = (state: RootState) => {
   const { currentDataset } = state.datasetTest;
   return currentDataset
