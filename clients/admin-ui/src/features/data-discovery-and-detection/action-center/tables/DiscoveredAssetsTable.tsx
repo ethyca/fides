@@ -6,6 +6,7 @@ import {
 import {
   AntButton as Button,
   AntEmpty as Empty,
+  AntTooltip as Tooltip,
   Flex,
   HStack,
   Icons,
@@ -17,7 +18,6 @@ import {
   Text,
 } from "fidesui";
 import { useRouter } from "next/router";
-// import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
@@ -26,7 +26,6 @@ import {
   ACTION_CENTER_ROUTE,
   UNCATEGORIZED_SEGMENT,
 } from "~/features/common/nav/v2/routes";
-// import { ACTION_CENTER_ROUTE } from "~/features/common/nav/v2/routes";
 import {
   FidesTableV2,
   PaginationBar,
@@ -68,6 +67,9 @@ export const DiscoveredAssetsTable = ({
   const anyBulkActionIsLoading =
     isAddingResults || isIgnoringResults || isAddingAllResults;
 
+  const disableAddAll =
+    anyBulkActionIsLoading || systemId === UNCATEGORIZED_SEGMENT;
+
   const {
     PAGE_SIZES,
     pageSize,
@@ -83,7 +85,6 @@ export const DiscoveredAssetsTable = ({
     resetPageIndexToDefault,
   } = useServerSidePagination();
   const [searchQuery, setSearchQuery] = useState("");
-  // const [isAddingAll, setIsAddingAll] = useState(false);
   const { successAlert, errorAlert } = useAlert();
 
   useEffect(() => {
@@ -226,19 +227,26 @@ export const DiscoveredAssetsTable = ({
                 </MenuItem>
               </MenuList>
             </Menu>
-            <Button
-              onClick={handleAddAll}
-              disabled={
-                anyBulkActionIsLoading || systemId === UNCATEGORIZED_SEGMENT
+
+            <Tooltip
+              title={
+                disableAddAll
+                  ? `These assets require a system before you can add them to the inventory.`
+                  : undefined
               }
-              loading={isAddingAllResults}
-              type="primary"
-              icon={<Icons.Checkmark />}
-              iconPosition="end"
-              data-testid="add-all"
             >
-              Add all
-            </Button>
+              <Button
+                onClick={handleAddAll}
+                disabled={disableAddAll}
+                loading={isAddingAllResults}
+                type="primary"
+                icon={<Icons.Checkmark />}
+                iconPosition="end"
+                data-testid="add-all"
+              >
+                Add all
+              </Button>
+            </Tooltip>
           </HStack>
         </Flex>
       </TableActionBar>
