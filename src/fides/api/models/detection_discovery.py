@@ -10,7 +10,7 @@ from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.future import select
-from sqlalchemy.orm import Session, relationship
+from sqlalchemy.orm import Session, RelationshipProperty, relationship
 from sqlalchemy.orm.query import Query
 
 from fides.api.db.base_class import Base, FidesBase
@@ -107,6 +107,12 @@ class MonitorConfig(Base):
     # TODO: many-to-many link to users assigned as data stewards; likely will need a join-table
 
     connection_config = relationship(ConnectionConfig)
+
+    executions = relationship(
+        "MonitorExecution",
+        cascade="all, delete-orphan",
+        backref="monitor_config",
+    )
 
     @property
     def connection_config_key(self) -> str:
