@@ -8405,6 +8405,7 @@ class TestPrivacyRequestFilteredResults:
         response = api_client.get(url, headers=auth_header)
         assert response.status_code == 403
 
+    @pytest.mark.integration_postgres
     @pytest.mark.usefixtures("default_access_policy", "dsr_testing_tools_enabled")
     @pytest.mark.parametrize(
         "auth_header,expected_status",
@@ -8418,24 +8419,34 @@ class TestPrivacyRequestFilteredResults:
     )
     def test_filtered_results_with_roles(
         self,
-        db,
-        privacy_request,
+        connection_config,
+        postgres_example_test_dataset_config,
         auth_header,
         expected_status,
-        test_client: TestClient,
+        api_client: TestClient,
+        generate_auth_header,
         request,
     ) -> None:
-        # this endpoint is only for test privacy requests
-        privacy_request.source = PrivacyRequestSource.dataset_test
-        db.commit()
-
-        url = V1_URL_PREFIX + PRIVACY_REQUEST_FILTERED_RESULTS.format(
-            privacy_request_id=privacy_request.id
+        dataset_url = get_connection_dataset_url(
+            connection_config, postgres_example_test_dataset_config
         )
-        auth_header = request.getfixturevalue(auth_header)
-        response = test_client.get(
+        response = api_client.post(
+            dataset_url + "/test",
+            headers=generate_auth_header(scopes=[DATASET_TEST]),
+            json={
+                "policy_key": "default_access_policy",
+                "identities": {"email": "jane@example.com"},
+            },
+        )
+        assert response.status_code == HTTP_200_OK
+
+        privacy_request_id = response.json()["privacy_request_id"]
+        url = V1_URL_PREFIX + PRIVACY_REQUEST_FILTERED_RESULTS.format(
+            privacy_request_id=privacy_request_id
+        )
+        response = api_client.get(
             url,
-            headers=auth_header,
+            headers=request.getfixturevalue(auth_header),
         )
         assert response.status_code == expected_status
 
@@ -8457,7 +8468,10 @@ class TestPrivacyRequestFilteredResults:
         response = api_client.post(
             dataset_url + "/test",
             headers=auth_header,
-            json={"email": "jane@example.com"},
+            json={
+                "policy_key": "default_access_policy",
+                "identities": {"email": "jane@example.com"},
+            },
         )
         assert response.status_code == HTTP_200_OK
 
@@ -8497,7 +8511,10 @@ class TestPrivacyRequestFilteredResults:
         response = api_client.post(
             dataset_url + "/test",
             headers=auth_header,
-            json={"email": "jane@example.com"},
+            json={
+                "policy_key": "default_access_policy",
+                "identities": {"email": "jane@example.com"},
+            },
         )
         assert response.status_code == HTTP_200_OK
 
@@ -8543,8 +8560,11 @@ class TestPrivacyRequestFilteredResults:
             dataset_url + "/test",
             headers=auth_header,
             json={
-                "email": "employee-1@example.com",
-                "postgres_example_test_dataset:customer:id": 1,
+                "policy_key": "default_access_policy",
+                "identities": {
+                    "email": "employee-1@example.com",
+                    "postgres_example_test_dataset:customer:id": 1,
+                },
             },
         )
         assert response.status_code == HTTP_200_OK

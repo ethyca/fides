@@ -26,7 +26,12 @@ import {
 } from "~/features/datastore-connections";
 import { Dataset } from "~/types/api";
 
-import { selectCurrentDataset, setCurrentDataset } from "./dataset-test.slice";
+import {
+  selectCurrentDataset,
+  selectCurrentPolicyKey,
+  setCurrentDataset,
+  setReachability,
+} from "./dataset-test.slice";
 import { removeNulls } from "./helpers";
 
 interface EditorSectionProps {
@@ -40,6 +45,7 @@ const EditorSection = ({ connectionKey }: EditorSectionProps) => {
 
   const [editorContent, setEditorContent] = useState<string>("");
   const currentDataset = useAppSelector(selectCurrentDataset);
+  const currentPolicyKey = useAppSelector(selectCurrentPolicyKey);
 
   const {
     data: datasetConfigs,
@@ -54,11 +60,18 @@ const EditorSection = ({ connectionKey }: EditorSectionProps) => {
       {
         connectionKey,
         datasetKey: currentDataset?.fides_key || "",
+        policyKey: currentPolicyKey,
       },
       {
-        skip: !connectionKey || !currentDataset?.fides_key,
+        skip: !connectionKey || !currentDataset?.fides_key || !currentPolicyKey,
       },
     );
+
+  useEffect(() => {
+    if (reachability) {
+      dispatch(setReachability(reachability.reachable));
+    }
+  }, [reachability, dispatch]);
 
   const datasetOptions = useMemo(
     () =>
@@ -90,10 +103,21 @@ const EditorSection = ({ connectionKey }: EditorSectionProps) => {
   }, [currentDataset]);
 
   useEffect(() => {
-    if (connectionKey && currentDataset?.fides_key) {
+    if (currentPolicyKey && currentDataset?.fides_key && connectionKey) {
       refetchReachability();
     }
-  }, [connectionKey, currentDataset, refetchReachability]);
+  }, [
+    currentPolicyKey,
+    currentDataset?.fides_key,
+    connectionKey,
+    refetchReachability,
+  ]);
+
+  useEffect(() => {
+    if (reachability) {
+      dispatch(setReachability(reachability.reachable));
+    }
+  }, [reachability, dispatch]);
 
   const handleDatasetChange = async (value: string) => {
     const selectedConfig = datasetConfigs?.items.find(
@@ -142,6 +166,7 @@ const EditorSection = ({ connectionKey }: EditorSectionProps) => {
     );
     toast(successToastParams("Successfully modified dataset"));
     await refetchDatasets();
+    await refetchReachability();
   };
 
   const handleRefresh = async () => {
@@ -224,30 +249,32 @@ const EditorSection = ({ connectionKey }: EditorSectionProps) => {
           theme="light"
         />
       </Stack>
-      <Stack
-        backgroundColor={reachability?.reachable ? "green.50" : "red.50"}
-        border="1px solid"
-        borderColor={reachability?.reachable ? "green.500" : "red.500"}
-        borderRadius="md"
-        p={2}
-        flexShrink={0}
-        mt={2}
-      >
-        <HStack alignItems="center">
-          <HStack flex="1">
-            {reachability?.reachable ? (
-              <GreenCheckCircleIcon />
-            ) : (
-              <ErrorWarningIcon />
-            )}
-            <Text fontSize="sm" whiteSpace="pre-wrap">
-              {reachability?.reachable
-                ? "Dataset is reachable"
-                : `Dataset is not reachable. ${reachability?.details}`}
-            </Text>
+      {reachability && (
+        <Stack
+          backgroundColor={reachability?.reachable ? "green.50" : "red.50"}
+          border="1px solid"
+          borderColor={reachability?.reachable ? "green.500" : "red.500"}
+          borderRadius="md"
+          p={2}
+          flexShrink={0}
+          mt={2}
+        >
+          <HStack alignItems="center">
+            <HStack flex="1">
+              {reachability?.reachable ? (
+                <GreenCheckCircleIcon />
+              ) : (
+                <ErrorWarningIcon />
+              )}
+              <Text fontSize="sm" whiteSpace="pre-wrap">
+                {reachability?.reachable
+                  ? "Dataset is reachable"
+                  : `Dataset is not reachable. ${reachability?.details}`}
+              </Text>
+            </HStack>
           </HStack>
-        </HStack>
-      </Stack>
+        </Stack>
+      )}
     </VStack>
   );
 };

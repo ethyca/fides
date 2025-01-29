@@ -385,13 +385,14 @@ export const datastoreConnectionApi = baseApi.injectEndpoints({
       {
         connection_key: string;
         dataset_key: string;
-        input_data: Record<string, any>;
+        identities: Record<string, any>;
+        policy_key: string;
       }
     >({
       query: (params) => ({
         url: `${CONNECTION_ROUTE}/${params.connection_key}/dataset/${params.dataset_key}/test`,
         method: "POST",
-        body: params.input_data,
+        body: { identities: params.identities, policy_key: params.policy_key },
       }),
     }),
     getDatasetInputs: build.query<
@@ -406,12 +407,18 @@ export const datastoreConnectionApi = baseApi.injectEndpoints({
     }),
     getDatasetReachability: build.query<
       { reachable: boolean; details: string },
-      { connectionKey: string; datasetKey: string }
+      { connectionKey: string; datasetKey: string; policyKey?: string }
     >({
-      query: ({ connectionKey, datasetKey }) => ({
-        url: `${CONNECTION_ROUTE}/${connectionKey}/dataset/${datasetKey}/reachability`,
-        method: "GET",
-      }),
+      query: ({ connectionKey, datasetKey, policyKey }) => {
+        const baseUrl = `${CONNECTION_ROUTE}/${connectionKey}/dataset/${datasetKey}/reachability`;
+        const queryString = policyKey ? `?policy_key=${policyKey}` : "";
+        const url = baseUrl + queryString;
+
+        return {
+          url,
+          method: "GET",
+        };
+      },
       providesTags: () => ["Datastore Connection"],
     }),
   }),
