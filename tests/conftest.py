@@ -345,6 +345,7 @@ def user(db):
     yield user
     try:
         client.delete(db)
+        user.delete(db)
     except ObjectDeletedError:
         pass
 

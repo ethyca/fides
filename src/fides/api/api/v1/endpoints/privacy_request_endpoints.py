@@ -1298,7 +1298,7 @@ def approve_privacy_request(
     """Approve and dispatch a list of privacy requests and/or report failure"""
 
     return privacy_request_service.approve_privacy_requests(
-        privacy_requests.request_ids, user_id=client.user_id
+        privacy_requests.request_ids, reviewed_by=client.user_id
     )
 
 

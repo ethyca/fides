@@ -75,7 +75,6 @@ class ConsentReport(Consent):
 class PrivacyRequestCreate(FidesSchema):
     """Data required to create a PrivacyRequest"""
 
-    id: Optional[str] = None
     external_id: Optional[str] = None
     started_processing_at: Optional[datetime] = None
     finished_processing_at: Optional[datetime] = None
@@ -98,6 +97,17 @@ class PrivacyRequestCreate(FidesSchema):
         if value:
             verify_encryption_key(value.encode(CONFIG.security.encoding))
         return value
+
+
+class PrivacyRequestResubmit(PrivacyRequestCreate):
+    """Schema used to copy a privacy request for resubmission"""
+
+    id: str
+    reviewed_at: Optional[datetime] = None
+    reviewed_by: Optional[str] = None
+    identity_verified_at: Optional[datetime] = None
+    custom_privacy_request_fields_approved_at: Optional[datetime] = None
+    custom_privacy_request_fields_approved_by: Optional[str] = None
 
 
 class ConsentRequestCreate(FidesSchema):

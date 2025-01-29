@@ -29,6 +29,7 @@ from fides.api.schemas.privacy_request import (
     BulkReviewResponse,
     PrivacyRequestCreate,
     PrivacyRequestResponse,
+    PrivacyRequestResubmit,
 )
 from fides.api.service.messaging.message_dispatch_service import message_send_enabled
 from fides.api.service.privacy_request.request_service import (
@@ -81,7 +82,7 @@ class PrivacyRequestService:
         *,
         authenticated: bool = False,
         privacy_preferences: Optional[List[PrivacyPreferenceHistory]] = None,
-        user_id: Optional[str] = None,
+        submitted_by: Optional[str] = None,
     ) -> PrivacyRequest:
         """Creates a single privacy request.
 
@@ -132,8 +133,22 @@ class PrivacyRequestService:
             authenticated,
         )
 
-        OPTIONAL_FIELDS = [
+        RESUBMIT_FIELDS = [
             "id",
+            "reviewed_at",
+            "reviewed_by",
+            "identity_verified_at",
+            "custom_privacy_request_fields_approved_at",
+            "custom_privacy_request_fields_approved_by",
+        ]
+
+        if isinstance(privacy_request_data, PrivacyRequestResubmit):
+            for field in RESUBMIT_FIELDS:
+                attr = getattr(privacy_request_data, field)
+                if attr is not None:
+                    kwargs[field] = attr
+
+        OPTIONAL_FIELDS = [
             "external_id",
             "started_processing_at",
             "finished_processing_at",
@@ -153,7 +168,7 @@ class PrivacyRequestService:
             getattr(privacy_request_data, "source")
             == PrivacyRequestSource.request_manager
         ):
-            kwargs["submitted_by"] = user_id
+            kwargs["submitted_by"] = submitted_by
 
         try:
             privacy_request = PrivacyRequest.create(db=self.db, data=kwargs)
@@ -231,7 +246,7 @@ class PrivacyRequestService:
                     privacy_request_data,
                     authenticated=authenticated,
                     privacy_preferences=privacy_preferences,
-                    user_id=user_id,
+                    submitted_by=user_id,
                 )
                 created.append(privacy_request)
             except PrivacyRequestError as exc:
@@ -261,18 +276,36 @@ class PrivacyRequestService:
         if not existing_privacy_request:
             return None
 
-        if existing_privacy_request.status == PrivacyRequestStatus.complete:
-            raise FidesopsException("Cannot resubmit a completed privacy request")
+        if existing_privacy_request.status in [
+            PrivacyRequestStatus.complete,
+            PrivacyRequestStatus.pending,
+        ]:
+            raise FidesopsException(
+                f"Cannot resubmit a {existing_privacy_request.status} privacy request"
+            )
 
         # Copy all needed data first
-        create_data = PrivacyRequestCreate(
+        create_data = PrivacyRequestResubmit(
             id=privacy_request_id,
-            requested_at=existing_privacy_request.created_at,
+            external_id=existing_privacy_request.external_id,
+            started_processing_at=existing_privacy_request.started_processing_at,
+            finished_processing_at=existing_privacy_request.finished_processing_at,
+            requested_at=existing_privacy_request.requested_at,
             identity=existing_privacy_request.get_persisted_identity(),
             custom_privacy_request_fields=existing_privacy_request.get_persisted_custom_privacy_request_fields(),
             policy_key=existing_privacy_request.policy.key,
+            encryption_key=existing_privacy_request.get_cached_encryption_key(),
+            property_id=existing_privacy_request.property_id,
+            consent_preferences=existing_privacy_request.consent_preferences,
+            source=existing_privacy_request.source,
+            reviewed_at=existing_privacy_request.reviewed_at,
+            reviewed_by=existing_privacy_request.reviewed_by,
+            identity_verified_at=existing_privacy_request.identity_verified_at,
+            custom_privacy_request_fields_approved_at=existing_privacy_request.custom_privacy_request_fields_approved_at,
+            custom_privacy_request_fields_approved_by=existing_privacy_request.custom_privacy_request_fields_approved_by,
         )
-        user_id = existing_privacy_request.submitted_by
+        submitted_by = existing_privacy_request.submitted_by
+        reviewed_by = existing_privacy_request.reviewed_by
 
         # Delete old request and associated data first
         self.db.query(AuditLog).filter(
@@ -291,13 +324,14 @@ class PrivacyRequestService:
 
         # Create new request
         privacy_request = self.create_privacy_request(
-            create_data,
-            authenticated=True,
+            create_data, authenticated=True, submitted_by=submitted_by
         )
 
         if self.config_proxy.execution.require_manual_request_approval:
             self.approve_privacy_requests(
-                [privacy_request_id], user_id=user_id, suppress_notification=True
+                [privacy_request_id],
+                reviewed_by=reviewed_by,
+                suppress_notification=True,
             )
 
         return privacy_request
@@ -307,7 +341,7 @@ class PrivacyRequestService:
         request_ids: List[str],
         *,
         webhook_id: Optional[str] = None,
-        user_id: Optional[str] = None,
+        reviewed_by: Optional[str] = None,
         suppress_notification: Optional[bool] = False,
     ) -> BulkReviewResponse:
         succeeded: List[PrivacyRequest] = []
@@ -351,11 +385,13 @@ class PrivacyRequestService:
                 now = datetime.utcnow()
                 privacy_request.status = PrivacyRequestStatus.approved
                 privacy_request.reviewed_at = now
-                privacy_request.reviewed_by = user_id
+                privacy_request.reviewed_by = reviewed_by
 
                 if privacy_request.custom_fields:  # type: ignore[attr-defined]
                     privacy_request.custom_privacy_request_fields_approved_at = now
-                    privacy_request.custom_privacy_request_fields_approved_by = user_id
+                    privacy_request.custom_privacy_request_fields_approved_by = (
+                        reviewed_by
+                    )
 
                 privacy_request.save(db=self.db)
 
@@ -364,7 +400,7 @@ class PrivacyRequestService:
                     data={
                         "privacy_request_id": privacy_request.id,
                         "action": AuditLogAction.approved,
-                        "user_id": user_id,
+                        "user_id": reviewed_by,
                         "webhook_id": webhook_id,  # the last webhook reply received is what approves the entire request
                     },
                 )

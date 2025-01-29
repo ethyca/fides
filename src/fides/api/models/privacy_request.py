@@ -631,6 +631,12 @@ class PrivacyRequest(
         self.save(db)
         return self
 
+    def get_cached_encryption_key(self) -> Optional[str]:
+        """Gets the cached encryption key for this privacy request."""
+        cache: FidesopsRedis = get_cache()
+        encryption_key = cache.get(get_encryption_cache_key(self.id, "key"))
+        return encryption_key
+
     def get_cached_task_id(self) -> Optional[str]:
         """Gets the cached task ID for this privacy request."""
         cache: FidesopsRedis = get_cache()
