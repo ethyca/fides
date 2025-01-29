@@ -445,15 +445,22 @@ class PrivacyRequest(
 
         return super().create(db=db, data=data, check_name=check_name)
 
+    def clear_cached_values(self) -> None:
+        """
+        Clears all cached values associated with this privacy request from Redis.
+        """
+        logger.info(f"Clearing cached values for privacy request {self.id}")
+        cache: FidesopsRedis = get_cache()
+        all_keys = get_all_cache_keys_for_privacy_request(privacy_request_id=self.id)
+        for key in all_keys:
+            cache.delete(key)
+
     def delete(self, db: Session) -> None:
         """
         Clean up the cached and persisted data related to this privacy request before
         deleting this object from the database
         """
-        cache: FidesopsRedis = get_cache()
-        all_keys = get_all_cache_keys_for_privacy_request(privacy_request_id=self.id)
-        for key in all_keys:
-            cache.delete(key)
+        self.clear_cached_values()
 
         for provided_identity in self.provided_identities:  # type: ignore[attr-defined]
             provided_identity.delete(db=db)
@@ -623,6 +630,12 @@ class PrivacyRequest(
         self.identity_verified_at = datetime.utcnow()
         self.save(db)
         return self
+
+    def get_cached_encryption_key(self) -> Optional[str]:
+        """Gets the cached encryption key for this privacy request."""
+        cache: FidesopsRedis = get_cache()
+        encryption_key = cache.get(get_encryption_cache_key(self.id, "key"))
+        return encryption_key
 
     def get_cached_task_id(self) -> Optional[str]:
         """Gets the cached task ID for this privacy request."""
@@ -1348,7 +1361,9 @@ class PrivacyRequestError(Base):
     message_sent = Column(Boolean, nullable=False, default=False)
     privacy_request_id = Column(
         String,
-        ForeignKey(PrivacyRequest.id_field_path),
+        ForeignKey(
+            PrivacyRequest.id_field_path, ondelete="CASCADE", onupdate="CASCADE"
+        ),
         nullable=False,
     )
 
@@ -1413,7 +1428,9 @@ class ProvidedIdentity(HashMigrationMixin, Base):  # pylint: disable=R0904
 
     privacy_request_id = Column(
         String,
-        ForeignKey(PrivacyRequest.id_field_path),
+        ForeignKey(
+            PrivacyRequest.id_field_path, ondelete="CASCADE", onupdate="CASCADE"
+        ),
     )
     privacy_request = relationship(
         PrivacyRequest,
@@ -1521,7 +1538,9 @@ class CustomPrivacyRequestField(HashMigrationMixin, Base):
 
     privacy_request_id = Column(
         String,
-        ForeignKey(PrivacyRequest.id_field_path),
+        ForeignKey(
+            PrivacyRequest.id_field_path, ondelete="CASCADE", onupdate="CASCADE"
+        ),
     )
     privacy_request = relationship(
         PrivacyRequest,

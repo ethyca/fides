@@ -99,6 +99,17 @@ class PrivacyRequestCreate(FidesSchema):
         return value
 
 
+class PrivacyRequestResubmit(PrivacyRequestCreate):
+    """Schema used to copy a privacy request for resubmission"""
+
+    id: str
+    reviewed_at: Optional[datetime] = None
+    reviewed_by: Optional[str] = None
+    identity_verified_at: Optional[datetime] = None
+    custom_privacy_request_fields_approved_at: Optional[datetime] = None
+    custom_privacy_request_fields_approved_by: Optional[str] = None
+
+
 class ConsentRequestCreate(FidesSchema):
     """Data required to create a consent PrivacyRequest"""
 

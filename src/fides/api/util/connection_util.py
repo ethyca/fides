@@ -57,11 +57,9 @@ from fides.api.service.connectors.saas.connector_registry_service import (
     ConnectorRegistry,
     create_connection_config_from_template_no_save,
 )
-from fides.api.service.privacy_request.request_runner_service import (
-    queue_privacy_request,
-)
 from fides.api.util.logger import Pii
 from fides.common.api.v1.urn_registry import CONNECTION_TYPES, SAAS_CONFIG
+from fides.service.privacy_request.privacy_request_service import queue_privacy_request
 
 # pylint: disable=too-many-nested-blocks,too-many-branches,too-many-statements
 

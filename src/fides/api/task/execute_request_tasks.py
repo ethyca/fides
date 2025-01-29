@@ -230,7 +230,7 @@ def queue_downstream_tasks(
         # Only queue privacy request from the next step if we haven't reached the terminator before.
         # Multiple pathways could mark the same node as complete, so we may have already reached the
         # terminator node through a quicker path.
-        from fides.api.service.privacy_request.request_runner_service import (  # pylint: disable=cyclic-import
+        from fides.service.privacy_request.privacy_request_service import (  # pylint: disable=cyclic-import
             queue_privacy_request,
         )
 
