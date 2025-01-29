@@ -1,5 +1,5 @@
 import { AntButton, EditIcon, Icons } from "fidesui";
-import { useState } from "react";
+import { MouseEventHandler, useCallback, useState } from "react";
 
 import { SystemSelect } from "~/features/common/dropdown/SystemSelect";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
@@ -7,6 +7,7 @@ import { useAlert } from "~/features/common/hooks";
 import { getTableTHandTDStyles } from "~/features/common/table/v2/util";
 import ClassificationCategoryBadge from "~/features/data-discovery-and-detection/ClassificationCategoryBadge";
 import { useUpdateResourceCategoryMutation } from "~/features/data-discovery-and-detection/discovery-detection.slice";
+import { AddNewSystemModal } from "~/features/system/AddNewSystemModal";
 import { StagedResourceAPIResponse } from "~/types/api";
 
 interface SystemCellProps {
@@ -25,10 +26,19 @@ export const SystemCell = ({
     system: systemName,
   } = aggregateSystem;
   const [isEditing, setIsEditing] = useState(false);
+  const [isNewSystemModalOpen, setIsNewSystemModalOpen] = useState(false);
   const [updateResourceCategoryMutation, { isLoading }] =
     useUpdateResourceCategoryMutation();
-
   const { successAlert, errorAlert } = useAlert();
+
+  const onAddSystem: MouseEventHandler<HTMLButtonElement> = useCallback((e) => {
+    e.preventDefault();
+    setIsNewSystemModalOpen(true);
+  }, []);
+
+  const handleCloseNewSystemModal = () => {
+    setIsNewSystemModalOpen(false);
+  };
 
   const handleSelectSystem = async (
     fidesKey: string,
@@ -85,11 +95,26 @@ export const SystemCell = ({
           className="w-full"
           autoFocus
           defaultOpen
-          onBlur={() => setIsEditing(false)}
+          onBlur={(e) => {
+            // Close the dropdown unless the user is clicking the "Add new system" button, otherwise it won't open the modal
+            if (e.relatedTarget?.getAttribute("id") !== "add-new-system") {
+              setIsEditing(false);
+            }
+          }}
+          onAddSystem={onAddSystem}
           onSelect={(fidesKey: string, option) =>
             handleSelectSystem(fidesKey, option.label as string)
           }
           loading={isLoading}
+        />
+      )}
+      {isNewSystemModalOpen && (
+        <AddNewSystemModal
+          isOpen
+          onClose={handleCloseNewSystemModal}
+          onSuccessfulSubmit={(fidesKey, name) =>
+            handleSelectSystem(fidesKey, name, true)
+          }
         />
       )}
     </>
