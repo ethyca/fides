@@ -9,6 +9,7 @@ Create Date: 2025-01-27 23:41:59.803285
 import sqlalchemy as sa
 from alembic import op
 from sqlalchemy.dialects import postgresql
+from sqlalchemy.sql import func
 
 # revision identifiers, used by Alembic.
 revision = "ed96417b07d8"
@@ -32,7 +33,12 @@ def upgrade():
             default=[],
         ),
         sa.Column("created_at", sa.DateTime(), nullable=False, default=sa.func.now()),
-        sa.Column("updated_at", sa.DateTime(), nullable=False, default=sa.func.now()),
+        sa.Column(
+            "updated_at",
+            sa.DateTime(),
+            server_default=func.now(),
+            onupdate=func.current_timestamp(),
+        ),
         sa.ForeignKeyConstraint(["monitor_config_key"], ["monitorconfig.key"]),
         sa.PrimaryKeyConstraint("id"),
     )
