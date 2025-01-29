@@ -4,7 +4,7 @@ saas_config:
   type: hubspot
   description: A sample schema representing the HubSpot connector for Fides
   user_guide: https://docs.ethyca.com/user-guides/integrations/saas-integrations/hubspot
-  version: 0.0.7
+  version: 0.0.8
 
   connector_params:
     - name: domain
@@ -100,30 +100,17 @@ saas_config:
             - name: email
               identity: email
         update:
-          path: /communication-preferences/v3/unsubscribe
+          path: /communication-preferences/v4/statuses/<email>/unsubscribe-all
           method: POST
           body: |
             {
-              "emailAddress": "<email>",
-              "subscriptionId": "<subscriptionId>",
-              "legalBasis": "LEGITIMATE_INTEREST_CLIENT",
-              "legalBasisExplanation": "At users request, we opted them out"
             }
-          data_path: subscriptionStatuses
-          ignore_errors: [400]
           param_values:
             - name: email
               identity: email
-            - name: subscriptionId
-              references:
-                - dataset: <instance_fides_key>
-                  field: subscription_preferences.id
-                  direction: from
-          postprocessors:
-            - strategy: filter
-              configuration:
-                field: status
-                value: SUBSCRIBED
+          query_params:
+            - name: channel
+              value: EMAIL
     - name: users
       requests:
         read:

@@ -2,10 +2,11 @@ import { ColumnDef, createColumnHelper } from "@tanstack/react-table";
 
 import { DefaultCell } from "~/features/common/table/v2";
 
+import { DiscoveredSystemActionsCell } from "../tables/cells/DiscoveredSystemAggregateActionsCell";
 import { DiscoveredSystemStatusCell } from "../tables/cells/DiscoveredSystemAggregateStatusCell";
 import { MonitorSystemAggregate } from "../types";
 
-export const useDiscoveredSystemAggregateColumns = () => {
+export const useDiscoveredSystemAggregateColumns = (monitorId: string) => {
   const columnHelper = createColumnHelper<MonitorSystemAggregate>();
 
   const columns: ColumnDef<MonitorSystemAggregate, any>[] = [
@@ -60,19 +61,20 @@ export const useDiscoveredSystemAggregateColumns = () => {
       ),
       header: "Domains",
     }),
-    /*
-    // TODO: [HJ-343] uncomment when actions are implemented
     columnHelper.display({
       id: "actions",
       cell: (props) => (
-        <DiscoveredSystemActionsCell system={props.row.original} />
+        <DiscoveredSystemActionsCell
+          system={props.row.original}
+          monitorId={monitorId}
+        />
       ),
       header: "Actions",
       meta: {
         width: "auto",
         disableRowClick: true,
       },
-    }), */
+    }),
   ];
 
   return { columns };

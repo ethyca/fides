@@ -38,7 +38,7 @@ import {
   TableActionBar,
   TableSkeletonLoader,
 } from "~/features/common/table/v2";
-import TaxonomiesPicker from "~/features/common/TaxonomiesPicker";
+import TaxonomySelectCell from "~/features/common/table/v2/TaxonomySelectCell";
 import { DATA_BREADCRUMB_ICONS } from "~/features/data-discovery-and-detection/DiscoveryMonitorBreadcrumbs";
 import {
   useGetDatasetByKeyQuery,
@@ -199,7 +199,7 @@ const FieldsDetailPage: NextPage = () => {
             props.row.original.fields && props.row.original.fields?.length > 0;
           return (
             !hasSubfields && (
-              <TaxonomiesPicker
+              <TaxonomySelectCell
                 selectedTaxonomies={props.getValue() || []}
                 onAddTaxonomy={(dataCategory) =>
                   handleAddDataCategory({ dataCategory, field })

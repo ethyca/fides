@@ -6,6 +6,7 @@ import {
 import {
   AntButton as Button,
   AntEmpty as Empty,
+  AntTooltip as Tooltip,
   Flex,
   HStack,
   Icons,
@@ -16,11 +17,15 @@ import {
   MenuList,
   Text,
 } from "fidesui";
-// import { useRouter } from "next/router";
+import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 
+import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { useAlert } from "~/features/common/hooks";
-// import { ACTION_CENTER_ROUTE } from "~/features/common/nav/v2/routes";
+import {
+  ACTION_CENTER_ROUTE,
+  UNCATEGORIZED_SEGMENT,
+} from "~/features/common/nav/v2/routes";
 import {
   FidesTableV2,
   PaginationBar,
@@ -29,9 +34,10 @@ import {
   useServerSidePagination,
 } from "~/features/common/table/v2";
 import {
-  useAddMonitorResultsMutation,
+  useAddMonitorResultAssetsMutation,
+  useAddMonitorResultSystemMutation,
   useGetDiscoveredAssetsQuery,
-  useIgnoreMonitorResultsMutation,
+  useIgnoreMonitorResultAssetsMutation,
 } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
 
 import { SearchInput } from "../../SearchInput";
@@ -40,20 +46,29 @@ import { useDiscoveredAssetsColumns } from "../hooks/useDiscoveredAssetsColumns"
 interface DiscoveredAssetsTableProps {
   monitorId: string;
   systemId: string;
+  onSystemName?: (name: string) => void;
 }
 
 export const DiscoveredAssetsTable = ({
   monitorId,
   systemId,
+  onSystemName,
 }: DiscoveredAssetsTableProps) => {
-  // const router = useRouter();
+  const router = useRouter();
+  const [systemName, setSystemName] = useState(systemId);
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
-  const [addMonitorResultsMutation, { isLoading: isAddingResults }] =
-    useAddMonitorResultsMutation();
-  const [ignoreMonitorResultsMutation, { isLoading: isIgnoringResults }] =
-    useIgnoreMonitorResultsMutation();
+  const [addMonitorResultAssetsMutation, { isLoading: isAddingResults }] =
+    useAddMonitorResultAssetsMutation();
+  const [ignoreMonitorResultAssetsMutation, { isLoading: isIgnoringResults }] =
+    useIgnoreMonitorResultAssetsMutation();
+  const [addMonitorResultSystemMutation, { isLoading: isAddingAllResults }] =
+    useAddMonitorResultSystemMutation();
 
-  const anyBulkActionIsLoading = isAddingResults || isIgnoringResults;
+  const anyBulkActionIsLoading =
+    isAddingResults || isIgnoringResults || isAddingAllResults;
+
+  const disableAddAll =
+    anyBulkActionIsLoading || systemId === UNCATEGORIZED_SEGMENT;
 
   const {
     PAGE_SIZES,
@@ -70,8 +85,7 @@ export const DiscoveredAssetsTable = ({
     resetPageIndexToDefault,
   } = useServerSidePagination();
   const [searchQuery, setSearchQuery] = useState("");
-  // const [isAddingAll, setIsAddingAll] = useState(false);
-  const { successAlert } = useAlert();
+  const { successAlert, errorAlert } = useAlert();
 
   useEffect(() => {
     resetPageIndexToDefault();
@@ -87,9 +101,12 @@ export const DiscoveredAssetsTable = ({
 
   useEffect(() => {
     if (data) {
+      const firstSystemName = data.items[0]?.system || systemId || "";
       setTotalPages(data.pages || 1);
+      setSystemName(firstSystemName);
+      onSystemName?.(firstSystemName);
     }
-  }, [data, setTotalPages]);
+  }, [data, systemId, onSystemName, setTotalPages]);
 
   const { columns } = useDiscoveredAssetsColumns();
 
@@ -105,43 +122,56 @@ export const DiscoveredAssetsTable = ({
     },
   });
 
-  const selectedUrns = Object.keys(rowSelection).filter((k) => rowSelection[k]);
+  const selectedRows = tableInstance.getSelectedRowModel().rows;
+  const selectedUrns = selectedRows.map((row) => row.original.urn);
 
   const handleBulkAdd = async () => {
-    await addMonitorResultsMutation({
+    const result = await addMonitorResultAssetsMutation({
       urnList: selectedUrns,
     });
-    // TODO: Add "view" button which will bring users to the system inventory with an asset tab open (not yet developed)
-    successAlert(
-      `${selectedUrns.length} assets from ${systemId} have been added to the system inventory.`,
-      `Confirmed`,
-    );
+    if (isErrorResult(result)) {
+      errorAlert(getErrorMessage(result.error));
+    } else {
+      tableInstance.resetRowSelection();
+      successAlert(
+        `${selectedUrns.length} assets from ${systemName} have been added to the system inventory.`,
+        `Confirmed`,
+      );
+    }
   };
 
   const handleBulkIgnore = async () => {
-    await ignoreMonitorResultsMutation({
+    const result = await ignoreMonitorResultAssetsMutation({
       urnList: selectedUrns,
     });
-    successAlert(
-      `${selectedUrns.length} assets from ${systemId} have been ignored and will not be added to the system inventory.`,
-      `Confirmed`,
-    );
+    if (isErrorResult(result)) {
+      errorAlert(getErrorMessage(result.error));
+    } else {
+      tableInstance.resetRowSelection();
+      successAlert(
+        `${selectedUrns.length} assets from ${systemName} have been ignored and will not appear in future scans.`,
+        `Confirmed`,
+      );
+    }
   };
 
-  // TODO: [HJ-343] Uncommend when system actions are implemented
-  /* const handleAddAll = async () => {
-    setIsAddingAll(true);
-    await addMonitorResultsMutation({
-      systemId,
+  const handleAddAll = async () => {
+    const assetCount = data?.items.length || 0;
+    const result = await addMonitorResultSystemMutation({
+      monitor_config_key: monitorId,
+      resolved_system_id: systemId,
     });
-    setIsAddingAll(false);
-    router.push(`${ACTION_CENTER_ROUTE}/${monitorId}`);
-    // TODO: Add "view" button which will bring users to the system inventory with an asset tab open (not yet developed)
-    successAlert(
-      `All assets from ${systemId} have been added to the system inventory.`,
-      `Confirmed`,
-    );
-  }; */
+
+    if (isErrorResult(result)) {
+      errorAlert(getErrorMessage(result.error));
+    } else {
+      router.push(`${ACTION_CENTER_ROUTE}/${monitorId}`);
+      successAlert(
+        `${assetCount} assets from ${systemName} have been added to the system inventory.`,
+        `Confirmed`,
+      );
+    }
+  };
 
   if (!monitorId || !systemId) {
     return null;
@@ -197,19 +227,26 @@ export const DiscoveredAssetsTable = ({
                 </MenuItem>
               </MenuList>
             </Menu>
-            {/*
-            // TODO: [HJ-343] Uncommend when system actions are implemented
-            <Button
-              onClick={handleAddAll}
-              disabled={anyBulkActionIsLoading}
-              loading={isAddingAll}
-              type="primary"
-              icon={<Icons.Checkmark />}
-              iconPosition="end"
-              data-testid="add-all"
+
+            <Tooltip
+              title={
+                disableAddAll
+                  ? `These assets require a system before you can add them to the inventory.`
+                  : undefined
+              }
             >
-              Add all
-            </Button> */}
+              <Button
+                onClick={handleAddAll}
+                disabled={disableAddAll}
+                loading={isAddingAllResults}
+                type="primary"
+                icon={<Icons.Checkmark />}
+                iconPosition="end"
+                data-testid="add-all"
+              >
+                Add all
+              </Button>
+            </Tooltip>
           </HStack>
         </Flex>
       </TableActionBar>
