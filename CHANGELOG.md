@@ -38,7 +38,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ### Fixed
 - Updating mongodb connectors so it can support usernames and password with URL encoded characters [#5682](https://github.com/ethyca/fides/pull/5682)
 - After creating a new system, the url is now updated correctly to the new system edit page [#5701](https://github.com/ethyca/fides/pull/5701)
-
+- Visual fixes for table header buttons [#5693](https://github.com/ethyca/fides/pull/5693)
 
 ## [2.53.0](https://github.com/ethyca/fides/compare/2.52.0...2.53.0)
 
