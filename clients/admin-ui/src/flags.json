@@ -36,6 +36,12 @@
     "test": true,
     "production": false
   },
+  "dataCatalog": {
+    "description": "Data catalog view",
+    "development": true,
+    "test": true,
+    "production": false
+  },
   "webMonitor": {
     "description": "Monitor websites for activity",
     "development": true,

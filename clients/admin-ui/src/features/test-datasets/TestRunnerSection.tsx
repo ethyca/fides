@@ -1,5 +1,6 @@
 import {
   AntButton as Button,
+  AntSelect as Select,
   Heading,
   HStack,
   Text,
@@ -7,7 +8,7 @@ import {
   useToast,
   VStack,
 } from "fidesui";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useSelector } from "react-redux";
 
 import { useAppDispatch } from "~/app/hooks";
@@ -23,13 +24,17 @@ import { useGetFilteredResultsQuery } from "~/features/privacy-requests";
 import { PrivacyRequestStatus } from "~/types/api";
 import { isErrorResult } from "~/types/errors";
 
+import { useGetPoliciesQuery } from "../policy/policy.slice";
 import {
   finishTest,
   selectCurrentDataset,
+  selectCurrentPolicyKey,
+  selectIsReachable,
   selectIsTestRunning,
   selectPrivacyRequestId,
   selectTestInputs,
   selectTestResults,
+  setCurrentPolicyKey,
   setPrivacyRequestId,
   setTestInputs,
   setTestResults,
@@ -46,8 +51,10 @@ const TestResultsSection = ({ connectionKey }: TestResultsSectionProps) => {
   const [testDatasets] = useTestDatastoreConnectionDatasetsMutation();
 
   const currentDataset = useSelector(selectCurrentDataset);
+  const isReachable = useSelector(selectIsReachable);
   const testResults = useSelector(selectTestResults);
   const testInputs = useSelector(selectTestInputs);
+  const currentPolicyKey = useSelector(selectCurrentPolicyKey);
   const isTestRunning = useSelector(selectIsTestRunning);
   const privacyRequestId = useSelector(selectPrivacyRequestId);
 
@@ -78,6 +85,20 @@ const TestResultsSection = ({ connectionKey }: TestResultsSectionProps) => {
       skip: !connectionKey || !currentDataset?.fides_key,
       refetchOnMountOrArgChange: true,
     },
+  );
+
+  const { data: policies } = useGetPoliciesQuery();
+  const policyOptions = useMemo(
+    () =>
+      (policies?.items || [])
+        .filter((policy) =>
+          policy.rules?.some((rule) => rule.action_type === "access"),
+        )
+        .map((item) => ({
+          value: item.key,
+          label: item.name,
+        })),
+    [policies?.items],
   );
 
   useEffect(() => {
@@ -155,8 +176,19 @@ const TestResultsSection = ({ connectionKey }: TestResultsSectionProps) => {
     }
   };
 
+  const handlePolicyChange = (policyKey: string) => {
+    dispatch(setCurrentPolicyKey(policyKey));
+  };
+
+  const currentPolicyKeyValue = useMemo(() => {
+    if (!currentPolicyKey || !policies?.items) {
+      return null;
+    }
+    return currentPolicyKey;
+  }, [currentPolicyKey, policies?.items]);
+
   const handleTestRun = async () => {
-    if (!currentDataset?.fides_key) {
+    if (!currentDataset?.fides_key || !currentPolicyKey) {
       return;
     }
 
@@ -174,7 +206,8 @@ const TestResultsSection = ({ connectionKey }: TestResultsSectionProps) => {
       const result = await testDatasets({
         connection_key: connectionKey,
         dataset_key: currentDataset.fides_key,
-        input_data: parsedInput,
+        identities: parsedInput,
+        policy_key: currentPolicyKey,
       });
 
       if (isErrorResult(result)) {
@@ -202,11 +235,20 @@ const TestResultsSection = ({ connectionKey }: TestResultsSectionProps) => {
         justifyContent="space-between"
       >
         <HStack>
-          <Text>Test inputs (identities and references)</Text>
+          <Text>Test inputs</Text>
           <ClipboardButton copyText={inputValue} />
         </HStack>
         <HStack>
-          <QuestionTooltip label="Run a test access request using the provided test input data" />
+          <Select
+            id="policy"
+            aria-label="Policy selector"
+            data-testid="policy-select"
+            placeholder="Select policy"
+            value={currentPolicyKeyValue}
+            options={policyOptions}
+            onChange={handlePolicyChange}
+            className="w-64"
+          />
           <Button
             htmlType="submit"
             size="small"
@@ -214,9 +256,11 @@ const TestResultsSection = ({ connectionKey }: TestResultsSectionProps) => {
             data-testid="run-btn"
             onClick={handleTestRun}
             loading={isTestRunning}
+            disabled={!currentPolicyKey || !isReachable}
           >
             Run
           </Button>
+          <QuestionTooltip label="Run a test access request using the provided test input data and the selected access policy" />
         </HStack>
       </Heading>
       <Textarea
