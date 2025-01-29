@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.53.1b1.post0.dev14"
+    "version": "2.53.1b1.post0.dev15"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -9761,7 +9761,7 @@
           "Privacy Requests"
         ],
         "summary": "Privacy Request Data Transfer",
-        "description": "Transfer access request iinformation to the parent server.",
+        "description": "Transfer access request information to the parent server.",
         "operationId": "privacy_request_data_transfer_api_v1_privacy_request_transfer__privacy_request_id___rule_key__get",
         "security": [
           {
@@ -10212,6 +10212,55 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/FilteredPrivacyRequestResults"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/privacy-request/{privacy_request_id}/resubmit": {
+      "post": {
+        "tags": [
+          "Privacy Requests"
+        ],
+        "summary": "Resubmit Privacy Request",
+        "operationId": "resubmit_privacy_request_api_v1_privacy_request__privacy_request_id__resubmit_post",
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "privacy-request:create"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "name": "privacy_request_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Privacy Request Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PrivacyRequestResponse"
                 }
               }
             }
