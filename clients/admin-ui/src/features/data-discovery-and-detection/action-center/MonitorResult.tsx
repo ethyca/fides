@@ -63,7 +63,17 @@ export const MonitorResult = ({
     <List.Item data-testid={`monitor-result-${key}`} {...props}>
       <Skeleton avatar title={false} loading={showSkeleton} active>
         <List.Item.Meta
-          avatar={!!iconUrl && <Avatar src={iconUrl} size="small" />}
+          avatar={
+            <Avatar
+              src={iconUrl}
+              size="small"
+              icon={<Icons.Wikis />}
+              style={{
+                backgroundColor: "transparent",
+                color: "var(--ant-color-text)",
+              }}
+            />
+          }
           title={
             <NextLink
               href={`${ACTION_CENTER_ROUTE}/${key}`}
