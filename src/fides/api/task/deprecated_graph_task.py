@@ -115,7 +115,7 @@ def run_access_request_deprecated(
 ) -> Dict[str, List[Row]]:
     """Deprecated: Run the access request sequentially in-memory using Dask"""
     try:
-        traversal: Traversal = Traversal(graph, identity)
+        traversal: Traversal = Traversal(graph, identity, policy)
         privacy_request.add_success_execution_log(
             session,
             connection_key=None,
@@ -205,7 +205,7 @@ def run_erasure_request_deprecated(  # pylint: disable = too-many-arguments
     session: Session,
 ) -> Dict[str, int]:
     """Deprecated: Run an erasure request sequentially in-memory using Dask"""
-    traversal: Traversal = Traversal(graph, identity)
+    traversal: Traversal = Traversal(graph, identity, policy)
     with TaskResources(
         privacy_request, policy, connection_configs, EMPTY_REQUEST_TASK, session
     ) as resources:
