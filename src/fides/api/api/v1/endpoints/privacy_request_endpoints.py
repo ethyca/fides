@@ -1217,7 +1217,7 @@ def restart_privacy_request_from_failure(
         logger.info(
             f"Cached data for privacy request {privacy_request.id} has expired, automatically resubmitting request"
         )
-        return privacy_request_service.resubmit_privacy_request(privacy_request_id)
+        return privacy_request_service.resubmit_privacy_request(privacy_request_id)  # type: ignore[return-value]
 
     if privacy_request.status != PrivacyRequestStatus.error:
         raise HTTPException(
@@ -2217,6 +2217,7 @@ def resubmit_privacy_request(
         )
 
     return privacy_request
+
 
 def get_task_info(tasks: List[RequestTask]) -> Tuple[str, List[ExecutionLogStatus]]:
     """Returns first dataset and list of statuses from tasks"""
