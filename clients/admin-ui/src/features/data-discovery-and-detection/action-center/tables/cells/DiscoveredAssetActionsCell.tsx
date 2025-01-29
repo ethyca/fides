@@ -36,7 +36,7 @@ export const DiscoveredAssetActionsCell = ({
       urnList: [urn],
     });
     if (isErrorResult(result)) {
-      errorAlert("There was adding the asset to the system inventory");
+      errorAlert(getErrorMessage(result.error));
     } else {
       successAlert(
         `${type} "${name}" has been added to the system inventory.`,
