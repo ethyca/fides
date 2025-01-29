@@ -22,6 +22,7 @@ import {
   Portal,
   SmallCloseIcon,
   Table,
+  TableCellProps,
   TableContainer,
   Tbody,
   Td,
@@ -57,6 +58,7 @@ declare module "@tanstack/table-core" {
     showHeaderMenuWrapOption?: boolean;
     overflow?: "auto" | "visible" | "hidden";
     disableRowClick?: boolean;
+    cellProps?: TableCellProps;
     noPadding?: boolean;
     onCellClick?: (row: TData) => void;
   }
@@ -439,6 +441,7 @@ export const FidesTableV2 = <T,>({
                         opacity: 1,
                       },
                     }}
+                    {...header.column.columnDef.meta?.cellProps}
                   >
                     <HeaderContent
                       header={header}
