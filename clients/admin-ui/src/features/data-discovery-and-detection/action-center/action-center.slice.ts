@@ -102,6 +102,24 @@ const actionCenterApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Discovery Monitor Results"],
     }),
+    updateAssetsSystem: build.mutation<
+      any,
+      {
+        monitorId: string;
+        urnList: string[];
+        systemKey: string;
+      }
+    >({
+      query: (params) => ({
+        method: "PATCH",
+        url: `/plus/discovery-monitor/${params.monitorId}/results`,
+        body: params.urnList.map((urn) => ({
+          urn,
+          system_key: params.systemKey,
+        })),
+      }),
+      invalidatesTags: ["Discovery Monitor Results"],
+    }),
   }),
 });
 
@@ -113,4 +131,5 @@ export const {
   useIgnoreMonitorResultSystemMutation,
   useAddMonitorResultAssetsMutation,
   useIgnoreMonitorResultAssetsMutation,
+  useUpdateAssetsSystemMutation,
 } = actionCenterApi;
