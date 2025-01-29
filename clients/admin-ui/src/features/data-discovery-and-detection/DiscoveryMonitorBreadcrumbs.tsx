@@ -42,12 +42,10 @@ const DiscoveryMonitorBreadcrumbs = ({
       if (index === 0) {
         return;
       }
-      const isLast = index === urnParts.length - 1;
 
       breadcrumbItems.push({
         title: urnPart,
         icon: DATA_BREADCRUMB_ICONS[index - 1],
-        href: isLast ? undefined : "",
         onClick: (e) => {
           e.preventDefault();
           onPathClick(urnParts.slice(0, index + 1).join("."));
