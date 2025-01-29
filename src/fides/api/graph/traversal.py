@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 import json
-from typing import Any, Callable, Dict, List, Set, Tuple, cast
+from itertools import chain
+from typing import Any, Callable, Dict, List, Optional, Set, Tuple, cast
 
 import pydash.collections
 from fideslang.validation import FidesKey
@@ -24,6 +25,7 @@ from fides.api.graph.config import (
 )
 from fides.api.graph.execution import ExecutionNode
 from fides.api.graph.graph import DatasetGraph, Edge, Node
+from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import (
     PrivacyRequest,
     RequestTask,
@@ -204,6 +206,22 @@ class TraversalNode(Contextualizable):
         request_task: RequestTask = self.to_mock_request_task()
         return ExecutionNode(request_task)
 
+    def get_data_categories(self) -> Set[str]:
+        """
+        Returns a set of unique data categories across the collection and child fields.
+        """
+        collection = self.node.collection
+
+        return set(
+            chain(
+                collection.data_categories,
+                *[
+                    field.data_categories or []
+                    for field in collection.field_dict.values()
+                ],
+            )
+        )
+
 
 def artificial_traversal_node(address: CollectionAddress) -> TraversalNode:
     """generate an 'artificial' traversal_node pointing to the given address. This is used to
@@ -234,9 +252,12 @@ class Traversal:
             if seed_key in self.seed_data
         }
 
-    def __init__(self, graph: DatasetGraph, data: Dict[str, Any]):
+    def __init__(
+        self, graph: DatasetGraph, data: Dict[str, Any], policy: Optional[Policy] = None
+    ):
         self.graph = graph
         self.seed_data = data
+        self.policy = policy
         self.traversal_node_dict = {k: TraversalNode(v) for k, v in graph.nodes.items()}
         self.edges: Set[Edge] = graph.edges.copy()
         self.root_node = artificial_traversal_node(ROOT_COLLECTION_ADDRESS)
@@ -383,31 +404,40 @@ class Traversal:
                 # traversal traversal_node dict diff finished nodes
                 logger.error(
                     "Node could not be reached given specified ordering [{}]",
-                    ",".join([str(tn.address) for tn in running_node_queue.data]),
+                    ", ".join([str(tn.address) for tn in running_node_queue.data]),
                 )
                 raise TraversalError(
                     f"""Node could not be reached given the specified ordering:
-                    [{','.join([str(tn.address) for tn in running_node_queue.data])}]""",
+                    [{', '.join([str(tn.address) for tn in running_node_queue.data])}]""",
                 )
 
         # Remove nodes that have custom request fields, since we don't care if these are reachable or not.
         # They will be used independently by the Dynamic Email Erasure Connector.
         # TODO: ideally we'll update the Traversal code to include these "custom request field datasets"
         # as part of the main graph. This is a targeted workaround for now.
-        remaining_node_keys = set(
+        remaining_node_keys = {
             key
             for key in remaining_node_keys
             if not self.traversal_node_dict[key].node.collection.custom_request_fields()
-        )
+        }
+
+        # If a policy is provided, we will allow collections without relevant
+        # data categories to remain unreachable without raising any exceptions
+        if self.policy:
+            remaining_node_keys = {
+                key
+                for key in remaining_node_keys
+                if self.policy.applies_to(self.traversal_node_dict[key])
+            }
 
         # error if there are nodes that have not been visited
         if remaining_node_keys:
             logger.error(
                 "Some nodes were not reachable: {}",
-                ",".join([str(x) for x in remaining_node_keys]),
+                ", ".join([str(x) for x in remaining_node_keys]),
             )
             raise UnreachableNodesError(
-                f"Some nodes were not reachable: {','.join([str(x) for x in remaining_node_keys])}",
+                f"Some nodes were not reachable: {', '.join([str(x) for x in remaining_node_keys])}",
                 [key.value for key in remaining_node_keys],
             )
 
@@ -415,10 +445,10 @@ class Traversal:
         if remaining_edges:
             logger.error(
                 "Some edges were not reachable: {}",
-                ",".join([str(x) for x in remaining_edges]),
+                ", ".join([str(x) for x in remaining_edges]),
             )
             raise UnreachableEdgesError(
-                f"Some edges were not reachable: {','.join([str(x) for x in remaining_edges])}",
+                f"Some edges were not reachable: {', '.join([str(x) for x in remaining_edges])}",
                 [f"{edge}" for edge in remaining_edges],
             )
 
@@ -459,7 +489,7 @@ def log_traversal_error_and_update_privacy_request(
             action_type=ActionType.access,
         )
 
-    # For specific ones, we iterate over each error in the list
+    # For specific ones, we iterate over each unreachable node key in the list
     for error in err.errors:
         dataset, collection = (
             error.split(":")
