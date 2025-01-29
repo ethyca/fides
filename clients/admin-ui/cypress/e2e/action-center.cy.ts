@@ -1,4 +1,9 @@
-import { stubActionCenter, stubPlus } from "cypress/support/stubs";
+import {
+  stubActionCenter,
+  stubPlus,
+  stubSystemVendors,
+  stubVendorList,
+} from "cypress/support/stubs";
 
 import {
   ACTION_CENTER_ROUTE,
@@ -140,8 +145,11 @@ describe("Action center", () => {
       cy.getByTestId("column-domains").should("exist");
       cy.getByTestId("column-actions").should("exist");
       cy.getByTestId("row-0-col-system_name").within(() => {
-        cy.getByTestId("change-icon").should("exist"); // new result
+        cy.getByTestId("change-icon").should("exist");
         cy.contains("Uncategorized assets").should("exist");
+      });
+      cy.getByTestId("row-3-col-system_name").within(() => {
+        cy.getByTestId("change-icon").should("exist"); // new system
       });
       // TODO: [HJ-356] uncomment when data use column is implemented
       /* // data use column should be empty for uncategorized assets
@@ -331,6 +339,26 @@ describe("Action center", () => {
       cy.getByTestId("success-alert").should(
         "contain",
         'Browser Request "collect" has been assigned to Demo Marketing System.',
+      );
+    });
+    it("should allow creating a new system and assigning an asset to it", () => {
+      stubVendorList();
+      stubSystemVendors();
+      cy.getByTestId("row-4-col-system").within(() => {
+        cy.getByTestId("system-badge").click();
+      });
+      cy.wait("@getSystemsPaginated");
+      cy.getByTestId("add-new-system").click();
+      cy.getByTestId("add-modal-content").should("exist");
+      cy.getByTestId("vendor-name-select").antSelect("Aniview LTD");
+      cy.getByTestId("save-btn").click();
+      // adds new system
+      cy.wait("@postSystemVendors");
+      // assigns asset to new system
+      cy.wait("@setAssetSystem");
+      cy.getByTestId("success-alert").should(
+        "contain",
+        'Test System has been added to your system inventory and the Browser Request "gtm.js" has been assigned to that system.',
       );
     });
     it("should add individual assets", () => {
