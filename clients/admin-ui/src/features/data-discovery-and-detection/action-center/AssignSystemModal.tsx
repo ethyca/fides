@@ -5,10 +5,11 @@ import {
   AntTypography as Typography,
   ModalProps,
 } from "fidesui";
-import { useState } from "react";
+import { MouseEventHandler, useCallback, useState } from "react";
 
 import { SystemSelect } from "~/features/common/dropdown/SystemSelect";
 import FormModal from "~/features/common/modals/FormModal";
+import { AddNewSystemModal } from "~/features/system/AddNewSystemModal";
 
 const { Text } = Typography;
 
@@ -23,8 +24,19 @@ export const AssignSystemModal = ({
   ...props
 }: AssignSystemModalProps) => {
   const [selectedSystem, setSelectedSystem] = useState<DefaultOptionType>();
+  const [isNewSystemModalOpen, setIsNewSystemModalOpen] = useState(false);
+
+  const onAddSystem: MouseEventHandler<HTMLButtonElement> = useCallback((e) => {
+    e.preventDefault();
+    setIsNewSystemModalOpen(true);
+  }, []);
+
+  const handleCloseNewSystemModal = () => {
+    setIsNewSystemModalOpen(false);
+  };
 
   const handleClose = () => {
+    setSelectedSystem(undefined);
     props.onClose();
   };
 
@@ -40,14 +52,12 @@ export const AssignSystemModal = ({
           onSelect={(_, option) => {
             setSelectedSystem(option);
           }}
+          onAddSystem={onAddSystem}
+          value={selectedSystem}
         />
       </Flex>{" "}
       <Flex justify="space-between">
-        <Button
-          htmlType="reset"
-          onClick={props.onClose}
-          data-testid="cancel-btn"
-        >
+        <Button htmlType="reset" onClick={handleClose} data-testid="cancel-btn">
           Cancel
         </Button>
         <Button
@@ -63,6 +73,17 @@ export const AssignSystemModal = ({
           Save
         </Button>
       </Flex>
+      {isNewSystemModalOpen && (
+        <AddNewSystemModal
+          isOpen
+          onClose={handleCloseNewSystemModal}
+          onSuccessfulSubmit={(fidesKey, name) => {
+            handleCloseNewSystemModal();
+            setSelectedSystem({ label: name, value: fidesKey });
+          }}
+          toastOnSuccess
+        />
+      )}
     </FormModal>
   );
 };
