@@ -1,4 +1,9 @@
-import { stubActionCenter, stubPlus } from "cypress/support/stubs";
+import {
+  stubActionCenter,
+  stubPlus,
+  stubSystemVendors,
+  stubVendorList,
+} from "cypress/support/stubs";
 
 import {
   ACTION_CENTER_ROUTE,
@@ -119,6 +124,7 @@ describe("Action center", () => {
     beforeEach(() => {
       cy.visit(`${ACTION_CENTER_ROUTE}/${webMonitorKey}`);
       cy.wait("@getSystemAggregateResults");
+      cy.getByTestId("page-breadcrumb").should("contain", webMonitorKey); // little hack to make sure the webMonitorKey is available before proceeding
     });
     it("should display a breadcrumb", () => {
       cy.getByTestId("page-breadcrumb").within(() => {
@@ -137,11 +143,13 @@ describe("Action center", () => {
       // cy.getByTestId("column-data_use").should("exist");
       cy.getByTestId("column-locations").should("exist");
       cy.getByTestId("column-domains").should("exist");
-      // TODO: [HJ-343] uncomment when actions column is implemented
-      // cy.getByTestId("column-actions").should("exist");
+      cy.getByTestId("column-actions").should("exist");
       cy.getByTestId("row-0-col-system_name").within(() => {
-        cy.getByTestId("change-icon").should("exist"); // new result
+        cy.getByTestId("change-icon").should("exist");
         cy.contains("Uncategorized assets").should("exist");
+      });
+      cy.getByTestId("row-3-col-system_name").within(() => {
+        cy.getByTestId("change-icon").should("exist"); // new system
       });
       // TODO: [HJ-356] uncomment when data use column is implemented
       /* // data use column should be empty for uncategorized assets
@@ -165,6 +173,39 @@ describe("Action center", () => {
         "contain",
         "analytics.google.com",
       );
+      cy.getByTestId("row-0-col-actions").within(() => {
+        cy.getByTestId("add-btn").should("be.disabled");
+      });
+    });
+    it("should ignore all assets in an uncategorized system", () => {
+      cy.getByTestId("row-0-col-actions").within(() => {
+        cy.getByTestId("ignore-btn").click({ force: true });
+      });
+      cy.wait("@ignoreMonitorResultUncategorizedSystem");
+      cy.getByTestId("success-alert").should(
+        "contain",
+        "108 uncategorized assets have been ignored and will not appear in future scans.",
+      );
+    });
+    it("should add all assets in a categorized system", () => {
+      cy.getByTestId("row-1-col-actions").within(() => {
+        cy.getByTestId("add-btn").click({ force: true });
+      });
+      cy.wait("@addMonitorResultSystem");
+      cy.getByTestId("success-alert").should(
+        "contain",
+        "10 assets from Google Tag Manager have been added to the system inventory.",
+      );
+    });
+    it("should ignore all assets in a categorized system", () => {
+      cy.getByTestId("row-1-col-actions").within(() => {
+        cy.getByTestId("ignore-btn").click({ force: true });
+      });
+      cy.wait("@ignoreMonitorResultSystem");
+      cy.getByTestId("success-alert").should(
+        "contain",
+        "10 assets from Google Tag Manager have been ignored and will not appear in future scans.",
+      );
     });
     it("should navigate to table view on row click", () => {
       cy.getByTestId("row-1").click();
@@ -179,18 +220,70 @@ describe("Action center", () => {
     });
   });
 
-  describe("Action center system assets results", () => {
+  describe("Action center assets uncategorized results", () => {
+    const webMonitorKey = "my_web_monitor_1";
+    const systemId = "[undefined]";
+    beforeEach(() => {
+      cy.visit(`${ACTION_CENTER_ROUTE}/${webMonitorKey}/${systemId}`);
+      cy.wait("@getSystemAssetsUncategorized");
+      cy.getByTestId("page-breadcrumb").should("contain", "Uncategorized");
+    });
+    it("should render uncategorized asset results view", () => {
+      cy.getByTestId("search-bar").should("exist");
+      cy.getByTestId("pagination-btn").should("exist");
+      cy.getByTestId("bulk-actions-menu").should("be.disabled");
+      cy.getByTestId("add-all").should("be.disabled");
+
+      // table columns
+      cy.getByTestId("column-select").should("exist");
+      cy.getByTestId("column-name").should("exist");
+      cy.getByTestId("column-resource_type").should("exist");
+      cy.getByTestId("column-system").should("exist");
+      // TODO: [HJ-369] uncomment when data use column is implemented
+      // cy.getByTestId("column-data_use").should("exist");
+      cy.getByTestId("column-locations").should("exist");
+      cy.getByTestId("column-domain").should("exist");
+      // TODO: [HJ-344] uncomment when Discovery column is implemented
+      /* cy.getByTestId("column-with_consent").should("exist");
+      cy.getByTestId("row-4-col-with_consent")
+        .contains("Without consent")
+        .realHover();
+      cy.get(".ant-tooltip-inner").should("contain", "January"); */
+      cy.getByTestId("column-actions").should("exist");
+      cy.getByTestId("row-0-col-actions").within(() => {
+        cy.getByTestId("add-btn").should("be.disabled");
+        cy.getByTestId("ignore-btn").should("exist");
+      });
+    });
+    it("should allow adding a system on uncategorized assets", () => {
+      cy.getByTestId("row-0-col-system").within(() => {
+        cy.getByTestId("add-system-btn").click();
+      });
+      cy.wait("@getSystemsPaginated");
+      cy.getByTestId("system-select").antSelect("Fidesctl System");
+      cy.wait("@setAssetSystem");
+      cy.getByTestId("system-select").should("not.exist");
+      cy.getByTestId("success-alert").should(
+        "contain",
+        'Browser Request "0d22c925-3a81-4f10-bfdc-69a5d67e93bc" has been assigned to Fidesctl System.',
+      );
+    });
+  });
+
+  describe("Action center assets categorized results", () => {
     const webMonitorKey = "my_web_monitor_1";
     const systemId = "system_key-8fe42cdb-af2e-4b9e-9b38-f75673180b88";
     beforeEach(() => {
       cy.visit(`${ACTION_CENTER_ROUTE}/${webMonitorKey}/${systemId}`);
       cy.wait("@getSystemAssetResults");
+      cy.getByTestId("page-breadcrumb").should("contain", systemId); // little hack to make sure the systemId is available before proceeding
     });
     it("should render asset results view", () => {
       cy.getByTestId("page-breadcrumb").should("contain", systemId);
       cy.getByTestId("search-bar").should("exist");
       cy.getByTestId("pagination-btn").should("exist");
       cy.getByTestId("bulk-actions-menu").should("be.disabled");
+      cy.getByTestId("add-all").should("exist");
 
       // table columns
       cy.getByTestId("column-select").should("exist");
@@ -213,11 +306,7 @@ describe("Action center", () => {
         cy.getByTestId("ignore-btn").should("exist");
       });
     });
-    it.skip("should allow adding a system on uncategorized assets", () => {
-      // TODO: uncategorized assets are not yet available for testing
-    });
     it("should allow editing a system on categorized assets", () => {
-      cy.getByTestId("page-breadcrumb").should("contain", systemId); // little hack to make sure the systemId is available before proceeding
       cy.getByTestId("row-3-col-system").within(() => {
         cy.getByTestId("system-badge").click();
       });
@@ -225,6 +314,10 @@ describe("Action center", () => {
       cy.getByTestId("system-select").antSelect("Fidesctl System");
       cy.wait("@setAssetSystem");
       cy.getByTestId("system-select").should("not.exist");
+      cy.getByTestId("success-alert").should(
+        "contain",
+        'Browser Request "destination" has been assigned to Fidesctl System.',
+      );
 
       // Wait for previous UI animations to reset or Cypress chokes on the next part
       // eslint-disable-next-line cypress/no-unnecessary-waiting
@@ -243,20 +336,50 @@ describe("Action center", () => {
       cy.wait("@setAssetSystem");
       cy.getByTestId("success-alert").should("exist");
       cy.getByTestId("system-select").should("not.exist");
+      cy.getByTestId("success-alert").should(
+        "contain",
+        'Browser Request "collect" has been assigned to Demo Marketing System.',
+      );
+    });
+    it("should allow creating a new system and assigning an asset to it", () => {
+      stubVendorList();
+      stubSystemVendors();
+      cy.getByTestId("row-4-col-system").within(() => {
+        cy.getByTestId("system-badge").click();
+      });
+      cy.wait("@getSystemsPaginated");
+      cy.getByTestId("add-new-system").click();
+      cy.getByTestId("add-modal-content").should("exist");
+      cy.getByTestId("vendor-name-select").antSelect("Aniview LTD");
+      cy.getByTestId("save-btn").click();
+      // adds new system
+      cy.wait("@postSystemVendors");
+      // assigns asset to new system
+      cy.wait("@setAssetSystem");
+      cy.getByTestId("success-alert").should(
+        "contain",
+        'Test System has been added to your system inventory and the Browser Request "gtm.js" has been assigned to that system.',
+      );
     });
     it("should add individual assets", () => {
       cy.getByTestId("row-0-col-actions").within(() => {
         cy.getByTestId("add-btn").click({ force: true });
       });
       cy.wait("@addAssets");
-      cy.getByTestId("success-alert").should("exist");
+      cy.getByTestId("success-alert").should(
+        "contain",
+        'Browser Request "11020051272" has been added to the system inventory.',
+      );
     });
     it("should ignore individual assets", () => {
       cy.getByTestId("row-0-col-actions").within(() => {
         cy.getByTestId("ignore-btn").click({ force: true });
       });
       cy.wait("@ignoreAssets");
-      cy.getByTestId("success-alert").should("exist");
+      cy.getByTestId("success-alert").should(
+        "contain",
+        'Browser Request "11020051272" has been ignored and will not appear in future scans.',
+      );
     });
     it("should bulk add assets", () => {
       cy.getByTestId("bulk-actions-menu").should("be.disabled");
@@ -268,7 +391,10 @@ describe("Action center", () => {
       cy.getByTestId("bulk-actions-menu").click();
       cy.getByTestId("bulk-add").click();
       cy.wait("@addAssets");
-      cy.getByTestId("success-alert").should("exist");
+      cy.getByTestId("success-alert").should(
+        "contain",
+        "3 assets from Google Tag Manager have been added to the system inventory.",
+      );
     });
     it("should bulk ignore assets", () => {
       cy.getByTestId("bulk-actions-menu").should("be.disabled");
@@ -280,15 +406,29 @@ describe("Action center", () => {
       cy.getByTestId("bulk-actions-menu").click();
       cy.getByTestId("bulk-ignore").click();
       cy.wait("@ignoreAssets");
-      cy.getByTestId("success-alert").should("exist");
+      cy.getByTestId("success-alert").should(
+        "contain",
+        "3 assets from Google Tag Manager have been ignored and will not appear in future scans.",
+      );
     });
-    it.skip("should add all assets", () => {
-      // TODO: [HJ-343] unskip when add all is implemented
+    it("should add all assets", () => {
+      cy.intercept(
+        "POST",
+        "/api/v1/plus/discovery-monitor/*/promote*",
+        (req) => {
+          req.on("response", (res) => {
+            res.setDelay(100); // slight delay allows us to check for the loading state below
+          });
+        },
+      ).as("slowRequest");
       cy.getByTestId("add-all").click();
       cy.getByTestId("add-all").should("have.class", "ant-btn-loading");
-      cy.wait("@addAssets");
+      cy.wait("@slowRequest");
       cy.url().should("not.contain", systemId);
-      cy.getByTestId("success-alert").should("exist");
+      cy.getByTestId("success-alert").should(
+        "contain",
+        "11 assets from Google Tag Manager have been added to the system inventory.",
+      );
     });
   });
 });
