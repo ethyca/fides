@@ -46,7 +46,15 @@ def upgrade():
         sa.ForeignKeyConstraint(["monitor_config_key"], ["monitorconfig.key"]),
         sa.PrimaryKeyConstraint("id"),
     )
+    op.create_index(
+        "ix_monitorexecution_monitor_config_key",
+        "monitorexecution",
+        ["monitor_config_key"],
+    )
 
 
 def downgrade():
     op.drop_table("monitorexecution")
+    op.drop_index(
+        "ix_monitorexecution_monitor_config_key", table_name="monitorexecution"
+    )
