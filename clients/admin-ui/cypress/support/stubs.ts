@@ -524,12 +524,32 @@ export const stubActionCenter = () => {
   cy.intercept("GET", "/api/v1/plus/discovery-monitor/*/results*", {
     fixture: "detection-discovery/activity-center/system-asset-results",
   }).as("getSystemAssetResults");
+  cy.intercept(
+    "GET",
+    "/api/v1/plus/discovery-monitor/*/results?resolved_system_id=%5Bundefined%5D*",
+    {
+      fixture: "detection-discovery/activity-center/system-asset-uncategorized",
+    },
+  ).as("getSystemAssetsUncategorized");
   cy.intercept("POST", "/api/v1/plus/discovery-monitor/mute*", {
     response: 200,
   }).as("ignoreAssets");
   cy.intercept("POST", "/api/v1/plus/discovery-monitor/promote*", {
     response: 200,
   }).as("addAssets");
+  cy.intercept("POST", "/api/v1/plus/discovery-monitor/*/mute*", {
+    response: 200,
+  }).as("ignoreMonitorResultSystem");
+  cy.intercept(
+    "POST",
+    "/api/v1/plus/discovery-monitor/*/mute?resolved_system_id=%5Bundefined%5D",
+    {
+      response: 200,
+    },
+  ).as("ignoreMonitorResultUncategorizedSystem");
+  cy.intercept("POST", "/api/v1/plus/discovery-monitor/*/promote*", {
+    response: 200,
+  }).as("addMonitorResultSystem");
   cy.intercept("PATCH", "/api/v1/plus/discovery-monitor/*/results", {
     response: 200,
   }).as("setAssetSystem");
