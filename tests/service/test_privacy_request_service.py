@@ -102,7 +102,7 @@ class TestPrivacyRequestService:
             "first_name": {"label": "First name", "value": "John"}
         }
         policy_key = policy.key
-        encryption_key = "0123456789ABCDEF"
+        encryption_key = "thisisnotarealkey"
         property_id = property_a.id
         source = PrivacyRequestSource.request_manager
         submitted_by = reviewing_user.id
