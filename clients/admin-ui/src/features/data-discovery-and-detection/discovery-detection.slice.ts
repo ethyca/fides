@@ -34,6 +34,7 @@ interface DatabaseByMonitorQueryParams {
   page: number;
   size: number;
   monitor_config_id: string;
+  show_hidden?: boolean;
 }
 
 interface DatabaseByConnectionQueryParams {
@@ -90,7 +91,7 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
         }),
       },
     ),
-    getDatabasesByConnection: build.query<
+    getAvailableDatabasesByConnection: build.query<
       Page_str_,
       DatabaseByConnectionQueryParams
     >({
@@ -230,8 +231,8 @@ export const {
   useGetMonitorsByIntegrationQuery,
   usePutDiscoveryMonitorMutation,
   useGetDatabasesByMonitorQuery,
-  useGetDatabasesByConnectionQuery,
-  useLazyGetDatabasesByConnectionQuery,
+  useGetAvailableDatabasesByConnectionQuery,
+  useLazyGetAvailableDatabasesByConnectionQuery,
   useExecuteDiscoveryMonitorMutation,
   useDeleteDiscoveryMonitorMutation,
   useGetMonitorResultsQuery,
