@@ -107,6 +107,10 @@ const useTaxonomies = () => {
 
   const getDataUseDisplayName = (dataUseKey: string): JSX.Element | string =>
     getDataDisplayName(dataUseKey, getDataUseByKey, 1);
+  const getDataUseDisplayNameProps = (
+    dataUseKey: string,
+  ): DataDisplayNameProps =>
+    getDataDisplayNameProps(dataUseKey, getDataUseByKey, 1);
 
   /*
     Data Categories
@@ -143,6 +147,7 @@ const useTaxonomies = () => {
     getDataUses,
     getDataUseByKey,
     getDataUseDisplayName,
+    getDataUseDisplayNameProps,
     getDataCategories,
     getDataCategoryByKey,
     getDataCategoryDisplayName,

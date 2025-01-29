@@ -535,13 +535,52 @@ export const stubActionCenter = () => {
   cy.intercept("GET", "/api/v1/plus/discovery-monitor/*/results*", {
     fixture: "detection-discovery/activity-center/system-asset-results",
   }).as("getSystemAssetResults");
+  cy.intercept(
+    "GET",
+    "/api/v1/plus/discovery-monitor/*/results?resolved_system_id=%5Bundefined%5D*",
+    {
+      fixture: "detection-discovery/activity-center/system-asset-uncategorized",
+    },
+  ).as("getSystemAssetsUncategorized");
   cy.intercept("POST", "/api/v1/plus/discovery-monitor/mute*", {
     response: 200,
   }).as("ignoreAssets");
   cy.intercept("POST", "/api/v1/plus/discovery-monitor/promote*", {
     response: 200,
   }).as("addAssets");
+  cy.intercept("POST", "/api/v1/plus/discovery-monitor/*/mute*", {
+    response: 200,
+  }).as("ignoreMonitorResultSystem");
+  cy.intercept(
+    "POST",
+    "/api/v1/plus/discovery-monitor/*/mute?resolved_system_id=%5Bundefined%5D",
+    {
+      response: 200,
+    },
+  ).as("ignoreMonitorResultUncategorizedSystem");
+  cy.intercept("POST", "/api/v1/plus/discovery-monitor/*/promote*", {
+    response: 200,
+  }).as("addMonitorResultSystem");
   cy.intercept("PATCH", "/api/v1/plus/discovery-monitor/*/results", {
     response: 200,
   }).as("setAssetSystem");
+};
+
+export const stubDataCatalog = () => {
+  cy.intercept("GET", "/api/v1/plus/data-catalog/system*", {
+    fixture: "data-catalog/catalog-systems",
+  }).as("getCatalogSystems");
+  cy.intercept("GET", "/api/v1/plus/data-catalog/project*", {
+    fixture: "data-catalog/catalog-projects",
+  }).as("getCatalogProjects");
+  cy.intercept("GET", "/api/v1/plus/discovery-monitor/results?*", {
+    fixture: "data-catalog/catalog-tables",
+  }).as("getCatalogTables");
+  cy.intercept("POST", "/api/v1/plus/discovery-monitor/databases*", {
+    items: ["test_project"],
+    page: 1,
+    size: 1,
+    total: 1,
+    pages: 1,
+  }).as("getAvailableDatabases");
 };

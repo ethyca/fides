@@ -108,6 +108,7 @@ export const FidesCell = <T,>({
       height="inherit"
       onClick={handleCellClick}
       data-testid={`row-${cell.row.id}-col-${cell.column.id}`}
+      {...cell.column.columnDef.meta?.cellProps}
     >
       {!cell.getIsPlaceholder() || isFirstRowOfGroupedRows
         ? flexRender(cell.column.columnDef.cell, {
