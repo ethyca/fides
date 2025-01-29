@@ -19,7 +19,15 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - https://github.com/ethyca/fides/labels/high-risk: to indicate that a change is a "high-risk" change that could potentially lead to unanticipated regressions or degradations
 - https://github.com/ethyca/fides/labels/db-migration: to indicate that a given change includes a DB migration
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.53.0...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.54.0...main)
+
+
+
+## [2.53.0](https://github.com/ethyca/fides/compare/2.53.0...2.54.0)
+
+### Added
+- Migration to add the `data_uses` column to `stagedresource` table, prereqs for Data Catalog work in Fidesplus [#5600](https://github.com/ethyca/fides/pull/5600/) https://github.com/ethyca/fides/labels/db-migration
+- Added a new endpoint to fully resubmit any errored privacy requests [#5658](https://github.com/ethyca/fides/pull/5658) https://github.com/ethyca/fides/labels/db-migration
 
 ### Changed
 - Updated UI colors to new brand. Update logo, homepage cards. [#5668](https://github.com/ethyca/fides/pull/5668)

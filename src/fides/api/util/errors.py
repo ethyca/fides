@@ -118,5 +118,5 @@ def get_full_exception_name(exception: Exception) -> str:
     return module + "." + exception.__class__.__name__
 
 
-class FunctionalityNotConfigured(Exception):
+class RedisNotConfigured(Exception):
     """Custom exception for when invoked functionality is unavailable due to configuration."""
