@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.53.1b1.post0.dev6"
+    "version": "2.53.1b1.post0.dev7"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -5440,14 +5440,14 @@
         }
       }
     },
-    "/api/v1/connection/{connection_key}/dataset/{fides_key}": {
+    "/api/v1/connection/{connection_key}/dataset/{dataset_key}": {
       "get": {
         "tags": [
           "Dataset Configs"
         ],
         "summary": "Get Dataset",
         "description": "Returns a single ctl dataset linked to the given DatasetConfig.\n\nSoon to be deprecated",
-        "operationId": "get_dataset_api_v1_connection__connection_key__dataset__fides_key__get",
+        "operationId": "get_dataset_api_v1_connection__connection_key__dataset__dataset_key__get",
         "security": [
           {
             "OAuth2ClientCredentialsBearer": [
@@ -5457,12 +5457,12 @@
         ],
         "parameters": [
           {
-            "name": "fides_key",
+            "name": "dataset_key",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string",
-              "title": "Fides Key"
+              "title": "Dataset Key"
             }
           },
           {
@@ -5504,7 +5504,7 @@
         ],
         "summary": "Delete Dataset",
         "description": "Removes the DatasetConfig based on the given key.",
-        "operationId": "delete_dataset_api_v1_connection__connection_key__dataset__fides_key__delete",
+        "operationId": "delete_dataset_api_v1_connection__connection_key__dataset__dataset_key__delete",
         "security": [
           {
             "OAuth2ClientCredentialsBearer": [
@@ -5514,12 +5514,12 @@
         ],
         "parameters": [
           {
-            "name": "fides_key",
+            "name": "dataset_key",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string",
-              "title": "Fides Key"
+              "title": "Dataset Key"
             }
           },
           {
@@ -5549,14 +5549,14 @@
         }
       }
     },
-    "/api/v1/connection/{connection_key}/datasetconfig/{fides_key}": {
+    "/api/v1/connection/{connection_key}/datasetconfig/{dataset_key}": {
       "get": {
         "tags": [
           "Dataset Configs"
         ],
         "summary": "Get Dataset Config",
         "description": "Returns the specific Dataset Config linked to the Connection Config.",
-        "operationId": "get_dataset_config_api_v1_connection__connection_key__datasetconfig__fides_key__get",
+        "operationId": "get_dataset_config_api_v1_connection__connection_key__datasetconfig__dataset_key__get",
         "security": [
           {
             "OAuth2ClientCredentialsBearer": [
@@ -5566,12 +5566,12 @@
         ],
         "parameters": [
           {
-            "name": "fides_key",
+            "name": "dataset_key",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string",
-              "title": "Fides Key"
+              "title": "Dataset Key"
             }
           },
           {
@@ -5708,14 +5708,14 @@
         ]
       }
     },
-    "/api/v1/connection/{connection_key}/dataset/{fides_key}/inputs": {
+    "/api/v1/connection/{connection_key}/dataset/{dataset_key}/inputs": {
       "get": {
         "tags": [
           "Dataset Configs"
         ],
         "summary": "Dataset Identities And References",
         "description": "Returns a dictionary containing the immediate identity and dataset reference\ndependencies for the given dataset.",
-        "operationId": "dataset_identities_and_references_api_v1_connection__connection_key__dataset__fides_key__inputs_get",
+        "operationId": "dataset_identities_and_references_api_v1_connection__connection_key__dataset__dataset_key__inputs_get",
         "security": [
           {
             "OAuth2ClientCredentialsBearer": [
@@ -5725,12 +5725,12 @@
         ],
         "parameters": [
           {
-            "name": "fides_key",
+            "name": "dataset_key",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string",
-              "title": "Fides Key"
+              "title": "Dataset Key"
             }
           },
           {
@@ -5750,7 +5750,7 @@
               "application/json": {
                 "schema": {
                   "type": "object",
-                  "title": "Response Dataset Identities And References Api V1 Connection  Connection Key  Dataset  Fides Key  Inputs Get"
+                  "title": "Response Dataset Identities And References Api V1 Connection  Connection Key  Dataset  Dataset Key  Inputs Get"
                 }
               }
             }
@@ -5768,14 +5768,14 @@
         }
       }
     },
-    "/api/v1/connection/{connection_key}/dataset/{fides_key}/reachability": {
+    "/api/v1/connection/{connection_key}/dataset/{dataset_key}/reachability": {
       "get": {
         "tags": [
           "Dataset Configs"
         ],
         "summary": "Dataset Reachability",
         "description": "Returns a dictionary containing the immediate identity and dataset reference\ndependencies for the given dataset.",
-        "operationId": "dataset_reachability_api_v1_connection__connection_key__dataset__fides_key__reachability_get",
+        "operationId": "dataset_reachability_api_v1_connection__connection_key__dataset__dataset_key__reachability_get",
         "security": [
           {
             "OAuth2ClientCredentialsBearer": [
@@ -5785,12 +5785,12 @@
         ],
         "parameters": [
           {
-            "name": "fides_key",
+            "name": "dataset_key",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string",
-              "title": "Fides Key"
+              "title": "Dataset Key"
             }
           },
           {
@@ -5800,6 +5800,22 @@
             "schema": {
               "type": "string",
               "title": "Connection Key"
+            }
+          },
+          {
+            "name": "policy_key",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Policy Key"
             }
           }
         ],
@@ -5827,13 +5843,13 @@
         }
       }
     },
-    "/api/v1/connection/{connection_key}/dataset/{fides_key}/test": {
+    "/api/v1/connection/{connection_key}/dataset/{dataset_key}/test": {
       "post": {
         "tags": [
           "Dataset Configs"
         ],
         "summary": "Test Connection Datasets",
-        "operationId": "test_connection_datasets_api_v1_connection__connection_key__dataset__fides_key__test_post",
+        "operationId": "test_connection_datasets_api_v1_connection__connection_key__dataset__dataset_key__test_post",
         "security": [
           {
             "OAuth2ClientCredentialsBearer": [
@@ -5843,12 +5859,12 @@
         ],
         "parameters": [
           {
-            "name": "fides_key",
+            "name": "dataset_key",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string",
-              "title": "Fides Key"
+              "title": "Dataset Key"
             }
           },
           {
@@ -5866,7 +5882,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/UnlabeledIdentities"
+                "$ref": "#/components/schemas/DatasetTestRequest"
               }
             }
           }
@@ -17280,6 +17296,24 @@
         ],
         "title": "DatasetReachability",
         "description": "Response containing reachability details for a single dataset"
+      },
+      "DatasetTestRequest": {
+        "properties": {
+          "policy_key": {
+            "type": "string",
+            "title": "Policy Key"
+          },
+          "identities": {
+            "$ref": "#/components/schemas/UnlabeledIdentities"
+          }
+        },
+        "type": "object",
+        "required": [
+          "policy_key",
+          "identities"
+        ],
+        "title": "DatasetTestRequest",
+        "description": "The policy key and inputs required to run a dataset test."
       },
       "DatasetTraversalDetails": {
         "properties": {
