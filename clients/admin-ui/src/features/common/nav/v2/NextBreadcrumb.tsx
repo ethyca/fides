@@ -3,6 +3,7 @@ import {
   AntBreadcrumb as Breadcrumb,
   AntBreadcrumbItemType as BreadcrumbItemType,
   AntBreadcrumbProps as BreadcrumbProps,
+  AntButton as Button,
   AntTypography as Typography,
 } from "fidesui";
 import { Url } from "next/dist/shared/lib/router/router";
@@ -36,6 +37,7 @@ export const NextBreadcrumb = ({ items, ...props }: NextBreadcrumbProps) => {
       items?.map((item, i) => {
         const isCurrentPage = i === items.length - 1;
         const modifiedItem = { ...item };
+        const renderAsButton = modifiedItem.onClick && !modifiedItem.href;
         if (typeof modifiedItem.title === "string") {
           // for everything except the current page, truncate the title if it's too long
           modifiedItem.title = (
@@ -49,6 +51,20 @@ export const NextBreadcrumb = ({ items, ...props }: NextBreadcrumbProps) => {
               {modifiedItem.title}
             </Text>
           );
+        }
+        if (renderAsButton) {
+          modifiedItem.title = (
+            <Button
+              type="text"
+              size="small"
+              icon={modifiedItem.icon}
+              onClick={modifiedItem.onClick}
+              className="ant-breadcrumb-link -mt-px px-1 text-inherit"
+            >
+              {modifiedItem.title}
+            </Button>
+          );
+          return modifiedItem;
         }
         if (modifiedItem.icon) {
           modifiedItem.title = (
