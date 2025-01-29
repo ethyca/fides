@@ -12,7 +12,7 @@ import { Text, VStack } from "fidesui";
 import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";
 
-import { DATA_CATALOG_ROUTE } from "~/features/common/nav/v2/routes";
+import { DATA_CATALOG_II_ROUTE } from "~/features/common/nav/v2/routes";
 import {
   DefaultCell,
   FidesTableV2,
@@ -170,7 +170,9 @@ const CatalogProjectsTable = ({
         tableInstance={tableInstance}
         emptyTableNotice={<EmptyTableNotice />}
         onRowClick={(row) =>
-          router.push(`${DATA_CATALOG_ROUTE}/${systemKey}/projects/${row.urn}`)
+          router.push(
+            `${DATA_CATALOG_II_ROUTE}/${systemKey}/projects/${row.urn}`,
+          )
         }
       />
       <PaginationBar

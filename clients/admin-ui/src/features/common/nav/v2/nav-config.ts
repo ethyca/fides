@@ -73,6 +73,13 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         requiresFlag: "dataCatalog",
         requiresPlus: true,
       },
+      {
+        title: "2 Data 2 Catalog",
+        path: routes.DATA_CATALOG_II_ROUTE,
+        scopes: [],
+        requiresFlag: "dataCatalog",
+        requiresPlus: true,
+      },
     ],
   },
   {

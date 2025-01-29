@@ -1,6 +1,6 @@
 import { NextBreadcrumbProps } from "~/features/common/nav/v2/NextBreadcrumb";
 
-const parseUrnToBreadcrumbs = (
+const parseUrnWithProjectToBreadcrumbs = (
   urn: string,
   urlPrefix: string,
 ): NextBreadcrumbProps["items"] => {
@@ -20,4 +20,4 @@ const parseUrnToBreadcrumbs = (
   return breadcrumbItems;
 };
 
-export default parseUrnToBreadcrumbs;
+export default parseUrnWithProjectToBreadcrumbs;

@@ -6,7 +6,7 @@ import Layout from "~/features/common/Layout";
 import { DATA_CATALOG_ROUTE } from "~/features/common/nav/v2/routes";
 import PageHeader from "~/features/common/PageHeader";
 import CatalogResourcesTable from "~/features/data-catalog/staged-resources/CatalogResourcesTable";
-import parseUrnToBreadcrumbs from "~/features/data-catalog/staged-resources/parseUrnToBreadcrumbs";
+import parseUrnWithProjectToBreadcrumbs from "~/features/data-catalog/staged-resources/parseUrnToBreadcrumbs";
 import { useGetSystemByFidesKeyQuery } from "~/features/system";
 
 const CatalogResourceView: NextPage = () => {
@@ -16,8 +16,10 @@ const CatalogResourceView: NextPage = () => {
   const { data: system, isLoading } = useGetSystemByFidesKeyQuery(systemId);
 
   const resourceBreadcrumbs =
-    parseUrnToBreadcrumbs(resourceUrn, `${DATA_CATALOG_ROUTE}/${systemId}`) ??
-    [];
+    parseUrnWithProjectToBreadcrumbs(
+      resourceUrn,
+      `${DATA_CATALOG_ROUTE}/${systemId}`,
+    ) ?? [];
 
   if (isLoading) {
     return <FidesSpinner />;
