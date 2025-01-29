@@ -19,8 +19,7 @@ from fides.api.task.create_request_tasks import run_access_request
 
 
 def get_dataset_reachability(
-    db: Session,
-    dataset_config: DatasetConfig,
+    db: Session, dataset_config: DatasetConfig, policy: Optional[Policy] = None
 ) -> Tuple[bool, Optional[str]]:
     """
     Determines if the given dataset is reachable along with an error message
@@ -58,7 +57,7 @@ def get_dataset_reachability(
     }
 
     try:
-        Traversal(dataset_graph, identity_seed)
+        Traversal(dataset_graph, identity_seed, policy)
     except UnreachableNodesError as exc:
         return (
             False,
@@ -98,7 +97,7 @@ def run_test_access_request(
 ) -> PrivacyRequest:
     """
     Creates a privacy request with a source of "Dataset test" that runs an access request for a single dataset.
-    The input data is used to mock any external dataset values referenced by our dataset so that it can run
+    The input data is used to mock any external dataset values referenced by our dataset so that it can run in
     complete isolation.
     """
 
@@ -133,7 +132,7 @@ def run_test_access_request(
     privacy_request.cache_identity(input_identity)
 
     graph_dataset = dataset_config.get_graph()
-    modified_graph_dataset = _replace_references_with_identities(
+    modified_graph_dataset = replace_references_with_identities(
         dataset_config.fides_key, graph_dataset
     )
 
@@ -153,7 +152,7 @@ def run_test_access_request(
     return privacy_request
 
 
-def _replace_references_with_identities(
+def replace_references_with_identities(
     dataset_key: str, graph_dataset: GraphDataset
 ) -> GraphDataset:
     """

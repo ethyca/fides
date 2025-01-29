@@ -1,6 +1,6 @@
 # pylint: disable=E1101
 from enum import Enum as EnumType
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Set, Tuple, Union
 
 from fideslang.default_taxonomy import DEFAULT_TAXONOMY
 from fideslang.models import DataCategory as FideslangDataCategory
@@ -28,6 +28,9 @@ from fides.api.models.storage import StorageConfig, get_active_default_storage_c
 from fides.api.schemas.policy import ActionType, DrpAction
 from fides.api.util.data_category import _validate_data_category
 from fides.config import CONFIG
+
+if TYPE_CHECKING:
+    from fides.api.graph.traversal import TraversalNode
 
 
 class CurrentStep(EnumType):
@@ -116,6 +119,15 @@ class Policy(Base):
         _ = [rule.delete(db=db) for rule in self.rules]  # type: ignore[attr-defined]
         return super().delete(db=db)
 
+    def get_access_target_categories(self) -> List[str]:
+        """Returns all data categories that are the target of access rules."""
+        access_categories = []
+        for rule in self.rules:  # type: ignore[attr-defined]
+            if rule.action_type == ActionType.access:
+                access_categories.extend(rule.get_target_data_categories())
+
+        return access_categories
+
     def get_erasure_target_categories(self) -> List[str]:
         """Returns all data categories that are the target of erasure rules."""
         erasure_categories = []
@@ -139,6 +151,20 @@ class Policy(Base):
             return self.rules[0].action_type  # type: ignore[attr-defined]
         except IndexError:
             return None
+
+    def applies_to(self, node: "TraversalNode") -> bool:
+        """
+        Returns True if any data category in the traversal node starts with any of the policy's target categories.
+        """
+
+        target_data_categories: Set[str] = set(
+            self.get_access_target_categories()
+        ) | set(self.get_erasure_target_categories())
+
+        return any(
+            any(category.startswith(target) for target in target_data_categories)
+            for category in node.get_data_categories()
+        )
 
 
 def _get_ref_from_taxonomy(
