@@ -273,13 +273,13 @@ describe("Action center", () => {
   describe("Action center assets categorized results", () => {
     const webMonitorKey = "my_web_monitor_1";
     const systemId = "system_key-8fe42cdb-af2e-4b9e-9b38-f75673180b88";
+    const systemName = "Google Tag Manager";
     beforeEach(() => {
       cy.visit(`${ACTION_CENTER_ROUTE}/${webMonitorKey}/${systemId}`);
       cy.wait("@getSystemAssetResults");
-      cy.getByTestId("page-breadcrumb").should("contain", systemId); // little hack to make sure the systemId is available before proceeding
+      cy.getByTestId("page-breadcrumb").should("contain", systemName); // little hack to make sure the systemName is available before proceeding
     });
     it("should render asset results view", () => {
-      cy.getByTestId("page-breadcrumb").should("contain", systemId);
       cy.getByTestId("search-bar").should("exist");
       cy.getByTestId("pagination-btn").should("exist");
       cy.getByTestId("bulk-actions-menu").should("be.disabled");
@@ -428,6 +428,24 @@ describe("Action center", () => {
       cy.getByTestId("success-alert").should(
         "contain",
         "11 assets from Google Tag Manager have been added to the system inventory.",
+      );
+    });
+    it("should bulk assign assets to a system", () => {
+      cy.getByTestId("bulk-actions-menu").should("be.disabled");
+      cy.getByTestId("row-0-col-select").find("label").click();
+      cy.getByTestId("row-2-col-select").find("label").click();
+      cy.getByTestId("row-3-col-select").find("label").click();
+      cy.getByTestId("selected-count").should("contain", "3 selected");
+      cy.getByTestId("bulk-actions-menu").should("not.be.disabled");
+      cy.getByTestId("bulk-actions-menu").click();
+      cy.getByTestId("bulk-assign-system").click();
+      cy.getByTestId("add-modal-content").should("be.visible");
+      cy.getByTestId("system-select").antSelect("Fidesctl System");
+      cy.getByTestId("save-btn").click();
+      cy.wait("@setAssetSystem");
+      cy.getByTestId("success-alert").should(
+        "contain",
+        "3 assets have been assigned to Fidesctl System.",
       );
     });
   });
