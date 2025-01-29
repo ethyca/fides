@@ -13,6 +13,58 @@ PRIVACY_REQUEST_TASK_TIMEOUT = 5
 PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL = 150
 
 
+def validate_privacy_request(
+    pr, user_id, bigquery_enterprise_test_dataset_collections, access=True
+):
+    results = pr.get_raw_access_results()
+
+    assert len(results.keys()) == len(bigquery_enterprise_test_dataset_collections)
+
+    for key in results.keys():
+        assert results[key] is not None
+        assert results[key] != {}
+
+    users = results["enterprise_dsr_testing:users"]
+    assert len(users) == 1
+    user_details = users[0]
+    assert user_details["id"] == user_id
+
+    assert (
+        len(
+            [
+                comment["user_id"]
+                for comment in results["enterprise_dsr_testing:comments"]
+            ]
+        )
+        == 16
+        if access
+        else 1
+    )
+    assert (
+        len(
+            [post["user_id"] for post in results["enterprise_dsr_testing:post_history"]]
+        )
+        == 39
+        if access
+        else 1
+    )
+    assert (
+        len(
+            [
+                post["title"]
+                for post in results[
+                    "enterprise_dsr_testing:stackoverflow_posts_partitioned"
+                ]
+            ]
+        )
+        == 30
+        if access
+        else 1
+    )
+
+    return results
+
+
 @pytest.mark.integration_bigquery
 @pytest.mark.integration_external
 @pytest.mark.parametrize(
@@ -37,6 +89,7 @@ def test_access_request(
     policy_pre_execution_webhooks,
     policy_post_execution_webhooks,
     run_privacy_request_task,
+    bigquery_enterprise_test_dataset_collections,
 ):
     request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
     request.getfixturevalue(
@@ -67,44 +120,7 @@ def test_access_request(
         PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL,
     )
 
-    results = pr.get_raw_access_results()
-    assert len(results.keys()) == 4
-
-    for key in results.keys():
-        assert results[key] is not None
-        assert results[key] != {}
-
-    users = results["enterprise_dsr_testing:users"]
-    assert len(users) == 1
-    user_details = users[0]
-    assert user_details["id"] == user_id
-
-    assert (
-        len(
-            [
-                comment["user_id"]
-                for comment in results["enterprise_dsr_testing:comments"]
-            ]
-        )
-        == 16
-    )
-    assert (
-        len(
-            [post["user_id"] for post in results["enterprise_dsr_testing:post_history"]]
-        )
-        == 39
-    )
-    assert (
-        len(
-            [
-                post["title"]
-                for post in results[
-                    "enterprise_dsr_testing:stackoverflow_posts_partitioned"
-                ]
-            ]
-        )
-        == 30
-    )
+    validate_privacy_request(pr, user_id, bigquery_enterprise_test_dataset_collections)
 
     log_id = pr.execution_logs[0].id
     pr_id = pr.id
@@ -156,6 +172,7 @@ def test_erasure_request(
     bigquery_fixtures,
     bigquery_enterprise_erasure_policy,
     run_privacy_request_task,
+    bigquery_enterprise_test_dataset_collections,
 ):
     request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
     bigquery_enterprise_resources = request.getfixturevalue(bigquery_fixtures)
@@ -164,7 +181,7 @@ def test_erasure_request(
     # first test access request against manually added data
     user_id = bigquery_enterprise_resources["user_id"]
     customer_email = "customer-1@example.com"
-    data = {
+    data_user = {
         "requested_at": "2024-08-30T16:09:37.359Z",
         "policy_key": policy.key,
         "identity": {
@@ -180,47 +197,12 @@ def test_erasure_request(
         db,
         policy,
         run_privacy_request_task,
-        data,
+        data_user,
         PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL,
     )
 
-    results = pr.get_raw_access_results()
-    assert len(results.keys()) == 4
-
-    for key in results.keys():
-        assert results[key] is not None
-        assert results[key] != {}
-
-    users = results["enterprise_dsr_testing:users"]
-    assert len(users) == 1
-    user_details = users[0]
-    assert user_details["id"] == user_id
-
-    assert (
-        len(
-            [
-                comment["user_id"]
-                for comment in results["enterprise_dsr_testing:comments"]
-            ]
-        )
-        == 1
-    )
-    assert (
-        len(
-            [post["user_id"] for post in results["enterprise_dsr_testing:post_history"]]
-        )
-        == 1
-    )
-    assert (
-        len(
-            [
-                post["title"]
-                for post in results[
-                    "enterprise_dsr_testing:stackoverflow_posts_partitioned"
-                ]
-            ]
-        )
-        == 1
+    validate_privacy_request(
+        pr, user_id, bigquery_enterprise_test_dataset_collections, False
     )
 
     data = {
@@ -230,7 +212,7 @@ def test_erasure_request(
             "email": customer_email,
             "stackoverflow_user_id": {
                 "label": "Stackoverflow User Id",
-                "value": bigquery_enterprise_resources["user_id"],
+                "value": user_id,
             },
         },
     }
@@ -295,6 +277,7 @@ def test_access_request_multiple_custom_identities(
     policy_pre_execution_webhooks,
     policy_post_execution_webhooks,
     run_privacy_request_task,
+    bigquery_enterprise_test_dataset_collections,
 ):
     request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
 
@@ -321,44 +304,7 @@ def test_access_request_multiple_custom_identities(
         PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL,
     )
 
-    results = pr.get_raw_access_results()
-    assert len(results.keys()) == 4
-
-    for key in results.keys():
-        assert results[key] is not None
-        assert results[key] != {}
-
-    users = results["enterprise_dsr_testing:users"]
-    assert len(users) == 1
-    user_details = users[0]
-    assert user_details["id"] == user_id
-
-    assert (
-        len(
-            [
-                comment["user_id"]
-                for comment in results["enterprise_dsr_testing:comments"]
-            ]
-        )
-        == 16
-    )
-    assert (
-        len(
-            [post["user_id"] for post in results["enterprise_dsr_testing:post_history"]]
-        )
-        == 39
-    )
-    assert (
-        len(
-            [
-                post["title"]
-                for post in results[
-                    "enterprise_dsr_testing:stackoverflow_posts_partitioned"
-                ]
-            ]
-        )
-        == 30
-    )
+    validate_privacy_request(pr, user_id, bigquery_enterprise_test_dataset_collections)
 
     log_id = pr.execution_logs[0].id
     pr_id = pr.id
@@ -410,6 +356,7 @@ def test_erasure_request_multiple_custom_identities(
     bigquery_fixtures,
     bigquery_enterprise_erasure_policy,
     run_privacy_request_task,
+    bigquery_enterprise_test_dataset_collections,
 ):
     request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
     bigquery_enterprise_resources = request.getfixturevalue(bigquery_fixtures)
@@ -437,43 +384,8 @@ def test_erasure_request_multiple_custom_identities(
         PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL,
     )
 
-    results = pr.get_raw_access_results()
-    assert len(results.keys()) == 4
-
-    for key in results.keys():
-        assert results[key] is not None
-        assert results[key] != {}
-
-    users = results["enterprise_dsr_testing:users"]
-    assert len(users) == 1
-    user_details = users[0]
-    assert user_details["id"] == user_id
-
-    assert (
-        len(
-            [
-                comment["user_id"]
-                for comment in results["enterprise_dsr_testing:comments"]
-            ]
-        )
-        == 1
-    )
-    assert (
-        len(
-            [post["user_id"] for post in results["enterprise_dsr_testing:post_history"]]
-        )
-        == 1
-    )
-    assert (
-        len(
-            [
-                post["title"]
-                for post in results[
-                    "enterprise_dsr_testing:stackoverflow_posts_partitioned"
-                ]
-            ]
-        )
-        == 1
+    validate_privacy_request(
+        pr, user_id, bigquery_enterprise_test_dataset_collections, False
     )
 
     data = {
