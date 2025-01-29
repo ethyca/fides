@@ -32,6 +32,9 @@ export const DATA_DISCOVERY_ROUTE = "/data-discovery/discovery";
 export const DATA_DISCOVERY_ROUTE_DETAIL =
   "/data-discovery/discovery/[resourceUrn]";
 
+// End-to-end datasets
+export const DATA_CATALOG_ROUTE = "/data-catalog";
+
 // Privacy requests group
 export const DATASTORE_CONNECTION_ROUTE = "/datastore-connection";
 export const PRIVACY_REQUESTS_ROUTE = "/privacy-requests";

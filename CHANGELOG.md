@@ -32,7 +32,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Migrated radio buttons and groups to Ant Design [#5681](https://github.com/ethyca/fides/pull/5681)
 
 ### Added
-- Migration to add the `data_uses` column to `stagedresource` table, prereqs for Data Catalog work in Fidesplus [#5600](https://github.com/ethyca/fides/pull/5600/)
+- Migration to add the `data_uses` column to `stagedresource` table, prereqs for Data Catalog work in Fidesplus [#5600](https://github.com/ethyca/fides/pull/5600/) https://github.com/ethyca/fides/labels/db-migration
 
 ### Fixed
 - Updating mongodb connectors so it can support usernames and password with URL encoded characters [#5682](https://github.com/ethyca/fides/pull/5682)
@@ -43,6 +43,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ### Added
 - Added Action Center MVP behind new feature flag [#5622](https://github.com/ethyca/fides/pull/5622)
+- Added Data Catalog MVP behind new feature flag [#5628](https://github.com/ethyca/fides/pull/5628)
 - Added cache-clearing methods to the `DBCache` model to allow deleting cache entries [#5629](https://github.com/ethyca/fides/pull/5629)
 - Adds partitioning, custom identities, multiple identities to test coverage for BigQuery Enterprise [#5618](https://github.com/ethyca/fides/pull/5618)
 - Added Datahub groundwork required by Fidesplus [#5666](https://github.com/ethyca/fides/pull/5666)
@@ -210,6 +211,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ### Fixed
  - API router sanitizer being too aggressive with NextJS Catch-all Segments [#5438](https://github.com/ethyca/fides/pull/5438)
+ - Fix rendering of subfield names in D&D tables [#5439](https://github.com/ethyca/fides/pull/5439)
  - Fix BigQuery `partitioning` queries to properly support multiple identity clauses [#5432](https://github.com/ethyca/fides/pull/5432)
 
 ## [2.48.0](https://github.com/ethyca/fides/compare/2.47.1...2.48.0)
