@@ -366,6 +366,7 @@ const ConnectorParametersForm = ({
                 disabled={!connection?.key}
                 loading={result.isLoading || result.isFetching}
                 onClick={handleTestConnectionClick}
+                data-testid="test-connection-button"
               >
                 {testButtonLabel}
               </Button>

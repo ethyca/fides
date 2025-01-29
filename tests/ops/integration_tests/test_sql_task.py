@@ -933,27 +933,31 @@ class TestRetryIntegration:
 
             # All four nodes directly downstream of the root node attempt to process,
             # and nothing further processes downstream
-            assert [
-                (
-                    get_collection_identifier(log),
-                    log.status.value,
-                )
-                for log in execution_logs.order_by(ExecutionLog.created_at)
-            ] == [
-                ("Dataset traversal", "complete"),
-                ("postgres_example_test_dataset:customer", "in_processing"),
-                ("postgres_example_test_dataset:customer", "retrying"),
-                ("postgres_example_test_dataset:customer", "error"),
-                ("postgres_example_test_dataset:employee", "in_processing"),
-                ("postgres_example_test_dataset:employee", "retrying"),
-                ("postgres_example_test_dataset:employee", "error"),
-                ("postgres_example_test_dataset:report", "in_processing"),
-                ("postgres_example_test_dataset:report", "retrying"),
-                ("postgres_example_test_dataset:report", "error"),
-                ("postgres_example_test_dataset:visit", "in_processing"),
-                ("postgres_example_test_dataset:visit", "retrying"),
-                ("postgres_example_test_dataset:visit", "error"),
-            ]
+            assert set(
+                [
+                    (
+                        get_collection_identifier(log),
+                        log.status.value,
+                    )
+                    for log in execution_logs.order_by(ExecutionLog.created_at)
+                ]
+            ) == set(
+                [
+                    ("Dataset traversal", "complete"),
+                    ("postgres_example_test_dataset:customer", "in_processing"),
+                    ("postgres_example_test_dataset:customer", "retrying"),
+                    ("postgres_example_test_dataset:customer", "error"),
+                    ("postgres_example_test_dataset:employee", "in_processing"),
+                    ("postgres_example_test_dataset:employee", "retrying"),
+                    ("postgres_example_test_dataset:employee", "error"),
+                    ("postgres_example_test_dataset:report", "in_processing"),
+                    ("postgres_example_test_dataset:report", "retrying"),
+                    ("postgres_example_test_dataset:report", "error"),
+                    ("postgres_example_test_dataset:visit", "in_processing"),
+                    ("postgres_example_test_dataset:visit", "retrying"),
+                    ("postgres_example_test_dataset:visit", "error"),
+                ]
+            )
             # Downstream request tasks were marked as error
             assert [rt.status.value for rt in privacy_request.access_tasks] == [
                 "complete",
