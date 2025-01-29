@@ -1197,11 +1197,25 @@ def restart_privacy_request_from_failure(
     privacy_request_id: str,
     *,
     db: Session = Depends(deps.get_db),
+    privacy_request_service: PrivacyRequestService = Depends(
+        deps.get_privacy_request_service
+    ),
 ) -> PrivacyRequestResponse:
     """Restart a privacy request from failure"""
     privacy_request: PrivacyRequest = get_privacy_request_or_error(
         db, privacy_request_id
     )
+
+    # Automatically resubmit the request if the cache has expired
+    if (
+        not privacy_request.get_cached_identity_data()
+        and privacy_request.status
+        not in [PrivacyRequestStatus.complete, PrivacyRequestStatus.pending]
+    ):
+        logger.info(
+            f"Cached data for privacy request {privacy_request.id} has expired, automatically resubmitting request"
+        )
+        return privacy_request_service.resubmit_privacy_request(privacy_request_id)
 
     if privacy_request.status != PrivacyRequestStatus.error:
         raise HTTPException(
