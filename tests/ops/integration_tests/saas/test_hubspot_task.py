@@ -49,10 +49,6 @@ class TestHubspotConnector:
             == hubspot_identity_email
         )
 
-    @pytest.mark.skip(reason="Needs troubleshooting")
-    @pytest.mark.usefixtures(
-        "use_dsr_3_0"
-    )  # Only testing on DSR 3.0 not 2.0 - because of fixtures taking too long to settle down
     async def test_hubspot_erasure_request_task(
         self,
         hubspot_runner: ConnectorRunner,
@@ -66,6 +62,13 @@ class TestHubspotConnector:
 
         contact_id, user_id = hubspot_data
 
+        email_subscription_response = hubspot_test_client.get_email_subscriptions(
+            email=hubspot_identity_email
+        )
+        subscription_body = email_subscription_response.json()
+        for subscription_status in subscription_body["results"]:
+            assert subscription_status["status"] == "SUBSCRIBED"
+
         (
             _,
             erasure_results,
@@ -78,8 +81,8 @@ class TestHubspotConnector:
         # Masking request only issued to "contacts", "subscription_preferences", and "users" endpoints
         assert erasure_results == {
             "hubspot_instance:contacts": 1,
+            "hubspot_instance:subscription_preferences": 1,
             "hubspot_instance:owners": 0,
-            "hubspot_instance:subscription_preferences": 2,
             "hubspot_instance:users": 1,
         }
 
@@ -87,15 +90,15 @@ class TestHubspotConnector:
         contact_response = hubspot_test_client.get_contact(contact_id=contact_id)
         contact_body = contact_response.json()
         assert contact_body["properties"]["firstname"] == "MASKED"
-        assert contact_body["properties"]["email"].endswith("@company.com")
+        assert contact_body["properties"]["email"].endswith("+masked@ethyca.com")
 
         # verify user is unsubscribed
         email_subscription_response = hubspot_test_client.get_email_subscriptions(
             email=hubspot_identity_email
         )
         subscription_body = email_subscription_response.json()
-        for subscription_status in subscription_body["subscriptionStatuses"]:
-            assert subscription_status["status"] == "NOT_SUBSCRIBED"
+        for subscription_status in subscription_body["results"]:
+            assert subscription_status["status"] == "UNSUBSCRIBED"
 
         # verify user is deleted
         error_message = f"User with user id {user_id} could not be deleted from Hubspot"
