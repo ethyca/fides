@@ -43,7 +43,6 @@ def upgrade():
             server_default=sa.text("now()"),
             nullable=True,
         ),
-        sa.ForeignKeyConstraint(["monitor_config_key"], ["monitorconfig.key"]),
         sa.PrimaryKeyConstraint("id"),
     )
     op.create_index(
