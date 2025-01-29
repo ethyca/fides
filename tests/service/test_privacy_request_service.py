@@ -3,10 +3,13 @@ from unittest.mock import create_autospec
 
 import pytest
 from sqlalchemy.orm import Session
+from sqlalchemy.orm.exc import ObjectDeletedError
 
 from fides.api.common_exceptions import FidesopsException
+from fides.api.models.client import ClientDetail
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.fides_user import FidesUser
+from fides.api.models.fides_user_permissions import FidesUserPermissions
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import (
     ExecutionLog,
@@ -15,6 +18,7 @@ from fides.api.models.privacy_request import (
     PrivacyRequestStatus,
 )
 from fides.api.models.property import Property
+from fides.api.oauth.roles import APPROVER, CONTRIBUTOR, OWNER, VIEWER_AND_APPROVER
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.privacy_request import PrivacyRequestCreate
 from fides.api.schemas.redis_cache import CustomPrivacyRequestField, Identity
@@ -35,6 +39,38 @@ class TestPrivacyRequestService:
     ) -> PrivacyRequestService:
         return PrivacyRequestService(db, ConfigProxy(db), mock_messaging_service)
 
+    @pytest.fixture
+    def reviewing_user(self, db):
+        user = FidesUser.create(
+            db=db,
+            data={
+                "username": "reviewing_user",
+                "password": "TESTdcnG@wzJeu0&%3Qe2fGo7",
+                "email_address": "fides.user@ethyca.com",
+            },
+        )
+        client = ClientDetail(
+            hashed_secret="thisisatest",
+            salt="thisisstillatest",
+            roles=[APPROVER],
+            scopes=[],
+            user_id=user.id,
+        )
+
+        FidesUserPermissions.create(
+            db=db, data={"user_id": user.id, "roles": [APPROVER]}
+        )
+
+        db.add(client)
+        db.commit()
+        db.refresh(client)
+        yield user
+        try:
+            client.delete(db)
+            user.delete(db)
+        except ObjectDeletedError:
+            pass
+
     @pytest.mark.integration
     @pytest.mark.integration_postgres
     @pytest.mark.usefixtures(
@@ -51,7 +87,7 @@ class TestPrivacyRequestService:
         policy: Policy,
         connection_config: ConnectionConfig,
         property_a: Property,
-        user: FidesUser,
+        reviewing_user: FidesUser,
     ):
         # remove the host from the Postgres example connection
         # to force the privacy request to error
@@ -69,7 +105,7 @@ class TestPrivacyRequestService:
         encryption_key = "0123456789ABCDEF"
         property_id = property_a.id
         source = PrivacyRequestSource.request_manager
-        submitted_by = user.id
+        submitted_by = reviewing_user.id
 
         privacy_request = privacy_request_service.create_privacy_request(
             PrivacyRequestCreate(
