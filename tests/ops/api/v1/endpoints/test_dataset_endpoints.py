@@ -2095,10 +2095,10 @@ def get_connection_dataset_url(
     connection_key = "nonexistent_key"
     if connection_config:
         connection_key = connection_config.key
-    fides_key = "nonexistent_key"
+    dataset_key = "nonexistent_key"
     if dataset_config:
-        fides_key = dataset_config.fides_key
-    path_params = {"connection_key": connection_key, "fides_key": fides_key}
+        dataset_key = dataset_config.fides_key
+    path_params = {"connection_key": connection_key, "dataset_key": dataset_key}
     return path.format(**path_params)
 
 
@@ -2266,10 +2266,10 @@ def get_dataset_config_url(
     connection_key = "nonexistent_key"
     if connection_config:
         connection_key = connection_config.key
-    fides_key = "nonexistent_key"
+    dataset_key = "nonexistent_key"
     if dataset_config:
-        fides_key = dataset_config.fides_key
-    path_params = {"connection_key": connection_key, "fides_key": fides_key}
+        dataset_key = dataset_config.fides_key
+    path_params = {"connection_key": connection_key, "dataset_key": dataset_key}
     return path.format(**path_params)
 
 

@@ -457,13 +457,22 @@ describe("Fides-js GPP extension", () => {
           .then((args) => {
             const [data] = args;
             expect(data.pingData.applicableSections).to.eql([8]);
-            // TODO: (HJ-196) once locations and regulations are set, this value may change as it is currently hard coded
+            // TODO: (HJ-196) as locations and regulations are set, this value may change as it is currently hard coded
             expect(data.pingData.supportedAPIs).to.eql([
               "8:usca",
               "10:usco",
               "12:usct",
               "11:usut",
               "9:usva",
+              "17:usde",
+              "13:usfl",
+              "18:usia",
+              "14:usmt",
+              "19:usne",
+              "20:usnh",
+              "21:usnj",
+              "22:ustn",
+              "16:ustx",
             ]);
           });
       });
