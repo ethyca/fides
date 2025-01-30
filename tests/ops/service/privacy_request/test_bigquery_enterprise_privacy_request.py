@@ -231,7 +231,7 @@ def test_erasure_request(
     # first test access request against manually added data
     user_id = bigquery_enterprise_resources["user_id"]
     customer_email = "customer-1@example.com"
-    data_user = {
+    data = {
         "requested_at": "2024-08-30T16:09:37.359Z",
         "policy_key": policy.key,
         "identity": {
@@ -247,7 +247,7 @@ def test_erasure_request(
         db,
         policy,
         run_privacy_request_task,
-        data_user,
+        data,
         PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL,
     )
 
