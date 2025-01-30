@@ -64,7 +64,7 @@ export const useAlert = () => {
    * @param description
    */
   const successAlert = (
-    description: string,
+    description: string | JSX.Element,
     title?: string,
     addedOptions?: UseToastOptions,
   ) => {

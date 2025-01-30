@@ -18,6 +18,7 @@ import {
   MenuList,
   Text,
 } from "fidesui";
+import NextLink from "next/link";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 
@@ -162,7 +163,15 @@ export const DiscoveredAssetsTable = ({
       } else {
         tableInstance.resetRowSelection();
         successAlert(
-          `${selectedUrns.length} assets have been assigned to ${selectedSystem.label}.`,
+          <>
+            {`${selectedUrns.length} asset${selectedUrns.length > 1 ? "s" : ""} ${selectedUrns.length > 1 ? "have" : "has"} been assigned to ${selectedSystem.label}.`}{" "}
+            <NextLink
+              className="underline underline-offset-2"
+              href={`${ACTION_CENTER_ROUTE}/${monitorId}/${selectedSystem.value}`}
+            >
+              View
+            </NextLink>
+          </>,
           `Confirmed`,
         );
       }
