@@ -532,14 +532,14 @@ def bigquery_enterprise_resources(
         """
         connection.execute(stmt)
 
-        # Create test stackoverflow_posts_partitioned data. Posts are responses to questions on Stackoverflow, and does not include original question.
+        # Create test stackoverflow_posts data. Posts are responses to questions on Stackoverflow, and does not include original question.
         post_body = "For me, the solution was to adopt 3 cats and dance with them under the full moon at midnight."
-        stmt = "select max(id) from enterprise_dsr_testing.stackoverflow_posts_partitioned;"
+        stmt = "select max(id) from enterprise_dsr_testing.stackoverflow_posts;"
         res = connection.execute(stmt)
         random_increment = random.randint(0, 99999)
         post_id = res.all()[0][0] + random_increment
         stmt = f"""
-            insert into enterprise_dsr_testing.stackoverflow_posts_partitioned (body, creation_date, id, owner_user_id, owner_display_name)
+            insert into enterprise_dsr_testing.stackoverflow_posts (body, creation_date, id, owner_user_id, owner_display_name)
             values ('{post_body}', '{creation_date}', {post_id}, {user_id}, '{display_name}');
         """
         connection.execute(stmt)
@@ -589,7 +589,7 @@ def bigquery_enterprise_resources(
         stmt = f"delete from enterprise_dsr_testing.comments where id = {comment_id};"
         connection.execute(stmt)
 
-        stmt = f"delete from enterprise_dsr_testing.stackoverflow_posts_partitioned where id = {post_id};"
+        stmt = f"delete from enterprise_dsr_testing.stackoverflow_posts where id = {post_id};"
         connection.execute(stmt)
 
         stmt = f"delete from enterprise_dsr_testing.users where id = {user_id};"
