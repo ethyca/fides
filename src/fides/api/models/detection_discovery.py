@@ -5,12 +5,12 @@ from enum import Enum
 from typing import Any, Dict, Iterable, List, Optional, Type
 
 from loguru import logger
-from sqlalchemy import ARRAY, Boolean, Column, DateTime, ForeignKey, String
+from sqlalchemy import ARRAY, Boolean, Column, DateTime, ForeignKey, String, func
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.future import select
-from sqlalchemy.orm import Session, RelationshipProperty, relationship
+from sqlalchemy.orm import Session, relationship
 from sqlalchemy.orm.query import Query
 
 from fides.api.db.base_class import Base, FidesBase
@@ -371,11 +371,11 @@ class MonitorExecution(Base):
         nullable=False,
         default=list,
     )
-    created_at = Column(
-        DateTime(timezone=True), nullable=False, default=datetime.now(timezone.utc)
-    )
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(
-        DateTime(timezone=True), nullable=False, default=datetime.now(timezone.utc)
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
     )
 
 

@@ -342,11 +342,9 @@ class ConnectionConfig(Base):
 
         for monitor in self.monitors:
             logger.info(
-                "Deleting monitor config {} associated with connection config {}...",
-                monitor.key,
-                self.key,
+                f"Deleting monitor config {monitor.key} associated with connection config {monitor.key}",
             )
-            monitor.delete(db=db)
+            db.delete(monitor)
 
         return super().delete(db=db)
 
