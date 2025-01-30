@@ -31,7 +31,6 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Added a new endpoint to fully resubmit any errored privacy requests [#5658](https://github.com/ethyca/fides/pull/5658) https://github.com/ethyca/fides/labels/db-migration
 
 ### Changed
-- Added frequency field to DataHubSchema integration config [#XXXX](https://github.com/ethyca/fides/pull/XXXX)
 - Updated UI colors to new brand. Update logo, homepage cards. [#5668](https://github.com/ethyca/fides/pull/5668)
 - Privacy request status tags colors have been updated [#5699](https://github.com/ethyca/fides/pull/5699)
 - The privacy declarations for a system are now sorted alphabetically by name. [#5683](https://github.com/ethyca/fides/pull/5683)
