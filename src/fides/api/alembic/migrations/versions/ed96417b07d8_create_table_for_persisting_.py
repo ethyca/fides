@@ -1,7 +1,7 @@
 """create table for persisting MonitorExecution records
 
 Revision ID: ed96417b07d8
-Revises: d9237a0c0d5a
+Revises: 1088e8353890
 Create Date: 2025-01-27 23:41:59.803285
 
 """
@@ -12,7 +12,7 @@ from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = "ed96417b07d8"
-down_revision = "d9237a0c0d5a"
+down_revision = "1088e8353890"
 branch_labels = None
 depends_on = None
 
