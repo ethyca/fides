@@ -22,7 +22,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.54.0...main)
 
 ### Fixed
-- Fixed Bigquery flaky tests. [#5713](LJ-278-fix-failed-big-query-enterprise-tests)
+- Fixed Bigquery flakey tests. [#5713](LJ-278-fix-failed-big-query-enterprise-tests)
 
 
 ## [2.53.0](https://github.com/ethyca/fides/compare/2.53.0...2.54.0)
