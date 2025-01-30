@@ -83,23 +83,29 @@ const actionCenterApi = baseApi.injectEndpoints({
       invalidatesTags: ["Discovery Monitor Results"],
     }),
     addMonitorResultAssets: build.mutation<any, { urnList?: string[] }>({
-      query: (params) => ({
-        method: "POST",
-        url: `/plus/discovery-monitor/promote`,
-        params: {
-          staged_resource_urns: params.urnList,
-        },
-      }),
+      query: (params) => {
+        const queryParams = new URLSearchParams();
+        params.urnList?.forEach((urn) =>
+          queryParams.append("staged_resource_urns", urn),
+        );
+        return {
+          method: "POST",
+          url: `/plus/discovery-monitor/promote?${queryParams}`,
+        };
+      },
       invalidatesTags: ["Discovery Monitor Results"],
     }),
     ignoreMonitorResultAssets: build.mutation<any, { urnList?: string[] }>({
-      query: (params) => ({
-        method: "POST",
-        url: `/plus/discovery-monitor/mute`,
-        params: {
-          staged_resource_urns: params.urnList,
-        },
-      }),
+      query: (params) => {
+        const queryParams = new URLSearchParams();
+        params.urnList?.forEach((urn) =>
+          queryParams.append("staged_resource_urns", urn),
+        );
+        return {
+          method: "POST",
+          url: `/plus/discovery-monitor/mute?${queryParams}`,
+        };
+      },
       invalidatesTags: ["Discovery Monitor Results"],
     }),
     updateAssetsSystem: build.mutation<
