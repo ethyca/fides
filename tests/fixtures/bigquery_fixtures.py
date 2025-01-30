@@ -63,12 +63,12 @@ def bigquery_connection_config(db: Session, bigquery_keyfile_creds) -> Generator
 @pytest.fixture(scope="function")
 def bigquery_enterprise_test_dataset_collections(
     example_datasets: List[Dict],
-) -> Generator:
+) -> List[str]:
+    """Returns the names of collections in the BigQuery Enterprise dataset"""
     bigquery_enterprise_dataset = example_datasets[16]
-    collections = [
-        collection for collection in bigquery_enterprise_dataset["collections"]
+    return [
+        collection["name"] for collection in bigquery_enterprise_dataset["collections"]
     ]
-    return collections
 
 
 @pytest.fixture(scope="function")
