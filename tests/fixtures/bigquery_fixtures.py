@@ -527,7 +527,7 @@ def bigquery_enterprise_resources(
         stmt = "select max(id) from enterprise_dsr_testing.users;"
         res = connection.execute(stmt)
         # Increment the id by a random number to avoid conflicts on concurrent test runs
-        random_increment = random.randint(0, 99999)
+        random_increment = random.randint(1, 99999)
         user_id = res.all()[0][0] + random_increment
         display_name = (
             f"fides_testing_{user_id}"  # prefix to do manual cleanup if needed
@@ -622,7 +622,7 @@ def bigquery_enterprise_resources_with_partitioning(
         stmt = "select max(id) from enterprise_dsr_testing.users;"
         res = connection.execute(stmt)
         # Increment the id by a random number to avoid conflicts on concurrent test runs
-        random_increment = random.randint(0, 99999)
+        random_increment = random.randint(1, 99999)
         user_id = res.all()[0][0] + random_increment
         display_name = (
             f"fides_testing_{user_id}"  # prefix to do manual cleanup if needed
@@ -642,7 +642,7 @@ def bigquery_enterprise_resources_with_partitioning(
         post_body = "For me, the solution was to adopt 3 cats and dance with them under the full moon at midnight."
         stmt = "select max(id) from enterprise_dsr_testing.stackoverflow_posts_partitioned;"
         res = connection.execute(stmt)
-        random_increment = random.randint(0, 99999)
+        random_increment = random.randint(1, 99999)
         post_id = res.all()[0][0] + random_increment
         stmt = f"""
             insert into enterprise_dsr_testing.stackoverflow_posts_partitioned (body, creation_date, id, owner_user_id, owner_display_name)
@@ -653,7 +653,7 @@ def bigquery_enterprise_resources_with_partitioning(
         # Create test comments data. Comments are responses to posts or questions on Stackoverflow, and does not include original question or post itself.
         stmt = "select max(id) from enterprise_dsr_testing.comments;"
         res = connection.execute(stmt)
-        random_increment = random.randint(0, 99999)
+        random_increment = random.randint(1, 99999)
         comment_id = res.all()[0][0] + random_increment
         comment_text = "FYI this only works if you have pytest installed locally."
         stmt = f"""
@@ -665,7 +665,7 @@ def bigquery_enterprise_resources_with_partitioning(
         # Create test post_history data
         stmt = "select max(id) from enterprise_dsr_testing.post_history;"
         res = connection.execute(stmt)
-        random_increment = random.randint(0, 99999)
+        random_increment = random.randint(1, 99999)
         post_history_id = res.all()[0][0] + random_increment
         revision_text = "this works if you have pytest"
         uuid = str(uuid4())
