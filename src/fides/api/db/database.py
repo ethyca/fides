@@ -80,7 +80,7 @@ def reset_db(database_url: str) -> None:
     engine = get_db_engine(database_url)
     with engine.connect() as connection:
         log.info("Dropping tables...")
-        Base.metadata.drop_all(connection)
+        Base.metadata.drop_all(bind=connection)
 
         log.info("Dropping Alembic table...")
         migration_context = migration.MigrationContext.configure(connection)
