@@ -17,6 +17,7 @@ export const parseResourceBreadcrumbsWithProject = (
   const urnParts = urn.split(URN_SEPARATOR);
   const projectUrn = urnParts.splice(0, 2).join(URN_SEPARATOR);
   const subResourceUrns: NextBreadcrumbProps["items"] = [];
+
   urnParts.reduce((prev, current, idx) => {
     const isLast = idx === urnParts.length - 1;
     const next = `${prev}${URN_SEPARATOR}${current}`;
@@ -34,4 +35,33 @@ export const parseResourceBreadcrumbsWithProject = (
     },
     ...subResourceUrns,
   ];
+};
+
+export const parseResourceBreadcrumbsNoProject = (
+  urn: string,
+  urlPrefix: string,
+) => {
+  if (!urn) {
+    return [];
+  }
+
+  console.log(urn);
+  const urnParts = urn.split(URN_SEPARATOR);
+  const monitorId = urnParts.shift();
+  const subResourceUrns: NextBreadcrumbProps["items"] = [];
+
+  console.log(urnParts);
+
+  urnParts.reduce((prev, current, idx) => {
+    const isLast = idx === urnParts.length - 1;
+    const next = `${prev}${URN_SEPARATOR}${current}`;
+    subResourceUrns.push({
+      title: current,
+      href: !isLast ? `${urlPrefix}/${next}` : undefined,
+    });
+    return next;
+  }, monitorId);
+  console.log(subResourceUrns);
+
+  return subResourceUrns;
 };
