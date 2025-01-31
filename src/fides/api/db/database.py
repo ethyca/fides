@@ -78,6 +78,7 @@ def reset_db(database_url: str) -> None:
     """
     log.info("Resetting database...")
     engine = get_db_engine(database_url)
+    engine.dispose()
     with engine.connect() as connection:
         log.info("Dropping tables...")
         Base.metadata.drop_all(bind=connection)
