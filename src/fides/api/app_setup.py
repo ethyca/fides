@@ -158,7 +158,7 @@ def log_startup() -> None:
         CONFIG.log_all_config_values()
 
 
-async def run_database_startup(app: FastAPI) -> None:
+def run_database_startup(app: FastAPI) -> None:
     """
     Perform all relevant database startup activities/configuration for the
     application webserver.
@@ -170,10 +170,10 @@ async def run_database_startup(app: FastAPI) -> None:
     if CONFIG.database.automigrate:
         try:
             configure_db(CONFIG.database.sync_database_uri)
-            async with async_session() as session:
-                await load_default_resources(session)
-                if CONFIG.database.load_samples:
-                    await load_samples(session)
+            # async with async_session() as session:
+            #     await load_default_resources(session)
+            #     if CONFIG.database.load_samples:
+            #         await load_samples(session)
         except Exception as e:
             logger.error("Error occurred during database configuration: {}", str(e))
     else:
