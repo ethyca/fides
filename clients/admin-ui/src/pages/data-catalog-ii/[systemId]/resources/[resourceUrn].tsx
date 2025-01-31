@@ -3,7 +3,7 @@ import { useRouter } from "next/router";
 
 import FidesSpinner from "~/features/common/FidesSpinner";
 import Layout from "~/features/common/Layout";
-import { DATA_CATALOG_II_ROUTE } from "~/features/common/nav/v2/routes";
+import { DATA_CATALOG_ROUTE } from "~/features/common/nav/v2/routes";
 import PageHeader from "~/features/common/PageHeader";
 import CatalogResourcesTable from "~/features/data-catalog/staged-resources/CatalogResourcesTable";
 import { parseResourceBreadcrumbsNoProject } from "~/features/data-catalog/utils/urnParsing";
@@ -19,7 +19,7 @@ const CatalogResourceView: NextPage = () => {
 
   const resourceBreadcrumbs = parseResourceBreadcrumbsNoProject(
     resourceUrn,
-    `${DATA_CATALOG_II_ROUTE}/${systemId}/resources`,
+    `${DATA_CATALOG_ROUTE}/${systemId}/resources`,
   );
 
   if (isLoading) {
@@ -31,10 +31,10 @@ const CatalogResourceView: NextPage = () => {
       <PageHeader
         heading="Data catalog"
         breadcrumbItems={[
-          { title: "All systems", href: DATA_CATALOG_II_ROUTE },
+          { title: "All systems", href: DATA_CATALOG_ROUTE },
           {
             title: system?.name ?? system?.fides_key,
-            href: `${DATA_CATALOG_II_ROUTE}`,
+            href: `${DATA_CATALOG_ROUTE}`,
           },
           ...resourceBreadcrumbs,
         ]}
@@ -43,7 +43,7 @@ const CatalogResourceView: NextPage = () => {
         resourceUrn={resourceUrn}
         onRowClick={(row) =>
           router.push(
-            `${DATA_CATALOG_II_ROUTE}/${system!.fides_key}/resources/${row.urn}`,
+            `${DATA_CATALOG_ROUTE}/${system!.fides_key}/resources/${row.urn}`,
           )
         }
       />

@@ -45,12 +45,9 @@ export const parseResourceBreadcrumbsNoProject = (
     return [];
   }
 
-  console.log(urn);
   const urnParts = urn.split(URN_SEPARATOR);
   const monitorId = urnParts.shift();
   const subResourceUrns: NextBreadcrumbProps["items"] = [];
-
-  console.log(urnParts);
 
   urnParts.reduce((prev, current, idx) => {
     const isLast = idx === urnParts.length - 1;
@@ -61,7 +58,6 @@ export const parseResourceBreadcrumbsNoProject = (
     });
     return next;
   }, monitorId);
-  console.log(subResourceUrns);
 
   return subResourceUrns;
 };

@@ -8,7 +8,7 @@ import { useRouter } from "next/router";
 import { useEffect, useMemo } from "react";
 
 import Layout from "~/features/common/Layout";
-import { DATA_CATALOG_II_ROUTE } from "~/features/common/nav/v2/routes";
+import { DATA_CATALOG_ROUTE } from "~/features/common/nav/v2/routes";
 import PageHeader from "~/features/common/PageHeader";
 import {
   FidesTableV2,
@@ -92,10 +92,10 @@ const CatalogDatasetView = () => {
       <PageHeader
         heading="Data catalog"
         breadcrumbItems={[
-          { title: "All systems", href: DATA_CATALOG_II_ROUTE },
+          { title: "All systems", href: DATA_CATALOG_ROUTE },
           {
             title: system?.name || systemKey,
-            href: DATA_CATALOG_II_ROUTE,
+            href: DATA_CATALOG_ROUTE,
           },
           { title: getProjectName(projectUrn) },
         ]}
@@ -108,7 +108,7 @@ const CatalogDatasetView = () => {
             emptyTableNotice={<EmptyCatalogTableNotice />}
             onRowClick={(row) =>
               push(
-                `${DATA_CATALOG_II_ROUTE}/${systemKey}/projects/${projectUrn}/${row.urn}/`,
+                `${DATA_CATALOG_ROUTE}/${systemKey}/projects/${projectUrn}/${row.urn}/`,
               )
             }
           />

@@ -12,7 +12,7 @@ import {
 import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";
 
-import { DATA_CATALOG_II_ROUTE } from "~/features/common/nav/v2/routes";
+import { DATA_CATALOG_ROUTE } from "~/features/common/nav/v2/routes";
 import {
   DefaultCell,
   DefaultHeaderCell,
@@ -92,7 +92,7 @@ const CatalogSystemsTable = () => {
       "monitor_config_ids",
     );
 
-    const url = `${DATA_CATALOG_II_ROUTE}/${row.fides_key}/${hasProjects ? "projects" : "resources"}?${queryString}`;
+    const url = `${DATA_CATALOG_ROUTE}/${row.fides_key}/${hasProjects ? "projects" : "resources"}?${queryString}`;
     router.push(url);
   };
 

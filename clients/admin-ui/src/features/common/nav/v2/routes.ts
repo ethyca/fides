@@ -34,7 +34,6 @@ export const DATA_DISCOVERY_ROUTE_DETAIL =
 
 // End-to-end datasets
 export const DATA_CATALOG_ROUTE = "/data-catalog";
-export const DATA_CATALOG_II_ROUTE = "/data-catalog-ii";
 
 // Privacy requests group
 export const DATASTORE_CONNECTION_ROUTE = "/datastore-connection";
