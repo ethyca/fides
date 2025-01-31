@@ -6,7 +6,6 @@ import Layout from "~/features/common/Layout";
 import { DATA_CATALOG_ROUTE } from "~/features/common/nav/v2/routes";
 import PageHeader from "~/features/common/PageHeader";
 import CatalogResourcesTable from "~/features/data-catalog/staged-resources/CatalogResourcesTable";
-import parseUrnWithProjectToBreadcrumbs from "~/features/data-catalog/staged-resources/parseUrnToBreadcrumbs";
 import { useGetSystemByFidesKeyQuery } from "~/features/system";
 
 const CatalogResourceView: NextPage = () => {
@@ -38,7 +37,13 @@ const CatalogResourceView: NextPage = () => {
           ...resourceBreadcrumbs,
         ]}
       />
-      <CatalogResourcesTable resourceUrn={resourceUrn} system={system!} />
+      <CatalogResourcesTable
+        resourceUrn={resourceUrn}
+        system={system!}
+        // onRowClick={(row) =>
+        //   router.push(`${DATA_CATALOG_ROUTE}/${system.fides_key}/${row.urn}`)
+        // }
+      />
     </Layout>
   );
 };

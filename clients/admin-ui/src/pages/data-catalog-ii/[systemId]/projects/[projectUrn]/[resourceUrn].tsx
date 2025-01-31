@@ -6,19 +6,22 @@ import Layout from "~/features/common/Layout";
 import { DATA_CATALOG_II_ROUTE } from "~/features/common/nav/v2/routes";
 import PageHeader from "~/features/common/PageHeader";
 import CatalogResourcesTable from "~/features/data-catalog/staged-resources/CatalogResourcesTable";
-import parseUrnWithProjectToBreadcrumbs from "~/features/data-catalog/staged-resources/parseUrnToBreadcrumbs";
+import { parseResourceBreadcrumbsWithProject } from "~/features/data-catalog/utils/urnParsing";
 import { useGetSystemByFidesKeyQuery } from "~/features/system";
 
 const CatalogResourceView: NextPage = () => {
   const { query } = useRouter();
   const systemId = query.systemId as string;
+  const projectUrn = query.projectUrn as string;
   const resourceUrn = query.resourceUrn as string;
   const { data: system, isLoading } = useGetSystemByFidesKeyQuery(systemId);
 
+  const router = useRouter();
+
   const resourceBreadcrumbs =
-    parseUrnWithProjectToBreadcrumbs(
+    parseResourceBreadcrumbsWithProject(
       resourceUrn,
-      `${DATA_CATALOG_II_ROUTE}/${systemId}/projects/`,
+      `${DATA_CATALOG_II_ROUTE}/${systemId}/projects`,
     ) ?? [];
 
   if (isLoading) {
@@ -38,7 +41,14 @@ const CatalogResourceView: NextPage = () => {
           ...resourceBreadcrumbs,
         ]}
       />
-      <CatalogResourcesTable resourceUrn={resourceUrn} system={system!} />
+      <CatalogResourcesTable
+        resourceUrn={resourceUrn}
+        onRowClick={(row) =>
+          router.push(
+            `${DATA_CATALOG_II_ROUTE}/${system!.fides_key}/projects/${projectUrn}/${row.urn}`,
+          )
+        }
+      />
     </Layout>
   );
 };

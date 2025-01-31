@@ -18,6 +18,7 @@ import {
 } from "~/features/common/table/v2";
 import EmptyCatalogTableNotice from "~/features/data-catalog/datasets/EmptyCatalogTableNotice";
 import useCatalogDatasetColumns from "~/features/data-catalog/datasets/useCatalogDatasetColumns";
+import { getProjectName } from "~/features/data-catalog/utils/urnParsing";
 import { useGetMonitorResultsQuery } from "~/features/data-discovery-and-detection/discovery-detection.slice";
 import { useGetSystemByFidesKeyQuery } from "~/features/system";
 import { StagedResourceAPIResponse } from "~/types/api";
@@ -94,9 +95,9 @@ const CatalogDatasetView = () => {
           { title: "All systems", href: DATA_CATALOG_II_ROUTE },
           {
             title: system?.name || systemKey,
-            href: `${DATA_CATALOG_II_ROUTE}/${systemKey}/projects`,
+            href: DATA_CATALOG_II_ROUTE,
           },
-          { title: projectUrn },
+          { title: getProjectName(projectUrn) },
         ]}
       />
       {!showContent && <TableSkeletonLoader rowHeight={36} numRows={36} />}
