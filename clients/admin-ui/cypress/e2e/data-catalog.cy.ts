@@ -97,7 +97,7 @@ describe("data catalog", () => {
     beforeEach(() => {
       stubStagedResourceActions();
       cy.visit(
-        `${DATA_CATALOG_ROUTE}/bigquery_system/monitor.project.test_dataset_1`,
+        `${DATA_CATALOG_ROUTE}/bigquery_system/projects/monitor.project/monitor.project.test_dataset_1`,
       );
     });
 

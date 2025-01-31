@@ -23,6 +23,9 @@ export const parseResourceBreadcrumbsWithProject = (
     return [];
   }
   const urnParts = urn.split(URN_SEPARATOR);
+  if (urnParts.length < 2) {
+    return [];
+  }
   const projectUrn = urnParts.splice(0, 2).join(URN_SEPARATOR);
   const subResourceUrns: NextBreadcrumbProps["items"] = [];
 
@@ -35,7 +38,7 @@ export const parseResourceBreadcrumbsWithProject = (
       icon: RESOURCE_ICONS[idx],
     });
     return next;
-  }, `${projectUrn}`);
+  }, projectUrn);
 
   return [
     {
@@ -48,7 +51,7 @@ export const parseResourceBreadcrumbsWithProject = (
 };
 
 export const parseResourceBreadcrumbsNoProject = (
-  urn: string,
+  urn: string | undefined,
   urlPrefix: string,
 ) => {
   if (!urn) {
@@ -56,6 +59,9 @@ export const parseResourceBreadcrumbsNoProject = (
   }
 
   const urnParts = urn.split(URN_SEPARATOR);
+  if (urnParts.length < 2) {
+    return [];
+  }
   const monitorId = urnParts.shift();
   const subResourceUrns: NextBreadcrumbProps["items"] = [];
 
