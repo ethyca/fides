@@ -5,6 +5,7 @@ import {
 } from "@tanstack/react-table";
 import {
   AntButton as Button,
+  AntDefaultOptionType as DefaultOptionType,
   AntEmpty as Empty,
   AntTooltip as Tooltip,
   Flex,
@@ -38,9 +39,11 @@ import {
   useAddMonitorResultSystemMutation,
   useGetDiscoveredAssetsQuery,
   useIgnoreMonitorResultAssetsMutation,
+  useUpdateAssetsSystemMutation,
 } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
 
 import { SearchInput } from "../../SearchInput";
+import { AssignSystemModal } from "../AssignSystemModal";
 import { useDiscoveredAssetsColumns } from "../hooks/useDiscoveredAssetsColumns";
 
 interface DiscoveredAssetsTableProps {
@@ -57,15 +60,22 @@ export const DiscoveredAssetsTable = ({
   const router = useRouter();
   const [systemName, setSystemName] = useState(systemId);
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
+  const [isAssignSystemModalOpen, setIsAssignSystemModalOpen] =
+    useState<boolean>(false);
   const [addMonitorResultAssetsMutation, { isLoading: isAddingResults }] =
     useAddMonitorResultAssetsMutation();
   const [ignoreMonitorResultAssetsMutation, { isLoading: isIgnoringResults }] =
     useIgnoreMonitorResultAssetsMutation();
   const [addMonitorResultSystemMutation, { isLoading: isAddingAllResults }] =
     useAddMonitorResultSystemMutation();
+  const [updateAssetsSystemMutation, { isLoading: isBulkUpdatingSystem }] =
+    useUpdateAssetsSystemMutation();
 
   const anyBulkActionIsLoading =
-    isAddingResults || isIgnoringResults || isAddingAllResults;
+    isAddingResults ||
+    isIgnoringResults ||
+    isAddingAllResults ||
+    isBulkUpdatingSystem;
 
   const disableAddAll =
     anyBulkActionIsLoading || systemId === UNCATEGORIZED_SEGMENT;
@@ -138,6 +148,26 @@ export const DiscoveredAssetsTable = ({
         `Confirmed`,
       );
     }
+  };
+
+  const handleBulkAssignSystem = async (selectedSystem?: DefaultOptionType) => {
+    if (typeof selectedSystem?.value === "string") {
+      const result = await updateAssetsSystemMutation({
+        monitorId,
+        urnList: selectedUrns,
+        systemKey: selectedSystem.value,
+      });
+      if (isErrorResult(result)) {
+        errorAlert(getErrorMessage(result.error));
+      } else {
+        tableInstance.resetRowSelection();
+        successAlert(
+          `${selectedUrns.length} assets have been assigned to ${selectedSystem.label}.`,
+          `Confirmed`,
+        );
+      }
+    }
+    setIsAssignSystemModalOpen(false);
   };
 
   const handleBulkIgnore = async () => {
@@ -217,6 +247,15 @@ export const DiscoveredAssetsTable = ({
                 >
                   Add
                 </MenuItem>
+                <MenuItem
+                  fontSize="small"
+                  onClick={() => {
+                    setIsAssignSystemModalOpen(true);
+                  }}
+                  data-testid="bulk-assign-system"
+                >
+                  Assign system
+                </MenuItem>
                 <MenuDivider />
                 <MenuItem
                   fontSize="small"
@@ -269,6 +308,14 @@ export const DiscoveredAssetsTable = ({
         isNextPageDisabled={isNextPageDisabled || isFetching}
         startRange={startRange}
         endRange={endRange}
+      />
+      <AssignSystemModal
+        isOpen={isAssignSystemModalOpen}
+        onClose={() => {
+          setIsAssignSystemModalOpen(false);
+        }}
+        onSave={handleBulkAssignSystem}
+        isSaving={isBulkUpdatingSystem}
       />
     </>
   );
