@@ -1,19 +1,46 @@
 import { AntSelect as Select, AntSelectProps as SelectProps } from "fidesui";
-import { useCallback, useMemo, useState } from "react";
+import {
+  MouseEventHandler,
+  ReactNode,
+  useCallback,
+  useMemo,
+  useState,
+} from "react";
 
 import { useGetSystemsQuery } from "~/features/system/system.slice";
 
+import { CustomSelectOption } from "../form/CustomSelectOption";
 import { debounce } from "../utils";
 
 const OPTIONS_LIMIT = 25;
+
+const dropdownRender = (
+  menu: ReactNode,
+  onAddSystem: MouseEventHandler<HTMLElement>,
+) => {
+  return (
+    <>
+      <CustomSelectOption
+        onClick={onAddSystem}
+        data-testid="add-new-system"
+        id="add-new-system"
+      >
+        Add new system +
+      </CustomSelectOption>
+      {menu}
+    </>
+  );
+};
 
 interface SystemSelectProps
   extends Omit<
     SelectProps,
     "options" | "showSearch" | "filterOption" | "onSearch"
-  > {}
+  > {
+  onAddSystem?: MouseEventHandler<HTMLButtonElement>;
+}
 
-export const SystemSelect = ({ ...props }: SystemSelectProps) => {
+export const SystemSelect = ({ onAddSystem, ...props }: SystemSelectProps) => {
   const [searchValue, setSearchValue] = useState<string>();
   const { data, isFetching } = useGetSystemsQuery({
     page: 1,
@@ -45,6 +72,9 @@ export const SystemSelect = ({ ...props }: SystemSelectProps) => {
       placeholder="Search..."
       aria-label="Search for a system to select"
       dropdownStyle={{ minWidth: "500px" }}
+      dropdownRender={
+        onAddSystem ? (menu) => dropdownRender(menu, onAddSystem) : undefined
+      }
       data-testid="system-select"
       {...props}
       showSearch

@@ -255,8 +255,8 @@ class NoSuchStrategyException(ValueError):
     """Exception for when a masking strategy does not exist"""
 
 
-class FunctionalityNotConfigured(Exception):
-    """Custom exception for when invoked functionality is unavailable due to configuration."""
+class RedisNotConfigured(Exception):
+    """Redis cache is unavailable due to configuration"""
 
 
 class InvalidSaaSRequestOverrideException(ValueError):

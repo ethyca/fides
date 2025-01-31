@@ -56,31 +56,73 @@ const actionCenterApi = baseApi.injectEndpoints({
       }),
       providesTags: () => ["Discovery Monitor Results"],
     }),
-    addMonitorResults: build.mutation<
+    addMonitorResultSystem: build.mutation<
       any,
-      { urnList?: string[]; systemId?: string }
+      { monitor_config_key?: string; resolved_system_id?: string }
     >({
       query: (params) => ({
         method: "POST",
-        url: `/plus/discovery-monitor/promote`,
+        url: `/plus/discovery-monitor/${params.monitor_config_key}/promote`,
         params: {
-          staged_resource_urns: params.urnList,
-          system_key: params.systemId,
+          resolved_system_id: params.resolved_system_id,
         },
       }),
       invalidatesTags: ["Discovery Monitor Results"],
     }),
-    ignoreMonitorResults: build.mutation<
+    ignoreMonitorResultSystem: build.mutation<
       any,
-      { urnList?: string[]; systemId?: string }
+      { monitor_config_key?: string; resolved_system_id?: string }
     >({
       query: (params) => ({
         method: "POST",
-        url: `/plus/discovery-monitor/mute`,
+        url: `/plus/discovery-monitor/${params.monitor_config_key}/mute`,
         params: {
-          staged_resource_urns: params.urnList,
-          system_key: params.systemId,
+          resolved_system_id: params.resolved_system_id,
         },
+      }),
+      invalidatesTags: ["Discovery Monitor Results"],
+    }),
+    addMonitorResultAssets: build.mutation<any, { urnList?: string[] }>({
+      query: (params) => {
+        const queryParams = new URLSearchParams();
+        params.urnList?.forEach((urn) =>
+          queryParams.append("staged_resource_urns", urn),
+        );
+        return {
+          method: "POST",
+          url: `/plus/discovery-monitor/promote?${queryParams}`,
+        };
+      },
+      invalidatesTags: ["Discovery Monitor Results"],
+    }),
+    ignoreMonitorResultAssets: build.mutation<any, { urnList?: string[] }>({
+      query: (params) => {
+        const queryParams = new URLSearchParams();
+        params.urnList?.forEach((urn) =>
+          queryParams.append("staged_resource_urns", urn),
+        );
+        return {
+          method: "POST",
+          url: `/plus/discovery-monitor/mute?${queryParams}`,
+        };
+      },
+      invalidatesTags: ["Discovery Monitor Results"],
+    }),
+    updateAssetsSystem: build.mutation<
+      any,
+      {
+        monitorId: string;
+        urnList: string[];
+        systemKey: string;
+      }
+    >({
+      query: (params) => ({
+        method: "PATCH",
+        url: `/plus/discovery-monitor/${params.monitorId}/results`,
+        body: params.urnList.map((urn) => ({
+          urn,
+          system_key: params.systemKey,
+        })),
       }),
       invalidatesTags: ["Discovery Monitor Results"],
     }),
@@ -91,6 +133,9 @@ export const {
   useGetAggregateMonitorResultsQuery,
   useGetDiscoveredSystemAggregateQuery,
   useGetDiscoveredAssetsQuery,
-  useAddMonitorResultsMutation,
-  useIgnoreMonitorResultsMutation,
+  useAddMonitorResultSystemMutation,
+  useIgnoreMonitorResultSystemMutation,
+  useAddMonitorResultAssetsMutation,
+  useIgnoreMonitorResultAssetsMutation,
+  useUpdateAssetsSystemMutation,
 } = actionCenterApi;
