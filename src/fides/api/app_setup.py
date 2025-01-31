@@ -14,7 +14,7 @@ from redis.exceptions import RedisError, ResponseError
 from slowapi.errors import RateLimitExceeded  # type: ignore
 from slowapi.extension import _rate_limit_exceeded_handler  # type: ignore
 from slowapi.middleware import SlowAPIMiddleware  # type: ignore
-from fides.api.db.ctl_session import async_session
+
 import fides
 from fides.api.api.deps import get_api_session
 from fides.api.api.v1 import CTL_ROUTER
@@ -24,6 +24,7 @@ from fides.api.api.v1.endpoints.generic_overrides import GENERIC_OVERRIDES_ROUTE
 from fides.api.api.v1.endpoints.health import HEALTH_ROUTER
 from fides.api.api.v1.exception_handlers import ExceptionHandlers
 from fides.api.common_exceptions import RedisConnectionError, RedisNotConfigured
+from fides.api.db.ctl_session import async_session
 from fides.api.db.database import configure_db
 from fides.api.db.seed import (
     create_or_update_parent_user,
