@@ -36,7 +36,7 @@ const CatalogResourceView: NextPage = () => {
           { title: "All systems", href: DATA_CATALOG_ROUTE },
           {
             title: system?.name ?? system?.fides_key,
-            href: `${DATA_CATALOG_ROUTE}/${systemId}`,
+            href: DATA_CATALOG_ROUTE,
           },
           ...resourceBreadcrumbs,
         ]}

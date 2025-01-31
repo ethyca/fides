@@ -1,3 +1,4 @@
+import { Icons } from "fidesui";
 import { NextBreadcrumbProps } from "~/features/common/nav/v2/NextBreadcrumb";
 
 const URN_SEPARATOR = ".";
@@ -6,6 +7,12 @@ export const getProjectName = (urn: string) => {
   const urnParts = urn.split(URN_SEPARATOR);
   return urnParts[1];
 };
+
+const RESOURCE_ICONS = [
+  <Icons.Layers key="layers" />,
+  <Icons.Table key="table" />,
+  <Icons.ShowDataCards key="field" style={{ transform: "rotate(-90deg)" }} />,
+];
 
 export const parseResourceBreadcrumbsWithProject = (
   urn: string | undefined,
@@ -24,6 +31,7 @@ export const parseResourceBreadcrumbsWithProject = (
     subResourceUrns.push({
       title: current,
       href: !isLast ? `${urlPrefix}/${projectUrn}/${next}` : undefined,
+      icon: RESOURCE_ICONS[idx],
     });
     return next;
   }, `${projectUrn}`);
@@ -32,6 +40,7 @@ export const parseResourceBreadcrumbsWithProject = (
     {
       title: getProjectName(projectUrn),
       href: `${urlPrefix}/${projectUrn}`,
+      icon: <Icons.Db2Database />,
     },
     ...subResourceUrns,
   ];
@@ -55,6 +64,7 @@ export const parseResourceBreadcrumbsNoProject = (
     subResourceUrns.push({
       title: current,
       href: !isLast ? `${urlPrefix}/${next}` : undefined,
+      icon: RESOURCE_ICONS[idx],
     });
     return next;
   }, monitorId);

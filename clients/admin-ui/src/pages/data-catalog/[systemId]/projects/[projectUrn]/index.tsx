@@ -4,6 +4,7 @@ import {
   getGroupedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
+import { Icons } from "fidesui";
 import { useRouter } from "next/router";
 import { useEffect, useMemo } from "react";
 
@@ -97,7 +98,7 @@ const CatalogDatasetView = () => {
             title: system?.name || systemKey,
             href: DATA_CATALOG_ROUTE,
           },
-          { title: getProjectName(projectUrn) },
+          { title: getProjectName(projectUrn), icon: <Icons.Db2Database /> },
         ]}
       />
       {!showContent && <TableSkeletonLoader rowHeight={36} numRows={36} />}
