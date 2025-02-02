@@ -452,7 +452,7 @@ def run_access_request(
     else:
         try:
             logger.info("Building access graph")
-            traversal: Traversal = Traversal(graph, identity)
+            traversal: Traversal = Traversal(graph, identity, policy)
 
             # Traversal.traverse populates traversal_nodes in place, adding parents and children to each traversal_node.
             traversal_nodes: Dict[CollectionAddress, TraversalNode] = {}

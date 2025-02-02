@@ -80,10 +80,6 @@ export type System = {
    */
   privacy_declarations: Array<PrivacyDeclaration>;
   /**
-   * A list of fides keys to model dependencies.
-   */
-  system_dependencies?: Array<string>;
-  /**
    *
    * The contact details information model.
    *

@@ -19,12 +19,60 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - https://github.com/ethyca/fides/labels/high-risk: to indicate that a change is a "high-risk" change that could potentially lead to unanticipated regressions or degradations
 - https://github.com/ethyca/fides/labels/db-migration: to indicate that a given change includes a DB migration
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.52.0...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.54.0...main)
+
+### Changed
+- Added frequency field to DataHubSchema integration config [#5716](https://github.com/ethyca/fides/pull/5716)
+
+### Fixed
+- Fixed Bigquery flakey tests. [#5713](LJ-278-fix-failed-big-query-enterprise-tests)
+
+## [2.53.0](https://github.com/ethyca/fides/compare/2.53.0...2.54.0)
 
 ### Added
+- Migration to add the `data_uses` column to `stagedresource` table, prereqs for Data Catalog work in Fidesplus [#5600](https://github.com/ethyca/fides/pull/5600/) https://github.com/ethyca/fides/labels/db-migration
+- Added a new endpoint to fully resubmit any errored privacy requests [#5658](https://github.com/ethyca/fides/pull/5658) https://github.com/ethyca/fides/labels/db-migration
+
+### Changed
+- Updated UI colors to new brand. Update logo, homepage cards. [#5668](https://github.com/ethyca/fides/pull/5668)
+- Privacy request status tags colors have been updated [#5699](https://github.com/ethyca/fides/pull/5699)
+- The privacy declarations for a system are now sorted alphabetically by name. [#5683](https://github.com/ethyca/fides/pull/5683)
+- Upgraded GPP library to `3.1.5` and added support for all available state sections (ustx, usde, usia, etc.) [#5696](https://github.com/ethyca/fides/pull/5696)
+- Updating DSR execution to allow collections to be unreachable when they don't contain policy-relevant data categories [#5689](https://github.com/ethyca/fides/pull/5689)
+- Added "All activity" root breadcrumb to D&D results tables [#5694](https://github.com/ethyca/fides/pull/5694)
+
+### Developer Experience
+- Migrated radio buttons and groups to Ant Design [#5681](https://github.com/ethyca/fides/pull/5681)
+
+### Fixed
+- Updating mongodb connectors so it can support usernames and password with URL encoded characters [#5682](https://github.com/ethyca/fides/pull/5682)
+- After creating a new system, the url is now updated correctly to the new system edit page [#5701](https://github.com/ethyca/fides/pull/5701)
+- Visual fixes for table header buttons [#5693](https://github.com/ethyca/fides/pull/5693)
+
+## [2.53.0](https://github.com/ethyca/fides/compare/2.52.0...2.53.0)
+
+### Added
+- Added Action Center MVP behind new feature flag [#5622](https://github.com/ethyca/fides/pull/5622)
+- Added Data Catalog MVP behind new feature flag [#5628](https://github.com/ethyca/fides/pull/5628)
 - Added cache-clearing methods to the `DBCache` model to allow deleting cache entries [#5629](https://github.com/ethyca/fides/pull/5629)
+- Adds partitioning, custom identities, multiple identities to test coverage for BigQuery Enterprise [#5618](https://github.com/ethyca/fides/pull/5618)
+- Added Datahub groundwork required by Fidesplus [#5666](https://github.com/ethyca/fides/pull/5666)
 
+### Changed
+- Updated brand link url [#5656](https://github.com/ethyca/fides/pull/5656)
+- Changed "Reclassify" D&D button to show in an overflow menu when row actions are overcrowded [#5655](https://github.com/ethyca/fides/pull/5655)
+- Removed primary key requirements for BigQuery and Postgres erasures [#5591](https://github.com/ethyca/fides/pull/5591)
+- Updated `DBCache` model so setting cache value always updates the updated_at field [#5669](https://github.com/ethyca/fides/pull/5669)
+- Changed sizes of buttons in table headers [#5654](https://github.com/ethyca/fides/pull/5654)
+- Adds new config for max number of rows in DSR download through Admin-UI [#5671](https://github.com/ethyca/fides/pull/5671)
+- Added CSS variable to FidesJS: `--fides-base-font-size: 16px` for better consistency. Overriding this variable with "1rem" will mimic legacy behavior. [#5673](https://github.com/ethyca/fides/pull/5673) https://github.com/ethyca/fides/labels/high-risk
 
+### Fixed
+- Fixed issue where the custom report "reset" button was not working as expected [#5649](https://github.com/ethyca/fides/pull/5649)
+- Fixed column ordering issue in the Data Map report [#5649](https://github.com/ethyca/fides/pull/5649)
+- Fixed issue where the Data Map report filter dialog was missing an Accordion item label [#5649](https://github.com/ethyca/fides/pull/5649)
+- Improved database session management for long running access request tasks [#5667](https://github.com/ethyca/fides/pull/5667)
+- Ensured decode_password function properly handles plaintext but valid base64 passwords [#5698](https://github.com/ethyca/fides/pull/5698)
 
 ## [2.52.0](https://github.com/ethyca/fides/compare/2.51.2...2.52.0)
 
@@ -173,6 +221,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ### Fixed
  - API router sanitizer being too aggressive with NextJS Catch-all Segments [#5438](https://github.com/ethyca/fides/pull/5438)
+ - Fix rendering of subfield names in D&D tables [#5439](https://github.com/ethyca/fides/pull/5439)
  - Fix BigQuery `partitioning` queries to properly support multiple identity clauses [#5432](https://github.com/ethyca/fides/pull/5432)
 
 ## [2.48.0](https://github.com/ethyca/fides/compare/2.47.1...2.48.0)

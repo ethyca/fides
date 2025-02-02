@@ -23,7 +23,7 @@ const Home: NextPage = () => {
         padding: "24px 0 0 40px",
       }}
     >
-      <PageHeader heading="Data lineage" />
+      <PageHeader style={{ paddingLeft: 0 }} heading="Data lineage" />
       <DatamapTableContext.Provider value={datamapTableContextValue}>
         <DatamapGraphStore>
           <Datamap />

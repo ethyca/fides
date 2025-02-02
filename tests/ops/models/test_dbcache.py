@@ -47,18 +47,31 @@ class TestDBCacheModel:
             ).decode()
             == "value 1"
         )
+        assert cache_value.updated_at is not None
+
+        original_timestamp = cache_value.updated_at
 
         # Update the cache value
         cache_value = DBCache.set_cache_value(
             db, DBCacheNamespace.LIST_PRIVACY_EXPERIENCE, "some-key", "value 2".encode()
         )
         assert cache_value.cache_value.decode() == "value 2"
+        assert cache_value.updated_at > original_timestamp
 
         # Check the value was actually updated
         updated_value = DBCache.get_cache_value(
             db, DBCacheNamespace.LIST_PRIVACY_EXPERIENCE, "some-key"
         )
         assert updated_value.decode() == "value 2"
+
+        previous_timestamp = cache_value.updated_at
+
+        # Updating the value with the same value should still update the timestamp
+        cache_value = DBCache.set_cache_value(
+            db, DBCacheNamespace.LIST_PRIVACY_EXPERIENCE, "some-key", "value 2".encode()
+        )
+        assert cache_value.cache_value.decode() == "value 2"
+        assert cache_value.updated_at > previous_timestamp
 
     def test_delete_cache_entry(self, db):
         # Add two entries

@@ -190,10 +190,7 @@ export const PropertiesTable = () => {
           />
           <HStack alignItems="center" spacing={4}>
             <Restrict scopes={[ScopeRegistryEnum.PROPERTY_CREATE]}>
-              <AddPropertyButton
-                buttonLabel="Add property"
-                buttonProps={{ size: "small" }}
-              />
+              <AddPropertyButton buttonLabel="Add property" />
             </Restrict>
           </HStack>
         </TableActionBar>

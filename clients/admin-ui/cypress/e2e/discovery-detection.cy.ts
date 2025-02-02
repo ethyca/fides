@@ -327,7 +327,8 @@ describe("discovery and detection", () => {
         cy.getByTestId(
           "row-my_bigquery_monitor.prj-bigquery-418515.test_dataset_1",
         ).within(() => {
-          cy.getByTestId("action-Reclassify").click();
+          cy.getByTestId("actions-overflow-btn").click();
+          cy.getByTestId("action-reclassify").click({ force: true });
           cy.wait("@confirmResource");
         });
       });
@@ -409,9 +410,7 @@ describe("discovery and detection", () => {
         cy.intercept("PATCH", "/api/v1/plus/discovery-monitor/*/results").as(
           "patchClassification",
         );
-        cy.getByTestId("classification-user.device.device_id").click({
-          force: true,
-        });
+        cy.getByTestId("classification-user.contact.phone_number").click();
         cy.getByTestId("taxonomy-select").antSelect("system");
         cy.wait("@patchClassification");
       });
@@ -423,7 +422,7 @@ describe("discovery and detection", () => {
           cy.getByTestId(
             "user-classification-user.contact.phone_number",
           ).should("exist");
-          cy.getByTestId("add-category-btn").click();
+          cy.getByTestId("taxonomy-add-btn").click();
           cy.get(".select-wrapper").should("exist");
         });
       });
@@ -433,7 +432,7 @@ describe("discovery and detection", () => {
           "row-my_bigquery_monitor.prj-bigquery-418515.test_dataset_1.consent-reports-20.No_categories-col-classifications",
         ).within(() => {
           cy.getByTestId("no-classifications").should("exist");
-          cy.getByTestId("add-category-btn").should("exist");
+          cy.getByTestId("taxonomy-add-btn").should("exist");
         });
       });
 
@@ -442,7 +441,7 @@ describe("discovery and detection", () => {
           "row-my_bigquery_monitor.prj-bigquery-418515.test_dataset_1.consent-reports-20.address-col-classifications",
         ).within(() => {
           cy.getByTestId("no-classifications").should("exist");
-          cy.getByTestId("add-category-btn").should("not.exist");
+          cy.getByTestId("taxonomy-add-btn").should("not.exist");
         });
       });
     });

@@ -39,6 +39,13 @@ export const NAV_CONFIG: NavConfigGroup[] = [
     title: "Detection & Discovery",
     routes: [
       {
+        title: "Action center",
+        path: routes.ACTION_CENTER_ROUTE,
+        scopes: [],
+        requiresFlag: "webMonitor",
+        requiresPlus: true,
+      },
+      {
         title: "Activity",
         path: routes.DETECTION_DISCOVERY_ACTIVITY_ROUTE,
         scopes: [],
@@ -57,6 +64,13 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         path: routes.DATA_DISCOVERY_ROUTE,
         scopes: [],
         requiresFlag: "dataDiscoveryAndDetection",
+        requiresPlus: true,
+      },
+      {
+        title: "Data catalog",
+        path: routes.DATA_CATALOG_ROUTE,
+        scopes: [],
+        requiresFlag: "dataCatalog",
         requiresPlus: true,
       },
     ],

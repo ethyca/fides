@@ -12,7 +12,10 @@ import {
   useIsAnyFormDirty,
 } from "~/features/common/hooks/useIsAnyFormDirty";
 import { useSystemOrDatamapRoute } from "~/features/common/hooks/useSystemOrDatamapRoute";
-import { INTEGRATION_MANAGEMENT_ROUTE } from "~/features/common/nav/v2/routes";
+import {
+  EDIT_SYSTEM_ROUTE,
+  INTEGRATION_MANAGEMENT_ROUTE,
+} from "~/features/common/nav/v2/routes";
 import {
   DEFAULT_TOAST_PARAMS,
   errorToastParams,
@@ -146,6 +149,11 @@ const useSystemFormTabs = ({
         setShowSaveMessage(true);
       }
       dispatch(setActiveSystem(system));
+      router.push({
+        pathname: EDIT_SYSTEM_ROUTE,
+        query: { id: system.fides_key },
+      });
+
       const toastParams = {
         ...DEFAULT_TOAST_PARAMS,
         description: (
@@ -250,7 +258,7 @@ const useSystemFormTabs = ({
           {showSaveMessage ? (
             <Box backgroundColor="gray.100" px={6} py={3}>
               <Text
-                color="gray.500"
+                color="primary.900"
                 fontSize="sm"
                 data-testid="save-help-message"
               >
@@ -315,7 +323,7 @@ const useSystemFormTabs = ({
                 <>
                   Add an integration to start managing privacy requests and
                   consent. Visit{" "}
-                  <Link href={INTEGRATION_MANAGEMENT_ROUTE} color="purple.500">
+                  <Link href={INTEGRATION_MANAGEMENT_ROUTE} color="link.900">
                     Integration Management
                   </Link>{" "}
                   to set up monitoring on databases.

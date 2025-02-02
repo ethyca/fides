@@ -89,12 +89,7 @@ const getCustomFieldColumns = (
         // Conditionally render the Group cell if we have more than one value.
         // Alternatively, could check the customField type
         Array.isArray(props.getValue()) ? (
-          <GroupCountBadgeCell
-            value={props.getValue()}
-            ignoreZero
-            badgeProps={{ variant: "outline" }}
-            {...props}
-          />
+          <GroupCountBadgeCell value={props.getValue()} ignoreZero {...props} />
         ) : (
           <DefaultCell value={props.getValue() as string} />
         ),
@@ -147,7 +142,7 @@ export const getDatamapReportColumns = ({
                 ? map(value, getDataUseDisplayName)
                 : getDataUseDisplayName(value || "")
             }
-            badgeProps={{ variant: "outline" }}
+            badgeProps={{ variant: "taxonomy" }}
             {...props}
           />
         );
@@ -177,7 +172,7 @@ export const getDatamapReportColumns = ({
           <BadgeCellExpandable
             values={values}
             cellProps={props as any}
-            variant="outline"
+            variant="taxonomy"
           />
         );
       },
@@ -202,7 +197,7 @@ export const getDatamapReportColumns = ({
                 ? map(value, getDataSubjectDisplayName)
                 : getDataSubjectDisplayName(value || "")
             }
-            badgeProps={{ variant: "outline" }}
+            badgeProps={{ variant: "taxonomy" }}
             {...props}
           />
         );
@@ -241,6 +236,9 @@ export const getDatamapReportColumns = ({
     columnHelper.accessor((row) => row.data_shared_with_third_parties, {
       id: COLUMN_IDS.DATA_SHARED_WITH_THIRD_PARTIES,
     }),
+    columnHelper.accessor((row) => row.processes_special_category_data, {
+      id: COLUMN_IDS.PROCESSES_SPECIAL_CATEGORY_DATA,
+    }),
     columnHelper.accessor((row) => row.data_stewards, {
       id: COLUMN_IDS.DATA_STEWARDS,
       cell: (props) => (
@@ -248,7 +246,6 @@ export const getDatamapReportColumns = ({
           suffix="data stewards"
           ignoreZero
           value={props.getValue()}
-          badgeProps={{ variant: "outline" }}
           {...props}
         />
       ),
@@ -273,7 +270,6 @@ export const getDatamapReportColumns = ({
           suffix="destinations"
           ignoreZero
           value={props.getValue()}
-          badgeProps={{ variant: "outline" }}
           {...props}
         />
       ),
@@ -292,7 +288,6 @@ export const getDatamapReportColumns = ({
           suffix="features"
           ignoreZero
           value={props.getValue()}
-          badgeProps={{ variant: "outline" }}
           {...props}
         />
       ),
@@ -317,7 +312,6 @@ export const getDatamapReportColumns = ({
           suffix="sources"
           ignoreZero
           value={props.getValue()}
-          badgeProps={{ variant: "outline" }}
           {...props}
         />
       ),
@@ -336,7 +330,6 @@ export const getDatamapReportColumns = ({
           suffix="profiles"
           ignoreZero
           value={props.getValue()}
-          badgeProps={{ variant: "outline" }}
           {...props}
         />
       ),
@@ -352,7 +345,6 @@ export const getDatamapReportColumns = ({
           suffix="transfers"
           ignoreZero
           value={props.getValue()}
-          badgeProps={{ variant: "outline" }}
           {...props}
         />
       ),
@@ -363,9 +355,6 @@ export const getDatamapReportColumns = ({
     }),
     columnHelper.accessor((row) => row.legitimate_interest_disclosure_url, {
       id: COLUMN_IDS.LEGITIMATE_INTEREST_DISCLOSURE_URL,
-    }),
-    columnHelper.accessor((row) => row.link_to_processor_contract, {
-      id: COLUMN_IDS.LINK_TO_PROCESSOR_CONTRACT,
     }),
     columnHelper.accessor((row) => row.processes_personal_data, {
       id: COLUMN_IDS.PROCESSES_PERSONAL_DATA,
@@ -383,7 +372,6 @@ export const getDatamapReportColumns = ({
           suffix="responsibilities"
           ignoreZero
           value={props.getValue()}
-          badgeProps={{ variant: "outline" }}
           {...props}
         />
       ),
@@ -402,7 +390,7 @@ export const getDatamapReportColumns = ({
           suffix="shared categories"
           ignoreZero
           value={props.getValue()}
-          badgeProps={{ variant: "outline" }}
+          badgeProps={{ variant: "taxonomy" }}
           {...props}
         />
       ),
@@ -413,24 +401,6 @@ export const getDatamapReportColumns = ({
     }),
     columnHelper.accessor((row) => row.special_category_legal_basis, {
       id: COLUMN_IDS.SPECIAL_CATEGORY_LEGAL_BASIS,
-    }),
-    columnHelper.accessor((row) => row.system_dependencies, {
-      id: COLUMN_IDS.SYSTEM_DEPENDENCIES,
-      cell: (props) => (
-        <GroupCountBadgeCell
-          suffix="dependencies"
-          ignoreZero
-          value={props.getValue()}
-          {...props}
-        />
-      ),
-      meta: {
-        showHeaderMenu: !isRenaming,
-        width: "auto",
-      },
-    }),
-    columnHelper.accessor((row) => row.third_country_safeguards, {
-      id: COLUMN_IDS.THIRD_COUNTRY_SAFEGUARDS,
     }),
     columnHelper.accessor((row) => row.third_parties, {
       id: COLUMN_IDS.THIRD_PARTIES,
@@ -456,7 +426,7 @@ export const getDatamapReportColumns = ({
           <BadgeCellExpandable
             values={values}
             cellProps={props as any}
-            variant="outline"
+            variant="taxonomy"
           />
         );
       },
@@ -488,7 +458,7 @@ export const getDatamapReportColumns = ({
           <BadgeCellExpandable
             values={values}
             cellProps={props as any}
-            variant="outline"
+            variant="taxonomy"
           />
         );
       },
@@ -506,7 +476,6 @@ export const getDatamapReportColumns = ({
           ignoreZero
           suffix="cookies"
           value={props.getValue()}
-          badgeProps={{ variant: "outline" }}
           {...props}
         />
       ),

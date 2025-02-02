@@ -160,9 +160,16 @@ def test_upload_access_results_has_data_use_map(
     "dsr_version",
     ["use_dsr_3_0", "use_dsr_2_0"],
 )
+@pytest.mark.parametrize(
+    "dataset_config",
+    [
+        "postgres_example_test_dataset_config_read_access",
+        "postgres_example_test_dataset_config_read_access_without_primary_keys",
+    ],
+)
 def test_create_and_process_access_request_postgres(
     trigger_webhook_mock,
-    postgres_example_test_dataset_config_read_access,
+    dataset_config,
     postgres_integration_db,
     db,
     cache,
@@ -174,6 +181,7 @@ def test_create_and_process_access_request_postgres(
     run_privacy_request_task,
 ):
     request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+    request.getfixturevalue(dataset_config)
 
     customer_email = "customer-1@example.com"
     data = {
@@ -196,7 +204,7 @@ def test_create_and_process_access_request_postgres(
         assert results[key] is not None
         assert results[key] != {}
 
-    result_key_prefix = f"postgres_example_test_dataset:"
+    result_key_prefix = "postgres_example_test_dataset:"
     customer_key = result_key_prefix + "customer"
     assert results[customer_key][0]["email"] == customer_email
 
@@ -278,14 +286,14 @@ def test_create_and_process_access_request_with_custom_identities_postgres(
         assert results[key] is not None
         assert results[key] != {}
 
-    result_key_prefix = f"postgres_example_test_dataset:"
+    result_key_prefix = "postgres_example_test_dataset:"
     customer_key = result_key_prefix + "customer"
     assert results[customer_key][0]["email"] == customer_email
 
     visit_key = result_key_prefix + "visit"
     assert results[visit_key][0]["email"] == customer_email
 
-    loyalty_key = f"postgres_example_test_extended_dataset:loyalty"
+    loyalty_key = "postgres_example_test_extended_dataset:loyalty"
     assert results[loyalty_key][0]["id"] == loyalty_id
 
     log_id = pr.execution_logs[0].id
@@ -355,7 +363,7 @@ def test_create_and_process_access_request_with_valid_skipped_collection(
 
     assert "login" not in results.keys()
 
-    result_key_prefix = f"postgres_example_test_dataset:"
+    result_key_prefix = "postgres_example_test_dataset:"
     customer_key = result_key_prefix + "customer"
     assert results[customer_key][0]["email"] == customer_email
 
@@ -712,9 +720,16 @@ def test_create_and_process_erasure_request_with_table_joins(
     "dsr_version",
     ["use_dsr_3_0", "use_dsr_2_0"],
 )
+@pytest.mark.parametrize(
+    "dataset_config",
+    [
+        "postgres_example_test_dataset_config_read_access",
+        "postgres_example_test_dataset_config_read_access_without_primary_keys",
+    ],
+)
 def test_create_and_process_erasure_request_read_access(
     postgres_integration_db,
-    postgres_example_test_dataset_config_read_access,
+    dataset_config,
     db,
     cache,
     erasure_policy,
@@ -723,6 +738,7 @@ def test_create_and_process_erasure_request_read_access(
     run_privacy_request_task,
 ):
     request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+    request.getfixturevalue(dataset_config)
 
     customer_email = "customer-2@example.com"
     customer_id = 2
@@ -739,7 +755,7 @@ def test_create_and_process_erasure_request_read_access(
         data,
     )
     errored_execution_logs = pr.execution_logs.filter_by(status="error")
-    assert errored_execution_logs.count() == 9
+    assert errored_execution_logs.count() == 11
     assert (
         errored_execution_logs[0].message
         == "No values were erased since this connection "

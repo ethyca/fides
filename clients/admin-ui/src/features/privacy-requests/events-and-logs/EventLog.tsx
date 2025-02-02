@@ -10,6 +10,7 @@ import {
   Thead,
   Tr,
 } from "fidesui";
+import palette from "fidesui/src/palette/palette.module.scss";
 import { ExecutionLog, ExecutionLogStatus } from "privacy-requests/types";
 
 import { ActionType } from "~/types/api";
@@ -40,7 +41,9 @@ const EventLog = ({ eventLogs, openErrorPanel }: EventDetailsProps) => {
       key={detail.updated_at}
       _hover={{
         backgroundColor:
-          detail.status === ExecutionLogStatus.ERROR ? "#F7FAFC" : "unset",
+          detail.status === ExecutionLogStatus.ERROR
+            ? palette.FIDESUI_NEUTRAL_50
+            : "unset",
       }}
       onClick={() => {
         if (detail.status === ExecutionLogStatus.ERROR) {
