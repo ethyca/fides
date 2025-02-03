@@ -111,6 +111,7 @@ const setTcString = (event: FidesEvent, cmpApi: CmpApi) => {
   }
   // Workaround for bug in base library https://github.com/IABTechLab/iabgpp-es/issues/35
   cmpApi.setFieldValueBySectionId(TcfEuV2.ID, "CmpId", ETHYCA_CMP_ID);
+  console.log("==>", tcString);
   cmpApi.setSectionStringById(TcfEuV2.ID, tcString);
   return true;
 };
@@ -279,7 +280,10 @@ const initializeGppCmpApi = () => {
     const tcSet = setTcString(event, cmpApi);
     if (tcSet) {
       cmpApi.setApplicableSections([TcfEuV2.ID]);
-      cmpApi.fireSectionChange("tcfeuv2");
+      cmpApi.fireSectionChange(TcfEuV2.NAME);
+      console.log("<==", cmpApi.getGppString());
+      const sections = cmpApi.getObject() as any;
+      console.log("===> sections", sections[TcfEuV2.NAME].PurposeConsents);
     }
 
     // Set US GPP opt outs
