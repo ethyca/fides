@@ -79,7 +79,7 @@ export const MonitorResult = ({
               href={`${ACTION_CENTER_ROUTE}/${key}`}
               className="whitespace-nowrap"
             >
-              {`${totalUpdates} assets detected${property ? `on ${property}` : ""}`}
+              {`${totalUpdates} assets detected${property ? ` on ${property}` : ""}`}
               {!!warning && (
                 <Tooltip
                   title={typeof warning === "string" ? warning : undefined}
