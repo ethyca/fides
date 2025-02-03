@@ -25,6 +25,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Added frequency field to DataHubSchema integration config [#5716](https://github.com/ethyca/fides/pull/5716)
 
 ### Fixed
+- Fixed `fides annotate dataset` command enters incorrect value on the `direction` field. [#xxxx](https://github.com/ethyca/fides/pull/xxxx)
 - Fixed Bigquery flakey tests. [#5713](LJ-278-fix-failed-big-query-enterprise-tests)
 - Fixed breadcrumb navigation issues in data catalog view [#5717](https://github.com/ethyca/fides/pull/5717)
 
