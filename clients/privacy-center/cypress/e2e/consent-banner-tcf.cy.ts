@@ -6,6 +6,7 @@ import {
   FidesCookie,
   FidesEndpointPaths,
   PrivacyExperience,
+  PrivacyExperienceMinimal,
 } from "fides-js";
 import { NoticeConsent } from "fides-js/src/lib/consent-types";
 import { FIDES_SEPARATOR } from "fides-js/src/lib/tcf/constants";
@@ -215,6 +216,49 @@ describe("Fides-js TCF", () => {
     });
   });
 
+  describe("Payload optimization", () => {
+    beforeEach(() => {
+      cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
+      stubTCFExperience({});
+    });
+    it("merges full experience with minimal after successful fetch", () => {
+      cy.window().then((win) => {
+        cy.fixture("consent/experience_tcf.json").then((payload) => {
+          cy.wait("@getPrivacyExperience");
+          expect(
+            (win.Fides.experience as PrivacyExperienceMinimal)
+              .tcf_purpose_consent_ids,
+          ).to.have.length(11);
+          expect((win.Fides.experience as any).tcf_purpose_consents).to.not
+            .exist;
+          cy.waitUntilFidesInitialized().then(() => {
+            const experience = payload.items[0];
+            const updatedExperience = {
+              ...experience,
+              tcf_purpose_consents: [],
+            };
+            stubTCFExperience({
+              experienceFullOverride: updatedExperience,
+            });
+            cy.wait("@getPrivacyExperience");
+            expect(
+              (
+                win.Fides.experience as PrivacyExperience &
+                  PrivacyExperienceMinimal
+              ).tcf_purpose_consent_ids,
+            ).to.have.length(11);
+            expect(
+              (
+                win.Fides.experience as PrivacyExperience &
+                  PrivacyExperienceMinimal
+              ).tcf_purpose_consents,
+            ).to.exist.to.have.length(4);
+          });
+        });
+      });
+    });
+  });
+
   describe("initial layer", () => {
     beforeEach(() => {
       cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
@@ -223,6 +267,7 @@ describe("Fides-js TCF", () => {
         fixture: "consent/notices_served_tcf.json",
       }).as("patchNoticesServed");
     });
+
     it("can render purposes in the initial layer", () => {
       cy.get("div#fides-banner").within(() => {
         cy.contains(PURPOSE_2.name);

@@ -152,6 +152,11 @@ export const TcfOverlay = ({
         // include user preferences from the cookie
         const userPrefs = buildUserPrefs(result, cookie);
         const fullExperience: PrivacyExperience = { ...result, ...userPrefs };
+        window.Fides.experience = {
+          ...window.Fides.experience,
+          ...fullExperience,
+        };
+        window.Fides.experience.minimal_tcf = false;
 
         setExperience(fullExperience);
         loadMessagesFromExperience(i18n, fullExperience, translationOverrides);
