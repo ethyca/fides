@@ -158,12 +158,16 @@ def annotate_dataset(
             if include_null:
                 output_dataset.append(current_dataset.model_dump(mode="json"))
             else:
-                output_dataset.append(current_dataset.model_dump(mode="json", exclude_none=True))
+                output_dataset.append(
+                    current_dataset.model_dump(mode="json", exclude_none=True)
+                )
         except AnnotationAbortError:
             if include_null:
                 output_dataset.append(current_dataset.model_dump(mode="json"))
             else:
-                output_dataset.append(current_dataset.model_dump(mode="json", exclude_none=True))
+                output_dataset.append(
+                    current_dataset.model_dump(mode="json", exclude_none=True)
+                )
             break
     manifests.write_manifest(dataset_file, output_dataset, "dataset")
     echo_green("Annotation process complete.")
