@@ -104,7 +104,7 @@ const CatalogDatasetViewNoProjects = () => {
             tableInstance={tableInstance}
             emptyTableNotice={<EmptyCatalogTableNotice />}
             onRowClick={(row) =>
-              push(`${DATA_CATALOG_ROUTE}/${systemKey}/${row.urn}`)
+              push(`${DATA_CATALOG_ROUTE}/${systemKey}/resources/${row.urn}`)
             }
           />
           <PaginationBar
