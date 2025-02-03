@@ -67,6 +67,11 @@ dataset:
             data_categories: [user.contact.email]
             fidesops_meta:
               data_type: string
+              masking_strategy_override:
+                strategy: random_string_rewrite
+                configuration:
+                  format_preservation:
+                    suffix: "+masked@ethyca.com"
           - name: invoice_prefix
             data_categories: [system.operations]
           - name: invoice_settings
@@ -89,6 +94,8 @@ dataset:
             data_categories: [user.contact.phone_number]
             fidesops_meta:
               data_type: string
+              masking_strategy_override:
+                strategy: null_rewrite
           - name: preferred_locales
             data_categories: [user]
             fidesops_meta:
@@ -183,6 +190,11 @@ dataset:
                 data_categories: [user.contact.email]
                 fidesops_meta:
                   data_type: string
+                  masking_strategy_override:
+                    strategy: random_string_rewrite
+                    configuration:
+                      format_preservation:
+                        suffix: "+masked@ethyca.com"
               - name: name
                 data_categories: [user.name]
                 fidesops_meta:
@@ -289,6 +301,11 @@ dataset:
             data_categories: [user.contact.email]
             fidesops_meta:
               data_type: string
+              masking_strategy_override:
+                strategy: random_string_rewrite
+                configuration:
+                  format_preservation:
+                    suffix: "+masked@ethyca.com"
           - name: receipt_number
             data_categories: [system.operations]
           - name: receipt_url
@@ -421,6 +438,11 @@ dataset:
                 data_categories: [user.contact.email]
                 fidesops_meta:
                   data_type: string
+                  masking_strategy_override:
+                    strategy: random_string_rewrite
+                    configuration:
+                      format_preservation:
+                        suffix: "+masked@ethyca.com"
               - name: customer_name
                 data_categories: [user.name]
                 fidesops_meta:
@@ -559,6 +581,11 @@ dataset:
             data_categories: [user.contact.email]
             fidesops_meta:
               data_type: string
+              masking_strategy_override:
+                strategy: random_string_rewrite
+                configuration:
+                  format_preservation:
+                    suffix: "+masked@ethyca.com"
           - name: review
             data_categories: [system.operations]
           - name: setup_future_usage
@@ -634,6 +661,10 @@ dataset:
                     data_categories: [user.contact.address.country]
                     fidesops_meta:
                       data_type: string
+                      masking_strategy_override:
+                        strategy: string_rewrite
+                        configuration:
+                          rewrite_value: US
                   - name: line1
                     data_categories: [user.contact.address.street]
                     fidesops_meta:
@@ -654,6 +685,11 @@ dataset:
                 data_categories: [user.contact.email]
                 fidesops_meta:
                   data_type: string
+                  masking_strategy_override:
+                    strategy: random_string_rewrite
+                    configuration:
+                      format_preservation:
+                        suffix: "+masked@ethyca.com"
               - name: name
                 data_categories: [user.name]
                 fidesops_meta:
@@ -734,6 +770,7 @@ dataset:
             data_categories: [user.contact.address.country]
             fidesops_meta:
               data_type: string
+              read_only: True
           - name: currency
             data_categories: [system.operations]
           - name: customer
@@ -1041,6 +1078,11 @@ dataset:
             data_categories: [user.contact.email]
             fidesops_meta:
               data_type: string
+              masking_strategy_override:
+                strategy: random_string_rewrite
+                configuration:
+                  format_preservation:
+                    suffix: "+masked@ethyca.com"
           - name: customer_name
             data_categories: [user.name]
             fidesops_meta:
