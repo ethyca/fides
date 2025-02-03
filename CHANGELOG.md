@@ -26,7 +26,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ### Fixed
 - Fixed `fides annotate dataset` command enters incorrect value on the `direction` field. [#5727](https://github.com/ethyca/fides/pull/5727)
-- Fixed Bigquery flakey tests. [#5713](LJ-278-fix-failed-big-query-enterprise-tests)
+- Fixed Bigquery flakey tests. [#5713](https://github.com/ethyca/fides/pull/5713)
 - Fixed breadcrumb navigation issues in data catalog view [#5717](https://github.com/ethyca/fides/pull/5717)
 
 ## [2.53.0](https://github.com/ethyca/fides/compare/2.53.0...2.54.0)
