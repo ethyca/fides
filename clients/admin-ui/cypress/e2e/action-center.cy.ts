@@ -65,6 +65,8 @@ describe("Action center", () => {
         const monitorKey = result
           .attr("data-testid")
           .replace("monitor-result-", "");
+        // property icon
+        cy.wrap(result).find(".ant-list-item-meta-avatar").should("exist");
         // linked title
         cy.wrap(result)
           .contains("assets detected")
