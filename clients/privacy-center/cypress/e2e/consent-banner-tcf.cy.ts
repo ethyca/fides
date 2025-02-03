@@ -511,6 +511,7 @@ describe("Fides-js TCF", () => {
     beforeEach(() => {
       cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
       stubTCFExperience({});
+      cy.wait("@getPrivacyExperience");
       cy.intercept("PATCH", `${API_URL}${FidesEndpointPaths.NOTICES_SERVED}`, {
         fixture: "consent/notices_served_tcf.json",
       }).as("patchNoticesServed");
@@ -1141,44 +1142,42 @@ describe("Fides-js TCF", () => {
 
         stubTCFExperience({
           stubOptions: { apiOptions },
-        }).then((result) => {
-          const privacyExperience = result.response.body.items[0];
-          cy.waitUntilFidesInitialized().then(() => {
-            cy.get("div#fides-banner").within(() => {
-              cy.get("#fides-button-group").within(() => {
-                cy.get("button").contains("Manage preferences").click();
-              });
+        });
+        cy.waitUntilFidesInitialized().then(() => {
+          cy.get("div#fides-banner").within(() => {
+            cy.get("#fides-button-group").within(() => {
+              cy.get("button").contains("Manage preferences").click();
             });
-            cy.getByTestId("consent-modal").within(() => {
-              cy.get("button").contains("Opt out of all").click();
-              cy.get("@FidesUpdated")
-                .should("have.been.calledOnce")
-                .its("lastCall.args.0.detail.extraDetails.consentMethod")
-                .then((consentMethod) => {
-                  expect(consentMethod).to.eql(ConsentMethod.REJECT);
-                  // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-                  expect(spyObject).to.be.called;
-                  const spy = spyObject.getCalls();
-                  const { args } = spy[0];
-                  expect(args[0]).to.equal(ConsentMethod.REJECT);
-                  expect(args[1]).to.be.a("object");
-                  // the TC str is dynamically updated upon save preferences with diff timestamp, so we do a fuzzy match
-                  expect(args[2]).to.contain("AA,1~");
-                  expect(args[3]).to.be.a("object");
-                  // timeout means API call not made, which is expected
-                  cy.on("fail", (error) => {
-                    if (error.message.indexOf("Timed out retrying") !== 0) {
-                      throw error;
-                    }
-                  });
-                  // check that preferences aren't sent to Fides API
-                  cy.wait("@patchPrivacyPreference", {
-                    requestTimeout: 100,
-                  }).then((xhr) => {
-                    assert.isNull(xhr?.response?.body);
-                  });
+          });
+          cy.getByTestId("consent-modal").within(() => {
+            cy.get("button").contains("Opt out of all").click();
+            cy.get("@FidesUpdated")
+              .should("have.been.calledOnce")
+              .its("lastCall.args.0.detail.extraDetails.consentMethod")
+              .then((consentMethod) => {
+                expect(consentMethod).to.eql(ConsentMethod.REJECT);
+                // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+                expect(spyObject).to.be.called;
+                const spy = spyObject.getCalls();
+                const { args } = spy[0];
+                expect(args[0]).to.equal(ConsentMethod.REJECT);
+                expect(args[1]).to.be.a("object");
+                // the TC str is dynamically updated upon save preferences with diff timestamp, so we do a fuzzy match
+                expect(args[2]).to.contain("AA,1~");
+                expect(args[3]).to.be.a("object");
+                // timeout means API call not made, which is expected
+                cy.on("fail", (error) => {
+                  if (error.message.indexOf("Timed out retrying") !== 0) {
+                    throw error;
+                  }
                 });
-            });
+                // check that preferences aren't sent to Fides API
+                cy.wait("@patchPrivacyPreference", {
+                  requestTimeout: 100,
+                }).then((xhr) => {
+                  assert.isNull(xhr?.response?.body);
+                });
+              });
           });
         });
       });
