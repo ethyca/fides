@@ -11,15 +11,6 @@ const withBundleAnalyzer = require("@next/bundle-analyzer")({
   enabled: process.env.ANALYZE === "true",
 });
 
-// DEFER (PROD-1981): Replace with `transpilePackages` after upgrading to 13.0.0
-// Transpile the modules needed for Swagger UI
-const withTM = require("next-transpile-modules")([
-  "react-syntax-highlighter",
-  "swagger-client",
-  "swagger-ui-react",
-  "fidesui",
-]);
-
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // `reactStrictMode` must be false for Chakra v2 modals to behave properly. See https://github.com/chakra-ui/chakra-ui/issues/5321#issuecomment-1219327270
@@ -28,6 +19,12 @@ const nextConfig = {
   env: {
     version: "1.2.3",
   },
+  transpilePackages: [
+    "react-syntax-highlighter",
+    "swagger-client",
+    "swagger-ui-react",
+    "fidesui",
+  ],
   webpack: (config, { isServer }) => {
     // Provide an empty fallback for the "fs" module for the client-side bundle
     // This is needed to ensure the dynamic import("fs") in loadConfigFromFile()
@@ -56,4 +53,4 @@ const nextConfig = {
   },
 };
 
-module.exports = withTM(withBundleAnalyzer(nextConfig));
+module.exports = withBundleAnalyzer(nextConfig);
