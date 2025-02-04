@@ -1,16 +1,17 @@
-"use client";
+import { headers } from "next/headers";
 
-import { Provider } from "react-redux";
+import HomePageContainer from "./HomePageContainer";
+import { loadPrivacyCenterEnvironment } from "./server-environment";
 
-import Home from "./homepage";
-import store from "./store";
+const HomePage = async () => {
+  const headersList = await headers();
 
-const HomePage = () => {
-  return (
-    <Provider store={store}>
-      <Home />
-    </Provider>
-  );
+  // Load the server-side environment for the session and pass it to the client as props
+  const customPropertyPath = headersList.get("customPropertyPath")?.toString();
+  const serverEnvironment = await loadPrivacyCenterEnvironment({
+    customPropertyPath,
+  });
+  return <HomePageContainer serverEnvironment={serverEnvironment} />;
 };
 
 export default HomePage;

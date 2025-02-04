@@ -1,4 +1,4 @@
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 import React, { useCallback, useState } from "react";
 
 import { useLocalStorage } from "~/common/hooks";

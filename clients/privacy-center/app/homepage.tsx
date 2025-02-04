@@ -1,5 +1,3 @@
-"use client";
-
 import {
   Flex,
   Heading,
@@ -27,10 +25,13 @@ import {
 } from "~/components/modals/privacy-request-modal/PrivacyRequestModal";
 import PrivacyCard from "~/components/PrivacyCard";
 import { useConfig } from "~/features/common/config.slice";
+import { loadProperty } from "~/features/common/property.slice";
 import {
+  loadSettings,
   selectIsNoticeDriven,
   useSettings,
 } from "~/features/common/settings.slice";
+import { loadStyles } from "~/features/common/styles.slice";
 import {
   clearLocation,
   selectPrivacyExperience,
@@ -39,9 +40,12 @@ import {
 import { useSubscribeToPrivacyExperienceQuery } from "~/features/consent/hooks";
 import { useGetIdVerificationConfigQuery } from "~/features/id-verification";
 
-const Home: NextPage = () => {
+import { useAppDispatch, useAppSelector } from "./hooks";
+import store from "./store";
+
+const HomePage: NextPage = ({}: {}) => {
   const router = useRouter();
-  // const dispatch = useAppDispatch();
+  const dispatch = useAppDispatch();
   const config = useConfig();
   const [isVerificationRequired, setIsVerificationRequired] =
     useState<boolean>(false);
@@ -83,11 +87,11 @@ const Home: NextPage = () => {
   const noticeEmptyStateModal = useDisclosure();
 
   // useEffect(() => {
-  //   if (router.query.geolocation) {
+  //   if (router.query?.geolocation) {
   //     // Ensure the query parameter is a string
   //     const geolocation = Array.isArray(router.query.geolocation)
-  //       ? router.query.geolocation[0]
-  //       : router.query.geolocation;
+  //       ? router.query?.geolocation[0]
+  //       : router.query?.geolocation;
 
   //     dispatch(setLocation(geolocation));
   //   } else {
@@ -96,17 +100,17 @@ const Home: NextPage = () => {
   //   }
   // }, [router.query.geolocation, dispatch]);
 
-  // const experience = useAppSelector(selectPrivacyExperience);
-  // const isNoticeDriven = useAppSelector(selectIsNoticeDriven);
-  // const emptyNotices = !experience?.privacy_notices?.length;
+  const experience = useAppSelector(selectPrivacyExperience);
+  const isNoticeDriven = useAppSelector(selectIsNoticeDriven);
+  const emptyNotices = !experience?.privacy_notices?.length;
 
-  // const handleConsentCardOpen = () => {
-  //   if (isNoticeDriven && emptyNotices) {
-  //     noticeEmptyStateModal.onOpen();
-  //   } else {
-  //     onConsentModalOpen();
-  //   }
-  // };
+  const handleConsentCardOpen = () => {
+    if (isNoticeDriven && emptyNotices) {
+      noticeEmptyStateModal.onOpen();
+    } else {
+      onConsentModalOpen();
+    }
+  };
 
   useEffect(() => {
     if (getIdVerificationConfigQuery.isError) {
@@ -276,4 +280,4 @@ const Home: NextPage = () => {
   );
 };
 
-export default Home;
+export default HomePage;
