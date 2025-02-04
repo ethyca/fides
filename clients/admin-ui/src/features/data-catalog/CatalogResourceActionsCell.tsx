@@ -1,15 +1,7 @@
-import {
-  AntButton,
-  AntButton as Button,
-  Flex,
-  Menu,
-  MenuButton,
-  MenuItem,
-  MenuList,
-  MoreIcon,
-} from "fidesui";
+import { AntButton as Button, Flex, Spacer } from "fidesui";
 
 import { useAlert } from "~/features/common/hooks";
+import CatalogResourceOverflowMenu from "~/features/data-catalog/staged-resources/CatalogResourceOverflowMenu";
 import {
   CatalogResourceStatus,
   getCatalogResourceStatus,
@@ -23,8 +15,10 @@ import { StagedResourceAPIResponse } from "~/types/api";
 
 const CatalogResourceActionsCell = ({
   resource,
+  onDetailClick,
 }: {
   resource: StagedResourceAPIResponse;
+  onDetailClick?: () => void;
 }) => {
   const { successAlert } = useAlert();
   const status = getCatalogResourceStatus(resource);
@@ -88,24 +82,11 @@ const CatalogResourceActionsCell = ({
           Approve
         </Button>
       )}
-      <Menu>
-        <MenuButton
-          as={AntButton}
-          size="small"
-          // Chakra is expecting the Chakra "type" prop, i.e. HTML type,
-          // but Ant buttons use "type" for styling
-          // @ts-ignore
-          type="text"
-          className="max-w-4"
-          icon={<MoreIcon transform="rotate(90deg)" ml={2} />}
-          data-testid="resource-actions-menu"
-        />
-        <MenuList>
-          <MenuItem onClick={hideResource} data-testid="hide-action">
-            Hide
-          </MenuItem>
-        </MenuList>
-      </Menu>
+      <Spacer />
+      <CatalogResourceOverflowMenu
+        onHideClick={hideResource}
+        onDetailClick={onDetailClick}
+      />
     </Flex>
   );
 };
