@@ -1,15 +1,21 @@
 "use client";
 
+import { theme } from "@chakra-ui/theme";
+import { ErrorBoundary } from "next/dist/client/components/error-boundary";
 import { useMemo } from "react";
 import { Provider } from "react-redux";
+import { PersistGate } from "redux-persist/integration/react";
 
+import { FidesUIProvider } from "~/../fidesui/src";
+import { I18nProvider } from "~/common/i18nContext";
 import { loadConfig } from "~/features/common/config.slice";
 import { loadProperty } from "~/features/common/property.slice";
 import { loadSettings } from "~/features/common/settings.slice";
 import { loadStyles } from "~/features/common/styles.slice";
 
 import HomePage from "./HomePage";
-import store from "./store";
+import Layout from "./layout";
+import store, { persistor } from "./store";
 
 const HomePageContainer = ({ serverEnvironment }) => {
   useMemo(() => {
@@ -24,7 +30,15 @@ const HomePageContainer = ({ serverEnvironment }) => {
 
   return (
     <Provider store={store}>
-      <HomePage />
+      <I18nProvider>
+        <PersistGate persistor={persistor}>
+          <FidesUIProvider theme={theme}>
+            <ErrorBoundary fallbackRender={Error}>
+              <HomePage />
+            </ErrorBoundary>
+          </FidesUIProvider>
+        </PersistGate>
+      </I18nProvider>
     </Provider>
   );
 };
