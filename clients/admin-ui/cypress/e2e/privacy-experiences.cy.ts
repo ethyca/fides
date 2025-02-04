@@ -281,9 +281,7 @@ describe("Privacy experiences", () => {
 
       it("does not show option to display privacy notices in modal preview when clicked", () => {
         cy.getByTestId("input-show_layer1_notices").should("not.exist");
-        cy.getByTestId("controlled-select-component").antSelect(
-            "Modal",
-        );
+        cy.getByTestId("controlled-select-component").antSelect("Modal");
         cy.getByTestId("add-privacy-notice").click();
         cy.getByTestId("select-privacy-notice").antSelect(0);
         cy.getByTestId("input-show_layer1_notices").should("not.exist");
