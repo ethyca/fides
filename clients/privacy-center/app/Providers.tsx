@@ -14,10 +14,9 @@ import { loadSettings } from "~/features/common/settings.slice";
 import { loadStyles } from "~/features/common/styles.slice";
 
 import HomePage from "./HomePage";
-import Layout from "./layout";
 import store, { persistor } from "./store";
 
-const HomePageContainer = ({ serverEnvironment }) => {
+const Providers = ({ serverEnvironment, children }) => {
   useMemo(() => {
     if (serverEnvironment) {
       // Load the server environment into the Redux store
@@ -33,13 +32,11 @@ const HomePageContainer = ({ serverEnvironment }) => {
       <I18nProvider>
         <PersistGate persistor={persistor}>
           <FidesUIProvider theme={theme}>
-            <ErrorBoundary fallbackRender={Error}>
-              <HomePage />
-            </ErrorBoundary>
+            <ErrorBoundary fallbackRender={Error}>{children}</ErrorBoundary>
           </FidesUIProvider>
         </PersistGate>
       </I18nProvider>
     </Provider>
   );
 };
-export default HomePageContainer;
+export default Providers;
