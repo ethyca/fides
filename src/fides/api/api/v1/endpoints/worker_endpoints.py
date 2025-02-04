@@ -1,9 +1,9 @@
-from typing import Any, Dict
+from typing import Dict
 
-from fastapi import APIRouter, HTTPException, Security
-from loguru import logger
-from starlette.status import HTTP_200_OK
 from celery.app.control import Inspect
+from fastapi import APIRouter, HTTPException, Security
+from starlette.status import HTTP_200_OK
+
 from fides.api.oauth.utils import verify_oauth_client
 from fides.api.schemas.worker import QueueInfo, TaskDetails, WorkerInfo, WorkerStats
 from fides.api.tasks import celery_app
@@ -32,7 +32,10 @@ async def get_worker_stats() -> WorkerStats:
     """
 
     try:
-        return WorkerStats(queues=get_queue_info(), workers=get_worker_info())
+        return WorkerStats(
+            queues=get_queue_info(),
+            workers=get_worker_info(),
+        )
     except Exception as e:
         raise HTTPException(
             status_code=500, detail=f"Error getting worker stats: {str(e)}"
@@ -51,13 +54,14 @@ def get_worker_info() -> Dict[str, WorkerInfo]:
     inspector: Inspect = celery_app.control.inspect()
     active = inspector.active() or {}
     reserved = inspector.reserved() or {}
+    registered = inspector.registered() or {}
 
     workers = {}
 
     # Process active tasks
     for worker_name, tasks in active.items():
         current_task = None
-        if tasks:
+        if tasks and len(tasks) > 0:
             current_task = TaskDetails.from_celery_task(tasks[0], state="started")
         workers[worker_name] = WorkerInfo(active_task=current_task, reserved_tasks=[])
 
@@ -72,7 +76,7 @@ def get_worker_info() -> Dict[str, WorkerInfo]:
             ]
             workers[worker_name].reserved_tasks = reserved_tasks
 
-    for worker_name, registered_tasks in inspector.registered().items():
+    for worker_name, registered_tasks in registered.items():
         workers[worker_name].registered_tasks = registered_tasks
 
     return workers
