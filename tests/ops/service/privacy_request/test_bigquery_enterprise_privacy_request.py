@@ -1,9 +1,11 @@
+from typing import Any, Dict, List, Optional
 from unittest import mock
 
 import pytest
 
 from fides.api.models.audit_log import AuditLog, AuditLogAction
-from fides.api.models.privacy_request import ExecutionLog
+from fides.api.models.privacy_request import ExecutionLog, PrivacyRequest
+from fides.api.util.collection_util import Row
 from tests.ops.service.privacy_request.test_request_runner_service import (
     get_privacy_request_results,
 )
@@ -11,6 +13,107 @@ from tests.ops.service.privacy_request.test_request_runner_service import (
 PRIVACY_REQUEST_TASK_TIMEOUT = 5
 # External services take much longer to return
 PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL = 150
+
+
+def validate_privacy_request(
+    pr: PrivacyRequest,
+    user_id: int,
+    bigquery_enterprise_test_dataset_collections: List[str],
+    access: bool = True,
+) -> Dict[str, Optional[List[Row]]]:
+    """
+    Validates the results of a privacy request with assertions.
+    - Checks that all collections have been queried
+    - Checks that all keys have a non-empty value
+    - Checks that only results for the user_id are returned
+    - Checks that the expected number of records are returned for each collection
+
+    Note: The access boolean determines if we are looking at the access or erasure result counts.
+
+    """
+    results = pr.get_raw_access_results()
+
+    assert len(results.keys()) == len(bigquery_enterprise_test_dataset_collections)
+
+    for key in results.keys():
+        assert results[key] is not None
+        assert results[key] != {}
+
+    users = results["enterprise_dsr_testing:users"]
+    assert len(users) == 1
+    user_details = users[0]
+    assert user_details["id"] == user_id
+
+    assert (
+        len(
+            [
+                comment["user_id"]
+                for comment in results["enterprise_dsr_testing:comments"]
+            ]
+        )
+        == 16
+        if access
+        else 1
+    )
+    assert (
+        len(
+            [post["user_id"] for post in results["enterprise_dsr_testing:post_history"]]
+        )
+        == 39
+        if access
+        else 1
+    )
+    assert (
+        len(
+            [
+                post["title"]
+                for post in results[
+                    "enterprise_dsr_testing:stackoverflow_posts_partitioned"
+                ]
+            ]
+        )
+        == 30
+        if access
+        else 1
+    )
+
+    return results
+
+
+def validate_erasure_privacy_request(
+    bigquery_enterprise_resources: dict[str, Any], user_id: int
+) -> None:
+    """Validates the results of an erasure request with assertions."""
+    bigquery_client = bigquery_enterprise_resources["client"]
+    post_history_id = bigquery_enterprise_resources["post_history_id"]
+    comment_id = bigquery_enterprise_resources["comment_id"]
+    post_id = bigquery_enterprise_resources["post_id"]
+    with bigquery_client.connect() as connection:
+        stmt = f"select text from enterprise_dsr_testing.post_history where id = {post_history_id};"
+        res = connection.execute(stmt).all()
+        for row in res:
+            assert row.text is None
+
+        stmt = f"select user_display_name, text from enterprise_dsr_testing.comments where id = {comment_id};"
+        res = connection.execute(stmt).all()
+        for row in res:
+            assert row.user_display_name is None
+            assert row.text is None
+
+        stmt = f"select owner_user_id, owner_display_name, body from enterprise_dsr_testing.stackoverflow_posts_partitioned where id = {post_id};"
+        res = connection.execute(stmt).all()
+        for row in res:
+            assert (
+                row.owner_user_id == bigquery_enterprise_resources["user_id"]
+            )  # not targeted by policy
+            assert row.owner_display_name is None
+            assert row.body is None
+
+        stmt = f"select display_name, location from enterprise_dsr_testing.users where id = {user_id};"
+        res = connection.execute(stmt).all()
+        for row in res:
+            assert row.display_name is None
+            assert row.location is None
 
 
 @pytest.mark.integration_bigquery
@@ -37,6 +140,7 @@ def test_access_request(
     policy_pre_execution_webhooks,
     policy_post_execution_webhooks,
     run_privacy_request_task,
+    bigquery_enterprise_test_dataset_collections,
 ):
     request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
     request.getfixturevalue(
@@ -67,44 +171,7 @@ def test_access_request(
         PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL,
     )
 
-    results = pr.get_raw_access_results()
-    assert len(results.keys()) == 4
-
-    for key in results.keys():
-        assert results[key] is not None
-        assert results[key] != {}
-
-    users = results["enterprise_dsr_testing:users"]
-    assert len(users) == 1
-    user_details = users[0]
-    assert user_details["id"] == user_id
-
-    assert (
-        len(
-            [
-                comment["user_id"]
-                for comment in results["enterprise_dsr_testing:comments"]
-            ]
-        )
-        == 16
-    )
-    assert (
-        len(
-            [post["user_id"] for post in results["enterprise_dsr_testing:post_history"]]
-        )
-        == 39
-    )
-    assert (
-        len(
-            [
-                post["title"]
-                for post in results[
-                    "enterprise_dsr_testing:stackoverflow_posts_partitioned"
-                ]
-            ]
-        )
-        == 30
-    )
+    validate_privacy_request(pr, user_id, bigquery_enterprise_test_dataset_collections)
 
     log_id = pr.execution_logs[0].id
     pr_id = pr.id
@@ -156,10 +223,10 @@ def test_erasure_request(
     bigquery_fixtures,
     bigquery_enterprise_erasure_policy,
     run_privacy_request_task,
+    bigquery_enterprise_test_dataset_collections,
 ):
     request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
     bigquery_enterprise_resources = request.getfixturevalue(bigquery_fixtures)
-    bigquery_client = bigquery_enterprise_resources["client"]
 
     # first test access request against manually added data
     user_id = bigquery_enterprise_resources["user_id"]
@@ -184,43 +251,8 @@ def test_erasure_request(
         PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL,
     )
 
-    results = pr.get_raw_access_results()
-    assert len(results.keys()) == 4
-
-    for key in results.keys():
-        assert results[key] is not None
-        assert results[key] != {}
-
-    users = results["enterprise_dsr_testing:users"]
-    assert len(users) == 1
-    user_details = users[0]
-    assert user_details["id"] == user_id
-
-    assert (
-        len(
-            [
-                comment["user_id"]
-                for comment in results["enterprise_dsr_testing:comments"]
-            ]
-        )
-        == 1
-    )
-    assert (
-        len(
-            [post["user_id"] for post in results["enterprise_dsr_testing:post_history"]]
-        )
-        == 1
-    )
-    assert (
-        len(
-            [
-                post["title"]
-                for post in results[
-                    "enterprise_dsr_testing:stackoverflow_posts_partitioned"
-                ]
-            ]
-        )
-        == 1
+    validate_privacy_request(
+        pr, user_id, bigquery_enterprise_test_dataset_collections, False
     )
 
     data = {
@@ -230,7 +262,7 @@ def test_erasure_request(
             "email": customer_email,
             "stackoverflow_user_id": {
                 "label": "Stackoverflow User Id",
-                "value": bigquery_enterprise_resources["user_id"],
+                "value": user_id,
             },
         },
     }
@@ -245,36 +277,7 @@ def test_erasure_request(
     )
     pr.delete(db=db)
 
-    bigquery_client = bigquery_enterprise_resources["client"]
-    post_history_id = bigquery_enterprise_resources["post_history_id"]
-    comment_id = bigquery_enterprise_resources["comment_id"]
-    post_id = bigquery_enterprise_resources["post_id"]
-    with bigquery_client.connect() as connection:
-        stmt = f"select text from enterprise_dsr_testing.post_history where id = {post_history_id};"
-        res = connection.execute(stmt).all()
-        for row in res:
-            assert row.text is None
-
-        stmt = f"select user_display_name, text from enterprise_dsr_testing.comments where id = {comment_id};"
-        res = connection.execute(stmt).all()
-        for row in res:
-            assert row.user_display_name is None
-            assert row.text is None
-
-        stmt = f"select owner_user_id, owner_display_name, body from enterprise_dsr_testing.stackoverflow_posts_partitioned where id = {post_id};"
-        res = connection.execute(stmt).all()
-        for row in res:
-            assert (
-                row.owner_user_id == bigquery_enterprise_resources["user_id"]
-            )  # not targeted by policy
-            assert row.owner_display_name is None
-            assert row.body is None
-
-        stmt = f"select display_name, location from enterprise_dsr_testing.users where id = {user_id};"
-        res = connection.execute(stmt).all()
-        for row in res:
-            assert row.display_name is None
-            assert row.location is None
+    validate_erasure_privacy_request(bigquery_enterprise_resources, user_id)
 
 
 @pytest.mark.integration_bigquery
@@ -295,6 +298,7 @@ def test_access_request_multiple_custom_identities(
     policy_pre_execution_webhooks,
     policy_post_execution_webhooks,
     run_privacy_request_task,
+    bigquery_enterprise_test_dataset_collections,
 ):
     request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
 
@@ -321,44 +325,7 @@ def test_access_request_multiple_custom_identities(
         PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL,
     )
 
-    results = pr.get_raw_access_results()
-    assert len(results.keys()) == 4
-
-    for key in results.keys():
-        assert results[key] is not None
-        assert results[key] != {}
-
-    users = results["enterprise_dsr_testing:users"]
-    assert len(users) == 1
-    user_details = users[0]
-    assert user_details["id"] == user_id
-
-    assert (
-        len(
-            [
-                comment["user_id"]
-                for comment in results["enterprise_dsr_testing:comments"]
-            ]
-        )
-        == 16
-    )
-    assert (
-        len(
-            [post["user_id"] for post in results["enterprise_dsr_testing:post_history"]]
-        )
-        == 39
-    )
-    assert (
-        len(
-            [
-                post["title"]
-                for post in results[
-                    "enterprise_dsr_testing:stackoverflow_posts_partitioned"
-                ]
-            ]
-        )
-        == 30
-    )
+    validate_privacy_request(pr, user_id, bigquery_enterprise_test_dataset_collections)
 
     log_id = pr.execution_logs[0].id
     pr_id = pr.id
@@ -410,10 +377,10 @@ def test_erasure_request_multiple_custom_identities(
     bigquery_fixtures,
     bigquery_enterprise_erasure_policy,
     run_privacy_request_task,
+    bigquery_enterprise_test_dataset_collections,
 ):
     request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
     bigquery_enterprise_resources = request.getfixturevalue(bigquery_fixtures)
-    bigquery_client = bigquery_enterprise_resources["client"]
 
     # first test access request against manually added data
     user_id = bigquery_enterprise_resources["user_id"]
@@ -437,43 +404,8 @@ def test_erasure_request_multiple_custom_identities(
         PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL,
     )
 
-    results = pr.get_raw_access_results()
-    assert len(results.keys()) == 4
-
-    for key in results.keys():
-        assert results[key] is not None
-        assert results[key] != {}
-
-    users = results["enterprise_dsr_testing:users"]
-    assert len(users) == 1
-    user_details = users[0]
-    assert user_details["id"] == user_id
-
-    assert (
-        len(
-            [
-                comment["user_id"]
-                for comment in results["enterprise_dsr_testing:comments"]
-            ]
-        )
-        == 1
-    )
-    assert (
-        len(
-            [post["user_id"] for post in results["enterprise_dsr_testing:post_history"]]
-        )
-        == 1
-    )
-    assert (
-        len(
-            [
-                post["title"]
-                for post in results[
-                    "enterprise_dsr_testing:stackoverflow_posts_partitioned"
-                ]
-            ]
-        )
-        == 1
+    validate_privacy_request(
+        pr, user_id, bigquery_enterprise_test_dataset_collections, False
     )
 
     data = {
@@ -497,33 +429,4 @@ def test_erasure_request_multiple_custom_identities(
     )
     pr.delete(db=db)
 
-    bigquery_client = bigquery_enterprise_resources["client"]
-    post_history_id = bigquery_enterprise_resources["post_history_id"]
-    comment_id = bigquery_enterprise_resources["comment_id"]
-    post_id = bigquery_enterprise_resources["post_id"]
-    with bigquery_client.connect() as connection:
-        stmt = f"select text from enterprise_dsr_testing.post_history where id = {post_history_id};"
-        res = connection.execute(stmt).all()
-        for row in res:
-            assert row.text is None
-
-        stmt = f"select user_display_name, text from enterprise_dsr_testing.comments where id = {comment_id};"
-        res = connection.execute(stmt).all()
-        for row in res:
-            assert row.user_display_name is None
-            assert row.text is None
-
-        stmt = f"select owner_user_id, owner_display_name, body from enterprise_dsr_testing.stackoverflow_posts_partitioned where id = {post_id};"
-        res = connection.execute(stmt).all()
-        for row in res:
-            assert (
-                row.owner_user_id == bigquery_enterprise_resources["user_id"]
-            )  # not targeted by policy
-            assert row.owner_display_name is None
-            assert row.body is None
-
-        stmt = f"select display_name, location from enterprise_dsr_testing.users where id = {user_id};"
-        res = connection.execute(stmt).all()
-        for row in res:
-            assert row.display_name is None
-            assert row.location is None
+    validate_erasure_privacy_request(bigquery_enterprise_resources, user_id)

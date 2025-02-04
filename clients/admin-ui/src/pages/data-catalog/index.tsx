@@ -1,6 +1,6 @@
 import Layout from "~/features/common/Layout";
 import PageHeader from "~/features/common/PageHeader";
-import SystemsTable from "~/features/data-catalog/systems/CatalogSystemsTable";
+import CatalogSystemsTable from "~/features/data-catalog/systems/CatalogSystemsTable";
 
 const DataCatalogMainPage = () => {
   return (
@@ -9,7 +9,7 @@ const DataCatalogMainPage = () => {
         heading="Data catalog"
         breadcrumbItems={[{ title: "All systems" }]}
       />
-      <SystemsTable />
+      <CatalogSystemsTable />
     </Layout>
   );
 };

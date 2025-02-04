@@ -39,7 +39,7 @@ const EMPTY_RESPONSE = {
 
 const columnHelper = createColumnHelper<SystemWithMonitorKeys>();
 
-const SystemsTable = () => {
+const CatalogSystemsTable = () => {
   const [rowSelectionState, setRowSelectionState] = useState<RowSelectionState>(
     {},
   );
@@ -92,7 +92,7 @@ const SystemsTable = () => {
       "monitor_config_ids",
     );
 
-    const url = `${DATA_CATALOG_ROUTE}/${row.fides_key}${hasProjects ? "/projects" : ""}?${queryString}`;
+    const url = `${DATA_CATALOG_ROUTE}/${row.fides_key}/${hasProjects ? "projects" : "resources"}?${queryString}`;
     router.push(url);
   };
 
@@ -183,4 +183,4 @@ const SystemsTable = () => {
   );
 };
 
-export default SystemsTable;
+export default CatalogSystemsTable;

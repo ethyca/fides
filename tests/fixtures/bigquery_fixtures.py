@@ -61,6 +61,17 @@ def bigquery_connection_config(db: Session, bigquery_keyfile_creds) -> Generator
 
 
 @pytest.fixture(scope="function")
+def bigquery_enterprise_test_dataset_collections(
+    example_datasets: List[Dict],
+) -> List[str]:
+    """Returns the names of collections in the BigQuery Enterprise dataset"""
+    bigquery_enterprise_dataset = example_datasets[16]
+    return [
+        collection["name"] for collection in bigquery_enterprise_dataset["collections"]
+    ]
+
+
+@pytest.fixture(scope="function")
 def bigquery_enterprise_connection_config(
     db: Session, bigquery_enterprise_keyfile_creds
 ) -> Generator:
@@ -341,6 +352,8 @@ def bigquery_example_test_dataset_config_with_namespace_and_partitioning_meta(
 def bigquery_resources(
     bigquery_example_test_dataset_config,
 ):
+    # Increment the ids by a random number to avoid conflicts on concurrent test runs
+    random_increment = random.randint(1, 99999)
     bigquery_connection_config = bigquery_example_test_dataset_config.connection_config
     connector = BigQueryConnector(bigquery_connection_config)
     bigquery_client = connector.client()
@@ -351,11 +364,11 @@ def bigquery_resources(
 
         stmt = "select max(id) from customer;"
         res = connection.execute(stmt)
-        customer_id = res.all()[0][0] + 1
+        customer_id = res.all()[0][0] + random_increment
 
         stmt = "select max(id) from address;"
         res = connection.execute(stmt)
-        address_id = res.all()[0][0] + 1
+        address_id = res.all()[0][0] + random_increment
 
         city = "Test City"
         state = "TX"
@@ -382,7 +395,7 @@ def bigquery_resources(
 
         stmt = "select max(id) from employee;"
         res = connection.execute(stmt)
-        employee_id = res.all()[0][0] + 1
+        employee_id = res.all()[0][0] + random_increment
         employee_email = f"employee-{uuid}@example.com"
         employee_name = f"Jane {uuid}"
 
@@ -422,6 +435,8 @@ def bigquery_resources(
 def bigquery_resources_with_namespace_meta(
     bigquery_example_test_dataset_config_with_namespace_meta,
 ):
+    # Increment the ids by a random number to avoid conflicts on concurrent test runs
+    random_increment = random.randint(1, 99999)
     bigquery_connection_config = (
         bigquery_example_test_dataset_config_with_namespace_meta.connection_config
     )
@@ -434,11 +449,11 @@ def bigquery_resources_with_namespace_meta(
 
         stmt = "select max(id) from fidesopstest.customer;"
         res = connection.execute(stmt)
-        customer_id = res.all()[0][0] + 1
+        customer_id = res.all()[0][0] + random_increment
 
         stmt = "select max(id) from fidesopstest.address;"
         res = connection.execute(stmt)
-        address_id = res.all()[0][0] + 1
+        address_id = res.all()[0][0] + random_increment
 
         city = "Test City"
         state = "TX"
@@ -465,7 +480,7 @@ def bigquery_resources_with_namespace_meta(
 
         stmt = "select max(id) from fidesopstest.employee;"
         res = connection.execute(stmt)
-        employee_id = res.all()[0][0] + 1
+        employee_id = res.all()[0][0] + random_increment
         employee_email = f"employee-{uuid}@example.com"
         employee_name = f"Jane {uuid}"
 
@@ -505,6 +520,8 @@ def bigquery_resources_with_namespace_meta(
 def bigquery_enterprise_resources(
     bigquery_enterprise_test_dataset_config,
 ):
+    # Increment the ids by a random number to avoid conflicts on concurrent test runs
+    random_increment = random.randint(1, 99999)
     bigquery_connection_config = (
         bigquery_enterprise_test_dataset_config.connection_config
     )
@@ -515,8 +532,6 @@ def bigquery_enterprise_resources(
         # Real max id in the Stackoverflow dataset is 20081052, so we purposefully generate and id above this max
         stmt = "select max(id) from enterprise_dsr_testing.users;"
         res = connection.execute(stmt)
-        # Increment the id by a random number to avoid conflicts on concurrent test runs
-        random_increment = random.randint(0, 99999)
         user_id = res.all()[0][0] + random_increment
         display_name = (
             f"fides_testing_{user_id}"  # prefix to do manual cleanup if needed
@@ -536,7 +551,6 @@ def bigquery_enterprise_resources(
         post_body = "For me, the solution was to adopt 3 cats and dance with them under the full moon at midnight."
         stmt = "select max(id) from enterprise_dsr_testing.stackoverflow_posts_partitioned;"
         res = connection.execute(stmt)
-        random_increment = random.randint(0, 99999)
         post_id = res.all()[0][0] + random_increment
         stmt = f"""
             insert into enterprise_dsr_testing.stackoverflow_posts_partitioned (body, creation_date, id, owner_user_id, owner_display_name)
@@ -547,7 +561,6 @@ def bigquery_enterprise_resources(
         # Create test comments data. Comments are responses to posts or questions on Stackoverflow, and does not include original question or post itself.
         stmt = "select max(id) from enterprise_dsr_testing.comments;"
         res = connection.execute(stmt)
-        random_increment = random.randint(0, 99999)
         comment_id = res.all()[0][0] + random_increment
         comment_text = "FYI this only works if you have pytest installed locally."
         stmt = f"""
@@ -557,9 +570,8 @@ def bigquery_enterprise_resources(
         connection.execute(stmt)
 
         # Create test post_history data
-        stmt = "select max(id) from enterprise_dsr_testing.comments;"
+        stmt = "select max(id) from enterprise_dsr_testing.post_history;"
         res = connection.execute(stmt)
-        random_increment = random.randint(0, 99999)
         post_history_id = res.all()[0][0] + random_increment
         revision_text = "this works if you have pytest"
         uuid = str(uuid4())
@@ -600,6 +612,8 @@ def bigquery_enterprise_resources(
 def bigquery_enterprise_resources_with_partitioning(
     bigquery_enterprise_test_dataset_config_with_partitioning_meta,
 ):
+    # Increment the ids by a random number to avoid conflicts on concurrent test runs
+    random_increment = random.randint(1, 99999)
     bigquery_connection_config = (
         bigquery_enterprise_test_dataset_config_with_partitioning_meta.connection_config
     )
@@ -610,8 +624,6 @@ def bigquery_enterprise_resources_with_partitioning(
         # Real max id in the Stackoverflow dataset is 20081052, so we purposefully generate and id above this max
         stmt = "select max(id) from enterprise_dsr_testing.users;"
         res = connection.execute(stmt)
-        # Increment the id by a random number to avoid conflicts on concurrent test runs
-        random_increment = random.randint(0, 99999)
         user_id = res.all()[0][0] + random_increment
         display_name = (
             f"fides_testing_{user_id}"  # prefix to do manual cleanup if needed
@@ -631,7 +643,6 @@ def bigquery_enterprise_resources_with_partitioning(
         post_body = "For me, the solution was to adopt 3 cats and dance with them under the full moon at midnight."
         stmt = "select max(id) from enterprise_dsr_testing.stackoverflow_posts_partitioned;"
         res = connection.execute(stmt)
-        random_increment = random.randint(0, 99999)
         post_id = res.all()[0][0] + random_increment
         stmt = f"""
             insert into enterprise_dsr_testing.stackoverflow_posts_partitioned (body, creation_date, id, owner_user_id, owner_display_name)
@@ -642,7 +653,6 @@ def bigquery_enterprise_resources_with_partitioning(
         # Create test comments data. Comments are responses to posts or questions on Stackoverflow, and does not include original question or post itself.
         stmt = "select max(id) from enterprise_dsr_testing.comments;"
         res = connection.execute(stmt)
-        random_increment = random.randint(0, 99999)
         comment_id = res.all()[0][0] + random_increment
         comment_text = "FYI this only works if you have pytest installed locally."
         stmt = f"""
@@ -652,9 +662,8 @@ def bigquery_enterprise_resources_with_partitioning(
         connection.execute(stmt)
 
         # Create test post_history data
-        stmt = "select max(id) from enterprise_dsr_testing.comments;"
+        stmt = "select max(id) from enterprise_dsr_testing.post_history;"
         res = connection.execute(stmt)
-        random_increment = random.randint(0, 99999)
         post_history_id = res.all()[0][0] + random_increment
         revision_text = "this works if you have pytest"
         uuid = str(uuid4())
