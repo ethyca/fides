@@ -20,6 +20,8 @@ import {
   PrivacyNoticeResponse,
 } from "~/types/api";
 
+import { COMPONENT_MAP } from "./constants";
+
 declare global {
   interface Window {
     Fides: FidesGlobal;
@@ -70,6 +72,10 @@ const Preview = ({
   const [noticesOnConfig, setNoticesOnConfig] = useState<
     PrivacyNoticeResponse[]
   >([]);
+  const isPreviewAvailable = [
+    ComponentType.BANNER_AND_MODAL,
+    ComponentType.MODAL,
+  ].includes(values.component);
 
   const toast = useToast();
 
@@ -152,34 +158,23 @@ const Preview = ({
     if (
       window.Fides &&
       values.privacy_notice_ids?.length &&
-      values.component !== ComponentType.PRIVACY_CENTER &&
-      values.component !== ComponentType.TCF_OVERLAY
+      isPreviewAvailable
     ) {
       window.Fides.init(baseConfig as any);
     }
-  }, [values, translation, baseConfig, allPrivacyNotices]);
+  }, [values, translation, baseConfig, allPrivacyNotices, isPreviewAvailable]);
 
   const modal = document.getElementById("fides-modal");
   if (modal) {
     modal.removeAttribute("tabindex");
   }
 
-  if (values.component === ComponentType.TCF_OVERLAY) {
+  if (!isPreviewAvailable) {
     return (
       <NoPreviewNotice
-        title="TCF preview not available"
-        description="There is no preview available for TCF. You can edit the available settings
-      and languages to the left."
-      />
-    );
-  }
-
-  if (values.component === ComponentType.PRIVACY_CENTER) {
-    return (
-      <NoPreviewNotice
-        title="Privacy center preview not available"
-        description="There is no preview available for privacy center. You can edit the available settings
-      and languages to the left."
+        title={`${COMPONENT_MAP.get(values.component)} preview not available`}
+        description={`There is no preview available for ${COMPONENT_MAP.get(values.component)}. You can edit the available settings
+      and languages to the left.`}
       />
     );
   }
@@ -234,8 +229,7 @@ const Preview = ({
           width: unset;
         }
       `}</style>
-      {values.component === ComponentType.BANNER_AND_MODAL ||
-      values.component === ComponentType.MODAL ? (
+      {isPreviewAvailable ? (
         <style>
           {`div#fides-modal {
           display: flex !important;
@@ -318,10 +312,7 @@ const Preview = ({
         id="fides-js-base"
         src={fidesJsScript}
         onReady={() => {
-          if (
-            values.component !== ComponentType.TCF_OVERLAY &&
-            values.component !== ComponentType.PRIVACY_CENTER
-          ) {
+          if (isPreviewAvailable) {
             window.Fides?.init(baseConfig as any);
           }
         }}
