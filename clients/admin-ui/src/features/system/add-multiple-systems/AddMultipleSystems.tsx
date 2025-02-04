@@ -16,6 +16,7 @@ import {
   vendorSourceLabels,
 } from "common/helpers";
 import {
+  BadgeCell,
   DefaultCell,
   DefaultHeaderCell,
   FidesTableV2,
@@ -185,8 +186,14 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
       }),
       columnHelper.accessor((row) => row.vendor_id, {
         id: "vendor_id",
-        cell: (props) => <VendorSourceCell value={props.getValue()} />,
-        header: (props) => <DefaultHeaderCell value="Source" {...props} />,
+        cell: (props) => (
+          <BadgeCell
+            alignItems="center"
+            justifyContent="center"
+            value={props.getValue()}
+          />
+        ),
+        header: (props) => <DefaultHeaderCell value="Vendor ID" {...props} />,
         enableColumnFilter: isTcfEnabled,
         filterFn: "arrIncludesSome",
       }),
@@ -352,7 +359,7 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
             <GlobalFilterV2
               globalFilter={globalFilter}
               setGlobalFilter={setGlobalFilter}
-              placeholder="Search"
+              placeholder="Search by vendor or vendor ID"
             />
           </Box>
           {totalSelectSystemsLength > 0 ? (
