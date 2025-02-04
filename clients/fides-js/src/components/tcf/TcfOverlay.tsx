@@ -11,7 +11,10 @@ import {
   PrivacyExperienceMinimal,
   ServingComponent,
 } from "../../lib/consent-types";
-import { isPrivacyExperience } from "../../lib/consent-utils";
+import {
+  experienceIsValid,
+  isPrivacyExperience,
+} from "../../lib/consent-utils";
 import { dispatchFidesEvent } from "../../lib/events";
 import { useNoticesServed } from "../../lib/hooks";
 import {
@@ -141,6 +144,7 @@ export const TcfOverlay = ({
         isGVLLangLoading = false;
       });
     }
+    fidesDebugger("Fetching full TCF experience...");
     fetchExperience({
       userLocationString: fidesRegionString,
       fidesApiUrl: options.fidesApiUrl,
@@ -151,22 +155,29 @@ export const TcfOverlay = ({
       if (isPrivacyExperience(result)) {
         // include user preferences from the cookie
         const userPrefs = buildUserPrefs(result, cookie);
-        const fullExperience: PrivacyExperience = { ...result, ...userPrefs };
-        window.Fides.experience = {
-          ...window.Fides.experience,
-          ...fullExperience,
-        };
-        window.Fides.experience.minimal_tcf = false;
 
-        setExperience(fullExperience);
-        loadMessagesFromExperience(i18n, fullExperience, translationOverrides);
-        if (!userlocale || bestLocale === defaultLocale) {
-          // English (default) GVL translations are part of the full experience, so we load them here.
-          loadGVLMessagesFromExperience(i18n, fullExperience);
-        } else {
-          setCurrentLocale(bestLocale);
-          if (!isGVLLangLoading) {
-            setIsI18nLoading(false);
+        if (experienceIsValid(result)) {
+          const fullExperience: PrivacyExperience = { ...result, ...userPrefs };
+          window.Fides.experience = {
+            ...window.Fides.experience,
+            ...fullExperience,
+          };
+          window.Fides.experience.minimal_tcf = false;
+
+          setExperience(fullExperience);
+          loadMessagesFromExperience(
+            i18n,
+            fullExperience,
+            translationOverrides,
+          );
+          if (!userlocale || bestLocale === defaultLocale) {
+            // English (default) GVL translations are part of the full experience, so we load them here.
+            loadGVLMessagesFromExperience(i18n, fullExperience);
+          } else {
+            setCurrentLocale(bestLocale);
+            if (!isGVLLangLoading) {
+              setIsI18nLoading(false);
+            }
           }
         }
       }
