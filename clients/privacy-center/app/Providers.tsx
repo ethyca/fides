@@ -1,22 +1,28 @@
 "use client";
 
-import { theme } from "@chakra-ui/theme";
-import { ErrorBoundary } from "next/dist/client/components/error-boundary";
 import { useMemo } from "react";
+import { ErrorBoundary } from "react-error-boundary";
 import { Provider } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
 
 import { FidesUIProvider } from "~/../fidesui/src";
 import { I18nProvider } from "~/common/i18nContext";
+import Error from "~/components/Error";
 import { loadConfig } from "~/features/common/config.slice";
 import { loadProperty } from "~/features/common/property.slice";
 import { loadSettings } from "~/features/common/settings.slice";
 import { loadStyles } from "~/features/common/styles.slice";
+import theme from "~/theme";
 
-import HomePage from "./HomePage";
+import { PrivacyCenterEnvironment } from "./server-environment";
 import store, { persistor } from "./store";
 
-const Providers = ({ serverEnvironment, children }) => {
+interface ProvidersProps {
+  serverEnvironment: PrivacyCenterEnvironment;
+  children: React.ReactNode;
+}
+
+const Providers = ({ serverEnvironment, children }: ProvidersProps) => {
   useMemo(() => {
     if (serverEnvironment) {
       // Load the server environment into the Redux store
