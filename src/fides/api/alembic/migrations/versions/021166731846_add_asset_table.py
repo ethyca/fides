@@ -38,7 +38,12 @@ def upgrade():
         sa.Column("name", sa.String(), nullable=False),
         sa.Column("asset_type", sa.String(), nullable=False),
         sa.Column("domain", sa.String(), nullable=True),
-        sa.Column("parent", sa.String(), nullable=True),
+        sa.Column(
+            "parent",
+            postgresql.ARRAY(sa.String()),
+            server_default="{}",
+            nullable=False,
+        ),
         sa.Column("parent_domain", sa.String(), nullable=True),
         sa.Column(
             "locations",
@@ -59,7 +64,6 @@ def upgrade():
             server_default="{}",
             nullable=False,
         ),
-        sa.Column("path", sa.String(), nullable=True),
         sa.Column("base_url", sa.String(), nullable=True),
         sa.Column("system_id", sa.String(), nullable=True),
         sa.ForeignKeyConstraint(["system_id"], ["ctl_systems.id"], ondelete="CASCADE"),

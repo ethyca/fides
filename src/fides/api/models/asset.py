@@ -33,7 +33,7 @@ class Asset(Base):
     name = Column(String, index=True, nullable=False)
     asset_type = Column(String, index=True, nullable=False)
     domain = Column(String, index=True)
-    parent = Column(String)
+    parent = Column(ARRAY(String), server_default="{}", nullable=False)
     parent_domain = Column(String)
     locations = Column(ARRAY(String), server_default="{}", nullable=False)
     with_consent = Column(BOOLEAN, default=False, nullable=False)
@@ -46,9 +46,6 @@ class Asset(Base):
         server_default="{}",
         default=dict,
     )
-
-    # Cookie-specific attributes
-    path = Column(String)
 
     # Browser request-specific attributes
     base_url = Column(String)
