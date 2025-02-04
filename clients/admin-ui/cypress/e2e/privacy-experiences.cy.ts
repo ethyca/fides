@@ -266,7 +266,7 @@ describe("Privacy experiences", () => {
       });
 
       it("shows option to display privacy notices in banner and updates preview when clicked", () => {
-        cy.getByTestId("input-show_layer1_notices").should("not.be.visible");
+        cy.getByTestId("input-show_layer1_notices").should("not.exist");
         cy.getByTestId("controlled-select-component").antSelect(
           "Banner and modal",
         );
@@ -277,6 +277,16 @@ describe("Privacy experiences", () => {
           .find("#fides-banner")
           .find("#fides-banner-notices")
           .contains("Essential");
+      });
+
+      it("does not show option to display privacy notices in modal preview when clicked", () => {
+        cy.getByTestId("input-show_layer1_notices").should("not.exist");
+        cy.getByTestId("controlled-select-component").antSelect(
+            "Modal",
+        );
+        cy.getByTestId("add-privacy-notice").click();
+        cy.getByTestId("select-privacy-notice").antSelect(0);
+        cy.getByTestId("input-show_layer1_notices").should("not.exist");
       });
 
       it("allows editing experience text and shows updated text in the preview", () => {
