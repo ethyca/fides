@@ -13,6 +13,7 @@ import type { NextPage } from "next";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 
+import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { ConfigErrorToastOptions } from "~/common/toast-options";
 import BrandLink from "~/components/BrandLink";
 import ConsentCard from "~/components/consent/ConsentCard";
@@ -27,13 +28,10 @@ import {
 } from "~/components/modals/privacy-request-modal/PrivacyRequestModal";
 import PrivacyCard from "~/components/PrivacyCard";
 import { useConfig } from "~/features/common/config.slice";
-import { loadProperty } from "~/features/common/property.slice";
 import {
-  loadSettings,
   selectIsNoticeDriven,
   useSettings,
 } from "~/features/common/settings.slice";
-import { loadStyles } from "~/features/common/styles.slice";
 import {
   clearLocation,
   selectPrivacyExperience,
@@ -42,10 +40,7 @@ import {
 import { useSubscribeToPrivacyExperienceQuery } from "~/features/consent/hooks";
 import { useGetIdVerificationConfigQuery } from "~/features/id-verification";
 
-import { useAppDispatch, useAppSelector } from "./hooks";
-import store from "./store";
-
-const HomePage: NextPage = ({}: {}) => {
+const HomePage: NextPage = () => {
   const router = useRouter();
   const dispatch = useAppDispatch();
   const config = useConfig();
@@ -89,18 +84,18 @@ const HomePage: NextPage = ({}: {}) => {
   const noticeEmptyStateModal = useDisclosure();
 
   // useEffect(() => {
-  //   if (router.query?.geolocation) {
+  //   if (router?.query.geolocation) {
   //     // Ensure the query parameter is a string
   //     const geolocation = Array.isArray(router.query.geolocation)
-  //       ? router.query?.geolocation[0]
-  //       : router.query?.geolocation;
+  //       ? router.query.geolocation[0]
+  //       : router.query.geolocation;
 
   //     dispatch(setLocation(geolocation));
   //   } else {
   //     // clear the location override if the geolocation query param isn't provided
   //     dispatch(clearLocation());
   //   }
-  // }, [router.query.geolocation, dispatch]);
+  // }, [router?.query.geolocation, dispatch]);
 
   const experience = useAppSelector(selectPrivacyExperience);
   const isNoticeDriven = useAppSelector(selectIsNoticeDriven);
