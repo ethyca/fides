@@ -6,10 +6,8 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { Box, Flex } from "fidesui";
-import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";
 
-import { DATA_CATALOG_ROUTE } from "~/features/common/nav/v2/routes";
 import {
   FidesTableV2,
   PaginationBar,
@@ -24,11 +22,7 @@ import { SearchInput } from "~/features/data-discovery-and-detection/SearchInput
 import { StagedResourceType } from "~/features/data-discovery-and-detection/types/StagedResourceType";
 import { findResourceType } from "~/features/data-discovery-and-detection/utils/findResourceType";
 import resourceHasChildren from "~/features/data-discovery-and-detection/utils/resourceHasChildren";
-import {
-  DiffStatus,
-  StagedResourceAPIResponse,
-  SystemResponse,
-} from "~/types/api";
+import { DiffStatus, StagedResourceAPIResponse } from "~/types/api";
 
 // everything except muted
 const DIFF_STATUS_FILTERS = [
@@ -53,13 +47,11 @@ const EMPTY_RESPONSE = {
 
 const CatalogResourcesTable = ({
   resourceUrn,
-  system,
+  onRowClick,
 }: {
   resourceUrn: string;
-  system: SystemResponse;
+  onRowClick: (row: StagedResourceAPIResponse) => void;
 }) => {
-  const router = useRouter();
-
   const {
     PAGE_SIZES,
     pageSize,
@@ -135,9 +127,7 @@ const CatalogResourcesTable = ({
         tableInstance={tableInstance}
         emptyTableNotice={<EmptyCatalogTableNotice />}
         getRowIsClickable={(row) => resourceHasChildren(row)}
-        onRowClick={(row) =>
-          router.push(`${DATA_CATALOG_ROUTE}/${system.fides_key}/${row.urn}`)
-        }
+        onRowClick={onRowClick}
       />
       <PaginationBar
         totalRows={totalRows || 0}
