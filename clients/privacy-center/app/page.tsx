@@ -1,16 +1,10 @@
-import { headers } from "next/headers";
+import getServerEnvironment from "~/common/hooks/getServerEnvironment";
 
 import HomePageContainer from "./HomePageContainer";
-import { loadPrivacyCenterEnvironment } from "./server-environment";
 
 const HomePage = async () => {
-  const headersList = await headers();
+  const serverEnvironment = await getServerEnvironment();
 
-  // Load the server-side environment for the session and pass it to the client as props
-  const customPropertyPath = headersList.get("customPropertyPath")?.toString();
-  const serverEnvironment = await loadPrivacyCenterEnvironment({
-    customPropertyPath,
-  });
   return <HomePageContainer serverEnvironment={serverEnvironment} />;
 };
 
