@@ -31,7 +31,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Fixed Bigquery flakey tests. [#5713](https://github.com/ethyca/fides/pull/5713)
 - Fixed breadcrumb navigation issues in data catalog view [#5717](https://github.com/ethyca/fides/pull/5717)
 
-## [2.53.0](https://github.com/ethyca/fides/compare/2.53.0...2.54.0)
+## [2.54.0](https://github.com/ethyca/fides/compare/2.53.0...2.54.0)
 
 ### Added
 - Migration to add the `data_uses` column to `stagedresource` table, prereqs for Data Catalog work in Fidesplus [#5600](https://github.com/ethyca/fides/pull/5600/) https://github.com/ethyca/fides/labels/db-migration
