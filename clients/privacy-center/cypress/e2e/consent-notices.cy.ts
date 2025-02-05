@@ -474,7 +474,9 @@ describe("Privacy notice driven consent", () => {
       cy.wait("@getExperience");
 
       cy.getByTestId("consent-item-pri_notice-advertising-000").click();
+      cy.getByTestId("toggle-Weekly Newsletter").should("be.visible");
       cy.getByTestId("toggle-Weekly Newsletter").getToggle().check();
+      cy.getByTestId("toggle-Monthly Newsletter").should("be.visible");
       cy.getByTestId("toggle-Monthly Newsletter").getToggle().check();
 
       cy.getByTestId("save-btn").click();
