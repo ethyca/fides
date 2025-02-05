@@ -218,6 +218,7 @@ export type TcfModelType = keyof TcfOtherConsent;
 
 export interface EnabledIds {
   purposesConsent: string[];
+  customPurposesConsent: string[];
   purposesLegint: string[];
   specialPurposes: string[];
   features: string[];

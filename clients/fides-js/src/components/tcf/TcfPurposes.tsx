@@ -3,7 +3,10 @@ import { useMemo, useState } from "preact/hooks";
 
 import { UpdateEnabledIds } from "~/components/tcf/TcfTabs";
 
-import { PrivacyExperience } from "../../lib/consent-types";
+import {
+  PrivacyExperience,
+  PrivacyNoticeWithPreference,
+} from "../../lib/consent-types";
 import { useI18n } from "../../lib/i18n/i18n-context";
 import { LEGAL_BASIS_OPTIONS } from "../../lib/tcf/constants";
 import { getUniquePurposeRecords, hasLegalBasis } from "../../lib/tcf/purposes";
@@ -53,18 +56,22 @@ const PurposeDetails = ({
 
 const TcfPurposes = ({
   allPurposesConsent = [],
+  allCustomPurposesConsent = [],
   allPurposesLegint = [],
   allSpecialPurposes,
   enabledPurposeConsentIds,
+  enabledCustomPurposeConsentIds,
   enabledPurposeLegintIds,
   enabledSpecialPurposeIds,
   onChange,
 }: {
   allPurposesConsent: TCFPurposeConsentRecord[] | undefined;
+  allCustomPurposesConsent: Array<PrivacyNoticeWithPreference> | undefined;
   enabledPurposeConsentIds: string[];
   allSpecialPurposes: PrivacyExperience["tcf_special_purposes"];
   allPurposesLegint: TCFPurposeLegitimateInterestsRecord[] | undefined;
   enabledPurposeLegintIds: string[];
+  enabledCustomPurposeConsentIds: string[];
   enabledSpecialPurposeIds: string[];
   onChange: (payload: UpdateEnabledIds) => void;
 }) => {
@@ -83,8 +90,10 @@ const TcfPurposes = ({
   );
   const activeData: {
     purposes: PurposeRecord[];
+    customPurposes: PrivacyNoticeWithPreference[];
     purposeModelType: keyof EnabledIds;
     enabledPurposeIds: string[];
+    enabledCustomPurposeIds: string[];
     specialPurposes: TCFSpecialPurposeRecord[];
     enabledSpecialPurposeIds: string[];
   } = useMemo(() => {
@@ -92,8 +101,10 @@ const TcfPurposes = ({
     if (activeLegalBasisOption.value === LegalBasisEnum.CONSENT.toString()) {
       return {
         purposes: uniquePurposes.filter((p) => p.isConsent),
+        customPurposes: allCustomPurposesConsent, // all custom purposes are "consent" purposes
         purposeModelType: "purposesConsent",
         enabledPurposeIds: enabledPurposeConsentIds,
+        enabledCustomPurposeIds: enabledCustomPurposeConsentIds,
         specialPurposes: specialPurposes.filter((sp) =>
           hasLegalBasis(sp, LegalBasisEnum.CONSENT),
         ),
@@ -110,12 +121,14 @@ const TcfPurposes = ({
       enabledSpecialPurposeIds,
     };
   }, [
+    allSpecialPurposes,
     activeLegalBasisOption,
     uniquePurposes,
-    enabledPurposeConsentIds,
     enabledPurposeLegintIds,
-    allSpecialPurposes,
     enabledSpecialPurposeIds,
+    allCustomPurposesConsent,
+    enabledPurposeConsentIds,
+    enabledCustomPurposeConsentIds,
   ]);
 
   return (
@@ -124,6 +137,17 @@ const TcfPurposes = ({
         options={LEGAL_BASIS_OPTIONS}
         active={activeLegalBasisOption}
         onChange={setActiveLegalBasisOption}
+      />
+      <RecordsList<PrivacyNoticeWithPreference>
+        type="customPurposes"
+        title="Custom Purposes"
+        items={activeData.customPurposes}
+        enabledIds={activeData.enabledCustomPurposeIds}
+        onToggle={(newEnabledIds) =>
+          onChange({ newEnabledIds, modelType: activeData.purposeModelType })
+        }
+        // This key forces a rerender when legal basis changes, which allows paging to reset properly
+        key={`purpose-record-${activeLegalBasisOption.value}`}
       />
       <RecordsList<PurposeRecord>
         type="purposes"

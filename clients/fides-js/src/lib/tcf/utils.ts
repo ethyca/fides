@@ -77,6 +77,7 @@ export const buildTcfEntitiesFromCookieAndFidesString = (
       return { ...item, current_preference: preference };
     });
   });
+  // todo- consider custom notices too
 
   // Now update tcfEntities based on the fides string
   if (cookie.fides_string) {

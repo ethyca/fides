@@ -48,9 +48,11 @@ const TcfTabs = ({
           <InfoBox>{i18n.t("static.tcf.purposes.description")}</InfoBox>
           <TcfPurposes
             allPurposesConsent={experience.tcf_purpose_consents}
+            allCustomPurposesConsent={experience.privacy_notices}
             allPurposesLegint={experience.tcf_purpose_legitimate_interests}
             allSpecialPurposes={experience.tcf_special_purposes}
             enabledPurposeConsentIds={enabledIds.purposesConsent}
+            enabledCustomPurposeConsentIds={enabledIds.customPurposesConsent}
             enabledPurposeLegintIds={enabledIds.purposesLegint}
             enabledSpecialPurposeIds={enabledIds.specialPurposes}
             onChange={handleUpdateDraftState}

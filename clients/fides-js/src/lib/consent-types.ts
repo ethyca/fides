@@ -466,6 +466,7 @@ export interface PrivacyExperienceMinimal
   extends Pick<
     PrivacyExperience,
     | "id"
+    | "privacy_notices"
     | "available_locales"
     | "gpp_settings"
     | "vendor_count"

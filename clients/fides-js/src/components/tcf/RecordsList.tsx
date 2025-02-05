@@ -6,6 +6,7 @@ import DataUseToggle from "../DataUseToggle";
 
 export type RecordListType =
   | "purposes"
+  | "customPurposes"
   | "specialPurposes"
   | "features"
   | "specialFeatures"
@@ -21,7 +22,7 @@ interface Props<T extends Item> {
   type: RecordListType;
   title: string;
   enabledIds: string[];
-  renderToggleChild: (item: T) => VNode;
+  renderToggleChild?: (item: T) => VNode;
   onToggle: (payload: string[]) => void;
   renderBadgeLabel?: (item: T) => string | undefined;
   hideToggles?: boolean;
@@ -85,7 +86,7 @@ const RecordsList = <T extends Item>({
           onLabel={toggleOnLabel}
           offLabel={toggleOffLabel}
         >
-          {renderToggleChild(item)}
+          {renderToggleChild ? renderToggleChild(item) : ""}
         </DataUseToggle>
       ))}
     </div>

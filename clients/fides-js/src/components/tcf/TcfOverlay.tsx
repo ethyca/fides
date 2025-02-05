@@ -8,7 +8,7 @@ import {
   ButtonType,
   ConsentMethod,
   PrivacyExperience,
-  PrivacyExperienceMinimal,
+  PrivacyExperienceMinimal, PrivacyNoticeTranslation, PrivacyNoticeWithPreference,
   ServingComponent,
 } from "../../lib/consent-types";
 import {
@@ -24,7 +24,7 @@ import {
   loadMessagesFromExperience,
   loadMessagesFromGVLTranslations,
   matchAvailableLocales,
-  selectBestExperienceConfigTranslation,
+  selectBestExperienceConfigTranslation, selectBestNoticeTranslation,
 } from "../../lib/i18n";
 import { useI18n } from "../../lib/i18n/i18n-context";
 import { updateConsentPreferences } from "../../lib/preferences";
@@ -54,7 +54,9 @@ import { TCFBannerSupplemental } from "./TCFBannerSupplemental";
 import { TcfConsentButtons } from "./TcfConsentButtons";
 import TcfTabs from "./TcfTabs";
 
-const getAllIds = (modelList: TcfModels) => {
+const getAllIds = (
+  modelList: TcfModels | Array<PrivacyNoticeWithPreference>,
+) => {
   if (!modelList) {
     return [];
   }
@@ -64,6 +66,16 @@ const getAllIds = (modelList: TcfModels) => {
 interface TcfOverlayProps extends Omit<OverlayProps, "experience"> {
   experienceMinimal: PrivacyExperienceMinimal;
 }
+
+/**
+ * Define a special PrivacyNoticeItem, where we've narrowed the list of
+ * available translations to the singular "best" translation that should be
+ * displayed, and paired that with the source notice itself.
+ */
+type PrivacyNoticeItem = {
+  notice: PrivacyNoticeWithPreference;
+  bestTranslation: PrivacyNoticeTranslation | null;
+};
 export const TcfOverlay = ({
   options,
   experienceMinimal,
@@ -112,6 +124,29 @@ export const TcfOverlay = ({
       fidesDebugger(`Fides GVL translations loaded for ${locale}`);
     }
   };
+
+  /**
+   * Collect the given PrivacyNotices into a list of "items" for rendering.
+   *
+   * Each "item" includes both:
+   * 1) notice: The PrivacyNotice itself with it's properties like keys,
+   *    preferences, etc.
+   * 2) bestTranslation: The "best" translation for the notice based on the
+   *    current locale
+   *
+   * We memoize these together to avoid repeatedly figuring out the "best"
+   * translation on every render, since it will only change if the overall
+   * locale changes!
+   */
+  const privacyNoticeItems: PrivacyNoticeItem[] = useMemo(
+      () =>
+          (experienceMinimal.privacy_notices || []).map((notice) => {
+            const bestTranslation = selectBestNoticeTranslation(i18n, notice);
+            return { notice, bestTranslation };
+          }),
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+      [experienceMinimal.privacy_notices, i18n, currentLocale],
+  );
 
   /**
    * TCF overlay loads with a minimal experience, which is then replaced with the full.
@@ -208,6 +243,7 @@ export const TcfOverlay = ({
       // Vendors and systems are the same to the FE, so we combine them here
       setDraftIds({
         purposesConsent: getEnabledIds(consentPurposes),
+        customPurposesConsent: getEnabledIds(experience.privacy_notices),
         purposesLegint: getEnabledIds(legintPurposes),
         specialPurposes: getEnabledIds(specialPurposes),
         features: getEnabledIds(features),
@@ -321,6 +357,7 @@ export const TcfOverlay = ({
         exp = experience as PrivacyExperience;
         allIds = {
           purposesConsent: getAllIds(exp.tcf_purpose_consents),
+          customPurposesConsent: getAllIds(exp.privacy_notices), // todo- ensure this is correct
           purposesLegint: getAllIds(exp.tcf_purpose_legitimate_interests),
           specialPurposes: getAllIds(exp.tcf_special_purposes),
           features: getAllIds(exp.tcf_features),
@@ -340,6 +377,8 @@ export const TcfOverlay = ({
         allIds = {
           purposesConsent:
             exp.tcf_purpose_consent_ids?.map((id) => `${id}`) || [],
+          customPurposesConsent:
+            exp.privacy_notices?.map((id) => `${id}`) || [],  // todo- ensure this is correct
           purposesLegint:
             exp.tcf_purpose_legitimate_interest_ids?.map((id) => `${id}`) || [],
           specialPurposes:
