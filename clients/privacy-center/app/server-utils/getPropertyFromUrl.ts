@@ -4,19 +4,27 @@ import { Property } from "~/types/api";
 const getPropertyFromUrl = async ({
   fidesApiUrl,
   customPropertyPath,
+  location,
 }: {
   fidesApiUrl: string;
   customPropertyPath: string;
+  location?: string;
 }) => {
   const headers = new Headers();
   addCommonHeaders(headers);
 
   let result: Property | null = null;
   try {
+    const searchParams = new URLSearchParams({
+      path: `/${customPropertyPath}`,
+    });
+    if (location) {
+      searchParams.set("location", location);
+    }
+
+    console.log("Fetching property with params", searchParams.toString());
     const response = await fetch(
-      `${fidesApiUrl}/plus/property?${new URLSearchParams({
-        path: `/${customPropertyPath}`,
-      })}`,
+      `${fidesApiUrl}/plus/property?${searchParams}`,
       {
         method: "GET",
         headers,

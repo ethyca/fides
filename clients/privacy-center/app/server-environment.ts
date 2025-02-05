@@ -287,7 +287,11 @@ export const loadServerSettings = (): PrivacyCenterServerSettings => {
 
 export const loadPrivacyCenterEnvironment = async ({
   customPropertyPath,
-}: { customPropertyPath?: string } = {}): Promise<PrivacyCenterEnvironment> => {
+  location,
+}: {
+  customPropertyPath?: string;
+  location?: string;
+} = {}): Promise<PrivacyCenterEnvironment> => {
   if (typeof window !== "undefined") {
     throw new Error(
       "Unexpected error, cannot load server environment from client code!",
@@ -299,24 +303,17 @@ export const loadPrivacyCenterEnvironment = async ({
   // Load environment variables
   const settings = loadEnvironmentVariables();
 
-  let property;
-  if (settings.CUSTOM_PROPERTIES && customPropertyPath) {
-    const result = await getPropertyFromUrl({
-      customPropertyPath,
+  const property =
+    (await getPropertyFromUrl({
+      customPropertyPath:
+        customPropertyPath ||
+        settings.FIDES_PRIVACY_CENTER__ROOT_PROPERTY_PATH ||
+        "/",
       fidesApiUrl: settings.SERVER_SIDE_FIDES_API_URL || settings.FIDES_API_URL,
-    });
-    if (result) {
-      property = result;
-    }
-  } else if (settings.FIDES_PRIVACY_CENTER__ROOT_PROPERTY_PATH) {
-    const result = await getPropertyFromUrl({
-      customPropertyPath: settings.FIDES_PRIVACY_CENTER__ROOT_PROPERTY_PATH,
-      fidesApiUrl: settings.SERVER_SIDE_FIDES_API_URL || settings.FIDES_API_URL,
-    });
-    if (result) {
-      property = result;
-    }
-  }
+      location,
+    })) || undefined;
+
+  console.log("property", property);
 
   // Load configuration file (if it exists)
   const config =
