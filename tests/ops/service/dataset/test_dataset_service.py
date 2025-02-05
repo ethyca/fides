@@ -10,11 +10,16 @@ from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.policy import Policy
 from fides.api.schemas.policy import ActionType
 from fides.service.dataset.dataset_service import (
-    get_dataset_reachability,
+    DatasetService,
     get_identities_and_references,
     run_test_access_request,
 )
 from tests.conftest import wait_for_tasks_to_complete
+
+
+@pytest.fixture
+def dataset_service(db: Session) -> DatasetService:
+    return DatasetService(db)
 
 
 class TestGetDatasetReachability:
@@ -54,6 +59,7 @@ class TestGetDatasetReachability:
     def test_get_dataset_reachability(
         self,
         db: Session,
+        dataset_service: DatasetService,
         dataset_config: List[str],
         expected: bool,
         connection_config: ConnectionConfig,
@@ -61,8 +67,7 @@ class TestGetDatasetReachability:
     ):
         request.getfixturevalue(dataset_config)
 
-        reachable = get_dataset_reachability(
-            db,
+        reachable = dataset_service.get_dataset_reachability(
             connection_config.datasets[0],
         )
         assert reachable == expected
@@ -122,12 +127,12 @@ class TestRunTestAccessRequest:
     def test_run_test_access_request(
         self,
         db: Session,
+        dataset_service: DatasetService,
         policy: Policy,
         postgres_example_test_dataset_config: DatasetConfig,
     ):
         dataset_config = postgres_example_test_dataset_config
-        privacy_request = run_test_access_request(
-            db,
+        privacy_request = dataset_service.run_test_access_request(
             policy,
             dataset_config,
             {"email": "jane@example.com"},
@@ -182,12 +187,12 @@ class TestRunTestAccessRequest:
     def test_run_sample_access_request_with_custom_id(
         self,
         db: Session,
+        dataset_service: DatasetService,
         policy: Policy,
         postgres_example_test_extended_dataset_config: DatasetConfig,
     ):
         dataset_config = postgres_example_test_extended_dataset_config
-        privacy_request = run_test_access_request(
-            db,
+        privacy_request = dataset_service.run_test_access_request(
             policy,
             dataset_config,
             {"loyalty_id": "CH-1"},
@@ -210,12 +215,12 @@ class TestRunTestAccessRequest:
     def test_run_test_access_request_with_dataset_reference(
         self,
         db: Session,
+        dataset_service: DatasetService,
         policy: Policy,
         multiple_identities_with_external_dependencies_dataset_config: DatasetConfig,
     ):
         dataset_config = multiple_identities_with_external_dependencies_dataset_config
-        privacy_request = run_test_access_request(
-            db,
+        privacy_request = dataset_service.run_test_access_request(
             policy,
             dataset_config,
             {"loyalty_id": "CH-1", "single_identity:customer:id": 1},

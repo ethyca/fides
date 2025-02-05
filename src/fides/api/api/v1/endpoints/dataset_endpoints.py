@@ -80,9 +80,8 @@ from fides.common.api.v1.urn_registry import (
 )
 from fides.config import CONFIG
 from fides.service.dataset.dataset_service import (
-    get_dataset_reachability,
+    DatasetService,
     get_identities_and_references,
-    run_test_access_request,
 )
 
 from fides.api.models.sql_models import (  # type: ignore[attr-defined] # isort: skip
@@ -821,6 +820,7 @@ def dataset_reachability(
     *,
     db: Session = Depends(deps.get_db),
     connection_config: ConnectionConfig = Depends(_get_connection_config),
+    dataset_service: DatasetService = Depends(dataset_service),
     dataset_key: FidesKey,
     policy_key: Optional[FidesKey] = None,
 ) -> Dict[str, Any]:
@@ -851,7 +851,9 @@ def dataset_reachability(
             detail=f'Policy with key "{policy_key}" not found',
         )
 
-    reachable, details = get_dataset_reachability(db, dataset_config, access_policy)
+    reachable, details = dataset_service.get_dataset_reachability(
+        dataset_config, access_policy
+    )
     return {"reachable": reachable, "details": details}
 
 
@@ -864,6 +866,7 @@ def dataset_reachability(
 def test_connection_datasets(
     *,
     db: Session = Depends(deps.get_db),
+    dataset_service: DatasetService = Depends(deps.get_dataset_service),
     connection_config: ConnectionConfig = Depends(_get_connection_config),
     dataset_key: FidesKey,
     test_request: DatasetTestRequest,
@@ -895,8 +898,7 @@ def test_connection_datasets(
             detail=f'Policy with key "{test_request.policy_key}" not found',
         )
 
-    privacy_request = run_test_access_request(
-        db,
+    privacy_request = dataset_service.run_test_access_request(
         access_policy,
         dataset_config,
         input_data=test_request.identities.data,

@@ -10,6 +10,7 @@ from fides.api.util.cache import get_cache as get_redis_connection
 from fides.config import CONFIG, FidesConfig
 from fides.config import get_config as get_app_config
 from fides.config.config_proxy import ConfigProxy
+from fides.service.dataset.dataset_service import DatasetService
 from fides.service.messaging.messaging_service import MessagingService
 from fides.service.privacy_request.privacy_request_service import PrivacyRequestService
 
@@ -84,3 +85,7 @@ def get_privacy_request_service(
     messaging_service: MessagingService = Depends(get_messaging_service),
 ) -> PrivacyRequestService:
     return PrivacyRequestService(db, config_proxy, messaging_service)
+
+
+def get_dataset_service(db: Session = Depends(get_db)) -> DatasetService:
+    return DatasetService(db)
