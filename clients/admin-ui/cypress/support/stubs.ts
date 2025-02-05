@@ -563,7 +563,7 @@ export const stubActionCenter = () => {
   }).as("addMonitorResultSystem");
   cy.intercept("PATCH", "/api/v1/plus/discovery-monitor/*/results", {
     response: 200,
-  }).as("setAssetSystem");
+  }).as("patchAssets");
 };
 
 export const stubDataCatalog = () => {

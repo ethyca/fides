@@ -39,8 +39,10 @@ import {
   useAddMonitorResultSystemMutation,
   useGetDiscoveredAssetsQuery,
   useIgnoreMonitorResultAssetsMutation,
+  useUpdateAssetsMutation,
   useUpdateAssetsSystemMutation,
 } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
+import AddDataUsesModal from "~/features/data-discovery-and-detection/action-center/AddDataUsesModal";
 
 import { SearchInput } from "../../SearchInput";
 import { AssignSystemModal } from "../AssignSystemModal";
@@ -62,6 +64,8 @@ export const DiscoveredAssetsTable = ({
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
   const [isAssignSystemModalOpen, setIsAssignSystemModalOpen] =
     useState<boolean>(false);
+  const [isAddDataUseModalOpen, setIsAddDataUseModalOpen] =
+    useState<boolean>(false);
   const [addMonitorResultAssetsMutation, { isLoading: isAddingResults }] =
     useAddMonitorResultAssetsMutation();
   const [ignoreMonitorResultAssetsMutation, { isLoading: isIgnoringResults }] =
@@ -70,6 +74,8 @@ export const DiscoveredAssetsTable = ({
     useAddMonitorResultSystemMutation();
   const [updateAssetsSystemMutation, { isLoading: isBulkUpdatingSystem }] =
     useUpdateAssetsSystemMutation();
+  const [updateAssetsMutation, { isLoading: isBulkAddingDataUses }] =
+    useUpdateAssetsMutation();
 
   const anyBulkActionIsLoading =
     isAddingResults ||
@@ -170,6 +176,31 @@ export const DiscoveredAssetsTable = ({
     setIsAssignSystemModalOpen(false);
   };
 
+  const handleBulkAddDataUse = async (newDataUses: string[]) => {
+    const selectedAssets = data?.items.filter((asset) =>
+      selectedUrns.includes(asset.urn),
+    );
+    if (!selectedAssets) {
+      return;
+    }
+    const result = await updateAssetsMutation({
+      monitorId,
+      assets: selectedAssets.map((asset) => ({
+        urn: asset.urn,
+        data_uses: [...(asset.data_uses || []), ...newDataUses],
+      })),
+    });
+    if (isErrorResult(result)) {
+      errorAlert(getErrorMessage(result.error));
+    } else {
+      tableInstance.resetRowSelection();
+      successAlert(
+        `Consent categories added to ${selectedUrns.length} assets from ${systemName}.`,
+        `Confirmed`,
+      );
+    }
+  };
+
   const handleBulkIgnore = async () => {
     const result = await ignoreMonitorResultAssetsMutation({
       urnList: selectedUrns,
@@ -249,6 +280,13 @@ export const DiscoveredAssetsTable = ({
                 </MenuItem>
                 <MenuItem
                   fontSize="small"
+                  onClick={() => setIsAddDataUseModalOpen(true)}
+                  data-testid="bulk-add-data-use"
+                >
+                  Add consent category
+                </MenuItem>
+                <MenuItem
+                  fontSize="small"
                   onClick={() => {
                     setIsAssignSystemModalOpen(true);
                   }}
@@ -316,6 +354,14 @@ export const DiscoveredAssetsTable = ({
         }}
         onSave={handleBulkAssignSystem}
         isSaving={isBulkUpdatingSystem}
+      />
+      <AddDataUsesModal
+        isOpen={isAddDataUseModalOpen}
+        onClose={() => {
+          setIsAddDataUseModalOpen(false);
+        }}
+        onSave={handleBulkAddDataUse}
+        isSaving={isBulkAddingDataUses}
       />
     </>
   );

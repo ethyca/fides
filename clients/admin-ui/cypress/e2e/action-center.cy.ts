@@ -2,6 +2,7 @@ import {
   stubActionCenter,
   stubPlus,
   stubSystemVendors,
+  stubTaxonomyEntities,
   stubVendorList,
 } from "cypress/support/stubs";
 
@@ -241,8 +242,7 @@ describe("Action center", () => {
       cy.getByTestId("column-name").should("exist");
       cy.getByTestId("column-resource_type").should("exist");
       cy.getByTestId("column-system").should("exist");
-      // TODO: [HJ-369] uncomment when data use column is implemented
-      // cy.getByTestId("column-data_use").should("exist");
+      cy.getByTestId("column-data_use").should("exist");
       cy.getByTestId("column-locations").should("exist");
       cy.getByTestId("column-domain").should("exist");
       // TODO: [HJ-344] uncomment when Discovery column is implemented
@@ -263,7 +263,7 @@ describe("Action center", () => {
       });
       cy.wait("@getSystemsPaginated");
       cy.getByTestId("system-select").antSelect("Fidesctl System");
-      cy.wait("@setAssetSystem");
+      cy.wait("@patchAssets");
       cy.getByTestId("system-select").should("not.exist");
       cy.getByTestId("success-alert").should(
         "contain",
@@ -292,8 +292,7 @@ describe("Action center", () => {
       cy.getByTestId("column-name").should("exist");
       cy.getByTestId("column-resource_type").should("exist");
       cy.getByTestId("column-system").should("exist");
-      // TODO: [HJ-369] uncomment when data use column is implemented
-      // cy.getByTestId("column-data_use").should("exist");
+      cy.getByTestId("column-data_use").should("exist");
       cy.getByTestId("column-locations").should("exist");
       cy.getByTestId("column-domain").should("exist");
       // TODO: [HJ-344] uncomment when Discovery column is implemented
@@ -314,7 +313,7 @@ describe("Action center", () => {
       });
       cy.wait("@getSystemsPaginated");
       cy.getByTestId("system-select").antSelect("Fidesctl System");
-      cy.wait("@setAssetSystem");
+      cy.wait("@patchAssets");
       cy.getByTestId("system-select").should("not.exist");
       cy.getByTestId("success-alert").should(
         "contain",
@@ -335,7 +334,7 @@ describe("Action center", () => {
       });
       cy.wait("@getSystemsPaginated");
       cy.getByTestId("system-select").antSelect("Demo Marketing System");
-      cy.wait("@setAssetSystem");
+      cy.wait("@patchAssets");
       cy.getByTestId("success-alert").should("exist");
       cy.getByTestId("system-select").should("not.exist");
       cy.getByTestId("success-alert").should(
@@ -357,7 +356,7 @@ describe("Action center", () => {
       // adds new system
       cy.wait("@postSystemVendors");
       // assigns asset to new system
-      cy.wait("@setAssetSystem");
+      cy.wait("@patchAssets");
       cy.getByTestId("success-alert").should(
         "contain",
         'Test System has been added to your system inventory and the Browser Request "gtm.js" has been assigned to that system.',
@@ -432,6 +431,7 @@ describe("Action center", () => {
         "11 assets from Google Tag Manager have been added to the system inventory.",
       );
     });
+
     it("should bulk assign assets to a system", () => {
       cy.getByTestId("bulk-actions-menu").should("be.disabled");
       cy.getByTestId("row-0-col-select").find("label").click();
@@ -444,10 +444,29 @@ describe("Action center", () => {
       cy.getByTestId("add-modal-content").should("be.visible");
       cy.getByTestId("system-select").antSelect("Fidesctl System");
       cy.getByTestId("save-btn").click();
-      cy.wait("@setAssetSystem");
+      cy.wait("@patchAssets");
       cy.getByTestId("success-alert").should(
         "contain",
         "3 assets have been assigned to Fidesctl System.",
+      );
+    });
+
+    it("should bulk add data uses to assets", () => {
+      stubTaxonomyEntities();
+      cy.getByTestId("bulk-actions-menu").should("be.disabled");
+      cy.getByTestId("row-0-col-select").find("label").click();
+      cy.getByTestId("row-2-col-select").find("label").click();
+      cy.getByTestId("row-3-col-select").find("label").click();
+      cy.getByTestId("selected-count").should("contain", "3 selected");
+      cy.getByTestId("bulk-actions-menu").should("not.be.disabled");
+      cy.getByTestId("bulk-actions-menu").click();
+      cy.getByTestId("bulk-add-data-use").click();
+      cy.getByTestId("taxonomy-select").antSelect("essential");
+      cy.getByTestId("save-btn").click({ force: true });
+      cy.wait("@patchAssets");
+      cy.getByTestId("success-alert").should(
+        "contain",
+        "Consent categories added to 3 assets from Google Tag Manager.",
       );
     });
   });
