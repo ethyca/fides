@@ -39,7 +39,6 @@ class DatahubSchema(ConnectionConfigSecretsSchema):
         default="FidesDataCategories",
     )
 
-
     _required_components: ClassVar[List[str]] = ["datahub_server_url", "datahub_token"]
 
 
