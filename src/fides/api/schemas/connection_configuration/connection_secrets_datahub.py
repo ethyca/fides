@@ -33,6 +33,12 @@ class DatahubSchema(ConnectionConfigSecretsSchema):
         description="The frequency at which the integration should run. Defaults to daily.",
         default=PeriodicIntegrationFrequency.daily,
     )
+    glossary_node: str = Field(
+        title="Glossary Node",
+        description="The glossary node name to use on Datahub for Fides Data Categories. Defaults to FidesDataCategories",
+        default="FidesDataCategories",
+    )
+
 
     _required_components: ClassVar[List[str]] = ["datahub_server_url", "datahub_token"]
 
