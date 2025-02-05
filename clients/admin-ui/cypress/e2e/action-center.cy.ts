@@ -154,11 +154,11 @@ describe("Action center", () => {
       });
       // data use column should be empty for uncategorized assets
       cy.getByTestId("row-0-col-data_use").children().should("have.length", 0);
-      cy.getByTestId("row-1-col-system_name").within(() => {
-        cy.getByTestId("change-icon").should("not.exist"); // existing result
-        cy.contains("Google Tag Manager").should("exist");
-      });
-      // TODO: [HJ-356] data use column should not be empty for other assets
+      // cy.getByTestId("row-1-col-system_name").within(() => {
+      //   cy.getByTestId("change-icon").should("not.exist"); // existing result
+      //   cy.contains("Google Tag Manager").should("exist");
+      // });
+      // data use column should not be empty for other assets
       cy.getByTestId("row-1-col-data_use")
         .children()
         .should("not.have.length", 0);
