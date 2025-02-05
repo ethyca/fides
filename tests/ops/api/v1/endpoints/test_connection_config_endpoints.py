@@ -2036,6 +2036,7 @@ class TestPutConnectionConfigSecrets:
             "datahub_server_url": "https://datahub.example.com",
             "datahub_token": "test",
             "frequency": "weekly",
+            "glossary_node": "FidesDataCategories",
         }
         assert datahub_connection_config_no_secrets.last_test_timestamp is None
         assert datahub_connection_config_no_secrets.last_test_succeeded is None
@@ -2072,6 +2073,7 @@ class TestPutConnectionConfigSecrets:
             "datahub_server_url": "https://datahub.example.com",
             "datahub_token": "test",
             "frequency": "daily",
+            "glossary_node": "FidesDataCategories",
         }
         assert datahub_connection_config_no_secrets.last_test_timestamp is None
         assert datahub_connection_config_no_secrets.last_test_succeeded is None
