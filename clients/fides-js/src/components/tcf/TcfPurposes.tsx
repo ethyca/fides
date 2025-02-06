@@ -3,16 +3,13 @@ import { useMemo, useState } from "preact/hooks";
 
 import { UpdateEnabledIds } from "~/components/tcf/TcfTabs";
 
-import {
-  PrivacyExperience,
-  PrivacyNoticeWithPreference,
-} from "../../lib/consent-types";
+import { PrivacyExperience } from "../../lib/consent-types";
 import { useI18n } from "../../lib/i18n/i18n-context";
 import { LEGAL_BASIS_OPTIONS } from "../../lib/tcf/constants";
 import { getUniquePurposeRecords, hasLegalBasis } from "../../lib/tcf/purposes";
 import {
   EnabledIds,
-  LegalBasisEnum,
+  LegalBasisEnum, PrivacyNoticeWithBestTranslation,
   PurposeRecord,
   TCFPurposeConsentRecord,
   TCFPurposeLegitimateInterestsRecord,
@@ -66,7 +63,7 @@ const TcfPurposes = ({
   onChange,
 }: {
   allPurposesConsent: TCFPurposeConsentRecord[] | undefined;
-  allCustomPurposesConsent: Array<PrivacyNoticeWithPreference> | undefined;
+  allCustomPurposesConsent: Array<PrivacyNoticeWithBestTranslation> | undefined; // todo- is this undefined ever?
   enabledPurposeConsentIds: string[];
   allSpecialPurposes: PrivacyExperience["tcf_special_purposes"];
   allPurposesLegint: TCFPurposeLegitimateInterestsRecord[] | undefined;
@@ -92,7 +89,7 @@ const TcfPurposes = ({
   console.log(allCustomPurposesConsent);
   const activeData: {
     purposes: PurposeRecord[];
-    customPurposes?: PrivacyNoticeWithPreference[] | undefined;
+    customPurposes?: PrivacyNoticeWithBestTranslation[] | undefined;
     purposeModelType: keyof EnabledIds;
     enabledPurposeIds: string[];
     enabledCustomPurposeIds: string[];
@@ -141,7 +138,7 @@ const TcfPurposes = ({
         onChange={setActiveLegalBasisOption}
       />
       {activeData.customPurposes ? (
-        <RecordsList<PrivacyNoticeWithPreference>
+        <RecordsList<PrivacyNoticeWithBestTranslation>
           type="customPurposes"
           title="Custom Purposes"
           items={activeData.customPurposes}

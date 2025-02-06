@@ -1,7 +1,7 @@
 import type { GVL } from "@iabtechlabtcf/core";
 
-import type {
-  PrivacyExperience,
+import {
+  PrivacyExperience, PrivacyNoticeTranslation, PrivacyNoticeWithPreference,
   PrivacyPreferencesRequest,
   UserConsentPreference,
 } from "../consent-types";
@@ -226,6 +226,10 @@ export interface EnabledIds {
   vendorsConsent: string[];
   vendorsLegint: string[];
 }
+
+export type PrivacyNoticeWithBestTranslation = PrivacyNoticeWithPreference & {
+  bestTranslation: PrivacyNoticeTranslation | null;
+};
 
 export type VendorRecord = TCFVendorConsentRecord &
   Pick<TCFVendorLegitimateInterestsRecord, "purpose_legitimate_interests"> &

@@ -3,6 +3,7 @@ import { h, VNode } from "preact";
 import { DEFAULT_LOCALE, getCurrentLocale } from "../../lib/i18n";
 import { useI18n } from "../../lib/i18n/i18n-context";
 import DataUseToggle from "../DataUseToggle";
+import {PrivacyNoticeTranslation} from "~/lib/consent-types";
 
 export type RecordListType =
   | "purposes"
@@ -15,6 +16,7 @@ export type RecordListType =
 interface Item {
   id: string | number;
   name?: string;
+  bestTranslation?: PrivacyNoticeTranslation | null; // only used for custom purposes
 }
 
 interface Props<T extends Item> {
@@ -75,7 +77,11 @@ const RecordsList = <T extends Item>({
       {items.map((item) => (
         <DataUseToggle
           key={item.id}
-          title={getNameForItem(item)}
+          title={
+            item.bestTranslation
+              ? item.bestTranslation.title || ""
+              : getNameForItem(item)
+          }
           noticeKey={`${item.id}`}
           onToggle={() => {
             handleToggle(item);

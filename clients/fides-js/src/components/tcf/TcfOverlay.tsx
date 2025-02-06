@@ -4,21 +4,16 @@ import "./fides-tcf.css";
 import { h } from "preact";
 import { useCallback, useEffect, useMemo, useState } from "preact/hooks";
 
-import { NoticeToggleProps } from "~/components/notices/NoticeToggles";
-import { getConsentContext } from "~/lib/consent-context";
-
 import {
   ButtonType,
   ConsentMethod,
   PrivacyExperience,
   PrivacyExperienceMinimal,
-  PrivacyNoticeTranslation,
   PrivacyNoticeWithPreference,
   ServingComponent,
 } from "../../lib/consent-types";
 import {
   experienceIsValid,
-  getGpcStatusFromNotice,
   isPrivacyExperience,
 } from "../../lib/consent-utils";
 import { dispatchFidesEvent } from "../../lib/events";
@@ -37,8 +32,9 @@ import { useI18n } from "../../lib/i18n/i18n-context";
 import { updateConsentPreferences } from "../../lib/preferences";
 import { EMPTY_ENABLED_IDS } from "../../lib/tcf/constants";
 import { useGvl } from "../../lib/tcf/gvl-context";
-import type {
+import {
   EnabledIds,
+  PrivacyNoticeWithBestTranslation,
   TcfModels,
   TcfSavePreferences,
 } from "../../lib/tcf/types";
@@ -75,15 +71,6 @@ interface TcfOverlayProps extends Omit<OverlayProps, "experience"> {
   experienceMinimal: PrivacyExperienceMinimal;
 }
 
-/**
- * Define a special PrivacyNoticeItem, where we've narrowed the list of
- * available translations to the singular "best" translation that should be
- * displayed, and paired that with the source notice itself.
- */
-type PrivacyNoticeItem = {
-  notice: PrivacyNoticeWithPreference;
-  bestTranslation: PrivacyNoticeTranslation | null;
-};
 export const TcfOverlay = ({
   options,
   experienceMinimal,
@@ -134,28 +121,22 @@ export const TcfOverlay = ({
   };
 
   /**
-   * Collect the given PrivacyNotices into a list of "items" for rendering.
-   *
-   * Each "item" includes both:
-   * 1) notice: The PrivacyNotice itself with it's properties like keys,
-   *    preferences, etc.
-   * 2) bestTranslation: The "best" translation for the notice based on the
-   *    current locale
+   * Enhance the given PrivacyNotices with best translation for rendering.
    *
    * We memoize these together to avoid repeatedly figuring out the "best"
    * translation on every render, since it will only change if the overall
    * locale changes!
    */
-  const privacyNoticeItems: PrivacyNoticeItem[] = useMemo(
-    () =>
-      (experienceMinimal.privacy_notices || []).map((notice) => {
-        const bestTranslation = selectBestNoticeTranslation(i18n, notice);
-        return { notice, bestTranslation };
-      }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [experienceMinimal.privacy_notices, i18n, currentLocale],
-  );
-
+  const privacyNoticesWithBestTranslation: PrivacyNoticeWithBestTranslation[] =
+    useMemo(
+      () =>
+        (experienceMinimal.privacy_notices || []).map((notice) => {
+          const bestTranslation = selectBestNoticeTranslation(i18n, notice);
+          return { ...notice, bestTranslation };
+        }),
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+      [experienceMinimal.privacy_notices, i18n, currentLocale],
+    );
 
   /**
    * TCF overlay loads with a minimal experience, which is then replaced with the full.
@@ -304,13 +285,16 @@ export const TcfOverlay = ({
 
   const { servedNoticeHistoryId } = useNoticesServed({
     privacyExperienceConfigHistoryId,
-    privacyNoticeHistoryIds: privacyNoticeItems.reduce((ids, e) => {
-      const id = e.bestTranslation?.privacy_notice_history_id;
-      if (id) {
-        ids.push(id);
-      }
-      return ids;
-    }, [] as string[]),
+    privacyNoticeHistoryIds: privacyNoticesWithBestTranslation.reduce(
+      (ids, e) => {
+        const id = e.bestTranslation?.privacy_notice_history_id;
+        if (id) {
+          ids.push(id);
+        }
+        return ids;
+      },
+      [] as string[],
+    ),
     options,
     userGeography: fidesRegionString,
     acknowledgeMode: false,
@@ -534,6 +518,7 @@ export const TcfOverlay = ({
           : () => (
               <TcfTabs
                 experience={experience}
+                customNotices={privacyNoticesWithBestTranslation}
                 enabledIds={draftIds}
                 onChange={(updatedIds) => {
                   setDraftIds(updatedIds);
