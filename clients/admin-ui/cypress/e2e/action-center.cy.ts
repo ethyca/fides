@@ -159,9 +159,7 @@ describe("Action center", () => {
       //   cy.contains("Google Tag Manager").should("exist");
       // });
       // data use column should not be empty for other assets
-      cy.getByTestId("row-1-col-data_use")
-        .children()
-        .should("not.have.length", 0);
+      cy.getByTestId("row-1-col-data_use").children().should("have.length", 1);
 
       // multiple locations
       cy.getByTestId("row-2-col-locations").should("contain", "2 locations");
