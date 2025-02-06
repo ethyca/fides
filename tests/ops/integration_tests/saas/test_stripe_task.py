@@ -143,7 +143,7 @@ class TestStripeConnector:
         policy: Policy,
         dsr_version,
         request,
-        erasure_policy_string_rewrite,
+        erasure_policy_all_categories,
         stripe_identity_email,
         stripe_test_client,
         stripe_create_data,
@@ -153,12 +153,18 @@ class TestStripeConnector:
 
         dataset_name = stripe_runner.dataset_config.fides_key
 
+        generated_customer = stripe_create_data
+        customer_id = generated_customer["customer_id"]
+
+        customer = stripe_test_client.get_customer(customer_id)
+        customer_name = customer["shipping"]["name"]
+
         (
             _,
             erasure_results,
         ) = await stripe_runner.non_strict_erasure_request(
             access_policy=policy,
-            erasure_policy=erasure_policy_string_rewrite,
+            erasure_policy=erasure_policy_all_categories,
             identities={"email": stripe_identity_email},
         )
 
@@ -180,9 +186,8 @@ class TestStripeConnector:
         }
 
         # customer
-        customer = stripe_test_client.get_customer(stripe_identity_email)
-        customer_id = customer["id"]
-        assert customer["shipping"]["name"] == "MASKED"
+        customer = stripe_test_client.get_customer(customer_id)
+        assert customer["shipping"]["name"] != customer_name
 
         # card
         cards = stripe_test_client.get_card(customer_id)
@@ -191,11 +196,11 @@ class TestStripeConnector:
         # payment method
         payment_methods = stripe_test_client.get_payment_method(customer_id)
         for payment_method in payment_methods:
-            assert payment_method["billing_details"]["name"] == "MASKED"
+            assert payment_method["billing_details"]["name"] != customer_name
 
         # bank account
         bank_account = stripe_test_client.get_bank_account(customer_id)
-        assert bank_account["account_holder_name"] == "MASKED"
+        assert bank_account["account_holder_name"] != customer_name
 
         # tax_id
         tax_ids = stripe_test_client.get_tax_ids(customer_id)

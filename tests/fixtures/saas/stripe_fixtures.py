@@ -367,13 +367,12 @@ class StripeTestClient:
             headers=self.headers,
         )
 
-    def get_customer(self, email):
+    def get_customer(self, id):
         response = requests.get(
-            url=f"{self.base_url}/v1/customers",
+            url=f"{self.base_url}/v1/customers/{id}",
             headers=self.headers,
-            params={"email": email},
         )
-        customer = response.json()["data"][0]
+        customer = response.json()
         return customer
 
     def get_card(self, customer_id):
@@ -513,7 +512,7 @@ def stripe_create_data(
         stripe_test_client, generate_random_email(), generate_random_phone_number()
     )
 
-    yield
+    yield customer
 
     for data in [customer, random_customer]:
         stripe_test_client.delete_customer(data["customer_id"])
