@@ -1,4 +1,4 @@
-import { AntButton, Box, CloseIcon } from "fidesui";
+import { AntButton as Button, Box, CloseIcon } from "fidesui";
 import { useState } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";
@@ -14,7 +14,7 @@ import TaxonomyBadge from "~/features/data-discovery-and-detection/TaxonomyBadge
 import { isErrorResult } from "~/types/errors";
 
 const DeleteDataUseButton = ({ onClick }: { onClick: () => void }) => (
-  <AntButton
+  <Button
     onClick={onClick}
     icon={<CloseIcon boxSize={2} />}
     size="small"

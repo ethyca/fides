@@ -1,5 +1,5 @@
 import {
-  AntButton,
+  AntButton as Button,
   AntFlex as Flex,
   AntTypography as Typography,
   ModalProps,
@@ -47,14 +47,10 @@ const AddDataUsesModal = ({
         />
       </Flex>
       <Flex justify="space-between">
-        <AntButton
-          htmlType="reset"
-          onClick={handleReset}
-          data-testid="cancel-btn"
-        >
+        <Button htmlType="reset" onClick={handleReset} data-testid="cancel-btn">
           Cancel
-        </AntButton>
-        <AntButton
+        </Button>
+        <Button
           htmlType="submit"
           type="primary"
           disabled={!selectedDataUses.length}
@@ -63,7 +59,7 @@ const AddDataUsesModal = ({
           data-testid="save-btn"
         >
           Save
-        </AntButton>
+        </Button>
       </Flex>
     </FormModal>
   );
