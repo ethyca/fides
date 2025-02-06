@@ -96,6 +96,7 @@ export const LEGAL_BASIS_OPTIONS = [
 
 export const EMPTY_ENABLED_IDS: EnabledIds = {
   purposesConsent: [],
+  customPurposesConsent: [],
   purposesLegint: [],
   specialPurposes: [],
   features: [],

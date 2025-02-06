@@ -4,15 +4,21 @@ import "./fides-tcf.css";
 import { h } from "preact";
 import { useCallback, useEffect, useMemo, useState } from "preact/hooks";
 
+import { NoticeToggleProps } from "~/components/notices/NoticeToggles";
+import { getConsentContext } from "~/lib/consent-context";
+
 import {
   ButtonType,
   ConsentMethod,
   PrivacyExperience,
-  PrivacyExperienceMinimal, PrivacyNoticeTranslation, PrivacyNoticeWithPreference,
+  PrivacyExperienceMinimal,
+  PrivacyNoticeTranslation,
+  PrivacyNoticeWithPreference,
   ServingComponent,
 } from "../../lib/consent-types";
 import {
   experienceIsValid,
+  getGpcStatusFromNotice,
   isPrivacyExperience,
 } from "../../lib/consent-utils";
 import { dispatchFidesEvent } from "../../lib/events";
@@ -24,7 +30,8 @@ import {
   loadMessagesFromExperience,
   loadMessagesFromGVLTranslations,
   matchAvailableLocales,
-  selectBestExperienceConfigTranslation, selectBestNoticeTranslation,
+  selectBestExperienceConfigTranslation,
+  selectBestNoticeTranslation,
 } from "../../lib/i18n";
 import { useI18n } from "../../lib/i18n/i18n-context";
 import { updateConsentPreferences } from "../../lib/preferences";
@@ -41,6 +48,7 @@ import {
   createTcfSavePayload,
   createTcfSavePayloadFromMinExp,
   getEnabledIds,
+  getEnabledIdsNotice,
   getGVLPurposeList,
   updateCookie,
 } from "../../lib/tcf/utils";
@@ -139,14 +147,15 @@ export const TcfOverlay = ({
    * locale changes!
    */
   const privacyNoticeItems: PrivacyNoticeItem[] = useMemo(
-      () =>
-          (experienceMinimal.privacy_notices || []).map((notice) => {
-            const bestTranslation = selectBestNoticeTranslation(i18n, notice);
-            return { notice, bestTranslation };
-          }),
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-      [experienceMinimal.privacy_notices, i18n, currentLocale],
+    () =>
+      (experienceMinimal.privacy_notices || []).map((notice) => {
+        const bestTranslation = selectBestNoticeTranslation(i18n, notice);
+        return { notice, bestTranslation };
+      }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [experienceMinimal.privacy_notices, i18n, currentLocale],
   );
+
 
   /**
    * TCF overlay loads with a minimal experience, which is then replaced with the full.
@@ -230,6 +239,7 @@ export const TcfOverlay = ({
     } else {
       const {
         tcf_purpose_consents: consentPurposes = [],
+        privacy_notices: customPurposes = [],
         tcf_purpose_legitimate_interests: legintPurposes = [],
         tcf_special_purposes: specialPurposes = [],
         tcf_features: features = [],
@@ -241,9 +251,11 @@ export const TcfOverlay = ({
       } = experience as PrivacyExperience;
 
       // Vendors and systems are the same to the FE, so we combine them here
+      console.log("setting draft IDs");
+      console.log(customPurposes);
       setDraftIds({
         purposesConsent: getEnabledIds(consentPurposes),
-        customPurposesConsent: getEnabledIds(experience.privacy_notices),
+        customPurposesConsent: getEnabledIdsNotice(customPurposes),
         purposesLegint: getEnabledIds(legintPurposes),
         specialPurposes: getEnabledIds(specialPurposes),
         features: getEnabledIds(features),
@@ -292,7 +304,13 @@ export const TcfOverlay = ({
 
   const { servedNoticeHistoryId } = useNoticesServed({
     privacyExperienceConfigHistoryId,
-    privacyNoticeHistoryIds: [],
+    privacyNoticeHistoryIds: privacyNoticeItems.reduce((ids, e) => {
+      const id = e.bestTranslation?.privacy_notice_history_id;
+      if (id) {
+        ids.push(id);
+      }
+      return ids;
+    }, [] as string[]),
     options,
     userGeography: fidesRegionString,
     acknowledgeMode: false,
@@ -378,7 +396,7 @@ export const TcfOverlay = ({
           purposesConsent:
             exp.tcf_purpose_consent_ids?.map((id) => `${id}`) || [],
           customPurposesConsent:
-            exp.privacy_notices?.map((id) => `${id}`) || [],  // todo- ensure this is correct
+            exp.privacy_notices?.map((id) => `${id}`) || [], // todo- ensure this is correct
           purposesLegint:
             exp.tcf_purpose_legitimate_interest_ids?.map((id) => `${id}`) || [],
           specialPurposes:

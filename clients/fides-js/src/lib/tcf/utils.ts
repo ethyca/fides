@@ -5,10 +5,10 @@ import {
   ConsentMechanism,
   FidesCookie,
   PrivacyExperience,
-  PrivacyExperienceMinimal,
+  PrivacyExperienceMinimal, PrivacyNoticeWithPreference,
   RecordConsentServedRequest,
 } from "../consent-types";
-import { transformTcfPreferencesToCookieKeys } from "../cookie";
+import {getFidesConsentCookie, transformTcfPreferencesToCookieKeys} from "../cookie";
 import {
   transformConsentToFidesUserPreference,
   transformUserPreferenceToBoolean,
@@ -32,6 +32,8 @@ import {
   TCFVendorLegitimateInterestsRecord,
   TCFVendorSave,
 } from "./types";
+import { resolveConsentValue } from "../consent-value";
+import { getConsentContext } from "../consent-context";
 
 type TcfSave =
   | TCFPurposeSave
@@ -231,6 +233,39 @@ export const getEnabledIds = (modelList: TcfModels) => {
     })
     .filter((model) => model.consentValue)
     .map((model) => `${model.id}`);
+};
+
+/**
+ * Retrieves the enabled IDs from the given Notice list. This is used to
+ * determine which IDs are currently enabled for the user to display in the UI.
+ */
+export const getEnabledIdsNotice = (
+  noticeList: PrivacyNoticeWithPreference[],
+) => {
+  console.log("notice list:")
+  console.log(noticeList);
+  if (!noticeList) {
+    return [];
+  }
+  const parsedCookie: FidesCookie | undefined = getFidesConsentCookie();
+  const context = getConsentContext();
+  console.log("consent context:");
+  console.log(context);
+
+  const result = noticeList
+    .map((notice) => {
+      const value = resolveConsentValue(
+        notice,
+        context,
+        parsedCookie?.consent,
+      );
+      return { ...notice, consentValue: value };
+    })
+    .filter((notice) => notice.consentValue)
+    .map((notice) => `${notice.id}`);
+  console.log("enabled ids notice:");
+  console.log(result);
+  return result;
 };
 
 const transformTcfModelToTcfSave = ({

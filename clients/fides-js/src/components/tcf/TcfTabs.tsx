@@ -38,6 +38,8 @@ const TcfTabs = ({
     },
     [enabledIds, onChange],
   );
+  console.log("tcf tabs privacy notices:");
+  console.log(experience.privacy_notices);
 
   const tcfTabs = [
     {

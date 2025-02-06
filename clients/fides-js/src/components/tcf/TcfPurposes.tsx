@@ -88,9 +88,11 @@ const TcfPurposes = ({
   const [activeLegalBasisOption, setActiveLegalBasisOption] = useState(
     LEGAL_BASIS_OPTIONS[0],
   );
+  console.log("active custom purposes consent data:");
+  console.log(allCustomPurposesConsent);
   const activeData: {
     purposes: PurposeRecord[];
-    customPurposes: PrivacyNoticeWithPreference[];
+    customPurposes?: PrivacyNoticeWithPreference[] | undefined;
     purposeModelType: keyof EnabledIds;
     enabledPurposeIds: string[];
     enabledCustomPurposeIds: string[];
@@ -138,17 +140,19 @@ const TcfPurposes = ({
         active={activeLegalBasisOption}
         onChange={setActiveLegalBasisOption}
       />
-      <RecordsList<PrivacyNoticeWithPreference>
-        type="customPurposes"
-        title="Custom Purposes"
-        items={activeData.customPurposes}
-        enabledIds={activeData.enabledCustomPurposeIds}
-        onToggle={(newEnabledIds) =>
-          onChange({ newEnabledIds, modelType: activeData.purposeModelType })
-        }
-        // This key forces a rerender when legal basis changes, which allows paging to reset properly
-        key={`purpose-record-${activeLegalBasisOption.value}`}
-      />
+      {activeData.customPurposes ? (
+        <RecordsList<PrivacyNoticeWithPreference>
+          type="customPurposes"
+          title="Custom Purposes"
+          items={activeData.customPurposes}
+          enabledIds={activeData.enabledCustomPurposeIds}
+          onToggle={(newEnabledIds) =>
+            onChange({ newEnabledIds, modelType: activeData.purposeModelType })
+          }
+          // This key forces a rerender when legal basis changes, which allows paging to reset properly
+          key={`purpose-record-${activeLegalBasisOption.value}`}
+        />
+      ) : null}
       <RecordsList<PurposeRecord>
         type="purposes"
         title={i18n.t("static.tcf.purposes")}
