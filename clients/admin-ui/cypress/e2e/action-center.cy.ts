@@ -153,7 +153,7 @@ describe("Action center", () => {
         cy.getByTestId("change-icon").should("exist"); // new system
       });
       // data use column should be empty for uncategorized assets
-      cy.getByTestId("row-0-col-data_use").children().should("have.length", 0);
+      cy.getByTestId("row-0-col-data_use").should("be.empty");
       // cy.getByTestId("row-1-col-system_name").within(() => {
       //   cy.getByTestId("change-icon").should("not.exist"); // existing result
       //   cy.contains("Google Tag Manager").should("exist");
