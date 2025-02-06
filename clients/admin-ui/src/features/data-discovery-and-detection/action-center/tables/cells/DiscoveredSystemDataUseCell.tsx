@@ -9,9 +9,8 @@ const DiscoveredSystemDataUseCell = ({
   system: MonitorSystemAggregate;
 }) => {
   const { getDataUseDisplayName } = useTaxonomies();
-  const consentCategories = system.data_uses.filter((use) =>
-    isConsentCategory(use),
-  );
+  const consentCategories =
+    system.data_uses?.filter((use) => isConsentCategory(use)) ?? [];
   const cellValues = consentCategories.map((use) => ({
     label: getDataUseDisplayName(use),
     key: use,
@@ -19,7 +18,7 @@ const DiscoveredSystemDataUseCell = ({
 
   return (
     <BadgeCellExpandable
-      values={cellValues}
+      values={cellValues.length ? cellValues : [{ label: "None", key: "none" }]}
       bgColor="white"
       borderWidth="1px"
       borderColor="gray.200"
