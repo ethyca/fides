@@ -229,22 +229,22 @@ export const PrivacyExperienceForm = ({
         baseTestId="property"
       />
       <Divider />
-      {values.component !== ComponentType.TCF_OVERLAY ? (
+      <Heading fontSize="md" fontWeight="semibold">
+        Privacy notices
+      </Heading>
+      <ScrollableList
+        addButtonLabel="Add privacy notice"
+        allItems={filterNoticesForOnlyParentNotices().map((n) => n.id)}
+        values={values.privacy_notice_ids ?? []}
+        setValues={(newValues) =>
+          setFieldValue("privacy_notice_ids", newValues)
+        }
+        getItemLabel={getPrivacyNoticeName}
+        draggable
+        baseTestId="privacy-notice"
+      />
+      {values.component === ComponentType.BANNER_AND_MODAL ? (
         <>
-          <Heading fontSize="md" fontWeight="semibold">
-            Privacy notices
-          </Heading>
-          <ScrollableList
-            addButtonLabel="Add privacy notice"
-            allItems={filterNoticesForOnlyParentNotices().map((n) => n.id)}
-            values={values.privacy_notice_ids ?? []}
-            setValues={(newValues) =>
-              setFieldValue("privacy_notice_ids", newValues)
-            }
-            getItemLabel={getPrivacyNoticeName}
-            draggable
-            baseTestId="privacy-notice"
-          />
           <Collapse in={!!values.privacy_notice_ids?.length} animateOpacity>
             <Box p="1px">
               <CustomSwitch
