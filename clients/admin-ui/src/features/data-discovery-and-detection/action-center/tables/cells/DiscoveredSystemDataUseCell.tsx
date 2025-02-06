@@ -18,7 +18,7 @@ const DiscoveredSystemDataUseCell = ({
 
   return (
     <BadgeCellExpandable
-      values={cellValues.length ? cellValues : [{ label: "None", key: "none" }]}
+      values={cellValues}
       bgColor="white"
       borderWidth="1px"
       borderColor="gray.200"
