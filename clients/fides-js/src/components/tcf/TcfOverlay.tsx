@@ -320,7 +320,7 @@ export const TcfOverlay = ({
         });
       }
       updateConsentPreferences({
-        consentPreferencesToSave: [],
+        consentPreferencesToSave: [], // todo- pass this in
         privacyExperienceConfigHistoryId,
         experience: experience || experienceMinimal,
         consentMethod,
@@ -359,7 +359,7 @@ export const TcfOverlay = ({
         exp = experience as PrivacyExperience;
         allIds = {
           purposesConsent: getAllIds(exp.tcf_purpose_consents),
-          customPurposesConsent: getAllIds(exp.privacy_notices), // todo- ensure this is correct
+          customPurposesConsent: getAllIds(exp.privacy_notices),
           purposesLegint: getAllIds(exp.tcf_purpose_legitimate_interests),
           specialPurposes: getAllIds(exp.tcf_special_purposes),
           features: getAllIds(exp.tcf_features),
@@ -380,7 +380,7 @@ export const TcfOverlay = ({
           purposesConsent:
             exp.tcf_purpose_consent_ids?.map((id) => `${id}`) || [],
           customPurposesConsent:
-            exp.privacy_notices?.map((id) => `${id}`) || [], // todo- ensure this is correct
+            exp.privacy_notices?.map((id) => `${id}`) || [],
           purposesLegint:
             exp.tcf_purpose_legitimate_interest_ids?.map((id) => `${id}`) || [],
           specialPurposes:

@@ -144,7 +144,7 @@ const TcfPurposes = ({
           items={activeData.customPurposes}
           enabledIds={activeData.enabledCustomPurposeIds}
           onToggle={(newEnabledIds) =>
-            onChange({ newEnabledIds, modelType: activeData.purposeModelType })
+            onChange({ newEnabledIds, modelType: "customPurposesConsent" })
           }
           // This key forces a rerender when legal basis changes, which allows paging to reset properly
           key={`purpose-record-${activeLegalBasisOption.value}`}
