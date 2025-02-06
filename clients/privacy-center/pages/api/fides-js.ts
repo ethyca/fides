@@ -5,6 +5,7 @@ import {
   constructFidesRegionString,
   DEFAULT_LOCALE,
   EmptyExperience,
+  experienceIsValid,
   fetchExperience,
   FidesConfig,
   PrivacyExperience,
@@ -197,6 +198,7 @@ export default async function handler(
         propertyId,
         requestMinimalTCF: true,
       });
+      experienceIsValid(experience);
     }
   }
 
