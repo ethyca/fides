@@ -308,15 +308,12 @@ export const loadPrivacyCenterEnvironment = async ({
     ? `/${settings.FIDES_PRIVACY_CENTER__ROOT_PROPERTY_PATH}`
     : null;
 
-  // todo: on failure, should still try static config file
   const property =
     (await getPropertyFromUrl({
       path: propertyPath || rootPropertyPath || "/",
       fidesApiUrl: settings.SERVER_SIDE_FIDES_API_URL || settings.FIDES_API_URL,
       location: location?.replace("-", "_").toLocaleLowerCase(),
     })) || undefined;
-
-  console.log("property", property);
 
   // Load configuration file (if it exists)
   const config =
