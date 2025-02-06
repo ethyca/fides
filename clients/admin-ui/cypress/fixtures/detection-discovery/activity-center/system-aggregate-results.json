@@ -46,6 +46,7 @@
       "vendor_id": "fds.1046",
       "total_updates": 10,
       "locations": ["USA"],
+      "data_uses": ["essential", "collect"],
       "domains": [
         "td.doubleclick.net",
         "www.google.com",

@@ -23,17 +23,20 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ### Added
 - Added editing support for categories of consent on discovered assets [#5739](https://github.com/ethyca/fides/pull/5739)
+- Added a read-only consent category cell to Action Center aggregate system results table [#5737](https://github.com/ethyca/fides/pull/5737)
 
 ### Changed
 - Added frequency field to DataHubSchema integration config [#5716](https://github.com/ethyca/fides/pull/5716)
+- Added glossary_node field to DataHubSchema integration config [#5734](https://github.com/ethyca/fides/pull/5734)
 - Added initial support for upcoming "headless" CMP experience type [#5731](https://github.com/ethyca/fides/pull/5731)
 
 ### Fixed
 - Fixed `fides annotate dataset` command enters incorrect value on the `direction` field. [#5727](https://github.com/ethyca/fides/pull/5727)
 - Fixed Bigquery flakey tests. [#5713](https://github.com/ethyca/fides/pull/5713)
 - Fixed breadcrumb navigation issues in data catalog view [#5717](https://github.com/ethyca/fides/pull/5717)
+- Fixed `window.Fides.experience` of FidesJS to be a merged version of the minimal and full experience. [#5726](https://github.com/ethyca/fides/pull/5726)
 
-## [2.53.0](https://github.com/ethyca/fides/compare/2.53.0...2.54.0)
+## [2.54.0](https://github.com/ethyca/fides/compare/2.53.0...2.54.0)
 
 ### Added
 - Migration to add the `data_uses` column to `stagedresource` table, prereqs for Data Catalog work in Fidesplus [#5600](https://github.com/ethyca/fides/pull/5600/) https://github.com/ethyca/fides/labels/db-migration
@@ -49,6 +52,10 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ### Developer Experience
 - Migrated radio buttons and groups to Ant Design [#5681](https://github.com/ethyca/fides/pull/5681)
+
+### Added
+- Migration to add the `data_uses` column to `stagedresource` table, prereqs for Data Catalog work in Fidesplus [#5600](https://github.com/ethyca/fides/pull/5600/) https://github.com/ethyca/fides/labels/db-migration
+- Migration to add the `monitorexecution` table used by fidesplus to persist `MonitorExecution` records to DB [#5704](https://github.com/ethyca/fides/pull/5704) https://github.com/ethyca/fides/labels/db-migration
 
 ### Fixed
 - Updating mongodb connectors so it can support usernames and password with URL encoded characters [#5682](https://github.com/ethyca/fides/pull/5682)
