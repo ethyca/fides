@@ -3,11 +3,11 @@ import { Property } from "~/types/api";
 
 const getPropertyFromUrl = async ({
   fidesApiUrl,
-  customPropertyPath,
+  path,
   location,
 }: {
   fidesApiUrl: string;
-  customPropertyPath: string;
+  path: string;
   location?: string;
 }) => {
   const headers = new Headers();
@@ -16,7 +16,7 @@ const getPropertyFromUrl = async ({
   let result: Property | null = null;
   try {
     const searchParams = new URLSearchParams({
-      path: `/${customPropertyPath}`,
+      path,
     });
     if (location) {
       searchParams.set("location", location);
