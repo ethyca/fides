@@ -1,6 +1,9 @@
 import { ColumnDef, createColumnHelper } from "@tanstack/react-table";
 
-import { DefaultCell } from "~/features/common/table/v2";
+import {
+  DefaultCell,
+  IndeterminateCheckboxCell,
+} from "~/features/common/table/v2";
 import DiscoveredSystemDataUseCell from "~/features/data-discovery-and-detection/action-center/tables/cells/DiscoveredSystemDataUseCell";
 
 import { DiscoveredSystemActionsCell } from "../tables/cells/DiscoveredSystemAggregateActionsCell";
@@ -11,6 +14,31 @@ export const useDiscoveredSystemAggregateColumns = (monitorId: string) => {
   const columnHelper = createColumnHelper<MonitorSystemAggregate>();
 
   const columns: ColumnDef<MonitorSystemAggregate, any>[] = [
+    columnHelper.display({
+      id: "select",
+      cell: ({ row }) => (
+        <IndeterminateCheckboxCell
+          isChecked={row.getIsSelected()}
+          onChange={row.getToggleSelectedHandler()}
+          dataTestId={`select-${row.original.name || row.id}`}
+        />
+      ),
+      header: ({ table }) => (
+        <IndeterminateCheckboxCell
+          isChecked={table.getIsAllPageRowsSelected()}
+          isIndeterminate={table.getIsSomeRowsSelected()}
+          onChange={table.getToggleAllRowsSelectedHandler()}
+          dataTestId="select-all-rows"
+        />
+      ),
+      maxSize: 40,
+      meta: {
+        disableRowClick: true,
+        cellProps: {
+          borderRight: "none",
+        },
+      },
+    }),
     columnHelper.accessor((row) => row.name, {
       id: "system_name",
       cell: (props) => (
@@ -19,6 +47,9 @@ export const useDiscoveredSystemAggregateColumns = (monitorId: string) => {
       header: "System",
       meta: {
         width: "auto",
+        cellProps: {
+          borderLeft: "none",
+        },
       },
     }),
     columnHelper.accessor((row) => row.total_updates, {

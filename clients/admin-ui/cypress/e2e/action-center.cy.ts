@@ -207,8 +207,42 @@ describe("Action center", () => {
         "10 assets from Google Tag Manager have been ignored and will not appear in future scans.",
       );
     });
+    it("shouldn't allow bulk add when uncategorized system is selected", () => {
+      cy.getByTestId("row-0-col-select").find("label").click();
+      cy.getByTestId("selected-count").should("contain", "1 selected");
+      cy.getByTestId("bulk-actions-menu").click();
+      cy.getByTestId("bulk-add").should("be.disabled");
+    });
+    it("should bulk add results from categorized systems", () => {
+      cy.getByTestId("bulk-actions-menu").should("be.disabled");
+      cy.getByTestId("row-1-col-select").find("label").click();
+      cy.getByTestId("row-2-col-select").find("label").click();
+      cy.getByTestId("selected-count").should("contain", "2 selected");
+      cy.getByTestId("bulk-actions-menu").should("not.be.disabled");
+      cy.getByTestId("bulk-actions-menu").click();
+      cy.getByTestId("bulk-add").click();
+      cy.wait("@addMonitorResultSystem");
+      cy.getByTestId("success-alert").should(
+        "contain",
+        "16 assets have been added to the system inventory.",
+      );
+    });
+    it("should bulk ignore results from all systems", () => {
+      cy.getByTestId("row-0-col-select").find("label").click();
+      cy.getByTestId("row-1-col-select").find("label").click();
+      cy.getByTestId("row-2-col-select").find("label").click();
+      cy.getByTestId("selected-count").should("contain", "3 selected");
+      cy.getByTestId("bulk-actions-menu").should("not.be.disabled");
+      cy.getByTestId("bulk-actions-menu").click();
+      cy.getByTestId("bulk-ignore").click();
+      cy.wait("@ignoreMonitorResultSystem");
+      cy.getByTestId("success-alert").should(
+        "contain",
+        "124 assets have been ignored and will not appear in future scans.",
+      );
+    });
     it("should navigate to table view on row click", () => {
-      cy.getByTestId("row-1").click();
+      cy.getByTestId("row-1-col-system_name").click();
       cy.url().should(
         "contain",
         "system_key-8fe42cdb-af2e-4b9e-9b38-f75673180b88",
