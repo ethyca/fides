@@ -36,6 +36,7 @@ class ComponentType(Enum):
     modal = "modal"
     privacy_center = "privacy_center"
     tcf_overlay = "tcf_overlay"  # TCF Banner + modal combined
+    headless = "headless"
 
 
 class Layer1ButtonOption(Enum):
@@ -51,6 +52,7 @@ class Layer1ButtonOption(Enum):
 FidesJSUXTypes: List[ComponentType] = [
     ComponentType.banner_and_modal,
     ComponentType.modal,
+    ComponentType.headless,
 ]
 
 # Fides JS Overlay Types - there should only be one of these defined per region + property
@@ -58,6 +60,7 @@ FidesJSOverlayTypes: List[ComponentType] = [
     ComponentType.banner_and_modal,
     ComponentType.modal,
     ComponentType.tcf_overlay,
+    ComponentType.headless,
 ]
 
 

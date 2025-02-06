@@ -20,6 +20,7 @@ export interface MonitorSystemAggregate {
   system_key: string | null; // null when the system is not a known system
   vendor_id: string;
   total_updates: 0;
+  data_uses: string[];
   locations: string[];
   domains: string[];
 }
