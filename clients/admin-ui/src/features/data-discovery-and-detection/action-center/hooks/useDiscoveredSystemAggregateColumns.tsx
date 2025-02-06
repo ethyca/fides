@@ -1,6 +1,7 @@
 import { ColumnDef, createColumnHelper } from "@tanstack/react-table";
 
 import { DefaultCell } from "~/features/common/table/v2";
+import DiscoveredSystemDataUseCell from "~/features/data-discovery-and-detection/action-center/tables/cells/DiscoveredSystemDataUseCell";
 
 import { DiscoveredSystemActionsCell } from "../tables/cells/DiscoveredSystemAggregateActionsCell";
 import { DiscoveredSystemStatusCell } from "../tables/cells/DiscoveredSystemAggregateStatusCell";
@@ -26,15 +27,17 @@ export const useDiscoveredSystemAggregateColumns = (monitorId: string) => {
       header: "Assets",
       size: 80,
     }),
-    /*
-    // TODO: [HJ-356] uncomment when monitor supports categories of consent
     columnHelper.display({
       id: "data_use",
+      cell: (props) => (
+        <DiscoveredSystemDataUseCell system={props.row.original} />
+      ),
       header: "Categories of consent",
       meta: {
         width: "auto",
+        disableRowClick: true,
       },
-    }), */
+    }),
     columnHelper.accessor((row) => row.locations, {
       id: "locations",
       cell: (props) => (
