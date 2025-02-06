@@ -34,9 +34,6 @@ export const useDiscoveredSystemAggregateColumns = (monitorId: string) => {
       maxSize: 40,
       meta: {
         disableRowClick: true,
-        cellProps: {
-          borderRight: "none",
-        },
       },
     }),
     columnHelper.accessor((row) => row.name, {
@@ -47,9 +44,6 @@ export const useDiscoveredSystemAggregateColumns = (monitorId: string) => {
       header: "System",
       meta: {
         width: "auto",
-        cellProps: {
-          borderLeft: "none",
-        },
       },
     }),
     columnHelper.accessor((row) => row.total_updates, {
