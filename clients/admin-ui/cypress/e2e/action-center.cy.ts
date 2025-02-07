@@ -121,7 +121,7 @@ describe("Action center", () => {
     });
   });
 
-  describe.only("Action center system aggregate results", () => {
+  describe("Action center system aggregate results", () => {
     const webMonitorKey = "my_web_monitor_1";
     beforeEach(() => {
       cy.visit(`${ACTION_CENTER_ROUTE}/${webMonitorKey}`);
