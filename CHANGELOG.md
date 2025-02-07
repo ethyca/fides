@@ -32,6 +32,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Added initial support for upcoming "headless" CMP experience type [#5731](https://github.com/ethyca/fides/pull/5731)
 - All Select dropdowns will now allow searching to narrow down the options by default [#5738](https://github.com/ethyca/fides/pull/5738)
 - Exposes privacy notice picker for TCF components [#5730](https://github.com/ethyca/fides/pull/5730)
+- Model changes to support new privacy center config options [5732](https://github.com/ethyca/fides/pull/5732)
 
 ### Fixed
 - Fixed `fides annotate dataset` command enters incorrect value on the `direction` field. [#5727](https://github.com/ethyca/fides/pull/5727)
