@@ -1,3 +1,4 @@
+import { Icons } from "fidesui";
 import { FlagNames } from "~/features/common/features";
 import { ScopeRegistryEnum } from "~/types/api";
 
@@ -19,12 +20,13 @@ export type NavConfigRoute = {
 
 export type NavConfigGroup = {
   title: string;
+  icon: React.ReactNode;
   routes: NavConfigRoute[];
 };
 
 export const NAV_CONFIG: NavConfigGroup[] = [
-  // Goes last because its root path will match everything.
   {
+    icon: <Icons.Home />,
     title: "Overview",
     routes: [
       {
@@ -37,6 +39,7 @@ export const NAV_CONFIG: NavConfigGroup[] = [
   },
   {
     title: "Detection & Discovery",
+    icon: <Icons.DataAnalytics />,
     routes: [
       {
         title: "Action center",
@@ -77,6 +80,7 @@ export const NAV_CONFIG: NavConfigGroup[] = [
   },
   {
     title: "Data inventory",
+    icon: <Icons.DataTable />,
     routes: [
       {
         title: "Data lineage",
@@ -112,6 +116,7 @@ export const NAV_CONFIG: NavConfigGroup[] = [
   },
   {
     title: "Privacy requests",
+    icon: <Icons.MessageQueue />,
     routes: [
       {
         title: "Request manager",
@@ -136,6 +141,7 @@ export const NAV_CONFIG: NavConfigGroup[] = [
   },
   {
     title: "Consent",
+    icon: <Icons.SettingsAdjust />,
     routes: [
       {
         title: "Vendors",
@@ -166,6 +172,7 @@ export const NAV_CONFIG: NavConfigGroup[] = [
   },
   {
     title: "Settings",
+    icon: <Icons.Settings />,
     routes: [
       {
         title: "Properties",
@@ -293,6 +300,7 @@ export const NAV_CONFIG: NavConfigGroup[] = [
 if (process.env.NEXT_PUBLIC_APP_ENV === "development") {
   NAV_CONFIG.push({
     title: "Developer",
+    icon: <Icons.Code />,
     routes: [
       {
         title: "Ant Design POC",
@@ -319,6 +327,11 @@ export type NavGroup = {
    * The routes that are nested under this group. These are displayed inside of each group's accordion.
    */
   children: Array<NavGroupChild>;
+
+  /**
+   * Icon to display in the accordion header
+   */
+  icon: React.ReactNode;
 };
 
 /** If all routes in the group require plus and plus is not running then return true */
@@ -465,6 +478,7 @@ export const configureNavGroups = ({
 
     const navGroup: NavGroup = {
       title: group.title,
+      icon: group.icon,
       children: [],
     };
 
