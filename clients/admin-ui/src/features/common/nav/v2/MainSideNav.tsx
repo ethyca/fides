@@ -182,7 +182,7 @@ export const UnconnectedMainSideNav = ({
           <Box pb={6}>
             <FidesLogoHomeLink />
           </Box>
-          <Accordion
+          {/* <Accordion
             allowMultiple
             width="100%"
             defaultIndex={[...Array(groups.length).keys()]}
@@ -191,7 +191,7 @@ export const UnconnectedMainSideNav = ({
             {groups.map((group) => (
               <NavGroupMenu key={group.title} group={group} active={active} />
             ))}
-          </Accordion>
+          </Accordion> */}
           <NavMenu onClick={handleMenuItemClick} items={navMenuItems} />
         </Box>
         <Box alignItems="center" pb={4}>
