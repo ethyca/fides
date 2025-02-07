@@ -6,7 +6,7 @@ import {
 } from "@tanstack/react-table";
 import { Icons } from "fidesui";
 import { useRouter } from "next/router";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import Layout from "~/features/common/Layout";
 import { DATA_CATALOG_ROUTE } from "~/features/common/nav/v2/routes";
@@ -17,6 +17,7 @@ import {
   TableSkeletonLoader,
   useServerSidePagination,
 } from "~/features/common/table/v2";
+import CatalogDatasetDetailDrawer from "~/features/data-catalog/datasets/CatalogDatasetDetailDrawer";
 import EmptyCatalogTableNotice from "~/features/data-catalog/datasets/EmptyCatalogTableNotice";
 import useCatalogDatasetColumns from "~/features/data-catalog/datasets/useCatalogDatasetColumns";
 import { getProjectName } from "~/features/data-catalog/utils/urnParsing";
@@ -36,6 +37,10 @@ const CatalogDatasetView = () => {
   const { query, push } = useRouter();
   const systemKey = query.systemId as string;
   const projectUrn = query.projectUrn as string;
+
+  const [detailsToView, setDetailsToView] = useState<
+    StagedResourceAPIResponse | undefined
+  >(undefined);
 
   const { data: system, isLoading: systemIsLoading } =
     useGetSystemByFidesKeyQuery(systemKey);
@@ -74,7 +79,9 @@ const CatalogDatasetView = () => {
     setTotalPages(totalPages);
   }, [totalPages, setTotalPages]);
 
-  const columns = useCatalogDatasetColumns();
+  const columns = useCatalogDatasetColumns({
+    onDetailClick: (dataset) => setDetailsToView(dataset),
+  });
 
   const tableInstance = useReactTable<StagedResourceAPIResponse>({
     getCoreRowModel: getCoreRowModel(),
@@ -123,6 +130,10 @@ const CatalogDatasetView = () => {
             isNextPageDisabled={isNextPageDisabled}
             startRange={startRange}
             endRange={endRange}
+          />
+          <CatalogDatasetDetailDrawer
+            dataset={detailsToView}
+            onClose={() => setDetailsToView(undefined)}
           />
         </>
       )}
