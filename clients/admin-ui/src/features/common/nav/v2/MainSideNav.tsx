@@ -25,6 +25,7 @@ import {
 import palette from "fidesui/src/palette/palette.module.scss";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
+import { useState } from "react";
 
 import logoImage from "~/../public/logo-white.svg";
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
@@ -144,6 +145,7 @@ export const UnconnectedMainSideNav = ({
   handleLogout: any;
   username: string;
 }) => {
+  const [currentItemKey, setCurrentItemKey] = useState<string | null>(null);
   const router = useRouter();
 
   const navMenuItems = groups.map((group) => ({
@@ -156,8 +158,9 @@ export const UnconnectedMainSideNav = ({
     })),
   }));
 
-  const handleMenuItemClick: MenuProps["onClick"] = ({ key: path }) => {
-    router.push(path);
+  const handleMenuItemClick: MenuProps["onClick"] = ({ key }) => {
+    router.push(key); // the key is the link path
+    setCurrentItemKey(key);
   };
 
   return (
@@ -178,7 +181,7 @@ export const UnconnectedMainSideNav = ({
         height="100%"
         justifyContent="space-between"
       >
-        <Box>
+        <Box width="100%">
           <Box pb={6}>
             <FidesLogoHomeLink />
           </Box>
@@ -192,7 +195,12 @@ export const UnconnectedMainSideNav = ({
               <NavGroupMenu key={group.title} group={group} active={active} />
             ))}
           </Accordion> */}
-          <NavMenu onClick={handleMenuItemClick} items={navMenuItems} />
+          <NavMenu
+            onClick={handleMenuItemClick}
+            items={navMenuItems}
+            selectedKeys={currentItemKey ? [currentItemKey] : []}
+            style={{ minWidth: 0, flex: "auto" }}
+          />
         </Box>
         <Box alignItems="center" pb={4}>
           <AntButton
