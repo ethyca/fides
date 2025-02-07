@@ -13,7 +13,10 @@ import { StagedResourceAPIResponse } from "~/types/api";
 
 const columnHelper = createColumnHelper<StagedResourceAPIResponse>();
 
-const useCatalogResourceColumns = (type: StagedResourceType) => {
+const useCatalogResourceColumns = (
+  type: StagedResourceType,
+  onDetailClick: (resource: StagedResourceAPIResponse) => void,
+) => {
   const defaultColumns: ColumnDef<StagedResourceAPIResponse, any>[] = [];
 
   if (!type) {
@@ -58,7 +61,10 @@ const useCatalogResourceColumns = (type: StagedResourceType) => {
       columnHelper.display({
         id: "actions",
         cell: ({ row }) => (
-          <CatalogResourceActionsCell resource={row.original} />
+          <CatalogResourceActionsCell
+            resource={row.original}
+            onDetailClick={() => onDetailClick(row.original)}
+          />
         ),
         header: "Actions",
         meta: {
@@ -112,7 +118,10 @@ const useCatalogResourceColumns = (type: StagedResourceType) => {
       columnHelper.display({
         id: "actions",
         cell: ({ row }) => (
-          <CatalogResourceActionsCell resource={row.original} />
+          <CatalogResourceActionsCell
+            resource={row.original}
+            onDetailClick={() => onDetailClick(row.original)}
+          />
         ),
         header: "Actions",
         meta: {

@@ -1,6 +1,14 @@
 /* eslint-disable react/no-unstable-nested-components */
 
 import { ColumnDef, createColumnHelper } from "@tanstack/react-table";
+import {
+  AntButton as Button,
+  Menu,
+  MenuButton,
+  MenuItem,
+  MenuList,
+  MoreIcon,
+} from "fidesui";
 import { useMemo } from "react";
 
 import { DefaultCell } from "~/features/common/table/v2";
@@ -12,7 +20,38 @@ import { StagedResourceAPIResponse } from "~/types/api";
 
 const columnHelper = createColumnHelper<StagedResourceAPIResponse>();
 
-const useCatalogDatasetColumns = () => {
+const CatalogDatasetActionsCell = ({
+  onDetailClick,
+}: {
+  onDetailClick?: () => void;
+}) => {
+  return (
+    <Menu>
+      <MenuButton
+        as={Button}
+        size="small"
+        // @ts-ignore: Ant type, not Chakra type
+        type="text"
+        icon={<MoreIcon transform="rotate(90deg)" />}
+        className="w-6 gap-0"
+        data-testid="dataset-actions"
+      />
+      <MenuList>
+        <MenuItem data-testid="view-dataset-details" onClick={onDetailClick}>
+          View details
+        </MenuItem>
+      </MenuList>
+    </Menu>
+  );
+};
+
+interface CatalogDatasetColumnsParams {
+  onDetailClick: (dataset: StagedResourceAPIResponse) => void;
+}
+
+const useCatalogDatasetColumns = ({
+  onDetailClick,
+}: CatalogDatasetColumnsParams) => {
   const columns: ColumnDef<StagedResourceAPIResponse, any>[] = useMemo(
     () => [
       columnHelper.accessor((row) => row.name, {
@@ -41,8 +80,20 @@ const useCatalogDatasetColumns = () => {
         cell: (props) => <RelativeTimestampCell time={props.getValue()} />,
         header: "Updated",
       }),
+      columnHelper.display({
+        id: "actions",
+        cell: ({ row }) => (
+          <CatalogDatasetActionsCell
+            onDetailClick={() => onDetailClick(row.original)}
+          />
+        ),
+        size: 25,
+        meta: {
+          disableRowClick: true,
+        },
+      }),
     ],
-    [],
+    [onDetailClick],
   );
 
   return columns;

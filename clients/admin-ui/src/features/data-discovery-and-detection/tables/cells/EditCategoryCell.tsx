@@ -64,7 +64,7 @@ const EditCategoryCell = ({ resource }: EditCategoryCellProps) => {
     !isAdding && !!bestClassifiedCategory && !userCategories.length;
 
   return (
-    <TaxonomyCellContainer>
+    <TaxonomyCellContainer data-testid="edit-category-cell">
       {noCategories && (
         <>
           <TaxonomyBadge data-testid="no-classifications">None</TaxonomyBadge>

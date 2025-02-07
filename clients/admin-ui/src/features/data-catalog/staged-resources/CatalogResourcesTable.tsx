@@ -16,6 +16,7 @@ import {
   useServerSidePagination,
 } from "~/features/common/table/v2";
 import EmptyCatalogTableNotice from "~/features/data-catalog/datasets/EmptyCatalogTableNotice";
+import CatalogResourceDetailDrawer from "~/features/data-catalog/staged-resources/CatalogResourceDetailDrawer";
 import useCatalogResourceColumns from "~/features/data-catalog/useCatalogResourceColumns";
 import { useGetMonitorResultsQuery } from "~/features/data-discovery-and-detection/discovery-detection.slice";
 import { SearchInput } from "~/features/data-discovery-and-detection/SearchInput";
@@ -95,9 +96,13 @@ const CatalogResourcesTable = ({
     setTotalPages(totalPages);
   }, [totalPages, setTotalPages]);
 
+  const [detailResource, setDetailResource] = useState<
+    StagedResourceAPIResponse | undefined
+  >(undefined);
+
   const type = findResourceType(data[0] ?? StagedResourceType.NONE);
 
-  const columns = useCatalogResourceColumns(type);
+  const columns = useCatalogResourceColumns(type, setDetailResource);
 
   const tableInstance = useReactTable<StagedResourceAPIResponse>({
     getCoreRowModel: getCoreRowModel(),
@@ -139,6 +144,10 @@ const CatalogResourcesTable = ({
         isNextPageDisabled={isNextPageDisabled}
         startRange={startRange}
         endRange={endRange}
+      />
+      <CatalogResourceDetailDrawer
+        resource={detailResource}
+        onClose={() => setDetailResource(undefined)}
       />
     </>
   );
