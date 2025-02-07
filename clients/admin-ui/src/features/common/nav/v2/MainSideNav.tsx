@@ -1,31 +1,21 @@
 import {
-  Accordion,
-  AccordionButton,
-  AccordionIcon,
-  AccordionItem,
-  AccordionPanel,
   AntButton,
   AntMenuProps as MenuProps,
   Box,
-  Button,
+  Icons,
   Link,
-  ListItem,
   Menu,
   MenuButton,
   MenuDivider,
   MenuItem,
   MenuList,
-  QuestionIcon,
   Stack,
   Text,
-  UnorderedList,
-  UserIcon,
   VStack,
 } from "fidesui";
 import palette from "fidesui/src/palette/palette.module.scss";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
-import { useState } from "react";
 
 import logoImage from "~/../public/logo-white.svg";
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
@@ -35,103 +25,12 @@ import Image from "~/features/common/Image";
 import { useGetHealthQuery } from "~/features/plus/plus.slice";
 
 import { useNav } from "./hooks";
-import { ActiveNav, NavGroup, NavGroupChild } from "./nav-config";
+import { ActiveNav, NavGroup } from "./nav-config";
 import { NavMenu } from "./NavMenu";
 import { INDEX_ROUTE } from "./routes";
 
 const NAV_BACKGROUND_COLOR = palette.FIDESUI_MINOS;
 const NAV_WIDTH = "240px";
-
-const FidesLogoHomeLink = () => (
-  <Box px={2}>
-    <Link as={NextLink} href={INDEX_ROUTE} display="flex">
-      <Image src={logoImage} alt="Fides Logo" width={116} />
-    </Link>
-  </Box>
-);
-
-export const NavSideBarLink = ({
-  childGroup,
-  isActive,
-}: {
-  childGroup: NavGroupChild;
-  isActive: boolean;
-}) => {
-  const { title, path } = childGroup;
-  return (
-    <ListItem listStyleType="none">
-      {/* TODO PROD-2563 */}
-      <Button
-        as={NextLink}
-        href={path}
-        height="34px"
-        variant="ghost"
-        fontWeight="normal"
-        fontSize="sm"
-        px={2}
-        width="100%"
-        justifyContent="start"
-        color={palette.FIDESUI_NEUTRAL_200}
-        isActive={isActive}
-        _hover={{
-          backgroundColor: palette.FIDESUI_NEUTRAL_800,
-        }}
-        _active={{
-          color: palette.FIDESUI_MINOS,
-          backgroundColor: palette.FIDESUI_SANDSTONE,
-        }}
-        _focus={{
-          outline: "none",
-        }}
-        data-testid={`${title}-nav-link`}
-      >
-        {title}
-      </Button>
-    </ListItem>
-  );
-};
-
-const NavGroupMenu = ({
-  group,
-  active,
-}: {
-  group: NavGroup;
-  active: ActiveNav | undefined;
-}) => (
-  <AccordionItem border="none" data-testid={`${group.title}-nav-group`}>
-    <h3>
-      <AccordionButton px={2} py={3}>
-        <Box
-          fontSize="xs"
-          fontWeight="bold"
-          textTransform="uppercase"
-          as="span"
-          flex="1"
-          textAlign="left"
-        >
-          {group.title}
-        </Box>
-        <AccordionIcon />
-      </AccordionButton>
-    </h3>
-    <AccordionPanel fontSize="sm" p={0}>
-      <UnorderedList m={0}>
-        {group.children.map((child) => {
-          const isActive = child.exact
-            ? active?.path === child.path
-            : !!active?.path?.startsWith(child.path);
-          return (
-            <NavSideBarLink
-              isActive={isActive}
-              key={child.path}
-              childGroup={child}
-            />
-          );
-        })}
-      </UnorderedList>
-    </AccordionPanel>
-  </AccordionItem>
-);
 
 /** Inner component which we export for component testing */
 export const UnconnectedMainSideNav = ({
@@ -205,18 +104,12 @@ export const UnconnectedMainSideNav = ({
       >
         <Box width="100%">
           <Box pb={6}>
-            <FidesLogoHomeLink />
+            <Box px={2}>
+              <Link as={NextLink} href={INDEX_ROUTE} display="flex">
+                <Image src={logoImage} alt="Fides Logo" width={116} />
+              </Link>
+            </Box>
           </Box>
-          {/* <Accordion
-            allowMultiple
-            width="100%"
-            defaultIndex={[...Array(groups.length).keys()]}
-            overflowY="auto"
-          >
-            {groups.map((group) => (
-              <NavGroupMenu key={group.title} group={group} active={active} />
-            ))}
-          </Accordion> */}
           <NavMenu
             onClick={handleMenuItemClick}
             items={navMenuItems}
@@ -226,8 +119,9 @@ export const UnconnectedMainSideNav = ({
         <Box alignItems="center" pb={4}>
           <AntButton
             href="https://docs.ethyca.com"
-            className="border-none bg-transparent hover:!bg-gray-700"
-            icon={<QuestionIcon color="white" boxSize={4} />}
+            target="_blank"
+            className="border-none bg-transparent  hover:!bg-gray-700"
+            icon={<Icons.Help color="white" />}
           />
           {username && (
             <Menu>
@@ -235,7 +129,7 @@ export const UnconnectedMainSideNav = ({
                 as={AntButton}
                 className="border-none bg-transparent hover:!bg-gray-700"
                 data-testid="header-menu-button"
-                icon={<UserIcon color="white" />}
+                icon={<Icons.User color="white" />}
               />
               <MenuList shadow="xl" zIndex="20">
                 <Stack px={3} py={2} spacing={1}>
