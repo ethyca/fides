@@ -111,6 +111,7 @@ export const stubConfig = (
       const experienceMock = mockExperienceApiResp || {
         fixture: "consent/experience_banner_modal.json",
       };
+      console.log("experience mock notices", experienceMock?.privacy_notices);
       const experienceResp =
         mockExperienceApiResp === OVERRIDE.UNDEFINED
           ? undefined
@@ -170,6 +171,7 @@ interface StubExperienceTCFProps {
   demoPageQueryParams?: Cypress.VisitOptions["qs"] | null;
   demoPageWindowParams?: any;
   experienceIsInvalid?: boolean;
+  includeCustomPurposes?: boolean;
 }
 export const stubTCFExperience = ({
   stubOptions,
@@ -180,6 +182,7 @@ export const stubTCFExperience = ({
   demoPageQueryParams,
   demoPageWindowParams,
   experienceIsInvalid,
+  includeCustomPurposes,
 }: StubExperienceTCFProps) => {
   return cy
     .fixture("consent/experience_tcf_minimal.json")
@@ -203,6 +206,16 @@ export const stubTCFExperience = ({
           experienceFullItem,
           experienceFullOverride,
         );
+        if (includeCustomPurposes) {
+          cy.fixture("consent/custom_tcf_notices.json").then(
+            (customNotices) => {
+              experienceMinItem.privacy_notices =
+                customNotices["privacy_notices"];
+              experienceFull.items[0].privacy_notices =
+                customNotices["privacy_notices"];
+            },
+          );
+        }
         // set initial experience to minimal
         // set stubbed /privacy-experience response to full
         stubConfig(

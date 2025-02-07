@@ -405,8 +405,7 @@ export const TcfOverlay = ({
         allIds = {
           purposesConsent:
             exp.tcf_purpose_consent_ids?.map((id) => `${id}`) || [],
-          customPurposesConsent:
-            exp.privacy_notices?.map((id) => `${id}`) || [],
+          customPurposesConsent: getAllIds(exp.privacy_notices) || [],
           purposesLegint:
             exp.tcf_purpose_legitimate_interest_ids?.map((id) => `${id}`) || [],
           specialPurposes:
