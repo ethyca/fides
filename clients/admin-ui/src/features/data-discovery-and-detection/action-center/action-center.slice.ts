@@ -1,4 +1,5 @@
 import { baseApi } from "~/features/common/api.slice";
+import { getQueryParamsFromArray } from "~/features/common/utils";
 import { PaginationQueryParams } from "~/types/common/PaginationQueryParams";
 
 import {
@@ -7,6 +8,11 @@ import {
   MonitorSummaryPaginatedResponse,
   MonitorSystemAggregatePaginatedResponse,
 } from "./types";
+
+interface MonitorResultSystemQueryParams {
+  monitor_config_key: string;
+  resolved_system_ids: string[];
+}
 
 const actionCenterApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
@@ -57,30 +63,36 @@ const actionCenterApi = baseApi.injectEndpoints({
       }),
       providesTags: () => ["Discovery Monitor Results"],
     }),
-    addMonitorResultSystem: build.mutation<
+    addMonitorResultSystems: build.mutation<
       any,
-      { monitor_config_key?: string; resolved_system_id?: string }
+      MonitorResultSystemQueryParams
     >({
-      query: (params) => ({
-        method: "POST",
-        url: `/plus/discovery-monitor/${params.monitor_config_key}/promote`,
-        params: {
-          resolved_system_id: params.resolved_system_id,
-        },
-      }),
+      query: ({ monitor_config_key, resolved_system_ids }) => {
+        const params = getQueryParamsFromArray(
+          resolved_system_ids,
+          "resolved_system_ids",
+        );
+        return {
+          method: "POST",
+          url: `/plus/discovery-monitor/${monitor_config_key}/promote?${params}`,
+        };
+      },
       invalidatesTags: ["Discovery Monitor Results"],
     }),
-    ignoreMonitorResultSystem: build.mutation<
+    ignoreMonitorResultSystems: build.mutation<
       any,
-      { monitor_config_key?: string; resolved_system_id?: string }
+      MonitorResultSystemQueryParams
     >({
-      query: (params) => ({
-        method: "POST",
-        url: `/plus/discovery-monitor/${params.monitor_config_key}/mute`,
-        params: {
-          resolved_system_id: params.resolved_system_id,
-        },
-      }),
+      query: ({ monitor_config_key, resolved_system_ids }) => {
+        const params = getQueryParamsFromArray(
+          resolved_system_ids,
+          "resolved_system_ids",
+        );
+        return {
+          method: "POST",
+          url: `/plus/discovery-monitor/${monitor_config_key}/mute?${params}`,
+        };
+      },
       invalidatesTags: ["Discovery Monitor Results"],
     }),
     addMonitorResultAssets: build.mutation<any, { urnList?: string[] }>({
@@ -163,8 +175,8 @@ export const {
   useGetAggregateMonitorResultsQuery,
   useGetDiscoveredSystemAggregateQuery,
   useGetDiscoveredAssetsQuery,
-  useAddMonitorResultSystemMutation,
-  useIgnoreMonitorResultSystemMutation,
+  useAddMonitorResultSystemsMutation,
+  useIgnoreMonitorResultSystemsMutation,
   useAddMonitorResultAssetsMutation,
   useIgnoreMonitorResultAssetsMutation,
   useUpdateAssetsSystemMutation,

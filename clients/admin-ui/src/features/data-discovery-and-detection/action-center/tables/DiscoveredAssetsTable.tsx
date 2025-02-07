@@ -37,7 +37,7 @@ import {
 } from "~/features/common/table/v2";
 import {
   useAddMonitorResultAssetsMutation,
-  useAddMonitorResultSystemMutation,
+  useAddMonitorResultSystemsMutation,
   useGetDiscoveredAssetsQuery,
   useIgnoreMonitorResultAssetsMutation,
   useUpdateAssetsMutation,
@@ -71,8 +71,8 @@ export const DiscoveredAssetsTable = ({
     useAddMonitorResultAssetsMutation();
   const [ignoreMonitorResultAssetsMutation, { isLoading: isIgnoringResults }] =
     useIgnoreMonitorResultAssetsMutation();
-  const [addMonitorResultSystemMutation, { isLoading: isAddingAllResults }] =
-    useAddMonitorResultSystemMutation();
+  const [addMonitorResultSystemsMutation, { isLoading: isAddingAllResults }] =
+    useAddMonitorResultSystemsMutation();
   const [updateAssetsSystemMutation, { isLoading: isBulkUpdatingSystem }] =
     useUpdateAssetsSystemMutation();
   const [updateAssetsMutation, { isLoading: isBulkAddingDataUses }] =
@@ -224,9 +224,9 @@ export const DiscoveredAssetsTable = ({
 
   const handleAddAll = async () => {
     const assetCount = data?.items.length || 0;
-    const result = await addMonitorResultSystemMutation({
+    const result = await addMonitorResultSystemsMutation({
       monitor_config_key: monitorId,
-      resolved_system_id: systemId,
+      resolved_system_ids: [systemId],
     });
 
     if (isErrorResult(result)) {
