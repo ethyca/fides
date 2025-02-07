@@ -4,8 +4,6 @@ import "./fides-tcf.css";
 import { h } from "preact";
 import { useCallback, useEffect, useMemo, useState } from "preact/hooks";
 
-import { transformConsentToFidesUserPreference } from "../../lib/shared-consent-utils";
-
 import {
   ButtonType,
   ConsentMethod,
@@ -33,6 +31,7 @@ import {
 } from "../../lib/i18n";
 import { useI18n } from "../../lib/i18n/i18n-context";
 import { updateConsentPreferences } from "../../lib/preferences";
+import { transformConsentToFidesUserPreference } from "../../lib/shared-consent-utils";
 import { EMPTY_ENABLED_IDS } from "../../lib/tcf/constants";
 import { useGvl } from "../../lib/tcf/gvl-context";
 import {
@@ -235,8 +234,6 @@ export const TcfOverlay = ({
       } = experience as PrivacyExperience;
 
       // Vendors and systems are the same to the FE, so we combine them here
-      console.log("setting draft IDs");
-      console.log(customPurposes);
       setDraftIds({
         purposesConsent: getEnabledIds(consentPurposes),
         customPurposesConsent: getEnabledIdsNotice(customPurposes),
@@ -359,7 +356,6 @@ export const TcfOverlay = ({
         servedNoticeHistoryId,
         updateCookie: (oldCookie) =>
           updateCookie(
-            // todo- update this for custom notices
             oldCookie,
             tcf,
             enabledIds,

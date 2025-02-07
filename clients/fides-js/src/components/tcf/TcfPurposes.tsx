@@ -36,6 +36,9 @@ const PurposeDetails = ({
 }) => {
   const { i18n } = useI18n();
   if (isCustomPurpose) {
+    // eslint-disable-next-line no-param-reassign
+    purpose = purpose as PrivacyNoticeWithBestTranslation;
+    // Custom purposes already have translation details
     return (
       <div>
         <p className="fides-tcf-toggle-content">
@@ -44,13 +47,17 @@ const PurposeDetails = ({
       </div>
     );
   }
+  // eslint-disable-next-line no-param-reassign
+  purpose = purpose as
+    | TCFPurposeConsentRecord
+    | TCFPurposeLegitimateInterestsRecord;
   const vendors = [...(purpose.vendors || []), ...(purpose.systems || [])];
   return (
     <div>
       <p className="fides-tcf-toggle-content">
         {i18n.t(`exp.tcf.${type}.${purpose.id}.description`)}
       </p>
-      {purpose.illustrations.map((illustration, i) => (
+      {purpose.illustrations.map((illustration: any, i: any) => (
         <p
           key={illustration}
           className="fides-tcf-illustration fides-background-dark"
@@ -76,7 +83,7 @@ const TcfPurposes = ({
   onChange,
 }: {
   allPurposesConsent: TCFPurposeConsentRecord[] | undefined;
-  allCustomPurposesConsent: Array<PrivacyNoticeWithBestTranslation> | undefined; // todo- is this undefined ever?
+  allCustomPurposesConsent: Array<PrivacyNoticeWithBestTranslation> | undefined;
   enabledPurposeConsentIds: string[];
   allSpecialPurposes: PrivacyExperience["tcf_special_purposes"];
   allPurposesLegint: TCFPurposeLegitimateInterestsRecord[] | undefined;
@@ -98,8 +105,7 @@ const TcfPurposes = ({
   const [activeLegalBasisOption, setActiveLegalBasisOption] = useState(
     LEGAL_BASIS_OPTIONS[0],
   );
-  console.log("active custom purposes consent data:");
-  console.log(allCustomPurposesConsent);
+  // @ts-ignore
   const activeData: {
     purposes: PurposeRecord[];
     customPurposes?: PrivacyNoticeWithBestTranslation[] | undefined;

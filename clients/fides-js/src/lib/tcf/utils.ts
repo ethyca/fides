@@ -85,7 +85,6 @@ export const buildTcfEntitiesFromCookieAndFidesString = (
       return { ...item, current_preference: preference };
     });
   });
-  // todo- consider custom notices too
 
   // Now update tcfEntities based on the fides string
   if (cookie.fides_string) {
@@ -157,7 +156,23 @@ export const updateExperienceFromCookieConsentTcf = ({
       experience,
     );
   }
-  return { ...experience, ...tcfEntities };
+
+  // If the given TCF experience has no custom notices, return standard TCF entities along with experience
+  if (!experience.privacy_notices) {
+    return { ...experience, ...tcfEntities };
+  }
+
+  const noticesWithConsent: PrivacyNoticeWithPreference[] | undefined =
+    experience.privacy_notices?.map((notice) => {
+      const preference = Object.keys(cookie.consent).includes(notice.notice_key)
+        ? transformConsentToFidesUserPreference(
+            Boolean(cookie.consent[notice.notice_key]),
+            notice.consent_mechanism,
+          )
+        : undefined;
+      return { ...notice, current_preference: preference };
+    });
+  return { ...experience, ...tcfEntities, privacy_notices: noticesWithConsent };
 };
 
 /**
