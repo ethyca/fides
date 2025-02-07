@@ -13,7 +13,8 @@
     {
       "urn": "monitor.project.dataset.table_3",
       "name": "table_3",
-      "diff_status": "classification_addition"
+      "diff_status": "classification_addition",
+      "user_assigned_data_categories": ["system"]
     },
     {
       "urn": "monitor.project.dataset.table_4",
