@@ -39,7 +39,7 @@ import { NavMenu } from "./NavMenu";
 import { INDEX_ROUTE } from "./routes";
 
 const NAV_BACKGROUND_COLOR = palette.FIDESUI_MINOS;
-const NAV_WIDTH = "200px";
+const NAV_WIDTH = "240px";
 
 const FidesLogoHomeLink = () => (
   <Box px={2}>
@@ -146,15 +146,14 @@ export const UnconnectedMainSideNav = ({
 }) => {
   const router = useRouter();
 
-  const navMenuItems = groups.map(({ title, children, icon }) => ({
-    key: title,
-    icon,
-    label: title,
-    children: children.map((child) => ({
+  const navMenuItems = groups.map((group) => ({
+    key: group.title,
+    icon: group.icon,
+    label: <span data-testid={`${group.title}-nav-group`}>{group.title}</span>,
+    children: group.children.map((child) => ({
       key: child.path,
-      label: <span data-testid={`${title}-nav-link`}>{child.title}</span>,
+      label: <span data-testid={`${child.title}-nav-link`}>{child.title}</span>,
     })),
-    "data-something": "something",
   }));
 
   const handleMenuItemClick: MenuProps["onClick"] = ({ key: path }) => {
@@ -193,7 +192,7 @@ export const UnconnectedMainSideNav = ({
               <NavGroupMenu key={group.title} group={group} active={active} />
             ))}
           </Accordion>
-          <NavMenu onClick={handleMenuItemClick} items={navMenuItems}></NavMenu>
+          <NavMenu onClick={handleMenuItemClick} items={navMenuItems} />
         </Box>
         <Box alignItems="center" pb={4}>
           <AntButton
