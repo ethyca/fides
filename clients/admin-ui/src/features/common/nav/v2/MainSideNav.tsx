@@ -145,7 +145,6 @@ export const UnconnectedMainSideNav = ({
   handleLogout: any;
   username: string;
 }) => {
-  const [currentItemKey, setCurrentItemKey] = useState<string | null>(null);
   const router = useRouter();
 
   const navMenuItems = groups.map((group) => ({
@@ -163,9 +162,27 @@ export const UnconnectedMainSideNav = ({
     })),
   }));
 
-  const handleMenuItemClick: MenuProps["onClick"] = ({ key }) => {
-    router.push(key); // the key is the link path
-    setCurrentItemKey(key);
+  const getActiveKeyFromUrl = () => {
+    if (!active) {
+      return null;
+    }
+
+    const activeItem = groups
+      .flatMap((group) => group.children)
+      .find((child) => {
+        if (child.exact) {
+          return active?.path === child.path;
+        }
+        return active?.path ? active?.path.startsWith(child.path) : false;
+      });
+
+    return activeItem?.path || null;
+  };
+
+  const activeKey = getActiveKeyFromUrl();
+
+  const handleMenuItemClick: MenuProps["onClick"] = ({ key: path }) => {
+    router.push(path);
   };
 
   return (
@@ -203,7 +220,7 @@ export const UnconnectedMainSideNav = ({
           <NavMenu
             onClick={handleMenuItemClick}
             items={navMenuItems}
-            selectedKeys={currentItemKey ? [currentItemKey] : []}
+            selectedKeys={activeKey ? [activeKey] : []}
           />
         </Box>
         <Box alignItems="center" pb={4}>
