@@ -108,6 +108,12 @@ export const UnconnectedMainSideNav = ({
             onClick={handleMenuItemClick}
             items={navMenuItems}
             selectedKeys={activeKey ? [activeKey] : []}
+            onOpenChange={(keys) =>
+              localStorage.setItem("mainSideNavOpenKeys", JSON.stringify(keys))
+            }
+            defaultOpenKeys={JSON.parse(
+              localStorage.getItem("mainSideNavOpenKeys") || "[]",
+            )}
           />
         </Box>
         <Box alignItems="center" pb={4}>
