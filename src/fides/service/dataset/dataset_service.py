@@ -518,7 +518,7 @@ def _run_clean_datasets(
     for dataset in datasets:
         logger.info(f"Cleaning field names for dataset: {dataset.fides_key}")
         for collection in dataset.collections:
-            collection["fields"] = recursive_clean_fields(collection["fields"])  # type: ignore # pylint: disable=unsupported-assignment-operation
+            collection["fields"] = _recursive_clean_fields(collection["fields"])  # type: ignore # pylint: disable=unsupported-assignment-operation
 
         # manually upsert the dataset
 
@@ -552,7 +552,7 @@ def _run_clean_datasets(
     return succeeded, failed
 
 
-def recursive_clean_fields(fields: List[dict]) -> List[dict]:
+def _recursive_clean_fields(fields: List[dict]) -> List[dict]:
     """
     Recursively clean the fields of a dataset.
     """
@@ -560,7 +560,7 @@ def recursive_clean_fields(fields: List[dict]) -> List[dict]:
     for field in fields:
         field["name"] = field["name"].split(".")[-1]
         if field["fields"]:
-            field["fields"] = recursive_clean_fields(field["fields"])
+            field["fields"] = _recursive_clean_fields(field["fields"])
         cleaned_fields.append(field)
     return cleaned_fields
 
