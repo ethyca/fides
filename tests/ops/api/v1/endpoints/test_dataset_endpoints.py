@@ -895,7 +895,7 @@ class TestPatchDatasetConfigs:
             "'saas_connector_example' of the connection config"
         )
 
-    @mock.patch("fides.api.models.datasetconfig.DatasetConfig.create_or_update")
+    @mock.patch("fides.service.dataset.dataset_service.DatasetConfig.create_or_update")
     def test_patch_dataset_configs_failed_response(
         self,
         mock_create: Mock,
@@ -1824,7 +1824,9 @@ class TestPutDatasets:
             "'saas_connector_example' of the connection config"
         )
 
-    @mock.patch("fides.api.models.datasetconfig.DatasetConfig.upsert_with_ctl_dataset")
+    @mock.patch(
+        "fides.service.dataset.dataset_service.DatasetConfig.upsert_with_ctl_dataset"
+    )
     def test_patch_datasets_failed_response(
         self,
         mock_create: Mock,
@@ -1918,7 +1920,9 @@ class TestPutYamlDatasets:
         )
         assert response.status_code == 400
 
-    @mock.patch("fides.api.models.datasetconfig.DatasetConfig.upsert_with_ctl_dataset")
+    @mock.patch(
+        "fides.service.dataset.dataset_service.DatasetConfig.upsert_with_ctl_dataset"
+    )
     def test_patch_datasets_failed_response(
         self,
         mock_create: Mock,

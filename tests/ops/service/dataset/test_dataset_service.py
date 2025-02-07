@@ -12,7 +12,6 @@ from fides.api.schemas.policy import ActionType
 from fides.service.dataset.dataset_service import (
     DatasetService,
     get_identities_and_references,
-    run_test_access_request,
 )
 from tests.conftest import wait_for_tasks_to_complete
 

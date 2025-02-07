@@ -32,7 +32,6 @@ from fides.api.models.sql_models import (
     sql_model_map,
 )
 from fides.api.oauth.utils import verify_oauth_client_prod
-from fides.api.schemas.dataset import validate_data_categories_against_db
 from fides.api.util import errors
 from fides.api.util.api_router import APIRouter
 from fides.api.util.endpoint_utils import (
@@ -43,6 +42,7 @@ from fides.api.util.endpoint_utils import (
     forbid_if_editing_is_default,
 )
 from fides.common.api.scope_registry import CREATE, DELETE, READ, UPDATE
+from fides.service.dataset.dataset_service import validate_data_categories_against_db
 
 
 async def get_data_categories_from_db(async_session: AsyncSession) -> List[FidesKey]:
