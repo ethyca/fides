@@ -121,7 +121,6 @@ const ScrollableListAdd = ({
   return isAdding ? (
     <Box w="full">
       <Select
-        showSearch
         labelInValue
         placeholder="Select..."
         filterOption={(input, option) =>
