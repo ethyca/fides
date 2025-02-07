@@ -36,6 +36,7 @@ const withCustomProps = (WrappedComponent: typeof Select) => {
     placeholder = "Select...",
     optionRender = optionDescriptionRender,
     className = "w-full",
+    showSearch = true,
     suffixIcon,
     menuItemSelectedIcon = <Checkmark />,
     ...props
@@ -44,6 +45,7 @@ const withCustomProps = (WrappedComponent: typeof Select) => {
       placeholder,
       optionRender,
       className,
+      showSearch,
       suffixIcon: props.loading ? undefined : suffixIcon || <ChevronDown />,
       menuItemSelectedIcon,
       "data-testid": `select${props.id ? `-${props.id}` : ""}`,

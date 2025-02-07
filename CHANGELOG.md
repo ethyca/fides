@@ -22,19 +22,24 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.54.0...main)
 
 ### Added
+- Added editing support for categories of consent on discovered assets [#5739](https://github.com/ethyca/fides/pull/5739)
 - Added a read-only consent category cell to Action Center aggregate system results table [#5737](https://github.com/ethyca/fides/pull/5737)
+- Added detail trays to items in data catalog view [#5729](https://github.com/ethyca/fides/pull/5729)
 
 ### Changed
 - Added frequency field to DataHubSchema integration config [#5716](https://github.com/ethyca/fides/pull/5716)
 - Added glossary_node field to DataHubSchema integration config [#5734](https://github.com/ethyca/fides/pull/5734)
 - Added initial support for upcoming "headless" CMP experience type [#5731](https://github.com/ethyca/fides/pull/5731)
+- All Select dropdowns will now allow searching to narrow down the options by default [#5738](https://github.com/ethyca/fides/pull/5738)
 - Exposes privacy notice picker for TCF components [#5730](https://github.com/ethyca/fides/pull/5730)
+- Model changes to support new privacy center config options [5732](https://github.com/ethyca/fides/pull/5732)
 
 ### Fixed
 - Fixed `fides annotate dataset` command enters incorrect value on the `direction` field. [#5727](https://github.com/ethyca/fides/pull/5727)
 - Fixed Bigquery flakey tests. [#5713](https://github.com/ethyca/fides/pull/5713)
 - Fixed breadcrumb navigation issues in data catalog view [#5717](https://github.com/ethyca/fides/pull/5717)
 - Fixed `window.Fides.experience` of FidesJS to be a merged version of the minimal and full experience. [#5726](https://github.com/ethyca/fides/pull/5726)
+- Fixed vendor count template string on FidesJS embedded layer 2 descriptions (#5736)[https://github.com/ethyca/fides/pull/5736]
 
 ## [2.54.0](https://github.com/ethyca/fides/compare/2.53.0...2.54.0)
 

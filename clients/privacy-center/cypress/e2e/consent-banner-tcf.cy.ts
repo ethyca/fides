@@ -1526,6 +1526,9 @@ describe("Fides-js TCF", () => {
           stubOptions: { fidesDisableBanner: true },
           demoPageWindowParams: { fides_embed: "true" },
         });
+        cy.getByTestId("fides-modal-description").within(() => {
+          cy.get(".fides-vendor-count").first().should("have.text", "16");
+        });
         checkDefaultExperienceRender();
       });
     });

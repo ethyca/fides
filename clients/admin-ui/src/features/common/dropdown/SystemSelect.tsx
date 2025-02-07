@@ -33,10 +33,7 @@ const dropdownRender = (
 };
 
 interface SystemSelectProps
-  extends Omit<
-    SelectProps,
-    "options" | "showSearch" | "filterOption" | "onSearch"
-  > {
+  extends Omit<SelectProps, "options" | "filterOption" | "onSearch"> {
   onAddSystem?: MouseEventHandler<HTMLButtonElement>;
 }
 
@@ -77,7 +74,6 @@ export const SystemSelect = ({ onAddSystem, ...props }: SystemSelectProps) => {
       }
       data-testid="system-select"
       {...props}
-      showSearch
       filterOption={false}
       options={options}
       onSearch={onSearch}
