@@ -272,6 +272,16 @@ export type FidesApiOptions = {
   ) => Promise<RecordsServedResponse | null>;
 };
 
+/**
+ * Define a special PrivacyNoticeItem, where we've narrowed the list of
+ * available translations to the singular "best" translation that should be
+ * displayed, and paired that with the source notice itself.
+ */
+export type PrivacyNoticeItem = {
+  notice: PrivacyNoticeWithPreference;
+  bestTranslation: PrivacyNoticeTranslation | null;
+};
+
 export class SaveConsentPreference {
   consentPreference: UserConsentPreference;
 

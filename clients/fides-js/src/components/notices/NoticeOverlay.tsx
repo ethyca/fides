@@ -12,8 +12,7 @@ import {
   Layer1ButtonOption,
   NoticeConsent,
   PrivacyNotice,
-  PrivacyNoticeTranslation,
-  PrivacyNoticeWithPreference,
+  PrivacyNoticeItem,
   SaveConsentPreference,
   ServingComponent,
 } from "../../lib/consent-types";
@@ -37,16 +36,6 @@ import { NoticeConsentButtons } from "../ConsentButtons";
 import Overlay from "../Overlay";
 import { OverlayProps } from "../types";
 import { NoticeToggleProps, NoticeToggles } from "./NoticeToggles";
-
-/**
- * Define a special PrivacyNoticeItem, where we've narrowed the list of
- * available translations to the singular "best" translation that should be
- * displayed, and paired that with the source notice itself.
- */
-type PrivacyNoticeItem = {
-  notice: PrivacyNoticeWithPreference;
-  bestTranslation: PrivacyNoticeTranslation | null;
-};
 
 const NoticeOverlay: FunctionComponent<OverlayProps> = ({
   options,

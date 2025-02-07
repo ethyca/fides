@@ -9,7 +9,8 @@ import { LEGAL_BASIS_OPTIONS } from "../../lib/tcf/constants";
 import { getUniquePurposeRecords, hasLegalBasis } from "../../lib/tcf/purposes";
 import {
   EnabledIds,
-  LegalBasisEnum, PrivacyNoticeWithBestTranslation,
+  LegalBasisEnum,
+  PrivacyNoticeWithBestTranslation,
   PurposeRecord,
   TCFPurposeConsentRecord,
   TCFPurposeLegitimateInterestsRecord,
@@ -21,16 +22,28 @@ import RecordsList, { RecordListType } from "./RecordsList";
 
 type TCFPurposeRecord =
   | TCFPurposeConsentRecord
-  | TCFPurposeLegitimateInterestsRecord;
+  | TCFPurposeLegitimateInterestsRecord
+  | PrivacyNoticeWithBestTranslation;
 
 const PurposeDetails = ({
   type,
   purpose,
+  isCustomPurpose = false,
 }: {
   type: RecordListType;
   purpose: TCFPurposeRecord;
+  isCustomPurpose?: boolean;
 }) => {
   const { i18n } = useI18n();
+  if (isCustomPurpose) {
+    return (
+      <div>
+        <p className="fides-tcf-toggle-content">
+          {purpose.bestTranslation?.description}
+        </p>
+      </div>
+    );
+  }
   const vendors = [...(purpose.vendors || []), ...(purpose.systems || [])];
   return (
     <div>
@@ -146,6 +159,9 @@ const TcfPurposes = ({
           onToggle={(newEnabledIds) =>
             onChange({ newEnabledIds, modelType: "customPurposesConsent" })
           }
+          renderToggleChild={(p) => (
+            <PurposeDetails type="purposes" purpose={p} isCustomPurpose />
+          )}
           // This key forces a rerender when legal basis changes, which allows paging to reset properly
           key={`purpose-record-${activeLegalBasisOption.value}`}
         />

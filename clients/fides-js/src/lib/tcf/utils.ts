@@ -1,14 +1,22 @@
 import { TCString } from "@iabtechlabtcf/core";
 
 import { extractIds } from "../common-utils";
+import { getConsentContext } from "../consent-context";
 import {
   ConsentMechanism,
   FidesCookie,
   PrivacyExperience,
-  PrivacyExperienceMinimal, PrivacyNoticeWithPreference,
+  PrivacyExperienceMinimal,
+  PrivacyNoticeWithPreference,
   RecordConsentServedRequest,
+  SaveConsentPreference,
 } from "../consent-types";
-import {getFidesConsentCookie, transformTcfPreferencesToCookieKeys} from "../cookie";
+import { resolveConsentValue } from "../consent-value";
+import {
+  buildCookieConsentFromConsentPreferences,
+  getFidesConsentCookie,
+  transformTcfPreferencesToCookieKeys,
+} from "../cookie";
 import {
   transformConsentToFidesUserPreference,
   transformUserPreferenceToBoolean,
@@ -32,8 +40,6 @@ import {
   TCFVendorLegitimateInterestsRecord,
   TCFVendorSave,
 } from "./types";
-import { resolveConsentValue } from "../consent-value";
-import { getConsentContext } from "../consent-context";
 
 type TcfSave =
   | TCFPurposeSave
@@ -242,7 +248,7 @@ export const getEnabledIds = (modelList: TcfModels) => {
 export const getEnabledIdsNotice = (
   noticeList: PrivacyNoticeWithPreference[],
 ) => {
-  console.log("notice list:")
+  console.log("notice list:");
   console.log(noticeList);
   if (!noticeList) {
     return [];
@@ -254,11 +260,7 @@ export const getEnabledIdsNotice = (
 
   const result = noticeList
     .map((notice) => {
-      const value = resolveConsentValue(
-        notice,
-        context,
-        parsedCookie?.consent,
-      );
+      const value = resolveConsentValue(notice, context, parsedCookie?.consent);
       return { ...notice, consentValue: value };
     })
     .filter((notice) => notice.consentValue)
@@ -437,6 +439,7 @@ export const createTcfSavePayloadFromMinExp = ({
  * @param tcf - The TCF save preferences representing the data sent to the backend.
  * @param enabledIds - The user's enabled IDs.
  * @param experience - The full privacy experience.
+ * @param consentPreferencesToSave - Any Custom Notice preferences to save.
  * @returns A promise that resolves to the updated Fides cookie.
  */
 export const updateCookie = async (
@@ -444,17 +447,24 @@ export const updateCookie = async (
   tcf: TcfSavePreferences,
   enabledIds: EnabledIds,
   experience: PrivacyExperience | PrivacyExperienceMinimal,
+  consentPreferencesToSave: SaveConsentPreference[],
 ): Promise<FidesCookie> => {
   const tcString = await generateFidesString({
     tcStringPreferences: enabledIds,
     experience,
   });
-  return {
+  const result = {
     ...oldCookie,
     fides_string: tcString,
     tcf_consent: transformTcfPreferencesToCookieKeys(tcf),
     tcf_version_hash: experience.meta?.version_hash,
   };
+  if (consentPreferencesToSave) {
+    result.consent = buildCookieConsentFromConsentPreferences(
+      consentPreferencesToSave,
+    );
+  }
+  return result;
 };
 
 /**

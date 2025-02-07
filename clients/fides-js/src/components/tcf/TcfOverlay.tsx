@@ -4,12 +4,15 @@ import "./fides-tcf.css";
 import { h } from "preact";
 import { useCallback, useEffect, useMemo, useState } from "preact/hooks";
 
+import { transformConsentToFidesUserPreference } from "../../lib/shared-consent-utils";
+
 import {
   ButtonType,
   ConsentMethod,
   PrivacyExperience,
   PrivacyExperienceMinimal,
   PrivacyNoticeWithPreference,
+  SaveConsentPreference,
   ServingComponent,
 } from "../../lib/consent-types";
 import {
@@ -302,6 +305,26 @@ export const TcfOverlay = ({
     tcfNoticesServed,
   });
 
+  const createConsentPreferencesToSave = (
+    privacyNoticeList: PrivacyNoticeWithBestTranslation[],
+    enabledPrivacyNoticeIds: string[],
+  ): SaveConsentPreference[] => {
+    if (!privacyNoticeList || !enabledPrivacyNoticeIds) {
+      return [];
+    }
+    return privacyNoticeList.map((item) => {
+      const userPreference = transformConsentToFidesUserPreference(
+        enabledPrivacyNoticeIds.includes(item.id),
+        item.consent_mechanism,
+      );
+      return new SaveConsentPreference(
+        item,
+        userPreference,
+        item.bestTranslation?.privacy_notice_history_id,
+      );
+    });
+  };
+
   const handleUpdateAllPreferences = useCallback(
     (consentMethod: ConsentMethod, enabledIds: EnabledIds) => {
       if (!experience && !experienceMinimal) {
@@ -319,8 +342,12 @@ export const TcfOverlay = ({
           enabledIds,
         });
       }
+      const consentPreferencesToSave = createConsentPreferencesToSave(
+        privacyNoticesWithBestTranslation,
+        enabledIds.customPurposesConsent,
+      );
       updateConsentPreferences({
-        consentPreferencesToSave: [], // todo- pass this in
+        consentPreferencesToSave,
         privacyExperienceConfigHistoryId,
         experience: experience || experienceMinimal,
         consentMethod,
@@ -332,10 +359,12 @@ export const TcfOverlay = ({
         servedNoticeHistoryId,
         updateCookie: (oldCookie) =>
           updateCookie(
+            // todo- update this for custom notices
             oldCookie,
             tcf,
             enabledIds,
             experience || experienceMinimal,
+            consentPreferencesToSave,
           ),
       });
       setDraftIds(enabledIds);
