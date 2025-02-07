@@ -18,6 +18,7 @@ import {
   MenuList,
   Text,
 } from "fidesui";
+import { uniq } from "lodash";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 
@@ -183,12 +184,17 @@ export const DiscoveredAssetsTable = ({
     if (!selectedAssets) {
       return;
     }
+    const assets = selectedAssets.map((asset) => {
+      // eslint-disable-next-line @typescript-eslint/naming-convention
+      const data_uses = uniq([...(asset.data_uses || []), ...newDataUses]);
+      return {
+        urn: asset.urn,
+        data_uses,
+      };
+    });
     const result = await updateAssetsMutation({
       monitorId,
-      assets: selectedAssets.map((asset) => ({
-        urn: asset.urn,
-        data_uses: [...(asset.data_uses || []), ...newDataUses],
-      })),
+      assets,
     });
     if (isErrorResult(result)) {
       errorAlert(getErrorMessage(result.error));
