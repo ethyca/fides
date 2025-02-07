@@ -4,13 +4,6 @@ import {
   Box,
   Icons,
   Link,
-  Menu,
-  MenuButton,
-  MenuDivider,
-  MenuItem,
-  MenuList,
-  Stack,
-  Text,
   VStack,
 } from "fidesui";
 import palette from "fidesui/src/palette/palette.module.scss";
@@ -24,6 +17,7 @@ import { logout, selectUser, useLogoutMutation } from "~/features/auth";
 import Image from "~/features/common/Image";
 import { useGetHealthQuery } from "~/features/plus/plus.slice";
 
+import AccountDropdownMenu from "./AccountDropdownMenu";
 import { useNav } from "./hooks";
 import { ActiveNav, NavGroup } from "./nav-config";
 import { NavMenu } from "./NavMenu";
@@ -124,31 +118,7 @@ export const UnconnectedMainSideNav = ({
             icon={<Icons.Help color="white" />}
           />
           {username && (
-            <Menu>
-              <MenuButton
-                as={AntButton}
-                className="border-none bg-transparent hover:!bg-gray-700"
-                data-testid="header-menu-button"
-                icon={<Icons.User color="white" />}
-              />
-              <MenuList shadow="xl" zIndex="20">
-                <Stack px={3} py={2} spacing={1}>
-                  <Text color="gray.700" fontWeight="medium">
-                    {username}
-                  </Text>
-                </Stack>
-
-                <MenuDivider />
-                <MenuItem
-                  color="gray.700"
-                  _focus={{ color: "complimentary.500", bg: "gray.100" }}
-                  onClick={handleLogout}
-                  data-testid="header-menu-sign-out"
-                >
-                  Sign out
-                </MenuItem>
-              </MenuList>
-            </Menu>
+            <AccountDropdownMenu username={username} onLogout={handleLogout} />
           )}
         </Box>
       </VStack>
