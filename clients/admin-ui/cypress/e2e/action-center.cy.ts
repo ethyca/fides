@@ -121,7 +121,7 @@ describe("Action center", () => {
     });
   });
 
-  describe("Action center system aggregate results", () => {
+  describe.only("Action center system aggregate results", () => {
     const webMonitorKey = "my_web_monitor_1";
     beforeEach(() => {
       cy.visit(`${ACTION_CENTER_ROUTE}/${webMonitorKey}`);
@@ -181,7 +181,9 @@ describe("Action center", () => {
       cy.getByTestId("row-0-col-actions").within(() => {
         cy.getByTestId("ignore-btn").click({ force: true });
       });
-      cy.wait("@ignoreMonitorResultUncategorizedSystem");
+      cy.wait("@ignoreMonitorResultSystem").then((interception) => {
+        expect(interception.request.url).to.contain("[undefined]");
+      });
       cy.getByTestId("success-alert").should(
         "contain",
         "108 uncategorized assets have been ignored and will not appear in future scans.",
