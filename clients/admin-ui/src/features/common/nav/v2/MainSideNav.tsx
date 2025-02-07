@@ -154,7 +154,12 @@ export const UnconnectedMainSideNav = ({
     label: <span data-testid={`${group.title}-nav-group`}>{group.title}</span>,
     children: group.children.map((child) => ({
       key: child.path,
-      label: <span data-testid={`${child.title}-nav-link`}>{child.title}</span>,
+      // child label needs left margin/padding to align with group title
+      label: (
+        <span data-testid={`${child.title}-nav-link`} className="ml-4 pl-0.5">
+          {child.title}
+        </span>
+      ),
     })),
   }));
 
@@ -165,7 +170,7 @@ export const UnconnectedMainSideNav = ({
 
   return (
     <Box
-      px={1.5}
+      px={2}
       pb={0}
       pt={4}
       minWidth={NAV_WIDTH}
@@ -199,7 +204,6 @@ export const UnconnectedMainSideNav = ({
             onClick={handleMenuItemClick}
             items={navMenuItems}
             selectedKeys={currentItemKey ? [currentItemKey] : []}
-            style={{ minWidth: 0, flex: "auto" }}
           />
         </Box>
         <Box alignItems="center" pb={4}>

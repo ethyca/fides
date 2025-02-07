@@ -9,7 +9,7 @@ export const NavMenu = ({ className, ...props }: MenuProps) => (
   <Menu
     mode="inline"
     theme="dark"
-    inlineIndent={16}
+    inlineIndent={8}
     {...props}
     className={`${styles.menu} ${className}`}
   />
