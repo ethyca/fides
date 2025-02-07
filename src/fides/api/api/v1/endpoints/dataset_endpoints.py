@@ -195,8 +195,8 @@ def patch_dataset_configs(
     """
     try:
         return dataset_service.bulk_create_or_update_datasets(
-            connection_config=connection_config,
-            dataset_pairs=dataset_pairs,
+            connection_config,
+            dataset_pairs,
         )
     except DatasetNotFoundException as e:
         raise HTTPException(
@@ -514,7 +514,7 @@ def clean_datasets(
     return JSONResponse(
         status_code=HTTP_200_OK,
         content={
-            "succeded": succeeded,
+            "succeeded": succeeded,
             "failed": failed,
         },
     )

@@ -67,24 +67,6 @@ class YAMLDatasetInput(BaseModel):
     dataset: List[FideslangDataset]
 
 
-class DatasetCreateOrUpdateData(BaseModel):
-    """Schema for dataset creation/update data"""
-
-    connection_config_id: str
-    fides_key: FidesKey
-    ctl_dataset_id: Optional[str] = None
-    dataset: Optional[FideslangDataset] = None
-
-    model_config = ConfigDict(from_attributes=True)
-
-    @model_validator(mode="before")
-    def validate_dataset_or_ctl_id(cls, values: Dict[str, Any]) -> Dict[str, Any]:
-        """Either dataset or ctl_dataset_id must be provided"""
-        if not values.get("dataset") and not values.get("ctl_dataset_id"):
-            raise ValueError("Either dataset or ctl_dataset_id must be provided")
-        return values
-
-
 class DatasetError(Exception):
     """Base class for dataset-related errors"""
 
@@ -97,22 +79,6 @@ class DatasetNotFoundException(DatasetError):
     """Raised when a dataset is not found"""
 
 
-class DatasetValidationError(DatasetError):
-    """Raised when dataset validation fails"""
-
-    def __init__(self, message: str, errors: Optional[List[Dict[str, Any]]] = None):
-        self.errors = errors or []
-        super().__init__(message)
-
-
-class DuplicateDatasetError(DatasetError):
-    """Raised when attempting to create a dataset with a duplicate key"""
-
-
-class DatasetCreationError(DatasetError):
-    """Raised when dataset creation fails"""
-
-
 class DatasetService:
     def __init__(self, db: Session):
         self.db = db
@@ -120,28 +86,25 @@ class DatasetService:
     def create_or_update_dataset(
         self,
         connection_config: ConnectionConfig,
-        dataset_pair: Union[DatasetConfigCtlDataset, DatasetInput],
+        dataset: Union[DatasetConfigCtlDataset, FideslangDataset],
     ) -> Tuple[Optional[FideslangDataset], Optional[BulkUpdateFailed]]:
         """Create or update a single dataset"""
         try:
-            # Handle different input types
-            if isinstance(dataset_pair, DatasetConfigCtlDataset):
-                ctl_dataset, fetched_dataset = _get_and_validate_ctl_dataset(
-                    self.db, dataset_pair.ctl_dataset_fides_key
-                )
-                data = DatasetCreateOrUpdateData(
-                    connection_config_id=connection_config.id,
-                    fides_key=dataset_pair.fides_key,
-                    ctl_dataset_id=ctl_dataset.id,
-                )
-                dataset_to_validate = fetched_dataset
-            else:  # DatasetInput
-                data = DatasetCreateOrUpdateData(
-                    connection_config_id=connection_config.id,
-                    fides_key=dataset_pair.fides_key,
-                    dataset=dataset_pair.dataset,
-                )
-                dataset_to_validate = dataset_pair.dataset
+            if isinstance(dataset, DatasetConfigCtlDataset):
+                ctl_dataset = _get_ctl_dataset(self.db, dataset.ctl_dataset_fides_key)
+                dataset_to_validate = FideslangDataset.model_validate(ctl_dataset)
+                data_dict = {
+                    "connection_config_id": connection_config.id,
+                    "fides_key": dataset.fides_key,
+                    "ctl_dataset_id": ctl_dataset.id,
+                }
+            else:
+                dataset_to_validate = dataset
+                data_dict = {
+                    "connection_config_id": connection_config.id,
+                    "fides_key": dataset.fides_key,
+                    "dataset": dataset.model_dump(mode="json"),
+                }
 
             # Validate dataset
             if connection_config.connection_type == ConnectionType.saas:
@@ -149,72 +112,49 @@ class DatasetService:
             validate_masking_strategy_override(dataset_to_validate)
             validate_data_categories(dataset_to_validate, self.db)
 
-            # Create or update the dataset
-            if isinstance(dataset_pair, DatasetConfigCtlDataset):
-                dataset_config = _create_or_update_dataset_config(
-                    self.db, data, ctl_dataset.id
-                )
-            else:
-                dataset_config = _create_or_update_dataset_config(self.db, data)
+            # Create or update using unified method
+            dataset_config = DatasetConfig.upsert_with_ctl_dataset(
+                self.db, data=data_dict
+            )
 
             return dataset_config.ctl_dataset, None
 
         except (SaaSConfigNotFoundException, ValidationError) as exception:
             error = BulkUpdateFailed(
                 message=str(exception),
-                data=dataset_pair.model_dump(),
+                data=dataset.model_dump(),
             )
             logger.warning(f"Dataset validation failed: {str(exception)}")
             return None, error
 
-        except IntegrityError:
-            message = f"Dataset with key '{dataset_pair.fides_key}' already exists."
-            error = BulkUpdateFailed(
-                message=message,
-                data=dataset_pair.model_dump(),
-            )
-            logger.warning(message)
-            return None, error
+        except (PydanticValidationError, DatasetNotFoundException):
+            raise
 
         except Exception as e:
-            if isinstance(e, (PydanticValidationError, DatasetNotFoundException)):
-                raise
-
-            message = f"Create/update failed for dataset '{dataset_pair.fides_key}'"
+            message = f"Create/update failed for dataset '{dataset.fides_key}'"
             logger.warning(f"{message}: {str(e)}")
             error = BulkUpdateFailed(
                 message="Dataset create/update failed.",
-                data=dataset_pair.model_dump(),
+                data=dataset.model_dump(),
             )
             return None, error
 
     def bulk_create_or_update_datasets(
         self,
         connection_config: ConnectionConfig,
-        dataset_pairs: Union[List[DatasetConfigCtlDataset], List[FideslangDataset]],
+        datasets: Union[List[DatasetConfigCtlDataset], List[FideslangDataset]],
     ) -> BulkPutDataset:
         """Create or update multiple datasets"""
         created_or_updated: List[FideslangDataset] = []
         failed: List[BulkUpdateFailed] = []
 
-        logger.info("Starting bulk upsert for {} datasets", len(dataset_pairs))
+        logger.info("Starting bulk upsert for {} datasets", len(datasets))
 
-        for item in dataset_pairs:
-            if isinstance(item, FideslangDataset):
-                dataset_input = DatasetInput(
-                    dataset=item,
-                    connection_config_id=connection_config.id,
-                    fides_key=item.fides_key,
-                )
-                dataset_result, error = self.create_or_update_dataset(
-                    connection_config=connection_config,
-                    dataset_pair=dataset_input,
-                )
-            else:  # DatasetConfigCtlDataset
-                dataset_result, error = self.create_or_update_dataset(
-                    connection_config=connection_config,
-                    dataset_pair=item,
-                )
+        for item in datasets:
+            dataset_result, error = self.create_or_update_dataset(
+                connection_config=connection_config,
+                dataset=item,
+            )
 
             if dataset_result:
                 created_or_updated.append(dataset_result)
@@ -565,22 +505,14 @@ def _recursive_clean_fields(fields: List[dict]) -> List[dict]:
     return cleaned_fields
 
 
-def _get_and_validate_ctl_dataset(
-    db: Session, ctl_dataset_fides_key: str
-) -> Tuple[CtlDataset, FideslangDataset]:
-    """Get and validate a CTL dataset"""
-    ctl_dataset: CtlDataset = (
-        db.query(CtlDataset).filter_by(fides_key=ctl_dataset_fides_key).first()
-    )
+def _get_ctl_dataset(db: Session, fides_key: str) -> CtlDataset:
+    """Helper to get CTL dataset by fides_key"""
+    ctl_dataset = db.query(CtlDataset).filter(CtlDataset.fides_key == fides_key).first()
     if not ctl_dataset:
         raise DatasetNotFoundException(
-            f"No ctl dataset with key '{ctl_dataset_fides_key}'"
+            f"No CTL dataset found with fides_key '{fides_key}'"
         )
-
-    fetched_dataset: FideslangDataset = FideslangDataset.model_validate(ctl_dataset)
-    validate_data_categories(fetched_dataset, db)
-
-    return ctl_dataset, fetched_dataset
+    return ctl_dataset
 
 
 def _validate_saas_dataset(
@@ -608,25 +540,3 @@ def _validate_saas_dataset(
                     "allowed to have references or identities. Please add "
                     "them to the SaaS config."
                 )
-
-
-def _create_or_update_dataset_config(
-    db: Session,
-    data: DatasetCreateOrUpdateData,
-    ctl_dataset_id: Optional[str] = None,
-) -> DatasetConfig:
-    """Create or update a dataset config"""
-    if ctl_dataset_id:
-        data_dict: Dict[str, Any] = {
-            "connection_config_id": data.connection_config_id,
-            "fides_key": data.fides_key,
-            "ctl_dataset_id": ctl_dataset_id,
-        }
-        return DatasetConfig.create_or_update(db, data=data_dict)
-
-    data_dict: Dict[str, Any] = {
-        "connection_config_id": data.connection_config_id,
-        "fides_key": data.fides_key,
-        "dataset": data.dataset.model_dump(mode="json") if data.dataset else None,
-    }
-    return DatasetConfig.upsert_with_ctl_dataset(db, data=data_dict)

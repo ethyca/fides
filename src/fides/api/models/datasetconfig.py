@@ -5,6 +5,7 @@ from fideslang.validation import FidesKey
 from loguru import logger
 from sqlalchemy import Column, ForeignKey, String
 from sqlalchemy.orm import Session, relationship
+from typing_extensions import deprecated
 
 from fides.api.common_exceptions import ValidationError
 from fides.api.db.base_class import Base
@@ -59,89 +60,55 @@ class DatasetConfig(Base):
         cls, db: Session, *, data: Dict[str, Any]
     ) -> "DatasetConfig":
         """
-        Create or update the DatasetConfig AND the corresponding CTL Dataset
+        Create or update both the DatasetConfig and its associated CTL Dataset.
 
-        If the DatasetConfig exists with the supplied FidesKey, update the linked CtlDataset with the dataset contents.
-        If the DatasetConfig *does not exist*, upsert a CtlDataset on fides_key, and then link to the DatasetConfig on creation.
+        This method handles:
+        1. Creating/updating the CTL Dataset
+        2. Creating/updating the DatasetConfig that references it
 
+        Args:
+            db: Database session
+            data: Dictionary containing:
+                - connection_config_id: ID of the connection config
+                - fides_key: Key for the dataset config
+                - dataset: Optional dataset contents for CTL dataset
+
+        Returns:
+            Updated or created DatasetConfig
         """
+        # Handle CTL dataset first
+        ctl_dataset = None
+        if "dataset" in data:
+            dataset_contents = data["dataset"]
+            ctl_dataset = cls._upsert_ctl_dataset(
+                db,
+                dataset_contents,
+                existing_ctl_dataset=cls._get_existing_ctl_dataset(db, data),
+            )
+            data["ctl_dataset_id"] = ctl_dataset.id
+            data.pop("dataset")
 
-        def upsert_ctl_dataset(ctl_dataset_obj: Optional[CtlDataset]) -> CtlDataset:
-            """
-            If ctl_dataset_obj specified, update that resource directly, otherwise
-            create a new resource.
-            """
-            ctl_dataset_data = data.copy()
-            validated_data = Dataset(**ctl_dataset_data.get("dataset", {}))
-
-            if ctl_dataset_obj:
-                # It's possible this updates the ctl_dataset.fides_key and this causes a conflict
-                # with another ctl_dataset, if we fetched the datasetconfig.ctl_dataset.
-                for key, val in validated_data.model_dump(mode="json").items():
-                    setattr(
-                        ctl_dataset_obj, key, val
-                    )  # Just update the existing ctl_dataset with the new values
-            else:
-                ctl_dataset_obj = CtlDataset(
-                    **validated_data.model_dump(mode="json")
-                )  # Validate the values if creating a new CtlDataset
-
-            db.add(ctl_dataset_obj)
-            db.commit()
-            db.refresh(ctl_dataset_obj)
-            return ctl_dataset_obj
-
-        dataset = DatasetConfig.filter(
+        # Then handle DatasetConfig
+        dataset_config = cls.filter(
             db=db,
             conditions=(
-                (DatasetConfig.connection_config_id == data["connection_config_id"])
-                & (DatasetConfig.fides_key == data["fides_key"])
+                (cls.connection_config_id == data["connection_config_id"])
+                & (cls.fides_key == data["fides_key"])
             ),
         ).first()
 
-        if dataset:
-            upsert_ctl_dataset(
-                dataset.ctl_dataset
-            )  # Update existing ctl_dataset first.
-            data.pop("dataset", None)
-            dataset.update(db=db, data=data)
+        if dataset_config:
+            dataset_config.update(db=db, data=data)
         else:
-            fetched_ctl_dataset = (
-                db.query(CtlDataset)
-                .filter(
-                    CtlDataset.fides_key == data.get("dataset", {}).get("fides_key")
-                )
-                .first()
-            )
-            ctl_dataset = upsert_ctl_dataset(
-                fetched_ctl_dataset
-            )  # Create/update existing ctl_dataset first
-            data["ctl_dataset_id"] = ctl_dataset.id
-            data.pop("dataset", None)
-            dataset = cls.create(db=db, data=data)
+            dataset_config = cls.create(db=db, data=data)
 
-        return dataset
+        return dataset_config
 
     @classmethod
-    def create_or_update(cls, db: Session, *, data: Dict[str, Any]) -> "DatasetConfig":  # type: ignore[override]
-        """
-        Look up dataset by config and fides_key. If found, update this dataset, otherwise
-        create a new one.
-        """
-        dataset = DatasetConfig.filter(
-            db=db,
-            conditions=(
-                (DatasetConfig.connection_config_id == data["connection_config_id"])
-                & (DatasetConfig.fides_key == data["fides_key"])
-            ),
-        ).first()
-
-        if dataset:
-            dataset.update(db=db, data=data)
-        else:
-            dataset = cls.create(db=db, data=data)
-
-        return dataset
+    @deprecated("Use upsert_with_ctl_dataset instead")
+    def create_or_update(cls, db: Session, *, data: Dict[str, Any]) -> "DatasetConfig":
+        """Deprecated: Use upsert_with_ctl_dataset instead"""
+        return cls.upsert_with_ctl_dataset(db, data=data)
 
     def get_graph(self) -> GraphDataset:
         """
@@ -186,6 +153,41 @@ class DatasetConfig(Base):
 
         dataset_graph.collections = [stubbed_collection]
         return dataset_graph
+
+    @staticmethod
+    def _upsert_ctl_dataset(
+        db: Session,
+        dataset_data: Dict[str, Any],
+        existing_ctl_dataset: Optional[CtlDataset] = None,
+    ) -> CtlDataset:
+        """Helper method to handle CTL dataset creation/updates"""
+        validated_data = Dataset(**dataset_data)
+
+        if existing_ctl_dataset:
+            for key, val in validated_data.model_dump(mode="json").items():
+                setattr(existing_ctl_dataset, key, val)
+            ctl_dataset = existing_ctl_dataset
+        else:
+            ctl_dataset = CtlDataset(**validated_data.model_dump(mode="json"))
+
+        db.add(ctl_dataset)
+        db.commit()
+        db.refresh(ctl_dataset)
+        return ctl_dataset
+
+    @staticmethod
+    def _get_existing_ctl_dataset(
+        db: Session, data: Dict[str, Any]
+    ) -> Optional[CtlDataset]:
+        """Helper method to find existing CTL dataset"""
+        if "dataset" not in data:
+            return None
+
+        return (
+            db.query(CtlDataset)
+            .filter(CtlDataset.fides_key == data["dataset"].get("fides_key"))
+            .first()
+        )
 
 
 def to_graph_field(

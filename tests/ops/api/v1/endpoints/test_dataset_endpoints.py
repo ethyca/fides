@@ -895,7 +895,9 @@ class TestPatchDatasetConfigs:
             "'saas_connector_example' of the connection config"
         )
 
-    @mock.patch("fides.service.dataset.dataset_service.DatasetConfig.create_or_update")
+    @mock.patch(
+        "fides.service.dataset.dataset_service.DatasetConfig.upsert_with_ctl_dataset"
+    )
     def test_patch_dataset_configs_failed_response(
         self,
         mock_create: Mock,
