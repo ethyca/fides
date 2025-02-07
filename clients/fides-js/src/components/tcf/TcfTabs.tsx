@@ -1,9 +1,12 @@
 import { h } from "preact";
 import { useCallback, useRef } from "preact/hooks";
 
-import {PrivacyExperience} from "../../lib/consent-types";
+import { PrivacyExperience } from "../../lib/consent-types";
 import { useI18n } from "../../lib/i18n/i18n-context";
-import {EnabledIds, PrivacyNoticeWithBestTranslation} from "../../lib/tcf/types";
+import {
+  EnabledIds,
+  PrivacyNoticeWithBestTranslation,
+} from "../../lib/tcf/types";
 import InfoBox from "../InfoBox";
 import TcfFeatures from "./TcfFeatures";
 import TcfPurposes from "./TcfPurposes";

@@ -1,9 +1,9 @@
 import { h, VNode } from "preact";
 
+import { PrivacyNoticeTranslation } from "../../lib/consent-types";
 import { DEFAULT_LOCALE, getCurrentLocale } from "../../lib/i18n";
 import { useI18n } from "../../lib/i18n/i18n-context";
 import DataUseToggle from "../DataUseToggle";
-import {PrivacyNoticeTranslation} from "~/lib/consent-types";
 
 export type RecordListType =
   | "purposes"

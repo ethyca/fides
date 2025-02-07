@@ -1,7 +1,9 @@
 import type { GVL } from "@iabtechlabtcf/core";
 
 import {
-  PrivacyExperience, PrivacyNoticeTranslation, PrivacyNoticeWithPreference,
+  PrivacyExperience,
+  PrivacyNoticeTranslation,
+  PrivacyNoticeWithPreference,
   PrivacyPreferencesRequest,
   UserConsentPreference,
 } from "../consent-types";

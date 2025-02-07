@@ -263,26 +263,19 @@ export const getEnabledIds = (modelList: TcfModels) => {
 export const getEnabledIdsNotice = (
   noticeList: PrivacyNoticeWithPreference[],
 ) => {
-  console.log("notice list:");
-  console.log(noticeList);
   if (!noticeList) {
     return [];
   }
   const parsedCookie: FidesCookie | undefined = getFidesConsentCookie();
   const context = getConsentContext();
-  console.log("consent context:");
-  console.log(context);
 
-  const result = noticeList
+  return noticeList
     .map((notice) => {
       const value = resolveConsentValue(notice, context, parsedCookie?.consent);
       return { ...notice, consentValue: value };
     })
     .filter((notice) => notice.consentValue)
     .map((notice) => `${notice.id}`);
-  console.log("enabled ids notice:");
-  console.log(result);
-  return result;
 };
 
 const transformTcfModelToTcfSave = ({

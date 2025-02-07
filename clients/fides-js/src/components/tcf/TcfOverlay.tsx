@@ -372,6 +372,7 @@ export const TcfOverlay = ({
       fidesRegionString,
       options,
       privacyExperienceConfigHistoryId,
+      privacyNoticesWithBestTranslation,
       servedNoticeHistoryId,
     ],
   );
