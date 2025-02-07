@@ -272,12 +272,19 @@ export default async function handler(
   };
   const fidesConfigJSON = JSON.stringify(fidesConfig);
 
-  fidesDebugger(
-    "Bundling generic fides.js & Privacy Center configuration together...",
-  );
-  const fidesJsFile = tcfEnabled
-    ? "public/lib/fides-tcf.js"
-    : "public/lib/fides.js";
+  fidesDebugger("Bundling js & Privacy Center configuration together...");
+  const isHeadlessExperience =
+    experience?.experience_config?.component === ComponentType.HEADLESS;
+  let fidesJsFile = "public/lib/fides.js";
+  if (tcfEnabled) {
+    fidesDebugger("TCF extension enabled, bundling fides-tcf.js...");
+    fidesJsFile = "public/lib/fides-tcf.js";
+  } else if (isHeadlessExperience) {
+    fidesDebugger(
+      "Headless experience detected, bundling fides-headless.js...",
+    );
+    fidesJsFile = "public/lib/fides-headless.js";
+  }
   const fidesJSBuffer = await fsPromises.readFile(fidesJsFile);
   const fidesJS: string = fidesJSBuffer.toString();
   if (!fidesJS || fidesJS === "") {

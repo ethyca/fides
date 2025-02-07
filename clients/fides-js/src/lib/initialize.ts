@@ -48,7 +48,6 @@ import {
   selectBestNoticeTranslation,
   setupI18n,
 } from "./i18n";
-import { initOverlay } from "./initOverlay";
 import { updateConsentPreferences } from "./preferences";
 import {
   noticeHasConsentInCookie,
@@ -312,12 +311,18 @@ export const initialize = async ({
   fides,
   options,
   geolocation,
+  initOverlay,
   renderOverlay,
   updateExperience,
   overrides,
   propertyId,
 }: {
   fides: FidesGlobal;
+  initOverlay?: (
+    props: OverlayProps & {
+      renderOverlay?: (props: OverlayProps, parent: ContainerNode) => void;
+    },
+  ) => Promise<void>;
   renderOverlay?: (props: OverlayProps, parent: ContainerNode) => void;
   /**
    * Once we for sure have a valid experience, this is another chance to update values
@@ -472,7 +477,7 @@ export const initialize = async ({
         shouldContinueInitOverlay = false;
       }
 
-      if (shouldContinueInitOverlay) {
+      if (!!initOverlay && shouldContinueInitOverlay) {
         // OK, we're (finally) ready to initialize & render the overlay!
         initOverlay({
           options,

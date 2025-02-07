@@ -1,7 +1,7 @@
 /**
  * FidesJS: JavaScript SDK for Fides (https://github.com/ethyca/fides)
  *
- * This is the primary entry point for the fides.js module.
+ * This is the primary entry point for the fides.js module, excluding the UI.
  *
  * See the overall package docs in ./docs/README.md for more!
  */
@@ -40,8 +40,6 @@ import {
   initialize,
   UpdateExperienceFn,
 } from "./lib/initialize";
-import { initOverlay } from "./lib/initOverlay";
-import { renderOverlay } from "./lib/renderOverlay";
 import { customGetConsentPreferences } from "./services/external/preferences";
 
 declare global {
@@ -156,8 +154,6 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
   const updatedFides = await initialize({
     ...config,
     fides: this,
-    initOverlay,
-    renderOverlay,
     updateExperience,
     overrides,
     propertyId: config.propertyId,
@@ -255,7 +251,6 @@ export * from "./lib/consent-value";
 export * from "./lib/cookie";
 export * from "./lib/events";
 export * from "./lib/i18n";
-export * from "./lib/initOverlay";
 export * from "./lib/shared-consent-utils";
 export * from "./services/api";
 export * from "./services/external/geolocation";
