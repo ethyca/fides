@@ -18,10 +18,10 @@ from fides.api.models.privacy_request import (
     PrivacyRequestStatus,
 )
 from fides.api.models.property import Property
-from fides.api.oauth.roles import APPROVER, CONTRIBUTOR, OWNER, VIEWER_AND_APPROVER
+from fides.api.oauth.roles import APPROVER
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.privacy_request import PrivacyRequestCreate
-from fides.api.schemas.redis_cache import CustomPrivacyRequestField, Identity
+from fides.api.schemas.redis_cache import Identity
 from fides.config.config_proxy import ConfigProxy
 from fides.service.messaging.messaging_service import MessagingService
 from fides.service.privacy_request.privacy_request_service import PrivacyRequestService
