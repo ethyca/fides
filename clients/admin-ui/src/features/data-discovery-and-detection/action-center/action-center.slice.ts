@@ -1,9 +1,10 @@
 import { baseApi } from "~/features/common/api.slice";
 import { getQueryParamsFromArray } from "~/features/common/utils";
-import { Page_StagedResourceAPIResponse_ } from "~/types/api";
 import { PaginationQueryParams } from "~/types/common/PaginationQueryParams";
 
 import {
+  DiscoveredAssetPaginatedResponse,
+  DiscoveredAssetResponse,
   MonitorSummaryPaginatedResponse,
   MonitorSystemAggregatePaginatedResponse,
 } from "./types";
@@ -47,7 +48,7 @@ const actionCenterApi = baseApi.injectEndpoints({
       providesTags: ["Discovery Monitor Results"],
     }),
     getDiscoveredAssets: build.query<
-      Page_StagedResourceAPIResponse_,
+      DiscoveredAssetPaginatedResponse,
       { key: string; system: string; search: string } & PaginationQueryParams
     >({
       query: ({ key, system, page = 1, size = 20, search }) => ({
@@ -138,6 +139,35 @@ const actionCenterApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Discovery Monitor Results"],
     }),
+    updateAssetsDataUse: build.mutation<
+      any,
+      { monitorId: string; urnList: string[]; dataUses: string[] }
+    >({
+      query: (params) => ({
+        method: "PATCH",
+        url: `/plus/discovery-monitor/${params.monitorId}/results`,
+        body: params.urnList.map((urn) => ({
+          urn,
+          data_uses: params.dataUses,
+        })),
+      }),
+      invalidatesTags: ["Discovery Monitor Results"],
+    }),
+    // generic update assets mutation, necessary for non-destructive bulk data use updates
+    updateAssets: build.mutation<
+      any,
+      {
+        monitorId: string;
+        assets: DiscoveredAssetResponse[];
+      }
+    >({
+      query: (params) => ({
+        method: "PATCH",
+        url: `/plus/discovery-monitor/${params.monitorId}/results`,
+        body: params.assets,
+      }),
+      invalidatesTags: ["Discovery Monitor Results"],
+    }),
   }),
 });
 
@@ -150,4 +180,6 @@ export const {
   useAddMonitorResultAssetsMutation,
   useIgnoreMonitorResultAssetsMutation,
   useUpdateAssetsSystemMutation,
+  useUpdateAssetsDataUseMutation,
+  useUpdateAssetsMutation,
 } = actionCenterApi;
