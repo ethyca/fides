@@ -537,7 +537,7 @@ export const stubActionCenter = () => {
   }).as("getSystemAssetResults");
   cy.intercept(
     "GET",
-    "/api/v1/plus/discovery-monitor/*/results?resolved_system_ids=%5Bundefined%5D*",
+    "/api/v1/plus/discovery-monitor/*/results?resolved_system_id=%5Bundefined%5D*",
     {
       fixture: "detection-discovery/activity-center/system-asset-uncategorized",
     },
