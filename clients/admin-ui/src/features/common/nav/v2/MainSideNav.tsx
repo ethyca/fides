@@ -5,6 +5,7 @@ import {
   AccordionItem,
   AccordionPanel,
   AntButton,
+  AntMenuProps as MenuProps,
   Box,
   Button,
   Link,
@@ -34,6 +35,7 @@ import { useGetHealthQuery } from "~/features/plus/plus.slice";
 
 import { useNav } from "./hooks";
 import { ActiveNav, NavGroup, NavGroupChild } from "./nav-config";
+import { NavMenu } from "./NavMenu";
 import { INDEX_ROUTE } from "./routes";
 
 const NAV_BACKGROUND_COLOR = palette.FIDESUI_MINOS;
@@ -141,75 +143,96 @@ export const UnconnectedMainSideNav = ({
   active: ActiveNav | undefined;
   handleLogout: any;
   username: string;
-}) => (
-  <Box
-    p={4}
-    pb={0}
-    minWidth={NAV_WIDTH}
-    maxWidth={NAV_WIDTH}
-    backgroundColor={NAV_BACKGROUND_COLOR}
-    height="100%"
-    overflow="auto"
-  >
-    <VStack
-      as="nav"
-      alignItems="start"
-      color="white"
-      height="100%"
-      justifyContent="space-between"
-    >
-      <Box>
-        <Box pb={6}>
-          <FidesLogoHomeLink />
-        </Box>
-        <Accordion
-          allowMultiple
-          width="100%"
-          defaultIndex={[...Array(groups.length).keys()]}
-          overflowY="auto"
-        >
-          {groups.map((group) => (
-            <NavGroupMenu key={group.title} group={group} active={active} />
-          ))}
-        </Accordion>
-      </Box>
-      <Box alignItems="center" pb={4}>
-        <AntButton
-          href="https://docs.ethyca.com"
-          className="border-none bg-transparent hover:!bg-gray-700"
-          icon={<QuestionIcon color="white" boxSize={4} />}
-        />
-        {username && (
-          <Menu>
-            <MenuButton
-              as={AntButton}
-              className="border-none bg-transparent hover:!bg-gray-700"
-              data-testid="header-menu-button"
-              icon={<UserIcon color="white" />}
-            />
-            <MenuList shadow="xl" zIndex="20">
-              <Stack px={3} py={2} spacing={1}>
-                <Text color="gray.700" fontWeight="medium">
-                  {username}
-                </Text>
-              </Stack>
+}) => {
+  const router = useRouter();
 
-              <MenuDivider />
-              <MenuItem
-                color="gray.700"
-                _focus={{ color: "complimentary.500", bg: "gray.100" }}
-                onClick={handleLogout}
-                data-testid="header-menu-sign-out"
-              >
-                Sign out
-              </MenuItem>
-            </MenuList>
-          </Menu>
-        )}
-      </Box>
-    </VStack>
-  </Box>
-);
+  const navMenuItems = groups.map(({ title, children, icon }) => ({
+    key: title,
+    icon,
+    label: title,
+    children: children.map((child) => ({
+      key: child.path,
+      label: <span data-testid={`${title}-nav-link`}>{child.title}</span>,
+    })),
+    "data-something": "something",
+  }));
+
+  const handleMenuItemClick: MenuProps["onClick"] = ({ key: path }) => {
+    router.push(path);
+  };
+
+  return (
+    <Box
+      px={1.5}
+      pb={0}
+      pt={4}
+      minWidth={NAV_WIDTH}
+      maxWidth={NAV_WIDTH}
+      backgroundColor={NAV_BACKGROUND_COLOR}
+      height="100%"
+      overflow="auto"
+    >
+      <VStack
+        as="nav"
+        alignItems="start"
+        color="white"
+        height="100%"
+        justifyContent="space-between"
+      >
+        <Box>
+          <Box pb={6}>
+            <FidesLogoHomeLink />
+          </Box>
+          <Accordion
+            allowMultiple
+            width="100%"
+            defaultIndex={[...Array(groups.length).keys()]}
+            overflowY="auto"
+          >
+            {groups.map((group) => (
+              <NavGroupMenu key={group.title} group={group} active={active} />
+            ))}
+          </Accordion>
+          <NavMenu onClick={handleMenuItemClick} items={navMenuItems}></NavMenu>
+        </Box>
+        <Box alignItems="center" pb={4}>
+          <AntButton
+            href="https://docs.ethyca.com"
+            className="border-none bg-transparent hover:!bg-gray-700"
+            icon={<QuestionIcon color="white" boxSize={4} />}
+          />
+          {username && (
+            <Menu>
+              <MenuButton
+                as={AntButton}
+                className="border-none bg-transparent hover:!bg-gray-700"
+                data-testid="header-menu-button"
+                icon={<UserIcon color="white" />}
+              />
+              <MenuList shadow="xl" zIndex="20">
+                <Stack px={3} py={2} spacing={1}>
+                  <Text color="gray.700" fontWeight="medium">
+                    {username}
+                  </Text>
+                </Stack>
+
+                <MenuDivider />
+                <MenuItem
+                  color="gray.700"
+                  _focus={{ color: "complimentary.500", bg: "gray.100" }}
+                  onClick={handleLogout}
+                  data-testid="header-menu-sign-out"
+                >
+                  Sign out
+                </MenuItem>
+              </MenuList>
+            </Menu>
+          )}
+        </Box>
+      </VStack>
+    </Box>
+  );
+};
 
 const MainSideNav = () => {
   const router = useRouter();

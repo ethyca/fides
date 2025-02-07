@@ -15,6 +15,7 @@ export type {
   RadioGroupProps as AntRadioGroupProps,
   SelectProps as AntSelectProps,
   SwitchProps as AntSwitchProps,
+  MenuProps as AntMenuProps,
   GetProps,
   InputRef,
   RadioChangeEvent,

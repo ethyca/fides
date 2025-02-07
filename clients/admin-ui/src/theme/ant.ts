@@ -57,6 +57,9 @@ export const antTheme: AntThemeConfig = {
     Menu: {
       itemHeight: 36,
       itemHoverBg: palette.FIDESUI_NEUTRAL_50,
+      darkItemBg: palette.FIDESUI_MINOS,
+      darkSubMenuItemBg: palette.FIDESUI_MINOS,
+      darkItemSelectedColor: palette.FIDESUI_SANDSTONE,
     },
     Tooltip: {
       colorBgSpotlight: palette.FIDESUI_MINOS,
