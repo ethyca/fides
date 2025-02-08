@@ -268,6 +268,10 @@ export const TcfOverlay = ({
     return undefined;
   }, [experienceMinimal, experience, i18n]);
 
+  const customPurposes: string[] = useMemo(() => {
+    return privacyNoticesWithBestTranslation.map((notice) => notice.name);
+  }, [privacyNoticesWithBestTranslation]);
+
   const purposes: string[] = useMemo(() => {
     if (gvlTranslations) {
       return getGVLPurposeList(gvlTranslations);
@@ -533,7 +537,10 @@ export const TcfOverlay = ({
             )}
             className="fides-tcf-banner-container"
           >
-            <TCFBannerSupplemental purposes={purposes} />
+            <TCFBannerSupplemental
+              purposes={purposes}
+              customPurposes={customPurposes}
+            />
           </ConsentBanner>
         );
       }}
