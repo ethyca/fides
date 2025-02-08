@@ -42,7 +42,9 @@ from fides.api.util.endpoint_utils import (
     forbid_if_editing_is_default,
 )
 from fides.common.api.scope_registry import CREATE, DELETE, READ, UPDATE
-from fides.service.dataset.dataset_validator import validate_data_categories_against_db
+from fides.service.dataset.validation_steps.data_category import (
+    validate_data_categories_against_db,
+)
 
 
 async def get_data_categories_from_db(async_session: AsyncSession) -> List[FidesKey]:

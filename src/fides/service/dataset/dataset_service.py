@@ -33,11 +33,11 @@ from fides.api.schemas.dataset import (
 )
 from fides.api.schemas.redis_cache import Identity, LabeledIdentity
 from fides.api.util.data_category import get_data_categories_from_db
-from fides.service.dataset.dataset_validator import (
-    DatasetValidator,
-    TraversalValidationStep,
+from fides.service.dataset.dataset_validator import DatasetValidator
+from fides.service.dataset.validation_steps.data_category import (
     validate_data_categories_against_db,
 )
+from fides.service.dataset.validation_steps.traversal import TraversalValidationStep
 
 from fides.api.models.sql_models import (  # type: ignore[attr-defined] # isort: skip
     Dataset as CtlDataset,
