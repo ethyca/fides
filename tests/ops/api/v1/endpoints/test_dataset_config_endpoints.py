@@ -896,7 +896,7 @@ class TestPatchDatasetConfigs:
         )
 
     @mock.patch(
-        "fides.service.dataset.dataset_service.DatasetConfig.upsert_with_ctl_dataset"
+        "fides.service.dataset.dataset_config_service.DatasetConfig.upsert_with_ctl_dataset"
     )
     def test_patch_dataset_configs_failed_response(
         self,
@@ -1827,7 +1827,7 @@ class TestPutDatasets:
         )
 
     @mock.patch(
-        "fides.service.dataset.dataset_service.DatasetConfig.upsert_with_ctl_dataset"
+        "fides.service.dataset.dataset_config_service.DatasetConfig.upsert_with_ctl_dataset"
     )
     def test_patch_datasets_failed_response(
         self,
@@ -1923,7 +1923,7 @@ class TestPutYamlDatasets:
         assert response.status_code == 400
 
     @mock.patch(
-        "fides.service.dataset.dataset_service.DatasetConfig.upsert_with_ctl_dataset"
+        "fides.service.dataset.dataset_config_service.DatasetConfig.upsert_with_ctl_dataset"
     )
     def test_patch_datasets_failed_response(
         self,

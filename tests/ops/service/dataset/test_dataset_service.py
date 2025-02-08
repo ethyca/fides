@@ -9,7 +9,7 @@ from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.policy import Policy
 from fides.api.schemas.policy import ActionType
-from fides.service.dataset.dataset_service import (
+from fides.service.dataset.dataset_config_service import (
     DatasetService,
     get_identities_and_references,
 )

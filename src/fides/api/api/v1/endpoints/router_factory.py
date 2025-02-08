@@ -10,7 +10,6 @@ from fastapi import Depends, HTTPException, Response, Security, status
 from fastapi.encoders import jsonable_encoder
 from fideslang import FidesModelType
 from fideslang.models import Dataset
-from fideslang.validation import FidesKey
 from pydantic import ValidationError as PydanticValidationError
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.status import HTTP_422_UNPROCESSABLE_ENTITY
@@ -25,12 +24,7 @@ from fides.api.db.crud import (
     upsert_resources,
 )
 from fides.api.db.ctl_session import get_async_db
-from fides.api.models.datasetconfig import validate_masking_strategy_override
-from fides.api.models.sql_models import (
-    DataCategory,
-    ModelWithDefaultField,
-    sql_model_map,
-)
+from fides.api.models.sql_models import ModelWithDefaultField, sql_model_map
 from fides.api.oauth.utils import verify_oauth_client_prod
 from fides.api.util import errors
 from fides.api.util.api_router import APIRouter
@@ -42,50 +36,16 @@ from fides.api.util.endpoint_utils import (
     forbid_if_editing_is_default,
 )
 from fides.common.api.scope_registry import CREATE, DELETE, READ, UPDATE
-from fides.service.dataset.validation_steps.data_category import (
-    validate_data_categories_against_db,
-)
-
-
-async def get_data_categories_from_db(async_session: AsyncSession) -> List[FidesKey]:
-    """Similar method to one on the ops side except this uses an async session to retrieve data categories"""
-    resources = await list_resource(DataCategory, async_session)
-    data_categories = [res.fides_key for res in resources]
-    return data_categories
-
-
-async def validate_data_categories(
-    dataset: Dataset, async_session: AsyncSession
-) -> None:
-    """
-    Validate DataCategories on Datasets based on existing DataCategories in the database.
-    """
-    try:
-        defined_data_categories: List[FidesKey] = await get_data_categories_from_db(
-            async_session
-        )
-        validate_data_categories_against_db(dataset, defined_data_categories)
-    except PydanticValidationError as e:
-        raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=jsonable_encoder(e.errors(include_url=False, include_input=False)),
-        )
-
-
-def validate_masking_strategy(dataset: Dataset) -> None:
-    try:
-        validate_masking_strategy_override(dataset)
-    except ValidationError as e:
-        raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=jsonable_encoder(e.message),
-        )
+from fides.service.dataset.dataset_service import DatasetService
 
 
 def generic_router_factory(fides_model: FidesModelType, model_type: str) -> APIRouter:
     """
     Compose all of the individual route factories into a single coherent Router.
+    Skip dataset-specific routes as they are now handled by DatasetService.
     """
+    if model_type == "dataset":
+        return APIRouter()  # Return empty router for datasets
 
     object_router = APIRouter()
 
@@ -158,8 +118,19 @@ def create_router_factory(fides_model: FidesModelType, model_type: str) -> APIRo
         """
         sql_model = sql_model_map[model_type]
         if isinstance(resource, Dataset):
-            await validate_data_categories(resource, db)
-            validate_masking_strategy(resource)
+            try:
+                dataset_service = DatasetService(db)
+                dataset_service.validate_dataset(resource)
+            except (ValidationError, PydanticValidationError) as e:
+                raise HTTPException(
+                    status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+                    detail=jsonable_encoder(
+                        e.errors(include_url=False, include_input=False)
+                        if isinstance(e, PydanticValidationError)
+                        else e.message
+                    ),
+                )
+
         if isinstance(sql_model, ModelWithDefaultField) and resource.is_default:
             raise errors.ForbiddenIsDefaultTaxonomyError(
                 model_type, resource.fides_key, action="create"
@@ -264,8 +235,18 @@ def update_router_factory(fides_model: FidesModelType, model_type: str) -> APIRo
         """
         sql_model = sql_model_map[model_type]
         if isinstance(resource, Dataset):
-            await validate_data_categories(resource, db)
-            validate_masking_strategy(resource)
+            try:
+                dataset_service = DatasetService(db)
+                dataset_service.validate_dataset(resource)
+            except (ValidationError, PydanticValidationError) as e:
+                raise HTTPException(
+                    status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+                    detail=jsonable_encoder(
+                        e.errors(include_url=False, include_input=False)
+                        if isinstance(e, PydanticValidationError)
+                        else e.message
+                    ),
+                )
         await forbid_if_editing_is_default(sql_model, resource.fides_key, resource, db)
         return await update_resource(sql_model, resource.model_dump(mode="json"), db)
 
@@ -344,10 +325,21 @@ def upsert_router_factory(fides_model: FidesModelType, model_type: str) -> APIRo
 
         sql_model = sql_model_map[model_type]
         resource_dicts = [resource.model_dump(mode="json") for resource in resources]
-        for resource in resources:
-            if isinstance(resource, Dataset):
-                await validate_data_categories(resource, db)
-                validate_masking_strategy(resource)
+        if any(isinstance(resource, Dataset) for resource in resources):
+            try:
+                dataset_service = DatasetService(db)
+                for resource in resources:
+                    if isinstance(resource, Dataset):
+                        dataset_service.validate_dataset(resource)
+            except (ValidationError, PydanticValidationError) as e:
+                raise HTTPException(
+                    status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+                    detail=jsonable_encoder(
+                        e.errors(include_url=False, include_input=False)
+                        if isinstance(e, PydanticValidationError)
+                        else e.message
+                    ),
+                )
         await forbid_if_editing_any_is_default(sql_model, resource_dicts, db)
         result = await upsert_resources(sql_model, resource_dicts, db)
         response.status_code = (

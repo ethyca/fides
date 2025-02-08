@@ -4,7 +4,6 @@ import yaml
 from fastapi import Depends, HTTPException, Request
 from fastapi.encoders import jsonable_encoder
 from fastapi.params import Security
-from fastapi.responses import JSONResponse
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
@@ -55,17 +54,16 @@ from fides.common.api.v1.urn_registry import (
     DATASET_REACHABILITY,
     DATASET_VALIDATE,
     DATASETS,
-    DATASETS_CLEAN,
     TEST_DATASET,
     V1_URL_PREFIX,
     YAML_DATASETS,
 )
 from fides.config import CONFIG
-from fides.service.dataset.dataset_service import (
-    DatasetNotFoundException,
-    DatasetService,
+from fides.service.dataset.dataset_config_service import (
+    DatasetConfigService,
     get_identities_and_references,
 )
+from fides.service.dataset.dataset_service import DatasetNotFoundException
 
 from fides.api.models.sql_models import (  # type: ignore[attr-defined] # isort: skip
     Dataset as CtlDataset,
@@ -98,7 +96,9 @@ def _get_connection_config(
 )
 def validate_dataset(
     dataset: FideslangDataset,
-    dataset_service: DatasetService = Depends(deps.get_dataset_service),
+    dataset_config_service: DatasetConfigService = Depends(
+        deps.get_dataset_config_service
+    ),
     connection_config: ConnectionConfig = Depends(_get_connection_config),
 ) -> ValidateDatasetResponse:
     """
@@ -118,7 +118,9 @@ def validate_dataset(
     """
 
     try:
-        return dataset_service.validate_dataset(connection_config, dataset)
+        return dataset_config_service.validate_dataset_config(
+            connection_config, dataset
+        )
     except PydanticValidationError as e:
         raise HTTPException(
             status_code=HTTP_422_UNPROCESSABLE_ENTITY,
@@ -135,7 +137,9 @@ def validate_dataset(
 def put_dataset_configs(
     dataset_pairs: Annotated[List[DatasetConfigCtlDataset], Field(max_length=50)],  # type: ignore
     db: Session = Depends(deps.get_db),
-    dataset_service: DatasetService = Depends(deps.get_dataset_service),
+    dataset_config_service: DatasetConfigService = Depends(
+        deps.get_dataset_config_service
+    ),
     connection_config: ConnectionConfig = Depends(_get_connection_config),
 ) -> BulkPutDataset:
     """
@@ -171,7 +175,9 @@ def put_dataset_configs(
         db.commit()
 
     # reuse the existing patch logic once we've removed the unused dataset configs
-    return patch_dataset_configs(dataset_pairs, dataset_service, connection_config)
+    return patch_dataset_configs(
+        dataset_pairs, dataset_config_service, connection_config
+    )
 
 
 @router.patch(
@@ -182,7 +188,9 @@ def put_dataset_configs(
 )
 def patch_dataset_configs(
     dataset_pairs: Annotated[List[DatasetConfigCtlDataset], Field(max_length=50)],  # type: ignore
-    dataset_service: DatasetService = Depends(deps.get_dataset_service),
+    dataset_config_service: DatasetConfigService = Depends(
+        deps.get_dataset_config_service
+    ),
     connection_config: ConnectionConfig = Depends(_get_connection_config),
 ) -> BulkPutDataset:
     """
@@ -194,7 +202,7 @@ def patch_dataset_configs(
     to the DatasetConfig.
     """
     try:
-        return dataset_service.bulk_create_or_update_datasets(
+        return dataset_config_service.bulk_create_or_update_dataset_configs(
             connection_config,
             dataset_pairs,
         )
@@ -218,7 +226,9 @@ def patch_dataset_configs(
 )
 def patch_datasets(
     datasets: Annotated[List[FideslangDataset], Field(max_length=50)],  # type: ignore
-    dataset_service: DatasetService = Depends(deps.get_dataset_service),
+    dataset_config_service: DatasetConfigService = Depends(
+        deps.get_dataset_config_service
+    ),
     connection_config: ConnectionConfig = Depends(_get_connection_config),
 ) -> BulkPutDataset:
     """
@@ -232,7 +242,7 @@ def patch_datasets(
     """
 
     try:
-        return dataset_service.bulk_create_or_update_datasets(
+        return dataset_config_service.bulk_create_or_update_dataset_configs(
             connection_config, datasets
         )
     except PydanticValidationError as e:
@@ -250,7 +260,9 @@ def patch_datasets(
 )
 async def patch_yaml_datasets(
     request: Request,
-    dataset_service: DatasetService = Depends(deps.get_dataset_service),
+    dataset_config_service: DatasetConfigService = Depends(
+        deps.get_dataset_config_service
+    ),
     connection_config: ConnectionConfig = Depends(_get_connection_config),
 ) -> BulkPutDataset:
     """
@@ -274,7 +286,7 @@ async def patch_yaml_datasets(
             for dataset_dict in yaml_request_body["dataset"]
         ]
 
-        return dataset_service.bulk_create_or_update_datasets(
+        return dataset_config_service.bulk_create_or_update_dataset_configs(
             connection_config, datasets
         )
 
@@ -498,29 +510,6 @@ def get_ctl_datasets(
 
 
 @router.get(
-    DATASETS_CLEAN,
-    dependencies=[Security(verify_oauth_client, scopes=[DATASET_READ])],
-    response_model=List[FideslangDataset],
-    deprecated=True,
-)
-def clean_datasets(
-    dataset_service: DatasetService = Depends(deps.get_dataset_service),
-) -> JSONResponse:
-    """
-    Clean up names of datasets and upsert them.
-    """
-
-    succeeded, failed = dataset_service.clean_datasets()
-    return JSONResponse(
-        status_code=HTTP_200_OK,
-        content={
-            "succeeded": succeeded,
-            "failed": failed,
-        },
-    )
-
-
-@router.get(
     DATASET_INPUTS,
     dependencies=[Security(verify_oauth_client, scopes=[DATASET_READ])],
 )
@@ -561,7 +550,9 @@ def dataset_reachability(
     *,
     db: Session = Depends(deps.get_db),
     connection_config: ConnectionConfig = Depends(_get_connection_config),
-    dataset_service: DatasetService = Depends(deps.get_dataset_service),
+    dataset_config_service: DatasetConfigService = Depends(
+        deps.get_dataset_config_service
+    ),
     dataset_key: FidesKey,
     policy_key: Optional[FidesKey] = None,
 ) -> Dict[str, Any]:
@@ -592,7 +583,7 @@ def dataset_reachability(
             detail=f'Policy with key "{policy_key}" not found',
         )
 
-    reachable, details = dataset_service.get_dataset_reachability(
+    reachable, details = dataset_config_service.get_dataset_reachability(
         dataset_config, access_policy
     )
     return {"reachable": reachable, "details": details}
@@ -607,7 +598,9 @@ def dataset_reachability(
 def test_connection_datasets(
     *,
     db: Session = Depends(deps.get_db),
-    dataset_service: DatasetService = Depends(deps.get_dataset_service),
+    dataset_config_service: DatasetConfigService = Depends(
+        deps.get_dataset_config_service
+    ),
     connection_config: ConnectionConfig = Depends(_get_connection_config),
     dataset_key: FidesKey,
     test_request: DatasetTestRequest,
@@ -639,7 +632,7 @@ def test_connection_datasets(
             detail=f'Policy with key "{test_request.policy_key}" not found',
         )
 
-    privacy_request = dataset_service.run_test_access_request(
+    privacy_request = dataset_config_service.run_test_access_request(
         access_policy,
         dataset_config,
         input_data=test_request.identities.data,

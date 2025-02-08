@@ -113,7 +113,9 @@ from fides.common.api.v1.urn_registry import (
 )
 from fides.config import CONFIG
 from tests.conftest import generate_role_header_for_user
-from tests.ops.api.v1.endpoints.test_dataset_endpoints import get_connection_dataset_url
+from tests.ops.api.v1.endpoints.test_dataset_config_endpoints import (
+    get_connection_dataset_url,
+)
 
 page_size = Params().size
 
