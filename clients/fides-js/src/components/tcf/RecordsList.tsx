@@ -6,8 +6,7 @@ import { useI18n } from "../../lib/i18n/i18n-context";
 import DataUseToggle from "../DataUseToggle";
 
 export type RecordListType =
-  | "purposes"
-  | "customPurposes"
+  | "purposes" // Sometimes includes custom purposes
   | "specialPurposes"
   | "features"
   | "specialFeatures"
@@ -24,8 +23,8 @@ interface Props<T extends Item> {
   type: RecordListType;
   title: string;
   enabledIds: string[];
-  renderToggleChild?: (item: T) => VNode;
-  onToggle: (payload: string[]) => void;
+  renderToggleChild?: (item: T, isCustomPurpose?: boolean) => VNode;
+  onToggle: (payload: string[], item: T) => void;
   renderBadgeLabel?: (item: T) => string | undefined;
   hideToggles?: boolean;
 }
@@ -48,9 +47,12 @@ const RecordsList = <T extends Item>({
   const handleToggle = (item: T) => {
     const purposeId = `${item.id}`;
     if (enabledIds.indexOf(purposeId) !== -1) {
-      onToggle(enabledIds.filter((e) => e !== purposeId));
+      onToggle(
+        enabledIds.filter((e) => e !== purposeId),
+        item,
+      );
     } else {
-      onToggle([...enabledIds, purposeId]);
+      onToggle([...enabledIds, purposeId], item);
     }
   };
 
@@ -92,7 +94,9 @@ const RecordsList = <T extends Item>({
           onLabel={toggleOnLabel}
           offLabel={toggleOffLabel}
         >
-          {renderToggleChild ? renderToggleChild(item) : ""}
+          {renderToggleChild
+            ? renderToggleChild(item, Boolean(item.bestTranslation))
+            : ""}
         </DataUseToggle>
       ))}
     </div>

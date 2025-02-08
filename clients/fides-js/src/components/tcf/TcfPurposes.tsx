@@ -156,33 +156,39 @@ const TcfPurposes = ({
         active={activeLegalBasisOption}
         onChange={setActiveLegalBasisOption}
       />
-      {activeData.customPurposes ? (
-        <RecordsList<PrivacyNoticeWithBestTranslation>
-          type="customPurposes"
-          title="Custom Purposes"
-          items={activeData.customPurposes}
-          enabledIds={activeData.enabledCustomPurposeIds}
-          onToggle={(newEnabledIds) =>
-            onChange({ newEnabledIds, modelType: "customPurposesConsent" })
-          }
-          renderToggleChild={(p) => (
-            <PurposeDetails type="purposes" purpose={p} isCustomPurpose />
-          )}
-          // This key forces a rerender when legal basis changes, which allows paging to reset properly
-          key={`purpose-record-${activeLegalBasisOption.value}`}
-        />
-      ) : null}
-      <RecordsList<PurposeRecord>
+      <RecordsList<
+        PurposeRecord | (PrivacyNoticeWithBestTranslation & PurposeRecord)
+      >
         type="purposes"
         title={i18n.t("static.tcf.purposes")}
-        items={activeData.purposes}
-        enabledIds={activeData.enabledPurposeIds}
-        onToggle={(newEnabledIds) =>
-          onChange({ newEnabledIds, modelType: activeData.purposeModelType })
+        items={[...activeData.customPurposes, ...activeData.purposes]}
+        enabledIds={[
+          ...activeData.enabledCustomPurposeIds,
+          ...activeData.enabledPurposeIds,
+        ]}
+        onToggle={(newEnabledIds, item) =>
+          onChange({
+            newEnabledIds,
+            modelType: item.bestTranslation
+              ? "customPurposesConsent"
+              : activeData.purposeModelType,
+          })
         }
-        renderToggleChild={(p) => (
-          <PurposeDetails type="purposes" purpose={p} />
+        renderToggleChild={(p, isCustomPurpose) => (
+          <PurposeDetails
+            type="purposes"
+            purpose={p}
+            isCustomPurpose={isCustomPurpose}
+          />
         )}
+        renderBadgeLabel={(item) => {
+          // Denote which purposes are standard IAB purposes if we have custom ones in the mix
+          if (!activeData.customPurposes) {
+            return undefined;
+          }
+          // @ts-ignore
+          return item.bestTranslation ? "" : "IAB TCF";
+        }}
         // This key forces a rerender when legal basis changes, which allows paging to reset properly
         key={`purpose-record-${activeLegalBasisOption.value}`}
       />
