@@ -26,7 +26,7 @@ class ValidateDatasetResponse(FidesSchema):
     """
 
     dataset: Dataset
-    traversal_details: DatasetTraversalDetails
+    traversal_details: Optional[DatasetTraversalDetails]
 
 
 class DatasetConfigCtlDataset(FidesSchema):

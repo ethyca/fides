@@ -42,6 +42,7 @@ from fides.api.util.data_category import get_user_data_categories
 from fides.api.util.errors import AlreadyExistsError, QueryError
 from fides.api.util.text import to_snake_case
 from fides.config import CONFIG
+from fides.service.dataset.dataset_service import DatasetService
 
 from .crud import create_resource, get_resource, list_resource, upsert_resources
 from .samples import (
@@ -502,9 +503,10 @@ async def load_samples(async_session: AsyncSession) -> None:
                     dataset_pair = DatasetConfigCtlDataset(
                         fides_key=dataset_key, ctl_dataset_fides_key=dataset_key
                     )
+                    dataset_service = DatasetService(db=db_session)
                     patch_dataset_configs(
                         dataset_pairs=[dataset_pair],
-                        db=db_session,
+                        dataset_service=dataset_service,
                         connection_config=connection_config,
                     )
                     dataset_config = DatasetConfig.get_by(

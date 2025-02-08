@@ -1,35 +1,24 @@
 from copy import deepcopy
 from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional, Sequence, Set, Tuple, Type, Union
+from typing import Any, Dict, List, Optional, Set, Tuple, Union
 
 from fideslang.models import Dataset as FideslangDataset
-from fideslang.models import DatasetCollection, DatasetField
 from fideslang.validation import FidesKey
 from loguru import logger
-from pydantic import BaseModel, ConfigDict
 from pydantic import ValidationError as PydanticValidationError
-from pydantic import field_validator, model_validator
 from sqlalchemy import select
-from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from fides.api import common_exceptions
 from fides.api.common_exceptions import (
     SaaSConfigNotFoundException,
-    TraversalError,
     UnreachableNodesError,
     ValidationError,
 )
 from fides.api.graph.config import GraphDataset
 from fides.api.graph.graph import DatasetGraph
 from fides.api.graph.traversal import Traversal
-from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType
-from fides.api.models.datasetconfig import (
-    DatasetConfig,
-    convert_dataset_to_graph,
-    to_graph_field,
-    validate_masking_strategy_override,
-)
+from fides.api.models.connectionconfig import ConnectionConfig
+from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import (
     PrivacyRequest,
@@ -40,31 +29,19 @@ from fides.api.schemas.api import BulkUpdateFailed
 from fides.api.schemas.dataset import (
     BulkPutDataset,
     DatasetConfigCtlDataset,
-    DatasetTraversalDetails,
     ValidateDatasetResponse,
 )
 from fides.api.schemas.redis_cache import Identity, LabeledIdentity
-from fides.api.util.data_category import DataCategory as DefaultTaxonomyDataCategories
 from fides.api.util.data_category import get_data_categories_from_db
-from fides.api.util.saas_util import merge_datasets
+from fides.service.dataset.dataset_validator import (
+    DatasetValidator,
+    TraversalValidationStep,
+    validate_data_categories_against_db,
+)
 
 from fides.api.models.sql_models import (  # type: ignore[attr-defined] # isort: skip
     Dataset as CtlDataset,
 )
-
-
-class DatasetInput(BaseModel):
-    """Schema for dataset input data"""
-
-    dataset: FideslangDataset
-    connection_config_id: str
-    fides_key: FidesKey
-
-
-class YAMLDatasetInput(BaseModel):
-    """Schema for YAML dataset input"""
-
-    dataset: List[FideslangDataset]
 
 
 class DatasetError(Exception):
@@ -107,10 +84,12 @@ class DatasetService:
                 }
 
             # Validate dataset
-            if connection_config.connection_type == ConnectionType.saas:
-                _validate_saas_dataset(connection_config, dataset_to_validate)
-            validate_masking_strategy_override(dataset_to_validate)
-            validate_data_categories(dataset_to_validate, self.db)
+            DatasetValidator(
+                self.db,
+                dataset_to_validate,
+                connection_config,
+                skip_steps=[TraversalValidationStep],
+            ).validate()
 
             # Create or update using unified method
             dataset_config = DatasetConfig.upsert_with_ctl_dataset(
@@ -173,45 +152,8 @@ class DatasetService:
     def validate_dataset(
         self, connection_config: ConnectionConfig, dataset: FideslangDataset
     ) -> ValidateDatasetResponse:
-        validate_data_categories(dataset, self.db)
 
-        try:
-            # Attempt to generate a traversal for this dataset by providing an empty
-            # dictionary of all unique identity keys
-            graph = convert_dataset_to_graph(dataset, connection_config.key)  # type: ignore
-
-            # Datasets for SaaS connections need to be merged with a SaaS config to
-            # be able to generate a valid traversal
-            if connection_config.connection_type == ConnectionType.saas:
-                _validate_saas_dataset(connection_config, dataset)
-                graph = merge_datasets(
-                    graph, connection_config.get_saas_config().get_graph(connection_config.secrets)  # type: ignore
-                )
-            complete_graph = DatasetGraph(graph)
-            unique_identities = set(complete_graph.identity_keys.values())
-            Traversal(complete_graph, {k: None for k in unique_identities})
-        except (TraversalError, ValidationError) as err:
-            logger.warning(
-                "Traversal validation failed for dataset '{}': {}",
-                dataset.fides_key,
-                err,
-            )
-            return ValidateDatasetResponse(
-                dataset=dataset,
-                traversal_details=DatasetTraversalDetails(
-                    is_traversable=False,
-                    msg=str(err),
-                ),
-            )
-
-        logger.info("Validation successful for dataset '{}'!", dataset.fides_key)
-        return ValidateDatasetResponse(
-            dataset=dataset,
-            traversal_details=DatasetTraversalDetails(
-                is_traversable=True,
-                msg=None,
-            ),
-        )
+        return DatasetValidator(self.db, dataset, connection_config).validate()
 
     def get_dataset_reachability(
         self, dataset_config: DatasetConfig, policy: Optional[Policy] = None
@@ -382,71 +324,6 @@ def validate_data_categories(dataset: FideslangDataset, db: Session) -> None:
     validate_data_categories_against_db(dataset, defined_data_categories)
 
 
-def validate_data_categories_against_db(
-    dataset: FideslangDataset, defined_data_categories: List[FidesKey]
-) -> None:
-    """
-    Validate that data_categories defined on the Dataset, Collection, and Field levels exist
-    in the database.  Doing this instead of a traditional validator function to have
-    access to a database session.
-
-    If no data categories in the database, default to using data categories from the default taxonomy.
-    """
-    if not defined_data_categories:
-        logger.info(
-            "No data categories in the database: reverting to default data categories."
-        )
-        defined_data_categories = [
-            FidesKey(key) for key in DefaultTaxonomyDataCategories.__members__.keys()
-        ]
-
-    class DataCategoryValidationMixin(BaseModel):
-        @field_validator("data_categories", check_fields=False)
-        @classmethod
-        def valid_data_categories(
-            cls: Type["DataCategoryValidationMixin"], v: Optional[List[FidesKey]]
-        ) -> Optional[List[FidesKey]]:
-            """Validate that all annotated data categories exist in the taxonomy"""
-            return _valid_data_categories(v, defined_data_categories)
-
-    class FieldDataCategoryValidation(DatasetField, DataCategoryValidationMixin):
-        fields: Optional[List["FieldDataCategoryValidation"]] = None  # type: ignore[assignment]
-
-    FieldDataCategoryValidation.model_rebuild()
-
-    class CollectionDataCategoryValidation(
-        DatasetCollection, DataCategoryValidationMixin
-    ):
-        fields: Sequence[FieldDataCategoryValidation] = []  # type: ignore[assignment]
-
-    class DatasetDataCategoryValidation(FideslangDataset, DataCategoryValidationMixin):
-        collections: Sequence[CollectionDataCategoryValidation]  # type: ignore[assignment]
-
-    DatasetDataCategoryValidation(**dataset.model_dump(mode="json"))
-
-
-def _valid_data_categories(
-    proposed_data_categories: Optional[List[FidesKey]],
-    defined_data_categories: List[FidesKey],
-) -> Optional[List[FidesKey]]:
-    """
-    Ensure that every data category provided matches a valid defined data category.
-    Throws an error if any of the categories are invalid,
-    or otherwise returns the list of categories unchanged.
-    """
-
-    def validate_category(data_category: FidesKey) -> FidesKey:
-        if data_category not in defined_data_categories:
-            raise common_exceptions.DataCategoryNotSupported(
-                f"The data category {data_category} is not supported."
-            )
-        return data_category
-
-    if proposed_data_categories:
-        return [dc for dc in proposed_data_categories if validate_category(dc)]
-    return proposed_data_categories
-
-
 def _run_clean_datasets(
     db: Session, datasets: List[FideslangDataset]
 ) -> tuple[List[str], List[str]]:
@@ -513,30 +390,3 @@ def _get_ctl_dataset(db: Session, fides_key: str) -> CtlDataset:
             f"No CTL dataset found with fides_key '{fides_key}'"
         )
     return ctl_dataset
-
-
-def _validate_saas_dataset(
-    connection_config: ConnectionConfig, dataset: FideslangDataset
-) -> None:
-    if connection_config.saas_config is None:
-        raise SaaSConfigNotFoundException(
-            f"Connection config '{connection_config.key}' must have a "
-            "SaaS config before validating or adding a dataset"
-        )
-
-    fides_key = connection_config.saas_config["fides_key"]
-    if fides_key != dataset.fides_key:
-        raise ValidationError(
-            f"The fides_key '{dataset.fides_key}' of the dataset "
-            f"does not match the fides_key '{fides_key}' "
-            "of the connection config"
-        )
-    for collection in dataset.collections:
-        for field in collection.fields:
-            graph_field = to_graph_field(field)
-            if graph_field.references or graph_field.identity:
-                raise ValidationError(
-                    "A dataset for a ConnectionConfig type of 'saas' is not "
-                    "allowed to have references or identities. Please add "
-                    "them to the SaaS config."
-                )

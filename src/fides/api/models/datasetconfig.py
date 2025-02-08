@@ -60,34 +60,35 @@ class DatasetConfig(Base):
         cls, db: Session, *, data: Dict[str, Any]
     ) -> "DatasetConfig":
         """
-        Create or update the DatasetConfig AND the corresponding CTL Dataset
-
-        If the DatasetConfig exists with the supplied FidesKey, update the linked CtlDataset with the dataset contents.
-        If the DatasetConfig *does not exist*, upsert a CtlDataset on fides_key, and then link to the DatasetConfig on creation.
-
+        Create or update both DatasetConfig and CTL Dataset.
+        Updates existing CTL Dataset if found by ID or fides_key, otherwise creates new one.
         """
 
-        def upsert_ctl_dataset(dataset_contents: Dict[str, Any]) -> CtlDataset:
-            """
-            If ctl_dataset_obj specified, update that resource directly, otherwise
-            create a new resource.
-            """
-            validated_data = Dataset(**dataset_contents)
+        def upsert_ctl_dataset(
+            dataset_contents: Dict[str, Any],
+            existing_ctl_dataset_id: Optional[str] = None,
+        ) -> CtlDataset:
+            """Create new or update existing CTL dataset."""
+            validated_data = Dataset(**dataset_contents).model_dump(mode="json")
 
-            # Check for existing CTL dataset
-            ctl_dataset = (
-                db.query(CtlDataset)
-                .filter(CtlDataset.fides_key == dataset_contents.get("fides_key"))
-                .first()
-            )
+            if existing_ctl_dataset_id:
+                ctl_dataset = (
+                    db.query(CtlDataset)
+                    .filter(CtlDataset.id == existing_ctl_dataset_id)
+                    .first()
+                )
+            else:
+                ctl_dataset = (
+                    db.query(CtlDataset)
+                    .filter(CtlDataset.fides_key == dataset_contents.get("fides_key"))
+                    .first()
+                )
 
             if ctl_dataset:
-                # Update existing CTL dataset
-                for key, val in validated_data.model_dump(mode="json").items():
+                for key, val in validated_data.items():
                     setattr(ctl_dataset, key, val)
             else:
-                # Create new CTL dataset
-                ctl_dataset = CtlDataset(**validated_data.model_dump(mode="json"))
+                ctl_dataset = CtlDataset(**validated_data)
 
             db.add(ctl_dataset)
             db.commit()
@@ -96,14 +97,9 @@ class DatasetConfig(Base):
 
         # Make a copy of data to avoid modifications
         data_copy = data.copy()
+        dataset_contents = data_copy.pop("dataset", None)
 
-        # Handle CTL dataset if dataset data is provided
-        if "dataset" in data_copy:
-            ctl_dataset = upsert_ctl_dataset(data_copy["dataset"])
-            data_copy["ctl_dataset_id"] = ctl_dataset.id
-            data_copy.pop("dataset")
-
-        # Handle DatasetConfig
+        # Check for existing dataset config
         dataset_config = cls.filter(
             db=db,
             conditions=(
@@ -111,7 +107,16 @@ class DatasetConfig(Base):
                 & (cls.fides_key == data_copy["fides_key"])
             ),
         ).first()
+        existing_ctl_dataset_id = (
+            dataset_config.ctl_dataset_id if dataset_config else None
+        )
 
+        # Handle CTL dataset if dataset data is provided
+        if dataset_contents:
+            ctl_dataset = upsert_ctl_dataset(dataset_contents, existing_ctl_dataset_id)
+            data_copy["ctl_dataset_id"] = ctl_dataset.id
+
+        # Create or update DatasetConfig
         if dataset_config:
             dataset_config.update(db=db, data=data_copy)
         else:
@@ -121,7 +126,7 @@ class DatasetConfig(Base):
 
     @classmethod
     @deprecated("Use upsert_with_ctl_dataset instead")
-    def create_or_update(cls, db: Session, *, data: Dict[str, Any]) -> "DatasetConfig":
+    def create_or_update(cls, db: Session, *, data: Dict[str, Any]) -> "DatasetConfig":  # type: ignore[override]
         """Deprecated: Use upsert_with_ctl_dataset instead"""
         return cls.upsert_with_ctl_dataset(db, data=data)
 
