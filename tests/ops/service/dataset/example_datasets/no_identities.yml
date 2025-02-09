@@ -1,7 +1,7 @@
 dataset:
-  - fides_key: single_identity
-    name: Single identity
-    description: A dataset with a single collection that relies on an identity
+  - fides_key: no_identities
+    name: No identities
+    description: A dataset with a single collection with missing identities
     collections:
       - name: customer
         fields:

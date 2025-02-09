@@ -15,6 +15,7 @@ from fides.api.common_exceptions import (
 from fides.api.graph.config import GraphDataset
 from fides.api.graph.graph import DatasetGraph
 from fides.api.graph.traversal import Traversal
+from fides.api.graph.traversal_node import TraversalNode
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.policy import Policy
@@ -40,6 +41,20 @@ from fides.service.dataset.validation_steps.data_category import (
     validate_data_categories_against_db,
 )
 from fides.service.dataset.validation_steps.traversal import TraversalValidationStep
+
+
+class DatasetFilter:
+    """
+    Filter that excludes nodes that are not part of the specified dataset.
+    This ensures that unreachable nodes from other datasets are not treated as errors.
+    """
+
+    def __init__(self, dataset_name: str):
+        self.dataset_name = dataset_name
+
+    def exclude_node(self, node: TraversalNode) -> bool:
+        """Returns True if the node is not part of the dataset"""
+        return node.address.dataset != self.dataset_name
 
 
 class DatasetConfigService:
@@ -176,7 +191,12 @@ class DatasetConfigService:
         }
 
         try:
-            Traversal(dataset_graph, identity_seed, policy)
+            Traversal(
+                dataset_graph,
+                identity_seed,
+                policy,
+                node_filters=[DatasetFilter(dataset_config.fides_key)],
+            )
         except UnreachableNodesError as exc:
             return (
                 False,
