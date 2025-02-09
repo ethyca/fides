@@ -239,20 +239,27 @@ describe("Fides-js TCF", () => {
             };
             stubTCFExperience({
               experienceFullOverride: updatedExperience,
+              skipVisit: true,
             });
-            cy.wait("@getPrivacyExperience");
-            expect(
-              (
-                win.Fides.experience as PrivacyExperience &
-                  PrivacyExperienceMinimal
-              ).tcf_purpose_consent_ids,
-            ).to.have.length(11);
-            expect(
-              (
-                win.Fides.experience as PrivacyExperience &
-                  PrivacyExperienceMinimal
-              ).tcf_purpose_consents,
-            ).to.exist.to.have.length(4);
+            cy.waitUntil(() => {
+              return (
+                (win.Fides.experience as PrivacyExperience).tcf_purpose_consents
+                  .length > 0
+              );
+            }).then(() => {
+              expect(
+                (
+                  win.Fides.experience as PrivacyExperience &
+                    PrivacyExperienceMinimal
+                ).tcf_purpose_consent_ids,
+              ).to.have.length(11);
+              expect(
+                (
+                  win.Fides.experience as PrivacyExperience &
+                    PrivacyExperienceMinimal
+                ).tcf_purpose_consents,
+              ).to.have.length(4);
+            });
           });
         });
       });

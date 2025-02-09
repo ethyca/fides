@@ -71,6 +71,7 @@ export const stubConfig = (
   mockExperienceApiResp?: any,
   demoPageQueryParams?: Cypress.VisitOptions["qs"] | null,
   demoPageWindowParams?: any,
+  skipVisit?: boolean,
 ) => {
   cy.fixture("consent/fidesjs_options_banner_modal.json").then((config) => {
     const updatedConfig = {
@@ -138,11 +139,13 @@ export const stubConfig = (
       { fixture: "consent/notices_served.json" },
     ).as("patchNoticesServed");
     cy.log("Visiting consent demo with config", updatedConfig);
-    cy.visitConsentDemo(
-      updatedConfig,
-      demoPageQueryParams,
-      demoPageWindowParams,
-    );
+    if (!skipVisit) {
+      cy.visitConsentDemo(
+        updatedConfig,
+        demoPageQueryParams,
+        demoPageWindowParams,
+      );
+    }
   });
 };
 
@@ -171,6 +174,7 @@ interface StubExperienceTCFProps {
   demoPageQueryParams?: Cypress.VisitOptions["qs"] | null;
   demoPageWindowParams?: any;
   experienceIsInvalid?: boolean;
+  skipVisit?: boolean;
   includeCustomPurposes?: boolean;
 }
 export const stubTCFExperience = ({
@@ -182,6 +186,7 @@ export const stubTCFExperience = ({
   demoPageQueryParams,
   demoPageWindowParams,
   experienceIsInvalid,
+  skipVisit,
   includeCustomPurposes,
 }: StubExperienceTCFProps) => {
   return cy
@@ -238,6 +243,7 @@ export const stubTCFExperience = ({
           experienceFull,
           demoPageQueryParams,
           demoPageWindowParams,
+          skipVisit,
         );
       });
     });
