@@ -25,6 +25,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Added editing support for categories of consent on discovered assets [#5739](https://github.com/ethyca/fides/pull/5739)
 - Added a read-only consent category cell to Action Center aggregate system results table [#5737](https://github.com/ethyca/fides/pull/5737)
 - Added detail trays to items in data catalog view [#5729](https://github.com/ethyca/fides/pull/5729)
+- Support rendering and saving consent from custom notices in TCF Overlay [#5742](https://github.com/ethyca/fides/pull/5742)
 
 ### Changed
 - Added frequency field to DataHubSchema integration config [#5716](https://github.com/ethyca/fides/pull/5716)
