@@ -268,7 +268,7 @@ export const TcfOverlay = ({
     return undefined;
   }, [experienceMinimal, experience, i18n]);
 
-  const customPurposes: string[] = useMemo(() => {
+  const customPurposes: (string | undefined)[] = useMemo(() => {
     return privacyNoticesWithBestTranslation.map((notice) => notice.name);
   }, [privacyNoticesWithBestTranslation]);
 

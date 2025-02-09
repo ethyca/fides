@@ -4,7 +4,7 @@ import { useI18n } from "../../lib/i18n/i18n-context";
 
 interface TCFBannerSupplementalProps {
   purposes: string[] | undefined;
-  customPurposes: string[] | undefined;
+  customPurposes: (string | undefined)[];
 }
 
 export const TCFBannerSupplemental = ({

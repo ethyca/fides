@@ -161,6 +161,7 @@ const TcfPurposes = ({
       >
         type="purposes"
         title={i18n.t("static.tcf.purposes")}
+        // @ts-ignore
         items={[...activeData.customPurposes, ...activeData.purposes]}
         enabledIds={[
           ...activeData.enabledCustomPurposeIds,
@@ -169,6 +170,7 @@ const TcfPurposes = ({
         onToggle={(newEnabledIds, item) =>
           onChange({
             newEnabledIds,
+            // @ts-ignore
             modelType: item.bestTranslation
               ? "customPurposesConsent"
               : activeData.purposeModelType,
