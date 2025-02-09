@@ -89,7 +89,10 @@ const Preview = ({
   };
 
   useEffect(() => {
-    if (values.privacy_notice_ids) {
+    if (
+      values.privacy_notice_ids &&
+      values.component !== ComponentType.TCF_OVERLAY
+    ) {
       Promise.all(
         values.privacy_notice_ids!.map((id) => getPrivacyNotice(id)),
       ).then((data) =>
