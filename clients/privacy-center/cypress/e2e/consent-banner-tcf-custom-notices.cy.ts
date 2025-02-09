@@ -1280,7 +1280,8 @@ describe("Fides-js TCF", () => {
           .as("mockSavePreferencesFn");
 
         stubTCFExperience({
-          stubOptions: { apiOptions, includeCustomPurposes: true },
+          stubOptions: { apiOptions },
+          includeCustomPurposes: true
         });
         cy.waitUntilFidesInitialized().then(() => {
           cy.get("div#fides-banner").within(() => {
@@ -2307,9 +2308,6 @@ describe("Fides-js TCF", () => {
           cy.get("button").contains("Manage preferences").click();
         });
       });
-
-      // Verify the toggles
-      // todo- verify custom toggles
       // Purposes
       cy.getByTestId(`toggle-${PURPOSE_4.name}`).within(() => {
         cy.get("input").should("not.be.checked");
