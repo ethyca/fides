@@ -1281,7 +1281,7 @@ describe("Fides-js TCF", () => {
 
         stubTCFExperience({
           stubOptions: { apiOptions },
-          includeCustomPurposes: true
+          includeCustomPurposes: true,
         });
         cy.waitUntilFidesInitialized().then(() => {
           cy.get("div#fides-banner").within(() => {
