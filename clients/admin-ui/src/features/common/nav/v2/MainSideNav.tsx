@@ -25,6 +25,7 @@ import { INDEX_ROUTE } from "./routes";
 
 const NAV_BACKGROUND_COLOR = palette.FIDESUI_MINOS;
 const NAV_WIDTH = "240px";
+const OPENED_TOGGLES_LOCAL_STORAGE_KEY = "mainSideNavOpenKeys";
 
 /** Inner component which we export for component testing */
 export const UnconnectedMainSideNav = ({
@@ -78,6 +79,31 @@ export const UnconnectedMainSideNav = ({
     router.push(path);
   };
 
+  // When the nav is first loaded, we want to open the toggles that were open when the user last visited
+  // the page. This is stored in local storage so that it persists across refreshes.
+  const getStartupOpenKeys = () => {
+    const openedKeysString = localStorage.getItem(
+      OPENED_TOGGLES_LOCAL_STORAGE_KEY,
+    );
+    let openedKeys = [];
+    if (openedKeysString) {
+      try {
+        openedKeys = JSON.parse(openedKeysString);
+      } catch (e) {
+        // eslint-disable-next-line no-console
+        console.error("Error parsing local storage key", e);
+      }
+    }
+    return openedKeys;
+  };
+
+  const handleOpenChange = (keys: string[]) => {
+    localStorage.setItem(
+      OPENED_TOGGLES_LOCAL_STORAGE_KEY,
+      JSON.stringify(keys),
+    );
+  };
+
   return (
     <Box
       px={2}
@@ -108,12 +134,8 @@ export const UnconnectedMainSideNav = ({
             onClick={handleMenuItemClick}
             items={navMenuItems}
             selectedKeys={activeKey ? [activeKey] : []}
-            onOpenChange={(keys) =>
-              localStorage.setItem("mainSideNavOpenKeys", JSON.stringify(keys))
-            }
-            defaultOpenKeys={JSON.parse(
-              localStorage.getItem("mainSideNavOpenKeys") || "[]",
-            )}
+            onOpenChange={handleOpenChange}
+            defaultOpenKeys={getStartupOpenKeys()}
           />
         </Box>
         <Box alignItems="center" pb={4}>
