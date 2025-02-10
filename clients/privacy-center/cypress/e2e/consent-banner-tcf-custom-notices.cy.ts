@@ -131,6 +131,7 @@ const assertTcOptIns = ({
   const { fides_string: fidesString } = cookie;
   const tcString = fidesString?.split(FIDES_SEPARATOR)[0];
   expect(tcString).to.be.a("string");
+  expect(tcString).to.not.equal("");
   const model = TCString.decode(tcString!);
   const values = Array.from(model[modelType].values()).sort();
   expect(values).to.eql(ids.sort());
