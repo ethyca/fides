@@ -60,11 +60,13 @@ const setFidesGeoLocationToBlueConicProfile = () => {
     return;
   }
   const profile = window.blueConicClient.profile.getProfile();
-  profile.setValue("fides_identifier", window.Fides?.identity?.fides_user_device_id);
+  profile.setValue(
+    "fides_identifier",
+    window.Fides?.identity?.fides_user_device_id,
+  );
   profile.setValue("fides_geolocation", window.Fides?.geolocation);
   window.blueConicClient.profile.updateProfile();
 };
-
 
 export const blueconic = (
   { approach = "onetrust" }: { approach: "onetrust" | undefined } = {
