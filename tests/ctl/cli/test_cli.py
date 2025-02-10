@@ -325,6 +325,28 @@ class TestAnnotate:
         assert result.exit_code == 0
         print(result.output)
 
+    def test_regression_annotate_dataset(
+        self,
+        test_config_path: str,
+        test_cli_runner: CliRunner,
+    ):
+        test_cli_runner.invoke(
+            cli,
+            [
+                "-f",
+                test_config_path,
+                "annotate",
+                "dataset",
+                "tests/ctl/data/failing_direction.yml",
+            ],
+            input="user\n",
+        )
+        with open("tests/ctl/data/failing_direction.yml", "r") as dataset_yml:
+            try:
+                dataset_yml = yaml.safe_load(dataset_yml)
+            except yaml.constructor.ConstructorError:
+                assert False, "The yaml file is not valid"
+
 
 @pytest.mark.integration
 def test_audit(test_config_path: str, test_cli_runner: CliRunner) -> None:

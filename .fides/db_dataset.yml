@@ -916,6 +916,25 @@ dataset:
       data_categories: [system.operations]
     - name: updated_at
       data_categories: [system.operations]
+  - name: monitorexecution
+    data_categories: []
+    fields:
+    - name: id
+      data_categories: [system.operations]
+    - name: monitor_config_key
+      data_categories: [system.operations]
+    - name: status
+      data_categories: [system.operations]
+    - name: started
+      data_categories: [system.operations]
+    - name: completed
+      data_categories: [system.operations]
+    - name: classification_instances
+      data_categories: [system.operations]
+    - name: created_at
+      data_categories: [system.operations]
+    - name: updated_at
+      data_categories: [system.operations]
   - name: policy
     data_categories: []
     fields:

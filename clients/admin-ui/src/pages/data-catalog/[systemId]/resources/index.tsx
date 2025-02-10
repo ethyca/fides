@@ -5,7 +5,7 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { useRouter } from "next/router";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import Layout from "~/features/common/Layout";
 import { DATA_CATALOG_ROUTE } from "~/features/common/nav/v2/routes";
@@ -16,9 +16,10 @@ import {
   TableSkeletonLoader,
   useServerSidePagination,
 } from "~/features/common/table/v2";
+import { useGetCatalogDatasetsQuery } from "~/features/data-catalog/data-catalog.slice";
+import CatalogDatasetDetailDrawer from "~/features/data-catalog/datasets/CatalogDatasetDetailDrawer";
 import EmptyCatalogTableNotice from "~/features/data-catalog/datasets/EmptyCatalogTableNotice";
 import useCatalogDatasetColumns from "~/features/data-catalog/datasets/useCatalogDatasetColumns";
-import { useGetMonitorResultsQuery } from "~/features/data-discovery-and-detection/discovery-detection.slice";
 import { useGetSystemByFidesKeyQuery } from "~/features/system";
 import { StagedResourceAPIResponse } from "~/types/api";
 
@@ -30,10 +31,10 @@ const EMPTY_RESPONSE = {
   pages: 1,
 };
 
-const CatalogDatasetView = () => {
+const CatalogDatasetViewNoProjects = () => {
   const { query, push } = useRouter();
   const systemKey = query.systemId as string;
-  const projectId = query.projectId as string;
+  const monitorConfigKeys = query.monitor_config_ids as string[];
 
   const { data: system, isLoading: systemIsLoading } =
     useGetSystemByFidesKeyQuery(systemKey);
@@ -56,10 +57,10 @@ const CatalogDatasetView = () => {
     isFetching,
     isLoading,
     data: resources,
-  } = useGetMonitorResultsQuery({
-    staged_resource_urn: projectId,
+  } = useGetCatalogDatasetsQuery({
     page: pageIndex,
     size: pageSize,
+    monitor_config_ids: monitorConfigKeys,
   });
 
   const {
@@ -72,7 +73,13 @@ const CatalogDatasetView = () => {
     setTotalPages(totalPages);
   }, [totalPages, setTotalPages]);
 
-  const columns = useCatalogDatasetColumns();
+  const [detailsToView, setDetailsToView] = useState<
+    StagedResourceAPIResponse | undefined
+  >(undefined);
+
+  const columns = useCatalogDatasetColumns({
+    onDetailClick: (dataset) => setDetailsToView(dataset),
+  });
 
   const tableInstance = useReactTable<StagedResourceAPIResponse>({
     getCoreRowModel: getCoreRowModel(),
@@ -94,9 +101,7 @@ const CatalogDatasetView = () => {
           { title: "All systems", href: DATA_CATALOG_ROUTE },
           {
             title: system?.name || systemKey,
-            href: `${DATA_CATALOG_ROUTE}/${systemKey}/projects`,
           },
-          { title: projectId },
         ]}
       />
       {!showContent && <TableSkeletonLoader rowHeight={36} numRows={36} />}
@@ -106,7 +111,7 @@ const CatalogDatasetView = () => {
             tableInstance={tableInstance}
             emptyTableNotice={<EmptyCatalogTableNotice />}
             onRowClick={(row) =>
-              push(`${DATA_CATALOG_ROUTE}/${systemKey}/${row.urn}`)
+              push(`${DATA_CATALOG_ROUTE}/${systemKey}/resources/${row.urn}`)
             }
           />
           <PaginationBar
@@ -120,10 +125,14 @@ const CatalogDatasetView = () => {
             startRange={startRange}
             endRange={endRange}
           />
+          <CatalogDatasetDetailDrawer
+            dataset={detailsToView}
+            onClose={() => setDetailsToView(undefined)}
+          />
         </>
       )}
     </Layout>
   );
 };
 
-export default CatalogDatasetView;
+export default CatalogDatasetViewNoProjects;

@@ -1,11 +1,11 @@
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, Iterable, List, Optional, Type
 
 from loguru import logger
-from sqlalchemy import ARRAY, Boolean, Column, DateTime, ForeignKey, String
+from sqlalchemy import ARRAY, Boolean, Column, DateTime, ForeignKey, String, func
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.ext.mutable import MutableDict
@@ -16,16 +16,6 @@ from sqlalchemy.orm.query import Query
 from fides.api.db.base_class import Base, FidesBase
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.sql_models import System  # type: ignore[attr-defined]
-
-# class MonitorExecution(BaseModel):
-#     id: str
-#     monitor_config_id: str
-#     status: Optional[str]
-#     started: Optional[datetime]
-#     completed: Optional[datetime]
-#     classification_instances: List[str] = PydanticField(
-#         default_factory=list
-#     )  # TODO: formalize to FK
 
 
 class DiffStatus(Enum):
@@ -118,6 +108,12 @@ class MonitorConfig(Base):
     # TODO: many-to-many link to users assigned as data stewards; likely will need a join-table
 
     connection_config = relationship(ConnectionConfig)
+
+    executions = relationship(
+        "MonitorExecution",
+        cascade="all, delete-orphan",
+        backref="monitor_config",
+    )
 
     @property
     def connection_config_key(self) -> str:
@@ -365,6 +361,41 @@ class StagedResource(Base):
             )
             if parent_resource:
                 parent_resource.add_child_diff_status(DiffStatus.ADDITION)
+
+
+class MonitorExecution(Base):
+    """
+    Monitor execution record used for data detection and discovery.
+
+    Each monitor execution references `MonitorConfig`, which provide it with underlying
+    configuration details used in connecting to the external data store.
+    """
+
+    id = Column(String, primary_key=True)
+    monitor_config_key = Column(
+        String,
+        ForeignKey(MonitorConfig.key),
+        nullable=False,
+        index=True,
+    )
+    status = Column(String, nullable=True)
+    started = Column(
+        DateTime(timezone=True), nullable=True, default=datetime.now(timezone.utc)
+    )
+    completed = Column(DateTime(timezone=True), nullable=True)
+    classification_instances = Column(
+        ARRAY(String),
+        index=False,
+        unique=False,
+        nullable=False,
+        default=list,
+    )
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+    )
 
 
 def fetch_staged_resources_by_type_query(

@@ -2,6 +2,7 @@ from typing import Any, Dict, List, Literal, Optional, Union
 
 from pydantic import ConfigDict, Field, field_validator, model_validator
 
+from fides.api.models.location_regulation_selections import PrivacyNoticeRegion
 from fides.api.schemas.base_class import FidesSchema
 
 RequiredType = Literal["optional", "required"]
@@ -54,7 +55,8 @@ class CustomPrivacyRequestField(FidesSchema):
 
 
 class PrivacyRequestOption(FidesSchema):
-    policy_key: str
+    locations: Optional[Union[List[PrivacyNoticeRegion], Literal["fallback"]]] = None
+    policy_key: Optional[str] = None
     icon_path: str
     title: str
     description: str
@@ -116,6 +118,18 @@ class ConsentConfig(FidesSchema):
     page: ConsentConfigPage
 
 
+class PolicyUnavailableMessages(FidesSchema):
+    """
+    Used to capture the information to present to a user if a policy is unavailable.
+    """
+
+    title: str
+    description: str
+    close_button_text: str
+    action_button_text: str
+    action_link: str
+
+
 class PrivacyCenterConfig(FidesSchema):
     """
     NOTE: Add to this schema with care. Any fields added to
@@ -138,6 +152,7 @@ class PrivacyCenterConfig(FidesSchema):
     consent: ConsentConfig
     privacy_policy_url: Optional[str] = None
     privacy_policy_url_text: Optional[str] = None
+    policy_unavailable_messages: Optional[PolicyUnavailableMessages] = None
 
 
 class PartialPrivacyRequestOption(FidesSchema):

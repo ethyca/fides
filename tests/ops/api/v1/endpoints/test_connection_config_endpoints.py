@@ -2018,6 +2018,7 @@ class TestPutConnectionConfigSecrets:
         payload = {
             "datahub_server_url": "https://datahub.example.com",
             "datahub_token": "test",
+            "frequency": "weekly",
         }
         resp = api_client.put(
             url + "?verify=False",
@@ -2034,6 +2035,8 @@ class TestPutConnectionConfigSecrets:
         assert datahub_connection_config_no_secrets.secrets == {
             "datahub_server_url": "https://datahub.example.com",
             "datahub_token": "test",
+            "frequency": "weekly",
+            "glossary_node": "FidesDataCategories",
         }
         assert datahub_connection_config_no_secrets.last_test_timestamp is None
         assert datahub_connection_config_no_secrets.last_test_succeeded is None
@@ -2069,6 +2072,8 @@ class TestPutConnectionConfigSecrets:
         assert datahub_connection_config_no_secrets.secrets == {
             "datahub_server_url": "https://datahub.example.com",
             "datahub_token": "test",
+            "frequency": "daily",
+            "glossary_node": "FidesDataCategories",
         }
         assert datahub_connection_config_no_secrets.last_test_timestamp is None
         assert datahub_connection_config_no_secrets.last_test_succeeded is None
@@ -2085,7 +2090,7 @@ class TestPutConnectionConfigSecrets:
         """
         url = f"{V1_URL_PREFIX}{CONNECTIONS}/{datahub_connection_config_no_secrets.key}/secret"
         auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
-        payload = {"datahub_token": "test"}
+        payload = {"datahub_token": "test", "frequency": "weekly"}
         resp = api_client.put(
             url + "?verify=False",
             headers=auth_header,
@@ -2111,6 +2116,7 @@ class TestPutConnectionConfigSecrets:
         auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
         payload = {
             "datahub_server_url": "https://datahub.example.com",
+            "frequency": "weekly",
         }
         resp = api_client.put(
             url + "?verify=False",
