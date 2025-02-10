@@ -86,8 +86,7 @@ async def create_dataset(
 ) -> Dict:
     """Create a new dataset"""
     try:
-        created = dataset_service.create_dataset(dataset)
-        return created.model_dump()
+        return dataset_service.create_dataset(dataset)
     except PydanticValidationError as e:
         raise HTTPException(
             status_code=HTTP_422_UNPROCESSABLE_ENTITY,
@@ -193,8 +192,7 @@ async def get_dataset(
     """Get a single dataset by fides key"""
     service = DatasetService(db)
     try:
-        dataset = service.get_dataset(fides_key)
-        return dataset.model_dump()
+        return service.get_dataset(fides_key)
     except DatasetNotFoundException as e:
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,
