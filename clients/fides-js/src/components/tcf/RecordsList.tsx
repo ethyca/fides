@@ -12,13 +12,13 @@ export type RecordListType =
   | "specialFeatures"
   | "vendors";
 
-interface Item {
+export interface RecordListItem {
   id: string | number;
   name?: string;
   bestTranslation?: PrivacyNoticeTranslation | null; // only used for custom purposes
 }
 
-interface Props<T extends Item> {
+interface Props<T extends RecordListItem> {
   items: T[];
   type: RecordListType;
   title: string;
@@ -29,7 +29,7 @@ interface Props<T extends Item> {
   hideToggles?: boolean;
 }
 
-const RecordsList = <T extends Item>({
+const RecordsList = <T extends RecordListItem>({
   items,
   type,
   title,
@@ -64,7 +64,7 @@ const RecordsList = <T extends Item>({
     toggleOffLabel = "Off";
   }
 
-  const getNameForItem = (item: Item) => {
+  const getNameForItem = (item: RecordListItem) => {
     if (type === "vendors") {
       // Return the (non-localized!) name for vendors
       return item.name as string;

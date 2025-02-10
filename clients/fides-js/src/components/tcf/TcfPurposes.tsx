@@ -18,7 +18,7 @@ import {
 } from "../../lib/tcf/types";
 import EmbeddedVendorList from "./EmbeddedVendorList";
 import RadioGroup from "./RadioGroup";
-import RecordsList, { RecordListType } from "./RecordsList";
+import RecordsList, { RecordListItem, RecordListType } from "./RecordsList";
 
 type TCFPurposeRecord =
   | TCFPurposeConsentRecord
@@ -105,13 +105,12 @@ const TcfPurposes = ({
   const [activeLegalBasisOption, setActiveLegalBasisOption] = useState(
     LEGAL_BASIS_OPTIONS[0],
   );
-  // @ts-ignore
   const activeData: {
     purposes: PurposeRecord[];
-    customPurposes?: PrivacyNoticeWithBestTranslation[] | undefined;
+    customPurposes?: PrivacyNoticeWithBestTranslation[];
     purposeModelType: keyof EnabledIds;
     enabledPurposeIds: string[];
-    enabledCustomPurposeIds: string[];
+    enabledCustomPurposeIds?: string[];
     specialPurposes: TCFSpecialPurposeRecord[];
     enabledSpecialPurposeIds: string[];
   } = useMemo(() => {
@@ -156,17 +155,22 @@ const TcfPurposes = ({
         active={activeLegalBasisOption}
         onChange={setActiveLegalBasisOption}
       />
-      <RecordsList<
-        PurposeRecord | (PrivacyNoticeWithBestTranslation & PurposeRecord)
-      >
+      <RecordsList<PurposeRecord | PrivacyNoticeWithBestTranslation>
         type="purposes"
         title={i18n.t("static.tcf.purposes")}
-        // @ts-ignore
-        items={[...activeData.customPurposes, ...activeData.purposes]}
-        enabledIds={[
-          ...activeData.enabledCustomPurposeIds,
-          ...activeData.enabledPurposeIds,
-        ]}
+        items={
+          activeData.customPurposes
+            ? [...activeData.customPurposes, ...activeData.purposes]
+            : activeData.purposes
+        }
+        enabledIds={
+          activeData.enabledCustomPurposeIds
+            ? [
+                ...activeData.enabledCustomPurposeIds,
+                ...activeData.enabledPurposeIds,
+              ]
+            : activeData.enabledPurposeIds
+        }
         onToggle={(newEnabledIds, item) =>
           onChange({
             newEnabledIds,
@@ -183,12 +187,11 @@ const TcfPurposes = ({
             isCustomPurpose={isCustomPurpose}
           />
         )}
-        renderBadgeLabel={(item) => {
+        renderBadgeLabel={(item: RecordListItem) => {
           // Denote which purposes are standard IAB purposes if we have custom ones in the mix
           if (!activeData.customPurposes) {
             return undefined;
           }
-          // @ts-ignore
           return item.bestTranslation ? "" : "IAB TCF";
         }}
         // This key forces a rerender when legal basis changes, which allows paging to reset properly
