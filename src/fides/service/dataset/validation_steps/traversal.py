@@ -43,6 +43,7 @@ class TraversalValidationStep(DatasetValidationStep):
             context.traversal_details = DatasetTraversalDetails(
                 is_traversable=True, msg=None
             )
+
         except (TraversalError, ValidationError) as err:
             context.traversal_details = DatasetTraversalDetails(
                 is_traversable=False, msg=str(err)

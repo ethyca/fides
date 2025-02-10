@@ -3554,8 +3554,7 @@ class TestRequestPreview:
         assert response.status_code == 400
         assert (
             response.json()["detail"]
-            == "Referred to object postgres_example_test_dataset:customer:id does not "
-            "exist. Make sure all referenced datasets are included in the request body."
+            == "Referenced object postgres_example_test_dataset:customer:id from dataset mongo_test does not exist. Make sure all referenced datasets are included in the request body."
         )
 
         # Use the dataset endpoint to create the Postgres DatasetConfig

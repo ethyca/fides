@@ -66,10 +66,43 @@ class DatasetService:
             raise DatasetNotFoundException(f"Dataset {fides_key} not found")
         return dataset
 
-    def delete_dataset(self, fides_key: str) -> None:
+    def delete_dataset(self, fides_key: str) -> CtlDataset:
         """Delete a dataset by fides key"""
         dataset = self.get_dataset(fides_key)
         dataset.delete(self.db)
+        return dataset
+
+    def upsert_datasets(self, datasets: List[FideslangDataset]) -> Tuple[int, int]:
+        """
+        For any dataset in `datasets` that already exists in the database,
+        update the dataset by its `fides_key`. Otherwise, create a new dataset.
+
+        Returns a tuple of (inserted_count, updated_count).
+        """
+        inserted = 0
+        updated = 0
+
+        for dataset in datasets:
+            try:
+                existing = (
+                    self.db.query(CtlDataset)
+                    .filter(CtlDataset.fides_key == dataset.fides_key)
+                    .first()
+                )
+
+                if existing:
+                    self.validate_dataset(dataset)
+                    data_dict = dataset.model_dump(mode="json")
+                    existing.update(self.db, data=data_dict)
+                    updated += 1
+                else:
+                    self.create_dataset(dataset)
+                    inserted += 1
+            except Exception as e:
+                logger.error(f"Error upserting dataset {dataset.fides_key}: {str(e)}")
+                raise
+
+        return inserted, updated
 
     def clean_datasets(self) -> Tuple[List[str], List[str]]:
         datasets = self.db.execute(select([CtlDataset])).scalars().all()

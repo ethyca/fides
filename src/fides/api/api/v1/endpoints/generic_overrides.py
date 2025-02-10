@@ -1,6 +1,7 @@
 from typing import Dict, List, Optional, Type, Union
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Security
+from fastapi import APIRouter, Depends, HTTPException, Query, Response, Security
+from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
 from fastapi_pagination import Page, Params
 from fastapi_pagination.ext.async_sqlalchemy import paginate as async_paginate
@@ -18,7 +19,7 @@ from starlette.status import (
 
 from fides.api.api import deps
 from fides.api.api.deps import get_dataset_service, get_db
-from fides.api.common_exceptions import KeyOrNameAlreadyExists
+from fides.api.common_exceptions import KeyOrNameAlreadyExists, ValidationError
 from fides.api.db.base_class import get_key_from_data
 from fides.api.db.crud import list_resource_query
 from fides.api.db.ctl_session import get_async_db
@@ -38,14 +39,14 @@ from fides.api.util.errors import FidesError, ForbiddenIsDefaultTaxonomyError
 from fides.api.util.filter_utils import apply_filters_to_query
 from fides.common.api.scope_registry import (
     CTL_DATASET_CREATE,
+    CTL_DATASET_DELETE,
+    CTL_DATASET_READ,
     CTL_DATASET_UPDATE,
     DATA_CATEGORY_CREATE,
     DATA_CATEGORY_UPDATE,
     DATA_SUBJECT_CREATE,
     DATA_USE_CREATE,
     DATA_USE_UPDATE,
-    DATASET_DELETE,
-    DATASET_READ,
 )
 from fides.common.api.v1.urn_registry import DATASETS_CLEAN, V1_URL_PREFIX
 from fides.service.dataset.dataset_service import (
@@ -67,7 +68,10 @@ from fides.api.models.sql_models import (  # type: ignore[attr-defined] # isort:
 # We create routers to override specific methods in those defined in generic.py
 # when we need more custom implementations for only some of the methods in a router.
 
-dataset_router = APIRouter(tags=["Dataset"], prefix=V1_URL_PREFIX)
+dataset_router = APIRouter(
+    tags=["Dataset"],
+    prefix=f"{V1_URL_PREFIX}",
+)
 data_use_router = APIRouter(tags=["DataUse"], prefix=V1_URL_PREFIX)
 data_category_router = APIRouter(tags=["DataCategory"], prefix=V1_URL_PREFIX)
 data_subject_router = APIRouter(tags=["DataSubject"], prefix=V1_URL_PREFIX)
@@ -87,10 +91,14 @@ async def create_dataset(
     """Create a new dataset"""
     try:
         return dataset_service.create_dataset(dataset)
-    except PydanticValidationError as e:
+    except (ValidationError, PydanticValidationError) as exc:
         raise HTTPException(
             status_code=HTTP_422_UNPROCESSABLE_ENTITY,
-            detail={"message": str(e)},
+            detail=jsonable_encoder(
+                exc.errors(include_url=False, include_input=False)
+                if isinstance(exc, PydanticValidationError)
+                else exc.message
+            ),
         )
 
 
@@ -108,12 +116,15 @@ async def update_dataset(
     """Update an existing dataset"""
     service = DatasetService(db)
     try:
-        updated = service.update_dataset(dataset)
-        return updated.model_dump()
-    except PydanticValidationError as e:
+        return service.update_dataset(dataset)
+    except (ValidationError, PydanticValidationError) as exc:
         raise HTTPException(
             status_code=HTTP_422_UNPROCESSABLE_ENTITY,
-            detail={"message": str(e)},
+            detail=jsonable_encoder(
+                exc.errors(include_url=False, include_input=False)
+                if isinstance(exc, PydanticValidationError)
+                else exc.message
+            ),
         )
     except DatasetNotFoundException as e:
         raise HTTPException(
@@ -124,7 +135,7 @@ async def update_dataset(
 
 @dataset_router.get(
     "/dataset",
-    dependencies=[Security(verify_oauth_client, scopes=[DATASET_READ])],
+    dependencies=[Security(verify_oauth_client, scopes=[CTL_DATASET_READ])],
     response_model=Union[Page[FideslangDataset], List[FideslangDataset]],
     name="List datasets (optionally paginated)",
 )
@@ -145,6 +156,7 @@ async def list_dataset_paginated(
     Provided filters (search, data_categories, exclude_saas_datasets, only_unlinked_datasets) will be applied,
     returning only the datasets that match ALL of the filters.
     """
+
     query = select(CtlDataset)
 
     # Add filters for search and data categories
@@ -181,7 +193,7 @@ async def list_dataset_paginated(
 
 @dataset_router.get(
     "/dataset/{fides_key}",
-    dependencies=[Security(verify_oauth_client, scopes=[DATASET_READ])],
+    dependencies=[Security(verify_oauth_client, scopes=[CTL_DATASET_READ])],
     response_model=FideslangDataset,
     name="Get dataset",
 )
@@ -202,18 +214,25 @@ async def get_dataset(
 
 @dataset_router.delete(
     "/dataset/{fides_key}",
-    dependencies=[Security(verify_oauth_client, scopes=[DATASET_DELETE])],
-    status_code=status.HTTP_204_NO_CONTENT,
+    dependencies=[Security(verify_oauth_client, scopes=[CTL_DATASET_DELETE])],
     name="Delete dataset",
 )
 async def delete_dataset(
     fides_key: str,
     db: Session = Depends(get_db),
-) -> None:
+) -> JSONResponse:
     """Delete a dataset by fides key"""
     service = DatasetService(db)
     try:
-        service.delete_dataset(fides_key)
+        dataset = service.delete_dataset(fides_key)
+        return JSONResponse(
+            content={
+                "message": "resource deleted",
+                "resource": FideslangDataset.model_validate(dataset).model_dump(
+                    mode="json"
+                ),
+            },
+        )
     except DatasetNotFoundException as e:
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,
@@ -221,9 +240,53 @@ async def delete_dataset(
         )
 
 
+@dataset_router.post(
+    "/dataset/upsert",
+    dependencies=[
+        Security(
+            verify_oauth_client,
+            scopes=[CTL_DATASET_CREATE, CTL_DATASET_UPDATE],
+        )
+    ],
+)
+async def upsert_datasets(
+    datasets: List[FideslangDataset],
+    response: Response,
+    dataset_service: DatasetService = Depends(get_dataset_service),
+) -> Dict:
+    """
+    For any dataset in `datasets` that already exists in the database,
+    update the dataset by its `fides_key`. Otherwise, create a new dataset.
+
+    Responds with a `201 Created` if even a single dataset in `datasets`
+    did not previously exist. Otherwise, responds with a `200 OK`.
+    """
+    try:
+        inserted, updated = dataset_service.upsert_datasets(datasets)
+
+        response.status_code = (
+            status.HTTP_201_CREATED if inserted > 0 else response.status_code
+        )
+
+        return {
+            "message": f"Upserted {len(datasets)} Dataset(s)",
+            "inserted": inserted,
+            "updated": updated,
+        }
+    except (ValidationError, PydanticValidationError) as exc:
+        raise HTTPException(
+            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=jsonable_encoder(
+                exc.errors(include_url=False, include_input=False)
+                if isinstance(exc, PydanticValidationError)
+                else exc.message
+            ),
+        )
+
+
 @dataset_router.get(
     DATASETS_CLEAN,
-    dependencies=[Security(verify_oauth_client, scopes=[DATASET_READ])],
+    dependencies=[Security(verify_oauth_client, scopes=[CTL_DATASET_READ])],
     response_model=List[FideslangDataset],
     deprecated=True,
 )

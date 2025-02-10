@@ -177,7 +177,7 @@ class TestValidateDataset:
         assert not details["is_traversable"]
         assert (
             details["msg"]
-            == "Referred to object postgres_example_test_dataset:address:id does not exist"
+            == "Referenced object postgres_example_test_dataset:address:id from dataset postgres_example_test_dataset does not exist"
         )
 
     def test_put_validate_dataset_nested_collections(
@@ -419,7 +419,7 @@ class TestValidateDataset:
         assert response_body["traversal_details"]
         assert response_body["traversal_details"]["is_traversable"] is False
         assert (
-            "Referred to object postgres_example_test_dataset:customer:id does not exist"
+            "Referenced object postgres_example_test_dataset:customer:id from dataset mongo_test does not exist"
             == response_body["traversal_details"]["msg"]
         )
 
@@ -2453,7 +2453,7 @@ class TestListDataset:
         ctl_dataset,
         secondary_hubspot_instance,
     ):
-        auth_header = generate_auth_header(scopes=[DATASET_READ])
+        auth_header = generate_auth_header(scopes=[CTL_DATASET_READ])
         response = api_client.get(f"{V1_URL_PREFIX}/dataset", headers=auth_header)
 
         assert response.status_code == 200
@@ -2472,7 +2472,7 @@ class TestListDataset:
         ctl_dataset,
         secondary_hubspot_instance,
     ):
-        auth_header = generate_auth_header(scopes=[DATASET_READ])
+        auth_header = generate_auth_header(scopes=[CTL_DATASET_READ])
         response = api_client.get(
             f"{V1_URL_PREFIX}/dataset?exclude_saas_datasets=True",
             headers=auth_header,
@@ -2490,7 +2490,7 @@ class TestListDataset:
         unlinked_dataset,
         linked_dataset,
     ):
-        auth_header = generate_auth_header(scopes=[DATASET_READ])
+        auth_header = generate_auth_header(scopes=[CTL_DATASET_READ])
         response = api_client.get(
             f"{V1_URL_PREFIX}/dataset?only_unlinked_datasets=True",
             headers=auth_header,
@@ -2508,7 +2508,7 @@ class TestListDataset:
         ctl_dataset,
         secondary_hubspot_instance,
     ):
-        auth_header = generate_auth_header(scopes=[DATASET_READ])
+        auth_header = generate_auth_header(scopes=[CTL_DATASET_READ])
         response = api_client.get(
             f"{V1_URL_PREFIX}/dataset?page=1&size=5", headers=auth_header
         )
@@ -2530,7 +2530,7 @@ class TestListDataset:
         ctl_dataset,
         secondary_hubspot_instance,
     ):
-        auth_header = generate_auth_header(scopes=[DATASET_READ])
+        auth_header = generate_auth_header(scopes=[CTL_DATASET_READ])
         response = api_client.get(
             f"{V1_URL_PREFIX}/dataset?page=1&size=5&exclude_saas_datasets=True",
             headers=auth_header,
@@ -2549,7 +2549,7 @@ class TestListDataset:
         unlinked_dataset,
         linked_dataset,
     ):
-        auth_header = generate_auth_header(scopes=[DATASET_READ])
+        auth_header = generate_auth_header(scopes=[CTL_DATASET_READ])
         response = api_client.get(
             f"{V1_URL_PREFIX}/dataset?page=1&size=5&only_unlinked_datasets=True",
             headers=auth_header,
@@ -2568,7 +2568,7 @@ class TestListDataset:
         ctl_dataset,
         saas_ctl_dataset,
     ):
-        auth_header = generate_auth_header(scopes=[DATASET_READ])
+        auth_header = generate_auth_header(scopes=[CTL_DATASET_READ])
         # We don't pass in the page but we pass in the size,
         # so we should get a paginated response with the default page number (1)
         response = api_client.get(
@@ -2593,7 +2593,7 @@ class TestListDataset:
         ctl_dataset,
         saas_ctl_dataset,
     ):
-        auth_header = generate_auth_header(scopes=[DATASET_READ])
+        auth_header = generate_auth_header(scopes=[CTL_DATASET_READ])
         # We don't pass in the size but we pass in the page,
         # so we should get a paginated response with the default size (50)
         response = api_client.get(
@@ -2620,7 +2620,7 @@ class TestListDataset:
         saas_ctl_dataset,
         dataset_with_categories,
     ):
-        auth_header = generate_auth_header(scopes=[DATASET_READ])
+        auth_header = generate_auth_header(scopes=[CTL_DATASET_READ])
         response = api_client.get(
             f"{V1_URL_PREFIX}/dataset?page=1&size=1&data_categories=user.contact.email",
             headers=auth_header,

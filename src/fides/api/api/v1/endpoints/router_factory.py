@@ -6,15 +6,10 @@ Mostly used for `ctl`-related objects.
 """
 from typing import Dict, List
 
-from fastapi import Depends, HTTPException, Response, Security, status
-from fastapi.encoders import jsonable_encoder
+from fastapi import Depends, Response, Security, status
 from fideslang import FidesModelType
-from fideslang.models import Dataset
-from pydantic import ValidationError as PydanticValidationError
 from sqlalchemy.ext.asyncio import AsyncSession
-from starlette.status import HTTP_422_UNPROCESSABLE_ENTITY
 
-from fides.api.common_exceptions import ValidationError
 from fides.api.db.crud import (
     create_resource,
     delete_resource,
@@ -36,7 +31,6 @@ from fides.api.util.endpoint_utils import (
     forbid_if_editing_is_default,
 )
 from fides.common.api.scope_registry import CREATE, DELETE, READ, UPDATE
-from fides.service.dataset.dataset_service import DatasetService
 
 
 def generic_router_factory(fides_model: FidesModelType, model_type: str) -> APIRouter:
@@ -44,8 +38,6 @@ def generic_router_factory(fides_model: FidesModelType, model_type: str) -> APIR
     Compose all of the individual route factories into a single coherent Router.
     Skip dataset-specific routes as they are now handled by DatasetService.
     """
-    if model_type == "dataset":
-        return APIRouter()  # Return empty router for datasets
 
     object_router = APIRouter()
 
@@ -77,11 +69,11 @@ def generic_router_factory(fides_model: FidesModelType, model_type: str) -> APIR
 def create_router_factory(fides_model: FidesModelType, model_type: str) -> APIRouter:
     """Return a configured version of a generic 'Create' route."""
 
-    router = APIRouter(prefix=f"{API_PREFIX}/{model_type}", tags=[fides_model.__name__])
+    router = APIRouter(prefix=f"{API_PREFIX}", tags=[fides_model.__name__])
 
     @router.post(
         name="Create",
-        path="/",
+        path=f"/{model_type}",
         response_model=fides_model,
         status_code=status.HTTP_201_CREATED,
         dependencies=[
@@ -117,20 +109,6 @@ def create_router_factory(fides_model: FidesModelType, model_type: str) -> APIRo
         will return a `403 Forbidden`.
         """
         sql_model = sql_model_map[model_type]
-        if isinstance(resource, Dataset):
-            try:
-                dataset_service = DatasetService(db)
-                dataset_service.validate_dataset(resource)
-            except (ValidationError, PydanticValidationError) as e:
-                raise HTTPException(
-                    status_code=HTTP_422_UNPROCESSABLE_ENTITY,
-                    detail=jsonable_encoder(
-                        e.errors(include_url=False, include_input=False)
-                        if isinstance(e, PydanticValidationError)
-                        else e.message
-                    ),
-                )
-
         if isinstance(sql_model, ModelWithDefaultField) and resource.is_default:
             raise errors.ForbiddenIsDefaultTaxonomyError(
                 model_type, resource.fides_key, action="create"
@@ -196,10 +174,10 @@ def get_router_factory(fides_model: FidesModelType, model_type: str) -> APIRoute
 def update_router_factory(fides_model: FidesModelType, model_type: str) -> APIRouter:
     """Return a configured version of a generic 'Update' route."""
 
-    router = APIRouter(prefix=f"{API_PREFIX}/{model_type}", tags=[fides_model.__name__])
+    router = APIRouter(prefix=f"{API_PREFIX}", tags=[fides_model.__name__])
 
     @router.put(
-        path="/",
+        path=f"/{model_type}",
         response_model=fides_model,
         dependencies=[
             Security(
@@ -234,19 +212,6 @@ def update_router_factory(fides_model: FidesModelType, model_type: str) -> APIRo
         with a `403 Forbidden` if attempted.
         """
         sql_model = sql_model_map[model_type]
-        if isinstance(resource, Dataset):
-            try:
-                dataset_service = DatasetService(db)
-                dataset_service.validate_dataset(resource)
-            except (ValidationError, PydanticValidationError) as e:
-                raise HTTPException(
-                    status_code=HTTP_422_UNPROCESSABLE_ENTITY,
-                    detail=jsonable_encoder(
-                        e.errors(include_url=False, include_input=False)
-                        if isinstance(e, PydanticValidationError)
-                        else e.message
-                    ),
-                )
         await forbid_if_editing_is_default(sql_model, resource.fides_key, resource, db)
         return await update_resource(sql_model, resource.model_dump(mode="json"), db)
 
@@ -325,21 +290,6 @@ def upsert_router_factory(fides_model: FidesModelType, model_type: str) -> APIRo
 
         sql_model = sql_model_map[model_type]
         resource_dicts = [resource.model_dump(mode="json") for resource in resources]
-        if any(isinstance(resource, Dataset) for resource in resources):
-            try:
-                dataset_service = DatasetService(db)
-                for resource in resources:
-                    if isinstance(resource, Dataset):
-                        dataset_service.validate_dataset(resource)
-            except (ValidationError, PydanticValidationError) as e:
-                raise HTTPException(
-                    status_code=HTTP_422_UNPROCESSABLE_ENTITY,
-                    detail=jsonable_encoder(
-                        e.errors(include_url=False, include_input=False)
-                        if isinstance(e, PydanticValidationError)
-                        else e.message
-                    ),
-                )
         await forbid_if_editing_any_is_default(sql_model, resource_dicts, db)
         result = await upsert_resources(sql_model, resource_dicts, db)
         response.status_code = (
