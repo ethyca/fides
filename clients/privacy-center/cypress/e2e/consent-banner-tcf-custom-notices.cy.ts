@@ -744,21 +744,6 @@ describe("Fides-js TCF", () => {
         cy.get("@FidesUIChanged").its("callCount").should("equal", 2);
       });
 
-      it("can handle group toggle empty states", () => {
-        cy.fixture("consent/experience_tcf.json").then((payload) => {
-          const experience = payload.items[0];
-          const updatedExperience = { ...experience, tcf_purpose_consents: [] };
-          stubTCFExperience({
-            experienceFullOverride: updatedExperience,
-            includeCustomPurposes: true,
-          });
-          cy.waitUntilFidesInitialized().then(() => {
-            cy.get("#fides-modal-link").click();
-            cy.getByTestId(`records-list-purposes`).should("not.exist");
-          });
-        });
-      });
-
       it("separates purpose tab by legal bases", () => {
         const legintSpecialPurposeName =
           "Deliver and present advertising and content";

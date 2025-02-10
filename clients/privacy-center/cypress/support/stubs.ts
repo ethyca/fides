@@ -112,7 +112,6 @@ export const stubConfig = (
       const experienceMock = mockExperienceApiResp || {
         fixture: "consent/experience_banner_modal.json",
       };
-      console.log("experience mock notices", experienceMock?.privacy_notices);
       const experienceResp =
         mockExperienceApiResp === OVERRIDE.UNDEFINED
           ? undefined
