@@ -37,9 +37,12 @@ const DataUseToggle = ({
     onToggle: toggleDescription,
   } = useDisclosure({ id: noticeKey });
 
-  const handleKeyDown = (event: KeyboardEvent) => {
+  const handleKeyDown = (event: KeyboardEvent, isClickable: boolean) => {
     if (event.code === "Space" || event.code === "Enter") {
-      toggleDescription();
+      event.preventDefault();
+      if (isClickable) {
+        toggleDescription();
+      }
     }
   };
 
@@ -58,7 +61,7 @@ const DataUseToggle = ({
         <span
           role="button"
           tabIndex={0}
-          onKeyDown={isClickable ? handleKeyDown : undefined}
+          onKeyDown={(e) => handleKeyDown(e, isClickable)}
           {...buttonProps}
           className={
             isHeader
