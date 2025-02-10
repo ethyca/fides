@@ -13,11 +13,12 @@ const setupBlueConicClient = (
   const mockProfile = {
     setConsentedObjectives: jest.fn(),
     setRefusedObjectives: jest.fn(),
+    setValue: jest.fn()
   };
   const client = {
     profile: {
       getProfile: jest.fn(() => mockProfile),
-      updateProfile: jest.fn(),
+      updateProfile: jest.fn()
     },
     event: initialized === "initialized" ? getBlueConicEvent() : undefined,
   } as const satisfies typeof window.blueConicClient;
