@@ -70,7 +70,7 @@ const DataUseToggle = ({
             {title}
           </span>
         </span>
-        <span>
+        <span className="fides-notice-toggle-controls">
           {gpcBadge}
           {badge ? <span className="fides-notice-badge">{badge}</span> : null}
           {includeToggle ? (
