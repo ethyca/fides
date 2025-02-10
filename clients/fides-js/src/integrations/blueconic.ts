@@ -55,18 +55,15 @@ const configureObjectives = () => {
 };
 
 // assigns the Fides geolocation to the BlueConic profile for the current user
-// allows BlueConic to review geolocation discrepenices between BlueConic & Ethyca fides.js
 const setFidesGeoLocationToBlueConicProfile = () => {
   if (!blueConicLoaded() || !window.blueConicClient?.profile) {
     return;
   }
-
-  var profile = window.blueConicClient.profile.getProfile()
-  profile.setValue("fides_identifier", window.Fides?.identity?.fides_user_device_id)
-  profile.setValue("fides_geolocation", window.Fides?.geolocation)
-  window.blueConicClient.profile.updateProfile()
-
-}
+  const profile = window.blueConicClient.profile.getProfile();
+  profile.setValue("fides_identifier", window.Fides?.identity?.fides_user_device_id);
+  profile.setValue("fides_geolocation", window.Fides?.geolocation);
+  window.blueConicClient.profile.updateProfile();
+};
 
 
 export const blueconic = (
@@ -77,15 +74,12 @@ export const blueconic = (
   if (approach !== "onetrust") {
     throw new Error("Unsupported approach");
   }
-
   window.addEventListener("FidesInitialized", configureObjectives);
   window.addEventListener("FidesUpdated", () => {
     configureObjectives();
     setFidesGeoLocationToBlueConicProfile();
   });
   window.addEventListener("onBlueConicLoaded", configureObjectives);
-
   configureObjectives();
   setFidesGeoLocationToBlueConicProfile();
-
 };
