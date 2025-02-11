@@ -57,6 +57,7 @@ export const antTheme: AntThemeConfig = {
     Menu: {
       itemHoverBg: palette.FIDESUI_NEUTRAL_50,
       darkItemBg: palette.FIDESUI_MINOS,
+      darkItemColor: palette.FIDESUI_CORINTH,
       darkSubMenuItemBg: palette.FIDESUI_MINOS,
       darkItemSelectedBg: palette.FIDESUI_SANDSTONE,
     },
