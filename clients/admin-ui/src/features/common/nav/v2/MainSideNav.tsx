@@ -94,6 +94,13 @@ export const UnconnectedMainSideNav = ({
         console.error("Error parsing local storage key", e);
       }
     }
+
+    // If the active key is not in the opened keys, add it
+    const activeParentKey = active?.title;
+    if (activeParentKey && !openedKeys.includes(activeParentKey)) {
+      openedKeys.push(activeParentKey);
+    }
+
     return openedKeys;
   };
 
