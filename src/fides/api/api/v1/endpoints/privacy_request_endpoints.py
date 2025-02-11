@@ -424,29 +424,55 @@ def _filter_privacy_request_queryset(
             (started_lt, started_gt, "started"),
         ]
     )
+
+    # Handle fuzzy search string
     if fuzzy_search_str:
-        decrypted_identities_automaton = get_decrypted_identities_automaton(db)
+        if CONFIG.execution.fuzzy_search_enabled:
+            decrypted_identities_automaton = get_decrypted_identities_automaton(db)
 
-        # Set of associated privacy request ids
-        fuzzy_search_identity_privacy_request_ids: Optional[Set[str]] = set(
-            x
-            for list in decrypted_identities_automaton.values(fuzzy_search_str)
-            for x in list
-        )
+            # Set of associated privacy request ids
+            fuzzy_search_identity_privacy_request_ids: Optional[Set[str]] = set(
+                x
+                for list in decrypted_identities_automaton.values(fuzzy_search_str)
+                for x in list
+            )
 
-        if not fuzzy_search_identity_privacy_request_ids:
-            query = query.filter(PrivacyRequest.id.ilike(f"{fuzzy_search_str}%"))
+            if not fuzzy_search_identity_privacy_request_ids:
+                query = query.filter(PrivacyRequest.id.ilike(f"{fuzzy_search_str}%"))
+            else:
+                query = query.filter(
+                    or_(
+                        PrivacyRequest.id.in_(
+                            fuzzy_search_identity_privacy_request_ids
+                        ),
+                        PrivacyRequest.id.ilike(f"{fuzzy_search_str}%"),
+                    )
+                )
         else:
+            # When fuzzy search is disabled, treat fuzzy_search_str as an
+            # exact match on identity or partial match on privacy request ID
+            identity_hashes = ProvidedIdentity.hash_value_for_search(fuzzy_search_str)
+            identity_set: Set[str] = {
+                identity[0]
+                for identity in ProvidedIdentity.filter(
+                    db=db,
+                    conditions=(
+                        (ProvidedIdentity.hashed_value.in_(identity_hashes))
+                        & (ProvidedIdentity.privacy_request_id.isnot(None))
+                    ),
+                ).values(column("privacy_request_id"))
+            }
+
             query = query.filter(
                 or_(
-                    PrivacyRequest.id.in_(fuzzy_search_identity_privacy_request_ids),
-                    PrivacyRequest.id.ilike(f"{fuzzy_search_str}%"),
+                    PrivacyRequest.id.in_(identity_set),
+                    PrivacyRequest.id.ilike(f"%{fuzzy_search_str}%"),
                 )
             )
 
     if identity:
         identity_hashes = ProvidedIdentity.hash_value_for_search(identity)
-        identity_set: Set[str] = {
+        identity_set: Set[str] = { # type: ignore[no-redef]
             identity[0]
             for identity in ProvidedIdentity.filter(
                 db=db,
@@ -499,7 +525,7 @@ def _filter_privacy_request_queryset(
 
     # Further restrict all PrivacyRequests by additional params
     if request_id:
-        query = query.filter(PrivacyRequest.id.ilike(f"{request_id}%"))
+        query = query.filter(PrivacyRequest.id.ilike(f"%{request_id}%"))
     if external_id:
         query = query.filter(PrivacyRequest.external_id.ilike(f"{external_id}%"))
     if status:
