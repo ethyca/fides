@@ -36,7 +36,6 @@ const SelectDataset = ({ options }: { options?: Option[] }) => {
             options={options}
             onChange={(v) => setValue(v)}
             mode="multiple"
-            showSearch
             className="w-full"
           />
         </Box>

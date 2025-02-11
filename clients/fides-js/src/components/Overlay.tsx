@@ -258,6 +258,7 @@ const Overlay: FunctionComponent<Props> = ({
                 isMobile: false,
               })
             }
+            onVendorPageClick={onVendorPageClick}
           >
             {renderModalContent()}
           </ConsentContent>
