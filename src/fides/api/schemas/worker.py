@@ -8,7 +8,7 @@ class TaskDetails(FidesSchema):
     task_id: str
     task_name: str
     args: List[Any]
-    kwargs: Dict[str, Any]
+    keyword_args: Optional[Dict[str, Any]] = None
     started_at: Optional[str] = None
 
     @classmethod
@@ -21,11 +21,16 @@ class TaskDetails(FidesSchema):
             except (TypeError, ValueError):
                 timestamp = None
 
+        # Only include kwargs for execute request tasks
+        keyword_args = None
+        if task["name"] in ["run_access_node", "run_erasure_node", "run_consent_node"]:
+            keyword_args = task.get("kwargs", {})
+
         return cls(
             task_id=task["id"],
             task_name=task["name"],
             args=task.get("args", []),
-            kwargs=task.get("kwargs", {}),
+            keyword_args=keyword_args,
             started_at=timestamp,
             state=state,
         )
