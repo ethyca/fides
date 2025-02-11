@@ -239,18 +239,27 @@ class StagedResource(Base):
         nullable=True,
     )  # just a "soft" pointer, for now TODO: make this a FK
 
+    # for now, this is just used for web monitor resources.
     system_id = Column(
         String,
         ForeignKey(System.id_field_path),
         nullable=True,
         index=True,
     )
-    system = relationship(System)
+
+    # TODO: we should be able to enable the below relationship, but it
+    # but it confuses different functionality since 'system' means different
+    # things depending on whether the resource is a database or web monitor
+    # staged resource
+    #    system = relationship(System)
+
+    # the Compass vendor ID associated with the StagedResource.
+    # only used for web monitor resources
     vendor_id = Column(
         String,
         nullable=True,
         index=True,  # indexed because we frequently need to slice by vendor ID
-    )  # the Compass vendor ID associated with the StagedResource
+    )
 
     source_modified = Column(
         DateTime(timezone=True),
@@ -371,7 +380,6 @@ class MonitorExecution(Base):
     configuration details used in connecting to the external data store.
     """
 
-    id = Column(String, primary_key=True)
     monitor_config_key = Column(
         String,
         ForeignKey(MonitorConfig.key),
