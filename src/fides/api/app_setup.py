@@ -134,7 +134,6 @@ def override_generic_routers(
     for router in overriding_routers:
         base_router.include_router(router)
 
-
 def log_startup() -> None:
     """Log application startup and other information."""
     logger.info(f"Starting Fides - v{VERSION}")

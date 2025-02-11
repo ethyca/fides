@@ -1418,7 +1418,7 @@ class TestDatasetReferenceValidation:
         assert log.collection_name is None
         assert (
             log.message
-            == f"Dataset referencevalidation successful for privacy request: {privacy_request.id}"
+            == f"Dataset reference validation successful for privacy request: {privacy_request.id}"
         )
         assert log.action_type == privacy_request.policy.get_action_type()
 

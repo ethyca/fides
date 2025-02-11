@@ -42,7 +42,6 @@ class DatasetService:
 
     def create_dataset(self, dataset: FideslangDataset) -> CtlDataset:
         """Create a new dataset with validation"""
-
         self.validate_dataset(dataset)
         data_dict = dataset.model_dump(mode="json")
         return CtlDataset.create(self.db, data=data_dict)

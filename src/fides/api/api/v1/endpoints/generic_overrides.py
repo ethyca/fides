@@ -68,10 +68,7 @@ from fides.api.models.sql_models import (  # type: ignore[attr-defined] # isort:
 # We create routers to override specific methods in those defined in generic.py
 # when we need more custom implementations for only some of the methods in a router.
 
-dataset_router = APIRouter(
-    tags=["Dataset"],
-    prefix=f"{V1_URL_PREFIX}",
-)
+dataset_router = APIRouter(tags=["Dataset"], prefix=V1_URL_PREFIX)
 data_use_router = APIRouter(tags=["DataUse"], prefix=V1_URL_PREFIX)
 data_category_router = APIRouter(tags=["DataCategory"], prefix=V1_URL_PREFIX)
 data_subject_router = APIRouter(tags=["DataSubject"], prefix=V1_URL_PREFIX)

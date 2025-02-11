@@ -8,6 +8,7 @@ from typing import Dict, List
 
 from fastapi import Depends, Response, Security, status
 from fideslang import FidesModelType
+from fideslang.models import Dataset
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from fides.api.db.crud import (
@@ -36,7 +37,6 @@ from fides.common.api.scope_registry import CREATE, DELETE, READ, UPDATE
 def generic_router_factory(fides_model: FidesModelType, model_type: str) -> APIRouter:
     """
     Compose all of the individual route factories into a single coherent Router.
-    Skip dataset-specific routes as they are now handled by DatasetService.
     """
 
     object_router = APIRouter()
@@ -69,11 +69,11 @@ def generic_router_factory(fides_model: FidesModelType, model_type: str) -> APIR
 def create_router_factory(fides_model: FidesModelType, model_type: str) -> APIRouter:
     """Return a configured version of a generic 'Create' route."""
 
-    router = APIRouter(prefix=f"{API_PREFIX}", tags=[fides_model.__name__])
+    router = APIRouter(prefix=f"{API_PREFIX}/{model_type}", tags=[fides_model.__name__])
 
     @router.post(
         name="Create",
-        path=f"/{model_type}",
+        path="/",
         response_model=fides_model,
         status_code=status.HTTP_201_CREATED,
         dependencies=[
@@ -109,6 +109,9 @@ def create_router_factory(fides_model: FidesModelType, model_type: str) -> APIRo
         will return a `403 Forbidden`.
         """
         sql_model = sql_model_map[model_type]
+        if isinstance(resource, Dataset):
+            await validate_data_categories(resource, db)
+            validate_masking_strategy(resource)
         if isinstance(sql_model, ModelWithDefaultField) and resource.is_default:
             raise errors.ForbiddenIsDefaultTaxonomyError(
                 model_type, resource.fides_key, action="create"
@@ -174,10 +177,10 @@ def get_router_factory(fides_model: FidesModelType, model_type: str) -> APIRoute
 def update_router_factory(fides_model: FidesModelType, model_type: str) -> APIRouter:
     """Return a configured version of a generic 'Update' route."""
 
-    router = APIRouter(prefix=f"{API_PREFIX}", tags=[fides_model.__name__])
+    router = APIRouter(prefix=f"{API_PREFIX}/{model_type}", tags=[fides_model.__name__])
 
     @router.put(
-        path=f"/{model_type}",
+        path="/",
         response_model=fides_model,
         dependencies=[
             Security(
