@@ -13,13 +13,11 @@ class TaskDetails(FidesSchema):
 
     @classmethod
     def from_celery_task(cls, task: dict, state: str) -> "TaskDetails":
-        # Handle cases where time_start might be None
-        timestamp = None
-        if task.get("time_start"):
-            try:
-                timestamp = datetime.fromtimestamp(task["time_start"]).isoformat()
-            except (TypeError, ValueError):
-                timestamp = None
+        timestamp = (
+            datetime.fromtimestamp(task["time_start"]).isoformat()
+            if task.get("time_start")
+            else None
+        )
 
         # Only include kwargs for execute request tasks
         keyword_args = None
