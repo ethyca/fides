@@ -1,10 +1,11 @@
 import { FidesGlobal } from "../../src/fides";
 import { blueconic } from "../../src/integrations/blueconic";
+import { UserGeolocation } from "fides-js";
 import { MARKETING_CONSENT_KEYS } from "../../src/lib/consent-constants";
 
 const getBlueConicEvent = () =>
   ({
-    subscribe: () => {},
+    subscribe: () => { },
   }) as const;
 
 const setupBlueConicClient = (
@@ -39,6 +40,17 @@ const setupFidesWithConsent = (key: string, optInStatus: boolean) => {
 const setupFidesWithoutConsent = () => {
   window.Fides = {
     consent: {},
+  } as any as FidesGlobal;
+};
+
+const setupFidesWithGeoLocationAndFidesUser = (
+  fidesUserId: string,
+  geolocation: UserGeolocation,
+) => {
+  window.Fides = {
+    consent: {},
+    identity: { "fides_user_device_id": fidesUserId },
+    geolocation: geolocation,
   } as any as FidesGlobal;
 };
 
@@ -129,6 +141,29 @@ describe("blueconic", () => {
     expect(
       window.blueConicClient?.profile?.updateProfile,
     ).not.toHaveBeenCalled();
+  });
+
+  test("that geolocation gets assigned to BlueConic profile", () => {
+    const { mockProfile } = setupBlueConicClient("initialized");
+
+    const fidesUserId = "b020c053-0ea2-409c-b71c-a55b6236f842";
+    const fides_geolocation = {
+      location: "US-NY",
+      country: "US",
+      region: "NY",
+    };
+
+    setupFidesWithGeoLocationAndFidesUser(fidesUserId, fides_geolocation);
+
+    blueconic();
+
+    expect(mockProfile.setValue).toHaveBeenCalledWith(
+      "fides_identifier", fidesUserId
+    );
+    expect(mockProfile.setValue).toHaveBeenCalledWith(
+      "fides_geolocation", fides_geolocation
+    );
+    expect(window.blueConicClient?.profile?.updateProfile).toHaveBeenCalled();
   });
 
   test.each(["FidesInitialized", "FidesUpdated", "onBlueConicLoaded"])(
