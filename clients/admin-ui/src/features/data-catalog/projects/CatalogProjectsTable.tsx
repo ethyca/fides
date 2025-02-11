@@ -24,6 +24,8 @@ import { RelativeTimestampCell } from "~/features/common/table/v2/cells";
 import CatalogResourceNameCell from "~/features/data-catalog/CatalogResourceNameCell";
 import CatalogStatusBadgeCell from "~/features/data-catalog/CatalogStatusBadgeCell";
 import { useGetCatalogProjectsQuery } from "~/features/data-catalog/data-catalog.slice";
+import CatalogResourceDetailDrawer from "~/features/data-catalog/staged-resources/CatalogResourceDetailDrawer";
+import CatalogResourceOverflowMenu from "~/features/data-catalog/staged-resources/CatalogResourceOverflowMenu";
 import { getCatalogResourceStatus } from "~/features/data-catalog/utils";
 import { StagedResourceAPIResponse } from "~/types/api";
 
@@ -103,6 +105,10 @@ const CatalogProjectsTable = ({
     setTotalPages(totalPages);
   }, [totalPages, setTotalPages]);
 
+  const [detailResource, setDetailResource] = useState<
+    StagedResourceAPIResponse | undefined
+  >(undefined);
+
   const columns: ColumnDef<StagedResourceAPIResponse, any>[] = useMemo(
     () => [
       columnHelper.accessor((row) => row.name, {
@@ -139,6 +145,18 @@ const CatalogProjectsTable = ({
           cellProps: {
             borderRight: "none",
           },
+        },
+      }),
+      columnHelper.display({
+        id: "actions",
+        cell: ({ row }) => (
+          <CatalogResourceOverflowMenu
+            onDetailClick={() => setDetailResource(row.original)}
+          />
+        ),
+        size: 25,
+        meta: {
+          disableRowClick: true,
         },
       }),
     ],
@@ -183,6 +201,10 @@ const CatalogProjectsTable = ({
         isNextPageDisabled={isNextPageDisabled}
         startRange={startRange}
         endRange={endRange}
+      />
+      <CatalogResourceDetailDrawer
+        resource={detailResource}
+        onClose={() => setDetailResource(undefined)}
       />
     </>
   );

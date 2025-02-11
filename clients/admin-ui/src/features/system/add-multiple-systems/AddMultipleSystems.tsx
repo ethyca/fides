@@ -263,7 +263,7 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
           successToastParams(
             `Successfully added ${
               vendorIds.length
-            } ${systemText.toLocaleLowerCase()}`,
+            } ${systemText.toLocaleLowerCase()}${vendorIds.length > 1 ? "s" : ""}`,
           ),
         );
       }

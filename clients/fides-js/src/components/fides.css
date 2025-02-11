@@ -780,6 +780,11 @@ div#fides-overlay-wrapper .fides-toggle .fides-toggle-display {
   font-weight: 600;
 }
 
+.fides-notice-toggle-controls {
+  white-space: nowrap;
+  margin-left: 8px;
+}
+
 /* GPC */
 .fides-gpc-banner {
   border: 1px solid var(--fides-overlay-primary-color);
