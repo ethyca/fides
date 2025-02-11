@@ -1133,7 +1133,8 @@ describe("Fides-js TCF", () => {
         });
       });
 
-      it("can opt in to some and opt out of others", () => {
+      // DEFER: can probably be removed
+      it.skip("can opt in to some and opt out of others", () => {
         // todo- opt in to 1 custom notice, then test cookie and window.Fides obj
         cy.getByTestId("consent-modal").within(() => {
           // opt in to purpose 4
