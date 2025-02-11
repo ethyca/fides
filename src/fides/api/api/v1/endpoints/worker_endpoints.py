@@ -20,7 +20,7 @@ router = APIRouter(tags=["Worker Stats"], prefix=V1_URL_PREFIX)
     status_code=HTTP_200_OK,
     response_model=WorkerStats,
 )
-async def get_worker_stats() -> WorkerStats:
+def get_worker_stats() -> WorkerStats:  # pragma: no cover
     """Get statistics about Celery queues and workers.
 
     Returns information about task queues and worker states in the Celery system:
