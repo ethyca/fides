@@ -1,8 +1,26 @@
-import { getCoreRowModel, useReactTable } from "@tanstack/react-table";
-import { AntEmpty as Empty, Box, Flex } from "fidesui";
+import {
+  getCoreRowModel,
+  RowSelectionState,
+  useReactTable,
+} from "@tanstack/react-table";
+import {
+  AntButton as Button,
+  AntEmpty as Empty,
+  AntTooltip as Tooltip,
+  Box,
+  Flex,
+  Icons,
+  Menu,
+  MenuButton,
+  MenuItem,
+  MenuList,
+  Text,
+} from "fidesui";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 
+import { getErrorMessage } from "~/features/common/helpers";
+import { useAlert } from "~/features/common/hooks";
 import {
   ACTION_CENTER_ROUTE,
   UNCATEGORIZED_SEGMENT,
@@ -14,7 +32,12 @@ import {
   TableSkeletonLoader,
   useServerSidePagination,
 } from "~/features/common/table/v2";
-import { useGetDiscoveredSystemAggregateQuery } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
+import {
+  useAddMonitorResultSystemsMutation,
+  useGetDiscoveredSystemAggregateQuery,
+  useIgnoreMonitorResultSystemsMutation,
+} from "~/features/data-discovery-and-detection/action-center/action-center.slice";
+import { isErrorResult } from "~/types/errors";
 
 import { SearchInput } from "../../SearchInput";
 import { useDiscoveredSystemAggregateColumns } from "../hooks/useDiscoveredSystemAggregateColumns";
@@ -42,7 +65,18 @@ export const DiscoveredSystemAggregateTable = ({
     setTotalPages,
     resetPageIndexToDefault,
   } = useServerSidePagination();
+
+  const [addMonitorResultSystemsMutation, { isLoading: isAddingResults }] =
+    useAddMonitorResultSystemsMutation();
+  const [ignoreMonitorResultSystemsMutation, { isLoading: isIgnoringResults }] =
+    useIgnoreMonitorResultSystemsMutation();
+
+  const anyBulkActionIsLoading = isAddingResults || isIgnoringResults;
+
+  const { successAlert, errorAlert } = useAlert();
+
   const [searchQuery, setSearchQuery] = useState("");
+  const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
 
   useEffect(() => {
     resetPageIndexToDefault();
@@ -69,7 +103,17 @@ export const DiscoveredSystemAggregateTable = ({
     manualPagination: true,
     data: data?.items || [],
     columnResizeMode: "onChange",
+    onRowSelectionChange: setRowSelection,
+    state: {
+      rowSelection,
+    },
   });
+
+  const selectedRows = tableInstance.getSelectedRowModel().rows;
+
+  const uncategorizedIsSelected = selectedRows.some(
+    (row) => row.original.id === null,
+  );
 
   if (isLoading) {
     return <TableSkeletonLoader rowHeight={36} numRows={36} />;
@@ -79,6 +123,50 @@ export const DiscoveredSystemAggregateTable = ({
     router.push(
       `${ACTION_CENTER_ROUTE}/${monitorId}/${row.id ?? UNCATEGORIZED_SEGMENT}`,
     );
+  };
+
+  const handleBulkAdd = async () => {
+    const totalUpdates = selectedRows.reduce(
+      (acc, row) => acc + row.original.total_updates,
+      0,
+    );
+
+    const result = await addMonitorResultSystemsMutation({
+      monitor_config_key: monitorId,
+      resolved_system_ids: selectedRows.map((row) => row.original.id),
+    });
+
+    if (isErrorResult(result)) {
+      errorAlert(getErrorMessage(result.error));
+    } else {
+      successAlert(
+        `${totalUpdates} assets have been added to the system inventory.`,
+      );
+      setRowSelection({});
+    }
+  };
+
+  const handleBulkIgnore = async () => {
+    const totalUpdates = selectedRows.reduce(
+      (acc, row) => acc + row.original.total_updates,
+      0,
+    );
+
+    const result = await ignoreMonitorResultSystemsMutation({
+      monitor_config_key: monitorId,
+      resolved_system_ids: selectedRows.map(
+        (row) => row.original.id ?? UNCATEGORIZED_SEGMENT,
+      ),
+    });
+
+    if (isErrorResult(result)) {
+      errorAlert(getErrorMessage(result.error));
+    } else {
+      successAlert(
+        `${totalUpdates} assets have been ignored and will not appear in future scans.`,
+      );
+      setRowSelection({});
+    }
   };
 
   return (
@@ -94,6 +182,59 @@ export const DiscoveredSystemAggregateTable = ({
             <Box flexShrink={0}>
               <SearchInput value={searchQuery} onChange={setSearchQuery} />
             </Box>
+          </Flex>
+          <Flex align="center">
+            {!!selectedRows.length && (
+              <Text
+                fontSize="xs"
+                fontWeight="semibold"
+                minW={16}
+                mr={6}
+                data-testid="selected-count"
+              >
+                {`${selectedRows.length} selected`}
+              </Text>
+            )}
+            <Menu>
+              <MenuButton
+                as={Button}
+                icon={<Icons.ChevronDown />}
+                iconPosition="end"
+                loading={anyBulkActionIsLoading}
+                data-testid="bulk-actions-menu"
+                disabled={!selectedRows.length}
+                // @ts-ignore - `type` prop is for Ant button, not Chakra MenuButton
+                type="primary"
+              >
+                Actions
+              </MenuButton>
+              <MenuList>
+                <Tooltip
+                  title={
+                    uncategorizedIsSelected
+                      ? "Uncategorized assets can't be added to the inventory"
+                      : null
+                  }
+                  placement="left"
+                >
+                  <MenuItem
+                    fontSize="small"
+                    onClick={handleBulkAdd}
+                    data-testid="bulk-add"
+                    isDisabled={uncategorizedIsSelected}
+                  >
+                    Add
+                  </MenuItem>
+                </Tooltip>
+                <MenuItem
+                  fontSize="small"
+                  onClick={handleBulkIgnore}
+                  data-testid="bulk-ignore"
+                >
+                  Ignore
+                </MenuItem>
+              </MenuList>
+            </Menu>
           </Flex>
         </Flex>
       </TableActionBar>

@@ -18,6 +18,7 @@ import {
   MenuList,
   Text,
 } from "fidesui";
+import { uniq } from "lodash";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 
@@ -36,11 +37,13 @@ import {
 } from "~/features/common/table/v2";
 import {
   useAddMonitorResultAssetsMutation,
-  useAddMonitorResultSystemMutation,
+  useAddMonitorResultSystemsMutation,
   useGetDiscoveredAssetsQuery,
   useIgnoreMonitorResultAssetsMutation,
+  useUpdateAssetsMutation,
   useUpdateAssetsSystemMutation,
 } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
+import AddDataUsesModal from "~/features/data-discovery-and-detection/action-center/AddDataUsesModal";
 
 import { SearchInput } from "../../SearchInput";
 import { AssignSystemModal } from "../AssignSystemModal";
@@ -62,14 +65,18 @@ export const DiscoveredAssetsTable = ({
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
   const [isAssignSystemModalOpen, setIsAssignSystemModalOpen] =
     useState<boolean>(false);
+  const [isAddDataUseModalOpen, setIsAddDataUseModalOpen] =
+    useState<boolean>(false);
   const [addMonitorResultAssetsMutation, { isLoading: isAddingResults }] =
     useAddMonitorResultAssetsMutation();
   const [ignoreMonitorResultAssetsMutation, { isLoading: isIgnoringResults }] =
     useIgnoreMonitorResultAssetsMutation();
-  const [addMonitorResultSystemMutation, { isLoading: isAddingAllResults }] =
-    useAddMonitorResultSystemMutation();
+  const [addMonitorResultSystemsMutation, { isLoading: isAddingAllResults }] =
+    useAddMonitorResultSystemsMutation();
   const [updateAssetsSystemMutation, { isLoading: isBulkUpdatingSystem }] =
     useUpdateAssetsSystemMutation();
+  const [updateAssetsMutation, { isLoading: isBulkAddingDataUses }] =
+    useUpdateAssetsMutation();
 
   const anyBulkActionIsLoading =
     isAddingResults ||
@@ -170,6 +177,36 @@ export const DiscoveredAssetsTable = ({
     setIsAssignSystemModalOpen(false);
   };
 
+  const handleBulkAddDataUse = async (newDataUses: string[]) => {
+    const selectedAssets = data?.items.filter((asset) =>
+      selectedUrns.includes(asset.urn),
+    );
+    if (!selectedAssets) {
+      return;
+    }
+    const assets = selectedAssets.map((asset) => {
+      // eslint-disable-next-line @typescript-eslint/naming-convention
+      const data_uses = uniq([...(asset.data_uses || []), ...newDataUses]);
+      return {
+        urn: asset.urn,
+        data_uses,
+      };
+    });
+    const result = await updateAssetsMutation({
+      monitorId,
+      assets,
+    });
+    if (isErrorResult(result)) {
+      errorAlert(getErrorMessage(result.error));
+    } else {
+      tableInstance.resetRowSelection();
+      successAlert(
+        `Consent categories added to ${selectedUrns.length} assets from ${systemName}.`,
+        `Confirmed`,
+      );
+    }
+  };
+
   const handleBulkIgnore = async () => {
     const result = await ignoreMonitorResultAssetsMutation({
       urnList: selectedUrns,
@@ -187,9 +224,9 @@ export const DiscoveredAssetsTable = ({
 
   const handleAddAll = async () => {
     const assetCount = data?.items.length || 0;
-    const result = await addMonitorResultSystemMutation({
+    const result = await addMonitorResultSystemsMutation({
       monitor_config_key: monitorId,
-      resolved_system_id: systemId,
+      resolved_system_ids: [systemId],
     });
 
     if (isErrorResult(result)) {
@@ -246,6 +283,13 @@ export const DiscoveredAssetsTable = ({
                   data-testid="bulk-add"
                 >
                   Add
+                </MenuItem>
+                <MenuItem
+                  fontSize="small"
+                  onClick={() => setIsAddDataUseModalOpen(true)}
+                  data-testid="bulk-add-data-use"
+                >
+                  Add consent category
                 </MenuItem>
                 <MenuItem
                   fontSize="small"
@@ -316,6 +360,14 @@ export const DiscoveredAssetsTable = ({
         }}
         onSave={handleBulkAssignSystem}
         isSaving={isBulkUpdatingSystem}
+      />
+      <AddDataUsesModal
+        isOpen={isAddDataUseModalOpen}
+        onClose={() => {
+          setIsAddDataUseModalOpen(false);
+        }}
+        onSave={handleBulkAddDataUse}
+        isSaving={isBulkAddingDataUses}
       />
     </>
   );

@@ -6,6 +6,7 @@ const STATUS_COLOR_MAP: Record<CatalogResourceStatus, string> = {
   [CatalogResourceStatus.APPROVED]: "green",
   [CatalogResourceStatus.IN_REVIEW]: "yellow",
   [CatalogResourceStatus.CLASSIFYING]: "blue",
+  [CatalogResourceStatus.NONE]: "gray",
 };
 
 const CatalogStatusBadgeCell = ({

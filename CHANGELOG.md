@@ -22,7 +22,11 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.54.0...main)
 
 ### Added
+- Added editing support for categories of consent on discovered assets [#5739](https://github.com/ethyca/fides/pull/5739)
 - Added a read-only consent category cell to Action Center aggregate system results table [#5737](https://github.com/ethyca/fides/pull/5737)
+- Added detail trays to items in data catalog view [#5729](https://github.com/ethyca/fides/pull/5729)
+- Support rendering and saving consent from custom notices in TCF Overlay [#5742](https://github.com/ethyca/fides/pull/5742)
+- Added worker stats endpoint to monitor worker status and task queue length [#5725](https://github.com/ethyca/fides/pull/5725)
 
 ### Changed
 - Added frequency field to DataHubSchema integration config [#5716](https://github.com/ethyca/fides/pull/5716)
@@ -30,6 +34,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Added initial support for upcoming "headless" CMP experience type [#5731](https://github.com/ethyca/fides/pull/5731)
 - All Select dropdowns will now allow searching to narrow down the options by default [#5738](https://github.com/ethyca/fides/pull/5738)
 - Exposes privacy notice picker for TCF components [#5730](https://github.com/ethyca/fides/pull/5730)
+- Model changes to support new privacy center config options [5732](https://github.com/ethyca/fides/pull/5732)
 
 ### Fixed
 - Fixed `fides annotate dataset` command enters incorrect value on the `direction` field. [#5727](https://github.com/ethyca/fides/pull/5727)
@@ -43,6 +48,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ### Added
 - Migration to add the `data_uses` column to `stagedresource` table, prereqs for Data Catalog work in Fidesplus [#5600](https://github.com/ethyca/fides/pull/5600/) https://github.com/ethyca/fides/labels/db-migration
 - Added a new endpoint to fully resubmit any errored privacy requests [#5658](https://github.com/ethyca/fides/pull/5658) https://github.com/ethyca/fides/labels/db-migration
+- Migration to add the `monitorexecution` table used by fidesplus to persist `MonitorExecution` records to DB [#5704](https://github.com/ethyca/fides/pull/5704) https://github.com/ethyca/fides/labels/db-migration
 
 ### Changed
 - Updated UI colors to new brand. Update logo, homepage cards. [#5668](https://github.com/ethyca/fides/pull/5668)
@@ -54,10 +60,6 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ### Developer Experience
 - Migrated radio buttons and groups to Ant Design [#5681](https://github.com/ethyca/fides/pull/5681)
-
-### Added
-- Migration to add the `data_uses` column to `stagedresource` table, prereqs for Data Catalog work in Fidesplus [#5600](https://github.com/ethyca/fides/pull/5600/) https://github.com/ethyca/fides/labels/db-migration
-- Migration to add the `monitorexecution` table used by fidesplus to persist `MonitorExecution` records to DB [#5704](https://github.com/ethyca/fides/pull/5704) https://github.com/ethyca/fides/labels/db-migration
 
 ### Fixed
 - Updating mongodb connectors so it can support usernames and password with URL encoded characters [#5682](https://github.com/ethyca/fides/pull/5682)
