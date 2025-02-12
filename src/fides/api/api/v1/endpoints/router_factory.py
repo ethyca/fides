@@ -8,7 +8,6 @@ from typing import Dict, List
 
 from fastapi import Depends, Response, Security, status
 from fideslang import FidesModelType
-from fideslang.models import Dataset
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from fides.api.db.crud import (
@@ -109,9 +108,6 @@ def create_router_factory(fides_model: FidesModelType, model_type: str) -> APIRo
         will return a `403 Forbidden`.
         """
         sql_model = sql_model_map[model_type]
-        if isinstance(resource, Dataset):
-            await validate_data_categories(resource, db)
-            validate_masking_strategy(resource)
         if isinstance(sql_model, ModelWithDefaultField) and resource.is_default:
             raise errors.ForbiddenIsDefaultTaxonomyError(
                 model_type, resource.fides_key, action="create"

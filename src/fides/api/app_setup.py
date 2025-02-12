@@ -6,7 +6,7 @@ Contains utility functions that set up the application webserver.
 from logging import DEBUG
 from typing import AsyncGenerator, List
 
-from fastapi import APIRouter, FastAPI
+from fastapi import FastAPI
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.routing import APIRoute
 from loguru import logger
@@ -40,6 +40,7 @@ from fides.api.service.connectors.saas.connector_registry_service import (
 
 # pylint: disable=wildcard-import, unused-wildcard-import
 from fides.api.service.saas_request.override_implementations import *
+from fides.api.util.api_router import APIRouter
 from fides.api.util.cache import get_cache
 from fides.api.util.consent_util import create_default_tcf_purpose_overrides_on_startup
 from fides.api.util.endpoint_utils import fides_limiter
@@ -133,6 +134,7 @@ def override_generic_routers(
                     del base_router.routes[i]
     for router in overriding_routers:
         base_router.include_router(router)
+
 
 def log_startup() -> None:
     """Log application startup and other information."""

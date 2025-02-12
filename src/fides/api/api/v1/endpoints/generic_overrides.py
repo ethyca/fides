@@ -1,6 +1,6 @@
 from typing import Dict, List, Optional, Type, Union
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Response, Security
+from fastapi import Depends, HTTPException, Query, Response, Security
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
 from fastapi_pagination import Page, Params
@@ -17,7 +17,6 @@ from starlette.status import (
     HTTP_422_UNPROCESSABLE_ENTITY,
 )
 
-from fides.api.api import deps
 from fides.api.api.deps import get_dataset_service, get_db
 from fides.api.common_exceptions import KeyOrNameAlreadyExists, ValidationError
 from fides.api.db.base_class import get_key_from_data
@@ -35,6 +34,7 @@ from fides.api.schemas.taxonomy_extensions import (
     DataUse,
     DataUseCreateOrUpdate,
 )
+from fides.api.util.api_router import APIRouter
 from fides.api.util.errors import FidesError, ForbiddenIsDefaultTaxonomyError
 from fides.api.util.filter_utils import apply_filters_to_query
 from fides.common.api.scope_registry import (
@@ -108,12 +108,11 @@ async def create_dataset(
 )
 async def update_dataset(
     dataset: FideslangDataset,
-    db: Session = Depends(get_db),
+    dataset_service: DatasetService = Depends(get_dataset_service),
 ) -> Dict:
     """Update an existing dataset"""
-    service = DatasetService(db)
     try:
-        return service.update_dataset(dataset)
+        return dataset_service.update_dataset(dataset)
     except (ValidationError, PydanticValidationError) as exc:
         raise HTTPException(
             status_code=HTTP_422_UNPROCESSABLE_ENTITY,
@@ -196,12 +195,11 @@ async def list_dataset_paginated(
 )
 async def get_dataset(
     fides_key: str,
-    db: Session = Depends(get_db),
+    dataset_service: DatasetService = Depends(get_dataset_service),
 ) -> Dict:
     """Get a single dataset by fides key"""
-    service = DatasetService(db)
     try:
-        return service.get_dataset(fides_key)
+        return dataset_service.get_dataset(fides_key)
     except DatasetNotFoundException as e:
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,
@@ -216,12 +214,11 @@ async def get_dataset(
 )
 async def delete_dataset(
     fides_key: str,
-    db: Session = Depends(get_db),
+    dataset_service: DatasetService = Depends(get_dataset_service),
 ) -> JSONResponse:
     """Delete a dataset by fides key"""
-    service = DatasetService(db)
     try:
-        dataset = service.delete_dataset(fides_key)
+        dataset = dataset_service.delete_dataset(fides_key)
         return JSONResponse(
             content={
                 "message": "resource deleted",
@@ -288,7 +285,7 @@ async def upsert_datasets(
     deprecated=True,
 )
 def clean_datasets(
-    dataset_service: DatasetService = Depends(deps.get_dataset_service),
+    dataset_service: DatasetService = Depends(get_dataset_service),
 ) -> JSONResponse:
     """
     Clean up names of datasets and upsert them.
