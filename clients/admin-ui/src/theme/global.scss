@@ -55,8 +55,16 @@ h6 {
   }
 }
 
-// Remove rounding from submenu arrow
-// to better match the style Carbon icons
-.ant-menu-submenu-arrow {
-  --ant-border-radius: 0px;
+.ant-menu {
+  .ant-menu-submenu-arrow {
+    // Remove rounding from submenu arrow
+    // to better match the style Carbon icons
+    --ant-border-radius: 0px;
+
+    // fix missing pixel in the arrow icon
+    &::before,
+    &::after {
+      width: calc(calc(var(--ant-font-size) / 7 * 5) * 0.65);
+    }
+  }
 }
