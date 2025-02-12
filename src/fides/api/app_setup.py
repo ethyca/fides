@@ -6,6 +6,7 @@ Contains utility functions that set up the application webserver.
 from logging import DEBUG
 from typing import AsyncGenerator, List
 
+from fastapi import APIRouter as FastAPIRouter
 from fastapi import FastAPI
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.routing import APIRoute
@@ -55,7 +56,7 @@ VERSION = fides.__version__
 # these routers are initialized _outside_ of inner `api` module
 # to avoid cyclical dependency chains.
 # see https://github.com/ethyca/fides/issues/3652
-DB_ROUTER = APIRouter()
+DB_ROUTER = FastAPIRouter()
 DB_ROUTER.include_router(ADMIN_ROUTER)
 DB_ROUTER.include_router(HEALTH_ROUTER)
 
