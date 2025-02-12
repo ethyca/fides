@@ -4,15 +4,16 @@ import {
   DefaultCell,
   IndeterminateCheckboxCell,
 } from "~/features/common/table/v2";
-import { StagedResourceAPIResponse } from "~/types/api";
+import DiscoveredAssetDataUseCell from "~/features/data-discovery-and-detection/action-center/tables/cells/DiscoveredAssetDataUseCell";
+import { DiscoveredAssetResponse } from "~/features/data-discovery-and-detection/action-center/types";
 
 import { DiscoveredAssetActionsCell } from "../tables/cells/DiscoveredAssetActionsCell";
 import { SystemCell } from "../tables/cells/SystemCell";
 
 export const useDiscoveredAssetsColumns = () => {
-  const columnHelper = createColumnHelper<StagedResourceAPIResponse>();
+  const columnHelper = createColumnHelper<DiscoveredAssetResponse>();
 
-  const columns: ColumnDef<StagedResourceAPIResponse, any>[] = [
+  const columns: ColumnDef<DiscoveredAssetResponse, any>[] = [
     columnHelper.display({
       id: "select",
       cell: ({ row }) => (
@@ -57,15 +58,17 @@ export const useDiscoveredAssetsColumns = () => {
         width: "auto",
       },
     }),
-    /*
-    // TODO: [HJ-369] uncomment when monitor supports categories of consent
     columnHelper.display({
       id: "data_use",
+      cell: (props) => (
+        <DiscoveredAssetDataUseCell asset={props.row.original} />
+      ),
       header: "Categories of consent",
       meta: {
         width: "auto",
+        disableRowClick: true,
       },
-    }), */
+    }),
     columnHelper.accessor((row) => row.locations, {
       id: "locations",
       cell: (props) => (
