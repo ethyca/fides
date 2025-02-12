@@ -72,6 +72,8 @@ const DatasetYamlForm = () => {
     let dataset;
     if (isDatasetArray(value)) {
       [dataset] = value.dataset;
+    } else if (Array.isArray(value)) {
+      [dataset] = value;
     } else {
       dataset = value;
     }
