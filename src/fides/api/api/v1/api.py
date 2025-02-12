@@ -20,6 +20,7 @@ from fides.api.api.v1.endpoints import (
     storage_endpoints,
     user_endpoints,
     user_permission_endpoints,
+    worker_endpoints,
 )
 from fides.api.util.api_router import APIRouter
 
@@ -45,3 +46,4 @@ api_router.include_router(user_endpoints.router)
 api_router.include_router(user_permission_endpoints.router)
 api_router.include_router(manual_webhook_endpoints.router)
 api_router.include_router(registration_endpoints.router)
+api_router.include_router(worker_endpoints.router)

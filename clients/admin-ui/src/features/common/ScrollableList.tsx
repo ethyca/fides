@@ -21,6 +21,7 @@ const ScrollableListItem = <T extends unknown>({
   label,
   draggable,
   onDeleteItem,
+  tooltip,
   onRowClick,
   maxH = 10,
   rowTestId,
@@ -29,6 +30,7 @@ const ScrollableListItem = <T extends unknown>({
   label: string;
   draggable?: boolean;
   onDeleteItem?: (item: T) => void;
+  tooltip?: string;
   onRowClick?: (item: T) => void;
   maxH?: number;
   rowTestId: string;
@@ -83,6 +85,7 @@ const ScrollableListItem = <T extends unknown>({
           >
             {label}
           </Text>
+          {tooltip ? <QuestionTooltip label={tooltip} /> : null}
         </Flex>
         {onDeleteItem && (
           <Button
@@ -121,7 +124,6 @@ const ScrollableListAdd = ({
   return isAdding ? (
     <Box w="full">
       <Select
-        showSearch
         labelInValue
         placeholder="Select..."
         filterOption={(input, option) =>
@@ -158,6 +160,7 @@ const ScrollableList = <T extends unknown>({
   values,
   setValues,
   canDeleteItem,
+  getTooltip,
   onRowClick,
   selectOnAdd,
   getItemLabel,
@@ -175,6 +178,7 @@ const ScrollableList = <T extends unknown>({
   values: T[];
   setValues: (newOrder: T[]) => void;
   canDeleteItem?: (item: T) => boolean;
+  getTooltip?: (item: T) => string | undefined;
   onRowClick?: (item: T) => void;
   selectOnAdd?: boolean;
   getItemLabel?: (item: T) => string;
@@ -262,6 +266,9 @@ const ScrollableList = <T extends unknown>({
               draggable
               maxH={maxHeight}
               rowTestId={`${baseTestId}-row-${itemId}`}
+              tooltip={
+                getTooltip && getTooltip(item) ? getTooltip(item) : undefined
+              }
             />
           );
         })}
@@ -279,6 +286,9 @@ const ScrollableList = <T extends unknown>({
               label={getItemDisplayName(item)}
               onRowClick={onRowClick}
               onDeleteItem={handleDeleteItem}
+              tooltip={
+                getTooltip && getTooltip(item) ? getTooltip(item) : undefined
+              }
               maxH={maxHeight}
               rowTestId={`${baseTestId}-row-${itemId}`}
             />
