@@ -174,6 +174,7 @@ interface StubExperienceTCFProps {
   demoPageWindowParams?: any;
   experienceIsInvalid?: boolean;
   skipVisit?: boolean;
+  includeCustomPurposes?: boolean;
 }
 export const stubTCFExperience = ({
   stubOptions,
@@ -185,6 +186,7 @@ export const stubTCFExperience = ({
   demoPageWindowParams,
   experienceIsInvalid,
   skipVisit,
+  includeCustomPurposes,
 }: StubExperienceTCFProps) => {
   return cy
     .fixture("consent/experience_tcf_minimal.json")
@@ -208,6 +210,16 @@ export const stubTCFExperience = ({
           experienceFullItem,
           experienceFullOverride,
         );
+        if (includeCustomPurposes) {
+          cy.fixture("consent/custom_tcf_notices.json").then(
+            (customNotices) => {
+              experienceMinItem.privacy_notices =
+                customNotices["privacy_notices"];
+              experienceFull.items[0].privacy_notices =
+                customNotices["privacy_notices"];
+            },
+          );
+        }
         // set initial experience to minimal
         // set stubbed /privacy-experience response to full
         stubConfig(

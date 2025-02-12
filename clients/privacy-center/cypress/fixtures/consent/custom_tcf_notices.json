@@ -1,0 +1,112 @@
+{
+  "privacy_notices": [
+    {
+      "name": "Advertising",
+      "notice_key": "advertising",
+      "internal_description": null,
+      "origin": null,
+      "consent_mechanism": "opt_in",
+      "data_uses": ["advertising.first_party.contextual"],
+      "enforcement_level": "system_wide",
+      "disabled": false,
+      "has_gpc_flag": false,
+      "id": "pri_notice-advertising-000",
+      "created_at": "2024-01-01T12:00:00.000000+00:00",
+      "updated_at": "2024-01-01T12:00:00.000000+00:00",
+      "default_preference": "opt_out",
+      "cookies": [{ "name": "advertising", "path": null, "domain": null }],
+      "translations": [
+        {
+          "language": "en",
+          "title": "Advertising",
+          "description": "This website uses marketing cookies and services to deliver personalized advertisements, promotions, and offers that are relevant to you. They help optimize ad delivery, measure campaign effectiveness, and enable advertisers to reach specific target audiences.",
+          "privacy_notice_history_id": "pri_notice-history-advertising-en-000"
+        },
+        {
+          "language": "es",
+          "title": "Mercadotecnia",
+          "description": "Este sitio web usa cookies y servicios de mercadotecnia para presentar anuncios, promociones y ofertas personalizadas relevantes para usted. Estos datos ayudan a optimizar los anuncios, medir la eficacia de las campañas y permitir a los anunciantes llegar a audiencias objetivo específicas.",
+          "privacy_notice_history_id": "pri_notice-history-advertising-es-000"
+        },
+        {
+          "language": "fr-CA",
+          "title": "Marketing",
+          "description": "Ce site Web utilise des témoins et des services marketing pour délivrer des publicités personnalisées, des promotions et des offres qui vous correspondent.  Ils aident à optimiser la délivrance de publicités, à mesurer l’efficacité des campagnes publicitaires et permettent aux annonceurs d’atteindre des audiences ciblées spécifiques.",
+          "privacy_notice_history_id": "pri_notice-history-advertising-fr-ca-000"
+        }
+      ]
+    },
+    {
+      "name": "Analytics",
+      "notice_key": "analytics_opt_out",
+      "internal_description": null,
+      "origin": null,
+      "consent_mechanism": "opt_out",
+      "data_uses": ["analytics.reporting.ad_performance"],
+      "enforcement_level": "system_wide",
+      "disabled": false,
+      "has_gpc_flag": false,
+      "id": "pri_notice-analytics-000",
+      "created_at": "2024-01-01T12:00:00.000000+00:00",
+      "updated_at": "2024-01-01T12:00:00.000000+00:00",
+      "default_preference": "opt_in",
+      "cookies": [{ "name": "_ga", "path": null, "domain": null }],
+      "translations": [
+        {
+          "language": "en",
+          "title": "Analytics",
+          "description": "This website uses analytics cookies and services for collecting aggregated data and statistical information. This data helps us analyze and optimize site performance, identify popular content, detect navigation issues, and make informed decisions to enhance the user experience.",
+          "privacy_notice_history_id": "pri_notice-history-analytics-en-000"
+        },
+        {
+          "language": "es",
+          "title": "Análisis",
+          "description": "Este sitio web usa cookies analíticas y servicios para recopilar datos agregados e información estadística. Estos datos nos ayudan a analizar y optimizar el rendimiento del sitio, identificar contenido popular, detectar problemas de navegación y tomar decisiones informadas para mejorar la experiencia del usuario.",
+          "privacy_notice_history_id": "pri_notice-history-analytics-es-000"
+        },
+        {
+          "language": "fr-CA",
+          "title": "Analytique",
+          "description": "Ce site Web utilise des témoins et des services analytiques pour collecter des données agrégées et de l’information statistique. Ces données nous aident à analyser et à optimiser la performance des sites, à identifier le contenu préféré, à détecter les problèmes de navigation et à prendre des décisions éclairées pour améliorer l’expérience de l'utilisateur.",
+          "privacy_notice_history_id": "pri_notice-history-analytics-fr-ca-000"
+        }
+      ]
+    },
+    {
+      "name": "Essential",
+      "notice_key": "essential",
+      "internal_description": null,
+      "origin": null,
+      "consent_mechanism": "notice_only",
+      "data_uses": ["provide.service"],
+      "enforcement_level": "system_wide",
+      "disabled": false,
+      "has_gpc_flag": false,
+      "id": "pri_notice-essential-000",
+      "created_at": "2024-01-01T12:00:00.000000+00:00",
+      "updated_at": "2024-01-01T12:00:00.000000+00:00",
+      "default_preference": "opt_in",
+      "cookies": [],
+      "translations": [
+        {
+          "language": "en",
+          "title": "Essential",
+          "description": "This website uses essential cookies and services to enable core website features and provide a seamless user experience. These cookies and services are used to facilitate features such as navigation, remember user preferences, and ensure the security of the website.",
+          "privacy_notice_history_id": "pri_notice-history-essential-en-000"
+        },
+        {
+          "language": "es",
+          "title": "Esenciales",
+          "description": "Este sitio web utiliza cookies esenciales y servicios para habilitar las funciones principales del sitio web y brindar una experiencia de usuario perfecta. Estas cookies y servicios se usan para facilitar características como la navegación, recordar referencias del usuario y garantizar la seguridad del sitio web.",
+          "privacy_notice_history_id": "pri_notice-history-essential-es-000"
+        },
+        {
+          "language": "fr-CA",
+          "title": "Essentiel",
+          "description": "Ce site Web utilise des témoins et des services essentiels pour activer les fonctionnalités principales du site et offrir une expérience fluide aux utilisateurs. Ces témoins et services sont utilisés pour faciliter les fonctionnalités comme la navigation, la mémorisation des préférences de l’utilisateur et assurer la sécurité du site.",
+          "privacy_notice_history_id": "pri_notice-history-essential-fr-ca-000"
+        }
+      ]
+    }
+  ]
+}

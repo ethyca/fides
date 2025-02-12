@@ -108,6 +108,11 @@ const ConfigurePrivacyExperience = ({
     : defaultInitialValues;
 
   const handleSubmit = async (values: ExperienceConfigCreate) => {
+    // Ignore placeholder TCF notice. It is used only as a UX cue that TCF purposes will always exist
+    // eslint-disable-next-line no-param-reassign
+    values.privacy_notice_ids = values.privacy_notice_ids?.filter(
+      (item) => item !== "tcf_purposes_placeholder",
+    );
     const valuesToSubmit = {
       ...values,
       disabled: passedInExperience?.disabled ?? true,
