@@ -13,7 +13,7 @@ class NamespaceMetaValidationStep(DatasetValidationStep):
         if not context.connection_config:
             return
 
-        connection_type: str = context.connection_config.connection_type.value
+        connection_type: str = context.connection_config.connection_type.value  # type: ignore[attr-defined]
         namespace_meta_class = NamespaceMeta.get_implementation(connection_type)
         if not namespace_meta_class:
             return

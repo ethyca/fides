@@ -17,8 +17,8 @@ from starlette.status import (
     HTTP_422_UNPROCESSABLE_ENTITY,
 )
 
-from fides.api.api.deps import get_dataset_service, get_db
-from fides.api.common_exceptions import KeyOrNameAlreadyExists, ValidationError
+from fides.api.api.deps import get_dataset_service
+from fides.api.common_exceptions import ValidationError
 from fides.api.db.base_class import get_key_from_data
 from fides.api.db.crud import list_resource_query
 from fides.api.db.ctl_session import get_async_db
@@ -27,11 +27,8 @@ from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.oauth.utils import verify_oauth_client
 from fides.api.schemas.filter_params import FilterParams
 from fides.api.schemas.taxonomy_extensions import (
-    DataCategory,
     DataCategoryCreateOrUpdate,
-    DataSubject,
     DataSubjectCreateOrUpdate,
-    DataUse,
     DataUseCreateOrUpdate,
 )
 from fides.api.util.api_router import APIRouter
@@ -42,11 +39,6 @@ from fides.common.api.scope_registry import (
     CTL_DATASET_DELETE,
     CTL_DATASET_READ,
     CTL_DATASET_UPDATE,
-    DATA_CATEGORY_CREATE,
-    DATA_CATEGORY_UPDATE,
-    DATA_SUBJECT_CREATE,
-    DATA_USE_CREATE,
-    DATA_USE_UPDATE,
 )
 from fides.common.api.v1.urn_registry import DATASETS_CLEAN, V1_URL_PREFIX
 from fides.service.dataset.dataset_service import (
@@ -420,6 +412,7 @@ def create_or_update_taxonomy(
         return validate_and_create_taxonomy(db, model, validation_schema, data)
 
     return validate_and_create_taxonomy(db, model, validation_schema, data)
+
 
 GENERIC_OVERRIDES_ROUTER = APIRouter()
 GENERIC_OVERRIDES_ROUTER.include_router(dataset_router)
