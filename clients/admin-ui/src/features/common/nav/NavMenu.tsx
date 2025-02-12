@@ -11,9 +11,10 @@ export const NavMenu = ({ className, ...props }: MenuProps) => (
     theme="dark"
     inlineIndent={8}
     expandIcon={
-      <span>
+      <div>
+        {/* The wrapper div is required otherwise the size of the icon is ignored */}
         <Icons.ChevronDown size={14} />
-      </span>
+      </div>
     }
     {...props}
     className={`${styles.menu} ${className}`}
