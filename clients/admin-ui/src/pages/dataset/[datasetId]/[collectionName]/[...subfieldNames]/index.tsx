@@ -21,13 +21,13 @@ import { useRouter } from "next/router";
 import { useCallback, useMemo, useState } from "react";
 
 import Layout from "~/features/common/Layout";
-import { NextBreadcrumbProps } from "~/features/common/nav/v2/NextBreadcrumb";
+import { NextBreadcrumbProps } from "~/features/common/nav/NextBreadcrumb";
 import {
   DATASET_COLLECTION_DETAIL_ROUTE,
   DATASET_COLLECTION_SUBFIELD_DETAIL_ROUTE,
   DATASET_DETAIL_ROUTE,
   DATASET_ROUTE,
-} from "~/features/common/nav/v2/routes";
+} from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 import {
   BadgeCell,

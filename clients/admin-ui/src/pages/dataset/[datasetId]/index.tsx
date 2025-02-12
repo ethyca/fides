@@ -23,7 +23,7 @@ import Layout from "~/features/common/Layout";
 import {
   DATASET_COLLECTION_DETAIL_ROUTE,
   DATASET_ROUTE,
-} from "~/features/common/nav/v2/routes";
+} from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 import {
   DefaultCell,

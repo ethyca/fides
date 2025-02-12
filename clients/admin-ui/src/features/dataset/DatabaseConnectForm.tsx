@@ -8,7 +8,7 @@ import { useFeatures } from "~/features/common/features";
 import { CustomSwitch, CustomTextInput } from "~/features/common/form/inputs";
 import { getErrorMessage } from "~/features/common/helpers";
 import ConfirmationModal from "~/features/common/modals/ConfirmationModal";
-import { DATASET_DETAIL_ROUTE } from "~/features/common/nav/v2/routes";
+import { DATASET_DETAIL_ROUTE } from "~/features/common/nav/routes";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { DEFAULT_ORGANIZATION_FIDES_KEY } from "~/features/organization";
 import { useCreateClassifyInstanceMutation } from "~/features/plus/plus.slice";

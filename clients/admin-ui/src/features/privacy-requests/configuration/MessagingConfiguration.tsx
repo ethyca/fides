@@ -14,7 +14,7 @@ import Layout from "~/features/common/Layout";
 import {
   PRIVACY_REQUESTS_CONFIGURATION_ROUTE,
   PRIVACY_REQUESTS_ROUTE,
-} from "~/features/common/nav/v2/routes";
+} from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 import { messagingProviders } from "~/features/privacy-requests/constants";
 import {

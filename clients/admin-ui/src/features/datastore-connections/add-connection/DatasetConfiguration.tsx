@@ -22,7 +22,7 @@ import { useEffect, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import { getErrorMessage } from "~/features/common/helpers";
-import { DATASTORE_CONNECTION_ROUTE } from "~/features/common/nav/v2/routes";
+import { DATASTORE_CONNECTION_ROUTE } from "~/features/common/nav/routes";
 import {
   useGetAllDatasetsQuery,
   useUpsertDatasetsMutation,

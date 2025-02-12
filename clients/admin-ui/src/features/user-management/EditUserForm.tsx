@@ -6,7 +6,7 @@ import { selectUser } from "~/features/auth";
 import { useHasPermission } from "~/features/common/Restrict";
 import { ScopeRegistryEnum } from "~/types/api";
 
-import { USER_MANAGEMENT_ROUTE } from "../common/nav/v2/routes";
+import { USER_MANAGEMENT_ROUTE } from "../common/nav/routes";
 import PageHeader from "../common/PageHeader";
 import { User } from "./types";
 import { useEditUserMutation } from "./user-management.slice";

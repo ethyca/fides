@@ -27,7 +27,7 @@ import { useAlert } from "~/features/common/hooks";
 import {
   ACTION_CENTER_ROUTE,
   UNCATEGORIZED_SEGMENT,
-} from "~/features/common/nav/v2/routes";
+} from "~/features/common/nav/routes";
 import {
   FidesTableV2,
   PaginationBar,

@@ -6,7 +6,7 @@ import React, { useMemo } from "react";
 import { useAppSelector } from "~/app/hooks";
 import DataTabs from "~/features/common/DataTabs";
 import Layout from "~/features/common/Layout";
-import { ADD_SYSTEMS_ROUTE } from "~/features/common/nav/v2/routes";
+import { ADD_SYSTEMS_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 import ConnectionTypeLogo from "~/features/datastore-connections/ConnectionTypeLogo";
 import { selectLockedForGVL } from "~/features/system/dictionary-form/dict-suggestion.slice";

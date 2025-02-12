@@ -9,7 +9,7 @@ import {
 import {
   ACTION_CENTER_ROUTE,
   INTEGRATION_MANAGEMENT_ROUTE,
-} from "~/features/common/nav/v2/routes";
+} from "~/features/common/nav/routes";
 
 describe("Action center", () => {
   beforeEach(() => {
