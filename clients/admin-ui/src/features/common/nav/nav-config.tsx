@@ -1,4 +1,5 @@
 import { Icons } from "fidesui";
+import { ReactNode } from "react";
 
 import { FlagNames } from "~/features/common/features";
 import { ScopeRegistryEnum } from "~/types/api";
@@ -21,7 +22,7 @@ export type NavConfigRoute = {
 
 export type NavConfigGroup = {
   title: string;
-  icon: React.ReactNode;
+  icon: ReactNode;
   routes: NavConfigRoute[];
 };
 
