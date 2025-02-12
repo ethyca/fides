@@ -54,3 +54,9 @@ h6 {
     color: var(--fidesui-minos);
   }
 }
+
+// Remove rounding from submenu arrow
+// to better match the style Carbon icons
+.ant-menu-submenu-arrow {
+  --ant-border-radius: 0px;
+}
