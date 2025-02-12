@@ -371,7 +371,7 @@ class TestStagedResourceModelWebMonitorResults:
         saved_resource: StagedResource = StagedResource.get_urn(
             db, create_web_monitor_staged_resource.urn
         )
-        assert saved_resource.system.name == system.name
+        assert saved_resource.system_id == system.id
         assert saved_resource.meta == {
             "domain": "td.doubleclick.net",
             "method": "GET",
@@ -403,15 +403,15 @@ class TestStagedResourceModelWebMonitorResults:
         )
 
         # check system initially
-        assert saved_resource.system.name == system.name
+        assert saved_resource.system_id == system.id
 
-        saved_resource.system = system_hidden
+        saved_resource.system_id = system_hidden.id
         # needed to ensure array updates are persisted to the db
-        flag_modified(saved_resource, "system")
+        flag_modified(saved_resource, "system_id")
 
         saved_resource.save(db)
         updated_resource = StagedResource.get_urn(db, saved_resource.urn)
-        assert updated_resource.system.name == system_hidden.name
+        assert updated_resource.system_id == system_hidden.id
 
 
 SAMPLE_START_DATE = datetime(2024, 5, 20, 0, 42, 5, 17137, tzinfo=timezone.utc)

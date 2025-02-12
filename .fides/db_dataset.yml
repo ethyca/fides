@@ -2248,6 +2248,10 @@ dataset:
       data_categories: [system]
     - name: data_uses
       data_categories: [system]
+    - name: system_id
+      data_categories: [system]
+    - name: vendor_id
+      data_categories: [system]
   - name: fides_user_invite
     fields:
       - name: created_at
