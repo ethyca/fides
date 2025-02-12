@@ -62,6 +62,10 @@ const componentTypeOptions: SelectProps["options"] = [
     label: "Privacy center",
     value: ComponentType.PRIVACY_CENTER,
   },
+  {
+    label: "Headless",
+    value: ComponentType.HEADLESS,
+  },
 ];
 
 const buttonLayoutOptions: SelectProps["options"] = [
@@ -118,7 +122,7 @@ export const PrivacyExperienceForm = ({
 }) => {
   const router = useRouter();
 
-  const { values, setFieldValue, dirty, isValid, isSubmitting } =
+  const { values, setFieldValue, dirty, isValid, isSubmitting, initialValues } =
     useFormikContext<ExperienceConfigCreate>();
   const noticePage = useAppSelector(selectNoticePage);
   const noticePageSize = useAppSelector(selectNoticePageSize);
@@ -213,12 +217,15 @@ export const PrivacyExperienceForm = ({
           options={componentTypeOptions}
           label="Experience type"
           layout="stacked"
-          disabled={!!values.component}
+          disabled={!!initialValues.component}
           isRequired
         />
       )}
       <Collapse
-        in={values.component !== ComponentType.PRIVACY_CENTER}
+        in={
+          values.component !== ComponentType.PRIVACY_CENTER &&
+          values.component !== ComponentType.HEADLESS
+        }
         animateOpacity
       >
         <Box p="1px">
