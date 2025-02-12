@@ -6,7 +6,7 @@ import {
 
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { useAlert } from "~/features/common/hooks";
-import { UNCATEGORIZED_SEGMENT } from "~/features/common/nav/v2/routes";
+import { UNCATEGORIZED_SEGMENT } from "~/features/common/nav/routes";
 
 import {
   useAddMonitorResultSystemsMutation,

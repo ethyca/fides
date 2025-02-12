@@ -12,7 +12,7 @@ import { useRef, useState } from "react";
 
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { useAlert } from "~/features/common/hooks";
-import { DATASET_DETAIL_ROUTE } from "~/features/common/nav/v2/routes";
+import { DATASET_DETAIL_ROUTE } from "~/features/common/nav/routes";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { Editor, isYamlException } from "~/features/common/yaml/helpers";
 import YamlError from "~/features/common/yaml/YamlError";

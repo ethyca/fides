@@ -12,7 +12,7 @@ import {
 import NextLink from "next/link";
 import { useEffect, useState } from "react";
 
-import { ACTION_CENTER_ROUTE } from "~/features/common/nav/v2/routes";
+import { ACTION_CENTER_ROUTE } from "~/features/common/nav/routes";
 import { formatDate, getWebsiteIconUrl } from "~/features/common/utils";
 
 import { MonitorAggregatedResults } from "./types";

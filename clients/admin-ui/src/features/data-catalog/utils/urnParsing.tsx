@@ -1,6 +1,6 @@
 import { Icons } from "fidesui";
 
-import { NextBreadcrumbProps } from "~/features/common/nav/v2/NextBreadcrumb";
+import { NextBreadcrumbProps } from "~/features/common/nav/NextBreadcrumb";
 
 const URN_SEPARATOR = ".";
 

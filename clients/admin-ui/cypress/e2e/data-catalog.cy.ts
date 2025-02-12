@@ -6,7 +6,7 @@ import {
   stubTaxonomyEntities,
 } from "cypress/support/stubs";
 
-import { DATA_CATALOG_ROUTE } from "~/features/common/nav/v2/routes";
+import { DATA_CATALOG_ROUTE } from "~/features/common/nav/routes";
 
 describe("data catalog", () => {
   beforeEach(() => {

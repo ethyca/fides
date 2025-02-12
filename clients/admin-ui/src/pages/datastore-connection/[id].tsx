@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { useAlert } from "~/features/common/hooks";
-import { DATASTORE_CONNECTION_ROUTE } from "~/features/common/nav/v2/routes";
+import { DATASTORE_CONNECTION_ROUTE } from "~/features/common/nav/routes";
 import {
   connectionTypeApi,
   selectConnectionTypes,
