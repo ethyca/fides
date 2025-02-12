@@ -1,4 +1,4 @@
-import { AntMenu as Menu, Icons } from "fidesui";
+import { AntMenu as Menu } from "fidesui";
 import { ComponentProps } from "react";
 
 import styles from "./NavMenu.module.scss";
@@ -10,12 +10,6 @@ export const NavMenu = ({ className, ...props }: MenuProps) => (
     mode="inline"
     theme="dark"
     inlineIndent={8}
-    expandIcon={
-      <div>
-        {/* The wrapper div is required otherwise the size of the icon is ignored */}
-        <Icons.ChevronDown size={14} />
-      </div>
-    }
     {...props}
     className={`${styles.menu} ${className}`}
   />
