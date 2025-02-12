@@ -27,9 +27,11 @@ const AccountDropdownMenu = ({
         ],
       }}
       overlayStyle={{ width: "200px" }}
+      trigger={["click", "hover"]}
     >
       <Button
-        className="border-none bg-transparent  hover:!bg-gray-700"
+        tabIndex={0}
+        className="border-none bg-transparent hover:!bg-gray-700 focus:!bg-gray-700"
         icon={<Icons.User color="white" />}
       />
     </Dropdown>
