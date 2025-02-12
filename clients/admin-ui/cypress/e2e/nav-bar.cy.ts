@@ -47,6 +47,7 @@ describe("Nav Bar", () => {
 
     cy.get(".ant-menu-submenu-title").should("have.length", 6);
     cy.getByTestId("Detection & Discovery-nav-group")
+      .click()
       .parents(".ant-menu-submenu")
       .within(() => {
         cy.getByTestId("Activity-nav-link").should("exist");

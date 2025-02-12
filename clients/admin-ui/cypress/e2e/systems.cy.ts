@@ -36,6 +36,7 @@ describe("System management page", () => {
 
   it("Can navigate to the system management page", () => {
     cy.visit("/");
+    cy.getByTestId("Data inventory-nav-group").click();
     cy.getByTestId("System inventory-nav-link").click();
     cy.wait("@getSystemsPaginated");
     cy.getByTestId("system-management");
