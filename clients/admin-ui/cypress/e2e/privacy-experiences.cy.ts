@@ -9,7 +9,7 @@ import {
 } from "cypress/support/stubs";
 
 import { PREVIEW_CONTAINER_ID } from "~/constants";
-import { PRIVACY_EXPERIENCE_ROUTE } from "~/features/common/nav/v2/routes";
+import { PRIVACY_EXPERIENCE_ROUTE } from "~/features/common/nav/routes";
 import { RoleRegistryEnum } from "~/types/api";
 
 const EXPERIENCE_ID = "pri_0338d055-f91b-4a17-ad4e-600c61551199";

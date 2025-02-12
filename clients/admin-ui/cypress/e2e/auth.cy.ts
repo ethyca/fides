@@ -1,6 +1,6 @@
 import { stubOpenIdProviders, stubUserManagement } from "cypress/support/stubs";
 
-import { SYSTEM_ROUTE } from "~/features/common/nav/v2/routes";
+import { SYSTEM_ROUTE } from "~/features/common/nav/routes";
 
 describe("User Authentication", () => {
   beforeEach(() => {

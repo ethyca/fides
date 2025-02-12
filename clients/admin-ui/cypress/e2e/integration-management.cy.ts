@@ -1,6 +1,6 @@
 import { stubPlus, stubSystemCrud } from "cypress/support/stubs";
 
-import { INTEGRATION_MANAGEMENT_ROUTE } from "~/features/common/nav/v2/routes";
+import { INTEGRATION_MANAGEMENT_ROUTE } from "~/features/common/nav/routes";
 
 describe("Integration management for data detection & discovery", () => {
   beforeEach(() => {

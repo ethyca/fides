@@ -8,7 +8,7 @@ import { useAppSelector } from "~/app/hooks";
 import { getErrorMessage } from "~/features/common/helpers";
 import { DesktopIcon } from "~/features/common/Icon/DesktopIcon";
 import { MobileIcon } from "~/features/common/Icon/MobileIcon";
-import { PRIVACY_EXPERIENCE_ROUTE } from "~/features/common/nav/v2/routes";
+import { PRIVACY_EXPERIENCE_ROUTE } from "~/features/common/nav/routes";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import {
   defaultInitialValues,
