@@ -27,6 +27,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Added detail trays to items in data catalog view [#5729](https://github.com/ethyca/fides/pull/5729)
 - Support rendering and saving consent from custom notices in TCF Overlay [#5742](https://github.com/ethyca/fides/pull/5742)
 - Added worker stats endpoint to monitor worker status and task queue length [#5725](https://github.com/ethyca/fides/pull/5725)
+- New "Headless" experience type to support custom UI implementations [#5751](https://github.com/ethyca/fides/pull/5751)
 
 ### Changed
 - Added frequency field to DataHubSchema integration config [#5716](https://github.com/ethyca/fides/pull/5716)

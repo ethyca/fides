@@ -83,6 +83,37 @@ describe("Consent overlay", () => {
     });
   });
 
+  describe("when experience is Headless", () => {
+    beforeEach(() => {
+      cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
+      cy.fixture("consent/fidesjs_options_banner_modal.json").then((config) => {
+        stubConfig({
+          experience: {
+            experience_config: {
+              ...config.experience.experience_config,
+              ...{ component: ComponentType.HEADLESS },
+            },
+          },
+        });
+      });
+    });
+
+    it("should not render the banner or modal", () => {
+      cy.waitUntilFidesInitialized().then(() => {
+        // The banner has a delay, so in order to assert its non-existence, we have
+        // to give it a chance to come up first. Otherwise, the following gets will
+        // pass regardless.
+        // eslint-disable-next-line cypress/no-unnecessary-waiting
+        cy.wait(500);
+        cy.get("@FidesUIShown").should("not.have.been.called");
+        cy.get("div#fides-banner").should("not.exist");
+        // can display the modal link but it shouldn't do anything
+        cy.get("#fides-modal-link").click();
+        cy.getByTestId("consent-modal").should("not.exist");
+      });
+    });
+  });
+
   describe("when overlay is enabled", () => {
     describe("when overlay is shown", () => {
       beforeEach(() => {
@@ -1132,6 +1163,26 @@ describe("Consent overlay", () => {
         );
         cy.get("span").contains("Advertising with gpc enabled");
         cy.get("span").contains("Global Privacy Control Applied");
+      });
+
+      it("sends GPC consent override from a Headless experience", () => {
+        cy.on("window:before:load", (win) => {
+          // eslint-disable-next-line no-param-reassign
+          win.navigator.globalPrivacyControl = true;
+        });
+        cy.fixture("consent/fidesjs_options_banner_modal.json").then(
+          (config) => {
+            stubConfig({
+              experience: {
+                experience_config: {
+                  ...config.experience.experience_config,
+                  ...{ component: ComponentType.HEADLESS },
+                },
+              },
+            });
+          },
+        );
+        cy.wait("@patchPrivacyPreference");
       });
     });
 
