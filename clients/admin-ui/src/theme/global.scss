@@ -62,6 +62,7 @@ h6 {
     --ant-border-radius: 0px;
 
     // fix missing pixel in the arrow icon
+    // (it's the same width as ant only changing 0.6 to 0.65 here)
     &::before,
     &::after {
       width: calc(calc(var(--ant-font-size) / 7 * 5) * 0.65);
