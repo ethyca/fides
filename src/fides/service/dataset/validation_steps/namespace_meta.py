@@ -13,16 +13,14 @@ class NamespaceMetaValidationStep(DatasetValidationStep):
         if not context.connection_config:
             return
 
-        connection_type = context.connection_config.connection_type
+        connection_type: str = context.connection_config.connection_type.value
         namespace_meta_class = NamespaceMeta.get_implementation(connection_type)
         if not namespace_meta_class:
             return
 
         # Check if dataset has namespace metadata
         namespace_meta = (
-            context.dataset.fides_meta.get("namespace")  # type: ignore[attr-defined]
-            if context.dataset.fides_meta
-            else None
+            context.dataset.fides_meta.namespace if context.dataset.fides_meta else None
         )
 
         # Check if connection config has required secret fields
