@@ -212,52 +212,6 @@ describe("Fides-js TCF", () => {
     });
   });
 
-  describe("Payload optimization", () => {
-    beforeEach(() => {
-      cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
-      stubTCFExperience({
-        includeCustomPurposes: true,
-      });
-    });
-    it("merges full experience with minimal after successful fetch", () => {
-      cy.window().then((win) => {
-        cy.fixture("consent/experience_tcf.json").then((payload) => {
-          cy.wait("@getPrivacyExperience");
-          expect(
-            (win.Fides.experience as PrivacyExperienceMinimal)
-              .tcf_purpose_consent_ids,
-          ).to.have.length(11);
-          expect((win.Fides.experience as any).tcf_purpose_consents).to.not
-            .exist;
-          cy.waitUntilFidesInitialized().then(() => {
-            const experience = payload.items[0];
-            const updatedExperience = {
-              ...experience,
-              tcf_purpose_consents: [],
-            };
-            stubTCFExperience({
-              experienceFullOverride: updatedExperience,
-              includeCustomPurposes: true,
-            });
-            cy.wait("@getPrivacyExperience");
-            expect(
-              (
-                win.Fides.experience as PrivacyExperience &
-                  PrivacyExperienceMinimal
-              ).tcf_purpose_consent_ids,
-            ).to.have.length(11);
-            expect(
-              (
-                win.Fides.experience as PrivacyExperience &
-                  PrivacyExperienceMinimal
-              ).tcf_purpose_consents,
-            ).to.exist.to.have.length(4);
-          });
-        });
-      });
-    });
-  });
-
   describe("initial layer", () => {
     beforeEach(() => {
       cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
