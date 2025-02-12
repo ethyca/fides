@@ -110,7 +110,6 @@ export const TcfOverlay = ({
   }, [currentLocale, minExperienceLocale, setCurrentLocale]);
 
   const { gvlTranslations, setGvlTranslations } = useGvl();
-  const [isGVLLangLoading, setIsGVLLangLoading] = useState(false);
   const loadGVLTranslations = async (locale: string) => {
     const gvlTranslationObjects = await fetchGvlTranslations(
       options.fidesApiUrl,
@@ -150,6 +149,8 @@ export const TcfOverlay = ({
   const [experience, setExperience] = useState<PrivacyExperience>();
 
   useEffect(() => {
+    let isGVLLangLoading = false;
+
     if (!!userlocale && bestLocale !== minExperienceLocale) {
       // The minimal experience translation is different from the user's language.
       // This occurs when the customer has set their overrides on the window object
@@ -165,9 +166,9 @@ export const TcfOverlay = ({
       // We can only get English GVL translations from the experience.
       // If the user's locale is not English, we need to load them from the api.
       // This only affects the modal.
-      setIsGVLLangLoading(true);
+      isGVLLangLoading = true;
       loadGVLTranslations(bestLocale).then(() => {
-        setIsGVLLangLoading(false);
+        isGVLLangLoading = false;
       });
     }
     fidesDebugger("Fetching full TCF experience...");
@@ -191,6 +192,20 @@ export const TcfOverlay = ({
           window.Fides.experience.minimal_tcf = false;
 
           setExperience(fullExperience);
+          loadMessagesFromExperience(
+            i18n,
+            fullExperience,
+            translationOverrides,
+          );
+          if (!userlocale || bestLocale === defaultLocale) {
+            // English (default) GVL translations are part of the full experience, so we load them here.
+            loadGVLMessagesFromExperience(i18n, fullExperience);
+          } else {
+            setCurrentLocale(bestLocale);
+            if (!isGVLLangLoading) {
+              setIsI18nLoading(false);
+            }
+          }
         }
       }
     });
@@ -205,16 +220,6 @@ export const TcfOverlay = ({
     if (!experience) {
       setDraftIds(EMPTY_ENABLED_IDS);
     } else {
-      loadMessagesFromExperience(i18n, experience, translationOverrides);
-      if (!userlocale || bestLocale === defaultLocale) {
-        // English (default) GVL translations are part of the full experience, so we load them here.
-        loadGVLMessagesFromExperience(i18n, experience);
-      } else {
-        setCurrentLocale(bestLocale);
-        if (!isGVLLangLoading) {
-          setIsI18nLoading(false);
-        }
-      }
       const {
         tcf_purpose_consents: consentPurposes = [],
         privacy_notices: customPurposes = [],

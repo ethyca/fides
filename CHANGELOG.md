@@ -48,7 +48,6 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Fixed `window.Fides.experience` of FidesJS to be a merged version of the minimal and full experience. [#5726](https://github.com/ethyca/fides/pull/5726)
 - Fixed vendor count template string on FidesJS embedded layer 2 descriptions [#5736](https://github.com/ethyca/fides/pull/5736)
 - Allowing a list with a single dataset in the YAML dataset editor [#5750](https://github.com/ethyca/fides/pull/5750)
-- Fixed edge case translation string issue on FidesJS embedded layer 2 (#5749)[https://github.com/ethyca/fides/pull/5749]
 
 ## [2.54.0](https://github.com/ethyca/fides/compare/2.53.0...2.54.0)
 
