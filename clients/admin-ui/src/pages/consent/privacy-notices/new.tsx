@@ -1,7 +1,7 @@
 import { Box, Text } from "fidesui";
 
 import Layout from "~/features/common/Layout";
-import { PRIVACY_NOTICES_ROUTE } from "~/features/common/nav/v2/routes";
+import { PRIVACY_NOTICES_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 import PrivacyNoticeForm from "~/features/privacy-notices/PrivacyNoticeForm";
 

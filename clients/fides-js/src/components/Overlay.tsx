@@ -23,7 +23,7 @@ import {
 } from "../lib/consent-types";
 import { defaultShowModal, shouldResurfaceConsent } from "../lib/consent-utils";
 import { dispatchFidesEvent } from "../lib/events";
-import { useHasMounted } from "../lib/hooks";
+import { useElementById, useHasMounted } from "../lib/hooks";
 import { useI18n } from "../lib/i18n/i18n-context";
 import { blockPageScrolling, unblockPageScrolling } from "../lib/ui-utils";
 import ConsentContent from "./ConsentContent";
@@ -70,9 +70,13 @@ const Overlay: FunctionComponent<Props> = ({
 }) => {
   const { i18n } = useI18n();
   const delayBannerMilliseconds = 100;
-  const delayModalLinkMilliseconds = 200;
   const hasMounted = useHasMounted();
   const isAutomatedConsent = isConsentOverride(options);
+  const modalLinkId = options.modalLinkId || "fides-modal-link";
+  const modalLinkIsDisabled =
+    !experience || !!options.fidesEmbed || options.modalLinkId === "";
+  const modalLink = useElementById(modalLinkId, modalLinkIsDisabled);
+  const modalLinkRef = useRef<HTMLElement | null>(null);
 
   const showBanner = useMemo(
     () =>
@@ -86,7 +90,6 @@ const Overlay: FunctionComponent<Props> = ({
   const [bannerIsOpen, setBannerIsOpen] = useState(
     options.fidesEmbed ? showBanner : false,
   );
-  const modalLinkRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
     if (isUiBlocking && bannerIsOpen) {
@@ -153,71 +156,42 @@ const Overlay: FunctionComponent<Props> = ({
   }, [showBanner, setBannerIsOpen]);
 
   useEffect(() => {
-    if (options.fidesEmbed || !experience || options.modalLinkId === "") {
-      // If empty string is explicitly set, do not attempt to bind the modal link to the click handler.
-      // developers using `Fides.showModal();` can use this to prevent polling for the modal link.
-      return () => {};
+    if (!!experience && !options.fidesEmbed) {
+      window.Fides.showModal = handleOpenModal;
     }
-    window.Fides.showModal = handleOpenModal;
-    document.body.classList.add("fides-overlay-modal-link-shown");
-    // use a short delay to give basic page a chance to render the modal link element
-    const delayModalLinkBinding = setTimeout(() => {
-      const modalLinkId = options.modalLinkId || "fides-modal-link";
-      fidesDebugger("Searching for modal link element...");
-      const bindModalLink = (modalLinkEl: HTMLElement) => {
+    return () => {
+      window.Fides.showModal = defaultShowModal;
+    };
+  }, [experience, handleOpenModal, options.fidesEmbed]);
+
+  useEffect(() => {
+    // If empty string is explicitly set, do not attempt to bind the modal link to the click handler.
+    // developers using `Fides.showModal();` can use this to prevent polling for the modal link.
+    if (!modalLinkIsDisabled) {
+      if (modalLink) {
         fidesDebugger(
           "Modal link element found, updating it to show and trigger modal on click.",
         );
-        modalLinkRef.current = modalLinkEl;
+        modalLinkRef.current = modalLink;
         modalLinkRef.current.addEventListener("click", window.Fides.showModal);
-        // Update to show the pre-existing modal link in the DOM
+        // show the modal link in the DOM
+        document.body.classList.add("fides-overlay-modal-link-shown");
         modalLinkRef.current.classList.add("fides-modal-link-shown");
-      };
-      const checkModalLink = () => {
-        let modalLinkEl = document.getElementById(modalLinkId);
-        if (!modalLinkEl) {
-          // Wait until the hosting page's link element is available before attempting to bind to the click handler. This is useful for dynamic (SPA) pages and pages that load the modal link element after the Fides script has loaded.
-          fidesDebugger(
-            `Modal link element not found (#${modalLinkId}), waiting for it to be added to the DOM...`,
-          );
-          let attempts = 0;
-          let interval = 200;
-          const checkInterval = setInterval(() => {
-            modalLinkEl = document.getElementById(modalLinkId);
-            if (modalLinkEl) {
-              clearInterval(checkInterval);
-              bindModalLink(modalLinkEl);
-            } else {
-              attempts += 1;
-              // if the container is not found after 5 attempts, increase the interval to reduce the polling frequency
-              if (attempts >= 5 && interval < 1000) {
-                interval += 200;
-              }
-            }
-          }, interval);
-        } else {
-          bindModalLink(modalLinkEl);
-        }
-      };
-      checkModalLink();
-    }, delayModalLinkMilliseconds);
+      } else {
+        fidesDebugger(`Searching for Modal link element #${modalLinkId}...`);
+      }
+    } else {
+      fidesDebugger("Modal Link is disabled for this experience.");
+    }
     return () => {
-      clearTimeout(delayModalLinkBinding);
       if (modalLinkRef.current) {
         modalLinkRef.current.removeEventListener(
           "click",
           window.Fides.showModal,
         );
       }
-      window.Fides.showModal = defaultShowModal;
     };
-  }, [
-    options.fidesEmbed,
-    options.modalLinkId,
-    options.debug,
-    handleOpenModal,
-    experience,
-  ]);
+  }, [modalLink, modalLinkIsDisabled, modalLinkId]);
 
   const handleManagePreferencesClick = (): void => {
     handleOpenModal();

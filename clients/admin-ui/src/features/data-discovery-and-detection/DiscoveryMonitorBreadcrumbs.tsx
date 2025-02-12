@@ -3,7 +3,7 @@ import { Icons } from "fidesui";
 import {
   NextBreadcrumb,
   NextBreadcrumbProps,
-} from "../common/nav/v2/NextBreadcrumb";
+} from "../common/nav/NextBreadcrumb";
 
 interface DiscoveryMonitorBreadcrumbsProps {
   resourceUrn?: string;

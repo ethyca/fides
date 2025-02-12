@@ -2,7 +2,7 @@ import { AntTypography as Typography } from "fidesui";
 import type { NextPage } from "next";
 
 import Layout from "~/features/common/Layout";
-import { CONFIGURE_CONSENT_ROUTE } from "~/features/common/nav/v2/routes";
+import { CONFIGURE_CONSENT_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 import { AddMultipleSystems } from "~/features/system/add-multiple-systems/AddMultipleSystems";
 

@@ -40,6 +40,7 @@ import {
   initialize,
   UpdateExperienceFn,
 } from "./lib/initialize";
+import { initOverlay } from "./lib/initOverlay";
 import { renderOverlay } from "./lib/renderOverlay";
 import { customGetConsentPreferences } from "./services/external/preferences";
 
@@ -155,6 +156,7 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
   const updatedFides = await initialize({
     ...config,
     fides: this,
+    initOverlay,
     renderOverlay,
     updateExperience,
     overrides,

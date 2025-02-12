@@ -6,7 +6,7 @@ import {
   stubProperties,
 } from "cypress/support/stubs";
 
-import { PROPERTIES_ROUTE } from "~/features/common/nav/v2/routes";
+import { PROPERTIES_ROUTE } from "~/features/common/nav/routes";
 import { RoleRegistryEnum } from "~/types/api";
 
 describe("Properties page", () => {

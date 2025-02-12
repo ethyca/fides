@@ -1,6 +1,6 @@
 import { stubPlus } from "cypress/support/stubs";
 
-import { GLOBAL_CONSENT_CONFIG_ROUTE } from "~/features/common/nav/v2/routes";
+import { GLOBAL_CONSENT_CONFIG_ROUTE } from "~/features/common/nav/routes";
 
 describe("Consent settings", () => {
   beforeEach(() => {

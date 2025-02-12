@@ -27,6 +27,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Added detail trays to items in data catalog view [#5729](https://github.com/ethyca/fides/pull/5729)
 - Support rendering and saving consent from custom notices in TCF Overlay [#5742](https://github.com/ethyca/fides/pull/5742)
 - Added worker stats endpoint to monitor worker status and task queue length [#5725](https://github.com/ethyca/fides/pull/5725)
+- New "Headless" experience type to support custom UI implementations [#5751](https://github.com/ethyca/fides/pull/5751)
 
 ### Changed
 - Added frequency field to DataHubSchema integration config [#5716](https://github.com/ethyca/fides/pull/5716)
@@ -41,7 +42,8 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Fixed Bigquery flakey tests. [#5713](https://github.com/ethyca/fides/pull/5713)
 - Fixed breadcrumb navigation issues in data catalog view [#5717](https://github.com/ethyca/fides/pull/5717)
 - Fixed `window.Fides.experience` of FidesJS to be a merged version of the minimal and full experience. [#5726](https://github.com/ethyca/fides/pull/5726)
-- Fixed vendor count template string on FidesJS embedded layer 2 descriptions (#5736)[https://github.com/ethyca/fides/pull/5736]
+- Fixed vendor count template string on FidesJS embedded layer 2 descriptions [#5736](https://github.com/ethyca/fides/pull/5736)
+- Allowing a list with a single dataset in the YAML dataset editor [#5750](https://github.com/ethyca/fides/pull/5750)
 - Fixed edge case translation string issue on FidesJS embedded layer 2 (#5749)[https://github.com/ethyca/fides/pull/5749]
 
 ## [2.54.0](https://github.com/ethyca/fides/compare/2.53.0...2.54.0)

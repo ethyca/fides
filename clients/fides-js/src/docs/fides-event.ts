@@ -75,6 +75,8 @@ export type FidesEventType =
  *
  * - `FidesModalClosed`: Dispatched whenever the FidesJS modal is closed.
  *
+ * **Note**: The events `FidesUIShown`, `FidesUIChanged`, and `FidesModalClosed` are not available in a Headless experience, as they are specific to the FidesJS UI components.
+ *
  */
 export interface FidesEvent extends CustomEvent {
   /**
