@@ -32,12 +32,12 @@ from fides.api.util.api_router import APIRouter
 from fides.api.util.errors import FidesError, ForbiddenIsDefaultTaxonomyError
 from fides.api.util.filter_utils import apply_filters_to_query
 from fides.common.api.scope_registry import (
+    CTL_DATASET_READ,
     DATA_CATEGORY_CREATE,
     DATA_CATEGORY_UPDATE,
     DATA_SUBJECT_CREATE,
     DATA_USE_CREATE,
     DATA_USE_UPDATE,
-    DATASET_READ,
 )
 from fides.common.api.v1.urn_registry import V1_URL_PREFIX
 
@@ -60,7 +60,7 @@ data_subject_router = APIRouter(tags=["DataSubject"], prefix=V1_URL_PREFIX)
 
 @dataset_router.get(
     "/dataset",
-    dependencies=[Security(verify_oauth_client, scopes=[DATASET_READ])],
+    dependencies=[Security(verify_oauth_client, scopes=[CTL_DATASET_READ])],
     response_model=Union[Page[Dataset], List[Dataset]],
     name="List datasets (optionally paginated)",
 )
@@ -318,6 +318,7 @@ async def create_data_subject(
             detail=f"Data subject with key {data_subject.fides_key} or name {data_subject.name} already exists.",
         )
 
+
 @data_use_router.put(
     "/data_use",
     dependencies=[Security(verify_oauth_client, scopes=[DATA_USE_UPDATE])],
@@ -340,6 +341,7 @@ async def update_data_use(
             detail=f"Data use not found with key: {data_use.fides_key}",
         )
     return validate_and_update_taxonomy(db, resource, DataUse, data_use)
+
 
 @data_category_router.put(
     "/data_category",

@@ -3184,7 +3184,9 @@ class TestCrudActiveProperty:
         self, test_config: FidesConfig, endpoint: str
     ) -> None:
         """Ensure we can toggle `active` property on default taxonomy elements"""
-        resource = getattr(DEFAULT_TAXONOMY, endpoint)[0]
+        # Use the third element to avoid deactivating top-level items, which deactivates
+        # all their descendants and we'd need to manually re-activate each one.
+        resource = getattr(DEFAULT_TAXONOMY, endpoint)[2]
         resource = TAXONOMY_EXTENSIONS[endpoint](
             **resource.model_dump(mode="json")
         )  # cast resource to extended model
