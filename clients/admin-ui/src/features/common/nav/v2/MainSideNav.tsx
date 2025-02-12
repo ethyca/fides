@@ -153,7 +153,12 @@ export const UnconnectedMainSideNav = ({
             icon={<Icons.Help color="white" />}
           />
           {username && (
-            <AccountDropdownMenu username={username} onLogout={handleLogout} />
+            <div className="inline-block">
+              <AccountDropdownMenu
+                username={username}
+                onLogout={handleLogout}
+              />
+            </div>
           )}
         </Box>
       </VStack>
