@@ -1,6 +1,6 @@
 import { stubPlus } from "cypress/support/stubs";
 
-import { DOMAIN_MANAGEMENT_ROUTE } from "~/features/common/nav/v2/routes";
+import { DOMAIN_MANAGEMENT_ROUTE } from "~/features/common/nav/routes";
 
 // Mock response for GET /api/v1/config?api_set=true
 const API_SET_CONFIG = {

@@ -10,7 +10,7 @@ import {
   CustomTextInput,
 } from "~/features/common/form/inputs";
 import { enumToOptions } from "~/features/common/helpers";
-import { PROPERTIES_ROUTE } from "~/features/common/nav/v2/routes";
+import { PROPERTIES_ROUTE } from "~/features/common/nav/routes";
 import ScrollableList from "~/features/common/ScrollableList";
 import {
   selectAllExperienceConfigs,

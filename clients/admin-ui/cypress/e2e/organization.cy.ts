@@ -1,6 +1,6 @@
 import { stubOrganizationCrud } from "cypress/support/stubs";
 
-import { ORGANIZATION_MANAGEMENT_ROUTE } from "~/features/common/nav/v2/routes";
+import { ORGANIZATION_MANAGEMENT_ROUTE } from "~/features/common/nav/routes";
 
 describe("Organization page", () => {
   beforeEach(() => {

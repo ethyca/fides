@@ -11,7 +11,7 @@ import {
   ADD_SYSTEMS_ROUTE,
   INTEGRATION_MANAGEMENT_ROUTE,
   SYSTEM_ROUTE,
-} from "~/features/common/nav/v2/routes";
+} from "~/features/common/nav/routes";
 import { RoleRegistryEnum } from "~/types/api";
 
 describe("System management page", () => {
