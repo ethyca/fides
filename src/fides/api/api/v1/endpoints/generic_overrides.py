@@ -165,7 +165,7 @@ def validate_and_create_taxonomy(
     """
     if not data.fides_key:
         raise FidesError(f"Fides key is required to create a {model.__name__} resource")
-    if isinstance(model, ModelWithDefaultField) and data.is_default:
+    if isinstance(data, ModelWithDefaultField) and data.is_default:
         raise ForbiddenIsDefaultTaxonomyError(
             model.__name__, data.fides_key, action="create"
         )
@@ -184,6 +184,14 @@ def validate_and_update_taxonomy(
     """
     Validate and update a taxonomy element.
     """
+    if (
+        isinstance(data, ModelWithDefaultField)
+        and data.is_default != resource.is_default
+    ):
+        raise ForbiddenIsDefaultTaxonomyError(
+            "resource", data.fides_key, action="modify"
+        )
+
     # If active field is being updated, cascade change either up or down
     if hasattr(data, "active"):
         if data.active:
@@ -257,11 +265,6 @@ async def create_data_use(
             status_code=HTTP_422_UNPROCESSABLE_ENTITY,
             detail=f"Data use with key {data_use.fides_key} or name {data_use.name} already exists.",
         )
-    except Exception:
-        raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
-            detail="Error creating data use. Try a different name or key",
-        )
 
 
 @data_category_router.post(
@@ -287,11 +290,6 @@ async def create_data_category(
         raise HTTPException(
             status_code=HTTP_422_UNPROCESSABLE_ENTITY,
             detail=f"Data category with key {data_category.fides_key} or name {data_category.name} already exists.",
-        )
-    except Exception:
-        raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
-            detail="Error creating data category. Try a different name or key.",
         )
 
 
@@ -319,12 +317,6 @@ async def create_data_subject(
             status_code=HTTP_422_UNPROCESSABLE_ENTITY,
             detail=f"Data subject with key {data_subject.fides_key} or name {data_subject.name} already exists.",
         )
-    except Exception:
-        raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
-            detail="Error creating data subject. Try a different name or key.",
-        )
-
 
 @data_use_router.put(
     "/data_use",
@@ -347,14 +339,7 @@ async def update_data_use(
             status_code=HTTP_404_NOT_FOUND,
             detail=f"Data use not found with key: {data_use.fides_key}",
         )
-    try:
-        return validate_and_update_taxonomy(db, resource, DataUse, data_use)
-    except Exception:
-        raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
-            detail="Error updating data use",
-        )
-
+    return validate_and_update_taxonomy(db, resource, DataUse, data_use)
 
 @data_category_router.put(
     "/data_category",
@@ -379,13 +364,7 @@ async def update_data_category(
             status_code=HTTP_404_NOT_FOUND,
             detail=f"Data category not found with key: {data_category.fides_key}",
         )
-    try:
-        return validate_and_update_taxonomy(db, resource, DataCategory, data_category)
-    except Exception:
-        raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
-            detail="Error updating data category",
-        )
+    return validate_and_update_taxonomy(db, resource, DataCategory, data_category)
 
 
 GENERIC_OVERRIDES_ROUTER = APIRouter()
