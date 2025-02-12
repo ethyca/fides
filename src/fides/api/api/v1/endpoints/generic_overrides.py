@@ -1,6 +1,6 @@
 from typing import Dict, List, Optional, Type, Union
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Security
+from fastapi import Depends, HTTPException, Query, Security
 from fastapi_pagination import Page, Params
 from fastapi_pagination.ext.async_sqlalchemy import paginate as async_paginate
 from fideslang.models import Dataset
@@ -28,6 +28,7 @@ from fides.api.schemas.taxonomy_extensions import (
     DataUse,
     DataUseCreateOrUpdate,
 )
+from fides.api.util.api_router import APIRouter
 from fides.api.util.errors import FidesError, ForbiddenIsDefaultTaxonomyError
 from fides.api.util.filter_utils import apply_filters_to_query
 from fides.common.api.scope_registry import (
