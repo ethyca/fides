@@ -29,7 +29,7 @@ import Layout from "~/features/common/Layout";
 import {
   ADD_SYSTEMS_ROUTE,
   EDIT_SYSTEM_ROUTE,
-} from "~/features/common/nav/v2/routes";
+} from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 import Restrict from "~/features/common/Restrict";
 import {

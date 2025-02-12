@@ -6,7 +6,7 @@ import {
   DATAMAP_ROUTE,
   PRIVACY_REQUESTS_ROUTE,
   SYSTEM_ROUTE,
-} from "~/features/common/nav/v2/routes";
+} from "~/features/common/nav/routes";
 import { ScopeRegistryEnum } from "~/types/api";
 
 import { ModuleCardConfig } from "./types";

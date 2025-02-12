@@ -4,7 +4,7 @@ import React from "react";
 
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import ConfirmationModal from "~/features/common/modals/ConfirmationModal";
-import { PROPERTIES_ROUTE } from "~/features/common/nav/v2/routes";
+import { PROPERTIES_ROUTE } from "~/features/common/nav/routes";
 import Restrict from "~/features/common/Restrict";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { useDeletePropertyMutation } from "~/features/properties/property.slice";

@@ -10,7 +10,7 @@ import React, { useCallback, useEffect } from "react";
 import { useDispatch } from "react-redux";
 
 import { useAppSelector } from "~/app/hooks";
-import { DATASTORE_CONNECTION_ROUTE } from "~/features/common/nav/v2/routes";
+import { DATASTORE_CONNECTION_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 
 import ChooseConnection from "./ChooseConnection";

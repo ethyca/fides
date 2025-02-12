@@ -15,8 +15,8 @@ import { useMemo } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import { CustomSwitch, CustomTextInput } from "~/features/common/form/inputs";
-import BackButton from "~/features/common/nav/v2/BackButton";
-import { PRIVACY_EXPERIENCE_ROUTE } from "~/features/common/nav/v2/routes";
+import BackButton from "~/features/common/nav/BackButton";
+import { PRIVACY_EXPERIENCE_ROUTE } from "~/features/common/nav/routes";
 import { PRIVACY_NOTICE_REGION_RECORD } from "~/features/common/privacy-notice-regions";
 import ScrollableList from "~/features/common/ScrollableList";
 import {

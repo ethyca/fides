@@ -3,7 +3,7 @@ import React from "react";
 
 import { useFeatures } from "~/features/common/features";
 
-import { ADD_SYSTEMS_ROUTE } from "../common/nav/v2/routes";
+import { ADD_SYSTEMS_ROUTE } from "../common/nav/routes";
 import PageHeader from "../common/PageHeader";
 import AddConnectionButton from "./add-connection/AddConnectionButton";
 

@@ -3,7 +3,7 @@ import { useRouter } from "next/router";
 import {
   DATA_DETECTION_ROUTE_DETAIL,
   DATA_DISCOVERY_ROUTE_DETAIL,
-} from "~/features/common/nav/v2/routes";
+} from "~/features/common/nav/routes";
 
 const useDiscoveryRoutes = () => {
   const router = useRouter();
