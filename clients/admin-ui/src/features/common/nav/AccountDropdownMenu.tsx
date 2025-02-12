@@ -15,7 +15,7 @@ const AccountDropdownMenu = ({
         items: [
           {
             key: "1",
-            label: <span data-testid="header-menu-button">{username}</span>,
+            label: <span data-testid="header-menu-username">{username}</span>,
             type: "group",
           },
           { type: "divider" },
@@ -33,6 +33,7 @@ const AccountDropdownMenu = ({
         tabIndex={0}
         className="border-none bg-transparent hover:!bg-gray-700 focus:!bg-gray-700"
         icon={<Icons.User color="white" />}
+        data-testid="header-menu-button"
       />
     </Dropdown>
   );
