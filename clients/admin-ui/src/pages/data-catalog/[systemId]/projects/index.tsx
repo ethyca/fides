@@ -2,7 +2,7 @@ import { useRouter } from "next/router";
 
 import FidesSpinner from "~/features/common/FidesSpinner";
 import Layout from "~/features/common/Layout";
-import { DATA_CATALOG_ROUTE } from "~/features/common/nav/v2/routes";
+import { DATA_CATALOG_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 import CatalogProjectsTable from "~/features/data-catalog/projects/CatalogProjectsTable";
 import { useGetSystemByFidesKeyQuery } from "~/features/system";

@@ -23,7 +23,7 @@ import { CustomTextInput } from "~/features/common/form/inputs";
 import { passwordValidation } from "~/features/common/form/validation";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { TrashCanSolidIcon } from "~/features/common/Icon/TrashCanSolidIcon";
-import { USER_MANAGEMENT_ROUTE } from "~/features/common/nav/v2/routes";
+import { USER_MANAGEMENT_ROUTE } from "~/features/common/nav/routes";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { useGetEmailInviteStatusQuery } from "~/features/messaging/messaging.slice";
 import { useGetAllOpenIDProvidersQuery } from "~/features/openid-authentication/openprovider.slice";

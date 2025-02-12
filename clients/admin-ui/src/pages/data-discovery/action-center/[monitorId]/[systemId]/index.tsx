@@ -6,7 +6,7 @@ import FixedLayout from "~/features/common/FixedLayout";
 import {
   ACTION_CENTER_ROUTE,
   UNCATEGORIZED_SEGMENT,
-} from "~/features/common/nav/v2/routes";
+} from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 import { DiscoveredAssetsTable } from "~/features/data-discovery-and-detection/action-center/tables/DiscoveredAssetsTable";
 
