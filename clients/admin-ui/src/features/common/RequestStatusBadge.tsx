@@ -1,52 +1,55 @@
-import { Badge, BadgeProps } from "fidesui";
+import { AntTag as Tag, AntTagProps as TagProps } from "fidesui";
 
 import { PrivacyRequestStatus } from "~/types/api";
 
 export const statusPropMap: {
-  [key in PrivacyRequestStatus]: BadgeProps & { label?: string };
+  [key in PrivacyRequestStatus]: Omit<TagProps, "color"> & {
+    color: "success" | "marble" | "error" | "warning" | "info" | "alert";
+    label?: string;
+  };
 } = {
   approved: {
-    bg: "success.100",
+    color: "success",
     label: "Approved",
   },
   complete: {
-    bg: "success.100",
+    color: "success",
     label: "Completed",
   },
   awaiting_email_send: {
-    bg: "marble.100",
+    color: "marble",
     label: "Awaiting Email Send",
   },
   denied: {
-    bg: "warn.100",
+    color: "warning",
     label: "Denied",
   },
   canceled: {
-    bg: "marble.100",
+    color: "marble",
     label: "Canceled",
   },
   error: {
-    bg: "error.100",
+    color: "error",
     label: "Error",
   },
   in_processing: {
-    bg: "caution.100",
+    color: "warning",
     label: "In Progress",
   },
   paused: {
-    bg: "marble.100",
+    color: "marble",
     label: "Paused",
   },
   pending: {
-    bg: "info.100",
+    color: "info",
     label: "New",
   },
   identity_unverified: {
-    bg: "marble.100",
+    color: "marble",
     label: "Unverified",
   },
   requires_input: {
-    bg: "alert.100",
+    color: "alert",
     label: "Requires Input",
   },
 };
@@ -56,24 +59,15 @@ interface RequestBadgeProps {
 }
 
 const RequestStatusBadge = ({ status }: RequestBadgeProps) => (
-  <Badge
-    bg={statusPropMap[status].bg}
-    width="100%"
-    minWidth="120px"
-    lineHeight="22px"
-    textAlign="center"
+  <Tag
+    color={statusPropMap[status].color}
+    className="w-full min-w-[120px] text-center leading-[22px]"
     data-testid="request-status-badge"
   >
-    <span
-      style={{
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-      }}
-    >
+    <span className="flex items-center justify-center">
       {statusPropMap[status].label}
     </span>
-  </Badge>
+  </Tag>
 );
 
 export default RequestStatusBadge;

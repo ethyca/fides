@@ -174,8 +174,8 @@ const AntPOC: NextPage = () => {
                   <Input defaultValue="26888888" />
                 </Space.Compact>
                 <Space.Compact>
-                  <Input style={{ width: "20%" }} defaultValue="0571" />
-                  <Input style={{ width: "80%" }} defaultValue="26888888" />
+                  <Input className="w-1/5" defaultValue="0571" />
+                  <Input className="w-4/5" defaultValue="26888888" />
                 </Space.Compact>
                 <Space.Compact>
                   <Input.Search
@@ -184,7 +184,7 @@ const AntPOC: NextPage = () => {
                     allowClear
                   />
                 </Space.Compact>
-                <Space.Compact style={{ width: "100%" }}>
+                <Space.Compact className="w-full">
                   <Input defaultValue="Combine input and button" />
                   <Button type="primary">Submit</Button>
                 </Space.Compact>
@@ -220,17 +220,19 @@ const AntPOC: NextPage = () => {
           <Col span={8}>
             <Card title="Tag" bordered={false} className="h-full">
               <Space direction="vertical">
-                <Tag color="magenta">magenta</Tag>
-                <Tag color="red">red</Tag>
-                <Tag color="volcano">volcano</Tag>
-                <Tag color="orange">orange</Tag>
-                <Tag color="gold">gold</Tag>
-                <Tag color="lime">lime</Tag>
-                <Tag color="green">green</Tag>
-                <Tag color="cyan">cyan</Tag>
-                <Tag color="blue">blue</Tag>
-                <Tag color="geekblue">geekblue</Tag>
-                <Tag color="purple">purple</Tag>
+                <Tag color="corinth">corinth</Tag>
+                <Tag color="minos">minos</Tag>
+                <Tag color="terracotta">terracotta</Tag>
+                <Tag color="olive">olive</Tag>
+                <Tag color="marble">marble</Tag>
+                <Tag color="sandstone">sandstone</Tag>
+                <Tag color="nectar">nectar</Tag>
+                <Tag color="error">error</Tag>
+                <Tag color="warning">warning</Tag>
+                <Tag color="success">success</Tag>
+                <Tag color="info">info</Tag>
+                <Tag color="alert">alert</Tag>
+                <Tag color="transparent">transparent</Tag>
               </Space>
             </Card>
           </Col>

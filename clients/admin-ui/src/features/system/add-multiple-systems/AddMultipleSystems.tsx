@@ -31,7 +31,6 @@ import {
 import { errorToastParams, successToastParams } from "common/toast";
 import {
   AntButton as Button,
-  Badge,
   Box,
   Flex,
   HStack,
@@ -65,7 +64,7 @@ export const VendorSourceCell = ({ value }: { value: string }) => {
   return (
     <Flex alignItems="center" justifyContent="center" height="100%" mr="2">
       <Tooltip label={labels.fullName} placement="top">
-        <Badge>{labels.label}</Badge>
+        <Tag>{labels.label}</Tag>
       </Tooltip>
     </Flex>
   );
