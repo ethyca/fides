@@ -20,7 +20,7 @@ from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import relationship
 
 from fides.api.db.base_class import Base
-from fides.api.models.sql_models import System
+from fides.api.models.sql_models import System  # type: ignore[attr-defined]
 
 
 class Asset(Base):
@@ -106,14 +106,14 @@ class Asset(Base):
             )
 
         result = await async_session.execute(
-            select(cls).where(
+            select(cls).where(  # type: ignore[arg-type, call-arg]
                 cls.name == data["name"],
                 cls.asset_type == data["asset_type"],
                 cls.domain == data["domain"],
                 cls.system_id == data["system_id"],
                 cls.base_url == data.get("base_url"),
             )
-        )  # type: ignore[arg-type]
+        )
         existing_record = result.scalars().first()
         record_id: str
         if existing_record:
@@ -140,15 +140,15 @@ class Asset(Base):
         using the provided system `id` or `fides_key`, whichever is provided
         """
         if system_id:
-            query = select(cls).where(cls.system_id == system_id)
+            query = select(cls).where(cls.system_id == system_id)  # type: ignore[arg-type]
         else:
             if not system_fides_key:
                 raise ValueError(
                     "Either system_id or system_fides_key must be provided"
                 )
             query = (
-                select(cls)
-                .join(System, System.id == cls.system_id)
+                select(cls)  # type: ignore[arg-type]
+                .join(System, System.id == cls.system_id)  # type: ignore[attr-defined]
                 .where(System.fides_key == system_fides_key)
             )
 
