@@ -1,11 +1,4 @@
-import {
-  AntButton,
-  AntMenuProps as MenuProps,
-  Box,
-  Icons,
-  Link,
-  VStack,
-} from "fidesui";
+import { AntButton, Box, Icons, VStack } from "fidesui";
 import palette from "fidesui/src/palette/palette.module.scss";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
@@ -39,8 +32,6 @@ export const UnconnectedMainSideNav = ({
   handleLogout: any;
   username: string;
 }) => {
-  const router = useRouter();
-
   const navMenuItems = groups.map((group) => ({
     key: group.title,
     icon: group.icon,
@@ -49,9 +40,13 @@ export const UnconnectedMainSideNav = ({
       key: child.path,
       // child label needs left margin/padding to align with group title
       label: (
-        <span data-testid={`${child.title}-nav-link`} className="ml-4 pl-0.5">
+        <NextLink
+          href={child.path}
+          data-testid={`${child.title}-nav-link`}
+          className="ml-4 pl-0.5"
+        >
           {child.title}
-        </span>
+        </NextLink>
       ),
     })),
   }));
@@ -74,10 +69,6 @@ export const UnconnectedMainSideNav = ({
   };
 
   const activeKey = getActiveKeyFromUrl();
-
-  const handleMenuItemClick: MenuProps["onClick"] = ({ key: path }) => {
-    router.push(path);
-  };
 
   // When the nav is first loaded, we want to open the toggles that were open when the user last visited
   // the page. This is stored in local storage so that it persists across refreshes.
@@ -132,13 +123,12 @@ export const UnconnectedMainSideNav = ({
         <Box width="100%">
           <Box pb={6}>
             <Box px={2}>
-              <Link as={NextLink} href={INDEX_ROUTE} display="flex">
+              <NextLink href={INDEX_ROUTE}>
                 <Image src={logoImage} alt="Fides Logo" width={116} />
-              </Link>
+              </NextLink>
             </Box>
           </Box>
           <NavMenu
-            onClick={handleMenuItemClick}
             items={navMenuItems}
             selectedKeys={activeKey ? [activeKey] : []}
             onOpenChange={handleOpenChange}
