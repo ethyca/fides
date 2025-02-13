@@ -1,7 +1,7 @@
 import { Box } from "fidesui";
 import { useRouter } from "next/router";
 
-import { INTEGRATION_MANAGEMENT_ROUTE } from "~/features/common/nav/v2/routes";
+import { INTEGRATION_MANAGEMENT_ROUTE } from "~/features/common/nav/routes";
 import IntegrationBox from "~/features/integrations/IntegrationBox";
 import NoIntegrations from "~/features/integrations/NoIntegrations";
 import { ConnectionConfigurationResponse } from "~/types/api";

@@ -19,6 +19,10 @@ const GZIP_SIZE_WARN_KB = 35; // log a warning if bundle size exceeds this
 const GZIP_SIZE_TCF_ERROR_KB = 86;
 const GZIP_SIZE_TCF_WARN_KB = 75;
 
+// Headless
+const GZIP_SIZE_HEADLESS_ERROR_KB = 25;
+const GZIP_SIZE_HEADLESS_WARN_KB = 20;
+
 const preactAliases = {
   entries: [
     { find: "react", replacement: "preact/compat" },
@@ -105,6 +109,11 @@ const SCRIPTS = [
     name: `${NAME}-tcf`,
     gzipWarnSizeKb: GZIP_SIZE_TCF_WARN_KB,
     gzipErrorSizeKb: GZIP_SIZE_TCF_ERROR_KB,
+  },
+  {
+    name: `${NAME}-headless`,
+    gzipWarnSizeKb: GZIP_SIZE_HEADLESS_WARN_KB,
+    gzipErrorSizeKb: GZIP_SIZE_HEADLESS_ERROR_KB,
   },
   {
     name: `${NAME}-ext-gpp`,

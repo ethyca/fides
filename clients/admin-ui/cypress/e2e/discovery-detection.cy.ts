@@ -8,7 +8,7 @@ import {
   DATA_DETECTION_ROUTE,
   DATA_DISCOVERY_ROUTE,
   DETECTION_DISCOVERY_ACTIVITY_ROUTE,
-} from "~/features/common/nav/v2/routes";
+} from "~/features/common/nav/routes";
 
 describe("discovery and detection", () => {
   beforeEach(() => {

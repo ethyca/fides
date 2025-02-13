@@ -23,7 +23,7 @@ import NextLink from "next/link";
 import { useRouter } from "next/router";
 import { useEffect, useMemo } from "react";
 
-import { PRIVACY_NOTICES_ROUTE } from "~/features/common/nav/v2/routes";
+import { PRIVACY_NOTICES_ROUTE } from "~/features/common/nav/routes";
 import { useHasPermission } from "~/features/common/Restrict";
 import { useGetHealthQuery } from "~/features/plus/plus.slice";
 import {

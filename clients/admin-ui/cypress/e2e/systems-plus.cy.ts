@@ -15,7 +15,7 @@ import {
   DATAMAP_ROUTE,
   INDEX_ROUTE,
   SYSTEM_ROUTE,
-} from "~/features/common/nav/v2/routes";
+} from "~/features/common/nav/routes";
 import { RoleRegistryEnum } from "~/types/api";
 
 describe("System management with Plus features", () => {

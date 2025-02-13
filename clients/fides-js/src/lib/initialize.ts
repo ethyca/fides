@@ -6,6 +6,7 @@ import { fetchExperience } from "../services/api";
 import { getGeolocation } from "../services/external/geolocation";
 import { getConsentContext } from "./consent-context";
 import {
+  ComponentType,
   ConsentMechanism,
   ConsentMethod,
   FidesConfig,
@@ -47,12 +48,12 @@ import {
   selectBestNoticeTranslation,
   setupI18n,
 } from "./i18n";
-import { initOverlay } from "./initOverlay";
 import { updateConsentPreferences } from "./preferences";
 import {
   noticeHasConsentInCookie,
   transformConsentToFidesUserPreference,
 } from "./shared-consent-utils";
+import { searchForElement } from "./ui-utils";
 
 export type UpdateExperienceFn = (args: {
   cookie: FidesCookie;
@@ -310,13 +311,19 @@ export const initialize = async ({
   fides,
   options,
   geolocation,
+  initOverlay,
   renderOverlay,
   updateExperience,
   overrides,
   propertyId,
 }: {
   fides: FidesGlobal;
-  renderOverlay: (props: OverlayProps, parent: ContainerNode) => void;
+  initOverlay?: (
+    props: OverlayProps & {
+      renderOverlay?: (props: OverlayProps, parent: ContainerNode) => void;
+    },
+  ) => Promise<void>;
+  renderOverlay?: (props: OverlayProps, parent: ContainerNode) => void;
   /**
    * Once we for sure have a valid experience, this is another chance to update values
    * before the overlay renders.
@@ -324,7 +331,7 @@ export const initialize = async ({
   updateExperience: UpdateExperienceFn;
   overrides?: Partial<FidesOverrides>;
 } & FidesConfig): Promise<Partial<FidesGlobal>> => {
-  let shouldInitOverlay: boolean = options.isOverlayEnabled;
+  let shouldContinueInitOverlay: boolean = true;
   let fidesRegionString: string | null = null;
   let getModalLinkLabel: FidesGlobal["getModalLinkLabel"] = () =>
     DEFAULT_MODAL_LINK_LABEL;
@@ -333,13 +340,23 @@ export const initialize = async ({
     throw new Error("Fides cookie should be initialized");
   }
 
-  if (shouldInitOverlay) {
+  /**
+   * If a property is using legacy consent, we should not initialize any
+   * part of the overlay, not even Headless. Those properties will have
+   * `isOverlayEnabled: false` in their config. `isOverlayEnabled` should
+   * not be confused with Headless experiences, which are still considered
+   * notice-based consent experiences.
+   */
+  const isNoticeBasedConsentEnabled = options.isOverlayEnabled;
+  shouldContinueInitOverlay = isNoticeBasedConsentEnabled;
+
+  if (shouldContinueInitOverlay) {
     if (!validateOptions(options)) {
       fidesDebugger(
-        "Invalid overlay options. Skipping overlay initialization.",
+        "Invalid config options. Skipping overlay initialization.",
         options,
       );
-      shouldInitOverlay = false;
+      shouldContinueInitOverlay = false;
     }
 
     fidesRegionString = await retrieveEffectiveRegionString(
@@ -353,7 +370,7 @@ export const initialize = async ({
       fidesDebugger(
         `User location could not be obtained. Skipping overlay initialization.`,
       );
-      shouldInitOverlay = false;
+      shouldContinueInitOverlay = false;
     } else if (!isPrivacyExperience(fides.experience)) {
       fetchedClientSideExperience = true;
       // If no effective PrivacyExperience was pre-fetched, fetch one using the current region string
@@ -368,6 +385,7 @@ export const initialize = async ({
     }
 
     if (
+      shouldContinueInitOverlay &&
       isPrivacyExperience(fides.experience) &&
       experienceIsValid(fides.experience)
     ) {
@@ -415,25 +433,51 @@ export const initialize = async ({
       // eslint-disable-next-line no-param-reassign
       fides.cookie = updatedCookie;
 
-      if (shouldInitOverlay) {
-        // Initialize the i18n singleton before we render the overlay
-        const i18n = setupI18n();
-        initializeI18n(
+      // Initialize the i18n singleton before we render the overlay
+      const i18n = setupI18n();
+      initializeI18n(
+        i18n,
+        window?.navigator,
+        fides.experience,
+        options,
+        overrides?.experienceTranslationOverrides,
+      );
+
+      // Provide the modal link label function to the client based on the current locale unless specified via props.
+      getModalLinkLabel = (props) =>
+        localizeModalLinkText(
+          !!props?.disableLocalization,
           i18n,
-          window?.navigator,
           fides.experience,
-          options,
-          overrides?.experienceTranslationOverrides,
         );
 
-        // Provide the modal link label function to the client based on the current locale unless specified via props.
-        getModalLinkLabel = (props) =>
-          localizeModalLinkText(
-            !!props?.disableLocalization,
-            i18n,
-            fides.experience,
-          );
+      /**
+       * Now that we have the experience, translations, and modal link label,
+       * we can render the modal link for the Headless experience.
+       * With non-headless experiences, this will be handled by the overlay itself.
+       */
+      if (
+        fides.experience.experience_config?.component === ComponentType.HEADLESS
+      ) {
+        const modalLinkId = options.modalLinkId || "fides-modal-link";
+        const modalLinkIsDisabled =
+          !fides.experience ||
+          !!options.fidesEmbed ||
+          options.modalLinkId === "";
+        fidesDebugger("Fides overlay is disabled for this experience.");
+        if (modalLinkIsDisabled) {
+          fidesDebugger("Modal Link is disabled for this experience.");
+        }
+        fidesDebugger(`Searching for Modal link element #${modalLinkId}...`);
+        searchForElement(modalLinkId).then((foundElement) => {
+          fidesDebugger("Modal link element found, updating it to show");
+          document.body.classList.add("fides-overlay-modal-link-shown");
+          foundElement.classList.add("fides-modal-link-shown");
+        });
+        shouldContinueInitOverlay = false;
+      }
 
+      if (!!initOverlay && shouldContinueInitOverlay) {
         // OK, we're (finally) ready to initialize & render the overlay!
         initOverlay({
           options,
@@ -448,28 +492,30 @@ export const initialize = async ({
         }).catch((e) => {
           fidesDebugger(e);
         });
-
-        /**
-         * Last up: apply GPC to the current preferences automatically. This will
-         * set any applicable notices to "opt-out" unless the user has previously
-         * saved consent, etc.
-         *
-         * NOTE: We want to finish initialization immediately while GPC updates
-         * continue to run in the background. To ensure that any GPC API calls
-         * don't block the rest of the code from executing, we use setTimeout with
-         * no delay which simply moves it to the end of the JavaScript event queue.
-         */
-        setTimeout(
-          automaticallyApplyGPCPreferences.bind(null, {
-            savedConsent: fides.saved_consent,
-            effectiveExperience: fides.experience as PrivacyExperience,
-            cookie: fides.cookie,
-            fidesRegionString,
-            fidesOptions: options,
-            i18n,
-          }),
-        );
       }
+
+      /**
+       * Last up: apply GPC to the current preferences automatically. This will
+       * set any applicable notices to "opt-out" unless the user has previously
+       * saved consent, etc.
+       *
+       * NOTE: We want to finish initialization immediately while GPC updates
+       * continue to run in the background. To ensure that any GPC API calls
+       * don't block the rest of the code from executing, we use setTimeout with
+       * no delay which simply moves it to the end of the JavaScript event queue.
+       */
+      setTimeout(
+        automaticallyApplyGPCPreferences.bind(null, {
+          savedConsent: fides.saved_consent,
+          effectiveExperience: fides.experience as PrivacyExperience,
+          cookie: fides.cookie,
+          fidesRegionString,
+          fidesOptions: options,
+          i18n,
+        }),
+      );
+    } else {
+      fidesDebugger("Skipping overlay initialization.", fides.experience);
     }
   }
 

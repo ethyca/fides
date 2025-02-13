@@ -15,8 +15,8 @@ import { useMemo } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import { CustomSwitch, CustomTextInput } from "~/features/common/form/inputs";
-import BackButton from "~/features/common/nav/v2/BackButton";
-import { PRIVACY_EXPERIENCE_ROUTE } from "~/features/common/nav/v2/routes";
+import BackButton from "~/features/common/nav/BackButton";
+import { PRIVACY_EXPERIENCE_ROUTE } from "~/features/common/nav/routes";
 import { PRIVACY_NOTICE_REGION_RECORD } from "~/features/common/privacy-notice-regions";
 import ScrollableList from "~/features/common/ScrollableList";
 import {
@@ -61,6 +61,10 @@ const componentTypeOptions: SelectProps["options"] = [
   {
     label: "Privacy center",
     value: ComponentType.PRIVACY_CENTER,
+  },
+  {
+    label: "Headless",
+    value: ComponentType.HEADLESS,
   },
 ];
 
@@ -118,7 +122,7 @@ export const PrivacyExperienceForm = ({
 }) => {
   const router = useRouter();
 
-  const { values, setFieldValue, dirty, isValid, isSubmitting } =
+  const { values, setFieldValue, dirty, isValid, isSubmitting, initialValues } =
     useFormikContext<ExperienceConfigCreate>();
   const noticePage = useAppSelector(selectNoticePage);
   const noticePageSize = useAppSelector(selectNoticePageSize);
@@ -213,12 +217,15 @@ export const PrivacyExperienceForm = ({
           options={componentTypeOptions}
           label="Experience type"
           layout="stacked"
-          disabled={!!values.component}
+          disabled={!!initialValues.component}
           isRequired
         />
       )}
       <Collapse
-        in={values.component !== ComponentType.PRIVACY_CENTER}
+        in={
+          values.component !== ComponentType.PRIVACY_CENTER &&
+          values.component !== ComponentType.HEADLESS
+        }
         animateOpacity
       >
         <Box p="1px">
