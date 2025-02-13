@@ -509,7 +509,6 @@ def run_privacy_request(
             return
 
         except BaseException as exc:  # pylint: disable=broad-except
-            logger.error(f"Error running privacy request: {str(exc)}")
             privacy_request.error_processing(db=session)
             # If dev mode, log traceback
             _log_exception(exc, CONFIG.dev_mode)
