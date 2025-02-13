@@ -1,0 +1,1 @@
+from .bigquery_namespace_meta import BigQueryNamespaceMeta as BigQueryNamespaceMeta
