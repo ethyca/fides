@@ -6,13 +6,9 @@ import pytest
 import requests
 from fideslang import DEFAULT_TAXONOMY
 from pytest import MonkeyPatch
-from sqlalchemy.exc import IntegrityError
 
-from fides.api.db.base import Base
 from fides.api.db.ctl_session import sync_engine, sync_session
-from fides.api.db.session import get_db_engine, get_db_session
 from fides.api.models.sql_models import DataUse
-from fides.api.util.endpoint_utils import API_PREFIX
 from fides.core import api
 from tests.conftest import create_citext_extension
 
@@ -56,10 +52,10 @@ def setup_ctl_db(test_config, test_client, config):
     assert (
         requests.post == test_client.post
     )  # Sanity check to make sure monkeypatch_requests fixture has run
-    yield test_client.post(
-        f"{test_config.cli.server_url}{API_PREFIX}/admin/db/reset",
+    yield api.db_action(
+        server_url=test_config.cli.server_url,
         headers=config.user.auth_header,
-        allow_redirects=False,
+        action="reset",
     )
 
 
