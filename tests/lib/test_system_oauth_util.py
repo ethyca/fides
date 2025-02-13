@@ -36,7 +36,7 @@ class TestHasSystemPermissions:
     as well.  As long as you have the right scope, you can work with the given resource.
     """
 
-    async def test_owner_role_can_always_update_system(self, owner_user, db, system):
+    def test_owner_role_can_always_update_system(self, owner_user, db, system):
         payload = {
             JWE_PAYLOAD_ROLES: [OWNER],
             JWE_PAYLOAD_CLIENT_ID: owner_user.client.id,
@@ -47,7 +47,7 @@ class TestHasSystemPermissions:
             CONFIG.security.app_encryption_key,
         )  # Note token doesn't have system on it, but the user is an owner
 
-        response = await verify_oauth_client_for_system_from_request_body(
+        response = verify_oauth_client_for_system_from_request_body(
             security_scopes=SecurityScopes(scopes=[SYSTEM_UPDATE]),
             authorization=token,
             db=db,
@@ -58,9 +58,7 @@ class TestHasSystemPermissions:
 
         assert response == system.fides_key
 
-    async def test_viewer_role_alone_cannot_update_system(
-        self, viewer_user, db, system
-    ):
+    def test_viewer_role_alone_cannot_update_system(self, viewer_user, db, system):
         payload = {
             JWE_PAYLOAD_ROLES: [VIEWER],
             JWE_PAYLOAD_CLIENT_ID: viewer_user.client.id,
@@ -72,7 +70,7 @@ class TestHasSystemPermissions:
         )  # Note token doesn't have system on it, and user is only a viewer
 
         with pytest.raises(AuthorizationError):
-            await verify_oauth_client_for_system_from_request_body(
+            verify_oauth_client_for_system_from_request_body(
                 security_scopes=SecurityScopes(scopes=[SYSTEM_UPDATE]),
                 authorization=token,
                 db=db,
@@ -81,7 +79,7 @@ class TestHasSystemPermissions:
                 ),
             )
 
-    async def test_viewer_is_also_system_manager(self, system_manager, db, system):
+    def test_viewer_is_also_system_manager(self, system_manager, db, system):
         payload = {
             JWE_PAYLOAD_ROLES: [VIEWER],
             JWE_PAYLOAD_CLIENT_ID: system_manager.client.id,
@@ -93,7 +91,7 @@ class TestHasSystemPermissions:
             CONFIG.security.app_encryption_key,
         )
 
-        await verify_oauth_client_for_system_from_request_body(
+        verify_oauth_client_for_system_from_request_body(
             security_scopes=SecurityScopes(scopes=[SYSTEM_UPDATE]),
             authorization=token,
             db=db,
@@ -104,7 +102,7 @@ class TestHasSystemPermissions:
 
         assert True
 
-    async def test_system_manager_no_system_found(self, system_manager, db, system):
+    def test_system_manager_no_system_found(self, system_manager, db, system):
         payload = {
             JWE_PAYLOAD_ROLES: [VIEWER],
             JWE_PAYLOAD_CLIENT_ID: system_manager.client.id,
@@ -117,7 +115,7 @@ class TestHasSystemPermissions:
         )
 
         with pytest.raises(AuthorizationError):
-            await verify_oauth_client_for_system_from_request_body(
+            verify_oauth_client_for_system_from_request_body(
                 security_scopes=SecurityScopes(scopes=[SYSTEM_UPDATE]),
                 authorization=token,
                 db=db,
@@ -126,9 +124,7 @@ class TestHasSystemPermissions:
                 ),
             )
 
-    async def test_system_manager_systems_not_on_token(
-        self, system_manager, db, system
-    ):
+    def test_system_manager_systems_not_on_token(self, system_manager, db, system):
         payload = {
             JWE_PAYLOAD_ROLES: [VIEWER],
             JWE_PAYLOAD_CLIENT_ID: system_manager.client.id,
@@ -141,7 +137,7 @@ class TestHasSystemPermissions:
         )
 
         with pytest.raises(AuthorizationError):
-            await verify_oauth_client_for_system_from_request_body(
+            verify_oauth_client_for_system_from_request_body(
                 security_scopes=SecurityScopes(scopes=[SYSTEM_UPDATE]),
                 authorization=token,
                 db=db,
@@ -150,7 +146,7 @@ class TestHasSystemPermissions:
                 ),
             )
 
-    async def test_system_manager_client_cannot_issue_systems(
+    def test_system_manager_client_cannot_issue_systems(
         self, system_manager, db, system
     ):
         system_manager.client.systems = []
@@ -168,7 +164,7 @@ class TestHasSystemPermissions:
         )
 
         with pytest.raises(AuthorizationError):
-            await verify_oauth_client_for_system_from_request_body(
+            verify_oauth_client_for_system_from_request_body(
                 security_scopes=SecurityScopes(scopes=[SYSTEM_UPDATE]),
                 authorization=token,
                 db=db,
@@ -177,7 +173,7 @@ class TestHasSystemPermissions:
                 ),
             )
 
-    async def test_system_manager_does_not_have_proper_scope_for_given_endpoint(
+    def test_system_manager_does_not_have_proper_scope_for_given_endpoint(
         self, system_manager, db, system
     ):
         payload = {
@@ -192,7 +188,7 @@ class TestHasSystemPermissions:
         )
 
         with pytest.raises(AuthorizationError):
-            await verify_oauth_client_for_system_from_request_body(
+            verify_oauth_client_for_system_from_request_body(
                 security_scopes=SecurityScopes(scopes=[POLICY_CREATE_OR_UPDATE]),
                 authorization=token,
                 db=db,
