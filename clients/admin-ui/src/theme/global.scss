@@ -40,17 +40,21 @@ h6 {
 // Custom styles for dark submenus
 .ant-menu-dark .ant-menu-sub {
   // The unselected submenu item should be light gray
-  > .ant-menu-item > .ant-menu-title-content {
+  > .ant-menu-item > .ant-menu-title-content a {
     color: var(--fidesui-neutral-200);
 
-    &:hover {
+    &:hover,
+    &:focus {
       color: var(--fidesui-full-white);
+    }
+    &:focus-visible {
+      text-decoration: underline;
     }
   }
   // The selected submenu item should be dark, because the background is light
   // But using the token "darkItemSelectedColor" also affect the group title,
   // therefore we need this css rule
-  > .ant-menu-item.ant-menu-item-selected > .ant-menu-title-content {
+  > .ant-menu-item.ant-menu-item-selected > .ant-menu-title-content a {
     color: var(--fidesui-minos);
   }
 }
