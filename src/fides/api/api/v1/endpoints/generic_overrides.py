@@ -17,8 +17,8 @@ from starlette.status import (
     HTTP_422_UNPROCESSABLE_ENTITY,
 )
 
-from fides.api.api.deps import get_dataset_service
-from fides.api.common_exceptions import ValidationError
+from fides.api.api.deps import get_dataset_service, get_db
+from fides.api.common_exceptions import KeyOrNameAlreadyExists, ValidationError
 from fides.api.db.base_class import get_key_from_data
 from fides.api.db.crud import list_resource_query
 from fides.api.db.ctl_session import get_async_db
@@ -27,8 +27,11 @@ from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.oauth.utils import verify_oauth_client
 from fides.api.schemas.filter_params import FilterParams
 from fides.api.schemas.taxonomy_extensions import (
+    DataCategory,
     DataCategoryCreateOrUpdate,
+    DataSubject,
     DataSubjectCreateOrUpdate,
+    DataUse,
     DataUseCreateOrUpdate,
 )
 from fides.api.util.api_router import APIRouter
@@ -39,6 +42,11 @@ from fides.common.api.scope_registry import (
     CTL_DATASET_DELETE,
     CTL_DATASET_READ,
     CTL_DATASET_UPDATE,
+    DATA_CATEGORY_CREATE,
+    DATA_CATEGORY_UPDATE,
+    DATA_SUBJECT_CREATE,
+    DATA_USE_CREATE,
+    DATA_USE_UPDATE,
 )
 from fides.common.api.v1.urn_registry import DATASETS_CLEAN, V1_URL_PREFIX
 from fides.service.dataset.dataset_service import (
@@ -343,7 +351,7 @@ def validate_and_create_taxonomy(
     """
     if not data.fides_key:
         raise FidesError(f"Fides key is required to create a {model.__name__} resource")
-    if isinstance(model, ModelWithDefaultField) and data.is_default:
+    if isinstance(data, ModelWithDefaultField) and data.is_default:
         raise ForbiddenIsDefaultTaxonomyError(
             model.__name__, data.fides_key, action="create"
         )
@@ -362,6 +370,14 @@ def validate_and_update_taxonomy(
     """
     Validate and update a taxonomy element.
     """
+    if (
+        isinstance(data, ModelWithDefaultField)
+        and data.is_default != resource.is_default
+    ):
+        raise ForbiddenIsDefaultTaxonomyError(
+            "resource", data.fides_key, action="modify"
+        )
+
     # If active field is being updated, cascade change either up or down
     if hasattr(data, "active"):
         if data.active:
@@ -412,6 +428,136 @@ def create_or_update_taxonomy(
         return validate_and_create_taxonomy(db, model, validation_schema, data)
 
     return validate_and_create_taxonomy(db, model, validation_schema, data)
+
+
+@data_use_router.post(
+    "/data_use",
+    dependencies=[Security(verify_oauth_client, scopes=[DATA_USE_CREATE])],
+    response_model=DataUse,
+    status_code=status.HTTP_201_CREATED,
+    name="Create",
+)
+async def create_data_use(
+    data_use: DataUseCreateOrUpdate,
+    db: Session = Depends(get_db),
+) -> Dict:
+    """
+    Create a data use. Updates existing data use if data use with name already exists and is disabled.
+    """
+    try:
+        return create_or_update_taxonomy(db, data_use, DataUseDbModel, DataUse)
+    except KeyOrNameAlreadyExists:
+        raise HTTPException(
+            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"Data use with key {data_use.fides_key} or name {data_use.name} already exists.",
+        )
+    except PydanticValidationError as e:
+        raise HTTPException(
+            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=str(e),
+        )
+
+
+@data_category_router.post(
+    "/data_category",
+    dependencies=[Security(verify_oauth_client, scopes=[DATA_CATEGORY_CREATE])],
+    response_model=DataCategory,
+    status_code=status.HTTP_201_CREATED,
+    name="Create",
+)
+async def create_data_category(
+    data_category: DataCategoryCreateOrUpdate,
+    db: Session = Depends(get_db),
+) -> Dict:
+    """
+    Create a data category
+    """
+
+    try:
+        return create_or_update_taxonomy(
+            db, data_category, DataCategoryDbModel, DataCategory
+        )
+    except KeyOrNameAlreadyExists:
+        raise HTTPException(
+            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"Data category with key {data_category.fides_key} or name {data_category.name} already exists.",
+        )
+
+
+@data_subject_router.post(
+    "/data_subject",
+    dependencies=[Security(verify_oauth_client, scopes=[DATA_SUBJECT_CREATE])],
+    response_model=DataSubject,
+    status_code=status.HTTP_201_CREATED,
+    name="Create",
+)
+async def create_data_subject(
+    data_subject: DataSubjectCreateOrUpdate,
+    db: Session = Depends(get_db),
+) -> Dict:
+    """
+    Create a data subject
+    """
+
+    try:
+        return create_or_update_taxonomy(
+            db, data_subject, DataSubjectDbModel, DataSubject
+        )
+    except KeyOrNameAlreadyExists:
+        raise HTTPException(
+            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"Data subject with key {data_subject.fides_key} or name {data_subject.name} already exists.",
+        )
+
+
+@data_use_router.put(
+    "/data_use",
+    dependencies=[Security(verify_oauth_client, scopes=[DATA_USE_UPDATE])],
+    response_model=DataUse,
+    status_code=status.HTTP_200_OK,
+    name="Update",
+)
+async def update_data_use(
+    data_use: DataUseCreateOrUpdate,
+    db: Session = Depends(get_db),
+) -> Dict:
+    """
+    Update a data use. Ensures updates to "active" are appropriately cascaded.
+    """
+
+    resource = DataUseDbModel.get_by(db, field="fides_key", value=data_use.fides_key)
+    if not resource:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail=f"Data use not found with key: {data_use.fides_key}",
+        )
+    return validate_and_update_taxonomy(db, resource, DataUse, data_use)
+
+
+@data_category_router.put(
+    "/data_category",
+    dependencies=[Security(verify_oauth_client, scopes=[DATA_CATEGORY_UPDATE])],
+    response_model=DataCategory,
+    status_code=status.HTTP_200_OK,
+    name="Update",
+)
+async def update_data_category(
+    data_category: DataCategoryCreateOrUpdate,
+    db: Session = Depends(get_db),
+) -> Dict:
+    """
+    Update a data category. Ensures updates to "active" are appropriately cascaded.
+    """
+
+    resource = DataCategoryDbModel.get_by(
+        db, field="fides_key", value=data_category.fides_key
+    )
+    if not resource:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail=f"Data category not found with key: {data_category.fides_key}",
+        )
+    return validate_and_update_taxonomy(db, resource, DataCategory, data_category)
 
 
 GENERIC_OVERRIDES_ROUTER = APIRouter()

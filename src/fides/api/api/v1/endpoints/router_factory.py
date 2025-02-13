@@ -108,7 +108,7 @@ def create_router_factory(fides_model: FidesModelType, model_type: str) -> APIRo
         will return a `403 Forbidden`.
         """
         sql_model = sql_model_map[model_type]
-        if isinstance(sql_model, ModelWithDefaultField) and resource.is_default:
+        if isinstance(resource, ModelWithDefaultField) and resource.is_default:
             raise errors.ForbiddenIsDefaultTaxonomyError(
                 model_type, resource.fides_key, action="create"
             )
