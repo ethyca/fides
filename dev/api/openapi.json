@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.54.1b6.post0.dev12"
+    "version": "2.54.1b6.post0.dev13"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -1130,7 +1130,7 @@
         "security": [
           {
             "OAuth2ClientCredentialsBearer": [
-              "dataset:read"
+              "ctl_dataset:read"
             ]
           }
         ],
@@ -16337,9 +16337,6 @@
           }
         },
         "type": "object",
-        "required": [
-          "description"
-        ],
         "title": "DataCategoryCreateOrUpdate"
       },
       "DataFlow": {
@@ -16655,9 +16652,6 @@
           }
         },
         "type": "object",
-        "required": [
-          "description"
-        ],
         "title": "DataSubjectCreateOrUpdate"
       },
       "DataSubjectRights": {
@@ -16968,9 +16962,6 @@
           }
         },
         "type": "object",
-        "required": [
-          "description"
-        ],
         "title": "DataUseCreateOrUpdate"
       },
       "DatabaseConfig": {
