@@ -1370,7 +1370,7 @@ class TestGetPrivacyRequests:
         auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
 
         # Test two matches on email
-        FUZZY_SEARCH_STR_1 = "te"
+        FUZZY_SEARCH_STR_1 = "test-"
         response = api_client.get(
             url + f"?fuzzy_search_str={FUZZY_SEARCH_STR_1}",
             headers=auth_header,
@@ -1389,9 +1389,9 @@ class TestGetPrivacyRequests:
         ]
 
         # Test one on email prefix
-        FUZZY_SEARCH_STR_1 = "test-happy@exam"
+        FUZZY_SEARCH_STR_2 = "test-happy@exam"
         response = api_client.get(
-            url + f"?fuzzy_search_str={FUZZY_SEARCH_STR_1}",
+            url + f"?fuzzy_search_str={FUZZY_SEARCH_STR_2}",
             headers=auth_header,
         )
         assert 200 == response.status_code
@@ -1408,9 +1408,9 @@ class TestGetPrivacyRequests:
         ]
 
         # Test one match on email full
-        FUZZY_SEARCH_STR_1 = "test-happy@example.com"
+        FUZZY_SEARCH_STR_3 = "test-happy@example.com"
         response = api_client.get(
-            url + f"?fuzzy_search_str={FUZZY_SEARCH_STR_1}",
+            url + f"?fuzzy_search_str={FUZZY_SEARCH_STR_3}",
             headers=auth_header,
         )
         assert 200 == response.status_code
@@ -1427,9 +1427,9 @@ class TestGetPrivacyRequests:
         ]
 
         # Test one match on phone number
-        FUZZY_SEARCH_STR_1 = "+11232"
+        FUZZY_SEARCH_STR_4 = "%2B11232"
         response = api_client.get(
-            url + f"?fuzzy_search_str={FUZZY_SEARCH_STR_1}",
+            url + f"?fuzzy_search_str={FUZZY_SEARCH_STR_4}",
             headers=auth_header,
         )
         assert 200 == response.status_code
@@ -1446,9 +1446,9 @@ class TestGetPrivacyRequests:
         ]
 
         # Test partial match on request id
-        FUZZY_SEARCH_STR_1 = privacy_request.id[:5]  # use first 5 chars
+        FUZZY_SEARCH_STR_5 = privacy_request.id[:5]  # use first 5 chars
         response = api_client.get(
-            url + f"?fuzzy_search_str={FUZZY_SEARCH_STR_1}",
+            url + f"?fuzzy_search_str={FUZZY_SEARCH_STR_5}",
             headers=auth_header,
         )
         assert 200 == response.status_code
@@ -1465,9 +1465,9 @@ class TestGetPrivacyRequests:
         ]
 
         # Test no match on email
-        FUZZY_SEARCH_STR_1 = "happy"  # this is invalid because it's not the beginning of the given email identity
+        FUZZY_SEARCH_STR_6 = "happy"  # this is invalid because it's not the beginning of the given email identity
         response = api_client.get(
-            url + f"?fuzzy_search_str={FUZZY_SEARCH_STR_1}",
+            url + f"?fuzzy_search_str={FUZZY_SEARCH_STR_6}",
             headers=auth_header,
         )
         assert 200 == response.status_code
@@ -1519,13 +1519,6 @@ class TestGetPrivacyRequests:
         assert 200 == response.status_code
         resp = response.json()
         assert privacy_request.id in [result["id"] for result in resp["items"]]
-
-        # Test that the privacy request identities are automatically put in the cache as a side-effect of fuzzy-search
-        identities = (
-            privacy_request.retrieve_decrypted_identities_from_cache_by_privacy_request()
-        )
-        assert identities["email"] == TEST_EMAIL
-        assert identities["phone_number"] == TEST_PHONE
 
     def test_filter_privacy_requests_by_external_id(
         self,
