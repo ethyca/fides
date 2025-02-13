@@ -34,7 +34,8 @@ def created_resources(
         base_resource = resources_dict[resource_type].model_copy()
         uuid_suffix = str(uuid.uuid4())[:6]
         base_resource.fides_key = "{}_{}".format(base_resource.fides_key, uuid_suffix)
-        base_resource.name = "{} {}".format(base_resource.name, uuid_suffix)
+        if hasattr(base_resource, "name"):
+            base_resource.name = "{} {}".format(base_resource.name, uuid_suffix)
         _api.create(
             url=test_config.cli.server_url,
             resource_type=resource_type,

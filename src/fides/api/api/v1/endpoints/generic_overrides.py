@@ -4,6 +4,7 @@ from fastapi import Depends, HTTPException, Query, Security
 from fastapi_pagination import Page, Params
 from fastapi_pagination.ext.async_sqlalchemy import paginate as async_paginate
 from fideslang.models import Dataset
+from pydantic import ValidationError as PydanticValidationError
 from sqlalchemy import not_
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
@@ -264,6 +265,11 @@ async def create_data_use(
         raise HTTPException(
             status_code=HTTP_422_UNPROCESSABLE_ENTITY,
             detail=f"Data use with key {data_use.fides_key} or name {data_use.name} already exists.",
+        )
+    except PydanticValidationError as e:
+        raise HTTPException(
+            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=str(e),
         )
 
 
