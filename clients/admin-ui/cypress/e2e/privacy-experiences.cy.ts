@@ -231,17 +231,6 @@ describe("Privacy experiences", () => {
         cy.getByTestId("toast-success-msg").should("exist");
       });
 
-      it("doesn't allow component type to be changed after selection", () => {
-        cy.getByTestId("controlled-select-component").antSelect(
-          "Banner and modal",
-        );
-        cy.getByTestId("controlled-select-component").should(
-          "have.class",
-          "ant-select-disabled",
-        );
-        cy.getByTestId("input-dismissable").should("be.visible");
-      });
-
       it("doesn't show a preview for a privacy center", () => {
         cy.getByTestId("controlled-select-component").antSelect(
           "Privacy center",
@@ -309,6 +298,14 @@ describe("Privacy experiences", () => {
         cy.visit(`${PRIVACY_EXPERIENCE_ROUTE}/pri_001`);
       });
 
+      it("doesn't allow component type to be changed", () => {
+        cy.getByTestId("controlled-select-component").should(
+          "have.class",
+          "ant-select-disabled",
+        );
+        cy.getByTestId("input-dismissable").should("be.visible");
+      });
+
       it("populates the form and shows the preview with the existing values", () => {
         cy.wait("@getExperienceDetail");
         cy.getByTestId("controlled-select-component").should(
@@ -334,7 +331,7 @@ describe("Privacy experiences", () => {
         cy.wait("@getTCFExperience");
         cy.getByTestId("input-dismissable").should("be.visible");
         cy.getByTestId("no-preview-notice").contains(
-          "TCF preview not available",
+          "TCF overlay preview not available",
         );
       });
     });

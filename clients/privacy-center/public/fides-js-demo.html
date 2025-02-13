@@ -169,6 +169,12 @@
           consent: Fides.consent.tracking,
           dataUse: Fides.consent.data_sales,
         });
+
+        // update the modal link label if it's not already set. This is useful for displaying the correct language after fides has initialized and the user's language has been detected.
+        const modalLink = document.getElementById("fides-modal-link");
+        if (!!modalLink) {
+          modalLink.innerText = Fides.getModalLinkLabel();
+        }
       };
 
       // Handle both synchronous & asynchronous initialization

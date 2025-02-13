@@ -19,7 +19,11 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - https://github.com/ethyca/fides/labels/high-risk: to indicate that a change is a "high-risk" change that could potentially lead to unanticipated regressions or degradations
 - https://github.com/ethyca/fides/labels/db-migration: to indicate that a given change includes a DB migration
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.54.0...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.55.0...main)
+
+
+
+## [2.55.0](https://github.com/ethyca/fides/compare/2.54.0...2.55.0)
 
 ### Added
 - Added editing support for categories of consent on discovered assets [#5739](https://github.com/ethyca/fides/pull/5739)
@@ -27,6 +31,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Added detail trays to items in data catalog view [#5729](https://github.com/ethyca/fides/pull/5729)
 - Support rendering and saving consent from custom notices in TCF Overlay [#5742](https://github.com/ethyca/fides/pull/5742)
 - Added worker stats endpoint to monitor worker status and task queue length [#5725](https://github.com/ethyca/fides/pull/5725)
+- New "Headless" experience type to support custom UI implementations [#5751](https://github.com/ethyca/fides/pull/5751)
 
 ### Changed
 - Added frequency field to DataHubSchema integration config [#5716](https://github.com/ethyca/fides/pull/5716)
@@ -43,6 +48,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Fixed `window.Fides.experience` of FidesJS to be a merged version of the minimal and full experience. [#5726](https://github.com/ethyca/fides/pull/5726)
 - Fixed vendor count template string on FidesJS embedded layer 2 descriptions [#5736](https://github.com/ethyca/fides/pull/5736)
 - Allowing a list with a single dataset in the YAML dataset editor [#5750](https://github.com/ethyca/fides/pull/5750)
+- Fixed edge case translation string issue on FidesJS embedded layer 2 (#5749)[https://github.com/ethyca/fides/pull/5749]
 
 ## [2.54.0](https://github.com/ethyca/fides/compare/2.53.0...2.54.0)
 
