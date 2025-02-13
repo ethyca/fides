@@ -5,7 +5,6 @@ from fideslang.validation import FidesKey
 from loguru import logger
 from sqlalchemy import Column, ForeignKey, String
 from sqlalchemy.orm import Session, relationship
-from typing_extensions import deprecated
 
 from fides.api.common_exceptions import ValidationError
 from fides.api.db.base_class import Base
@@ -56,9 +55,7 @@ class DatasetConfig(Base):
     )
 
     @classmethod
-    def upsert_with_ctl_dataset(
-        cls, db: Session, *, data: Dict[str, Any]
-    ) -> "DatasetConfig":
+    def create_or_update(cls, db: Session, *, data: Dict[str, Any]) -> "DatasetConfig":  # type: ignore[override]
         """
         Create or update both DatasetConfig and CTL Dataset.
         Updates existing CTL Dataset if found by ID or fides_key, otherwise creates new one.
@@ -123,12 +120,6 @@ class DatasetConfig(Base):
             dataset_config = cls.create(db=db, data=data_copy)
 
         return dataset_config
-
-    @classmethod
-    @deprecated("Use upsert_with_ctl_dataset instead")
-    def create_or_update(cls, db: Session, *, data: Dict[str, Any]) -> "DatasetConfig":  # type: ignore[override]
-        """Deprecated: Use upsert_with_ctl_dataset instead"""
-        return cls.upsert_with_ctl_dataset(db, data=data)
 
     def get_graph(self) -> GraphDataset:
         """

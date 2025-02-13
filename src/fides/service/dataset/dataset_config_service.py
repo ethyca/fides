@@ -93,9 +93,7 @@ class DatasetConfigService:
             ).validate()
 
             # Create or update using unified method
-            dataset_config = DatasetConfig.upsert_with_ctl_dataset(
-                self.db, data=data_dict
-            )
+            dataset_config = DatasetConfig.create_or_update(self.db, data=data_dict)
 
             return dataset_config.ctl_dataset, None
 
