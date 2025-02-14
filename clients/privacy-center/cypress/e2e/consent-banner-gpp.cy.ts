@@ -177,7 +177,39 @@ describe("Fides-js GPP extension", () => {
             });
             // The gpp string should also have an extra section now and the header should
             // indicate TCF
-            expect(args[3][0].pingData.gppString).to.contain("DBABMA~");
+            expect(args[3][0].pingData.gppString).to.eql(
+              "DBABMA~CQM0UsAQM0UsAGXABBENArEoABaAAEAAAAAAABEAAAAA",
+            );
+            console.log(args[3][0].pingData.parsedSections);
+            // the `PurposeConsents` should match the gpp string
+            expect(
+              args[3][0].pingData.parsedSections.tcfeuv2.PurposeConsents,
+            ).to.eql([
+              false,
+              false,
+              false,
+              true,
+              false,
+              true,
+              true,
+              false,
+              true,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+            ]);
           });
       });
     });
