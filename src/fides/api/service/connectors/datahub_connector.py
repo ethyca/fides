@@ -1,6 +1,6 @@
 from typing import Generic, Optional
 
-from datahub.ingestion.graph.client import DataHubGraph, DataHubGraphConfig
+from datahub.ingestion.graph.client import DataHubGraph, DatahubClientConfig
 from loguru import logger
 
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionTestStatus
@@ -15,9 +15,11 @@ class DatahubConnector(Generic[DB_CONNECTOR_TYPE]):
     def __init__(self, configuration: ConnectionConfig):
         self.configuration = configuration
         self.config = DatahubSchema(**configuration.secrets or {})
-        # TODO: use token for authentication
         self.datahub_client = DataHubGraph(
-            DataHubGraphConfig(server=str(self.config.datahub_server_url))
+            DatahubClientConfig(
+                server=str(self.config.datahub_server_url),
+                token=str(self.config.datahub_token),
+            )
         )
 
     def test_connection(self) -> Optional[ConnectionTestStatus]:
