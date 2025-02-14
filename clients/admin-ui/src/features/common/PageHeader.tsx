@@ -1,7 +1,7 @@
 import { AntFlex as Flex, Heading } from "fidesui";
 import { ComponentProps, ReactNode } from "react";
 
-import { NextBreadcrumb, NextBreadcrumbProps } from "./nav/v2/NextBreadcrumb";
+import { NextBreadcrumb, NextBreadcrumbProps } from "./nav/NextBreadcrumb";
 
 interface PageHeaderProps extends ComponentProps<"div"> {
   heading?: ReactNode;

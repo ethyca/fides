@@ -28,7 +28,7 @@ import InfoBox from "~/features/common/InfoBox";
 import {
   MESSAGING_ADD_TEMPLATE_ROUTE,
   MESSAGING_EDIT_ROUTE,
-} from "~/features/common/nav/v2/routes";
+} from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 import QuestionTooltip from "~/features/common/QuestionTooltip";
 import {

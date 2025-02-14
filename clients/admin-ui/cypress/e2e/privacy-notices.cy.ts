@@ -6,7 +6,7 @@ import {
   stubTranslationConfig,
 } from "cypress/support/stubs";
 
-import { PRIVACY_NOTICES_ROUTE } from "~/features/common/nav/v2/routes";
+import { PRIVACY_NOTICES_ROUTE } from "~/features/common/nav/routes";
 import { RoleRegistryEnum } from "~/types/api";
 
 const ESSENTIAL_NOTICE_ID = "pri_a518b4d0-9cbc-48b1-94dc-2fe911537b8e";

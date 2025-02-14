@@ -7,7 +7,7 @@ import * as Yup from "yup";
 
 import { useAppSelector } from "~/app/hooks";
 import { ControlledSelect } from "~/features/common/form/ControlledSelect";
-import { DATASTORE_CONNECTION_ROUTE } from "~/features/common/nav/v2/routes";
+import { DATASTORE_CONNECTION_ROUTE } from "~/features/common/nav/routes";
 import { useGetAllDataCategoriesQuery } from "~/features/taxonomy";
 import { selectDataCategories } from "~/features/taxonomy/taxonomy.slice";
 

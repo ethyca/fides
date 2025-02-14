@@ -48,7 +48,7 @@ import { useEffect, useMemo, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import ConfirmationModal from "~/features/common/modals/ConfirmationModal";
-import { INDEX_ROUTE } from "~/features/common/nav/v2/routes";
+import { INDEX_ROUTE } from "~/features/common/nav/routes";
 import AddVendor from "~/features/configure-consent/AddVendor";
 import {
   DictSystems,

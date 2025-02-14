@@ -21,7 +21,7 @@ import { useRouter } from "next/router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { getQueryParamsFromList } from "~/features/common/modals/FilterModal";
-import { ADD_MULTIPLE_VENDORS_ROUTE } from "~/features/common/nav/v2/routes";
+import { ADD_MULTIPLE_VENDORS_ROUTE } from "~/features/common/nav/routes";
 import AddVendor from "~/features/configure-consent/AddVendor";
 import {
   ConsentManagementFilterModal,
