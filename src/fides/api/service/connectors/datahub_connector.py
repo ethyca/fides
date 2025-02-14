@@ -1,6 +1,7 @@
 from typing import Generic, Optional
 
-from datahub.ingestion.graph.client import DataHubGraph, DatahubClientConfig
+from datahub.ingestion.graph.client import DataHubGraph
+from datahub.ingestion.graph.config import DatahubClientConfig
 from loguru import logger
 
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionTestStatus
