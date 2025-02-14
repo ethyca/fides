@@ -1,6 +1,7 @@
 import { FidesGlobal } from "../../src/fides";
 import { blueconic } from "../../src/integrations/blueconic";
 import { MARKETING_CONSENT_KEYS } from "../../src/lib/consent-constants";
+import { UserGeolocation } from "../../src/lib/consent-types";
 
 const getBlueConicEvent = () =>
   ({
@@ -13,6 +14,7 @@ const setupBlueConicClient = (
   const mockProfile = {
     setConsentedObjectives: jest.fn(),
     setRefusedObjectives: jest.fn(),
+    setValue: jest.fn(),
   };
   const client = {
     profile: {
@@ -41,6 +43,17 @@ const setupFidesWithoutConsent = () => {
   } as any as FidesGlobal;
 };
 
+const setupFidesWithGeoLocationAndFidesUser = (
+  fidesUserId: string,
+  geolocation: UserGeolocation,
+) => {
+  window.Fides = {
+    consent: {},
+    identity: { fides_user_device_id: fidesUserId },
+    geolocation,
+  } as any as FidesGlobal;
+};
+
 describe("blueconic", () => {
   afterEach(() => {
     window.blueConicClient = undefined;
@@ -48,8 +61,74 @@ describe("blueconic", () => {
     jest.resetAllMocks();
   });
 
-  test("that other modes are not supported", () => {
-    expect(() => blueconic({ approach: "other mode" as "onetrust" })).toThrow();
+  describe("approaches", () => {
+    test("that other approaches are not supported", () => {
+      expect(() =>
+        blueconic({ approach: "other mode" as "onetrust" }),
+      ).toThrow();
+    });
+
+    describe.each([undefined, "onetrust"] as const)(
+      "onetrust approach",
+      (approach) => {
+        test("when fides configures no consent, blueconic sets consent for all purposes", () => {
+          const { client, mockProfile } = setupBlueConicClient();
+          setupFidesWithoutConsent();
+
+          blueconic({ approach });
+
+          expect(mockProfile.setConsentedObjectives).toHaveBeenCalledWith([
+            "iab_purpose_1",
+            "iab_purpose_2",
+            "iab_purpose_3",
+            "iab_purpose_4",
+          ]);
+          expect(mockProfile.setRefusedObjectives).toHaveBeenCalledWith([]);
+          expect(client.profile.updateProfile).toHaveBeenCalled();
+        });
+
+        describe.each(MARKETING_CONSENT_KEYS)(
+          "when consent is set via the %s key",
+          (key) => {
+            test.each([
+              [
+                "opted in",
+                true,
+                [
+                  "iab_purpose_1",
+                  "iab_purpose_2",
+                  "iab_purpose_3",
+                  "iab_purpose_4",
+                ],
+                [],
+              ],
+              [
+                "opted out",
+                false,
+                ["iab_purpose_1"],
+                ["iab_purpose_2", "iab_purpose_3", "iab_purpose_4"],
+              ],
+            ])(
+              "that a user who has %s gets the correct consented and refused objectives",
+              (_, optInStatus, consented, refused) => {
+                const { client, mockProfile } = setupBlueConicClient();
+                setupFidesWithConsent(key, optInStatus);
+
+                blueconic();
+
+                expect(mockProfile.setConsentedObjectives).toHaveBeenCalledWith(
+                  consented,
+                );
+                expect(mockProfile.setRefusedObjectives).toHaveBeenCalledWith(
+                  refused,
+                );
+                expect(client.profile.updateProfile).toHaveBeenCalled();
+              },
+            );
+          },
+        );
+      },
+    );
   });
 
   test("that nothing happens when blueconic and fides are not initialized", () => {
@@ -64,57 +143,30 @@ describe("blueconic", () => {
     ).not.toHaveBeenCalled();
   });
 
-  test("when fides configures no consent, blueconic sets consent for all purposes", () => {
-    const { client, mockProfile } = setupBlueConicClient();
-    setupFidesWithoutConsent();
+  test("that geolocation gets assigned to BlueConic profile", () => {
+    const { mockProfile } = setupBlueConicClient("initialized");
+
+    const fidesUserId = "b020c053-0ea2-409c-b71c-a55b6236f842";
+    const fidesGeolocation = {
+      location: "US-NY",
+      country: "US",
+      region: "NY",
+    };
+
+    setupFidesWithGeoLocationAndFidesUser(fidesUserId, fidesGeolocation);
 
     blueconic();
 
-    expect(mockProfile.setConsentedObjectives).toHaveBeenCalledWith([
-      "iab_purpose_1",
-      "iab_purpose_2",
-      "iab_purpose_3",
-      "iab_purpose_4",
-    ]);
-    expect(mockProfile.setRefusedObjectives).toHaveBeenCalledWith([]);
-    expect(client.profile.updateProfile).toHaveBeenCalled();
+    expect(mockProfile.setValue).toHaveBeenCalledWith(
+      "fides_identifier",
+      fidesUserId,
+    );
+    expect(mockProfile.setValue).toHaveBeenCalledWith(
+      "fides_geolocation",
+      fidesGeolocation,
+    );
+    expect(window.blueConicClient?.profile?.updateProfile).toHaveBeenCalled();
   });
-
-  describe.each(MARKETING_CONSENT_KEYS)(
-    "when consent is set via the %s key",
-    (key) => {
-      test.each([
-        [
-          "opted in",
-          true,
-          ["iab_purpose_1", "iab_purpose_2", "iab_purpose_3", "iab_purpose_4"],
-          [],
-        ],
-        [
-          "opted out",
-          false,
-          ["iab_purpose_1"],
-          ["iab_purpose_2", "iab_purpose_3", "iab_purpose_4"],
-        ],
-      ])(
-        "that a user who has %s gets the correct consented and refused objectives",
-        (_, optInStatus, consented, refused) => {
-          const { client, mockProfile } = setupBlueConicClient();
-          setupFidesWithConsent(key, optInStatus);
-
-          blueconic();
-
-          expect(mockProfile.setConsentedObjectives).toHaveBeenCalledWith(
-            consented,
-          );
-          expect(mockProfile.setRefusedObjectives).toHaveBeenCalledWith(
-            refused,
-          );
-          expect(client.profile.updateProfile).toHaveBeenCalled();
-        },
-      );
-    },
-  );
 
   test.each(["FidesInitialized", "FidesUpdated", "onBlueConicLoaded"])(
     "that %s event can cause objectives to be set",
