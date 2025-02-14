@@ -69,51 +69,61 @@ async def lifespan(wrapped_app: FastAPI) -> AsyncGenerator[None, None]:
     and must be maintained.
     """
     start_time = perf_counter()
-    logger.info("Starting server setup...")
+    try:
+        logger.info("Starting server setup...")
 
-    if not CONFIG.dev_mode:
-        sys.tracebacklimit = 0
+        if not CONFIG.dev_mode:
+            sys.tracebacklimit = 0
 
-    log_startup()
+        log_startup()
 
-    await run_database_startup(wrapped_app)
+        logger.debug("Starting database startup...")
+        run_database_startup(wrapped_app)
+        logger.debug("Database startup complete")
 
-    check_redis()
+        logger.debug("Checking Redis...")
+        check_redis()
+        logger.debug("Redis check complete")
 
-    if not scheduler.running:
-        scheduler.start()
-    if not async_scheduler.running:
-        async_scheduler.start()
+        if not scheduler.running:
+            logger.debug("Starting scheduler...")
+            scheduler.start()
+        if not async_scheduler.running:
+            logger.debug("Starting async scheduler...")
+            async_scheduler.start()
 
-    # generate and/or cache the identity salt
-    get_identity_salt()
+        # generate and/or cache the identity salt
+        get_identity_salt()
 
-    initiate_scheduled_batch_email_send()
-    initiate_poll_for_exited_privacy_request_tasks()
-    initiate_scheduled_dsr_data_removal()
-    initiate_bcrypt_migration_task()
+        initiate_scheduled_batch_email_send()
+        initiate_poll_for_exited_privacy_request_tasks()
+        initiate_scheduled_dsr_data_removal()
+        initiate_bcrypt_migration_task()
 
-    logger.debug("Sending startup analytics events...")
-    # Avoid circular imports
-    from fides.api.analytics import in_docker_container, send_analytics_event
+        logger.debug("Sending startup analytics events...")
+        # Avoid circular imports
+        from fides.api.analytics import in_docker_container, send_analytics_event
 
-    await send_analytics_event(
-        AnalyticsEvent(
-            docker=in_docker_container(),
-            event=Event.server_start.value,
-            event_created_at=datetime.now(tz=timezone.utc),
+        await send_analytics_event(
+            AnalyticsEvent(
+                docker=in_docker_container(),
+                event=Event.server_start.value,
+                event_created_at=datetime.now(tz=timezone.utc),
+            )
         )
-    )
 
-    # It's just a random bunch of strings when serialized
-    if not CONFIG.logging.serialization:
-        logger.info(FIDES_ASCII_ART)
+        # It's just a random bunch of strings when serialized
+        if not CONFIG.logging.serialization:
+            logger.info(FIDES_ASCII_ART)
 
-    warn_root_user_enabled()
+        warn_root_user_enabled()
 
-    logger.info("Fides startup complete! v{}", VERSION)
-    startup_time = round(perf_counter() - start_time, 3)
-    logger.info("Server setup completed in {} seconds", startup_time)
+        logger.info("Fides startup complete! v{}", VERSION)
+        startup_time = round(perf_counter() - start_time, 3)
+        logger.info("Server setup completed in {} seconds", startup_time)
+    except Exception as e:
+        logger.error(f"Startup failed: {str(e)}")
+        raise
     yield  # All of this happens before the webserver comes up
 
 

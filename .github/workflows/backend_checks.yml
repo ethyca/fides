@@ -235,7 +235,7 @@ jobs:
       - name: Set Up Python
         uses: actions/setup-python@v5
         with:
-          python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
+          python-version: ${{ matrix.python_version }}
           cache: "pip"
 
       - name: Install Nox
@@ -287,7 +287,7 @@ jobs:
       - name: Set Up Python
         uses: actions/setup-python@v5
         with:
-          python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
+          python-version: ${{ matrix.python_version }}
           cache: "pip"
 
       - name: Install Nox
@@ -349,7 +349,7 @@ jobs:
       - name: Set Up Python
         uses: actions/setup-python@v5
         with:
-          python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
+          python-version: ${{ matrix.python_version }}
           cache: "pip"
 
       - name: Install Nox
@@ -444,7 +444,7 @@ jobs:
       - name: Set Up Python
         uses: actions/setup-python@v5
         with:
-          python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
+          python-version: ${{ matrix.python_version }}
           cache: "pip"
 
       - name: Install Nox
