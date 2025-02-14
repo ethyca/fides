@@ -1,5 +1,5 @@
 import json
-from typing import Any
+from typing import Any, Optional
 
 from celery import VERSION_BANNER
 from celery.apps.worker import Worker
@@ -10,20 +10,52 @@ from fides.api.service.saas_request.override_implementations import *
 from fides.api.tasks import (
     MESSAGING_QUEUE_NAME,
     PRIVACY_PREFERENCES_QUEUE_NAME,
+    DSR_QUEUE_NAME,
     celery_app,
 )
 
 
-def start_worker() -> None:
-    logger.info("Running Celery worker...")
+def start_worker(
+    queues: Optional[str] = None, exclude_queues: Optional[str] = None
+) -> None:
+    """
+    Start a Celery worker. Optionally provide a list of queues for the worker to consume,
+    as a comma-separated string, or a list of queues to exclude.
+    If no queues are provided, the worker will consume from all queues: the default queue,
+    the messaging queue, and the privacy preferences queue.
+    """
+
+    assert (
+        not queues or not exclude_queues
+    ), "Cannot provide both queues and exclude_queues"
+
     default_queue_name = celery_app.conf.get("task_default_queue", "celery")
+
+    all_queues = [
+        default_queue_name,
+        MESSAGING_QUEUE_NAME,
+        PRIVACY_PREFERENCES_QUEUE_NAME,
+        DSR_QUEUE_NAME,
+    ]
+    # If queues are provided, use them. Otherwise, use all queues.
+    worker_queues = queues or ",".join(all_queues)
+
+    # If excluded queues are provided, remove them from the list of all queues.
+    if exclude_queues:
+        excluded_queues = exclude_queues.split(",")
+        worker_queues = ",".join(
+            [queue for queue in all_queues if queue not in excluded_queues]
+        )
+
+    logger.info(f"Running Celery worker for queues: {worker_queues}")
+
     celery_app.worker_main(
         argv=[
             "--quiet",  # Disable Celery startup banner
             "worker",
             "--loglevel=info",
             "--concurrency=2",
-            f"--queues={default_queue_name},{MESSAGING_QUEUE_NAME},{PRIVACY_PREFERENCES_QUEUE_NAME}",
+            f"--queues={worker_queues}",
         ]
     )
 
