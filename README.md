@@ -140,8 +140,8 @@ brew install freetds openssl
 ```
 2. Add the following to your shell (i.e. `.zshrc`) to ensure your compiler can access the `freetds` and `openssl` libraries, updating the paths & versions to match your local install:
 ```bash
-export LDFLAGS="-L/opt/homebrew/Cellar/freetds/1.3.18/lib -L/opt/homebrew/Cellar/openssl@1.1/1.1.1u/lib"
-export CFLAGS="-I/opt/homebrew/Cellar/freetds/1.3.18/include"
+export LDFLAGS="-L/opt/homebrew/opt/freetds/lib -L/opt/homebrew/opt/openssl/lib"
+export CFLAGS="-I/opt/homebrew/opt/freetds/include"
 ```
 3. Reinstall Fides with MSSQL support by including the `all` extra requirement:
 ```bash
