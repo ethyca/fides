@@ -506,12 +506,12 @@ describe("Fides-js GPP extension", () => {
           {
             eventName: "sectionChange",
             data: "usca",
-            gppString: "DBABBg~BUoAAABY.QA",
+            gppString: "DBABBg~BUUAAABY.QA",
           },
           {
             eventName: "signalStatus",
             data: "ready",
-            gppString: "DBABBg~BUoAAABY.QA",
+            gppString: "DBABBg~BUUAAABY.QA",
           },
         ];
         // Check the GPP events
