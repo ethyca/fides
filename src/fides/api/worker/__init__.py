@@ -8,9 +8,9 @@ from loguru import logger
 
 from fides.api.service.saas_request.override_implementations import *
 from fides.api.tasks import (
+    DSR_QUEUE_NAME,
     MESSAGING_QUEUE_NAME,
     PRIVACY_PREFERENCES_QUEUE_NAME,
-    DSR_QUEUE_NAME,
     celery_app,
 )
 
