@@ -13,98 +13,73 @@ from typing import Dict, List, Any
 from enum import Enum
 
 from loguru import logger
+from loguru._handler import Message  # type: ignore
 
 from fides.config import CONFIG, FidesConfig
 
 MASKED = "MASKED"
 
-
-class SinkType(str, Enum):
-    """Enum for supported logging sink types"""
-    FILE = "file"
-    REDIS = "redis"
-    STDOUT = ""  # Empty string for backwards compatibility
-
-
 class LogSink(ABC):
-    """Abstract base class for log sinks"""
+    """Abstract base class for custom log sinks.
+
+    A log sink defines how log messages should be handled.
+    Built-in sinks (stdout/file) are handled separately.
+    """
     @abstractmethod
-    def get_sink_config(self,
-        level: str,
-        colorize: bool,
-        serialize: bool,
-        include_called_from: bool,
-        format_string: str
-    ) -> Dict[str, Any]:
-        """Returns the sink configuration dictionary"""
+    def __call__(self, message: Message) -> None:
+        """Handle a log message directly.
+
+        Args:
+            message: The log message to handle, containing the record and all metadata
+        """
         pass
 
 
-class StdoutSink(LogSink):
-    def get_sink_config(self,
-        level: str,
-        colorize: bool,
-        serialize: bool,
-        include_called_from: bool,
-        format_string: str
-    ) -> Dict[str, Any]:
-        return {
-            "sink": sys.stdout,
-            "colorize": colorize,
-            "format": format_string,
-            "level": level,
-            "serialize": serialize,
-            "diagnose": False,
-            "backtrace": True,
-            "catch": True,
-            "filter": lambda logRecord: not bool(logRecord["extra"]),
-        }
-
-
 class RedisSink(LogSink):
-    """Redis sink implementation"""
-    def get_sink_config(self,
-        level: str,
-        colorize: bool,
-        serialize: bool,
-        include_called_from: bool,
-        format_string: str
-    ) -> Dict[str, Any]:
-        from fides.api.util.logger_redis_sink import RedisLogSink
-        return {
-            "sink": RedisLogSink(),
-            "colorize": False,  # Redis doesn't need colorization
-            "format": format_string,
-            "level": level,
-            "serialize": True,  # Always serialize for Redis
-            "diagnose": False,
-            "backtrace": True,
-            "catch": True,
+    """A sink that writes log messages to Redis."""
+    def __init__(self):
+        self.cache = None
+
+    def _ensure_cache(self) -> None:
+        """Lazily initialize Redis connection when needed."""
+        if self.cache is None:
+            from fides.api.util.cache import get_cache
+            self.cache = get_cache()
+
+    def __call__(self, message: Message) -> None:
+        """Write log message to Redis if conditions are met."""
+        from fides.api.schemas.privacy_request import PrivacyRequestSource
+
+        record: Dict[str, Any] = message.record
+
+        # Extract privacy request context
+        extras = record["extra"]
+        privacy_request_id = extras.get("privacy_request_id")
+        privacy_request_source = extras.get("privacy_request_source")
+
+        # Only process logs with privacy request ID and source is dataset_test
+        if (
+            not privacy_request_id
+            or privacy_request_source != PrivacyRequestSource.dataset_test.value
+        ):
+            return
+
+        # Ensure we have a Redis connection
+        self._ensure_cache()
+
+        # Create Redis key using privacy request ID
+        key = f"log_{privacy_request_id}"
+
+        # Format log message
+        log_entry = {
+            "time": record["time"],
+            "level": record["level"].name,
+            "message": record["message"],
+            "extra": dict(record["extra"]),
         }
 
-
-class FileSink(LogSink):
-    def __init__(self, path: str):
-        self.path = path
-
-    def get_sink_config(self,
-        level: str,
-        colorize: bool,
-        serialize: bool,
-        include_called_from: bool,
-        format_string: str
-    ) -> Dict[str, Any]:
-        return {
-            "sink": self.path,
-            "colorize": colorize,
-            "format": format_string,
-            "level": level,
-            "serialize": serialize,
-            "diagnose": False,
-            "backtrace": True,
-            "catch": True,
-            "filter": lambda logRecord: not bool(logRecord["extra"]),
-        }
+        # Encode and append log entry to the list in Redis
+        self.cache.push_encoded_object(key, log_entry)
 
 
 class Pii(str):
@@ -130,33 +105,14 @@ def _log_warning(exc: BaseException, dev_mode: bool = False) -> None:
     else:
         logger.error(exc)
 
-
-def get_sink(sink_type: str, **kwargs) -> LogSink:
-    """Factory function to create appropriate sink"""
-    try:
-        sink_enum = SinkType(sink_type)
-        if sink_enum == SinkType.STDOUT:
-            return StdoutSink()
-        elif sink_enum == SinkType.REDIS:
-            return RedisSink()
-        elif sink_enum == SinkType.FILE:
-            return FileSink(kwargs.get('path', ''))
-        raise ValueError(f"Unsupported sink type: {sink_type}")
-    except ValueError as e:
-        logger.warning(f"Invalid sink type '{sink_type}', falling back to stdout")
-        return StdoutSink()
-
-
 def create_handler_dicts(
     level: str,
-    sink: str,
+    sink: Any,
     serialize: bool,
     colorize: bool,
     include_called_from: bool
 ) -> List[Dict]:
-    """
-    Creates dictionaries used for configuring loguru handlers.
-    """
+    """Creates dictionaries used for configuring loguru handlers."""
     time_format = "<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green>"
     level_format = "<level>{level: <8}</level>"
     called_from_format = (
@@ -176,17 +132,23 @@ def create_handler_dicts(
         + message_format
     )
 
-    # Get the appropriate sink
-    log_sink = get_sink(sink)
+    # Create base handler config
+    base_config = {
+        "format": log_format,
+        "level": level,
+        "serialize": serialize,
+        "colorize": colorize,
+        "diagnose": False,
+        "backtrace": True,
+        "catch": True,
+    }
 
-    # Get base configuration from sink
-    standard_dict = log_sink.get_sink_config(
-        level=level,
-        colorize=colorize,
-        serialize=serialize,
-        include_called_from=include_called_from,
-        format_string=log_format
-    )
+    # Configure handler
+    standard_dict = {
+        **base_config,
+        "sink": sink,
+        "filter": lambda logRecord: not bool(logRecord["extra"])
+    }
 
     # Create extra dict with additional formatting for logs with extra context
     extra_dict = {
@@ -208,25 +170,29 @@ def setup(config: FidesConfig) -> None:
         logging.getLogger(name).handlers = []
         logging.getLogger(name).propagate = True
 
+    handlers = []
+
     # Configure main sink from config
-    handlers = create_handler_dicts(
+    destination = config.logging.destination
+    main_sink = sys.stdout if not destination else destination
+    handlers.extend(create_handler_dicts(
         level=config.logging.level,
         include_called_from=config.dev_mode,
-        sink=config.logging.destination,
+        sink=main_sink,
         serialize=config.logging.serialization == "json",
         colorize=config.logging.colorize,
-    )
+    ))
 
     # Add Redis sink if Redis is enabled
     if config.redis.enabled:
-        redis_handlers = create_handler_dicts(
+        redis_sink = RedisSink()
+        handlers.extend(create_handler_dicts(
             level=config.logging.level,
             include_called_from=config.dev_mode,
-            sink=SinkType.REDIS,
+            sink=redis_sink,
             serialize=True,  # Always serialize for Redis
             colorize=False,  # Redis doesn't need colorization
-        )
-        handlers.extend(redis_handlers)
+        ))
 
     logger.configure(handlers=handlers)
 
@@ -238,7 +204,6 @@ def obfuscate_message(message: str) -> str:
     Currently being obfuscated:
         - Database username + password
     """
-
     strings_to_replace: List[str] = [
         f"{CONFIG.database.user}:{CONFIG.database.password}"
     ]
