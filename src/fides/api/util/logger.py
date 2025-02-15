@@ -19,23 +19,7 @@ from fides.config import CONFIG, FidesConfig
 
 MASKED = "MASKED"
 
-class LogSink(ABC):
-    """Abstract base class for custom log sinks.
-
-    A log sink defines how log messages should be handled.
-    Built-in sinks (stdout/file) are handled separately.
-    """
-    @abstractmethod
-    def __call__(self, message: Message) -> None:
-        """Handle a log message directly.
-
-        Args:
-            message: The log message to handle, containing the record and all metadata
-        """
-        pass
-
-
-class RedisSink(LogSink):
+class RedisSink:
     """A sink that writes log messages to Redis."""
     def __init__(self):
         self.cache = None
