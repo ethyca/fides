@@ -1,6 +1,7 @@
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
+from fides.api.models.policy import Policy
 from loguru import logger
 from sqlalchemy.orm import Session
 
@@ -10,15 +11,12 @@ from fides.api.common_exceptions import (
     RedisNotConfigured,
 )
 from fides.api.models.audit_log import AuditLog, AuditLogAction
-from fides.api.models.policy import Policy
 from fides.api.models.pre_approval_webhook import PreApprovalWebhook
 from fides.api.models.privacy_preference import PrivacyPreferenceHistory
 from fides.api.models.privacy_request import (
     ConsentRequest,
     ExecutionLog,
     PrivacyRequest,
-    PrivacyRequestSource,
-    PrivacyRequestStatus,
     RequestTask,
 )
 from fides.api.models.property import Property
@@ -30,6 +28,8 @@ from fides.api.schemas.privacy_request import (
     PrivacyRequestCreate,
     PrivacyRequestResponse,
     PrivacyRequestResubmit,
+    PrivacyRequestSource,
+    PrivacyRequestStatus,
 )
 from fides.api.service.messaging.message_dispatch_service import message_send_enabled
 from fides.api.service.privacy_request.request_service import (

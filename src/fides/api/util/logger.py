@@ -110,7 +110,25 @@ def setup(config: FidesConfig) -> None:
         serialize=config.logging.serialization == "json",
         colorize=config.logging.colorize,
     )
+
     logger.configure(handlers=handlers)
+
+
+def add_redis_sink(config: FidesConfig) -> None:
+    """Add Redis sink to the logger configuration.
+    This should be called after Redis is initialized."""
+    try:
+        from fides.api.util.cache import get_cache
+        from fides.api.util.logger_redis_sink import RedisLogSink
+
+        redis_connection = get_cache()
+        logger.add(
+            sink=RedisLogSink(redis_connection),
+            level=config.logging.level,
+            serialize=config.logging.serialization == "json",
+        )
+    except Exception as e:
+        logger.warning("Failed to initialize Redis logging sink: {}", e)
 
 
 def obfuscate_message(message: str) -> str:

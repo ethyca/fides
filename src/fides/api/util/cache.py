@@ -118,6 +118,19 @@ class FidesopsRedis(Redis):
             return result
         return None
 
+    def rpush_encoded_object(self, key: str, obj: Any) -> int:
+        """Encode an object and append it to a list in Redis.
+
+        Args:
+            key: The Redis key for the list
+            obj: The object to encode and append
+
+        Returns:
+            The length of the list after the push operation
+        """
+        encoded_entry = self.encode_obj(obj)
+        return self.rpush(key, encoded_entry)
+
 
 def get_cache(should_log: Optional[bool] = False) -> FidesopsRedis:
     """Return a singleton connection to our Redis cache"""

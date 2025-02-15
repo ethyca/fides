@@ -44,6 +44,11 @@ def log_celery_setup(sender: str, instance: Worker, **kwargs: Any) -> None:
 
     logger.bind(celery_details=celery_details).info("Celery connection setup complete")
 
+    # Add Redis sink for dataset test logs
+    from fides.api.util.logger import add_redis_sink
+    from fides.config import CONFIG
+    add_redis_sink(CONFIG)
+
 
 if __name__ == "__main__":  # pragma: no cover
     start_worker()
