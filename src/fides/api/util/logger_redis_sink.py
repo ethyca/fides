@@ -1,20 +1,19 @@
-from typing import TYPE_CHECKING, Any, Dict
+from typing import Any, Dict
 from fides.api.schemas.privacy_request import PrivacyRequestSource
 from loguru._handler import Message  # type: ignore
-
-if TYPE_CHECKING:
-    from fides.api.util.cache import FidesopsRedis
 
 class RedisLogSink:
     """Custom loguru sink that sends logs to Redis for dataset test privacy requests"""
 
-    def __init__(self, redis_connection: "FidesopsRedis") -> None:
-        """Initialize the Redis sink with a Redis connection.
+    def __init__(self) -> None:
+        """Initialize the Redis sink."""
+        self.cache = None
 
-        Args:
-            redis_connection: A FidesopsRedis instance
-        """
-        self.cache = redis_connection
+    def _ensure_cache(self) -> None:
+        """Lazily initialize Redis connection when needed."""
+        if self.cache is None:
+            from fides.api.util.cache import get_cache
+            self.cache = get_cache()
 
     def __call__(self, message: Message) -> None:
         """Write log message to Redis if conditions are met.
@@ -33,10 +32,13 @@ class RedisLogSink:
         ):
             return
 
+        # Ensure we have a Redis connection
+        self._ensure_cache()
+
         # Create Redis key using privacy request ID
         key = f"log_{privacy_request_id}"
 
-        # Format log message
+        # Format log message with additional metadata
         log_entry = {
             "time": record["time"],
             "level": record["level"].name,
@@ -45,4 +47,4 @@ class RedisLogSink:
         }
 
         # Encode and append log entry to the list in Redis
-        self.cache.rpush_encoded_object(key, log_entry)
+        self.cache.push_encoded_object(key, log_entry)

@@ -13,7 +13,7 @@ from tenacity import (
 )
 
 from fides.api.db.session import get_db_engine, get_db_session
-from fides.api.util.logger import setup as setup_logging, add_redis_sink
+from fides.api.util.logger import setup as setup_logging
 from fides.config import CONFIG, FidesConfig
 
 MESSAGING_QUEUE_NAME = "fidesops.messaging"
@@ -89,9 +89,6 @@ def _create_celery(config: FidesConfig = CONFIG) -> Celery:
     logger.bind(api_config=CONFIG.logging.json()).debug(
         "Logger configuration options in use"
     )
-
-    # Add Redis sink for dataset test logs
-    add_redis_sink(config)
 
     app = Celery(__name__)
 

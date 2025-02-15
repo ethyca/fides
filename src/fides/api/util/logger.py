@@ -8,7 +8,9 @@ from __future__ import annotations
 
 import logging
 import sys
-from typing import Dict, List
+from abc import ABC, abstractmethod
+from typing import Dict, List, Any
+from enum import Enum
 
 from loguru import logger
 
@@ -17,9 +19,96 @@ from fides.config import CONFIG, FidesConfig
 MASKED = "MASKED"
 
 
+class SinkType(str, Enum):
+    """Enum for supported logging sink types"""
+    FILE = "file"
+    REDIS = "redis"
+    STDOUT = ""  # Empty string for backwards compatibility
+
+
+class LogSink(ABC):
+    """Abstract base class for log sinks"""
+    @abstractmethod
+    def get_sink_config(self,
+        level: str,
+        colorize: bool,
+        serialize: bool,
+        include_called_from: bool,
+        format_string: str
+    ) -> Dict[str, Any]:
+        """Returns the sink configuration dictionary"""
+        pass
+
+
+class StdoutSink(LogSink):
+    def get_sink_config(self,
+        level: str,
+        colorize: bool,
+        serialize: bool,
+        include_called_from: bool,
+        format_string: str
+    ) -> Dict[str, Any]:
+        return {
+            "sink": sys.stdout,
+            "colorize": colorize,
+            "format": format_string,
+            "level": level,
+            "serialize": serialize,
+            "diagnose": False,
+            "backtrace": True,
+            "catch": True,
+            "filter": lambda logRecord: not bool(logRecord["extra"]),
+        }
+
+
+class RedisSink(LogSink):
+    """Redis sink implementation"""
+    def get_sink_config(self,
+        level: str,
+        colorize: bool,
+        serialize: bool,
+        include_called_from: bool,
+        format_string: str
+    ) -> Dict[str, Any]:
+        from fides.api.util.logger_redis_sink import RedisLogSink
+        return {
+            "sink": RedisLogSink(),
+            "colorize": False,  # Redis doesn't need colorization
+            "format": format_string,
+            "level": level,
+            "serialize": True,  # Always serialize for Redis
+            "diagnose": False,
+            "backtrace": True,
+            "catch": True,
+        }
+
+
+class FileSink(LogSink):
+    def __init__(self, path: str):
+        self.path = path
+
+    def get_sink_config(self,
+        level: str,
+        colorize: bool,
+        serialize: bool,
+        include_called_from: bool,
+        format_string: str
+    ) -> Dict[str, Any]:
+        return {
+            "sink": self.path,
+            "colorize": colorize,
+            "format": format_string,
+            "level": level,
+            "serialize": serialize,
+            "diagnose": False,
+            "backtrace": True,
+            "catch": True,
+            "filter": lambda logRecord: not bool(logRecord["extra"]),
+        }
+
+
 class Pii(str):
     """Mask pii data"""
-
     def __format__(self, __format_spec: str) -> str:
         if CONFIG.logging.log_pii:
             return super().__format__(__format_spec)
@@ -42,14 +131,31 @@ def _log_warning(exc: BaseException, dev_mode: bool = False) -> None:
         logger.error(exc)
 
 
+def get_sink(sink_type: str, **kwargs) -> LogSink:
+    """Factory function to create appropriate sink"""
+    try:
+        sink_enum = SinkType(sink_type)
+        if sink_enum == SinkType.STDOUT:
+            return StdoutSink()
+        elif sink_enum == SinkType.REDIS:
+            return RedisSink()
+        elif sink_enum == SinkType.FILE:
+            return FileSink(kwargs.get('path', ''))
+        raise ValueError(f"Unsupported sink type: {sink_type}")
+    except ValueError as e:
+        logger.warning(f"Invalid sink type '{sink_type}', falling back to stdout")
+        return StdoutSink()
+
+
 def create_handler_dicts(
-    level: str, sink: str, serialize: bool, colorize: bool, include_called_from: bool
+    level: str,
+    sink: str,
+    serialize: bool,
+    colorize: bool,
+    include_called_from: bool
 ) -> List[Dict]:
     """
     Creates dictionaries used for configuring loguru handlers.
-
-    Two dictionaries are returned, one for standard logs and another to handle
-    logs that include "extra" information.
     """
     time_format = "<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green>"
     level_format = "<level>{level: <8}</level>"
@@ -70,39 +176,39 @@ def create_handler_dicts(
         + message_format
     )
 
-    standard_dict = {
-        "colorize": colorize,
-        "format": log_format,
-        "level": level,
-        "serialize": serialize,
-        "sink": sys.stdout if sink == "" else sink,
-        "filter": lambda logRecord: not bool(logRecord["extra"]),
-        "diagnose": False,
-        "backtrace": True,
-        "catch": True,
-    }
+    # Get the appropriate sink
+    log_sink = get_sink(sink)
+
+    # Get base configuration from sink
+    standard_dict = log_sink.get_sink_config(
+        level=level,
+        colorize=colorize,
+        serialize=serialize,
+        include_called_from=include_called_from,
+        format_string=log_format
+    )
+
+    # Create extra dict with additional formatting for logs with extra context
     extra_dict = {
         **standard_dict,
         "format": log_format + " | <dim>{extra}</dim>",
         "filter": lambda logRecord: bool(logRecord["extra"]),
     }
+
     return [standard_dict, extra_dict]
 
 
 def setup(config: FidesConfig) -> None:
     """
-    Removes all handlers from all loggers, and sets those
-    loggers to propagate log entries to the root logger.
-    Then, configures Loguru to use the desired handlers.
-
-    This should be one of the last function calls made, as
-    the addition of any new loggers afterwards will require
-    it to be run again.
+    Configures logging with the appropriate sink based on configuration.
+    Removes all handlers from all loggers, and sets those loggers to propagate
+    log entries to the root logger. Then, configures Loguru to use the desired handlers.
     """
     for name in logging.root.manager.loggerDict.keys():
         logging.getLogger(name).handlers = []
         logging.getLogger(name).propagate = True
 
+    # Configure main sink from config
     handlers = create_handler_dicts(
         level=config.logging.level,
         include_called_from=config.dev_mode,
@@ -111,24 +217,18 @@ def setup(config: FidesConfig) -> None:
         colorize=config.logging.colorize,
     )
 
-    logger.configure(handlers=handlers)
-
-
-def add_redis_sink(config: FidesConfig) -> None:
-    """Add Redis sink to the logger configuration.
-    This should be called after Redis is initialized."""
-    try:
-        from fides.api.util.cache import get_cache
-        from fides.api.util.logger_redis_sink import RedisLogSink
-
-        redis_connection = get_cache()
-        logger.add(
-            sink=RedisLogSink(redis_connection),
+    # Add Redis sink if Redis is enabled
+    if config.redis.enabled:
+        redis_handlers = create_handler_dicts(
             level=config.logging.level,
-            serialize=config.logging.serialization == "json",
+            include_called_from=config.dev_mode,
+            sink=SinkType.REDIS,
+            serialize=True,  # Always serialize for Redis
+            colorize=False,  # Redis doesn't need colorization
         )
-    except Exception as e:
-        logger.warning("Failed to initialize Redis logging sink: {}", e)
+        handlers.extend(redis_handlers)
+
+    logger.configure(handlers=handlers)
 
 
 def obfuscate_message(message: str) -> str:

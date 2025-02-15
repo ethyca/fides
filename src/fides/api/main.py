@@ -52,7 +52,7 @@ from fides.api.ui import (
     path_is_in_ui_directory,
 )
 from fides.api.util.endpoint_utils import API_PREFIX
-from fides.api.util.logger import _log_exception, add_redis_sink
+from fides.api.util.logger import _log_exception
 from fides.cli.utils import FIDES_ASCII_ART
 from fides.config import CONFIG, check_required_webserver_config_values
 
@@ -79,9 +79,6 @@ async def lifespan(wrapped_app: FastAPI) -> AsyncGenerator[None, None]:
     await run_database_startup(wrapped_app)
 
     check_redis()
-
-    # Add Redis sink after Redis is initialized
-    add_redis_sink(CONFIG)
 
     if not scheduler.running:
         scheduler.start()

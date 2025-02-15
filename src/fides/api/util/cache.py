@@ -118,7 +118,7 @@ class FidesopsRedis(Redis):
             return result
         return None
 
-    def rpush_encoded_object(self, key: str, obj: Any) -> int:
+    def push_encoded_object(self, key: str, obj: Any) -> int:
         """Encode an object and append it to a list in Redis.
 
         Args:
