@@ -15,6 +15,7 @@ const fetchPropetyFromApi = async ({
 
   let result: Property | null = null;
   try {
+    // Endpoint params are passed as query params using URLSearchParams
     const searchParams = new URLSearchParams({
       path,
     });
@@ -22,20 +23,18 @@ const fetchPropetyFromApi = async ({
       searchParams.set("location", location);
     }
 
-    console.log("Fetching property with params", searchParams.toString());
-    const response = await fetch(
-      `${fidesApiUrl}/plus/property?${searchParams}`,
-      {
-        method: "GET",
-        headers,
-      },
-    );
+    const url = `${fidesApiUrl}/plus/property?${searchParams}`;
+    fidesDebugger(`Fetching property from API: ${url}`);
+
+    const response = await fetch(url, {
+      method: "GET",
+      headers,
+    });
     if (response.ok) {
       result = await response.json();
     }
   } catch (e) {
-    // eslint-disable-next-line no-console
-    console.log("Request to find property failed", e);
+    fidesDebugger(`Request to fetch property failed`, e);
   }
 
   return result;

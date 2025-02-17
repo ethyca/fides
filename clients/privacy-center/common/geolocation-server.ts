@@ -36,7 +36,6 @@ export const lookupGeolocationServerSide = async () => {
 
   // 1. Check for a provided "geolocation" query param
   const { geolocation: geolocationQuery } = searchParams;
-  console.log("searchParams", searchParams);
   if (typeof geolocationQuery === "string") {
     if (!VALID_ISO_3166_LOCATION_REGEX.test(geolocationQuery)) {
       throw new Error(
@@ -45,8 +44,11 @@ export const lookupGeolocationServerSide = async () => {
     }
 
     const [country, region] = geolocationQuery.split("-");
+    const location = geolocationQuery.replace("-", "_");
+    fidesDebugger(`Using location provided via query param: ${location}`);
+
     return {
-      location: geolocationQuery.replace("-", "_"),
+      location,
       country,
       region,
     };
@@ -66,19 +68,23 @@ export const lookupGeolocationServerSide = async () => {
       [region] = cdnHeaderRegion.split(",");
       // Check if the region header is valid; otherwise discard (it's optional!)
       if (VALID_ISO_3166_2_REGION_REGEX.test(region)) {
-        geolocation = `${country}_${region}`;
+        geolocation = `${country}-${region}`;
       } else {
         region = null;
       }
     }
     if (VALID_ISO_3166_LOCATION_REGEX.test(geolocation)) {
+      const location = geolocation.replace("-", "_").toLowerCase();
+      fidesDebugger(`Using location provided by CDN headers: ${location}`);
+
       return {
-        location: geolocation.toLowerCase(),
+        location,
         country,
         region,
       };
     }
   }
 
+  fidesDebugger(`Using location: null`);
   return null;
 };
