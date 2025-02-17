@@ -37,6 +37,7 @@ const fetchPropetyFromApi = async ({
     fidesDebugger(`Request to fetch property failed`, e);
   }
 
+  fidesDebugger(`Fetched property id: `, result?.id);
   return result;
 };
 export default fetchPropetyFromApi;
