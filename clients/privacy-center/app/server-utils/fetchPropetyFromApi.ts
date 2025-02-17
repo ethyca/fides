@@ -1,14 +1,14 @@
 import { addCommonHeaders } from "~/common/CommonHeaders";
 import { Property } from "~/types/api";
 
-const getPropertyFromUrl = async ({
+const fetchPropetyFromApi = async ({
   fidesApiUrl,
   path,
   location,
 }: {
   fidesApiUrl: string;
   path: string;
-  location?: string;
+  location?: string | null;
 }) => {
   const headers = new Headers();
   addCommonHeaders(headers);
@@ -40,4 +40,4 @@ const getPropertyFromUrl = async ({
 
   return result;
 };
-export default getPropertyFromUrl;
+export default fetchPropetyFromApi;
