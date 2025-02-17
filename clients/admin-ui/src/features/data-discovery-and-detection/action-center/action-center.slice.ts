@@ -1,11 +1,18 @@
 import { baseApi } from "~/features/common/api.slice";
-import { Page_StagedResourceAPIResponse_ } from "~/types/api";
+import { getQueryParamsFromArray } from "~/features/common/utils";
 import { PaginationQueryParams } from "~/types/common/PaginationQueryParams";
 
 import {
+  DiscoveredAssetPaginatedResponse,
+  DiscoveredAssetResponse,
   MonitorSummaryPaginatedResponse,
   MonitorSystemAggregatePaginatedResponse,
 } from "./types";
+
+interface MonitorResultSystemQueryParams {
+  monitor_config_key: string;
+  resolved_system_ids: string[];
+}
 
 const actionCenterApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
@@ -41,7 +48,7 @@ const actionCenterApi = baseApi.injectEndpoints({
       providesTags: ["Discovery Monitor Results"],
     }),
     getDiscoveredAssets: build.query<
-      Page_StagedResourceAPIResponse_,
+      DiscoveredAssetPaginatedResponse,
       { key: string; system: string; search: string } & PaginationQueryParams
     >({
       query: ({ key, system, page = 1, size = 20, search }) => ({
@@ -56,30 +63,36 @@ const actionCenterApi = baseApi.injectEndpoints({
       }),
       providesTags: () => ["Discovery Monitor Results"],
     }),
-    addMonitorResultSystem: build.mutation<
+    addMonitorResultSystems: build.mutation<
       any,
-      { monitor_config_key?: string; resolved_system_id?: string }
+      MonitorResultSystemQueryParams
     >({
-      query: (params) => ({
-        method: "POST",
-        url: `/plus/discovery-monitor/${params.monitor_config_key}/promote`,
-        params: {
-          resolved_system_id: params.resolved_system_id,
-        },
-      }),
+      query: ({ monitor_config_key, resolved_system_ids }) => {
+        const params = getQueryParamsFromArray(
+          resolved_system_ids,
+          "resolved_system_ids",
+        );
+        return {
+          method: "POST",
+          url: `/plus/discovery-monitor/${monitor_config_key}/promote?${params}`,
+        };
+      },
       invalidatesTags: ["Discovery Monitor Results"],
     }),
-    ignoreMonitorResultSystem: build.mutation<
+    ignoreMonitorResultSystems: build.mutation<
       any,
-      { monitor_config_key?: string; resolved_system_id?: string }
+      MonitorResultSystemQueryParams
     >({
-      query: (params) => ({
-        method: "POST",
-        url: `/plus/discovery-monitor/${params.monitor_config_key}/mute`,
-        params: {
-          resolved_system_id: params.resolved_system_id,
-        },
-      }),
+      query: ({ monitor_config_key, resolved_system_ids }) => {
+        const params = getQueryParamsFromArray(
+          resolved_system_ids,
+          "resolved_system_ids",
+        );
+        return {
+          method: "POST",
+          url: `/plus/discovery-monitor/${monitor_config_key}/mute?${params}`,
+        };
+      },
       invalidatesTags: ["Discovery Monitor Results"],
     }),
     addMonitorResultAssets: build.mutation<any, { urnList?: string[] }>({
@@ -126,6 +139,35 @@ const actionCenterApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Discovery Monitor Results"],
     }),
+    updateAssetsDataUse: build.mutation<
+      any,
+      { monitorId: string; urnList: string[]; dataUses: string[] }
+    >({
+      query: (params) => ({
+        method: "PATCH",
+        url: `/plus/discovery-monitor/${params.monitorId}/results`,
+        body: params.urnList.map((urn) => ({
+          urn,
+          data_uses: params.dataUses,
+        })),
+      }),
+      invalidatesTags: ["Discovery Monitor Results"],
+    }),
+    // generic update assets mutation, necessary for non-destructive bulk data use updates
+    updateAssets: build.mutation<
+      any,
+      {
+        monitorId: string;
+        assets: DiscoveredAssetResponse[];
+      }
+    >({
+      query: (params) => ({
+        method: "PATCH",
+        url: `/plus/discovery-monitor/${params.monitorId}/results`,
+        body: params.assets,
+      }),
+      invalidatesTags: ["Discovery Monitor Results"],
+    }),
   }),
 });
 
@@ -133,9 +175,11 @@ export const {
   useGetAggregateMonitorResultsQuery,
   useGetDiscoveredSystemAggregateQuery,
   useGetDiscoveredAssetsQuery,
-  useAddMonitorResultSystemMutation,
-  useIgnoreMonitorResultSystemMutation,
+  useAddMonitorResultSystemsMutation,
+  useIgnoreMonitorResultSystemsMutation,
   useAddMonitorResultAssetsMutation,
   useIgnoreMonitorResultAssetsMutation,
   useUpdateAssetsSystemMutation,
+  useUpdateAssetsDataUseMutation,
+  useUpdateAssetsMutation,
 } = actionCenterApi;

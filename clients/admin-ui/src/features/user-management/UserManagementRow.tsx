@@ -9,7 +9,7 @@ import {
 
 import { useAppSelector } from "~/app/hooks";
 import { selectUser } from "~/features/auth";
-import { USER_MANAGEMENT_ROUTE } from "~/features/common/nav/v2/routes";
+import { USER_MANAGEMENT_ROUTE } from "~/features/common/nav/routes";
 import Restrict, { useHasPermission } from "~/features/common/Restrict";
 import { ROLES } from "~/features/user-management/constants";
 import { ScopeRegistryEnum } from "~/types/api";

@@ -5,11 +5,15 @@ export enum CatalogResourceStatus {
   IN_REVIEW = "In review",
   APPROVED = "Approved",
   CLASSIFYING = "Classifying",
+  NONE = "None",
 }
 
 export const getCatalogResourceStatus = (
-  resource: StagedResourceAPIResponse,
+  resource: StagedResourceAPIResponse | undefined,
 ) => {
+  if (!resource) {
+    return CatalogResourceStatus.APPROVED;
+  }
   const resourceSchemaChanged =
     resource.diff_status === DiffStatus.ADDITION ||
     resource.diff_status === DiffStatus.REMOVAL;

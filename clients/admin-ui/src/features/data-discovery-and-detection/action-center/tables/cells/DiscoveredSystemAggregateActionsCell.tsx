@@ -6,11 +6,11 @@ import {
 
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { useAlert } from "~/features/common/hooks";
-import { UNCATEGORIZED_SEGMENT } from "~/features/common/nav/v2/routes";
+import { UNCATEGORIZED_SEGMENT } from "~/features/common/nav/routes";
 
 import {
-  useAddMonitorResultSystemMutation,
-  useIgnoreMonitorResultSystemMutation,
+  useAddMonitorResultSystemsMutation,
+  useIgnoreMonitorResultSystemsMutation,
 } from "../../action-center.slice";
 import { MonitorSystemAggregate } from "../../types";
 
@@ -23,10 +23,10 @@ export const DiscoveredSystemActionsCell = ({
   monitorId,
   system,
 }: DiscoveredSystemActionsCellProps) => {
-  const [addMonitorResultSystemMutation, { isLoading: isAddingResults }] =
-    useAddMonitorResultSystemMutation();
-  const [ignoreMonitorResultSystemMutation, { isLoading: isIgnoringResults }] =
-    useIgnoreMonitorResultSystemMutation();
+  const [addMonitorResultSystemsMutation, { isLoading: isAddingResults }] =
+    useAddMonitorResultSystemsMutation();
+  const [ignoreMonitorResultSystemsMutation, { isLoading: isIgnoringResults }] =
+    useIgnoreMonitorResultSystemsMutation();
 
   const { successAlert, errorAlert } = useAlert();
 
@@ -40,16 +40,16 @@ export const DiscoveredSystemActionsCell = ({
   } = system;
 
   const handleAdd = async () => {
-    const result = await addMonitorResultSystemMutation({
+    const result = await addMonitorResultSystemsMutation({
       monitor_config_key: monitorId,
-      resolved_system_id: resolvedSystemId,
+      resolved_system_ids: [resolvedSystemId],
     });
     if (isErrorResult(result)) {
       errorAlert(getErrorMessage(result.error));
     } else {
       successAlert(
         !systemKey
-          ? `${systemName} and ${totalUpdates}assets have been added to the system inventory. ${systemName} is now configured for consent.`
+          ? `${systemName} and ${totalUpdates} assets have been added to the system inventory. ${systemName} is now configured for consent.`
           : `${totalUpdates} assets from ${systemName} have been added to the system inventory.`,
         `Confirmed`,
       );
@@ -57,9 +57,9 @@ export const DiscoveredSystemActionsCell = ({
   };
 
   const handleIgnore = async () => {
-    const result = await ignoreMonitorResultSystemMutation({
+    const result = await ignoreMonitorResultSystemsMutation({
       monitor_config_key: monitorId,
-      resolved_system_id: resolvedSystemId || UNCATEGORIZED_SEGMENT,
+      resolved_system_ids: [resolvedSystemId || UNCATEGORIZED_SEGMENT],
     });
     if (isErrorResult(result)) {
       errorAlert(getErrorMessage(result.error));

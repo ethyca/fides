@@ -12,7 +12,10 @@ import {
 import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";
 
-import { DATA_CATALOG_ROUTE } from "~/features/common/nav/v2/routes";
+import {
+  DATA_CATALOG_ROUTE,
+  EDIT_SYSTEM_ROUTE,
+} from "~/features/common/nav/routes";
 import {
   DefaultCell,
   DefaultHeaderCell,
@@ -24,6 +27,7 @@ import {
 import { getQueryParamsFromArray } from "~/features/common/utils";
 import { useGetCatalogSystemsQuery } from "~/features/data-catalog/data-catalog.slice";
 import EmptyCatalogTableNotice from "~/features/data-catalog/datasets/EmptyCatalogTableNotice";
+import CatalogSystemDetailDrawer from "~/features/data-catalog/systems/CatalogSystemDetailDrawer";
 import EditDataUseCell from "~/features/data-catalog/systems/EditDataUseCell";
 import SystemActionsCell from "~/features/data-catalog/systems/SystemActionCell";
 import { useLazyGetAvailableDatabasesByConnectionQuery } from "~/features/data-discovery-and-detection/discovery-detection.slice";
@@ -39,7 +43,7 @@ const EMPTY_RESPONSE = {
 
 const columnHelper = createColumnHelper<SystemWithMonitorKeys>();
 
-const SystemsTable = () => {
+const CatalogSystemsTable = () => {
   const [rowSelectionState, setRowSelectionState] = useState<RowSelectionState>(
     {},
   );
@@ -78,6 +82,15 @@ const SystemsTable = () => {
     setTotalPages(totalPages);
   }, [totalPages, setTotalPages]);
 
+  const [detailSystemKey, setDetailSystemKey] = useState<string | undefined>(
+    undefined,
+  );
+
+  // force a re-render when the table fetches again (e.g. on data use updates)
+  const detailsToView = useMemo(() => {
+    return data.find((s) => s.fides_key === detailSystemKey);
+  }, [data, detailSystemKey]);
+
   const handleRowClicked = async (row: SystemWithMonitorKeys) => {
     // if there are projects, go to project view; otherwise go to datasets view
     const projectsResponse = await getProjects({
@@ -92,7 +105,7 @@ const SystemsTable = () => {
       "monitor_config_ids",
     );
 
-    const url = `${DATA_CATALOG_ROUTE}/${row.fides_key}${hasProjects ? "/projects" : ""}?${queryString}`;
+    const url = `${DATA_CATALOG_ROUTE}/${row.fides_key}/${hasProjects ? "projects" : "resources"}?${queryString}`;
     router.push(url);
   };
 
@@ -124,7 +137,7 @@ const SystemsTable = () => {
         cell: (props) => (
           <SystemActionsCell
             onDetailClick={() =>
-              router.push(`/systems/configure/${props.row.original.fides_key}`)
+              setDetailSystemKey(props.row.original.fides_key)
             }
           />
         ),
@@ -138,7 +151,7 @@ const SystemsTable = () => {
         },
       }),
     ],
-    [router],
+    [],
   );
 
   const tableInstance = useReactTable<SystemWithMonitorKeys>({
@@ -179,8 +192,18 @@ const SystemsTable = () => {
         startRange={startRange}
         endRange={endRange}
       />
+      <CatalogSystemDetailDrawer
+        system={detailsToView}
+        onClose={() => setDetailSystemKey(undefined)}
+        onEdit={() =>
+          router.push({
+            pathname: EDIT_SYSTEM_ROUTE,
+            query: { id: detailSystemKey },
+          })
+        }
+      />
     </>
   );
 };
 
-export default SystemsTable;
+export default CatalogSystemsTable;

@@ -48,7 +48,6 @@ export const TaxonomySelect = ({
     <Select<string, TaxonomySelectOption>
       options={selectOptions}
       autoFocus
-      showSearch
       variant="borderless"
       optionRender={TaxonomyOption}
       dropdownStyle={{ minWidth: "500px" }}

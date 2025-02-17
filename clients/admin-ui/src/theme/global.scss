@@ -36,3 +36,40 @@ h6 {
   --ant-button-default-hover-bg: var(--fidesui-neutral-200);
   --ant-button-default-bg: var(--fidesui-neutral-50);
 }
+
+// Custom styles for dark submenus
+.ant-menu-dark .ant-menu-sub {
+  // The unselected submenu item should be light gray
+  > .ant-menu-item > .ant-menu-title-content a {
+    color: var(--fidesui-neutral-200);
+
+    &:hover,
+    &:focus {
+      color: var(--fidesui-full-white);
+    }
+    &:focus-visible {
+      text-decoration: underline;
+    }
+  }
+  // The selected submenu item should be dark, because the background is light
+  // But using the token "darkItemSelectedColor" also affect the group title,
+  // therefore we need this css rule
+  > .ant-menu-item.ant-menu-item-selected > .ant-menu-title-content a {
+    color: var(--fidesui-minos);
+  }
+}
+
+.ant-menu {
+  .ant-menu-submenu-arrow {
+    // Remove rounding from submenu arrow
+    // to better match the style Carbon icons
+    --ant-border-radius: 0px;
+
+    // fix missing pixel in the arrow icon
+    // (it's the same width as ant only changing 0.6 to 0.65 here)
+    &::before,
+    &::after {
+      width: calc(calc(var(--ant-font-size) / 7 * 5) * 0.65);
+    }
+  }
+}

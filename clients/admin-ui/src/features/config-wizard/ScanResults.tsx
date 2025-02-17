@@ -21,7 +21,7 @@ import { SystemsCheckboxTable } from "~/features/common/SystemsCheckboxTable";
 import { useUpsertSystemsMutation } from "~/features/system";
 import { System } from "~/types/api";
 
-import { NextBreadcrumb } from "../common/nav/v2/NextBreadcrumb";
+import { NextBreadcrumb } from "../common/nav/NextBreadcrumb";
 import {
   changeStep,
   reset,

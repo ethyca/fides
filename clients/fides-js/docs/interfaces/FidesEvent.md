@@ -58,6 +58,8 @@ preferences in the FidesJS UI but has yet to *save* those changes (i.e.
 
 - `FidesModalClosed`: Dispatched whenever the FidesJS modal is closed.
 
+**Note**: The events `FidesUIShown`, `FidesUIChanged`, and `FidesModalClosed` are not available in a Headless experience, as they are specific to the FidesJS UI components.
+
 ## Extends
 
 - `CustomEvent`

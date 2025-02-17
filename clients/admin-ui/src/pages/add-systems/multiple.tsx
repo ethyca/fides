@@ -6,7 +6,7 @@ import {
   ADD_SYSTEMS_MANUAL_ROUTE,
   ADD_SYSTEMS_ROUTE,
   DATAMAP_ROUTE,
-} from "~/features/common/nav/v2/routes";
+} from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 import { AddMultipleSystems } from "~/features/system/add-multiple-systems/AddMultipleSystems";
 

@@ -5,10 +5,10 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { useRouter } from "next/router";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import Layout from "~/features/common/Layout";
-import { DATA_CATALOG_ROUTE } from "~/features/common/nav/v2/routes";
+import { DATA_CATALOG_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 import {
   FidesTableV2,
@@ -17,6 +17,7 @@ import {
   useServerSidePagination,
 } from "~/features/common/table/v2";
 import { useGetCatalogDatasetsQuery } from "~/features/data-catalog/data-catalog.slice";
+import CatalogDatasetDetailDrawer from "~/features/data-catalog/datasets/CatalogDatasetDetailDrawer";
 import EmptyCatalogTableNotice from "~/features/data-catalog/datasets/EmptyCatalogTableNotice";
 import useCatalogDatasetColumns from "~/features/data-catalog/datasets/useCatalogDatasetColumns";
 import { useGetSystemByFidesKeyQuery } from "~/features/system";
@@ -72,7 +73,13 @@ const CatalogDatasetViewNoProjects = () => {
     setTotalPages(totalPages);
   }, [totalPages, setTotalPages]);
 
-  const columns = useCatalogDatasetColumns();
+  const [detailsToView, setDetailsToView] = useState<
+    StagedResourceAPIResponse | undefined
+  >(undefined);
+
+  const columns = useCatalogDatasetColumns({
+    onDetailClick: (dataset) => setDetailsToView(dataset),
+  });
 
   const tableInstance = useReactTable<StagedResourceAPIResponse>({
     getCoreRowModel: getCoreRowModel(),
@@ -104,7 +111,7 @@ const CatalogDatasetViewNoProjects = () => {
             tableInstance={tableInstance}
             emptyTableNotice={<EmptyCatalogTableNotice />}
             onRowClick={(row) =>
-              push(`${DATA_CATALOG_ROUTE}/${systemKey}/${row.urn}`)
+              push(`${DATA_CATALOG_ROUTE}/${systemKey}/resources/${row.urn}`)
             }
           />
           <PaginationBar
@@ -117,6 +124,10 @@ const CatalogDatasetViewNoProjects = () => {
             isNextPageDisabled={isNextPageDisabled}
             startRange={startRange}
             endRange={endRange}
+          />
+          <CatalogDatasetDetailDrawer
+            dataset={detailsToView}
+            onClose={() => setDetailsToView(undefined)}
           />
         </>
       )}

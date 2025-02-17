@@ -504,6 +504,9 @@ export const stubExperienceConfig = () => {
   cy.intercept("GET", "/api/v1/experience-config/*/available_translations", {
     fixture: "privacy-notices/available-translations.json",
   }).as("getAvailableTranslations");
+  cy.intercept("GET", "/api/v1/experience-config/available_translations", {
+    fixture: "privacy-notices/available-translations.json",
+  }).as("getAvailableTranslations");
   stubPlus(true);
 };
 
@@ -551,19 +554,12 @@ export const stubActionCenter = () => {
   cy.intercept("POST", "/api/v1/plus/discovery-monitor/*/mute*", {
     response: 200,
   }).as("ignoreMonitorResultSystem");
-  cy.intercept(
-    "POST",
-    "/api/v1/plus/discovery-monitor/*/mute?resolved_system_id=%5Bundefined%5D",
-    {
-      response: 200,
-    },
-  ).as("ignoreMonitorResultUncategorizedSystem");
   cy.intercept("POST", "/api/v1/plus/discovery-monitor/*/promote*", {
     response: 200,
   }).as("addMonitorResultSystem");
   cy.intercept("PATCH", "/api/v1/plus/discovery-monitor/*/results", {
     response: 200,
-  }).as("setAssetSystem");
+  }).as("patchAssets");
 };
 
 export const stubDataCatalog = () => {

@@ -41,7 +41,9 @@ import {
   getInitialFides,
   getOverridesByType,
   initialize,
+  UpdateExperienceFn,
 } from "./lib/initialize";
+import { initOverlay } from "./lib/initOverlay";
 import { initializeTcfCmpApi } from "./lib/tcf";
 import { decodeFidesString } from "./lib/tcf/fidesString";
 import { renderOverlay } from "./lib/tcf/renderOverlay";
@@ -74,14 +76,10 @@ const updateWindowFides = (fidesGlobal: FidesGlobal) => {
   }
 };
 
-const updateExperience = ({
+const updateExperience: UpdateExperienceFn = ({
   cookie,
   experience,
   isExperienceClientSideFetched,
-}: {
-  cookie: FidesCookie;
-  experience: PrivacyExperience;
-  isExperienceClientSideFetched: boolean;
 }): Partial<PrivacyExperience> => {
   if (!isExperienceClientSideFetched) {
     // If it's not client side fetched, we don't update anything since the cookie has already
@@ -214,6 +212,7 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
   const updatedFides = await initialize({
     ...config,
     fides: this,
+    initOverlay,
     renderOverlay,
     updateExperience,
     overrides,
@@ -277,6 +276,8 @@ const _Fides: FidesGlobal = {
     }
     return this.init();
   },
+  initialized: false,
+  onFidesEvent,
   shouldShowExperience() {
     if (!isPrivacyExperience(this.experience)) {
       // Nothing to show if there's no experience
@@ -295,8 +296,6 @@ const _Fides: FidesGlobal = {
       this.saved_consent,
     );
   },
-  initialized: false,
-  onFidesEvent,
   meta,
   shopify,
   showModal: defaultShowModal,

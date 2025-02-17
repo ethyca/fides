@@ -98,6 +98,7 @@ describe("Smoke test", () => {
 
     it("can access Postgres connectors from the Admin UI", () => {
       // Postgres
+      cy.getByTestId("Data inventory-nav-group").click();
       cy.getByTestId("System inventory-nav-link").click();
       cy.getByTestId("system-cookie_house_postgresql_database").within(() => {
         cy.getByTestId("edit-btn").click();
@@ -110,6 +111,7 @@ describe("Smoke test", () => {
 
     it("can access Mongo connectors from the Admin UI", () => {
       // Mongo
+      cy.getByTestId("Data inventory-nav-group").click();
       cy.getByTestId("System inventory-nav-link").click();
       cy.getByTestId("system-cookie_house_customer_database").within(() => {
         cy.getByTestId("edit-btn").click();

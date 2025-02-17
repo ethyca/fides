@@ -6,7 +6,7 @@ import {
   configureNavGroups,
   findActiveNav,
   NAV_CONFIG,
-} from "~/features/common/nav/v2/nav-config";
+} from "~/features/common/nav/nav-config";
 import { selectThisUsersScopes } from "~/features/user-management";
 
 export const useNav = ({ path }: { path: string }) => {

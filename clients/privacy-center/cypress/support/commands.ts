@@ -12,7 +12,7 @@ Cypress.Commands.add("getByTestId", (selector, ...args) =>
   cy.get(`[data-testid='${selector}']`, ...args),
 );
 
-Cypress.Commands.add("getToggle", (...args) =>
+Cypress.Commands.add("getToggle", (_, ...args) =>
   cy.get(`input[type="checkbox"]`, ...args),
 );
 
@@ -121,9 +121,6 @@ Cypress.Commands.add(
       visitOptions.qs = queryParams;
     }
     cy.visit("/fides-js-components-demo.html", visitOptions);
-    if (options?.options?.tcfEnabled) {
-      cy.wait("@getPrivacyExperience");
-    }
   },
 );
 
