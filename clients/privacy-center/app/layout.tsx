@@ -1,13 +1,13 @@
 "use server";
 
-import "../ui/global.scss";
+import "./ui/global.scss";
 
 import { ReactElement } from "react";
 
 import Header from "~/components/Header";
 
-import Providers from "../Providers";
-import getPrivacyCenterEnvironment from "../server-utils/getPrivacyCenterEnvironment";
+import Providers from "./Providers";
+import getPrivacyCenterEnvironment from "./server-utils/getPrivacyCenterEnvironment";
 
 export async function generateMetadata() {
   const { config } = await getPrivacyCenterEnvironment();

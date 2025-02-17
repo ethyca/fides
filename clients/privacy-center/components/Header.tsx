@@ -1,6 +1,6 @@
 "use client";
 
-import { Flex } from "@chakra-ui/layout";
+import { Flex } from "fidesui";
 
 import Logo from "./Logo";
 
