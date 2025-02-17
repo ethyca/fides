@@ -1,15 +1,16 @@
 "use server";
 
-import "./ui/global.scss";
+import "../ui/global.scss";
 
+import { NextPage } from "next";
+import { headers } from "next/headers";
+import { ReactElement } from "react";
+
+import { lookupGeolocationServerSide } from "~/common/geolocation-server";
 import Header from "~/components/Header";
 
-import Providers from "./Providers";
-import { NextPage } from "next";
-import { loadPrivacyCenterEnvironment } from "./server-environment";
-import { headers } from "next/headers";
-import { lookupGeolocationServerSide } from "~/common/geolocation-server";
-import { ReactElement } from "react";
+import Providers from "../Providers";
+import { loadPrivacyCenterEnvironment } from "../server-environment";
 
 export async function generateMetadata() {
   return {
