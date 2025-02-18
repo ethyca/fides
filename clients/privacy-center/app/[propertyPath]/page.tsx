@@ -28,6 +28,7 @@ const PropertyPathHomePage = async ({ params }: PropertyPathHomePageProps) => {
 
   return (
     <PageLayout serverEnvironment={serverEnvironment}>
+      {/* @ts-expect-error Async Server Component. Remove when upgraded to TypeScript 5.1.3 or higher. */}
       {isPropertyFoundForPath ? <HomePage /> : <Custom404 />}
     </PageLayout>
   );

@@ -20,15 +20,15 @@ export const useConsentRequestModal = () => {
   );
 
   const params = useParams();
-  const customPropertyPath = params?.customPropertyPath;
+  const propertyPath = params?.propertyPath;
 
   const successHandler = useCallback(() => {
     let consentRoute = "/consent";
-    if (customPropertyPath) {
-      consentRoute = `/${customPropertyPath}/consent`;
+    if (propertyPath) {
+      consentRoute = `/${propertyPath}/consent`;
     }
     router.push(consentRoute);
-  }, [customPropertyPath, router]);
+  }, [propertyPath, router]);
 
   const onOpen = () => {
     setCurrentView(ModalViews.ConsentRequest);
