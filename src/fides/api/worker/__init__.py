@@ -1,5 +1,5 @@
 import json
-from typing import Any, Optional
+from typing import Any, List, Optional
 
 from celery import VERSION_BANNER
 from celery.apps.worker import Worker
@@ -37,11 +37,18 @@ def start_worker(
         PRIVACY_PREFERENCES_QUEUE_NAME,
         DSR_QUEUE_NAME,
     ]
-    # If queues are provided, use them. Otherwise, use all queues.
-    worker_queues = queues or ",".join(all_queues)
+
+    # Fall back to all queues if neither queues nor exclude_queues are provided.
+    worker_queues = ",".join(all_queues)
+
+    if queues:
+        validate_queues(queues, all_queues)
+        # If queues are provided, use them.
+        worker_queues = queues
 
     # If excluded queues are provided, remove them from the list of all queues.
     if exclude_queues:
+        validate_queues(exclude_queues, all_queues)
         excluded_queues = exclude_queues.split(",")
         worker_queues = ",".join(
             [queue for queue in all_queues if queue not in excluded_queues]
@@ -58,6 +65,16 @@ def start_worker(
             f"--queues={worker_queues}",
         ]
     )
+
+
+def validate_queues(queues_string: str, known_queues: List[str]) -> None:
+    """
+    Validate that the provided queues string is a comma-separated list of known queues.
+    """
+    queues = queues_string.split(",")
+    unknown_queues = [queue for queue in queues if queue not in known_queues]
+    if unknown_queues:
+        raise ValueError(f"Unknown queues: {unknown_queues}")
 
 
 @celeryd_after_setup.connect
