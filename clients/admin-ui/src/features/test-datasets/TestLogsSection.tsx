@@ -1,6 +1,6 @@
 import { format } from "date-fns-tz";
 import { Box, Heading, HStack, Text } from "fidesui";
-import { useEffect, useRef } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef } from "react";
 import { useSelector } from "react-redux";
 
 import { useAppDispatch } from "~/app/hooks";
@@ -31,16 +31,16 @@ const getLevelColor = (level: string) => {
   }
 };
 
-const LogLine = ({
-  log,
-}: {
+interface LogLineProps {
   log: {
     timestamp: string;
     level: string;
     module_info: string;
     message: string;
   };
-}) => (
+}
+
+const LogLine = memo(({ log }: LogLineProps) => (
   <Box
     as="pre"
     margin={0}
@@ -72,7 +72,9 @@ const LogLine = ({
       {log.message}
     </Text>
   </Box>
-);
+));
+
+LogLine.displayName = "LogLine";
 
 const TestLogsSection = () => {
   const dispatch = useAppDispatch();
@@ -97,20 +99,27 @@ const TestLogsSection = () => {
   }, [newLogs, dispatch]);
 
   // Auto scroll to bottom when new logs arrive
-  useEffect(() => {
+  const scrollToBottom = useCallback(() => {
     if (logsRef.current) {
       logsRef.current.scrollTop = logsRef.current.scrollHeight;
     }
-  }, [logs]);
+  }, []);
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [logs, scrollToBottom]);
 
   // Format logs for copying to clipboard
-  const plainLogs =
-    logs
-      ?.map(
-        (log) =>
-          `${formatTimestamp(log.timestamp)} | ${log.level} | ${log.module_info} - ${log.message}`,
-      )
-      .join("\n") || "";
+  const plainLogs = useMemo(
+    () =>
+      logs
+        ?.map(
+          (log) =>
+            `${formatTimestamp(log.timestamp)} | ${log.level} | ${log.module_info} - ${log.message}`,
+        )
+        .join("\n") || "",
+    [logs],
+  );
 
   return (
     <>
@@ -137,7 +146,7 @@ const TestLogsSection = () => {
       >
         {logs?.map((log) => (
           <LogLine
-            key={`${log.timestamp}-${log.module_info}-${log.message.substring(0, 20)}`}
+            key={`${log.timestamp}-${log.module_info}-${log.message}`}
             log={log}
           />
         ))}
@@ -146,4 +155,4 @@ const TestLogsSection = () => {
   );
 };
 
-export default TestLogsSection;
+export default memo(TestLogsSection);
