@@ -119,7 +119,7 @@ const loadConfigFile = async (
         path = urlString.replace("file:", "");
       }
       const file = await fsPromises.readFile(path || url, "utf-8");
-      fidesDebugger(`Loaded configuration file: ${urlString}`);
+      console.debug(`Loaded configuration file: ${urlString}`);
       return file;
     } catch (err: any) {
       // Catch "file not found" errors (ENOENT)
@@ -339,7 +339,7 @@ export const loadPrivacyCenterEnvironment = async ({
     );
   }
   // DEFER: Log a version number here (see https://github.com/ethyca/fides/issues/3171)
-  fidesDebugger("Load Privacy Center environment for session...");
+  console.debug("Load Privacy Center environment for session...");
 
   // Load environment variables
   const settings = loadEnvironmentVariables();
