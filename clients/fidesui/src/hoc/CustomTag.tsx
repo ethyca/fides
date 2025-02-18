@@ -24,7 +24,8 @@ const RETAIN_DEFAULT_BORDER = ["corinth", "transparent"];
  */
 const withCustomProps = (WrappedComponent: typeof Tag) => {
   const WrappedTag = ({
-    color = "default",
+    onClick,
+    color = onClick ? "transparent" : "default",
     style,
     ...props
   }: CustomTagProps) => {
@@ -54,6 +55,8 @@ const withCustomProps = (WrappedComponent: typeof Tag) => {
     const customProps = {
       color: brandColor || color === "transparent" ? undefined : color,
       style: { ...style, ...customStyle },
+      component: onClick ? "button" : undefined,
+      onClick,
       ...props,
     };
 
