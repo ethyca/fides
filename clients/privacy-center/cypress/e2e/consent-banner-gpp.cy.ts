@@ -176,9 +176,10 @@ describe("Fides-js GPP extension", () => {
               expect(data.data).to.eql(expected[idx].data);
             });
             // The gpp string should also have an extra section now and the header should
-            // indicate TCF
-            expect(args[3][0].pingData.gppString).to.eql(
-              "DBABMA~CQNBgcAQNBgcAGXABBENArEoABaAAEAAAAAAABEAAAAA",
+            // indicate TCF. The use of a regex is necessary because part of the string is
+            // date-based and changes each day.
+            expect(args[3][0].pingData.gppString).to.match(
+              /DBABMA~CQ[A-za-z0-9][A-za-z0-9][A-za-z0-9][A-za-z0-9]AQNBgcAGXABBENArEoABaAAEAAAAAAABEAAAAA/,
             );
             // the `PurposeConsents` should match the gpp string
             expect(
