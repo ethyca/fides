@@ -35,6 +35,7 @@ describe("Fides.showModal", () => {
       });
 
       it("Should not show modal link in favor of showModal", () => {
+        cy.get("body").should("have.class", "fides-overlay-modal-link-shown");
         cy.get("#fides-modal-link").should("not.be.visible");
         cy.waitUntilFidesInitialized().then(() => {
           cy.window().its("Fides").invoke("showModal");
