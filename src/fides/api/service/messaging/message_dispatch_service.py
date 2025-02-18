@@ -65,12 +65,12 @@ def dispatch_message_task(
     schema = FidesopsMessage.model_validate(message_meta)
     with self.get_new_session() as db:
         dispatch_message(
-            db,
-            schema.action_type,
-            Identity.model_validate(to_identity),
-            service_type,
-            schema.body_params,
-            property_id,
+            db=db,
+            action_type=schema.action_type,
+            to_identity=Identity.model_validate(to_identity),
+            service_type=service_type,
+            message_body_params=schema.body_params,
+            property_id=property_id,
         )
 
 
@@ -136,6 +136,7 @@ def message_send_enabled(
     property_specific_messaging_enabled = ConfigProxy(
         db
     ).notifications.enable_property_specific_messaging
+
     if property_specific_messaging_enabled:
         # Only email messaging method is supported when property-specific messaging is enabled.
         service_type = get_email_messaging_config_service_type(db=db)

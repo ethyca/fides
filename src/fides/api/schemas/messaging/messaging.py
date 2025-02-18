@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from enum import Enum
-from typing import Any, Dict, List, Optional, Set, Tuple, Type, Union
+from typing import Any, Dict, List, Optional, Tuple, Type, Union
 
 from fideslang.default_taxonomy import DEFAULT_TAXONOMY
 from fideslang.validation import FidesKey
@@ -101,7 +101,7 @@ class SubjectIdentityVerificationBodyParams(BaseModel):
 class RequestReceiptBodyParams(BaseModel):
     """Body params required for privacy request receipt template"""
 
-    request_types: Set[SafeStr]
+    request_types: List[SafeStr]
 
 
 class AccessRequestCompleteBodyParams(BaseModel):
@@ -115,6 +115,8 @@ class RequestReviewDenyBodyParams(BaseModel):
     """Body params required for privacy request review deny template"""
 
     rejection_reason: Optional[SafeStr] = None
+
+    model_config = ConfigDict(extra="forbid")
 
 
 class ConsentPreferencesByUser(BaseModel):
@@ -195,6 +197,32 @@ class FidesopsMessage(
     ] = None
 
     model_config = ConfigDict(arbitrary_types_allowed=True)
+
+    @model_validator(mode="after")
+    def validate_body_params_match_action_type(self) -> "FidesopsMessage":
+
+        valid_body_params_for_action_type = {
+            MessagingActionType.CONSENT_REQUEST: None,  # FIXME: for now skip this one, unsure what the body params are
+            MessagingActionType.CONSENT_REQUEST_EMAIL_FULFILLMENT: ConsentEmailFulfillmentBodyParams,
+            MessagingActionType.SUBJECT_IDENTITY_VERIFICATION: SubjectIdentityVerificationBodyParams,
+            MessagingActionType.PRIVACY_REQUEST_RECEIPT: RequestReceiptBodyParams,
+            MessagingActionType.PRIVACY_REQUEST_REVIEW_DENY: RequestReviewDenyBodyParams,
+            MessagingActionType.PRIVACY_REQUEST_REVIEW_APPROVE: None,  # No body params for this action type
+            MessagingActionType.PRIVACY_REQUEST_COMPLETE_ACCESS: AccessRequestCompleteBodyParams,
+            MessagingActionType.MESSAGE_ERASURE_REQUEST_FULFILLMENT: ErasureRequestBodyParams,
+            MessagingActionType.PRIVACY_REQUEST_ERROR_NOTIFICATION: ErrorNotificationBodyParams,
+            MessagingActionType.USER_INVITE: UserInviteBodyParams,
+        }
+
+        valid_body_params = valid_body_params_for_action_type.get(
+            self.action_type, None
+        )
+        if valid_body_params and not isinstance(self.body_params, valid_body_params):
+            raise ValueError(
+                f"Invalid body params for action type {self.action_type}. Expected {valid_body_params.__name__}, got {type(self.body_params).__name__}"
+            )
+
+        return self
 
 
 class EmailForActionType(BaseModel):
