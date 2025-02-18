@@ -89,6 +89,18 @@ class FidesopsRedis(Redis):
             for key, value in encoded_object_dict.items()
         }
 
+    def get_decoded_list(self, key: str) -> List[Dict[str, Any]]:
+        """Get and decode all items in a Redis list.
+
+        Args:
+            key: The Redis key for the list
+
+        Returns:
+            List of decoded items stored under the key. Empty list if key doesn't exist.
+        """
+        items = self.lrange(key, 0, -1)
+        return [self.decode_obj(item) for item in items if item is not None]
+
     @staticmethod
     def encode_obj(obj: Any) -> bytes:
         """Encode an object to a JSON string that can be stored in Redis"""
