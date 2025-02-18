@@ -344,7 +344,7 @@ export const loadPrivacyCenterEnvironment = async ({
   // Load environment variables
   const settings = loadEnvironmentVariables();
 
-  let property;
+  let property = null;
   if (settings.CUSTOM_PROPERTIES && customPropertyPath) {
     const result = await fetchPropetyFromApi({
       path: customPropertyPath,
