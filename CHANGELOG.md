@@ -24,6 +24,9 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ### Docs
 - Removed version pins in LDFLAGS & CFLAGS for local MSSQL builds [#5760](https://github.com/ethyca/fides/pull/5760)
 
+### Fixed
+- Fixed sending of notifications for privacy request receipts [#5777](https://github.com/ethyca/fides/pull/5777)
+
 ## [2.55.0](https://github.com/ethyca/fides/compare/2.54.0...2.55.0)
 
 ### Added
