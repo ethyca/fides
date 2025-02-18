@@ -15,7 +15,7 @@ import React, { useEffect, useState } from "react";
 import { useAppSelector } from "~/app/hooks";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import ConfirmationModal from "~/features/common/modals/ConfirmationModal";
-import { USER_MANAGEMENT_ROUTE } from "~/features/common/nav/v2/routes";
+import { USER_MANAGEMENT_ROUTE } from "~/features/common/nav/routes";
 import QuestionTooltip from "~/features/common/QuestionTooltip";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { ROLES } from "~/features/user-management/constants";

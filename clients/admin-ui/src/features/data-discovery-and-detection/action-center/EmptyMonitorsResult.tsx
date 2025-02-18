@@ -1,7 +1,7 @@
 import { AntButton as Button, AntEmpty as Empty } from "fidesui";
 import NextLink from "next/link";
 
-import { INTEGRATION_MANAGEMENT_ROUTE } from "~/features/common/nav/v2/routes";
+import { INTEGRATION_MANAGEMENT_ROUTE } from "~/features/common/nav/routes";
 
 export const EmptyMonitorsResult = () => (
   <Empty

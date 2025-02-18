@@ -4,7 +4,7 @@ import { useRouter } from "next/router";
 import { ReactNode } from "react";
 
 import Layout from "~/features/common/Layout";
-import { PRIVACY_REQUESTS_ROUTE } from "~/features/common/nav/v2/routes";
+import { PRIVACY_REQUESTS_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 import { useGetAllPrivacyRequestsQuery } from "~/features/privacy-requests";
 import PrivacyRequest from "~/features/privacy-requests/PrivacyRequest";

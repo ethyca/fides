@@ -4,7 +4,7 @@ import { useRouter } from "next/router";
 
 import { getErrorMessage } from "~/features/common/helpers";
 import Layout from "~/features/common/Layout";
-import { PROPERTIES_ROUTE } from "~/features/common/nav/v2/routes";
+import { PROPERTIES_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { useCreatePropertyMutation } from "~/features/properties/property.slice";

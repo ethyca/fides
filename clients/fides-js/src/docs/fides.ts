@@ -141,6 +141,8 @@ export interface Fides {
    * automated searching for, and binding the click event to, the modal link. If using
    * Fides Cloud, contact Ethyca Support for details on adjusting global settings.
    *
+   * This function is not available for Headless experiences.
+   *
    *
    * @example
    * Showing the FidesJS modal via an `onclick` handler on a custom button element:

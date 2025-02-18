@@ -1,6 +1,6 @@
 import { stubOrganizationCrud } from "cypress/support/stubs";
 
-import { ORGANIZATION_MANAGEMENT_ROUTE } from "~/features/common/nav/v2/routes";
+import { ORGANIZATION_MANAGEMENT_ROUTE } from "~/features/common/nav/routes";
 
 describe("Organization page", () => {
   beforeEach(() => {
@@ -12,6 +12,8 @@ describe("Organization page", () => {
 
   it("can navigate to the Organization page", () => {
     cy.visit("/");
+    cy.getByTestId("Settings-nav-group").click();
+    cy.getByTestId("Organization-nav-link").click();
     cy.getByTestId("Organization-nav-link").click();
     cy.getByTestId("organization-management");
   });
