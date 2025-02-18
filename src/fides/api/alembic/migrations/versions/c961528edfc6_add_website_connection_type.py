@@ -17,7 +17,7 @@ depends_on = None
 
 
 def upgrade():
-    # Add 'datahub' to ConnectionType enum
+    # add 'website' to ConnectionType enum
     op.execute("ALTER TYPE connectiontype RENAME TO connectiontype_old")
     op.execute(
         """
@@ -63,7 +63,7 @@ def upgrade():
 
 
 def downgrade():
-    # Remove 'datahub' from ConnectionType enum
+    # Remove 'website' from ConnectionType enum
     op.execute("DELETE FROM connectionconfig WHERE connection_type IN ('datahub')")
     op.execute("ALTER TYPE connectiontype RENAME TO connectiontype_old")
     op.execute(
