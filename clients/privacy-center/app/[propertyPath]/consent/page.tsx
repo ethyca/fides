@@ -1,5 +1,8 @@
 import Custom404 from "~/app/not-found";
-import getPrivacyCenterEnvironmentCached from "~/app/server-utils/getPrivacyCenterEnvironment";
+import {
+  getPageMetadata,
+  getPrivacyCenterEnvironmentCached,
+} from "~/app/server-utils";
 import ConsentPage from "~/components/ConsentPage";
 import PageLayout from "~/components/PageLayout";
 
@@ -8,6 +11,8 @@ interface CustomPropertyPathConsentPageProps {
     propertyPath: string;
   }>;
 }
+
+export const generateMetadata = getPageMetadata;
 
 /**
  * Renders the consent page for a custom property path.

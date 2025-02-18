@@ -11,13 +11,18 @@ import HomePage from "~/components/HomePage";
 import PageLayout from "~/components/PageLayout";
 
 import Custom404 from "../not-found";
-import getPrivacyCenterEnvironmentCached from "../server-utils/getPrivacyCenterEnvironment";
+import {
+  getPageMetadata,
+  getPrivacyCenterEnvironmentCached,
+} from "../server-utils";
 
 interface PropertyPathHomePageProps {
   params: Promise<{
     propertyPath: string;
   }>;
 }
+
+export const generateMetadata = getPageMetadata;
 
 const PropertyPathHomePage = async ({ params }: PropertyPathHomePageProps) => {
   const { propertyPath } = await params;

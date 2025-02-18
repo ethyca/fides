@@ -1,9 +1,13 @@
 "use server";
 
+import {
+  getPageMetadata,
+  getPrivacyCenterEnvironmentCached,
+} from "~/app/server-utils";
 import HomePage from "~/components/HomePage";
 import PageLayout from "~/components/PageLayout";
 
-import getPrivacyCenterEnvironmentCached from "../server-utils/getPrivacyCenterEnvironment";
+export const generateMetadata = getPageMetadata;
 
 const Home = async () => {
   const serverEnvironment = await getPrivacyCenterEnvironmentCached();
