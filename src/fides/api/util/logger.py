@@ -8,9 +8,7 @@ from __future__ import annotations
 
 import logging
 import sys
-from abc import ABC, abstractmethod
-from typing import Dict, List, Any
-from enum import Enum
+from typing import Any, Dict, List
 
 from loguru import logger
 from loguru._handler import Message  # type: ignore
@@ -32,7 +30,7 @@ class RedisSink:
 
     def __call__(self, message: Message) -> None:
         """Write log message to Redis if conditions are met."""
-        from fides.api.schemas.privacy_request import PrivacyRequestSource
+        from fides.api.schemas.privacy_request import LogEntry, PrivacyRequestSource
 
         record: Dict[str, Any] = message.record
 
@@ -55,12 +53,14 @@ class RedisSink:
         key = f"log_{privacy_request_id}"
 
         # Format log message
-        log_entry = {
-            "time": record["time"],
-            "level": record["level"].name,
-            "message": record["message"],
-            "extra": dict(record["extra"]),
-        }
+        module_info = f"{record['name']}:{record['function']}:{record['line']}"
+
+        log_entry = LogEntry(
+            timestamp=record["time"].isoformat(),
+            level=record["level"].name,
+            module_info=module_info,
+            message=record["message"],
+        )
 
         # Encode and append log entry to the list in Redis
         self.cache.push_encoded_object(key, log_entry)

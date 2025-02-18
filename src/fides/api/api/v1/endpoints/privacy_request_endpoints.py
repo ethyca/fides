@@ -94,6 +94,7 @@ from fides.api.schemas.privacy_request import (
     ExecutionLogDetailResponse,
     ExecutionLogStatus,
     FilteredPrivacyRequestResults,
+    LogEntry,
     ManualWebhookData,
     PrivacyRequestAccessResults,
     PrivacyRequestCreate,
@@ -106,8 +107,8 @@ from fides.api.schemas.privacy_request import (
     PrivacyRequestVerboseResponse,
     RequestTaskCallbackRequest,
     ReviewPrivacyRequestIds,
-    VerificationCode,
     TestPrivacyRequestLogs,
+    VerificationCode,
 )
 from fides.api.service.messaging.message_dispatch_service import EMAIL_JOIN_STRING
 from fides.api.task.execute_request_tasks import log_task_queued, queue_request_task
@@ -2291,12 +2292,12 @@ def filter_access_results(
         Security(verify_oauth_client, scopes=[PRIVACY_REQUEST_READ_ACCESS_RESULTS])
     ],
     status_code=HTTP_200_OK,
-    response_model=TestPrivacyRequestLogs,
+    response_model=List[LogEntry],
 )
 def get_test_privacy_request_logs(
     privacy_request_id: str,
     db: Session = Depends(deps.get_db),
-) -> Dict[str, Any]:
+) -> List[LogEntry]:
     """Get logs for a test privacy request."""
     privacy_request = get_privacy_request_or_error(db, privacy_request_id)
 
@@ -2306,12 +2307,12 @@ def get_test_privacy_request_logs(
             detail="Logs can only be retrieved for test privacy requests.",
         )
 
+    if not CONFIG.security.dsr_testing_tools_enabled:
+        raise HTTPException(
+            status_code=HTTP_403_FORBIDDEN,
+            detail="DSR testing tools are not enabled.",
+        )
+
     # Get logs from Redis
     cache = get_cache()
-    logs = cache.get_decoded_list(f"log_{privacy_request_id}")
-
-    return {
-        "privacy_request_id": privacy_request.id,
-        "status": privacy_request.status,
-        "logs": logs if CONFIG.security.dsr_testing_tools_enabled else "DSR testing tools are not enabled, logs will not be shown."
-    }
+    return cache.get_decoded_list(f"log_{privacy_request_id}") or []

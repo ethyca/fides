@@ -487,9 +487,18 @@ class FilteredPrivacyRequestResults(FidesSchema):
     results: Union[Dict[str, Any], str]
 
 
+class LogEntry(FidesSchema):
+    """Schema representing a single log entry"""
+
+    timestamp: str
+    level: str
+    module_info: str
+    message: str
+
+
 class TestPrivacyRequestLogs(FidesSchema):
     """Schema representing the logs of a test privacy request"""
 
     privacy_request_id: str
     status: PrivacyRequestStatus
-    logs: Union[List[Dict[str, Any]], str]
+    logs: Union[List[LogEntry], str]

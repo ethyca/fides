@@ -20,11 +20,14 @@ import {
   useGetDatasetInputsQuery,
   useTestDatastoreConnectionDatasetsMutation,
 } from "~/features/datastore-connections";
-import { useGetFilteredResultsQuery } from "~/features/privacy-requests";
+import { useGetPoliciesQuery } from "~/features/policy/policy.slice";
+import {
+  useGetFilteredResultsQuery,
+  useGetTestLogsQuery,
+} from "~/features/privacy-requests";
 import { PrivacyRequestStatus } from "~/types/api";
 import { isErrorResult } from "~/types/errors";
 
-import { useGetPoliciesQuery } from "../policy/policy.slice";
 import {
   finishTest,
   selectCurrentDataset,
@@ -73,6 +76,12 @@ const TestResultsSection = ({ connectionKey }: TestResultsSectionProps) => {
       skip: !privacyRequestId || !currentDataset?.fides_key,
       pollingInterval: 2000,
     },
+  );
+
+  // Get test logs with refetch capability
+  const { refetch: refetchLogs } = useGetTestLogsQuery(
+    { privacy_request_id: privacyRequestId! },
+    { skip: !privacyRequestId },
   );
 
   // Get dataset inputs
@@ -140,14 +149,20 @@ const TestResultsSection = ({ connectionKey }: TestResultsSectionProps) => {
 
     if (filteredResults.status === PrivacyRequestStatus.COMPLETE) {
       if (isTestRunning) {
-        dispatch(setTestResults(resultsAction));
-        dispatch(finishTest());
-        toast(successToastParams("Test run completed successfully"));
+        // Do one final log fetch before finishing
+        refetchLogs().then(() => {
+          dispatch(setTestResults(resultsAction));
+          dispatch(finishTest());
+          toast(successToastParams("Test run completed successfully"));
+        });
       }
     } else if (filteredResults.status === PrivacyRequestStatus.ERROR) {
-      dispatch(setTestResults(resultsAction));
-      dispatch(finishTest());
-      toast(errorToastParams("Test run failed"));
+      // Do one final log fetch before finishing
+      refetchLogs().then(() => {
+        dispatch(setTestResults(resultsAction));
+        dispatch(finishTest());
+        toast(errorToastParams("Test run failed"));
+      });
     }
   }, [
     filteredResults,
@@ -156,6 +171,7 @@ const TestResultsSection = ({ connectionKey }: TestResultsSectionProps) => {
     isTestRunning,
     dispatch,
     toast,
+    refetchLogs,
   ]);
 
   const handleInputChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
