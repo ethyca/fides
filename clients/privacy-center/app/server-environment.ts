@@ -9,7 +9,6 @@
  */
 import { URL } from "url";
 
-import getPropertyFromUrl from "~/app/server-utils/getPropertyFromUrl";
 import loadEnvironmentVariables from "~/app/server-utils/loadEnvironmentVariables";
 import { PrivacyCenterSettings } from "~/app/server-utils/PrivacyCenterSettings";
 import {
@@ -24,6 +23,8 @@ import {
   LegacyConfig,
   LegacyConsentConfig,
 } from "~/types/config";
+
+import fetchPropetyFromApi from "./server-utils/fetchPropetyFromApi";
 
 /**
  * Subset of PrivacyCenterSettings that are for use only on server-side and
@@ -322,4 +323,111 @@ export const getClientSettings = (): PrivacyCenterClientSettings => {
   };
 
   return clientSettings;
+};
+
+/**
+ * Loads all the ENV variable settings, configuration files, etc. to initialize the environment
+ */
+// eslint-disable-next-line no-underscore-dangle,@typescript-eslint/naming-convention
+
+export const loadPrivacyCenterEnvironment = async ({
+  customPropertyPath,
+}: { customPropertyPath?: string } = {}): Promise<PrivacyCenterEnvironment> => {
+  if (typeof window !== "undefined") {
+    throw new Error(
+      "Unexpected error, cannot load server environment from client code!",
+    );
+  }
+  // DEFER: Log a version number here (see https://github.com/ethyca/fides/issues/3171)
+  fidesDebugger("Load Privacy Center environment for session...");
+
+  // Load environment variables
+  const settings = loadEnvironmentVariables();
+
+  let property;
+  if (settings.CUSTOM_PROPERTIES && customPropertyPath) {
+    const result = await fetchPropetyFromApi({
+      path: customPropertyPath,
+      fidesApiUrl: settings.SERVER_SIDE_FIDES_API_URL || settings.FIDES_API_URL,
+    });
+    if (result) {
+      property = result;
+    }
+  } else if (settings.FIDES_PRIVACY_CENTER__ROOT_PROPERTY_PATH) {
+    const result = await fetchPropetyFromApi({
+      path: settings.FIDES_PRIVACY_CENTER__ROOT_PROPERTY_PATH,
+      fidesApiUrl: settings.SERVER_SIDE_FIDES_API_URL || settings.FIDES_API_URL,
+    });
+    if (result) {
+      property = result;
+    }
+  }
+
+  // Load configuration file (if it exists)
+  const config =
+    property?.privacy_center_config ||
+    (await loadConfigFromFile(settings.CONFIG_JSON_URL));
+
+  // Load styling file (if it exists)
+  const styles =
+    property?.stylesheet || (await loadStylesFromFile(settings.CONFIG_CSS_URL));
+
+  // Load client settings (ensuring we only pass-along settings that are safe for the client)
+  const clientSettings: PrivacyCenterClientSettings = {
+    FIDES_API_URL: settings.FIDES_API_URL,
+    DEBUG: settings.DEBUG,
+    IS_OVERLAY_ENABLED: settings.IS_OVERLAY_ENABLED,
+    IS_PREFETCH_ENABLED: settings.IS_PREFETCH_ENABLED,
+    IS_GEOLOCATION_ENABLED: settings.IS_GEOLOCATION_ENABLED,
+    GEOLOCATION_API_URL: settings.GEOLOCATION_API_URL,
+    OVERLAY_PARENT_ID: settings.OVERLAY_PARENT_ID,
+    MODAL_LINK_ID: settings.MODAL_LINK_ID,
+    PRIVACY_CENTER_URL: settings.PRIVACY_CENTER_URL,
+    SHOW_BRAND_LINK: settings.SHOW_BRAND_LINK,
+    FIDES_EMBED: settings.FIDES_EMBED,
+    FIDES_DISABLE_SAVE_API: settings.FIDES_DISABLE_SAVE_API,
+    FIDES_DISABLE_NOTICES_SERVED_API: settings.FIDES_DISABLE_NOTICES_SERVED_API,
+    FIDES_DISABLE_BANNER: settings.FIDES_DISABLE_BANNER,
+    FIDES_TCF_GDPR_APPLIES: settings.FIDES_TCF_GDPR_APPLIES,
+    FIDES_STRING: settings.FIDES_STRING,
+    IS_FORCED_TCF: settings.IS_FORCED_TCF,
+    FIDES_JS_BASE_URL: settings.FIDES_JS_BASE_URL,
+    CUSTOM_OPTIONS_PATH: settings.CUSTOM_OPTIONS_PATH,
+    PREVENT_DISMISSAL: settings.PREVENT_DISMISSAL,
+    ALLOW_HTML_DESCRIPTION: settings.ALLOW_HTML_DESCRIPTION,
+    BASE_64_COOKIE: settings.BASE_64_COOKIE,
+    FIDES_PRIMARY_COLOR: settings.FIDES_PRIMARY_COLOR,
+    FIDES_CLEAR_COOKIE: settings.FIDES_CLEAR_COOKIE,
+    FIDES_CONSENT_OVERRIDE: settings.FIDES_CONSENT_OVERRIDE,
+  };
+
+  // For backwards-compatibility, override FIDES_API_URL with the value from the config file if present
+  // DEFER: remove backwards compatibility (see https://github.com/ethyca/fides/issues/1264)
+  if (
+    config &&
+    (config?.server_url_production ||
+      config?.server_url_development ||
+      (config as any)?.fidesops_host_production ||
+      (config as any)?.fidesops_host_development)
+  ) {
+    console.warn(
+      "Using deprecated 'server_url_production' or 'server_url_development' config. " +
+        "Please update to using FIDES_PRIVACY_CENTER__FIDES_API_URL environment variable instead.",
+    );
+    const legacyApiUrl =
+      process.env.NODE_ENV === "development" || process.env.NODE_ENV === "test"
+        ? config.server_url_development ||
+          (config as any).fidesops_host_development
+        : config.server_url_production ||
+          (config as any).fidesops_host_production;
+
+    clientSettings.FIDES_API_URL = legacyApiUrl;
+  }
+
+  return {
+    settings: clientSettings,
+    config,
+    styles,
+    property,
+  };
 };

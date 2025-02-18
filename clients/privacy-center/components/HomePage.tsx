@@ -10,7 +10,7 @@ import {
   useToast,
 } from "fidesui";
 import type { NextPage } from "next";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
@@ -83,23 +83,28 @@ const HomePage: NextPage = () => {
   useSubscribeToPrivacyExperienceQuery();
   const noticeEmptyStateModal = useDisclosure();
 
-  // useEffect(() => {
-  //   if (router?.query.geolocation) {
-  //     // Ensure the query parameter is a string
-  //     const geolocation = Array.isArray(router.query.geolocation)
-  //       ? router.query.geolocation[0]
-  //       : router.query.geolocation;
+  const searchParams = useSearchParams();
+  const geolocationQueryParam = searchParams?.get("geolocation");
 
-  //     dispatch(setLocation(geolocation));
-  //   } else {
-  //     // clear the location override if the geolocation query param isn't provided
-  //     dispatch(clearLocation());
-  //   }
-  // }, [router?.query.geolocation, dispatch]);
+  useEffect(() => {
+    if (geolocationQueryParam) {
+      // Ensure the query parameter is a string
+      const geolocation = Array.isArray(geolocationQueryParam)
+        ? geolocationQueryParam[0]
+        : geolocationQueryParam;
+
+      dispatch(setLocation(geolocation));
+    } else {
+      // clear the location override if the geolocation query param isn't provided
+      dispatch(clearLocation());
+    }
+  }, [geolocationQueryParam, dispatch]);
 
   const experience = useAppSelector(selectPrivacyExperience);
   const isNoticeDriven = useAppSelector(selectIsNoticeDriven);
   const emptyNotices = !experience?.privacy_notices?.length;
+
+  console.log("experience", experience);
 
   const handleConsentCardOpen = () => {
     if (isNoticeDriven && emptyNotices) {
