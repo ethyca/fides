@@ -143,7 +143,7 @@ describe("blueconic", () => {
     ).not.toHaveBeenCalled();
   });
 
-  test("that geolocation gets assigned to BlueConic profile", () => {
+  test("that geolocation gets assigned to BlueConic profile when there is an update to consent", () => {
     const { mockProfile } = setupBlueConicClient("initialized");
 
     const fidesUserId = "b020c053-0ea2-409c-b71c-a55b6236f842";
