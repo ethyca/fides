@@ -248,8 +248,8 @@ class StagedResource(Base):
     )
 
     # TODO: we should be able to enable the below relationship, but it
-    # but it confuses different functionality since 'system' means different
-    # things depending on whether the resource is a database or web monitor
+    # confuses different functionality since 'system' means different
+    # things depending on whether the resource is a datastore or web monitor
     # staged resource
     #    system = relationship(System)
 
