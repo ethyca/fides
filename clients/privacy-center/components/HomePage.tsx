@@ -10,7 +10,7 @@ import {
   useToast,
 } from "fidesui";
 import type { NextPage } from "next";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
@@ -41,7 +41,6 @@ import { useSubscribeToPrivacyExperienceQuery } from "~/features/consent/hooks";
 import { useGetIdVerificationConfigQuery } from "~/features/id-verification";
 
 const HomePage: NextPage = () => {
-  const router = useRouter();
   const dispatch = useAppDispatch();
   const config = useConfig();
   const [isVerificationRequired, setIsVerificationRequired] =
@@ -104,8 +103,6 @@ const HomePage: NextPage = () => {
   const isNoticeDriven = useAppSelector(selectIsNoticeDriven);
   const emptyNotices = !experience?.privacy_notices?.length;
 
-  console.log("experience", experience);
-
   const handleConsentCardOpen = () => {
     if (isNoticeDriven && emptyNotices) {
       noticeEmptyStateModal.onOpen();
@@ -155,6 +152,7 @@ const HomePage: NextPage = () => {
     );
   });
 
+  const showConsentModal = searchParams?.get("showConsentModal");
   if (config.includeConsent && config.consent) {
     content.push(
       <ConsentCard
@@ -165,7 +163,7 @@ const HomePage: NextPage = () => {
         onOpen={handleConsentCardOpen}
       />,
     );
-    if (router.query?.showConsentModal === "true") {
+    if (showConsentModal === "true") {
       // manually override whether to show the consent modal given
       // the query param `showConsentModal`
       isConsentModalOpen = true;
