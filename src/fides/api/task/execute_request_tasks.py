@@ -296,7 +296,6 @@ def run_access_node(
                         ]
                         # Run the main access function
                         graph_task.access_request(*upstream_access_data)
-                logger.info(f"Session ID - After get access data: {id(session)}")
 
         queue_downstream_tasks_with_retries(
             self,

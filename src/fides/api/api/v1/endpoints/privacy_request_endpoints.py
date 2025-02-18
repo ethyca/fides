@@ -107,6 +107,7 @@ from fides.api.schemas.privacy_request import (
     RequestTaskCallbackRequest,
     ReviewPrivacyRequestIds,
     VerificationCode,
+    TestPrivacyRequestLogs,
 )
 from fides.api.service.messaging.message_dispatch_service import EMAIL_JOIN_STRING
 from fides.api.task.execute_request_tasks import log_task_queued, queue_request_task
@@ -114,7 +115,7 @@ from fides.api.task.filter_results import filter_data_categories
 from fides.api.task.graph_task import EMPTY_REQUEST, EMPTY_REQUEST_TASK, collect_queries
 from fides.api.task.task_resources import TaskResources
 from fides.api.util.api_router import APIRouter
-from fides.api.util.cache import FidesopsRedis
+from fides.api.util.cache import FidesopsRedis, get_cache
 from fides.api.util.collection_util import Row
 from fides.api.util.endpoint_utils import validate_start_and_end_filters
 from fides.api.util.enums import ColumnSort
@@ -2282,3 +2283,35 @@ def filter_access_results(
             target_categories.add(target.data_category)
 
     return filter_data_categories(access_results, target_categories, dataset_graph)
+
+
+@router.get(
+    "/privacy-request/{privacy_request_id}/logs",
+    dependencies=[
+        Security(verify_oauth_client, scopes=[PRIVACY_REQUEST_READ_ACCESS_RESULTS])
+    ],
+    status_code=HTTP_200_OK,
+    response_model=TestPrivacyRequestLogs,
+)
+def get_test_privacy_request_logs(
+    privacy_request_id: str,
+    db: Session = Depends(deps.get_db),
+) -> Dict[str, Any]:
+    """Get logs for a test privacy request."""
+    privacy_request = get_privacy_request_or_error(db, privacy_request_id)
+
+    if privacy_request.source != PrivacyRequestSource.dataset_test:
+        raise HTTPException(
+            status_code=HTTP_403_FORBIDDEN,
+            detail="Logs can only be retrieved for test privacy requests.",
+        )
+
+    # Get logs from Redis
+    cache = get_cache()
+    logs = cache.get_decoded_list(f"log_{privacy_request_id}")
+
+    return {
+        "privacy_request_id": privacy_request.id,
+        "status": privacy_request.status,
+        "logs": logs if CONFIG.security.dsr_testing_tools_enabled else "DSR testing tools are not enabled, logs will not be shown."
+    }

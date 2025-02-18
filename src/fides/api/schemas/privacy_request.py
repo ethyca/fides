@@ -485,3 +485,11 @@ class FilteredPrivacyRequestResults(FidesSchema):
     privacy_request_id: str
     status: PrivacyRequestStatus
     results: Union[Dict[str, Any], str]
+
+
+class TestPrivacyRequestLogs(FidesSchema):
+    """Schema representing the logs of a test privacy request"""
+
+    privacy_request_id: str
+    status: PrivacyRequestStatus
+    logs: Union[List[Dict[str, Any]], str]
