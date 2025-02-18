@@ -36,6 +36,9 @@ async def javascript_asset_data(system_async) -> Dict[str, Any]:
         "system_id": system_async.id,
         "locations": ["US", "Canada"],
         "data_uses": ["analytics"],
+        "meta": {
+            "prop_1": "test",
+        },
     }
 
 
@@ -104,6 +107,11 @@ class TestUpsertAsset:
 
             # update a field on the asset - specifically, this field is _not_ part of uniqueness criteria
             javascript_asset_data["locations"] = ["US", "Canada", "EU"]
+            # update existing meta prop
+            javascript_asset_data["meta"]["prop_1"] = "updated"
+            # and add a new meta prop
+            javascript_asset_data["meta"]["prop_2"] = "test"
+
             # and update the asset
             await Asset.upsert_async(
                 async_session=async_session,
@@ -130,6 +138,9 @@ class TestUpsertAsset:
                 "Canada",
                 "EU",
             ]  # check updated locations
+            # check meta is updated as expected
+            assert updated_asset.meta["prop_1"] == "updated"
+            assert updated_asset.meta["prop_2"] == "test"
 
             # ensure all other attributes have stayed the same
             assert updated_asset.name == created_asset.name
