@@ -220,6 +220,7 @@ const AntPOC: NextPage = () => {
           <Col span={8}>
             <Card title="Tag" bordered={false} className="h-full">
               <Space direction="vertical">
+                <Tag color="default">default</Tag>
                 <Tag color="corinth">corinth</Tag>
                 <Tag color="minos">minos</Tag>
                 <Tag color="terracotta">terracotta</Tag>

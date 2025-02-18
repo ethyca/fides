@@ -17,13 +17,14 @@ interface CustomTagProps extends Omit<TagProps, "color"> {
 
 // Colors that need light text and border
 const DARK_BACKGROUNDS = ["minos"];
+const RETAIN_DEFAULT_BORDER = ["corinth", "transparent"];
 
 /**
  * Higher-order component that adds brand colors support to the Tag component.
  */
 const withCustomProps = (WrappedComponent: typeof Tag) => {
   const WrappedTag = ({
-    color = "corinth",
+    color = "default",
     style,
     ...props
   }: CustomTagProps) => {
@@ -35,11 +36,13 @@ const withCustomProps = (WrappedComponent: typeof Tag) => {
         ? (`FIDESUI_BG_${color.toUpperCase()}` as BgColorKeys)
         : undefined;
     const needsLightText = color && DARK_BACKGROUNDS.includes(color);
+    const retainDefaultBorder = color && RETAIN_DEFAULT_BORDER.includes(color);
     let customStyle = {};
     if (brandColor) {
       customStyle = {
         backgroundColor: palette[brandColor],
         color: needsLightText ? palette.FIDESUI_NEUTRAL_100 : undefined,
+        border: retainDefaultBorder ? undefined : "none",
       };
     } else if (color === "transparent") {
       customStyle = {
