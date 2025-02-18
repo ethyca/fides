@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.54.1b6.post0.dev17"
+    "version": "2.55.1b0.post0.dev2"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -2957,6 +2957,9 @@
                   },
                   {
                     "$ref": "#/components/schemas/TimescaleDocsSchema"
+                  },
+                  {
+                    "$ref": "#/components/schemas/WebsiteSchema"
                   }
                 ],
                 "title": "Unvalidated Secrets"
@@ -4365,6 +4368,9 @@
                   },
                   {
                     "$ref": "#/components/schemas/TimescaleDocsSchema"
+                  },
+                  {
+                    "$ref": "#/components/schemas/WebsiteSchema"
                   }
                 ],
                 "title": "Unvalidated Secrets"
@@ -4511,6 +4517,9 @@
                   },
                   {
                     "$ref": "#/components/schemas/TimescaleDocsSchema"
+                  },
+                  {
+                    "$ref": "#/components/schemas/WebsiteSchema"
                   }
                 ],
                 "title": "Unvalidated Secrets"
@@ -15353,7 +15362,8 @@
           "scylla",
           "snowflake",
           "sovrn",
-          "timescale"
+          "timescale",
+          "website"
         ],
         "title": "ConnectionType",
         "description": "Supported types to which we can connect Fides."
@@ -16001,6 +16011,9 @@
               },
               {
                 "$ref": "#/components/schemas/TimescaleDocsSchema"
+              },
+              {
+                "$ref": "#/components/schemas/WebsiteSchema"
               },
               {
                 "type": "null"
@@ -24687,6 +24700,9 @@
               },
               {
                 "$ref": "#/components/schemas/TimescaleDocsSchema"
+              },
+              {
+                "$ref": "#/components/schemas/WebsiteSchema"
               }
             ],
             "title": "Secrets"
@@ -26272,7 +26288,8 @@
           "database",
           "email",
           "manual",
-          "saas"
+          "saas",
+          "website"
         ],
         "title": "SystemType"
       },
@@ -27098,6 +27115,22 @@
         ],
         "title": "WebhookOrder",
         "description": "Schema for displaying a minimal amount of information about the webhook and its order"
+      },
+      "WebsiteSchema": {
+        "properties": {
+          "url": {
+            "type": "string",
+            "minLength": 1,
+            "format": "uri",
+            "title": "Url"
+          }
+        },
+        "type": "object",
+        "required": [
+          "url"
+        ],
+        "title": "WebsiteSchema",
+        "description": "Schema to validate the secrets needed for a generic website connector"
       },
       "WorkerHealthCheck": {
         "properties": {
