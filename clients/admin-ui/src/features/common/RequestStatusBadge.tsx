@@ -4,7 +4,14 @@ import { PrivacyRequestStatus } from "~/types/api";
 
 export const statusPropMap: {
   [key in PrivacyRequestStatus]: Omit<TagProps, "color"> & {
-    color: "success" | "marble" | "error" | "warning" | "info" | "alert";
+    color:
+      | "success"
+      | "marble"
+      | "error"
+      | "warning"
+      | "info"
+      | "alert"
+      | "caution";
     label?: string;
   };
 } = {
@@ -33,7 +40,7 @@ export const statusPropMap: {
     label: "Error",
   },
   in_processing: {
-    color: "warning",
+    color: "caution",
     label: "In Progress",
   },
   paused: {
