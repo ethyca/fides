@@ -179,7 +179,7 @@ describe("Fides-js GPP extension", () => {
             // indicate TCF. The use of a regex is necessary because part of the string is
             // date-based and changes each day.
             expect(args[3][0].pingData.gppString).to.match(
-              /DBABMA~CQ[A-z0-9][A-z0-9][A-z0-9][A-z0-9]AQNBgcAGXABBENArEoABaAAEAAAAAAABEAAAAA/,
+              /DBABMA~CQ[a-zA-z0-9][a-zA-z0-9][a-zA-z0-9][a-zA-z0-9]AQNBgcAGXABBENArEoABaAAEAAAAAAABEAAAAA/,
             );
             // the `PurposeConsents` should match the gpp string
             expect(
