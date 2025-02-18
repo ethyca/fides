@@ -13,7 +13,7 @@ import {
 } from "fidesui";
 import { useFormik } from "formik";
 import { Headers } from "headers-polyfill";
-import { useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import React, { useEffect } from "react";
 import * as Yup from "yup";
 
@@ -65,7 +65,8 @@ const usePrivacyRequestForm = ({
   const customPrivacyRequestFields =
     action?.custom_privacy_request_fields ?? {};
   const toast = useToast();
-  const router = useRouter();
+  const searchParams = useSearchParams();
+
   const property = useProperty();
 
   const formik = useFormik<FormValues>({
@@ -86,7 +87,8 @@ const usePrivacyRequestForm = ({
           .filter(([, field]) => !field.hidden)
           .map(([key, field]) => {
             const valueFromQueryParam =
-              field.query_param_key && router.query[field.query_param_key];
+              field.query_param_key &&
+              (searchParams?.get(field.query_param_key) as string);
 
             const value = valueFromQueryParam || field.default_value || "";
 
@@ -134,7 +136,7 @@ const usePrivacyRequestForm = ({
             }
 
             const valueFromQueryParam =
-              field.query_param_key && router.query[field.query_param_key];
+              field.query_param_key && searchParams?.get(field.query_param_key);
 
             const value = valueFromQueryParam || field.default_value || null;
 
