@@ -198,13 +198,13 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
         return (
             db.query(Asset)
             .filter(
-                Asset.type == "Cookie",
-                or_(
-                    *[
-                        Asset.data_use.like(f"{notice_use}%")
-                        for notice_use in self.data_uses
-                    ]
-                )
+            Asset.type == "Cookie",
+            or_(
+                *[
+                Asset.data_uses.any(notice_use)
+                for notice_use in self.data_uses
+                ]
+            )
             )
         ).all()
 

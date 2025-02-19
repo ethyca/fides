@@ -38,8 +38,8 @@ def upgrade():
 
         connection.execute(
             sa.text(
-                "INSERT INTO asset (id, created_at, updated_at, name, domain, system_id, locations, data_uses, asset_type, with_consent) "
-                "VALUES (:id, :created_at, :updated_at, :name, :domain, :system_id, :locations, :data_uses, :asset_type, false)"
+                "INSERT INTO asset (id, created_at, updated_at, name, domain, system_id, data_uses, asset_type, with_consent) "
+                "VALUES (:id, :created_at, :updated_at, :name, :domain, :system_id, :data_uses, :asset_type, false)"
             ),
             id=str(uuid.uuid4()),
             created_at=row.created_at,
@@ -47,7 +47,6 @@ def upgrade():
             name=row.name,
             domain=row.domain,
             system_id=row.system_id,
-            locations=[row.path],
             data_uses=data_uses,
             asset_type="Cookie",
         )
@@ -73,6 +72,5 @@ def downgrade():
             name=row.name,
             domain=row.domain,
             system_id=row.system_id,
-            path=row.locations[0],
             privacy_declaration_id=None,
         )
