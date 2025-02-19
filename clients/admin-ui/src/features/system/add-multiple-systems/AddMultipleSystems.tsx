@@ -31,13 +31,13 @@ import {
 import { errorToastParams, successToastParams } from "common/toast";
 import {
   AntButton as Button,
+  AntTag as Tag,
+  AntTooltip as Tooltip,
   Box,
   Flex,
   HStack,
   Spinner,
-  Tag,
   Text,
-  Tooltip,
   useDisclosure,
   useToast,
   VStack,
@@ -63,7 +63,7 @@ export const VendorSourceCell = ({ value }: { value: string }) => {
   const labels = vendorSourceLabels[source] ?? { label: "", fullName: "" };
   return (
     <Flex alignItems="center" justifyContent="center" height="100%" mr="2">
-      <Tooltip label={labels.fullName} placement="top">
+      <Tooltip title={labels.fullName}>
         <Tag>{labels.label}</Tag>
       </Tooltip>
     </Flex>
@@ -273,20 +273,6 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
     .getSelectedRowModel()
     .rows.some((row) => !row.original.linked_system);
 
-  const isTooltipDisabled = useMemo(() => {
-    /*
-      The tooltip surrounding the add button is conditionally displayed.
-
-      It displays if no rows have been selected or if all of the vendors
-      are already linked to systems
-    */
-    if (!anyNewSelectedRows || allRowsLinkedToSystem) {
-      return false;
-    }
-
-    return true;
-  }, [anyNewSelectedRows, allRowsLinkedToSystem]);
-
   if (!dictionaryService && !isLoadingHealthCheck) {
     router.push(INDEX_ROUTE);
     return null; // this prevents the empty table from flashing
@@ -359,12 +345,7 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
               <Text fontWeight="700" fontSize="sm" lineHeight="2" ml={4}>
                 {totalSelectSystemsLength.toLocaleString("en")} selected
               </Text>
-              <Tooltip
-                label={toolTipText}
-                shouldWrapChildren
-                placement="top"
-                isDisabled={isTooltipDisabled}
-              >
+              <Tooltip title={toolTipText}>
                 <Button
                   onClick={onOpen}
                   data-testid="add-multiple-systems-btn"
@@ -386,14 +367,10 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
               <Button
                 onClick={onOpenFilter}
                 data-testid="filter-multiple-systems-btn"
-                size="small"
               >
-                Filter{" "}
+                Filter
                 {totalFilters > 0 ? (
-                  <Tag borderRadius="full" size="sm" ml={2}>
-                    {" "}
-                    {totalFilters}{" "}
-                  </Tag>
+                  <Tag className="mr-0">{totalFilters}</Tag>
                 ) : null}
               </Button>
             </span>

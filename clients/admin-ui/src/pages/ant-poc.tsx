@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import {
   AntAlert as Alert,
   AntButton as Button,
@@ -13,6 +14,7 @@ import {
   AntSwitch as Switch,
   AntTag as Tag,
   AntTooltip as Tooltip,
+  Icons,
 } from "fidesui";
 import type { NextPage } from "next";
 
@@ -234,6 +236,17 @@ const AntPOC: NextPage = () => {
                 <Tag color="info">info</Tag>
                 <Tag color="alert">alert</Tag>
                 <Tag color="transparent">transparent</Tag>
+                <Tag closable onClose={() => console.log("closed")}>
+                  Closable Tag
+                </Tag>
+                <Tag onClick={() => console.log("clicked")} addable />
+                <Tag onClick={() => console.log("clicked")} addable>
+                  Add More
+                </Tag>
+                <Tag hasSparkle onClick={() => console.log("clicked")}>
+                  Data Category
+                  <Icons.Edit />
+                </Tag>
               </Space>
             </Card>
           </Col>

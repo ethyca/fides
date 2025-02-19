@@ -1,7 +1,10 @@
 import { Tag, TagProps } from "antd/lib";
+import { Icons } from "fidesui";
 import React from "react";
 
+import SparkleIcon from "../icons/Sparkle";
 import palette from "../palette/palette.module.scss";
+import styles from "./CustomTag.module.scss";
 
 // Extract brand colors that start with "FIDESUI_BG_" from palette
 type BrandColorKeys = keyof typeof palette;
@@ -13,6 +16,8 @@ export type BrandColor = Lowercase<ColorName> | "transparent";
 
 interface CustomTagProps extends Omit<TagProps, "color"> {
   color?: TagProps["color"] | BrandColor;
+  addable?: boolean;
+  hasSparkle?: boolean;
 }
 
 // Colors that need light text and border
@@ -27,8 +32,18 @@ const withCustomProps = (WrappedComponent: typeof Tag) => {
     onClick,
     color = onClick ? "transparent" : "default",
     style,
+    children,
+    addable,
+    hasSparkle,
     ...props
   }: CustomTagProps) => {
+    const hasOnlyIcon =
+      React.Children.count(children) === 1 &&
+      React.isValidElement(children) &&
+      typeof children.type === "object";
+
+    const shouldReducePadding = hasOnlyIcon || (addable && !children);
+
     // If it's a brand color, use our palette
     const brandColor =
       typeof color === "string" &&
@@ -41,26 +56,46 @@ const withCustomProps = (WrappedComponent: typeof Tag) => {
     let customStyle = {};
     if (brandColor) {
       customStyle = {
-        backgroundColor: palette[brandColor],
+        background: palette[brandColor],
         color: needsLightText ? palette.FIDESUI_NEUTRAL_100 : undefined,
-        border: retainDefaultBorder ? undefined : "none",
       };
     } else if (color === "transparent") {
       customStyle = {
-        backgroundColor: "transparent",
+        background: "transparent",
       };
     }
 
     // If not a brand color, pass through to Ant Tag
-    const customProps = {
+    const customProps: TagProps = {
       color: brandColor || color === "transparent" ? undefined : color,
-      style: { ...style, ...customStyle },
-      component: onClick ? "button" : undefined,
-      onClick,
+      style: {
+        ...style,
+        ...customStyle,
+        marginInlineEnd: 0, // allow for flex gap instead of margin
+        paddingInline: shouldReducePadding
+          ? "calc((var(--ant-padding-xs) * 0.5) - 1px)" // -1px to account for border
+          : undefined,
+      },
+      className: styles.tag,
+      bordered: retainDefaultBorder,
+      closeIcon: props.closable ? <Icons.CloseLarge size={10} /> : undefined,
+      children: (
+        <>
+          {hasSparkle && <SparkleIcon />}
+          {children}
+          {addable && <Icons.AddLarge size={10} aria-label="Add" />}
+        </>
+      ),
       ...props,
     };
 
-    return <WrappedComponent {...customProps} />;
+    return onClick ? (
+      <button type="button" onClick={onClick} className={styles.buttonTag}>
+        <WrappedComponent {...customProps} />
+      </button>
+    ) : (
+      <WrappedComponent {...customProps} />
+    );
   };
   return WrappedTag;
 };
