@@ -9,6 +9,7 @@
 
 import HomePage from "~/components/HomePage";
 import PageLayout from "~/components/PageLayout";
+import { NextSearchParams } from "~/types/next";
 
 import Custom404 from "../not-found";
 import {
@@ -20,14 +21,19 @@ interface PropertyPathHomePageProps {
   params: Promise<{
     propertyPath: string;
   }>;
+  searchParams: NextSearchParams;
 }
 
 export const generateMetadata = getPageMetadata;
 
-const PropertyPathHomePage = async ({ params }: PropertyPathHomePageProps) => {
+const PropertyPathHomePage = async ({
+  params,
+  searchParams,
+}: PropertyPathHomePageProps) => {
   const { propertyPath } = await params;
   const serverEnvironment = await getPrivacyCenterEnvironmentCached({
     propertyPath: `/${propertyPath}`,
+    searchParams,
   });
   const isPropertyFoundForPath = !!serverEnvironment.property;
 

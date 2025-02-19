@@ -17,8 +17,7 @@ import type { NextApiRequest, NextApiResponse } from "next";
 
 import { getFidesApiUrl } from "~/app/server-environment";
 import { getPrivacyCenterEnvironmentCached } from "~/app/server-utils";
-import { LOCATION_HEADERS } from "~/common/geolocation";
-import { lookupGeolocationServerSide } from "~/common/geolocation-server";
+import { LOCATION_HEADERS, lookupGeolocation } from "~/common/geolocation";
 import { safeLookupPropertyId } from "~/common/property-id";
 
 // one hour, how long the client should cache fides.js for
@@ -128,7 +127,7 @@ export default async function handler(
 
   try {
     // Check if a geolocation was provided via headers or query param
-    geolocation = await lookupGeolocationServerSide();
+    geolocation = await lookupGeolocation(req);
 
     propertyId = safeLookupPropertyId(
       req,

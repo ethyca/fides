@@ -3,6 +3,7 @@
 import { headers } from "next/headers";
 
 import debugLogServer from "~/app/server-utils/debugLogServer";
+import { NextSearchParams } from "~/types/next";
 
 import {
   CLOUDFRONT_HEADER_COUNTRY,
@@ -10,20 +11,6 @@ import {
   VALID_ISO_3166_2_REGION_REGEX,
   VALID_ISO_3166_LOCATION_REGEX,
 } from "./geolocation";
-
-/*
-  This is a workround for getting query params into the layout,
-  middleware.ts sets the query params as headers so we can
-  read it here.
-  src: https://github.com/vercel/next.js/discussions/54955#discussioncomment-11744585
-*/
-const getSearchParams = async () => {
-  const headerStore = await headers();
-  const searchParams = Object.fromEntries(
-    new URLSearchParams(headerStore.get("searchParams") || ""),
-  );
-  return searchParams;
-};
 
 /**
  * Lookup the "geolocation" (ie country and region) for the given request by looking for either:
@@ -33,27 +20,31 @@ const getSearchParams = async () => {
  * If none of these are found, return an undefined geolocation.
  *
  */
-export const lookupGeolocationServerSide = async () => {
-  const searchParams = await getSearchParams();
-
+export const lookupGeolocationServerSide = async ({
+  searchParams,
+}: {
+  searchParams?: NextSearchParams;
+} = {}) => {
   // 1. Check for a provided "geolocation" query param
-  const { geolocation: geolocationQuery } = searchParams;
-  if (typeof geolocationQuery === "string") {
-    if (!VALID_ISO_3166_LOCATION_REGEX.test(geolocationQuery)) {
-      throw new Error(
-        `Provided location (${geolocationQuery}) query parameter is not in ISO 3166 format.`,
-      );
+  if (searchParams) {
+    const { geolocation: geolocationQuery } = await searchParams;
+    if (typeof geolocationQuery === "string") {
+      if (!VALID_ISO_3166_LOCATION_REGEX.test(geolocationQuery)) {
+        throw new Error(
+          `Provided location (${geolocationQuery}) query parameter is not in ISO 3166 format.`,
+        );
+      }
+
+      const [country, region] = geolocationQuery.split("-");
+      const location = geolocationQuery.replace("-", "_");
+      debugLogServer(`Using location provided via query param: ${location}`);
+
+      return {
+        location,
+        country,
+        region,
+      };
     }
-
-    const [country, region] = geolocationQuery.split("-");
-    const location = geolocationQuery.replace("-", "_");
-    debugLogServer(`Using location provided via query param: ${location}`);
-
-    return {
-      location,
-      country,
-      region,
-    };
   }
 
   // 2. Check for CloudFront viewer location headers

@@ -6,11 +6,14 @@ import {
 } from "~/app/server-utils";
 import HomePage from "~/components/HomePage";
 import PageLayout from "~/components/PageLayout";
+import { NextSearchParams } from "~/types/next";
 
 export const generateMetadata = getPageMetadata;
 
-const Home = async () => {
-  const serverEnvironment = await getPrivacyCenterEnvironmentCached();
+const Home = async ({ searchParams }: { searchParams: NextSearchParams }) => {
+  const serverEnvironment = await getPrivacyCenterEnvironmentCached({
+    searchParams,
+  });
 
   return (
     <PageLayout serverEnvironment={serverEnvironment}>

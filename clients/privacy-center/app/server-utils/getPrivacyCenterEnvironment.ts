@@ -3,6 +3,7 @@
 import { cache } from "react";
 
 import { lookupGeolocationServerSide } from "~/common/geolocation-server";
+import { NextSearchParams } from "~/types/next";
 
 import {
   getClientSettings,
@@ -15,15 +16,23 @@ import debugLogServer from "./debugLogServer";
 import fetchPropetyFromApi from "./fetchPropetyFromApi";
 import loadEnvironmentVariables from "./loadEnvironmentVariables";
 
+/**
+ *
+ * Get the privacy center environment (env variables, config, styles, property, location) for the current session.
+ * @param propertyPath If the property path is provided, the property will be fetched from the API. eg. /myproperty
+ * @param searchParams The search params from the request, required to allow geolocation overrides through query params eg ?geolocation=us-ca
+ */
 const getPrivacyCenterEnvironment = async ({
   propertyPath,
+  searchParams,
 }: {
   propertyPath?: string;
+  searchParams?: NextSearchParams;
 } = {}): Promise<PrivacyCenterEnvironment> => {
   // DEFER: Log a version number here (see https://github.com/ethyca/fides/issues/3171)
   debugLogServer("Load Privacy Center environment for session...");
 
-  const userLocation = await lookupGeolocationServerSide();
+  const userLocation = await lookupGeolocationServerSide({ searchParams });
   const envVariables = loadEnvironmentVariables();
   const privacyCenterPath =
     propertyPath || envVariables.ROOT_PROPERTY_PATH || "/";
