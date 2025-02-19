@@ -25,15 +25,6 @@ const nextConfig = {
     "swagger-ui-react",
     "fidesui",
   ],
-  webpack: (config, { isServer }) => {
-    // Provide an empty fallback for the "fs" module for the client-side bundle
-    // This is needed to ensure the dynamic import("fs") in loadConfigFromFile()
-    // doesn't attempt to import the "fs" module when the client code runs!
-    if (!isServer) {
-      config.resolve.fallback.fs = false;
-    }
-    return config;
-  },
   async rewrites() {
     return [
       {

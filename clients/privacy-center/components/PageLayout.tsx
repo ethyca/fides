@@ -1,7 +1,7 @@
-import Providers from "~/app/Providers";
 import { PrivacyCenterEnvironment } from "~/app/server-environment";
 
 import Header from "./Header";
+import Providers from "./Providers";
 
 interface PageLayoutProps {
   children: React.ReactNode;

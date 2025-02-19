@@ -15,8 +15,8 @@ import { loadStyles } from "~/features/common/styles.slice";
 import { setLocation } from "~/features/consent/consent.slice";
 import theme from "~/theme";
 
-import { PrivacyCenterEnvironment } from "./server-environment";
-import store, { persistor } from "./store";
+import { PrivacyCenterEnvironment } from "../app/server-environment";
+import store, { persistor } from "../app/store";
 
 interface ProvidersProps {
   serverEnvironment: PrivacyCenterEnvironment;

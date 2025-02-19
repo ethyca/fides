@@ -108,7 +108,9 @@ export default async function handler(
   res: NextApiResponse,
 ) {
   // Load the configured consent options (data uses, defaults, etc.) from environment
-  const environment = await getPrivacyCenterEnvironmentCached();
+  const environment = await getPrivacyCenterEnvironmentCached({
+    skipGeolocation: true,
+  });
 
   let options: ConsentOption[] = [];
   if (environment.config?.consent?.page.consentOptions) {

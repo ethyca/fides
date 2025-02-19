@@ -25,14 +25,18 @@ import lookupGeolocationServerSide from "./lookupGeolocationServerSide";
 const getPrivacyCenterEnvironment = async ({
   propertyPath,
   searchParams,
+  skipGeolocation,
 }: {
   propertyPath?: string;
   searchParams?: NextSearchParams;
+  skipGeolocation?: boolean;
 } = {}): Promise<PrivacyCenterEnvironment> => {
   // DEFER: Log a version number here (see https://github.com/ethyca/fides/issues/3171)
   debugLogServer("Load Privacy Center environment for session...");
 
-  const userLocation = await lookupGeolocationServerSide({ searchParams });
+  const userLocation = skipGeolocation
+    ? null
+    : await lookupGeolocationServerSide({ searchParams });
   const envVariables = loadEnvironmentVariables();
   const privacyCenterPath =
     propertyPath || envVariables.ROOT_PROPERTY_PATH || "/";
