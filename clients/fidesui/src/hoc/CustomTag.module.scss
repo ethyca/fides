@@ -4,9 +4,9 @@
   display: inline-flex;
   align-items: center;
   gap: calc(var(--ant-margin-xs) * 0.75);
-  // the heights are both the same Ant uses but -2px to account for border making it 20px instead of 22px
+  // the line-height is the same Ant uses but -2px to account for border making it 20px instead of 22px
   line-height: calc(var(--ant-line-height-sm) * var(--ant-font-size-sm) - 2px);
-  min-height: calc(var(--ant-line-height-sm) * var(--ant-font-size-sm) - 2px);
+  min-height: calc(var(--ant-line-height-sm) * var(--ant-font-size-sm));
   :global(svg:not([data-icon])) {
     width: 10px;
     height: 10px;
@@ -28,5 +28,13 @@
     :global(.ant-tag) {
       border: 1px solid map-get($colors, "minos");
     }
+  }
+}
+
+.closeButton {
+  border-radius: var(--ant-border-radius-xs);
+  &:focus-visible {
+    outline: 1px solid map-get($colors, "minos");
+    outline-offset: 2px;
   }
 }

@@ -18,6 +18,7 @@ interface CustomTagProps extends Omit<TagProps, "color"> {
   color?: TagProps["color"] | BrandColor;
   addable?: boolean;
   hasSparkle?: boolean;
+  closeButtonLabel?: string;
 }
 
 // Colors that need light text and border
@@ -35,6 +36,7 @@ const withCustomProps = (WrappedComponent: typeof Tag) => {
     children,
     addable,
     hasSparkle,
+    closeButtonLabel = "Remove",
     ...props
   }: CustomTagProps) => {
     const hasOnlyIcon =
@@ -45,7 +47,7 @@ const withCustomProps = (WrappedComponent: typeof Tag) => {
     const shouldReducePadding = hasOnlyIcon || (addable && !children);
 
     // If it's a brand color, use our palette
-    const brandColor =
+    const brandColor: string | undefined =
       typeof color === "string" &&
       color !== "transparent" &&
       `FIDESUI_BG_${color.toUpperCase()}` in palette
@@ -73,17 +75,32 @@ const withCustomProps = (WrappedComponent: typeof Tag) => {
         ...customStyle,
         marginInlineEnd: 0, // allow for flex gap instead of margin
         paddingInline: shouldReducePadding
-          ? "calc((var(--ant-padding-xs) * 0.5) - 1px)" // -1px to account for border
+          ? "calc((var(--ant-padding-xs) * 0.5))"
           : undefined,
       },
       className: styles.tag,
       bordered: retainDefaultBorder,
-      closeIcon: props.closable ? <Icons.CloseLarge size={10} /> : undefined,
+      closeIcon: props.closable ? (
+        // Ant's own close icon doesn't currently use a button element,
+        // so we need to use our own for accessibility.
+        <button
+          type="button"
+          className={styles.closeButton}
+          aria-label={closeButtonLabel}
+        >
+          <Icons.CloseLarge size={10} />
+        </button>
+      ) : undefined,
       children: (
         <>
           {hasSparkle && <SparkleIcon />}
           {children}
-          {addable && <Icons.AddLarge size={10} aria-label="Add" />}
+          {addable && (
+            <Icons.AddLarge
+              size={10}
+              aria-label={props["aria-label"] || "Add"}
+            />
+          )}
         </>
       ),
       ...props,

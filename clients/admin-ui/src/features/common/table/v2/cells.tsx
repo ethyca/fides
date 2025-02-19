@@ -184,6 +184,7 @@ export const BadgeCellExpandable = <T,>({
         alignItems={isCollapsed ? "center" : "flex-start"}
         flexDirection={isCollapsed || isWrappedState ? "row" : "column"}
         flexWrap={isWrappedState ? "wrap" : "nowrap"}
+        gap={1.5}
         pt={2}
         pb={2}
         onClick={(e) => {

@@ -1,4 +1,4 @@
-import { AntButton as Button, Box, CloseIcon } from "fidesui";
+import { AntTag as Tag, Box } from "fidesui";
 import { useState } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";
@@ -8,21 +8,8 @@ import { useUpdateAssetsDataUseMutation } from "~/features/data-discovery-and-de
 import ConsentCategorySelect from "~/features/data-discovery-and-detection/action-center/ConsentCategorySelect";
 import { DiscoveredAssetResponse } from "~/features/data-discovery-and-detection/action-center/types";
 import isConsentCategory from "~/features/data-discovery-and-detection/action-center/utils/isConsentCategory";
-import TaxonomyAddButton from "~/features/data-discovery-and-detection/tables/cells/TaxonomyAddButton";
 import TaxonomyCellContainer from "~/features/data-discovery-and-detection/tables/cells/TaxonomyCellContainer";
-import TaxonomyBadge from "~/features/data-discovery-and-detection/TaxonomyBadge";
 import { isErrorResult } from "~/types/errors";
-
-const DeleteDataUseButton = ({ onClick }: { onClick: () => void }) => (
-  <Button
-    onClick={onClick}
-    icon={<CloseIcon boxSize={2} />}
-    size="small"
-    type="text"
-    className="max-h-4 max-w-4"
-    aria-label="Remove data use"
-  />
-);
 
 const DiscoveredAssetDataUseCell = ({
   asset,
@@ -78,18 +65,21 @@ const DiscoveredAssetDataUseCell = ({
       {!isAdding && (
         <>
           {dataUses?.map((d) => (
-            <TaxonomyBadge
+            <Tag
               key={d}
               data-testid={`data-use-${d}`}
-              closeButton={
-                <DeleteDataUseButton onClick={() => handleDeleteDataUse(d)} />
-              }
+              color="transparent"
+              closable
+              onClose={() => handleDeleteDataUse(d)}
+              closeButtonLabel="Remove data use"
             >
               {getDataUseDisplayName(d)}
-            </TaxonomyBadge>
+            </Tag>
           ))}
-          <TaxonomyAddButton
+          <Tag
             onClick={() => setIsAdding(true)}
+            data-testid="add-data-use-btn"
+            addable
             aria-label="Add data use"
           />
         </>
