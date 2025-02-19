@@ -751,7 +751,7 @@ class TestMessageDispatchService:
 
     def test_dispatch_invalid_action_type(self, db):
         with pytest.raises(MessageDispatchException):
-            dispatch_message(db, "bad", None, None)
+            dispatch_message(db, "bad", to_identity=None, service_type=None)
 
     def test_dispatcher_from_config_type_unknown(self):
         assert _get_dispatcher_from_config_type("bad") is None
