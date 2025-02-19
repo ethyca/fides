@@ -202,7 +202,7 @@ class FidesopsMessage(
     def validate_body_params_match_action_type(self) -> "FidesopsMessage":
 
         valid_body_params_for_action_type = {
-            MessagingActionType.CONSENT_REQUEST: None,  # FIXME: for now skip this one, unsure what the body params are
+            MessagingActionType.CONSENT_REQUEST: None,  # Don't validate this one
             MessagingActionType.CONSENT_REQUEST_EMAIL_FULFILLMENT: ConsentEmailFulfillmentBodyParams,
             MessagingActionType.SUBJECT_IDENTITY_VERIFICATION: SubjectIdentityVerificationBodyParams,
             MessagingActionType.PRIVACY_REQUEST_RECEIPT: RequestReceiptBodyParams,

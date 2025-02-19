@@ -162,6 +162,7 @@ def message_send_enabled(
 def dispatch_message(
     db: Session,
     action_type: MessagingActionType,
+    *,
     to_identity: Optional[Identity],
     service_type: Optional[str],
     message_body_params: Optional[
