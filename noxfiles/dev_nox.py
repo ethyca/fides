@@ -239,7 +239,7 @@ def quickstart(session: Session) -> None:
     "action",
     [
         param("dry", id="dry"),
-        param("run", id="run"),
+        param("live", id="live"),
     ],
 )
 def delete_old_test_pypi_packages(session: Session, action: str) -> None:
@@ -250,5 +250,5 @@ def delete_old_test_pypi_packages(session: Session, action: str) -> None:
 
     if action == "dry":
         session.run("pypi-cleanup", "-u", "fides-ethyca", "-p", "ethyca-fides", "-t", "https://test.pypi.org", "-d", "365", "-y")
-    elif action == "run":
+    elif action == "live":
         session.run("pypi-cleanup", "-u", "fides-ethyca", "-p", "ethyca-fides", "-t", "https://test.pypi.org", "-d", "365", "-y", "--do-it")
