@@ -30,13 +30,16 @@ dataset:
         fides_meta:
           erase_after: [bigquery_example_test_dataset.address]
         fields:
-          - name: address_id
-            data_categories: [system.operations]
+          - name: address
             fides_meta:
-              references:
-                - dataset: bigquery_example_test_dataset
-                  field: address.id
-                  direction: to
+              type: object
+            fields:
+              - name: address_id
+                data_categories: [system.operations]
+                references:
+                  - dataset: bigquery_example_test_dataset
+                    field: address.id
+                    direction: to
           - name: created
             data_categories: [system.operations]
           - name: email

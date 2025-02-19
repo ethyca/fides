@@ -76,12 +76,12 @@ class TestBigQueryQueryConfig:
                 BigQueryNamespaceMeta(
                     project_id="cool_project", dataset_id="first_dataset"
                 ),
-                "SELECT address_id, created, custom_id, email, id, name FROM `cool_project.first_dataset.customer` WHERE (email = :email)",
+                "SELECT address, created, custom_id, email, id, name FROM `cool_project.first_dataset.customer` WHERE (email = :email)",
             ),
             # Namespace meta will be a dict / JSON when retrieved from the DB
             (
                 {"project_id": "cool_project", "dataset_id": "first_dataset"},
-                "SELECT address_id, created, custom_id, email, id, name FROM `cool_project.first_dataset.customer` WHERE (email = :email)",
+                "SELECT address, created, custom_id, email, id, name FROM `cool_project.first_dataset.customer` WHERE (email = :email)",
             ),
             (
                 {
@@ -89,11 +89,11 @@ class TestBigQueryQueryConfig:
                     "dataset_id": "first_dataset",
                     "connection_type": "bigquery",
                 },
-                "SELECT address_id, created, custom_id, email, id, name FROM `cool_project.first_dataset.customer` WHERE (email = :email)",
+                "SELECT address, created, custom_id, email, id, name FROM `cool_project.first_dataset.customer` WHERE (email = :email)",
             ),
             (
                 None,
-                "SELECT address_id, created, custom_id, email, id, name FROM `customer` WHERE (email = :email)",
+                "SELECT address, created, custom_id, email, id, name FROM `customer` WHERE (email = :email)",
             ),
         ],
     )
