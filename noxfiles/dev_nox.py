@@ -232,3 +232,23 @@ def quickstart(session: Session) -> None:
     build(session, "admin_ui")
     session.notify("teardown")
     run_infrastructure(datastores=["mongodb", "postgres"], run_quickstart=True)
+
+
+@nox_session()
+@parametrize(
+    "action",
+    [
+        param("dry", id="dry"),
+        param("run", id="run"),
+    ],
+)
+def delete_old_test_pypi_packages(session: Session, action: str) -> None:
+    """
+    Delete old packages from the test pypi repository.
+    """
+    session.install("pypi-cleanup")
+
+    if action == "dry":
+        session.run("pypi-cleanup", "-u", "fides-ethyca", "-p", "ethyca-fides", "-t", "https://test.pypi.org", "-d", "365", "-y")
+    elif action == "run":
+        session.run("pypi-cleanup", "-u", "fides-ethyca", "-p", "ethyca-fides", "-t", "https://test.pypi.org", "-d", "365", "-y", "--do-it")
