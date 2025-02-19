@@ -294,6 +294,7 @@ async def update_system(
     delattr(resource, "cookies")
 
     # perform any updates on the system resource itself
+    log.info(f"resource.model_dump() {resource.model_dump()}")
     updated_system = await update_resource(System, resource.model_dump(), db)
 
     async with db.begin():
@@ -406,6 +407,8 @@ async def create_system(
 
     # create the system resource using generic creation
     # the system must be created before the privacy declarations so that it can be referenced
+    log.info(f"Creating system with fides_key {resource}")
+    log.info(f"Creating system with fides_key {resource.vendor_deleted_date}")
     resource_dict = resource.model_dump(
         mode="json"
     )  # mode=json helps Url fields be converted to strings before saving to db
