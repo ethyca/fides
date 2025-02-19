@@ -12,6 +12,7 @@ import { loadConfig } from "~/features/common/config.slice";
 import { loadProperty } from "~/features/common/property.slice";
 import { loadSettings } from "~/features/common/settings.slice";
 import { loadStyles } from "~/features/common/styles.slice";
+import { setLocation } from "~/features/consent/consent.slice";
 import theme from "~/theme";
 
 import { PrivacyCenterEnvironment } from "./server-environment";
@@ -30,6 +31,8 @@ const Providers = ({ serverEnvironment, children }: ProvidersProps) => {
       store.dispatch(loadConfig(serverEnvironment.config));
       store.dispatch(loadStyles(serverEnvironment.styles));
       store.dispatch(loadProperty(serverEnvironment.property));
+
+      store.dispatch(setLocation(serverEnvironment.location?.location));
     }
   }, [serverEnvironment]);
 

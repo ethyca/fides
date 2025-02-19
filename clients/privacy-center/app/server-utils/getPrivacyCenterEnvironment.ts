@@ -61,6 +61,7 @@ const getPrivacyCenterEnvironment = async ({
     config,
     styles,
     property,
+    location: userLocation || undefined,
   };
 };
 

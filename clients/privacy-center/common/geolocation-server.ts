@@ -72,7 +72,7 @@ export const lookupGeolocationServerSide = async () => {
       if (VALID_ISO_3166_2_REGION_REGEX.test(region)) {
         geolocation = `${country}-${region}`;
       } else {
-        region = null;
+        region = undefined;
       }
     }
     if (VALID_ISO_3166_LOCATION_REGEX.test(geolocation)) {

@@ -32,16 +32,11 @@ import {
   selectIsNoticeDriven,
   useSettings,
 } from "~/features/common/settings.slice";
-import {
-  clearLocation,
-  selectPrivacyExperience,
-  setLocation,
-} from "~/features/consent/consent.slice";
+import { selectPrivacyExperience } from "~/features/consent/consent.slice";
 import { useSubscribeToPrivacyExperienceQuery } from "~/features/consent/hooks";
 import { useGetIdVerificationConfigQuery } from "~/features/id-verification";
 
 const HomePage: NextPage = () => {
-  const dispatch = useAppDispatch();
   const config = useConfig();
   const [isVerificationRequired, setIsVerificationRequired] =
     useState<boolean>(false);
@@ -83,23 +78,9 @@ const HomePage: NextPage = () => {
   const noticeEmptyStateModal = useDisclosure();
 
   const searchParams = useSearchParams();
-  const geolocationQueryParam = searchParams?.get("geolocation");
-
-  useEffect(() => {
-    if (geolocationQueryParam) {
-      // Ensure the query parameter is a string
-      const geolocation = Array.isArray(geolocationQueryParam)
-        ? geolocationQueryParam[0]
-        : geolocationQueryParam;
-
-      dispatch(setLocation(geolocation));
-    } else {
-      // clear the location override if the geolocation query param isn't provided
-      dispatch(clearLocation());
-    }
-  }, [geolocationQueryParam, dispatch]);
 
   const experience = useAppSelector(selectPrivacyExperience);
+  console.log("experience", experience);
   const isNoticeDriven = useAppSelector(selectIsNoticeDriven);
   const emptyNotices = !experience?.privacy_notices?.length;
 
