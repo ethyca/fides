@@ -80,7 +80,6 @@ const HomePage: NextPage = () => {
   const searchParams = useSearchParams();
 
   const experience = useAppSelector(selectPrivacyExperience);
-  console.log("experience", experience);
   const isNoticeDriven = useAppSelector(selectIsNoticeDriven);
   const emptyNotices = !experience?.privacy_notices?.length;
 
