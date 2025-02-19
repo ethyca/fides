@@ -96,24 +96,24 @@ def test_delete_attachment_cascades(db, attachment, attachment_reference):
 
 
 @pytest.mark.parametrize(
-    "attachment",
+    "attachment_with_error",
     [
         Attachments(
-            id="1",
+            id="4",
             user_id=None,
             file_name="file.txt",
             storage_url="http://example.com/file.txt",
             attachment_type="attach_to_dsr",
         ),
         Attachments(
-            id="1",
+            id="5",
             user_id="user_1",
             file_name=None,
             storage_url="http://example.com/file.txt",
             attachment_type="attach_to_dsr",
         ),
         Attachments(
-            id="1",
+            id="6",
             user_id="user_1",
             file_name="file.txt",
             storage_url=None,
@@ -121,7 +121,9 @@ def test_delete_attachment_cascades(db, attachment, attachment_reference):
         ),
     ],
 )
-def test_non_nullable_fields_attachments(db, attachment):
+def test_non_nullable_fields_attachments(db, attachment_with_error):
     """Test that non-nullable fields are enforced."""
-    db.add(attachment)
-    db.commit()
+    db.add(attachment_with_error)
+    with pytest.raises(IntegrityError):
+        db.commit()
+    db.rollback()
