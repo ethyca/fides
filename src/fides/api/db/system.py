@@ -410,7 +410,7 @@ async def create_system(
     log.info(f"Creating system with fides_key {resource}")
     log.info(f"Creating system with fides_key {resource.vendor_deleted_date}")
     resource_dict = resource.model_dump(
-        mode="json"
+        # mode="json"
     )  # mode=json helps Url fields be converted to strings before saving to db
 
     # set the current user's ID
