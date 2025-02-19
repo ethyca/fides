@@ -249,6 +249,29 @@ def delete_old_test_pypi_packages(session: Session, action: str) -> None:
     session.install("pypi-cleanup")
 
     if action == "dry":
-        session.run("pypi-cleanup", "-u", "fides-ethyca", "-p", "ethyca-fides", "-t", "https://test.pypi.org", "-d", "365", "-y")
+        session.run(
+            "pypi-cleanup",
+            "-u",
+            "fides-ethyca",
+            "-p",
+            "ethyca-fides",
+            "-t",
+            "https://test.pypi.org",
+            "-d",
+            "365",
+            "-y",
+        )
     elif action == "live":
-        session.run("pypi-cleanup", "-u", "fides-ethyca", "-p", "ethyca-fides", "-t", "https://test.pypi.org", "-d", "365", "-y", "--do-it")
+        session.run(
+            "pypi-cleanup",
+            "-u",
+            "fides-ethyca",
+            "-p",
+            "ethyca-fides",
+            "-t",
+            "https://test.pypi.org",
+            "-d",
+            "365",
+            "-y",
+            "--do-it",
+        )
