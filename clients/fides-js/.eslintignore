@@ -3,3 +3,4 @@ dist
 jest.config.js
 rollup.config.mjs
 .eslintrc*
+src/lib/gpp/modules
