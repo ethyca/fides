@@ -9,7 +9,6 @@
  */
 import { URL } from "url";
 
-import { UserGeolocation } from "~/../fides-js/dist/fides";
 import loadEnvironmentVariables from "~/app/server-utils/loadEnvironmentVariables";
 import { PrivacyCenterSettings } from "~/app/server-utils/PrivacyCenterSettings";
 import {
@@ -79,7 +78,11 @@ export interface PrivacyCenterEnvironment {
   config?: Config | PrivacyCenterConfig;
   styles?: Styles;
   property: Property | null;
-  location?: UserGeolocation;
+  location?: {
+    country?: string;
+    location?: string;
+    region?: string;
+  };
 }
 
 /**
