@@ -84,6 +84,9 @@ jobs:
           username: ${{ env.DOCKER_USER }}
           password: ${{ env.DOCKER_TOKEN }}
 
+      - name: Clear pip cache
+        run: pip cache purge
+
       - name: Install Dev Requirements
         run: pip install -r dev-requirements.txt
 
