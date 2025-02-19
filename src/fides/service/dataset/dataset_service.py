@@ -1,6 +1,7 @@
 from copy import deepcopy
 from typing import Any, Dict, Optional, Set, Tuple
 
+from loguru import logger
 from sqlalchemy.orm import Session
 
 from fides.api.common_exceptions import UnreachableNodesError, ValidationError
@@ -109,43 +110,50 @@ def run_test_access_request(
         },
     )
 
-    # Remove periods and colons to avoid them being parsed as path delimiters downstream.
-    escaped_input_data = {
-        key.replace(".", "_").replace(":", "_"): value
-        for key, value in input_data.items()
-    }
+    with logger.contextualize(
+        privacy_request_id=privacy_request.id,
+        privacy_request_source=PrivacyRequestSource.dataset_test,
+    ):
+        try:
+            # Remove periods and colons to avoid them being parsed as path delimiters downstream.
+            escaped_input_data = {
+                key.replace(".", "_").replace(":", "_"): value
+                for key, value in input_data.items()
+            }
 
-    # Manually cache the input data as identity data.
-    # We're doing a bit of trickery here to avoid asking for labels for custom identities.
-    predefined_fields = Identity.model_fields.keys()
-    input_identity = {
-        key: (
-            value
-            if key in predefined_fields
-            else LabeledIdentity(label=key, value=value)
-        )
-        for key, value in escaped_input_data.items()
-    }
-    privacy_request.cache_identity(input_identity)
+            # Manually cache the input data as identity data.
+            # We're doing a bit of trickery here to avoid asking for labels for custom identities.
+            predefined_fields = Identity.model_fields.keys()
+            input_identity = {
+                key: (
+                    value
+                    if key in predefined_fields
+                    else LabeledIdentity(label=key, value=value)
+                )
+                for key, value in escaped_input_data.items()
+            }
+            privacy_request.cache_identity(input_identity)
 
-    graph_dataset = dataset_config.get_graph()
-    modified_graph_dataset = replace_references_with_identities(
-        dataset_config.fides_key, graph_dataset
-    )
+            graph_dataset = dataset_config.get_graph()
+            modified_graph_dataset = replace_references_with_identities(
+                dataset_config.fides_key, graph_dataset
+            )
 
-    dataset_graph = DatasetGraph(modified_graph_dataset)
-    connection_config = dataset_config.connection_config
+            dataset_graph = DatasetGraph(modified_graph_dataset)
+            connection_config = dataset_config.connection_config
 
-    # Finally invoke the existing DSR 3.0 access request task
-    run_access_request(
-        privacy_request,
-        policy,
-        dataset_graph,
-        [connection_config],
-        escaped_input_data,
-        db,
-        privacy_request_proceed=False,
-    )
+            run_access_request(
+                privacy_request,
+                policy,
+                dataset_graph,
+                [connection_config],
+                escaped_input_data,
+                db,
+                privacy_request_proceed=False,
+            )
+        except Exception as exc:
+            logger.error(f"Error running test access request: {exc}")
+
     return privacy_request
 
 

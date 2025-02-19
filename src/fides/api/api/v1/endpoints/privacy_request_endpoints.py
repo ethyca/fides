@@ -2181,15 +2181,21 @@ def get_test_privacy_request_results(
         db, results, dataset_key, privacy_request.policy_id  # type: ignore[arg-type]
     )
 
-    return {
-        "privacy_request_id": privacy_request.id,
-        "status": privacy_request.status,
-        "results": (
-            filtered_results
-            if CONFIG.security.dsr_testing_tools_enabled
-            else "DSR testing tools are not enabled, results will not be shown."
-        ),
-    }
+    with logger.contextualize(
+        privacy_request_id=privacy_request.id,
+        privacy_request_source=privacy_request.source.value,
+    ):
+        logger.info("Privacy request run completed.")
+
+        return {
+            "privacy_request_id": privacy_request.id,
+            "status": privacy_request.status,
+            "results": (
+                filtered_results
+                if CONFIG.security.dsr_testing_tools_enabled
+                else "DSR testing tools are not enabled, results will not be shown."
+            ),
+        }
 
 
 @router.post(

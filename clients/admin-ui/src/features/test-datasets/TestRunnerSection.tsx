@@ -70,13 +70,14 @@ const TestResultsSection = ({ connectionKey }: TestResultsSectionProps) => {
   }, [currentDataset, testInputs]);
 
   // Poll for results when we have a privacy request ID
-  const { data: filteredResults } = useGetFilteredResultsQuery(
-    { privacy_request_id: privacyRequestId! },
-    {
-      skip: !privacyRequestId || !currentDataset?.fides_key,
-      pollingInterval: 2000,
-    },
-  );
+  const { data: filteredResults, error: filteredResultsError } =
+    useGetFilteredResultsQuery(
+      { privacy_request_id: privacyRequestId! },
+      {
+        skip: !privacyRequestId || !currentDataset?.fides_key,
+        pollingInterval: 2000,
+      },
+    );
 
   // Get test logs with refetch capability
   const { refetch: refetchLogs } = useGetTestLogsQuery(
@@ -133,6 +134,17 @@ const TestResultsSection = ({ connectionKey }: TestResultsSectionProps) => {
   useEffect(() => {
     const currentDatasetKey = currentDataset?.fides_key;
 
+    // Handle 404 errors by stopping polling and showing error
+    if (
+      filteredResultsError &&
+      "status" in filteredResultsError &&
+      filteredResultsError.status === 404
+    ) {
+      dispatch(finishTest());
+      toast(errorToastParams("Test run failed"));
+      return;
+    }
+
     if (
       !filteredResults ||
       filteredResults.privacy_request_id !== privacyRequestId ||
@@ -166,6 +178,7 @@ const TestResultsSection = ({ connectionKey }: TestResultsSectionProps) => {
     }
   }, [
     filteredResults,
+    filteredResultsError,
     privacyRequestId,
     currentDataset,
     isTestRunning,
