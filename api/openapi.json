@@ -1130,7 +1130,7 @@
         "security": [
           {
             "OAuth2ClientCredentialsBearer": [
-              "ctl_dataset:read"
+              "dataset:read"
             ]
           }
         ],
@@ -2957,9 +2957,6 @@
                   },
                   {
                     "$ref": "#/components/schemas/TimescaleDocsSchema"
-                  },
-                  {
-                    "$ref": "#/components/schemas/WebsiteSchema"
                   }
                 ],
                 "title": "Unvalidated Secrets"
@@ -4368,9 +4365,6 @@
                   },
                   {
                     "$ref": "#/components/schemas/TimescaleDocsSchema"
-                  },
-                  {
-                    "$ref": "#/components/schemas/WebsiteSchema"
                   }
                 ],
                 "title": "Unvalidated Secrets"
@@ -4517,9 +4511,6 @@
                   },
                   {
                     "$ref": "#/components/schemas/TimescaleDocsSchema"
-                  },
-                  {
-                    "$ref": "#/components/schemas/WebsiteSchema"
                   }
                 ],
                 "title": "Unvalidated Secrets"
@@ -15362,8 +15353,7 @@
           "scylla",
           "snowflake",
           "sovrn",
-          "timescale",
-          "website"
+          "timescale"
         ],
         "title": "ConnectionType",
         "description": "Supported types to which we can connect Fides."
@@ -16013,9 +16003,6 @@
                 "$ref": "#/components/schemas/TimescaleDocsSchema"
               },
               {
-                "$ref": "#/components/schemas/WebsiteSchema"
-              },
-              {
                 "type": "null"
               }
             ],
@@ -16350,6 +16337,9 @@
           }
         },
         "type": "object",
+        "required": [
+          "description"
+        ],
         "title": "DataCategoryCreateOrUpdate"
       },
       "DataFlow": {
@@ -16665,6 +16655,9 @@
           }
         },
         "type": "object",
+        "required": [
+          "description"
+        ],
         "title": "DataSubjectCreateOrUpdate"
       },
       "DataSubjectRights": {
@@ -16975,6 +16968,9 @@
           }
         },
         "type": "object",
+        "required": [
+          "description"
+        ],
         "title": "DataUseCreateOrUpdate"
       },
       "DatabaseConfig": {
@@ -24700,9 +24696,6 @@
               },
               {
                 "$ref": "#/components/schemas/TimescaleDocsSchema"
-              },
-              {
-                "$ref": "#/components/schemas/WebsiteSchema"
               }
             ],
             "title": "Secrets"
@@ -26288,8 +26281,7 @@
           "database",
           "email",
           "manual",
-          "saas",
-          "website"
+          "saas"
         ],
         "title": "SystemType"
       },
@@ -27115,22 +27107,6 @@
         ],
         "title": "WebhookOrder",
         "description": "Schema for displaying a minimal amount of information about the webhook and its order"
-      },
-      "WebsiteSchema": {
-        "properties": {
-          "url": {
-            "type": "string",
-            "minLength": 1,
-            "format": "uri",
-            "title": "Url"
-          }
-        },
-        "type": "object",
-        "required": [
-          "url"
-        ],
-        "title": "WebsiteSchema",
-        "description": "Schema to validate the secrets needed for a generic website connector"
       },
       "WorkerHealthCheck": {
         "properties": {
