@@ -27,6 +27,9 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ### Docs
 - Removed version pins in LDFLAGS & CFLAGS for local MSSQL builds [#5760](https://github.com/ethyca/fides/pull/5760)
 
+### Fixed
+- Fixed GPP string and section inconsistencies [#5765](https://github.com/ethyca/fides/pull/5765)
+
 ## [2.55.0](https://github.com/ethyca/fides/compare/2.54.0...2.55.0)
 
 ### Added
