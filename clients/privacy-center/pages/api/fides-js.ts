@@ -190,9 +190,7 @@ export default async function handler(
       experience = await fetchExperience({
         userLocationString: fidesRegionString,
         userLanguageString,
-        fidesApiUrl:
-          serverSettings.SERVER_SIDE_FIDES_API_URL ||
-          environment.settings.FIDES_API_URL,
+        fidesApiUrl: getFidesApiUrl(),
         propertyId,
         requestMinimalTCF: true,
       });
