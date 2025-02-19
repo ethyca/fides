@@ -25,8 +25,6 @@ import {
   LegacyConsentConfig,
 } from "~/types/config";
 
-import fetchPropetyFromApi from "./server-utils/fetchPropetyFromApi";
-
 /**
  * Subset of PrivacyCenterSettings that are for use only on server-side and
  * should never be exposed to the client.

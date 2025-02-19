@@ -13,7 +13,7 @@ import type { NextPage } from "next";
 import { useSearchParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
 
-import { useAppDispatch, useAppSelector } from "~/app/hooks";
+import { useAppSelector } from "~/app/hooks";
 import { ConfigErrorToastOptions } from "~/common/toast-options";
 import BrandLink from "~/components/BrandLink";
 import ConsentCard from "~/components/consent/ConsentCard";
