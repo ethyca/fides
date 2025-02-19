@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.54.0"
+    "version": "2.55.0"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -13449,6 +13449,35 @@
         }
       }
     },
+    "/api/v1/worker-stats": {
+      "get": {
+        "tags": [
+          "Worker Stats"
+        ],
+        "summary": "Get Worker Stats",
+        "description": "Get statistics about Celery queues and workers.\n\nReturns information about task queues and worker states in the Celery system:\n- Queue statistics: Number of pending tasks in each Redis-backed queue\n- Worker statistics: Current state of each Celery worker including:\n    - Active task: Currently executing task, if any\n    - Reserved tasks: Tasks reserved by a worker but not yet started\n    - Registered tasks: Tasks this worker is configured to accept",
+        "operationId": "get_worker_stats_api_v1_worker_stats_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkerStats"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "worker-stats:read"
+            ]
+          }
+        ]
+      }
+    },
     "/api/v1/admin/db/{action}": {
       "post": {
         "tags": [
@@ -16997,6 +17026,22 @@
             "title": "DataHub Token",
             "description": "The token used to authenticate with your DataHub server.",
             "sensitive": true
+          },
+          "frequency": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PeriodicIntegrationFrequency"
+              }
+            ],
+            "title": "Frequency",
+            "description": "The frequency at which the integration should run. Defaults to daily.",
+            "default": "daily"
+          },
+          "glossary_node": {
+            "type": "string",
+            "title": "Glossary Node",
+            "description": "The glossary node name to use on Datahub for Fides Data Categories. Defaults to FidesDataCategories",
+            "default": "FidesDataCategories"
           }
         },
         "type": "object",
@@ -21129,6 +21174,16 @@
         "title": "ParamValue",
         "description": "A named variable which can be sourced from identities, dataset references, or connector params. These values\nare used to replace the placeholders in the path, header, query, and body param values."
       },
+      "PeriodicIntegrationFrequency": {
+        "type": "string",
+        "enum": [
+          "daily",
+          "weekly",
+          "monthly"
+        ],
+        "title": "PeriodicIntegrationFrequency",
+        "description": "Enum for periodic integration frequency"
+      },
       "PolicyMaskingSpec": {
         "properties": {
           "strategy": {
@@ -23214,6 +23269,19 @@
         ],
         "title": "QueryParam"
       },
+      "QueueInfo": {
+        "properties": {
+          "messages": {
+            "type": "integer",
+            "title": "Messages"
+          }
+        },
+        "type": "object",
+        "required": [
+          "messages"
+        ],
+        "title": "QueueInfo"
+      },
       "RDSMySQLDocsSchema": {
         "properties": {
           "auth_method": {
@@ -24764,7 +24832,8 @@
           "validate:exec",
           "webhook:create_or_update",
           "webhook:delete",
-          "webhook:read"
+          "webhook:read",
+          "worker-stats:read"
         ],
         "title": "ScopeRegistryEnum"
       },
@@ -26216,6 +26285,52 @@
         ],
         "title": "SystemType"
       },
+      "TaskDetails": {
+        "properties": {
+          "task_id": {
+            "type": "string",
+            "title": "Task Id"
+          },
+          "task_name": {
+            "type": "string",
+            "title": "Task Name"
+          },
+          "args": {
+            "items": {},
+            "type": "array",
+            "title": "Args"
+          },
+          "keyword_args": {
+            "anyOf": [
+              {
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Keyword Args"
+          },
+          "started_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Started At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "task_id",
+          "task_name",
+          "args"
+        ],
+        "title": "TaskDetails"
+      },
       "TestMessagingStatusMessage": {
         "properties": {
           "msg": {
@@ -27022,6 +27137,62 @@
         ],
         "title": "WorkerHealthCheck",
         "description": "Worker Healthcheck Schema"
+      },
+      "WorkerInfo": {
+        "properties": {
+          "active_task": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TaskDetails"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "reserved_tasks": {
+            "items": {
+              "$ref": "#/components/schemas/TaskDetails"
+            },
+            "type": "array",
+            "title": "Reserved Tasks",
+            "default": []
+          },
+          "registered_tasks": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Registered Tasks",
+            "default": []
+          }
+        },
+        "type": "object",
+        "title": "WorkerInfo"
+      },
+      "WorkerStats": {
+        "properties": {
+          "queues": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/QueueInfo"
+            },
+            "type": "object",
+            "title": "Queues"
+          },
+          "workers": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/WorkerInfo"
+            },
+            "type": "object",
+            "title": "Workers"
+          }
+        },
+        "type": "object",
+        "required": [
+          "queues",
+          "workers"
+        ],
+        "title": "WorkerStats"
       },
       "fides__api__schemas__connection_configuration__connection_secrets_bigquery__KeyfileCreds": {
         "properties": {
