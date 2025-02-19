@@ -248,12 +248,14 @@ async def update_resource(
         async with async_session.begin():
             try:
                 log.debug("Updating resource")
+                log.info(f"resource_dict: {resource_dict}")
                 await async_session.execute(
                     _update(sql_model.__table__)
                     .where(sql_model.fides_key == resource_dict["fides_key"])
                     .values(resource_dict)
                 )
-            except SQLAlchemyError:
+            except SQLAlchemyError as err:
+                log.warning(f"SQLAlchemyError: {err}")
                 error = errors.QueryError()
                 log.bind(error=error.detail["error"]).info(  # type: ignore[index]
                     "Failed to update resource"
