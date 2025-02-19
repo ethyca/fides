@@ -23,6 +23,10 @@ const GZIP_SIZE_TCF_WARN_KB = 75;
 const GZIP_SIZE_HEADLESS_ERROR_KB = 25;
 const GZIP_SIZE_HEADLESS_WARN_KB = 20;
 
+// GPP
+const GZIP_SIZE_GPP_ERROR_KB = 25;
+const GZIP_SIZE_GPP_WARN_KB = 15;
+
 const preactAliases = {
   entries: [
     { find: "react", replacement: "preact/compat" },
@@ -117,8 +121,8 @@ const SCRIPTS = [
   },
   {
     name: `${NAME}-ext-gpp`,
-    gzipWarnSizeKb: 10,
-    gzipErrorSizeKb: 20,
+    gzipWarnSizeKb: GZIP_SIZE_GPP_WARN_KB,
+    gzipErrorSizeKb: GZIP_SIZE_GPP_ERROR_KB,
     isExtension: true,
   },
 ];
