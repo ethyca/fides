@@ -905,3 +905,42 @@ def get_system_data_uses(db: Session, include_parents: bool) -> Set:
         else:
             data_uses.add(data_use)
     return data_uses
+
+
+# Attachments
+class AttachmentReferences(Base):
+    """
+    Stores information about an Attachment and any other element which may reference that attachment.
+    """
+
+    __tablename__ = "attachment_references"
+
+    attachment_id = Column(String, ForeignKey("attachments.id"), nullable=False)
+    reference_id = Column(String, nullable=False)
+    reference_type = Column(String, nullable=False)
+
+    attachment = relationship(
+        "Attachments",
+        back_populates="references",
+        uselist=False,
+    )
+
+
+class Attachments(Base):
+    """
+    Stores information about an Attachment.
+    """
+
+    __tablename__ = "attachments"
+
+    user_id = Column(String, nullable=False)
+    file_name = Column(String, nullable=False)
+    storage_url = Column(String, nullable=False)
+    attachment_type = Column(String, nullable=False)
+
+    references = relationship(
+        "AttachmentReferences",
+        back_populates="attachment",
+        cascade="all, delete",
+        uselist=True,
+    )
