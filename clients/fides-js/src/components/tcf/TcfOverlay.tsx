@@ -240,6 +240,7 @@ export const TcfOverlay = ({
         vendorsLegint: getEnabledIds([...legintVendors, ...legintSystems]),
       });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [experience]);
 
   useEffect(() => {

@@ -21,8 +21,15 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.55.0...main)
 
+### Added
+- DB model support for Web Monitoring [#5616](https://github.com/ethyca/fides/pull/5616) https://github.com/ethyca/fides/labels/db-migration
+
 ### Docs
 - Removed version pins in LDFLAGS & CFLAGS for local MSSQL builds [#5760](https://github.com/ethyca/fides/pull/5760)
+
+### Fixed
+- Fixed GPP string and section inconsistencies [#5765](https://github.com/ethyca/fides/pull/5765)
+- Fixed sending of notifications for privacy request receipts [#5777](https://github.com/ethyca/fides/pull/5777)
 
 ## [2.55.0](https://github.com/ethyca/fides/compare/2.54.0...2.55.0)
 
@@ -30,7 +37,6 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Added editing support for categories of consent on discovered assets [#5739](https://github.com/ethyca/fides/pull/5739)
 - Added a read-only consent category cell to Action Center aggregate system results table [#5737](https://github.com/ethyca/fides/pull/5737)
 - Added detail trays to items in data catalog view [#5729](https://github.com/ethyca/fides/pull/5729)
-- DB model support for Web Monitoring [#5616](https://github.com/ethyca/fides/pull/5616)
 - Support rendering and saving consent from custom notices in TCF Overlay [#5742](https://github.com/ethyca/fides/pull/5742)
 - Added worker stats endpoint to monitor worker status and task queue length [#5725](https://github.com/ethyca/fides/pull/5725)
 - New "Headless" experience type to support custom UI implementations [#5751](https://github.com/ethyca/fides/pull/5751)
@@ -41,7 +47,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Added initial support for upcoming "headless" CMP experience type [#5731](https://github.com/ethyca/fides/pull/5731)
 - All Select dropdowns will now allow searching to narrow down the options by default [#5738](https://github.com/ethyca/fides/pull/5738)
 - Exposes privacy notice picker for TCF components [#5730](https://github.com/ethyca/fides/pull/5730)
-- Model changes to support new privacy center config options [5732](https://github.com/ethyca/fides/pull/5732) https://github.com/ethyca/fides/labels/db-migration
+- Model changes to support new privacy center config options [5732](https://github.com/ethyca/fides/pull/5732)
 
 ### Fixed
 - Fixed `fides annotate dataset` command enters incorrect value on the `direction` field. [#5727](https://github.com/ethyca/fides/pull/5727)
