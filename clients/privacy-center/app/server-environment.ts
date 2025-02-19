@@ -353,9 +353,9 @@ export const loadPrivacyCenterEnvironment = async ({
     if (result) {
       property = result;
     }
-  } else if (settings.FIDES_PRIVACY_CENTER__ROOT_PROPERTY_PATH) {
+  } else if (settings.ROOT_PROPERTY_PATH) {
     const result = await fetchPropetyFromApi({
-      path: settings.FIDES_PRIVACY_CENTER__ROOT_PROPERTY_PATH,
+      path: settings.ROOT_PROPERTY_PATH,
       fidesApiUrl: settings.SERVER_SIDE_FIDES_API_URL || settings.FIDES_API_URL,
     });
     if (result) {

@@ -24,15 +24,24 @@ const getPrivacyCenterEnvironment = async ({
   debugLogServer("Load Privacy Center environment for session...");
 
   const userLocation = await lookupGeolocationServerSide();
-  const privacyCenterPath = propertyPath || "/";
   const envVariables = loadEnvironmentVariables();
+  const privacyCenterPath =
+    propertyPath || envVariables.ROOT_PROPERTY_PATH || "/";
 
   // Fetch property from API
-  const property = await fetchPropetyFromApi({
-    path: privacyCenterPath,
-    fidesApiUrl: getFidesApiUrl(),
-    location: userLocation?.location,
-  });
+  // Only fetch if USE_API_CONFIG is true or propertyPath is provided
+  // (property paths are only supported in the api)
+  const useApiConfig = Boolean(
+    envVariables.USE_API_CONFIG || privacyCenterPath !== "/",
+  );
+  let property = null;
+  if (useApiConfig) {
+    property = await fetchPropetyFromApi({
+      path: privacyCenterPath,
+      fidesApiUrl: getFidesApiUrl(),
+      location: userLocation?.location,
+    });
+  }
 
   // Load config from property or fallback to static file config
   const config =

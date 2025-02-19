@@ -15,7 +15,8 @@ export interface PrivacyCenterSettings {
   CONFIG_JSON_URL: string; // e.g. file:///app/config/config.json
   SHOW_BRAND_LINK: boolean; // whether to render the Ethyca brand link
   CUSTOM_PROPERTIES: boolean; // (optional) (default: true) enables the use of a single privacy center instance to serve different properties on different paths with custom configs
-  FIDES_PRIVACY_CENTER__ROOT_PROPERTY_PATH: string | null; // (optional) setting this will fetch a property when navigating the root ("/") path.
+  ROOT_PROPERTY_PATH: string | null; // (optional) force a property path to be fetched from the API. If "/foo" is set, it will attempt to return the property with "/foo" path.
+  USE_API_CONFIG: boolean; // (optional) (default: false) when set to true, the privacy center will attempt to fetch a property from the API before falling back to the static config.
 
   // Fides.js options
   DEBUG: boolean; // whether console logs are enabled for consent components

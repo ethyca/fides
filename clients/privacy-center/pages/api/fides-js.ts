@@ -15,10 +15,8 @@ import {
 import { promises as fsPromises } from "fs";
 import type { NextApiRequest, NextApiResponse } from "next";
 
-import {
-  loadPrivacyCenterEnvironment,
-  loadServerSettings,
-} from "~/app/server-environment";
+import { getFidesApiUrl } from "~/app/server-environment";
+import { getPrivacyCenterEnvironmentCached } from "~/app/server-utils";
 import { LOCATION_HEADERS, lookupGeolocation } from "~/common/geolocation";
 import { safeLookupPropertyId } from "~/common/property-id";
 
@@ -110,8 +108,7 @@ export default async function handler(
   res: NextApiResponse,
 ) {
   // Load the configured consent options (data uses, defaults, etc.) from environment
-  const environment = await loadPrivacyCenterEnvironment();
-  const serverSettings = await loadServerSettings();
+  const environment = await getPrivacyCenterEnvironmentCached();
 
   let options: ConsentOption[] = [];
   if (environment.config?.consent?.page.consentOptions) {
@@ -367,12 +364,7 @@ async function fetchCustomFidesCss(
 
   if (shouldRefresh) {
     try {
-      const environment = await loadPrivacyCenterEnvironment();
-      const serverSettings = await loadServerSettings();
-
-      const fidesUrl =
-        serverSettings.SERVER_SIDE_FIDES_API_URL ||
-        environment.settings.FIDES_API_URL;
+      const fidesUrl = getFidesApiUrl();
       const response = await fetch(
         `${fidesUrl}/plus/custom-asset/custom-fides.css`,
       );
