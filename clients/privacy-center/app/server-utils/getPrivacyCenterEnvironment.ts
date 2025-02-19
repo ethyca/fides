@@ -2,7 +2,6 @@
 
 import { cache } from "react";
 
-import { lookupGeolocationServerSide } from "~/common/geolocation-server";
 import { NextSearchParams } from "~/types/next";
 
 import {
@@ -13,8 +12,9 @@ import {
   PrivacyCenterEnvironment,
 } from "../server-environment";
 import debugLogServer from "./debugLogServer";
-import fetchPropetyFromApi from "./fetchPropetyFromApi";
+import fetchPropertyFromApi from "./fetchPropertyFromApi";
 import loadEnvironmentVariables from "./loadEnvironmentVariables";
+import lookupGeolocationServerSide from "./lookupGeolocationServerSide";
 
 /**
  *
@@ -45,7 +45,7 @@ const getPrivacyCenterEnvironment = async ({
   );
   let property = null;
   if (useApiConfig) {
-    property = await fetchPropetyFromApi({
+    property = await fetchPropertyFromApi({
       path: privacyCenterPath,
       fidesApiUrl: getFidesApiUrl(),
       location: userLocation?.location,

@@ -10,7 +10,7 @@ import {
   CLOUDFRONT_HEADER_REGION,
   VALID_ISO_3166_2_REGION_REGEX,
   VALID_ISO_3166_LOCATION_REGEX,
-} from "./geolocation";
+} from "../../common/geolocation";
 
 /**
  * Lookup the "geolocation" (ie country and region) for the given request by looking for either:
@@ -20,7 +20,7 @@ import {
  * If none of these are found, return an undefined geolocation.
  *
  */
-export const lookupGeolocationServerSide = async ({
+const lookupGeolocationServerSide = async ({
   searchParams,
 }: {
   searchParams?: NextSearchParams;
@@ -81,3 +81,4 @@ export const lookupGeolocationServerSide = async ({
   debugLogServer(`Using location: null`);
   return null;
 };
+export default lookupGeolocationServerSide;

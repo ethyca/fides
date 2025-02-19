@@ -3,7 +3,7 @@ import { Property } from "~/types/api";
 
 import debugLogServer from "./debugLogServer";
 
-const fetchPropetyFromApi = async ({
+const fetchPropertyFromApi = async ({
   fidesApiUrl,
   path,
   location,
@@ -42,4 +42,4 @@ const fetchPropetyFromApi = async ({
   debugLogServer(`Fetched property id: `, result?.id);
   return result;
 };
-export default fetchPropetyFromApi;
+export default fetchPropertyFromApi;
