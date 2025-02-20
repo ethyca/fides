@@ -23,6 +23,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ### Added
 - DB model support for Web Monitoring [#5616](https://github.com/ethyca/fides/pull/5616) https://github.com/ethyca/fides/labels/db-migration
+- DB model support for Attachments [#5784](https://github.com/ethyca/fides/pull/5784)
 
 ### Docs
 - Removed version pins in LDFLAGS & CFLAGS for local MSSQL builds [#5760](https://github.com/ethyca/fides/pull/5760)
