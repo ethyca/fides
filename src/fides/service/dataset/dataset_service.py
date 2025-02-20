@@ -112,7 +112,7 @@ def run_test_access_request(
 
     with logger.contextualize(
         privacy_request_id=privacy_request.id,
-        privacy_request_source=PrivacyRequestSource.dataset_test,
+        privacy_request_source=PrivacyRequestSource.dataset_test.value,
     ):
         try:
             # Remove periods and colons to avoid them being parsed as path delimiters downstream.
