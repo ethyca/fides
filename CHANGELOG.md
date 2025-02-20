@@ -19,7 +19,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - https://github.com/ethyca/fides/labels/high-risk: to indicate that a change is a "high-risk" change that could potentially lead to unanticipated regressions or degradations
 - https://github.com/ethyca/fides/labels/db-migration: to indicate that a given change includes a DB migration
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.55.0...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.55.2...main)
 
 ### Added
 - DB model support for Web Monitoring [#5616](https://github.com/ethyca/fides/pull/5616) https://github.com/ethyca/fides/labels/db-migration
@@ -27,8 +27,16 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ### Docs
 - Removed version pins in LDFLAGS & CFLAGS for local MSSQL builds [#5760](https://github.com/ethyca/fides/pull/5760)
 
+## [2.55.2](https://github.com/ethyca/fides/compare/2.55.1...2.55.2)
+
+### Changed
+- Release version bump. No code changes.
+
+## [2.55.1](https://github.com/ethyca/fides/compare/2.55.0...2.55.1)
+
 ### Fixed
 - Fixed GPP string and section inconsistencies [#5765](https://github.com/ethyca/fides/pull/5765)
+- Fixed sending of notifications for privacy request receipts [#5777](https://github.com/ethyca/fides/pull/5777)
 - Fixed Compass returning error for deleted GVL systems [#5786](https://github.com/ethyca/fides/pull/5786)
 
 ## [2.55.0](https://github.com/ethyca/fides/compare/2.54.0...2.55.0)

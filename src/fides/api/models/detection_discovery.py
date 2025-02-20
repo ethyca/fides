@@ -15,7 +15,6 @@ from sqlalchemy.orm.query import Query
 
 from fides.api.db.base_class import Base, FidesBase
 from fides.api.models.connectionconfig import ConnectionConfig
-from fides.api.models.sql_models import System  # type: ignore[attr-defined]
 
 
 class DiffStatus(Enum):
@@ -233,38 +232,11 @@ class StagedResource(Base):
     urn = Column(String, index=True, unique=True, nullable=False)
     resource_type = Column(String, index=True, nullable=True)
     description = Column(String, nullable=True)
-    monitor_config_id = Column(
-        String,
-        index=True,  # indexed because we frequently need to slice by monitor config ID
-        nullable=True,
-    )  # just a "soft" pointer, for now TODO: make this a FK
-
-    # for now, this is just used for web monitor resources.
-    system_id = Column(
-        String,
-        ForeignKey(System.id_field_path),
-        nullable=True,
-        index=True,
-    )
-
-    # TODO: we should be able to enable the below relationship, but it
-    # confuses different functionality since 'system' means different
-    # things depending on whether the resource is a datastore or web monitor
-    # staged resource
-    #    system = relationship(System)
-
-    # the Compass vendor ID associated with the StagedResource.
-    # only used for web monitor resources
-    vendor_id = Column(
-        String,
-        nullable=True,
-        index=True,  # indexed because we frequently need to slice by vendor ID
-    )
-
+    monitor_config_id = Column(String, nullable=True)  # just a "soft" pointer, for now
     source_modified = Column(
         DateTime(timezone=True),
         nullable=True,
-    )  # when the resource was modified in the datasource
+    )  # when the table was modified in the datasource
     classifications = Column(
         ARRAY(JSONB),
         nullable=False,
@@ -380,6 +352,7 @@ class MonitorExecution(Base):
     configuration details used in connecting to the external data store.
     """
 
+    id = Column(String, primary_key=True)
     monitor_config_key = Column(
         String,
         ForeignKey(MonitorConfig.key),
