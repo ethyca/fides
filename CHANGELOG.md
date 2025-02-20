@@ -29,6 +29,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ### Fixed
 - Fixed GPP string and section inconsistencies [#5765](https://github.com/ethyca/fides/pull/5765)
+- Fixed Compass returning error for deleted GVL systems [#5786](https://github.com/ethyca/fides/pull/5786)
 
 ## [2.55.0](https://github.com/ethyca/fides/compare/2.54.0...2.55.0)
 
