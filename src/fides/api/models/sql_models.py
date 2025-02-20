@@ -438,6 +438,10 @@ class System(Base, FidesBase):
         "Cookies", back_populates="system", lazy="selectin", uselist=True, viewonly=True
     )
 
+    assets = relationship(
+        "Asset", back_populates="system", lazy="selectin", uselist=True, viewonly=True
+    )
+
     @classmethod
     def get_data_uses(
         cls: Type[System], systems: List[System], include_parents: bool = True

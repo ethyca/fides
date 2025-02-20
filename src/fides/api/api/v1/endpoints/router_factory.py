@@ -158,7 +158,7 @@ def create_router_factory(fides_model: FidesModelType, model_type: str) -> APIRo
         if isinstance(resource, Dataset):
             await validate_data_categories(resource, db)
             validate_masking_strategy(resource)
-        if isinstance(sql_model, ModelWithDefaultField) and resource.is_default:
+        if isinstance(resource, ModelWithDefaultField) and resource.is_default:
             raise errors.ForbiddenIsDefaultTaxonomyError(
                 model_type, resource.fides_key, action="create"
             )
