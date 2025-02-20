@@ -3000,7 +3000,7 @@ class TestDefaultTaxonomyCrud:
         )
         assert result.status_code == 403
         assert (
-            "cannot modify a resource where 'is_default' is true"
+            "cannot modify 'is_default' field on an existing resource"
             in result.json()["detail"]["error"]
         )
 
@@ -3184,7 +3184,9 @@ class TestCrudActiveProperty:
         self, test_config: FidesConfig, endpoint: str
     ) -> None:
         """Ensure we can toggle `active` property on default taxonomy elements"""
-        resource = getattr(DEFAULT_TAXONOMY, endpoint)[0]
+        # Use the third element to avoid deactivating top-level items, which deactivates
+        # all their descendants and we'd need to manually re-activate each one.
+        resource = getattr(DEFAULT_TAXONOMY, endpoint)[2]
         resource = TAXONOMY_EXTENSIONS[endpoint](
             **resource.model_dump(mode="json")
         )  # cast resource to extended model
@@ -3240,6 +3242,7 @@ class TestCrudActiveProperty:
             **resource.model_dump(mode="json")
         )  # cast resource to extended model
         resource.fides_key = resource.fides_key + "_test_create_active_false"
+        resource.name = resource.name + "_test_create_active_false"
         resource.is_default = False
         resource.version_added = None
         resource.active = False
@@ -3264,6 +3267,8 @@ class TestCrudActiveProperty:
         assert result.json()["active"] is False
 
         resource.fides_key = resource.fides_key + "_test_create_active_true"
+        resource.name = resource.name + "_test_create_active_true"
+        resource.is_default = False
         resource.active = True
         json_resource = resource.json(exclude_none=True)
         token_scopes: List[str] = [f"{CLI_SCOPE_PREFIX_MAPPING[endpoint]}:{CREATE}"]

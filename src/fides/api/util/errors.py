@@ -100,9 +100,13 @@ class ForbiddenIsDefaultTaxonomyError(ForbiddenError):
         action: str = "modify",
         error_message: Optional[str] = None,
     ) -> None:
-        error = (
-            error_message or f"cannot {action} a resource where 'is_default' is true"
+        default_error_message = (
+            "cannot modify 'is_default' field on an existing resource"
+            if action == "modify"
+            else f"cannot {action} a resource where 'is_default' is true"
         )
+
+        error = error_message or default_error_message
         super().__init__(
             resource_type=resource_type, fides_key=fides_key, error_message=error
         )
