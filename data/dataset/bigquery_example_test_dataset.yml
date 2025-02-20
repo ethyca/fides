@@ -41,6 +41,16 @@ dataset:
             fides_meta:
               type: object
             fields:
+              - name: city
+                data_categories: [user.contact.address.city]
+              - name: house
+                data_categories: [user.contact.address.street]
+              - name: id
+                data_categories: [system.operations]
+              - name: state
+                data_categories: [user.contact.address.state]
+              - name: street
+                data_categories: [user.contact.address.street]
               - name: address_id
                 data_categories: [system.operations]
                 references:
