@@ -13,6 +13,7 @@ from typing import TYPE_CHECKING, Any, Dict, List, Optional
 from loguru import logger
 from loguru._handler import Message
 
+from fides.api.schemas.privacy_request import LogEntry, PrivacyRequestSource
 from fides.config import CONFIG, FidesConfig
 
 if TYPE_CHECKING:
@@ -36,7 +37,6 @@ class RedisSink:
 
     def __call__(self, message: Message) -> None:
         """Write log message to Redis if conditions are met."""
-        from fides.api.schemas.privacy_request import LogEntry, PrivacyRequestSource
 
         record: Dict[str, Any] = message.record  # type: ignore[attr-defined]
 
