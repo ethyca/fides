@@ -197,7 +197,7 @@ export const BadgeCellExpandable = <T,>({
       >
         {displayValues.map((value) => (
           <Tag
-            color="transparent"
+            color="white"
             key={value.key}
             data-testid={value.key}
             {...tagProps}

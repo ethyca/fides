@@ -235,7 +235,7 @@ const AntPOC: NextPage = () => {
                 <Tag color="success">success</Tag>
                 <Tag color="info">info</Tag>
                 <Tag color="alert">alert</Tag>
-                <Tag color="transparent">transparent</Tag>
+                <Tag color="white">white</Tag>
                 <Tag closable onClose={() => console.log("closed")}>
                   Closable Tag
                 </Tag>
@@ -244,8 +244,16 @@ const AntPOC: NextPage = () => {
                   Add More
                 </Tag>
                 <Tag hasSparkle onClick={() => console.log("clicked")}>
-                  Data Category
+                  Data Use
                   <Icons.Edit />
+                </Tag>
+                <Tag
+                  hasSparkle
+                  onClick={() => console.log("clicked")}
+                  closable
+                  onClose={() => console.log("closed")}
+                >
+                  Data Category
                 </Tag>
               </Space>
             </Card>

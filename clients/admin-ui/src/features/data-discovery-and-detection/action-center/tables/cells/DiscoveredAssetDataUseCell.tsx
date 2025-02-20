@@ -68,7 +68,7 @@ const DiscoveredAssetDataUseCell = ({
             <Tag
               key={d}
               data-testid={`data-use-${d}`}
-              color="transparent"
+              color="white"
               closable
               onClose={() => handleDeleteDataUse(d)}
               closeButtonLabel="Remove data use"
