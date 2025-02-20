@@ -58,9 +58,9 @@ def test_validate_snowflake_missing_namespace_and_secrets():
         validator.validate(context)
 
     assert (
-        "Dataset for snowflake connection must either have namespace metadata or the connection must have the following configuration: account_identifier, user_login_name, warehouse_name"
-        in str(exc.value)
-    )
+        "Dataset for snowflake connection must either have namespace metadata "
+        "or the connection must have values for the following fields: Database Name, Schema"
+    ) in str(exc.value)
 
 
 def test_validate_snowflake_with_valid_namespace():
@@ -179,10 +179,8 @@ def test_validate_with_connection_defaults():
         connection_type=ConnectionType.snowflake,
         name="Test Connection",
         secrets={
-            "account_identifier": "test_account",
-            "user_login_name": "test_user",
-            "warehouse_name": "test_warehouse",
-            "password": "test_password",
+            "database_name": "test_db",
+            "schema_name": "test_schema",
         },
     )
     context = DatasetValidationContext(
@@ -191,3 +189,68 @@ def test_validate_with_connection_defaults():
 
     validator = NamespaceMetaValidationStep()
     validator.validate(context)
+
+
+@pytest.mark.parametrize(
+    "falsy_value",
+    [None, ""],
+)
+def test_validate_bigquery_with_missing_dataset(falsy_value):
+    """Test validation fails when BigQuery dataset has falsy value in required secret field"""
+    dataset = FideslangDataset(fides_key="test_dataset", collections=[])
+    connection_config = ConnectionConfig(
+        key="test_connection",
+        connection_type=ConnectionType.bigquery,
+        name="Test Connection",
+        secrets={"dataset": falsy_value},
+    )
+    context = DatasetValidationContext(
+        db=None, dataset=dataset, connection_config=connection_config
+    )
+
+    validator = NamespaceMetaValidationStep()
+    with pytest.raises(ValidationError) as exc:
+        validator.validate(context)
+
+    assert (
+        "Dataset for bigquery connection must either have namespace metadata "
+        "or the connection must have values for the following fields: Dataset"
+    ) in str(exc.value)
+
+
+@pytest.mark.parametrize(
+    "field,falsy_value",
+    [
+        ("database_name", None),
+        ("database_name", ""),
+        ("schema_name", None),
+        ("schema_name", ""),
+    ],
+)
+def test_validate_snowflake_with_missing_required_fields(field, falsy_value):
+    """Test validation fails when Snowflake has falsy values in required secret fields"""
+    dataset = FideslangDataset(fides_key="test_dataset", collections=[])
+    secrets = {
+        "database_name": "test_db",
+        "schema_name": "test_schema",
+    }
+    secrets[field] = falsy_value  # Override one field with falsy value
+
+    connection_config = ConnectionConfig(
+        key="test_connection",
+        connection_type=ConnectionType.snowflake,
+        name="Test Connection",
+        secrets=secrets,
+    )
+    context = DatasetValidationContext(
+        db=None, dataset=dataset, connection_config=connection_config
+    )
+
+    validator = NamespaceMetaValidationStep()
+    with pytest.raises(ValidationError) as exc:
+        validator.validate(context)
+
+    assert (
+        "Dataset for snowflake connection must either have namespace metadata "
+        "or the connection must have values for the following fields: Database Name, Schema"
+    ) in str(exc.value)

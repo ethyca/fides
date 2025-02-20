@@ -23,23 +23,25 @@ class NamespaceMetaValidationStep(DatasetValidationStep):
             context.dataset.fides_meta.namespace if context.dataset.fides_meta else None
         )
 
-        # Check if connection config has required secret fields
-        required_fields = NamespaceMeta.get_required_secret_fields(connection_type)
+        # Get required secret fields from the namespace meta class
+        required_fields = namespace_meta_class.get_fallback_secret_fields()
         has_connection_defaults = all(
-            field in context.connection_config.secrets for field in required_fields
+            field_name in context.connection_config.secrets
+            and context.connection_config.secrets[field_name]
+            for field_name, _ in required_fields
         )
 
         if not namespace_meta and not has_connection_defaults:
-            required_fields_str = ", ".join(sorted(required_fields))
-            raise ValidationError(
-                f"Dataset for {connection_type} connection must either have namespace "
-                f"metadata or the connection must have the following configuration: {required_fields_str}"
+            field_descriptions = ", ".join(
+                field_label for _, field_label in required_fields
             )
-
-        # If namespace metadata exists, validate it against the correct schema
+            raise ValidationError(
+                f"Dataset for {connection_type} connection must either have namespace metadata "
+                f"or the connection must have values for the following fields: {field_descriptions}"
+            )
         if namespace_meta:
             try:
-                namespace_meta_class.model_validate(namespace_meta)
+                namespace_meta_class(**namespace_meta)
             except Exception as e:
                 raise ValidationError(
                     f"Invalid namespace metadata for {connection_type}: {str(e)}"

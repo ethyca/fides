@@ -1,9 +1,7 @@
-from abc import ABC
-from typing import ClassVar, Dict, Optional, Set, Type
+from abc import ABC, abstractmethod
+from typing import ClassVar, Dict, Optional, Set, Tuple, Type
 
 from pydantic import BaseModel
-
-from fides.api.schemas.connection_configuration import secrets_schemas
 
 
 class NamespaceMeta(BaseModel, ABC):
@@ -28,12 +26,10 @@ class NamespaceMeta(BaseModel, ABC):
         return cls._implementations.get(connection_type)
 
     @classmethod
-    def get_required_secret_fields(cls, connection_type: str) -> Set[str]:
-        """Get required secret fields from the connection's secrets schema"""
-        if connection_type not in secrets_schemas:
-            return set()
-
-        schema = secrets_schemas[connection_type]
-        return {
-            name for name, field in schema.__fields__.items() if field.is_required()
-        }
+    @abstractmethod
+    def get_fallback_secret_fields(cls) -> Set[Tuple]:
+        """
+        The required connection config secrets when namespace metadata is missing.
+        Each implementation specifies which fields are required from connection secrets
+        when falling back due to missing namespace metadata.
+        """
