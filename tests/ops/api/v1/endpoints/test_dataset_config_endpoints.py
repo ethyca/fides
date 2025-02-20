@@ -177,7 +177,7 @@ class TestValidateDataset:
         assert not details["is_traversable"]
         assert (
             details["msg"]
-            == "Referred to object postgres_example_test_dataset:address:id does not exist"
+            == "Referenced object postgres_example_test_dataset:address:id from dataset postgres_example_test_dataset does not exist"
         )
 
     def test_put_validate_dataset_nested_collections(
@@ -419,7 +419,7 @@ class TestValidateDataset:
         assert response_body["traversal_details"]
         assert response_body["traversal_details"]["is_traversable"] is False
         assert (
-            "Referred to object postgres_example_test_dataset:customer:id does not exist"
+            "Referenced object postgres_example_test_dataset:customer:id from dataset mongo_test does not exist"
             == response_body["traversal_details"]["msg"]
         )
 
@@ -895,7 +895,9 @@ class TestPatchDatasetConfigs:
             "'saas_connector_example' of the connection config"
         )
 
-    @mock.patch("fides.api.models.datasetconfig.DatasetConfig.create_or_update")
+    @mock.patch(
+        "fides.service.dataset.dataset_config_service.DatasetConfig.create_or_update"
+    )
     def test_patch_dataset_configs_failed_response(
         self,
         mock_create: Mock,
@@ -1824,7 +1826,9 @@ class TestPutDatasets:
             "'saas_connector_example' of the connection config"
         )
 
-    @mock.patch("fides.api.models.datasetconfig.DatasetConfig.upsert_with_ctl_dataset")
+    @mock.patch(
+        "fides.service.dataset.dataset_config_service.DatasetConfig.create_or_update"
+    )
     def test_patch_datasets_failed_response(
         self,
         mock_create: Mock,
@@ -1918,7 +1922,9 @@ class TestPutYamlDatasets:
         )
         assert response.status_code == 400
 
-    @mock.patch("fides.api.models.datasetconfig.DatasetConfig.upsert_with_ctl_dataset")
+    @mock.patch(
+        "fides.service.dataset.dataset_config_service.DatasetConfig.create_or_update"
+    )
     def test_patch_datasets_failed_response(
         self,
         mock_create: Mock,
