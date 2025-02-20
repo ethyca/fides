@@ -31,7 +31,7 @@ class DataSubject(BaseDataSubject):
 
 class TaxonomyCreateOrUpdateBase(DefaultModel, BaseModel):
     name: Optional[str] = None
-    description: Optional[str] = None
+    description: Optional[str]
     active: Optional[bool] = True
     fides_key: Optional[FidesKey] = None
     tags: Optional[List[str]] = None
