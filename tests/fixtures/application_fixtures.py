@@ -58,6 +58,7 @@ from fides.api.models.privacy_preference import (
     ServingComponent,
 )
 from fides.api.models.privacy_request import (
+    Consent,
     ConsentRequest,
     PrivacyRequest,
     ProvidedIdentity,
