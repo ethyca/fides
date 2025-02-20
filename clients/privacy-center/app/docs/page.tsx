@@ -1,6 +1,6 @@
 "use server";
 
-import "swagger-ui-react/swagger-ui.css";
+//import "swagger-ui-react/swagger-ui.css";
 
 import { NextPage } from "next";
 import { notFound } from "next/navigation";
@@ -12,6 +12,7 @@ const DocsPage: NextPage = () => {
     return notFound();
   }
 
-  return <SwaggerUI url="/api/openapi.json" />;
+  // return <SwaggerUI url="/api/openapi.json" />;
+  return <h1>Swagger docs not available</h1>;
 };
 export default DocsPage;

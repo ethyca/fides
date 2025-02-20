@@ -19,7 +19,7 @@
     "typescript": "^4.9.5"
   },
   "peerDependencies": {
-    "react": "19.0.0",
+    "react": "^19.0.0",
     "react-dom": "19.0.0"
   },
   "peerDevDependencies": {
@@ -43,7 +43,7 @@
     "eslint-plugin-react-hooks": "^4.6.2",
     "eslint-plugin-simple-import-sort": "^12.1.1",
     "prettier": "^3.3.3",
-    "react": "19.0.0",
+    "react": "^19.0.0",
     "react-dom": "19.0.0"
   }
 }
