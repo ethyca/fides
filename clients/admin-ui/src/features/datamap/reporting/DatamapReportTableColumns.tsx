@@ -142,7 +142,7 @@ export const getDatamapReportColumns = ({
                 ? map(value, getDataUseDisplayName)
                 : getDataUseDisplayName(value || "")
             }
-            tagProps={{ color: "transparent" }}
+            tagProps={{ color: "white" }}
             {...props}
           />
         );
@@ -191,7 +191,7 @@ export const getDatamapReportColumns = ({
                 ? map(value, getDataSubjectDisplayName)
                 : getDataSubjectDisplayName(value || "")
             }
-            tagProps={{ color: "transparent" }}
+            tagProps={{ color: "white" }}
             {...props}
           />
         );
@@ -384,7 +384,7 @@ export const getDatamapReportColumns = ({
           suffix="shared categories"
           ignoreZero
           value={props.getValue()}
-          tagProps={{ color: "transparent" }}
+          tagProps={{ color: "white" }}
           {...props}
         />
       ),
