@@ -908,6 +908,27 @@ def get_system_data_uses(db: Session, include_parents: bool) -> Set:
 
 
 # Attachments
+
+
+class AttachmentType(str, EnumType):
+    """
+    Enum for attachment types. Indicates attachment usage.
+    """
+
+    internal_use_only = "internal_use_only"
+    include_with_access_package = "include_with_access_package"
+
+
+class AttachmentReferenceType(str, EnumType):
+    """
+    Enum for attachment reference types. Indicates where attachment is referenced.
+    """
+
+    manual_step = "manual_step"
+    privacy_request = "privacy_request"
+    comment = "comment"
+
+
 class AttachmentReferences(Base):
     """
     Stores information about an Attachment and any other element which may reference that attachment.
@@ -917,7 +938,7 @@ class AttachmentReferences(Base):
 
     attachment_id = Column(String, ForeignKey("attachments.id"), nullable=False)
     reference_id = Column(String, nullable=False)
-    reference_type = Column(String, nullable=False)
+    reference_type = Column(EnumColumn(AttachmentReferenceType), nullable=False)
 
     attachment = relationship(
         "Attachments",
@@ -936,7 +957,7 @@ class Attachments(Base):
     user_id = Column(String, ForeignKey("fidesuser.id"), nullable=False)
     file_name = Column(String, nullable=False)
     storage_url = Column(String, nullable=False)
-    attachment_type = Column(String, nullable=False)
+    attachment_type = Column(EnumColumn(AttachmentType), nullable=False)
 
     references = relationship(
         "AttachmentReferences",
