@@ -62,8 +62,8 @@ const withCustomProps = (WrappedComponent: typeof Tag) => {
       };
     }
 
-    // If not a brand color, pass through to Ant Tag
     const customProps: TagProps = {
+      // If not a brand color, pass through to Ant Tag
       color: brandColor ? undefined : color,
       style: {
         ...style,

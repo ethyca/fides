@@ -19,7 +19,7 @@
   &:hover,
   &:focus {
     :global(.ant-tag) {
-      // !important is necessary because out custom component adds the background style to the tag inline giving it a higher specificity than our scss style here
+      // !important is necessary because our custom component adds the background style to the tag inline giving it a higher specificity than our scss style here
       background: map-get($colors, "neutral-50") !important;
     }
   }
