@@ -55,7 +55,6 @@ from fides.api.models.client import ClientDetail
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.manual_webhook import AccessManualWebhook
 from fides.api.models.policy import (
-    CurrentStep,
     Policy,
     PolicyPreWebhook,
     WebhookDirection,
@@ -74,7 +73,7 @@ from fides.api.schemas.external_https import (
     WebhookJWE,
 )
 from fides.api.schemas.masking.masking_secrets import MaskingSecretCache
-from fides.api.schemas.policy import ActionType
+from fides.api.schemas.policy import ActionType, CurrentStep
 from fides.api.schemas.privacy_request import (
     CheckpointActionRequired,
     ExecutionLogStatus,

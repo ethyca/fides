@@ -21,9 +21,8 @@ from fides.api.common_exceptions import (
 )
 from fides.api.graph.config import TERMINATOR_ADDRESS, CollectionAddress
 from fides.api.models.connectionconfig import ConnectionConfig
-from fides.api.models.policy import CurrentStep
 from fides.api.models.privacy_request import ExecutionLog, PrivacyRequest, RequestTask
-from fides.api.schemas.policy import ActionType
+from fides.api.schemas.policy import ActionType, CurrentStep
 from fides.api.schemas.privacy_request import ExecutionLogStatus, PrivacyRequestStatus
 from fides.api.task.graph_task import (
     GraphTask,

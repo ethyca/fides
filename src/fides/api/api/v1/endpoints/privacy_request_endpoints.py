@@ -62,7 +62,7 @@ from fides.api.models.client import ClientDetail
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.manual_webhook import AccessManualWebhook
-from fides.api.models.policy import CurrentStep, Policy, PolicyPreWebhook, Rule
+from fides.api.models.policy import Policy, PolicyPreWebhook, Rule
 from fides.api.models.pre_approval_webhook import (
     PreApprovalWebhook,
     PreApprovalWebhookReply,
@@ -84,7 +84,7 @@ from fides.api.oauth.utils import (
 )
 from fides.api.schemas.dataset import CollectionAddressResponse, DryRunDatasetResponse
 from fides.api.schemas.external_https import PrivacyRequestResumeFormat
-from fides.api.schemas.policy import ActionType
+from fides.api.schemas.policy import ActionType, CurrentStep
 from fides.api.schemas.privacy_request import (
     BulkPostPrivacyRequests,
     BulkReviewResponse,

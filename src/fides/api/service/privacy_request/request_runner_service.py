@@ -24,7 +24,6 @@ from fides.api.models.connectionconfig import AccessLevel, ConnectionConfig
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.manual_webhook import AccessManualWebhook
 from fides.api.models.policy import (
-    CurrentStep,
     Policy,
     PolicyPostWebhook,
     PolicyPreWebhook,
@@ -40,7 +39,7 @@ from fides.api.schemas.messaging.messaging import (
     AccessRequestCompleteBodyParams,
     MessagingActionType,
 )
-from fides.api.schemas.policy import ActionType
+from fides.api.schemas.policy import ActionType, CurrentStep
 from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.schemas.redis_cache import Identity
 from fides.api.service.connectors import FidesConnector, get_connector

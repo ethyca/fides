@@ -15,7 +15,7 @@ from fides.api.common_exceptions import (
 )
 from fides.api.graph.graph import DatasetGraph
 from fides.api.models.application_config import ApplicationConfig
-from fides.api.models.policy import CurrentStep, PolicyPostWebhook
+from fides.api.models.policy import PolicyPostWebhook
 from fides.api.models.privacy_request import (
     ActionType,
     CheckpointActionRequired,
@@ -32,7 +32,7 @@ from fides.api.schemas.messaging.messaging import (
     MessagingActionType,
     MessagingServiceType,
 )
-from fides.api.schemas.policy import Rule
+from fides.api.schemas.policy import CurrentStep, Rule
 from fides.api.schemas.privacy_request import Consent
 from fides.api.schemas.redis_cache import Identity
 from fides.api.service.masking.strategy.masking_strategy import MaskingStrategy

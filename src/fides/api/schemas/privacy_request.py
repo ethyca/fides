@@ -8,10 +8,9 @@ from pydantic import ConfigDict, Field, field_serializer, field_validator
 from fides.api.custom_types import SafeStr
 from fides.api.graph.config import CollectionAddress
 from fides.api.models.audit_log import AuditLogAction
-from fides.api.models.policy import CurrentStep
 from fides.api.schemas.api import BulkResponse, BulkUpdateFailed
 from fides.api.schemas.base_class import FidesSchema
-from fides.api.schemas.policy import ActionType
+from fides.api.schemas.policy import ActionType, CurrentStep
 from fides.api.schemas.policy import PolicyResponse as PolicySchema
 from fides.api.schemas.redis_cache import CustomPrivacyRequestField, Identity
 from fides.api.schemas.user import PrivacyRequestReviewer
