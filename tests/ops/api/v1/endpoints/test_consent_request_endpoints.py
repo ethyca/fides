@@ -869,7 +869,7 @@ class TestSaveConsent:
         "subject_identity_verification_required", "automatically_approved"
     )
     @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
     )
     def test_verify_then_set_consent_preferences(
         self,
@@ -1024,7 +1024,7 @@ class TestSaveConsent:
     )
     @patch("fides.api.models.privacy_request.ConsentRequest.verify_identity")
     @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
     )
     def test_set_consent_consent_preferences(
         self,
@@ -1129,7 +1129,7 @@ class TestSaveConsent:
     )
     @patch("fides.api.models.privacy_request.ConsentRequest.verify_identity")
     @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
     )
     def test_set_consent_preferences_privacy_request_pending_when_id_verification_required(
         self,

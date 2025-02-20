@@ -39,7 +39,7 @@ class TestCreateDrpPrivacyRequest:
         return V1_URL_PREFIX + DRP_EXERCISE
 
     @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
     )
     def test_create_drp_privacy_request(
         self,
@@ -104,7 +104,7 @@ class TestCreateDrpPrivacyRequest:
         assert run_access_request_mock.called
 
     @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
     )
     def test_create_drp_privacy_request_unsupported_identity_props(
         self,
@@ -246,7 +246,7 @@ class TestCreateDrpPrivacyRequest:
         "fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher"
     )
     @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
     )
     def test_create_drp_privacy_request_error_notification(
         self,
