@@ -68,7 +68,7 @@ const EditDataUseCell = ({ system }: EditDataUseCellProps) => {
           ))}
           <Tag
             onClick={() => setIsAdding(true)}
-            data-testid="add-data-use-btn"
+            data-testid="taxonomy-add-btn"
             addable
             aria-label="Add data use"
           />

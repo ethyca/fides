@@ -61,6 +61,7 @@ const EditCategoryCell = ({ resource }: EditCategoryCellProps) => {
             <Tag
               onClick={() => setIsAdding(true)}
               addable
+              data-testid="taxonomy-add-btn"
               aria-label="Add category"
             />
           )}
@@ -84,6 +85,7 @@ const EditCategoryCell = ({ resource }: EditCategoryCellProps) => {
           <Tag
             onClick={() => setIsAdding(true)}
             addable
+            data-testid="taxonomy-add-btn"
             aria-label="Add category"
           />
         </>
