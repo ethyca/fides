@@ -148,9 +148,6 @@ from fides.api.schemas.connection_configuration.connection_secrets_timescale imp
 from fides.api.schemas.connection_configuration.connection_secrets_timescale import (
     TimescaleSchema as TimescaleSchema,
 )
-from fides.api.schemas.connection_configuration.connection_secrets_website import (
-    WebsiteSchema,
-)
 from fides.api.schemas.connection_configuration.connections_secrets_https import (
     HttpsSchema as HttpsSchema,
 )
@@ -183,7 +180,6 @@ secrets_schemas: Dict[str, Any] = {
     ConnectionType.snowflake.value: SnowflakeSchema,
     ConnectionType.sovrn.value: SovrnSchema,
     ConnectionType.timescale.value: TimescaleSchema,
-    ConnectionType.website.value: WebsiteSchema,
 }
 
 
@@ -241,5 +237,4 @@ connection_secrets_schemas = Union[
     SnowflakeDocsSchema,
     SovrnDocsSchema,
     TimescaleDocsSchema,
-    WebsiteSchema,
 ]
