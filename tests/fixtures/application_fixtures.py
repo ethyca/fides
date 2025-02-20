@@ -57,7 +57,12 @@ from fides.api.models.privacy_preference import (
     ServedNoticeHistory,
     ServingComponent,
 )
-from fides.api.models.privacy_request import PrivacyRequest, RequestTask
+from fides.api.models.privacy_request import (
+    ConsentRequest,
+    PrivacyRequest,
+    ProvidedIdentity,
+    RequestTask,
+)
 from fides.api.models.property import Property
 from fides.api.models.registration import UserRegistration
 from fides.api.models.sql_models import DataCategory as DataCategoryDbModel
@@ -76,7 +81,6 @@ from fides.api.schemas.messaging.messaging import (
     MessagingServiceDetails,
     MessagingServiceSecrets,
     MessagingServiceType,
-    MessagingTemplateWithPropertiesDetail,
 )
 from fides.api.schemas.privacy_request import PrivacyRequestSource, PrivacyRequestStatus
 from fides.api.schemas.property import Property as PropertySchema
