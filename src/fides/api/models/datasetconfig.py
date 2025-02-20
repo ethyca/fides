@@ -165,6 +165,24 @@ class DatasetConfig(Base):
         dataset_graph.collections = [stubbed_collection]
         return dataset_graph
 
+    def get_identities_and_references(self) -> Set[str]:
+        """
+        Returns all identity and dataset references in the dataset.
+        If a field has multiple references only the first reference will be considered.
+        """
+        result: Set[str] = set()
+        dataset: GraphDataset = self.get_graph()
+        for collection in dataset.collections:
+            # Process the identities in the collection
+            result.update(collection.identities().values())
+            for _, field_refs in collection.references().items():
+                # Take first reference only, we only care that this collection is reachable,
+                # how we get there doesn't matter for our current use case
+                ref, edge_direction = field_refs[0]
+                if edge_direction == "from" and ref.dataset != self.fides_key:
+                    result.add(ref.value)
+        return result
+
 
 def to_graph_field(
     field: DatasetField, return_all_elements: Optional[bool] = None

@@ -1,8 +1,7 @@
 from copy import deepcopy
-from typing import Any, Dict, List, Optional, Set, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 from fideslang.models import Dataset as FideslangDataset
-from fideslang.validation import FidesKey
 from loguru import logger
 from pydantic import ValidationError as PydanticValidationError
 from sqlalchemy.orm import Session
@@ -31,15 +30,11 @@ from fides.api.schemas.dataset import (
     ValidateDatasetResponse,
 )
 from fides.api.schemas.redis_cache import Identity, LabeledIdentity
-from fides.api.util.data_category import get_data_categories_from_db
 from fides.service.dataset.dataset_service import (
     DatasetNotFoundException,
     _get_ctl_dataset,
 )
 from fides.service.dataset.dataset_validator import DatasetValidator
-from fides.service.dataset.validation_steps.data_category import (
-    validate_data_categories_against_db,
-)
 from fides.service.dataset.validation_steps.traversal import TraversalValidationStep
 
 
@@ -106,6 +101,8 @@ class DatasetConfigService:
             return None, error
 
         except (PydanticValidationError, DatasetNotFoundException):
+            # Raising errors for now to stay consistent with existing behavior.
+            # TODO: Include these errors in the bulk update response and update the test assertions.
             raise
 
         except Exception as e:
@@ -268,28 +265,6 @@ class DatasetConfigService:
         return privacy_request
 
 
-def get_identities_and_references(
-    dataset_config: DatasetConfig,
-) -> Set[str]:
-    """
-    Returns all identity and dataset references in the dataset.
-    If a field has multiple references only the first reference will be considered.
-    """
-
-    result: Set[str] = set()
-    dataset: GraphDataset = dataset_config.get_graph()
-    for collection in dataset.collections:
-        # Process the identities in the collection
-        result.update(collection.identities().values())
-        for _, field_refs in collection.references().items():
-            # Take first reference only, we only care that this collection is reachable,
-            # how we get there doesn't matter for our current use case
-            ref, edge_direction = field_refs[0]
-            if edge_direction == "from" and ref.dataset != dataset_config.fides_key:
-                result.add(ref.value)
-    return result
-
-
 def replace_references_with_identities(
     dataset_key: str, graph_dataset: GraphDataset
 ) -> GraphDataset:
@@ -312,13 +287,3 @@ def replace_references_with_identities(
                     field.references.remove((ref, "from"))
 
     return modified_graph_dataset
-
-
-def validate_data_categories(dataset: FideslangDataset, db: Session) -> None:
-    """Validate data categories on a given Dataset
-
-    As a separate method because we want to be able to match against data_categories in the
-    database instead of a static list.
-    """
-    defined_data_categories: List[FidesKey] = get_data_categories_from_db(db)
-    validate_data_categories_against_db(dataset, defined_data_categories)

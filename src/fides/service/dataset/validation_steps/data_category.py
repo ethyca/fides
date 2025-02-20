@@ -32,9 +32,11 @@ def _valid_data_categories(
             )
         return data_category
 
-    if proposed_data_categories:
-        return [dc for dc in proposed_data_categories if validate_category(dc)]
-    return proposed_data_categories
+    categories = proposed_data_categories or []
+    for category in categories:
+        validate_category(category)
+
+    return categories
 
 
 def validate_data_categories_against_db(

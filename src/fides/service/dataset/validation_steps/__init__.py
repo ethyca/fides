@@ -1,3 +1,11 @@
+"""
+Dynamically loads all validation step modules in this directory.
+
+This allows validation steps to be added or removed by simply adding/removing Python files,
+without modifying existing code. Each .py file (except __init__.py) should contain a single
+validation step.
+"""
+
 import importlib
 import os
 import os.path

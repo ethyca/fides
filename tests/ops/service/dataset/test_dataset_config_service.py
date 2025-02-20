@@ -9,10 +9,7 @@ from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.policy import Policy
 from fides.api.schemas.policy import ActionType
-from fides.service.dataset.dataset_config_service import (
-    DatasetConfigService,
-    get_identities_and_references,
-)
+from fides.service.dataset.dataset_config_service import DatasetConfigService
 from tests.conftest import wait_for_tasks_to_complete
 
 
@@ -138,9 +135,9 @@ class TestGetIdentitiesAndReferences:
     ):
         request.getfixturevalue(dataset_config)
 
-        required_identities = get_identities_and_references(
-            connection_config.datasets[0],
-        )
+        required_identities = connection_config.datasets[
+            0
+        ].get_identities_and_references()
         assert required_identities == expected_required_identities
 
 

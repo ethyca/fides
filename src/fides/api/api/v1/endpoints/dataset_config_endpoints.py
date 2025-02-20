@@ -59,10 +59,7 @@ from fides.common.api.v1.urn_registry import (
     YAML_DATASETS,
 )
 from fides.config import CONFIG
-from fides.service.dataset.dataset_config_service import (
-    DatasetConfigService,
-    get_identities_and_references,
-)
+from fides.service.dataset.dataset_config_service import DatasetConfigService
 from fides.service.dataset.dataset_service import DatasetNotFoundException
 
 from fides.api.models.sql_models import (  # type: ignore[attr-defined] # isort: skip
@@ -537,7 +534,7 @@ def dataset_identities_and_references(
             detail=f"No dataset config with fides_key '{dataset_key}'",
         )
 
-    inputs = get_identities_and_references(dataset_config)
+    inputs = dataset_config.get_identities_and_references()
     return {input: None for input in inputs}
 
 
