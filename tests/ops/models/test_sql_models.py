@@ -3,7 +3,12 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from fides.api.models.fides_user import FidesUser
-from fides.api.models.sql_models import AttachmentReferences, Attachments
+from fides.api.models.sql_models import (
+    AttachmentReferences,
+    AttachmentReferenceType,
+    Attachments,
+    AttachmentType,
+)
 
 
 @pytest.fixture
@@ -13,7 +18,7 @@ def attachment(user):
         user_id=user.id,
         file_name="file.txt",
         storage_url="http://example.com/file.txt",
-        attachment_type="attach_to_dsr",
+        attachment_type=AttachmentType.internal_use_only,
     )
 
 
@@ -22,7 +27,7 @@ def attachment_reference(attachment):
     return AttachmentReferences(
         attachment_id=attachment.id,
         reference_id="ref_1",
-        reference_type="manual_webhook",
+        reference_type=AttachmentReferenceType.privacy_request,
     )
 
 
@@ -63,6 +68,20 @@ def test_create_attachment_reference(db, attachment, attachment_reference):
     assert retrieved_reference.reference_type == attachment_reference.reference_type
 
 
+def test_attachment_foreign_key_constraint(db):
+    """Test that the foreign key constraint is enforced."""
+    attachment = Attachments(
+        id="2",
+        user_id="non_existent_id",
+        file_name="file.txt",
+        storage_url="http://example.com/file.txt",
+        attachment_type="attach_to_dsr",
+    )
+    db.add(attachment)
+    with pytest.raises(IntegrityError):
+        db.commit()
+
+
 def test_attachment_reference_relationship(db, attachment, attachment_reference):
     """Test the relationship between attachment and attachment reference."""
     attachment_setup(db, attachment, attachment_reference)
@@ -73,7 +92,7 @@ def test_attachment_reference_relationship(db, attachment, attachment_reference)
     assert retrieved_attachment.references[0].reference_id == "ref_1"
 
 
-def test_foreign_key_constraint(db):
+def test_attachment_reference_foreign_key_constraint(db):
     """Test that the foreign key constraint is enforced."""
     attachment_reference = AttachmentReferences(
         attachment_id="non_existent_id", reference_id="ref_1", reference_type="type_1"
@@ -125,6 +144,29 @@ def test_delete_attachment_cascades(db, attachment, attachment_reference):
 def test_non_nullable_fields_attachments(db, attachment_with_error):
     """Test that non-nullable fields are enforced."""
     db.add(attachment_with_error)
+    with pytest.raises(IntegrityError):
+        db.commit()
+    db.rollback()
+
+
+@pytest.mark.parametrize(
+    "attachment_reference_with_error",
+    [
+        AttachmentReferences(
+            attachment_id="attachment_1",
+            reference_id=None,
+            reference_type="type_1",
+        ),
+        AttachmentReferences(
+            attachment_id="attachment_1",
+            reference_id="ref_1",
+            reference_type=None,
+        ),
+    ],
+)
+def test_non_nullable_fields_attachment_references(db, attachment_reference_with_error):
+    """Test that non-nullable fields are enforced."""
+    db.add(attachment_reference_with_error)
     with pytest.raises(IntegrityError):
         db.commit()
     db.rollback()
