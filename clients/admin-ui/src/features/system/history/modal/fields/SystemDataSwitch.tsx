@@ -1,4 +1,4 @@
-import { Flex, FormControl, Tag, VStack } from "fidesui";
+import { AntTag as Tag, Flex, FormControl, VStack } from "fidesui";
 import { useField } from "formik";
 import _ from "lodash";
 import { useEffect, useState } from "react";
@@ -68,7 +68,7 @@ const SystemDataSwitch = ({
           {tooltip ? <QuestionTooltip label={tooltip} /> : null}
         </Flex>
         {field.value !== undefined && (
-          <Tag colorScheme="gray" size="sm" m={1}>
+          <Tag color="marble" className="m-1">
             {field.value ? "YES" : "NO"}
           </Tag>
         )}
