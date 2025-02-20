@@ -933,7 +933,7 @@ class Attachments(Base):
 
     __tablename__ = "attachments"
 
-    user_id = Column(String, nullable=False)
+    user_id = Column(String, ForeignKey("fidesuser.id"), nullable=False)
     file_name = Column(String, nullable=False)
     storage_url = Column(String, nullable=False)
     attachment_type = Column(String, nullable=False)

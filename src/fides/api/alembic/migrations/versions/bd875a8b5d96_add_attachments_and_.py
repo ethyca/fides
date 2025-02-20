@@ -39,6 +39,10 @@ def upgrade():
             server_default=sa.text("now()"),
             nullable=True,
         ),
+        sa.ForeignKeyConstraint(
+            ["user_id"],
+            ["fidesuser.id"],
+        ),
         sa.PrimaryKeyConstraint("id"),
     )
     op.create_index(op.f("ix_attachments_id"), "attachments", ["id"], unique=False)

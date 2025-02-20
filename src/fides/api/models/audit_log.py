@@ -11,6 +11,8 @@ class AuditLogAction(str, EnumType):
     """Enum for audit log actions, reflecting what a user did."""
 
     approved = "approved"
+    attachment_created = "attachment_created"
+    attachment_deleted = "attachment_deleted"
     denied = "denied"
     email_sent = "email_sent"
     finished = "finished"

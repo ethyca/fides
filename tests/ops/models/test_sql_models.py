@@ -3,13 +3,14 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from fides.api.models.sql_models import AttachmentReferences, Attachments
+from fides.api.models.fides_user import FidesUser
 
 
 @pytest.fixture
-def attachment():
+def attachment(user):
     return Attachments(
         id="1",
-        user_id="user_1",
+        user_id=user.id,
         file_name="file.txt",
         storage_url="http://example.com/file.txt",
         attachment_type="attach_to_dsr",
