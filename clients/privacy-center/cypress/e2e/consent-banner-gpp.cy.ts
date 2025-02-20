@@ -176,8 +176,42 @@ describe("Fides-js GPP extension", () => {
               expect(data.data).to.eql(expected[idx].data);
             });
             // The gpp string should also have an extra section now and the header should
-            // indicate TCF
-            expect(args[3][0].pingData.gppString).to.contain("DBABMA~");
+            // indicate TCF.
+            // The use of a regex is necessary because part of the string is
+            // date-based and changes each day. The first 6 characters are the
+            // "Created" date, the next 6 are the "Last Updated" date.
+            expect(args[3][0].pingData.gppString).to.match(
+              /DBABMA~[a-zA-Z0-9]{6}[a-zA-Z0-9]{6}AGXABBENArEoABaAAEAAAAAAABEAAAAA/,
+            );
+            // the `PurposeConsents` should match the gpp string
+            expect(
+              args[3][0].pingData.parsedSections.tcfeuv2.PurposeConsents,
+            ).to.eql([
+              false,
+              false,
+              false,
+              true,
+              false,
+              true,
+              true,
+              false,
+              true,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+              false,
+            ]);
           });
       });
     });
@@ -506,12 +540,12 @@ describe("Fides-js GPP extension", () => {
           {
             eventName: "sectionChange",
             data: "usca",
-            gppString: "DBABBg~BUoAAABY.QA",
+            gppString: "DBABBg~BUUAAABY.QA",
           },
           {
             eventName: "signalStatus",
             data: "ready",
-            gppString: "DBABBg~BUoAAABY.QA",
+            gppString: "DBABBg~BUUAAABY.QA",
           },
         ];
         // Check the GPP events
