@@ -11,6 +11,7 @@ from sqlalchemy.orm import Query
 from sqlalchemy.sql.elements import TextClause
 
 from fides.api.common_exceptions import PrivacyRequestNotFound
+from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import (
     EXITED_EXECUTION_LOG_STATUSES,
     PrivacyRequest,
@@ -23,7 +24,6 @@ from fides.api.schemas.privacy_request import (
     PrivacyRequestResponse,
     PrivacyRequestStatus,
 )
-from fides.api.models.policy import Policy
 from fides.api.schemas.redis_cache import Identity
 from fides.api.service.masking.strategy.masking_strategy import MaskingStrategy
 from fides.api.tasks import DatabaseTask, celery_app

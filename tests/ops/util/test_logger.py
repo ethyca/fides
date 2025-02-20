@@ -5,10 +5,10 @@ import pytest
 from loguru import logger
 from loguru._handler import Message
 
-from fides.api.util.logger import MASKED, Pii, _log_exception, _log_warning, RedisSink
-from fides.config import CONFIG
 from fides.api.schemas.privacy_request import PrivacyRequestSource
 from fides.api.util.cache import get_cache
+from fides.api.util.logger import MASKED, Pii, RedisSink, _log_exception, _log_warning
+from fides.config import CONFIG
 
 
 @pytest.mark.unit
@@ -75,7 +75,7 @@ class TestRedisSink:
         # Log with dataset_test source context
         with logger.contextualize(
             privacy_request_id=test_id,
-            privacy_request_source=PrivacyRequestSource.dataset_test.value
+            privacy_request_source=PrivacyRequestSource.dataset_test.value,
         ):
             logger.info(test_msg)
 
@@ -95,11 +95,14 @@ class TestRedisSink:
         test_msg = "test message"
 
         # Test different privacy request sources
-        other_sources = [PrivacyRequestSource.privacy_center.value, PrivacyRequestSource.request_manager.value, None]
+        other_sources = [
+            PrivacyRequestSource.privacy_center.value,
+            PrivacyRequestSource.request_manager.value,
+            None,
+        ]
         for source in other_sources:
             with logger.contextualize(
-                privacy_request_id=test_id,
-                privacy_request_source=source
+                privacy_request_id=test_id, privacy_request_source=source
             ):
                 logger.info(test_msg)
 

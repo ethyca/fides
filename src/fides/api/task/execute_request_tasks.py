@@ -191,7 +191,11 @@ def queue_downstream_tasks_with_retries(
         privacy_request, request_task = get_privacy_request_and_task(
             session, privacy_request_id, privacy_request_task_id
         )
-        with logger.contextualize(privacy_request_source=(privacy_request.source.value if privacy_request.source else None)):
+        with logger.contextualize(
+            privacy_request_source=(
+                privacy_request.source.value if privacy_request.source else None
+            )
+        ):
             log_task_complete(request_task)
             queue_downstream_tasks(
                 session,
@@ -259,8 +263,10 @@ def run_access_node(
 
     try:
         with self.get_new_session() as session:
-            privacy_request, request_task, upstream_results = run_prerequisite_task_checks(
-                session, privacy_request_id, privacy_request_task_id
+            privacy_request, request_task, upstream_results = (
+                run_prerequisite_task_checks(
+                    session, privacy_request_id, privacy_request_task_id
+                )
             )
             with logger.contextualize(
                 privacy_request_source=(
@@ -301,9 +307,9 @@ def run_access_node(
             self,
             privacy_request_id,
             privacy_request_task_id,
-                CurrentStep.upload_access,
-                privacy_request_proceed,
-            )
+            CurrentStep.upload_access,
+            privacy_request_proceed,
+        )
     except Exception as e:
         logger.error(f"Error in run_access_node: {e}")
         raise

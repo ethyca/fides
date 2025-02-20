@@ -8,31 +8,37 @@ from __future__ import annotations
 
 import logging
 import sys
-from typing import Any, Dict, List
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
 from loguru import logger
-from loguru._handler import Message  # type: ignore
+from loguru._handler import Message
 
 from fides.config import CONFIG, FidesConfig
 
+if TYPE_CHECKING:
+    from fides.api.util.cache import FidesopsRedis
+
 MASKED = "MASKED"
+
 
 class RedisSink:
     """A sink that writes log messages to Redis."""
-    def __init__(self):
-        self.cache = None
+
+    def __init__(self) -> None:
+        self.cache: Optional["FidesopsRedis"] = None
 
     def _ensure_cache(self) -> None:
         """Lazily initialize Redis connection when needed."""
         if self.cache is None:
             from fides.api.util.cache import get_cache
+
             self.cache = get_cache()
 
     def __call__(self, message: Message) -> None:
         """Write log message to Redis if conditions are met."""
         from fides.api.schemas.privacy_request import LogEntry, PrivacyRequestSource
 
-        record: Dict[str, Any] = message.record
+        record: Dict[str, Any] = message.record  # type: ignore[attr-defined]
 
         # Extract privacy request context
         extras = record["extra"]
@@ -48,6 +54,7 @@ class RedisSink:
 
         # Ensure we have a Redis connection
         self._ensure_cache()
+        assert self.cache  # for mypy
 
         # Create Redis key using privacy request ID
         key = f"log_{privacy_request_id}"
@@ -68,6 +75,7 @@ class RedisSink:
 
 class Pii(str):
     """Mask pii data"""
+
     def __format__(self, __format_spec: str) -> str:
         if CONFIG.logging.log_pii:
             return super().__format__(__format_spec)
@@ -89,12 +97,9 @@ def _log_warning(exc: BaseException, dev_mode: bool = False) -> None:
     else:
         logger.error(exc)
 
+
 def create_handler_dicts(
-    level: str,
-    sink: Any,
-    serialize: bool,
-    colorize: bool,
-    include_called_from: bool
+    level: str, sink: Any, serialize: bool, colorize: bool, include_called_from: bool
 ) -> List[Dict]:
     """Creates dictionaries used for configuring loguru handlers."""
     time_format = "<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green>"
@@ -131,7 +136,7 @@ def create_handler_dicts(
     standard_dict = {
         **base_config,
         "sink": sink,
-        "filter": lambda logRecord: not bool(logRecord["extra"])
+        "filter": lambda logRecord: not bool(logRecord["extra"]),
     }
 
     # Create extra dict with additional formatting for logs with extra context
@@ -159,24 +164,28 @@ def setup(config: FidesConfig) -> None:
     # Configure main sink from config
     destination = config.logging.destination
     main_sink = sys.stdout if not destination else destination
-    handlers.extend(create_handler_dicts(
-        level=config.logging.level,
-        include_called_from=config.dev_mode,
-        sink=main_sink,
-        serialize=config.logging.serialization == "json",
-        colorize=config.logging.colorize,
-    ))
+    handlers.extend(
+        create_handler_dicts(
+            level=config.logging.level,
+            include_called_from=config.dev_mode,
+            sink=main_sink,
+            serialize=config.logging.serialization == "json",
+            colorize=config.logging.colorize,
+        )
+    )
 
     # Add Redis sink if Redis is enabled
     if config.redis.enabled:
         redis_sink = RedisSink()
-        handlers.extend(create_handler_dicts(
-            level=config.logging.level,
-            include_called_from=config.dev_mode,
-            sink=redis_sink,
-            serialize=True,  # Always serialize for Redis
-            colorize=False,  # Redis doesn't need colorization
-        ))
+        handlers.extend(
+            create_handler_dicts(
+                level=config.logging.level,
+                include_called_from=config.dev_mode,
+                sink=redis_sink,
+                serialize=True,  # Always serialize for Redis
+                colorize=False,  # Redis doesn't need colorization
+            )
+        )
 
     logger.configure(handlers=handlers)
 

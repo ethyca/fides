@@ -107,7 +107,6 @@ from fides.api.schemas.privacy_request import (
     PrivacyRequestVerboseResponse,
     RequestTaskCallbackRequest,
     ReviewPrivacyRequestIds,
-    TestPrivacyRequestLogs,
     VerificationCode,
 )
 from fides.api.service.messaging.message_dispatch_service import EMAIL_JOIN_STRING
@@ -2303,7 +2302,7 @@ def filter_access_results(
 def get_test_privacy_request_logs(
     privacy_request_id: str,
     db: Session = Depends(deps.get_db),
-) -> List[LogEntry]:
+) -> List[Dict[str, Any]]:
     """Get logs for a test privacy request."""
     privacy_request = get_privacy_request_or_error(db, privacy_request_id)
 

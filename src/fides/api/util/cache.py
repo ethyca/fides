@@ -99,7 +99,11 @@ class FidesopsRedis(Redis):
             List of decoded items stored under the key. Empty list if key doesn't exist.
         """
         items = self.lrange(key, 0, -1)
-        return [self.decode_obj(item) for item in items if item is not None]
+        decoded_items = []
+        for item in items:
+            if item and (decoded := self.decode_obj(item)):
+                decoded_items.append(decoded)
+        return decoded_items
 
     @staticmethod
     def encode_obj(obj: Any) -> bytes:
