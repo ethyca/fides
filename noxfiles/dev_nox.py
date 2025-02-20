@@ -64,6 +64,19 @@ def dev(session: Session) -> None:
     if "worker" in session.posargs:
         session.run("docker", "compose", "up", "--wait", "worker", external=True)
 
+    if "worker-privacy-preferences" in session.posargs:
+        session.run(
+            "docker",
+            "compose",
+            "up",
+            "--wait",
+            "worker-privacy-preferences",
+            external=True,
+        )
+
+    if "worker-dsr" in session.posargs:
+        session.run("docker", "compose", "up", "--wait", "worker-dsr", external=True)
+
     datastores = [
         datastore for datastore in session.posargs if datastore in ALL_DATASTORES
     ] or None
