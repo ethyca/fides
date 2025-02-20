@@ -7,7 +7,7 @@ import { Provider } from "react-redux";
 import { makeStore, RootState } from "~/app/store";
 
 type CustomRenderOptions = {
-  preloadedState?: Partial<RootState>;
+  preloadedState?: any;
   customStore?: Store;
 } & RenderOptions;
 

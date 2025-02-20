@@ -1,11 +1,6 @@
-const path = require("path");
-
 const withBundleAnalyzer = require("@next/bundle-analyzer")({
   enabled: process.env.ANALYZE === "true",
 });
-
-// DEFER (PROD-1981): Replace with `transpilePackages` after upgrading to 13.0.0
-const withTM = require("next-transpile-modules")(["fidesui"]);
 
 /** @type {import("next").NextConfig} */
 const nextConfig = {
@@ -15,6 +10,7 @@ const nextConfig = {
     // Data flow scanning sometimes takes longer than the default of 30 seconds
     proxyTimeout: 120000,
   },
+  transpilePackages: ["antd", "fidesui"],
   images: {
     loader: "custom",
   },
@@ -50,4 +46,4 @@ if (process.env.PROD_EXPORT === "true") {
   nextConfig.output = "export";
 }
 
-module.exports = withTM(withBundleAnalyzer(nextConfig));
+module.exports = withBundleAnalyzer(nextConfig);
