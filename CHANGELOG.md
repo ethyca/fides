@@ -28,6 +28,9 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ### Docs
 - Removed version pins in LDFLAGS & CFLAGS for local MSSQL builds [#5760](https://github.com/ethyca/fides/pull/5760)
 
+### Fixed
+- Fixed BigQuery DSR integration generates invalid queries when having a dataset with nested fields [#5785](https://github.com/ethyca/fides/pull/5785)
+
 ## [2.55.2](https://github.com/ethyca/fides/compare/2.55.1...2.55.2)
 
 ### Changed
