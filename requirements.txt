@@ -42,7 +42,7 @@ passlib[bcrypt]==1.7.4
 plotly==5.13.1
 pyinstrument==4.5.1
 psycopg2-binary==2.9.6
-pydantic==2.7.1
+pydantic==2.11.0a2
 pydantic-settings==2.3.3
 pydash==6.0.2
 pygtrie==2.5.0
