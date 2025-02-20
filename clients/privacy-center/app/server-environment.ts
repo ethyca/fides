@@ -77,7 +77,7 @@ export interface PrivacyCenterEnvironment {
   settings: PrivacyCenterClientSettings;
   config?: Config | PrivacyCenterConfig;
   styles?: Styles;
-  property: Property | null;
+  property?: Property | null;
   location?: {
     country?: string;
     location?: string;
