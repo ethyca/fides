@@ -112,11 +112,11 @@ export const datasetTestSlice = createSlice({
         [action.payload.datasetKey]: action.payload.values,
       };
     },
-    setLogs: (state, action: PayloadAction<typeof initialState.logs>) => {
-      state.logs = action.payload;
+    setLogs: (draftState, action: PayloadAction<typeof initialState.logs>) => {
+      draftState.logs = action.payload;
     },
-    clearLogs: (state) => {
-      state.logs = [];
+    clearLogs: (draftState) => {
+      draftState.logs = [];
     },
   },
 });
