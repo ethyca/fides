@@ -119,7 +119,43 @@ services:
 
   worker:
     image: ethyca/fides:local
-    command: fides worker
+    command: fides worker --exclude-queues=fides.dsr,fides.privacy_preferences  # exclude DSRs and privacy preferences queues
+    depends_on:
+      redis:
+        condition: service_started
+    restart: always
+    environment:
+      FIDES__CONFIG_PATH: ${FIDES__CONFIG_PATH:-/fides/.fides/fides.toml}
+      FIDES__LOGGING__COLORIZE: "True"
+      FIDES__USER__ANALYTICS_OPT_OUT: "True"
+    volumes:
+      - type: bind
+        source: ./
+        target: /fides
+        read_only: False
+      - /fides/src/fides.egg-info
+
+  worker-privacy-preferences:
+    image: ethyca/fides:local
+    command: fides worker --queues=fides.privacy_preferences
+    depends_on:
+      redis:
+        condition: service_started
+    restart: always
+    environment:
+      FIDES__CONFIG_PATH: ${FIDES__CONFIG_PATH:-/fides/.fides/fides.toml}
+      FIDES__LOGGING__COLORIZE: "True"
+      FIDES__USER__ANALYTICS_OPT_OUT: "True"
+    volumes:
+      - type: bind
+        source: ./
+        target: /fides
+        read_only: False
+      - /fides/src/fides.egg-info
+
+  worker-dsr:
+    image: ethyca/fides:local
+    command: fides worker --queues=fides.dsr
     depends_on:
       redis:
         condition: service_started
