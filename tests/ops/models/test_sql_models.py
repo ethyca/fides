@@ -2,8 +2,8 @@ import pytest
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from fides.api.models.sql_models import AttachmentReferences, Attachments
 from fides.api.models.fides_user import FidesUser
+from fides.api.models.sql_models import AttachmentReferences, Attachments
 
 
 @pytest.fixture
