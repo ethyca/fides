@@ -13,6 +13,7 @@ import yaml
 from fastapi import Query
 from fastapi.testclient import TestClient
 from fideslang import DEFAULT_TAXONOMY, models
+from fideslang.models import System as SystemSchema
 from httpx import AsyncClient
 from loguru import logger
 from sqlalchemy.engine.base import Engine
@@ -28,6 +29,7 @@ from fides.api.cryptography.schemas.jwt import (
     JWE_PAYLOAD_SYSTEMS,
 )
 from fides.api.db.ctl_session import sync_engine
+from fides.api.db.system import create_system
 from fides.api.main import app
 from fides.api.models.privacy_request import (
     EXITED_EXECUTION_LOG_STATUSES,
@@ -1297,6 +1299,24 @@ def system(db: Session) -> System:
     )
 
     db.refresh(system)
+    return system
+
+
+@pytest.fixture()
+@pytest.mark.asyncio
+async def system_async(async_session):
+    """Creates a system for testing with an async session, to be used in async tests"""
+    resource = SystemSchema(
+        fides_key=str(uuid4()),
+        organization_fides_key="default_organization",
+        name="test_system_1",
+        system_type="test",
+        privacy_declarations=[],
+    )
+
+    system = await create_system(
+        resource, async_session, CONFIG.security.oauth_root_client_id
+    )
     return system
 
 

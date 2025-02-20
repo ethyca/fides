@@ -29,7 +29,7 @@ from fides.api.task.graph_task import (
     mark_current_and_downstream_nodes_as_failed,
 )
 from fides.api.task.task_resources import TaskResources
-from fides.api.tasks import DatabaseTask, celery_app
+from fides.api.tasks import DSR_QUEUE_NAME, DatabaseTask, celery_app
 from fides.api.util.cache import cache_task_tracking_key
 from fides.api.util.collection_util import Row
 from fides.api.util.logger_context_utils import LoggerContextKeys, log_context
@@ -489,10 +489,13 @@ def queue_request_task(
 ) -> None:
     """Queues the RequestTask in Celery and caches the Celery Task ID"""
     celery_task_fn: Task = mapping[request_task.action_type]
-    celery_task = celery_task_fn.delay(
-        privacy_request_id=request_task.privacy_request_id,
-        privacy_request_task_id=request_task.id,
-        privacy_request_proceed=privacy_request_proceed,
+    celery_task = celery_task_fn.apply_async(
+        queue=DSR_QUEUE_NAME,
+        kwargs={
+            "privacy_request_id": request_task.privacy_request_id,
+            "privacy_request_task_id": request_task.id,
+            "privacy_request_proceed": privacy_request_proceed,
+        },
     )
     cache_task_tracking_key(request_task.id, celery_task.task_id)
 
