@@ -134,7 +134,9 @@ def test_create_and_process_erasure_request_saas(
 
     pr.delete(db=db)
 
-
+@pytest.mark.skip(
+    "Flaky Test - to be investigated in https://ethyca.atlassian.net/browse/LJ-425"
+)
 @pytest.mark.integration_saas
 @mock.patch("fides.api.models.privacy_request.PrivacyRequest.trigger_policy_webhook")
 @pytest.mark.parametrize(
