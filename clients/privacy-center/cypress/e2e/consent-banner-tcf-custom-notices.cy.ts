@@ -225,6 +225,7 @@ describe("Fides-js TCF", () => {
 
     it("can render purposes in the initial layer", () => {
       cy.get("div#fides-banner").within(() => {
+        cy.contains("Advertising English");
         cy.contains(PURPOSE_2.name);
         cy.contains(PURPOSE_6.name);
       });

@@ -333,14 +333,14 @@ def test_validate_dataset_reference_invalid(db: Session, dataset_config: Dataset
     assert "must include at least two dot-separated components" in e.value.message
 
 
-class TestUpsertWithCtlDataset:
+class TestCreateOrUpdate:
     def test_no_existing_dataset_config_or_ctl_dataset(
         self, db, example_datasets, connection_config
     ):
         """Ctl Dataset is created"""
         postgres_dataset = example_datasets[0]
 
-        dataset_config = DatasetConfig.upsert_with_ctl_dataset(
+        dataset_config = DatasetConfig.create_or_update(
             db=db,
             data={
                 "connection_config_id": connection_config.id,
@@ -411,7 +411,7 @@ class TestUpsertWithCtlDataset:
                 }
             ],
         }
-        dataset_config = DatasetConfig.upsert_with_ctl_dataset(
+        dataset_config = DatasetConfig.create_or_update(
             db=db,
             data={
                 "connection_config_id": connection_config.id,
@@ -481,7 +481,7 @@ class TestUpsertWithCtlDataset:
                 },
             ],
         }
-        updated_dataset_config = DatasetConfig.upsert_with_ctl_dataset(
+        updated_dataset_config = DatasetConfig.create_or_update(
             db=db,
             data={
                 "connection_config_id": dataset_config.connection_config_id,

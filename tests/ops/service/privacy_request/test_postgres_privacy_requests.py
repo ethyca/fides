@@ -12,6 +12,7 @@ from fides.api.models.privacy_request import (
     PrivacyRequestStatus,
 )
 from fides.api.util.data_category import DataCategory
+from tests.ops.integration_tests.test_execution import get_sorted_execution_logs
 from tests.ops.service.privacy_request.test_request_runner_service import (
     PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL,
     get_privacy_request_results,
@@ -450,7 +451,12 @@ def test_create_and_process_access_request_postgres_with_disabled_integration(
         task_timeout=PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL,
     )
 
-    for execution_log in pr.execution_logs:
+    first, *rest = pr.execution_logs
+
+    assert first.dataset_name == "Dataset reference validation"
+    assert first.status == ExecutionLogStatus.complete
+
+    for execution_log in rest:
         assert execution_log.dataset_name == "Dataset traversal"
         assert execution_log.status == ExecutionLogStatus.error
 
@@ -465,11 +471,19 @@ def test_create_and_process_access_request_postgres_with_disabled_integration(
         task_timeout=PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL,
     )
 
-    assert pr.execution_logs.count() == 1
+    logs = get_sorted_execution_logs(db, pr)
 
-    execution_log = pr.execution_logs[0]
-    assert execution_log.dataset_name == "Dataset traversal"
-    assert execution_log.status == ExecutionLogStatus.complete
+    if dsr_version == "use_dsr_3_0":
+        assert logs == [
+            ("Dataset reference validation", "complete"),
+            ("Dataset traversal", "complete"),
+            ("Dataset reference validation", "complete"),
+        ]
+    else:
+        assert logs == [
+            ("Dataset reference validation", "complete"),
+            ("Dataset traversal", "complete"),
+        ]
 
 
 @pytest.mark.integration_postgres

@@ -67,6 +67,7 @@ class ConnectionType(enum.Enum):
     snowflake = "snowflake"
     sovrn = "sovrn"
     timescale = "timescale"
+    website = "website"
 
     @property
     def human_readable(self) -> str:
@@ -101,6 +102,7 @@ class ConnectionType(enum.Enum):
             ConnectionType.snowflake.value: "Snowflake",
             ConnectionType.sovrn.value: "Sovrn",
             ConnectionType.timescale.value: "TimescaleDB",
+            ConnectionType.website.value: "Website",
         }
         try:
             return readable_mapping[self.value]
@@ -143,6 +145,7 @@ class ConnectionType(enum.Enum):
             ConnectionType.snowflake.value: SystemType.database,
             ConnectionType.sovrn.value: SystemType.email,
             ConnectionType.timescale.value: SystemType.database,
+            ConnectionType.website.value: SystemType.website,
         }
 
         try:
