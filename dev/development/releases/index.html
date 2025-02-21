@@ -1373,6 +1373,10 @@ git<span class="w"> </span>pull
 <p>The release checklist is a manual set of checks done before each release to ensure functionality of the most critical components of the application. Some of these steps are redundant with automated tests, while others are <em>only</em> tested here as part of this check.</p>
 <p>This checklist should be copy/pasted into the final pre-release PR, and checked off as you complete each step.</p>
 <p>Additionally, there is a robust <a href="https://ethyca.atlassian.net/wiki/spaces/EN/pages/2545483802/Release+Process+Fides">Release Process</a> page available in Confluence (<em>internal only</em>).</p>
+<blockquote>
+<p>[!WARNING]
+THIS RELEASE BRANCH PULL REQUEST SHOULD NOT BE MERGED! IT IS FOR TRACEABILITY PURPOSES ONLY!</p>
+</blockquote>
 <h3 id="pre-release-steps">Pre-Release Steps</h3>
 <h4 id="general">General</h4>
 <p>From the release branch, confirm the following:</p>
@@ -1413,7 +1417,7 @@ git<span class="w"> </span>pull
 <ul>
 <li>[ ] Verify user creation</li>
 <li>[ ] Verify a Viewer can view all systems</li>
-<li>[ ] Verify a Data Steward can edit systems they are assigned </li>
+<li>[ ] Verify a Data Steward can edit systems they are assigned</li>
 </ul>
 <h4 id="documentation">Documentation</h4>
 <ul>
@@ -1438,7 +1442,7 @@ over to the release branch. This ensures that the CHANGELOG stays consistent bet
 <li>[ ] Smoke test the PyPi &amp; DockerHub releases:<ul>
 <li>[ ] Create a fresh venv with <code>python3 -m venv 2_12_0_venv</code></li>
 <li>[ ] Activate the venv <code>source 2_12_0_venv/bin/activate</code></li>
-<li>[ ] <code>pip install ethyca-fides</code> </li>
+<li>[ ] <code>pip install ethyca-fides</code></li>
 <li>[ ] <code>fides deploy up</code></li>
 </ul>
 </li>
