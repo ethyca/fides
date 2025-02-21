@@ -810,10 +810,8 @@ describe("i18n-utils", () => {
         const expectedResults = tests[locale];
         const match = locale.match(LOCALE_REGEX);
         if (match) {
-          // eslint-disable-next-line jest/no-conditional-expect
           expect(Array.from(match)).toEqual(expectedResults);
         } else {
-          // eslint-disable-next-line jest/no-conditional-expect
           expect(match).toEqual(expectedResults);
         }
       });
