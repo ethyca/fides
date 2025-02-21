@@ -1,21 +1,18 @@
-from datetime import datetime, timezone
-from typing import Annotated, Any, Callable, Dict, List, Optional
+from typing import Annotated, Any, Dict, List, Optional
 
 import yaml
 from fastapi import Depends, HTTPException, Request
 from fastapi.encoders import jsonable_encoder
 from fastapi.params import Security
-from fastapi.responses import JSONResponse
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
-from fideslang.models import Dataset
+from fideslang.models import Dataset as FideslangDataset
 from fideslang.validation import FidesKey
 from loguru import logger
 from pydantic import Field
 from pydantic import ValidationError as PydanticValidationError
 from sqlalchemy import and_, not_, select
-from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 from starlette.status import (
     HTTP_200_OK,
@@ -28,37 +25,20 @@ from starlette.status import (
 )
 
 from fides.api.api import deps
-from fides.api.common_exceptions import (
-    SaaSConfigNotFoundException,
-    TraversalError,
-    ValidationError,
-)
-from fides.api.graph.graph import DatasetGraph
-from fides.api.graph.traversal import Traversal
-from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType
-from fides.api.models.datasetconfig import (
-    DatasetConfig,
-    convert_dataset_to_graph,
-    to_graph_field,
-    validate_masking_strategy_override,
-)
+from fides.api.models.connectionconfig import ConnectionConfig
+from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.policy import Policy
 from fides.api.oauth.utils import verify_oauth_client
-from fides.api.schemas.api import BulkUpdateFailed
 from fides.api.schemas.dataset import (
     BulkPutDataset,
     DatasetConfigCtlDataset,
     DatasetConfigSchema,
     DatasetReachability,
-    DatasetTraversalDetails,
     ValidateDatasetResponse,
-    validate_data_categories_against_db,
 )
 from fides.api.schemas.privacy_request import TestPrivacyRequest
 from fides.api.schemas.redis_cache import DatasetTestRequest
 from fides.api.util.api_router import APIRouter
-from fides.api.util.data_category import get_data_categories_from_db
-from fides.api.util.saas_util import merge_datasets
 from fides.common.api.scope_registry import (
     DATASET_CREATE_OR_UPDATE,
     DATASET_DELETE,
@@ -79,11 +59,8 @@ from fides.common.api.v1.urn_registry import (
     YAML_DATASETS,
 )
 from fides.config import CONFIG
-from fides.service.dataset.dataset_service import (
-    get_dataset_reachability,
-    get_identities_and_references,
-    run_test_access_request,
-)
+from fides.service.dataset.dataset_config_service import DatasetConfigService
+from fides.service.dataset.dataset_service import DatasetNotFoundException
 
 from fides.api.models.sql_models import (  # type: ignore[attr-defined] # isort: skip
     Dataset as CtlDataset,
@@ -108,22 +85,6 @@ def _get_connection_config(
     return connection_config
 
 
-def validate_data_categories(dataset: Dataset, db: Session) -> None:
-    """Validate data categories on a given Dataset
-
-    As a separate method because we want to be able to match against data_categories in the
-    database instead of a static list.
-    """
-    try:
-        defined_data_categories: List[FidesKey] = get_data_categories_from_db(db)
-        validate_data_categories_against_db(dataset, defined_data_categories)
-    except PydanticValidationError as e:
-        raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=jsonable_encoder(e.errors(include_url=False, include_input=False)),
-        )
-
-
 @router.put(
     DATASET_VALIDATE,
     dependencies=[Security(verify_oauth_client, scopes=[DATASET_READ])],
@@ -131,8 +92,10 @@ def validate_data_categories(dataset: Dataset, db: Session) -> None:
     response_model=ValidateDatasetResponse,
 )
 def validate_dataset(
-    dataset: Dataset,
-    db: Session = Depends(deps.get_db),
+    dataset: FideslangDataset,
+    dataset_config_service: DatasetConfigService = Depends(
+        deps.get_dataset_config_service
+    ),
     connection_config: ConnectionConfig = Depends(_get_connection_config),
 ) -> ValidateDatasetResponse:
     """
@@ -150,43 +113,16 @@ def validate_dataset(
     Returns a 200 OK for all valid datasets, and a traversal_details object with
     information about the traversal (or traversal errors).
     """
-    validate_data_categories(dataset, db)
 
     try:
-        # Attempt to generate a traversal for this dataset by providing an empty
-        # dictionary of all unique identity keys
-        graph = convert_dataset_to_graph(dataset, connection_config.key)  # type: ignore
-
-        # Datasets for SaaS connections need to be merged with a SaaS config to
-        # be able to generate a valid traversal
-        if connection_config.connection_type == ConnectionType.saas:
-            _validate_saas_dataset(connection_config, dataset)
-            graph = merge_datasets(
-                graph, connection_config.get_saas_config().get_graph(connection_config.secrets)  # type: ignore
-            )
-        complete_graph = DatasetGraph(graph)
-        unique_identities = set(complete_graph.identity_keys.values())
-        Traversal(complete_graph, {k: None for k in unique_identities})
-    except (TraversalError, ValidationError) as err:
-        logger.warning(
-            "Traversal validation failed for dataset '{}': {}", dataset.fides_key, err
+        return dataset_config_service.validate_dataset_config(
+            connection_config, dataset
         )
-        return ValidateDatasetResponse(
-            dataset=dataset,
-            traversal_details=DatasetTraversalDetails(
-                is_traversable=False,
-                msg=str(err),
-            ),
+    except PydanticValidationError as e:
+        raise HTTPException(
+            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=jsonable_encoder(e.errors(include_url=False, include_input=False)),
         )
-
-    logger.info("Validation successful for dataset '{}'!", dataset.fides_key)
-    return ValidateDatasetResponse(
-        dataset=dataset,
-        traversal_details=DatasetTraversalDetails(
-            is_traversable=True,
-            msg=None,
-        ),
-    )
 
 
 @router.put(
@@ -198,6 +134,9 @@ def validate_dataset(
 def put_dataset_configs(
     dataset_pairs: Annotated[List[DatasetConfigCtlDataset], Field(max_length=50)],  # type: ignore
     db: Session = Depends(deps.get_db),
+    dataset_config_service: DatasetConfigService = Depends(
+        deps.get_dataset_config_service
+    ),
     connection_config: ConnectionConfig = Depends(_get_connection_config),
 ) -> BulkPutDataset:
     """
@@ -233,7 +172,9 @@ def put_dataset_configs(
         db.commit()
 
     # reuse the existing patch logic once we've removed the unused dataset configs
-    return patch_dataset_configs(dataset_pairs, db, connection_config)
+    return patch_dataset_configs(
+        dataset_pairs, dataset_config_service, connection_config
+    )
 
 
 @router.patch(
@@ -244,7 +185,9 @@ def put_dataset_configs(
 )
 def patch_dataset_configs(
     dataset_pairs: Annotated[List[DatasetConfigCtlDataset], Field(max_length=50)],  # type: ignore
-    db: Session = Depends(deps.get_db),
+    dataset_config_service: DatasetConfigService = Depends(
+        deps.get_dataset_config_service
+    ),
     connection_config: ConnectionConfig = Depends(_get_connection_config),
 ) -> BulkPutDataset:
     """
@@ -254,58 +197,22 @@ def patch_dataset_configs(
 
     The CtlDataset contents are retrieved for extra validation before linking this
     to the DatasetConfig.
-
     """
-    created_or_updated: List[Dataset] = []
-    failed: List[BulkUpdateFailed] = []
-    logger.info("Starting bulk upsert for {} Dataset Configs", len(dataset_pairs))
-
-    for dataset_pair in dataset_pairs:
-        logger.info(
-            "Finding ctl_dataset with key '{}'", dataset_pair.ctl_dataset_fides_key
-        )
-        ctl_dataset: CtlDataset = (
-            db.query(CtlDataset)
-            .filter_by(fides_key=dataset_pair.ctl_dataset_fides_key)
-            .first()
-        )
-        if not ctl_dataset:
-            raise HTTPException(
-                status_code=HTTP_404_NOT_FOUND,
-                detail=f"No ctl dataset with key '{dataset_pair.ctl_dataset_fides_key}'",
-            )
-
-        try:
-            fetched_dataset: Dataset = Dataset.model_validate(ctl_dataset)
-        except PydanticValidationError as e:
-            raise HTTPException(
-                status_code=HTTP_422_UNPROCESSABLE_ENTITY,
-                detail=jsonable_encoder(
-                    e.errors(include_url=False, include_input=False)
-                ),
-            )
-        validate_data_categories(fetched_dataset, db)
-
-        data = {
-            "connection_config_id": connection_config.id,
-            "fides_key": dataset_pair.fides_key,
-            "ctl_dataset_id": ctl_dataset.id,
-        }
-
-        create_or_update_dataset(
+    try:
+        return dataset_config_service.bulk_create_or_update_dataset_configs(
             connection_config,
-            created_or_updated,
-            data,
-            fetched_dataset,
-            db,
-            failed,
-            DatasetConfig.create_or_update,
+            dataset_pairs,
         )
-
-    return BulkPutDataset(
-        succeeded=created_or_updated,
-        failed=failed,
-    )
+    except DatasetNotFoundException as e:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail=str(e),
+        )
+    except PydanticValidationError as e:
+        raise HTTPException(
+            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=jsonable_encoder(e.errors(include_url=False, include_input=False)),
+        )
 
 
 @router.patch(
@@ -315,8 +222,10 @@ def patch_dataset_configs(
     response_model=BulkPutDataset,
 )
 def patch_datasets(
-    datasets: Annotated[List[Dataset], Field(max_length=50)],  # type: ignore
-    db: Session = Depends(deps.get_db),
+    datasets: Annotated[List[FideslangDataset], Field(max_length=50)],  # type: ignore
+    dataset_config_service: DatasetConfigService = Depends(
+        deps.get_dataset_config_service
+    ),
     connection_config: ConnectionConfig = Depends(_get_connection_config),
 ) -> BulkPutDataset:
     """
@@ -329,181 +238,78 @@ def patch_datasets(
     Otherwise, a new DatasetConfig will be created.
     """
 
-    created_or_updated: List[Dataset] = []
-    failed: List[BulkUpdateFailed] = []
-    logger.info("Starting bulk upsert for {} datasets", len(datasets))
-
-    # warn if there are duplicate fides_keys within the datasets
-    # valid datasets with the same fides_key will override each other
-    key_list = [dataset.fides_key for dataset in datasets]
-    if len(key_list) != len(set(key_list)):
-        logger.warning(
-            "Datasets with duplicate fides_keys detected, may result in unintended behavior."
+    try:
+        return dataset_config_service.bulk_create_or_update_dataset_configs(
+            connection_config, datasets
         )
-
-    for dataset in datasets:
-        validate_data_categories(dataset, db)
-        data = {
-            "connection_config_id": connection_config.id,
-            "fides_key": dataset.fides_key,
-            "dataset": dataset.model_dump(
-                mode="json"
-            ),  # Currently used for upserting a CTL Dataset
-        }
-        create_or_update_dataset(
-            connection_config,
-            created_or_updated,
-            data,
-            dataset,
-            db,
-            failed,
-            DatasetConfig.upsert_with_ctl_dataset,
+    except PydanticValidationError as e:
+        raise HTTPException(
+            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=jsonable_encoder(e.errors(include_url=False, include_input=False)),
         )
-    return BulkPutDataset(
-        succeeded=created_or_updated,
-        failed=failed,
-    )
 
 
 @router.patch(
     YAML_DATASETS,
     dependencies=[Security(verify_oauth_client, scopes=[DATASET_CREATE_OR_UPDATE])],
-    status_code=200,
+    status_code=HTTP_200_OK,
     response_model=BulkPutDataset,
-    include_in_schema=False,  # Not including this path in the schema.
-    # Since this yaml function needs to access the request, the open api spec will not be generated correctly.
-    # To include this path, extend open api: https://fastapi.tiangolo.com/advanced/extending-openapi/
 )
 async def patch_yaml_datasets(
     request: Request,
-    db: Session = Depends(deps.get_db),
+    dataset_config_service: DatasetConfigService = Depends(
+        deps.get_dataset_config_service
+    ),
     connection_config: ConnectionConfig = Depends(_get_connection_config),
 ) -> BulkPutDataset:
+    """
+    Bulk create or update datasets from YAML format.
+    Accepts application/x-yaml content type.
+    """
     if request.headers.get("content-type") != X_YAML:
         raise HTTPException(
             status_code=HTTP_415_UNSUPPORTED_MEDIA_TYPE,
-            detail="Supported type: " + X_YAML,
+            detail=f"Content type must be {X_YAML}",
         )
-    body = await request.body()
+
     try:
-        yaml_request_body: dict = yaml.safe_load(body)
+        # Read and parse YAML content
+        body = await request.body()
+        yaml_request_body = yaml.safe_load(body)
+
+        # Convert YAML datasets to Dataset objects
+        datasets = [
+            FideslangDataset.model_validate(dataset_dict)
+            for dataset_dict in yaml_request_body["dataset"]
+        ]
+
+        return dataset_config_service.bulk_create_or_update_dataset_configs(
+            connection_config, datasets
+        )
+
     except yaml.MarkedYAMLError as e:
         raise HTTPException(
-            status_code=HTTP_400_BAD_REQUEST, detail="Error in YAML: " + str(e)
+            status_code=HTTP_400_BAD_REQUEST,
+            detail=f"Invalid YAML format: {str(e)}",
         )
-    datasets = (
-        yaml_request_body.get("dataset") if isinstance(yaml_request_body, dict) else []
-    )
-    created_or_updated: List[Dataset] = []
-    failed: List[BulkUpdateFailed] = []
-    if isinstance(datasets, list):
-        for dataset in datasets:  # type: ignore
-            validate_data_categories(Dataset(**dataset), db)
-            data: dict = {
-                "connection_config_id": connection_config.id,
-                "fides_key": dataset["fides_key"],
-                "dataset": dataset,  # Currently used for upserting a CTL Dataset
-            }
-            create_or_update_dataset(
-                connection_config,
-                created_or_updated,
-                data,
-                Dataset(**dataset),
-                db,
-                failed,
-                DatasetConfig.upsert_with_ctl_dataset,
-            )
-    return BulkPutDataset(
-        succeeded=created_or_updated,
-        failed=failed,
-    )
-
-
-def create_or_update_dataset(
-    connection_config: ConnectionConfig,
-    created_or_updated: List[Dataset],
-    data: dict,
-    dataset: Dataset,
-    db: Session,
-    failed: List[BulkUpdateFailed],
-    create_method: Callable,
-) -> None:
-    try:
-        if connection_config.connection_type == ConnectionType.saas:
-            # Validating here instead of on ctl_dataset creation because this only applies
-            # when a ctl_dataset is being linked to a Saas Connector.
-            _validate_saas_dataset(connection_config, dataset)  # type: ignore
-        # Try to find an existing DatasetConfig matching the given connection & key
-        validate_masking_strategy_override(dataset)
-        dataset_config = create_method(db, data=data)
-        created_or_updated.append(dataset_config.ctl_dataset)
-    except (
-        SaaSConfigNotFoundException,
-        ValidationError,
-    ) as exception:
-        logger.warning(exception.message)
-        failed.append(
-            BulkUpdateFailed(
-                message=exception.message,
-                data=data,
-            )
+    except PydanticValidationError as e:
+        raise HTTPException(
+            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"Dataset validation failed: {str(e)}",
         )
-    except IntegrityError:
-        message = "Dataset with key '%s' already exists." % data["fides_key"]
-        logger.warning(message)
-        failed.append(
-            BulkUpdateFailed(
-                message=message,
-                data=data,
-            )
-        )
-    except Exception:
-        logger.warning("Create/update failed for dataset '{}'.", data["fides_key"])
-        failed.append(
-            BulkUpdateFailed(
-                message="Dataset create/update failed.",
-                data=data,
-            )
-        )
-
-
-def _validate_saas_dataset(
-    connection_config: ConnectionConfig, dataset: Dataset
-) -> None:
-    if connection_config.saas_config is None:
-        raise SaaSConfigNotFoundException(
-            f"Connection config '{connection_config.key}' must have a "
-            "SaaS config before validating or adding a dataset"
-        )
-
-    fides_key = connection_config.saas_config["fides_key"]
-    if fides_key != dataset.fides_key:
-        raise ValidationError(
-            f"The fides_key '{dataset.fides_key}' of the dataset "
-            f"does not match the fides_key '{fides_key}' "
-            "of the connection config"
-        )
-    for collection in dataset.collections:
-        for field in collection.fields:
-            graph_field = to_graph_field(field)
-            if graph_field.references or graph_field.identity:
-                raise ValidationError(
-                    "A dataset for a ConnectionConfig type of 'saas' is not "
-                    "allowed to have references or identities. Please add "
-                    "them to the SaaS config."
-                )
 
 
 @router.get(
     CONNECTION_DATASETS,
     dependencies=[Security(verify_oauth_client, scopes=[DATASET_READ])],
-    response_model=Page[Dataset],
+    response_model=Page[FideslangDataset],
+    deprecated=True,
 )
 def get_datasets(
     db: Session = Depends(deps.get_db),
     params: Params = Depends(),
     connection_config: ConnectionConfig = Depends(_get_connection_config),
-) -> AbstractPage[Dataset]:
+) -> AbstractPage[FideslangDataset]:
     """Returns all CTL datasets attached to the ConnectionConfig via the Dataset Config.
 
     Soon to be deprecated.
@@ -532,13 +338,14 @@ def get_datasets(
 @router.get(
     DATASET_BY_KEY,
     dependencies=[Security(verify_oauth_client, scopes=[DATASET_READ])],
-    response_model=Dataset,
+    response_model=FideslangDataset,
+    deprecated=True,
 )
 def get_dataset(
     dataset_key: FidesKey,
     db: Session = Depends(deps.get_db),
     connection_config: ConnectionConfig = Depends(_get_connection_config),
-) -> Dataset:
+) -> FideslangDataset:
     """Returns a single ctl dataset linked to the given DatasetConfig.
 
     Soon to be deprecated
@@ -656,14 +463,14 @@ def delete_dataset(
 @router.get(
     f"/filter{DATASETS}",
     dependencies=[Security(verify_oauth_client, scopes=[DATASET_READ])],
-    response_model=List[Dataset],
+    response_model=List[FideslangDataset],
     deprecated=True,
 )
 def get_ctl_datasets(
     db: Session = Depends(deps.get_db),
     remove_saas_datasets: bool = True,
     only_unlinked_datasets: bool = False,
-) -> List[Dataset]:
+) -> List[FideslangDataset]:
     """
     Deprecated. Use `GET /datasets` instead.
     Returns all CTL datasets .
@@ -699,87 +506,6 @@ def get_ctl_datasets(
     return datasets
 
 
-def recursive_clean_fields(fields: List[dict]) -> List[dict]:
-    """
-    Recursively clean the fields of a dataset.
-    """
-    cleaned_fields = []
-    for field in fields:
-        field["name"] = field["name"].split(".")[-1]
-        if field["fields"]:
-            field["fields"] = recursive_clean_fields(field["fields"])
-        cleaned_fields.append(field)
-    return cleaned_fields
-
-
-def run_clean_datasets(
-    db: Session, datasets: List[Dataset]
-) -> tuple[List[str], List[str]]:
-    """
-    Clean the dataset name and structure to remove any malformed data possibly present from nested field regressions.
-    Changes dot separated positional names to source names (ie. `user.address.street` -> `street`).
-    """
-
-    for dataset in datasets:
-        logger.info(f"Cleaning field names for dataset: {dataset.fides_key}")
-        for collection in dataset.collections:
-            collection["fields"] = recursive_clean_fields(collection["fields"])  # type: ignore # pylint: disable=unsupported-assignment-operation
-
-        # manually upsert the dataset
-
-        logger.info(f"Upserting dataset: {dataset.fides_key}")
-        failed = []
-        try:
-            dataset_ctl_obj = (
-                db.query(CtlDataset)
-                .filter(CtlDataset.fides_key == dataset.fides_key)
-                .first()
-            )
-            if dataset_ctl_obj:
-                db.query(CtlDataset).filter(
-                    CtlDataset.fides_key == dataset.fides_key
-                ).update(
-                    {
-                        "collections": dataset.collections,
-                        "updated_at": datetime.now(timezone.utc),
-                    },
-                    synchronize_session=False,
-                )
-                db.commit()
-            else:
-                logger.error(f"Dataset with fides_key {dataset.fides_key} not found.")
-        except Exception as e:
-            logger.error(f"Error upserting dataset: {dataset.fides_key} {e}")
-            db.rollback()
-            failed.append(dataset.fides_key)
-
-    succeeded = [dataset.fides_key for dataset in datasets]
-    return succeeded, failed
-
-
-@router.get(
-    "/datasets/clean",
-    dependencies=[Security(verify_oauth_client, scopes=[DATASET_READ])],
-    response_model=List[Dataset],
-    deprecated=True,
-)
-def clean_datasets(
-    db: Session = Depends(deps.get_db),
-) -> JSONResponse:
-    """
-    Clean up names of datasets and upsert them.
-    """
-    datasets = db.execute(select([CtlDataset])).scalars().all()
-    succeeded, failed = run_clean_datasets(db, datasets)
-    return JSONResponse(
-        status_code=HTTP_200_OK,
-        content={
-            "succeded": succeeded,
-            "failed": failed,
-        },
-    )
-
-
 @router.get(
     DATASET_INPUTS,
     dependencies=[Security(verify_oauth_client, scopes=[DATASET_READ])],
@@ -808,7 +534,7 @@ def dataset_identities_and_references(
             detail=f"No dataset config with fides_key '{dataset_key}'",
         )
 
-    inputs = get_identities_and_references(dataset_config)
+    inputs = dataset_config.get_identities_and_references()
     return {input: None for input in inputs}
 
 
@@ -821,6 +547,9 @@ def dataset_reachability(
     *,
     db: Session = Depends(deps.get_db),
     connection_config: ConnectionConfig = Depends(_get_connection_config),
+    dataset_config_service: DatasetConfigService = Depends(
+        deps.get_dataset_config_service
+    ),
     dataset_key: FidesKey,
     policy_key: Optional[FidesKey] = None,
 ) -> Dict[str, Any]:
@@ -851,7 +580,9 @@ def dataset_reachability(
             detail=f'Policy with key "{policy_key}" not found',
         )
 
-    reachable, details = get_dataset_reachability(db, dataset_config, access_policy)
+    reachable, details = dataset_config_service.get_dataset_reachability(
+        dataset_config, access_policy
+    )
     return {"reachable": reachable, "details": details}
 
 
@@ -864,6 +595,9 @@ def dataset_reachability(
 def test_connection_datasets(
     *,
     db: Session = Depends(deps.get_db),
+    dataset_config_service: DatasetConfigService = Depends(
+        deps.get_dataset_config_service
+    ),
     connection_config: ConnectionConfig = Depends(_get_connection_config),
     dataset_key: FidesKey,
     test_request: DatasetTestRequest,
@@ -895,8 +629,7 @@ def test_connection_datasets(
             detail=f'Policy with key "{test_request.policy_key}" not found',
         )
 
-    privacy_request = run_test_access_request(
-        db,
+    privacy_request = dataset_config_service.run_test_access_request(
         access_policy,
         dataset_config,
         input_data=test_request.identities.data,

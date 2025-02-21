@@ -1,4 +1,4 @@
-from typing import Any, Dict, Set
+from typing import Any, Dict, Set, Tuple
 from unittest import mock
 
 import pytest
@@ -648,6 +648,10 @@ class TestSQLLikeQueryConfig:
 
         class NewSQLNamespaceMeta(NamespaceMeta):
             schema: str
+
+            @classmethod
+            def get_fallback_secret_fields(cls) -> Set[Tuple]:
+                return {}
 
         class NewSQLQueryConfig(SQLQueryConfig):
             pass
