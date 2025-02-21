@@ -55,7 +55,7 @@ class MySQLConnector(SQLConnector):
         port = f":{local_port}" if local_port else ""
         dbname = f"/{config.dbname}" if config.dbname else ""
         url = f"mysql+pymysql://{user_password}{netloc}{port}{dbname}"
-        logger.warning("LOOK HERE {url}")
+        logger.warning(f"LOOK HERE {url}")
         return url
 
     # Overrides SQLConnector.create_client
@@ -72,7 +72,7 @@ class MySQLConnector(SQLConnector):
             uri = self.build_ssh_uri(local_address=self.ssh_server.local_bind_address)
         else:
             uri = (self.configuration.secrets or {}).get("url") or self.build_uri()
-        logger.warning("LOOK HERE {url}")
+        logger.warning(f"LOOK HERE {url}")
 
         return create_engine(
             uri,
