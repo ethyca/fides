@@ -37,7 +37,7 @@ class MySQLConnector(SQLConnector):
         port = f":{config.port}" if config.port else ""
         dbname = f"/{config.dbname}" if config.dbname else ""
         url = f"mysql+pymysql://{user_password}{netloc}{port}{dbname}"
-        logger.warning("LOOK HERE {url}")
+        logger.warning(f"LOOK HERE {url}")
         return url
 
     def build_ssh_uri(self, local_address: tuple) -> str:
