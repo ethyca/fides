@@ -8,6 +8,7 @@ import pydash
 import pytest
 from pydantic import ValidationError
 from sqlalchemy.orm import Session
+from sqlalchemy.orm.attributes import flag_modified
 
 from fides.api.common_exceptions import (
     ClientUnsuccessfulException,
@@ -15,6 +16,7 @@ from fides.api.common_exceptions import (
 )
 from fides.api.graph.graph import DatasetGraph
 from fides.api.models.application_config import ApplicationConfig
+from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.policy import PolicyPostWebhook
 from fides.api.models.privacy_request import (
     ActionType,
@@ -1372,3 +1374,104 @@ class TestAsyncCallbacks:
             # node cannot be paused
             db.refresh(pr)
             assert pr.status == PrivacyRequestStatus.complete
+
+
+class TestDatasetReferenceValidation:
+    @pytest.mark.usefixtures("dataset_config")
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.access_runner"
+    )
+    @pytest.mark.parametrize(
+        "dsr_version",
+        ["use_dsr_3_0", "use_dsr_2_0"],
+    )
+    def test_dataset_reference_validation_success(
+        self,
+        run_access,
+        db: Session,
+        privacy_request: PrivacyRequest,
+        run_privacy_request_task,
+        request,
+        dsr_version,
+    ):
+        """Test that successful dataset reference validation is logged"""
+
+        request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+
+        # Run privacy request
+        run_privacy_request_task.delay(privacy_request.id).get(
+            timeout=PRIVACY_REQUEST_TASK_TIMEOUT
+        )
+
+        # Verify success log was created
+        success_logs = privacy_request.execution_logs.filter_by(status="complete").all()
+
+        validation_logs = [
+            log
+            for log in success_logs
+            if log.dataset_name == "Dataset reference validation"
+        ]
+
+        assert len(validation_logs) == 1
+        log = validation_logs[0]
+        assert log.connection_key is None
+        assert log.collection_name is None
+        assert (
+            log.message
+            == f"Dataset reference validation successful for privacy request: {privacy_request.id}"
+        )
+        assert log.action_type == privacy_request.policy.get_action_type()
+
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.access_runner"
+    )
+    @pytest.mark.parametrize(
+        "dsr_version",
+        ["use_dsr_3_0", "use_dsr_2_0"],
+    )
+    def test_dataset_reference_validation_error(
+        self,
+        run_access,
+        db: Session,
+        privacy_request: PrivacyRequest,
+        dataset_config: DatasetConfig,
+        run_privacy_request_task,
+        request,
+        dsr_version,
+    ):
+        """Test that dataset reference validation errors are logged"""
+
+        request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+
+        # Add invalid dataset reference that will cause validation error
+        dataset_config.ctl_dataset.collections[0]["fields"][0]["fides_meta"] = {
+            "references": [
+                {"dataset": "invalid_dataset", "field": "invalid_collection.field"}
+            ]
+        }
+        flag_modified(dataset_config.ctl_dataset, "collections")
+        dataset_config.save(db)
+
+        # Run privacy request
+        run_privacy_request_task.delay(privacy_request.id).get(
+            timeout=PRIVACY_REQUEST_TASK_TIMEOUT
+        )
+
+        # Verify error log was created
+        error_logs = privacy_request.execution_logs.filter_by(status="error").all()
+
+        validation_logs = [
+            log
+            for log in error_logs
+            if log.dataset_name == "Dataset reference validation"
+        ]
+
+        assert len(validation_logs) == 1
+        log = validation_logs[0]
+        assert log.connection_key is None
+        assert log.collection_name is None
+        assert (
+            "Referenced object invalid_dataset:invalid_collection:field from dataset postgres_example_subscriptions_dataset does not exist"
+            in log.message
+        )
+        assert log.action_type == privacy_request.policy.get_action_type()

@@ -3,7 +3,7 @@ from typing import Any, Dict, List, Optional, Set, Tuple
 
 import requests
 from loguru import logger
-from pydantic import ValidationError
+from pydantic import ValidationError as PydanticValidationError
 from sqlalchemy.orm import Query, Session
 
 from fides.api import common_exceptions
@@ -15,6 +15,7 @@ from fides.api.common_exceptions import (
     NoCachedManualWebhookEntry,
     PrivacyRequestExit,
     PrivacyRequestPaused,
+    ValidationError,
 )
 from fides.api.db.session import get_db_session
 from fides.api.graph.config import CollectionAddress
@@ -187,7 +188,7 @@ def run_webhooks_and_report_status(
             privacy_request.error_processing(db)
             privacy_request.cache_failed_checkpoint_details(current_step)
             return False
-        except ValidationError:
+        except PydanticValidationError:
             logger.error(
                 "Privacy Request '{}' errored due to response validation error from webhook '{}'.",
                 privacy_request.id,

@@ -42,7 +42,7 @@ from starlette.status import (
 
 from fides.api.api import deps
 from fides.api.api.deps import get_privacy_request_service
-from fides.api.api.v1.endpoints.dataset_endpoints import _get_connection_config
+from fides.api.api.v1.endpoints.dataset_config_endpoints import _get_connection_config
 from fides.api.api.v1.endpoints.manual_webhook_endpoints import (
     get_access_manual_webhook_or_404,
 )
@@ -165,7 +165,9 @@ from fides.common.api.v1.urn_registry import (
 )
 from fides.config import CONFIG
 from fides.config.config_proxy import ConfigProxy
-from fides.service.dataset.dataset_service import replace_references_with_identities
+from fides.service.dataset.dataset_config_service import (
+    replace_references_with_identities,
+)
 from fides.service.messaging.messaging_service import MessagingService
 from fides.service.privacy_request.privacy_request_service import (
     PrivacyRequestService,
