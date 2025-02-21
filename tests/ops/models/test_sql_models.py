@@ -4,9 +4,9 @@ from sqlalchemy.orm import Session
 
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.sql_models import (
+    Attachment,
     AttachmentReference,
     AttachmentReferenceType,
-    Attachment,
     AttachmentType,
 )
 
