@@ -27,7 +27,6 @@ from fides.api.schemas.dataset import (
 )
 from fides.api.schemas.privacy_request import PrivacyRequestSource, PrivacyRequestStatus
 from fides.api.schemas.redis_cache import Identity, LabeledIdentity
-from fides.api.task.create_request_tasks import run_access_request
 from fides.service.dataset.dataset_service import (
     DatasetNotFoundException,
     _get_ctl_dataset,
@@ -252,6 +251,8 @@ class DatasetConfigService:
 
                 dataset_graph = DatasetGraph(modified_graph_dataset)
                 connection_config = dataset_config.connection_config
+
+                from fides.api.task.create_request_tasks import run_access_request
 
                 run_access_request(
                     privacy_request,
