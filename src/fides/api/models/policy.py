@@ -30,7 +30,7 @@ from fides.api.util.data_category import _validate_data_category
 from fides.config import CONFIG
 
 if TYPE_CHECKING:
-    from fides.api.graph.traversal import TraversalNode
+    from fides.api.graph.traversal_node import TraversalNode
 
 
 class CurrentStep(EnumType):

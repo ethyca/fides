@@ -9,12 +9,13 @@ from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.policy import Policy
 from fides.api.schemas.policy import ActionType
-from fides.service.dataset.dataset_service import (
-    get_dataset_reachability,
-    get_identities_and_references,
-    run_test_access_request,
-)
+from fides.service.dataset.dataset_config_service import DatasetConfigService
 from tests.conftest import wait_for_tasks_to_complete
+
+
+@pytest.fixture
+def dataset_config_service(db: Session) -> DatasetConfigService:
+    return DatasetConfigService(db)
 
 
 class TestGetDatasetReachability:
@@ -46,14 +47,14 @@ class TestGetDatasetReachability:
                 "no_identities_dataset_config",
                 (
                     False,
-                    'The following collections are not reachable "single_identity:customer"',
+                    'The following collections are not reachable "no_identities:customer"',
                 ),
             ),
         ],
     )
     def test_get_dataset_reachability(
         self,
-        db: Session,
+        dataset_config_service: DatasetConfigService,
         dataset_config: List[str],
         expected: bool,
         connection_config: ConnectionConfig,
@@ -61,11 +62,40 @@ class TestGetDatasetReachability:
     ):
         request.getfixturevalue(dataset_config)
 
-        reachable = get_dataset_reachability(
-            db,
+        reachable = dataset_config_service.get_dataset_reachability(
             connection_config.datasets[0],
         )
         assert reachable == expected
+
+    @pytest.mark.usefixtures(
+        "single_identity_dataset_config", "unreachable_dataset_on_different_connection"
+    )
+    def test_get_dataset_reachability_ignores_additional_connections(
+        self,
+        dataset_config_service: DatasetConfigService,
+        connection_config: ConnectionConfig,
+    ):
+        """Verify that the reachability check ignores unreachable datasets on other connections"""
+
+        reachable = dataset_config_service.get_dataset_reachability(
+            connection_config.datasets[0],
+        )
+        assert reachable == (True, None)
+
+    @pytest.mark.usefixtures(
+        "single_identity_dataset_config", "no_identities_dataset_config"
+    )
+    def test_get_dataset_reachability_ignores_sibling_datasets(
+        self,
+        dataset_config_service: DatasetConfigService,
+        connection_config: ConnectionConfig,
+    ):
+        """Verify that the reachability check ignores unreachable sibling datasets (on the same connection)"""
+
+        reachable = dataset_config_service.get_dataset_reachability(
+            connection_config.datasets[0],
+        )
+        assert reachable == (True, None)
 
 
 class TestGetIdentitiesAndReferences:
@@ -105,9 +135,9 @@ class TestGetIdentitiesAndReferences:
     ):
         request.getfixturevalue(dataset_config)
 
-        required_identities = get_identities_and_references(
-            connection_config.datasets[0],
-        )
+        required_identities = connection_config.datasets[
+            0
+        ].get_identities_and_references()
         assert required_identities == expected_required_identities
 
 
@@ -122,12 +152,12 @@ class TestRunTestAccessRequest:
     def test_run_test_access_request(
         self,
         db: Session,
+        dataset_config_service: DatasetConfigService,
         policy: Policy,
         postgres_example_test_dataset_config: DatasetConfig,
     ):
         dataset_config = postgres_example_test_dataset_config
-        privacy_request = run_test_access_request(
-            db,
+        privacy_request = dataset_config_service.run_test_access_request(
             policy,
             dataset_config,
             {"email": "jane@example.com"},
@@ -182,12 +212,12 @@ class TestRunTestAccessRequest:
     def test_run_sample_access_request_with_custom_id(
         self,
         db: Session,
+        dataset_config_service: DatasetConfigService,
         policy: Policy,
         postgres_example_test_extended_dataset_config: DatasetConfig,
     ):
         dataset_config = postgres_example_test_extended_dataset_config
-        privacy_request = run_test_access_request(
-            db,
+        privacy_request = dataset_config_service.run_test_access_request(
             policy,
             dataset_config,
             {"loyalty_id": "CH-1"},
@@ -210,12 +240,12 @@ class TestRunTestAccessRequest:
     def test_run_test_access_request_with_dataset_reference(
         self,
         db: Session,
+        dataset_config_service: DatasetConfigService,
         policy: Policy,
         multiple_identities_with_external_dependencies_dataset_config: DatasetConfig,
     ):
         dataset_config = multiple_identities_with_external_dependencies_dataset_config
-        privacy_request = run_test_access_request(
-            db,
+        privacy_request = dataset_config_service.run_test_access_request(
             policy,
             dataset_config,
             {"loyalty_id": "CH-1", "single_identity:customer:id": 1},

@@ -37,6 +37,26 @@ dataset:
                 - dataset: bigquery_example_test_dataset
                   field: address.id
                   direction: to
+          - name: extra_address_data
+            fides_meta:
+              type: object
+            fields:
+              - name: city
+                data_categories: [user.contact.address.city]
+              - name: house
+                data_categories: [user.contact.address.street]
+              - name: id
+                data_categories: [system.operations]
+              - name: state
+                data_categories: [user.contact.address.state]
+              - name: street
+                data_categories: [user.contact.address.street]
+              - name: address_id
+                data_categories: [system.operations]
+                references:
+                  - dataset: bigquery_example_test_dataset
+                    field: address.id
+                    direction: to
           - name: created
             data_categories: [system.operations]
           - name: email

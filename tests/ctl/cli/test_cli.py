@@ -4,7 +4,6 @@ from base64 import b64decode
 from json import dump, loads
 from typing import Generator
 
-import click
 import pytest
 import yaml
 from click.testing import CliRunner
