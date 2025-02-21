@@ -69,6 +69,6 @@ tinycss2==1.2.1
 toml==0.10.2
 twilio==7.15.0
 typing-extensions==4.12.2
-validators==0.20.0
+validators==0.34.0
 versioneer==0.19
 fideslang==3.0.9
