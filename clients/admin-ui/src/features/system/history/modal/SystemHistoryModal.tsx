@@ -18,7 +18,7 @@ import SelectedHistoryProvider from "./SelectedHistoryContext";
 import SystemDataForm from "./SystemDataForm";
 
 const getBadges = (before: Record<string, any>, after: Record<string, any>) => {
-  const badges = [];
+  const badges: string[] = [];
   const specialFields = new Set([
     "egress",
     "ingress",

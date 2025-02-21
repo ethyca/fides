@@ -1,3 +1,5 @@
+import { ReactElement } from "react";
+
 import { CircleIcon } from "~/features/common/Icon/CircleIcon";
 import { RightDownArrowIcon } from "~/features/common/Icon/RightDownArrowIcon";
 import { RightUpArrowIcon } from "~/features/common/Icon/RightUpArrowIcon";
@@ -54,7 +56,7 @@ export const InProgressIndicator = () => (
 
 export const STATUS_INDICATOR_MAP: Record<
   ResourceChangeType,
-  JSX.Element | null
+  ReactElement | null
 > = {
   [ResourceChangeType.ADDITION]: <AdditionIndicator />,
   [ResourceChangeType.REMOVAL]: <RemovalIndicator />,

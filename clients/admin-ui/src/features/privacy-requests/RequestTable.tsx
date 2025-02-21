@@ -13,7 +13,7 @@ import {
   useToast,
 } from "fidesui";
 import { useRouter } from "next/router";
-import { useCallback, useMemo, useState } from "react";
+import { ReactElement, useCallback, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 import { selectToken } from "~/features/auth";
@@ -40,7 +40,7 @@ import { getRequestTableColumns } from "~/features/privacy-requests/RequestTable
 import { RequestTableFilterModal } from "~/features/privacy-requests/RequestTableFilterModal";
 import { PrivacyRequestEntity } from "~/features/privacy-requests/types";
 
-export const RequestTable = ({ ...props }: BoxProps): JSX.Element => {
+export const RequestTable = ({ ...props }: BoxProps): ReactElement => {
   const { plus: hasPlus } = useFeatures();
   const [fuzzySearchTerm, setFuzzySearchTerm] = useState<string>("");
   const filters = useSelector(selectPrivacyRequestFilters);

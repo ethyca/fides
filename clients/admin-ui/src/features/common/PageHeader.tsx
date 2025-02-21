@@ -1,5 +1,5 @@
 import { AntFlex as Flex, Heading } from "fidesui";
-import { ComponentProps, ReactNode } from "react";
+import React, { ComponentProps, ReactElement, ReactNode } from "react";
 
 import { NextBreadcrumb, NextBreadcrumbProps } from "./nav/NextBreadcrumb";
 
@@ -30,7 +30,7 @@ const PageHeader = ({
   rightContent,
   style,
   ...props
-}: PageHeaderProps): JSX.Element => (
+}: PageHeaderProps): ReactElement => (
   <div
     {...props}
     style={

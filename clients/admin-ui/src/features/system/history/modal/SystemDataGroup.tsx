@@ -16,7 +16,7 @@ const SystemDataGroup = ({
 
   // Filter children based on whether their name prop exists in before or after of selectedHistory
   const filteredChildren = childArray.filter((child) => {
-    if (React.isValidElement(child) && child.props.name) {
+    if (React.isValidElement<{ name: string }>(child) && child.props.name) {
       const { name } = child.props;
       const beforeValue = _.get(selectedHistory?.before, name);
       const afterValue = _.get(selectedHistory?.after, name);

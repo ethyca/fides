@@ -12,7 +12,7 @@ import { Property, ScopeRegistryEnum } from "~/types/api";
 
 interface Props {
   property: Property;
-  triggerComponent: React.ReactElement & { isDisabled?: boolean };
+  triggerComponent: React.ReactElement<any> & { disabled?: boolean };
 }
 
 /**

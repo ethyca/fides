@@ -34,7 +34,7 @@ export const resolvePath = (object: Record<string, any>, path: string) =>
   path.split(".").reduce((o, p) => (o ? o[p] : undefined), object);
 
 // This component is used within a Chakra Td element. Chakra requires a
-// JSX.Element in that context, so all returns in this component need to be wrapped in a fragment.
+// ReactElement in that context, so all returns in this component need to be wrapped in a fragment.
 /* eslint-disable react/jsx-no-useless-fragment */
 export const SystemTableCell = ({
   system,

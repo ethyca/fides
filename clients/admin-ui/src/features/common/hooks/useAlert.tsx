@@ -8,7 +8,7 @@ import {
   useToast,
   UseToastOptions,
 } from "fidesui";
-import { MouseEventHandler } from "react";
+import { MouseEventHandler, ReactElement } from "react";
 
 /**
  * Custom hook for toast notifications
@@ -23,7 +23,7 @@ export const useAlert = () => {
    * @param description
    */
   const errorAlert = (
-    description: string | JSX.Element,
+    description: string | ReactElement,
     title?: string,
     addedOptions?: UseToastOptions,
   ) => {

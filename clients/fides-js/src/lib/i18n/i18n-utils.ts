@@ -123,8 +123,7 @@ function extractMessagesFromExperienceConfig(
     const locale = DEFAULT_LOCALE;
     const messages: Messages = {};
     EXPERIENCE_TRANSLATION_FIELDS.forEach((key) => {
-      // @ts-expect-error EXPERIENCE_TRANSLATION_FIELDS is a const array
-      const message = experienceConfig[key];
+      const message = (experienceConfig as any)[key];
       if (typeof message === "string") {
         messages[`exp.${key}`] = message;
       }

@@ -25,6 +25,7 @@
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "sourceMap": true,
+    "noImplicitAny": false,
     "strict": true,
     "target": "es5",
     "types": ["@testing-library/jest-dom"],

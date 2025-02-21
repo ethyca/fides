@@ -24,7 +24,7 @@ import {
   VStack,
 } from "fidesui";
 import { Field, FieldInputProps, Form, Formik, FormikProps } from "formik";
-import React, { useEffect, useRef } from "react";
+import React, { ReactElement, useEffect, useRef } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import { ConnectionType } from "~/types/api";
@@ -103,7 +103,7 @@ const ConnectorParametersForm = ({
     return error;
   };
 
-  const getFormLabel = (id: string, value: string): JSX.Element => (
+  const getFormLabel = (id: string, value: string): ReactElement => (
     <FormLabel
       color="gray.900"
       fontSize="14px"
@@ -125,7 +125,7 @@ const ConnectorParametersForm = ({
   const getFormField = (
     key: string,
     item: ConnectionTypeSecretSchemaProperty,
-  ): JSX.Element => (
+  ): ReactElement => (
     <Field
       id={key}
       name={key}

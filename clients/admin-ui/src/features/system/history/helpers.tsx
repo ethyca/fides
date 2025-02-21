@@ -1,5 +1,5 @@
 import _ from "lodash";
-import React from "react";
+import React, { ReactElement } from "react";
 
 import { DictOption } from "~/features/plus/plus.slice";
 import { PrivacyDeclaration } from "~/types/api/models/PrivacyDeclaration";
@@ -118,7 +118,7 @@ export const describeSystemChange = (history: SystemHistoryResponse) => {
       categorizeFieldModifications(before, after));
   }
 
-  const changeDescriptions: Array<[string, JSX.Element]> = [];
+  const changeDescriptions: Array<[string, ReactElement]> = [];
 
   if (addedFields.length > 0) {
     // eslint-disable-next-line react/jsx-key

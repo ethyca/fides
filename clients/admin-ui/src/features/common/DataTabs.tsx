@@ -7,7 +7,7 @@ import {
   Tabs,
   TabsProps,
 } from "fidesui";
-import { ReactNode } from "react";
+import React, { ReactElement, ReactNode } from "react";
 
 export type TabListBorder = "full-width" | "partial";
 
@@ -37,7 +37,7 @@ export const FidesTab = ({
 
 export interface TabData {
   label: string;
-  content: ReactNode | JSX.Element;
+  content: ReactElement | null;
   isDisabled?: boolean;
 }
 

@@ -19,7 +19,7 @@ import {
   SimpleGrid,
   Text,
 } from "fidesui";
-import React, { ReactNode, useState } from "react";
+import React, { ReactElement, ReactNode, useState } from "react";
 
 export const getQueryParamsFromList = (
   optionList: Option[],
@@ -175,7 +175,7 @@ export const FilterModal = ({
   onClose,
   children,
   ...props
-}: FilterModalProps): JSX.Element => (
+}: FilterModalProps): ReactElement => (
   <Modal isOpen={isOpen} onClose={onClose} isCentered size="2xl" {...props}>
     <ModalOverlay />
     <ModalContent>

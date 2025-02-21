@@ -25,7 +25,7 @@ import {
 } from "fidesui";
 import { Field, FieldInputProps, Form, Formik, FormikProps } from "formik";
 import _ from "lodash";
-import React from "react";
+import React, { ReactElement } from "react";
 import { DatastoreConnectionStatus } from "src/features/datastore-connections/types";
 
 import { useFeatures } from "~/features/common/features";
@@ -123,7 +123,7 @@ export const ConnectorParametersForm = ({
     return error;
   };
 
-  const getFormLabel = (id: string, value: string): JSX.Element => (
+  const getFormLabel = (id: string, value: string): ReactElement => (
     <FormLabel
       color="gray.900"
       fontSize="14px"
@@ -150,7 +150,7 @@ export const ConnectorParametersForm = ({
   const getFormField = (
     key: string,
     item: ConnectionTypeSecretSchemaProperty,
-  ): JSX.Element => (
+  ): ReactElement => (
     <Field
       id={`secrets.${key}`}
       name={`secrets.${key}`}

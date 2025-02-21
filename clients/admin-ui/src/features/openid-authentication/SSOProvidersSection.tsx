@@ -5,6 +5,7 @@ import {
   Text,
   useDisclosure,
 } from "fidesui";
+import { ReactElement } from "react";
 
 import AddSSOProviderModal from "~/features/openid-authentication/AddSSOProviderModal";
 import { useGetAllOpenIDProvidersQuery } from "~/features/openid-authentication/openprovider.slice";
@@ -15,7 +16,7 @@ const SSOProvidersSection = () => {
   const { onOpen, isOpen, onClose } = useDisclosure();
   const { data: openidProviders } = useGetAllOpenIDProvidersQuery();
 
-  const renderItems: () => JSX.Element[] | undefined = () =>
+  const renderItems: () => ReactElement[] | undefined = () =>
     openidProviders?.map((item: OpenIDProvider) => (
       <SSOProvider key={item.identifier} openIDProvider={item} />
     ));

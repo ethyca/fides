@@ -17,7 +17,7 @@ import {
   useToast,
   VStack,
 } from "fidesui";
-import { useMemo, useState } from "react";
+import { ReactElement, useMemo, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
@@ -75,7 +75,7 @@ const EmptyTableNotice = () => (
 
 const columnHelper = createColumnHelper<CustomFieldDefinitionWithId>();
 
-export const CustomFieldsTable = ({ ...rest }: BoxProps): JSX.Element => {
+export const CustomFieldsTable = ({ ...rest }: BoxProps): ReactElement => {
   const toast = useToast();
   const { isLoading } = useGetAllCustomFieldDefinitionsQuery();
   const customFields = useAppSelector(selectAllCustomFieldDefinitions);

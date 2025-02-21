@@ -59,7 +59,7 @@ const useCytoscapeGraph = ({ data }: { data: SpatialData }) => {
     [],
   );
   const backgroundColor = palette.FIDESUI_NEUTRAL_50;
-  const styleSheet: cytoscape.Stylesheet[] = useMemo(
+  const styleSheet: cytoscape.StylesheetStyle[] = useMemo(
     () => [
       {
         selector: "node[label]",

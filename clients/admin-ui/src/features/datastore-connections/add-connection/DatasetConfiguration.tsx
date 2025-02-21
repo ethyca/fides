@@ -102,7 +102,7 @@ const DatasetConfiguration = () => {
       // First update the datasets
       const datasets = Array.isArray(value) ? value : [value];
       const upsertResult = await upsertDatasets(datasets);
-      if ("error" in upsertResult) {
+      if (upsertResult.error) {
         const errorMessage = getErrorMessage(upsertResult.error);
         errorAlert(errorMessage);
         return;

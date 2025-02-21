@@ -32,7 +32,13 @@ import {
   theme,
   Tr,
 } from "fidesui";
-import React, { ReactNode, useEffect, useMemo, useState } from "react";
+import React, {
+  ReactElement,
+  ReactNode,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 
 import { useLocalStorage } from "~/features/common/hooks/useLocalStorage";
 import { DisplayAllIcon, GroupedIcon } from "~/features/common/Icon";
@@ -66,7 +72,7 @@ declare module "@tanstack/table-core" {
 /* eslint-enable */
 
 export const sortingDisplay: {
-  [key: string]: { icon: JSX.Element; title: string };
+  [key: string]: { icon: ReactElement; title: string };
 } = {
   asc: { icon: <ArrowUpIcon />, title: "Sort ascending" },
   desc: { icon: <ArrowDownIcon />, title: "Sort descending" },

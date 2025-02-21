@@ -9,6 +9,7 @@ import {
   ModalOverlay,
   ModalProps,
 } from "fidesui";
+import { ReactElement } from "react";
 
 export interface StandardDialogProps extends ModalProps {
   heading?: string;
@@ -30,7 +31,7 @@ const StandardDialog = ({
   continueButtonText,
   "data-testid": testId = "standard-dialog",
   ...props
-}: StandardDialogProps): JSX.Element => {
+}: StandardDialogProps): ReactElement => {
   const { onClose } = props;
   return (
     <Modal closeOnOverlayClick={isLoading} {...props}>

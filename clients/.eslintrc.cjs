@@ -32,7 +32,7 @@ module.exports = {
         types: {
           "React.FC": {
             message:
-              "Remove entirely and allow Typescript to infer JSX.Element.",
+              "Remove entirely and allow Typescript to infer ReactElement.",
           },
         },
       },

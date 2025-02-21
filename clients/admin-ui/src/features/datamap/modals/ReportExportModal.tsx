@@ -5,7 +5,7 @@ import {
   FormLabel,
   Text,
 } from "fidesui";
-import { useState } from "react";
+import { ReactElement, useState } from "react";
 
 import StandardDialog, {
   StandardDialogProps,
@@ -17,7 +17,7 @@ interface ReportExportModalProps
   onConfirm: (downloadType: ExportFormat) => void;
 }
 
-const ReportExportModal = (props: ReportExportModalProps): JSX.Element => {
+const ReportExportModal = (props: ReportExportModalProps): ReactElement => {
   const [downloadType, setDownloadType] = useState<ExportFormat>(
     ExportFormat.csv,
   );

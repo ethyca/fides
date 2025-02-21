@@ -223,7 +223,7 @@ export const CustomFieldModal = ({
 
     if ("error" in result) {
       errorAlert(
-        getErrorMessage(result.error),
+        getErrorMessage(result.error!),
         `Custom field has failed to save due to the following:`,
       );
     } else {

@@ -7,6 +7,7 @@ import {
   useDisclosure,
   WarningIcon,
 } from "fidesui";
+import { ReactElement } from "react";
 
 import { TrashCanOutlineIcon } from "~/features/common/Icon/TrashCanOutlineIcon";
 import ConfirmationModal from "~/features/common/modals/ConfirmationModal";
@@ -26,7 +27,7 @@ export const CustomFieldActions = ({
   onEdit,
   onDelete,
   ...props
-}: CustomFieldActionsProps): JSX.Element => {
+}: CustomFieldActionsProps): ReactElement => {
   const modal = useDisclosure();
   return (
     <Box {...props}>

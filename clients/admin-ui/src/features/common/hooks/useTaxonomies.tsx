@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
 import { find } from "lodash";
-import { Fragment, ReactNode } from "react";
+import { Fragment, ReactElement, ReactNode } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import {
@@ -76,7 +76,7 @@ const useTaxonomies = () => {
         }
       | undefined,
     primaryLevel = 1,
-  ): string | JSX.Element => {
+  ): string | ReactElement => {
     const { name, primaryName } = getDataDisplayNameProps(
       fidesLangKey,
       getDataFunction,
@@ -105,7 +105,7 @@ const useTaxonomies = () => {
   const getDataUseByKey = (dataUseKey: string) =>
     find(dataUses, { fides_key: dataUseKey });
 
-  const getDataUseDisplayName = (dataUseKey: string): JSX.Element | string =>
+  const getDataUseDisplayName = (dataUseKey: string): ReactElement | string =>
     getDataDisplayName(dataUseKey, getDataUseByKey, 1);
   const getDataUseDisplayNameProps = (
     dataUseKey: string,
@@ -120,7 +120,7 @@ const useTaxonomies = () => {
     find(dataCategories, { fides_key: dataCategoryKey });
   const getDataCategoryDisplayName = (
     dataCategoryKey: string,
-  ): JSX.Element | string =>
+  ): ReactElement | string =>
     getDataDisplayName(dataCategoryKey, getDataCategoryByKey, 2);
   const getDataCategoryDisplayNameProps = (
     dataCategoryKey: string,

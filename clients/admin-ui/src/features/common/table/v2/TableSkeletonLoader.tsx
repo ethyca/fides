@@ -1,5 +1,5 @@
 import { Skeleton, Stack } from "fidesui";
-import { FC } from "react";
+import { FC, ReactElement } from "react";
 
 type Props = {
   rowHeight: number;
@@ -7,7 +7,7 @@ type Props = {
 };
 
 export const TableSkeletonLoader: FC<Props> = ({ rowHeight, numRows }) => {
-  const rows = [];
+  const rows: ReactElement[] = [];
   for (let i = 0; i < numRows; i += 1) {
     rows.push(<Skeleton height={`${rowHeight}px`} key={i} />);
   }

@@ -52,7 +52,7 @@ const useDictSuggestion = (
   const { vendor_id: vendorId } = values;
   const dictEntry = useAppSelector(selectDictEntry(vendorId || ""));
   const isShowingSuggestions = useAppSelector(selectSuggestions);
-  const inputRef = useRef();
+  const inputRef = useRef(null);
 
   useEffect(() => {
     if (isShowingSuggestions === "showing") {

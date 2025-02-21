@@ -20,7 +20,7 @@ import {
   WarningIcon,
 } from "fidesui";
 import { useField, useFormikContext } from "formik";
-import { ReactNode, useEffect, useMemo, useState } from "react";
+import { ReactElement, ReactNode, useEffect, useMemo, useState } from "react";
 
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import ConfirmationModal from "~/features/common/modals/ConfirmationModal";
@@ -126,7 +126,7 @@ export const BadgeCellCount = ({
   plSuffix?: string;
 } & BadgeProps) => {
   // If count is 1, display count with singular suffix
-  let badge = null;
+  let badge: null | ReactElement = null;
   if (count === 1) {
     badge = (
       <FidesBadge {...badgeProps}>
@@ -236,7 +236,7 @@ export const GroupCountBadgeCell = ({
   ignoreZero?: boolean;
   badgeProps?: BadgeProps;
 }) => {
-  let badges = null;
+  let badges: ReactElement | ReactElement[] | null = null;
   if (!value) {
     return ignoreZero ? null : (
       <FidesBadge {...badgeProps}>0{suffix ? ` ${suffix}` : ""}</FidesBadge>

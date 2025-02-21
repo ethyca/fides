@@ -28,7 +28,7 @@ const DataFlowScannerOption = ({ onClick }: { onClick: () => void }) => {
     return null;
   }
 
-  let tooltip = null;
+  let tooltip: string | null = null;
   if (!dataFlowScanning) {
     tooltip =
       "The data flow scanner is not enabled, please check your configuration.";

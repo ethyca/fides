@@ -76,7 +76,7 @@ export const UnconnectedMainSideNav = ({
     const openedKeysString = localStorage.getItem(
       OPENED_TOGGLES_LOCAL_STORAGE_KEY,
     );
-    let openedKeys = [];
+    let openedKeys: string[] = [];
     if (openedKeysString) {
       try {
         openedKeys = JSON.parse(openedKeysString);

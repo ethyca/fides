@@ -1,7 +1,8 @@
 import { Badge, BadgeProps } from "fidesui";
+import { ReactElement } from "react";
 
 interface ClassificationCategoryBadgeProps extends BadgeProps {
-  classification?: string | JSX.Element;
+  classification?: string | ReactElement;
   children: React.ReactNode;
 }
 

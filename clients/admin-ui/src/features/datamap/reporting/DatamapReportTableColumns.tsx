@@ -1,7 +1,7 @@
 import { ColumnDef, createColumnHelper } from "@tanstack/react-table";
 import { DefaultCell, GroupCountBadgeCell } from "common/table/v2";
 import { isArray, map, snakeCase } from "lodash";
-import { ReactNode } from "react";
+import { ReactElement, ReactNode } from "react";
 
 import { CustomReportColumn } from "~/features/common/custom-reports/types";
 import {
@@ -105,7 +105,9 @@ const getCustomFieldColumns = (
 interface DatamapReportColumnProps {
   onSelectRow: (row: DatamapReport) => void;
   getDataUseDisplayName: (dataUseKey: string) => ReactNode;
-  getDataCategoryDisplayName: (dataCategoryKey: string) => string | JSX.Element;
+  getDataCategoryDisplayName: (
+    dataCategoryKey: string,
+  ) => string | ReactElement;
   getDataSubjectDisplayName: (dataSubjectKey: string) => ReactNode;
   datamapReport: Page_DatamapReport_ | undefined;
   customFields: CustomFieldDefinitionWithId[];

@@ -32,10 +32,12 @@ const ControlledRadioGroup = ({
   const isInvalid = !!(meta.touched && meta.error);
   const defaultSelected = defaultFirstSelected ? options[0] : undefined;
   const selected =
-    options.find((o) => o.value === field.value) ?? defaultSelected;
+    options.find((o: any) => o.value === field.value) ?? defaultSelected;
 
   const handleChange = (e: RadioChangeEvent) => {
-    field.onChange(props.name)(e.target.value);
+    if (typeof field.onChange === "function") {
+      field.onChange(e.target.value);
+    }
   };
 
   if (layout === "stacked") {

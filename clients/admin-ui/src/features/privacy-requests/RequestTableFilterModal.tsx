@@ -15,6 +15,7 @@ import {
   ModalProps,
   Stack,
 } from "fidesui";
+import { ReactElement } from "react";
 
 import {
   SubjectRequestActionTypeOptions,
@@ -31,7 +32,7 @@ export const RequestTableFilterModal = ({
   onClose,
   onFilterChange,
   ...props
-}: RequestTableFilterModalProps): JSX.Element => {
+}: RequestTableFilterModalProps): ReactElement => {
   const {
     handleStatusChange,
     handleActionTypeChange,

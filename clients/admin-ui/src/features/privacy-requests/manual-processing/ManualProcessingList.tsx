@@ -28,7 +28,7 @@ import {
   PatchUploadManualWebhookDataRequest,
   PrivacyRequestEntity,
 } from "privacy-requests/types";
-import React, { useEffect, useState } from "react";
+import React, { ReactElement, useEffect, useState } from "react";
 
 import { useAppDispatch } from "~/app/hooks";
 import { getActionTypes } from "~/features/common/RequestType";
@@ -41,7 +41,7 @@ import { ManualInputData, ManualProcessingDetailProps } from "./types";
 type ActionConfig = {
   ProcessingDetailComponent: (
     props: ManualProcessingDetailProps,
-  ) => JSX.Element;
+  ) => ReactElement;
   uploadMutation: (params: any) => any;
   getUploadedWebhookDataEndpoint: any;
 };

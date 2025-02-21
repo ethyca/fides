@@ -8,7 +8,7 @@ import {
   Box,
   Heading,
 } from "fidesui";
-import { useEffect, useMemo, useState } from "react";
+import { ReactElement, useEffect, useMemo, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import CheckboxTree from "~/features/common/CheckboxTree";
@@ -70,7 +70,7 @@ export const DatamapReportFilterModal = ({
   onFilterChange,
   onClose,
   ...props
-}: DatamapReportFilterModalProps): JSX.Element => {
+}: DatamapReportFilterModalProps): ReactElement => {
   useGetAllDataUsesQuery();
   useGetAllDataSubjectsQuery();
   useGetAllDataCategoriesQuery();

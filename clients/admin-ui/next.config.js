@@ -10,7 +10,7 @@ const nextConfig = {
     // Data flow scanning sometimes takes longer than the default of 30 seconds
     proxyTimeout: 120000,
   },
-  transpilePackages: ["antd", "fidesui"],
+  transpilePackages: ["fidesui"],
   images: {
     loader: "custom",
   },

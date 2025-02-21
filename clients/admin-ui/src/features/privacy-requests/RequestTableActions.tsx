@@ -9,6 +9,7 @@ import {
   Text,
   useDisclosure,
 } from "fidesui";
+import { ReactElement } from "react";
 
 import ConfirmationModal from "~/features/common/modals/ConfirmationModal";
 import Restrict from "~/features/common/Restrict";
@@ -25,7 +26,7 @@ interface RequestTableActionsProps extends StackProps {
 export const RequestTableActions = ({
   subjectRequest,
   ...props
-}: RequestTableActionsProps): JSX.Element | null => {
+}: RequestTableActionsProps): ReactElement | null => {
   const approvalModal = useDisclosure();
   const denyModal = useDisclosure();
   const deleteModal = useDisclosure();
