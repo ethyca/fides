@@ -905,3 +905,63 @@ def get_system_data_uses(db: Session, include_parents: bool) -> Set:
         else:
             data_uses.add(data_use)
     return data_uses
+
+
+# Attachment
+
+
+class AttachmentType(str, EnumType):
+    """
+    Enum for attachment types. Indicates attachment usage.
+    """
+
+    internal_use_only = "internal_use_only"
+    include_with_access_package = "include_with_access_package"
+
+
+class AttachmentReferenceType(str, EnumType):
+    """
+    Enum for attachment reference types. Indicates where attachment is referenced.
+    """
+
+    manual_step = "manual_step"
+    privacy_request = "privacy_request"
+    comment = "comment"
+
+
+class AttachmentReference(Base):
+    """
+    Stores information about an Attachment and any other element which may reference that attachment.
+    """
+
+    __tablename__ = "attachment_reference"
+
+    attachment_id = Column(String, ForeignKey("attachment.id"), nullable=False)
+    reference_id = Column(String, nullable=False)
+    reference_type = Column(EnumColumn(AttachmentReferenceType), nullable=False)
+
+    attachment = relationship(
+        "Attachment",
+        back_populates="references",
+        uselist=False,
+    )
+
+
+class Attachment(Base):
+    """
+    Stores information about an Attachment.
+    """
+
+    __tablename__ = "attachment"
+
+    user_id = Column(String, ForeignKey("fidesuser.id"), nullable=False)
+    file_name = Column(String, nullable=False)
+    storage_url = Column(String, nullable=False)
+    attachment_type = Column(EnumColumn(AttachmentType), nullable=False)
+
+    references = relationship(
+        "AttachmentReference",
+        back_populates="attachment",
+        cascade="all, delete",
+        uselist=True,
+    )
