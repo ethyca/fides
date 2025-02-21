@@ -134,6 +134,7 @@ def test_create_and_process_erasure_request_saas(
 
     pr.delete(db=db)
 
+
 @pytest.mark.skip(
     "Flaky Test - to be investigated in https://ethyca.atlassian.net/browse/LJ-425"
 )
