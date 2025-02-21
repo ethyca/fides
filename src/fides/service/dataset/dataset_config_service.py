@@ -18,17 +18,14 @@ from fides.api.graph.traversal_node import TraversalNode
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.policy import Policy
-from fides.api.models.privacy_request import (
-    PrivacyRequest,
-    PrivacyRequestSource,
-    PrivacyRequestStatus,
-)
+from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.api import BulkUpdateFailed
 from fides.api.schemas.dataset import (
     BulkPutDataset,
     DatasetConfigCtlDataset,
     ValidateDatasetResponse,
 )
+from fides.api.schemas.privacy_request import PrivacyRequestSource, PrivacyRequestStatus
 from fides.api.schemas.redis_cache import Identity, LabeledIdentity
 from fides.api.task.create_request_tasks import run_access_request
 from fides.service.dataset.dataset_service import (
