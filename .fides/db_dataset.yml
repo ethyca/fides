@@ -48,7 +48,7 @@ dataset:
     - name: single_row
       data_categories:
       - system.operations
-  - name: attachment_references
+  - name: attachment_reference
     fields:
     - name: attachment_id
       data_categories:
@@ -68,7 +68,7 @@ dataset:
     - name: updated_at
       data_categories:
       - system.operations
-  - name: attachments
+  - name: attachment
     fields:
     - name: attachment_type
       data_categories:
