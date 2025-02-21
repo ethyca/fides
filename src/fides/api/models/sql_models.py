@@ -907,7 +907,7 @@ def get_system_data_uses(db: Session, include_parents: bool) -> Set:
     return data_uses
 
 
-# Attachments
+# Attachment
 
 
 class AttachmentType(str, EnumType):
@@ -929,30 +929,30 @@ class AttachmentReferenceType(str, EnumType):
     comment = "comment"
 
 
-class AttachmentReferences(Base):
+class AttachmentReference(Base):
     """
     Stores information about an Attachment and any other element which may reference that attachment.
     """
 
-    __tablename__ = "attachment_references"
+    __tablename__ = "attachment_reference"
 
-    attachment_id = Column(String, ForeignKey("attachments.id"), nullable=False)
+    attachment_id = Column(String, ForeignKey("attachment.id"), nullable=False)
     reference_id = Column(String, nullable=False)
     reference_type = Column(EnumColumn(AttachmentReferenceType), nullable=False)
 
     attachment = relationship(
-        "Attachments",
+        "Attachment",
         back_populates="references",
         uselist=False,
     )
 
 
-class Attachments(Base):
+class Attachment(Base):
     """
     Stores information about an Attachment.
     """
 
-    __tablename__ = "attachments"
+    __tablename__ = "attachment"
 
     user_id = Column(String, ForeignKey("fidesuser.id"), nullable=False)
     file_name = Column(String, nullable=False)
@@ -960,7 +960,7 @@ class Attachments(Base):
     attachment_type = Column(EnumColumn(AttachmentType), nullable=False)
 
     references = relationship(
-        "AttachmentReferences",
+        "AttachmentReference",
         back_populates="attachment",
         cascade="all, delete",
         uselist=True,
