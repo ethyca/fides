@@ -6,7 +6,10 @@ import type { Classification } from "./Classification";
 import type { DiffStatus } from "./DiffStatus";
 import type { StagedResourceTypeValue } from "./StagedResourceTypeValue";
 
-export type Table = {
+/**
+ * API model that represents a datastore staged resource, fields common to all types of datastore staged resources
+ */
+export type DatastoreStagedResource = {
   urn: string;
   /**
    * The data uses associated with the resource
@@ -36,9 +39,4 @@ export type Table = {
    *
    */
   child_diff_statuses?: Record<string, boolean>;
-  database_name?: string | null;
-  schema_name: string;
-  parent_schema: string;
-  fields?: Array<string>;
-  num_rows?: number | null;
 };
