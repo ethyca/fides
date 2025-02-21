@@ -115,8 +115,8 @@ const setTcString = (event: FidesEvent, cmpApi: CmpApi) => {
   return true;
 };
 
-/** From our options, derive what APIs of GPP are applicable */
-const getSupportedApis = () => {
+/** From experience options, derive what APIs of GPP are applicable */
+const getExperienceSupportedApis = () => {
   const supportedApis: string[] = [];
   if (isPrivacyExperience(window.Fides.experience)) {
     const { gpp_settings: gppSettings } = window.Fides.experience;
@@ -124,7 +124,7 @@ const getSupportedApis = () => {
       if (window.Fides.options.tcfEnabled && gppSettings.enable_tcfeu_string) {
         supportedApis.push(`${TcfEuV2.ID}:${TcfEuV2.NAME}`);
       }
-      fidesDebugger("GPP settings", gppSettings);
+      fidesDebugger("Experience GPP settings", gppSettings);
       if (
         gppSettings.us_approach === GPPUSApproach.NATIONAL ||
         gppSettings.us_approach === GPPUSApproach.ALL
@@ -169,14 +169,9 @@ const initializeGppCmpApi = () => {
   cmpApi.setCmpStatus(CmpStatus.LOADED);
   window.addEventListener("FidesInitialized", (event) => {
     // TODO (PROD-1439): re-evaluate if GPP is "cheating" accessing window.Fides instead of using the event details only
-    const {
-      experience,
-      saved_consent: savedConsent,
-      options,
-      geolocation,
-    } = window.Fides;
+    const { experience, saved_consent: savedConsent, options } = window.Fides;
     const isTcfEnabled = options.tcfEnabled;
-    cmpApi.setSupportedAPIs(getSupportedApis());
+    cmpApi.setSupportedAPIs(getExperienceSupportedApis());
     // Set status to ready immediately upon initialization, if either:
     // A. Consent should not be resurfaced
     // B. User has no prefs and has all opt-in notices and TCF is disabled
@@ -211,20 +206,11 @@ const initializeGppCmpApi = () => {
         cmpApi.setApplicableSections([-1]);
       }
       cmpApi.setSignalStatus(SignalStatus.READY);
-
-      // mimics __gpp('ping', console.log);
-      fidesDebugger(
-        `GPP: CMP status and configuration for ${geolocation?.location}`,
-        {
-          cmpStatus: cmpApi.getCmpStatus(),
-          cmpDisplayStatus: cmpApi.getCmpDisplayStatus(),
-          signalStatus: cmpApi.getSignalStatus(),
-          supportedAPIs: cmpApi.getSupportedAPIs(),
-          applicableSections: cmpApi.getApplicableSections(),
-          gppString: cmpApi.getGppString(),
-          parsedSections: cmpApi.getObject(),
-        },
-      );
+      /* eslint-disable no-underscore-dangle */
+      if (window.__gpp && fidesDebugger) {
+        window.__gpp?.("ping", (data) => fidesDebugger(data));
+      }
+      /* eslint-enable no-underscore-dangle */
     }
   });
 
