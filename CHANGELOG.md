@@ -21,6 +21,18 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.55.3...main)
 
+### Added
+- DB model support for Web Monitoring [#5616](https://github.com/ethyca/fides/pull/5616) https://github.com/ethyca/fides/labels/db-migration
+- Added support for queue-specific Celery workers [#5761](https://github.com/ethyca/fides/pull/5761)
+
+### Changed
+- Improved dataset validation for namespace metadata and dataset reachability [#5744](https://github.com/ethyca/fides/pull/5744)
+
+### Docs
+- Removed version pins in LDFLAGS & CFLAGS for local MSSQL builds [#5760](https://github.com/ethyca/fides/pull/5760)
+
+## [2.55.3](https://github.com/ethyca/fides/compare/2.55.2...2.55.3)
+
 ### Fixed
 - Fixed BigQuery DSR integration generates invalid queries when having a dataset with nested fields [#5785](https://github.com/ethyca/fides/pull/5785)
 
