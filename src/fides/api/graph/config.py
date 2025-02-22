@@ -431,7 +431,7 @@ class MaskingTruncation:
 
 
 # for now, we only support BQ partitioning, so the clause pattern we expect is BQ-specific
-BIGQUERY_PARTITION_CLAUSE_PATTERN = r"^`(?P<field_1>[a-zA-Z0-9_]*)` ([<|>][=]?) (?P<operand_1>[a-zA-Z0-9_\s(),\.\"\']*)(\sAND `(?P<field_2>[a-zA-Z0-9_]*)` ([<|>][=]?) (?P<operand_2>[a-zA-Z0-9_\s(),\.\"\']*))?$"
+BIGQUERY_PARTITION_CLAUSE_PATTERN = r"^`(?P<field_1>[a-zA-Z0-9_]*)` ([<|>][=]?) (?P<operand_1>[a-zA-Z0-9_\s(),\.\"\'\-]*)(\sAND `(?P<field_2>[a-zA-Z0-9_]*)` ([<|>][=]?) (?P<operand_2>[a-zA-Z0-9_\s(),\.\"\'\-]*))?$"
 # protected keywords that are _not_ allowed in the operands, to avoid any potential malicious execution.
 PROHIBITED_KEYWORDS = [
     "UNION",

@@ -466,6 +466,7 @@ export interface PrivacyExperienceMinimal
   extends Pick<
     PrivacyExperience,
     | "id"
+    | "privacy_notices"
     | "available_locales"
     | "gpp_settings"
     | "vendor_count"
@@ -643,6 +644,7 @@ export enum ComponentType {
   MODAL = "modal",
   PRIVACY_CENTER = "privacy_center",
   TCF_OVERLAY = "tcf_overlay",
+  HEADLESS = "headless",
 }
 
 export enum BannerEnabled {

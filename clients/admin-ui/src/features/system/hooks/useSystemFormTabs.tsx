@@ -15,7 +15,7 @@ import { useSystemOrDatamapRoute } from "~/features/common/hooks/useSystemOrData
 import {
   EDIT_SYSTEM_ROUTE,
   INTEGRATION_MANAGEMENT_ROUTE,
-} from "~/features/common/nav/v2/routes";
+} from "~/features/common/nav/routes";
 import {
   DEFAULT_TOAST_PARAMS,
   errorToastParams,

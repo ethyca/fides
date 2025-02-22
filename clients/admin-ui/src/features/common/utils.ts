@@ -117,6 +117,6 @@ export const getOptionsFromMap = <T = string>(
     value: key,
   }));
 
-export const getWebsiteIconUrl = (hostname: string) => {
-  return `https://icons.duckduckgo.com/ip3/${hostname}.ico`;
+export const getWebsiteIconUrl = (domain: string, size = 24) => {
+  return `https://cdn.brandfetch.io/${domain}/icon/theme/light/fallback/404/h/${size}/w/${size}?c=1idbRjELpikqQ1PLiqb`;
 };

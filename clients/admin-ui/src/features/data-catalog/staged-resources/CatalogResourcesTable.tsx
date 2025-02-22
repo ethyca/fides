@@ -6,10 +6,8 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { Box, Flex } from "fidesui";
-import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";
 
-import { DATA_CATALOG_ROUTE } from "~/features/common/nav/v2/routes";
 import {
   FidesTableV2,
   PaginationBar,
@@ -18,17 +16,14 @@ import {
   useServerSidePagination,
 } from "~/features/common/table/v2";
 import EmptyCatalogTableNotice from "~/features/data-catalog/datasets/EmptyCatalogTableNotice";
+import CatalogResourceDetailDrawer from "~/features/data-catalog/staged-resources/CatalogResourceDetailDrawer";
 import useCatalogResourceColumns from "~/features/data-catalog/useCatalogResourceColumns";
 import { useGetMonitorResultsQuery } from "~/features/data-discovery-and-detection/discovery-detection.slice";
 import { SearchInput } from "~/features/data-discovery-and-detection/SearchInput";
 import { StagedResourceType } from "~/features/data-discovery-and-detection/types/StagedResourceType";
 import { findResourceType } from "~/features/data-discovery-and-detection/utils/findResourceType";
 import resourceHasChildren from "~/features/data-discovery-and-detection/utils/resourceHasChildren";
-import {
-  DiffStatus,
-  StagedResourceAPIResponse,
-  SystemResponse,
-} from "~/types/api";
+import { DiffStatus, StagedResourceAPIResponse } from "~/types/api";
 
 // everything except muted
 const DIFF_STATUS_FILTERS = [
@@ -53,13 +48,11 @@ const EMPTY_RESPONSE = {
 
 const CatalogResourcesTable = ({
   resourceUrn,
-  system,
+  onRowClick,
 }: {
   resourceUrn: string;
-  system: SystemResponse;
+  onRowClick: (row: StagedResourceAPIResponse) => void;
 }) => {
-  const router = useRouter();
-
   const {
     PAGE_SIZES,
     pageSize,
@@ -103,9 +96,13 @@ const CatalogResourcesTable = ({
     setTotalPages(totalPages);
   }, [totalPages, setTotalPages]);
 
+  const [detailResource, setDetailResource] = useState<
+    StagedResourceAPIResponse | undefined
+  >(undefined);
+
   const type = findResourceType(data[0] ?? StagedResourceType.NONE);
 
-  const columns = useCatalogResourceColumns(type);
+  const columns = useCatalogResourceColumns(type, setDetailResource);
 
   const tableInstance = useReactTable<StagedResourceAPIResponse>({
     getCoreRowModel: getCoreRowModel(),
@@ -135,9 +132,7 @@ const CatalogResourcesTable = ({
         tableInstance={tableInstance}
         emptyTableNotice={<EmptyCatalogTableNotice />}
         getRowIsClickable={(row) => resourceHasChildren(row)}
-        onRowClick={(row) =>
-          router.push(`${DATA_CATALOG_ROUTE}/${system.fides_key}/${row.urn}`)
-        }
+        onRowClick={onRowClick}
       />
       <PaginationBar
         totalRows={totalRows || 0}
@@ -149,6 +144,10 @@ const CatalogResourcesTable = ({
         isNextPageDisabled={isNextPageDisabled}
         startRange={startRange}
         endRange={endRange}
+      />
+      <CatalogResourceDetailDrawer
+        resource={detailResource}
+        onClose={() => setDetailResource(undefined)}
       />
     </>
   );

@@ -12,7 +12,7 @@ import {
 import NextLink from "next/link";
 import { useEffect, useState } from "react";
 
-import { ACTION_CENTER_ROUTE } from "~/features/common/nav/v2/routes";
+import { ACTION_CENTER_ROUTE } from "~/features/common/nav/routes";
 import { formatDate, getWebsiteIconUrl } from "~/features/common/utils";
 
 import { MonitorAggregatedResults } from "./types";
@@ -63,13 +63,23 @@ export const MonitorResult = ({
     <List.Item data-testid={`monitor-result-${key}`} {...props}>
       <Skeleton avatar title={false} loading={showSkeleton} active>
         <List.Item.Meta
-          avatar={!!iconUrl && <Avatar src={iconUrl} size="small" />}
+          avatar={
+            <Avatar
+              src={iconUrl}
+              size="small"
+              icon={<Icons.Wikis />}
+              style={{
+                backgroundColor: "transparent",
+                color: "var(--ant-color-text)",
+              }}
+            />
+          }
           title={
             <NextLink
               href={`${ACTION_CENTER_ROUTE}/${key}`}
               className="whitespace-nowrap"
             >
-              {`${totalUpdates} assets detected${property ? `on ${property}` : ""}`}
+              {`${totalUpdates} assets detected${property ? ` on ${property}` : ""}`}
               {!!warning && (
                 <Tooltip
                   title={typeof warning === "string" ? warning : undefined}

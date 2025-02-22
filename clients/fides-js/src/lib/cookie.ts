@@ -349,6 +349,18 @@ export const removeCookiesFromBrowser = (
   });
 };
 
+export const buildCookieConsentFromConsentPreferences = (
+  consentPreferencesToSave: SaveConsentPreference[],
+): NoticeConsent => {
+  const noticeMap = new Map<string, boolean>(
+    consentPreferencesToSave.map(({ notice, consentPreference }) => [
+      notice.notice_key,
+      transformUserPreferenceToBoolean(consentPreference),
+    ]),
+  );
+  return Object.fromEntries(noticeMap);
+};
+
 /**
  * Update cookie based on consent preferences to save
  */
@@ -356,16 +368,9 @@ export const updateCookieFromNoticePreferences = async (
   oldCookie: FidesCookie,
   consentPreferencesToSave: SaveConsentPreference[],
 ): Promise<FidesCookie> => {
-  const noticeMap = new Map<string, boolean>(
-    consentPreferencesToSave.map(({ notice, consentPreference }) => [
-      notice.notice_key,
-      transformUserPreferenceToBoolean(consentPreference),
-    ]),
-  );
-  const consentCookieKey: NoticeConsent = Object.fromEntries(noticeMap);
   return {
     ...oldCookie,
-    consent: consentCookieKey,
+    consent: buildCookieConsentFromConsentPreferences(consentPreferencesToSave),
   };
 };
 

@@ -1,0 +1,1 @@
+"use strict";var GppCommand;Object.defineProperty(exports,"__esModule",{value:!0}),exports.GppCommand=void 0,function(e){e.ADD_EVENT_LISTENER="addEventListener",e.GET_FIELD="getField",e.GET_SECTION="getSection",e.HAS_SECTION="hasSection",e.PING="ping",e.REMOVE_EVENT_LISTENER="removeEventListener"}(GppCommand=exports.GppCommand||(exports.GppCommand={}));
