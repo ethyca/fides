@@ -16,9 +16,16 @@
     "incremental": true,
     "baseUrl": "./",
     "paths": {
-      "~/*": ["./*"]
-      // "react": ["./node_modules/react"],
-      // "react-dom": ["./node_modules/react-dom"]
+      "~/*": ["./*"],
+      /*
+        DEFER (LJ-423)
+        Forcing the typescript compiler to use the local types from this project.
+        Otherwise the compiler will try to use the types from the clients/node_modules folder
+        which is a different version.
+        Once we unify React versions across all monorepo clients, we can remove this.
+      */
+      "react": ["./node_modules/@types/react"],
+      "react-dom": ["./node_modules/@types/react-dom"]
     },
     "plugins": [
       {
