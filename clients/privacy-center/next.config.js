@@ -21,10 +21,11 @@ const nextConfig = {
   },
   transpilePackages: [
     "react-syntax-highlighter",
-    "swagger-client",
-    "swagger-ui-react",
+    // "swagger-client",
+    // "swagger-ui-react",
     "fidesui",
   ],
+
   async rewrites() {
     return [
       {

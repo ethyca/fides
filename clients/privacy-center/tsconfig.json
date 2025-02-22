@@ -14,9 +14,11 @@
     "isolatedModules": true,
     "jsx": "preserve",
     "incremental": true,
-    "baseUrl": ".",
+    "baseUrl": "./",
     "paths": {
       "~/*": ["./*"]
+      // "react": ["./node_modules/react"],
+      // "react-dom": ["./node_modules/react-dom"]
     },
     "plugins": [
       {
