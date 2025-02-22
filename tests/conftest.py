@@ -33,6 +33,7 @@ from fides.api.db.system import create_system
 from fides.api.main import app
 from fides.api.models.privacy_request import (
     EXITED_EXECUTION_LOG_STATUSES,
+    RequestTask,
     generate_request_callback_pre_approval_jwe,
     generate_request_callback_resume_jwe,
 )
