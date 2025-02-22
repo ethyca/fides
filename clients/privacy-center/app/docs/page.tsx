@@ -1,10 +1,10 @@
 "use server";
 
-//import "swagger-ui-react/swagger-ui.css";
+// import "swagger-ui-react/swagger-ui.css";
 
 import { NextPage } from "next";
 import { notFound } from "next/navigation";
-//import SwaggerUI from "swagger-ui-react";
+// import SwaggerUI from "swagger-ui-react";
 
 const DocsPage: NextPage = () => {
   const isDevelopmentBuild = process.env.NODE_ENV === "development";
@@ -12,7 +12,7 @@ const DocsPage: NextPage = () => {
     return notFound();
   }
 
-  return <h1>Not available</h1>
- // return <SwaggerUI url="/api/openapi.json" />;
+  return <h1>Not available</h1>;
+  // return <SwaggerUI url="/api/openapi.json" />;
 };
 export default DocsPage;
