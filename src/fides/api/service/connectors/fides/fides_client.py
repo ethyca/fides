@@ -13,7 +13,7 @@ from fides.api.schemas.privacy_request import (
 )
 from fides.api.schemas.redis_cache import Identity
 from fides.api.schemas.user import UserLogin
-from fides.api.service.privacy_request.request_service import poll_server_for_completion
+from fides.api.service.privacy_request.polling_service import poll_server_for_completion
 from fides.api.util.collection_util import Row
 from fides.api.util.errors import FidesError
 from fides.api.util.wrappers import sync

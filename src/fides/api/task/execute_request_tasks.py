@@ -34,6 +34,7 @@ from fides.api.task.graph_task import (
     GraphTask,
     mark_current_and_downstream_nodes_as_failed,
 )
+from fides.api.task.queue_task import queue_request_task
 from fides.api.task.task_resources import TaskResources
 from fides.api.tasks import DSR_QUEUE_NAME, DatabaseTask, celery_app
 from fides.api.util.cache import cache_task_tracking_key
@@ -455,27 +456,14 @@ def _order_tasks_by_input_key(
     return tasks
 
 
-mapping = {
+DSR_QUEUE_NAME = "dsr"
+
+# Map action types to their corresponding task functions
+TASK_MAPPING = {
     ActionType.access: run_access_node,
     ActionType.erasure: run_erasure_node,
     ActionType.consent: run_consent_node,
 }
-
-
-def queue_request_task(
-    request_task: RequestTask, privacy_request_proceed: bool = True
-) -> None:
-    """Queues the RequestTask in Celery and caches the Celery Task ID"""
-    celery_task_fn: Task = mapping[request_task.action_type]
-    celery_task = celery_task_fn.apply_async(
-        queue=DSR_QUEUE_NAME,
-        kwargs={
-            "privacy_request_id": request_task.privacy_request_id,
-            "privacy_request_task_id": request_task.id,
-            "privacy_request_proceed": privacy_request_proceed,
-        },
-    )
-    cache_task_tracking_key(request_task.id, celery_task.task_id)
 
 
 def log_task_queued(request_task: RequestTask, location: str) -> None:

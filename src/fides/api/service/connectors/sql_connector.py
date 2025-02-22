@@ -1,5 +1,6 @@
 import io
 from abc import abstractmethod
+from time import sleep
 from typing import Any, Dict, List, Optional, Type
 
 import paramiko
@@ -169,6 +170,7 @@ class SQLConnector(BaseConnector[Engine]):
                 return self.partitioned_retrieval(query_config, connection, stmt)
 
             results = connection.execute(stmt)
+            sleep(120)
             return self.cursor_result_to_rows(results)
 
     def mask_data(

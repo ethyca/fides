@@ -1,3 +1,5 @@
+"""Utilities for caching data."""
+
 import json
 from typing import Any, Dict, List, Optional, Union
 from urllib.parse import unquote_to_bytes
@@ -11,6 +13,7 @@ from redis.exceptions import DataError
 from fides.api import common_exceptions
 from fides.api.schemas.masking.masking_secrets import SecretType
 from fides.api.tasks import (
+    DSR_QUEUE_NAME,
     MESSAGING_QUEUE_NAME,
     PRIVACY_PREFERENCES_QUEUE_NAME,
     celery_app,
@@ -236,32 +239,54 @@ def cache_task_tracking_key(request_id: str, celery_task_id: str) -> None:
 
 
 def celery_tasks_in_flight(celery_task_ids: List[str]) -> bool:
-    """Returns True if supplied Celery Tasks appear to be in-flight"""
+    """Returns True if supplied Celery Tasks appear to be in-flight or queued"""
     if not celery_task_ids:
         return False
 
+    # Check if tasks are being processed by workers
     queried_tasks = celery_app.control.inspect().query_task(*celery_task_ids)
-    if not queried_tasks:
-        return False
+    if queried_tasks:
+        # Expected format: {HOSTNAME: {TASK_ID: [STATE, TASK_INFO]}}
+        for _, task_details in queried_tasks.items():
+            for _, state_array in task_details.items():
+                state: str = state_array[0]
+                # Note, not positive of states here,
+                # some seen in testing, some from here:
+                # https://github.com/celery/celery/blob/main/celery/worker/control.py or
+                # https://github.com/celery/celery/blob/main/celery/states.py
+                if state in [
+                    "active",
+                    "received",
+                    "registered",
+                    "reserved",
+                    "retry",
+                    "scheduled",
+                    "started",
+                ]:
+                    return True
 
-    # Expected format: {HOSTNAME: {TASK_ID: [STATE, TASK_INFO]}}
-    for _, task_details in queried_tasks.items():
-        for _, state_array in task_details.items():
-            state: str = state_array[0]
-            # Note, not positive of states here,
-            # some seen in testing, some from here:
-            # https://github.com/celery/celery/blob/main/celery/worker/control.py or
-            # https://github.com/celery/celery/blob/main/celery/states.py
-            if state in [
-                "active",
-                "received",
-                "registered",
-                "reserved",
-                "retry",
-                "scheduled",
-                "started",
-            ]:
-                return True
+    # Check if tasks are in Redis queues
+    redis_conn = get_cache()
+    default_queue_name = celery_app.conf.get("task_default_queue", "celery")
+    for queue in [
+        MESSAGING_QUEUE_NAME,
+        PRIVACY_PREFERENCES_QUEUE_NAME,
+        default_queue_name,
+    ]:
+        # Get all tasks in the queue
+        queue_length = redis_conn.llen(queue)
+        if queue_length > 0:
+            # Check each task in the queue
+            for i in range(queue_length):
+                task = redis_conn.lindex(queue, i)
+                if task:
+                    # Task data is stored as JSON string
+                    try:
+                        task_data = json.loads(task)
+                        if task_data.get("headers", {}).get("id") in celery_task_ids:
+                            return True
+                    except json.JSONDecodeError:
+                        logger.warning("Failed to decode task data from Redis queue")
 
     return False
 

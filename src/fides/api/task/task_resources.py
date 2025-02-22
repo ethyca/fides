@@ -28,6 +28,7 @@ from fides.api.service.connectors import (
 )
 from fides.api.service.connectors.base_email_connector import BaseEmailConnector
 from fides.api.service.connectors.s3_connector import S3Connector
+from fides.api.task.queue_task import queue_request_task
 from fides.api.util.cache import get_cache
 from fides.api.util.collection_util import Row, extract_key_for_address
 
@@ -201,3 +202,5 @@ class TaskResources:
         """
         logger.debug("Closing all task resources")
         self.connections.close()
+
+__all__ = ["queue_request_task"]

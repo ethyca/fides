@@ -14,7 +14,9 @@ from fides.api.service.privacy_request.request_runner_service import (
 )
 from fides.api.service.privacy_request.request_service import (
     DSR_DATA_REMOVAL,
+    INTERRUPTED_TASK_REQUEUE_POLL,
     PRIVACY_REQUEST_STATUS_CHANGE_POLL,
+    initiate_interrupted_task_requeue_poll,
     initiate_poll_for_exited_privacy_request_tasks,
     initiate_scheduled_dsr_data_removal,
 )
@@ -86,6 +88,22 @@ def test_initiate_poll_for_exited_privacy_request_tasks() -> None:
     initiate_poll_for_exited_privacy_request_tasks()
     assert scheduler.running
     job = scheduler.get_job(job_id=PRIVACY_REQUEST_STATUS_CHANGE_POLL)
+    assert job is not None
+    assert isinstance(job.trigger, IntervalTrigger)
+    assert job.trigger.interval == datetime.timedelta(
+        seconds=CONFIG.execution.state_polling_interval
+    )
+
+    CONFIG.test_mode = True
+
+
+def test_initiate_interrupted_task_requeue_poll() -> None:
+    """This task runs on an interval looking for tasks that were interrupted and need to be requeued"""
+    CONFIG.test_mode = False
+
+    initiate_interrupted_task_requeue_poll()
+    assert scheduler.running
+    job = scheduler.get_job(job_id=INTERRUPTED_TASK_REQUEUE_POLL)
     assert job is not None
     assert isinstance(job.trigger, IntervalTrigger)
     assert job.trigger.interval == datetime.timedelta(
