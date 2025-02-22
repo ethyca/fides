@@ -18,17 +18,14 @@ from fides.api.graph.traversal_node import TraversalNode
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.policy import Policy
-from fides.api.models.privacy_request import (
-    PrivacyRequest,
-    PrivacyRequestSource,
-    PrivacyRequestStatus,
-)
+from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.api import BulkUpdateFailed
 from fides.api.schemas.dataset import (
     BulkPutDataset,
     DatasetConfigCtlDataset,
     ValidateDatasetResponse,
 )
+from fides.api.schemas.privacy_request import PrivacyRequestSource, PrivacyRequestStatus
 from fides.api.schemas.redis_cache import Identity, LabeledIdentity
 from fides.service.dataset.dataset_service import (
     DatasetNotFoundException,
@@ -223,45 +220,52 @@ class DatasetConfigService:
             },
         )
 
-        # Remove periods and colons to avoid them being parsed as path delimiters downstream.
-        escaped_input_data = {
-            key.replace(".", "_").replace(":", "_"): value
-            for key, value in input_data.items()
-        }
+        with logger.contextualize(
+            privacy_request_id=privacy_request.id,
+            privacy_request_source=PrivacyRequestSource.dataset_test.value,
+        ):
+            try:
+                # Remove periods and colons to avoid them being parsed as path delimiters downstream.
+                escaped_input_data = {
+                    key.replace(".", "_").replace(":", "_"): value
+                    for key, value in input_data.items()
+                }
 
-        # Manually cache the input data as identity data.
-        # We're doing a bit of trickery here to avoid asking for labels for custom identities.
-        predefined_fields = Identity.model_fields.keys()
-        input_identity = {
-            key: (
-                value
-                if key in predefined_fields
-                else LabeledIdentity(label=key, value=value)
-            )
-            for key, value in escaped_input_data.items()
-        }
-        privacy_request.cache_identity(input_identity)
+                # Manually cache the input data as identity data.
+                # We're doing a bit of trickery here to avoid asking for labels for custom identities.
+                predefined_fields = Identity.model_fields.keys()
+                input_identity = {
+                    key: (
+                        value
+                        if key in predefined_fields
+                        else LabeledIdentity(label=key, value=value)
+                    )
+                    for key, value in escaped_input_data.items()
+                }
+                privacy_request.cache_identity(input_identity)
 
-        graph_dataset = dataset_config.get_graph()
-        modified_graph_dataset = replace_references_with_identities(
-            dataset_config.fides_key, graph_dataset
-        )
+                graph_dataset = dataset_config.get_graph()
+                modified_graph_dataset = replace_references_with_identities(
+                    dataset_config.fides_key, graph_dataset
+                )
 
-        dataset_graph = DatasetGraph(modified_graph_dataset)
-        connection_config = dataset_config.connection_config
+                dataset_graph = DatasetGraph(modified_graph_dataset)
+                connection_config = dataset_config.connection_config
 
-        from fides.api.task.create_request_tasks import run_access_request
+                from fides.api.task.create_request_tasks import run_access_request
 
-        # Finally invoke the existing DSR 3.0 access request task
-        run_access_request(
-            privacy_request,
-            policy,
-            dataset_graph,
-            [connection_config],
-            escaped_input_data,
-            self.db,
-            privacy_request_proceed=False,
-        )
+                run_access_request(
+                    privacy_request,
+                    policy,
+                    dataset_graph,
+                    [connection_config],
+                    escaped_input_data,
+                    self.db,
+                    privacy_request_proceed=False,
+                )
+            except Exception as exc:
+                logger.error(f"Error running test access request: {exc}")
+
         return privacy_request
 
 

@@ -62,21 +62,17 @@ from fides.api.models.client import ClientDetail
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.manual_webhook import AccessManualWebhook
-from fides.api.models.policy import CurrentStep, Policy, PolicyPreWebhook, Rule
+from fides.api.models.policy import Policy, PolicyPreWebhook, Rule
 from fides.api.models.pre_approval_webhook import (
     PreApprovalWebhook,
     PreApprovalWebhookReply,
 )
 from fides.api.models.privacy_request import (
     EXITED_EXECUTION_LOG_STATUSES,
-    CheckpointActionRequired,
     CustomPrivacyRequestField,
     ExecutionLog,
-    ExecutionLogStatus,
     PrivacyRequest,
     PrivacyRequestNotifications,
-    PrivacyRequestSource,
-    PrivacyRequestStatus,
     ProvidedIdentity,
     RequestTask,
 )
@@ -88,20 +84,25 @@ from fides.api.oauth.utils import (
 )
 from fides.api.schemas.dataset import CollectionAddressResponse, DryRunDatasetResponse
 from fides.api.schemas.external_https import PrivacyRequestResumeFormat
-from fides.api.schemas.policy import ActionType
+from fides.api.schemas.policy import ActionType, CurrentStep
 from fides.api.schemas.privacy_request import (
     BulkPostPrivacyRequests,
     BulkReviewResponse,
     BulkSoftDeletePrivacyRequests,
+    CheckpointActionRequired,
     DenyPrivacyRequests,
     ExecutionLogDetailResponse,
+    ExecutionLogStatus,
     FilteredPrivacyRequestResults,
+    LogEntry,
     ManualWebhookData,
     PrivacyRequestAccessResults,
     PrivacyRequestCreate,
     PrivacyRequestFilter,
     PrivacyRequestNotificationInfo,
     PrivacyRequestResponse,
+    PrivacyRequestSource,
+    PrivacyRequestStatus,
     PrivacyRequestTaskSchema,
     PrivacyRequestVerboseResponse,
     RequestTaskCallbackRequest,
@@ -114,7 +115,7 @@ from fides.api.task.filter_results import filter_data_categories
 from fides.api.task.graph_task import EMPTY_REQUEST, EMPTY_REQUEST_TASK, collect_queries
 from fides.api.task.task_resources import TaskResources
 from fides.api.util.api_router import APIRouter
-from fides.api.util.cache import FidesopsRedis
+from fides.api.util.cache import FidesopsRedis, get_cache
 from fides.api.util.collection_util import Row
 from fides.api.util.endpoint_utils import validate_start_and_end_filters
 from fides.api.util.enums import ColumnSort
@@ -2207,15 +2208,21 @@ def get_test_privacy_request_results(
         db, results, dataset_key, privacy_request.policy_id  # type: ignore[arg-type]
     )
 
-    return {
-        "privacy_request_id": privacy_request.id,
-        "status": privacy_request.status,
-        "results": (
-            filtered_results
-            if CONFIG.security.dsr_testing_tools_enabled
-            else "DSR testing tools are not enabled, results will not be shown."
-        ),
-    }
+    with logger.contextualize(
+        privacy_request_id=privacy_request.id,
+        privacy_request_source=privacy_request.source.value,
+    ):
+        logger.info("Privacy request run completed.")
+
+        return {
+            "privacy_request_id": privacy_request.id,
+            "status": privacy_request.status,
+            "results": (
+                filtered_results
+                if CONFIG.security.dsr_testing_tools_enabled
+                else "DSR testing tools are not enabled, results will not be shown."
+            ),
+        }
 
 
 @router.post(
@@ -2310,3 +2317,35 @@ def filter_access_results(
             target_categories.add(target.data_category)
 
     return filter_data_categories(access_results, target_categories, dataset_graph)
+
+
+@router.get(
+    "/privacy-request/{privacy_request_id}/logs",
+    dependencies=[
+        Security(verify_oauth_client, scopes=[PRIVACY_REQUEST_READ_ACCESS_RESULTS])
+    ],
+    status_code=HTTP_200_OK,
+    response_model=List[LogEntry],
+)
+def get_test_privacy_request_logs(
+    privacy_request_id: str,
+    db: Session = Depends(deps.get_db),
+) -> List[Dict[str, Any]]:
+    """Get logs for a test privacy request."""
+    privacy_request = get_privacy_request_or_error(db, privacy_request_id)
+
+    if privacy_request.source != PrivacyRequestSource.dataset_test:
+        raise HTTPException(
+            status_code=HTTP_403_FORBIDDEN,
+            detail="Logs can only be retrieved for test privacy requests.",
+        )
+
+    if not CONFIG.security.dsr_testing_tools_enabled:
+        raise HTTPException(
+            status_code=HTTP_403_FORBIDDEN,
+            detail="DSR testing tools are not enabled.",
+        )
+
+    # Get logs from Redis
+    cache = get_cache()
+    return cache.get_decoded_list(f"log_{privacy_request_id}") or []

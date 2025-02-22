@@ -12,13 +12,16 @@ from fides.api.common_exceptions import PrivacyRequestNotFound
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import (
     EXITED_EXECUTION_LOG_STATUSES,
-    ExecutionLogStatus,
     PrivacyRequest,
-    PrivacyRequestStatus,
 )
 from fides.api.schemas.drp_privacy_request import DrpPrivacyRequestCreate
 from fides.api.schemas.masking.masking_secrets import MaskingSecretCache
 from fides.api.schemas.policy import ActionType
+from fides.api.schemas.privacy_request import (
+    ExecutionLogStatus,
+    PrivacyRequestResponse,
+    PrivacyRequestStatus,
+)
 from fides.api.schemas.redis_cache import Identity
 from fides.api.service.masking.strategy.masking_strategy import MaskingStrategy
 from fides.api.task.queue_task import queue_request_task
