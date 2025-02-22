@@ -1,11 +1,10 @@
 import datetime
-from copy import deepcopy
 from typing import List, Set
 
 import pytest
-from pydantic import ValidationError as PydanticValidationError
 from pytest import FixtureRequest
 from sqlalchemy.orm import Session
+from sqlalchemy.orm.attributes import flag_modified
 
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.datasetconfig import DatasetConfig
@@ -18,13 +17,13 @@ from tests.conftest import wait_for_tasks_to_complete
 def make_dataset_invalid(db: Session, dataset_config: DatasetConfig) -> None:
     """Helper function to make a dataset invalid by setting an invalid data type in its collections"""
     ctl_dataset = dataset_config.ctl_dataset
-    collections = deepcopy(ctl_dataset.collections)
 
     # Set an invalid data type on the first field
-    first_field = collections[0]["fields"][0]
-    first_field["fides_meta"] = {"data_type": "invalid_type"}
+    ctl_dataset.collections[0]["fields"][0]["fides_meta"] = {
+        "data_type": "invalid_type"
+    }
+    flag_modified(ctl_dataset, "collections")
 
-    ctl_dataset.collections = collections
     db.add(ctl_dataset)
     db.commit()
 

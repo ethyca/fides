@@ -153,9 +153,6 @@ class DatasetConfigService:
         """
         # First check if the target dataset is valid
         try:
-            import pdb
-
-            pdb.set_trace()
             dataset_config.get_graph()
         except PydanticValidationError as exc:
             return False, jsonable_encoder(
