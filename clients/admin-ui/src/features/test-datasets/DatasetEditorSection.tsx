@@ -269,7 +269,15 @@ const EditorSection = ({ connectionKey }: EditorSectionProps) => {
               <Text fontSize="sm" whiteSpace="pre-wrap">
                 {reachability?.reachable
                   ? "Dataset is reachable"
-                  : `Dataset is not reachable. ${reachability?.details}`}
+                  : `Dataset is not reachable. ${
+                      Array.isArray(reachability?.details)
+                        ? `${reachability?.details[0]?.msg}${
+                            reachability?.details[0]?.loc
+                              ? ` (${reachability?.details[0]?.loc})`
+                              : ""
+                          }`
+                        : reachability?.details
+                    }`}
               </Text>
             </HStack>
           </HStack>

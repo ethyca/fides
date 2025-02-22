@@ -1,6 +1,7 @@
 from copy import deepcopy
 from typing import Any, Dict, List, Optional, Tuple, Union
 
+from fastapi.encoders import jsonable_encoder
 from fideslang.models import Dataset as FideslangDataset
 from loguru import logger
 from pydantic import ValidationError as PydanticValidationError
@@ -27,7 +28,6 @@ from fides.api.schemas.dataset import (
 )
 from fides.api.schemas.privacy_request import PrivacyRequestSource, PrivacyRequestStatus
 from fides.api.schemas.redis_cache import Identity, LabeledIdentity
-from fides.api.task.create_request_tasks import run_access_request
 from fides.service.dataset.dataset_service import (
     DatasetNotFoundException,
     _get_ctl_dataset,
@@ -147,28 +147,43 @@ class DatasetConfigService:
 
     def get_dataset_reachability(
         self, dataset_config: DatasetConfig, policy: Optional[Policy] = None
-    ) -> Tuple[bool, Optional[str]]:
+    ) -> Tuple[bool, Optional[Union[str, List[Dict[str, Any]]]]]:
         """
         Determines if the given dataset is reachable along with an error message
         """
+        # First check if the target dataset is valid
+        try:
+            import pdb
 
-        # Get all the dataset configs that are not associated with a disabled connection
-        datasets = DatasetConfig.all(db=self.db)
-        dataset_graphs = [
+            pdb.set_trace()
             dataset_config.get_graph()
-            for dataset_config in datasets
-            if not dataset_config.connection_config.disabled
-        ]
+        except PydanticValidationError as exc:
+            return False, jsonable_encoder(
+                exc.errors(
+                    include_url=False, include_input=False, include_context=False
+                )
+            )
+
+        # Get graphs for all enabled datasets
+        dataset_graphs = []
+        datasets = DatasetConfig.all(db=self.db)
+        for dataset in datasets:
+            if not dataset.connection_config.disabled:
+                try:
+                    dataset_graphs.append(dataset.get_graph())
+                except PydanticValidationError:
+                    continue
 
         # We still want to check reachability even if our dataset config's connection is disabled.
         # We also consider the siblings, because if the connection is enabled, then all the
         # datasets will be enabled with it.
         sibling_dataset_graphs = []
         if dataset_config.connection_config.disabled:
-            sibling_datasets = dataset_config.connection_config.datasets
-            sibling_dataset_graphs = [
-                dataset_config.get_graph() for dataset_config in sibling_datasets
-            ]
+            for sibling in dataset_config.connection_config.datasets:
+                try:
+                    sibling_dataset_graphs.append(sibling.get_graph())
+                except PydanticValidationError:
+                    continue
 
         try:
             dataset_graph = DatasetGraph(*dataset_graphs, *sibling_dataset_graphs)
@@ -252,6 +267,8 @@ class DatasetConfigService:
 
                 dataset_graph = DatasetGraph(modified_graph_dataset)
                 connection_config = dataset_config.connection_config
+
+                from fides.api.task.create_request_tasks import run_access_request
 
                 run_access_request(
                     privacy_request,

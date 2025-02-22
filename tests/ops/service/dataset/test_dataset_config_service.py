@@ -1,7 +1,9 @@
 import datetime
+from copy import deepcopy
 from typing import List, Set
 
 import pytest
+from pydantic import ValidationError as PydanticValidationError
 from pytest import FixtureRequest
 from sqlalchemy.orm import Session
 
@@ -13,10 +15,23 @@ from fides.service.dataset.dataset_config_service import DatasetConfigService
 from tests.conftest import wait_for_tasks_to_complete
 
 
+def make_dataset_invalid(db: Session, dataset_config: DatasetConfig) -> None:
+    """Helper function to make a dataset invalid by setting an invalid data type in its collections"""
+    ctl_dataset = dataset_config.ctl_dataset
+    collections = deepcopy(ctl_dataset.collections)
+
+    # Set an invalid data type on the first field
+    first_field = collections[0]["fields"][0]
+    first_field["fides_meta"] = {"data_type": "invalid_type"}
+
+    ctl_dataset.collections = collections
+    db.add(ctl_dataset)
+    db.commit()
+
+
 @pytest.fixture
 def dataset_config_service(db: Session) -> DatasetConfigService:
     return DatasetConfigService(db)
-
 
 class TestGetDatasetReachability:
 
@@ -94,6 +109,65 @@ class TestGetDatasetReachability:
 
         reachable = dataset_config_service.get_dataset_reachability(
             connection_config.datasets[0],
+        )
+        assert reachable == (True, None)
+
+    def test_get_dataset_reachability_invalid_dataset_config(
+        self,
+        dataset_config_service: DatasetConfigService,
+        single_identity_dataset_config: DatasetConfig,
+        db: Session,
+    ):
+        """Test that dataset with invalid datatype fails validation by directly modifying the database"""
+        make_dataset_invalid(db, single_identity_dataset_config)
+
+        reachable = dataset_config_service.get_dataset_reachability(
+            single_identity_dataset_config,
+        )
+        assert reachable == (
+            False,
+            [
+                {
+                    "type": "value_error",
+                    "loc": ["collections", 0, "fields", 0, "fides_meta", "data_type"],
+                    "msg": "Value error, The data type invalid_type is not supported.",
+                }
+            ],
+        )
+
+    def test_get_dataset_reachability_ignores_validation_error_on_other_connection(
+        self,
+        dataset_config_service: DatasetConfigService,
+        single_identity_dataset_config: DatasetConfig,
+        unreachable_dataset_on_different_connection: DatasetConfig,
+        db: Session,
+    ):
+        """Test that validation errors on other connections are ignored"""
+        make_dataset_invalid(db, unreachable_dataset_on_different_connection)
+
+        reachable = dataset_config_service.get_dataset_reachability(
+            single_identity_dataset_config,
+        )
+        assert reachable == (True, None)
+
+    def test_get_dataset_reachability_ignores_sibling_validation_error(
+        self,
+        db: Session,
+        dataset_config_service: DatasetConfigService,
+        single_identity_dataset_config: DatasetConfig,
+        no_identities_dataset_config: DatasetConfig,
+        connection_config: ConnectionConfig,
+    ):
+        """Test that validation errors on sibling datasets are ignored"""
+        # Disable the connection
+        connection_config.disabled = True
+        db.commit()
+
+        # Make the sibling dataset invalid
+        make_dataset_invalid(db, no_identities_dataset_config)
+
+        reachable = dataset_config_service.get_dataset_reachability(
+            single_identity_dataset_config,
         )
         assert reachable == (True, None)
 
