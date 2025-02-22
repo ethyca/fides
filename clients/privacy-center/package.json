@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev -p 3001",
     "dev:windows": "next dev",
-    "build": "node ./prepare_build.js && next build",
+    "build": "next build",
     "start": "next start",
     "lint": "next lint && eslint ./cypress/**/*.ts",
     "lint:fix": "next lint --fix && eslint --fix ./cypress/**/*.ts",
