@@ -474,7 +474,7 @@ def _filter_privacy_request_queryset(
 
     if identity:
         identity_hashes = ProvidedIdentity.hash_value_for_search(identity)
-        identity_set: Set[str] = { # type: ignore[no-redef]
+        identity_set: Set[str] = {  # type: ignore[no-redef]
             identity[0]
             for identity in ProvidedIdentity.filter(
                 db=db,
