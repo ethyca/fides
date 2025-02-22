@@ -111,6 +111,7 @@ class SQLConnector(BaseConnector[Engine]):
                 connection.execute("select 1")
         except OperationalError as e:
             logger.error("something")
+            logger.error(e)
             raise ConnectionException(
                 f"Operational Error connecting to {self.configuration.connection_type.value} db."  # type: ignore
             )
