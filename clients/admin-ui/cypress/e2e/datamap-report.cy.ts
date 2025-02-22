@@ -4,7 +4,7 @@ import {
   stubTaxonomyEntities,
 } from "cypress/support/stubs";
 
-import { REPORTING_DATAMAP_ROUTE } from "~/features/common/nav/v2/routes";
+import { REPORTING_DATAMAP_ROUTE } from "~/features/common/nav/routes";
 import {
   AllowedTypes,
   CustomFieldDefinition,

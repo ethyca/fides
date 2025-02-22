@@ -15,7 +15,7 @@ import { PersistGate } from "redux-persist/integration/react";
 
 import ProtectedRoute from "~/features/auth/ProtectedRoute";
 import CommonSubscriptions from "~/features/common/CommonSubscriptions";
-import MainSideNav from "~/features/common/nav/v2/MainSideNav";
+import MainSideNav from "~/features/common/nav/MainSideNav";
 import { antTheme } from "~/theme/ant";
 
 import store, { persistor } from "../app/store";

@@ -9,7 +9,7 @@ import NextLink from "next/link";
 import { useCallback, useEffect, useState } from "react";
 
 import Layout from "~/features/common/Layout";
-import { ACTION_CENTER_ROUTE } from "~/features/common/nav/v2/routes";
+import { ACTION_CENTER_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 import {
   PaginationBar,

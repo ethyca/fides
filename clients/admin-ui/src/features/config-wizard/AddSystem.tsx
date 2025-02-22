@@ -13,7 +13,7 @@ import { UpgradeModal } from "~/features/common/modals/UpgradeModal";
 import {
   ADD_SYSTEMS_MANUAL_ROUTE,
   ADD_SYSTEMS_MULTIPLE_ROUTE,
-} from "~/features/common/nav/v2/routes";
+} from "~/features/common/nav/routes";
 import { ValidTargets } from "~/types/api";
 
 import CalloutNavCard from "../common/CalloutNavCard";

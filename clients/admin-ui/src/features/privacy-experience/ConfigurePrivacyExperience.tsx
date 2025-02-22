@@ -8,7 +8,7 @@ import { useAppSelector } from "~/app/hooks";
 import { getErrorMessage } from "~/features/common/helpers";
 import { DesktopIcon } from "~/features/common/Icon/DesktopIcon";
 import { MobileIcon } from "~/features/common/Icon/MobileIcon";
-import { PRIVACY_EXPERIENCE_ROUTE } from "~/features/common/nav/v2/routes";
+import { PRIVACY_EXPERIENCE_ROUTE } from "~/features/common/nav/routes";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import {
   defaultInitialValues,
@@ -108,6 +108,11 @@ const ConfigurePrivacyExperience = ({
     : defaultInitialValues;
 
   const handleSubmit = async (values: ExperienceConfigCreate) => {
+    // Ignore placeholder TCF notice. It is used only as a UX cue that TCF purposes will always exist
+    // eslint-disable-next-line no-param-reassign
+    values.privacy_notice_ids = values.privacy_notice_ids?.filter(
+      (item) => item !== "tcf_purposes_placeholder",
+    );
     const valuesToSubmit = {
       ...values,
       disabled: passedInExperience?.disabled ?? true,

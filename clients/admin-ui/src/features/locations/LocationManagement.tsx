@@ -19,7 +19,7 @@ import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { LocationRegulationResponse, Selection } from "~/types/api";
 import { isErrorResult } from "~/types/errors";
 
-import { REGULATIONS_ROUTE } from "../common/nav/v2/routes";
+import { REGULATIONS_ROUTE } from "../common/nav/routes";
 import ToastLink from "../common/ToastLink";
 import LocationPickerCard from "./LocationPickerCard";
 import { usePatchLocationsRegulationsMutation } from "./locations.slice";

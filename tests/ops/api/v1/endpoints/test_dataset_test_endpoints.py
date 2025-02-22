@@ -15,7 +15,9 @@ from fides.common.api.scope_registry import (
     DATASET_READ,
     DATASET_TEST,
 )
-from tests.ops.api.v1.endpoints.test_dataset_endpoints import get_connection_dataset_url
+from tests.ops.api.v1.endpoints.test_dataset_config_endpoints import (
+    get_connection_dataset_url,
+)
 
 
 class TestDatasetInputs:

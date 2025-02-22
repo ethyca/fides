@@ -3,7 +3,7 @@ import React, { useEffect, useMemo, useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import DataTabs, { TabData } from "~/features/common/DataTabs";
-import { DATASTORE_CONNECTION_ROUTE } from "~/features/common/nav/v2/routes";
+import { DATASTORE_CONNECTION_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 import {
   reset,

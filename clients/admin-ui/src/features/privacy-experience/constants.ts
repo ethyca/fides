@@ -4,6 +4,7 @@ export const COMPONENT_MAP = new Map([
   ["tcf_overlay", "TCF overlay"],
   ["modal", "Modal"],
   ["banner_and_modal", "Banner and modal"],
+  ["headless", "Headless"],
 ]);
 
 export const BANNER_ENABLED_MAP = new Map([
