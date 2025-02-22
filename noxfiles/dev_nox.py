@@ -51,6 +51,7 @@ def dev(session: Session) -> None:
         - pc = Build and run the Privacy Center
         - remote_debug = Run with remote debugging enabled (see docker-compose.remote-debug.yml)
         - worker = Run a Fides worker
+        - flower = Run Flower monitoring dashboard for Celery
         - child = Run a Fides child node
         - <datastore(s)> = Run a test datastore (e.g. 'mssql', 'mongodb')
 
@@ -76,6 +77,16 @@ def dev(session: Session) -> None:
 
     if "worker-dsr" in session.posargs:
         session.run("docker", "compose", "up", "--wait", "worker-dsr", external=True)
+        
+    if "flower" in session.posargs:
+        # Only start Flower if worker is also enabled
+        if "worker" in session.posargs:
+            session.run("docker", "compose", "up", "-d", "flower", external=True)
+        else:
+            session.error(
+                "Flower requires the worker service. Please add 'worker' to your arguments."
+            )
+
 
     datastores = [
         datastore for datastore in session.posargs if datastore in ALL_DATASTORES
