@@ -51,6 +51,8 @@ def upgrade():
             asset_type="Cookie",
         )
 
+    op.add_column("asset", sa.Column("description", sa.String(), nullable=True))
+
 
 def downgrade():
     connection = op.get_bind()
@@ -74,3 +76,5 @@ def downgrade():
             system_id=row.system_id,
             privacy_declaration_id=None,
         )
+
+    op.drop_column("asset", "description")
