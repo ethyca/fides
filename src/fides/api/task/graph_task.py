@@ -36,14 +36,10 @@ from fides.api.models.connectionconfig import (
     ConnectionType,
 )
 from fides.api.models.datasetconfig import DatasetConfig
-from fides.api.models.policy import CurrentStep, Policy
-from fides.api.models.privacy_request import (
-    ExecutionLog,
-    ExecutionLogStatus,
-    PrivacyRequest,
-    RequestTask,
-)
-from fides.api.schemas.policy import ActionType
+from fides.api.models.policy import Policy
+from fides.api.models.privacy_request import ExecutionLog, PrivacyRequest, RequestTask
+from fides.api.schemas.policy import ActionType, CurrentStep
+from fides.api.schemas.privacy_request import ExecutionLogStatus
 from fides.api.service.connectors.base_connector import BaseConnector
 from fides.api.task.consolidate_query_matches import consolidate_query_matches
 from fides.api.task.filter_element_match import filter_element_match
