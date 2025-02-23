@@ -23,8 +23,6 @@ from fides.api.models import (
 from fides.api.models.asset import Asset
 from fides.api.models.location_regulation_selections import DeprecatedNoticeRegion
 from fides.api.models.sql_models import (  # type: ignore[attr-defined]
-    Cookies,
-    PrivacyDeclaration,
     System,
     get_system_data_uses,
 )
@@ -196,15 +194,11 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
         """Return relevant assets of type 'cookie' (via the data use)"""
         db = Session.object_session(self)
         return (
-            db.query(Asset)
-            .filter(
-            Asset.type == "Cookie",
-            or_(
-                *[
-                Asset.data_uses.any(notice_use)
-                for notice_use in self.data_uses
-                ]
-            )
+            db.query(Asset).filter(
+                Asset.asset_type == "Cookie",
+                or_(
+                    *[Asset.data_uses.any(notice_use) for notice_use in self.data_uses]
+                ),
             )
         ).all()
 
