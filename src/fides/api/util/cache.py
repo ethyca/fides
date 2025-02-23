@@ -294,29 +294,6 @@ def celery_tasks_in_flight(celery_task_ids: List[str]) -> bool:
                 ]:
                     return True
 
-    # Check if tasks are in Redis queues
-    redis_conn = get_cache()
-    default_queue_name = celery_app.conf.get("task_default_queue", "celery")
-    for queue in [
-        MESSAGING_QUEUE_NAME,
-        PRIVACY_PREFERENCES_QUEUE_NAME,
-        default_queue_name,
-    ]:
-        # Get all tasks in the queue
-        queue_length = redis_conn.llen(queue)
-        if queue_length > 0:
-            # Check each task in the queue
-            for i in range(queue_length):
-                task = redis_conn.lindex(queue, i)
-                if task:
-                    # Task data is stored as JSON string
-                    try:
-                        task_data = json.loads(task)
-                        if task_data.get("headers", {}).get("id") in celery_task_ids:
-                            return True
-                    except json.JSONDecodeError:
-                        logger.warning("Failed to decode task data from Redis queue")
-
     return False
 
 
@@ -331,6 +308,7 @@ def get_queue_counts() -> Dict[str, int]:
         for queue in [
             MESSAGING_QUEUE_NAME,
             PRIVACY_PREFERENCES_QUEUE_NAME,
+            DSR_QUEUE_NAME,
             default_queue_name,
         ]:
             queue_counts[queue] = redis_conn.llen(queue)

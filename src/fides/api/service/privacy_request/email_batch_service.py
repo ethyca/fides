@@ -16,7 +16,7 @@ from fides.api.service.privacy_request.request_runner_service import (
 from fides.api.tasks import DatabaseTask, celery_app
 from fides.api.tasks.scheduled.scheduler import scheduler
 from fides.config import get_config
-from fides.service.privacy_request.privacy_request_service import queue_privacy_request
+from fides.service.privacy_request.privacy_request_utils import queue_privacy_request
 
 CONFIG = get_config()
 BATCH_EMAIL_SEND = "batch_email_send"

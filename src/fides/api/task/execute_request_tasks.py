@@ -34,6 +34,7 @@ from fides.api.tasks import DSR_QUEUE_NAME, DatabaseTask, celery_app
 from fides.api.util.cache import cache_task_tracking_key
 from fides.api.util.collection_util import Row
 from fides.api.util.logger_context_utils import LoggerContextKeys, log_context
+from fides.service.privacy_request.privacy_request_utils import _process_privacy_request_restart
 
 # DSR 3.0 task functions
 

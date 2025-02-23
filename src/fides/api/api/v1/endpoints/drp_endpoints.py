@@ -49,7 +49,7 @@ from fides.config.config_proxy import ConfigProxy
 from fides.service.messaging.messaging_service import (
     check_and_dispatch_error_notifications,
 )
-from fides.service.privacy_request.privacy_request_service import queue_privacy_request
+from fides.service.privacy_request.privacy_request_utils import queue_privacy_request
 
 router = APIRouter(tags=["DRP"], prefix=urls.V1_URL_PREFIX)
 

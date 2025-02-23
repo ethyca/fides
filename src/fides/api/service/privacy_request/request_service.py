@@ -1,11 +1,12 @@
 from __future__ import annotations
 
 from datetime import datetime, timedelta
+import json
 from typing import Any, Dict, List, Optional, Set
 
 from loguru import logger
 from sqlalchemy import text
-from sqlalchemy.orm import Query
+from sqlalchemy.orm import Query, Session
 from sqlalchemy.sql.elements import TextClause
 
 from fides.api.common_exceptions import PrivacyRequestNotFound
@@ -16,8 +17,9 @@ from fides.api.models.privacy_request import (
 )
 from fides.api.schemas.drp_privacy_request import DrpPrivacyRequestCreate
 from fides.api.schemas.masking.masking_secrets import MaskingSecretCache
-from fides.api.schemas.policy import ActionType
+from fides.api.schemas.policy import ActionType, CurrentStep
 from fides.api.schemas.privacy_request import (
+    CheckpointActionRequired,
     ExecutionLogStatus,
     PrivacyRequestResponse,
     PrivacyRequestStatus,
@@ -34,6 +36,7 @@ from fides.api.util.cache import (
     get_cache,
 )
 from fides.config import CONFIG
+from fides.service.privacy_request.privacy_request_utils import _process_privacy_request_restart, queue_privacy_request
 
 PRIVACY_REQUEST_STATUS_CHANGE_POLL = "privacy_request_status_change_poll"
 DSR_DATA_REMOVAL = "dsr_data_removal"
@@ -345,22 +348,26 @@ def initiate_interrupted_task_requeue_poll() -> None:
         id=INTERRUPTED_TASK_REQUEUE_POLL,
         coalesce=True,  # Only run one instance at a time
         replace_existing=True,
-        seconds=CONFIG.execution.state_polling_interval,  # Reuse same interval as status change polling
+        seconds=10,  # Reuse same interval as status change polling
     )
 
-
 @celery_app.task(base=DatabaseTask, bind=True)
-def requeue_interrupted_tasks(self: DatabaseTask) -> Dict[str, List[str]]:
+def requeue_interrupted_tasks(self: DatabaseTask) -> None:
     """
     Identifies and requeues tasks that were interrupted before completion.
 
     Looks for tasks that are:
-    1. Marked as 'in_processing'
+    1. Marked as 'in_processing' or 'approved'
     2. Have a cached task_id
-    3. Task is not actually running in Celery
+    3. Task is not actually running in Celery or in the queue
     """
     with self.get_new_session() as db:
-        logger.info("Starting check for interrupted tasks to requeue")
+        logger.warning("Starting check for interrupted tasks to requeue")
+
+        # Get all task IDs currently in the queue
+        redis_conn: FidesopsRedis = get_cache()
+        queued_tasks = redis_conn.lrange("fides.dsr", 0, -1)
+        queued_tasks_ids = [json.loads(task)["headers"]["id"] for task in queued_tasks]
 
         # Get all in-progress privacy requests
         in_progress_requests = (
@@ -374,57 +381,70 @@ def requeue_interrupted_tasks(self: DatabaseTask) -> Dict[str, List[str]]:
             .order_by(PrivacyRequest.created_at)
         )
 
-        results = {"requeued_tasks": [], "active_tasks": [], "state_cleaned": []}
-        logger.info("Found {} privacy requests to check", in_progress_requests.count())
+        logger.debug("Found {} privacy requests to check", in_progress_requests.count())
 
+        # Check each privacy request
         for pr in in_progress_requests:
+            should_requeue = False
             logger.debug("Checking tasks for privacy request {}", pr.id)
-            for task in pr.request_tasks:
-                task_id = task.get_cached_task_id()
-                logger.debug(
-                    "Checking task {} (status: {}, cached_task_id: {})",
-                    task.id,
-                    task.status,
-                    task_id,
+            task_id = pr.get_cached_task_id()
+
+            if task_id:
+                # Check if the main privacy request task is active
+                if task_id in queued_tasks_ids:
+                    logger.debug("The privacy request {} is in the queue", pr.id)
+                elif celery_tasks_in_flight([task_id]):
+                    logger.debug("The privacy request {} is running", pr.id)
+                else:
+                    logger.debug("The privacy request {} is not queued or running", pr.id)
+
+                    # Check each individual request task
+                    for task in pr.request_tasks:
+                        if task.status in [ExecutionLogStatus.in_processing, ExecutionLogStatus.pending]:
+                            subtask_id = task.get_cached_task_id()
+
+                            if subtask_id:
+                                if subtask_id in queued_tasks_ids:
+                                    logger.debug("Request task {} is in the queue", task.id)
+                                elif celery_tasks_in_flight([subtask_id]):
+                                    logger.debug("Request task {} is running", task.id)
+                                else:
+                                    logger.warning("Request task {} is not in the queue or running", task.id)
+                                    should_requeue = True
+
+            # Requeue the privacy request if needed
+            if should_requeue:
+                # Both DSR 2.0 and 3.0 cache checkpoint details
+                checkpoint_details: Optional[CheckpointActionRequired] = (
+                    pr.get_failed_checkpoint_details()
+                )
+                resume_step = checkpoint_details.step if checkpoint_details else None
+
+                # DSR 3.0 additionally stores Request Tasks in the application db that can be used to infer
+                # a resume checkpoint in the event the cache has expired.
+                if not resume_step and pr.request_tasks.count():
+                    if pr.consent_tasks.count():
+                        resume_step = CurrentStep.consent
+                    elif pr.erasure_tasks.count():
+                        # Checking if access terminator task was completed, because erasure tasks are created
+                        # at the same time as the access tasks
+                        terminator_access_task = pr.get_terminate_task_by_action(ActionType.access)
+                        resume_step = (
+                            CurrentStep.erasure
+                            if terminator_access_task.status == ExecutionLogStatus.complete
+                            else CurrentStep.access
+                        )
+                    elif pr.access_tasks.count():
+                        resume_step = CurrentStep.access
+
+                logger.warning(
+                    "Automatically re-queuing Privacy Request {} from step {}",
+                    pr,
+                    resume_step.value if resume_step else None,
                 )
 
-                if task.status == ExecutionLogStatus.in_processing and task_id:
-                    # Check if task is still running
-                    is_running = celery_tasks_in_flight([task_id])
-                    logger.debug(
-                        "Task {} is{} still running in Celery",
-                        task.id,
-                        "" if is_running else " not",
-                    )
-
-                    if not is_running:
-                        # Clean up stale state
-                        cache: FidesopsRedis = get_cache()
-                        cache.delete(get_async_task_tracking_cache_key(task.id))
-                        results["state_cleaned"].append(task.id)
-                        logger.info("Cleaned stale state for task {}", task.id)
-
-                        # Only requeue if upstream tasks are complete
-                        if task.can_queue_request_task(db):
-                            queue_request_task(task)
-                            results["requeued_tasks"].append(task.id)
-                            logger.info(
-                                "Requeued interrupted task {} for privacy request {}",
-                                task.id,
-                                pr.id,
-                            )
-                        else:
-                            logger.info(
-                                "Task {} has incomplete upstream dependencies - not requeuing",
-                                task.id,
-                            )
-                    else:
-                        results["active_tasks"].append(task.id)
-
-        logger.info(
-            "Requeue check complete. Results: {} tasks requeued, {} tasks still active, {} states cleaned",
-            len(results["requeued_tasks"]),
-            len(results["active_tasks"]),
-            len(results["state_cleaned"]),
-        )
-        return results
+                return _process_privacy_request_restart(
+                    pr,
+                    resume_step,
+                    db,
+                )
