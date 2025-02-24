@@ -17,14 +17,9 @@ export const MYSQL_PLACEHOLDER = {
   created_at: "",
 };
 
-export const MYSQL_TAGS = [
-  "Database",
-  "Detection",
-  "Discovery",
-  "MySQL Server",
-];
+export const MYSQL_TAGS = ["Database", "Detection", "Discovery", "MySQL"];
 
-export const MySQLServerOverview = () => (
+export const MySQLOverview = () => (
   <>
     <InfoHeading text="Overview" />
     <InfoText>Add infotext</InfoText>
@@ -44,9 +39,13 @@ export const MySQLServerOverview = () => (
       </InfoText>
       <InfoUnorderedList>
         <ListItem>
-          CREATE LOGIN username WITH PASSWORD = &apos;password&apos;;
+          CREATE USER &apos;username&apos; IDENTIFIED WITH authentication_plugin
+          BY &apos;password&apos;;
         </ListItem>
-        <ListItem>GRANT SELECT, INSERT, UPDATE TO username;</ListItem>
+        <ListItem>
+          GRANT SELECT, INSERT ON database.* TO
+          &apos;username&apos;@&apos;%&apos;;
+        </ListItem>
       </InfoUnorderedList>
     </ShowMoreContent>
   </>
@@ -55,7 +54,7 @@ export const MySQLServerOverview = () => (
 const MYSQL_TYPE_INFO = {
   placeholder: MYSQL_PLACEHOLDER,
   category: ConnectionCategory.DATABASE,
-  overview: <MySQLServerOverview />,
+  overview: <MySQLOverview />,
   tags: MYSQL_TAGS,
 };
 
