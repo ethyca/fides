@@ -243,7 +243,7 @@ class TestSaaSQueryConfig:
             "merge_fields": {
                 "FNAME": "First",
                 "LNAME": "Last",
-                # adress is a list of objects
+                # address is a list of objects
                 "ADDRESS": [
                     {
                         "addr1": "123 Main St",
@@ -252,7 +252,15 @@ class TestSaaSQueryConfig:
                         "zip": "94105",
                         # country is read_only so it will not be present on the update body
                         "country": "USA",
-                    }
+                    },
+                    {
+                        "addr1": "124 Main St",
+                        "city": "San Fernando",
+                        "state": "BA",
+                        "zip": "94205",
+                        # country is read_only so it will not be present on the update body
+                        "country": "ARG",
+                    },
                 ],
                 # PHONE is read_only so it will not be present on the update body
                 "PHONE": "555-555-5555",
@@ -280,7 +288,13 @@ class TestSaaSQueryConfig:
                         "city": "MASKED",
                         "state": "MASKED",
                         "zip": "MASKED",
-                    }
+                    },
+                    {
+                        "addr1": "MASKED",
+                        "city": "MASKED",
+                        "state": "MASKED",
+                        "zip": "MASKED",
+                    },
                 ],
             }
         }
