@@ -1,18 +1,10 @@
-import {
-  AntButton as Button,
-  Box,
-  CloseIcon,
-  EditIcon,
-  useDisclosure,
-} from "fidesui";
+import { AntTag as Tag, Box, Icons, useDisclosure } from "fidesui";
 import { useState } from "react";
 
 import DataUseSelect from "~/features/common/dropdown/DataUseSelect";
 import useTaxonomies from "~/features/common/hooks/useTaxonomies";
 import EditMinimalDataUseModal from "~/features/data-catalog/systems/EditMinimalDataUseModal";
-import TaxonomyAddButton from "~/features/data-discovery-and-detection/tables/cells/TaxonomyAddButton";
 import TaxonomyCellContainer from "~/features/data-discovery-and-detection/tables/cells/TaxonomyCellContainer";
-import TaxonomyBadge from "~/features/data-discovery-and-detection/TaxonomyBadge";
 import useSystemDataUseCrud from "~/features/data-use/useSystemDataUseCrud";
 import {
   PrivacyDeclaration,
@@ -23,17 +15,6 @@ import {
 interface EditDataUseCellProps {
   system: SystemResponse;
 }
-
-const DeleteDataUseButton = ({ onClick }: { onClick: () => void }) => (
-  <Button
-    onClick={onClick}
-    icon={<CloseIcon boxSize={2} />}
-    size="small"
-    type="text"
-    className="max-h-4 max-w-4"
-    aria-label="Remove data use"
-  />
-);
 
 const createMinimalDataUse = (use: string): PrivacyDeclaration => ({
   data_use: use,
@@ -70,24 +51,25 @@ const EditDataUseCell = ({ system }: EditDataUseCellProps) => {
       {!isAdding && (
         <>
           {dataUses.map((d, idx) => (
-            <TaxonomyBadge
+            <Tag
               key={d}
               data-testid={`data-use-${d}`}
+              color="white"
               onClick={() =>
                 handleOpenEditForm(system.privacy_declarations[idx])
               }
-              closeButton={
-                <DeleteDataUseButton
-                  onClick={() => deleteDeclarationByDataUse(d)}
-                />
-              }
+              closable
+              onClose={() => deleteDeclarationByDataUse(d)}
+              closeButtonLabel="Remove data use"
             >
-              <EditIcon />
+              <Icons.Edit size={10} />
               {getDataUseDisplayName(d)}
-            </TaxonomyBadge>
+            </Tag>
           ))}
-          <TaxonomyAddButton
+          <Tag
             onClick={() => setIsAdding(true)}
+            data-testid="taxonomy-add-btn"
+            addable
             aria-label="Add data use"
           />
           <EditMinimalDataUseModal

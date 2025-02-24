@@ -2,7 +2,7 @@ import { Box, ButtonProps, Divider, Stack, Text, useDisclosure } from "fidesui";
 import { Fragment, useEffect, useState } from "react";
 
 import useSystemDataUseCrud from "~/features/data-use/useSystemDataUseCrud";
-import EmptyTableState from "~/features/system/dictionary-data-uses/EmptyTableState";
+import EmptyTableState from "~/features/system/system-form-declaration-tab/EmptyTableState";
 import {
   PrivacyDeclarationDisplayGroup,
   PrivacyDeclarationTabTable,
