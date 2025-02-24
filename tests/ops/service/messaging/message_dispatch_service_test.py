@@ -574,10 +574,11 @@ class TestMessageDispatchService:
         )
 
     @mock.patch(
-        "fides.api.service.messaging.message_dispatch_service._aws_ses_dispatcher"
+        "fides.api.service.messaging.message_dispatch_service.AWSSESService",
+        autospec=True,
     )
     def test_email_dispatch_aws_ses_email_test_message(
-        self, mock_aws_ses_dispatcher, db, messaging_config_aws_ses
+        self, mock_aws_ses_service, db, messaging_config_aws_ses
     ):
         dispatch_message(
             db=db,
@@ -586,13 +587,42 @@ class TestMessageDispatchService:
             service_type=MessagingServiceType.aws_ses.value,
         )
         body = '<!DOCTYPE html>\n<html lang="en">\n  <head>\n    <meta charset="UTF-8" />\n    <title>Fides Test message</title>\n  </head>\n  <body>\n    <main>\n      <p>This is a test message from Fides.</p>\n    </main>\n  </body>\n</html>'
-        mock_aws_ses_dispatcher.assert_called_with(
-            messaging_config_aws_ses,
-            EmailForActionType(
-                subject="Test message from fides",
-                body=body,
-            ),
+        mock_aws_ses_service.assert_called_once_with(messaging_config_aws_ses)
+        mock_aws_ses_service.return_value.send_email.assert_called_once_with(
             "test@email.com",
+            "Test message from fides",
+            body,
+        )
+
+    @mock.patch(
+        "fides.api.service.messaging.message_dispatch_service.AWSSESService",
+        autospec=True,
+    )
+    def test_email_dispatch_aws_ses_email_raises_exception(
+        self, mock_aws_ses_service, db, messaging_config_aws_ses
+    ):
+        mock_aws_ses_service.return_value.send_email.side_effect = Exception(
+            "Oops! Something went wrong"
+        )
+
+        with pytest.raises(MessageDispatchException) as exc:
+            dispatch_message(
+                db=db,
+                action_type=MessagingActionType.TEST_MESSAGE,
+                to_identity=Identity(email="test@email.com"),
+                service_type=MessagingServiceType.aws_ses.value,
+            )
+
+        body = '<!DOCTYPE html>\n<html lang="en">\n  <head>\n    <meta charset="UTF-8" />\n    <title>Fides Test message</title>\n  </head>\n  <body>\n    <main>\n      <p>This is a test message from Fides.</p>\n    </main>\n  </body>\n</html>'
+        mock_aws_ses_service.assert_called_once_with(messaging_config_aws_ses)
+        mock_aws_ses_service.return_value.send_email.assert_called_once_with(
+            "test@email.com",
+            "Test message from fides",
+            body,
+        )
+
+        assert "AWS SES email failed to send due to: Oops! Something went wrong" in str(
+            exc.value
         )
 
     def test_fidesops_email_model_validateect(self):
