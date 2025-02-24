@@ -19,12 +19,7 @@ const nextConfig = {
   env: {
     version: "1.2.3",
   },
-  transpilePackages: [
-    "react-syntax-highlighter",
-    // "swagger-client",
-    // "swagger-ui-react",
-    "fidesui",
-  ],
+  transpilePackages: ["react-syntax-highlighter", "fidesui"],
 
   async rewrites() {
     return [
