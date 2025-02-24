@@ -1,6 +1,7 @@
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
+from fides.api.schemas.policy import ActionType
 from loguru import logger
 from sqlalchemy.orm import Session
 
@@ -10,12 +11,14 @@ from fides.api.common_exceptions import (
     RedisNotConfigured,
 )
 from fides.api.models.audit_log import AuditLog, AuditLogAction
-from fides.api.models.policy import Policy
+from fides.api.models.policy import CurrentStep, Policy
 from fides.api.models.pre_approval_webhook import PreApprovalWebhook
 from fides.api.models.privacy_preference import PrivacyPreferenceHistory
 from fides.api.models.privacy_request import (
+    CheckpointActionRequired,
     ConsentRequest,
     ExecutionLog,
+    ExecutionLogStatus,
     PrivacyRequest,
     PrivacyRequestSource,
     PrivacyRequestStatus,
@@ -615,3 +618,81 @@ def _trigger_pre_approval_webhooks(
             webhook=webhook,
             policy_action=privacy_request.policy.get_action_type(),
         )
+
+def _requeue_privacy_request(
+    db: Session,
+    privacy_request: PrivacyRequest,
+) -> PrivacyRequestResponse:
+    """If failed_step is provided, restart the DSR within that step. Otherwise,
+    restart the privacy request from the beginning."""
+
+    if privacy_request.status not in [
+        PrivacyRequestStatus.approved,
+        PrivacyRequestStatus.in_processing,
+    ]:
+        raise PrivacyRequestError(
+            f"Cannot re-queue privacy request {privacy_request.id} with status {privacy_request.status.value}"
+        )
+
+    # Both DSR 2.0 and 3.0 cache checkpoint details
+    checkpoint_details: Optional[CheckpointActionRequired] = (
+        privacy_request.get_failed_checkpoint_details()
+    )
+    resume_step = checkpoint_details.step if checkpoint_details else None
+
+    # DSR 3.0 additionally stores Request Tasks in the application db that can be used to infer
+    # a resume checkpoint in the event the cache has expired.
+    if not resume_step and privacy_request.request_tasks.count():
+        if privacy_request.consent_tasks.count():
+            resume_step = CurrentStep.consent
+        elif privacy_request.erasure_tasks.count():
+            # Checking if access terminator task was completed, because erasure tasks are created
+            # at the same time as the access tasks
+            terminator_access_task = privacy_request.get_terminate_task_by_action(ActionType.access)
+            resume_step = (
+                CurrentStep.erasure
+                if terminator_access_task.status == ExecutionLogStatus.complete
+                else CurrentStep.access
+            )
+        elif privacy_request.access_tasks.count():
+            resume_step = CurrentStep.access
+
+    logger.debug(
+        "Re-queuing privacy request {} from step {}",
+        privacy_request.id,
+        resume_step.value if resume_step else None,
+    )
+
+    return _process_privacy_request_restart(
+        privacy_request,
+        resume_step,
+        db,
+    )
+
+def _process_privacy_request_restart(
+    privacy_request: PrivacyRequest,
+    failed_step: Optional[CurrentStep],
+    db: Session,
+) -> PrivacyRequestResponse:
+    """If failed_step is provided, restart the DSR within that step. Otherwise,
+    restart the privacy request from the beginning."""
+    if failed_step:
+        logger.info(
+            "Restarting failed privacy request '{}' from '{}'",
+            privacy_request.id,
+            failed_step,
+        )
+    else:
+        logger.info(
+            "Restarting failed privacy request '{}' from the beginning",
+            privacy_request.id,
+        )
+
+    privacy_request.status = PrivacyRequestStatus.in_processing
+    privacy_request.save(db=db)
+    queue_privacy_request(
+        privacy_request_id=privacy_request.id,
+        from_step=failed_step.value if failed_step else None,
+    )
+
+    return privacy_request  # type: ignore[return-value]

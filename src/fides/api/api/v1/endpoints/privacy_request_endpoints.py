@@ -74,6 +74,7 @@ from fides.api.models.privacy_request import (
     ExecutionLog,
     ExecutionLogStatus,
     PrivacyRequest,
+    PrivacyRequestError,
     PrivacyRequestNotifications,
     PrivacyRequestSource,
     PrivacyRequestStatus,
@@ -170,6 +171,8 @@ from fides.service.dataset.dataset_config_service import (
 from fides.service.messaging.messaging_service import MessagingService
 from fides.service.privacy_request.privacy_request_service import (
     PrivacyRequestService,
+    _process_privacy_request_restart,
+    _requeue_privacy_request,
     _trigger_pre_approval_webhooks,
     queue_privacy_request,
 )
@@ -1866,35 +1869,6 @@ def resume_privacy_request_from_requires_input(
     return privacy_request  # type: ignore[return-value]
 
 
-def _process_privacy_request_restart(
-    privacy_request: PrivacyRequest,
-    failed_step: Optional[CurrentStep],
-    db: Session,
-) -> PrivacyRequestResponse:
-    """If failed_step is provided, restart the DSR within that step. Otherwise,
-    restart the privacy request from the beginning."""
-    if failed_step:
-        logger.info(
-            "Restarting failed privacy request '{}' from '{}'",
-            privacy_request.id,
-            failed_step,
-        )
-    else:
-        logger.info(
-            "Restarting failed privacy request '{}' from the beginning",
-            privacy_request.id,
-        )
-
-    privacy_request.status = PrivacyRequestStatus.in_processing
-    privacy_request.save(db=db)
-    queue_privacy_request(
-        privacy_request_id=privacy_request.id,
-        from_step=failed_step.value if failed_step else None,
-    )
-
-    return privacy_request  # type: ignore[return-value]
-
-
 @router.get(
     REQUEST_TASKS,
     dependencies=[Security(verify_oauth_client, scopes=[PRIVACY_REQUEST_READ])],
@@ -1935,51 +1909,15 @@ def requeue_privacy_request(
 
     Don't use this unless the Privacy Request is stuck.
     """
-    pr: PrivacyRequest = get_privacy_request_or_error(db, privacy_request_id)
+    privacy_request: PrivacyRequest = get_privacy_request_or_error(db, privacy_request_id)
 
-    if pr.status not in [
-        PrivacyRequestStatus.approved,
-        PrivacyRequestStatus.in_processing,
-    ]:
+    try:
+        return _requeue_privacy_request(db, privacy_request)
+    except PrivacyRequestError as exc:
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,
-            detail=f"Request failed. Cannot re-queue privacy request {pr.id} with status {pr.status.value}",
+            detail=exc.message,
         )
-
-    # Both DSR 2.0 and 3.0 cache checkpoint details
-    checkpoint_details: Optional[CheckpointActionRequired] = (
-        pr.get_failed_checkpoint_details()
-    )
-    resume_step = checkpoint_details.step if checkpoint_details else None
-
-    # DSR 3.0 additionally stores Request Tasks in the application db that can be used to infer
-    # a resume checkpoint in the event the cache has expired.
-    if not resume_step and pr.request_tasks.count():
-        if pr.consent_tasks.count():
-            resume_step = CurrentStep.consent
-        elif pr.erasure_tasks.count():
-            # Checking if access terminator task was completed, because erasure tasks are created
-            # at the same time as the access tasks
-            terminator_access_task = pr.get_terminate_task_by_action(ActionType.access)
-            resume_step = (
-                CurrentStep.erasure
-                if terminator_access_task.status == ExecutionLogStatus.complete
-                else CurrentStep.access
-            )
-        elif pr.access_tasks.count():
-            resume_step = CurrentStep.access
-
-    logger.info(
-        "Manually re-queuing Privacy Request {} from step {}",
-        pr,
-        resume_step.value if resume_step else None,
-    )
-
-    return _process_privacy_request_restart(
-        pr,
-        resume_step,
-        db,
-    )
 
 
 @router.post(
