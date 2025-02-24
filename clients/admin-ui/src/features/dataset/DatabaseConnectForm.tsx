@@ -74,7 +74,7 @@ const DatabaseConnectForm = () => {
       },
     });
 
-    if ("error" in result) {
+    if (result.error) {
       return {
         error: getErrorMessage(result.error),
       };
@@ -108,7 +108,7 @@ const DatabaseConnectForm = () => {
   > => {
     const result = await createMutation(datasetBody);
 
-    if ("error" in result) {
+    if (result.error) {
       return {
         error: getErrorMessage(result.error),
       };
@@ -152,7 +152,7 @@ const DatabaseConnectForm = () => {
       },
     });
 
-    if ("error" in result) {
+    if (result.error) {
       return {
         error: getErrorMessage(result.error),
       };

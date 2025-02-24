@@ -14,7 +14,6 @@
     "dev": "NODE_ENV=development rollup --watch -c",
     "build": "NODE_ENV=production rollup -c",
     "build:windows": "set NODE_ENV=production && rollup -c",
-    "postbuild": "npm run docs:generate",
     "clean": "rm -rf dist .turbo node_modules",
     "docs:generate": "typedoc --out docs src/docs/",
     "format": "prettier --write .",

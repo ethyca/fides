@@ -82,7 +82,7 @@ const ConfigureAlerts = () => {
       email_addresses: values.emails,
       notify_after_failures: values.notify ? values.minErrorCount : 0,
     });
-    if ("error" in payload) {
+    if (payload.error) {
       errorAlert(
         getErrorMessage(payload.error),
         `Configure alerts and notifications has failed to save due to the following:`,

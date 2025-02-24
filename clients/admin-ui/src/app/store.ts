@@ -128,7 +128,9 @@ const persistConfig = {
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
 
-export const makeStore = (preloadedState?: Partial<RootState>) =>
+export const makeStore = (
+  preloadedState?: Parameters<typeof persistedReducer>[0],
+) =>
   configureStore({
     reducer: persistedReducer,
     middleware: (getDefaultMiddleware) =>

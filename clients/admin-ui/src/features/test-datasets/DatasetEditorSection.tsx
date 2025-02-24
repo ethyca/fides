@@ -1,4 +1,4 @@
-import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query/fetchBaseQuery";
+import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import {
   AntButton as Button,
   AntSelect as Select,
