@@ -7,7 +7,7 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.sql import Delete, Update  # type: ignore
 from sqlalchemy.sql.elements import ColumnElement
 
-from fides.api.graph.config import Field
+from fides.api.graph.config import Field, FieldPath
 from fides.api.graph.execution import ExecutionNode
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest
@@ -208,3 +208,22 @@ class BigQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
             return partitioned_queries
 
         return [table.delete().where(*where_clauses)]
+
+    def format_fields_for_query(
+        self,
+        field_paths: List[FieldPath],
+    ) -> List[str]:
+        """Returns field paths in a format they can be added into SQL queries.
+
+        Only returns non-nested fields (fields with exactly one level).
+        Nested fields are skipped with a warning log.
+        """
+        formatted_fields = []
+        for field_path in field_paths:
+            if len(field_path.levels) > 1:
+                logger.warning(
+                    f"Skipping nested field '{'.'.join(field_path.levels)}' as nested fields are not supported"
+                )
+            else:
+                formatted_fields.append(field_path.levels[0])
+        return formatted_fields

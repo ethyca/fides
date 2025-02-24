@@ -11,6 +11,12 @@ interface DatasetTestState {
   testResults: Record<string, string>;
   isTestRunning: boolean;
   currentPolicyKey?: string;
+  logs: Array<{
+    timestamp: string;
+    level: string;
+    module_info: string;
+    message: string;
+  }>;
 }
 
 const initialState: DatasetTestState = {
@@ -20,6 +26,7 @@ const initialState: DatasetTestState = {
   testInputs: {},
   testResults: {},
   isTestRunning: false,
+  logs: [],
 };
 
 export const datasetTestSlice = createSlice({
@@ -32,6 +39,7 @@ export const datasetTestSlice = createSlice({
         [action.payload]: "",
       };
       draftState.isTestRunning = true;
+      draftState.logs = [];
     },
     setPrivacyRequestId: (draftState, action: PayloadAction<string>) => {
       draftState.privacyRequestId = action.payload;
@@ -104,6 +112,12 @@ export const datasetTestSlice = createSlice({
         [action.payload.datasetKey]: action.payload.values,
       };
     },
+    setLogs: (draftState, action: PayloadAction<typeof initialState.logs>) => {
+      draftState.logs = action.payload;
+    },
+    clearLogs: (draftState) => {
+      draftState.logs = [];
+    },
   },
 });
 
@@ -116,6 +130,8 @@ export const {
   setCurrentDataset,
   setReachability,
   setTestResults,
+  setLogs,
+  clearLogs,
 } = datasetTestSlice.actions;
 
 export const selectPrivacyRequestId = (state: RootState) =>
@@ -142,5 +158,6 @@ export const selectTestResults = (state: RootState) => {
 };
 export const selectIsTestRunning = (state: RootState) =>
   state.datasetTest.isTestRunning;
+export const selectLogs = (state: RootState) => state.datasetTest.logs;
 
 export const { reducer } = datasetTestSlice;

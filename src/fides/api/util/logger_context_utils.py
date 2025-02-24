@@ -30,6 +30,7 @@ class LoggerContextKeys(str, Enum):
     system_key = "system_key"
     url = "url"
     task_id = "task_id"
+    privacy_request_source = "privacy_request_source"
 
 
 class ErrorGroup(str, Enum):
