@@ -61,7 +61,9 @@ task_default_queue = "fides"
 task_always_eager = true
 
 [notifications]
-notification_service_type = "mailgun"
+notification_service_type = "aws_ses"
+send_request_receipt_notification = true
+send_request_completion_notification = true
 
 [consent]
 tcf_enabled = false

@@ -13,6 +13,7 @@ from fides.api.schemas.api import BulkResponse, BulkUpdateFailed
 from fides.api.schemas.privacy_preference import MinimalPrivacyPreferenceHistorySchema
 from fides.api.schemas.privacy_request import Consent
 from fides.api.schemas.property import MinimalProperty
+from fides.api.schemas.storage.storage import AWSAuthMethod
 
 
 class MessagingMethod(Enum):
@@ -23,12 +24,13 @@ class MessagingMethod(Enum):
 
 
 class MessagingServiceType(Enum):
-    """Enum for messaging service type. Upper-cased in the database"""
+    """Enum for messaging service type."""
 
     mailgun = "mailgun"
     twilio_text = "twilio_text"
     twilio_email = "twilio_email"
     mailchimp_transactional = "mailchimp_transactional"
+    aws_ses = "aws_ses"
 
     @classmethod
     def _missing_(
@@ -45,6 +47,7 @@ EMAIL_MESSAGING_SERVICES: Tuple[str, ...] = (
     MessagingServiceType.mailgun.value,
     MessagingServiceType.twilio_email.value,
     MessagingServiceType.mailchimp_transactional.value,
+    MessagingServiceType.aws_ses.value,
 )
 SMS_MESSAGING_SERVICES: Tuple[str, ...] = (MessagingServiceType.twilio_text.value,)
 
@@ -251,6 +254,9 @@ class MessagingServiceDetails(Enum):
     # Twilio Email
     TWILIO_EMAIL_FROM = "twilio_email_from"
 
+    # AWS SES
+    AWS_REGION = "aws_region"
+
 
 class MessagingServiceDetailsMailchimpTransactional(BaseModel):
     """The details required to represent a Mailchimp Transactional email configuration."""
@@ -275,6 +281,16 @@ class MessagingServiceDetailsTwilioEmail(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
 
+class MessagingServiceDetailsAWSSES(BaseModel):
+    """The details required to represent an AWS SES email configuration."""
+
+    email_from: str
+    domain: str
+    aws_region: str
+
+    model_config = ConfigDict(extra="forbid")
+
+
 class MessagingServiceSecrets(Enum):
     """Enum for message service secrets"""
 
@@ -292,6 +308,11 @@ class MessagingServiceSecrets(Enum):
 
     # Twilio Sendgrid/Email
     TWILIO_API_KEY = "twilio_api_key"
+
+    # AWS SES
+    AWS_AUTH_METHOD = "aws_auth_method"
+    AWS_ACCESS_KEY_ID = "aws_access_key_id"
+    AWS_SECRET_ACCESS_KEY = "aws_secret_access_key"
 
 
 class MessagingServiceSecretsMailchimpTransactional(BaseModel):
@@ -335,6 +356,21 @@ class MessagingServiceSecretsTwilioEmail(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
 
+class MessagingServiceSecretsAWSSES(BaseModel):
+    """The secrets required to connect to AWS SES."""
+
+    aws_auth_method: AWSAuthMethod
+    aws_access_key_id: Optional[str] = None
+    aws_secret_access_key: Optional[str] = None
+    aws_assume_role_arn: Optional[str] = Field(
+        default=None,
+        title="Assume Role ARN",
+        description="If provided, the ARN of the role that should be assumed to connect to AWS.",
+    )
+
+    model_config = ConfigDict(extra="forbid")
+
+
 class MessagingConfigBase(BaseModel):
     """Base model shared by messaging config related models"""
 
@@ -344,6 +380,7 @@ class MessagingConfigBase(BaseModel):
             MessagingServiceDetailsMailgun,
             MessagingServiceDetailsTwilioEmail,
             MessagingServiceDetailsMailchimpTransactional,
+            MessagingServiceDetailsAWSSES,
         ]
     ] = None
     model_config = ConfigDict(
@@ -405,6 +442,7 @@ SUPPORTED_MESSAGING_SERVICE_SECRETS = Union[
     MessagingServiceSecretsTwilioSMS,
     MessagingServiceSecretsTwilioEmail,
     MessagingServiceSecretsMailchimpTransactional,
+    MessagingServiceSecretsAWSSES,
 ]
 
 
