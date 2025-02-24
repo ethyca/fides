@@ -1355,6 +1355,82 @@ def erasure_policy_string_rewrite(
 
 
 @pytest.fixture(scope="function")
+def erasure_policy_string_rewrite_address(
+    db: Session,
+    oauth_client: ClientDetail,
+    storage_config: StorageConfig,
+) -> Generator:
+    erasure_policy = Policy.create(
+        db=db,
+        data={
+            "name": "string rewrite policy",
+            "key": "string_rewrite_policy",
+            "client_id": oauth_client.id,
+        },
+    )
+
+    erasure_rule = Rule.create(
+        db=db,
+        data={
+            "action_type": ActionType.erasure.value,
+            "client_id": oauth_client.id,
+            "name": "string rewrite erasure rule",
+            "policy_id": erasure_policy.id,
+            "masking_strategy": {
+                "strategy": StringRewriteMaskingStrategy.name,
+                "configuration": {"rewrite_value": "MASKED"},
+            },
+        },
+    )
+
+    erasure_rule_targets = []
+    erasure_rule_targets.append(
+        RuleTarget.create(
+            db=db,
+            data={
+                "client_id": oauth_client.id,
+                "data_category": DataCategory("user.name").value,
+                "rule_id": erasure_rule.id,
+            },
+        )
+    )
+    erasure_rule_targets.append(
+        RuleTarget.create(
+            db=db,
+            data={
+                "client_id": oauth_client.id,
+                "data_category": DataCategory("user.contact.address").value,
+                "rule_id": erasure_rule.id,
+            },
+        )
+    )
+    erasure_rule_targets.append(
+        RuleTarget.create(
+            db=db,
+            data={
+                "client_id": oauth_client.id,
+                "data_category": DataCategory("user.contact.phone_number").value,
+                "rule_id": erasure_rule.id,
+            },
+        )
+    )
+    yield erasure_policy
+    try:
+        for erasure_rule_target in erasure_rule_targets:
+            erasure_rule_target.delete(db)
+    except ObjectDeletedError:
+        pass
+    try:
+        erasure_rule.delete(db)
+    except ObjectDeletedError:
+        pass
+    try:
+        erasure_policy.delete(db)
+    except ObjectDeletedError:
+        pass
+
+
+@pytest.fixture(scope="function")
 def erasure_policy_string_rewrite_name_and_email(
     db: Session,
     oauth_client: ClientDetail,
