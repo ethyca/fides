@@ -32,6 +32,7 @@ def make_dataset_invalid(db: Session, dataset_config: DatasetConfig) -> None:
 def dataset_config_service(db: Session) -> DatasetConfigService:
     return DatasetConfigService(db)
 
+
 class TestGetDatasetReachability:
 
     @pytest.mark.parametrize(
