@@ -343,6 +343,7 @@ export default async function handler(
     .setHeader("Content-Type", "application/javascript")
     // Allow CORS since this is a static file we do not need to lock down
     .setHeader("Access-Control-Allow-Origin", "*")
+    .setHeader("Access-Control-Allow-Headers", "*")
     .setHeader("Cache-Control", stringify(cacheHeaders))
     // Ignore cache if user's geolocation or language changes
     .setHeader("Vary", [...LOCATION_HEADERS, "Accept-Language"])

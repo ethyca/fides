@@ -37,6 +37,7 @@
     "@tanstack/react-table": "^8.10.7",
     "@types/d3-hierarchy": "^3.1.7",
     "@types/jest": "^29.5.12",
+    "@types/swagger-ui-react": "^5.18.0",
     "@xyflow/react": "^12.3.1",
     "cytoscape": "^3.30.0",
     "cytoscape-klay": "^3.1.4",
@@ -67,6 +68,7 @@
     "react-dropzone": "^14.2.3",
     "react-redux": "^9.1.2",
     "redux-persist": "^6.0.0",
+    "swagger-ui-react": "^5.19.0",
     "yup": "^1.4.0"
   },
   "devDependencies": {

@@ -309,6 +309,11 @@ if (process.env.NEXT_PUBLIC_APP_ENV === "development") {
         path: routes.ANT_POC_ROUTE,
         scopes: [],
       },
+      {
+        title: "Fides JS Docs",
+        path: routes.FIDES_JS_DOCS,
+        scopes: [],
+      },
     ],
   });
 }
