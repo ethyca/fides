@@ -19,28 +19,28 @@ saas_config:
     - name: users
       requests:
         read:
-          request_override: interruptable_request
+          request_override: interruptible_request
           param_values:
             - name: email
               identity: email
     - name: orders
       requests:
         read:
-          request_override: interruptable_request
+          request_override: interruptible_request
           param_values:
             - name: email
               identity: email
     - name: preferences
       requests:
         read:
-          request_override: interruptable_request
+          request_override: interruptible_request
           param_values:
             - name: email
               identity: email
     - name: notifications
       requests:
         read:
-          request_override: interruptable_request
+          request_override: interruptible_request
           param_values:
             - name: email
               identity: email

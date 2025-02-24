@@ -13,8 +13,8 @@ from fides.api.service.saas_request.saas_request_override_factory import (
 from fides.api.util.collection_util import Row
 
 
-@register("interruptable_request", [SaaSRequestType.READ])
-def interruptable_request(
+@register("interruptible_request", [SaaSRequestType.READ])
+def interruptible_request(
     client: AuthenticatedClient,
     node: TraversalNode,
     policy: Policy,
