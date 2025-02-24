@@ -78,6 +78,11 @@ def upgrade():
         ["id"],
         unique=False,
     )
+    op.create_unique_constraint(
+        '_attachment_reference_uc',
+        'attachment_reference',
+        ['attachment_id', 'reference_id']
+    )
     # ### end Alembic commands ###
 
 
