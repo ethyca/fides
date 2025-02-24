@@ -77,6 +77,7 @@ from fides.api.service.connectors.snowflake_connector import (
 from fides.api.service.connectors.timescale_connector import (
     TimescaleConnector as TimescaleConnector,
 )
+from fides.api.service.connectors.website_connector import WebsiteConnector
 
 supported_connectors: Dict[str, Any] = {
     ConnectionType.attentive_email.value: AttentiveConnector,
@@ -105,6 +106,7 @@ supported_connectors: Dict[str, Any] = {
     ConnectionType.snowflake.value: SnowflakeConnector,
     ConnectionType.sovrn.value: SovrnConnector,
     ConnectionType.timescale.value: TimescaleConnector,
+    ConnectionType.website.value: WebsiteConnector,
 }
 
 

@@ -2,7 +2,7 @@ import SearchBar from "common/SearchBar";
 import {
   AntButton as Button,
   AntSwitch as Switch,
-  Badge,
+  AntTag as Tag,
   Box,
   Flex,
   FormControl,
@@ -99,9 +99,9 @@ const DataFlowSystemsModal = ({
           <Text fontSize="2xl" lineHeight={8} fontWeight="semibold">
             Configure {flowType.toLocaleLowerCase()} systems
           </Text>
-          <Badge bg="success.500" color="white">
+          <Tag color="success">
             Assigned to {selectedDataFlows.length} systems
-          </Badge>
+          </Tag>
         </ModalHeader>
         <ModalBody data-testid="assign-systems-modal-body">
           {emptySystems ? (

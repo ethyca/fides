@@ -29,3 +29,4 @@ export { default as FilterIcon } from "./Filter";
 export { default as FilterLightIcon } from "./FilterLight";
 export { default as GreenCircleIcon } from "./GreenCircle";
 export { default as GripDotsVerticalIcon } from "./GripDotsVertical";
+export { default as SparkleIcon } from "./Sparkle";

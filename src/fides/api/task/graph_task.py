@@ -28,21 +28,18 @@ from fides.api.graph.config import (
 )
 from fides.api.graph.execution import ExecutionNode
 from fides.api.graph.graph import DatasetGraph
-from fides.api.graph.traversal import Traversal, TraversalNode
+from fides.api.graph.traversal import Traversal
+from fides.api.graph.traversal_node import TraversalNode
 from fides.api.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
     ConnectionType,
 )
 from fides.api.models.datasetconfig import DatasetConfig
-from fides.api.models.policy import CurrentStep, Policy
-from fides.api.models.privacy_request import (
-    ExecutionLog,
-    ExecutionLogStatus,
-    PrivacyRequest,
-    RequestTask,
-)
-from fides.api.schemas.policy import ActionType
+from fides.api.models.policy import Policy
+from fides.api.models.privacy_request import ExecutionLog, PrivacyRequest, RequestTask
+from fides.api.schemas.policy import ActionType, CurrentStep
+from fides.api.schemas.privacy_request import ExecutionLogStatus
 from fides.api.service.connectors.base_connector import BaseConnector
 from fides.api.task.consolidate_query_matches import consolidate_query_matches
 from fides.api.task.filter_element_match import filter_element_match

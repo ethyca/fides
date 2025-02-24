@@ -1,5 +1,5 @@
 import { CellContext } from "@tanstack/react-table";
-import { Badge, TagProps, Tooltip } from "fidesui";
+import { AntTag as Tag, AntTooltip as Tooltip } from "fidesui";
 import React, { useState } from "react";
 
 import { PRIVACY_NOTICE_REGION_MAP } from "~/features/common/privacy-notice-regions";
@@ -15,16 +15,9 @@ import {
 export const MechanismCell = (value: ConsentMechanism | undefined) => {
   const innerText = MECHANISM_MAP.get(value!) ?? value;
   return (
-    <Badge
-      size="sm"
-      width="fit-content"
-      data-testid="status-badge"
-      textTransform="uppercase"
-      fontWeight="400"
-      px={2}
-    >
+    <Tag data-testid="status-badge" style={{ textTransform: "uppercase" }}>
       {innerText}
-    </Badge>
+    </Tag>
   );
 };
 
@@ -62,26 +55,25 @@ export const getNoticeChildren = (
 
 type TagNames = "available" | "enabled" | "inactive";
 
-const systemsApplicableTags: Record<TagNames, TagProps & { tooltip: string }> =
-  {
-    available: {
-      backgroundColor: "warn.100",
-      color: "minos",
-      tooltip:
-        "This notice is associated with a system + data use and can be enabled",
-    },
-    enabled: {
-      backgroundColor: "success.100",
-      color: "minos",
-      tooltip: "This notice is active and available for consumers",
-    },
-    inactive: {
-      backgroundColor: "gray.100",
-      color: "minos",
-      tooltip:
-        "This privacy notice cannot be enabled because it either does not have a data use or the linked data use has not been assigned to a system",
-    },
-  };
+const systemsApplicableTags: Record<
+  TagNames,
+  { color: string; tooltip: string }
+> = {
+  available: {
+    color: "warning",
+    tooltip:
+      "This notice is associated with a system + data use and can be enabled",
+  },
+  enabled: {
+    color: "success",
+    tooltip: "This notice is active and available for consumers",
+  },
+  inactive: {
+    color: "default",
+    tooltip:
+      "This privacy notice cannot be enabled because it either does not have a data use or the linked data use has not been assigned to a system",
+  },
+};
 
 export const PrivacyNoticeStatusCell = (
   cellProps: CellContext<LimitedPrivacyNoticeResponseSchema, boolean>,
@@ -103,21 +95,20 @@ export const PrivacyNoticeStatusCell = (
   }
   const { tooltip = undefined, ...tagProps } = tagValue
     ? systemsApplicableTags[tagValue]
-    : {};
+    : { color: "default" };
 
   return (
-    <Tooltip label={tooltip}>
-      <Badge
-        size="sm"
-        width="fit-content"
-        {...tagProps}
-        data-testid="status-badge"
-        textTransform="uppercase"
-        fontWeight="400"
-        px={2}
-      >
-        {tagValue}
-      </Badge>
+    <Tooltip title={tooltip}>
+      {/* the span is necessary to prevent the tooltip from changing the line height */}
+      <span>
+        <Tag
+          color={tagProps.color}
+          data-testid="status-badge"
+          style={{ textTransform: "uppercase" }}
+        >
+          {tagValue}
+        </Tag>
+      </span>
     </Tooltip>
   );
 };

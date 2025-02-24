@@ -2,7 +2,7 @@ import { SerializedError } from "@reduxjs/toolkit";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import {
   AntButton as Button,
-  Badge,
+  AntTag as Tag,
   Box,
   Flex,
   HStack,
@@ -139,22 +139,13 @@ const UserForm = ({ onSubmit, initialValues, canEditNames }: Props) => {
                 >
                   Profile{" "}
                   {activeUser?.disabled && (
-                    <Badge
-                      bg="green.500"
-                      color="white"
-                      paddingLeft="2"
-                      marginLeft="2"
-                      textTransform="none"
-                      paddingRight="8px"
-                      height="18px"
-                      lineHeight="18px"
-                      borderRadius="6px"
-                      fontWeight="500"
-                      textAlign="center"
+                    <Tag
+                      color="success"
+                      className="ml-2"
                       data-testid="invite-sent-badge"
                     >
                       Invite sent
-                    </Badge>
+                    </Tag>
                   )}
                 </Text>
                 <Box marginLeft="auto">

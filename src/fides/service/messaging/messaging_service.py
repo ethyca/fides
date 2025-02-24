@@ -181,13 +181,15 @@ class MessagingService:
                 if policy.get_rules_for_action(action_type=ActionType(action_type)):
                     request_types.add(action_type)
 
+            request_types_list = list(request_types)
+
             dispatch_message_task.apply_async(
                 queue=MESSAGING_QUEUE_NAME,
                 kwargs={
                     "message_meta": FidesopsMessage(
                         action_type=MessagingActionType.PRIVACY_REQUEST_RECEIPT,
                         body_params=RequestReceiptBodyParams(
-                            request_types=request_types
+                            request_types=request_types_list
                         ),
                     ).model_dump(mode="json"),
                     "service_type": self.config.notifications.notification_service_type,
@@ -299,12 +301,14 @@ def send_privacy_request_receipt_message_to_user(
         if policy.get_rules_for_action(action_type=ActionType(action_type)):
             request_types.add(action_type)
 
+    request_types_list = list(request_types)
+
     dispatch_message_task.apply_async(
         queue=MESSAGING_QUEUE_NAME,
         kwargs={
             "message_meta": FidesopsMessage(
                 action_type=MessagingActionType.PRIVACY_REQUEST_RECEIPT,
-                body_params=RequestReceiptBodyParams(request_types=request_types),
+                body_params=RequestReceiptBodyParams(request_types=request_types_list),
             ).model_dump(mode="json"),
             "service_type": service_type,
             "to_identity": to_identity.labeled_dict(),

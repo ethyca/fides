@@ -1,5 +1,5 @@
 import {
-  Badge,
+  AntTag as Tag,
   Flex,
   Heading,
   Modal,
@@ -71,20 +71,14 @@ const SystemHistoryModal = ({ selectedHistory, isOpen, onClose }: Props) => (
             <>
               {getBadges(selectedHistory.before, selectedHistory.after).map(
                 (badge, index) => (
-                  <Badge
+                  <Tag
                     // eslint-disable-next-line react/no-array-index-key
                     key={index}
-                    marginLeft="8px"
-                    fontSize="10px"
-                    padding="0px 4px"
-                    variant="solid"
-                    lineHeight="18px"
-                    height="18px"
-                    backgroundColor="#718096"
-                    borderRadius="2px"
+                    color="minos"
+                    className="ml-2"
                   >
                     {badge}
-                  </Badge>
+                  </Tag>
                 ),
               )}
             </>

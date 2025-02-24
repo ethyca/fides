@@ -1,17 +1,17 @@
-import { AntTooltip as Tooltip, Badge, BadgeProps } from "fidesui";
+import {
+  AntTag as Tag,
+  AntTagProps as TagProps,
+  AntTooltip as Tooltip,
+} from "fidesui";
 
 import { formatDate } from "~/features/common/utils";
 
-interface ResultStatusBadgeProps extends BadgeProps {
-  colorScheme: string;
+interface ResultStatusBadgeProps extends Omit<TagProps, "color"> {
+  color: "success" | "error";
 }
 
 const ResultStatusBadge = ({ children, ...props }: ResultStatusBadgeProps) => {
-  return (
-    <Badge fontSize="xs" fontWeight="normal" textTransform="none" {...props}>
-      {children}
-    </Badge>
-  );
+  return <Tag {...props}>{children}</Tag>;
 };
 
 interface DiscoveryStatusBadgeCellProps {
@@ -28,13 +28,9 @@ export const DiscoveryStatusBadgeCell = ({
       {/* tooltip throws errors if immediate child is not available or changes after render so this div wrapper helps keep it stable */}
       <div>
         {withConsent ? (
-          <ResultStatusBadge colorScheme="green">
-            With consent
-          </ResultStatusBadge>
+          <ResultStatusBadge color="success">With consent</ResultStatusBadge>
         ) : (
-          <ResultStatusBadge colorScheme="red">
-            Without consent
-          </ResultStatusBadge>
+          <ResultStatusBadge color="error">Without consent</ResultStatusBadge>
         )}
       </div>
     </Tooltip>

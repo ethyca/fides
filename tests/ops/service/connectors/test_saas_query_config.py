@@ -222,6 +222,83 @@ class TestSaaSQueryConfig:
             == '{\n  "merge_fields": {"FNAME": "MASKED", "LNAME": "MASKED"}\n}\n'
         )
 
+    def test_generate_update_stmt_read_only_fields(
+        self,
+        privacy_request,
+        erasure_policy_string_rewrite_address,
+        combined_traversal,
+        saas_example_connection_config,
+    ):
+        saas_config: SaaSConfig = saas_example_connection_config.get_saas_config()
+        endpoints = saas_config.top_level_endpoint_dict
+        update_request = endpoints["member"].requests.update
+
+        member = combined_traversal.traversal_node_dict[
+            CollectionAddress(saas_config.fides_key, "member")
+        ].to_mock_execution_node()
+
+        config = SaaSQueryConfig(member, endpoints, {}, update_request)
+        row = {
+            "id": "123",
+            "merge_fields": {
+                "FNAME": "First",
+                "LNAME": "Last",
+                # address is a list of objects
+                "ADDRESS": [
+                    {
+                        "addr1": "123 Main St",
+                        "city": "San Francisco",
+                        "state": "CA",
+                        "zip": "94105",
+                        # country is read_only so it will not be present on the update body
+                        "country": "USA",
+                    },
+                    {
+                        "addr1": "124 Main St",
+                        "city": "San Fernando",
+                        "state": "BA",
+                        "zip": "94205",
+                        # country is read_only so it will not be present on the update body
+                        "country": "ARG",
+                    },
+                ],
+                # PHONE is read_only so it will not be present on the update body
+                "PHONE": "555-555-5555",
+            },
+            "list_id": "abc",
+        }
+
+        # build request by taking a row, masking it, and adding it to
+        # the body of a PUT request
+        prepared_request: SaaSRequestParams = config.generate_update_stmt(
+            row, erasure_policy_string_rewrite_address, privacy_request
+        )
+        assert prepared_request.method == HTTPMethod.PUT.value
+        assert prepared_request.path == "/3.0/lists/abc/members/123"
+        assert prepared_request.headers == {"Content-Type": "application/json"}
+        assert prepared_request.query_params == {}
+        request_body = json.loads(prepared_request.body)
+        assert request_body == {
+            "merge_fields": {
+                "FNAME": "MASKED",
+                "LNAME": "MASKED",
+                "ADDRESS": [
+                    {
+                        "addr1": "MASKED",
+                        "city": "MASKED",
+                        "state": "MASKED",
+                        "zip": "MASKED",
+                    },
+                    {
+                        "addr1": "MASKED",
+                        "city": "MASKED",
+                        "state": "MASKED",
+                        "zip": "MASKED",
+                    },
+                ],
+            }
+        }
+
     def test_generate_update_stmt_custom_http_method(
         self,
         privacy_request,

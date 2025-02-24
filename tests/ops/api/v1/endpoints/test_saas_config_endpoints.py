@@ -28,7 +28,7 @@ from fides.common.api.v1.urn_registry import (
     V1_URL_PREFIX,
 )
 from fides.config import CONFIG
-from tests.ops.api.v1.endpoints.test_dataset_endpoints import _reject_key
+from tests.ops.api.v1.endpoints.test_dataset_config_endpoints import _reject_key
 from tests.ops.test_helpers.saas_test_utils import create_zip_file
 
 

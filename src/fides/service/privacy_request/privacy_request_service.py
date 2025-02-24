@@ -17,8 +17,6 @@ from fides.api.models.privacy_request import (
     ConsentRequest,
     ExecutionLog,
     PrivacyRequest,
-    PrivacyRequestSource,
-    PrivacyRequestStatus,
     RequestTask,
 )
 from fides.api.models.property import Property
@@ -30,12 +28,15 @@ from fides.api.schemas.privacy_request import (
     PrivacyRequestCreate,
     PrivacyRequestResponse,
     PrivacyRequestResubmit,
+    PrivacyRequestSource,
+    PrivacyRequestStatus,
 )
 from fides.api.service.messaging.message_dispatch_service import message_send_enabled
 from fides.api.service.privacy_request.request_service import (
     build_required_privacy_request_kwargs,
     cache_data,
 )
+from fides.api.tasks import DSR_QUEUE_NAME
 from fides.api.util.cache import cache_task_tracking_key
 from fides.api.util.logger_context_utils import LoggerContextKeys, log_context
 from fides.config.config_proxy import ConfigProxy
@@ -511,10 +512,13 @@ def queue_privacy_request(
         run_privacy_request,
     )
 
-    task = run_privacy_request.delay(
-        privacy_request_id=privacy_request_id,
-        from_webhook_id=from_webhook_id,
-        from_step=from_step,
+    task = run_privacy_request.apply_async(
+        queue=DSR_QUEUE_NAME,
+        kwargs={
+            "privacy_request_id": privacy_request_id,
+            "from_webhook_id": from_webhook_id,
+            "from_step": from_step,
+        },
     )
     cache_task_tracking_key(privacy_request_id, task.task_id)
 

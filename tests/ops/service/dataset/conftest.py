@@ -151,3 +151,24 @@ def no_identities_dataset_config(
     yield dataset_config
     dataset_config.delete(db=db)
     ctl_dataset.delete(db=db)
+
+
+@pytest.fixture
+def unreachable_dataset_on_different_connection(
+    db: Session,
+    read_connection_config: ConnectionConfig,
+) -> Generator:
+    dataset = load_example_dataset("no_identities.yml")[0]
+    ctl_dataset = CtlDataset.create_from_dataset_dict(db, dataset)
+
+    dataset_config = DatasetConfig.create(
+        db=db,
+        data={
+            "connection_config_id": read_connection_config.id,
+            "fides_key": dataset["fides_key"],
+            "ctl_dataset_id": ctl_dataset.id,
+        },
+    )
+    yield dataset_config
+    dataset_config.delete(db=db)
+    ctl_dataset.delete(db=db)

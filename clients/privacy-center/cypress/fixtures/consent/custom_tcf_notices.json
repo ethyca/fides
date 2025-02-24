@@ -1,7 +1,7 @@
 {
   "privacy_notices": [
     {
-      "name": "Advertising",
+      "name": "Advertising Name",
       "notice_key": "advertising",
       "internal_description": null,
       "origin": null,
@@ -18,7 +18,7 @@
       "translations": [
         {
           "language": "en",
-          "title": "Advertising",
+          "title": "Advertising English",
           "description": "This website uses marketing cookies and services to deliver personalized advertisements, promotions, and offers that are relevant to you. They help optimize ad delivery, measure campaign effectiveness, and enable advertisers to reach specific target audiences.",
           "privacy_notice_history_id": "pri_notice-history-advertising-en-000"
         },

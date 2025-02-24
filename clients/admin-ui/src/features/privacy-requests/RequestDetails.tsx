@@ -1,4 +1,12 @@
-import { Badge, Box, Divider, Flex, Heading, HStack, Text } from "fidesui";
+import {
+  AntTag as Tag,
+  Box,
+  Divider,
+  Flex,
+  Heading,
+  HStack,
+  Text,
+} from "fidesui";
 
 import ClipboardButton from "~/features/common/ClipboardButton";
 import DaysLeftTag from "~/features/common/DaysLeftTag";
@@ -52,7 +60,7 @@ const RequestDetails = ({ subjectRequest }: RequestDetailsProps) => {
             Source:
           </Text>
           <Box>
-            <Badge>{subjectRequest.source}</Badge>
+            <Tag>{subjectRequest.source}</Tag>
           </Box>
         </Flex>
       )}
@@ -69,7 +77,7 @@ const RequestDetails = ({ subjectRequest }: RequestDetailsProps) => {
           Policy key:
         </Text>
         <Box>
-          <Badge>{subjectRequest.policy.key}</Badge>
+          <Tag>{subjectRequest.policy.key}</Tag>
         </Box>
       </Flex>
       <Flex alignItems="center">

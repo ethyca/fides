@@ -1,0 +1,1 @@
+"use strict";Object.defineProperty(exports,"__esModule",{value:!0}),exports.PingCommand=void 0;const PingData_js_1=require("../model/PingData.js"),Command_js_1=require("./Command.js");class PingCommand extends Command_js_1.Command{respond(){let e=new PingData_js_1.PingData(this.cmpApiContext);this.invokeCallback(e)}}exports.PingCommand=PingCommand;

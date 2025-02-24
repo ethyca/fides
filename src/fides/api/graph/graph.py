@@ -196,12 +196,10 @@ class DatasetGraph:
                 )
                 for dest_field_address, direction in ref_list:
                     if dest_field_address.collection_address() not in self.nodes:
-                        logger.warning(
-                            "Referenced object {} does not exist", dest_field_address
-                        )
+                        message = f"Referenced object {dest_field_address} from dataset {node_address.dataset} does not exist"
+                        logger.warning(message)
                         raise ValidationError(
-                            f"Referred to object {dest_field_address} does not exist",
-                            errors=[dest_field_address.value],
+                            message, errors=[dest_field_address.value]
                         )
                     self.edges.add(
                         Edge.create_edge(

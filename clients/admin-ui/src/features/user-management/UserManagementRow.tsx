@@ -1,5 +1,11 @@
 import { TrashCanSolidIcon } from "common/Icon/TrashCanSolidIcon";
-import { AntButton as Button, Badge, Td, Tr, useDisclosure } from "fidesui";
+import {
+  AntButton as Button,
+  AntTag as Tag,
+  Td,
+  Tr,
+  useDisclosure,
+} from "fidesui";
 import { useRouter } from "next/router";
 import React from "react";
 import {
@@ -64,9 +70,9 @@ const UserManagementRow = ({ user }: UserManagementRowProps) => {
         <Td pl={0} py={1} onClick={handleEditUser}>
           {user.username}{" "}
           {user.disabled && (
-            <Badge colorScheme="success" data-testid="invite-sent-badge">
+            <Tag color="success" data-testid="invite-sent-badge">
               Invite sent
-            </Badge>
+            </Tag>
           )}
         </Td>
         <Td pl={0} py={1} onClick={handleEditUser}>
@@ -80,15 +86,15 @@ const UserManagementRow = ({ user }: UserManagementRowProps) => {
         </Td>
         <Td pl={0} py={1} onClick={handleEditUser}>
           {permissionsLabels.map((permission) => (
-            <Badge data-testid="user-permissions-badge" key={permission}>
+            <Tag data-testid="user-permissions-badge" key={permission}>
               {permission}
-            </Badge>
+            </Tag>
           ))}
         </Td>
         <Td pl={0} py={1} onClick={handleEditUser}>
-          <Badge textAlign="center" data-testid="user-systems-badge">
+          <Tag className="text-center" data-testid="user-systems-badge">
             {userSystems ? userSystems.length : 0}
-          </Badge>
+          </Tag>
         </Td>
         <Td pl={0} py={1} onClick={handleEditUser}>
           {user.created_at ? new Date(user.created_at).toUTCString() : null}

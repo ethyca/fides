@@ -1,0 +1,1 @@
+"use strict";Object.defineProperty(exports,"__esModule",{value:!0}),exports.EventData=void 0;class EventData{constructor(t,e,a,s){this.eventName=t,this.listenerId=e,this.data=a,this.pingData=s}}exports.EventData=EventData;

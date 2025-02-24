@@ -21,21 +21,15 @@ from fides.api.common_exceptions import (
 )
 from fides.api.graph.config import TERMINATOR_ADDRESS, CollectionAddress
 from fides.api.models.connectionconfig import ConnectionConfig
-from fides.api.models.policy import CurrentStep
-from fides.api.models.privacy_request import (
-    ExecutionLog,
-    ExecutionLogStatus,
-    PrivacyRequest,
-    PrivacyRequestStatus,
-    RequestTask,
-)
-from fides.api.schemas.policy import ActionType
+from fides.api.models.privacy_request import ExecutionLog, PrivacyRequest, RequestTask
+from fides.api.schemas.policy import ActionType, CurrentStep
+from fides.api.schemas.privacy_request import ExecutionLogStatus, PrivacyRequestStatus
 from fides.api.task.graph_task import (
     GraphTask,
     mark_current_and_downstream_nodes_as_failed,
 )
 from fides.api.task.task_resources import TaskResources
-from fides.api.tasks import DatabaseTask, celery_app
+from fides.api.tasks import DSR_QUEUE_NAME, DatabaseTask, celery_app
 from fides.api.util.cache import cache_task_tracking_key
 from fides.api.util.collection_util import Row
 from fides.api.util.logger_context_utils import LoggerContextKeys, log_context
@@ -196,14 +190,19 @@ def queue_downstream_tasks_with_retries(
         privacy_request, request_task = get_privacy_request_and_task(
             session, privacy_request_id, privacy_request_task_id
         )
-        log_task_complete(request_task)
-        queue_downstream_tasks(
-            session,
-            request_task,
-            privacy_request,
-            current_step,
-            privacy_request_proceed,
-        )
+        with logger.contextualize(
+            privacy_request_source=(
+                privacy_request.source.value if privacy_request.source else None
+            )
+        ):
+            log_task_complete(request_task)
+            queue_downstream_tasks(
+                session,
+                request_task,
+                privacy_request,
+                current_step,
+                privacy_request_proceed,
+            )
 
 
 def queue_downstream_tasks(
@@ -260,48 +259,59 @@ def run_access_node(
 ) -> None:
     """Run an individual task in the access graph for DSR 3.0 and queue downstream nodes
     upon completion if applicable"""
-    with self.get_new_session() as session:
-        privacy_request, request_task, upstream_results = run_prerequisite_task_checks(
-            session, privacy_request_id, privacy_request_task_id
+
+    try:
+        with self.get_new_session() as session:
+            privacy_request, request_task, upstream_results = (
+                run_prerequisite_task_checks(
+                    session, privacy_request_id, privacy_request_task_id
+                )
+            )
+            with logger.contextualize(
+                privacy_request_source=(
+                    privacy_request.source.value if privacy_request.source else None
+                )
+            ):
+                log_task_starting(request_task)
+
+                if can_run_task_body(request_task):
+                    # Build GraphTask resource to facilitate execution
+                    with TaskResources(
+                        privacy_request,
+                        privacy_request.policy,
+                        session.query(ConnectionConfig).all(),
+                        request_task,
+                        session,
+                    ) as resources:
+                        graph_task: GraphTask = create_graph_task(
+                            session, request_task, resources
+                        )
+                        # Currently, upstream tasks and "input keys" (which are built by data dependencies)
+                        # are the same, but they may not be the same in the future.
+                        ordered_upstream_tasks: List[Optional[RequestTask]] = (
+                            _order_tasks_by_input_key(
+                                graph_task.execution_node.input_keys, upstream_results
+                            )
+                        )
+                        # Pass in access data dependencies in the same order as the input keys.
+                        # If we don't have access data for an upstream node, pass in an empty list
+                        upstream_access_data: List[List[Row]] = [
+                            upstream.get_access_data() if upstream else []
+                            for upstream in ordered_upstream_tasks
+                        ]
+                        # Run the main access function
+                        graph_task.access_request(*upstream_access_data)
+
+        queue_downstream_tasks_with_retries(
+            self,
+            privacy_request_id,
+            privacy_request_task_id,
+            CurrentStep.upload_access,
+            privacy_request_proceed,
         )
-        log_task_starting(request_task)
-
-        if can_run_task_body(request_task):
-            # Build GraphTask resource to facilitate execution
-            with TaskResources(
-                privacy_request,
-                privacy_request.policy,
-                session.query(ConnectionConfig).all(),
-                request_task,
-                session,
-            ) as resources:
-                graph_task: GraphTask = create_graph_task(
-                    session, request_task, resources
-                )
-                # Currently, upstream tasks and "input keys" (which are built by data dependencies)
-                # are the same, but they may not be the same in the future.
-                ordered_upstream_tasks: List[Optional[RequestTask]] = (
-                    _order_tasks_by_input_key(
-                        graph_task.execution_node.input_keys, upstream_results
-                    )
-                )
-                # Pass in access data dependencies in the same order as the input keys.
-                # If we don't have access data for an upstream node, pass in an empty list
-                upstream_access_data: List[List[Row]] = [
-                    upstream.get_access_data() if upstream else []
-                    for upstream in ordered_upstream_tasks
-                ]
-                # Run the main access function
-                graph_task.access_request(*upstream_access_data)
-        logger.info(f"Session ID - After get access data: {id(session)}")
-
-    queue_downstream_tasks_with_retries(
-        self,
-        privacy_request_id,
-        privacy_request_task_id,
-        CurrentStep.upload_access,
-        privacy_request_proceed,
-    )
+    except Exception as e:
+        logger.error(f"Error in run_access_node: {e}")
+        raise
 
 
 @celery_app.task(base=DatabaseTask, bind=True)
@@ -323,26 +333,33 @@ def run_erasure_node(
         privacy_request, request_task, _ = run_prerequisite_task_checks(
             session, privacy_request_id, privacy_request_task_id
         )
-        log_task_starting(request_task)
+        with logger.contextualize(
+            privacy_request_source=(
+                privacy_request.source.value if privacy_request.source else None
+            )
+        ):
+            log_task_starting(request_task)
 
-        if can_run_task_body(request_task):
-            with TaskResources(
-                privacy_request,
-                privacy_request.policy,
-                session.query(ConnectionConfig).all(),
-                request_task,
-                session,
-            ) as resources:
-                # Build GraphTask resource to facilitate execution
-                graph_task: GraphTask = create_graph_task(
-                    session, request_task, resources
-                )
-                # Get access data that was saved in the erasure format that was collected from the
-                # access task for the same collection.  This data is used to build the masking request
-                retrieved_data: List[Row] = request_task.get_data_for_erasures() or []
+            if can_run_task_body(request_task):
+                with TaskResources(
+                    privacy_request,
+                    privacy_request.policy,
+                    session.query(ConnectionConfig).all(),
+                    request_task,
+                    session,
+                ) as resources:
+                    # Build GraphTask resource to facilitate execution
+                    graph_task: GraphTask = create_graph_task(
+                        session, request_task, resources
+                    )
+                    # Get access data that was saved in the erasure format that was collected from the
+                    # access task for the same collection.  This data is used to build the masking request
+                    retrieved_data: List[Row] = (
+                        request_task.get_data_for_erasures() or []
+                    )
 
-                # Run the main erasure function!
-                graph_task.erasure_request(retrieved_data)
+                    # Run the main erasure function!
+                    graph_task.erasure_request(retrieved_data)
 
     queue_downstream_tasks_with_retries(
         self,
@@ -372,28 +389,33 @@ def run_consent_node(
         privacy_request, request_task, upstream_results = run_prerequisite_task_checks(
             session, privacy_request_id, privacy_request_task_id
         )
-        log_task_starting(request_task)
+        with logger.contextualize(
+            privacy_request_source=(
+                privacy_request.source.value if privacy_request.source else None
+            )
+        ):
+            log_task_starting(request_task)
 
-        if can_run_task_body(request_task):
-            # Build GraphTask resource to facilitate execution
-            with TaskResources(
-                privacy_request,
-                privacy_request.policy,
-                session.query(ConnectionConfig).all(),
-                request_task,
-                session,
-            ) as resources:
-                graph_task: GraphTask = create_graph_task(
-                    session, request_task, resources
-                )
-                access_data: List = []
-                if upstream_results:
-                    # For consent, expected that there is only one upstream node, the root node,
-                    # and it holds the identity data (stored in a list for consistency with other
-                    # data stored in access_data)
-                    access_data = upstream_results[0].get_access_data() or []
+            if can_run_task_body(request_task):
+                # Build GraphTask resource to facilitate execution
+                with TaskResources(
+                    privacy_request,
+                    privacy_request.policy,
+                    session.query(ConnectionConfig).all(),
+                    request_task,
+                    session,
+                ) as resources:
+                    graph_task: GraphTask = create_graph_task(
+                        session, request_task, resources
+                    )
+                    access_data: List = []
+                    if upstream_results:
+                        # For consent, expected that there is only one upstream node, the root node,
+                        # and it holds the identity data (stored in a list for consistency with other
+                        # data stored in access_data)
+                        access_data = upstream_results[0].get_access_data() or []
 
-                graph_task.consent_request(access_data[0] if access_data else {})
+                    graph_task.consent_request(access_data[0] if access_data else {})
 
     queue_downstream_tasks_with_retries(
         self,
@@ -467,10 +489,13 @@ def queue_request_task(
 ) -> None:
     """Queues the RequestTask in Celery and caches the Celery Task ID"""
     celery_task_fn: Task = mapping[request_task.action_type]
-    celery_task = celery_task_fn.delay(
-        privacy_request_id=request_task.privacy_request_id,
-        privacy_request_task_id=request_task.id,
-        privacy_request_proceed=privacy_request_proceed,
+    celery_task = celery_task_fn.apply_async(
+        queue=DSR_QUEUE_NAME,
+        kwargs={
+            "privacy_request_id": request_task.privacy_request_id,
+            "privacy_request_task_id": request_task.id,
+            "privacy_request_proceed": privacy_request_proceed,
+        },
     )
     cache_task_tracking_key(request_task.id, celery_task.task_id)
 

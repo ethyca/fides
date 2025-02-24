@@ -30,19 +30,7 @@ from fides.api.util.data_category import _validate_data_category
 from fides.config import CONFIG
 
 if TYPE_CHECKING:
-    from fides.api.graph.traversal import TraversalNode
-
-
-class CurrentStep(EnumType):
-    pre_webhooks = "pre_webhooks"
-    access = "access"
-    upload_access = "upload_access"
-    erasure = "erasure"
-    finalize_erasure = "finalize_erasure"
-    consent = "consent"
-    finalize_consent = "finalize_consent"
-    email_post_send = "email_post_send"
-    post_webhooks = "post_webhooks"
+    from fides.api.graph.traversal_node import TraversalNode
 
 
 def _validate_drp_action(drp_action: Optional[str]) -> None:

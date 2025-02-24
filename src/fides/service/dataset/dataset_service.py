@@ -1,176 +1,176 @@
-from copy import deepcopy
-from typing import Any, Dict, Optional, Set, Tuple
+from datetime import datetime, timezone
+from typing import List, Tuple
 
+from fideslang.models import Dataset as FideslangDataset
+from loguru import logger
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from fides.api.common_exceptions import UnreachableNodesError, ValidationError
-from fides.api.graph.config import GraphDataset
-from fides.api.graph.graph import DatasetGraph
-from fides.api.graph.traversal import Traversal
-from fides.api.models.datasetconfig import DatasetConfig
-from fides.api.models.policy import Policy
-from fides.api.models.privacy_request import (
-    PrivacyRequest,
-    PrivacyRequestSource,
-    PrivacyRequestStatus,
+from fides.api.schemas.dataset import ValidateDatasetResponse
+from fides.service.dataset.dataset_validator import DatasetValidator
+
+from fides.api.models.sql_models import (  # type: ignore[attr-defined] # isort: skip
+    Dataset as CtlDataset,
 )
-from fides.api.schemas.redis_cache import Identity, LabeledIdentity
-from fides.api.task.create_request_tasks import run_access_request
 
 
-def get_dataset_reachability(
-    db: Session, dataset_config: DatasetConfig, policy: Optional[Policy] = None
-) -> Tuple[bool, Optional[str]]:
-    """
-    Determines if the given dataset is reachable along with an error message
-    """
+class DatasetError(Exception):
+    """Base class for dataset-related errors"""
 
-    # Get all the dataset configs that are not associated with a disabled connection
-    datasets = DatasetConfig.all(db=db)
-    dataset_graphs = [
-        dataset_config.get_graph()
-        for dataset_config in datasets
-        if not dataset_config.connection_config.disabled
-    ]
+    def __init__(self, message: str):
+        self.message = message
+        super().__init__(self.message)
 
-    # We still want to check reachability even if our dataset config's connection is disabled.
-    # We also consider the siblings, because if the connection is enabled, then all the
-    # datasets will be enabled with it.
-    sibling_dataset_graphs = []
-    if dataset_config.connection_config.disabled:
-        sibling_datasets = dataset_config.connection_config.datasets
-        sibling_dataset_graphs = [
-            dataset_config.get_graph() for dataset_config in sibling_datasets
-        ]
 
-    try:
-        dataset_graph = DatasetGraph(*dataset_graphs, *sibling_dataset_graphs)
-    except ValidationError as exc:
-        return (
-            False,
-            f'The following dataset references do not exist "{", ".join(exc.errors)}"',
+class DatasetNotFoundException(DatasetError):
+    """Raised when a dataset is not found"""
+
+
+class DatasetService:
+    def __init__(self, db: Session):
+        self.db = db
+
+    def validate_dataset(
+        self,
+        dataset: FideslangDataset,
+    ) -> ValidateDatasetResponse:
+        """
+        Validates a standalone dataset for create/update operations, performing all necessary validations.
+        """
+
+        return DatasetValidator(self.db, dataset).validate()
+
+    def create_dataset(self, dataset: FideslangDataset) -> CtlDataset:
+        """Create a new dataset with validation"""
+        self.validate_dataset(dataset)
+        data_dict = dataset.model_dump(mode="json")
+        return CtlDataset.create(self.db, data=data_dict)
+
+    def update_dataset(self, dataset: FideslangDataset) -> CtlDataset:
+        """Update an existing dataset with validation"""
+
+        self.validate_dataset(dataset)
+        existing = _get_ctl_dataset(self.db, dataset.fides_key)
+        if not existing:
+            raise DatasetNotFoundException(f"Dataset {dataset.fides_key} not found")
+
+        # Update the dataset
+        data_dict = dataset.model_dump(mode="json")
+        return existing.update(self.db, data=data_dict)
+
+    def get_dataset(self, fides_key: str) -> CtlDataset:
+        """Get a single dataset by fides key"""
+        dataset = _get_ctl_dataset(self.db, fides_key)
+        if not dataset:
+            raise DatasetNotFoundException(f"Dataset {fides_key} not found")
+        return dataset
+
+    def delete_dataset(self, fides_key: str) -> CtlDataset:
+        """Delete a dataset by fides key"""
+        dataset = self.get_dataset(fides_key)
+        dataset.delete(self.db)
+        return dataset
+
+    def upsert_datasets(self, datasets: List[FideslangDataset]) -> Tuple[int, int]:
+        """
+        For any dataset in `datasets` that already exists in the database,
+        update the dataset by its `fides_key`. Otherwise, create a new dataset.
+
+        Returns a tuple of (inserted_count, updated_count).
+        """
+        inserted = 0
+        updated = 0
+
+        for dataset in datasets:
+            try:
+                existing = (
+                    self.db.query(CtlDataset)
+                    .filter(CtlDataset.fides_key == dataset.fides_key)
+                    .first()
+                )
+
+                if existing:
+                    self.validate_dataset(dataset)
+                    data_dict = dataset.model_dump(mode="json")
+                    existing.update(self.db, data=data_dict)
+                    updated += 1
+                else:
+                    self.create_dataset(dataset)
+                    inserted += 1
+            except Exception as e:
+                logger.error(f"Error upserting dataset {dataset.fides_key}: {str(e)}")
+                raise
+
+        return inserted, updated
+
+    def clean_datasets(self) -> Tuple[List[str], List[str]]:
+        datasets = self.db.execute(select([CtlDataset])).scalars().all()
+        return _run_clean_datasets(self.db, datasets)
+
+
+def _get_ctl_dataset(db: Session, fides_key: str) -> CtlDataset:
+    """Helper to get CTL dataset by fides_key"""
+    ctl_dataset = db.query(CtlDataset).filter(CtlDataset.fides_key == fides_key).first()
+    if not ctl_dataset:
+        raise DatasetNotFoundException(
+            f"No CTL dataset found with fides_key '{fides_key}'"
         )
-
-    # dummy data is enough to determine traversability
-    identity_seed: Dict[str, str] = {
-        k: "something" for k in dataset_graph.identity_keys.values()
-    }
-
-    try:
-        Traversal(dataset_graph, identity_seed, policy)
-    except UnreachableNodesError as exc:
-        return (
-            False,
-            f'The following collections are not reachable "{", ".join(exc.errors)}"',
-        )
-
-    return True, None
+    return ctl_dataset
 
 
-def get_identities_and_references(
-    dataset_config: DatasetConfig,
-) -> Set[str]:
+def _run_clean_datasets(
+    db: Session, datasets: List[FideslangDataset]
+) -> tuple[List[str], List[str]]:
     """
-    Returns all identity and dataset references in the dataset.
-    If a field has multiple references only the first reference will be considered.
+    Clean the dataset name and structure to remove any malformed data possibly present from nested field regressions.
+    Changes dot separated positional names to source names (ie. `user.address.street` -> `street`).
     """
 
-    result: Set[str] = set()
-    dataset: GraphDataset = dataset_config.get_graph()
-    for collection in dataset.collections:
-        # Process the identities in the collection
-        result.update(collection.identities().values())
-        for _, field_refs in collection.references().items():
-            # Take first reference only, we only care that this collection is reachable,
-            # how we get there doesn't matter for our current use case
-            ref, edge_direction = field_refs[0]
-            if edge_direction == "from" and ref.dataset != dataset_config.fides_key:
-                result.add(ref.value)
-    return result
+    for dataset in datasets:
+        logger.info(f"Cleaning field names for dataset: {dataset.fides_key}")
+        for collection in dataset.collections:
+            collection["fields"] = _recursive_clean_fields(collection["fields"])  # type: ignore # pylint: disable=unsupported-assignment-operation
+
+        # manually upsert the dataset
+
+        logger.info(f"Upserting dataset: {dataset.fides_key}")
+        failed = []
+        try:
+            dataset_ctl_obj = (
+                db.query(CtlDataset)
+                .filter(CtlDataset.fides_key == dataset.fides_key)
+                .first()
+            )
+            if dataset_ctl_obj:
+                db.query(CtlDataset).filter(
+                    CtlDataset.fides_key == dataset.fides_key
+                ).update(
+                    {
+                        "collections": dataset.collections,
+                        "updated_at": datetime.now(timezone.utc),
+                    },
+                    synchronize_session=False,
+                )
+                db.commit()
+            else:
+                logger.error(f"Dataset with fides_key {dataset.fides_key} not found.")
+        except Exception as e:
+            logger.error(f"Error upserting dataset: {dataset.fides_key} {e}")
+            db.rollback()
+            failed.append(dataset.fides_key)
+
+    succeeded = [dataset.fides_key for dataset in datasets]
+    return succeeded, failed
 
 
-def run_test_access_request(
-    db: Session,
-    policy: Policy,
-    dataset_config: DatasetConfig,
-    input_data: Dict[str, Any],
-) -> PrivacyRequest:
+def _recursive_clean_fields(fields: List[dict]) -> List[dict]:
     """
-    Creates a privacy request with a source of "Dataset test" that runs an access request for a single dataset.
-    The input data is used to mock any external dataset values referenced by our dataset so that it can run in
-    complete isolation.
+    Recursively clean the fields of a dataset.
     """
-
-    # Create a privacy request with a source of "Dataset test"
-    # so it's not shown to the user.
-    privacy_request = PrivacyRequest.create(
-        db=db,
-        data={
-            "policy_id": policy.id,
-            "source": PrivacyRequestSource.dataset_test,
-            "status": PrivacyRequestStatus.in_processing,
-        },
-    )
-
-    # Remove periods and colons to avoid them being parsed as path delimiters downstream.
-    escaped_input_data = {
-        key.replace(".", "_").replace(":", "_"): value
-        for key, value in input_data.items()
-    }
-
-    # Manually cache the input data as identity data.
-    # We're doing a bit of trickery here to avoid asking for labels for custom identities.
-    predefined_fields = Identity.model_fields.keys()
-    input_identity = {
-        key: (
-            value
-            if key in predefined_fields
-            else LabeledIdentity(label=key, value=value)
-        )
-        for key, value in escaped_input_data.items()
-    }
-    privacy_request.cache_identity(input_identity)
-
-    graph_dataset = dataset_config.get_graph()
-    modified_graph_dataset = replace_references_with_identities(
-        dataset_config.fides_key, graph_dataset
-    )
-
-    dataset_graph = DatasetGraph(modified_graph_dataset)
-    connection_config = dataset_config.connection_config
-
-    # Finally invoke the existing DSR 3.0 access request task
-    run_access_request(
-        privacy_request,
-        policy,
-        dataset_graph,
-        [connection_config],
-        escaped_input_data,
-        db,
-        privacy_request_proceed=False,
-    )
-    return privacy_request
-
-
-def replace_references_with_identities(
-    dataset_key: str, graph_dataset: GraphDataset
-) -> GraphDataset:
-    """
-    Replace external field references with identity values for testing.
-
-    Creates a copy of the graph dataset and replaces dataset references with
-    equivalent identity references that can be seeded directly. This allows
-    testing a single dataset in isolation without needing to load data from
-    referenced external datasets.
-    """
-
-    modified_graph_dataset = deepcopy(graph_dataset)
-
-    for collection in modified_graph_dataset.collections:
-        for field in collection.fields:
-            for ref, edge_direction in field.references[:]:
-                if edge_direction == "from" and ref.dataset != dataset_key:
-                    field.identity = f"{ref.dataset}_{ref.collection}_{'_'.join(ref.field_path.levels)}"
-                    field.references.remove((ref, "from"))
-
-    return modified_graph_dataset
+    cleaned_fields = []
+    for field in fields:
+        field["name"] = field["name"].split(".")[-1]
+        if field["fields"]:
+            field["fields"] = _recursive_clean_fields(field["fields"])
+        cleaned_fields.append(field)
+    return cleaned_fields
