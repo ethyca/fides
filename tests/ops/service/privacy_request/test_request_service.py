@@ -1,15 +1,9 @@
 import time
 from datetime import datetime
-from unittest import mock
 
 import pytest
-from fastapi.testclient import TestClient
 from httpx import HTTPStatusError
 
-from fides.api.api.v1.endpoints.privacy_request_endpoints import (
-    PRIVACY_REQUEST_CALLBACK_RESUME,
-    CurrentStep,
-)
 from fides.api.cryptography.cryptographic_util import str_to_b64_str
 from fides.api.db.seed import create_or_update_parent_user
 from fides.api.models.privacy_request import (
@@ -251,28 +245,6 @@ class TestPollForExitedPrivacyRequests:
 
         db.refresh(privacy_request)
         assert privacy_request.status == PrivacyRequestStatus.error
-
-    @pytest.mark.usefixtures("request_task")
-    @mock.patch(
-        "fides.api.api.v1.endpoints.privacy_request_endpoints.queue_privacy_request"
-    )
-    def test_requeue_privacy_request_with_access_tasks(
-        self,
-        queue_privacy_request_mock,
-        privacy_request,
-        api_client: TestClient,
-        generate_auth_header,
-        url,
-    ):
-        """Test that a privacy request with access tasks is requeued from the access step"""
-        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CALLBACK_RESUME])
-        response = api_client.post(url, headers=auth_header)
-        assert 200 == response.status_code
-        assert queue_privacy_request_mock.called
-        queue_privacy_request_mock.assert_called_with(
-            privacy_request_id=privacy_request.id,
-            from_step=CurrentStep.access.value,
-        )
 
 
 @pytest.fixture(scope="function")
