@@ -35,7 +35,6 @@ def get_aws_session(
             ],
             region_name=storage_secrets.get("region_name"),  # type: ignore
         )
-
     elif auth_method == AWSAuthMethod.AUTOMATIC.value:
         session = Session(
             region_name=storage_secrets.get("region_name"),  # type: ignore

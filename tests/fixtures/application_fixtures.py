@@ -1112,32 +1112,6 @@ def policy(
 
 
 @pytest.fixture(scope="function")
-def consent_automation() -> Generator:
-    consentable_items = [
-        {
-            "type": "Channel",
-            "external_id": 1,
-            "name": "Marketing channel (email)",
-            "children": [
-                {
-                    "type": "Message type",
-                    "external_id": 1,
-                    "name": "Weekly Ads",
-                }
-            ],
-        }
-    ]
-
-    ConsentAutomation.create_or_update(
-        db,
-        data={
-            "connection_config_id": connection_config.id,
-            "consentable_items": consentable_items,
-        },
-    )
-
-
-@pytest.fixture(scope="function")
 def consent_policy(
     db: Session,
     oauth_client: ClientDetail,
