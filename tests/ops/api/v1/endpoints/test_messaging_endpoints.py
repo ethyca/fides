@@ -167,7 +167,7 @@ class TestPostMessagingConfig:
         assert 422 == response.status_code
         assert (
             json.loads(response.text)["detail"][0]["msg"]
-            == "Input should be 'mailgun', 'twilio_text', 'twilio_email' or 'mailchimp_transactional'"
+            == "Input should be 'mailgun', 'twilio_text', 'twilio_email', 'mailchimp_transactional' or 'aws_ses'"
         )
 
     def test_post_email_config_with_no_key(
