@@ -1,7 +1,7 @@
 import {
   AntButton as Button,
   AntSwitch as Switch,
-  Badge,
+  AntTag as Tag,
   Box,
   Flex,
   FormControl,
@@ -84,9 +84,9 @@ const AssignSystemsModal = ({
           alignItems="center"
         >
           <Text>Assign systems</Text>
-          <Badge bg="success.500" color="white">
+          <Tag color="success">
             Assigned to {assignedSystems.length} systems
-          </Badge>
+          </Tag>
         </ModalHeader>
         <ModalBody data-testid="assign-systems-modal-body">
           {emptySystems ? (
