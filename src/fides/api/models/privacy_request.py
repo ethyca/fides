@@ -502,11 +502,12 @@ class PrivacyRequest(
                 )
 
         # Simultaneously add identities to automaton for fuzzy search
-        try:
-            self.add_identities_to_automaton()
-        except Exception as exc:
-            # This should never affect the ability to create privacy requests
-            logger.error(f"Could not add identities to Automaton: {Pii(str(exc))}")
+        if CONFIG.execution.fuzzy_search_enabled:
+            try:
+                self.add_identities_to_automaton()
+            except Exception as exc:
+                # This should never affect the ability to create privacy requests
+                logger.error(f"Could not add identities to Automaton: {Pii(str(exc))}")
 
     def persist_custom_privacy_request_fields(
         self,

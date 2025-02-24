@@ -362,6 +362,17 @@ def run_privacy_request(
                     if not dataset_config.connection_config.disabled
                 ]
                 dataset_graph = DatasetGraph(*dataset_graphs)
+
+                # Add success log for dataset configuration
+                privacy_request.add_success_execution_log(
+                    session,
+                    connection_key=None,
+                    dataset_name="Dataset reference validation",
+                    collection_name=None,
+                    message=f"Dataset reference validation successful for privacy request: {privacy_request.id}",
+                    action_type=privacy_request.policy.get_action_type(),  # type: ignore
+                )
+
                 identity_data = {
                     key: value["value"] if isinstance(value, dict) else value
                     for key, value in privacy_request.get_cached_identity_data().items()
@@ -487,6 +498,20 @@ def run_privacy_request(
                 # The access, consent, and erasure runners for DSR 3.0 throw this exception after its
                 # Request Tasks have been built.  The Privacy Request will be requeued from
                 # the appropriate checkpoint when all the Request Tasks have run.
+                return
+
+            except ValidationError as exc:
+                # Handle validation errors from dataset graph creation
+                logger.error(f"Error validating dataset references: {str(exc)}")
+                privacy_request.add_error_execution_log(
+                    session,
+                    connection_key=None,
+                    dataset_name="Dataset reference validation",
+                    collection_name=None,
+                    message=str(exc),
+                    action_type=privacy_request.policy.get_action_type(),  # type: ignore
+                )
+                privacy_request.error_processing(db=session)
                 return
 
             except BaseException as exc:  # pylint: disable=broad-except
