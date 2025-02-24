@@ -20,6 +20,8 @@ depends_on = None
 
 
 def upgrade():
+    op.add_column("asset", sa.Column("description", sa.String(), nullable=True))
+
     connection = op.get_bind()
     result = connection.execute(
         sa.text(
@@ -51,8 +53,6 @@ def upgrade():
             data_uses=data_uses,
             asset_type="Cookie",
         )
-
-    op.add_column("asset", sa.Column("description", sa.String(), nullable=True))
 
 
 def downgrade():
