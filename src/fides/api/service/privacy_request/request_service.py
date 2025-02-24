@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from asyncio import sleep
 from datetime import datetime, timedelta
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Set
+from typing import Any, Dict, List, Optional, Set
 
 from httpx import AsyncClient
 from loguru import logger
@@ -32,12 +32,6 @@ from fides.api.tasks.scheduled.scheduler import scheduler
 from fides.api.util.cache import FidesopsRedis, celery_tasks_in_flight, get_cache
 from fides.common.api.v1.urn_registry import PRIVACY_REQUESTS, V1_URL_PREFIX
 from fides.config import CONFIG
-
-if TYPE_CHECKING:
-    from fides.service.privacy_request.privacy_request_service import (
-        PrivacyRequestError,
-        _requeue_privacy_request,
-    )
 
 PRIVACY_REQUEST_STATUS_CHANGE_POLL = "privacy_request_status_change_poll"
 DSR_DATA_REMOVAL = "dsr_data_removal"
@@ -369,10 +363,6 @@ def requeue_interrupted_tasks(self: DatabaseTask) -> None:
     3. Checks each privacy request to determine if its tasks are still active.
     4. Requeues the privacy request if any of its tasks are found to be interrupted.
     """
-    from fides.service.privacy_request.privacy_request_service import (
-        PrivacyRequestError,
-        _requeue_privacy_request,
-    )
 
     with self.get_new_session() as db:
         logger.debug("Starting check for interrupted tasks to requeue")
@@ -440,6 +430,11 @@ def requeue_interrupted_tasks(self: DatabaseTask) -> None:
 
             # Requeue the privacy request if needed
             if should_requeue:
+                from fides.service.privacy_request.privacy_request_service import (  # pylint: disable=cyclic-import
+                    PrivacyRequestError,
+                    _requeue_privacy_request,
+                )
+
                 try:
                     _requeue_privacy_request(db, privacy_request)
                 except PrivacyRequestError as exc:
