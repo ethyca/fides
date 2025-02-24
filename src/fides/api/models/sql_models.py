@@ -941,7 +941,9 @@ class AttachmentReference(Base):
     reference_type = Column(EnumColumn(AttachmentReferenceType), nullable=False)
 
     __table_args__ = (
-        UniqueConstraint('attachment_id', 'reference_id', name='_attachment_reference_uc'),
+        UniqueConstraint(
+            "attachment_id", "reference_id", name="_attachment_reference_uc"
+        ),
     )
 
     attachment = relationship(
