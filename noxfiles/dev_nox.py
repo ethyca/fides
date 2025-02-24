@@ -36,6 +36,7 @@ def shell(session: Session) -> None:
         )
 
 
+# pylint: disable=too-many-branches
 @nox_session()
 def dev(session: Session) -> None:
     """
@@ -77,7 +78,7 @@ def dev(session: Session) -> None:
 
     if "worker-dsr" in session.posargs:
         session.run("docker", "compose", "up", "--wait", "worker-dsr", external=True)
-        
+
     if "flower" in session.posargs:
         # Only start Flower if worker is also enabled
         if "worker" in session.posargs:
@@ -86,7 +87,6 @@ def dev(session: Session) -> None:
             session.error(
                 "Flower requires the worker service. Please add 'worker' to your arguments."
             )
-
 
     datastores = [
         datastore for datastore in session.posargs if datastore in ALL_DATASTORES

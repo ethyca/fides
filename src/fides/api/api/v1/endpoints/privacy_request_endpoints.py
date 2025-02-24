@@ -72,7 +72,6 @@ from fides.api.models.privacy_request import (
     CustomPrivacyRequestField,
     ExecutionLog,
     PrivacyRequest,
-    PrivacyRequestError,
     PrivacyRequestNotifications,
     ProvidedIdentity,
     RequestTask,
@@ -85,7 +84,7 @@ from fides.api.oauth.utils import (
 )
 from fides.api.schemas.dataset import CollectionAddressResponse, DryRunDatasetResponse
 from fides.api.schemas.external_https import PrivacyRequestResumeFormat
-from fides.api.schemas.policy import ActionType, CurrentStep
+from fides.api.schemas.policy import ActionType
 from fides.api.schemas.privacy_request import (
     BulkPostPrivacyRequests,
     BulkReviewResponse,
@@ -171,6 +170,7 @@ from fides.service.dataset.dataset_config_service import (
 )
 from fides.service.messaging.messaging_service import MessagingService
 from fides.service.privacy_request.privacy_request_service import (
+    PrivacyRequestError,
     PrivacyRequestService,
     _process_privacy_request_restart,
     _requeue_privacy_request,
@@ -1910,7 +1910,9 @@ def requeue_privacy_request(
 
     Don't use this unless the Privacy Request is stuck.
     """
-    privacy_request: PrivacyRequest = get_privacy_request_or_error(db, privacy_request_id)
+    privacy_request: PrivacyRequest = get_privacy_request_or_error(
+        db, privacy_request_id
+    )
 
     try:
         return _requeue_privacy_request(db, privacy_request)

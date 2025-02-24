@@ -1,7 +1,6 @@
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
-from fides.api.schemas.policy import ActionType, CurrentStep
 from loguru import logger
 from sqlalchemy.orm import Session
 
@@ -15,19 +14,20 @@ from fides.api.models.policy import Policy
 from fides.api.models.pre_approval_webhook import PreApprovalWebhook
 from fides.api.models.privacy_preference import PrivacyPreferenceHistory
 from fides.api.models.privacy_request import (
-    CheckpointActionRequired,
     ConsentRequest,
     ExecutionLog,
-    ExecutionLogStatus,
     PrivacyRequest,
     RequestTask,
 )
 from fides.api.models.property import Property
 from fides.api.schemas.api import BulkUpdateFailed
 from fides.api.schemas.messaging.messaging import MessagingActionType
+from fides.api.schemas.policy import ActionType, CurrentStep
 from fides.api.schemas.privacy_request import (
     BulkPostPrivacyRequests,
     BulkReviewResponse,
+    CheckpointActionRequired,
+    ExecutionLogStatus,
     PrivacyRequestCreate,
     PrivacyRequestResponse,
     PrivacyRequestResubmit,
@@ -54,7 +54,7 @@ from fides.service.messaging.messaging_service import (
 class PrivacyRequestError(Exception):
     """Base exception for privacy request operations."""
 
-    def __init__(self, message: str, data: dict):
+    def __init__(self, message: str, data: Optional[Dict] = None):
         self.message = message
         self.data = data
         super().__init__(message)
@@ -619,6 +619,7 @@ def _trigger_pre_approval_webhooks(
             policy_action=privacy_request.policy.get_action_type(),
         )
 
+
 def _requeue_privacy_request(
     db: Session,
     privacy_request: PrivacyRequest,
@@ -648,7 +649,9 @@ def _requeue_privacy_request(
         elif privacy_request.erasure_tasks.count():
             # Checking if access terminator task was completed, because erasure tasks are created
             # at the same time as the access tasks
-            terminator_access_task = privacy_request.get_terminate_task_by_action(ActionType.access)
+            terminator_access_task = privacy_request.get_terminate_task_by_action(
+                ActionType.access
+            )
             resume_step = (
                 CurrentStep.erasure
                 if terminator_access_task.status == ExecutionLogStatus.complete
@@ -668,6 +671,7 @@ def _requeue_privacy_request(
         resume_step,
         db,
     )
+
 
 def _process_privacy_request_restart(
     privacy_request: PrivacyRequest,
