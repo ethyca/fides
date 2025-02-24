@@ -13,11 +13,11 @@ from fides.api.models.privacy_request import (
     Consent,
     ConsentRequest,
     CustomPrivacyRequestField,
-    PrivacyRequestSource,
     PrivacyRequestStatus,
     ProvidedIdentity,
 )
 from fides.api.schemas.messaging.messaging import MessagingServiceType
+from fides.api.schemas.privacy_request import PrivacyRequestSource
 from fides.common.api.scope_registry import CONNECTION_READ, CONSENT_READ
 from fides.common.api.v1.urn_registry import (
     CONSENT_REQUEST,

@@ -20,11 +20,14 @@ import {
   useGetDatasetInputsQuery,
   useTestDatastoreConnectionDatasetsMutation,
 } from "~/features/datastore-connections";
-import { useGetFilteredResultsQuery } from "~/features/privacy-requests";
+import { useGetPoliciesQuery } from "~/features/policy/policy.slice";
+import {
+  useGetFilteredResultsQuery,
+  useGetTestLogsQuery,
+} from "~/features/privacy-requests";
 import { PrivacyRequestStatus } from "~/types/api";
 import { isErrorResult } from "~/types/errors";
 
-import { useGetPoliciesQuery } from "../policy/policy.slice";
 import {
   finishTest,
   selectCurrentDataset,
@@ -67,12 +70,19 @@ const TestResultsSection = ({ connectionKey }: TestResultsSectionProps) => {
   }, [currentDataset, testInputs]);
 
   // Poll for results when we have a privacy request ID
-  const { data: filteredResults } = useGetFilteredResultsQuery(
+  const { data: filteredResults, error: filteredResultsError } =
+    useGetFilteredResultsQuery(
+      { privacy_request_id: privacyRequestId! },
+      {
+        skip: !privacyRequestId || !currentDataset?.fides_key,
+        pollingInterval: 2000,
+      },
+    );
+
+  // Get test logs with refetch capability
+  const { refetch: refetchLogs } = useGetTestLogsQuery(
     { privacy_request_id: privacyRequestId! },
-    {
-      skip: !privacyRequestId || !currentDataset?.fides_key,
-      pollingInterval: 2000,
-    },
+    { skip: !privacyRequestId },
   );
 
   // Get dataset inputs
@@ -124,6 +134,17 @@ const TestResultsSection = ({ connectionKey }: TestResultsSectionProps) => {
   useEffect(() => {
     const currentDatasetKey = currentDataset?.fides_key;
 
+    // Handle 404 errors by stopping polling and showing error
+    if (
+      filteredResultsError &&
+      "status" in filteredResultsError &&
+      filteredResultsError.status === 404
+    ) {
+      dispatch(finishTest());
+      toast(errorToastParams("Test run failed"));
+      return;
+    }
+
     if (
       !filteredResults ||
       filteredResults.privacy_request_id !== privacyRequestId ||
@@ -140,22 +161,30 @@ const TestResultsSection = ({ connectionKey }: TestResultsSectionProps) => {
 
     if (filteredResults.status === PrivacyRequestStatus.COMPLETE) {
       if (isTestRunning) {
-        dispatch(setTestResults(resultsAction));
-        dispatch(finishTest());
-        toast(successToastParams("Test run completed successfully"));
+        // Do one final log fetch before finishing
+        refetchLogs().then(() => {
+          dispatch(setTestResults(resultsAction));
+          dispatch(finishTest());
+          toast(successToastParams("Test run completed successfully"));
+        });
       }
     } else if (filteredResults.status === PrivacyRequestStatus.ERROR) {
-      dispatch(setTestResults(resultsAction));
-      dispatch(finishTest());
-      toast(errorToastParams("Test run failed"));
+      // Do one final log fetch before finishing
+      refetchLogs().then(() => {
+        dispatch(setTestResults(resultsAction));
+        dispatch(finishTest());
+        toast(errorToastParams("Test run failed"));
+      });
     }
   }, [
     filteredResults,
+    filteredResultsError,
     privacyRequestId,
     currentDataset,
     isTestRunning,
     dispatch,
     toast,
+    refetchLogs,
   ]);
 
   const handleInputChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {

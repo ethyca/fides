@@ -32,7 +32,7 @@ from fides.api.models.audit_log import AuditLog, AuditLogAction
 from fides.api.models.client import ClientDetail
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.datasetconfig import DatasetConfig
-from fides.api.models.policy import CurrentStep, Policy
+from fides.api.models.policy import Policy
 from fides.api.models.pre_approval_webhook import PreApprovalWebhookReply
 from fides.api.models.privacy_request import (
     ExecutionLog,
@@ -55,7 +55,7 @@ from fides.api.schemas.messaging.messaging import (
     RequestReviewDenyBodyParams,
     SubjectIdentityVerificationBodyParams,
 )
-from fides.api.schemas.policy import ActionType, PolicyResponse
+from fides.api.schemas.policy import ActionType, CurrentStep, PolicyResponse
 from fides.api.schemas.redis_cache import Identity, LabeledIdentity
 from fides.api.task.graph_runners import access_runner
 from fides.api.tasks import DSR_QUEUE_NAME, MESSAGING_QUEUE_NAME

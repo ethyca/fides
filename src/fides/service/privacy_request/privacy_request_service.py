@@ -17,8 +17,6 @@ from fides.api.models.privacy_request import (
     ConsentRequest,
     ExecutionLog,
     PrivacyRequest,
-    PrivacyRequestSource,
-    PrivacyRequestStatus,
     RequestTask,
 )
 from fides.api.models.property import Property
@@ -30,6 +28,8 @@ from fides.api.schemas.privacy_request import (
     PrivacyRequestCreate,
     PrivacyRequestResponse,
     PrivacyRequestResubmit,
+    PrivacyRequestSource,
+    PrivacyRequestStatus,
 )
 from fides.api.service.messaging.message_dispatch_service import message_send_enabled
 from fides.api.service.privacy_request.request_service import (

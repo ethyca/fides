@@ -6,6 +6,9 @@ from tests.ops.integration_tests.saas.connector_runner import ConnectorRunner
 from tests.ops.test_helpers.saas_test_utils import poll_for_existence
 
 
+@pytest.mark.skip(
+    "Flaky Test - to be investigated in https://ethyca.atlassian.net/browse/LJ-425"
+)
 @pytest.mark.integration_saas
 class TestHubspotConnector:
 

@@ -13,9 +13,7 @@ from fides.api.models.connectionconfig import ConnectionConfig, ConnectionTestSt
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.privacy_request import (
     ExecutionLog,
-    ExecutionLogStatus,
     PrivacyRequest,
-    PrivacyRequestStatus,
     RequestTask,
     TraversalDetails,
 )
@@ -23,6 +21,7 @@ from fides.api.schemas.connection_configuration.connection_secrets_dynamic_erasu
     DynamicErasureEmailSchema,
 )
 from fides.api.schemas.policy import ActionType
+from fides.api.schemas.privacy_request import ExecutionLogStatus, PrivacyRequestStatus
 from fides.api.service.connectors.base_connector import BaseConnector
 from fides.api.service.connectors.base_erasure_email_connector import (
     BaseErasureEmailConnector,

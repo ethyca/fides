@@ -85,6 +85,13 @@ def test_convert_dataset_to_graph_no_collections(example_datasets):
         ),
         (
             [
+                "`_pt` > TIMESTAMP(''2020-01-01'') AND `_pt` <= CURRENT_TIMESTAMP()",
+                "`_pt` > TIMESTAMP(''2019-01-01'') AND `_pt` <= TIMESTAMP(''2019-01-01'')",
+            ],
+            None,
+        ),
+        (
+            [
                 "`created` > 4 OR 1 = 1",  # comparison operators after an OR are not permitted
                 "`created` > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 2000 DAY) AND `created` <= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1000 DAY)",
             ],

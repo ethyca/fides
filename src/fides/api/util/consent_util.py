@@ -12,13 +12,13 @@ from fides.api.models.privacy_notice import (
 )
 from fides.api.models.privacy_preference import PrivacyPreferenceHistory
 from fides.api.models.privacy_request import (
-    ExecutionLogStatus,
     PrivacyRequest,
     ProvidedIdentity,
     ProvidedIdentityType,
 )
 from fides.api.models.sql_models import System  # type: ignore[attr-defined]
 from fides.api.models.tcf_purpose_overrides import TCFPurposeOverride
+from fides.api.schemas.privacy_request import ExecutionLogStatus
 from fides.api.schemas.redis_cache import Identity
 
 

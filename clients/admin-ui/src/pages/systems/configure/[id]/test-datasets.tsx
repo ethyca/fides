@@ -1,4 +1,4 @@
-import { HStack } from "fidesui";
+import { Box, HStack, VStack } from "fidesui";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
@@ -13,6 +13,7 @@ import {
   useGetSystemByFidesKeyQuery,
 } from "~/features/system";
 import EditorSection from "~/features/test-datasets/DatasetEditorSection";
+import TestLogsSection from "~/features/test-datasets/TestLogsSection";
 import TestResultsSection from "~/features/test-datasets/TestRunnerSection";
 
 // Helper functions
@@ -67,16 +68,27 @@ const TestDatasetPage: NextPage = () => {
           { title: "Test datasets" },
         ]}
       />
-      <HStack
+      <VStack
         alignItems="stretch"
         flex="1"
         minHeight="0"
         spacing="4"
-        padding="4 4 4 0"
+        padding="0"
       >
-        <EditorSection connectionKey={connectionKey} />
-        <TestResultsSection connectionKey={connectionKey} />
-      </HStack>
+        <HStack
+          alignItems="stretch"
+          flex="1"
+          minHeight="0"
+          spacing="4"
+          maxHeight="60vh"
+        >
+          <EditorSection connectionKey={connectionKey} />
+          <TestResultsSection connectionKey={connectionKey} />
+        </HStack>
+        <Box flex="0 0 auto">
+          <TestLogsSection />
+        </Box>
+      </VStack>
     </Layout>
   );
 };
