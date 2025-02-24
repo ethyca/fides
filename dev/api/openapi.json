@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.55.4"
+    "version": "2.55.5b0.post0.dev1"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -992,483 +992,6 @@
             "OAuth2ClientCredentialsBearer": [
               "data_use:create",
               "data_use:update"
-            ]
-          }
-        ]
-      }
-    },
-    "/api/v1/dataset": {
-      "post": {
-        "tags": [
-          "Dataset"
-        ],
-        "summary": "Create",
-        "description": "Create a resource.\n\nPayloads with an is_default field can only be set to False,\nwill return a `403 Forbidden`.",
-        "operationId": "Create_api_v1_dataset_post",
-        "security": [
-          {
-            "OAuth2ClientCredentialsBearer": [
-              "ctl_dataset:create"
-            ]
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Dataset"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Dataset"
-                }
-              }
-            }
-          },
-          "403": {
-            "content": {
-              "application/json": {
-                "example": {
-                  "detail": {
-                    "error": "user does not have permission to modify this resource",
-                    "resource_type": "dataset",
-                    "fides_key": "example.key"
-                  }
-                }
-              }
-            },
-            "description": "Forbidden"
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      },
-      "put": {
-        "tags": [
-          "Dataset"
-        ],
-        "summary": "Update",
-        "description": "Update a resource by its fides_key.\n\nThe `is_default` field cannot be updated and will respond\nwith a `403 Forbidden` if attempted.",
-        "operationId": "update_api_v1_dataset_put",
-        "security": [
-          {
-            "OAuth2ClientCredentialsBearer": [
-              "ctl_dataset:update"
-            ]
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Dataset"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Dataset"
-                }
-              }
-            }
-          },
-          "403": {
-            "content": {
-              "application/json": {
-                "example": {
-                  "detail": {
-                    "error": "user does not have permission to modify this resource",
-                    "resource_type": "dataset",
-                    "fides_key": "example.key"
-                  }
-                }
-              }
-            },
-            "description": "Forbidden"
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      },
-      "get": {
-        "tags": [
-          "Dataset"
-        ],
-        "summary": "List Datasets (Optionally Paginated)",
-        "description": "Get a list of all of the Datasets.\nIf any pagination parameters (size or page) are provided, then the response will be paginated.\nOtherwise all Datasets will be returned (this may be a slow operation if there are many datasets,\nso using the pagination parameters is recommended).\nProvided filters (search, data_categories, exclude_saas_datasets, only_unlinked_datasets) will be applied,\nreturning only the datasets that match ALL of the filters.",
-        "operationId": "List_datasets__optionally_paginated__api_v1_dataset_get",
-        "security": [
-          {
-            "OAuth2ClientCredentialsBearer": [
-              "dataset:read"
-            ]
-          }
-        ],
-        "parameters": [
-          {
-            "name": "size",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "integer",
-                  "maximum": 100,
-                  "minimum": 1
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Size"
-            }
-          },
-          {
-            "name": "page",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "integer",
-                  "minimum": 1
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Page"
-            }
-          },
-          {
-            "name": "search",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Search"
-            }
-          },
-          {
-            "name": "data_categories",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "array",
-                  "items": {
-                    "type": "string"
-                  }
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Data Categories"
-            }
-          },
-          {
-            "name": "exclude_saas_datasets",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "boolean"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "default": false,
-              "title": "Exclude Saas Datasets"
-            }
-          },
-          {
-            "name": "only_unlinked_datasets",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "boolean"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "default": false,
-              "title": "Only Unlinked Datasets"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "anyOf": [
-                    {
-                      "$ref": "#/components/schemas/Page_Dataset_"
-                    },
-                    {
-                      "type": "array",
-                      "items": {
-                        "$ref": "#/components/schemas/Dataset"
-                      }
-                    }
-                  ],
-                  "title": "Response List Datasets  Optionally Paginated  Api V1 Dataset Get"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/dataset/{fides_key}": {
-      "get": {
-        "tags": [
-          "Dataset"
-        ],
-        "summary": "Get",
-        "description": "Get a resource by its fides_key.",
-        "operationId": "get_api_v1_dataset__fides_key__get",
-        "security": [
-          {
-            "OAuth2ClientCredentialsBearer": [
-              "ctl_dataset:read"
-            ]
-          }
-        ],
-        "parameters": [
-          {
-            "name": "fides_key",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "title": "Fides Key"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Dataset"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      },
-      "delete": {
-        "tags": [
-          "Dataset"
-        ],
-        "summary": "Delete",
-        "description": "Delete a resource by its fides_key.\n\nResources that have `is_default=True` cannot be deleted and will respond\nwith a `403 Forbidden`.",
-        "operationId": "delete_api_v1_dataset__fides_key__delete",
-        "security": [
-          {
-            "OAuth2ClientCredentialsBearer": [
-              "ctl_dataset:delete"
-            ]
-          }
-        ],
-        "parameters": [
-          {
-            "name": "fides_key",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "title": "Fides Key"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "title": "Response Delete Api V1 Dataset  Fides Key  Delete"
-                }
-              }
-            }
-          },
-          "403": {
-            "content": {
-              "application/json": {
-                "example": {
-                  "detail": {
-                    "error": "user does not have permission to modify this resource",
-                    "resource_type": "dataset",
-                    "fides_key": "example.key"
-                  }
-                }
-              }
-            },
-            "description": "Forbidden"
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/dataset/upsert": {
-      "post": {
-        "tags": [
-          "Dataset"
-        ],
-        "summary": "Upsert",
-        "description": "For any resource in `resources` that already exists in the database,\nupdate the resource by its `fides_key`. Otherwise, create a new resource.\n\nResponds with a `201 Created` if even a single resource in `resources`\ndid not previously exist. Otherwise, responds with a `200 OK`.\n\nThe `is_default` field cannot be updated and will respond\nwith a `403 Forbidden` if attempted.",
-        "operationId": "upsert_api_v1_dataset_upsert_post",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "items": {
-                  "$ref": "#/components/schemas/Dataset"
-                },
-                "type": "array",
-                "title": "Resources"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "title": "Response Upsert Api V1 Dataset Upsert Post"
-                },
-                "example": {
-                  "message": "Upserted 3 dataset(s)",
-                  "inserted": 0,
-                  "updated": 3
-                }
-              }
-            }
-          },
-          "201": {
-            "description": "Created",
-            "content": {
-              "application/json": {
-                "example": {
-                  "message": "Upserted 3 dataset(s)",
-                  "inserted": 1,
-                  "updated": 2
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "example": {
-                  "detail": {
-                    "error": "user does not have permission to modify this resource",
-                    "resource_type": "DataCategory",
-                    "fides_key": "example.key"
-                  }
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "OAuth2ClientCredentialsBearer": [
-              "ctl_dataset:create",
-              "ctl_dataset:update"
             ]
           }
         ]
@@ -2957,6 +2480,9 @@
                   },
                   {
                     "$ref": "#/components/schemas/TimescaleDocsSchema"
+                  },
+                  {
+                    "$ref": "#/components/schemas/WebsiteSchema"
                   }
                 ],
                 "title": "Unvalidated Secrets"
@@ -4365,6 +3891,9 @@
                   },
                   {
                     "$ref": "#/components/schemas/TimescaleDocsSchema"
+                  },
+                  {
+                    "$ref": "#/components/schemas/WebsiteSchema"
                   }
                 ],
                 "title": "Unvalidated Secrets"
@@ -4511,6 +4040,9 @@
                   },
                   {
                     "$ref": "#/components/schemas/TimescaleDocsSchema"
+                  },
+                  {
+                    "$ref": "#/components/schemas/WebsiteSchema"
                   }
                 ],
                 "title": "Unvalidated Secrets"
@@ -5375,6 +4907,7 @@
         "summary": "Get Datasets",
         "description": "Returns all CTL datasets attached to the ConnectionConfig via the Dataset Config.\n\nSoon to be deprecated.",
         "operationId": "get_datasets_api_v1_connection__connection_key__dataset_get",
+        "deprecated": true,
         "security": [
           {
             "OAuth2ClientCredentialsBearer": [
@@ -5440,6 +4973,56 @@
         }
       }
     },
+    "/api/v1/yml/connection/{connection_key}/dataset": {
+      "patch": {
+        "tags": [
+          "Dataset Configs"
+        ],
+        "summary": "Patch Yaml Datasets",
+        "description": "Bulk create or update datasets from YAML format.\nAccepts application/x-yaml content type.",
+        "operationId": "patch_yaml_datasets_api_v1_yml_connection__connection_key__dataset_patch",
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "dataset:create_or_update"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "name": "connection_key",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Connection Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BulkPutDataset"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/connection/{connection_key}/dataset/{dataset_key}": {
       "get": {
         "tags": [
@@ -5448,6 +5031,7 @@
         "summary": "Get Dataset",
         "description": "Returns a single ctl dataset linked to the given DatasetConfig.\n\nSoon to be deprecated",
         "operationId": "get_dataset_api_v1_connection__connection_key__dataset__dataset_key__get",
+        "deprecated": true,
         "security": [
           {
             "OAuth2ClientCredentialsBearer": [
@@ -5672,40 +5256,6 @@
             }
           }
         }
-      }
-    },
-    "/api/v1/datasets/clean": {
-      "get": {
-        "tags": [
-          "Dataset Configs"
-        ],
-        "summary": "Clean Datasets",
-        "description": "Clean up names of datasets and upsert them.",
-        "operationId": "clean_datasets_api_v1_datasets_clean_get",
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "items": {
-                    "$ref": "#/components/schemas/Dataset"
-                  },
-                  "type": "array",
-                  "title": "Response Clean Datasets Api V1 Datasets Clean Get"
-                }
-              }
-            }
-          }
-        },
-        "deprecated": true,
-        "security": [
-          {
-            "OAuth2ClientCredentialsBearer": [
-              "dataset:read"
-            ]
-          }
-        ]
       }
     },
     "/api/v1/connection/{connection_key}/dataset/{dataset_key}/inputs": {
@@ -10278,6 +9828,60 @@
         }
       }
     },
+    "/api/v1/privacy-request/{privacy_request_id}/logs": {
+      "get": {
+        "tags": [
+          "Privacy Requests"
+        ],
+        "summary": "Get Test Privacy Request Logs",
+        "description": "Get logs for a test privacy request.",
+        "operationId": "get_test_privacy_request_logs_api_v1_privacy_request__privacy_request_id__logs_get",
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "privacy-request-access-results:read"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "name": "privacy_request_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Privacy Request Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/LogEntry"
+                  },
+                  "title": "Response Get Test Privacy Request Logs Api V1 Privacy Request  Privacy Request Id  Logs Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/id-verification/config": {
       "get": {
         "tags": [
@@ -13667,6 +13271,441 @@
         }
       }
     },
+    "/api/v1/dataset": {
+      "post": {
+        "tags": [
+          "Dataset"
+        ],
+        "summary": "Create Dataset",
+        "description": "Create a new dataset",
+        "operationId": "Create_dataset_api_v1_dataset_post",
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "ctl_dataset:create"
+            ]
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Dataset"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Dataset"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Dataset"
+        ],
+        "summary": "Update Dataset",
+        "description": "Update an existing dataset",
+        "operationId": "Update_dataset_api_v1_dataset_put",
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "ctl_dataset:update"
+            ]
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Dataset"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Dataset"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Dataset"
+        ],
+        "summary": "List Datasets (Optionally Paginated)",
+        "description": "Get a list of all of the Datasets.\nIf any pagination parameters (size or page) are provided, then the response will be paginated.\nOtherwise all Datasets will be returned (this may be a slow operation if there are many datasets,\nso using the pagination parameters is recommended).\nProvided filters (search, data_categories, exclude_saas_datasets, only_unlinked_datasets) will be applied,\nreturning only the datasets that match ALL of the filters.",
+        "operationId": "List_datasets__optionally_paginated__api_v1_dataset_get",
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "ctl_dataset:read"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "name": "size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "maximum": 100,
+                  "minimum": 1
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Size"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Page"
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Search"
+            }
+          },
+          {
+            "name": "data_categories",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Data Categories"
+            }
+          },
+          {
+            "name": "exclude_saas_datasets",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": false,
+              "title": "Exclude Saas Datasets"
+            }
+          },
+          {
+            "name": "only_unlinked_datasets",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": false,
+              "title": "Only Unlinked Datasets"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/Page_Dataset_"
+                    },
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Dataset"
+                      }
+                    }
+                  ],
+                  "title": "Response List Datasets  Optionally Paginated  Api V1 Dataset Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/dataset/{fides_key}": {
+      "get": {
+        "tags": [
+          "Dataset"
+        ],
+        "summary": "Get Dataset",
+        "description": "Get a single dataset by fides key",
+        "operationId": "Get_dataset_api_v1_dataset__fides_key__get",
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "ctl_dataset:read"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "name": "fides_key",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Fides Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Dataset"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Dataset"
+        ],
+        "summary": "Delete Dataset",
+        "description": "Delete a dataset by fides key",
+        "operationId": "Delete_dataset_api_v1_dataset__fides_key__delete",
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "ctl_dataset:delete"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "name": "fides_key",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Fides Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/dataset/upsert": {
+      "post": {
+        "tags": [
+          "Dataset"
+        ],
+        "summary": "Upsert Datasets",
+        "description": "For any dataset in `datasets` that already exists in the database,\nupdate the dataset by its `fides_key`. Otherwise, create a new dataset.\n\nResponds with a `201 Created` if even a single dataset in `datasets`\ndid not previously exist. Otherwise, responds with a `200 OK`.",
+        "operationId": "upsert_datasets_api_v1_dataset_upsert_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "items": {
+                  "$ref": "#/components/schemas/Dataset"
+                },
+                "type": "array",
+                "title": "Datasets"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "title": "Response Upsert Datasets Api V1 Dataset Upsert Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "ctl_dataset:create",
+              "ctl_dataset:update"
+            ]
+          }
+        ]
+      }
+    },
+    "/api/v1/dataset/clean": {
+      "get": {
+        "tags": [
+          "Dataset"
+        ],
+        "summary": "Clean Datasets",
+        "description": "Clean up names of datasets and upsert them.",
+        "operationId": "clean_datasets_api_v1_dataset_clean_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/Dataset"
+                  },
+                  "type": "array",
+                  "title": "Response Clean Datasets Api V1 Dataset Clean Get"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": true,
+        "security": [
+          {
+            "OAuth2ClientCredentialsBearer": [
+              "ctl_dataset:read"
+            ]
+          }
+        ]
+      }
+    },
     "/": {
       "get": {
         "tags": [
@@ -15353,7 +15392,8 @@
           "scylla",
           "snowflake",
           "sovrn",
-          "timescale"
+          "timescale",
+          "website"
         ],
         "title": "ConnectionType",
         "description": "Supported types to which we can connect Fides."
@@ -16003,6 +16043,9 @@
                 "$ref": "#/components/schemas/TimescaleDocsSchema"
               },
               {
+                "$ref": "#/components/schemas/WebsiteSchema"
+              },
+              {
                 "type": "null"
               }
             ],
@@ -16337,9 +16380,6 @@
           }
         },
         "type": "object",
-        "required": [
-          "description"
-        ],
         "title": "DataCategoryCreateOrUpdate"
       },
       "DataFlow": {
@@ -16655,9 +16695,6 @@
           }
         },
         "type": "object",
-        "required": [
-          "description"
-        ],
         "title": "DataSubjectCreateOrUpdate"
       },
       "DataSubjectRights": {
@@ -16968,9 +17005,6 @@
           }
         },
         "type": "object",
-        "required": [
-          "description"
-        ],
         "title": "DataUseCreateOrUpdate"
       },
       "DatabaseConfig": {
@@ -18892,6 +18926,35 @@
         ],
         "title": "LegalBasisForProfilingEnum",
         "description": "The model for describing the legal basis under which profiling is performed"
+      },
+      "LogEntry": {
+        "properties": {
+          "timestamp": {
+            "type": "string",
+            "title": "Timestamp"
+          },
+          "level": {
+            "type": "string",
+            "title": "Level"
+          },
+          "module_info": {
+            "type": "string",
+            "title": "Module Info"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "timestamp",
+          "level",
+          "module_info",
+          "message"
+        ],
+        "title": "LogEntry",
+        "description": "Schema representing a single log entry"
       },
       "MSSQLDocsSchema": {
         "properties": {
@@ -24696,6 +24759,9 @@
               },
               {
                 "$ref": "#/components/schemas/TimescaleDocsSchema"
+              },
+              {
+                "$ref": "#/components/schemas/WebsiteSchema"
               }
             ],
             "title": "Secrets"
@@ -26281,7 +26347,8 @@
           "database",
           "email",
           "manual",
-          "saas"
+          "saas",
+          "website"
         ],
         "title": "SystemType"
       },
@@ -26885,7 +26952,14 @@
             "$ref": "#/components/schemas/Dataset"
           },
           "traversal_details": {
-            "$ref": "#/components/schemas/DatasetTraversalDetails"
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DatasetTraversalDetails"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "type": "object",
@@ -27107,6 +27181,22 @@
         ],
         "title": "WebhookOrder",
         "description": "Schema for displaying a minimal amount of information about the webhook and its order"
+      },
+      "WebsiteSchema": {
+        "properties": {
+          "url": {
+            "type": "string",
+            "minLength": 1,
+            "format": "uri",
+            "title": "Url"
+          }
+        },
+        "type": "object",
+        "required": [
+          "url"
+        ],
+        "title": "WebsiteSchema",
+        "description": "Schema to validate the secrets needed for a generic website connector"
       },
       "WorkerHealthCheck": {
         "properties": {
