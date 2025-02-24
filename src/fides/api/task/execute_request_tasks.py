@@ -260,54 +260,58 @@ def run_access_node(
     """Run an individual task in the access graph for DSR 3.0 and queue downstream nodes
     upon completion if applicable"""
 
-    with self.get_new_session() as session:
-        privacy_request, request_task, upstream_results = (
-            run_prerequisite_task_checks(
-                session, privacy_request_id, privacy_request_task_id
+    try:
+        with self.get_new_session() as session:
+            privacy_request, request_task, upstream_results = (
+                run_prerequisite_task_checks(
+                    session, privacy_request_id, privacy_request_task_id
+                )
             )
-        )
-        with logger.contextualize(
-            privacy_request_source=(
-                privacy_request.source.value if privacy_request.source else None
-            )
-        ):
-            log_task_starting(request_task)
+            with logger.contextualize(
+                privacy_request_source=(
+                    privacy_request.source.value if privacy_request.source else None
+                )
+            ):
+                log_task_starting(request_task)
 
-            if can_run_task_body(request_task):
-                # Build GraphTask resource to facilitate execution
-                with TaskResources(
-                    privacy_request,
-                    privacy_request.policy,
-                    session.query(ConnectionConfig).all(),
-                    request_task,
-                    session,
-                ) as resources:
-                    graph_task: GraphTask = create_graph_task(
-                        session, request_task, resources
-                    )
-                    # Currently, upstream tasks and "input keys" (which are built by data dependencies)
-                    # are the same, but they may not be the same in the future.
-                    ordered_upstream_tasks: List[Optional[RequestTask]] = (
-                        _order_tasks_by_input_key(
-                            graph_task.execution_node.input_keys, upstream_results
+                if can_run_task_body(request_task):
+                    # Build GraphTask resource to facilitate execution
+                    with TaskResources(
+                        privacy_request,
+                        privacy_request.policy,
+                        session.query(ConnectionConfig).all(),
+                        request_task,
+                        session,
+                    ) as resources:
+                        graph_task: GraphTask = create_graph_task(
+                            session, request_task, resources
                         )
-                    )
-                    # Pass in access data dependencies in the same order as the input keys.
-                    # If we don't have access data for an upstream node, pass in an empty list
-                    upstream_access_data: List[List[Row]] = [
-                        upstream.get_access_data() if upstream else []
-                        for upstream in ordered_upstream_tasks
-                    ]
-                    # Run the main access function
-                    graph_task.access_request(*upstream_access_data)
+                        # Currently, upstream tasks and "input keys" (which are built by data dependencies)
+                        # are the same, but they may not be the same in the future.
+                        ordered_upstream_tasks: List[Optional[RequestTask]] = (
+                            _order_tasks_by_input_key(
+                                graph_task.execution_node.input_keys, upstream_results
+                            )
+                        )
+                        # Pass in access data dependencies in the same order as the input keys.
+                        # If we don't have access data for an upstream node, pass in an empty list
+                        upstream_access_data: List[List[Row]] = [
+                            upstream.get_access_data() if upstream else []
+                            for upstream in ordered_upstream_tasks
+                        ]
+                        # Run the main access function
+                        graph_task.access_request(*upstream_access_data)
 
-    queue_downstream_tasks_with_retries(
-        self,
-        privacy_request_id,
-        privacy_request_task_id,
-        CurrentStep.upload_access,
-        privacy_request_proceed,
-    )
+        queue_downstream_tasks_with_retries(
+            self,
+            privacy_request_id,
+            privacy_request_task_id,
+            CurrentStep.upload_access,
+            privacy_request_proceed,
+        )
+    except Exception as e:
+        logger.error(f"Error in run_access_node: {e}")
+        raise
 
 
 @celery_app.task(base=DatabaseTask, bind=True)
