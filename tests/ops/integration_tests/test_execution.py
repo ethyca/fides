@@ -17,12 +17,12 @@ from fides.api.models.connectionconfig import (
     ConnectionType,
 )
 from fides.api.models.datasetconfig import convert_dataset_to_graph
-from fides.api.models.policy import CurrentStep
 from fides.api.models.privacy_request import (
     CheckpointActionRequired,
     ExecutionLog,
     PrivacyRequest,
 )
+from fides.api.schemas.policy import CurrentStep
 from fides.api.task.graph_task import get_cached_data_for_erasures
 from fides.config import CONFIG
 from tests.fixtures.application_fixtures import integration_secrets
@@ -400,13 +400,17 @@ class TestDeleteCollection:
             run_privacy_request_task,
             data,
         )
+
+        # DSR 3.0 has an extra Dataset reference validation from re-entering the run_privacy_request function
+        expected_log_count = 25 if dsr_version == "use_dsr_3_0" else 24
+
         assert pr.get_results() != {}
         logs = get_sorted_execution_logs(db, pr)
-        assert len(logs) == 23
+        assert len(logs) == expected_log_count
 
         read_connection_config.delete(db)
         logs = get_sorted_execution_logs(db, pr)
-        assert len(logs) == 23
+        assert len(logs) == expected_log_count
 
 
 @pytest.mark.integration
@@ -744,14 +748,18 @@ class TestSkipCollectionDueToDisabledConnectionConfig:
             run_privacy_request_task,
             data,
         )
+
+        # DSR 3.0 has an extra Dataset reference validation from re-entering the run_privacy_request function
+        expected_log_count = 25 if dsr_version == "use_dsr_3_0" else 24
+
         assert pr.get_results() != {}
         logs = get_sorted_execution_logs(db, pr)
-        assert len(logs) == 23
+        assert len(logs) == expected_log_count
 
         read_connection_config.disabled = True
         read_connection_config.save(db)
         logs = get_sorted_execution_logs(db, pr)
-        assert len(logs) == 23
+        assert len(logs) == expected_log_count
 
 
 @pytest.mark.integration

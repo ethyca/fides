@@ -13,11 +13,11 @@ from fides.api.models.privacy_request import (
     Consent,
     ConsentRequest,
     CustomPrivacyRequestField,
-    PrivacyRequestSource,
     PrivacyRequestStatus,
     ProvidedIdentity,
 )
 from fides.api.schemas.messaging.messaging import MessagingServiceType
+from fides.api.schemas.privacy_request import PrivacyRequestSource
 from fides.common.api.scope_registry import CONNECTION_READ, CONSENT_READ
 from fides.common.api.v1.urn_registry import (
     CONSENT_REQUEST,
@@ -869,7 +869,7 @@ class TestSaveConsent:
         "subject_identity_verification_required", "automatically_approved"
     )
     @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
     )
     def test_verify_then_set_consent_preferences(
         self,
@@ -1024,7 +1024,7 @@ class TestSaveConsent:
     )
     @patch("fides.api.models.privacy_request.ConsentRequest.verify_identity")
     @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
     )
     def test_set_consent_consent_preferences(
         self,
@@ -1129,7 +1129,7 @@ class TestSaveConsent:
     )
     @patch("fides.api.models.privacy_request.ConsentRequest.verify_identity")
     @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
     )
     def test_set_consent_preferences_privacy_request_pending_when_id_verification_required(
         self,

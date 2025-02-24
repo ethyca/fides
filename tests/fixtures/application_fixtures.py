@@ -61,8 +61,6 @@ from fides.api.models.privacy_request import (
     Consent,
     ConsentRequest,
     PrivacyRequest,
-    PrivacyRequestSource,
-    PrivacyRequestStatus,
     ProvidedIdentity,
     RequestTask,
 )
@@ -84,8 +82,8 @@ from fides.api.schemas.messaging.messaging import (
     MessagingServiceDetails,
     MessagingServiceSecrets,
     MessagingServiceType,
-    MessagingTemplateWithPropertiesDetail,
 )
+from fides.api.schemas.privacy_request import PrivacyRequestSource, PrivacyRequestStatus
 from fides.api.schemas.property import Property as PropertySchema
 from fides.api.schemas.property import PropertyType
 from fides.api.schemas.redis_cache import (
