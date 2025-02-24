@@ -343,7 +343,7 @@ def initiate_interrupted_task_requeue_poll() -> None:
         id=INTERRUPTED_TASK_REQUEUE_POLL,
         coalesce=True,
         replace_existing=True,
-        seconds=10,
+        seconds=CONFIG.execution.state_polling_interval,
     )
 
 
