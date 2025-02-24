@@ -170,3 +170,18 @@ def test_non_nullable_fields_attachment_references(db, attachment_reference_with
     with pytest.raises(IntegrityError):
         db.commit()
     db.rollback()
+
+
+def test_attachment_reference_unique_ids(db, attachment, attachment_reference):
+    """Test that the unique constraint on the attachment/reference id is enforced."""
+    attachment_setup(db, attachment, attachment_reference)
+
+    attachment_reference = AttachmentReference(
+        attachment_id="attachment_1",
+        reference_id="ref_1",
+        reference_type=AttachmentReferenceType.privacy_request,
+    )
+    db.add(attachment_reference)
+    with pytest.raises(IntegrityError):
+        db.commit()
+    db.rollback()
