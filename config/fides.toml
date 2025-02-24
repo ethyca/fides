@@ -36,7 +36,7 @@ task_always_eager = true # boolean
 
 # A fully anonymized unique identifier that is automatically generated
 # by the application. Used for anonymous analytics when opted-in.
-analytics_id = "92416e74ecdedd0d48c6ae53cd0c7d18" # string
+analytics_id = "7c30c4333fb8b0a9c5c470f3bf52a689" # string
 
 # When set to True, disables functionality that requires making calls
 # to a Fides webserver.
@@ -194,6 +194,9 @@ state_polling_interval = 30 # integer
 
 # Temporary flag to switch to using DSR 3.0 to process your tasks.
 use_dsr_3_0 = false # boolean
+
+# Whether fuzzy search is enabled for privacy request lookups.
+fuzzy_search_enabled = true # boolean
 
 #-------------#
 #-- LOGGING --#
