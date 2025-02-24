@@ -10,7 +10,7 @@ import { ConnectionCategory } from "~/features/integrations/ConnectionCategory";
 import { AccessLevel, ConnectionType } from "~/types/api";
 
 export const MYSQL_PLACEHOLDER = {
-  name: "MySQL Server",
+  name: "MySQL",
   key: "mysql_placeholder",
   connection_type: ConnectionType.MYSQL,
   access: AccessLevel.READ,
