@@ -343,9 +343,9 @@ def initiate_interrupted_task_requeue_poll() -> None:
         trigger="interval",
         kwargs={},
         id=INTERRUPTED_TASK_REQUEUE_POLL,
-        coalesce=True,  # Only run one instance at a time
+        coalesce=True,
         replace_existing=True,
-        seconds=10,  # Reuse same interval as status change polling
+        seconds=CONFIG.execution.state_polling_interval,
     )
 
 @celery_app.task(base=DatabaseTask, bind=True)
