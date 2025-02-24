@@ -193,14 +193,18 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
     def cookies(self) -> List[Asset]:
         """Return relevant assets of type 'cookie' (via the data use)"""
         db = Session.object_session(self)
-        return (
-            db.query(Asset).filter(
-                Asset.asset_type == "Cookie",
-                or_(
-                    *[Asset.data_uses.any(notice_use) for notice_use in self.data_uses]
-                ),
-            )
-        ).all()
+        or_queries = [
+            f"array_to_string(data_uses, ',') ILIKE '%{data_use}%'"
+            for data_use in self.data_uses
+        ]
+
+        query = db.query(Asset).filter(
+            Asset.asset_type == "Cookie",
+            or_(*[text(query) for query in or_queries]),
+        )
+        print(f"Query: {query}")
+
+        return query.all()
 
     @property
     def calculated_systems_applicable(self) -> bool:
