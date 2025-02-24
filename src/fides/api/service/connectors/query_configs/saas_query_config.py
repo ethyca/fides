@@ -28,6 +28,10 @@ from fides.api.schemas.saas.saas_config import (
 )
 from fides.api.schemas.saas.shared_schemas import SaaSRequestParams
 from fides.api.service.connectors.query_configs.query_config import QueryConfig
+from fides.api.task.refine_target_path import (
+    build_refined_target_paths,
+    join_detailed_path,
+)
 from fides.api.util import saas_util
 from fides.api.util.collection_util import Row, merge_dicts
 from fides.api.util.saas_util import (
@@ -460,11 +464,14 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
                 self.request_task
             )
             param_values[REPLY_TO] = V1_URL_PREFIX + REQUEST_TASK_CALLBACK
-
         # remove any row values for fields marked as read-only, these will be omitted from all update maps
         for field_path, field in self.field_map().items():
             if field.read_only:
-                pydash.unset(row, field_path.string_path)
+                for path in build_refined_target_paths(
+                    row, query_paths={field_path: None}
+                ):
+                    detailed_path = join_detailed_path(path)
+                    pydash.unset(row, detailed_path)
 
         # mask row values
         update_value_map: Dict[str, Any] = self.update_value_map(

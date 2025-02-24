@@ -16,14 +16,7 @@ const DiscoveredSystemDataUseCell = ({
     key: use,
   }));
 
-  return (
-    <BadgeCellExpandable
-      values={cellValues}
-      bgColor="white"
-      borderWidth="1px"
-      borderColor="gray.200"
-    />
-  );
+  return <BadgeCellExpandable values={cellValues} />;
 };
 
 export default DiscoveredSystemDataUseCell;
