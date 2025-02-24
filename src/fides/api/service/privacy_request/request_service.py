@@ -427,6 +427,7 @@ def requeue_interrupted_tasks(self: DatabaseTask) -> None:
                         # If the task ID is not cached, we can't check if it's running
                         if not subtask_id:
                             continue
+
                         if (
                             subtask_id not in queued_tasks_ids
                             and not celery_tasks_in_flight([subtask_id])
