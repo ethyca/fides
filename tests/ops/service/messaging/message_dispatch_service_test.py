@@ -573,6 +573,28 @@ class TestMessageDispatchService:
             "+19198675309",
         )
 
+    @mock.patch(
+        "fides.api.service.messaging.message_dispatch_service._aws_ses_dispatcher"
+    )
+    def test_email_dispatch_aws_ses_email_test_message(
+        self, mock_aws_ses_dispatcher, db, messaging_config_aws_ses
+    ):
+        dispatch_message(
+            db=db,
+            action_type=MessagingActionType.TEST_MESSAGE,
+            to_identity=Identity(email="test@email.com"),
+            service_type=MessagingServiceType.aws_ses.value,
+        )
+        body = '<!DOCTYPE html>\n<html lang="en">\n  <head>\n    <meta charset="UTF-8" />\n    <title>Fides Test message</title>\n  </head>\n  <body>\n    <main>\n      <p>This is a test message from Fides.</p>\n    </main>\n  </body>\n</html>'
+        mock_aws_ses_dispatcher.assert_called_with(
+            messaging_config_aws_ses,
+            EmailForActionType(
+                subject="Test message from fides",
+                body=body,
+            ),
+            "test@email.com",
+        )
+
     def test_fidesops_email_model_validateect(self):
         FidesopsMessage.model_validate(
             {
@@ -659,7 +681,7 @@ class TestMessageDispatchService:
         "fides.api.service.messaging.message_dispatch_service._twilio_sms_dispatcher"
     )
     def test_sms_dispatch_twilio_config_no_secrets(
-        self, mock_mailgun_dispatcher: Mock, db: Session
+        self, mock_twilio_sms_dispatcher: Mock, db: Session
     ) -> None:
         messaging_config = MessagingConfig.create(
             db=db,
@@ -685,7 +707,7 @@ class TestMessageDispatchService:
             == "Messaging secrets not found for config with key: my_twilio_sms_config"
         )
 
-        mock_mailgun_dispatcher.assert_not_called()
+        mock_twilio_sms_dispatcher.assert_not_called()
 
         messaging_config.delete(db)
 
@@ -693,7 +715,7 @@ class TestMessageDispatchService:
         "fides.api.service.messaging.message_dispatch_service._twilio_sms_dispatcher"
     )
     def test_dispatch_no_identity(
-        self, mock_mailgun_dispatcher: Mock, db: Session
+        self, mock_twilio_sms_dispatcher: Mock, db: Session
     ) -> None:
         MessagingConfig.create(
             db=db,
@@ -717,7 +739,107 @@ class TestMessageDispatchService:
 
         assert "No identity supplied" in exc.value.args[0]
 
+        mock_twilio_sms_dispatcher.assert_not_called()
+
+    @mock.patch(
+        "fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher"
+    )
+    def test_email_dispatch_mailgun_no_identity_for_type(
+        self,
+        mock_mailgun_dispatcher: Mock,
+        db: Session,
+        messaging_config,
+    ) -> None:
+        with pytest.raises(MessageDispatchException) as err:
+            dispatch_message(
+                db=db,
+                action_type=MessagingActionType.SUBJECT_IDENTITY_VERIFICATION,
+                to_identity=Identity(
+                    **{"phone_number": "+12312341231"}
+                ),  # Identity only has phone number
+                service_type=MessagingServiceType.mailgun.value,
+                message_body_params=SubjectIdentityVerificationBodyParams(
+                    verification_code="2348", verification_code_ttl_seconds=600
+                ),
+            )
+
+        assert "No email identity supplied." in str(err.value)
         mock_mailgun_dispatcher.assert_not_called()
+
+    @mock.patch(
+        "fides.api.service.messaging.message_dispatch_service._twilio_sms_dispatcher"
+    )
+    def test_email_dispatch_twilio_sms_no_identity_for_type(
+        self,
+        mock_twilio_sms_dispatcher: Mock,
+        db: Session,
+        messaging_config_twilio_sms,
+    ) -> None:
+        with pytest.raises(MessageDispatchException) as err:
+            dispatch_message(
+                db=db,
+                action_type=MessagingActionType.SUBJECT_IDENTITY_VERIFICATION,
+                to_identity=Identity(
+                    **{"email": "test@test.com"}
+                ),  # Identity only has email
+                service_type=MessagingServiceType.twilio_text.value,
+                message_body_params=SubjectIdentityVerificationBodyParams(
+                    verification_code="2348", verification_code_ttl_seconds=600
+                ),
+            )
+
+        assert "No phone identity supplied." in str(err.value)
+        mock_twilio_sms_dispatcher.assert_not_called()
+
+    @mock.patch(
+        "fides.api.service.messaging.message_dispatch_service._twilio_email_dispatcher"
+    )
+    def test_email_dispatch_twilio_email_no_identity_for_type(
+        self,
+        mock_twilio_email_dispatcher: Mock,
+        db: Session,
+        messaging_config_twilio_email,
+    ) -> None:
+        with pytest.raises(MessageDispatchException) as err:
+            dispatch_message(
+                db=db,
+                action_type=MessagingActionType.SUBJECT_IDENTITY_VERIFICATION,
+                to_identity=Identity(
+                    **{"phone_number": "+12312341231"}
+                ),  # Identity only has phone
+                service_type=MessagingServiceType.twilio_email.value,
+                message_body_params=SubjectIdentityVerificationBodyParams(
+                    verification_code="2348", verification_code_ttl_seconds=600
+                ),
+            )
+
+        assert "No email identity supplied." in str(err.value)
+        mock_twilio_email_dispatcher.assert_not_called()
+
+    @mock.patch(
+        "fides.api.service.messaging.message_dispatch_service._aws_ses_dispatcher"
+    )
+    def test_email_dispatch_aws_ses_no_identity_for_type(
+        self,
+        mock_aws_ses_dispatcher: Mock,
+        db: Session,
+        messaging_config_aws_ses,
+    ) -> None:
+        with pytest.raises(MessageDispatchException) as err:
+            dispatch_message(
+                db=db,
+                action_type=MessagingActionType.SUBJECT_IDENTITY_VERIFICATION,
+                to_identity=Identity(
+                    **{"phone_number": "+12312341231"}
+                ),  # Identity only has phone
+                service_type=MessagingServiceType.aws_ses.value,
+                message_body_params=SubjectIdentityVerificationBodyParams(
+                    verification_code="2348", verification_code_ttl_seconds=600
+                ),
+            )
+
+        assert "No email identity supplied." in str(err.value)
+        mock_aws_ses_dispatcher.assert_not_called()
 
     @mock.patch(
         "fides.api.service.messaging.message_dispatch_service._twilio_sms_dispatcher"
@@ -890,12 +1012,6 @@ class TestMessageDispatchService:
 
 
 class TestTwilioEmailDispatcher:
-    def test_dispatch_no_to(self, messaging_config_twilio_email):
-        with pytest.raises(MessageDispatchException) as exc:
-            _twilio_email_dispatcher(messaging_config_twilio_email, "test", None)
-
-        assert "No email identity" in str(exc.value)
-
     def test_dispatch_no_secrets(self, messaging_config_twilio_email):
         messaging_config_twilio_email.secrets = None
         with pytest.raises(MessageDispatchException) as exc:
@@ -905,7 +1021,7 @@ class TestTwilioEmailDispatcher:
                 "test@email.com",
             )
 
-        assert "No twilio email config details or secrets" in str(exc.value)
+        assert "No Twilio email config details or secrets" in str(exc.value)
 
     def test_template_found(self, test_template_response_body):
         template_test = _get_template_id_if_exists(
@@ -941,18 +1057,12 @@ class TestTwilioEmailDispatcher:
 
 
 class TestTwilioSmsDispatcher:
-    def test_dispatch_no_to(self, messaging_config_twilio_sms):
-        with pytest.raises(MessageDispatchException) as exc:
-            _twilio_sms_dispatcher(messaging_config_twilio_sms, "test", None)
-
-        assert "No phone identity" in str(exc.value)
-
     def test_dispatch_no_secrets(self, messaging_config_twilio_sms):
         messaging_config_twilio_sms.secrets = None
         with pytest.raises(MessageDispatchException) as exc:
             _twilio_sms_dispatcher(messaging_config_twilio_sms, "test", "+9198675309")
 
-        assert "No config secrets" in str(exc.value)
+        assert "No Twilio SMS config secrets supplied" in str(exc.value)
 
     def test_dispatch_no_sender(self, messaging_config_twilio_sms):
         messaging_config_twilio_sms.secrets[

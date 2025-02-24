@@ -213,3 +213,31 @@ def messaging_config_twilio_sms(db: Session) -> Generator:
     )
     yield messaging_config
     messaging_config.delete(db)
+
+
+@pytest.fixture(scope="function")
+def messaging_config_aws_ses(db: Session) -> Generator:
+    name = str(uuid4())
+    messaging_config = MessagingConfig.create(
+        db=db,
+        data={
+            "name": name,
+            "key": "my_aws_ses_config",
+            "service_type": MessagingServiceType.aws_ses.value,
+            "details": {
+                MessagingServiceDetails.AWS_REGION.value: "us-west-2",
+                MessagingServiceDetails.DOMAIN.value: "some.domain.com",
+                MessagingServiceDetails.EMAIL_FROM.value: "test@test.com",
+            },
+        },
+    )
+    messaging_config.set_secrets(
+        db=db,
+        messaging_secrets={
+            MessagingServiceSecrets.AWS_AUTH_METHOD.value: "secret_keys",
+            MessagingServiceSecrets.AWS_ACCESS_KEY_ID.value: "1234",
+            MessagingServiceSecrets.AWS_SECRET_ACCESS_KEY.value: "1234",
+        },
+    )
+    yield messaging_config
+    messaging_config.delete(db)

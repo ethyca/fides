@@ -486,9 +486,19 @@ def _get_dispatcher_from_config_type(
 def validate_config(
     messaging_config: MessagingConfig,
     config_name: str,
+    validate_details: Optional[bool] = True,
 ) -> None:
-    if not messaging_config.details or not messaging_config.secrets:
-        error_message = f"No {config_name} config details or secrets supplied."
+    """
+    Validates that the messaging config has the required details and secrets.
+    """
+    condition = (
+        not messaging_config.details or not messaging_config.secrets
+        if validate_details
+        else not messaging_config.secrets
+    )
+
+    if condition:
+        error_message = f"No {config_name} config {'details or secrets' if validate_details else 'secrets'} supplied."
         logger.error(f"Message failed to send. {error_message}")
         raise MessageDispatchException(error_message)
 
@@ -681,7 +691,7 @@ def _twilio_sms_dispatcher(
     to: str,
 ) -> None:
     """Dispatches SMS using Twilio"""
-    validate_config(messaging_config, "Twilio SMS")
+    validate_config(messaging_config, "Twilio SMS", validate_details=False)
 
     account_sid = messaging_config.secrets[
         MessagingServiceSecrets.TWILIO_ACCOUNT_SID.value
