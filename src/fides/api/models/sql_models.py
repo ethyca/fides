@@ -45,6 +45,8 @@ from typing_extensions import Protocol, runtime_checkable
 from fides.api.common_exceptions import KeyOrNameAlreadyExists
 from fides.api.db.base_class import Base
 from fides.api.db.base_class import FidesBase as FideslibBase
+
+# from fides.api.models.audit_log import AuditLog, AuditLogAction
 from fides.api.models.client import ClientDetail
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.fides_user_permissions import FidesUserPermissions
@@ -905,69 +907,3 @@ def get_system_data_uses(db: Session, include_parents: bool) -> Set:
         else:
             data_uses.add(data_use)
     return data_uses
-
-
-# Attachment
-
-
-class AttachmentType(str, EnumType):
-    """
-    Enum for attachment types. Indicates attachment usage.
-    """
-
-    internal_use_only = "internal_use_only"
-    include_with_access_package = "include_with_access_package"
-
-
-class AttachmentReferenceType(str, EnumType):
-    """
-    Enum for attachment reference types. Indicates where attachment is referenced.
-    """
-
-    manual_step = "manual_step"
-    privacy_request = "privacy_request"
-    comment = "comment"
-
-
-class AttachmentReference(Base):
-    """
-    Stores information about an Attachment and any other element which may reference that attachment.
-    """
-
-    __tablename__ = "attachment_reference"
-
-    attachment_id = Column(String, ForeignKey("attachment.id"), nullable=False)
-    reference_id = Column(String, nullable=False)
-    reference_type = Column(EnumColumn(AttachmentReferenceType), nullable=False)
-
-    __table_args__ = (
-        UniqueConstraint(
-            "attachment_id", "reference_id", name="_attachment_reference_uc"
-        ),
-    )
-
-    attachment = relationship(
-        "Attachment",
-        back_populates="references",
-        uselist=False,
-    )
-
-
-class Attachment(Base):
-    """
-    Stores information about an Attachment.
-    """
-
-    __tablename__ = "attachment"
-
-    user_id = Column(String, ForeignKey("fidesuser.id"), nullable=False)
-    file_name = Column(String, nullable=False)
-    storage_url = Column(String, nullable=False)
-    attachment_type = Column(EnumColumn(AttachmentType), nullable=False)
-
-    references = relationship(
-        "AttachmentReference",
-        back_populates="attachment",
-        cascade="all, delete",
-        uselist=True,
-    )

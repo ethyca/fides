@@ -25,7 +25,6 @@ def upgrade():
         sa.Column("id", sa.String(length=255), nullable=False),
         sa.Column("user_id", sa.String(), nullable=False),
         sa.Column("file_name", sa.String(), nullable=False),
-        sa.Column("storage_url", sa.String(), nullable=False),
         sa.Column("attachment_type", sa.String(), nullable=False),
         sa.Column(
             "created_at",
