@@ -85,7 +85,10 @@ const useDetectionResultColumns = ({
           />
         ),
         header: "Actions",
-        size: 180,
+        meta: {
+          width: "auto",
+          disableRowClick: true,
+        },
       }),
     ];
     return { columns };
@@ -139,6 +142,10 @@ const useDetectionResultColumns = ({
           <DetectionItemActionsCell resource={props.row.original} />
         ),
         header: "Actions",
+        meta: {
+          width: "auto",
+          disableRowClick: true,
+        },
       }),
     ];
     return { columns };
@@ -197,6 +204,10 @@ const useDetectionResultColumns = ({
           <DetectionItemActionsCell resource={props.row.original} />
         ),
         header: "Actions",
+        meta: {
+          width: "auto",
+          disableRowClick: true,
+        },
       }),
     ];
     return { columns };

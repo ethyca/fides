@@ -76,6 +76,7 @@ const useDiscoveryResultColumns = ({
         header: "Actions",
         meta: {
           width: "auto",
+          disableRowClick: true,
         },
       }),
     ];
@@ -141,6 +142,7 @@ const useDiscoveryResultColumns = ({
         header: "Actions",
         meta: {
           width: "auto",
+          disableRowClick: true,
         },
       }),
     ];
@@ -201,6 +203,7 @@ const useDiscoveryResultColumns = ({
         header: "Actions",
         meta: {
           width: "auto",
+          disableRowClick: true,
         },
       }),
     ];
