@@ -4,9 +4,11 @@
 
 import type { fides__api__schemas__privacy_center_config__CustomPrivacyRequestField } from "./fides__api__schemas__privacy_center_config__CustomPrivacyRequestField";
 import type { IdentityInputs } from "./IdentityInputs";
+import type { PrivacyNoticeRegion } from "./PrivacyNoticeRegion";
 
 export type PrivacyRequestOption = {
-  policy_key: string;
+  locations?: Array<PrivacyNoticeRegion> | "fallback" | null;
+  policy_key?: string | null;
   icon_path: string;
   title: string;
   description: string;

@@ -6,6 +6,7 @@ import {
   BulkPutConnectionConfiguration,
   ConnectionConfigurationResponse,
   CreateConnectionConfigurationWithSecrets,
+  Page_Asset_,
   Page_BasicSystemResponse_,
   System,
   SystemResponse,
@@ -168,6 +169,17 @@ const systemApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: () => ["Datastore Connection", "System"],
     }),
+    getSystemAssets: build.query<
+      Page_Asset_,
+      PaginationQueryParams & { search: string; fides_key: string }
+    >({
+      query: ({ fides_key, ...params }) => ({
+        method: "GET",
+        url: `/plus/system-assets/${fides_key}`,
+        params,
+      }),
+      providesTags: ["System Assets"],
+    }),
   }),
 });
 
@@ -185,6 +197,7 @@ export const {
   useGetSystemConnectionConfigsQuery,
   usePatchSystemConnectionSecretsMutation,
   useLazyGetSystemByFidesKeyQuery,
+  useGetSystemAssetsQuery,
 } = systemApi;
 
 export interface State {

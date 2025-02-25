@@ -26,6 +26,7 @@ import type { ScyllaDocsSchema } from "./ScyllaDocsSchema";
 import type { SnowflakeDocsSchema } from "./SnowflakeDocsSchema";
 import type { SovrnDocsSchema } from "./SovrnDocsSchema";
 import type { TimescaleDocsSchema } from "./TimescaleDocsSchema";
+import type { WebsiteSchema } from "./WebsiteSchema";
 
 export type SaasConnectionTemplateValuesExtended = {
   name?: string | null;
@@ -54,7 +55,8 @@ export type SaasConnectionTemplateValuesExtended = {
     | ScyllaDocsSchema
     | SnowflakeDocsSchema
     | SovrnDocsSchema
-    | TimescaleDocsSchema;
+    | TimescaleDocsSchema
+    | WebsiteSchema;
   instance_key: string;
   enabled_actions: Array<ActionType>;
 };

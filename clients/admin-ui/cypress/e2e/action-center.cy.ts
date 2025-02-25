@@ -1,9 +1,9 @@
 import {
-  stubActionCenter,
   stubPlus,
   stubSystemVendors,
   stubTaxonomyEntities,
   stubVendorList,
+  stubWebsiteMonitor,
 } from "cypress/support/stubs";
 
 import {
@@ -15,7 +15,7 @@ describe("Action center", () => {
   beforeEach(() => {
     cy.login();
     stubPlus(true);
-    stubActionCenter();
+    stubWebsiteMonitor();
   });
 
   describe("disabled web monitor", () => {

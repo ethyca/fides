@@ -6,6 +6,7 @@ import {
   stubSystemVendors,
   stubTaxonomyEntities,
   stubVendorList,
+  stubWebsiteMonitor,
 } from "cypress/support/stubs";
 
 import {
@@ -462,6 +463,20 @@ describe("System management with Plus features", () => {
       cy.location().should((location) => {
         expect(location.pathname).to.eq(INDEX_ROUTE);
       });
+    });
+  });
+
+  describe("asset list", () => {
+    beforeEach(() => {
+      stubWebsiteMonitor();
+      cy.visit(`${SYSTEM_ROUTE}/configure/demo_analytics_system`);
+      cy.wait("@getSystem");
+    });
+
+    it("lists assets in the system assets tab", () => {
+      cy.getByTestId("tab-Assets").click({ force: true });
+      cy.wait("@getSystemAssets");
+      cy.getByTestId("row-0-col-name").should("contain", "ar_debug");
     });
   });
 
