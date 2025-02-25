@@ -42,6 +42,7 @@ class NotificationSettings(FidesSettings):
                 "twilio_text",
                 "twilio_email",
                 "mailchimp_transactional",
+                "aws_ses",
             ]
             value = value.lower()  # force lowercase for safety
 

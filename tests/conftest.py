@@ -62,6 +62,7 @@ from tests.fixtures.integration_fixtures import *
 from tests.fixtures.manual_fixtures import *
 from tests.fixtures.manual_webhook_fixtures import *
 from tests.fixtures.mariadb_fixtures import *
+from tests.fixtures.messaging_fixtures import *
 from tests.fixtures.mongodb_fixtures import *
 from tests.fixtures.mssql_fixtures import *
 from tests.fixtures.mysql_fixtures import *
