@@ -33,9 +33,6 @@ const useSystemAssetColumns = () => {
             label: PRIVACY_NOTICE_REGION_RECORD[location],
             key: location,
           }))}
-          bgColor="white"
-          borderWidth="1px"
-          borderColor="gray.200"
         />
       ),
       header: "Locations",
@@ -56,9 +53,6 @@ const useSystemAssetColumns = () => {
             label: parent,
             key: parent,
           }))}
-          bgColor="white"
-          borderWidth="1px"
-          borderColor="gray.200"
         />
       ),
       header: "Parent",

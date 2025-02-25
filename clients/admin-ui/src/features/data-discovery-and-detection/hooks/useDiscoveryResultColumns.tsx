@@ -9,9 +9,8 @@ import FieldDataTypeCell from "~/features/data-discovery-and-detection/tables/ce
 import ResultStatusBadgeCell from "~/features/data-discovery-and-detection/tables/cells/StagedResourceStatusBadgeCell";
 import { DiscoveryMonitorItem } from "~/features/data-discovery-and-detection/types/DiscoveryMonitorItem";
 import { ResourceChangeType } from "~/features/data-discovery-and-detection/types/ResourceChangeType";
-import { StagedResourceType } from "~/features/data-discovery-and-detection/types/StagedResourceType";
 import findProjectFromUrn from "~/features/data-discovery-and-detection/utils/findProjectFromUrn";
-import { DiffStatus } from "~/types/api";
+import { DiffStatus, StagedResourceTypeValue } from "~/types/api";
 
 import DiscoveryItemActionsCell from "../tables/cells/DiscoveryItemActionsCell";
 import EditCategoryCell from "../tables/cells/EditCategoryCell";
@@ -20,13 +19,13 @@ import ResultStatusCell from "../tables/cells/ResultStatusCell";
 const useDiscoveryResultColumns = ({
   resourceType,
 }: {
-  resourceType: StagedResourceType | undefined;
+  resourceType: StagedResourceTypeValue | undefined;
 }) => {
   const columnHelper = createColumnHelper<DiscoveryMonitorItem>();
 
   const defaultColumns: ColumnDef<DiscoveryMonitorItem, any>[] = [];
 
-  if (resourceType === StagedResourceType.SCHEMA) {
+  if (resourceType === StagedResourceTypeValue.SCHEMA) {
     const columns = [
       columnHelper.accessor((row) => row.name, {
         id: "name",
@@ -82,7 +81,7 @@ const useDiscoveryResultColumns = ({
     return { columns };
   }
 
-  if (resourceType === StagedResourceType.TABLE) {
+  if (resourceType === StagedResourceTypeValue.TABLE) {
     const columns = [
       columnHelper.display({
         id: "select",
@@ -147,7 +146,7 @@ const useDiscoveryResultColumns = ({
     return { columns };
   }
 
-  if (resourceType === StagedResourceType.FIELD) {
+  if (resourceType === StagedResourceTypeValue.FIELD) {
     const columns = [
       columnHelper.accessor((row) => row.name, {
         id: "name",
