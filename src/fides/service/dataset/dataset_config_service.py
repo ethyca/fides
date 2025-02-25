@@ -14,8 +14,7 @@ from fides.api.common_exceptions import (
 )
 from fides.api.graph.config import GraphDataset
 from fides.api.graph.graph import DatasetGraph
-from fides.api.graph.traversal import Traversal
-from fides.api.graph.traversal_node import TraversalNode
+from fides.api.graph.traversal import Traversal, TraversalNode
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.policy import Policy
