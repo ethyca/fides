@@ -372,7 +372,7 @@ const useSystemFormTabs = ({
   if (isPlusEnabled && webMonitor) {
     tabData.push({
       label: "Assets",
-      content: <SystemAssets system={activeSystem} />,
+      content: activeSystem ? <SystemAssets system={activeSystem} /> : null,
       isDisabled: !activeSystem,
     });
   }
