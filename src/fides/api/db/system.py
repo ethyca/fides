@@ -11,14 +11,11 @@ from fastapi import HTTPException
 from fideslang.models import System as SystemSchema
 from fideslang.validation import FidesKey
 from loguru import logger as log
-from sqlalchemy import and_, delete, insert, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
-from sqlalchemy.sql.elements import BinaryExpression
 from starlette.status import HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND
 
 from fides.api.db.crud import create_resource, get_resource, update_resource
-from fides.api.models.asset import Asset
 from fides.api.models.sql_models import (  # type: ignore[attr-defined]
     DataCategory,
     DataSubject,
