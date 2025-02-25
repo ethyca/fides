@@ -10,7 +10,7 @@ from py._path.local import LocalPath
 from sqlalchemy import delete
 from sqlalchemy.exc import InvalidRequestError
 
-from fides.api.db.system import create_system, upsert_cookies
+from fides.api.db.system import create_system, upsert_cookie_assets
 from fides.api.models.sql_models import Cookies, PrivacyDeclaration
 from fides.api.models.sql_models import System as sql_System
 from fides.api.util.data_category import get_data_categories_map
@@ -467,7 +467,7 @@ class TestUpsertCookies:
         """Test adding a cookie at the system level"""
         new_cookies = [{"name": "carrots"}]
 
-        await upsert_cookies(
+        await upsert_cookie_assets(
             async_session_temp,
             new_cookies,
             privacy_declaration=None,
@@ -498,7 +498,7 @@ class TestUpsertCookies:
             test_cookie_system.privacy_declarations, key=lambda x: x.name
         )[1]
 
-        await upsert_cookies(
+        await upsert_cookie_assets(
             async_session_temp,
             new_cookies,
             privacy_declaration,
@@ -535,7 +535,7 @@ class TestUpsertCookies:
         existing_cookie = privacy_declaration.cookies[0]
         assert existing_cookie.name == "strawberry"
 
-        await upsert_cookies(
+        await upsert_cookie_assets(
             async_session_temp,
             new_cookies,
             privacy_declaration,
@@ -562,7 +562,7 @@ class TestUpsertCookies:
         new_cookies = [{"name": "carrots", "path": "first_path/"}]
 
         # Let's add cookie first
-        await upsert_cookies(
+        await upsert_cookie_assets(
             async_session_temp,
             new_cookies,
             privacy_declaration=None,
@@ -577,7 +577,7 @@ class TestUpsertCookies:
         assert new_cookie.path == "first_path/"
 
         # Let's update cookie now
-        await upsert_cookies(
+        await upsert_cookie_assets(
             async_session_temp,
             [{"name": "carrots", "path": "second_path/"}],
             privacy_declaration=None,
@@ -593,7 +593,7 @@ class TestUpsertCookies:
         assert new_cookie.id == updated_cookie.id  # They're the same resource
 
         # Let's delete this cookie
-        await upsert_cookies(
+        await upsert_cookie_assets(
             async_session_temp,
             [],
             privacy_declaration=None,
@@ -620,7 +620,7 @@ class TestUpsertCookies:
         existing_cookie = privacy_declaration.cookies[0]
         assert existing_cookie.name == "strawberry"
 
-        await upsert_cookies(
+        await upsert_cookie_assets(
             async_session_temp,
             new_cookies,
             privacy_declaration,
@@ -652,7 +652,7 @@ class TestUpsertCookies:
         existing_cookie = privacy_declaration.cookies[0]
         assert existing_cookie.name == "strawberry"
 
-        await upsert_cookies(
+        await upsert_cookie_assets(
             async_session_temp,
             new_cookies,
             privacy_declaration,
@@ -698,7 +698,7 @@ class TestUpsertCookies:
     ):
         """Test if a privacy declaration is deleted, its cookie is still linked to the system"""
         with pytest.raises(Exception):
-            await upsert_cookies(
+            await upsert_cookie_assets(
                 async_session_temp,
                 [{"name": "cookie_name"}],
                 privacy_declaration=None,
@@ -710,7 +710,7 @@ class TestUpsertCookies:
     ):
         """Test if a privacy declaration is deleted, its cookie is still linked to the system"""
         with pytest.raises(Exception):
-            await upsert_cookies(
+            await upsert_cookie_assets(
                 async_session_temp,
                 [{"name": "cookie_name"}],
                 privacy_declaration=test_cookie_system.privacy_declarations[0],
