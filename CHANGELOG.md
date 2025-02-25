@@ -24,9 +24,11 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ### Added
 - DB model support for Web Monitoring [#5616](https://github.com/ethyca/fides/pull/5616) https://github.com/ethyca/fides/labels/db-migration
 - Added support for queue-specific Celery workers [#5761](https://github.com/ethyca/fides/pull/5761)
+- Support for location based privacy center actions [#5803](https://github.com/ethyca/fides/pull/5803)
 
 ### Changed
 - Improved dataset validation for namespace metadata and dataset reachability [#5744](https://github.com/ethyca/fides/pull/5744)
+- Privacy Center was updated to use React 19 and leverage Server Components [#5803](https://github.com/ethyca/fides/pull/5803)
 
 ### Docs
 - Removed version pins in LDFLAGS & CFLAGS for local MSSQL builds [#5760](https://github.com/ethyca/fides/pull/5760)
