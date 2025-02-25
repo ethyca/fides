@@ -21,6 +21,7 @@ updates:
         dependency-type: "direct"
       - dependency-name: "@iabgpp*"
         dependency-type: "direct"
+    versioning-strategy: "increase"
   - package-ecosystem: npm
     directory: "/clients/sample-app"
     schedule:
