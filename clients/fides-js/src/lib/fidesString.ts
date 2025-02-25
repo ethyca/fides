@@ -1,5 +1,10 @@
-import { FIDES_SEPARATOR } from "./constants";
-import { VendorSources } from "./vendors";
+import { CmpApi } from "@iabgpp/cmpapi";
+
+import { FIDES_SEPARATOR } from "./tcf/constants";
+import { VendorSources } from "./tcf/vendors";
+
+/** Default GPP string to use when no CmpApi is provided or when it returns no string */
+export const DEFAULT_GPP_STRING = "DBAA";
 
 /**
  * Decodes a Fides string into its component parts.
@@ -59,8 +64,11 @@ export const decodeFidesString = (fidesString: string) => {
  */
 export const idsFromAcString = (acString: string) => {
   const isValidAc = /\d~/;
+  if (!acString) {
+    return [];
+  }
   if (!isValidAc.test(acString)) {
-    fidesDebugger(`Received invalid AC string ${acString}, returning no ids`);
+    fidesDebugger(`Received invalid AC string "${acString}", returning no ids`);
     return [];
   }
   const split = acString.split("~");
@@ -73,4 +81,30 @@ export const idsFromAcString = (acString: string) => {
     return [];
   }
   return ids.map((id) => `${VendorSources.AC}.${id}`);
+};
+
+/**
+ * Formats the fides_string with the GPP string from the CMP API.
+ * In a TCF experience, appends the GPP string as the third part.
+ * In a non-TCF experience, uses empty strings for TCF and AC parts.
+ * @param cmpApi Optional GPP CMP API instance. If not provided, uses DEFAULT_GPP_STRING
+ * @returns The formatted fides_string
+ */
+export const formatFidesStringWithGpp = (cmpApi?: CmpApi): string => {
+  const gppString = cmpApi?.getGppString() || DEFAULT_GPP_STRING;
+
+  // In a TCF experience, append to existing string
+  if (window.Fides.options.tcfEnabled) {
+    const parts = window.Fides.fides_string?.split(FIDES_SEPARATOR) || [];
+    // Ensure we have at least 2 parts (TCF and AC strings)
+    while (parts.length < 2) {
+      parts.push("");
+    }
+    // Add GPP string as third part
+    parts[2] = gppString;
+    return parts.join(FIDES_SEPARATOR);
+  }
+
+  // In a non-TCF experience, use empty strings for TCF and AC parts
+  return `,,${gppString}`;
 };
