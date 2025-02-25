@@ -200,7 +200,6 @@ services:
       - redis
       - worker
     environment:
-      - FLOWER_BASIC_AUTH=admin:adminpassword # Optional: basic auth protection
       - CELERY_BROKER_URL=redis://:redispassword@redis:6379/0
       - CELERY_RESULT_BACKEND=redis://:redispassword@redis:6379/0
 

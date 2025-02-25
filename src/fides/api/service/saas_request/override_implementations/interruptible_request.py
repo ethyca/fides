@@ -22,6 +22,10 @@ def interruptible_request(
     input_data: Dict[str, List[Any]],
     secrets: Dict[str, Any],
 ) -> List[Row]:
+    """
+    This request override is used to test the interrupted task requeue feature.
+    It will randomly terminate the request early with a 50% chance.
+    """
 
     # 50/50 chance to terminate the request early
     if random.random() < 0.5:
