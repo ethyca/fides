@@ -28,8 +28,7 @@ from fides.api.graph.config import (
 )
 from fides.api.graph.execution import ExecutionNode
 from fides.api.graph.graph import DatasetGraph
-from fides.api.graph.traversal import Traversal
-from fides.api.graph.traversal_node import TraversalNode
+from fides.api.graph.traversal import Traversal, TraversalNode
 from fides.api.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
