@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { Provider } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
@@ -24,7 +24,7 @@ interface ProvidersProps {
 }
 
 const Providers = ({ serverEnvironment, children }: ProvidersProps) => {
-  useMemo(() => {
+  useEffect(() => {
     if (serverEnvironment) {
       // Load the server environment into the Redux store
       store.dispatch(loadSettings(serverEnvironment.settings));
