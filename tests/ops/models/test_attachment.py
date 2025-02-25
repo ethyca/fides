@@ -2,23 +2,32 @@ import pytest
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from fides.api.models.fides_user import FidesUser
-from fides.api.models.sql_models import (
+from fides.api.models.attachment import (
     Attachment,
     AttachmentReference,
     AttachmentReferenceType,
     AttachmentType,
 )
+from fides.api.models.fides_user import FidesUser
 
 
 @pytest.fixture
-def attachment(user):
+def attachment_data(user):
+    return {
+        "id": "1",
+        "user_id": user.id,
+        "file_name": "file.txt",
+        "attachment_type": AttachmentType.internal_use_only,
+    }
+
+
+@pytest.fixture
+def attachment(user, attachment_data):
     return Attachment(
-        id="1",
+        id=attachment_data["id"],
         user_id=user.id,
-        file_name="file.txt",
-        storage_url="http://example.com/file.txt",
-        attachment_type=AttachmentType.internal_use_only,
+        file_name=attachment_data["file_name"],
+        attachment_type=attachment_data["attachment_type"],
     )
 
 
@@ -40,16 +49,14 @@ def attachment_setup(
     db.commit()
 
 
-def test_create_attachment(db, attachment):
+def test_create_attachment(db, attachment_data):
     """Test creating an attachment."""
-    db.add(attachment)
-    db.commit()
+    attachment = Attachment.create(db=db, data=attachment_data)
     retrieved_attachment = db.query(Attachment).filter_by(id=attachment.id).first()
 
     assert retrieved_attachment is not None
     assert retrieved_attachment.user_id == attachment.user_id
     assert retrieved_attachment.file_name == attachment.file_name
-    assert retrieved_attachment.storage_url == attachment.storage_url
     assert retrieved_attachment.attachment_type == attachment.attachment_type
 
 
@@ -74,7 +81,6 @@ def test_attachment_foreign_key_constraint(db):
         id="2",
         user_id="non_existent_id",
         file_name="file.txt",
-        storage_url="http://example.com/file.txt",
         attachment_type="attach_to_dsr",
     )
     db.add(attachment)
@@ -106,8 +112,7 @@ def test_delete_attachment_cascades(db, attachment, attachment_reference):
     """Test that deleting an attachment cascades to its references."""
     attachment_setup(db, attachment, attachment_reference)
 
-    db.delete(attachment)
-    db.commit()
+    attachment.delete(db=db)
 
     retrieved_reference = (
         db.query(AttachmentReference).filter_by(reference_id="ref_1").first()
@@ -122,22 +127,19 @@ def test_delete_attachment_cascades(db, attachment, attachment_reference):
             id="4",
             user_id=None,
             file_name="file.txt",
-            storage_url="http://example.com/file.txt",
-            attachment_type="attach_to_dsr",
+            attachment_type=AttachmentType.include_with_access_package,
         ),
         Attachment(
             id="5",
             user_id="user_1",
             file_name=None,
-            storage_url="http://example.com/file.txt",
-            attachment_type="attach_to_dsr",
+            attachment_type=AttachmentType.internal_use_only,
         ),
         Attachment(
             id="6",
             user_id="user_1",
             file_name="file.txt",
-            storage_url=None,
-            attachment_type="attach_to_dsr",
+            attachment_type=None,
         ),
     ],
 )
