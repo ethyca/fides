@@ -228,7 +228,7 @@ class BigQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
                 formatted_fields.append(field_path.levels[0])
         return formatted_fields
 
-    def generate_raw_query(
+    def generate_raw_query_without_tuples(
         self, field_list: List[str], filters: Dict[str, List[Any]]
     ) -> Optional[TextClause]:
         """
