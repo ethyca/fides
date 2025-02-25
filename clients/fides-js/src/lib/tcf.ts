@@ -29,26 +29,35 @@ const FORBIDDEN_LEGITIMATE_INTEREST_PURPOSE_IDS = [1, 3, 4, 5, 6];
 const AC_SPECIFICATION_VERSION = 1;
 
 /**
- * Generate an AC String based on TCF-related info from privacy experience.
+ * Generates an Additional Consent (AC) string in the format `version~id1.id2.id3` where:
+ * - version: The AC specification version (currently 1)
+ * - id1.id2.id3: A sorted, dot-separated list of vendor IDs that have consent
+ *
+ * The function combines vendors from both consent and legitimate interest lists,
+ * filters for AC vendors only (those with 'gacp' prefix), extracts their numeric IDs,
+ * and joins them in ascending order.
+ *
+ * @example
+ * // Given vendors ["gacp.42", "gacp.33", "gvl.12", "gacp.49"]
+ * generateAcString({tcStringPreferences: {
+ *   vendorsConsent: ["gacp.42"],
+ *   vendorsLegint: ["gacp.33", "gvl.12", "gacp.49"]
+ * }})
+ * // Returns "1~33.42.49"
  */
 const generateAcString = ({
   tcStringPreferences,
 }: {
   tcStringPreferences: Pick<EnabledIds, "vendorsConsent" | "vendorsLegint">;
 }) => {
-  const uniqueIds = Array.from(
-    new Set(
-      [
-        ...tcStringPreferences.vendorsConsent,
-        ...tcStringPreferences.vendorsLegint,
-      ]
-        .filter((id) => vendorIsAc(id))
-        // Convert gacp.42 --> 42
-        .map((id) => decodeVendorId(id).id),
-    ),
-  );
-  const vendorIds = uniqueIds.sort((a, b) => Number(a) - Number(b)).join(".");
-
+  const vendorIds = [
+    ...tcStringPreferences.vendorsConsent,
+    ...tcStringPreferences.vendorsLegint,
+  ]
+    .filter(vendorIsAc)
+    .map((id) => decodeVendorId(id).id)
+    .sort((a, b) => Number(a) - Number(b))
+    .join(".");
   return `${AC_SPECIFICATION_VERSION}~${vendorIds}`;
 };
 
