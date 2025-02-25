@@ -1,4 +1,4 @@
-from typing import Any, List, Optional
+from typing import Any, Dict, List, Optional, Union
 
 from fideslang.models import Dataset
 from fideslang.validation import FidesKey
@@ -71,4 +71,4 @@ class DatasetReachability(FidesSchema):
     """
 
     reachable: bool
-    details: Optional[str]
+    details: Optional[Union[str, List[Dict[str, Any]]]]
