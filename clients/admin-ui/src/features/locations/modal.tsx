@@ -1,6 +1,6 @@
 import {
   AntButton as Button,
-  Badge,
+  AntTag as Tag,
   Box,
   Checkbox,
   Flex,
@@ -54,13 +54,9 @@ export const HeaderCheckboxRow = ({
           {title}
         </Text>
       </Checkbox>
-      <Badge
-        variant="solid"
-        width="fit-content"
-        data-testid="num-selected-badge"
-      >
+      <Tag color="minos" className="w-fit" data-testid="num-selected-badge">
         {numSelected} selected
-      </Badge>
+      </Tag>
     </Box>
     {children}
   </Flex>

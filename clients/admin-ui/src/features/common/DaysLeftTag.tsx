@@ -1,4 +1,4 @@
-import { Tag } from "fidesui";
+import { AntTag as Tag } from "fidesui";
 import React from "react";
 
 import { PrivacyRequestStatus } from "~/types/api/models/PrivacyRequestStatus";
@@ -20,19 +20,19 @@ const DaysLeftTag = ({ daysLeft, includeText, status }: DaysLeftTagProps) => {
     return null;
   }
 
-  let backgroundColor = "";
+  let color = "";
 
   switch (true) {
     case daysLeft >= 10:
-      backgroundColor = "success.500";
+      color = "success";
       break;
 
     case daysLeft < 10 && daysLeft > 4:
-      backgroundColor = "warn.500";
+      color = "warning";
       break;
 
     case daysLeft < 5:
-      backgroundColor = "error.500";
+      color = "error";
       break;
 
     default:
@@ -41,16 +41,7 @@ const DaysLeftTag = ({ daysLeft, includeText, status }: DaysLeftTagProps) => {
 
   const text = includeText ? `${daysLeft} days left` : daysLeft;
 
-  return (
-    <Tag
-      backgroundColor={backgroundColor}
-      color="white"
-      fontWeight="medium"
-      fontSize="sm"
-    >
-      {text}
-    </Tag>
-  );
+  return <Tag color={color}>{text}</Tag>;
 };
 
 export default DaysLeftTag;

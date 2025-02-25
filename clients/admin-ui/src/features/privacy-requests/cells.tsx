@@ -61,7 +61,7 @@ export const RequestStatusBadgeCell = ({
   value: keyof typeof statusPropMap;
 }) => (
   <BadgeCell
-    colorScheme={statusPropMap[value].colorScheme}
+    color={statusPropMap[value].colorScheme}
     value={statusPropMap[value].label}
     data-testid="request-status-badge"
   />
@@ -103,7 +103,7 @@ export const RequestDaysLeftCell = ({
   return (
     <BadgeCell
       value={includeText ? `${daysLeft} days left` : daysLeft.toString()}
-      colorScheme={colorScheme}
+      color={colorScheme}
     />
   );
 };

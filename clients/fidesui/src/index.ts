@@ -15,6 +15,7 @@ export type {
   RadioGroupProps as AntRadioGroupProps,
   SelectProps as AntSelectProps,
   SwitchProps as AntSwitchProps,
+  TagProps as AntTagProps,
   GetProps,
   InputRef,
   RadioChangeEvent,
@@ -41,7 +42,6 @@ export {
   Skeleton as AntSkeleton,
   Space as AntSpace,
   Switch as AntSwitch,
-  Tag as AntTag,
   Tooltip as AntTooltip,
   Typography as AntTypography,
 } from "antd/lib";
@@ -92,3 +92,4 @@ export { ExampleComponent } from "./components/example-component";
 export { FloatingMenu } from "./components/floating-menu";
 export { PrimaryLink, SecondaryLink } from "./components/links";
 export { SystemsCheckboxTable } from "./components/systems-checkbox-table";
+export { CustomTag as AntTag } from "./hoc";

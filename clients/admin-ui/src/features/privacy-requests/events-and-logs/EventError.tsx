@@ -1,5 +1,5 @@
 import ClipboardButton from "common/ClipboardButton";
-import { Box, Divider, Flex, Tag, Text } from "fidesui";
+import { AntTag as Tag, Box, Divider, Flex, Text } from "fidesui";
 import React from "react";
 
 type EventErrorProps = {
@@ -18,15 +18,7 @@ const EventError = ({ errorMessage }: EventErrorProps) => (
       >
         Status
       </Text>
-      <Tag
-        size="sm"
-        height="20px"
-        backgroundColor="red.500"
-        color="white"
-        marginRight="8px"
-      >
-        Error
-      </Tag>
+      <Tag color="error">Error</Tag>
       <Box padding="0px" marginBottom="3px">
         <ClipboardButton copyText={errorMessage} />
       </Box>
