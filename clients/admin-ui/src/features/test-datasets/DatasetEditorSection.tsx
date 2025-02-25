@@ -38,6 +38,21 @@ interface EditorSectionProps {
   connectionKey: string;
 }
 
+const getReachabilityMessage = (details: any) => {
+  if (Array.isArray(details)) {
+    const firstDetail = details[0];
+
+    if (!firstDetail) {
+      return "";
+    }
+
+    const message = firstDetail.msg || "";
+    const location = firstDetail.loc ? ` (${firstDetail.loc})` : "";
+    return `${message}${location}`;
+  }
+  return details;
+};
+
 const EditorSection = ({ connectionKey }: EditorSectionProps) => {
   const toast = useToast();
   const dispatch = useAppDispatch();
@@ -269,7 +284,7 @@ const EditorSection = ({ connectionKey }: EditorSectionProps) => {
               <Text fontSize="sm" whiteSpace="pre-wrap">
                 {reachability?.reachable
                   ? "Dataset is reachable"
-                  : `Dataset is not reachable. ${reachability?.details}`}
+                  : `Dataset is not reachable. ${getReachabilityMessage(reachability?.details)}`}
               </Text>
             </HStack>
           </HStack>
