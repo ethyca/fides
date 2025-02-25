@@ -587,11 +587,12 @@ class TestMessageDispatchService:
             service_type=MessagingServiceType.aws_ses.value,
         )
         body = '<!DOCTYPE html>\n<html lang="en">\n  <head>\n    <meta charset="UTF-8" />\n    <title>Fides Test message</title>\n  </head>\n  <body>\n    <main>\n      <p>This is a test message from Fides.</p>\n    </main>\n  </body>\n</html>'
+        message = EmailForActionType(subject="Test message from fides", body=body)
+
         mock_aws_ses_service.assert_called_once_with(messaging_config_aws_ses)
-        mock_aws_ses_service.return_value.send_email.assert_called_once_with(
+        mock_aws_ses_service.return_value.send_message.assert_called_once_with(
+            message,
             "test@email.com",
-            "Test message from fides",
-            body,
         )
 
     @mock.patch(
@@ -601,7 +602,7 @@ class TestMessageDispatchService:
     def test_email_dispatch_aws_ses_email_raises_exception(
         self, mock_aws_ses_service, db, messaging_config_aws_ses
     ):
-        mock_aws_ses_service.return_value.send_email.side_effect = Exception(
+        mock_aws_ses_service.return_value.send_message.side_effect = Exception(
             "Oops! Something went wrong"
         )
 
@@ -614,11 +615,12 @@ class TestMessageDispatchService:
             )
 
         body = '<!DOCTYPE html>\n<html lang="en">\n  <head>\n    <meta charset="UTF-8" />\n    <title>Fides Test message</title>\n  </head>\n  <body>\n    <main>\n      <p>This is a test message from Fides.</p>\n    </main>\n  </body>\n</html>'
+        message = EmailForActionType(subject="Test message from fides", body=body)
+
         mock_aws_ses_service.assert_called_once_with(messaging_config_aws_ses)
-        mock_aws_ses_service.return_value.send_email.assert_called_once_with(
+        mock_aws_ses_service.return_value.send_message.assert_called_once_with(
+            message,
             "test@email.com",
-            "Test message from fides",
-            body,
         )
 
         assert "AWS SES email failed to send due to: Oops! Something went wrong" in str(

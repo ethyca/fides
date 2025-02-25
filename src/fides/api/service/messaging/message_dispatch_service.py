@@ -736,7 +736,7 @@ def _aws_ses_dispatcher(
     aws_ses_serivce = AWSSESService(messaging_config)
 
     try:
-        aws_ses_serivce.send_email(to, message.subject, message.body)
+        aws_ses_serivce.send_message(message, to)
     except Exception as e:
         logger.error("Email failed to send: {}", Pii(str(e)))
         raise MessageDispatchException(f"AWS SES email failed to send due to: {Pii(e)}")

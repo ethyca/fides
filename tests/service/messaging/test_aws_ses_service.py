@@ -6,6 +6,7 @@ from fides.api.models.messaging import MessagingConfig
 from fides.api.schemas.messaging.messaging import (
     MessagingServiceDetailsAWSSES,
     MessagingServiceSecretsAWSSES,
+    EmailForActionType,
 )
 from fides.service.messaging.aws_ses_service import AWSSESException, AWSSESService
 
@@ -31,7 +32,7 @@ class TestAWSSESService:
         )
 
     @pytest.fixture
-    def aws_ses_service(self, messaging_config):
+    def aws_ses_service(self, messaging_config) -> AWSSESService:
         return AWSSESService(messaging_config)
 
     @patch("fides.service.messaging.aws_ses_service.get_aws_session")
@@ -153,18 +154,18 @@ class TestAWSSESService:
     @patch(
         "fides.service.messaging.aws_ses_service.AWSSESService.validate_email_and_domain_status"
     )
-    def test_send_email(
+    def test_send_message(
         self,
         mock_validate_email_and_domain_status,
         mock_get_ses_client,
-        aws_ses_service,
+        aws_ses_service: AWSSESService,
     ):
         mock_client = MagicMock()
         mock_get_ses_client.return_value = mock_client
 
-        aws_ses_service.send_email(
-            to="recipient@example.com", subject="Test Subject", body="<p>Test Body</p>"
-        )
+        message = EmailForActionType(subject="Test Subject", body="<p>Test Body</p>")
+
+        aws_ses_service.send_message(message=message, to="recipient@example.com")
 
         mock_validate_email_and_domain_status.assert_called_once()
         mock_client.send_email.assert_called_once_with(

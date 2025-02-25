@@ -6,9 +6,14 @@ from fides.api.models.messaging import MessagingConfig
 from fides.api.schemas.messaging.messaging import (
     MessagingServiceDetailsAWSSES,
     MessagingServiceSecretsAWSSES,
+    EmailForActionType,
 )
 from fides.api.schemas.storage.storage import StorageSecrets
 from fides.api.util.aws_util import get_aws_session
+
+from fides.service.messaging.base_messaging_provider_service import (
+    BaseMessageProviderService,
+)
 
 
 class SESClient:
@@ -52,7 +57,7 @@ class AWSSESException(Exception):
     pass
 
 
-class AWSSESService:
+class AWSSESService(BaseMessageProviderService):
     """
     Service class to wrap interactions with AWS SES.
     """
@@ -61,6 +66,7 @@ class AWSSESService:
         """
         Instantiate AWSSESService with a messaging config.
         """
+        super().__init__(messaging_config)
         self.messaging_config_details = MessagingServiceDetailsAWSSES.model_validate(
             messaging_config.details
         )
@@ -119,11 +125,10 @@ class AWSSESService:
             logger.error(f"Domain {domain} is not verified in SES.")
             raise AWSSESException(f"Domain {domain} is not verified in SES.")
 
-    def send_email(
+    def send_message(
         self,
+        message: EmailForActionType,
         to: str,
-        subject: str,
-        body: str,
     ) -> None:
         """
         Send an email using AWS SES.
@@ -136,8 +141,8 @@ class AWSSESService:
             Source=self.messaging_config_details.email_from,
             Destination={"ToAddresses": [to.strip()]},
             Message={
-                "Subject": {"Data": subject},
-                "Body": {"Html": {"Data": body}},
+                "Subject": {"Data": message.subject},
+                "Body": {"Html": {"Data": message.body}},
             },
         )
 
