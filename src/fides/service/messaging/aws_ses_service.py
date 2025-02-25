@@ -1,4 +1,4 @@
-from typing import Any, Optional
+from typing import Any, Optional, Literal
 
 from loguru import logger
 
@@ -14,6 +14,8 @@ from fides.api.util.aws_util import get_aws_session
 from fides.service.messaging.base_messaging_provider_service import (
     BaseMessageProviderService,
 )
+from fides.api.common_exceptions import MessageDispatchException
+from fides.api.util.logger import Pii
 
 
 class SESClient:
@@ -61,6 +63,8 @@ class AWSSESService(BaseMessageProviderService):
     """
     Service class to wrap interactions with AWS SES.
     """
+
+    provider_name: Literal["AWS SES"] = "AWS SES"
 
     def __init__(self, messaging_config: MessagingConfig):
         """
@@ -119,10 +123,8 @@ class AWSSESService(BaseMessageProviderService):
             response["VerificationAttributes"].get(domain, {}).get("VerificationStatus")
         )
         if email_status != "Success":
-            logger.error(f"Email {email} is not verified in SES.")
             raise AWSSESException(f"Email {email} is not verified in SES.")
         if domain_status != "Success":
-            logger.error(f"Domain {domain} is not verified in SES.")
             raise AWSSESException(f"Domain {domain} is not verified in SES.")
 
     def send_message(
@@ -134,17 +136,24 @@ class AWSSESService(BaseMessageProviderService):
         Send an email using AWS SES.
         Both the from_email and domain set in the messaging config must be verified in SES.
         """
-        self.validate_email_and_domain_status()
-        ses_client = self.get_ses_client()
+        try:
+            self.validate_email_and_domain_status()
+            ses_client = self.get_ses_client()
 
-        ses_client.send_email(
-            Source=self.messaging_config_details.email_from,
-            Destination={"ToAddresses": [to.strip()]},
-            Message={
-                "Subject": {"Data": message.subject},
-                "Body": {"Html": {"Data": message.body}},
-            },
-        )
+            ses_client.send_email(
+                Source=self.messaging_config_details.email_from,
+                Destination={"ToAddresses": [to.strip()]},
+                Message={
+                    "Subject": {"Data": message.subject},
+                    "Body": {"Html": {"Data": message.body}},
+                },
+            )
+
+        except Exception as e:
+            logger.error(f"Email failed to send: {str(e)}")
+            raise MessageDispatchException(
+                f"AWS SES email failed to send due to: {Pii(e)}"
+            )
 
     def get_email_template(
         self, template_name: str

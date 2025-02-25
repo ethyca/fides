@@ -4,9 +4,7 @@ import json
 from typing import Any, Callable, Dict, List, Optional, Union
 
 import requests
-import sendgrid
 from loguru import logger
-from sendgrid.helpers.mail import Content, Email, Mail, Personalization, TemplateId, To
 from sqlalchemy.orm import Session
 from twilio.base.exceptions import TwilioRestException
 from twilio.rest import Client
@@ -47,6 +45,8 @@ from fides.api.util.logger import Pii
 from fides.config import CONFIG
 from fides.config.config_proxy import ConfigProxy
 from fides.service.messaging.aws_ses_service import AWSSESService
+from fides.service.messaging.mailgun_service import MailgunService
+from fides.service.messaging.twilio_email_service import TwilioEmailService
 
 EMAIL_JOIN_STRING = ", "
 EMAIL_TEMPLATE_NAME = "fides"
@@ -563,77 +563,8 @@ def _mailgun_dispatcher(
     """Dispatches email using Mailgun"""
     validate_config(messaging_config, "Mailgun")
 
-    base_url = (
-        "https://api.mailgun.net"
-        if messaging_config.details[MessagingServiceDetails.IS_EU_DOMAIN.value] is False
-        else "https://api.eu.mailgun.net"
-    )
-
-    domain = messaging_config.details[MessagingServiceDetails.DOMAIN.value]
-
-    try:
-        # Check if a fides template exists
-        template_test = requests.get(
-            f"{base_url}/{messaging_config.details[MessagingServiceDetails.API_VERSION.value]}/{domain}/templates/{EMAIL_TEMPLATE_NAME}",
-            auth=(
-                "api",
-                messaging_config.secrets[MessagingServiceSecrets.MAILGUN_API_KEY.value],
-            ),
-        )
-
-        data = {
-            "from": f"<mailgun@{domain}>",
-            "to": [to.strip()],
-            "subject": message.subject,
-        }
-
-        if template_test.status_code == 200:
-            mailgun_variables = {
-                "fides_email_body": message.body,
-                **(message.template_variables or {}),
-            }
-            data["template"] = EMAIL_TEMPLATE_NAME
-            data["h:X-Mailgun-Variables"] = json.dumps(mailgun_variables)
-            response = requests.post(
-                f"{base_url}/{messaging_config.details[MessagingServiceDetails.API_VERSION.value]}/{domain}/messages",
-                auth=(
-                    "api",
-                    messaging_config.secrets[
-                        MessagingServiceSecrets.MAILGUN_API_KEY.value
-                    ],
-                ),
-                data=data,
-            )
-
-            if not response.ok:
-                logger.error(
-                    "Email failed to send with status code: %s", response.status_code
-                )
-                raise MessageDispatchException(
-                    f"Email failed to send with status code {response.status_code}"
-                )
-        else:
-            data["html"] = message.body
-            response = requests.post(
-                f"{base_url}/{messaging_config.details[MessagingServiceDetails.API_VERSION.value]}/{domain}/messages",
-                auth=(
-                    "api",
-                    messaging_config.secrets[
-                        MessagingServiceSecrets.MAILGUN_API_KEY.value
-                    ],
-                ),
-                data=data,
-            )
-            if not response.ok:
-                logger.error(
-                    "Email failed to send with status code: %s", response.status_code
-                )
-                raise MessageDispatchException(
-                    f"Email failed to send with status code {response.status_code}"
-                )
-    except Exception as e:
-        logger.error("Email failed to send: {}", Pii(str(e)))
-        raise MessageDispatchException(f"Email failed to send due to: {Pii(e)}")
+    mailgun_service = MailgunService(messaging_config)
+    mailgun_service.send_message(message, to)
 
 
 def _twilio_email_dispatcher(
@@ -642,47 +573,9 @@ def _twilio_email_dispatcher(
     to: str,
 ) -> None:
     """Dispatches email using twilio sendgrid"""
-    validate_config(messaging_config, "Twilio email")
 
-    try:
-        sg = sendgrid.SendGridAPIClient(
-            api_key=messaging_config.secrets[
-                MessagingServiceSecrets.TWILIO_API_KEY.value
-            ]
-        )
-
-        # the pagination via the client actually doesn't work
-        # in lieu of over-engineering this we can manually call
-        # the next page if/when we hit the limit here
-        response = sg.client.templates.get(
-            query_params={"generations": "dynamic", "page_size": 200}
-        )
-        template_test = _get_template_id_if_exists(
-            json.loads(response.body), EMAIL_TEMPLATE_NAME
-        )
-
-        from_email = Email(
-            messaging_config.details[MessagingServiceDetails.TWILIO_EMAIL_FROM.value]
-        )
-        to_email = To(to.strip())
-        subject = message.subject
-        mail = _compose_twilio_mail(
-            from_email, to_email, subject, message.body, template_test
-        )
-
-        response = sg.client.mail.send.post(request_body=mail.get())
-        if response.status_code >= 400:
-            logger.error(
-                "Email failed to send: %s: %s",
-                response.status_code,
-                Pii(str(response.body)),
-            )
-            raise MessageDispatchException(
-                f"Email failed to send: {response.status_code}, {Pii(str(response.body))}"
-            )
-    except Exception as e:
-        logger.error("Email failed to send: {}", Pii(str(e)))
-        raise MessageDispatchException(f"Email failed to send due to: {Pii(e)}")
+    twilio_email_service = TwilioEmailService(messaging_config)
+    twilio_email_service.send_message(message, to)
 
 
 def _twilio_sms_dispatcher(
@@ -734,49 +627,7 @@ def _aws_ses_dispatcher(
     validate_config(messaging_config, "AWS SES")
 
     aws_ses_serivce = AWSSESService(messaging_config)
-
-    try:
-        aws_ses_serivce.send_message(message, to)
-    except Exception as e:
-        logger.error("Email failed to send: {}", Pii(str(e)))
-        raise MessageDispatchException(f"AWS SES email failed to send due to: {Pii(e)}")
-
-
-def _get_template_id_if_exists(
-    templates_response: Dict[str, List], template_name: str
-) -> Optional[str]:
-    """
-    Checks to see if a SendGrid template exists for Fides, returning the id if so
-    """
-
-    for template in templates_response["result"]:
-        if template["name"].lower() == template_name.lower():
-            return template["id"]
-    return None
-
-
-def _compose_twilio_mail(
-    from_email: Email,
-    to_email: To,
-    subject: str,
-    message_body: str,
-    template_test: Optional[str] = None,
-) -> Mail:
-    """
-    Returns the Mail object to send, if a template is passed composes the Mail
-    appropriately with the template ID and paramaterized message body.
-    """
-    if template_test:
-        mail = Mail(from_email=from_email, subject=subject)
-        mail.template_id = TemplateId(template_test)
-        personalization = Personalization()
-        personalization.dynamic_template_data = {"fides_email_body": message_body}
-        personalization.add_email(to_email)
-        mail.add_personalization(personalization)
-    else:
-        content = Content("text/html", message_body)
-        mail = Mail(from_email, to_email, subject, content)
-    return mail
+    aws_ses_serivce.send_message(message, to)
 
 
 def get_email_messaging_config_service_type(db: Session) -> Optional[str]:

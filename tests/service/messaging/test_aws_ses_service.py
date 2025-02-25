@@ -9,6 +9,7 @@ from fides.api.schemas.messaging.messaging import (
     EmailForActionType,
 )
 from fides.service.messaging.aws_ses_service import AWSSESException, AWSSESService
+from fides.api.common_exceptions import MessageDispatchException
 
 
 class TestAWSSESService:
@@ -166,6 +167,39 @@ class TestAWSSESService:
         message = EmailForActionType(subject="Test Subject", body="<p>Test Body</p>")
 
         aws_ses_service.send_message(message=message, to="recipient@example.com")
+
+        mock_validate_email_and_domain_status.assert_called_once()
+        mock_client.send_email.assert_called_once_with(
+            Source="test@example.com",
+            Destination={"ToAddresses": ["recipient@example.com"]},
+            Message={
+                "Subject": {"Data": "Test Subject"},
+                "Body": {"Html": {"Data": "<p>Test Body</p>"}},
+            },
+        )
+
+    @patch("fides.service.messaging.aws_ses_service.AWSSESService.get_ses_client")
+    @patch(
+        "fides.service.messaging.aws_ses_service.AWSSESService.validate_email_and_domain_status"
+    )
+    def test_send_message_raises_exception(
+        self,
+        mock_validate_email_and_domain_status,
+        mock_get_ses_client,
+        aws_ses_service: AWSSESService,
+    ):
+        mock_client = MagicMock()
+        mock_get_ses_client.return_value = mock_client
+        mock_client.send_email.side_effect = Exception("Oops! Something went wrong")
+
+        message = EmailForActionType(subject="Test Subject", body="<p>Test Body</p>")
+
+        with pytest.raises(MessageDispatchException) as exc:
+            aws_ses_service.send_message(message=message, to="recipient@example.com")
+
+        assert "AWS SES email failed to send due to: Oops! Something went wrong" in str(
+            exc.value
+        )
 
         mock_validate_email_and_domain_status.assert_called_once()
         mock_client.send_email.assert_called_once_with(

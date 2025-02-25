@@ -62,6 +62,7 @@ task_always_eager = true
 
 [notifications]
 notification_service_type = "mailgun"
+send_request_receipt_notification = true
 
 [consent]
 tcf_enabled = false
