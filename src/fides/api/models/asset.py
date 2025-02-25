@@ -25,8 +25,7 @@ from fides.api.models.sql_models import System  # type: ignore[attr-defined]
 
 class Asset(Base):
     """
-    Web assets associated with a system. This model will supersede `Cookies` once we have established
-    a migration path and backward compatibility with all `Cookies` related APIs.
+    Web assets associated with a system
     """
 
     # Common attributes
@@ -38,6 +37,7 @@ class Asset(Base):
     locations = Column(ARRAY(String), server_default="{}", nullable=False)
     with_consent = Column(BOOLEAN, default=False, nullable=False)
     data_uses = Column(ARRAY(String), server_default="{}", nullable=False)
+    description = Column(String, nullable=True)
 
     # generic object to store additional attributes, specific to asset type
     meta = Column(
