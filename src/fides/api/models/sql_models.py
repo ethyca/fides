@@ -45,6 +45,8 @@ from typing_extensions import Protocol, runtime_checkable
 from fides.api.common_exceptions import KeyOrNameAlreadyExists
 from fides.api.db.base_class import Base
 from fides.api.db.base_class import FidesBase as FideslibBase
+
+# from fides.api.models.audit_log import AuditLog, AuditLogAction
 from fides.api.models.client import ClientDetail
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.fides_user_permissions import FidesUserPermissions
