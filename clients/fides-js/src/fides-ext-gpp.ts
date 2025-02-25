@@ -40,13 +40,14 @@ import {
   isPrivacyExperience,
   shouldResurfaceConsent,
 } from "./lib/consent-utils";
+import { saveFidesCookie } from "./lib/cookie";
 import { makeStub } from "./lib/gpp/stub";
 import { GppFunction, GPPUSApproach } from "./lib/gpp/types";
 import {
   setGppNoticesProvidedFromExperience,
   setGppOptOutsFromCookieAndExperience,
 } from "./lib/gpp/us-notices";
-import { ETHYCA_CMP_ID } from "./lib/tcf/constants";
+import { ETHYCA_CMP_ID, FIDES_SEPARATOR } from "./lib/tcf/constants";
 import { extractTCStringForCmpApi } from "./lib/tcf/events";
 
 const CMP_VERSION = 1;
@@ -294,6 +295,32 @@ const initializeGppCmpApi = () => {
         sectionsChanged.forEach((section) => {
           cmpApi.fireSectionChange(section.name);
         });
+      }
+
+      // Update fides_string with GPP string in both TCF and non-TCF mode
+      if (window.Fides.cookie) {
+        const gppString = cmpApi.getGppString();
+        if (gppString) {
+          // In TCF mode, append to existing string
+          if (window.Fides.options.tcfEnabled) {
+            const parts =
+              window.Fides.cookie.fides_string?.split(FIDES_SEPARATOR) || [];
+            // Ensure we have at least 2 parts (TCF and AC strings)
+            while (parts.length < 2) {
+              parts.push("");
+            }
+            // Add GPP string as third part
+            parts[2] = gppString;
+            window.Fides.cookie.fides_string = parts.join(FIDES_SEPARATOR);
+          } else {
+            // In non-TCF mode, use empty strings for TCF and AC parts
+            window.Fides.cookie.fides_string = `,,${gppString}`;
+          }
+          saveFidesCookie(
+            window.Fides.cookie,
+            window.Fides.options.base64Cookie,
+          );
+        }
       }
     }
     cmpApi.setSignalStatus(SignalStatus.READY);

@@ -152,6 +152,8 @@ export const generateFidesString = async ({
       // Attach the AC string
       const acString = generateAcString({ tcStringPreferences });
       encodedString = `${encodedString}${FIDES_SEPARATOR}${acString}`;
+
+      // GPP string portion is handled by the GPP extension
     }
   } catch (e) {
     // eslint-disable-next-line no-console
