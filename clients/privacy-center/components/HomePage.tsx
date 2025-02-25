@@ -132,7 +132,7 @@ const HomePage: NextPage = () => {
     );
   });
 
-  const showConsentModal = searchParams?.get("showConsentModal");
+  const showConsentModal = searchParams?.get("showConsentModal") === "true";
   if (config.includeConsent && config.consent) {
     content.push(
       <ConsentCard
@@ -143,7 +143,7 @@ const HomePage: NextPage = () => {
         onOpen={handleConsentCardOpen}
       />,
     );
-    if (showConsentModal === "true") {
+    if (showConsentModal) {
       // manually override whether to show the consent modal given
       // the query param `showConsentModal`
       isConsentModalOpen = true;
