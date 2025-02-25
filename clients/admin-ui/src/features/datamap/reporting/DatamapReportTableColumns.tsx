@@ -142,7 +142,7 @@ export const getDatamapReportColumns = ({
                 ? map(value, getDataUseDisplayName)
                 : getDataUseDisplayName(value || "")
             }
-            badgeProps={{ variant: "taxonomy" }}
+            tagProps={{ color: "white" }}
             {...props}
           />
         );
@@ -168,13 +168,7 @@ export const getDatamapReportColumns = ({
                 key: cellValues,
               },
             ];
-        return (
-          <BadgeCellExpandable
-            values={values}
-            cellProps={props as any}
-            variant="taxonomy"
-          />
-        );
+        return <BadgeCellExpandable values={values} cellProps={props as any} />;
       },
       meta: {
         showHeaderMenu: !isRenaming,
@@ -197,7 +191,7 @@ export const getDatamapReportColumns = ({
                 ? map(value, getDataSubjectDisplayName)
                 : getDataSubjectDisplayName(value || "")
             }
-            badgeProps={{ variant: "taxonomy" }}
+            tagProps={{ color: "white" }}
             {...props}
           />
         );
@@ -390,7 +384,7 @@ export const getDatamapReportColumns = ({
           suffix="shared categories"
           ignoreZero
           value={props.getValue()}
-          badgeProps={{ variant: "taxonomy" }}
+          tagProps={{ color: "white" }}
           {...props}
         />
       ),
@@ -422,13 +416,7 @@ export const getDatamapReportColumns = ({
                 key: cellValues,
               },
             ];
-        return (
-          <BadgeCellExpandable
-            values={values}
-            cellProps={props as any}
-            variant="taxonomy"
-          />
-        );
+        return <BadgeCellExpandable values={values} cellProps={props as any} />;
       },
       meta: {
         showHeaderMenu: !isRenaming,
@@ -454,13 +442,7 @@ export const getDatamapReportColumns = ({
                 key: cellValues,
               },
             ];
-        return (
-          <BadgeCellExpandable
-            values={values}
-            cellProps={props as any}
-            variant="taxonomy"
-          />
-        );
+        return <BadgeCellExpandable values={values} cellProps={props as any} />;
       },
       meta: {
         showHeaderMenu: !isRenaming,

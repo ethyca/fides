@@ -1,4 +1,4 @@
-import { Badge, Divider, Flex, Heading, Text } from "fidesui";
+import { AntTag as Tag, Divider, Flex, Heading, Text } from "fidesui";
 
 import { PrivacyRequestEntity } from "./types";
 
@@ -36,7 +36,7 @@ const SubjectIdentities = ({ subjectRequest }: SubjectIdentitiesProps) => {
             <Text color="gray.600" fontWeight="500" fontSize="sm" mr={2}>
               {value || ""}
             </Text>
-            <Badge>{identityVerifiedAt ? "Verified" : "Unverified"}</Badge>
+            <Tag>{identityVerifiedAt ? "Verified" : "Unverified"}</Tag>
           </Flex>
         ))}
       {customPrivacyRequestFields &&
@@ -70,7 +70,7 @@ const SubjectIdentities = ({ subjectRequest }: SubjectIdentitiesProps) => {
                       ? item.value.join(", ")
                       : item.value}
                   </Text>
-                  <Badge>Unverified</Badge>
+                  <Tag>Unverified</Tag>
                 </Flex>
               ))}
           </>

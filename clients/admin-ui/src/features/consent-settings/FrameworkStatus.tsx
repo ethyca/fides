@@ -1,4 +1,4 @@
-import { Badge, Stack, Text } from "fidesui";
+import { AntTag as Tag, Stack, Text } from "fidesui";
 
 import DocsLink from "~/features/common/DocsLink";
 
@@ -19,13 +19,9 @@ const FrameworkStatus = ({
     <Text>
       {name} status{" "}
       {enabled ? (
-        <Badge fontWeight="semibold" backgroundColor="success.100">
-          Enabled
-        </Badge>
+        <Tag color="success">Enabled</Tag>
       ) : (
-        <Badge fontWeight="semibold" backgroundColor="error.100">
-          Disabled
-        </Badge>
+        <Tag color="error">Disabled</Tag>
       )}
     </Text>
     <Text>

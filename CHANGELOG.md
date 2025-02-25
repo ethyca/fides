@@ -19,7 +19,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - https://github.com/ethyca/fides/labels/high-risk: to indicate that a change is a "high-risk" change that could potentially lead to unanticipated regressions or degradations
 - https://github.com/ethyca/fides/labels/db-migration: to indicate that a given change includes a DB migration
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.55.2...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.55.4...main)
 
 ### Added
 - DB model support for Web Monitoring [#5616](https://github.com/ethyca/fides/pull/5616) https://github.com/ethyca/fides/labels/db-migration
@@ -30,6 +30,16 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ### Docs
 - Removed version pins in LDFLAGS & CFLAGS for local MSSQL builds [#5760](https://github.com/ethyca/fides/pull/5760)
+
+## [2.55.4](https://github.com/ethyca/fides/compare/2.55.3...2.55.4)
+
+### Added
+- Added setting to control fuzzy search for privacy requests [#5748](https://github.com/ethyca/fides/pull/5748)
+
+### Fixed
+- Fixed BQ partition clause validation to allow `-` characters in operands [#5796](https://github.com/ethyca/fides/pull/5796)
+
+## [2.55.3](https://github.com/ethyca/fides/compare/2.55.2...2.55.3)
 
 ### Fixed
 - Fixed BigQuery DSR integration generates invalid queries when having a dataset with nested fields [#5785](https://github.com/ethyca/fides/pull/5785)
