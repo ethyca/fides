@@ -9,23 +9,7 @@ updates:
       - python
       - dependabot
   - package-ecosystem: npm
-    directory: "/clients/admin-ui"
-    schedule:
-      interval: weekly
-    labels:
-      - dependencies
-      - javascript
-      - dependabot
-  - package-ecosystem: npm
-    directory: "/clients/privacy-center"
-    schedule:
-      interval: weekly
-    labels:
-      - dependencies
-      - javascript
-      - dependabot
-  - package-ecosystem: npm
-    directory: "/clients/fides-js"
+    directory: "/clients"
     schedule:
       interval: weekly
     labels:
@@ -37,7 +21,22 @@ updates:
         dependency-type: "direct"
       - dependency-name: "@iabgpp*"
         dependency-type: "direct"
-
+  - package-ecosystem: npm
+    directory: "/clients/sample-app"
+    schedule:
+      interval: weekly
+    labels:
+      - dependencies
+      - javascript
+      - dependabot
+  - package-ecosystem: npm
+    directory: "/clients/cypress-e2e"
+    schedule:
+      interval: weekly
+    labels:
+      - dependencies
+      - javascript
+      - dependabot
   - package-ecosystem: github-actions
     directory: "/"
     schedule:
