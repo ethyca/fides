@@ -1,3 +1,4 @@
+/* eslint-disable no-underscore-dangle */
 /**
  * Extension for GPP
  *
@@ -41,13 +42,14 @@ import {
   shouldResurfaceConsent,
 } from "./lib/consent-utils";
 import { saveFidesCookie } from "./lib/cookie";
+import { formatFidesStringWithGpp } from "./lib/fidesString";
 import { makeStub } from "./lib/gpp/stub";
 import { GppFunction, GPPUSApproach } from "./lib/gpp/types";
 import {
   setGppNoticesProvidedFromExperience,
   setGppOptOutsFromCookieAndExperience,
 } from "./lib/gpp/us-notices";
-import { ETHYCA_CMP_ID, FIDES_SEPARATOR } from "./lib/tcf/constants";
+import { ETHYCA_CMP_ID } from "./lib/tcf/constants";
 import { extractTCStringForCmpApi } from "./lib/tcf/events";
 
 const CMP_VERSION = 1;
@@ -170,12 +172,7 @@ const initializeGppCmpApi = () => {
   cmpApi.setCmpStatus(CmpStatus.LOADED);
   window.addEventListener("FidesInitialized", (event) => {
     // TODO (PROD-1439): re-evaluate if GPP is "cheating" accessing window.Fides instead of using the event details only
-    const {
-      experience,
-      saved_consent: savedConsent,
-      options,
-      geolocation,
-    } = window.Fides;
+    const { experience, saved_consent: savedConsent, options } = window.Fides;
     const isTcfEnabled = options.tcfEnabled;
     cmpApi.setSupportedAPIs(getSupportedApis());
     // Set status to ready immediately upon initialization, if either:
@@ -213,19 +210,15 @@ const initializeGppCmpApi = () => {
       }
       cmpApi.setSignalStatus(SignalStatus.READY);
 
-      // mimics __gpp('ping', console.log);
-      fidesDebugger(
-        `GPP: CMP status and configuration for ${geolocation?.location}`,
-        {
-          cmpStatus: cmpApi.getCmpStatus(),
-          cmpDisplayStatus: cmpApi.getCmpDisplayStatus(),
-          signalStatus: cmpApi.getSignalStatus(),
-          supportedAPIs: cmpApi.getSupportedAPIs(),
-          applicableSections: cmpApi.getApplicableSections(),
-          gppString: cmpApi.getGppString(),
-          parsedSections: cmpApi.getObject(),
-        },
-      );
+      // Update fides_string with GPP string
+      const fidesString = formatFidesStringWithGpp(cmpApi);
+      window.Fides.fides_string = fidesString;
+
+      if (window.Fides.options.debug && typeof window?.__gpp === "function") {
+        window?.__gpp?.("ping", (data) => {
+          fidesDebugger("GPP Ping Data:", data);
+        });
+      }
     }
   });
 
@@ -297,30 +290,13 @@ const initializeGppCmpApi = () => {
         });
       }
 
-      // Update fides_string with GPP string in both TCF and non-TCF mode
+      // Update fides_string with GPP string
+      const fidesString = formatFidesStringWithGpp(cmpApi);
       if (window.Fides.cookie) {
-        const gppString = cmpApi.getGppString();
-        if (gppString) {
-          // In TCF mode, append to existing string
-          if (window.Fides.options.tcfEnabled) {
-            const parts =
-              window.Fides.cookie.fides_string?.split(FIDES_SEPARATOR) || [];
-            // Ensure we have at least 2 parts (TCF and AC strings)
-            while (parts.length < 2) {
-              parts.push("");
-            }
-            // Add GPP string as third part
-            parts[2] = gppString;
-            window.Fides.cookie.fides_string = parts.join(FIDES_SEPARATOR);
-          } else {
-            // In non-TCF mode, use empty strings for TCF and AC parts
-            window.Fides.cookie.fides_string = `,,${gppString}`;
-          }
-          saveFidesCookie(
-            window.Fides.cookie,
-            window.Fides.options.base64Cookie,
-          );
-        }
+        window.Fides.fides_string = fidesString;
+        window.Fides.cookie.fides_string = fidesString;
+        saveFidesCookie(window.Fides.cookie, window.Fides.options.base64Cookie);
+        fidesDebugger("GPP: updated fides_string", fidesString);
       }
     }
     cmpApi.setSignalStatus(SignalStatus.READY);

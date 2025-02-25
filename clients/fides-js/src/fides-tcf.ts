@@ -45,7 +45,7 @@ import {
 } from "./lib/initialize";
 import { initOverlay } from "./lib/initOverlay";
 import { initializeTcfCmpApi } from "./lib/tcf";
-import { decodeFidesString } from "./lib/tcf/fidesString";
+import { decodeFidesString } from "./lib/fidesString";
 import { renderOverlay } from "./lib/tcf/renderOverlay";
 import { makeStub } from "./lib/tcf/stub";
 import {
