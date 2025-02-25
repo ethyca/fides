@@ -7,12 +7,12 @@ from fides.api.schemas.messaging.messaging import (
     MessagingServiceDetailsAWSSES,
     MessagingServiceSecretsAWSSES,
 )
-from fides.service.messaging.aws_ses_service import AWSSESException, AWSSESService
+from fides.service.messaging.aws_ses_service import AWS_SES_Service, AWSSESException
 
 
-class TestAWSSESService:
+class TestAWS_SES_Service:
     """
-    Unit tests for the AWSSESService class. All AWS utilities are mocked.
+    Unit tests for the AWS_SES_Service class. All AWS utilities are mocked.
     """
 
     @pytest.fixture
@@ -21,9 +21,9 @@ class TestAWSSESService:
             aws_region="us-east-1", email_from="test@example.com", domain="example.com"
         )
         secrets = MessagingServiceSecretsAWSSES(
+            auth_method="secret_keys",
             aws_access_key_id="fake_access_key",
             aws_secret_access_key="fake_secret_key",
-            aws_auth_method="secret_keys",
             aws_assume_role_arn=None,
         )
         return MessagingConfig(
@@ -32,7 +32,7 @@ class TestAWSSESService:
 
     @pytest.fixture
     def aws_ses_service(self, messaging_config):
-        return AWSSESService(messaging_config)
+        return AWS_SES_Service(messaging_config)
 
     @patch("fides.service.messaging.aws_ses_service.get_aws_session")
     def test_get_ses_client(self, mock_get_aws_session, aws_ses_service):
@@ -65,7 +65,7 @@ class TestAWSSESService:
         mock_get_aws_session.assert_not_called()
         mock_session.client.assert_not_called()
 
-    @patch("fides.service.messaging.aws_ses_service.AWSSESService.get_ses_client")
+    @patch("fides.service.messaging.aws_ses_service.AWS_SES_Service.get_ses_client")
     def test_validate_email_and_domain_status_success(
         self, mock_get_ses_client, aws_ses_service
     ):
@@ -84,7 +84,7 @@ class TestAWSSESService:
             Identities=["test@example.com", "example.com"]
         )
 
-    @patch("fides.service.messaging.aws_ses_service.AWSSESService.get_ses_client")
+    @patch("fides.service.messaging.aws_ses_service.AWS_SES_Service.get_ses_client")
     def test_validate_email_and_domain_email_status_failure(
         self, mock_get_ses_client, aws_ses_service
     ):
@@ -106,7 +106,7 @@ class TestAWSSESService:
             Identities=["test@example.com", "example.com"]
         )
 
-    @patch("fides.service.messaging.aws_ses_service.AWSSESService.get_ses_client")
+    @patch("fides.service.messaging.aws_ses_service.AWS_SES_Service.get_ses_client")
     def test_validate_email_and_domain_email_status_missing(
         self, mock_get_ses_client, aws_ses_service
     ):
@@ -127,7 +127,7 @@ class TestAWSSESService:
             Identities=["test@example.com", "example.com"]
         )
 
-    @patch("fides.service.messaging.aws_ses_service.AWSSESService.get_ses_client")
+    @patch("fides.service.messaging.aws_ses_service.AWS_SES_Service.get_ses_client")
     def test_validate_email_and_domain_domain_status_failure(
         self, mock_get_ses_client, aws_ses_service
     ):
@@ -149,9 +149,9 @@ class TestAWSSESService:
             Identities=["test@example.com", "example.com"]
         )
 
-    @patch("fides.service.messaging.aws_ses_service.AWSSESService.get_ses_client")
+    @patch("fides.service.messaging.aws_ses_service.AWS_SES_Service.get_ses_client")
     @patch(
-        "fides.service.messaging.aws_ses_service.AWSSESService.validate_email_and_domain_status"
+        "fides.service.messaging.aws_ses_service.AWS_SES_Service.validate_email_and_domain_status"
     )
     def test_send_email(
         self,

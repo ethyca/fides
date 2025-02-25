@@ -52,14 +52,14 @@ class AWSSESException(Exception):
     pass
 
 
-class AWSSESService:
+class AWS_SES_Service:
     """
     Service class to wrap interactions with AWS SES.
     """
 
     def __init__(self, messaging_config: MessagingConfig):
         """
-        Instantiate AWSSESService with a messaging config.
+        Instantiate AWS_SES_Service with a messaging config.
         """
         self.messaging_config_details = MessagingServiceDetailsAWSSES.model_validate(
             messaging_config.details
@@ -84,7 +84,7 @@ class AWSSESService:
         }
 
         aws_session = get_aws_session(
-            auth_method=self.messaging_config_secrets.aws_auth_method.value,
+            auth_method=self.messaging_config_secrets.auth_method.value,
             storage_secrets=storage_secrets,  # type: ignore[arg-type]
             assume_role_arn=self.messaging_config_secrets.aws_assume_role_arn,
         )

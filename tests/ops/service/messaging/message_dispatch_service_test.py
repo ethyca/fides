@@ -574,7 +574,7 @@ class TestMessageDispatchService:
         )
 
     @mock.patch(
-        "fides.api.service.messaging.message_dispatch_service.AWSSESService",
+        "fides.api.service.messaging.message_dispatch_service.AWS_SES_Service",
         autospec=True,
     )
     def test_email_dispatch_aws_ses_email_test_message(
@@ -595,7 +595,7 @@ class TestMessageDispatchService:
         )
 
     @mock.patch(
-        "fides.api.service.messaging.message_dispatch_service.AWSSESService",
+        "fides.api.service.messaging.message_dispatch_service.AWS_SES_Service",
         autospec=True,
     )
     def test_email_dispatch_aws_ses_email_raises_exception(

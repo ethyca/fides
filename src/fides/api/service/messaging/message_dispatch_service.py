@@ -46,7 +46,7 @@ from fides.api.tasks import DatabaseTask, celery_app
 from fides.api.util.logger import Pii
 from fides.config import CONFIG
 from fides.config.config_proxy import ConfigProxy
-from fides.service.messaging.aws_ses_service import AWSSESService
+from fides.service.messaging.aws_ses_service import AWS_SES_Service
 
 EMAIL_JOIN_STRING = ", "
 EMAIL_TEMPLATE_NAME = "fides"
@@ -733,7 +733,7 @@ def _aws_ses_dispatcher(
 ) -> None:
     validate_config(messaging_config, "AWS SES")
 
-    aws_ses_serivce = AWSSESService(messaging_config)
+    aws_ses_serivce = AWS_SES_Service(messaging_config)
 
     try:
         aws_ses_serivce.send_email(to, message.subject, message.body)

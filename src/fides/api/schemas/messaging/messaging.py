@@ -10,10 +10,12 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 from fides.api.custom_types import PhoneNumber, SafeStr
 from fides.api.schemas import Msg
 from fides.api.schemas.api import BulkResponse, BulkUpdateFailed
+from fides.api.schemas.connection_configuration.connection_secrets_base_aws import (
+    BaseAWSSchema,
+)
 from fides.api.schemas.privacy_preference import MinimalPrivacyPreferenceHistorySchema
 from fides.api.schemas.privacy_request import Consent
 from fides.api.schemas.property import MinimalProperty
-from fides.api.schemas.storage.storage import AWSAuthMethod
 
 
 class MessagingMethod(Enum):
@@ -310,7 +312,7 @@ class MessagingServiceSecrets(Enum):
     TWILIO_API_KEY = "twilio_api_key"
 
     # AWS SES
-    AWS_AUTH_METHOD = "aws_auth_method"
+    AWS_AUTH_METHOD = "auth_method"
     AWS_ACCESS_KEY_ID = "aws_access_key_id"
     AWS_SECRET_ACCESS_KEY = "aws_secret_access_key"
     AWS_ASSUME_ROLE_ARN = "aws_assume_role_arn"
@@ -357,17 +359,11 @@ class MessagingServiceSecretsTwilioEmail(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
 
-class MessagingServiceSecretsAWSSES(BaseModel):
-    """The secrets required to connect to AWS SES."""
-
-    aws_auth_method: AWSAuthMethod
-    aws_access_key_id: Optional[str] = None
-    aws_secret_access_key: Optional[str] = None
-    aws_assume_role_arn: Optional[str] = Field(
-        default=None,
-        title="Assume Role ARN",
-        description="If provided, the ARN of the role that should be assumed to connect to AWS.",
-    )
+class MessagingServiceSecretsAWSSES(BaseAWSSchema):
+    """
+    The secrets required to connect to AWS SES.
+    Inherits basic AWS authentication schema.
+    """
 
     model_config = ConfigDict(extra="forbid")
 
@@ -413,14 +409,24 @@ class MessagingConfigRequestBase(MessagingConfigBase):
     ) -> None:
         if isinstance(service_type, MessagingServiceType):
             service_type = service_type.value
+
+        if (
+            service_type
+            in [
+                MessagingServiceType.mailgun.value,
+                MessagingServiceType.twilio_email.value,
+                MessagingServiceType.aws_ses.value,
+            ]
+            and not details
+        ):
+            raise ValueError("Messaging config must include details")
+
         if service_type == MessagingServiceType.mailgun.value:
-            if not details:
-                raise ValueError("Messaging config must include details")
-            MessagingServiceDetailsMailgun.validate(details)
+            MessagingServiceDetailsMailgun.model_validate(details)
         if service_type == MessagingServiceType.twilio_email.value:
-            if not details:
-                raise ValueError("Messaging config must include details")
-            MessagingServiceDetailsTwilioEmail.validate(details)
+            MessagingServiceDetailsTwilioEmail.model_validate(details)
+        if service_type == MessagingServiceType.aws_ses.value:
+            MessagingServiceDetailsAWSSES.model_validate(details)
 
 
 class MessagingConfigRequest(MessagingConfigRequestBase):
