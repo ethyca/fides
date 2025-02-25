@@ -17,13 +17,13 @@ import {
   getFidesConsentCookie,
   transformTcfPreferencesToCookieKeys,
 } from "../cookie";
+import { decodeFidesString, idsFromAcString } from "../fidesString";
 import {
   transformConsentToFidesUserPreference,
   transformUserPreferenceToBoolean,
 } from "../shared-consent-utils";
 import { generateFidesString } from "../tcf";
 import { FIDES_SYSTEM_COOKIE_KEY_MAP, TCF_KEY_MAP } from "./constants";
-import { decodeFidesString, idsFromAcString } from "./fidesString";
 import {
   EnabledIds,
   GVLTranslationJson,
@@ -91,6 +91,9 @@ export const buildTcfEntitiesFromCookieAndFidesString = (
     const { tc: tcString, ac: acString } = decodeFidesString(
       cookie.fides_string,
     );
+    if (!tcString) {
+      return tcfEntities;
+    }
     const acStringIds = idsFromAcString(acString);
 
     // Populate every field from tcModel

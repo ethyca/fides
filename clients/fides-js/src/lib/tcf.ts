@@ -9,6 +9,7 @@ import { CmpApi, TCData } from "@iabtechlabtcf/cmpapi";
 import { GVL, Segment, TCModel, TCString } from "@iabtechlabtcf/core";
 
 import { PrivacyExperience, PrivacyExperienceMinimal } from "./consent-types";
+import { formatFidesStringWithGpp } from "./fidesString";
 import { ETHYCA_CMP_ID, FIDES_SEPARATOR } from "./tcf/constants";
 import { extractTCStringForCmpApi } from "./tcf/events";
 import { EnabledIds } from "./tcf/types";
@@ -189,6 +190,14 @@ export const initializeTcfCmpApi = () => {
   // Initialize api with TC str, we don't yet show UI, so we use false
   // see https://github.com/InteractiveAdvertisingBureau/iabtcf-es/tree/master/modules/cmpapi#dont-show-ui--tc-string-does-not-need-an-update
   window.addEventListener("FidesInitialized", (event) => {
+    // Set default GPP string if GPP is enabled. This will get updated by the GPP extension
+    if (window.Fides.experience?.gpp_settings?.enabled) {
+      window.Fides.fides_string =
+        window.Fides.fides_string ||
+        window.Fides.cookie?.fides_string ||
+        formatFidesStringWithGpp();
+    }
+
     const tcString = extractTCStringForCmpApi(event);
     cmpApi.update(tcString, false);
   });
