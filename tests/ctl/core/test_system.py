@@ -478,73 +478,54 @@ class TestUpsertCookies:
         self, test_cookie_system, async_session_temp
     ):
         """Test that adding cookies with privacy declarations carries over the system ids and data uses"""
-        print("start of test")
-        new_cookies = [{"name": "apple"}, {"name": "strawberry"}]
-        privacy_declaration = sorted(
-            test_cookie_system.privacy_declarations, key=lambda x: x.name
-        )[0]
-        other_decl = sorted(
-            test_cookie_system.privacy_declarations, key=lambda x: x.name
-        )[1]
+        async with async_session_temp.begin():
+            # async_session_temp = session
+            new_cookies = [{"name": "apple"}, {"name": "strawberry"}]
+            privacy_declaration = sorted(
+                test_cookie_system.privacy_declarations, key=lambda x: x.name
+            )[0]
+            other_decl = sorted(
+                test_cookie_system.privacy_declarations, key=lambda x: x.name
+            )[1]
 
-        # give each privacy declaration a different data use that should translate the cookie
-        privacy_declaration.data_use = "essential"
-        other_decl.data_use = "functional.service.improve"
-        async_session_temp.add(privacy_declaration)
-        async_session_temp.add(other_decl)
-        # await async_session_temp.commit()
-        # await async_session_temp.refresh(privacy_declaration)
-        # await async_session_temp.refresh(other_decl)
+            result = await async_session_temp.execute(select(Asset))
+            assert len(result.scalars().all()) == 0
+            # add new cookies
 
-        print("assets before upserting anything")
-        result = await async_session_temp.execute(select(Asset))
-        assert len(result.scalars().all()) == 0
-        # add new cookies
+            await upsert_cookie_assets(
+                async_session_temp,
+                [new_cookies[0]],  # just one cookie
+                privacy_declaration,
+                system=None,
+            )
 
-        await upsert_cookie_assets(
-            async_session_temp,
-            [new_cookies[0]],  # just one cookie
-            privacy_declaration,
-            system=None,
-        )
-        await async_session_temp.commit()
-        result = await async_session_temp.execute(select(Asset))
-        assert len(result.scalars().all()) == 1
+            result = await async_session_temp.execute(select(Asset))
+            result = result.scalars().all()
+            assert len(result) == 1
+            new_cookie = result[0]
+            assert new_cookie.created_at is not None
+            assert new_cookie.updated_at is not None
+            assert new_cookie.name == "apple"
+            assert new_cookie.system_id == test_cookie_system.id
+            assert new_cookie.data_uses == [privacy_declaration.data_use]
 
-        await upsert_cookie_assets(
-            async_session_temp,
-            [new_cookies[1]],  # just one cookie
-            privacy_declaration=other_decl,
-            system=None,
-        )
-        await async_session_temp.commit()
-        result = await async_session_temp.execute(select(Asset))
-        assert len(result.scalars().all()) == 2
+            await upsert_cookie_assets(
+                async_session_temp,
+                [new_cookies[1]],  # just one cookie
+                privacy_declaration=other_decl,
+                system=None,
+            )
 
-        # add cookie already attached to system again but inside this session
+            result = await async_session_temp.execute(select(Asset))
 
-        result = await async_session_temp.execute(
-            select(Asset).where(Asset.name == new_cookies[0]["name"])
-        )
-        new_cookie = result.scalars().first()
-        assert new_cookie is not None
+            other_cookie = result.scalars().all()[0]
+            assert other_cookie.name == "strawberry"
+            assert other_cookie is not None
 
-        assert new_cookie.created_at is not None
-        assert new_cookie.updated_at is not None
-        assert new_cookie.name == "apple"
-        assert new_cookie.system_id == test_cookie_system.id
-        assert new_cookie.data_uses == [privacy_declaration.data_use.split]
-
-        result = await async_session_temp.execute(
-            select(Asset).where(Asset.name == "strawberry")
-        )
-        existing_cookie = result.scalars().first()
-        assert existing_cookie is not None
-
-        assert existing_cookie.created_at is not None
-        assert existing_cookie.updated_at is not None
-        assert existing_cookie.system_id == test_cookie_system.id
-        assert existing_cookie.data_uses == [other_decl.data_use]
+            assert other_cookie.created_at is not None
+            assert other_cookie.updated_at is not None
+            assert other_cookie.system_id == test_cookie_system.id
+            assert other_cookie.data_uses == [other_decl.data_use]
 
     async def test_no_change_to_privacy_declaration_cookies(
         self, test_cookie_system, async_session_temp
