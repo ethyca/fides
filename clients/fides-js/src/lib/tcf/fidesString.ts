@@ -1,19 +1,53 @@
 import { FIDES_SEPARATOR } from "./constants";
 import { VendorSources } from "./vendors";
 
+/**
+ * Decodes a Fides string into its component parts.
+ *
+ * The Fides string format is: `TC_STRING,AC_STRING,GPP_STRING` where:
+ * - TC_STRING: The TCF (Transparency & Consent Framework) string
+ * - AC_STRING: The Additional Consent string, which is derived from TC_STRING
+ * - GPP_STRING: The Global Privacy Platform string
+ *
+ * Rules:
+ * 1. If the string is empty or undefined, all parts are empty strings
+ * 2. If only one part exists, it's treated as the TC string
+ * 3. AC string can only exist if TC string exists (as it's derived from TC)
+ * 4. GPP string is independent and can exist with or without TC/AC strings
+ *
+ * @example
+ * // Complete string with all parts
+ * decodeFidesString("CPzvOIA.IAAA,1~2.3.4,DBABLA~BVAUAAAAAWA.QA")
+ * // Returns { tc: "CPzvOIA.IAAA", ac: "1~2.3.4", gpp: "DBABLA~BVAUAAAAAWA.QA" }
+ *
+ * // TC string only
+ * decodeFidesString("CPzvOIA.IAAA")
+ * // Returns { tc: "CPzvOIA.IAAA", ac: "", gpp: "" }
+ *
+ * // GPP string only (with empty TC and AC)
+ * decodeFidesString(",,DBABLA~BVAUAAAAAWA.QA")
+ * // Returns { tc: "", ac: "", gpp: "DBABLA~BVAUAAAAAWA.QA" }
+ *
+ * @param fidesString - The combined Fides string to decode
+ * @returns An object containing the decoded TC, AC, and GPP strings
+ */
 export const decodeFidesString = (fidesString: string) => {
+  if (!fidesString) {
+    return { tc: "", ac: "", gpp: "" };
+  }
+
   const split = fidesString.split(FIDES_SEPARATOR);
+
   if (split.length === 1) {
-    return { tc: split[0], ac: "" };
+    return { tc: split[0], ac: "", gpp: "" };
   }
-  if (split.length >= 2) {
-    const [tc, ac] = split;
-    if (tc === "") {
-      return { tc: "", ac: "" };
-    }
-    return { tc, ac };
+
+  const [tc = "", ac = "", gpp = ""] = split;
+  if (tc === "") {
+    return { tc: "", ac: "", gpp };
   }
-  return { tc: "", ac: "" };
+
+  return { tc, ac, gpp };
 };
 
 /**
