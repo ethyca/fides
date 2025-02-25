@@ -129,7 +129,7 @@ const useCytoscapeGraph = ({ data }: { data: SpatialData }) => {
         },
       },
     ],
-    [],
+    [backgroundColor],
   );
 
   return {

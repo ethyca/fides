@@ -1,19 +1,19 @@
-import { Wrap, WrapProps } from "fidesui";
-import React from "react";
+import React, { HTMLAttributes } from "react";
 
-const TaxonomyCellContainer = ({ children, ...props }: WrapProps) => {
+const TaxonomyCellContainer = ({
+  children,
+  className,
+  ...props
+}: HTMLAttributes<HTMLDivElement>) => {
   return (
-    <Wrap
-      py={2}
-      alignItems="center"
-      position="relative"
-      width="100%"
-      gap={2}
-      overflowX="auto"
+    <div
+      className={`relative flex w-full flex-wrap items-center gap-2 overflow-x-auto py-2 ${
+        className || ""
+      }`}
       {...props}
     >
       {children}
-    </Wrap>
+    </div>
   );
 };
 

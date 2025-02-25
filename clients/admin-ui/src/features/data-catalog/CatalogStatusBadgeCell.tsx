@@ -2,11 +2,11 @@ import { BadgeCell } from "~/features/common/table/v2";
 import { CatalogResourceStatus } from "~/features/data-catalog/utils";
 
 const STATUS_COLOR_MAP: Record<CatalogResourceStatus, string> = {
-  [CatalogResourceStatus.ATTENTION_REQUIRED]: "red",
-  [CatalogResourceStatus.APPROVED]: "green",
-  [CatalogResourceStatus.IN_REVIEW]: "yellow",
-  [CatalogResourceStatus.CLASSIFYING]: "blue",
-  [CatalogResourceStatus.NONE]: "gray",
+  [CatalogResourceStatus.ATTENTION_REQUIRED]: "error",
+  [CatalogResourceStatus.APPROVED]: "success",
+  [CatalogResourceStatus.IN_REVIEW]: "warning",
+  [CatalogResourceStatus.CLASSIFYING]: "info",
+  [CatalogResourceStatus.NONE]: "marble",
 };
 
 const CatalogStatusBadgeCell = ({
@@ -14,7 +14,7 @@ const CatalogStatusBadgeCell = ({
 }: {
   status: CatalogResourceStatus;
 }) => {
-  return <BadgeCell colorScheme={STATUS_COLOR_MAP[status]} value={status} />;
+  return <BadgeCell color={STATUS_COLOR_MAP[status]} value={status} />;
 };
 
 export default CatalogStatusBadgeCell;

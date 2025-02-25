@@ -1,11 +1,10 @@
-import { AntButton, EditIcon, Icons } from "fidesui";
+import { AntTag as Tag, Icons } from "fidesui";
 import { MouseEventHandler, useCallback, useState } from "react";
 
 import { SystemSelect } from "~/features/common/dropdown/SystemSelect";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { useAlert } from "~/features/common/hooks";
 import { getTableTHandTDStyles } from "~/features/common/table/v2/util";
-import ClassificationCategoryBadge from "~/features/data-discovery-and-detection/ClassificationCategoryBadge";
 import { useUpdateResourceCategoryMutation } from "~/features/data-discovery-and-detection/discovery-detection.slice";
 import { AddNewSystemModal } from "~/features/system/AddNewSystemModal";
 import { StagedResourceAPIResponse } from "~/types/api";
@@ -68,23 +67,15 @@ export const SystemCell = ({
       {!isEditing && (
         <div style={getTableTHandTDStyles()}>
           {systemName ? (
-            <ClassificationCategoryBadge
-              onClick={() => setIsEditing(true)}
-              data-testid="system-badge"
-            >
-              <>
-                {systemName}
-                <EditIcon />
-              </>
-            </ClassificationCategoryBadge>
+            <Tag onClick={() => setIsEditing(true)} data-testid="system-badge">
+              {systemName}
+              <Icons.Edit />
+            </Tag>
           ) : (
-            <AntButton
-              size="small"
-              type="text"
-              aria-label="add"
-              icon={<Icons.Add />}
+            <Tag
               onClick={() => setIsEditing(true)}
               data-testid="add-system-btn"
+              addable
             />
           )}
         </div>
