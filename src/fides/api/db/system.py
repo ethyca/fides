@@ -8,7 +8,6 @@ from typing import Any, Dict, List, Optional, Tuple, Type, Union
 
 from deepdiff import DeepDiff
 from fastapi import HTTPException
-from fideslang.models import Cookies as CookieSchema
 from fideslang.models import System as SystemSchema
 from fideslang.validation import FidesKey
 from loguru import logger as log
@@ -19,8 +18,8 @@ from sqlalchemy.sql.elements import BinaryExpression
 from starlette.status import HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND
 
 from fides.api.db.crud import create_resource, get_resource, update_resource
+from fides.api.models.asset import Asset
 from fides.api.models.sql_models import (  # type: ignore[attr-defined]
-    Cookies,
     DataCategory,
     DataSubject,
     DataUse,
@@ -169,7 +168,7 @@ async def upsert_privacy_declarations(
                 declaration = PrivacyDeclaration.create(db, data=data)
 
             # Upsert cookies for the given privacy declaration
-            await upsert_cookies(
+            await upsert_cookie_assets(
                 db, privacy_declaration_cookies, declaration, system=None
             )
 
@@ -178,14 +177,14 @@ async def upsert_privacy_declarations(
             await db.delete(existing_declarations)
 
 
-async def upsert_cookies(
+async def upsert_cookie_assets(
     async_session: AsyncSession,
     cookies: Optional[List[Dict]],
     privacy_declaration: Optional[PrivacyDeclaration],
     system: Optional[System],
 ) -> None:
     """
-    Upsert cookies for the given system or privacy_declaration.  Cookies can be attached at the system-level
+    Upsert cookie assets for the given system or privacy_declaration.  Cookies can be attached at the system-level
     or the privacy declaration-level.
 
     Remove any existing cookies that aren't specified here.
@@ -202,53 +201,37 @@ async def upsert_cookies(
             "Supply either system or privacy declaration, not both, to upsert cookies"
         )
 
-    parsed_cookies = (
-        [CookieSchema.model_validate(cookie) for cookie in cookies] if cookies else []
-    )
+    if privacy_declaration:
+        # if we got a privacy declaration we need to pull the system_id and data_use from it
+        system_id = privacy_declaration.system_id
+        data_uses = [privacy_declaration.data_use]
+    else:
+        data_uses = []
+        system_id = system.id
 
-    resource_filter: BinaryExpression = (
-        Cookies.system_id == system.id
-        if system
-        else Cookies.privacy_declaration_id == privacy_declaration.id  # type: ignore[union-attr]
-    )
+    resource_filter: BinaryExpression = Asset.system_id == system_id
 
-    for cookie_data in parsed_cookies:
-        # Check if cookie exists on the resource
-        result = await async_session.execute(
-            select(Cookies).where(
-                and_(Cookies.name == cookie_data.name, resource_filter)
-            )
+    if not cookies:
+        cookies = []
+
+    for cookie_data in cookies:
+        # Update existing or insert new cookie
+        await Asset.upsert_async(
+            async_session=async_session,
+            data={
+                "name": cookie_data.get("name"),
+                "domain": cookie_data.get("domain"),
+                "system_id": system.id if system else None,
+                "asset_type": "Cookie",
+                "data_uses": data_uses,
+            },
         )
-        row: Optional[Cookies] = result.scalars().first()
-        if row:
-            # Update existing cookie
-            await async_session.execute(
-                update(Cookies)
-                .where(Cookies.id == row.id)
-                .values(cookie_data.model_dump(mode="json"))
-            )
-
-        else:
-            # Insert new cookie
-            await async_session.execute(
-                insert(Cookies).values(
-                    {
-                        "name": cookie_data.name,
-                        "path": cookie_data.path,
-                        "domain": cookie_data.domain,
-                        "privacy_declaration_id": (
-                            privacy_declaration.id if privacy_declaration else None
-                        ),
-                        "system_id": system.id if system else None,
-                    }
-                )
-            )
 
     # Select cookies which are currently on the application resource, but not included in the request
     delete_result = await async_session.execute(
-        select(Cookies).where(
+        select(Asset).where(
             and_(
-                Cookies.name.notin_([cookie.name for cookie in parsed_cookies]),
+                Asset.name.notin_([cookie.get("name") for cookie in cookies]),
                 resource_filter,
             )
         )
@@ -256,8 +239,8 @@ async def upsert_cookies(
 
     # Remove those cookies altogether
     await async_session.execute(
-        delete(Cookies).where(
-            Cookies.id.in_(
+        delete(Asset).where(
+            Asset.id.in_(
                 [cookie.id for cookie in delete_result.scalars().unique().all()]
             )
         )
@@ -297,7 +280,7 @@ async def update_system(
     updated_system = await update_resource(System, resource.model_dump(), db)
 
     async with db.begin():
-        await upsert_cookies(
+        await upsert_cookie_assets(
             db, proposed_system_cookies, privacy_declaration=None, system=updated_system
         )  # Upsert the associated cookies at the System-level
 
@@ -418,7 +401,7 @@ async def create_system(
     privacy_declaration_exception = None
     try:
         async with db.begin():
-            await upsert_cookies(
+            await upsert_cookie_assets(
                 db,
                 proposed_system_cookies,
                 privacy_declaration=None,
@@ -433,7 +416,7 @@ async def create_system(
                 privacy_declaration = PrivacyDeclaration.create(
                     db, data=data
                 )  # create the associated PrivacyDeclaration
-                await upsert_cookies(
+                await upsert_cookie_assets(
                     db,
                     privacy_declaration_cookies,
                     privacy_declaration=privacy_declaration,
