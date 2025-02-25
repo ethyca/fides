@@ -216,12 +216,12 @@ async def upsert_cookie_assets(
 
     for cookie_data in cookies:
         # Update existing or insert new cookie
-        await Asset.upsert_async(
+        cookie_asset = await Asset.upsert_async(
             async_session=async_session,
             data={
                 "name": cookie_data.get("name"),
                 "domain": cookie_data.get("domain"),
-                "system_id": system.id if system else None,
+                "system_id": system_id,
                 "asset_type": "Cookie",
                 "data_uses": data_uses,
             },
@@ -384,7 +384,7 @@ async def create_system(
     delattr(resource, "privacy_declarations")
 
     # Remove system-level cookies from request; these will be processed after the system is added
-    proposed_system_cookies: Optional[List[Cookies]] = resource.cookies
+    proposed_system_cookies = resource.cookies
     delattr(resource, "cookies")
 
     # create the system resource using generic creation
