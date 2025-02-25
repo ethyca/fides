@@ -5,7 +5,7 @@ from loguru import logger
 from sqlalchemy import MetaData, Table, text
 from sqlalchemy.engine import Engine
 from sqlalchemy.sql import Delete, Update  # type: ignore
-from sqlalchemy.sql.elements import ColumnElement
+from sqlalchemy.sql.elements import ColumnElement, TextClause
 
 from fides.api.graph.config import Field, FieldPath
 from fides.api.graph.execution import ExecutionNode
@@ -227,3 +227,45 @@ class BigQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
             else:
                 formatted_fields.append(field_path.levels[0])
         return formatted_fields
+
+    def generate_raw_query(
+        self, field_list: List[str], filters: Dict[str, List[Any]]
+    ) -> Optional[TextClause]:
+        """
+        Allows executing a somewhat raw query where the field_list and filters do not depend
+        on the Node or Graph structure.
+
+        This is an override of the base class method that supports nested fields for BigQuery.
+        """
+        clauses = []
+        query_data = {}
+        for field_name, field_value in filters.items():
+            # Replace dots with underscores in field names for parameter binding
+            field_binding_name = field_name.replace(".", "_")
+            data = set(field_value)
+            if len(data) == 1:
+                clauses.append(
+                    self.format_clause_for_query(field_name, "=", field_binding_name)
+                )
+                query_data[field_binding_name] = data.pop()
+            elif len(data) > 1:
+                data_vals = list(data)
+                query_data_keys: List[str] = []
+                for val in data_vals:
+                    # appending "_in_stmt_generated_" (can be any arbitrary str) so that this name has lower chance of conflicting with pre-existing column in table
+                    query_data_name = (
+                        field_binding_name
+                        + "_in_stmt_generated_"
+                        + str(data_vals.index(val))
+                    )
+                    query_data[query_data_name] = val
+                    query_data_keys.append(self.format_query_data_name(query_data_name))
+                operand = ", ".join(query_data_keys)
+                clauses.append(self.format_clause_for_query(field_name, "IN", operand))
+
+        if len(clauses) > 0:
+            formatted_fields = ", ".join(field_list)
+            query_str = self.get_formatted_query_string(formatted_fields, clauses)
+            return text(query_str).params(query_data)
+
+        return None
