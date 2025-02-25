@@ -1,7 +1,8 @@
 import { CheckIcon, HStack } from "fidesui";
 
 import { useAlert } from "~/features/common/hooks";
-import { DiffStatus, StagedResource } from "~/types/api";
+import { DiscoveryMonitorItem } from "~/features/data-discovery-and-detection/types/DiscoveryMonitorItem";
+import { DiffStatus } from "~/types/api";
 
 import { MonitorOffIcon } from "../../../common/Icon/MonitorOffIcon";
 import { MonitorOnIcon } from "../../../common/Icon/MonitorOnIcon";
@@ -15,7 +16,7 @@ import { StagedResourceType } from "../../types/StagedResourceType";
 import { findResourceType } from "../../utils/findResourceType";
 
 interface DetectionItemActionProps {
-  resource: StagedResource;
+  resource: DiscoveryMonitorItem;
   ignoreChildActions?: boolean;
 }
 
