@@ -423,7 +423,7 @@ def requeue_interrupted_tasks(self: DatabaseTask) -> None:
                             and not celery_tasks_in_flight([subtask_id])
                         ):
                             logger.warning(
-                                f"Request task {request_task.id} is not in the queue or running"
+                                f"Request task {request_task.id} is not in the queue or running, requeueing privacy request"
                             )
                             should_requeue = True
                             break
