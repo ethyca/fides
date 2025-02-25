@@ -9,10 +9,9 @@ interface PageLayoutProps {
 }
 
 const PageLayout = ({ children, serverEnvironment }: PageLayoutProps) => {
-  const { styles, config } = serverEnvironment;
+  const { config } = serverEnvironment;
   return (
     <>
-      {styles ? <style suppressHydrationWarning>{styles}</style> : null}
       <Header logoPath={config?.logo_path!} logoUrl={config?.logo_url!} />
       <div>
         <Providers serverEnvironment={serverEnvironment}>{children}</Providers>

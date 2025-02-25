@@ -17,6 +17,7 @@ import theme from "~/theme";
 
 import { PrivacyCenterEnvironment } from "../app/server-environment";
 import store, { persistor } from "../app/store";
+import CustomStylesWrapper from "./CustomStylesWrapper";
 
 interface ProvidersProps {
   serverEnvironment: PrivacyCenterEnvironment;
@@ -41,7 +42,9 @@ const Providers = ({ serverEnvironment, children }: ProvidersProps) => {
       <I18nProvider>
         <PersistGate persistor={persistor}>
           <FidesUIProvider theme={theme}>
-            <ErrorBoundary fallbackRender={Error}>{children}</ErrorBoundary>
+            <ErrorBoundary fallbackRender={Error}>
+              <CustomStylesWrapper>{children}</CustomStylesWrapper>
+            </ErrorBoundary>
           </FidesUIProvider>
         </PersistGate>
       </I18nProvider>
