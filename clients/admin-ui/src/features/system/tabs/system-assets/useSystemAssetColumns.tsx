@@ -40,13 +40,31 @@ const useSystemAssetColumns = () => {
       ),
       header: "Locations",
       meta: {
-        width: "fit-content",
+        width: "auto",
       },
     }),
     columnHelper.accessor((row) => row.domain, {
       id: "domain",
       cell: (props) => <DefaultCell value={props.getValue()} />,
       header: "Domain",
+    }),
+    columnHelper.accessor((row) => row.parent, {
+      id: "parent",
+      cell: (props) => (
+        <BadgeCellExpandable
+          values={props.getValue().map((parent: string) => ({
+            label: parent,
+            key: parent,
+          }))}
+          bgColor="white"
+          borderWidth="1px"
+          borderColor="gray.200"
+        />
+      ),
+      header: "Parent",
+      meta: {
+        width: "auto",
+      },
     }),
   ];
 

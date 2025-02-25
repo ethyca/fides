@@ -14,7 +14,7 @@ import { useGetSystemAssetsQuery } from "~/features/system/system.slice";
 import useSystemAssetColumns from "~/features/system/tabs/system-assets/useSystemAssetColumns";
 import { SystemResponse } from "~/types/api";
 
-const SystemAssets = ({ system }: { system: SystemResponse }) => {
+const SystemAssetsTable = ({ system }: { system: SystemResponse }) => {
   const {
     PAGE_SIZES,
     pageSize,
@@ -94,4 +94,4 @@ const SystemAssets = ({ system }: { system: SystemResponse }) => {
   );
 };
 
-export default SystemAssets;
+export default SystemAssetsTable;
