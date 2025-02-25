@@ -104,7 +104,7 @@ const DiscoveryItemActionsCell = ({ resource }: DiscoveryItemActionsProps) => {
   };
 
   return (
-    <HStack gap={2} width="fit-content">
+    <HStack gap={2}>
       {showPromoteAction && (
         <ActionButton
           title="Confirm"

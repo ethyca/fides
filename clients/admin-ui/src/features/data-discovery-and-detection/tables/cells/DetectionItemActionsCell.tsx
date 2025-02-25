@@ -62,7 +62,7 @@ const DetectionItemActionsCell = ({
     childDiffHasChanges;
 
   return (
-    <HStack width="fit-content">
+    <HStack>
       {showStartMonitoringAction && (
         <ActionButton
           title="Monitor"
