@@ -75,7 +75,10 @@ export interface Fides {
    * - GPP_STRING: IAB GPP (Global Privacy Platform) string
    *
    * Note: The AC_STRING can only exist if TC_STRING exists, as it's derived from it.
-   * The GPP_STRING is independent and can exist with or without the other strings.
+   * When GPP is enabled, the GPP_STRING portion is automatically initialized during
+   * FidesJS initialization, either preserving any existing GPP string or using a
+   * default value. The GPP_STRING is independent and can exist with or without the
+   * other strings.
    *
    * @example
    * // Complete string with all parts:
