@@ -6,8 +6,8 @@ Create Date: 2025-02-18 18:33:56.039924
 
 """
 
-from typing import Dict
 import uuid
+from typing import Dict
 
 import sqlalchemy as sa
 from alembic import op
