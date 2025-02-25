@@ -34,6 +34,7 @@ import {
 } from "./lib/consent-types";
 import { initializeDebugger } from "./lib/debugger";
 import { dispatchFidesEvent, onFidesEvent } from "./lib/events";
+import { decodeFidesString } from "./lib/fidesString";
 import type { GppFunction } from "./lib/gpp/types";
 import { DEFAULT_MODAL_LINK_LABEL } from "./lib/i18n";
 import {
@@ -45,7 +46,6 @@ import {
 } from "./lib/initialize";
 import { initOverlay } from "./lib/initOverlay";
 import { initializeTcfCmpApi } from "./lib/tcf";
-import { decodeFidesString } from "./lib/fidesString";
 import { renderOverlay } from "./lib/tcf/renderOverlay";
 import { makeStub } from "./lib/tcf/stub";
 import {

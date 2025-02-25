@@ -41,18 +41,8 @@ export const decodeFidesString = (fidesString: string) => {
     return { tc: "", ac: "", gpp: "" };
   }
 
-  const split = fidesString.split(FIDES_SEPARATOR);
-
-  if (split.length === 1) {
-    return { tc: split[0], ac: "", gpp: "" };
-  }
-
-  const [tc = "", ac = "", gpp = ""] = split;
-  if (tc === "") {
-    return { tc: "", ac: "", gpp };
-  }
-
-  return { tc, ac, gpp };
+  const [tc = "", ac = "", gpp = ""] = fidesString.split(FIDES_SEPARATOR);
+  return tc ? { tc, ac, gpp } : { tc: "", ac: "", gpp };
 };
 
 /**
@@ -63,24 +53,15 @@ export const decodeFidesString = (fidesString: string) => {
  * idsFromAcString("1~1.2.3")
  */
 export const idsFromAcString = (acString: string) => {
-  const isValidAc = /\d~/;
-  if (!acString) {
-    return [];
-  }
-  if (!isValidAc.test(acString)) {
-    fidesDebugger(`Received invalid AC string "${acString}", returning no ids`);
-    return [];
-  }
-  const split = acString.split("~");
-  if (split.length !== 2) {
+  if (!acString?.match(/\d~[0-9.]+$/)) {
+    fidesDebugger(
+      acString && `Received invalid AC string "${acString}", returning no ids`,
+    );
     return [];
   }
 
-  const ids = split[1].split(".");
-  if (ids.length === 1 && ids[0] === "") {
-    return [];
-  }
-  return ids.map((id) => `${VendorSources.AC}.${id}`);
+  const [, ids = ""] = acString.split("~");
+  return ids ? ids.split(".").map((id) => `${VendorSources.AC}.${id}`) : [];
 };
 
 /**
@@ -92,19 +73,10 @@ export const idsFromAcString = (acString: string) => {
  */
 export const formatFidesStringWithGpp = (cmpApi?: CmpApi): string => {
   const gppString = cmpApi?.getGppString() || DEFAULT_GPP_STRING;
-
-  // In a TCF experience, append to existing string
-  if (window.Fides.options.tcfEnabled) {
-    const parts = window.Fides.fides_string?.split(FIDES_SEPARATOR) || [];
-    // Ensure we have at least 2 parts (TCF and AC strings)
-    while (parts.length < 2) {
-      parts.push("");
-    }
-    // Add GPP string as third part
-    parts[2] = gppString;
-    return parts.join(FIDES_SEPARATOR);
-  }
-
-  // In a non-TCF experience, use empty strings for TCF and AC parts
-  return `,,${gppString}`;
+  return window.Fides.options.tcfEnabled
+    ? [...(window.Fides.fides_string?.split(FIDES_SEPARATOR) || []), "", ""]
+        .slice(0, 2)
+        .concat(gppString)
+        .join(FIDES_SEPARATOR)
+    : `,,${gppString}`;
 };
