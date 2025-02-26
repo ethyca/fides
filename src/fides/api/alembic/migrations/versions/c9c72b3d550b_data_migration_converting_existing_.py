@@ -192,7 +192,7 @@ def downgrade():
                     "VALUES (:id, NOW(), NOW(), :name, :domain, :system_id)"
                     "ON CONFLICT DO NOTHING"
                 ),
-                id=cookie_id,
+                id=row.id,
                 name=row.name,
                 domain=row.domain,
                 system_id=row.system_id,
