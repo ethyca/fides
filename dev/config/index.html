@@ -1526,7 +1526,10 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 <span class="normal">411</span>
 <span class="normal">412</span>
 <span class="normal">413</span>
-<span class="normal">414</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># Fides Configuration File</span>
+<span class="normal">414</span>
+<span class="normal">415</span>
+<span class="normal">416</span>
+<span class="normal">417</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="c1"># Fides Configuration File</span>
 <span class="c1"># Additional Documentation at : https://ethyca.github.io/fides/stable/config/</span>
 
 <span class="c1">#--------------#</span>
@@ -1564,7 +1567,7 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 
 <span class="c1"># A fully anonymized unique identifier that is automatically generated</span>
 <span class="c1"># by the application. Used for anonymous analytics when opted-in.</span>
-<span class="n">analytics_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;12c80ceae9fd476237440f70c0d050fa&quot;</span><span class="w"> </span><span class="c1"># string</span>
+<span class="n">analytics_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;a3036fb9c5e3532f064cf8e2a547de82&quot;</span><span class="w"> </span><span class="c1"># string</span>
 
 <span class="c1"># When set to True, disables functionality that requires making calls</span>
 <span class="c1"># to a Fides webserver.</span>
@@ -1719,6 +1722,9 @@ It is printed to the console as valid <code>toml</code>, so this can be copy/pas
 
 <span class="c1"># Seconds between polling for Privacy Requests that should change state</span>
 <span class="n">state_polling_interval</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">30</span><span class="w"> </span><span class="c1"># integer</span>
+
+<span class="c1"># Seconds between polling for interrupted tasks to requeue</span>
+<span class="n">interrupted_task_requeue_interval</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">300</span><span class="w"> </span><span class="c1"># integer</span>
 
 <span class="c1"># Temporary flag to switch to using DSR 3.0 to process your tasks.</span>
 <span class="n">use_dsr_3_0</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="w"> </span><span class="c1"># boolean</span>
