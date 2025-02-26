@@ -6,7 +6,9 @@ import pytest
 import requests
 from fideslang import DEFAULT_TAXONOMY
 from pytest import MonkeyPatch
+from sqlalchemy.exc import IntegrityError
 
+from fides.api.db.base_class import Base
 from fides.api.db.ctl_session import sync_engine, sync_session
 from fides.api.models.sql_models import DataUse
 from fides.core import api
@@ -77,3 +79,37 @@ def load_default_data_uses(db):
         # if they're not present already.
         if DataUse.get_by(db, field="name", value=data_use.name) is None:
             DataUse.create(db=db, data=data_use.model_dump(mode="json"))
+
+
+@pytest.fixture(autouse=True)
+def clear_db_tables(db):
+    """Clear data from tables between tests.
+
+    If relationships are not set to cascade on delete they will fail with an
+    IntegrityError if there are relationsips present. This function stores tables
+    that fail with this error then recursively deletes until no more IntegrityErrors
+    are present.
+    """
+    yield
+
+    SKIP_TABLES = ["ctl_data_categories"]
+
+    def delete_data(tables):
+        redo = []
+        for table in tables:
+            if table.name in SKIP_TABLES:
+                # Don't purge _all_ tables
+                continue
+
+            try:
+                db.execute(table.delete())
+            except IntegrityError:
+                redo.append(table)
+            finally:
+                db.commit()
+
+        if redo:
+            delete_data(redo)
+
+    db.commit()  # make sure all transactions are closed before starting deletes
+    delete_data(Base.metadata.sorted_tables)
