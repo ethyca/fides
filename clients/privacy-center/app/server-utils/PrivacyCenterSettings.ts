@@ -1,3 +1,5 @@
+import { ConsentMethod } from "~/types/api";
+
 /**
  * Settings that can be controlled using ENV vars on the server.
  *
@@ -13,6 +15,7 @@ export interface PrivacyCenterSettings {
   CONFIG_JSON_URL: string; // e.g. file:///app/config/config.json
   SHOW_BRAND_LINK: boolean; // whether to render the Ethyca brand link
   CUSTOM_PROPERTIES: boolean; // (optional) (default: true) enables the use of a single privacy center instance to serve different properties on different paths with custom configs
+  FIDES_PRIVACY_CENTER__ROOT_PROPERTY_PATH: string | null; // (optional) setting this will fetch a property when navigating the root ("/") path.
 
   // Fides.js options
   DEBUG: boolean; // whether console logs are enabled for consent components
@@ -37,4 +40,5 @@ export interface PrivacyCenterSettings {
   BASE_64_COOKIE: boolean; // whether or not to encode cookie as base64 on top of the default JSON string
   FIDES_PRIMARY_COLOR: string | null; // (optional) sets fides primary color
   FIDES_CLEAR_COOKIE: boolean; // (optional) deletes fides_consent cookie on reload
+  FIDES_CONSENT_OVERRIDE: ConsentMethod.ACCEPT | ConsentMethod.REJECT | null; // (optional) sets a previously learned consent preference for the user
 }

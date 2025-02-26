@@ -12,6 +12,7 @@ from fides.api.models.detection_discovery import (
     MonitorConfig,
     MonitorFrequency,
     StagedResource,
+    fetch_staged_resources_by_type_query,
 )
 
 
@@ -58,6 +59,84 @@ class TestStagedResourceModel:
                     "bq_monitor_1.prj-bigquery-418515.test_dataset_1.consent-reports-20.Phone_number",
                 ],
                 "parent": "bq_monitor_1.prj-bigquery-418515.test_dataset_1",
+                "meta": {"num_rows": 19},
+            },
+        )
+        return resource
+
+    @pytest.fixture
+    def create_staged_database(self, db: Session):
+        urn = "bq_monitor_1.prj-bigquery-418515.test_dataset_1"
+        resource = StagedResource.create(
+            db=db,
+            data={
+                "urn": urn,
+                "user_assigned_data_categories": ["user.contact.email"],
+                "name": "test_dataset_1",
+                "resource_type": "Database",
+                "description": "test description",
+                "monitor_config_id": "bq_monitor_1",
+                "source_modified": "2024-03-27T21:47:09.915000+00:00",
+                "classifications": [
+                    {
+                        "label": "user.authorization.credentials",
+                        "score": 0.4247,
+                        "aggregated_score": 0.2336,
+                        "classification_paradigm": "context",
+                    },
+                    {
+                        "label": "system",
+                        "score": 0.4,
+                        "aggregated_score": 0.18,
+                        "classification_paradigm": "content",
+                    },
+                ],
+                "diff_status": DiffStatus.MONITORED.value,
+                "child_diff_statuses": {DiffStatus.CLASSIFICATION_ADDITION.value: 9},
+                "children": [
+                    "bq_monitor_1.prj-bigquery-418515.test_dataset_1.consent-reports-20",
+                    "bq_monitor_1.prj-bigquery-418515.test_dataset_1.consent-reports-21",
+                ],
+                "parent": "bq_monitor_1.prj-bigquery-418515",
+                "meta": {"num_rows": 19},
+            },
+        )
+        return resource
+
+    @pytest.fixture
+    def create_staged_schema(self, db: Session):
+        urn = "bq_monitor_1.prj-bigquery-418515"
+        resource = StagedResource.create(
+            db=db,
+            data={
+                "urn": urn,
+                "user_assigned_data_categories": ["user.contact.email"],
+                "name": "prj-bigquery-418515",
+                "resource_type": "Schema",
+                "description": "test description",
+                "monitor_config_id": "bq_monitor_1",
+                "source_modified": "2024-03-27T21:47:09.915000+00:00",
+                "classifications": [
+                    {
+                        "label": "user.authorization.credentials",
+                        "score": 0.4247,
+                        "aggregated_score": 0.2336,
+                        "classification_paradigm": "context",
+                    },
+                    {
+                        "label": "system",
+                        "score": 0.4,
+                        "aggregated_score": 0.18,
+                        "classification_paradigm": "content",
+                    },
+                ],
+                "diff_status": DiffStatus.MONITORED.value,
+                "child_diff_statuses": {DiffStatus.CLASSIFICATION_ADDITION.value: 9},
+                "children": [
+                    "bq_monitor_1.prj-bigquery-418515.test_dataset_1",
+                    "bq_monitor_1.prj-bigquery-418515.test_dataset_2",
+                ],
+                "parent": "bq_monitor_1",
                 "meta": {"num_rows": 19},
             },
         )
@@ -184,6 +263,155 @@ class TestStagedResourceModel:
             DiffStatus.REMOVAL.value: 1,
             DiffStatus.CLASSIFICATION_ADDITION.value: 10,
         }
+
+    def test_fetch_staged_resources_by_type_query(
+        self,
+        db: Session,
+        create_staged_resource,
+        create_staged_database,
+        create_staged_schema,
+    ) -> None:
+        """
+        Tests that the fetch_staged_resources_by_type_query works as expected
+        """
+        query = fetch_staged_resources_by_type_query("Table")
+        resources = db.execute(query).all()
+        assert len(resources) == 1
+        assert resources[0][0].resource_type == "Table"
+        assert resources[0][0].urn == create_staged_resource.urn
+
+        query = fetch_staged_resources_by_type_query("Schema")
+        resources = db.execute(query).all()
+        assert len(resources) == 1
+
+        query = fetch_staged_resources_by_type_query("Database")
+        resources = db.execute(query).all()
+        assert len(resources) == 1
+        assert resources[0][0].urn == create_staged_database.urn
+
+        database = StagedResource.get_urn(db, create_staged_database.urn)
+        database.diff_status = None
+        database.save(db)
+        query = fetch_staged_resources_by_type_query("Database")
+        resources = db.execute(query).all()
+        assert len(resources) == 1
+
+    def test_fetch_staged_resources_by_type_query(
+        self,
+        db: Session,
+        create_staged_resource,
+        create_staged_schema,
+    ):
+        """
+        Tests that the fetch_staged_resources_by_type_query works as expected
+        """
+        query = fetch_staged_resources_by_type_query("Table")
+        resources = db.execute(query).all()
+        assert len(resources) == 1
+        assert resources[0][0].resource_type == "Table"
+        assert resources[0][0].urn == create_staged_resource.urn
+
+        query = fetch_staged_resources_by_type_query("Schema")
+        resources = db.execute(query).all()
+        assert len(resources) == 1
+        assert resources[0][0].urn == create_staged_schema.urn
+
+        query = fetch_staged_resources_by_type_query("Table", ["bq_monitor_1"])
+        resources = db.execute(query).all()
+        assert len(resources) == 1
+
+        query = fetch_staged_resources_by_type_query("Table", ["bq_monitor_2"])
+        resources = db.execute(query).all()
+        assert len(resources) == 0
+
+
+class TestStagedResourceModelWebMonitorResults:
+    """Tests for the StagedResource model related to web monitor result applications"""
+
+    @pytest.fixture
+    def create_web_monitor_staged_resource(self, db: Session, system):
+        urn = "my_web_monitor_1.GET.td.doubleclick.net.https://td.doubleclick.net/td/ga/rul"
+        resource = StagedResource.create(
+            db=db,
+            # the data below is representative of a web monitor result staged resource
+            data={
+                "urn": urn,
+                "user_assigned_data_categories": ["user.contact.email"],
+                "name": "rul",
+                "resource_type": "Browser Request",
+                "monitor_config_id": "my_web_monitor_1",
+                "diff_status": DiffStatus.ADDITION.value,
+                "system_id": system.id,
+                "vendor_id": "sample_compass_vendor_id",
+                "meta": {
+                    "domain": "td.doubleclick.net",
+                    "method": "GET",
+                    "parent": "https://www.googletagmanager.com/gtag/js?id=G-B356CF15GS",
+                    "cookies": [
+                        "test_cookie=CheckForPermission; expires=Fri, 13-Dec-2024 15:25:18 GMT; path=/; domain=.doubleclick.net; Secure; SameSite=none"
+                    ],
+                    "base_url": "https://td.doubleclick.net/td/ga/rul",
+                    "data_uses": [],
+                    "locations": ["USA"],
+                    "mime_type": "text/html",
+                    "parent_domain": "www.googletagmanager.com",
+                },
+            },
+        )
+        yield resource
+        db.delete(resource)
+
+    def test_create_staged_resource(
+        self, db: Session, system, create_web_monitor_staged_resource
+    ) -> None:
+        """
+        Creation fixture creates the resource, this tests that it was created successfully
+        and that we can access its attributes as expected
+        """
+        saved_resource: StagedResource = StagedResource.get_urn(
+            db, create_web_monitor_staged_resource.urn
+        )
+        assert saved_resource.system_id == system.id
+        assert saved_resource.meta == {
+            "domain": "td.doubleclick.net",
+            "method": "GET",
+            "parent": "https://www.googletagmanager.com/gtag/js?id=G-B356CF15GS",
+            "cookies": [
+                "test_cookie=CheckForPermission; expires=Fri, 13-Dec-2024 15:25:18 GMT; path=/; domain=.doubleclick.net; Secure; SameSite=none"
+            ],
+            "base_url": "https://td.doubleclick.net/td/ga/rul",
+            "data_uses": [],
+            "locations": ["USA"],
+            "mime_type": "text/html",
+            "parent_domain": "www.googletagmanager.com",
+        }
+        assert saved_resource.diff_status == DiffStatus.ADDITION.value
+        assert saved_resource.vendor_id == "sample_compass_vendor_id"
+
+    def test_update_staged_resource(
+        self,
+        db: Session,
+        create_web_monitor_staged_resource,
+        system,
+        system_hidden,
+    ) -> None:
+        """
+        Tests that we can update a staged resource, specifically its web-monitor related properties
+        """
+        saved_resource: StagedResource = StagedResource.get_urn(
+            db, create_web_monitor_staged_resource.urn
+        )
+
+        # check system initially
+        assert saved_resource.system_id == system.id
+
+        saved_resource.system_id = system_hidden.id
+        # needed to ensure array updates are persisted to the db
+        flag_modified(saved_resource, "system_id")
+
+        saved_resource.save(db)
+        updated_resource = StagedResource.get_urn(db, saved_resource.urn)
+        assert updated_resource.system_id == system_hidden.id
 
 
 SAMPLE_START_DATE = datetime(2024, 5, 20, 0, 42, 5, 17137, tzinfo=timezone.utc)

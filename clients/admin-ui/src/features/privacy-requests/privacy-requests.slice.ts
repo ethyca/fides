@@ -110,8 +110,12 @@ export const requestCSVDownload = async ({
       },
     },
   )
-    .then((response) => {
+    .then(async (response) => {
       if (!response.ok) {
+        if (response.status === 400) {
+          const errorData = await response.json();
+          throw new Error(errorData.detail || "Bad request error");
+        }
         throw new Error("Got a bad response from the server");
       }
       return response.blob();
@@ -540,6 +544,35 @@ export const privacyRequestApi = baseApi.injectEndpoints({
         url: `privacy-request/${privacy_request_id}/access-results`,
       }),
     }),
+    getFilteredResults: build.query<
+      {
+        privacy_request_id: string;
+        status: PrivacyRequestStatus;
+        results: {
+          [key: string]: Array<Record<string, any>>;
+        };
+      },
+      { privacy_request_id: string }
+    >({
+      query: ({ privacy_request_id }) => ({
+        method: "GET",
+        url: `privacy-request/${privacy_request_id}/filtered-results`,
+      }),
+    }),
+    getTestLogs: build.query<
+      Array<{
+        timestamp: string;
+        level: string;
+        module_info: string;
+        message: string;
+      }>,
+      { privacy_request_id: string }
+    >({
+      query: ({ privacy_request_id }) => ({
+        method: "GET",
+        url: `privacy-request/${privacy_request_id}/logs`,
+      }),
+    }),
   }),
 });
 
@@ -570,6 +603,8 @@ export const {
   useCreateMessagingConfigurationSecretsMutation,
   useCreateTestConnectionMessageMutation,
   useGetPrivacyRequestAccessResultsQuery,
+  useGetFilteredResultsQuery,
+  useGetTestLogsQuery,
 } = privacyRequestApi;
 
 export type CORSOrigins = Pick<SecurityApplicationConfig, "cors_origins">;

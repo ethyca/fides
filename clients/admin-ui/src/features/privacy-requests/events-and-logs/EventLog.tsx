@@ -10,11 +10,29 @@ import {
   Thead,
   Tr,
 } from "fidesui";
+import palette from "fidesui/src/palette/palette.module.scss";
 import { ExecutionLog, ExecutionLogStatus } from "privacy-requests/types";
+
+import { ActionType } from "~/types/api";
 
 type EventDetailsProps = {
   eventLogs: ExecutionLog[];
   openErrorPanel: (message: string) => void;
+};
+
+const actionTypeToLabel = (actionType: string) => {
+  switch (actionType) {
+    case ActionType.ACCESS:
+      return "Data Retrieval";
+    case ActionType.ERASURE:
+      return "Data Deletion";
+    case ActionType.CONSENT:
+      return "Consent";
+    case ActionType.UPDATE:
+      return "Data Update";
+    default:
+      return actionType;
+  }
 };
 
 const EventLog = ({ eventLogs, openErrorPanel }: EventDetailsProps) => {
@@ -23,7 +41,9 @@ const EventLog = ({ eventLogs, openErrorPanel }: EventDetailsProps) => {
       key={detail.updated_at}
       _hover={{
         backgroundColor:
-          detail.status === ExecutionLogStatus.ERROR ? "#F7FAFC" : "unset",
+          detail.status === ExecutionLogStatus.ERROR
+            ? palette.FIDESUI_NEUTRAL_50
+            : "unset",
       }}
       onClick={() => {
         if (detail.status === ExecutionLogStatus.ERROR) {
@@ -38,6 +58,11 @@ const EventLog = ({ eventLogs, openErrorPanel }: EventDetailsProps) => {
       <Td>
         <Text color="gray.600" fontSize="xs" lineHeight="4" fontWeight="medium">
           {formatDate(detail.updated_at)}
+        </Text>
+      </Td>
+      <Td>
+        <Text color="gray.600" fontSize="xs" lineHeight="4" fontWeight="medium">
+          {actionTypeToLabel(detail.action_type)}
         </Text>
       </Td>
       <Td>
@@ -86,6 +111,16 @@ const EventLog = ({ eventLogs, openErrorPanel }: EventDetailsProps) => {
                   lineHeight="4"
                   fontWeight="medium"
                 >
+                  Action Type
+                </Text>
+              </Th>
+              <Th>
+                <Text
+                  color="black"
+                  fontSize="xs"
+                  lineHeight="4"
+                  fontWeight="medium"
+                >
                   Status
                 </Text>
               </Th>
@@ -102,7 +137,7 @@ const EventLog = ({ eventLogs, openErrorPanel }: EventDetailsProps) => {
             </Tr>
           </Thead>
 
-          <Tbody id="tabelBody">{tableItems}</Tbody>
+          <Tbody id="tableBody">{tableItems}</Tbody>
         </Table>
       </TableContainer>
     </Box>

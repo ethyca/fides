@@ -8,13 +8,14 @@ import CustomInput, {
 } from "common/custom-fields/form/CustomInput";
 import { AddIcon } from "common/custom-fields/icons/AddIcon";
 import FormSection from "common/form/FormSection";
-import { CustomSelect } from "common/form/inputs";
 import { TrashCanSolidIcon } from "common/Icon/TrashCanSolidIcon";
 import { AntButton as Button, Box, Flex, Text } from "fidesui";
 import { FieldArray, Form, FormikProps, useFormikContext } from "formik";
 import { useEffect } from "react";
 
 import type { FormValues } from "~/features/custom-fields/CustomFieldModal";
+
+import { ControlledSelect } from "../common/form/ControlledSelect";
 
 const CustomFieldLabelStyles = {
   ...CUSTOM_LABEL_STYLES,
@@ -68,24 +69,23 @@ export const CustomFieldForm = ({
             name="description"
             customLabelProps={CustomFieldLabelStyles}
           />
-          <CustomSelect
+          <ControlledSelect
             label="Location"
             name="resource_type"
             options={RESOURCE_TYPE_OPTIONS}
             labelProps={CustomFieldLabelStyles}
-            isDisabled={isEditing}
+            disabled={isEditing}
           />
         </FormSection>
       </Box>
       <Box py={3}>
         <FormSection title="Configuration">
-          <CustomSelect
+          <ControlledSelect
             label="Field Type"
             name="field_type"
+            labelProps={CustomFieldLabelStyles}
             options={FIELD_TYPE_OPTIONS_NEW}
-            onChange={async (e: any) => {
-              handleDropdownChange(e.value);
-            }}
+            onChange={handleDropdownChange}
           />
           {values.field_type !== FieldTypes.OPEN_TEXT ? (
             <Flex

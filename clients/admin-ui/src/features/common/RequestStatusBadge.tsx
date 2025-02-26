@@ -1,52 +1,62 @@
-import { Badge, BadgeProps } from "fidesui";
+import { AntTag as Tag, AntTagProps as TagProps } from "fidesui";
 
 import { PrivacyRequestStatus } from "~/types/api";
 
 export const statusPropMap: {
-  [key in PrivacyRequestStatus]: BadgeProps & { label?: string };
+  [key in PrivacyRequestStatus]: Omit<TagProps, "color"> & {
+    color:
+      | "success"
+      | "marble"
+      | "error"
+      | "warning"
+      | "info"
+      | "alert"
+      | "caution";
+    label?: string;
+  };
 } = {
   approved: {
-    bg: "yellow.500",
+    color: "success",
     label: "Approved",
   },
   complete: {
-    bg: "green.500",
+    color: "success",
     label: "Completed",
   },
   awaiting_email_send: {
-    bg: "gray.400",
+    color: "marble",
     label: "Awaiting Email Send",
   },
   denied: {
-    bg: "red.500",
+    color: "error",
     label: "Denied",
   },
   canceled: {
-    bg: "red.600",
+    color: "marble",
     label: "Canceled",
   },
   error: {
-    bg: "red.800",
+    color: "warning",
     label: "Error",
   },
   in_processing: {
-    bg: "orange.500",
+    color: "caution",
     label: "In Progress",
   },
   paused: {
-    bg: "gray.400",
+    color: "marble",
     label: "Paused",
   },
   pending: {
-    bg: "blue.400",
+    color: "info",
     label: "New",
   },
   identity_unverified: {
-    bg: "red.400",
+    color: "marble",
     label: "Unverified",
   },
   requires_input: {
-    bg: "yellow.400",
+    color: "alert",
     label: "Requires Input",
   },
 };
@@ -56,17 +66,13 @@ interface RequestBadgeProps {
 }
 
 const RequestStatusBadge = ({ status }: RequestBadgeProps) => (
-  <Badge
-    color="white"
-    bg={statusPropMap[status].bg}
-    width="100%"
-    minWidth="120px"
-    lineHeight="18px"
-    textAlign="center"
+  <Tag
+    color={statusPropMap[status].color}
+    className="w-[120px] justify-center"
     data-testid="request-status-badge"
   >
     {statusPropMap[status].label}
-  </Badge>
+  </Tag>
 );
 
 export default RequestStatusBadge;

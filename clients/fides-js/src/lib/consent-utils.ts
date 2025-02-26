@@ -104,7 +104,7 @@ export const constructFidesRegionString = (
  */
 export const validateOptions = (options: FidesInitOptions): boolean => {
   // Check if options is an invalid type
-  fidesDebugger("Validating Fides consent overlay options...", options);
+  fidesDebugger("Validating Fides config options...", options);
   if (typeof options !== "object") {
     return false;
   }
@@ -156,30 +156,31 @@ export const getOverrideValidatorMapByType = (
  * Determines whether experience is valid and relevant notices exist within the experience
  */
 export const experienceIsValid = (
-  effectiveExperience: PrivacyExperience | undefined | EmptyExperience,
+  effectiveExperience:
+    | PrivacyExperience
+    | PrivacyExperienceMinimal
+    | undefined
+    | EmptyExperience,
 ): boolean => {
   if (!isPrivacyExperience(effectiveExperience)) {
-    fidesDebugger(
-      "No relevant experience found. Skipping overlay initialization.",
-    );
+    fidesDebugger("No relevant experience found.");
     return false;
   }
   const expConfig = effectiveExperience.experience_config;
   if (!expConfig) {
-    fidesDebugger(
-      "No experience config found for experience. Skipping overlay initialization.",
-    );
+    fidesDebugger("No config found for experience.");
     return false;
   }
   if (
     !(
       expConfig.component === ComponentType.MODAL ||
       expConfig.component === ComponentType.BANNER_AND_MODAL ||
-      expConfig.component === ComponentType.TCF_OVERLAY
+      expConfig.component === ComponentType.TCF_OVERLAY ||
+      expConfig.component === ComponentType.HEADLESS
     )
   ) {
     fidesDebugger(
-      "No experience found with modal, banner_and_modal, or tcf_overlay component. Skipping overlay initialization.",
+      "No experience found with modal, banner_and_modal, tcf_overlay, or headless component.",
     );
     return false;
   }
@@ -190,9 +191,7 @@ export const experienceIsValid = (
       effectiveExperience.privacy_notices.length > 0
     )
   ) {
-    fidesDebugger(
-      `Privacy experience has no notices. Skipping overlay initialization.`,
-    );
+    fidesDebugger(`Privacy experience has no notices.`);
     return false;
   }
 
@@ -221,8 +220,11 @@ export const shouldResurfaceConsent = (
     }
     return true;
   }
-  // Never surface consent for modal-only experiences
-  if (experience.experience_config?.component === ComponentType.MODAL) {
+  // Never surface consent for modal-only or headless experiences
+  if (
+    experience.experience_config?.component === ComponentType.MODAL ||
+    experience.experience_config?.component === ComponentType.HEADLESS
+  ) {
     return false;
   }
   // Do not surface consent for null or empty notices

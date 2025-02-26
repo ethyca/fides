@@ -1,0 +1,31 @@
+dataset:
+  - fides_key: unreachable_without_data_categories
+    name: Unreachable without data categories
+    description: A dataset with an unreachable collection that does not contain data categories
+    collections:
+      - name: customer
+        fields:
+          - name: address_id
+            data_categories: [system.operations]
+          - name: created
+            data_categories: [system.operations]
+          - name: email
+            data_categories: [user.contact.email]
+            fides_meta:
+              identity: email
+              data_type: string
+          - name: id
+            data_categories: [user.unique_id]
+          - name: name
+            data_categories: [user.name]
+            fides_meta:
+              data_type: string
+              length: 40
+      - name: address
+        fields:
+          - name: city
+          - name: house
+          - name: id
+          - name: state
+          - name: street
+          - name: zip

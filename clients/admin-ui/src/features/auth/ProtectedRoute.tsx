@@ -3,7 +3,7 @@ import { ReactNode, useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { LOGIN_ROUTE, VERIFY_AUTH_INTERVAL } from "~/constants";
-import { useNav } from "~/features/common/nav/v2/hooks";
+import { useNav } from "~/features/common/nav/hooks";
 import { useGetHealthQuery } from "~/features/plus/plus.slice";
 import { useGetUserPermissionsQuery } from "~/features/user-management";
 

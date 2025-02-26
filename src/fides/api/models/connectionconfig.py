@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import enum
 from datetime import datetime
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Type
+from typing import TYPE_CHECKING, Any, List, Optional, Type
 
 from loguru import logger
 from sqlalchemy import Boolean, Column, DateTime, Enum, ForeignKey, String, event
@@ -24,6 +24,7 @@ from fides.config import CONFIG
 
 if TYPE_CHECKING:
     from fides.api.models.detection_discovery import MonitorConfig
+    from fides.api.schemas.connection_configuration.enums.system_type import SystemType
 
 
 class ConnectionTestStatus(enum.Enum):
@@ -66,13 +67,14 @@ class ConnectionType(enum.Enum):
     snowflake = "snowflake"
     sovrn = "sovrn"
     timescale = "timescale"
+    website = "website"
 
     @property
     def human_readable(self) -> str:
         """Human-readable mapping for ConnectionTypes
         Add to this mapping if you add a new ConnectionType
         """
-        readable_mapping: Dict[str, str] = {
+        readable_mapping: dict[str, str] = {
             ConnectionType.attentive_email.value: "Attentive Email",
             ConnectionType.bigquery.value: "BigQuery",
             ConnectionType.datahub.value: "DataHub",
@@ -100,6 +102,7 @@ class ConnectionType(enum.Enum):
             ConnectionType.snowflake.value: "Snowflake",
             ConnectionType.sovrn.value: "Sovrn",
             ConnectionType.timescale.value: "TimescaleDB",
+            ConnectionType.website.value: "Website",
         }
         try:
             return readable_mapping[self.value]
@@ -107,6 +110,48 @@ class ConnectionType(enum.Enum):
             raise NotImplementedError(
                 "Add new ConnectionType to human_readable mapping"
             )
+
+    @property
+    def system_type(self) -> "SystemType":
+        from fides.api.schemas.connection_configuration.enums.system_type import (
+            SystemType,
+        )
+
+        system_type_mapping: dict[str, SystemType] = {
+            ConnectionType.attentive_email.value: SystemType.email,
+            ConnectionType.bigquery.value: SystemType.database,
+            ConnectionType.datahub.value: SystemType.data_catalog,
+            ConnectionType.dynamic_erasure_email.value: SystemType.email,
+            ConnectionType.dynamodb.value: SystemType.database,
+            ConnectionType.fides.value: SystemType.manual,
+            ConnectionType.generic_consent_email.value: SystemType.email,
+            ConnectionType.generic_erasure_email.value: SystemType.email,
+            ConnectionType.google_cloud_sql_mysql.value: SystemType.database,
+            ConnectionType.google_cloud_sql_postgres.value: SystemType.database,
+            ConnectionType.https.value: SystemType.manual,
+            ConnectionType.manual_webhook.value: SystemType.manual,
+            ConnectionType.manual.value: SystemType.manual,
+            ConnectionType.mariadb.value: SystemType.database,
+            ConnectionType.mongodb.value: SystemType.database,
+            ConnectionType.mssql.value: SystemType.database,
+            ConnectionType.mysql.value: SystemType.database,
+            ConnectionType.postgres.value: SystemType.database,
+            ConnectionType.rds_mysql.value: SystemType.database,
+            ConnectionType.rds_postgres.value: SystemType.database,
+            ConnectionType.redshift.value: SystemType.database,
+            ConnectionType.s3.value: SystemType.database,
+            ConnectionType.saas.value: SystemType.saas,
+            ConnectionType.scylla.value: SystemType.database,
+            ConnectionType.snowflake.value: SystemType.database,
+            ConnectionType.sovrn.value: SystemType.email,
+            ConnectionType.timescale.value: SystemType.database,
+            ConnectionType.website.value: SystemType.website,
+        }
+
+        try:
+            return system_type_mapping[self.value]
+        except KeyError:
+            raise NotImplementedError("Add new ConnectionType to system_type mapping")
 
 
 class AccessLevel(enum.Enum):
@@ -220,10 +265,13 @@ class ConnectionConfig(Base):
             return False
 
         # hard-coding to avoid cyclic dependency
-        if authentication.strategy != "oauth2_authorization_code":
+        if authentication.strategy not in [
+            "oauth2_authorization_code",
+            "oauth2_client_credentials",
+        ]:
             return False
 
-        return bool(self.secrets and self.secrets.get("access_token"))
+        return bool(self.secrets and "access_token" in self.secrets.keys())
 
     @property
     def name_or_key(self) -> str:

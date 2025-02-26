@@ -3,7 +3,7 @@ import { stubLocations, stubPlus } from "cypress/support/stubs";
 import {
   LOCATIONS_ROUTE,
   REGULATIONS_ROUTE,
-} from "~/features/common/nav/v2/routes";
+} from "~/features/common/nav/routes";
 
 const assertIsChecked = (
   name: string,

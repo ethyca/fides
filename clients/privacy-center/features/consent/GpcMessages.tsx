@@ -1,29 +1,34 @@
 import { GpcStatus } from "fides-js";
-import { Badge, Box, HStack, Stack, Text, WarningTwoIcon } from "fidesui";
+import {
+  AntTag as Tag,
+  Box,
+  HStack,
+  Stack,
+  Text,
+  WarningTwoIcon,
+} from "fidesui";
 
 import useI18n from "~/common/hooks/useI18n";
 
 const BADGE_COLORS = {
   [GpcStatus.NONE]: undefined,
-  [GpcStatus.APPLIED]: "green",
-  [GpcStatus.OVERRIDDEN]: "red",
+  [GpcStatus.APPLIED]: "success",
+  [GpcStatus.OVERRIDDEN]: "error",
 };
 
 export const GpcBadge = ({ status }: { status: GpcStatus }) =>
   status === GpcStatus.NONE ? null : (
     <HStack data-testid="gpc-badge">
-      <Text color="gray.600" fontWeight="semibold" fontSize="xs">
+      <Text color="gray.800" fontWeight="semibold" fontSize="xs">
         Global Privacy Control
       </Text>
-      <Badge variant="solid" colorScheme={BADGE_COLORS[status]}>
-        {status}
-      </Badge>
+      <Tag color={BADGE_COLORS[status]}>{status}</Tag>
     </HStack>
   );
 
 const InfoText: typeof Text = (props) => (
   <Box
-    background="gray.100"
+    background="gray.75"
     border="1px solid"
     borderColor="blue.50"
     borderRadius="md"
@@ -68,7 +73,7 @@ export const GpcBanner = () => {
       border="1px solid"
       borderColor="blue.400"
       borderRadius="lg"
-      background="gray.100"
+      background="gray.75"
       padding={4}
       spacing={1}
       lineHeight={5}

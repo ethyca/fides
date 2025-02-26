@@ -13,7 +13,9 @@ from fides.api.schemas.namespace_meta.snowflake_namespace_meta import (
     SnowflakeNamespaceMeta,
 )
 from fides.api.service.connectors import SnowflakeConnector
-from fides.api.service.connectors.query_config import SnowflakeQueryConfig
+from fides.api.service.connectors.query_configs.snowflake_query_config import (
+    SnowflakeQueryConfig,
+)
 
 
 @pytest.mark.integration_external
@@ -148,7 +150,7 @@ class TestSnowflakeQueryConfig:
         )
         assert (
             str(update_stmt)
-            == 'UPDATE "address" SET "city" = :city, "house" = :house, "state" = :state, "street" = :street, "zip" = :zip WHERE "id" = :id'
+            == 'UPDATE "address" SET "city" = :masked_city, "house" = :masked_house, "state" = :masked_state, "street" = :masked_street, "zip" = :masked_zip WHERE "id" = :id'
         )
 
     def test_generate_namespaced_update_stmt(
@@ -189,5 +191,5 @@ class TestSnowflakeQueryConfig:
         )
         assert (
             str(update_stmt)
-            == 'UPDATE "FIDESOPS_TEST"."TEST"."address" SET "city" = :city, "house" = :house, "state" = :state, "street" = :street, "zip" = :zip WHERE "id" = :id'
+            == 'UPDATE "FIDESOPS_TEST"."TEST"."address" SET "city" = :masked_city, "house" = :masked_house, "state" = :masked_state, "street" = :masked_street, "zip" = :masked_zip WHERE "id" = :id'
         )

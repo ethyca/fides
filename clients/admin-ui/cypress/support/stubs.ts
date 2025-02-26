@@ -240,6 +240,10 @@ export const stubPlus = (available: boolean, options?: HealthCheck) => {
       statusCode: 400,
       body: {},
     }).as("getPlusHealth");
+    cy.intercept("GET", "/api/v1/plus/*", {
+      statusCode: 404,
+      body: {},
+    }).as("getNoPlusAvailable");
   }
 };
 
@@ -361,6 +365,17 @@ export const stubSystemVendors = () => {
   cy.intercept("GET", "/api/v1/plus/dictionary/system-vendors", {
     fixture: "systems/system-vendors.json",
   }).as("getSystemVendors");
+  cy.intercept("POST", "/api/v1/plus/dictionary/system-vendors", {
+    body: {
+      systems: [
+        {
+          id: "123",
+          name: "Test System",
+          fides_key: "test-system",
+        },
+      ],
+    },
+  }).as("postSystemVendors");
 };
 
 export const stubTranslationConfig = (enabled: boolean) => {
@@ -433,6 +448,31 @@ export const stubSystemIntegrations = () => {
   ).as("getConnections");
 };
 
+export const stubDisabledIntegrationSystemCrud = () => {
+  cy.intercept("GET", "/api/v1/system/disabled_postgres_system", {
+    fixture: "systems/system_disabled_integration.json",
+  }).as("getDisabledSystemIntegration");
+
+  cy.intercept("PATCH", "/api/v1/system/disabled_postgres_system/connection", {
+    statusCode: 200,
+    body: {},
+  }).as("patchConnection");
+
+  cy.intercept("PUT", "/api/v1/connection/asdasd_postgres/datasetconfig", {
+    statusCode: 200,
+    body: {},
+  }).as("putDatasetConfig");
+
+  cy.intercept(
+    "PATCH",
+    "/api/v1/system/disabled_postgres_system/connection/secrets*",
+    {
+      statusCode: 200,
+      body: {},
+    },
+  ).as("patchConnectionSecret");
+};
+
 export const stubUserManagement = () => {
   cy.intercept("/api/v1/user?*", {
     fixture: "user-management/users.json",
@@ -464,6 +504,9 @@ export const stubExperienceConfig = () => {
   cy.intercept("GET", "/api/v1/experience-config/*/available_translations", {
     fixture: "privacy-notices/available-translations.json",
   }).as("getAvailableTranslations");
+  cy.intercept("GET", "/api/v1/experience-config/available_translations", {
+    fixture: "privacy-notices/available-translations.json",
+  }).as("getAvailableTranslations");
   stubPlus(true);
 };
 
@@ -472,4 +515,68 @@ export const stubFidesCloud = () => {
     privacy_center_url: null,
     domain_verification_records: [],
   }).as("getFidesCloud");
+};
+
+export const stubActionCenter = () => {
+  cy.intercept("GET", "/api/v1/config*", {
+    body: {
+      detection_discovery: {
+        website_monitor_enabled: true,
+      },
+    },
+  }).as("getTranslationConfig");
+  cy.intercept("GET", "/api/v1/plus/discovery-monitor/aggregate-results*", {
+    fixture: "detection-discovery/activity-center/aggregate-results",
+  }).as("getMonitorResults");
+  cy.intercept(
+    "GET",
+    "/api/v1/plus/discovery-monitor/system-aggregate-results*",
+    {
+      fixture: "detection-discovery/activity-center/system-aggregate-results",
+    },
+  ).as("getSystemAggregateResults");
+  cy.intercept("GET", "/api/v1/plus/discovery-monitor/*/results*", {
+    fixture: "detection-discovery/activity-center/system-asset-results",
+  }).as("getSystemAssetResults");
+  cy.intercept(
+    "GET",
+    "/api/v1/plus/discovery-monitor/*/results?resolved_system_id=%5Bundefined%5D*",
+    {
+      fixture: "detection-discovery/activity-center/system-asset-uncategorized",
+    },
+  ).as("getSystemAssetsUncategorized");
+  cy.intercept("POST", "/api/v1/plus/discovery-monitor/mute*", {
+    response: 200,
+  }).as("ignoreAssets");
+  cy.intercept("POST", "/api/v1/plus/discovery-monitor/promote*", {
+    response: 200,
+  }).as("addAssets");
+  cy.intercept("POST", "/api/v1/plus/discovery-monitor/*/mute*", {
+    response: 200,
+  }).as("ignoreMonitorResultSystem");
+  cy.intercept("POST", "/api/v1/plus/discovery-monitor/*/promote*", {
+    response: 200,
+  }).as("addMonitorResultSystem");
+  cy.intercept("PATCH", "/api/v1/plus/discovery-monitor/*/results", {
+    response: 200,
+  }).as("patchAssets");
+};
+
+export const stubDataCatalog = () => {
+  cy.intercept("GET", "/api/v1/plus/data-catalog/system*", {
+    fixture: "data-catalog/catalog-systems",
+  }).as("getCatalogSystems");
+  cy.intercept("GET", "/api/v1/plus/data-catalog/project*", {
+    fixture: "data-catalog/catalog-projects",
+  }).as("getCatalogProjects");
+  cy.intercept("GET", "/api/v1/plus/discovery-monitor/results?*", {
+    fixture: "data-catalog/catalog-tables",
+  }).as("getCatalogTables");
+  cy.intercept("POST", "/api/v1/plus/discovery-monitor/databases*", {
+    items: ["test_project"],
+    page: 1,
+    size: 1,
+    total: 1,
+    pages: 1,
+  }).as("getAvailableDatabases");
 };

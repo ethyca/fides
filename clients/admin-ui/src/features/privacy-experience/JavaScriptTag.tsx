@@ -49,7 +49,6 @@ const JavaScriptTag = () => {
     <>
       <Button
         onClick={modal.onOpen}
-        size="small"
         icon={<CopyIcon />}
         iconPosition="end"
         data-testid="js-tag-btn"

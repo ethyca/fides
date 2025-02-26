@@ -32,7 +32,7 @@ export const debounce = (fn: (props?: any) => void, ms = 0) => {
 };
 
 export const formatDate = (value: string | number | Date): string =>
-  format(new Date(value), "MMMM d, Y, KK:mm:ss z");
+  format(new Date(value), "MMMM d, y, KK:mm:ss z");
 
 export const utf8ToB64 = (str: string): string =>
   window.btoa(unescape(encodeURIComponent(str)));
@@ -116,3 +116,7 @@ export const getOptionsFromMap = <T = string>(
     label: value,
     value: key,
   }));
+
+export const getWebsiteIconUrl = (domain: string, size = 24) => {
+  return `https://cdn.brandfetch.io/${domain}/icon/theme/light/fallback/404/h/${size}/w/${size}?c=1idbRjELpikqQ1PLiqb`;
+};

@@ -1,12 +1,14 @@
 import {
   stubDatasetCrud,
+  stubDisabledIntegrationSystemCrud,
   stubPlus,
+  stubPrivacyNoticesCrud,
   stubSystemCrud,
   stubSystemIntegrations,
   stubTaxonomyEntities,
 } from "cypress/support/stubs";
 
-import { SYSTEM_ROUTE } from "~/features/common/nav/v2/routes";
+import { EDIT_SYSTEM_ROUTE, SYSTEM_ROUTE } from "~/features/common/nav/routes";
 
 describe("System integrations", () => {
   beforeEach(() => {
@@ -67,6 +69,38 @@ describe("System integrations", () => {
 
     it("should not Request types (enabled-actions) field", () => {
       cy.getByTestId("enabled-actions").should("not.exist");
+    });
+  });
+
+  describe("Loading existing integration", () => {
+    beforeEach(() => {
+      cy.login();
+      stubPlus(false);
+      stubSystemIntegrations();
+      stubSystemCrud();
+      stubDatasetCrud();
+      stubTaxonomyEntities();
+      stubPrivacyNoticesCrud();
+      stubDisabledIntegrationSystemCrud();
+
+      cy.visit(EDIT_SYSTEM_ROUTE.replace("[id]", "disabled_postgres_system"));
+      cy.getByTestId("tab-Integrations").click();
+    });
+
+    it("when saving the form it shouldn't re-enable the integration", () => {
+      cy.get("form").within(() => {
+        cy.get("button[type=submit]").click();
+      });
+      cy.wait("@patchConnection").then(({ request }) => {
+        expect(request.body[0]).to.deep.equal({
+          access: "write",
+          connection_type: "postgres",
+          description: "",
+          key: "asdasd_postgres",
+          enabled_actions: [],
+        });
+        expect(request.body[0].disabled).to.be.undefined;
+      });
     });
   });
 });

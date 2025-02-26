@@ -1,4 +1,4 @@
-import { Box, Tag } from "fidesui";
+import { AntTag as Tag, Box } from "fidesui";
 import { Rule } from "privacy-requests/types";
 import React from "react";
 
@@ -25,17 +25,7 @@ export const getActionTypes = (rules: Rule[]): ActionType[] =>
 const RequestType = ({ rules }: RequestTypeProps) => {
   const tags = getActionTypes(rules)
     .map((action) => capitalize(action))
-    .map((action_type) => (
-      <Tag
-        key={action_type}
-        color="white"
-        bg="primary.400"
-        fontWeight="medium"
-        fontSize="sm"
-      >
-        {action_type}
-      </Tag>
-    ));
+    .map((action_type) => <Tag key={action_type}>{action_type}</Tag>);
 
   return <Box>{tags}</Box>;
 };

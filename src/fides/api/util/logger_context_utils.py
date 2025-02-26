@@ -16,7 +16,7 @@ from requests.exceptions import (  # pylint: disable=redefined-builtin
 from fides.config import CONFIG
 
 
-class LoggerContextKeys(Enum):
+class LoggerContextKeys(str, Enum):
     action_type = "action_type"
     status_code = "status_code"
     body = "body"
@@ -29,9 +29,11 @@ class LoggerContextKeys(Enum):
     response = "response"
     system_key = "system_key"
     url = "url"
+    task_id = "task_id"
+    privacy_request_source = "privacy_request_source"
 
 
-class ErrorGroup(Enum):
+class ErrorGroup(str, Enum):
     """A collection of user-friendly error labels to be used in contextualized logs."""
 
     network_error = "NetworkError"
@@ -57,18 +59,34 @@ class Contextualizable:
 
 
 def log_context(
-    _func: Optional[Callable] = None, **additional_context: Any
+    _func: Optional[Callable] = None,
+    capture_args: Optional[dict[str, LoggerContextKeys]] = None,
+    **additional_context: Any,
 ) -> Callable:
     """
-    A decorator that adds context information to log messages. It extracts context from
-    the arguments of the decorated function and from any specified additional context.
-    Optional additional context is provided through keyword arguments.
+    A decorator that adds context information to log messages. It extracts:
+    1. Values from function arguments, mapping them to standardized context names via capture_args dict
+    2. Context from any Contextualizable arguments
+    3. Additional context provided as decorator kwargs
+
+    Example:
+       @log_context(capture_args={"user_id": "standard_user_id"}, tenant="example")
+       def process_user(user_id: str) -> None:
+
+    Logs will include standard_user_id=<user_id> and tenant="example"
     """
 
     def decorator(func: Callable) -> Callable:
         @wraps(func)
         def wrapper(*args: Any, **kwargs: Any) -> Any:
             context = dict(additional_context)
+
+            # extract specified param values from kwargs
+            if capture_args:
+                for arg_name, context_name in capture_args.items():
+                    if arg_name in kwargs:
+                        context[context_name.value] = kwargs[arg_name]
+
             for arg in args:
                 if isinstance(arg, Contextualizable):
                     arg_context = arg.get_log_context()

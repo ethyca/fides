@@ -5,6 +5,7 @@
 import type { AccessLevel } from "./AccessLevel";
 import type { BigQueryDocsSchema } from "./BigQueryDocsSchema";
 import type { ConnectionType } from "./ConnectionType";
+import type { DatahubDocsSchema } from "./DatahubDocsSchema";
 import type { DynamicErasureEmailDocsSchema } from "./DynamicErasureEmailDocsSchema";
 import type { DynamoDBDocsSchema } from "./DynamoDBDocsSchema";
 import type { EmailDocsSchema } from "./EmailDocsSchema";
@@ -39,6 +40,7 @@ export type CreateConnectionConfigurationWithSecrets = {
   description?: string | null;
   secrets?:
     | BigQueryDocsSchema
+    | DatahubDocsSchema
     | DynamicErasureEmailDocsSchema
     | DynamoDBDocsSchema
     | EmailDocsSchema

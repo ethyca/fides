@@ -31,6 +31,7 @@ import { debounce } from "lodash";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
+import { CustomReportColumn } from "~/features/common/custom-reports/types";
 import useTaxonomies from "~/features/common/hooks/useTaxonomies";
 import { DownloadLightIcon } from "~/features/common/Icon";
 import { useHasPermission } from "~/features/common/Restrict";
@@ -59,12 +60,16 @@ import {
 import { CustomReportTemplates } from "../../common/custom-reports/CustomReportTemplates";
 import { DATAMAP_LOCAL_STORAGE_KEYS, DEFAULT_COLUMN_NAMES } from "./constants";
 import { DatamapReportWithCustomFields as DatamapReport } from "./datamap-report";
-import { useDatamapReport } from "./datamap-report-context";
+import {
+  DEFAULT_COLUMN_FILTERS,
+  DEFAULT_COLUMN_VISIBILITY,
+  useDatamapReport,
+} from "./datamap-report-context";
 import {
   getDatamapReportColumns,
   getDefaultColumn,
 } from "./DatamapReportTableColumns";
-import { getGrouping, getPrefixColumns } from "./utils";
+import { getColumnOrder, getGrouping, getPrefixColumns } from "./utils";
 
 const emptyMinimalDatamapReportResponse: Page_DatamapReport_ = {
   items: [],
@@ -168,7 +173,7 @@ export const DatamapReportTable = () => {
 
   const [
     exportMinimalDatamapReport,
-    { isLoading: isExportingReport, isSuccess: isExportReportSuccess },
+    { isLoading: isExportingReport, isError: isExportReportError },
   ] = useExportMinimalDatamapReportMutation();
 
   const { data, totalRows } = useMemo(() => {
@@ -203,15 +208,17 @@ export const DatamapReportTable = () => {
 
   const columns = useMemo(
     () =>
-      getDatamapReportColumns({
-        onSelectRow: (row) => setSelectedSystemId(row.fides_key),
-        getDataUseDisplayName,
-        getDataCategoryDisplayName,
-        getDataSubjectDisplayName,
-        datamapReport,
-        customFields,
-        isRenaming: isRenamingColumns,
-      }),
+      datamapReport
+        ? getDatamapReportColumns({
+            onSelectRow: (row) => setSelectedSystemId(row.fides_key),
+            getDataUseDisplayName,
+            getDataCategoryDisplayName,
+            getDataSubjectDisplayName,
+            datamapReport,
+            customFields,
+            isRenaming: isRenamingColumns,
+          })
+        : [],
     [
       getDataUseDisplayName,
       getDataSubjectDisplayName,
@@ -235,12 +242,41 @@ export const DatamapReportTable = () => {
   } = useDisclosure();
 
   const onExport = (downloadType: ExportFormat) => {
+    const columnMap: Record<string, CustomReportColumn> = {};
+    Object.entries(columnVisibility).forEach(([key, isVisible]) => {
+      columnMap[key] = {
+        enabled: isVisible,
+      };
+    });
+
+    Object.entries(columnNameMapOverrides).forEach(([key, label]) => {
+      if (columnMap[key]) {
+        columnMap[key].label = label;
+      } else {
+        columnMap[key] = {
+          label,
+          enabled: columnVisibility[key] ?? true,
+        };
+      }
+    });
     exportMinimalDatamapReport({
       ...reportQuery,
       format: downloadType,
       report_id: savedCustomReportId,
+      report: {
+        name: "",
+        type: "datamap",
+        config: {
+          column_map: columnMap,
+          table_state: {
+            groupBy,
+            filters: selectedFilters,
+            columnOrder,
+          },
+        },
+      },
     }).then(() => {
-      if (isExportReportSuccess) {
+      if (!isExportReportError) {
         onExportReportClose();
       }
     });
@@ -267,6 +303,20 @@ export const DatamapReportTable = () => {
       grouping: getGrouping(groupBy),
     },
   });
+
+  useEffect(() => {
+    if (groupBy && !!tableInstance && !!datamapReport) {
+      if (tableInstance.getState().columnOrder.length === 0) {
+        const tableColumnIds = tableInstance.getAllColumns().map((c) => c.id);
+        setColumnOrder(getColumnOrder(groupBy, tableColumnIds));
+      } else {
+        setColumnOrder(
+          getColumnOrder(groupBy, tableInstance.getState().columnOrder),
+        );
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [groupBy, tableInstance, datamapReport]);
 
   useEffect(() => {
     // changing the groupBy should wait until the data is loaded to update the grouping
@@ -307,12 +357,41 @@ export const DatamapReportTable = () => {
 
   const handleSavedReport = (
     savedReport: CustomReportResponse | null,
-    resetForm: (
+    resetColumnNameForm: (
       nextState?: Partial<FormikState<Record<string, string>>> | undefined,
     ) => void,
   ) => {
+    if (!savedReport && !savedCustomReportId) {
+      return;
+    }
     if (!savedReport) {
-      setSavedCustomReportId("");
+      try {
+        setSavedCustomReportId("");
+
+        /* NOTE: we can't just use tableInstance.reset() here because it will reset the table to the initial state, which is likely to include report settings that were saved in the user's local storage. Instead, we need to reset each individual setting to its default value. */
+
+        // reset column visibility (must happen before updating order)
+        setColumnVisibility(DEFAULT_COLUMN_VISIBILITY);
+        tableInstance.toggleAllColumnsVisible(true);
+        tableInstance.setColumnVisibility(DEFAULT_COLUMN_VISIBILITY);
+
+        // reset column order (must happen prior to updating groupBy)
+        setColumnOrder([]);
+        tableInstance.setColumnOrder([]);
+
+        // reset groupBy and filters (will automatically update the tableinstance)
+        setGroupBy(DATAMAP_GROUPING.SYSTEM_DATA_USE);
+        setSelectedFilters(DEFAULT_COLUMN_FILTERS);
+
+        // reset column names
+        setColumnNameMapOverrides({});
+        resetColumnNameForm({ values: {} });
+      } catch (error: any) {
+        toast({
+          status: "error",
+          description: "There was a problem resetting the report.",
+        });
+      }
       return;
     }
     try {
@@ -321,11 +400,18 @@ export const DatamapReportTable = () => {
           groupBy: savedGroupBy,
           filters: savedFilters,
           columnOrder: savedColumnOrder,
-          columnVisibility: savedColumnVisibility,
         } = savedReport.config.table_state;
+        const savedColumnVisibility: Record<string, boolean> = {};
+
+        Object.entries(savedReport.config.column_map ?? {}).forEach(
+          ([key, value]) => {
+            savedColumnVisibility[key] = value.enabled || false;
+          },
+        );
+
         if (savedGroupBy) {
+          // No need to manually update the tableInstance here; setting the groupBy will trigger the useEffect to update the grouping.
           setGroupBy(savedGroupBy);
-          tableInstance.setGrouping(getGrouping(savedGroupBy));
         }
         if (savedFilters) {
           setSelectedFilters(savedFilters);
@@ -340,8 +426,16 @@ export const DatamapReportTable = () => {
         }
       }
       if (savedReport.config?.column_map) {
-        setColumnNameMapOverrides(savedReport.config.column_map);
-        resetForm({ values: savedReport.config.column_map });
+        const columnNameMap: Record<string, string> = {};
+        Object.entries(savedReport.config.column_map ?? {}).forEach(
+          ([key, value]) => {
+            if (value.label) {
+              columnNameMap[key] = value.label;
+            }
+          },
+        );
+        setColumnNameMapOverrides(columnNameMap);
+        resetColumnNameForm({ values: columnNameMap });
       }
       setSavedCustomReportId(savedReport.id);
       toast({
@@ -433,7 +527,6 @@ export const DatamapReportTable = () => {
                 <Menu>
                   <MenuButton
                     as={Button}
-                    size="small"
                     icon={<ChevronDownIcon />}
                     iconPosition="end"
                     loading={groupChangeStarted}
@@ -466,7 +559,6 @@ export const DatamapReportTable = () => {
                 </Menu>
                 <Button
                   data-testid="filter-multiple-systems-btn"
-                  size="small"
                   onClick={onFilterModalOpen}
                 >
                   Filter
@@ -474,14 +566,12 @@ export const DatamapReportTable = () => {
                 <Button
                   aria-label="Export report"
                   data-testid="export-btn"
-                  size="small"
                   onClick={onExportReportOpen}
                   icon={<DownloadLightIcon ml="1.5px" />}
                 />
                 <Menu placement="bottom-end">
                   <MenuButton
                     as={Button}
-                    size="small"
                     icon={<MoreIcon className="rotate-90" />}
                     data-testid="more-menu"
                     aria-label="More options"

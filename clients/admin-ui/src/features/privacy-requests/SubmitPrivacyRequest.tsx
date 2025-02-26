@@ -92,12 +92,7 @@ const SubmitPrivacyRequest = () => {
   return (
     <>
       <SubmitPrivacyRequestModal isOpen={isOpen} onClose={onClose} />
-      <Button
-        type="primary"
-        size="small"
-        onClick={onOpen}
-        data-testid="submit-request-btn"
-      >
+      <Button type="primary" onClick={onOpen} data-testid="submit-request-btn">
         Create request
       </Button>
     </>

@@ -1,28 +1,21 @@
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, Iterable, List, Optional, Type
 
-from sqlalchemy import ARRAY, Boolean, Column, DateTime, ForeignKey, String
+from loguru import logger
+from sqlalchemy import ARRAY, Boolean, Column, DateTime, ForeignKey, String, func
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.future import select
 from sqlalchemy.orm import Session, relationship
+from sqlalchemy.orm.query import Query
 
 from fides.api.db.base_class import Base, FidesBase
 from fides.api.models.connectionconfig import ConnectionConfig
-
-# class MonitorExecution(BaseModel):
-#     id: str
-#     monitor_config_id: str
-#     status: Optional[str]
-#     started: Optional[datetime]
-#     completed: Optional[datetime]
-#     classification_instances: List[str] = PydanticField(
-#         default_factory=list
-#     )  # TODO: formalize to FK
+from fides.api.models.sql_models import System  # type: ignore[attr-defined]
 
 
 class DiffStatus(Enum):
@@ -115,6 +108,12 @@ class MonitorConfig(Base):
     # TODO: many-to-many link to users assigned as data stewards; likely will need a join-table
 
     connection_config = relationship(ConnectionConfig)
+
+    executions = relationship(
+        "MonitorExecution",
+        cascade="all, delete-orphan",
+        backref="monitor_config",
+    )
 
     @property
     def connection_config_key(self) -> str:
@@ -234,11 +233,38 @@ class StagedResource(Base):
     urn = Column(String, index=True, unique=True, nullable=False)
     resource_type = Column(String, index=True, nullable=True)
     description = Column(String, nullable=True)
-    monitor_config_id = Column(String, nullable=True)  # just a "soft" pointer, for now
+    monitor_config_id = Column(
+        String,
+        index=True,  # indexed because we frequently need to slice by monitor config ID
+        nullable=True,
+    )  # just a "soft" pointer, for now TODO: make this a FK
+
+    # for now, this is just used for web monitor resources.
+    system_id = Column(
+        String,
+        ForeignKey(System.id_field_path),
+        nullable=True,
+        index=True,
+    )
+
+    # TODO: we should be able to enable the below relationship, but it
+    # confuses different functionality since 'system' means different
+    # things depending on whether the resource is a datastore or web monitor
+    # staged resource
+    #    system = relationship(System)
+
+    # the Compass vendor ID associated with the StagedResource.
+    # only used for web monitor resources
+    vendor_id = Column(
+        String,
+        nullable=True,
+        index=True,  # indexed because we frequently need to slice by vendor ID
+    )
+
     source_modified = Column(
         DateTime(timezone=True),
         nullable=True,
-    )  # when the table was modified in the datasource
+    )  # when the resource was modified in the datasource
     classifications = Column(
         ARRAY(JSONB),
         nullable=False,
@@ -273,6 +299,13 @@ class StagedResource(Base):
     # placeholder for additional attributes
     meta = Column(
         MutableDict.as_mutable(JSONB),
+        nullable=False,
+        server_default="{}",
+        default=dict,
+    )
+
+    data_uses = Column(
+        ARRAY(String),
         nullable=False,
         server_default="{}",
         default=dict,
@@ -337,3 +370,65 @@ class StagedResource(Base):
             )
             if parent_resource:
                 parent_resource.add_child_diff_status(DiffStatus.ADDITION)
+
+
+class MonitorExecution(Base):
+    """
+    Monitor execution record used for data detection and discovery.
+
+    Each monitor execution references `MonitorConfig`, which provide it with underlying
+    configuration details used in connecting to the external data store.
+    """
+
+    monitor_config_key = Column(
+        String,
+        ForeignKey(MonitorConfig.key),
+        nullable=False,
+        index=True,
+    )
+    status = Column(String, nullable=True)
+    started = Column(
+        DateTime(timezone=True), nullable=True, default=datetime.now(timezone.utc)
+    )
+    completed = Column(DateTime(timezone=True), nullable=True)
+    classification_instances = Column(
+        ARRAY(String),
+        index=False,
+        unique=False,
+        nullable=False,
+        default=list,
+    )
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+    )
+
+
+def fetch_staged_resources_by_type_query(
+    resource_type: str,
+    monitor_config_ids: Optional[List[str]] = None,
+    show_hidden: bool = False,
+) -> Query[StagedResource]:
+    """
+    Fetches staged resources by type and monitor config ID. Optionally filters out muted staged resources ("hidden").
+    """
+    logger.info(
+        f"Fetching staged resources of type {resource_type}, show_hidden={show_hidden}, monitor_config_ids={monitor_config_ids}"
+    )
+    query = select(StagedResource).where(StagedResource.resource_type == resource_type)
+
+    if monitor_config_ids:
+        query = query.filter(StagedResource.monitor_config_id.in_(monitor_config_ids))
+    if not show_hidden:
+        from sqlalchemy import or_
+
+        query = query.filter(
+            or_(
+                StagedResource.diff_status != DiffStatus.MUTED.value,
+                StagedResource.diff_status.is_(None),
+            )
+        )
+
+    return query

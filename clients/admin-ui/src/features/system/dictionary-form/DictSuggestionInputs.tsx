@@ -1,6 +1,4 @@
 import {
-  AntSelect as Select,
-  AntSelectProps,
   AntSwitch as Switch,
   Box,
   Flex,
@@ -246,89 +244,6 @@ export const DictSuggestionSwitch = ({
   );
 };
 
-interface SelectOption {
-  value: string;
-  label: string;
-}
-
-type SelectProps = Props &
-  AntSelectProps & {
-    options: SelectOption[];
-    mode?: "multiple" | "tags";
-  };
-
-export const DictSuggestionSelect = ({
-  mode = "multiple",
-  label,
-  tooltip,
-  disabled,
-  isRequired = false,
-  dictField,
-  name,
-  placeholder = "Select...",
-  id,
-  options,
-}: SelectProps) => {
-  const { field, isInvalid, error } = useDictSuggestion(name, dictField);
-  const [searchValue, setSearchValue] = useState("");
-
-  if (mode === "tags" && typeof field.value === "string") {
-    field.value = [field.value];
-  }
-
-  const { setFieldValue } = useFormikContext();
-
-  const handleChange = (newValue: SelectOption) => {
-    setFieldValue(field.name, newValue);
-  };
-
-  return (
-    <FormControl isInvalid={isInvalid} isRequired={isRequired}>
-      <VStack alignItems="start">
-        <Flex alignItems="center">
-          <Label htmlFor={id || name} fontSize="xs" my={0} mr={1}>
-            {label}
-          </Label>
-          {tooltip ? <QuestionTooltip label={tooltip} /> : null}
-        </Flex>
-        <Flex width="100%" flexDir="column">
-          <Select<SelectOption, SelectOption>
-            {...field}
-            id={id || name}
-            showSearch
-            mode={mode}
-            placeholder={placeholder}
-            options={options}
-            optionRender={
-              mode === "tags"
-                ? (option) => {
-                    if (
-                      option.value === searchValue &&
-                      !field.value.includes(searchValue)
-                    ) {
-                      return `Create "${searchValue}"`;
-                    }
-                    return option.label;
-                  }
-                : undefined
-            }
-            value={field.value || []}
-            onChange={handleChange}
-            disabled={disabled}
-            data-testid={`input-${field.name}`}
-            onSearch={setSearchValue}
-          />
-        </Flex>
-        <ErrorMessage
-          isInvalid={isInvalid}
-          message={error}
-          fieldName={field.name}
-        />
-      </VStack>
-    </FormControl>
-  );
-};
-
 export const DictSuggestionNumberInput = ({
   label,
   tooltip,
@@ -364,7 +279,7 @@ export const DictSuggestionNumberInput = ({
               setFieldValue(field.name, v);
             }}
             w="100%"
-            colorScheme="purple"
+            colorScheme="terracotta"
             inputMode="numeric"
             data-testid={`input-${field.name}`}
             color={

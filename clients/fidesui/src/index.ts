@@ -8,29 +8,53 @@ export * from "@chakra-ui/utils";
 export type { ThemeConfig as AntThemeConfig } from "antd/es";
 export type {
   ButtonProps as AntButtonProps,
+  FlexProps as AntFlexProps,
+  FormInstance as AntFormInstance,
   InputProps as AntInputProps,
+  ListProps as AntListProps,
+  MenuProps as AntMenuProps,
+  RadioGroupProps as AntRadioGroupProps,
   SelectProps as AntSelectProps,
   SwitchProps as AntSwitchProps,
+  TagProps as AntTagProps,
   GetProps,
+  InputRef,
+  RadioChangeEvent,
 } from "antd/lib";
 export {
   Alert as AntAlert,
+  Avatar as AntAvatar,
+  Breadcrumb as AntBreadcrumb,
   Button as AntButton,
   Card as AntCard,
   Checkbox as AntCheckbox,
   Col as AntCol,
   Divider as AntDivider,
+  Dropdown as AntDropdown,
+  Empty as AntEmpty,
   Flex as AntFlex,
+  Form as AntForm,
   Input as AntInput,
   Layout as AntLayout,
+  List as AntList,
+  Menu as AntMenu,
   Radio as AntRadio,
   Row as AntRow,
+  Skeleton as AntSkeleton,
   Space as AntSpace,
   Switch as AntSwitch,
-  Tag as AntTag,
   Tooltip as AntTooltip,
   Typography as AntTypography,
 } from "antd/lib";
+export type {
+  BreadcrumbItemType as AntBreadcrumbItemType,
+  BreadcrumbProps as AntBreadcrumbProps,
+} from "antd/lib/breadcrumb/Breadcrumb";
+export type { ListItemProps as AntListItemProps } from "antd/lib/list";
+export type {
+  BaseOptionType as AntBaseOptionType,
+  DefaultOptionType as AntDefaultOptionType,
+} from "antd/lib/select";
 
 // Higher-order components
 export { CustomSelect as AntSelect } from "./hoc";
@@ -61,11 +85,12 @@ export { extendTheme, theme } from "./FidesUITheme";
  * These components are custom to FidesUI and are not included in ChakraUI, although they may rely on ChakraUI components.
  */
 export { CheckboxTree } from "./components/checkbox-tree";
-export { ClassifiedDataCategoryDropdown } from "./components/classified-data-category-dropdown";
 export type { ColumnMetadata } from "./components/column-dropdown";
 export { ColumnDropdown } from "./components/column-dropdown";
 export { ConfirmationModal } from "./components/confirmation-modal";
 export { DataCategoryDropdown } from "./components/data-category-dropdown";
 export { ExampleComponent } from "./components/example-component";
+export { FloatingMenu } from "./components/floating-menu";
 export { PrimaryLink, SecondaryLink } from "./components/links";
 export { SystemsCheckboxTable } from "./components/systems-checkbox-table";
+export { CustomTag as AntTag } from "./hoc";

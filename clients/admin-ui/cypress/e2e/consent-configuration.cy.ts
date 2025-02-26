@@ -9,7 +9,7 @@ import {
 import {
   ADD_MULTIPLE_VENDORS_ROUTE,
   CONFIGURE_CONSENT_ROUTE,
-} from "~/features/common/nav/v2/routes";
+} from "~/features/common/nav/routes";
 import { RoleRegistryEnum } from "~/types/api";
 
 describe("Consent configuration", () => {
@@ -249,11 +249,11 @@ describe("Consent configuration", () => {
         cy.getByTestId("add-vendor-btn").click();
         cy.getByTestId("input-name").type("Aniview LTD{enter}");
         cy.wait("@getDictionaryDeclarations");
-        cy.getSelectValueContainer(
-          "input-privacy_declarations.0.consent_use",
+        cy.getByTestId(
+          "controlled-select-privacy_declarations.0.consent_use",
         ).contains("Marketing");
-        cy.getSelectValueContainer(
-          "input-privacy_declarations.0.data_use",
+        cy.getByTestId(
+          "controlled-select-privacy_declarations.0.data_use",
         ).contains("Profiling for Advertising");
         ["av_*", "aniC", "2_C_*"].forEach((cookieName) => {
           cy.getByTestId("input-privacy_declarations.0.cookieNames").contains(
@@ -262,8 +262,8 @@ describe("Consent configuration", () => {
         });
 
         // Also check one that shouldn't have any cookies
-        cy.getSelectValueContainer(
-          "input-privacy_declarations.1.data_use",
+        cy.getByTestId(
+          "controlled-select-privacy_declarations.1.data_use",
         ).contains("Analytics for Insights");
         cy.getByTestId("input-privacy_declarations.1.cookieNames").contains(
           "Select...",

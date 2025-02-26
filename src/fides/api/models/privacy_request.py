@@ -24,6 +24,7 @@ from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.mutable import MutableDict, MutableList
 from sqlalchemy.orm import Query, RelationshipProperty, Session, backref, relationship
 from sqlalchemy.orm.dynamic import AppenderQuery
+from sqlalchemy.sql import text
 from sqlalchemy_utils.types.encrypted.encrypted_type import (
     AesGcmEngine,
     StringEncryptedType,
@@ -54,7 +55,6 @@ from fides.api.models.client import ClientDetail
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.manual_webhook import AccessManualWebhook
 from fides.api.models.policy import (
-    CurrentStep,
     Policy,
     PolicyPreWebhook,
     WebhookDirection,
@@ -73,7 +73,14 @@ from fides.api.schemas.external_https import (
     WebhookJWE,
 )
 from fides.api.schemas.masking.masking_secrets import MaskingSecretCache
-from fides.api.schemas.policy import ActionType
+from fides.api.schemas.policy import ActionType, CurrentStep
+from fides.api.schemas.privacy_request import (
+    CheckpointActionRequired,
+    ExecutionLogStatus,
+    ManualAction,
+    PrivacyRequestSource,
+    PrivacyRequestStatus,
+)
 from fides.api.schemas.redis_cache import (
     CustomPrivacyRequestField as CustomPrivacyRequestFieldSchema,
 )
@@ -123,71 +130,9 @@ EXECUTION_CHECKPOINTS = [
 ]
 
 
-class ManualAction(FidesSchema):
-    """
-    Surface how to retrieve or mask data in a database-agnostic way
-
-    - 'locators' are similar to the SQL "WHERE" information.
-    - 'get' contains a list of fields that should be retrieved from the source
-    - 'update' is a dictionary of fields and the replacement value/masking strategy
-    """
-
-    locators: Dict[str, Any]
-    get: Optional[List[str]]
-    update: Optional[Dict[str, Any]]
-
-
-class CheckpointActionRequired(FidesSchema):
-    """Describes actions needed on a particular checkpoint.
-
-    Examples are a paused collection that needs manual input, a failed collection that
-    needs to be restarted, or a collection where instructions need to be emailed to a third
-    party to complete the request.
-    """
-
-    step: CurrentStep
-    collection: Optional[CollectionAddress] = None
-    action_needed: Optional[List[ManualAction]] = None
-    model_config = ConfigDict(arbitrary_types_allowed=True)
-
-
 EmailRequestFulfillmentBodyParams = Dict[
     CollectionAddress, Optional[CheckpointActionRequired]
 ]
-
-
-class PrivacyRequestStatus(str, EnumType):
-    """Enum for privacy request statuses, reflecting where they are in the Privacy Request Lifecycle"""
-
-    identity_unverified = "identity_unverified"
-    requires_input = "requires_input"
-    pending = (
-        "pending"  # Privacy Request likely awaiting approval, if hanging in this state.
-    )
-    approved = "approved"
-    denied = "denied"
-    in_processing = "in_processing"
-    complete = "complete"
-    paused = "paused"
-    awaiting_email_send = "awaiting_email_send"
-    canceled = "canceled"
-    error = "error"
-
-
-class PrivacyRequestSource(str, EnumType):
-    """
-    The source where the privacy request originated from
-
-    - Privacy Center: Request created from the Privacy Center
-    - Request Manager: Request submitted from the Admin UI's Request manager page
-    - Consent Webhook: Request created as a side-effect of a consent webhook request (bidirectional consent)
-    - Fides.js: Request created as a side-effect of a privacy preference update from Fides.js
-    """
-
-    privacy_center = "Privacy Center"
-    request_manager = "Request Manager"
-    consent_webhook = "Consent Webhook"
-    fides_js = "Fides.js"
 
 
 class CallbackType(EnumType):
@@ -442,15 +387,22 @@ class PrivacyRequest(
 
         return super().create(db=db, data=data, check_name=check_name)
 
+    def clear_cached_values(self) -> None:
+        """
+        Clears all cached values associated with this privacy request from Redis.
+        """
+        logger.info(f"Clearing cached values for privacy request {self.id}")
+        cache: FidesopsRedis = get_cache()
+        all_keys = get_all_cache_keys_for_privacy_request(privacy_request_id=self.id)
+        for key in all_keys:
+            cache.delete(key)
+
     def delete(self, db: Session) -> None:
         """
         Clean up the cached and persisted data related to this privacy request before
         deleting this object from the database
         """
-        cache: FidesopsRedis = get_cache()
-        all_keys = get_all_cache_keys_for_privacy_request(privacy_request_id=self.id)
-        for key in all_keys:
-            cache.delete(key)
+        self.clear_cached_values()
 
         for provided_identity in self.provided_identities:  # type: ignore[attr-defined]
             provided_identity.delete(db=db)
@@ -550,11 +502,12 @@ class PrivacyRequest(
                 )
 
         # Simultaneously add identities to automaton for fuzzy search
-        try:
-            self.add_identities_to_automaton()
-        except Exception as exc:
-            # This should never affect the ability to create privacy requests
-            logger.error(f"Could not add identities to Automaton: {Pii(str(exc))}")
+        if CONFIG.execution.fuzzy_search_enabled:
+            try:
+                self.add_identities_to_automaton()
+            except Exception as exc:
+                # This should never affect the ability to create privacy requests
+                logger.error(f"Could not add identities to Automaton: {Pii(str(exc))}")
 
     def persist_custom_privacy_request_fields(
         self,
@@ -620,6 +573,12 @@ class PrivacyRequest(
         self.identity_verified_at = datetime.utcnow()
         self.save(db)
         return self
+
+    def get_cached_encryption_key(self) -> Optional[str]:
+        """Gets the cached encryption key for this privacy request."""
+        cache: FidesopsRedis = get_cache()
+        encryption_key = cache.get(get_encryption_cache_key(self.id, "key"))
+        return encryption_key
 
     def get_cached_task_id(self) -> Optional[str]:
         """Gets the cached task ID for this privacy request."""
@@ -1053,7 +1012,7 @@ class PrivacyRequest(
         """Dispatches this PrivacyRequest throughout the Fidesops System"""
         if self.started_processing_at is None:
             self.started_processing_at = datetime.utcnow()
-        if self.status == PrivacyRequestStatus.pending:
+        if self.status in [PrivacyRequestStatus.pending, PrivacyRequestStatus.approved]:
             self.status = PrivacyRequestStatus.in_processing
         self.save(db=db)
 
@@ -1128,7 +1087,10 @@ class PrivacyRequest(
         )
 
     def get_log_context(self) -> Dict[LoggerContextKeys, Any]:
-        return {LoggerContextKeys.privacy_request_id: self.id}
+        context = {LoggerContextKeys.privacy_request_id: self.id}
+        if self.source:
+            context[LoggerContextKeys.privacy_request_source] = self.source.value
+        return context
 
     @property
     def access_tasks(self) -> Query:
@@ -1294,6 +1256,28 @@ class PrivacyRequest(
         """Fetched the same filtered access results we uploaded to the user"""
         return self.filtered_final_upload or {}
 
+    def add_success_execution_log(
+        self,
+        db: Session,
+        connection_key: Optional[str],
+        dataset_name: Optional[str],
+        collection_name: Optional[str],
+        message: str,
+        action_type: ActionType,
+    ) -> ExecutionLog:
+        return ExecutionLog.create(
+            db=db,
+            data={
+                "privacy_request_id": self.id,
+                "connection_key": connection_key,
+                "dataset_name": dataset_name,
+                "collection_name": collection_name,
+                "status": ExecutionLogStatus.complete,
+                "message": message,
+                "action_type": action_type,
+            },
+        )
+
     def add_error_execution_log(
         self,
         db: Session,
@@ -1303,7 +1287,7 @@ class PrivacyRequest(
         message: str,
         action_type: ActionType,
     ) -> ExecutionLog:
-        execution_log = ExecutionLog.create(
+        return ExecutionLog.create(
             db=db,
             data={
                 "privacy_request_id": self.id,
@@ -1315,7 +1299,6 @@ class PrivacyRequest(
                 "action_type": action_type,
             },
         )
-        return execution_log
 
 
 class PrivacyRequestError(Base):
@@ -1324,7 +1307,9 @@ class PrivacyRequestError(Base):
     message_sent = Column(Boolean, nullable=False, default=False)
     privacy_request_id = Column(
         String,
-        ForeignKey(PrivacyRequest.id_field_path),
+        ForeignKey(
+            PrivacyRequest.id_field_path, ondelete="CASCADE", onupdate="CASCADE"
+        ),
         nullable=False,
     )
 
@@ -1389,7 +1374,9 @@ class ProvidedIdentity(HashMigrationMixin, Base):  # pylint: disable=R0904
 
     privacy_request_id = Column(
         String,
-        ForeignKey(PrivacyRequest.id_field_path),
+        ForeignKey(
+            PrivacyRequest.id_field_path, ondelete="CASCADE", onupdate="CASCADE"
+        ),
     )
     privacy_request = relationship(
         PrivacyRequest,
@@ -1497,7 +1484,9 @@ class CustomPrivacyRequestField(HashMigrationMixin, Base):
 
     privacy_request_id = Column(
         String,
-        ForeignKey(PrivacyRequest.id_field_path),
+        ForeignKey(
+            PrivacyRequest.id_field_path, ondelete="CASCADE", onupdate="CASCADE"
+        ),
     )
     privacy_request = relationship(
         PrivacyRequest,
@@ -1762,18 +1751,6 @@ def get_action_required_details(
     return None
 
 
-class ExecutionLogStatus(EnumType):
-    """Enum for execution log statuses, reflecting where they are in their workflow"""
-
-    in_processing = "in_processing"
-    pending = "pending"
-    complete = "complete"
-    error = "error"
-    awaiting_processing = "paused"  # "paused" in the database to avoid a migration, but use "awaiting_processing" in the app
-    retrying = "retrying"
-    skipped = "skipped"
-
-
 COMPLETED_EXECUTION_LOG_STATUSES = [
     ExecutionLogStatus.complete,
     ExecutionLogStatus.skipped,
@@ -1823,6 +1800,20 @@ class ExecutionLog(Base):
         String,
         nullable=False,
         index=True,
+    )
+
+    # Use clock_timestamp() instead of NOW() to get the actual current time at row creation,
+    # regardless of transaction state. This prevents timestamp caching within transactions
+    # and ensures more accurate creation times.
+    # https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-CURRENT
+
+    created_at = Column(
+        DateTime(timezone=True), server_default=text("clock_timestamp()")
+    )
+    updated_at = Column(
+        DateTime(timezone=True),
+        server_default=text("clock_timestamp()"),
+        onupdate=text("clock_timestamp()"),
     )
 
 
@@ -2056,11 +2047,9 @@ class RequestTask(Base):
 
         if not tasks_complete and should_log:
             logger.debug(
-                "Upstream tasks incomplete for {} task {}. Privacy Request: {}, Request Task {}.",
+                "Upstream tasks incomplete for {} task {}.",
                 self.action_type.value,
                 self.collection_address,
-                self.privacy_request_id,
-                self.id,
             )
 
         return tasks_complete
@@ -2088,24 +2077,20 @@ class RequestTask(Base):
 
         if should_log:
             logger.debug(
-                "Celery Task ID {} found for {} task {}. Privacy Request: {}, Request Task {}.",
+                "Celery Task ID {} found for {} task {}.",
                 celery_task_id,
                 self.action_type.value,
                 self.collection_address,
-                self.privacy_request_id,
-                self.id,
             )
 
         task_in_flight: bool = celery_tasks_in_flight([celery_task_id])
 
         if task_in_flight and should_log:
             logger.debug(
-                "Celery Task {} already processing for {} task {}. Privacy Request: {}, Request Task {}.",
+                "Celery Task {} already processing for {} task {}.",
                 celery_task_id,
                 self.action_type.value,
                 self.collection_address,
-                self.privacy_request_id,
-                self.id,
             )
 
         return task_in_flight

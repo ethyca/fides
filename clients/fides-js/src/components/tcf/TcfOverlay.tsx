@@ -9,9 +9,14 @@ import {
   ConsentMethod,
   PrivacyExperience,
   PrivacyExperienceMinimal,
+  PrivacyNoticeWithPreference,
+  SaveConsentPreference,
   ServingComponent,
 } from "../../lib/consent-types";
-import { isPrivacyExperience } from "../../lib/consent-utils";
+import {
+  experienceIsValid,
+  isPrivacyExperience,
+} from "../../lib/consent-utils";
 import { dispatchFidesEvent } from "../../lib/events";
 import { useNoticesServed } from "../../lib/hooks";
 import {
@@ -22,17 +27,26 @@ import {
   loadMessagesFromGVLTranslations,
   matchAvailableLocales,
   selectBestExperienceConfigTranslation,
+  selectBestNoticeTranslation,
 } from "../../lib/i18n";
 import { useI18n } from "../../lib/i18n/i18n-context";
 import { updateConsentPreferences } from "../../lib/preferences";
+import { transformConsentToFidesUserPreference } from "../../lib/shared-consent-utils";
+import { EMPTY_ENABLED_IDS } from "../../lib/tcf/constants";
 import { useGvl } from "../../lib/tcf/gvl-context";
-import type { EnabledIds, TcfSavePreferences } from "../../lib/tcf/types";
+import {
+  EnabledIds,
+  PrivacyNoticeWithBestTranslation,
+  TcfModels,
+  TcfSavePreferences,
+} from "../../lib/tcf/types";
 import {
   buildTcfEntitiesFromCookieAndFidesString as buildUserPrefs,
   constructTCFNoticesServedProps,
   createTcfSavePayload,
   createTcfSavePayloadFromMinExp,
   getEnabledIds,
+  getEnabledIdsNotice,
   getGVLPurposeList,
   updateCookie,
 } from "../../lib/tcf/utils";
@@ -46,9 +60,19 @@ import { TCFBannerSupplemental } from "./TCFBannerSupplemental";
 import { TcfConsentButtons } from "./TcfConsentButtons";
 import TcfTabs from "./TcfTabs";
 
+const getAllIds = (
+  modelList: TcfModels | Array<PrivacyNoticeWithPreference>,
+) => {
+  if (!modelList) {
+    return [];
+  }
+  return modelList.map((m) => `${m.id}`);
+};
+
 interface TcfOverlayProps extends Omit<OverlayProps, "experience"> {
   experienceMinimal: PrivacyExperienceMinimal;
 }
+
 export const TcfOverlay = ({
   options,
   experienceMinimal,
@@ -86,6 +110,7 @@ export const TcfOverlay = ({
   }, [currentLocale, minExperienceLocale, setCurrentLocale]);
 
   const { gvlTranslations, setGvlTranslations } = useGvl();
+  const [isGVLLangLoading, setIsGVLLangLoading] = useState(false);
   const loadGVLTranslations = async (locale: string) => {
     const gvlTranslationObjects = await fetchGvlTranslations(
       options.fidesApiUrl,
@@ -99,6 +124,24 @@ export const TcfOverlay = ({
   };
 
   /**
+   * Enhance the given PrivacyNotices with best translation for rendering.
+   *
+   * We memoize these together to avoid repeatedly figuring out the "best"
+   * translation on every render, since it will only change if the overall
+   * locale changes!
+   */
+  const privacyNoticesWithBestTranslation: PrivacyNoticeWithBestTranslation[] =
+    useMemo(
+      () =>
+        (experienceMinimal.privacy_notices || []).map((notice) => {
+          const bestTranslation = selectBestNoticeTranslation(i18n, notice);
+          return { ...notice, bestTranslation };
+        }),
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+      [experienceMinimal.privacy_notices, i18n, currentLocale],
+    );
+
+  /**
    * TCF overlay loads with a minimal experience, which is then replaced with the full.
    * We do this to ensure the overlay can be rendered as quickly as possible.
    * The full experience is fetched after the component mounts, so we store it
@@ -107,8 +150,6 @@ export const TcfOverlay = ({
   const [experience, setExperience] = useState<PrivacyExperience>();
 
   useEffect(() => {
-    let isGVLLangLoading = false;
-
     if (!!userlocale && bestLocale !== minExperienceLocale) {
       // The minimal experience translation is different from the user's language.
       // This occurs when the customer has set their overrides on the window object
@@ -124,11 +165,12 @@ export const TcfOverlay = ({
       // We can only get English GVL translations from the experience.
       // If the user's locale is not English, we need to load them from the api.
       // This only affects the modal.
-      isGVLLangLoading = true;
+      setIsGVLLangLoading(true);
       loadGVLTranslations(bestLocale).then(() => {
-        isGVLLangLoading = false;
+        setIsGVLLangLoading(false);
       });
     }
+    fidesDebugger("Fetching full TCF experience...");
     fetchExperience({
       userLocationString: fidesRegionString,
       fidesApiUrl: options.fidesApiUrl,
@@ -139,18 +181,16 @@ export const TcfOverlay = ({
       if (isPrivacyExperience(result)) {
         // include user preferences from the cookie
         const userPrefs = buildUserPrefs(result, cookie);
-        const fullExperience: PrivacyExperience = { ...result, ...userPrefs };
 
-        setExperience(fullExperience);
-        loadMessagesFromExperience(i18n, fullExperience, translationOverrides);
-        if (!userlocale || bestLocale === defaultLocale) {
-          // English (default) GVL translations are part of the full experience, so we load them here.
-          loadGVLMessagesFromExperience(i18n, fullExperience);
-        } else {
-          setCurrentLocale(bestLocale);
-          if (!isGVLLangLoading) {
-            setIsI18nLoading(false);
-          }
+        if (experienceIsValid(result)) {
+          const fullExperience: PrivacyExperience = { ...result, ...userPrefs };
+          window.Fides.experience = {
+            ...window.Fides.experience,
+            ...fullExperience,
+          };
+          window.Fides.experience.minimal_tcf = false;
+
+          setExperience(fullExperience);
         }
       }
     });
@@ -159,22 +199,25 @@ export const TcfOverlay = ({
 
   const { setVendorCount } = useVendorButton();
 
-  const [draftIds, setDraftIds] = useState<EnabledIds>();
+  const [draftIds, setDraftIds] = useState<EnabledIds>(EMPTY_ENABLED_IDS);
 
   useEffect(() => {
     if (!experience) {
-      setDraftIds({
-        purposesConsent: [],
-        purposesLegint: [],
-        specialPurposes: [],
-        features: [],
-        specialFeatures: [],
-        vendorsConsent: [],
-        vendorsLegint: [],
-      });
+      setDraftIds(EMPTY_ENABLED_IDS);
     } else {
+      loadMessagesFromExperience(i18n, experience, translationOverrides);
+      if (!userlocale || bestLocale === defaultLocale) {
+        // English (default) GVL translations are part of the full experience, so we load them here.
+        loadGVLMessagesFromExperience(i18n, experience);
+      } else {
+        setCurrentLocale(bestLocale);
+        if (!isGVLLangLoading) {
+          setIsI18nLoading(false);
+        }
+      }
       const {
         tcf_purpose_consents: consentPurposes = [],
+        privacy_notices: customPurposes = [],
         tcf_purpose_legitimate_interests: legintPurposes = [],
         tcf_special_purposes: specialPurposes = [],
         tcf_features: features = [],
@@ -188,6 +231,7 @@ export const TcfOverlay = ({
       // Vendors and systems are the same to the FE, so we combine them here
       setDraftIds({
         purposesConsent: getEnabledIds(consentPurposes),
+        customPurposesConsent: getEnabledIdsNotice(customPurposes),
         purposesLegint: getEnabledIds(legintPurposes),
         specialPurposes: getEnabledIds(specialPurposes),
         features: getEnabledIds(features),
@@ -196,6 +240,7 @@ export const TcfOverlay = ({
         vendorsLegint: getEnabledIds([...legintVendors, ...legintSystems]),
       });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [experience]);
 
   useEffect(() => {
@@ -219,6 +264,13 @@ export const TcfOverlay = ({
     return undefined;
   }, [experienceMinimal, experience, i18n]);
 
+  const customPurposes: (string | undefined)[] = useMemo(() => {
+    const notices = privacyNoticesWithBestTranslation.map(
+      (notice) => notice.bestTranslation?.title || notice.name,
+    );
+    return notices;
+  }, [privacyNoticesWithBestTranslation]);
+
   const purposes: string[] = useMemo(() => {
     if (gvlTranslations) {
       return getGVLPurposeList(gvlTranslations);
@@ -236,13 +288,42 @@ export const TcfOverlay = ({
 
   const { servedNoticeHistoryId } = useNoticesServed({
     privacyExperienceConfigHistoryId,
-    privacyNoticeHistoryIds: [],
+    privacyNoticeHistoryIds: privacyNoticesWithBestTranslation.reduce(
+      (ids, e) => {
+        const id = e.bestTranslation?.privacy_notice_history_id;
+        if (id) {
+          ids.push(id);
+        }
+        return ids;
+      },
+      [] as string[],
+    ),
     options,
     userGeography: fidesRegionString,
     acknowledgeMode: false,
     privacyExperience: experience || experienceMinimal,
     tcfNoticesServed,
   });
+
+  const createConsentPreferencesToSave = (
+    privacyNoticeList: PrivacyNoticeWithBestTranslation[],
+    enabledPrivacyNoticeIds: string[],
+  ): SaveConsentPreference[] => {
+    if (!privacyNoticeList || !enabledPrivacyNoticeIds) {
+      return [];
+    }
+    return privacyNoticeList.map((item) => {
+      const userPreference = transformConsentToFidesUserPreference(
+        enabledPrivacyNoticeIds.includes(item.id),
+        item.consent_mechanism,
+      );
+      return new SaveConsentPreference(
+        item,
+        userPreference,
+        item.bestTranslation?.privacy_notice_history_id,
+      );
+    });
+  };
 
   const handleUpdateAllPreferences = useCallback(
     (consentMethod: ConsentMethod, enabledIds: EnabledIds) => {
@@ -261,8 +342,12 @@ export const TcfOverlay = ({
           enabledIds,
         });
       }
+      const consentPreferencesToSave = createConsentPreferencesToSave(
+        privacyNoticesWithBestTranslation,
+        enabledIds.customPurposesConsent,
+      );
       updateConsentPreferences({
-        consentPreferencesToSave: [],
+        consentPreferencesToSave,
         privacyExperienceConfigHistoryId,
         experience: experience || experienceMinimal,
         consentMethod,
@@ -278,6 +363,7 @@ export const TcfOverlay = ({
             tcf,
             enabledIds,
             experience || experienceMinimal,
+            consentPreferencesToSave,
           ),
       });
       setDraftIds(enabledIds);
@@ -289,9 +375,89 @@ export const TcfOverlay = ({
       fidesRegionString,
       options,
       privacyExperienceConfigHistoryId,
+      privacyNoticesWithBestTranslation,
       servedNoticeHistoryId,
     ],
   );
+
+  const handleAcceptAll = useCallback(
+    (wasAutomated?: boolean) => {
+      let allIds: EnabledIds;
+      let exp = experience || experienceMinimal;
+      if (!exp.minimal_tcf) {
+        exp = experience as PrivacyExperience;
+        allIds = {
+          purposesConsent: getAllIds(exp.tcf_purpose_consents),
+          customPurposesConsent: getAllIds(exp.privacy_notices),
+          purposesLegint: getAllIds(exp.tcf_purpose_legitimate_interests),
+          specialPurposes: getAllIds(exp.tcf_special_purposes),
+          features: getAllIds(exp.tcf_features),
+          specialFeatures: getAllIds(exp.tcf_special_features),
+          vendorsConsent: getAllIds([
+            ...(exp.tcf_vendor_consents || []),
+            ...(exp.tcf_system_consents || []),
+          ]),
+          vendorsLegint: getAllIds([
+            ...(exp.tcf_vendor_legitimate_interests || []),
+            ...(exp.tcf_system_legitimate_interests || []),
+          ]),
+        };
+      } else {
+        // eslint-disable-next-line no-param-reassign
+        exp = experienceMinimal as PrivacyExperienceMinimal;
+        allIds = {
+          purposesConsent:
+            exp.tcf_purpose_consent_ids?.map((id) => `${id}`) || [],
+          customPurposesConsent: getAllIds(exp.privacy_notices) || [],
+          purposesLegint:
+            exp.tcf_purpose_legitimate_interest_ids?.map((id) => `${id}`) || [],
+          specialPurposes:
+            exp.tcf_special_purpose_ids?.map((id) => `${id}`) || [],
+          features: exp.tcf_feature_ids?.map((id) => `${id}`) || [],
+          specialFeatures:
+            exp.tcf_special_feature_ids?.map((id) => `${id}`) || [],
+          vendorsConsent: [
+            ...(exp.tcf_vendor_consent_ids || []),
+            ...(exp.tcf_system_consent_ids || []),
+          ],
+          vendorsLegint: [
+            ...(exp.tcf_vendor_legitimate_interest_ids || []),
+            ...(exp.tcf_system_legitimate_interest_ids || []),
+          ],
+        };
+      }
+      handleUpdateAllPreferences(
+        wasAutomated ? ConsentMethod.SCRIPT : ConsentMethod.ACCEPT,
+        allIds,
+      );
+    },
+    [experience, experienceMinimal, handleUpdateAllPreferences],
+  );
+
+  const handleRejectAll = useCallback(
+    (wasAutomated?: boolean) => {
+      handleUpdateAllPreferences(
+        wasAutomated ? ConsentMethod.SCRIPT : ConsentMethod.REJECT,
+        EMPTY_ENABLED_IDS,
+      );
+    },
+    [handleUpdateAllPreferences],
+  );
+
+  useEffect(() => {
+    if (options.fidesConsentOverride === ConsentMethod.ACCEPT) {
+      fidesDebugger(
+        "Consent automatically accepted by fides_consent_override!",
+      );
+      handleAcceptAll(true);
+    } else if (options.fidesConsentOverride === ConsentMethod.REJECT) {
+      fidesDebugger(
+        "Consent automatically rejected by fides_consent_override!",
+      );
+      handleRejectAll(true);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [options.fidesConsentOverride]);
 
   const [activeTabIndex, setActiveTabIndex] = useState(0);
 
@@ -308,7 +474,7 @@ export const TcfOverlay = ({
   }, [cookie, options.debug]);
 
   const handleDismiss = useCallback(() => {
-    handleUpdateAllPreferences(ConsentMethod.DISMISS, draftIds!);
+    handleUpdateAllPreferences(ConsentMethod.DISMISS, draftIds);
   }, [handleUpdateAllPreferences, draftIds]);
 
   const experienceConfig =
@@ -336,7 +502,6 @@ export const TcfOverlay = ({
         isEmbedded,
         isOpen,
         onClose,
-        onSave,
         onManagePreferencesClick,
       }) => {
         const goToVendorTab = () => {
@@ -350,24 +515,31 @@ export const TcfOverlay = ({
             isEmbedded={isEmbedded}
             onOpen={dispatchOpenBannerEvent}
             onClose={() => {
-              onClose();
               handleDismiss();
+              onClose();
             }}
             onVendorPageClick={goToVendorTab}
             renderButtonGroup={() => (
               <TcfConsentButtons
                 experience={experience || experienceMinimal}
                 onManagePreferencesClick={onManagePreferencesClick}
-                onSave={(consentMethod: ConsentMethod, keys: EnabledIds) => {
-                  handleUpdateAllPreferences(consentMethod, keys);
-                  onSave();
+                onAcceptAll={() => {
+                  handleAcceptAll();
+                  onClose();
+                }}
+                onRejectAll={() => {
+                  handleRejectAll();
+                  onClose();
                 }}
                 options={options}
               />
             )}
             className="fides-tcf-banner-container"
           >
-            <TCFBannerSupplemental purposes={purposes} />
+            <TCFBannerSupplemental
+              purposes={purposes}
+              customPurposes={customPurposes}
+            />
           </ConsentBanner>
         );
       }}
@@ -377,7 +549,8 @@ export const TcfOverlay = ({
           : () => (
               <TcfTabs
                 experience={experience}
-                enabledIds={draftIds!}
+                customNotices={privacyNoticesWithBestTranslation}
+                enabledIds={draftIds}
                 onChange={(updatedIds) => {
                   setDraftIds(updatedIds);
                   dispatchFidesEvent("FidesUIChanged", cookie, options.debug);
@@ -401,12 +574,19 @@ export const TcfOverlay = ({
               return (
                 <TcfConsentButtons
                   experience={experience}
-                  onSave={onSave}
+                  onAcceptAll={() => {
+                    handleAcceptAll();
+                    onClose();
+                  }}
+                  onRejectAll={() => {
+                    handleRejectAll();
+                    onClose();
+                  }}
                   renderFirstButton={() => (
                     <Button
                       buttonType={ButtonType.SECONDARY}
                       label={i18n.t("exp.save_button_label")}
-                      onClick={() => onSave(ConsentMethod.SAVE, draftIds!)}
+                      onClick={() => onSave(ConsentMethod.SAVE, draftIds)}
                       className="fides-save-button"
                     />
                   )}

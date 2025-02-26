@@ -89,6 +89,22 @@ class FidesopsRedis(Redis):
             for key, value in encoded_object_dict.items()
         }
 
+    def get_decoded_list(self, key: str) -> List[Dict[str, Any]]:
+        """Get and decode all items in a Redis list.
+
+        Args:
+            key: The Redis key for the list
+
+        Returns:
+            List of decoded items stored under the key. Empty list if key doesn't exist.
+        """
+        items = self.lrange(key, 0, -1)
+        decoded_items = []
+        for item in items:
+            if item and (decoded := self.decode_obj(item)):
+                decoded_items.append(decoded)
+        return decoded_items
+
     @staticmethod
     def encode_obj(obj: Any) -> bytes:
         """Encode an object to a JSON string that can be stored in Redis"""
@@ -118,9 +134,33 @@ class FidesopsRedis(Redis):
             return result
         return None
 
+    def push_encoded_object(
+        self, key: str, obj: Any, expire_time: int = CONFIG.redis.default_ttl_seconds
+    ) -> int:
+        """Encode an object and append it to a list in Redis.
+
+        Args:
+            key: The Redis key for the list
+            obj: The object to encode and append
+            expire_time: Time in seconds after which the key will expire. Defaults to CONFIG.redis.default_ttl_seconds.
+
+        Returns:
+            The length of the list after the push operation
+        """
+        encoded_entry = self.encode_obj(obj)
+        list_length = self.rpush(key, encoded_entry)
+        self.expire(key, expire_time)
+        return list_length
+
 
 def get_cache(should_log: Optional[bool] = False) -> FidesopsRedis:
     """Return a singleton connection to our Redis cache"""
+
+    if not CONFIG.redis.enabled:
+        raise common_exceptions.RedisNotConfigured(
+            "Application Redis cache required, but it is currently disabled! Please update your application configuration to enable integration with a Redis cache."
+        )
+
     global _connection  # pylint: disable=W0603
     if _connection is None:
         logger.debug("Creating new Redis connection...")
@@ -195,9 +235,7 @@ def get_masking_secret_cache_key(
 def get_all_cache_keys_for_privacy_request(privacy_request_id: str) -> List[Any]:
     """Returns all cache keys related to this privacy request's cached identities"""
     cache: FidesopsRedis = get_cache()
-    return cache.keys(f"{privacy_request_id}-*") + cache.keys(
-        f"id-{privacy_request_id}-*"
-    )
+    return cache.keys(f"*{privacy_request_id}*")
 
 
 def get_async_task_tracking_cache_key(privacy_request_id: str) -> str:

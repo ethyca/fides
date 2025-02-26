@@ -75,43 +75,6 @@ jobs:
           path: /tmp/python-${{ matrix.python_version }}.tar
           retention-days: 1
 
-  ###################
-  ## Static Checks ##
-  ###################
-  Static-Checks:
-    strategy:
-      matrix:
-        session_name:
-          [
-            '"isort(check)"',
-            '"black(check)"',
-            "mypy",
-            "pylint",
-            "xenon",
-            "check_install",
-            '"pytest(nox)"',
-          ]
-    runs-on: ubuntu-latest
-    continue-on-error: true
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Set Up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
-          cache: "pip"
-
-      - name: Install Nox
-        run: pip install nox>=2022
-
-      - name: Install Dev Requirements
-        run: pip install -r dev-requirements.txt
-
-      - name: Run Static Check
-        run: nox -s ${{ matrix.session_name }}
-
   ##################
   ## Performance ##
   ##################
@@ -244,6 +207,7 @@ jobs:
   Safe-Tests:
     needs: Check-Container-Startup
     strategy:
+      fail-fast: false
       matrix:
         python_version: ["3.9.18", "3.10.13"]
         test_selection:
@@ -255,7 +219,6 @@ jobs:
 
     runs-on: ubuntu-latest
     timeout-minutes: 45
-    continue-on-error: true
     steps:
       - name: Download container
         uses: actions/download-artifact@v4
@@ -321,6 +284,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Set Up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
+          cache: "pip"
+
       - name: Install Nox
         run: pip install nox>=2022
 
@@ -361,7 +330,7 @@ jobs:
       matrix:
         python_version: ["3.9.18", "3.10.13"]
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     # In PRs run with the "unsafe" label, or run on a "push" event to main
     if: contains(github.event.pull_request.labels.*.name, 'run unsafe ci checks') || github.event_name == 'push'
     steps:
@@ -376,6 +345,12 @@ jobs:
 
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Set Up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
+          cache: "pip"
 
       - name: Install Nox
         run: pip install nox>=2022
@@ -397,6 +372,8 @@ jobs:
           # Secrets to pull from 1Password
           BIGQUERY_DATASET: op://github-actions/bigquery/BIGQUERY_DATASET
           BIGQUERY_KEYFILE_CREDS: op://github-actions/bigquery/BIGQUERY_KEYFILE_CREDS
+          BIGQUERY_ENTERPRISE_DATASET: op://github-actions/bigquery-enterprise/BIGQUERY_ENTERPRISE_DATASET
+          BIGQUERY_ENTERPRISE_KEYFILE_CREDS: op://github-actions/bigquery-enterprise/BIGQUERY_ENTERPRISE_KEYFILE_CREDS
           DYNAMODB_ACCESS_KEY_ID: op://github-actions/dynamodb/DYNAMODB_ACCESS_KEY_ID
           DYNAMODB_ACCESS_KEY: op://github-actions/dynamodb/DYNAMODB_ACCESS_KEY
           DYNAMODB_ASSUME_ROLE_ARN: op://github-actions/dynamodb/DYNAMODB_ASSUME_ROLE_ARN
@@ -461,11 +438,17 @@ jobs:
       - name: Load image
         run: docker load --input /tmp/python-${{ matrix.python_version }}.tar
 
-      - name: Install Nox
-        run: pip install nox>=2022
-
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Set Up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
+          cache: "pip"
+
+      - name: Install Nox
+        run: pip install nox>=2022
 
       - name: Get Vault Token
         uses: hashicorp/vault-action@v2.5.0

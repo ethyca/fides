@@ -3,6 +3,7 @@
 # imported by Alembic
 from fides.api.db.base_class import Base
 from fides.api.models.application_config import ApplicationConfig
+from fides.api.models.asset import Asset
 from fides.api.models.audit_log import AuditLog
 from fides.api.models.authentication_request import AuthenticationRequest
 from fides.api.models.client import ClientDetail
@@ -12,6 +13,7 @@ from fides.api.models.custom_asset import CustomAsset
 from fides.api.models.custom_connector_template import CustomConnectorTemplate
 from fides.api.models.custom_report import CustomReport
 from fides.api.models.datasetconfig import DatasetConfig
+from fides.api.models.db_cache import DBCache
 from fides.api.models.detection_discovery import MonitorConfig, StagedResource
 from fides.api.models.experience_notices import ExperienceNotices
 from fides.api.models.fides_cloud import FidesCloud

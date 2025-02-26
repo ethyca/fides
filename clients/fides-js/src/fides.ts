@@ -9,7 +9,7 @@ import { blueconic } from "./integrations/blueconic";
 import { gtm } from "./integrations/gtm";
 import { meta } from "./integrations/meta";
 import { shopify } from "./integrations/shopify";
-import { raise } from "./lib/common-utils";
+import { isConsentOverride, raise } from "./lib/common-utils";
 import {
   FidesConfig,
   FidesExperienceTranslationOverrides,
@@ -40,6 +40,7 @@ import {
   initialize,
   UpdateExperienceFn,
 } from "./lib/initialize";
+import { initOverlay } from "./lib/initOverlay";
 import { renderOverlay } from "./lib/renderOverlay";
 import { customGetConsentPreferences } from "./services/external/preferences";
 
@@ -155,6 +156,7 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
   const updatedFides = await initialize({
     ...config,
     fides: this,
+    initOverlay,
     renderOverlay,
     updateExperience,
     overrides,
@@ -201,6 +203,7 @@ const _Fides: FidesGlobal = {
     fidesPrimaryColor: null,
     fidesClearCookie: false,
     showFidesBrandLink: true,
+    fidesConsentOverride: null,
   },
   fides_meta: {},
   identity: {},
@@ -221,6 +224,10 @@ const _Fides: FidesGlobal = {
   shouldShowExperience() {
     if (!isPrivacyExperience(this.experience)) {
       // Nothing to show if there's no experience
+      return false;
+    }
+    if (isConsentOverride(this.options)) {
+      // If consent preference override exists, we should not show the experience
       return false;
     }
     if (!this.cookie) {

@@ -14,12 +14,13 @@ import palette from "fidesui/src/palette/palette.module.scss";
 export const antTheme: AntThemeConfig = {
   cssVar: true,
   token: {
+    fontFamily: `Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"`,
     colorPrimary: palette.FIDESUI_MINOS,
     colorInfo: palette.FIDESUI_MINOS,
     colorSuccess: palette.FIDESUI_SUCCESS,
     colorWarning: palette.FIDESUI_WARNING,
     colorError: palette.FIDESUI_ERROR,
-    colorLink: palette.LINK,
+    colorLink: palette.FIDESUI_LINK,
     colorBgBase: palette.FIDESUI_FULL_WHITE,
     borderRadius: 4,
     wireframe: true,
@@ -29,7 +30,7 @@ export const antTheme: AntThemeConfig = {
     colorWarningBg: "#ffecc9", // custom override
     colorWarningBorder: "#ffdba1", // custom override
     colorSuccessBorder: palette.FIDESUI_SUCCESS,
-    colorPrimaryBg: palette.FIDESUI_SANDSTONE,
+    colorPrimaryBg: palette.FIDESUI_NEUTRAL_75,
     colorBorder: palette.FIDESUI_NEUTRAL_100,
     zIndexPopupBase: 1500, // supersede Chakra's modal z-index
   },
@@ -51,7 +52,18 @@ export const antTheme: AntThemeConfig = {
       bodyBg: palette.FIDESUI_NEUTRAL_50,
     },
     Select: {
-      optionActiveBg: palette.FIDESUI_SANDSTONE,
+      optionActiveBg: palette.FIDESUI_NEUTRAL_50,
+    },
+    Menu: {
+      itemHoverBg: palette.FIDESUI_NEUTRAL_50,
+      darkItemBg: palette.FIDESUI_MINOS,
+      darkItemColor: palette.FIDESUI_CORINTH,
+      darkSubMenuItemBg: palette.FIDESUI_MINOS,
+      darkItemSelectedBg: palette.FIDESUI_SANDSTONE,
+    },
+    Dropdown: {
+      fontSize: 16,
+      paddingBlock: 8,
     },
     Tooltip: {
       colorBgSpotlight: palette.FIDESUI_MINOS,

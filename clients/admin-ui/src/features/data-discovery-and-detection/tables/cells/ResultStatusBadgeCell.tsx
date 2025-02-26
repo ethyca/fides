@@ -1,19 +1,11 @@
-import { Badge, BadgeProps } from "fidesui";
+import { AntTag as Tag, AntTagProps as TagProps } from "fidesui";
 
 import { ResourceChangeType } from "~/features/data-discovery-and-detection/types/ResourceChangeType";
 import findResourceChangeType from "~/features/data-discovery-and-detection/utils/findResourceChangeType";
 import { StagedResource } from "~/types/api";
 
-interface ResultStatusBadgeProps extends BadgeProps {
-  colorScheme: string;
-}
-
-const ResultStatusBadge = ({ children, ...props }: ResultStatusBadgeProps) => {
-  return (
-    <Badge fontSize="xs" fontWeight="normal" textTransform="none" {...props}>
-      {children}
-    </Badge>
-  );
+const ResultStatusBadge = ({ children, ...props }: TagProps) => {
+  return <Tag {...props}>{children}</Tag>;
 };
 
 const ResultStatusBadgeCell = ({
@@ -24,27 +16,19 @@ const ResultStatusBadgeCell = ({
   changeTypeOverride?: ResourceChangeType;
 }) => {
   if (result.user_assigned_data_categories?.length) {
-    return <ResultStatusBadge colorScheme="green">Reviewed</ResultStatusBadge>;
+    return <ResultStatusBadge color="success">Reviewed</ResultStatusBadge>;
   }
   const changeType = changeTypeOverride ?? findResourceChangeType(result);
   switch (changeType) {
     case ResourceChangeType.MUTED:
-      return (
-        <ResultStatusBadge colorScheme="gray">Unmonitored</ResultStatusBadge>
-      );
+      return <ResultStatusBadge color="marble">Unmonitored</ResultStatusBadge>;
     case ResourceChangeType.MONITORED:
-      return (
-        <ResultStatusBadge colorScheme="green">Monitoring</ResultStatusBadge>
-      );
+      return <ResultStatusBadge color="success">Monitoring</ResultStatusBadge>;
     case ResourceChangeType.IN_PROGRESS:
-      return (
-        <ResultStatusBadge colorScheme="blue">Classifying</ResultStatusBadge>
-      );
+      return <ResultStatusBadge color="info">Classifying</ResultStatusBadge>;
     default:
       return (
-        <ResultStatusBadge colorScheme="orange">
-          Pending review
-        </ResultStatusBadge>
+        <ResultStatusBadge color="warning">Pending review</ResultStatusBadge>
       );
   }
 };
