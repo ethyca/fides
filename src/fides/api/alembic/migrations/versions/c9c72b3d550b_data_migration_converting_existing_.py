@@ -7,7 +7,7 @@ Create Date: 2025-02-18 18:33:56.039924
 """
 
 import uuid
-from typing import Dict
+from typing import Dict, List, Tuple
 
 import psycopg2
 import sqlalchemy as sa
@@ -34,7 +34,9 @@ def upgrade():
     connection = op.get_bind()
     result = connection.execute(
         sa.text(
-            "SELECT id, created_at, updated_at, name, domain, system_id, path, privacy_declaration_id FROM cookies"
+            "SELECT c.id, c.created_at, c.updated_at, c.name, c.domain, c.system_id, c.path, c.privacy_declaration_id, pd.system_id AS pud_system_id, pd.data_use "
+            "FROM cookies c "
+            "LEFT JOIN privacydeclaration pd ON c.privacy_declaration_id = pd.id"
         )
     )
 
@@ -54,22 +56,12 @@ def upgrade():
                 asset_type="Cookie",
             )
             continue
-        pud_system_id_data_use = connection.execute(
-            sa.text(
-                "SELECT system_id, data_use FROM privacydeclaration WHERE id = :privacy_declaration_id"
-            ),
-            privacy_declaration_id=row.privacy_declaration_id,
-        ).fetchone()
 
-        if pud_system_id_data_use:
-            pud_system_id, data_use = pud_system_id_data_use
-        if pud_system_id:
-            system_id = pud_system_id
+        if row.pud_system_id:
+            system_id = row.pud_system_id
+            data_uses = [row.data_use]
         else:
             system_id = row.system_id
-        if data_use:
-            data_uses = [data_use]
-        else:
             data_uses = []
 
         # Asset unique identifier is a composite of name, asset_type, domain, base_url, system_id. All assets here are cookies.
@@ -169,20 +161,23 @@ def downgrade():
         )
     )
 
+    # fetch all privacy declarations
+    privacy_declarations = connection.execute(
+        sa.text("SELECT id, system_id, data_use FROM privacydeclaration")
+    ).fetchall()
+    # create a mapping of system_id and data_use to privacy_declaration_id
+    privacy_declaration_mapping: Dict[Tuple[str, str], str] = {}
+    for pud in privacy_declarations:
+        privacy_declaration_mapping[(pud.system_id, pud.data_use)] = pud.id
+
     logger.debug("Migrating existing assets to cookies")
     for row in result:
         # Find the privacy declaration ID matching the system ID and data use
         privacy_declaration_ids = []
         for data_use in row.data_uses:
-            pud = connection.execute(
-                sa.text(
-                    "SELECT id FROM privacydeclaration WHERE system_id = :system_id AND data_use = :data_use"
-                ),
-                system_id=row.system_id,
-                data_use=data_use,
-            ).fetchone()
-            if pud:
-                privacy_declaration_ids.append(pud.id)
+            pud_id = privacy_declaration_mapping.get((row.system_id, data_use), None)
+            if pud_id:
+                privacy_declaration_ids.append(pud_id)
 
         if len(privacy_declaration_ids) == 0:
             # If no privacy declaration match we attach to system_id
