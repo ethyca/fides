@@ -1,5 +1,6 @@
 version: 2
 updates:
+  # Python dependencies
   - package-ecosystem: "pip"
     directory: "/"
     schedule:
@@ -8,10 +9,27 @@ updates:
       - dependencies
       - python
       - dependabot
-  - package-ecosystem: npm
+    open-pull-requests-limit: 0  # Security updates only
+
+  # Frontend monorepo dependencies
+  # Dependabot config must target /clients because package-lock.json is at the monorepo root
+
+  # Security updates for all monorepo dependencies
+  - package-ecosystem: "npm"
     directory: "/clients"
     schedule:
-      interval: weekly
+      interval: "daily"
+    labels:
+      - dependencies
+      - javascript
+      - dependabot
+    open-pull-requests-limit: 0  # Security updates only
+
+  # Version updates for IAB dependencies of fides-js
+  - package-ecosystem: "npm"
+    directory: "/clients"
+    schedule:
+      interval: "daily"
     labels:
       - dependencies
       - javascript
@@ -21,28 +39,35 @@ updates:
         dependency-type: "direct"
       - dependency-name: "@iabgpp*"
         dependency-type: "direct"
-    versioning-strategy: "increase"
-  - package-ecosystem: npm
+
+  # Frontend development/test dependencies
+  - package-ecosystem: "npm"
     directory: "/clients/sample-app"
     schedule:
-      interval: weekly
+      interval: "weekly"
     labels:
       - dependencies
       - javascript
       - dependabot
-  - package-ecosystem: npm
+    open-pull-requests-limit: 0  # Security updates only
+
+  - package-ecosystem: "npm"
     directory: "/clients/cypress-e2e"
     schedule:
-      interval: weekly
+      interval: "weekly"
     labels:
       - dependencies
       - javascript
       - dependabot
-  - package-ecosystem: github-actions
+    open-pull-requests-limit: 0  # Security updates only
+
+  # GitHub Actions
+  - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: weekly
+      interval: "weekly"
     labels:
       - dependencies
       - github_actions
       - dependabot
+    open-pull-requests-limit: 0  # Security updates only
