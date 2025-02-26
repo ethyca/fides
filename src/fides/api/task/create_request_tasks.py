@@ -18,9 +18,9 @@ from fides.api.graph.graph import DatasetGraph
 from fides.api.graph.traversal import (
     ARTIFICIAL_NODES,
     Traversal,
+    TraversalNode,
     log_traversal_error_and_update_privacy_request,
 )
-from fides.api.graph.traversal_node import TraversalNode
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import (
