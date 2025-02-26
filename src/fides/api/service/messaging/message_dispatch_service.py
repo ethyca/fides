@@ -44,7 +44,7 @@ from fides.api.tasks import DatabaseTask, celery_app
 from fides.api.util.logger import Pii
 from fides.config import CONFIG
 from fides.config.config_proxy import ConfigProxy
-from fides.service.messaging.aws_ses_service import AWSSESService
+from fides.service.messaging.aws_ses_service import AWS_SES_Service
 from fides.service.messaging.mailgun_service import MailgunService
 from fides.service.messaging.twilio_email_service import TwilioEmailService
 
@@ -573,6 +573,7 @@ def _twilio_email_dispatcher(
     to: str,
 ) -> None:
     """Dispatches email using twilio sendgrid"""
+    validate_config(messaging_config, "Twilio email")
 
     twilio_email_service = TwilioEmailService(messaging_config)
     twilio_email_service.send_message(message, to)
@@ -626,7 +627,7 @@ def _aws_ses_dispatcher(
 ) -> None:
     validate_config(messaging_config, "AWS SES")
 
-    aws_ses_serivce = AWSSESService(messaging_config)
+    aws_ses_serivce = AWS_SES_Service(messaging_config)
     aws_ses_serivce.send_message(message, to)
 
 

@@ -4,6 +4,7 @@ import pytest
 
 from fides.api.models.messaging import MessagingConfig
 from fides.api.schemas.messaging.messaging import (
+<<<<<<< HEAD
     MessagingServiceDetailsAWSSES,
     MessagingServiceSecretsAWSSES,
     EmailForActionType,
@@ -15,10 +16,22 @@ from fides.api.common_exceptions import MessageDispatchException
 class TestAWSSESService:
     """
     Unit tests for the AWSSESService class. All AWS utilities are mocked.
+=======
+    MessagingServiceDetailsAWS_SES,
+    MessagingServiceSecretsAWS_SES,
+)
+from fides.service.messaging.aws_ses_service import AWS_SES_Service, AWS_SESException
+
+
+class TestAWS_SES_Service:
+    """
+    Unit tests for the AWS_SES_Service class. All AWS utilities are mocked.
+>>>>>>> main
     """
 
     @pytest.fixture
     def messaging_config(self):
+<<<<<<< HEAD
         details = MessagingServiceDetailsAWSSES(
             aws_region="us-east-1", email_from="test@example.com", domain="example.com"
         )
@@ -26,6 +39,15 @@ class TestAWSSESService:
             aws_access_key_id="fake_access_key",
             aws_secret_access_key="fake_secret_key",
             aws_auth_method="secret_keys",
+=======
+        details = MessagingServiceDetailsAWS_SES(
+            aws_region="us-east-1", email_from="test@example.com", domain="example.com"
+        )
+        secrets = MessagingServiceSecretsAWS_SES(
+            auth_method="secret_keys",
+            aws_access_key_id="fake_access_key",
+            aws_secret_access_key="fake_secret_key",
+>>>>>>> main
             aws_assume_role_arn=None,
         )
         return MessagingConfig(
@@ -33,8 +55,13 @@ class TestAWSSESService:
         )
 
     @pytest.fixture
+<<<<<<< HEAD
     def aws_ses_service(self, messaging_config) -> AWSSESService:
         return AWSSESService(messaging_config)
+=======
+    def aws_ses_service(self, messaging_config):
+        return AWS_SES_Service(messaging_config)
+>>>>>>> main
 
     @patch("fides.service.messaging.aws_ses_service.get_aws_session")
     def test_get_ses_client(self, mock_get_aws_session, aws_ses_service):
@@ -67,7 +94,11 @@ class TestAWSSESService:
         mock_get_aws_session.assert_not_called()
         mock_session.client.assert_not_called()
 
+<<<<<<< HEAD
     @patch("fides.service.messaging.aws_ses_service.AWSSESService.get_ses_client")
+=======
+    @patch("fides.service.messaging.aws_ses_service.AWS_SES_Service.get_ses_client")
+>>>>>>> main
     def test_validate_email_and_domain_status_success(
         self, mock_get_ses_client, aws_ses_service
     ):
@@ -86,7 +117,11 @@ class TestAWSSESService:
             Identities=["test@example.com", "example.com"]
         )
 
+<<<<<<< HEAD
     @patch("fides.service.messaging.aws_ses_service.AWSSESService.get_ses_client")
+=======
+    @patch("fides.service.messaging.aws_ses_service.AWS_SES_Service.get_ses_client")
+>>>>>>> main
     def test_validate_email_and_domain_email_status_failure(
         self, mock_get_ses_client, aws_ses_service
     ):
@@ -100,7 +135,11 @@ class TestAWSSESService:
         }
 
         with pytest.raises(
+<<<<<<< HEAD
             AWSSESException, match="Email test@example.com is not verified in SES."
+=======
+            AWS_SESException, match="Email test@example.com is not verified in SES."
+>>>>>>> main
         ):
             aws_ses_service.validate_email_and_domain_status()
 
@@ -108,7 +147,11 @@ class TestAWSSESService:
             Identities=["test@example.com", "example.com"]
         )
 
+<<<<<<< HEAD
     @patch("fides.service.messaging.aws_ses_service.AWSSESService.get_ses_client")
+=======
+    @patch("fides.service.messaging.aws_ses_service.AWS_SES_Service.get_ses_client")
+>>>>>>> main
     def test_validate_email_and_domain_email_status_missing(
         self, mock_get_ses_client, aws_ses_service
     ):
@@ -121,7 +164,11 @@ class TestAWSSESService:
         }
 
         with pytest.raises(
+<<<<<<< HEAD
             AWSSESException, match="Email test@example.com is not verified in SES."
+=======
+            AWS_SESException, match="Email test@example.com is not verified in SES."
+>>>>>>> main
         ):
             aws_ses_service.validate_email_and_domain_status()
 
@@ -129,7 +176,11 @@ class TestAWSSESService:
             Identities=["test@example.com", "example.com"]
         )
 
+<<<<<<< HEAD
     @patch("fides.service.messaging.aws_ses_service.AWSSESService.get_ses_client")
+=======
+    @patch("fides.service.messaging.aws_ses_service.AWS_SES_Service.get_ses_client")
+>>>>>>> main
     def test_validate_email_and_domain_domain_status_failure(
         self, mock_get_ses_client, aws_ses_service
     ):
@@ -143,7 +194,11 @@ class TestAWSSESService:
         }
 
         with pytest.raises(
+<<<<<<< HEAD
             AWSSESException, match="Domain example.com is not verified in SES."
+=======
+            AWS_SESException, match="Domain example.com is not verified in SES."
+>>>>>>> main
         ):
             aws_ses_service.validate_email_and_domain_status()
 
@@ -151,6 +206,7 @@ class TestAWSSESService:
             Identities=["test@example.com", "example.com"]
         )
 
+<<<<<<< HEAD
     @patch("fides.service.messaging.aws_ses_service.AWSSESService.get_ses_client")
     @patch(
         "fides.service.messaging.aws_ses_service.AWSSESService.validate_email_and_domain_status"
@@ -160,10 +216,22 @@ class TestAWSSESService:
         mock_validate_email_and_domain_status,
         mock_get_ses_client,
         aws_ses_service: AWSSESService,
+=======
+    @patch("fides.service.messaging.aws_ses_service.AWS_SES_Service.get_ses_client")
+    @patch(
+        "fides.service.messaging.aws_ses_service.AWS_SES_Service.validate_email_and_domain_status"
+    )
+    def test_send_email(
+        self,
+        mock_validate_email_and_domain_status,
+        mock_get_ses_client,
+        aws_ses_service,
+>>>>>>> main
     ):
         mock_client = MagicMock()
         mock_get_ses_client.return_value = mock_client
 
+<<<<<<< HEAD
         message = EmailForActionType(subject="Test Subject", body="<p>Test Body</p>")
 
         aws_ses_service.send_message(message=message, to="recipient@example.com")
@@ -199,6 +267,10 @@ class TestAWSSESService:
 
         assert "AWS SES email failed to send due to: Oops! Something went wrong" in str(
             exc.value
+=======
+        aws_ses_service.send_email(
+            to="recipient@example.com", subject="Test Subject", body="<p>Test Body</p>"
+>>>>>>> main
         )
 
         mock_validate_email_and_domain_status.assert_called_once()

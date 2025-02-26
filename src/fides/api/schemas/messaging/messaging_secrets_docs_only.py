@@ -2,7 +2,7 @@ from typing import Union
 
 from fides.api.schemas.base_class import NoValidationSchema
 from fides.api.schemas.messaging.messaging import (
-    MessagingServiceSecretsAWSSES,
+    MessagingServiceSecretsAWS_SES,
     MessagingServiceSecretsMailchimpTransactional,
     MessagingServiceSecretsMailgun,
     MessagingServiceSecretsTwilioEmail,
@@ -33,8 +33,8 @@ class MessagingSecretsTwilioEmailDocs(
     """The secrets required to connect to Twilio email, for documentation"""
 
 
-class MessagingServiceSecretsAWSSESDocs(
-    MessagingServiceSecretsAWSSES, NoValidationSchema
+class MessagingServiceSecretsAWS_SESDocs(
+    MessagingServiceSecretsAWS_SES, NoValidationSchema
 ):
     """The secrets required to connect to AWS SES, for documentation"""
 
@@ -44,5 +44,5 @@ possible_messaging_secrets = Union[
     MessagingSecretsTwilioSMSDocs,
     MessagingSecretsTwilioEmailDocs,
     MessagingServiceSecretsMailchimpTransactionalDocs,
-    MessagingServiceSecretsAWSSESDocs,
+    MessagingServiceSecretsAWS_SESDocs,
 ]

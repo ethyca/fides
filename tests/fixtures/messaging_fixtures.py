@@ -235,8 +235,8 @@ def messaging_config_aws_ses(db: Session) -> Generator:
         db=db,
         messaging_secrets={
             MessagingServiceSecrets.AWS_AUTH_METHOD.value: "secret_keys",
-            MessagingServiceSecrets.AWS_ACCESS_KEY_ID.value: "1234",
-            MessagingServiceSecrets.AWS_SECRET_ACCESS_KEY.value: "1234",
+            MessagingServiceSecrets.AWS_ACCESS_KEY_ID.value: "test-access-key",
+            MessagingServiceSecrets.AWS_SECRET_ACCESS_KEY.value: "test-secret-key",
         },
     )
     yield messaging_config

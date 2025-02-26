@@ -4,8 +4,8 @@ from loguru import logger
 
 from fides.api.models.messaging import MessagingConfig
 from fides.api.schemas.messaging.messaging import (
-    MessagingServiceDetailsAWSSES,
-    MessagingServiceSecretsAWSSES,
+    MessagingServiceDetailsAWS_SES,
+    MessagingServiceSecretsAWS_SES,
     EmailForActionType,
 )
 from fides.api.schemas.storage.storage import StorageSecrets
@@ -55,11 +55,11 @@ class SESClient:
         pass
 
 
-class AWSSESException(Exception):
+class AWS_SESException(Exception):
     pass
 
 
-class AWSSESService(BaseMessageProviderService):
+class AWS_SES_Service:
     """
     Service class to wrap interactions with AWS SES.
     """
@@ -71,10 +71,10 @@ class AWSSESService(BaseMessageProviderService):
         Instantiate AWSSESService with a messaging config.
         """
         super().__init__(messaging_config)
-        self.messaging_config_details = MessagingServiceDetailsAWSSES.model_validate(
+        self.messaging_config_details = MessagingServiceDetailsAWS_SES.model_validate(
             messaging_config.details
         )
-        self.messaging_config_secrets = MessagingServiceSecretsAWSSES.model_validate(
+        self.messaging_config_secrets = MessagingServiceSecretsAWS_SES.model_validate(
             messaging_config.secrets
         )
         self._ses_client = None
@@ -94,7 +94,7 @@ class AWSSESService(BaseMessageProviderService):
         }
 
         aws_session = get_aws_session(
-            auth_method=self.messaging_config_secrets.aws_auth_method.value,
+            auth_method=self.messaging_config_secrets.auth_method.value,
             storage_secrets=storage_secrets,  # type: ignore[arg-type]
             assume_role_arn=self.messaging_config_secrets.aws_assume_role_arn,
         )
@@ -123,9 +123,9 @@ class AWSSESService(BaseMessageProviderService):
             response["VerificationAttributes"].get(domain, {}).get("VerificationStatus")
         )
         if email_status != "Success":
-            raise AWSSESException(f"Email {email} is not verified in SES.")
+            raise AWS_SESException(f"Email {email} is not verified in SES.")
         if domain_status != "Success":
-            raise AWSSESException(f"Domain {domain} is not verified in SES.")
+            raise AWS_SESException(f"Domain {domain} is not verified in SES.")
 
     def send_message(
         self,
