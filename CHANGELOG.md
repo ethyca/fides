@@ -25,6 +25,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - DB model support for Web Monitoring [#5616](https://github.com/ethyca/fides/pull/5616) https://github.com/ethyca/fides/labels/db-migration
 - Added support for queue-specific Celery workers [#5761](https://github.com/ethyca/fides/pull/5761)
 - Added support for AWS SES as an email provider [#5804](https://github.com/ethyca/fides/pull/5804)
+- Added "Assets" tab on system view for web monitor assets [#5811](https://github.com/ethyca/fides/pull/5811)
 
 ### Changed
 - Improved dataset validation for namespace metadata and dataset reachability [#5744](https://github.com/ethyca/fides/pull/5744)
