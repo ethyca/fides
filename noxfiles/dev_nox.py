@@ -63,25 +63,15 @@ def dev(session: Session) -> None:
     build(session, "dev")
     session.notify("teardown")
 
-    if "worker" in session.posargs:
-        session.run("docker", "compose", "up", "--wait", "worker", external=True)
+    workers = ["worker", "worker-privacy-preferences", "worker-dsr"]
 
-    if "worker-privacy-preferences" in session.posargs:
-        session.run(
-            "docker",
-            "compose",
-            "up",
-            "--wait",
-            "worker-privacy-preferences",
-            external=True,
-        )
-
-    if "worker-dsr" in session.posargs:
-        session.run("docker", "compose", "up", "--wait", "worker-dsr", external=True)
+    for worker in workers:
+        if worker in session.posargs:
+            session.run("docker", "compose", "up", "--wait", worker, external=True)
 
     if "flower" in session.posargs:
         # Only start Flower if worker is also enabled
-        if "worker" in session.posargs:
+        if any(worker in session.posargs for worker in workers):
             session.run("docker", "compose", "up", "-d", "flower", external=True)
         else:
             session.error(
