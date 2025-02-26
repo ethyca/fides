@@ -83,24 +83,29 @@ def upgrade():
             )
 
     # Insert the assets into the asset table
-    logger.debug("Inserting assets into asset table ")
-    for asset in assets_to_create.values():
+    assets_list = [
+        {
+            "id": asset.id,
+            "created_at": asset.created_at,
+            "updated_at": asset.updated_at,
+            "name": asset.name,
+            "domain": asset.domain,
+            "system_id": asset.system_id,
+            "data_uses": asset.data_uses,
+            "asset_type": "Cookie",
+        }
+        for asset in assets_to_create.values()
+    ]
 
-        connection.execute(
-            sa.text(
-                "INSERT INTO asset (id, created_at, updated_at, name, domain, system_id, data_uses, asset_type, with_consent) "
-                "VALUES (:id, :created_at, :updated_at, :name, :domain, :system_id, :data_uses, :asset_type, false) "
-                "ON CONFLICT DO NOTHING"
-            ),
-            id=str(uuid.uuid4()),
-            created_at=asset.created_at,
-            updated_at=asset.updated_at,
-            name=asset.name,
-            domain=asset.domain,
-            system_id=asset.system_id,
-            data_uses=asset.data_uses,
-            asset_type="Cookie",
-        )
+    logger.debug("Inserting assets into asset table ")
+    connection.execute(
+        sa.text(
+            "INSERT INTO asset (id, created_at, updated_at, name, domain, system_id, data_uses, asset_type, with_consent) "
+            "VALUES (:id, :created_at, :updated_at, :name, :domain, :system_id, :data_uses, :asset_type, false) "
+            "ON CONFLICT DO NOTHING"
+        ),
+        assets_list,
+    )
 
     # Delete the cookies table
     logger.debug("Deleting cookies table")
@@ -179,31 +184,40 @@ def downgrade():
             if pud_id:
                 privacy_declaration_ids.append(pud_id)
 
+        cookies_to_insert = []
+
         if len(privacy_declaration_ids) == 0:
             # If no privacy declaration match we attach to system_id
-            connection.execute(
-                sa.text(
-                    "INSERT INTO cookies (id, created_at, updated_at, name, domain, system_id) "
-                    "VALUES (:id, NOW(), NOW(), :name, :domain, :system_id)"
-                    "ON CONFLICT DO NOTHING"
-                ),
-                id=row.id,
-                name=row.name,
-                domain=row.domain,
-                system_id=row.system_id,
+            cookies_to_insert.append(
+                {
+                    "id": row.id,
+                    "name": row.name,
+                    "domain": row.domain,
+                    "system_id": row.system_id,
+                    "privacy_declaration_id": None,
+                }
             )
-        for privacy_declaration_id in privacy_declaration_ids:
-            # Create a cookie for each privacy declaration ID
-            # generate a new ID
-            cookie_id = str(uuid.uuid4())
+        else:
+            for privacy_declaration_id in privacy_declaration_ids:
+                # Create a cookie for each privacy declaration ID
+                # generate a new ID
+                cookie_id = str(uuid.uuid4())
+                cookies_to_insert.append(
+                    {
+                        "id": cookie_id,
+                        "name": row.name,
+                        "domain": row.domain,
+                        "system_id": None,
+                        "privacy_declaration_id": privacy_declaration_id,
+                    }
+                )
+
+        if cookies_to_insert:
             connection.execute(
                 sa.text(
-                    "INSERT INTO cookies (id, created_at, updated_at, name, domain, privacy_declaration_id) "
-                    "VALUES (:id, NOW(), NOW(), :name, :domain, :privacy_declaration_id)"
+                    "INSERT INTO cookies (id, created_at, updated_at, name, domain, system_id, privacy_declaration_id) "
+                    "VALUES (:id, NOW(), NOW(), :name, :domain, :system_id, :privacy_declaration_id) "
                     "ON CONFLICT DO NOTHING"
                 ),
-                id=cookie_id,
-                name=row.name,
-                domain=row.domain,
-                privacy_declaration_id=privacy_declaration_id,
+                cookies_to_insert,
             )
