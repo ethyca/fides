@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.55.5b2.post0.dev6"
+    "version": "2.55.5b2.post0.dev7"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -10986,6 +10986,9 @@
                   },
                   {
                     "$ref": "#/components/schemas/MessagingServiceSecretsMailchimpTransactionalDocs"
+                  },
+                  {
+                    "$ref": "#/components/schemas/MessagingServiceSecretsAWS_SESDocs"
                   }
                 ],
                 "title": "Unvalidated Messaging Secrets"
@@ -11060,6 +11063,9 @@
                   },
                   {
                     "$ref": "#/components/schemas/MessagingServiceSecretsMailchimpTransactionalDocs"
+                  },
+                  {
+                    "$ref": "#/components/schemas/MessagingServiceSecretsAWS_SESDocs"
                   }
                 ],
                 "title": "Unvalidated Messaging Secrets"
@@ -19350,6 +19356,9 @@
                 "$ref": "#/components/schemas/MessagingServiceDetailsMailchimpTransactional"
               },
               {
+                "$ref": "#/components/schemas/MessagingServiceDetailsAWS_SES"
+              },
+              {
                 "type": "null"
               }
             ],
@@ -19397,6 +19406,9 @@
                 "$ref": "#/components/schemas/MessagingServiceDetailsMailchimpTransactional"
               },
               {
+                "$ref": "#/components/schemas/MessagingServiceDetailsAWS_SES"
+              },
+              {
                 "type": "null"
               }
             ],
@@ -19426,6 +19438,9 @@
               },
               {
                 "$ref": "#/components/schemas/MessagingServiceDetailsMailchimpTransactional"
+              },
+              {
+                "$ref": "#/components/schemas/MessagingServiceDetailsAWS_SES"
               },
               {
                 "type": "null"
@@ -19580,6 +19595,31 @@
         "title": "MessagingSecretsTwilioSMSDocs",
         "description": "The secrets required to connect to Twilio sms, for documentation"
       },
+      "MessagingServiceDetailsAWS_SES": {
+        "properties": {
+          "email_from": {
+            "type": "string",
+            "title": "Email From"
+          },
+          "domain": {
+            "type": "string",
+            "title": "Domain"
+          },
+          "aws_region": {
+            "type": "string",
+            "title": "Aws Region"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "email_from",
+          "domain",
+          "aws_region"
+        ],
+        "title": "MessagingServiceDetailsAWS_SES",
+        "description": "The details required to represent an AWS SES email configuration."
+      },
       "MessagingServiceDetailsMailchimpTransactional": {
         "properties": {
           "email_from": {
@@ -19649,6 +19689,63 @@
         "title": "MessagingServiceDetailsTwilioEmail",
         "description": "The details required to represent a Twilio email configuration."
       },
+      "MessagingServiceSecretsAWS_SESDocs": {
+        "properties": {
+          "auth_method": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AWSAuthMethod"
+              }
+            ],
+            "title": "Authentication Method",
+            "description": "Determines which type of authentication method to use for connecting to Amazon Web Services. Currently accepted values are: `secret_keys` or `automatic`."
+          },
+          "aws_access_key_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Access Key ID",
+            "description": "Part of the credentials that provide access to your AWS account."
+          },
+          "aws_secret_access_key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Secret Access Key",
+            "description": "Part of the credentials that provide access to your AWS account.",
+            "sensitive": true
+          },
+          "aws_assume_role_arn": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Assume Role ARN",
+            "description": "If provided, the ARN of the role that should be assumed to connect to AWS."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "auth_method"
+        ],
+        "title": "MessagingServiceSecretsAWS_SESDocs",
+        "description": "The secrets required to connect to AWS SES, for documentation"
+      },
       "MessagingServiceSecretsMailchimpTransactionalDocs": {
         "properties": {
           "mailchimp_transactional_api_key": {
@@ -19670,10 +19767,11 @@
           "mailgun",
           "twilio_text",
           "twilio_email",
-          "mailchimp_transactional"
+          "mailchimp_transactional",
+          "aws_ses"
         ],
         "title": "MessagingServiceType",
-        "description": "Enum for messaging service type. Upper-cased in the database"
+        "description": "Enum for messaging service type."
       },
       "MessagingTemplateDefault": {
         "properties": {
