@@ -5,6 +5,7 @@ import {
   constructFidesRegionString,
   DEFAULT_LOCALE,
   EmptyExperience,
+  experienceIsValid,
   fetchExperience,
   FidesConfig,
   PrivacyExperience,
@@ -197,6 +198,7 @@ export default async function handler(
         propertyId,
         requestMinimalTCF: true,
       });
+      experienceIsValid(experience);
     }
   }
 
@@ -262,6 +264,7 @@ export default async function handler(
       base64Cookie: environment.settings.BASE_64_COOKIE,
       fidesPrimaryColor: environment.settings.FIDES_PRIMARY_COLOR,
       fidesClearCookie: environment.settings.FIDES_CLEAR_COOKIE,
+      fidesConsentOverride: environment.settings.FIDES_CONSENT_OVERRIDE,
     },
     experience: experience || undefined,
     geolocation: geolocation || undefined,
@@ -269,12 +272,19 @@ export default async function handler(
   };
   const fidesConfigJSON = JSON.stringify(fidesConfig);
 
-  fidesDebugger(
-    "Bundling generic fides.js & Privacy Center configuration together...",
-  );
-  const fidesJsFile = tcfEnabled
-    ? "public/lib/fides-tcf.js"
-    : "public/lib/fides.js";
+  fidesDebugger("Bundling js & Privacy Center configuration together...");
+  const isHeadlessExperience =
+    experience?.experience_config?.component === ComponentType.HEADLESS;
+  let fidesJsFile = "public/lib/fides.js";
+  if (tcfEnabled) {
+    fidesDebugger("TCF extension enabled, bundling fides-tcf.js...");
+    fidesJsFile = "public/lib/fides-tcf.js";
+  } else if (isHeadlessExperience) {
+    fidesDebugger(
+      "Headless experience detected, bundling fides-headless.js...",
+    );
+    fidesJsFile = "public/lib/fides-headless.js";
+  }
   const fidesJSBuffer = await fsPromises.readFile(fidesJsFile);
   const fidesJS: string = fidesJSBuffer.toString();
   if (!fidesJS || fidesJS === "") {

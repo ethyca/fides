@@ -1,6 +1,6 @@
 import { stubPlus, stubTaxonomyEntities } from "cypress/support/stubs";
 
-import { CUSTOM_FIELDS_ROUTE } from "~/features/common/nav/v2/routes";
+import { CUSTOM_FIELDS_ROUTE } from "~/features/common/nav/routes";
 import { RoleRegistryEnum } from "~/types/api";
 
 const TAXONOMY_SINGLE_SELECT_ID = "plu_1850be9e-fabc-424d-8224-2fc44c84605a";
@@ -315,12 +315,12 @@ describe("Custom Fields", () => {
           "have.value",
           "Description!!",
         );
-        cy.getSelectValueContainer("input-resource_type").contains(
+        cy.getByTestId("controlled-select-resource_type").contains(
           "taxonomy:data category",
         );
 
         // Configuration
-        cy.getSelectValueContainer("input-field_type").contains(
+        cy.getByTestId("controlled-select-field_type").contains(
           "Single select",
         );
         cy.getByTestId("custom-input-allow_list.allowed_values[0]").should(
@@ -336,7 +336,9 @@ describe("Custom Fields", () => {
       it("can edit field information", () => {
         const newDescription = "new description";
         cy.getByTestId("custom-input-description").clear().type(newDescription);
-        cy.selectOption("input-field_type", "Multiple select");
+        cy.getByTestId("controlled-select-field_type").antSelect(
+          "Multiple select",
+        );
         cy.getByTestId("save-btn").click();
         cy.wait("@putCustomFieldDefinition").then((interception) => {
           const { body } = interception.request;
@@ -399,7 +401,9 @@ describe("Custom Fields", () => {
 
         // Configuration
         const allowList = ["snorlax", "eevee"];
-        cy.selectOption("input-field_type", "Single select");
+        cy.getByTestId("controlled-select-field_type").antSelect(
+          "Single select",
+        );
         allowList.forEach((item, idx) => {
           cy.getByTestId("add-list-value-btn").click();
           cy.getByTestId(`custom-input-allow_list.allowed_values[${idx}]`).type(
@@ -428,10 +432,12 @@ describe("Custom Fields", () => {
         // Field info
         cy.getByTestId("custom-input-name").type(payload.name);
         cy.getByTestId("custom-input-description").type(payload.description);
-        cy.selectOption("input-resource_type", "taxonomy:data category");
+        cy.getByTestId("controlled-select-resource_type").antSelect(
+          "taxonomy:data category",
+        );
 
         // Configuration
-        cy.selectOption("input-field_type", "Open Text");
+        cy.getByTestId("controlled-select-field_type").antSelect("Open Text");
 
         cy.getByTestId("save-btn").click();
         cy.wait("@postCustomFieldDefinition").then((interception) => {

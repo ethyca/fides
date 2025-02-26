@@ -6,6 +6,8 @@ import { selectUser } from "~/features/auth";
 import { useHasPermission } from "~/features/common/Restrict";
 import { ScopeRegistryEnum } from "~/types/api";
 
+import { USER_MANAGEMENT_ROUTE } from "../common/nav/routes";
+import PageHeader from "../common/PageHeader";
 import { User } from "./types";
 import { useEditUserMutation } from "./user-management.slice";
 import { FormValues } from "./UserForm";
@@ -50,13 +52,21 @@ const EditUserForm = ({ user }: Props) => {
 
   return (
     <div>
-      <main>
-        <UserManagementTabs
-          onSubmit={handleSubmit}
-          initialValues={initialValues}
-          canEditNames={canUpdateUser}
-        />
-      </main>
+      <PageHeader
+        heading="Users"
+        breadcrumbItems={[
+          {
+            title: "All users",
+            href: USER_MANAGEMENT_ROUTE,
+          },
+          { title: initialValues.username },
+        ]}
+      />
+      <UserManagementTabs
+        onSubmit={handleSubmit}
+        initialValues={initialValues}
+        canEditNames={canUpdateUser}
+      />
     </div>
   );
 };

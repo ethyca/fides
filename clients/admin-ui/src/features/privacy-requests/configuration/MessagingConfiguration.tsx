@@ -1,11 +1,21 @@
-import { Box, Heading, Radio, RadioGroup, Stack, Text } from "fidesui";
+import {
+  AntFlex as Flex,
+  AntRadio as Radio,
+  Box,
+  Heading,
+  RadioChangeEvent,
+  Text,
+} from "fidesui";
 import { useEffect, useState } from "react";
 
 import { isErrorResult } from "~/features/common/helpers";
 import { useAlert, useAPIHelper } from "~/features/common/hooks";
 import Layout from "~/features/common/Layout";
-import BackButton from "~/features/common/nav/v2/BackButton";
-import { PRIVACY_REQUESTS_CONFIGURATION_ROUTE } from "~/features/common/nav/v2/routes";
+import {
+  PRIVACY_REQUESTS_CONFIGURATION_ROUTE,
+  PRIVACY_REQUESTS_ROUTE,
+} from "~/features/common/nav/routes";
+import PageHeader from "~/features/common/PageHeader";
 import { messagingProviders } from "~/features/privacy-requests/constants";
 import {
   useCreateMessagingConfigurationMutation,
@@ -33,7 +43,8 @@ const MessagingConfiguration = () => {
     }
   }, [activeMessagingProvider]);
 
-  const handleChange = async (value: string) => {
+  const handleChange = async (e: RadioChangeEvent) => {
+    const { value } = e.target;
     const result = await saveActiveConfiguration({
       notifications: {
         notification_service_type: value,
@@ -66,9 +77,18 @@ const MessagingConfiguration = () => {
 
   return (
     <Layout title="Configure Privacy Requests - Messaging">
-      <BackButton backPath={PRIVACY_REQUESTS_CONFIGURATION_ROUTE} />
-
-      <Heading mb={5} fontSize="2xl" fontWeight="semibold">
+      <PageHeader
+        heading="Privacy Requests"
+        breadcrumbItems={[
+          { title: "All requests", href: PRIVACY_REQUESTS_ROUTE },
+          {
+            title: "Configure requests",
+            href: PRIVACY_REQUESTS_CONFIGURATION_ROUTE,
+          },
+          { title: "Messaging" },
+        ]}
+      />
+      <Heading mb={5} fontSize="md" fontWeight="semibold">
         Configure your messaging provider
       </Heading>
 
@@ -87,19 +107,17 @@ const MessagingConfiguration = () => {
         <Heading fontSize="md" fontWeight="semibold" mt={10}>
           Choose service type to configure
         </Heading>
-        <RadioGroup
+        <Radio.Group
           onChange={handleChange}
           value={messagingValue}
           data-testid="privacy-requests-messaging-provider-selection"
-          colorScheme="secondary"
-          p={3}
+          className="p-3"
         >
-          <Stack direction="row">
+          <Flex>
             <Radio
               key={messagingProviders.mailgun}
               value={messagingProviders.mailgun}
               data-testid="option-mailgun"
-              mr={5}
             >
               Mailgun Email
             </Radio>
@@ -117,8 +135,8 @@ const MessagingConfiguration = () => {
             >
               Twilio SMS
             </Radio>
-          </Stack>
-        </RadioGroup>
+          </Flex>
+        </Radio.Group>
         {messagingValue === messagingProviders.mailgun ? (
           <MailgunEmailConfiguration />
         ) : null}

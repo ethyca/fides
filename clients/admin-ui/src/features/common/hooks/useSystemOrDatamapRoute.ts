@@ -1,5 +1,5 @@
 import { useFeatures } from "~/features/common/features";
-import { DATAMAP_ROUTE, SYSTEM_ROUTE } from "~/features/common/nav/v2/routes";
+import { DATAMAP_ROUTE, SYSTEM_ROUTE } from "~/features/common/nav/routes";
 
 /**
  * Often we need to either go to the systems page or the datamap page

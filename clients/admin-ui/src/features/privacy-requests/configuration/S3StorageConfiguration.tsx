@@ -2,7 +2,8 @@ import { AntButton as Button, Box, Divider, Heading, Stack } from "fidesui";
 import { Form, Formik } from "formik";
 import { useState } from "react";
 
-import { CustomSelect, CustomTextInput } from "~/features/common/form/inputs";
+import { ControlledSelect } from "~/features/common/form/ControlledSelect";
+import { CustomTextInput } from "~/features/common/form/inputs";
 import { isErrorResult } from "~/features/common/helpers";
 import { useAlert, useAPIHelper } from "~/features/common/hooks";
 import { storageTypes } from "~/features/privacy-requests/constants";
@@ -102,7 +103,7 @@ const S3StorageConfiguration = ({ storageDetails }: SavedStorageDetails) => {
           {({ isSubmitting, handleReset }) => (
             <Form>
               <Stack mt={5} spacing={5}>
-                <CustomSelect
+                <ControlledSelect
                   name="format"
                   label="Format"
                   options={[
@@ -112,7 +113,7 @@ const S3StorageConfiguration = ({ storageDetails }: SavedStorageDetails) => {
                   data-testid="format"
                   isRequired
                 />
-                <CustomSelect
+                <ControlledSelect
                   name="auth_method"
                   label="Auth method"
                   options={[

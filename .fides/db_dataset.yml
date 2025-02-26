@@ -916,6 +916,25 @@ dataset:
       data_categories: [system.operations]
     - name: updated_at
       data_categories: [system.operations]
+  - name: monitorexecution
+    data_categories: []
+    fields:
+    - name: id
+      data_categories: [system.operations]
+    - name: monitor_config_key
+      data_categories: [system.operations]
+    - name: status
+      data_categories: [system.operations]
+    - name: started
+      data_categories: [system.operations]
+    - name: completed
+      data_categories: [system.operations]
+    - name: classification_instances
+      data_categories: [system.operations]
+    - name: created_at
+      data_categories: [system.operations]
+    - name: updated_at
+      data_categories: [system.operations]
   - name: policy
     data_categories: []
     fields:
@@ -2227,6 +2246,12 @@ dataset:
       data_categories: [system]
     - name: user_assigned_data_categories
       data_categories: [system]
+    - name: data_uses
+      data_categories: [system]
+    - name: system_id
+      data_categories: [system]
+    - name: vendor_id
+      data_categories: [system]
   - name: fides_user_invite
     fields:
       - name: created_at
@@ -2335,6 +2360,52 @@ dataset:
       - name: config
         data_categories: [system.operations]
       - name: created_by
+        data_categories: [system.operations]
+      - name: created_at
+        data_categories: [system.operations]
+      - name: updated_at
+        data_categories: [system.operations]
+  - name: dbcache
+    fields:
+      - name: id
+        data_categories: [system.operations]
+      - name: namespace
+        data_categories: [system.operations]
+      - name: cache_key
+        data_categories: [system.operations]
+      - name: cache_value
+        data_categories: [system.operations]
+      - name: created_at
+        data_categories: [system.operations]
+      - name: updated_at
+        data_categories: [system.operations]
+  - name: asset
+    fields:
+      - name: id
+        data_categories: [system.operations]
+      - name: name
+        data_categories: [system.operations]
+      - name: asset_type
+        data_categories: [system.operations]
+      - name: domain
+        data_categories: [system.operations]
+      - name: parent
+        data_categories: [system.operations]
+      - name: parent_domain
+        data_categories: [system.operations]
+      - name: locations
+        data_categories: [system.operations]
+      - name: with_consent
+        data_categories: [system.operations]
+      - name: data_uses
+        data_categories: [system.operations]
+      - name: meta
+        data_categories: [system.operations]
+      - name: path
+        data_categories: [system.operations]
+      - name: base_url
+        data_categories: [system.operations]
+      - name: system_id
         data_categories: [system.operations]
       - name: created_at
         data_categories: [system.operations]

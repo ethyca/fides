@@ -6,7 +6,7 @@ import { useRouter } from "next/router";
 import * as Yup from "yup";
 
 import { useAppSelector } from "~/app/hooks";
-import { DATASTORE_CONNECTION_ROUTE } from "~/features/common/nav/v2/routes";
+import { DATASTORE_CONNECTION_ROUTE } from "~/features/common/nav/routes";
 
 import CustomInput from "../forms/CustomInput";
 import { BaseConnectorParametersFields } from "../types";

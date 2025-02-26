@@ -1,17 +1,14 @@
 import { Divider, Flex, Heading } from "fidesui";
 import { PrivacyRequestEntity } from "privacy-requests/types";
-import React, { useState } from "react";
+import React from "react";
 
 import ActivityTimeline from "./ActivityTimeline";
-import EventDetails, { EventData } from "./EventDetails";
 
 type EventsAndLogsProps = {
   subjectRequest: PrivacyRequestEntity;
 };
 
 const EventsAndLogs = ({ subjectRequest }: EventsAndLogsProps) => {
-  const [eventData, setEventData] = useState<EventData>();
-
   return (
     <>
       <Heading color="gray.900" fontSize="lg" fontWeight="semibold" mb={4}>
@@ -19,11 +16,7 @@ const EventsAndLogs = ({ subjectRequest }: EventsAndLogsProps) => {
       </Heading>
       <Divider />
       <Flex mt={3}>
-        <ActivityTimeline
-          subjectRequest={subjectRequest}
-          setEventDetails={setEventData}
-        />
-        <EventDetails eventData={eventData} />
+        <ActivityTimeline subjectRequest={subjectRequest} />
       </Flex>
     </>
   );

@@ -34,6 +34,7 @@ interface DatabaseByMonitorQueryParams {
   page: number;
   size: number;
   monitor_config_id: string;
+  show_hidden?: boolean;
 }
 
 interface DatabaseByConnectionQueryParams {
@@ -54,9 +55,10 @@ interface BulkResourceActionQueryParams {
 }
 
 interface ChangeResourceCategoryQueryParam {
-  staged_resource_urn: string;
-  user_assigned_data_categories: string[];
   monitor_config_id: string;
+  staged_resource_urn: string;
+  user_assigned_data_categories?: string[];
+  system_key?: string;
 }
 
 const discoveryDetectionApi = baseApi.injectEndpoints({
@@ -89,7 +91,7 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
         }),
       },
     ),
-    getDatabasesByConnection: build.query<
+    getAvailableDatabasesByConnection: build.query<
       Page_str_,
       DatabaseByConnectionQueryParams
     >({
@@ -134,6 +136,7 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
       ResourceActionQueryParams & {
         monitor_config_id: string;
         unmute_children?: boolean;
+        start_classification?: boolean;
         classify_monitored_resources?: boolean;
       }
     >({
@@ -214,6 +217,7 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
           {
             urn: params.staged_resource_urn,
             user_assigned_data_categories: params.user_assigned_data_categories,
+            system_key: params.system_key,
           },
         ],
       }),
@@ -227,8 +231,8 @@ export const {
   useGetMonitorsByIntegrationQuery,
   usePutDiscoveryMonitorMutation,
   useGetDatabasesByMonitorQuery,
-  useGetDatabasesByConnectionQuery,
-  useLazyGetDatabasesByConnectionQuery,
+  useGetAvailableDatabasesByConnectionQuery,
+  useLazyGetAvailableDatabasesByConnectionQuery,
   useExecuteDiscoveryMonitorMutation,
   useDeleteDiscoveryMonitorMutation,
   useGetMonitorResultsQuery,

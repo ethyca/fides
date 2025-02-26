@@ -1,5 +1,7 @@
 import ast
 import os
+import random
+from datetime import datetime
 from typing import Dict, Generator, List
 from uuid import uuid4
 
@@ -58,6 +60,45 @@ def bigquery_connection_config(db: Session, bigquery_keyfile_creds) -> Generator
     connection_config.delete(db)
 
 
+@pytest.fixture(scope="function")
+def bigquery_enterprise_test_dataset_collections(
+    example_datasets: List[Dict],
+) -> List[str]:
+    """Returns the names of collections in the BigQuery Enterprise dataset"""
+    bigquery_enterprise_dataset = example_datasets[16]
+    return [
+        collection["name"] for collection in bigquery_enterprise_dataset["collections"]
+    ]
+
+
+@pytest.fixture(scope="function")
+def bigquery_enterprise_connection_config(
+    db: Session, bigquery_enterprise_keyfile_creds
+) -> Generator:
+    connection_config = ConnectionConfig.create(
+        db=db,
+        data={
+            "name": str(uuid4()),
+            "key": "my_bigquery_enterprise_config",
+            "connection_type": ConnectionType.bigquery,
+            "access": AccessLevel.write,
+        },
+    )
+    # Pulling from integration config file or GitHub secrets
+    dataset = integration_config.get("bigquery_enterprise", {}).get(
+        "dataset"
+    ) or os.environ.get("BIGQUERY_ENTERPRISE_DATASET")
+    if bigquery_enterprise_keyfile_creds:
+        schema = BigQuerySchema(
+            keyfile_creds=bigquery_enterprise_keyfile_creds, dataset=dataset
+        )
+        connection_config.secrets = schema.model_dump(mode="json")
+        connection_config.save(db=db)
+
+    yield connection_config
+    connection_config.delete(db)
+
+
 @pytest.fixture(scope="session")
 def bigquery_keyfile_creds():
     """
@@ -70,6 +111,28 @@ def bigquery_keyfile_creds():
 
     if not keyfile_creds:
         raise RuntimeError("Missing keyfile_creds for BigQuery")
+
+    yield keyfile_creds
+
+
+@pytest.fixture(scope="session")
+def bigquery_enterprise_keyfile_creds():
+    """
+    Pulling from integration config file or GitHub secrets
+    """
+    keyfile_creds = integration_config.get("bigquery_enterprise", {}).get(
+        "keyfile_creds"
+    )
+    if keyfile_creds:
+        return keyfile_creds
+
+    if "BIGQUERY_ENTERPRISE_KEYFILE_CREDS" in os.environ:
+        keyfile_creds = ast.literal_eval(
+            os.environ.get("BIGQUERY_ENTERPRISE_KEYFILE_CREDS")
+        )
+
+    if not keyfile_creds:
+        raise RuntimeError("Missing keyfile_creds for BigQuery Enterprise")
 
     yield keyfile_creds
 
@@ -114,6 +177,83 @@ def bigquery_example_test_dataset_config(
         db=db,
         data={
             "connection_config_id": bigquery_connection_config.id,
+            "fides_key": fides_key,
+            "ctl_dataset_id": ctl_dataset.id,
+        },
+    )
+    yield dataset
+    dataset.delete(db=db)
+    ctl_dataset.delete(db=db)
+
+
+@pytest.fixture
+def bigquery_enterprise_test_dataset_config(
+    bigquery_enterprise_connection_config: ConnectionConfig,
+    db: Session,
+    example_datasets: List[Dict],
+) -> Generator:
+    bigquery_enterprise_dataset = example_datasets[16]
+    fides_key = bigquery_enterprise_dataset["fides_key"]
+    bigquery_enterprise_connection_config.name = fides_key
+    bigquery_enterprise_connection_config.key = fides_key
+    bigquery_enterprise_connection_config.save(db=db)
+
+    ctl_dataset = CtlDataset.create_from_dataset_dict(db, bigquery_enterprise_dataset)
+
+    dataset = DatasetConfig.create(
+        db=db,
+        data={
+            "connection_config_id": bigquery_enterprise_connection_config.id,
+            "fides_key": fides_key,
+            "ctl_dataset_id": ctl_dataset.id,
+        },
+    )
+    yield dataset
+    dataset.delete(db=db)
+    ctl_dataset.delete(db=db)
+
+
+@pytest.fixture
+def bigquery_enterprise_test_dataset_config_with_partitioning_meta(
+    bigquery_enterprise_connection_config: ConnectionConfig,
+    db: Session,
+    example_datasets: List[Dict],
+) -> Generator:
+    bigquery_enterprise_dataset = example_datasets[16]
+    fides_key = bigquery_enterprise_dataset["fides_key"]
+    bigquery_enterprise_connection_config.name = fides_key
+    bigquery_enterprise_connection_config.key = fides_key
+
+    # Update stackoverflow_posts_partitioned collection to have partition meta_data
+    # It is already set up as a partitioned table in BigQuery itself
+    stackoverflow_posts_partitioned_collection = next(
+        collection
+        for collection in bigquery_enterprise_dataset["collections"]
+        if collection["name"] == "stackoverflow_posts_partitioned"
+    )
+    bigquery_enterprise_dataset["collections"].remove(
+        stackoverflow_posts_partitioned_collection
+    )
+    stackoverflow_posts_partitioned_collection["fides_meta"] = {
+        "partitioning": {
+            "where_clauses": [
+                "`creation_date` > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1000 DAY) AND `creation_date` <= CURRENT_TIMESTAMP()",
+                "`creation_date` > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 2000 DAY) AND `creation_date` <= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1000 DAY)",
+            ]
+        }
+    }
+    bigquery_enterprise_dataset["collections"].append(
+        stackoverflow_posts_partitioned_collection
+    )
+
+    bigquery_enterprise_connection_config.save(db=db)
+
+    ctl_dataset = CtlDataset.create_from_dataset_dict(db, bigquery_enterprise_dataset)
+
+    dataset = DatasetConfig.create(
+        db=db,
+        data={
+            "connection_config_id": bigquery_enterprise_connection_config.id,
             "fides_key": fides_key,
             "ctl_dataset_id": ctl_dataset.id,
         },
@@ -212,6 +352,8 @@ def bigquery_example_test_dataset_config_with_namespace_and_partitioning_meta(
 def bigquery_resources(
     bigquery_example_test_dataset_config,
 ):
+    # Increment the ids by a random number to avoid conflicts on concurrent test runs
+    random_increment = random.randint(1, 99999)
     bigquery_connection_config = bigquery_example_test_dataset_config.connection_config
     connector = BigQueryConnector(bigquery_connection_config)
     bigquery_client = connector.client()
@@ -222,11 +364,11 @@ def bigquery_resources(
 
         stmt = "select max(id) from customer;"
         res = connection.execute(stmt)
-        customer_id = res.all()[0][0] + 1
+        customer_id = res.all()[0][0] + random_increment
 
         stmt = "select max(id) from address;"
         res = connection.execute(stmt)
-        address_id = res.all()[0][0] + 1
+        address_id = res.all()[0][0] + random_increment
 
         city = "Test City"
         state = "TX"
@@ -253,7 +395,7 @@ def bigquery_resources(
 
         stmt = "select max(id) from employee;"
         res = connection.execute(stmt)
-        employee_id = res.all()[0][0] + 1
+        employee_id = res.all()[0][0] + random_increment
         employee_email = f"employee-{uuid}@example.com"
         employee_name = f"Jane {uuid}"
 
@@ -293,6 +435,8 @@ def bigquery_resources(
 def bigquery_resources_with_namespace_meta(
     bigquery_example_test_dataset_config_with_namespace_meta,
 ):
+    # Increment the ids by a random number to avoid conflicts on concurrent test runs
+    random_increment = random.randint(1, 99999)
     bigquery_connection_config = (
         bigquery_example_test_dataset_config_with_namespace_meta.connection_config
     )
@@ -305,11 +449,11 @@ def bigquery_resources_with_namespace_meta(
 
         stmt = "select max(id) from fidesopstest.customer;"
         res = connection.execute(stmt)
-        customer_id = res.all()[0][0] + 1
+        customer_id = res.all()[0][0] + random_increment
 
         stmt = "select max(id) from fidesopstest.address;"
         res = connection.execute(stmt)
-        address_id = res.all()[0][0] + 1
+        address_id = res.all()[0][0] + random_increment
 
         city = "Test City"
         state = "TX"
@@ -336,7 +480,7 @@ def bigquery_resources_with_namespace_meta(
 
         stmt = "select max(id) from fidesopstest.employee;"
         res = connection.execute(stmt)
-        employee_id = res.all()[0][0] + 1
+        employee_id = res.all()[0][0] + random_increment
         employee_email = f"employee-{uuid}@example.com"
         employee_name = f"Jane {uuid}"
 
@@ -372,6 +516,190 @@ def bigquery_resources_with_namespace_meta(
         connection.execute(stmt)
 
 
+@pytest.fixture(scope="function")
+def bigquery_enterprise_resources(
+    bigquery_enterprise_test_dataset_config,
+):
+    # Increment the ids by a random number to avoid conflicts on concurrent test runs
+    random_increment = random.randint(1, 99999)
+    bigquery_connection_config = (
+        bigquery_enterprise_test_dataset_config.connection_config
+    )
+    connector = BigQueryConnector(bigquery_connection_config)
+    bigquery_client = connector.client()
+    with bigquery_client.connect() as connection:
+
+        # Real max id in the Stackoverflow dataset is 20081052, so we purposefully generate and id above this max
+        stmt = "select max(id) from enterprise_dsr_testing.users;"
+        res = connection.execute(stmt)
+        user_id = res.all()[0][0] + random_increment
+        display_name = (
+            f"fides_testing_{user_id}"  # prefix to do manual cleanup if needed
+        )
+        last_access_date = datetime.now()
+        creation_date = datetime.now()
+        location = "Dream World"
+
+        # Create test user data
+        stmt = f"""
+            insert into enterprise_dsr_testing.users (id, display_name, last_access_date, creation_date, location)
+            values ({user_id}, '{display_name}', '{last_access_date}', '{creation_date}', '{location}');
+        """
+        connection.execute(stmt)
+
+        # Create test stackoverflow_posts_partitioned data. Posts are responses to questions on Stackoverflow, and does not include original question.
+        post_body = "For me, the solution was to adopt 3 cats and dance with them under the full moon at midnight."
+        stmt = "select max(id) from enterprise_dsr_testing.stackoverflow_posts_partitioned;"
+        res = connection.execute(stmt)
+        post_id = res.all()[0][0] + random_increment
+        stmt = f"""
+            insert into enterprise_dsr_testing.stackoverflow_posts_partitioned (body, creation_date, id, owner_user_id, owner_display_name)
+            values ('{post_body}', '{creation_date}', {post_id}, {user_id}, '{display_name}');
+        """
+        connection.execute(stmt)
+
+        # Create test comments data. Comments are responses to posts or questions on Stackoverflow, and does not include original question or post itself.
+        stmt = "select max(id) from enterprise_dsr_testing.comments;"
+        res = connection.execute(stmt)
+        comment_id = res.all()[0][0] + random_increment
+        comment_text = "FYI this only works if you have pytest installed locally."
+        stmt = f"""
+            insert into enterprise_dsr_testing.comments (id, text, creation_date, post_id, user_id, user_display_name)
+            values ({comment_id}, '{comment_text}', '{creation_date}', {post_id}, {user_id}, '{display_name}');
+        """
+        connection.execute(stmt)
+
+        # Create test post_history data
+        stmt = "select max(id) from enterprise_dsr_testing.post_history;"
+        res = connection.execute(stmt)
+        post_history_id = res.all()[0][0] + random_increment
+        revision_text = "this works if you have pytest"
+        uuid = str(uuid4())
+        stmt = f"""
+            insert into enterprise_dsr_testing.post_history (id, text, creation_date, post_id, user_id, post_history_type_id, revision_guid)
+            values ({post_history_id}, '{revision_text}', '{creation_date}', {post_id}, {user_id}, 1, '{uuid}');
+        """
+        connection.execute(stmt)
+
+        yield {
+            "name": display_name,
+            "user_id": user_id,
+            "comment_id": comment_id,
+            "post_history_id": post_history_id,
+            "post_id": post_id,
+            "client": bigquery_client,
+            "connector": connector,
+            "first_comment_text": comment_text,
+            "first_post_body": post_body,
+            "revision_text": revision_text,
+            "display_name": display_name,
+        }
+        # Remove test data and close BigQuery connection in teardown
+        stmt = f"delete from enterprise_dsr_testing.post_history where id = {post_history_id};"
+        connection.execute(stmt)
+
+        stmt = f"delete from enterprise_dsr_testing.comments where id = {comment_id};"
+        connection.execute(stmt)
+
+        stmt = f"delete from enterprise_dsr_testing.stackoverflow_posts_partitioned where id = {post_id};"
+        connection.execute(stmt)
+
+        stmt = f"delete from enterprise_dsr_testing.users where id = {user_id};"
+        connection.execute(stmt)
+
+
+@pytest.fixture(scope="function")
+def bigquery_enterprise_resources_with_partitioning(
+    bigquery_enterprise_test_dataset_config_with_partitioning_meta,
+):
+    # Increment the ids by a random number to avoid conflicts on concurrent test runs
+    random_increment = random.randint(1, 99999)
+    bigquery_connection_config = (
+        bigquery_enterprise_test_dataset_config_with_partitioning_meta.connection_config
+    )
+    connector = BigQueryConnector(bigquery_connection_config)
+    bigquery_client = connector.client()
+    with bigquery_client.connect() as connection:
+
+        # Real max id in the Stackoverflow dataset is 20081052, so we purposefully generate and id above this max
+        stmt = "select max(id) from enterprise_dsr_testing.users;"
+        res = connection.execute(stmt)
+        user_id = res.all()[0][0] + random_increment
+        display_name = (
+            f"fides_testing_{user_id}"  # prefix to do manual cleanup if needed
+        )
+        last_access_date = datetime.now()
+        creation_date = datetime.now()
+        location = "Dream World"
+
+        # Create test user data
+        stmt = f"""
+            insert into enterprise_dsr_testing.users (id, display_name, last_access_date, creation_date, location)
+            values ({user_id}, '{display_name}', '{last_access_date}', '{creation_date}', '{location}');
+        """
+        connection.execute(stmt)
+
+        # Create test stackoverflow_posts_partitioned data. Posts are responses to questions on Stackoverflow, and does not include original question.
+        post_body = "For me, the solution was to adopt 3 cats and dance with them under the full moon at midnight."
+        stmt = "select max(id) from enterprise_dsr_testing.stackoverflow_posts_partitioned;"
+        res = connection.execute(stmt)
+        post_id = res.all()[0][0] + random_increment
+        stmt = f"""
+            insert into enterprise_dsr_testing.stackoverflow_posts_partitioned (body, creation_date, id, owner_user_id, owner_display_name)
+            values ('{post_body}', '{creation_date}', {post_id}, {user_id}, '{display_name}');
+        """
+        connection.execute(stmt)
+
+        # Create test comments data. Comments are responses to posts or questions on Stackoverflow, and does not include original question or post itself.
+        stmt = "select max(id) from enterprise_dsr_testing.comments;"
+        res = connection.execute(stmt)
+        comment_id = res.all()[0][0] + random_increment
+        comment_text = "FYI this only works if you have pytest installed locally."
+        stmt = f"""
+            insert into enterprise_dsr_testing.comments (id, text, creation_date, post_id, user_id, user_display_name)
+            values ({comment_id}, '{comment_text}', '{creation_date}', {post_id}, {user_id}, '{display_name}');
+        """
+        connection.execute(stmt)
+
+        # Create test post_history data
+        stmt = "select max(id) from enterprise_dsr_testing.post_history;"
+        res = connection.execute(stmt)
+        post_history_id = res.all()[0][0] + random_increment
+        revision_text = "this works if you have pytest"
+        uuid = str(uuid4())
+        stmt = f"""
+            insert into enterprise_dsr_testing.post_history (id, text, creation_date, post_id, user_id, post_history_type_id, revision_guid)
+            values ({post_history_id}, '{revision_text}', '{creation_date}', {post_id}, {user_id}, 1, '{uuid}');
+        """
+        connection.execute(stmt)
+
+        yield {
+            "name": display_name,
+            "user_id": user_id,
+            "comment_id": comment_id,
+            "post_history_id": post_history_id,
+            "post_id": post_id,
+            "client": bigquery_client,
+            "connector": connector,
+            "first_comment_text": comment_text,
+            "first_post_body": post_body,
+            "revision_text": revision_text,
+            "display_name": display_name,
+        }
+        # Remove test data and close BigQuery connection in teardown
+        stmt = f"delete from enterprise_dsr_testing.post_history where id = {post_history_id};"
+        connection.execute(stmt)
+
+        stmt = f"delete from enterprise_dsr_testing.comments where id = {comment_id};"
+        connection.execute(stmt)
+
+        stmt = f"delete from enterprise_dsr_testing.stackoverflow_posts_partitioned where id = {post_id};"
+        connection.execute(stmt)
+
+        stmt = f"delete from enterprise_dsr_testing.users where id = {user_id};"
+        connection.execute(stmt)
+
+
 @pytest.fixture(scope="session")
 def bigquery_test_engine(bigquery_keyfile_creds) -> Generator:
     """Return a connection to a Google BigQuery Warehouse"""
@@ -395,6 +723,30 @@ def bigquery_test_engine(bigquery_keyfile_creds) -> Generator:
     connector.test_connection()
     yield engine
     engine.dispose()
+
+
+def seed_bigquery_enterprise_integration_db(
+    bigquery_enterprise_test_dataset_config,
+) -> None:
+    """
+    Currently unused.
+    This helper function has already been run once, and data has been populated in the test BigQuery enterprise dataset.
+    We may need this later in case tables are accidentally removed.
+    """
+    bigquery_connection_config = (
+        bigquery_enterprise_test_dataset_config.connection_config
+    )
+    connector = BigQueryConnector(bigquery_connection_config)
+    bigquery_client = connector.client()
+    with bigquery_client.connect() as connection:
+
+        stmt = f"CREATE TABLE enterprise_dsr_testing.stackoverflow_posts_partitioned partition by date(creation_date) as select * from enterprise_dsr_testing.stackoverflow_posts;"
+        connection.execute(stmt)
+
+    print(
+        f"Created table enterprise_dsr_testing.stackoverflow_posts_partitioned, "
+        f"partitioned on column creation_date."
+    )
 
 
 def seed_bigquery_integration_db(bigquery_integration_engine) -> None:

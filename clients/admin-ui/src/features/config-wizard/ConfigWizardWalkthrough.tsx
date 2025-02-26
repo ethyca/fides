@@ -13,7 +13,7 @@ const ConfigWizardWalkthrough = () => {
 
   return (
     <Stack direction={["column", "row"]} bg="white">
-      <Box display="flex" justifyContent="center" w="100%">
+      <Box display="flex" justifyContent="flex-start" w="100%">
         {step === 1 ? <OrganizationInfoForm /> : null}
         {step === 2 ? <AddSystem /> : null}
         {step === 3 ? <AuthenticateScanner /> : null}

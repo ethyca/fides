@@ -4,7 +4,7 @@ import { useState } from "react";
 
 import { useFeatures } from "~/features/common/features";
 import Layout from "~/features/common/Layout";
-import { DATASET_ROUTE } from "~/features/common/nav/v2/routes";
+import { DATASET_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 import QuestionTooltip from "~/features/common/QuestionTooltip";
 import DatabaseConnectForm from "~/features/dataset/DatabaseConnectForm";
@@ -16,10 +16,14 @@ const NewDataset: NextPage = () => {
     "yaml" | "database" | "manual" | null
   >(null);
   return (
-    <Layout title="Create New Dataset" mainProps={{ paddingTop: 0 }}>
+    <Layout title="Create New Dataset">
       <PageHeader
-        breadcrumbs={[
-          { title: "Datasets", link: DATASET_ROUTE },
+        heading="Datasets"
+        breadcrumbItems={[
+          {
+            title: "All datasets",
+            href: DATASET_ROUTE,
+          },
           { title: "Create new" },
         ]}
       />

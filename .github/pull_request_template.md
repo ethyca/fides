@@ -1,4 +1,4 @@
-Closes #<issue>
+Closes [<issue>]
 
 ### Description Of Changes
 
@@ -17,6 +17,8 @@ _Write some things here about the changes and any potential caveats_
 * [ ] Issue requirements met
 * [ ] All CI pipelines succeeded
 * [ ] `CHANGELOG.md` updated
+  * [ ] Add a https://github.com/ethyca/fides/labels/db-migration label to the entry if your change includes a DB migration
+  * [ ] Add a https://github.com/ethyca/fides/labels/high-risk label to the entry if your change includes a high-risk change (i.e. potential for performance impact or unexpected regression) that should be flagged
 * Followup issues:
   * [ ] Followup issues created (include link)
   * [ ] No followup issues

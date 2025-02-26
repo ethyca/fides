@@ -3,7 +3,6 @@ import { useEffect, useState } from "preact/hooks";
 
 import {
   ButtonType,
-  ConsentMechanism,
   ConsentMethod,
   FidesInitOptions,
   PrivacyExperience,
@@ -139,6 +138,8 @@ type NoticeKeys = Array<PrivacyNotice["notice_key"]>;
 
 interface NoticeConsentButtonProps {
   experience: PrivacyExperience;
+  onAcceptAll: () => void;
+  onRejectAll: () => void;
   onSave: (consentMethod: ConsentMethod, noticeKeys: NoticeKeys) => void;
   onManagePreferencesClick?: () => void;
   enabledKeys: NoticeKeys;
@@ -150,6 +151,8 @@ interface NoticeConsentButtonProps {
 
 export const NoticeConsentButtons = ({
   experience,
+  onAcceptAll,
+  onRejectAll,
   onSave,
   onManagePreferencesClick,
   enabledKeys,
@@ -164,26 +167,10 @@ export const NoticeConsentButtons = ({
   }
   const { privacy_notices: notices } = experience;
 
-  const handleAcceptAll = () => {
-    onSave(
-      ConsentMethod.ACCEPT,
-      notices.map((n) => n.notice_key),
-    );
-  };
-
   const handleAcknowledgeNotices = () => {
     onSave(
       ConsentMethod.ACKNOWLEDGE,
       notices.map((n) => n.notice_key),
-    );
-  };
-
-  const handleRejectAll = () => {
-    onSave(
-      ConsentMethod.REJECT,
-      notices
-        .filter((n) => n.consent_mechanism === ConsentMechanism.NOTICE_ONLY)
-        .map((n) => n.notice_key),
     );
   };
 
@@ -219,8 +206,8 @@ export const NoticeConsentButtons = ({
     <ConsentButtons
       availableLocales={experience.available_locales}
       onManagePreferencesClick={onManagePreferencesClick}
-      onAcceptAll={handleAcceptAll}
-      onRejectAll={handleRejectAll}
+      onAcceptAll={onAcceptAll}
+      onRejectAll={onRejectAll}
       isInModal={isInModal}
       renderFirstButton={renderFirstButton}
       hideOptInOut={hideOptInOut}

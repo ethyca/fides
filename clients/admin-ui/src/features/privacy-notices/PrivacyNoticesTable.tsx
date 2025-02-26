@@ -19,10 +19,11 @@ import {
   useServerSidePagination,
 } from "common/table/v2";
 import { AntButton as Button, Flex, HStack, Text, VStack } from "fidesui";
+import NextLink from "next/link";
 import { useRouter } from "next/router";
 import { useEffect, useMemo } from "react";
 
-import { PRIVACY_NOTICES_ROUTE } from "~/features/common/nav/v2/routes";
+import { PRIVACY_NOTICES_ROUTE } from "~/features/common/nav/routes";
 import { useHasPermission } from "~/features/common/Restrict";
 import { useGetHealthQuery } from "~/features/plus/plus.slice";
 import {
@@ -226,15 +227,15 @@ export const PrivacyNoticesTable = () => {
         {userCanUpdate && (
           <TableActionBar>
             <HStack alignItems="center" spacing={4} marginLeft="auto">
-              <Button
+              <NextLink
                 href={`${PRIVACY_NOTICES_ROUTE}/new`}
-                role="link"
-                size="small"
-                type="primary"
-                data-testid="add-privacy-notice-btn"
+                passHref
+                legacyBehavior
               >
-                Add a privacy notice +
-              </Button>
+                <Button type="primary" data-testid="add-privacy-notice-btn">
+                  Add a privacy notice +
+                </Button>
+              </NextLink>
             </HStack>
           </TableActionBar>
         )}

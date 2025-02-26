@@ -19,15 +19,12 @@ import type { NextPage } from "next";
 import { useRouter } from "next/router";
 import { useCallback, useMemo, useState } from "react";
 
-import { DatabaseIcon } from "~/features/common/Icon/database/DatabaseIcon";
-import { DatasetIcon } from "~/features/common/Icon/database/DatasetIcon";
-import { TableIcon } from "~/features/common/Icon/database/TableIcon";
 import Layout from "~/features/common/Layout";
 import {
   DATASET_COLLECTION_SUBFIELD_DETAIL_ROUTE,
   DATASET_DETAIL_ROUTE,
   DATASET_ROUTE,
-} from "~/features/common/nav/v2/routes";
+} from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 import {
   BadgeCell,
@@ -38,12 +35,12 @@ import {
   TableActionBar,
   TableSkeletonLoader,
 } from "~/features/common/table/v2";
-import TaxonomiesPicker from "~/features/common/TaxonomiesPicker";
+import TaxonomySelectCell from "~/features/common/table/v2/TaxonomySelectCell";
+import { DATA_BREADCRUMB_ICONS } from "~/features/data-discovery-and-detection/DiscoveryMonitorBreadcrumbs";
 import {
   useGetDatasetByKeyQuery,
   useUpdateDatasetMutation,
 } from "~/features/dataset";
-import DatasetBreadcrumbs from "~/features/dataset/DatasetBreadcrumbs";
 import EditFieldDrawer from "~/features/dataset/EditFieldDrawer";
 import { getUpdatedDatasetFromField } from "~/features/dataset/helpers";
 import { DatasetField } from "~/types/api";
@@ -185,7 +182,7 @@ const FieldsDetailPage: NextPage = () => {
             props.row.original.fields && props.row.original.fields?.length > 0;
           return (
             !hasSubfields && (
-              <TaxonomiesPicker
+              <TaxonomySelectCell
                 selectedTaxonomies={props.getValue() || []}
                 onAddTaxonomy={(dataCategory) =>
                   handleAddDataCategory({ dataCategory, field })
@@ -260,29 +257,26 @@ const FieldsDetailPage: NextPage = () => {
     return [
       {
         title: "All datasets",
-        icon: <DatabaseIcon boxSize={4} />,
-        link: DATASET_ROUTE,
+        href: DATASET_ROUTE,
       },
       {
         title: datasetId,
-        link: {
+        href: {
           pathname: DATASET_DETAIL_ROUTE,
           query: { datasetId },
         },
-        icon: <DatasetIcon boxSize={5} />,
+        icon: DATA_BREADCRUMB_ICONS[1],
       },
       {
         title: collectionName,
-        icon: <TableIcon boxSize={5} />,
+        icon: DATA_BREADCRUMB_ICONS[2],
       },
     ];
   }, [datasetId, collectionName]);
 
   return (
-    <Layout title={`Dataset - ${datasetId}`} mainProps={{ paddingTop: 0 }}>
-      <PageHeader breadcrumbs={[{ title: "Datasets" }]}>
-        <DatasetBreadcrumbs breadcrumbs={breadcrumbs} />
-      </PageHeader>
+    <Layout title={`Dataset - ${datasetId}`}>
+      <PageHeader heading="Datasets" breadcrumbItems={breadcrumbs} />
 
       {isLoading ? (
         <TableSkeletonLoader rowHeight={36} numRows={15} />

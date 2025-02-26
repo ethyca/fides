@@ -68,6 +68,12 @@ dataset:
             data_categories: [user.name]
             fides_meta:
               data_type: string
+              masking_strategy_override:
+                strategy: string_rewrite
+                configuration:
+                  rewrite_value: testing
+                  format_preservation:
+                    suffix: "-test"
 
       - name: login
         fields:

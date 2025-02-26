@@ -28,7 +28,7 @@ import InfoBox from "~/features/common/InfoBox";
 import {
   MESSAGING_ADD_TEMPLATE_ROUTE,
   MESSAGING_EDIT_ROUTE,
-} from "~/features/common/nav/v2/routes";
+} from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 import QuestionTooltip from "~/features/common/QuestionTooltip";
 import {
@@ -173,17 +173,8 @@ const MessagingPage: NextPage = () => {
   });
 
   return (
-    <FixedLayout
-      title="Messaging"
-      mainProps={{
-        padding: "0 40px 10px",
-      }}
-    >
-      <PageHeader breadcrumbs={[{ title: "Messaging" }]}>
-        <Text fontWeight={500} color="gray.700">
-          Configure Fides messaging.
-        </Text>
-      </PageHeader>
+    <FixedLayout title="Messaging">
+      <PageHeader heading="Messaging" />
 
       <FeatureNotEnabledInfoBox />
       <MissingMessagesInfoBox />
@@ -191,7 +182,6 @@ const MessagingPage: NextPage = () => {
       <TableActionBar>
         <HStack alignItems="center" spacing={4} marginLeft="auto">
           <Button
-            size="small"
             type="primary"
             data-testid="add-message-btn"
             onClick={() => setIsAddTemplateModalOpen(true)}

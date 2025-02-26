@@ -1,5 +1,6 @@
 import {
   AntButton as Button,
+  AntSelectProps as SelectProps,
   ArrowForwardIcon,
   Box,
   Collapse,
@@ -10,16 +11,12 @@ import {
 } from "fidesui";
 import { useFormikContext } from "formik";
 import { useRouter } from "next/router";
+import { useMemo } from "react";
 
 import { useAppSelector } from "~/app/hooks";
-import {
-  CustomSelect,
-  CustomSwitch,
-  CustomTextInput,
-  SelectProps,
-} from "~/features/common/form/inputs";
-import BackButton from "~/features/common/nav/v2/BackButton";
-import { PRIVACY_EXPERIENCE_ROUTE } from "~/features/common/nav/v2/routes";
+import { CustomSwitch, CustomTextInput } from "~/features/common/form/inputs";
+import BackButton from "~/features/common/nav/BackButton";
+import { PRIVACY_EXPERIENCE_ROUTE } from "~/features/common/nav/routes";
 import { PRIVACY_NOTICE_REGION_RECORD } from "~/features/common/privacy-notice-regions";
 import ScrollableList from "~/features/common/ScrollableList";
 import {
@@ -42,12 +39,15 @@ import {
 } from "~/features/properties/property.slice";
 import {
   ComponentType,
+  ConsentMechanism,
   ExperienceConfigCreate,
   ExperienceTranslation,
   LimitedPrivacyNoticeResponseSchema,
   Property,
   SupportedLanguage,
 } from "~/types/api";
+
+import { ControlledSelect } from "../common/form/ControlledSelect";
 
 const componentTypeOptions: SelectProps["options"] = [
   {
@@ -62,6 +62,10 @@ const componentTypeOptions: SelectProps["options"] = [
     label: "Privacy center",
     value: ComponentType.PRIVACY_CENTER,
   },
+  {
+    label: "Headless",
+    value: ComponentType.HEADLESS,
+  },
 ];
 
 const buttonLayoutOptions: SelectProps["options"] = [
@@ -74,6 +78,8 @@ const buttonLayoutOptions: SelectProps["options"] = [
     value: Layer1ButtonOption.ACKNOWLEDGE,
   },
 ];
+
+const TCF_PLACEHOLDER_ID = "tcf_purposes_placeholder";
 
 export const PrivacyExperienceConfigColumnLayout = ({
   buttonPanel,
@@ -92,6 +98,17 @@ export const PrivacyExperienceConfigColumnLayout = ({
   </Flex>
 );
 
+function privacyNoticeIdsWithTcfId(values: ExperienceConfigCreate): string[] {
+  if (!values.privacy_notice_ids) {
+    return [TCF_PLACEHOLDER_ID];
+  }
+  const noticeIdsWithTcfId = values.privacy_notice_ids;
+  if (!noticeIdsWithTcfId.includes(TCF_PLACEHOLDER_ID)) {
+    noticeIdsWithTcfId.push(TCF_PLACEHOLDER_ID);
+  }
+  return noticeIdsWithTcfId;
+}
+
 export const PrivacyExperienceForm = ({
   allPrivacyNotices,
   translationsEnabled,
@@ -105,27 +122,42 @@ export const PrivacyExperienceForm = ({
 }) => {
   const router = useRouter();
 
-  const { values, setFieldValue, dirty, isValid, isSubmitting } =
+  const { values, setFieldValue, dirty, isValid, isSubmitting, initialValues } =
     useFormikContext<ExperienceConfigCreate>();
   const noticePage = useAppSelector(selectNoticePage);
   const noticePageSize = useAppSelector(selectNoticePageSize);
   useGetAllPrivacyNoticesQuery({ page: noticePage, size: noticePageSize });
 
+  const allPrivacyNoticesWithTcfPlaceholder: LimitedPrivacyNoticeResponseSchema[] =
+    useMemo(() => {
+      const noticesWithTcfPlaceholder = [...allPrivacyNotices];
+      if (!noticesWithTcfPlaceholder.some((n) => n.id === TCF_PLACEHOLDER_ID)) {
+        noticesWithTcfPlaceholder.push({
+          name: "TCF Purposes",
+          id: TCF_PLACEHOLDER_ID,
+          notice_key: TCF_PLACEHOLDER_ID,
+          data_uses: [],
+          consent_mechanism: ConsentMechanism.NOTICE_ONLY,
+          disabled: false,
+        });
+      }
+      return noticesWithTcfPlaceholder;
+    }, [allPrivacyNotices]);
+
   const getPrivacyNoticeName = (id: string) => {
-    const notice = allPrivacyNotices.find((n) => n.id === id);
+    const notice = allPrivacyNoticesWithTcfPlaceholder.find((n) => n.id === id);
     return notice?.name ?? id;
   };
 
-  const filterNoticesForOnlyParentNotices =
-    (): LimitedPrivacyNoticeResponseSchema[] => {
-      const childrenNoticeIds: FlatArray<(string[] | undefined)[], 1>[] =
-        allPrivacyNotices
-          .map((n) => n.children?.map((child) => child.id))
-          .flat();
-      return (
-        allPrivacyNotices.filter((n) => !childrenNoticeIds.includes(n.id)) ?? []
-      );
-    };
+  const filterNoticesForOnlyParentNotices = (
+    allNotices: LimitedPrivacyNoticeResponseSchema[],
+  ): LimitedPrivacyNoticeResponseSchema[] => {
+    const childrenNoticeIds: FlatArray<(string[] | undefined)[], 1>[] =
+      allNotices.map((n) => n.children?.map((child) => child.id)).flat();
+    return (
+      allPrivacyNotices.filter((n) => !childrenNoticeIds.includes(n.id)) ?? []
+    );
+  };
 
   useGetLocationsRegulationsQuery();
   const locationsRegulations = useAppSelector(selectLocationsRegulations);
@@ -179,18 +211,21 @@ export const PrivacyExperienceForm = ({
         variant="stacked"
       />
       {values.component !== ComponentType.TCF_OVERLAY && (
-        <CustomSelect
+        <ControlledSelect
           name="component"
           id="component"
           options={componentTypeOptions}
-          label="Experience Type"
-          variant="stacked"
-          isDisabled={!!values.component}
+          label="Experience type"
+          layout="stacked"
+          disabled={!!initialValues.component}
           isRequired
         />
       )}
       <Collapse
-        in={values.component !== ComponentType.PRIVACY_CENTER}
+        in={
+          values.component !== ComponentType.PRIVACY_CENTER &&
+          values.component !== ComponentType.HEADLESS
+        }
         animateOpacity
       >
         <Box p="1px">
@@ -206,13 +241,13 @@ export const PrivacyExperienceForm = ({
         in={values.component === ComponentType.BANNER_AND_MODAL}
         animateOpacity
       >
-        <CustomSelect
+        <ControlledSelect
           name="layer1_button_options"
           id="layer1_button_options"
           options={buttonLayoutOptions}
           label="Banner options"
-          variant="stacked"
-          isDisabled={values.component !== ComponentType.BANNER_AND_MODAL}
+          layout="stacked"
+          disabled={values.component !== ComponentType.BANNER_AND_MODAL}
         />
       </Collapse>
       <ScrollableList
@@ -231,22 +266,48 @@ export const PrivacyExperienceForm = ({
         baseTestId="property"
       />
       <Divider />
-      {values.component !== ComponentType.TCF_OVERLAY ? (
-        <>
-          <Heading fontSize="md" fontWeight="semibold">
-            Privacy notices
-          </Heading>
-          <ScrollableList
-            addButtonLabel="Add privacy notice"
-            allItems={filterNoticesForOnlyParentNotices().map((n) => n.id)}
-            values={values.privacy_notice_ids ?? []}
-            setValues={(newValues) =>
-              setFieldValue("privacy_notice_ids", newValues)
+      <Heading fontSize="md" fontWeight="semibold">
+        Privacy notices
+      </Heading>
+      {values.component === ComponentType.TCF_OVERLAY ? (
+        <ScrollableList<string>
+          addButtonLabel="Add privacy notice"
+          allItems={allPrivacyNoticesWithTcfPlaceholder.map((n) => n.id)}
+          values={privacyNoticeIdsWithTcfId(values)}
+          setValues={(newValues) =>
+            setFieldValue("privacy_notice_ids", newValues)
+          }
+          // @ts-ignore
+          canDeleteItem={(item: string): boolean => {
+            return Boolean(item !== TCF_PLACEHOLDER_ID);
+          }}
+          getTooltip={(item: string): string | undefined => {
+            if (item === TCF_PLACEHOLDER_ID) {
+              return "TCF Purposes are required by the framework and cannot be deleted.";
             }
-            getItemLabel={getPrivacyNoticeName}
-            draggable
-            baseTestId="privacy-notice"
-          />
+            return undefined;
+          }}
+          getItemLabel={getPrivacyNoticeName}
+          draggable
+          baseTestId="privacy-notice"
+        />
+      ) : (
+        <ScrollableList<string>
+          addButtonLabel="Add privacy notice"
+          allItems={filterNoticesForOnlyParentNotices(allPrivacyNotices).map(
+            (n) => n.id,
+          )}
+          values={values.privacy_notice_ids ?? []}
+          setValues={(newValues) =>
+            setFieldValue("privacy_notice_ids", newValues)
+          }
+          getItemLabel={getPrivacyNoticeName}
+          draggable
+          baseTestId="privacy-notice"
+        />
+      )}
+      {values.component === ComponentType.BANNER_AND_MODAL ? (
+        <>
           <Collapse in={!!values.privacy_notice_ids?.length} animateOpacity>
             <Box p="1px">
               <CustomSwitch

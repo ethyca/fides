@@ -85,7 +85,7 @@ from dataclasses import dataclass
 from re import match, search
 from typing import Any, Callable, Dict, List, Literal, Optional, Set, Tuple, Union
 
-from fideslang.models import MaskingStrategyOverride
+from fideslang.models import FieldMaskingStrategyOverride, MaskingStrategyOverride
 from fideslang.validation import FidesKey
 from pydantic import BaseModel, ConfigDict, field_serializer, field_validator
 
@@ -262,8 +262,8 @@ class Field(BaseModel, ABC):
     data_categories: Optional[List[FidesKey]] = None
     data_type_converter: DataTypeConverter = DataType.no_op.value
     return_all_elements: Optional[bool] = None
+    masking_strategy_override: Optional[FieldMaskingStrategyOverride] = None
     # Should field be returned by query if it is in an entrypoint array field, or just if it matches query?
-
     custom_request_field: Optional[str] = None
 
     """Known type of held data"""
@@ -393,6 +393,7 @@ def generate_field(
     return_all_elements: Optional[bool],
     read_only: Optional[bool],
     custom_request_field: Optional[str],
+    masking_strategy_override: Optional[FieldMaskingStrategyOverride],
 ) -> Field:
     """Generate a graph field."""
 
@@ -417,19 +418,20 @@ def generate_field(
         return_all_elements=return_all_elements,
         read_only=read_only,
         custom_request_field=custom_request_field,
+        masking_strategy_override=masking_strategy_override,
     )
 
 
 @dataclass
-class MaskingOverride:
-    """Data class to store override params related to data masking"""
+class MaskingTruncation:
+    """Data class to store truncation params related to data masking"""
 
     data_type_converter: Optional[DataTypeConverter]
     length: Optional[int]
 
 
 # for now, we only support BQ partitioning, so the clause pattern we expect is BQ-specific
-BIGQUERY_PARTITION_CLAUSE_PATTERN = r"^`(?P<field_1>[a-zA-Z0-9_]*)` ([<|>][=]?) (?P<operand_1>[a-zA-Z0-9_\s(),\.\"\']*)(\sAND `(?P<field_2>[a-zA-Z0-9_]*)` ([<|>][=]?) (?P<operand_2>[a-zA-Z0-9_\s(),\.\"\']*))?$"
+BIGQUERY_PARTITION_CLAUSE_PATTERN = r"^`(?P<field_1>[a-zA-Z0-9_]*)` ([<|>][=]?) (?P<operand_1>[a-zA-Z0-9_\s(),\.\"\'\-]*)(\sAND `(?P<field_2>[a-zA-Z0-9_]*)` ([<|>][=]?) (?P<operand_2>[a-zA-Z0-9_\s(),\.\"\'\-]*))?$"
 # protected keywords that are _not_ allowed in the operands, to avoid any potential malicious execution.
 PROHIBITED_KEYWORDS = [
     "UNION",

@@ -19,7 +19,7 @@ import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { LocationRegulationResponse, Selection } from "~/types/api";
 import { isErrorResult } from "~/types/errors";
 
-import { REGULATIONS_ROUTE } from "../common/nav/v2/routes";
+import { REGULATIONS_ROUTE } from "../common/nav/routes";
 import ToastLink from "../common/ToastLink";
 import LocationPickerCard from "./LocationPickerCard";
 import { usePatchLocationsRegulationsMutation } from "./locations.slice";
@@ -98,7 +98,6 @@ const LocationManagement = ({ data }: { data: LocationRegulationResponse }) => {
           placeholder="Search"
           search={search}
           onClear={() => setSearch("")}
-          data-testid="search-bar"
         />
       </Box>
       <SimpleGrid columns={{ base: 1, md: 2, xl: 3 }} spacing={6} width="100%">

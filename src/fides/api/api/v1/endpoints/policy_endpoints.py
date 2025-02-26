@@ -56,14 +56,14 @@ def get_policy_list(
     """
     Return a paginated list of all Policy records in this system
     """
-    logger.info("Finding all policies with pagination params '{}'", params)
+    logger.debug("Finding all policies with pagination params '{}'", params)
     policies = Policy.query(db=db).order_by(Policy.created_at.desc())
     return paginate(policies, params=params)
 
 
 def get_policy_or_error(db: Session, policy_key: FidesKey) -> Policy:
     """Helper method to load Policy or throw a 404"""
-    logger.info("Finding policy with key '{}'", policy_key)
+    logger.debug("Finding policy with key '{}'", policy_key)
     policy = Policy.get_by(db=db, field="key", value=policy_key)
     if not policy:
         raise HTTPException(
@@ -160,7 +160,7 @@ def get_rule_or_error(db: Session, policy_key: FidesKey, rule_key: FidesKey) -> 
     Also throws a 404 if a `Policy` with the given key can't be found.
     """
     policy = get_policy_or_error(db, policy_key)
-    logger.info("Finding rule with key '{}'", rule_key)
+    logger.debug("Finding rule with key '{}'", rule_key)
     rule = Rule.filter(
         db=db,
         conditions=((Rule.policy_id == policy.id) & (Rule.key == rule_key)),
@@ -191,7 +191,7 @@ def get_rule_list(
     Throws a 404 if the given `Policy` can't be found.
     """
     policy = get_policy_or_error(db, policy_key)
-    logger.info(
+    logger.debug(
         "Finding all rules for policy {} with pagination params '{}'",
         policy_key,
         params,
@@ -382,7 +382,7 @@ def get_rule_target_or_error(
     Helper method to load Rule Target or throw a 404.
     Also throws a 404 if a `Policy` or `Rule` with the given keys can't be found.
     """
-    logger.info("Finding rule target with key '{}'", rule_target_key)
+    logger.debug("Finding rule target with key '{}'", rule_target_key)
     rule: Rule = get_rule_or_error(db, policy_key, rule_key)
     rule_target = RuleTarget.filter(
         db=db,
@@ -417,7 +417,7 @@ def get_rule_target_list(
     Throws a 404 if the given `Rule` or `Policy` can't be found.
     """
     rule = get_rule_or_error(db, policy_key, rule_key)
-    logger.info(
+    logger.debug(
         "Finding all rule targets for rule {} with pagination params '{}'",
         rule_key,
         params,

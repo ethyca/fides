@@ -1,4 +1,4 @@
-import { Divider, Flex, Heading, Tag, Text } from "fidesui";
+import { AntTag as Tag, Divider, Flex, Heading, Text } from "fidesui";
 
 import { PrivacyRequestEntity } from "./types";
 
@@ -29,21 +29,14 @@ const SubjectIdentities = ({ subjectRequest }: SubjectIdentitiesProps) => {
       {Object.entries(identity)
         .filter(([, { value }]) => value !== null)
         .map(([key, { value, label }]) => (
-          <Flex key={key} alignItems="flex-start">
-            <Text mb={4} mr={2} fontSize="sm" color="gray.900" fontWeight="500">
+          <Flex key={key} alignItems="center" mb={4}>
+            <Text mr={2} fontSize="sm" color="gray.900" fontWeight="500">
               {label}:
             </Text>
             <Text color="gray.600" fontWeight="500" fontSize="sm" mr={2}>
               {value || ""}
             </Text>
-            <Tag
-              color="white"
-              bg="primary.400"
-              fontWeight="medium"
-              fontSize="sm"
-            >
-              {identityVerifiedAt ? "Verified" : "Unverified"}
-            </Tag>
+            <Tag>{identityVerifiedAt ? "Verified" : "Unverified"}</Tag>
           </Flex>
         ))}
       {customPrivacyRequestFields &&
@@ -77,14 +70,7 @@ const SubjectIdentities = ({ subjectRequest }: SubjectIdentitiesProps) => {
                       ? item.value.join(", ")
                       : item.value}
                   </Text>
-                  <Tag
-                    color="white"
-                    bg="primary.400"
-                    fontWeight="medium"
-                    fontSize="sm"
-                  >
-                    Unverified
-                  </Tag>
+                  <Tag>Unverified</Tag>
                 </Flex>
               ))}
           </>

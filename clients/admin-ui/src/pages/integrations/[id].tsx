@@ -11,7 +11,7 @@ import { useRouter } from "next/router";
 
 import DataTabs, { TabData } from "~/features/common/DataTabs";
 import Layout from "~/features/common/Layout";
-import { INTEGRATION_MANAGEMENT_ROUTE } from "~/features/common/nav/v2/routes";
+import { INTEGRATION_MANAGEMENT_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 import { useGetDatastoreConnectionByKeyQuery } from "~/features/datastore-connections";
 import useTestConnection from "~/features/datastore-connections/useTestConnection";
@@ -105,10 +105,11 @@ const IntegrationDetailView: NextPage = () => {
   return (
     <Layout title="Integrations">
       <PageHeader
-        breadcrumbs={[
+        heading="Integrations"
+        breadcrumbItems={[
           {
-            title: "Integrations",
-            link: INTEGRATION_MANAGEMENT_ROUTE,
+            title: "All integrations",
+            href: INTEGRATION_MANAGEMENT_ROUTE,
           },
           {
             title: connection?.name ?? connection?.key ?? "",

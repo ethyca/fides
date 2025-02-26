@@ -8,7 +8,7 @@ import {
   DATA_DETECTION_ROUTE,
   DATA_DISCOVERY_ROUTE,
   DETECTION_DISCOVERY_ACTIVITY_ROUTE,
-} from "~/features/common/nav/v2/routes";
+} from "~/features/common/nav/routes";
 
 describe("discovery and detection", () => {
   beforeEach(() => {
@@ -203,7 +203,11 @@ describe("discovery and detection", () => {
         cy.getByTestId("name-header").should("contain", "Table name");
         cy.getByTestId(
           "row-my_bigquery_monitor.prj-bigquery-418515.test_dataset_1.consent-reports-20",
-        ).should("exist");
+        ).within(() => {
+          cy.getByTestId(
+            "row-my_bigquery_monitor.prj-bigquery-418515.test_dataset_1.consent-reports-20-col-name",
+          ).should("contain", "consent-reports-20");
+        });
         cy.getByTestId(
           "row-my_bigquery_monitor.prj-bigquery-418515.test_dataset_1.consent-reports-19",
         ).should("exist");
@@ -278,6 +282,9 @@ describe("discovery and detection", () => {
       it("should show columns for fields", () => {
         cy.getByTestId("fidesTable-body").should("exist");
         cy.getByTestId("column-name").should("contain", "Field name");
+        cy.getByTestId(
+          "row-my_bigquery_monitor.prj-bigquery-418515.test_dataset_1.consent-reports-20.Created-col-name",
+        ).should("contain", "Created");
       });
 
       it("should allow navigation via row clicking on nested fields", () => {
@@ -314,6 +321,16 @@ describe("discovery and detection", () => {
           "contain",
           "test_dataset_1",
         );
+      });
+
+      it("should be able to reclassify", () => {
+        cy.getByTestId(
+          "row-my_bigquery_monitor.prj-bigquery-418515.test_dataset_1",
+        ).within(() => {
+          cy.getByTestId("actions-overflow-btn").click();
+          cy.getByTestId("action-reclassify").click({ force: true });
+          cy.wait("@confirmResource");
+        });
       });
     });
 
@@ -393,9 +410,7 @@ describe("discovery and detection", () => {
         cy.intercept("PATCH", "/api/v1/plus/discovery-monitor/*/results").as(
           "patchClassification",
         );
-        cy.getByTestId("classification-user.device.device_id").click({
-          force: true,
-        });
+        cy.getByTestId("classification-user.contact.phone_number").click();
         cy.getByTestId("taxonomy-select").antSelect("system");
         cy.wait("@patchClassification");
       });
@@ -407,7 +422,7 @@ describe("discovery and detection", () => {
           cy.getByTestId(
             "user-classification-user.contact.phone_number",
           ).should("exist");
-          cy.getByTestId("add-category-btn").click();
+          cy.getByTestId("taxonomy-add-btn").click();
           cy.get(".select-wrapper").should("exist");
         });
       });
@@ -417,7 +432,7 @@ describe("discovery and detection", () => {
           "row-my_bigquery_monitor.prj-bigquery-418515.test_dataset_1.consent-reports-20.No_categories-col-classifications",
         ).within(() => {
           cy.getByTestId("no-classifications").should("exist");
-          cy.getByTestId("add-category-btn").should("exist");
+          cy.getByTestId("taxonomy-add-btn").should("exist");
         });
       });
 
@@ -426,9 +441,74 @@ describe("discovery and detection", () => {
           "row-my_bigquery_monitor.prj-bigquery-418515.test_dataset_1.consent-reports-20.address-col-classifications",
         ).within(() => {
           cy.getByTestId("no-classifications").should("exist");
-          cy.getByTestId("add-category-btn").should("not.exist");
+          cy.getByTestId("taxonomy-add-btn").should("not.exist");
         });
       });
+    });
+
+    describe("nested-field-level view", () => {
+      beforeEach(() => {
+        cy.intercept("GET", "/api/v1/plus/discovery-monitor/results?*", {
+          fixture:
+            "detection-discovery/results/discovery/nested-field-list.json",
+        }).as("getNestedDetectionFields");
+        cy.visit(
+          `${DATA_DETECTION_ROUTE}/my_bigquery_monitor.prj-bigquery-418515.test_dataset_1.consent-reports-20.address`,
+        );
+        cy.wait("@getNestedDetectionFields");
+      });
+
+      it("should show columns for nested fields", () => {
+        cy.getByTestId("fidesTable-body").should("exist");
+        cy.getByTestId("column-name").should("contain", "Field name");
+        cy.getByTestId(
+          "row-my_bigquery_monitor.prj-bigquery-418515.test_dataset_1.consent-reports-20.address.zip-col-name",
+        ).should("contain", "zip");
+        cy.getByTestId(
+          "row-my_bigquery_monitor.prj-bigquery-418515.test_dataset_1.consent-reports-20.address.street.line_1-col-name",
+        ).should("contain", "street.line_1");
+      });
+
+      it("should not allow navigation via row clicking", () => {
+        cy.getByTestId(
+          "row-my_bigquery_monitor.prj-bigquery-418515.test_dataset_1.consent-reports-20.address.street.line_1",
+        ).click();
+        cy.url().should("not.contain", "street");
+      });
+    });
+  });
+
+  describe("without a db layer", () => {
+    it("shows resource name for resources that are not subfields", () => {
+      cy.intercept("GET", "/api/v1/plus/discovery-monitor/results?*", {
+        fixture: "detection-discovery/results/no-db-layer/field-list.json",
+      }).as("getFields");
+      cy.visit(
+        `${DATA_DISCOVERY_ROUTE}/dynamo_monitor.test_dataset_5.test_table_1`,
+      );
+      cy.getByTestId(
+        "row-dynamo_monitor.test_dataset_5.test_table_1.test_field_1-col-name",
+      ).should("contain", "test_field_1");
+    });
+
+    it("shows subfield names in dot notation", () => {
+      cy.intercept("GET", "/api/v1/plus/discovery-monitor/results?*", {
+        fixture:
+          "detection-discovery/results/no-db-layer/nested-field-list.json",
+      }).as("getFields");
+      cy.visit(
+        `${DATA_DISCOVERY_ROUTE}/my_bigquery_monitor.prj-bigquery-418515.test_dataset_1.consent-reports-20.address`,
+      );
+      cy.getByTestId(
+        "row-dynamo_monitor.test_dataset_5.test_table_1.address.zip-col-name",
+      ).should("contain", "zip");
+      cy.getByTestId(
+        "row-dynamo_monitor.test_dataset_5.test_table_1.address.street.line_1-col-name",
+      ).should("contain", "street.line_1");
+      // should still see correct name when top_level_field_urn is not provided
+      cy.getByTestId(
+        "row-dynamo_monitor.test_dataset_5.test_table_1.address.street.line_2-col-name",
+      ).should("contain", "street.line_2");
     });
   });
 });

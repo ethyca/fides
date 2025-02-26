@@ -1,11 +1,21 @@
-import { Box, Heading, Radio, RadioGroup, Stack, Text } from "fidesui";
+import {
+  AntFlex as Flex,
+  AntRadio as Radio,
+  Box,
+  Heading,
+  RadioChangeEvent,
+  Text,
+} from "fidesui";
 import { useEffect, useState } from "react";
 
 import { isErrorResult } from "~/features/common/helpers";
 import { useAlert, useAPIHelper } from "~/features/common/hooks";
 import Layout from "~/features/common/Layout";
-import BackButton from "~/features/common/nav/v2/BackButton";
-import { PRIVACY_REQUESTS_CONFIGURATION_ROUTE } from "~/features/common/nav/v2/routes";
+import {
+  PRIVACY_REQUESTS_CONFIGURATION_ROUTE,
+  PRIVACY_REQUESTS_ROUTE,
+} from "~/features/common/nav/routes";
+import PageHeader from "~/features/common/PageHeader";
 import { storageTypes } from "~/features/privacy-requests/constants";
 import {
   useCreateStorageMutation,
@@ -34,7 +44,8 @@ const StorageConfiguration = () => {
     }
   }, [activeStorage]);
 
-  const handleChange = async (value: string) => {
+  const handleChange = async (e: RadioChangeEvent) => {
+    const { value } = e.target;
     if (value === storageTypes.local) {
       const storageDetailsResult = await saveStorageType({
         type: value,
@@ -63,8 +74,18 @@ const StorageConfiguration = () => {
 
   return (
     <Layout title="Configure Privacy Requests - Storage">
-      <BackButton backPath={PRIVACY_REQUESTS_CONFIGURATION_ROUTE} />
-      <Heading mb={5} fontSize="2xl" fontWeight="semibold">
+      <PageHeader
+        heading="Privacy Requests"
+        breadcrumbItems={[
+          { title: "All requests", href: PRIVACY_REQUESTS_ROUTE },
+          {
+            title: "Configure requests",
+            href: PRIVACY_REQUESTS_CONFIGURATION_ROUTE,
+          },
+          { title: "Storage" },
+        ]}
+      />
+      <Heading mb={5} fontSize="md" fontWeight="semibold">
         Configure storage
       </Heading>
 
@@ -91,23 +112,22 @@ const StorageConfiguration = () => {
         <Heading fontSize="md" fontWeight="semibold" mt={10}>
           Choose storage type to configure
         </Heading>
-        <RadioGroup
-          isDisabled={isLoading}
+        <Radio.Group
+          disabled={isLoading}
           onChange={handleChange}
           value={storageValue}
           data-testid="privacy-requests-storage-selection"
-          colorScheme="secondary"
-          p={3}
+          className="p-3"
         >
-          <Stack direction="row">
-            <Radio key="local" value="local" data-testid="option-local" mr={5}>
+          <Flex>
+            <Radio key="local" value="local" data-testid="option-local">
               Local
             </Radio>
             <Radio key="s3" value="s3" data-testid="option-s3">
               S3
             </Radio>
-          </Stack>
-        </RadioGroup>
+          </Flex>
+        </Radio.Group>
         {storageValue === "s3" && storageDetails ? (
           <S3StorageConfiguration storageDetails={storageDetails} />
         ) : null}

@@ -1,10 +1,11 @@
-import { UseDisclosureReturn } from "fidesui";
+import { UseDisclosureReturn, useToast } from "fidesui";
 
 import FidesSpinner from "~/features/common/FidesSpinner";
 import useQueryResultToast from "~/features/common/form/useQueryResultToast";
 import FormModal from "~/features/common/modals/FormModal";
+import { DEFAULT_TOAST_PARAMS } from "~/features/common/toast";
 import {
-  useGetDatabasesByConnectionQuery,
+  useGetAvailableDatabasesByConnectionQuery,
   usePutDiscoveryMonitorMutation,
 } from "~/features/data-discovery-and-detection/discovery-detection.slice";
 import ConfigureMonitorDatabasesForm from "~/features/integrations/configure-monitor/ConfigureMonitorDatabasesForm";
@@ -14,7 +15,11 @@ import {
   ConnectionSystemTypeMap,
   MonitorConfig,
 } from "~/types/api";
-import { isErrorResult } from "~/types/errors";
+import { isErrorResult, RTKResult } from "~/types/errors";
+
+const TIMEOUT_DELAY = 5000;
+const TIMEOUT_COPY =
+  "Saving this monitor is taking longer than expected. Fides will continue processing it in the background, and you can check back later to view the updates.";
 
 const ConfigureMonitorModal = ({
   isOpen,
@@ -36,13 +41,15 @@ const ConfigureMonitorModal = ({
   const [putMonitorMutationTrigger, { isLoading: isSubmitting }] =
     usePutDiscoveryMonitorMutation();
 
-  const { data: databases } = useGetDatabasesByConnectionQuery({
+  const { data: databases } = useGetAvailableDatabasesByConnectionQuery({
     page: 1,
     size: 25,
     connection_config_key: integration.key,
   });
 
   const databasesAvailable = !!databases && !!databases.total;
+
+  const toast = useToast();
 
   const { toastResult } = useQueryResultToast({
     defaultSuccessMsg: `Monitor ${
@@ -54,10 +61,24 @@ const ConfigureMonitorModal = ({
   });
 
   const handleSubmit = async (values: MonitorConfig) => {
-    const result = await putMonitorMutationTrigger(values);
-    toastResult(result);
-    if (!isErrorResult(result)) {
-      onClose();
+    let result: RTKResult | undefined;
+    const timeout = setTimeout(() => {
+      if (!result) {
+        toast({
+          ...DEFAULT_TOAST_PARAMS,
+          status: "info",
+          description: TIMEOUT_COPY,
+        });
+        onClose();
+      }
+    }, TIMEOUT_DELAY);
+    result = await putMonitorMutationTrigger(values);
+    if (result) {
+      clearTimeout(timeout);
+      toastResult(result);
+      if (!isErrorResult(result)) {
+        onClose();
+      }
     }
   };
 

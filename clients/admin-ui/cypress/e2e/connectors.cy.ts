@@ -163,9 +163,7 @@ describe("Connectors", () => {
 
     it("allows the user to add an email connector", () => {
       cy.visit("/datastore-connection/new");
-      cy.getByTestId("select-dropdown-btn").click();
-      cy.getByTestId("select-dropdown-list").contains("Email connectors");
-      cy.getByTestId("select-dropdown-btn").click();
+      cy.getByTestId("connection-type-filter").antSelect("Email connectors");
       cy.getByTestId("sovrn-item").click();
       cy.url().should("contain", "/new?step=2");
 

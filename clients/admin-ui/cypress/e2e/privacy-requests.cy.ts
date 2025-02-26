@@ -274,7 +274,10 @@ describe("Privacy Requests", () => {
       it("shows configured fields and values", () => {
         cy.getByTestId("submit-request-btn").click();
         cy.wait("@getPrivacyCenterConfig");
-        cy.getSelectValueContainer("input-policy_key").type("a{enter}");
+
+        cy.getByTestId("controlled-select-policy_key").antSelect(
+          "Access your data",
+        );
         cy.getByTestId("input-identity.phone").should("not.exist");
         cy.getByTestId("input-identity.email").should("exist");
         cy.getByTestId(
@@ -292,7 +295,7 @@ describe("Privacy Requests", () => {
       it("can submit a privacy request", () => {
         cy.getByTestId("submit-request-btn").click();
         cy.wait("@getPrivacyCenterConfig");
-        cy.getSelectValueContainer("input-policy_key").type("a{enter}");
+        cy.getByTestId("controlled-select-policy_key").type("a{enter}");
         cy.getByTestId("input-identity.email").type("email@ethyca.com");
         cy.getByTestId(
           "input-custom_privacy_request_fields.required_field.value",

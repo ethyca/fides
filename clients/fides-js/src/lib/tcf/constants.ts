@@ -93,3 +93,14 @@ export const LEGAL_BASIS_OPTIONS = [
     value: LegalBasisEnum.LEGITIMATE_INTERESTS.toString(),
   },
 ];
+
+export const EMPTY_ENABLED_IDS: EnabledIds = {
+  purposesConsent: [],
+  customPurposesConsent: [],
+  purposesLegint: [],
+  specialPurposes: [],
+  features: [],
+  specialFeatures: [],
+  vendorsConsent: [],
+  vendorsLegint: [],
+};

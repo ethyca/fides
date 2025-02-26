@@ -13,7 +13,9 @@ from fides.api.schemas.namespace_meta.bigquery_namespace_meta import (
     BigQueryNamespaceMeta,
 )
 from fides.api.service.connectors import BigQueryConnector
-from fides.api.service.connectors.query_config import BigQueryQueryConfig
+from fides.api.service.connectors.query_configs.bigquery_query_config import (
+    BigQueryQueryConfig,
+)
 
 
 @pytest.mark.integration_external
@@ -74,12 +76,12 @@ class TestBigQueryQueryConfig:
                 BigQueryNamespaceMeta(
                     project_id="cool_project", dataset_id="first_dataset"
                 ),
-                "SELECT address_id, created, custom_id, email, id, name FROM `cool_project.first_dataset.customer` WHERE (email = :email)",
+                "SELECT address_id, created, custom_id, email, extra_address_data, id, name FROM `cool_project.first_dataset.customer` WHERE (email = :email)",
             ),
             # Namespace meta will be a dict / JSON when retrieved from the DB
             (
                 {"project_id": "cool_project", "dataset_id": "first_dataset"},
-                "SELECT address_id, created, custom_id, email, id, name FROM `cool_project.first_dataset.customer` WHERE (email = :email)",
+                "SELECT address_id, created, custom_id, email, extra_address_data, id, name FROM `cool_project.first_dataset.customer` WHERE (email = :email)",
             ),
             (
                 {
@@ -87,11 +89,11 @@ class TestBigQueryQueryConfig:
                     "dataset_id": "first_dataset",
                     "connection_type": "bigquery",
                 },
-                "SELECT address_id, created, custom_id, email, id, name FROM `cool_project.first_dataset.customer` WHERE (email = :email)",
+                "SELECT address_id, created, custom_id, email, extra_address_data, id, name FROM `cool_project.first_dataset.customer` WHERE (email = :email)",
             ),
             (
                 None,
-                "SELECT address_id, created, custom_id, email, id, name FROM `customer` WHERE (email = :email)",
+                "SELECT address_id, created, custom_id, email, extra_address_data, id, name FROM `customer` WHERE (email = :email)",
             ),
         ],
     )
@@ -194,7 +196,7 @@ class TestBigQueryQueryConfig:
         )
         stmts = set(str(stmt) for stmt in delete_stmts)
         expected_stmts = {
-            "DELETE FROM `employee` WHERE `employee`.`id` = %(id_1:STRING)s"
+            "DELETE FROM `employee` WHERE `employee`.`address_id` = %(address_id_1:STRING)s AND `employee`.`email` = %(email_1:STRING)s"
         }
         assert stmts == expected_stmts
 
@@ -287,6 +289,6 @@ class TestBigQueryQueryConfig:
         )
         stmts = set(str(stmt) for stmt in delete_stmts)
         expected_stmts = {
-            "DELETE FROM `silken-precinct-284918.fidesopstest.employee` WHERE `silken-precinct-284918.fidesopstest.employee`.`id` = %(id_1:STRING)s"
+            "DELETE FROM `silken-precinct-284918.fidesopstest.employee` WHERE `silken-precinct-284918.fidesopstest.employee`.`address_id` = %(address_id_1:STRING)s AND `silken-precinct-284918.fidesopstest.employee`.`email` = %(email_1:STRING)s"
         }
         assert stmts == expected_stmts

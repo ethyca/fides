@@ -14,7 +14,7 @@ import { useMemo, useState } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";
 import ConfirmationModal from "~/features/common/modals/ConfirmationModal";
-import { LOCATIONS_ROUTE } from "~/features/common/nav/v2/routes";
+import { LOCATIONS_ROUTE } from "~/features/common/nav/routes";
 import SearchBar from "~/features/common/SearchBar";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import ToastLink from "~/features/common/ToastLink";
@@ -103,7 +103,6 @@ const RegulationManagement = ({
           placeholder="Search"
           search={search}
           onClear={() => setSearch("")}
-          data-testid="search-bar"
         />
       </Box>
       <SimpleGrid columns={{ base: 1, md: 2, xl: 3 }} spacing={6} width="100%">

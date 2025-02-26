@@ -1,6 +1,6 @@
 import { stubSystemCrud, stubTaxonomyEntities } from "cypress/support/stubs";
 
-import { ADD_SYSTEMS_ROUTE } from "~/features/common/nav/v2/routes";
+import { ADD_SYSTEMS_ROUTE } from "~/features/common/nav/routes";
 
 describe("Config Wizard", () => {
   beforeEach(() => {
@@ -23,7 +23,7 @@ describe("Config Wizard", () => {
       cy.getByTestId("authenticate-aws-form");
       cy.getByTestId("input-aws_access_key_id").type("fakeAccessKey");
       cy.getByTestId("input-aws_secret_access_key").type("fakeSecretAccessKey");
-      cy.getByTestId("input-region_name").type("us-east-1{Enter}");
+      cy.getByTestId("controlled-select-region_name").type("us-east-1{Enter}");
     });
 
     it("Allows submitting the form and reviewing the results", () => {

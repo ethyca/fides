@@ -8,6 +8,7 @@
 export enum ConnectionType {
   ATTENTIVE_EMAIL = "attentive_email",
   BIGQUERY = "bigquery",
+  DATAHUB = "datahub",
   DYNAMODB = "dynamodb",
   FIDES = "fides",
   GENERIC_CONSENT_EMAIL = "generic_consent_email",

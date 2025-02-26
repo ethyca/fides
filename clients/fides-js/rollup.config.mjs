@@ -16,8 +16,16 @@ const GZIP_SIZE_ERROR_KB = 45; // fail build if bundle size exceeds this
 const GZIP_SIZE_WARN_KB = 35; // log a warning if bundle size exceeds this
 
 // TCF
-const GZIP_SIZE_TCF_ERROR_KB = 85;
+const GZIP_SIZE_TCF_ERROR_KB = 86;
 const GZIP_SIZE_TCF_WARN_KB = 75;
+
+// Headless
+const GZIP_SIZE_HEADLESS_ERROR_KB = 25;
+const GZIP_SIZE_HEADLESS_WARN_KB = 20;
+
+// GPP
+const GZIP_SIZE_GPP_ERROR_KB = 25;
+const GZIP_SIZE_GPP_WARN_KB = 15;
 
 const preactAliases = {
   entries: [
@@ -107,9 +115,14 @@ const SCRIPTS = [
     gzipErrorSizeKb: GZIP_SIZE_TCF_ERROR_KB,
   },
   {
+    name: `${NAME}-headless`,
+    gzipWarnSizeKb: GZIP_SIZE_HEADLESS_WARN_KB,
+    gzipErrorSizeKb: GZIP_SIZE_HEADLESS_ERROR_KB,
+  },
+  {
     name: `${NAME}-ext-gpp`,
-    gzipWarnSizeKb: 10,
-    gzipErrorSizeKb: 20,
+    gzipWarnSizeKb: GZIP_SIZE_GPP_WARN_KB,
+    gzipErrorSizeKb: GZIP_SIZE_GPP_ERROR_KB,
     isExtension: true,
   },
 ];

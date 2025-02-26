@@ -1,5 +1,7 @@
 import {
   AntButton as Button,
+  AntFlex as Flex,
+  AntRadio as Radio,
   ChevronDownIcon,
   ConfirmationModal,
   HStack,
@@ -15,8 +17,6 @@ import {
   PopoverHeader,
   PopoverTrigger,
   Portal,
-  Radio,
-  RadioGroup,
   Skeleton,
   Text,
   theme,
@@ -54,7 +54,7 @@ interface CustomReportTemplatesProps {
   reportType: ReportType;
   savedReportId: string; // from local storage
   tableStateToSave: CustomReportTableState | undefined;
-  currentColumnMap?: Record<string, string> | undefined;
+  currentColumnMap?: Record<string, string>;
   onCustomReportSaved: (customReport: CustomReportResponse | null) => void;
   onSavedReportDeleted: () => void;
 }
@@ -230,7 +230,6 @@ export const CustomReportTemplates = ({
       >
         <PopoverTrigger>
           <Button
-            size="small"
             className="max-w-40"
             icon={<ChevronDownIcon />}
             iconPosition="end"
@@ -311,48 +310,39 @@ export const CustomReportTemplates = ({
                         <Skeleton width="100%" height={theme.space[4]} />
                       </VStack>
                     ) : (
-                      <RadioGroup
-                        onChange={handleSelection}
+                      <Radio.Group
+                        onChange={(e) => handleSelection(e.target.value)}
                         value={selectedReportId}
-                        display="flex"
-                        flexDirection="column"
-                        gap={2}
-                        colorScheme="minos"
+                        className="flex flex-col gap-2"
                       >
                         {searchResults?.map((customReport) => (
-                          <HStack
+                          <Flex
                             key={customReport.id}
-                            justifyContent={
+                            className={
                               userCanDeleteReports
-                                ? "space-between"
-                                : "flex-start"
+                                ? "justify-between"
+                                : "justify-start"
                             }
-                            min-height={theme.space[6]}
-                            color="gray.700"
                           >
                             <Radio
-                              name="custom-report-id"
                               value={customReport.id}
+                              name="custom-report-id"
                               data-testid="custom-report-item"
                             >
                               <Text fontSize="sm">{customReport.name}</Text>
                             </Radio>
                             {userCanDeleteReports && (
-                              <IconButton
-                                variant="ghost"
-                                size="xs"
-                                aria-label={`delete ${CUSTOM_REPORT_TITLE}`}
+                              <Button
+                                type="text"
+                                size="small"
                                 icon={<TrashCanOutlineIcon fontSize={16} />}
-                                onClick={() => {
-                                  setReportToDelete(customReport);
-                                }}
+                                onClick={() => setReportToDelete(customReport)}
                                 data-testid="delete-report-button"
-                                color="gray.700"
                               />
                             )}
-                          </HStack>
+                          </Flex>
                         ))}
-                      </RadioGroup>
+                      </Radio.Group>
                     ))}
                 </PopoverBody>
                 <PopoverFooter border="none" px={6} pb={4} pt={4}>

@@ -4,11 +4,8 @@ import { ReactNode } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import { useFeatures } from "~/features/common/features";
-import {
-  CustomCheckbox,
-  CustomRadioGroup,
-  CustomSwitch,
-} from "~/features/common/form/inputs";
+import ControlledRadioGroup from "~/features/common/form/ControlledRadioGroup";
+import { CustomCheckbox, CustomSwitch } from "~/features/common/form/inputs";
 import { selectGppSettings } from "~/features/privacy-requests";
 import { GPPApplicationConfigResponse, GPPUSApproach } from "~/types/api";
 
@@ -44,9 +41,9 @@ const GppConfiguration = () => {
         {isEnabled ? (
           <>
             <Section title="GPP U.S.">
-              <CustomRadioGroup
+              <ControlledRadioGroup
                 name="gpp.us_approach"
-                variant="stacked"
+                layout="stacked"
                 defaultFirstSelected={false}
                 options={[
                   {

@@ -83,6 +83,37 @@ describe("Consent overlay", () => {
     });
   });
 
+  describe("when experience is Headless", () => {
+    beforeEach(() => {
+      cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
+      cy.fixture("consent/fidesjs_options_banner_modal.json").then((config) => {
+        stubConfig({
+          experience: {
+            experience_config: {
+              ...config.experience.experience_config,
+              ...{ component: ComponentType.HEADLESS },
+            },
+          },
+        });
+      });
+    });
+
+    it("should not render the banner or modal", () => {
+      cy.waitUntilFidesInitialized().then(() => {
+        // The banner has a delay, so in order to assert its non-existence, we have
+        // to give it a chance to come up first. Otherwise, the following gets will
+        // pass regardless.
+        // eslint-disable-next-line cypress/no-unnecessary-waiting
+        cy.wait(500);
+        cy.get("@FidesUIShown").should("not.have.been.called");
+        cy.get("div#fides-banner").should("not.exist");
+        // can display the modal link but it shouldn't do anything
+        cy.get("#fides-modal-link").click();
+        cy.getByTestId("consent-modal").should("not.exist");
+      });
+    });
+  });
+
   describe("when overlay is enabled", () => {
     describe("when overlay is shown", () => {
       beforeEach(() => {
@@ -175,6 +206,27 @@ describe("Consent overlay", () => {
               .property("consentMethod")
               .is.eql(ConsentMethod.REJECT);
           });
+        });
+      });
+
+      it("should not render the banner if fidesDisableBanner is true", () => {
+        stubConfig({
+          options: {
+            isOverlayEnabled: true,
+            fidesDisableBanner: true,
+          },
+        });
+        cy.waitUntilFidesInitialized().then(() => {
+          // The banner has a delay, so in order to assert its non-existence, we have
+          // to give it a chance to come up first. Otherwise, the following gets will
+          // pass regardless.
+          // eslint-disable-next-line cypress/no-unnecessary-waiting
+          cy.wait(500);
+          cy.get("@FidesUIShown").should("not.have.been.called");
+          cy.get("div#fides-banner").should("not.exist");
+          // can still open the modal
+          cy.get("#fides-modal-link").click();
+          cy.getByTestId("consent-modal").should("be.visible");
         });
       });
 
@@ -312,8 +364,109 @@ describe("Consent overlay", () => {
               cy.get("a.fides-brand-link").should(
                 "have.attr",
                 "href",
-                "https://fid.es/powered",
+                "https://ethyca.com/",
               );
+            });
+          });
+        });
+
+        describe("saving preferences", () => {
+          it("skips saving preferences to API when disable save is set", () => {
+            stubConfig({
+              options: {
+                fidesDisableSaveApi: true,
+              },
+            });
+            cy.waitUntilFidesInitialized().then(() => {
+              cy.get("#fides-modal-link").click();
+              cy.getByTestId("consent-modal").within(() => {
+                cy.get("button").contains("Opt out of all").click();
+                // timeout means API call not made, which is expected
+                cy.on("fail", (error) => {
+                  if (error.message.indexOf("Timed out retrying") !== 0) {
+                    throw error;
+                  }
+                });
+                // check that preferences aren't sent to Fides API
+                cy.wait("@patchPrivacyPreference", {
+                  requestTimeout: 100,
+                }).then((xhr) => {
+                  assert.isNull(xhr?.response?.body);
+                });
+              });
+            });
+          });
+
+          it("skips saving preferences to API when disable save is set via cookie", () => {
+            cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
+            cy.getCookie("fides_disable_save_api").should("not.exist");
+            cy.setCookie("fides_disable_save_api", "true");
+            stubConfig({});
+            cy.waitUntilFidesInitialized().then(() => {
+              cy.get("#fides-modal-link").click();
+              cy.getByTestId("consent-modal").within(() => {
+                cy.get("button").contains("Opt out of all").click();
+                // timeout means API call not made, which is expected
+                cy.on("fail", (error) => {
+                  if (error.message.indexOf("Timed out retrying") !== 0) {
+                    throw error;
+                  }
+                });
+                // check that preferences aren't sent to Fides API
+                cy.wait("@patchPrivacyPreference", {
+                  requestTimeout: 100,
+                }).then((xhr) => {
+                  assert.isNull(xhr?.response?.body);
+                });
+              });
+            });
+          });
+
+          it("skips saving preferences to API when disable save is set via query param", () => {
+            cy.getCookie("fides_string").should("not.exist");
+            stubConfig({}, null, null, { fides_disable_save_api: "true" });
+            cy.waitUntilFidesInitialized().then(() => {
+              cy.get("#fides-modal-link").click();
+              cy.getByTestId("consent-modal").within(() => {
+                cy.get("button").contains("Opt out of all").click();
+                // timeout means API call not made, which is expected
+                cy.on("fail", (error) => {
+                  if (error.message.indexOf("Timed out retrying") !== 0) {
+                    throw error;
+                  }
+                });
+                // check that preferences aren't sent to Fides API
+                cy.wait("@patchPrivacyPreference", {
+                  requestTimeout: 100,
+                }).then((xhr) => {
+                  assert.isNull(xhr?.response?.body);
+                });
+              });
+            });
+          });
+
+          it("skips saving preferences to API when disable save is set via window obj", () => {
+            cy.getCookie("fides_string").should("not.exist");
+            stubConfig({}, null, null, null, {
+              fides_disable_save_api: "true",
+            });
+            cy.waitUntilFidesInitialized().then(() => {
+              cy.get("#fides-modal-link").click();
+              cy.getByTestId("consent-modal").within(() => {
+                cy.get("button").contains("Opt out of all").click();
+                // timeout means API call not made, which is expected
+                cy.on("fail", (error) => {
+                  if (error.message.indexOf("Timed out retrying") !== 0) {
+                    throw error;
+                  }
+                });
+                // check that preferences aren't sent to Fides API
+                cy.wait("@patchPrivacyPreference", {
+                  requestTimeout: 100,
+                }).then((xhr) => {
+                  assert.isNull(xhr?.response?.body);
+                });
+              });
             });
           });
         });
@@ -1011,6 +1164,26 @@ describe("Consent overlay", () => {
         cy.get("span").contains("Advertising with gpc enabled");
         cy.get("span").contains("Global Privacy Control Applied");
       });
+
+      it("sends GPC consent override from a Headless experience", () => {
+        cy.on("window:before:load", (win) => {
+          // eslint-disable-next-line no-param-reassign
+          win.navigator.globalPrivacyControl = true;
+        });
+        cy.fixture("consent/fidesjs_options_banner_modal.json").then(
+          (config) => {
+            stubConfig({
+              experience: {
+                experience_config: {
+                  ...config.experience.experience_config,
+                  ...{ component: ComponentType.HEADLESS },
+                },
+              },
+            });
+          },
+        );
+        cy.wait("@patchPrivacyPreference");
+      });
     });
 
     describe("when GPC flag is found, and no notices apply to GPC", () => {
@@ -1670,6 +1843,154 @@ describe("Consent overlay", () => {
           },
         });
         cy.get("div#fides-banner").should("be.visible");
+      });
+    });
+
+    describe("Automatically set preferences", () => {
+      describe("Reject all", () => {
+        const validateRejectAll = (interception: any) => {
+          const { body } = interception.request;
+          expect(body.preferences).to.eql([
+            {
+              preference: "opt_out",
+              privacy_notice_history_id:
+                "pri_notice-history-advertising-en-000",
+            },
+            {
+              preference: "opt_out",
+              privacy_notice_history_id: "pri_notice-history-analytics-en-000",
+            },
+            {
+              preference: "acknowledge",
+              privacy_notice_history_id: "pri_notice-history-essential-en-000",
+            },
+          ]);
+          expect(body.method).to.eql(ConsentMethod.SCRIPT);
+        };
+        it("rejects all notices automatically when set", () => {
+          stubConfig({
+            options: {
+              fidesConsentOverride: ConsentMethod.REJECT,
+            },
+          });
+          cy.waitUntilFidesInitialized().then(() => {
+            cy.wait("@patchPrivacyPreference").then((interception) => {
+              validateRejectAll(interception);
+            });
+          });
+        });
+
+        it("rejects all notices automatically when set via cookie", () => {
+          cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
+          cy.getCookie("fides_consent_override").should("not.exist");
+          cy.setCookie("fides_consent_override", ConsentMethod.REJECT);
+          stubConfig({});
+
+          cy.waitUntilFidesInitialized().then(() => {
+            cy.wait("@patchPrivacyPreference").then((interception) => {
+              validateRejectAll(interception);
+            });
+          });
+        });
+
+        it("rejects all notices automatically when set via query param", () => {
+          cy.getCookie("fides_string").should("not.exist");
+          stubConfig({}, null, null, {
+            fides_consent_override: ConsentMethod.REJECT,
+          });
+
+          cy.waitUntilFidesInitialized().then(() => {
+            cy.wait("@patchPrivacyPreference").then((interception) => {
+              validateRejectAll(interception);
+            });
+          });
+        });
+
+        it("rejects all notices automatically when set via window obj", () => {
+          cy.getCookie("fides_string").should("not.exist");
+          stubConfig({}, null, null, null, {
+            fides_consent_override: ConsentMethod.REJECT,
+          });
+
+          cy.waitUntilFidesInitialized().then(() => {
+            cy.wait("@patchPrivacyPreference").then((interception) => {
+              validateRejectAll(interception);
+            });
+          });
+        });
+      });
+
+      describe("Accept all", () => {
+        const validateAcceptAll = (interception: any) => {
+          const { body } = interception.request;
+          expect(body.preferences).to.eql([
+            {
+              preference: "opt_in",
+              privacy_notice_history_id:
+                "pri_notice-history-advertising-en-000",
+            },
+            {
+              preference: "opt_in",
+              privacy_notice_history_id: "pri_notice-history-analytics-en-000",
+            },
+            {
+              preference: "acknowledge",
+              privacy_notice_history_id: "pri_notice-history-essential-en-000",
+            },
+          ]);
+          expect(body.method).to.eql(ConsentMethod.SCRIPT);
+        };
+        it("accepts all notices automatically when set", () => {
+          stubConfig({
+            options: {
+              fidesConsentOverride: ConsentMethod.ACCEPT,
+            },
+          });
+          cy.waitUntilFidesInitialized().then(() => {
+            cy.wait("@patchPrivacyPreference").then((interception) => {
+              validateAcceptAll(interception);
+            });
+          });
+        });
+
+        it("accepts all notices automatically when set via cookie", () => {
+          cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
+          cy.getCookie("fides_consent_override").should("not.exist");
+          cy.setCookie("fides_consent_override", ConsentMethod.ACCEPT);
+          stubConfig({});
+
+          cy.waitUntilFidesInitialized().then(() => {
+            cy.wait("@patchPrivacyPreference").then((interception) => {
+              validateAcceptAll(interception);
+            });
+          });
+        });
+
+        it("accepts all notices automatically when set via query param", () => {
+          cy.getCookie("fides_string").should("not.exist");
+          stubConfig({}, null, null, {
+            fides_consent_override: ConsentMethod.ACCEPT,
+          });
+
+          cy.waitUntilFidesInitialized().then(() => {
+            cy.wait("@patchPrivacyPreference").then((interception) => {
+              validateAcceptAll(interception);
+            });
+          });
+        });
+
+        it("accepts all notices automatically when set via window obj", () => {
+          cy.getCookie("fides_string").should("not.exist");
+          stubConfig({}, null, null, null, {
+            fides_consent_override: ConsentMethod.ACCEPT,
+          });
+
+          cy.waitUntilFidesInitialized().then(() => {
+            cy.wait("@patchPrivacyPreference").then((interception) => {
+              validateAcceptAll(interception);
+            });
+          });
+        });
       });
     });
   });

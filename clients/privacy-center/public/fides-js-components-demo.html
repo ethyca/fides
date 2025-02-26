@@ -1,7 +1,7 @@
 <!doctype html>
 <html>
   <head>
-    <title>fides-js script demo page</title>
+    <title>fides-js script components demo page</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <!--
@@ -26,7 +26,7 @@
       })();
       var deleteCookie = function () {
         document.cookie =
-          "fides_consent=;Path=/;expires=Thu, 01 Jan 1970 00:00:01 GMT;";
+          "fides_consent=;Path=/;expires='Thu, 01 Jan 1970 00:00:01 GMT';";
         location.reload();
       };
     </script>
@@ -207,6 +207,7 @@
           privacyCenterUrl: "http://localhost:3001",
           fidesApiUrl: "http://localhost:8080/api/v1",
           fidesPrimaryColor: "#008000",
+          showFidesBrandLink: true,
         },
       };
       if (init !== "false") {

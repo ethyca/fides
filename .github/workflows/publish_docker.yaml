@@ -11,6 +11,7 @@ env:
   # Docker auth with read-write (publish) permissions. Set as env in workflow root as auth is required in multiple jobs.
   DOCKER_USER: ${{ secrets.DOCKER_USER }}
   DOCKER_TOKEN: ${{ secrets.DOCKER_TOKEN }}
+  DEFAULT_PYTHON_VERSION: "3.10.13"
 
 jobs:
   ParseTags:
@@ -71,6 +72,12 @@ jobs:
         with:
           fetch-depth: 0 # This is required to properly tag images
 
+      - name: Set Up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
+          cache: "pip"
+
       - name: Login to DockerHub
         uses: docker/login-action@v3
         with:
@@ -104,7 +111,6 @@ jobs:
         if: needs.ParseTags.outputs.alpha_tag == 'true' || needs.ParseTags.outputs.beta_tag == 'true'
         run: nox -s "push(${{ matrix.application }},prerelease)" -- git_tag
 
-
   NotifyRedeploy:
     runs-on: ubuntu-latest
     needs: Push
@@ -112,7 +118,7 @@ jobs:
       # if an RC git tag, also notify Fidesinfra to trigger a redeploy of rc env, to pick up our newly published images
       - name: Send Repository Dispatch Event (RC redeploy)
         if: needs.ParseTags.outputs.rc_tag == 'true'
-        uses: peter-evans/repository-dispatch@v2
+        uses: peter-evans/repository-dispatch@v3
         with:
           event-type: trigger-fidesinfra-deploy-fides-rc
           repository: ethyca/fidesinfra

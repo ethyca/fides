@@ -4,11 +4,7 @@ from sqlalchemy.orm import Session
 
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType
 from fides.api.models.policy import Rule
-from fides.api.models.privacy_request import (
-    ExecutionLog,
-    ExecutionLogStatus,
-    PrivacyRequest,
-)
+from fides.api.models.privacy_request import ExecutionLog, PrivacyRequest
 from fides.api.schemas.connection_configuration.connection_secrets_email import (
     AdvancedSettings,
     BaseEmailSchema,
@@ -19,13 +15,16 @@ from fides.api.schemas.messaging.messaging import (
     MessagingActionType,
 )
 from fides.api.schemas.policy import ActionType
+from fides.api.schemas.privacy_request import ExecutionLogStatus
 from fides.api.schemas.redis_cache import Identity
 from fides.api.service.connectors.base_email_connector import (
     BaseEmailConnector,
-    get_email_messaging_config_service_type,
     get_org_name,
 )
-from fides.api.service.messaging.message_dispatch_service import dispatch_message
+from fides.api.service.messaging.message_dispatch_service import (
+    dispatch_message,
+    get_email_messaging_config_service_type,
+)
 from fides.config import get_config
 
 CONFIG = get_config()

@@ -2,7 +2,7 @@ import { SerializedError } from "@reduxjs/toolkit";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import {
   AntButton as Button,
-  Badge,
+  AntTag as Tag,
   Box,
   Flex,
   HStack,
@@ -23,7 +23,7 @@ import { CustomTextInput } from "~/features/common/form/inputs";
 import { passwordValidation } from "~/features/common/form/validation";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { TrashCanSolidIcon } from "~/features/common/Icon/TrashCanSolidIcon";
-import { USER_MANAGEMENT_ROUTE } from "~/features/common/nav/v2/routes";
+import { USER_MANAGEMENT_ROUTE } from "~/features/common/nav/routes";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { useGetEmailInviteStatusQuery } from "~/features/messaging/messaging.slice";
 import { useGetAllOpenIDProvidersQuery } from "~/features/openid-authentication/openprovider.slice";
@@ -139,22 +139,13 @@ const UserForm = ({ onSubmit, initialValues, canEditNames }: Props) => {
                 >
                   Profile{" "}
                   {activeUser?.disabled && (
-                    <Badge
-                      bg="green.500"
-                      color="white"
-                      paddingLeft="2"
-                      marginLeft="2"
-                      textTransform="none"
-                      paddingRight="8px"
-                      height="18px"
-                      lineHeight="18px"
-                      borderRadius="6px"
-                      fontWeight="500"
-                      textAlign="center"
+                    <Tag
+                      color="success"
+                      className="ml-2"
                       data-testid="invite-sent-badge"
                     >
                       Invite sent
-                    </Badge>
+                    </Tag>
                   )}
                 </Text>
                 <Box marginLeft="auto">

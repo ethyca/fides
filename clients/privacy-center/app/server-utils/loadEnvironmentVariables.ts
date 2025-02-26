@@ -1,4 +1,5 @@
 import { PrivacyCenterSettings } from "~/app/server-utils/PrivacyCenterSettings";
+import { ConsentMethod } from "~/types/api";
 
 const loadEnvironmentVariables = () => {
   // Load environment variables
@@ -16,7 +17,9 @@ const loadEnvironmentVariables = () => {
       "file:///app/config/config.css",
     SHOW_BRAND_LINK:
       process.env.FIDES_PRIVACY_CENTER__SHOW_BRAND_LINK === "true" || false,
-    CUSTOM_PROPERTIES: process.env.CUSTOM_PROPERTIES === "true" || true,
+    CUSTOM_PROPERTIES: process.env.CUSTOM_PROPERTIES !== "false", // default: true
+    FIDES_PRIVACY_CENTER__ROOT_PROPERTY_PATH:
+      process.env.FIDES_PRIVACY_CENTER__ROOT_PROPERTY_PATH || null,
 
     // Overlay options
     DEBUG: process.env.FIDES_PRIVACY_CENTER__DEBUG
@@ -83,6 +86,10 @@ const loadEnvironmentVariables = () => {
     FIDES_CLEAR_COOKIE: process.env.FIDES_PRIVACY_CENTER__FIDES_CLEAR_COOKIE
       ? process.env.FIDES_PRIVACY_CENTER__FIDES_CLEAR_COOKIE === "true"
       : false,
+    FIDES_CONSENT_OVERRIDE:
+      (process.env.FIDES_PRIVACY_CENTER__FIDES_KNOWN_PREFERENCE as
+        | ConsentMethod.ACCEPT
+        | ConsentMethod.REJECT) || null,
   };
   return settings;
 };

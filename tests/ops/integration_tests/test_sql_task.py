@@ -6,33 +6,20 @@ from unittest.mock import Mock
 import pytest
 from fideslang import Dataset
 from sqlalchemy import text
-from sqlalchemy.orm import Session
 
-from fides.api.graph.config import (
-    Collection,
-    CollectionAddress,
-    FieldAddress,
-    GraphDataset,
-    ScalarField,
-)
+from fides.api.graph.config import Collection, FieldAddress, GraphDataset, ScalarField
 from fides.api.graph.data_type import DataType, StringTypeConverter
 from fides.api.graph.graph import DatasetGraph, Edge, Node
 from fides.api.graph.traversal import TraversalNode
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.datasetconfig import convert_dataset_to_graph
 from fides.api.models.policy import ActionType, Policy, Rule, RuleTarget
-from fides.api.models.privacy_request import (
-    ExecutionLog,
-    ExecutionLogStatus,
-    PrivacyRequest,
-    PrivacyRequestStatus,
-    RequestTask,
-)
+from fides.api.models.privacy_request import ExecutionLog, RequestTask
 from fides.api.service.connectors import get_connector
-from fides.api.service.connectors.scylla_connector import ScyllaConnectorMissingKeyspace
 from fides.api.task.filter_results import filter_data_categories
 from fides.api.task.graph_task import get_cached_data_for_erasures
 from fides.config import CONFIG
+from tests.ops.integration_tests.test_execution import get_collection_identifier
 
 from ...conftest import access_runner_tester, erasure_runner_tester
 from ..graph.graph_test_util import (
@@ -41,12 +28,7 @@ from ..graph.graph_test_util import (
     field,
     records_matching_fields,
 )
-from ..task.traversal_data import (
-    integration_db_graph,
-    integration_scylladb_graph,
-    postgres_db_graph_dataset,
-    str_converter,
-)
+from ..task.traversal_data import integration_db_graph, postgres_db_graph_dataset
 
 
 @pytest.mark.integration_postgres
@@ -56,7 +38,7 @@ from ..task.traversal_data import (
     "dsr_version",
     ["use_dsr_3_0", "use_dsr_2_0"],
 )
-async def test_sql_erasure_ignores_collections_without_pk(
+async def test_sql_erasure_does_not_ignore_collections_without_pk(
     db,
     postgres_inserts,
     integration_postgres_config,
@@ -115,7 +97,7 @@ async def test_sql_erasure_ignores_collections_without_pk(
         .all()
     )
     logs = [log.__dict__ for log in logs]
-    # since address has no primary_key=True field, it's erasure is skipped
+    # erasure is not skipped since primary_key is not required
     assert (
         len(
             records_matching_fields(
@@ -125,13 +107,13 @@ async def test_sql_erasure_ignores_collections_without_pk(
                 message="No values were erased since no primary key was defined for this collection",
             )
         )
-        == 1
+        == 0
     )
     assert v == {
         "postgres_example:customer": 1,
         "postgres_example:payment_card": 0,
         "postgres_example:orders": 0,
-        "postgres_example:address": 0,
+        "postgres_example:address": 2,
     }
 
 
@@ -503,468 +485,7 @@ async def test_postgres_privacy_requests_against_non_default_schema(
     assert johanna_record.name is None  # Masked by erasure request
 
 
-@pytest.mark.integration_mssql
-@pytest.mark.integration
-@pytest.mark.asyncio
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
-)
-async def test_mssql_access_request_task(
-    db,
-    policy,
-    connection_config_mssql,
-    mssql_integration_db,
-    privacy_request,
-    dsr_version,
-    request,
-) -> None:
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
-    v = access_runner_tester(
-        privacy_request,
-        policy,
-        integration_db_graph("my_mssql_db_1"),
-        [connection_config_mssql],
-        {"email": "customer-1@example.com"},
-        db,
-    )
-
-    assert_rows_match(
-        v["my_mssql_db_1:address"],
-        min_size=2,
-        keys=["id", "street", "city", "state", "zip"],
-    )
-    assert_rows_match(
-        v["my_mssql_db_1:orders"],
-        min_size=3,
-        keys=["id", "customer_id", "shipping_address_id", "payment_card_id"],
-    )
-    assert_rows_match(
-        v["my_mssql_db_1:payment_card"],
-        min_size=2,
-        keys=["id", "name", "ccn", "customer_id", "billing_address_id"],
-    )
-    assert_rows_match(
-        v["my_mssql_db_1:customer"],
-        min_size=1,
-        keys=["id", "name", "email", "address_id"],
-    )
-
-    # links
-    assert v["my_mssql_db_1:customer"][0]["email"] == "customer-1@example.com"
-
-    logs = (
-        ExecutionLog.query(db=db)
-        .filter(ExecutionLog.privacy_request_id == privacy_request.id)
-        .all()
-    )
-
-    logs = [log.__dict__ for log in logs]
-    assert (
-        len(
-            records_matching_fields(
-                logs, dataset_name="my_mssql_db_1", collection_name="customer"
-            )
-        )
-        > 0
-    )
-    assert (
-        len(
-            records_matching_fields(
-                logs, dataset_name="my_mssql_db_1", collection_name="address"
-            )
-        )
-        > 0
-    )
-    assert (
-        len(
-            records_matching_fields(
-                logs, dataset_name="my_mssql_db_1", collection_name="orders"
-            )
-        )
-        > 0
-    )
-    assert (
-        len(
-            records_matching_fields(
-                logs,
-                dataset_name="my_mssql_db_1",
-                collection_name="payment_card",
-            )
-        )
-        > 0
-    )
-
-
-@pytest.mark.integration
-@pytest.mark.integration_mysql
-@pytest.mark.asyncio
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
-)
-async def test_mysql_access_request_task(
-    db,
-    policy,
-    connection_config_mysql,
-    mysql_integration_db,
-    privacy_request,
-    dsr_version,
-    request,
-) -> None:
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
-    v = access_runner_tester(
-        privacy_request,
-        policy,
-        integration_db_graph("my_mysql_db_1"),
-        [connection_config_mysql],
-        {"email": "customer-1@example.com"},
-        db,
-    )
-
-    assert_rows_match(
-        v["my_mysql_db_1:address"],
-        min_size=2,
-        keys=["id", "street", "city", "state", "zip"],
-    )
-    assert_rows_match(
-        v["my_mysql_db_1:orders"],
-        min_size=3,
-        keys=["id", "customer_id", "shipping_address_id", "payment_card_id"],
-    )
-    assert_rows_match(
-        v["my_mysql_db_1:payment_card"],
-        min_size=2,
-        keys=["id", "name", "ccn", "customer_id", "billing_address_id"],
-    )
-    assert_rows_match(
-        v["my_mysql_db_1:customer"],
-        min_size=1,
-        keys=["id", "name", "email", "address_id"],
-    )
-
-    # links
-    assert v["my_mysql_db_1:customer"][0]["email"] == "customer-1@example.com"
-
-    logs = (
-        ExecutionLog.query(db=db)
-        .filter(ExecutionLog.privacy_request_id == privacy_request.id)
-        .all()
-    )
-
-    logs = [log.__dict__ for log in logs]
-    assert (
-        len(
-            records_matching_fields(
-                logs, dataset_name="my_mysql_db_1", collection_name="customer"
-            )
-        )
-        > 0
-    )
-    assert (
-        len(
-            records_matching_fields(
-                logs, dataset_name="my_mysql_db_1", collection_name="address"
-            )
-        )
-        > 0
-    )
-    assert (
-        len(
-            records_matching_fields(
-                logs, dataset_name="my_mysql_db_1", collection_name="orders"
-            )
-        )
-        > 0
-    )
-    assert (
-        len(
-            records_matching_fields(
-                logs,
-                dataset_name="my_mysql_db_1",
-                collection_name="payment_card",
-            )
-        )
-        > 0
-    )
-
-
-@pytest.mark.integration_mariadb
-@pytest.mark.integration
-@pytest.mark.asyncio
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
-)
-async def test_mariadb_access_request_task(
-    db,
-    policy,
-    connection_config_mariadb,
-    mariadb_integration_db,
-    dsr_version,
-    request,
-    privacy_request,
-) -> None:
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
-    v = access_runner_tester(
-        privacy_request,
-        policy,
-        integration_db_graph("my_maria_db_1"),
-        [connection_config_mariadb],
-        {"email": "customer-1@example.com"},
-        db,
-    )
-
-    assert_rows_match(
-        v["my_maria_db_1:address"],
-        min_size=2,
-        keys=["id", "street", "city", "state", "zip"],
-    )
-    assert_rows_match(
-        v["my_maria_db_1:orders"],
-        min_size=3,
-        keys=["id", "customer_id", "shipping_address_id", "payment_card_id"],
-    )
-    assert_rows_match(
-        v["my_maria_db_1:payment_card"],
-        min_size=2,
-        keys=["id", "name", "ccn", "customer_id", "billing_address_id"],
-    )
-    assert_rows_match(
-        v["my_maria_db_1:customer"],
-        min_size=1,
-        keys=["id", "name", "email", "address_id"],
-    )
-
-    # links
-    assert v["my_maria_db_1:customer"][0]["email"] == "customer-1@example.com"
-
-    logs = (
-        ExecutionLog.query(db=db)
-        .filter(ExecutionLog.privacy_request_id == privacy_request.id)
-        .all()
-    )
-
-    logs = [log.__dict__ for log in logs]
-    assert (
-        len(
-            records_matching_fields(
-                logs, dataset_name="my_maria_db_1", collection_name="customer"
-            )
-        )
-        > 0
-    )
-    assert (
-        len(
-            records_matching_fields(
-                logs, dataset_name="my_maria_db_1", collection_name="address"
-            )
-        )
-        > 0
-    )
-    assert (
-        len(
-            records_matching_fields(
-                logs, dataset_name="my_maria_db_1", collection_name="orders"
-            )
-        )
-        > 0
-    )
-    assert (
-        len(
-            records_matching_fields(
-                logs,
-                dataset_name="my_maria_db_1",
-                collection_name="payment_card",
-            )
-        )
-        > 0
-    )
-
-
-@pytest.mark.integration
-@pytest.mark.integration_scylladb
-@pytest.mark.asyncio
-class TestScyllaDSRs:
-    @pytest.mark.parametrize(
-        "dsr_version",
-        ["use_dsr_2_0"],
-    )
-    async def test_scylladb_access_request_task_no_keyspace_dsr2(
-        self,
-        db: Session,
-        policy,
-        integration_scylladb_config,
-        scylladb_integration_no_keyspace,
-        privacy_request,
-        dsr_version,
-        request,
-    ) -> None:
-        request.getfixturevalue(dsr_version)
-
-        with pytest.raises(ScyllaConnectorMissingKeyspace) as err:
-            v = access_runner_tester(
-                privacy_request,
-                policy,
-                integration_scylladb_graph("scylla_example"),
-                [integration_scylladb_config],
-                {"email": "customer-1@example.com"},
-                db,
-            )
-
-        assert (
-            "No keyspace provided in the ScyllaDB configuration for connector scylla_example"
-            in str(err.value)
-        )
-
-    @pytest.mark.parametrize(
-        "dsr_version",
-        ["use_dsr_3_0"],
-    )
-    async def test_scylladb_access_request_task_no_keyspace_dsr3(
-        self,
-        db,
-        policy,
-        integration_scylladb_config,
-        scylladb_integration_no_keyspace,
-        privacy_request: PrivacyRequest,
-        dsr_version,
-        request,
-    ) -> None:
-        request.getfixturevalue(dsr_version)
-        v = access_runner_tester(
-            privacy_request,
-            policy,
-            integration_scylladb_graph("scylla_example"),
-            [integration_scylladb_config],
-            {"email": "customer-1@example.com"},
-            db,
-        )
-
-        assert v == {}
-        assert (
-            privacy_request.access_tasks.count() == 6
-        )  # There's 4 tables plus the root and terminal "dummy" tasks
-
-        # Root task should be completed
-        assert privacy_request.access_tasks.first().collection_name == "__ROOT__"
-        assert (
-            privacy_request.access_tasks.first().status == ExecutionLogStatus.complete
-        )
-
-        # All other tasks should be error
-        for access_task in privacy_request.access_tasks.offset(1):
-            assert access_task.status == ExecutionLogStatus.error
-
-    @pytest.mark.parametrize(
-        "dsr_version",
-        ["use_dsr_2_0", "use_dsr_3_0"],
-    )
-    async def test_scylladb_access_request_task(
-        self,
-        db,
-        policy,
-        integration_scylladb_config_with_keyspace,
-        scylla_reset_db,
-        scylladb_integration_with_keyspace,
-        privacy_request,
-        dsr_version,
-        request,
-    ) -> None:
-        request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
-        results = access_runner_tester(
-            privacy_request,
-            policy,
-            integration_scylladb_graph("scylla_example_with_keyspace"),
-            [integration_scylladb_config_with_keyspace],
-            {"email": "customer-1@example.com"},
-            db,
-        )
-
-        assert_rows_match(
-            results["scylla_example_with_keyspace:users"],
-            min_size=1,
-            keys=[
-                "age",
-                "alternative_contacts",
-                "do_not_contact",
-                "email",
-                "name",
-                "last_contacted",
-                "logins",
-                "states_lived",
-            ],
-        )
-        assert_rows_match(
-            results["scylla_example_with_keyspace:user_activity"],
-            min_size=3,
-            keys=["timestamp", "user_agent", "activity_type"],
-        )
-        assert_rows_match(
-            results["scylla_example_with_keyspace:payment_methods"],
-            min_size=2,
-            keys=["card_number", "expiration_date"],
-        )
-        assert_rows_match(
-            results["scylla_example_with_keyspace:orders"],
-            min_size=2,
-            keys=["order_amount", "order_date", "order_description"],
-        )
-
-    @pytest.mark.parametrize(
-        "dsr_version",
-        ["use_dsr_2_0", "use_dsr_3_0"],
-    )
-    async def test_scylladb_erasure_task(
-        self,
-        db,
-        integration_scylladb_config_with_keyspace,
-        scylladb_integration_with_keyspace,
-        scylla_reset_db,
-        privacy_request,
-        dsr_version,
-        request,
-    ):
-        request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
-        seed_email = "customer-1@example.com"
-
-        policy = erasure_policy(
-            db, "user.name", "user.behavior", "user.device", "user.payment"
-        )
-        privacy_request.policy_id = policy.id
-        privacy_request.save(db)
-
-        graph = integration_scylladb_graph("scylla_example_with_keyspace")
-        access_runner_tester(
-            privacy_request,
-            policy,
-            integration_scylladb_graph("scylla_example_with_keyspace"),
-            [integration_scylladb_config_with_keyspace],
-            {"email": seed_email},
-            db,
-        )
-        results = erasure_runner_tester(
-            privacy_request,
-            policy,
-            graph,
-            [integration_scylladb_config_with_keyspace],
-            {"email": seed_email},
-            get_cached_data_for_erasures(privacy_request.id),
-            db,
-        )
-        assert results == {
-            "scylla_example_with_keyspace:user_activity": 3,
-            "scylla_example_with_keyspace:users": 1,
-            "scylla_example_with_keyspace:payment_methods": 2,
-            "scylla_example_with_keyspace:orders": 2,
-        }
-
-
+@pytest.mark.integration_postgres
 @pytest.mark.integration
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
@@ -1384,11 +905,12 @@ class TestRetryIntegration:
                 # Execution starts with the employee collection, retries once on failure, and then errors
                 assert [
                     (
-                        CollectionAddress(log.dataset_name, log.collection_name).value,
+                        get_collection_identifier(log),
                         log.status.value,
                     )
                     for log in execution_logs.order_by("created_at")
                 ] == [
+                    ("Dataset traversal", "complete"),
                     ("postgres_example_test_dataset:employee", "in_processing"),
                     ("postgres_example_test_dataset:employee", "retrying"),
                     ("postgres_example_test_dataset:employee", "error"),
@@ -1407,32 +929,35 @@ class TestRetryIntegration:
             execution_logs = db.query(ExecutionLog).filter_by(
                 privacy_request_id=privacy_request.id
             )
-            assert 12 == execution_logs.count()
+            assert 13 == execution_logs.count()
 
             # All four nodes directly downstream of the root node attempt to process,
             # and nothing further processes downstream
-            assert [
-                (
-                    CollectionAddress(log.dataset_name, log.collection_name).value,
-                    log.status.value,
-                )
-                for log in execution_logs.order_by(
-                    ExecutionLog.collection_name, ExecutionLog.created_at
-                )
-            ] == [
-                ("postgres_example_test_dataset:customer", "in_processing"),
-                ("postgres_example_test_dataset:customer", "retrying"),
-                ("postgres_example_test_dataset:customer", "error"),
-                ("postgres_example_test_dataset:employee", "in_processing"),
-                ("postgres_example_test_dataset:employee", "retrying"),
-                ("postgres_example_test_dataset:employee", "error"),
-                ("postgres_example_test_dataset:report", "in_processing"),
-                ("postgres_example_test_dataset:report", "retrying"),
-                ("postgres_example_test_dataset:report", "error"),
-                ("postgres_example_test_dataset:visit", "in_processing"),
-                ("postgres_example_test_dataset:visit", "retrying"),
-                ("postgres_example_test_dataset:visit", "error"),
-            ]
+            assert set(
+                [
+                    (
+                        get_collection_identifier(log),
+                        log.status.value,
+                    )
+                    for log in execution_logs.order_by(ExecutionLog.created_at)
+                ]
+            ) == set(
+                [
+                    ("Dataset traversal", "complete"),
+                    ("postgres_example_test_dataset:customer", "in_processing"),
+                    ("postgres_example_test_dataset:customer", "retrying"),
+                    ("postgres_example_test_dataset:customer", "error"),
+                    ("postgres_example_test_dataset:employee", "in_processing"),
+                    ("postgres_example_test_dataset:employee", "retrying"),
+                    ("postgres_example_test_dataset:employee", "error"),
+                    ("postgres_example_test_dataset:report", "in_processing"),
+                    ("postgres_example_test_dataset:report", "retrying"),
+                    ("postgres_example_test_dataset:report", "error"),
+                    ("postgres_example_test_dataset:visit", "in_processing"),
+                    ("postgres_example_test_dataset:visit", "retrying"),
+                    ("postgres_example_test_dataset:visit", "error"),
+                ]
+            )
             # Downstream request tasks were marked as error
             assert [rt.status.value for rt in privacy_request.access_tasks] == [
                 "complete",
@@ -1538,11 +1063,12 @@ class TestRetryIntegration:
                 # Execution starts with the address collection, retries twice on failure, and then errors
                 assert [
                     (
-                        CollectionAddress(log.dataset_name, log.collection_name).value,
+                        get_collection_identifier(log),
                         log.status.value,
                     )
                     for log in execution_logs.order_by("created_at")
                 ] == [
+                    ("Dataset traversal", "complete"),
                     ("postgres_example_test_dataset:address", "in_processing"),
                     ("postgres_example_test_dataset:address", "retrying"),
                     ("postgres_example_test_dataset:address", "retrying"),
@@ -1563,18 +1089,17 @@ class TestRetryIntegration:
             execution_logs = db.query(ExecutionLog).filter_by(
                 privacy_request_id=privacy_request.id, action_type=ActionType.erasure
             )
-            assert 40 == execution_logs.count()
+            assert 44 == execution_logs.count()
 
-            # These nodes were able to complete because they didn't have a PK - nothing to erase
             visit_logs = execution_logs.filter_by(collection_name="visit")
-            assert {"in_processing", "complete"} == {
+            assert ["in_processing", "retrying", "retrying", "error"] == [
                 el.status.value for el in visit_logs
-            }
+            ]
 
             order_item_logs = execution_logs.filter_by(collection_name="order_item")
-            assert {"in_processing", "complete"} == {
+            assert ["in_processing", "retrying", "retrying", "error"] == [
                 el.status.value for el in order_item_logs
-            }
+            ]
             # Address log mask data couldn't run, attempted to retry twice per configuration
             address_logs = execution_logs.filter_by(collection_name="address").order_by(
                 ExecutionLog.created_at
@@ -1583,297 +1108,19 @@ class TestRetryIntegration:
                 el.status.value for el in address_logs
             ]
 
-            # Downstream request tasks were marked as error. Some tasks completed because there is no PK
-            # on their collection and we can't erase
-            assert {rt.status.value for rt in privacy_request.erasure_tasks} == {
-                "complete",
-                "error",
-                "error",
-                "error",
+            # Downstream request tasks (other than __ROOT__) were marked as error.
+            assert [rt.status.value for rt in privacy_request.erasure_tasks] == [
                 "complete",
                 "error",
                 "error",
                 "error",
                 "error",
                 "error",
-                "complete",
                 "error",
                 "error",
-            }
-
-
-@pytest.mark.integration_timescale
-@pytest.mark.integration
-@pytest.mark.asyncio
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
-)
-async def test_timescale_access_request_task(
-    db,
-    policy,
-    timescale_connection_config,
-    timescale_integration_db,
-    privacy_request,
-    dsr_version,
-    request,
-) -> None:
-    database_name = "my_timescale_db_1"
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
-    v = access_runner_tester(
-        privacy_request,
-        policy,
-        integration_db_graph(database_name),
-        [timescale_connection_config],
-        {"email": "customer-1@example.com"},
-        db,
-    )
-
-    assert_rows_match(
-        v[f"{database_name}:address"],
-        min_size=2,
-        keys=["id", "street", "city", "state", "zip"],
-    )
-    assert_rows_match(
-        v[f"{database_name}:orders"],
-        min_size=3,
-        keys=["id", "customer_id", "shipping_address_id", "payment_card_id"],
-    )
-    assert_rows_match(
-        v[f"{database_name}:payment_card"],
-        min_size=2,
-        keys=["id", "name", "ccn", "customer_id", "billing_address_id"],
-    )
-    assert_rows_match(
-        v[f"{database_name}:customer"],
-        min_size=1,
-        keys=["id", "name", "email", "address_id"],
-    )
-
-    # links
-    assert v[f"{database_name}:customer"][0]["email"] == "customer-1@example.com"
-
-    logs = (
-        ExecutionLog.query(db=db)
-        .filter(ExecutionLog.privacy_request_id == privacy_request.id)
-        .all()
-    )
-
-    logs = [log.__dict__ for log in logs]
-
-    assert (
-        len(
-            records_matching_fields(
-                logs, dataset_name=database_name, collection_name="customer"
-            )
-        )
-        > 0
-    )
-
-    assert (
-        len(
-            records_matching_fields(
-                logs, dataset_name=database_name, collection_name="address"
-            )
-        )
-        > 0
-    )
-
-    assert (
-        len(
-            records_matching_fields(
-                logs, dataset_name=database_name, collection_name="orders"
-            )
-        )
-        > 0
-    )
-
-    assert (
-        len(
-            records_matching_fields(
-                logs,
-                dataset_name=database_name,
-                collection_name="payment_card",
-            )
-        )
-        > 0
-    )
-
-
-@pytest.mark.integration_timescale
-@pytest.mark.integration
-@pytest.mark.asyncio
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
-)
-async def test_timescale_erasure_request_task(
-    db,
-    erasure_policy,
-    timescale_connection_config,
-    timescale_integration_db,
-    privacy_request_with_erasure_policy,
-    dsr_version,
-    request,
-) -> None:
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
-    rule = erasure_policy.rules[0]
-    target = rule.targets[0]
-    target.data_category = "user"
-    target.save(db)
-
-    database_name = "my_timescale_db_1"
-
-    dataset = postgres_db_graph_dataset(database_name, timescale_connection_config.key)
-
-    # Set some data categories on fields that will be targeted by the policy above
-    field([dataset], database_name, "customer", "name").data_categories = ["user.name"]
-    field([dataset], database_name, "address", "street").data_categories = ["user"]
-    field([dataset], database_name, "payment_card", "ccn").data_categories = ["user"]
-
-    graph = DatasetGraph(dataset)
-
-    v = access_runner_tester(
-        privacy_request_with_erasure_policy,
-        erasure_policy,
-        graph,
-        [timescale_connection_config],
-        {"email": "customer-1@example.com"},
-        db,
-    )
-
-    v = erasure_runner_tester(
-        privacy_request_with_erasure_policy,
-        erasure_policy,
-        graph,
-        [timescale_connection_config],
-        {"email": "customer-1@example.com"},
-        get_cached_data_for_erasures(privacy_request_with_erasure_policy.id),
-        db,
-    )
-    assert v == {
-        f"{database_name}:customer": 1,
-        f"{database_name}:orders": 0,
-        f"{database_name}:payment_card": 2,
-        f"{database_name}:address": 2,
-    }, "No erasure on orders table - no data categories targeted"
-
-    # Verify masking in appropriate tables
-    address_cursor = timescale_integration_db.execute(
-        text("select * from address where id in (1, 2)")
-    )
-    for address in address_cursor:
-        assert address.street is None  # Masked due to matching data category
-        assert address.state is not None
-        assert address.city is not None
-        assert address.zip is not None
-
-    customer_cursor = timescale_integration_db.execute(
-        text("select * from customer where id = 1")
-    )
-    customer = [customer for customer in customer_cursor][0]
-    assert customer.name is None  # Masked due to matching data category
-    assert customer.email == "customer-1@example.com"
-    assert customer.address_id is not None
-
-    payment_card_cursor = timescale_integration_db.execute(
-        text("select * from payment_card where id in ('pay_aaa-aaa', 'pay_bbb-bbb')")
-    )
-    payment_cards = [card for card in payment_card_cursor]
-    assert all(
-        [card.ccn is None for card in payment_cards]
-    )  # Masked due to matching data category
-    assert not any([card.name is None for card in payment_cards]) is None
-
-
-@pytest.mark.integration_timescale
-@pytest.mark.integration
-@pytest.mark.asyncio
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
-)
-async def test_timescale_query_and_mask_hypertable(
-    db,
-    erasure_policy,
-    timescale_connection_config,
-    timescale_integration_db,
-    privacy_request_with_erasure_policy,
-    dsr_version,
-    request,
-) -> None:
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
-    database_name = "my_timescale_db_1"
-
-    dataset = postgres_db_graph_dataset(database_name, timescale_connection_config.key)
-    # For this test, add a new collection to our standard dataset corresponding to the
-    # "onsite_personnel" timescale hypertable
-    onsite_personnel_collection = Collection(
-        name="onsite_personnel",
-        fields=[
-            ScalarField(
-                name="responsible", data_type_converter=str_converter, identity="email"
-            ),
-            ScalarField(
-                name="time", data_type_converter=str_converter, primary_key=True
-            ),
-        ],
-    )
-
-    dataset.collections.append(onsite_personnel_collection)
-    graph = DatasetGraph(dataset)
-    rule = erasure_policy.rules[0]
-    target = rule.targets[0]
-    target.data_category = "user"
-    target.save(db)
-    # Update data category on responsible field
-    field(
-        [dataset], database_name, "onsite_personnel", "responsible"
-    ).data_categories = ["user.contact.email"]
-
-    access_results = access_runner_tester(
-        privacy_request_with_erasure_policy,
-        erasure_policy,
-        graph,
-        [timescale_connection_config],
-        {"email": "employee-1@example.com"},
-        db,
-    )
-
-    # Demonstrate hypertable can be queried
-    assert access_results[f"{database_name}:onsite_personnel"] == [
-        {"responsible": "employee-1@example.com", "time": datetime(2022, 1, 1, 9, 0)},
-        {"responsible": "employee-1@example.com", "time": datetime(2022, 1, 2, 9, 0)},
-        {"responsible": "employee-1@example.com", "time": datetime(2022, 1, 3, 9, 0)},
-        {"responsible": "employee-1@example.com", "time": datetime(2022, 1, 5, 9, 0)},
-    ]
-
-    # Run an erasure on the hypertable targeting the responsible field
-    v = erasure_runner_tester(
-        privacy_request_with_erasure_policy,
-        erasure_policy,
-        graph,
-        [timescale_connection_config],
-        {"email": "employee-1@example.com"},
-        get_cached_data_for_erasures(privacy_request_with_erasure_policy.id),
-        db,
-    )
-
-    assert v == {
-        f"{database_name}:customer": 0,
-        f"{database_name}:orders": 0,
-        f"{database_name}:payment_card": 0,
-        f"{database_name}:address": 0,
-        f"{database_name}:onsite_personnel": 4,
-    }, "onsite_personnel.responsible was the only targeted data category"
-
-    personnel_records = timescale_integration_db.execute(
-        text("select * from onsite_personnel")
-    )
-    for record in personnel_records:
-        assert (
-            record.responsible != "employee-1@example.com"
-        )  # These emails have all been masked
+                "error",
+                "error",
+                "error",
+                "error",
+                "error",
+            ]

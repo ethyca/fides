@@ -4,6 +4,7 @@ module.exports = {
     project: "tsconfig.json",
     tsconfigRootDir: __dirname,
   },
+  parser: "@typescript-eslint/parser",
   overrides: [
     {
       // Require Swagger JSdoc for all /api routes

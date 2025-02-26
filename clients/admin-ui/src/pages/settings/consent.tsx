@@ -6,7 +6,6 @@ import {
   AntSwitch as Switch,
   Box,
   Flex,
-  Heading,
   Spinner,
   Stack,
   Text,
@@ -21,6 +20,7 @@ import DocsLink from "~/features/common/DocsLink";
 import { useFeatures } from "~/features/common/features";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import Layout from "~/features/common/Layout";
+import PageHeader from "~/features/common/PageHeader";
 import { useGetPurposesQuery } from "~/features/common/purpose.slice";
 import QuestionTooltip from "~/features/common/QuestionTooltip";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
@@ -217,9 +217,7 @@ const ConsentConfigPage: NextPage = () => {
         </Flex>
       ) : (
         <Box data-testid="consent-configuration">
-          <Heading marginBottom={4} fontSize="2xl">
-            Consent settings
-          </Heading>
+          <PageHeader heading="Consent settings" />
           <Stack spacing={3} mb={3}>
             <SettingsBox title="Transparency & Consent Framework settings">
               <FrameworkStatus name="TCF" enabled={isTcfEnabled} />

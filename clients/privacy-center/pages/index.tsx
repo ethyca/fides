@@ -13,6 +13,7 @@ import React, { useEffect, useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { ConfigErrorToastOptions } from "~/common/toast-options";
+import BrandLink from "~/components/BrandLink";
 import ConsentCard from "~/components/consent/ConsentCard";
 import {
   ConsentRequestModal,
@@ -25,7 +26,10 @@ import {
 } from "~/components/modals/privacy-request-modal/PrivacyRequestModal";
 import PrivacyCard from "~/components/PrivacyCard";
 import { useConfig } from "~/features/common/config.slice";
-import { selectIsNoticeDriven } from "~/features/common/settings.slice";
+import {
+  selectIsNoticeDriven,
+  useSettings,
+} from "~/features/common/settings.slice";
 import {
   clearLocation,
   selectPrivacyExperience,
@@ -67,6 +71,10 @@ const Home: NextPage = () => {
   } = useConsentRequestModal();
   let isConsentModalOpen = isConsentModalOpenConst;
   const getIdVerificationConfigQuery = useGetIdVerificationConfigQuery();
+
+  const { SHOW_BRAND_LINK } = useSettings();
+  const showPrivacyPolicyLink =
+    !!config.privacy_policy_url && !!config.privacy_policy_url_text;
 
   // Subscribe to experiences just to see if there are any notices.
   // The subscription automatically handles skipping if overlay is not enabled
@@ -163,7 +171,7 @@ const Home: NextPage = () => {
         <Stack align="center" spacing={3}>
           <Heading
             fontSize={["3xl", "4xl"]}
-            color="gray.600"
+            color="gray.800"
             fontWeight="semibold"
             textAlign="center"
             data-testid="heading"
@@ -176,7 +184,7 @@ const Home: NextPage = () => {
             fontWeight="medium"
             maxWidth={624}
             textAlign="center"
-            color="gray.600"
+            color="gray.800"
             data-testid="description"
           >
             {config.description}
@@ -188,7 +196,7 @@ const Home: NextPage = () => {
               fontWeight="medium"
               maxWidth={624}
               textAlign="center"
-              color="gray.600"
+              color="gray.800"
               data-testid={`description-${index}`}
               // eslint-disable-next-line react/no-array-index-key
               key={`description-${index}`}
@@ -206,7 +214,7 @@ const Home: NextPage = () => {
             fontSize={["small", "medium"]}
             fontWeight="medium"
             maxWidth={624}
-            color="gray.600"
+            color="gray.800"
             data-testid={`addendum-${index}`}
             // eslint-disable-next-line react/no-array-index-key
             key={`addendum-${index}`}
@@ -214,19 +222,25 @@ const Home: NextPage = () => {
             {paragraph}
           </Text>
         ))}
-        {config.privacy_policy_url && config.privacy_policy_url_text ? (
-          <Link
-            fontSize={["small", "medium"]}
-            fontWeight="medium"
-            textAlign="center"
-            textDecoration="underline"
-            color="gray.600"
-            href={config.privacy_policy_url}
-            isExternal
-          >
-            {config.privacy_policy_url_text}
-          </Link>
-        ) : null}
+
+        {(SHOW_BRAND_LINK || showPrivacyPolicyLink) && (
+          <Stack flexDirection="row">
+            {showPrivacyPolicyLink && (
+              <Link
+                fontSize={["small", "medium"]}
+                fontWeight="medium"
+                textAlign="center"
+                textDecoration="underline"
+                color="gray.800"
+                href={config.privacy_policy_url!}
+                isExternal
+              >
+                {config.privacy_policy_url_text}
+              </Link>
+            )}
+            <BrandLink />
+          </Stack>
+        )}
       </Stack>
       <PrivacyRequestModal
         isOpen={isPrivacyModalOpen}

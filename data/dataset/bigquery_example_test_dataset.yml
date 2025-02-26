@@ -5,7 +5,7 @@ dataset:
     collections:
       - name: address
         fides_meta:
-          erase_after: [ bigquery_example_test_dataset.employee ]
+          erase_after: [bigquery_example_test_dataset.employee]
         fields:
           - name: city
             data_categories: [user.contact.address.city]
@@ -13,18 +13,22 @@ dataset:
             data_categories: [user.contact.address.street]
           - name: id
             data_categories: [system.operations]
-            fides_meta:
-              primary_key: True
           - name: state
             data_categories: [user.contact.address.state]
           - name: street
             data_categories: [user.contact.address.street]
+            fides_meta:
+              data_type: string
+              masking_strategy_override:
+                strategy: string_rewrite
+                configuration:
+                  rewrite_value: REDACTED
           - name: zip
             data_categories: [user.contact.address.postal_code]
 
       - name: customer
         fides_meta:
-          erase_after: [ bigquery_example_test_dataset.address ]
+          erase_after: [bigquery_example_test_dataset.address]
         fields:
           - name: address_id
             data_categories: [system.operations]
@@ -33,6 +37,26 @@ dataset:
                 - dataset: bigquery_example_test_dataset
                   field: address.id
                   direction: to
+          - name: extra_address_data
+            fides_meta:
+              type: object
+            fields:
+              - name: city
+                data_categories: [user.contact.address.city]
+              - name: house
+                data_categories: [user.contact.address.street]
+              - name: id
+                data_categories: [system.operations]
+              - name: state
+                data_categories: [user.contact.address.state]
+              - name: street
+                data_categories: [user.contact.address.street]
+              - name: address_id
+                data_categories: [system.operations]
+                references:
+                  - dataset: bigquery_example_test_dataset
+                    field: address.id
+                    direction: to
           - name: created
             data_categories: [system.operations]
           - name: email
@@ -47,8 +71,6 @@ dataset:
               data_type: string
           - name: id
             data_categories: [user.unique_id]
-            fides_meta:
-              primary_key: True
           - name: name
             data_categories: [user.name]
             fides_meta:
@@ -74,8 +96,6 @@ dataset:
               data_type: string
           - name: id
             data_categories: [user.unique_id]
-            fides_meta:
-              primary_key: True
           - name: name
             data_categories: [user.name]
             fides_meta:
@@ -92,8 +112,6 @@ dataset:
                   direction: from
           - name: id
             data_categories: [system.operations]
-            fides_meta:
-              primary_key: True
           - name: time
             data_categories: [user.sensor]
 
@@ -108,8 +126,6 @@ dataset:
                   direction: from
           - name: id
             data_categories: [system.operations]
-            fides_meta:
-              primary_key: True
           - name: shipping_address_id
             data_categories: [system.operations]
             fides_meta:
@@ -160,8 +176,6 @@ dataset:
                   direction: from
           - name: id
             data_categories: [system.operations]
-            fides_meta:
-              primary_key: True
           - name: name
             data_categories: [user.financial]
           - name: preferred
@@ -171,8 +185,6 @@ dataset:
         fields:
           - name: id
             data_categories: [system.operations]
-            fides_meta:
-              primary_key: True
           - name: name
             data_categories: [system.operations]
           - name: price
@@ -187,8 +199,6 @@ dataset:
               data_type: string
           - name: id
             data_categories: [system.operations]
-            fides_meta:
-              primary_key: True
           - name: month
             data_categories: [system.operations]
           - name: name
@@ -221,8 +231,6 @@ dataset:
                   direction: from
           - name: id
             data_categories: [system.operations]
-            fides_meta:
-              primary_key: True
           - name: opened
             data_categories: [system.operations]
 
@@ -238,11 +246,12 @@ dataset:
       - name: visit_partitioned
         fides_meta:
           partitioning:
-            where_clauses: [
-              "`last_visit` > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 500 DAY) AND `last_visit` <= CURRENT_TIMESTAMP()",
-              "`last_visit` > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1000 DAY) AND `last_visit` <= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 500 DAY)",
-              "`last_visit` <= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1000 DAY)",
-            ]
+            where_clauses:
+              [
+                "`last_visit` > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 500 DAY) AND `last_visit` <= CURRENT_TIMESTAMP()",
+                "`last_visit` > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1000 DAY) AND `last_visit` <= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 500 DAY)",
+                "`last_visit` <= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1000 DAY)",
+              ]
         fields:
           - name: email
             data_categories: [user.contact.email]

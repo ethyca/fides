@@ -8,7 +8,7 @@ from fides.api.graph.execution import ExecutionNode
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionTestStatus
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest, RequestTask
-from fides.api.service.connectors.query_config import QueryConfig
+from fides.api.service.connectors.query_configs.query_config import QueryConfig
 from fides.api.util.collection_util import Row
 from fides.config import CONFIG
 
@@ -132,3 +132,14 @@ class BaseConnector(Generic[DB_CONNECTOR_TYPE], ABC):
         raise NotImplementedError(
             "execute_standalone_retrieval_query must be implemented in a concrete subclass"
         )
+
+    @property
+    def requires_primary_keys(self) -> bool:
+        """
+        Indicates if datasets linked to this connector require primary keys for erasures.
+        Defaults to True.
+        """
+
+        # Defaulting to true for now so we can keep the default behavior and
+        # incrementally determine the need for primary keys across all connectors
+        return True

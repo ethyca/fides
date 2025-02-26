@@ -13,11 +13,11 @@ from fides.api.models.privacy_request import (
     Consent,
     ConsentRequest,
     CustomPrivacyRequestField,
-    PrivacyRequestSource,
     PrivacyRequestStatus,
     ProvidedIdentity,
 )
 from fides.api.schemas.messaging.messaging import MessagingServiceType
+from fides.api.schemas.privacy_request import PrivacyRequestSource
 from fides.common.api.scope_registry import CONNECTION_READ, CONSENT_READ
 from fides.common.api.v1.urn_registry import (
     CONSENT_REQUEST,
@@ -246,7 +246,7 @@ class TestConsentRequest:
         "sovrn_email_connection_config",
         "subject_identity_verification_required",
     )
-    @patch("fides.api.service._verification.dispatch_message")
+    @patch("fides.service.messaging.messaging_service.dispatch_message")
     def test_consent_request(self, mock_dispatch_message, api_client, url):
         data = {"identity": {"email": "test@example.com"}}
         response = api_client.post(url, json=data)
@@ -258,7 +258,7 @@ class TestConsentRequest:
         "sovrn_email_connection_config",
         "subject_identity_verification_required",
     )
-    @patch("fides.api.service._verification.dispatch_message")
+    @patch("fides.service.messaging.messaging_service.dispatch_message")
     def test_consent_request_identity_present(
         self,
         mock_dispatch_message,
@@ -282,13 +282,13 @@ class TestConsentRequest:
         data = {"identity": {"email": "test@example.com"}}
         response = api_client.post(url, json=data)
         assert response.status_code == 500
-        assert "redis cache required" in response.json()["message"]
+        assert "Redis cache required" in response.json()["message"]
 
     @pytest.mark.usefixtures(
         "messaging_config",
         "sovrn_email_connection_config",
     )
-    @patch("fides.api.service._verification.dispatch_message")
+    @patch("fides.service.messaging.messaging_service.dispatch_message")
     def test_consent_request_subject_verification_disabled_no_email(
         self, mock_dispatch_message, api_client, url
     ):
@@ -302,7 +302,7 @@ class TestConsentRequest:
         "sovrn_email_connection_config",
         "subject_identity_verification_required",
     )
-    @patch("fides.api.service._verification.dispatch_message")
+    @patch("fides.service.messaging.messaging_service.dispatch_message")
     def test_consent_request_phone_number(self, mock_dispatch_message, api_client, url):
         data = {"identity": {"phone_number": "+3368675309"}}
         response = api_client.post(url, json=data)
@@ -314,7 +314,7 @@ class TestConsentRequest:
         "sovrn_email_connection_config",
         "subject_identity_verification_required",
     )
-    @patch("fides.api.service._verification.dispatch_message")
+    @patch("fides.service.messaging.messaging_service.dispatch_message")
     def test_consent_request_email_and_phone_use_config(
         self,
         mock_dispatch_message,
@@ -341,7 +341,7 @@ class TestConsentRequest:
         "sovrn_email_connection_config",
         "subject_identity_verification_required",
     )
-    @patch("fides.api.service._verification.dispatch_message")
+    @patch("fides.service.messaging.messaging_service.dispatch_message")
     def test_consent_request_email_and_phone_default_to_email(
         self,
         mock_dispatch_message,
@@ -372,7 +372,7 @@ class TestConsentRequest:
         "messaging_config",
         "subject_identity_verification_required",
     )
-    @patch("fides.api.service._verification.dispatch_message")
+    @patch("fides.service.messaging.messaging_service.dispatch_message")
     def test_consent_request_with_source(
         self,
         mock_dispatch_message,
@@ -399,7 +399,7 @@ class TestConsentRequest:
         "sovrn_email_connection_config",
         "subject_identity_verification_required",
     )
-    @patch("fides.api.service._verification.dispatch_message")
+    @patch("fides.service.messaging.messaging_service.dispatch_message")
     def test_consent_request_with_custom_privacy_request_fields(
         self,
         mock_dispatch_message,
@@ -869,7 +869,7 @@ class TestSaveConsent:
         "subject_identity_verification_required", "automatically_approved"
     )
     @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
     )
     def test_verify_then_set_consent_preferences(
         self,
@@ -1024,7 +1024,7 @@ class TestSaveConsent:
     )
     @patch("fides.api.models.privacy_request.ConsentRequest.verify_identity")
     @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
     )
     def test_set_consent_consent_preferences(
         self,
@@ -1129,7 +1129,7 @@ class TestSaveConsent:
     )
     @patch("fides.api.models.privacy_request.ConsentRequest.verify_identity")
     @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
     )
     def test_set_consent_preferences_privacy_request_pending_when_id_verification_required(
         self,

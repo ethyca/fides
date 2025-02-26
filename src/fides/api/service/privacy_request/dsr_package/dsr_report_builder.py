@@ -16,7 +16,7 @@ from fides.api.util.storage_util import storage_json_encoder
 DSR_DIRECTORY = Path(__file__).parent.resolve()
 
 TEXT_COLOR = "#4A5568"
-HEADER_COLOR = "#F7FAFC"
+HEADER_COLOR = "#FAFAFA"
 BORDER_COLOR = "#E2E8F0"
 
 
