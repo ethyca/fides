@@ -236,6 +236,22 @@ class BigQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
         on the Node or Graph structure.
 
         This is an override of the base class method that supports nested fields for BigQuery.
+
+        Examples with dot-delimited field names, notice the periods are replaced with underscores in the parameter bindings:
+
+        1. Single value filter:
+           field_list = ["id", "name", "email"]
+           filters = {"user.id": [123]}
+
+           Generates: SELECT id, name, email FROM `project_id.dataset_id.table_name` WHERE (user.id = :user_id)
+           With parameter binding: user_id = 123
+
+        2. Multiple value filter:
+           field_list = ["id", "name", "email"]
+           filters = {"user.status": ["active", "pending"]}
+
+           Generates: SELECT id, name, email FROM `project_id.dataset_id.table_name` WHERE (user.status IN (:user_status_in_stmt_generated_0, :user_status_in_stmt_generated_1))
+           With parameter bindings: user_status_in_stmt_generated_0 = "active", user_status_in_stmt_generated_1 = "pending"
         """
         clauses = []
         query_data = {}
