@@ -17,6 +17,9 @@ import DiscoveryItemActionsCell from "../tables/cells/DiscoveryItemActionsCell";
 import EditCategoryCell from "../tables/cells/EditCategoryCell";
 import ResultStatusCell from "../tables/cells/ResultStatusCell";
 
+const NAME_COLUMN_SIZE = 300;
+const ACTION_COLUMN_SIZE = 220;
+
 const useDiscoveryResultColumns = ({
   resourceType,
 }: {
@@ -37,6 +40,7 @@ const useDiscoveryResultColumns = ({
           />
         ),
         header: (props) => <DefaultHeaderCell value="Name" {...props} />,
+        size: NAME_COLUMN_SIZE,
       }),
       columnHelper.accessor((row) => row.urn, {
         id: "project",
@@ -74,8 +78,8 @@ const useDiscoveryResultColumns = ({
             <DefaultCell value="--" />
           ),
         header: "Actions",
+        size: ACTION_COLUMN_SIZE,
         meta: {
-          width: "auto",
           disableRowClick: true,
         },
       }),
@@ -108,6 +112,7 @@ const useDiscoveryResultColumns = ({
         id: "tables",
         cell: (props) => <ResultStatusCell result={props.row.original} />,
         header: (props) => <DefaultHeaderCell value="Table name" {...props} />,
+        size: NAME_COLUMN_SIZE,
       }),
       columnHelper.accessor((row) => row.description, {
         id: "description",
@@ -140,8 +145,8 @@ const useDiscoveryResultColumns = ({
           <DiscoveryItemActionsCell resource={props.row.original} />
         ),
         header: "Actions",
+        size: ACTION_COLUMN_SIZE,
         meta: {
-          width: "auto",
           disableRowClick: true,
         },
       }),
@@ -155,6 +160,7 @@ const useDiscoveryResultColumns = ({
         id: "name",
         cell: (props) => <ResultStatusCell result={props.row.original} />,
         header: (props) => <DefaultHeaderCell value="Field name" {...props} />,
+        size: NAME_COLUMN_SIZE,
       }),
       columnHelper.accessor((row) => row.source_data_type, {
         id: "data-type",
@@ -201,8 +207,8 @@ const useDiscoveryResultColumns = ({
           <DiscoveryItemActionsCell resource={props.row.original} />
         ),
         header: "Actions",
+        size: ACTION_COLUMN_SIZE,
         meta: {
-          width: "auto",
           disableRowClick: true,
         },
       }),
