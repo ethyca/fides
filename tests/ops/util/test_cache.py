@@ -241,3 +241,45 @@ class TestCeleryTasksInFlight:
         query_task_mock.return_value = {"@celery1234": {"abcde": ["reserved", {}]}}
 
         assert celery_tasks_in_flight(["abde"])
+
+
+def test_push_encoded_object_with_expiration(cache: FidesopsRedis) -> None:
+    """Test that push_encoded_object correctly sets expiration time."""
+    key = "test_list"
+    test_obj = {"test": "value"}
+    expire_time = 43200  # 12 hours in seconds
+
+    # Push object and set expiration
+    list_length = cache.push_encoded_object(key, test_obj, expire_time=expire_time)
+    assert list_length == 1  # First item in list
+
+    # Verify the item was stored correctly
+    items = cache.get_decoded_list(key)
+    assert len(items) == 1
+    assert items[0] == test_obj
+
+    # Verify expiration was set
+    ttl = cache.ttl(key)
+    assert (
+        ttl <= expire_time and ttl > 0
+    )  # TTL should be less than or equal to expire_time but greater than 0
+
+    # Clean up
+    cache.delete(key)
+
+
+def test_push_encoded_object_default_expiration(cache: FidesopsRedis) -> None:
+    """Test that push_encoded_object uses default TTL when no expiration is specified."""
+    key = "test_list_default"
+    test_obj = {"test": "value"}
+
+    # Push object with default expiration
+    list_length = cache.push_encoded_object(key, test_obj)
+    assert list_length == 1
+
+    # Verify expiration was set to default
+    ttl = cache.ttl(key)
+    assert ttl <= CONFIG.redis.default_ttl_seconds and ttl > 0
+
+    # Clean up
+    cache.delete(key)
