@@ -46,6 +46,7 @@ from fides.api.tasks import DatabaseTask, celery_app
 from fides.api.util.logger import Pii
 from fides.config import CONFIG
 from fides.config.config_proxy import ConfigProxy
+from fides.service.messaging.aws_ses_service import AWS_SES_Service
 
 EMAIL_JOIN_STRING = ", "
 EMAIL_TEMPLATE_NAME = "fides"
@@ -269,14 +270,21 @@ def dispatch_message(
     if subject_override and isinstance(message, EmailForActionType):
         message.subject = subject_override
 
+    to = (
+        to_identity.email
+        if messaging_method == MessagingMethod.EMAIL
+        else to_identity.phone_number
+    )
+
+    if not to:
+        error_message = f"No {'email' if messaging_method == MessagingMethod.EMAIL else 'phone'} identity supplied."
+        logger.error(f"Message failed to send. {error_message}")
+        raise MessageDispatchException(error_message)
+
     dispatcher(
         messaging_config,
         message,
-        (
-            to_identity.email
-            if messaging_method == MessagingMethod.EMAIL
-            else to_identity.phone_number
-        ),
+        to,
     )
 
 
@@ -470,27 +478,38 @@ def _get_dispatcher_from_config_type(
         MessagingServiceType.mailchimp_transactional: _mailchimp_transactional_dispatcher,
         MessagingServiceType.twilio_text: _twilio_sms_dispatcher,
         MessagingServiceType.twilio_email: _twilio_email_dispatcher,
+        MessagingServiceType.aws_ses: _aws_ses_dispatcher,
     }
     return handler.get(message_service_type)  # type: ignore
+
+
+def validate_config(
+    messaging_config: MessagingConfig,
+    config_name: str,
+    validate_details: Optional[bool] = True,
+) -> None:
+    """
+    Validates that the messaging config has the required details and secrets.
+    """
+    condition = (
+        not messaging_config.details or not messaging_config.secrets
+        if validate_details
+        else not messaging_config.secrets
+    )
+
+    if condition:
+        error_message = f"No {config_name} config {'details or secrets' if validate_details else 'secrets'} supplied."
+        logger.error(f"Message failed to send. {error_message}")
+        raise MessageDispatchException(error_message)
 
 
 def _mailchimp_transactional_dispatcher(
     messaging_config: MessagingConfig,
     message: EmailForActionType,
-    to: Optional[str],
+    to: str,
 ) -> None:
     """Dispatches email using Mailchimp Transactional"""
-    if not to:
-        logger.error("Message failed to send. No email identity supplied.")
-        raise MessageDispatchException("No email identity supplied.")
-
-    if not messaging_config.details or not messaging_config.secrets:
-        logger.error(
-            "Message failed to send. No Mailchimp Transactional config details or secrets supplied."
-        )
-        raise MessageDispatchException(
-            "No Mailchimp Transactional config details or secrets supplied."
-        )
+    validate_config(messaging_config, "Mailchimp Transactional")
 
     from_email = messaging_config.details[MessagingServiceDetails.EMAIL_FROM.value]
     data = json.dumps(
@@ -539,18 +558,10 @@ def _mailchimp_transactional_dispatcher(
 def _mailgun_dispatcher(
     messaging_config: MessagingConfig,
     message: EmailForActionType,
-    to: Optional[str],
+    to: str,
 ) -> None:
     """Dispatches email using Mailgun"""
-    if not to:
-        logger.error("Message failed to send. No email identity supplied.")
-        raise MessageDispatchException("No email identity supplied.")
-
-    if not messaging_config.details or not messaging_config.secrets:
-        logger.error(
-            "Message failed to send. No mailgun config details or secrets supplied."
-        )
-        raise MessageDispatchException("No mailgun config details or secrets supplied.")
+    validate_config(messaging_config, "Mailgun")
 
     base_url = (
         "https://api.mailgun.net"
@@ -628,19 +639,10 @@ def _mailgun_dispatcher(
 def _twilio_email_dispatcher(
     messaging_config: MessagingConfig,
     message: EmailForActionType,
-    to: Optional[str],
+    to: str,
 ) -> None:
     """Dispatches email using twilio sendgrid"""
-    if not to:
-        logger.error("Message failed to send. No email identity supplied.")
-        raise MessageDispatchException("No email identity supplied.")
-    if not messaging_config.details or not messaging_config.secrets:
-        logger.error(
-            "Message failed to send. No twilio email config details or secrets supplied."
-        )
-        raise MessageDispatchException(
-            "No twilio email config details or secrets supplied."
-        )
+    validate_config(messaging_config, "Twilio email")
 
     try:
         sg = sendgrid.SendGridAPIClient(
@@ -686,15 +688,11 @@ def _twilio_email_dispatcher(
 def _twilio_sms_dispatcher(
     messaging_config: MessagingConfig,
     message: str,
-    to: Optional[str],
+    to: str,
 ) -> None:
     """Dispatches SMS using Twilio"""
-    if not to:
-        logger.error("Message failed to send. No phone identity supplied.")
-        raise MessageDispatchException("No phone identity supplied.")
-    if messaging_config.secrets is None:
-        logger.error("Message failed to send. No config secrets supplied.")
-        raise MessageDispatchException("No config secrets supplied.")
+    validate_config(messaging_config, "Twilio SMS", validate_details=False)
+
     account_sid = messaging_config.secrets[
         MessagingServiceSecrets.TWILIO_ACCOUNT_SID.value
     ]
@@ -726,6 +724,22 @@ def _twilio_sms_dispatcher(
     except TwilioRestException as e:
         logger.error("Twilio SMS failed to send: {}", Pii(str(e)))
         raise MessageDispatchException(f"Twilio SMS failed to send due to: {Pii(e)}")
+
+
+def _aws_ses_dispatcher(
+    messaging_config: MessagingConfig,
+    message: EmailForActionType,
+    to: str,
+) -> None:
+    validate_config(messaging_config, "AWS SES")
+
+    aws_ses_serivce = AWS_SES_Service(messaging_config)
+
+    try:
+        aws_ses_serivce.send_email(to, message.subject, message.body)
+    except Exception as e:
+        logger.error("Email failed to send: {}", Pii(str(e)))
+        raise MessageDispatchException(f"AWS SES email failed to send due to: {Pii(e)}")
 
 
 def _get_template_id_if_exists(
