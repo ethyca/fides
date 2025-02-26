@@ -328,7 +328,7 @@ def remove_saved_dsr_data(self: DatabaseTask) -> None:
 def initiate_interrupted_task_requeue_poll() -> None:
     """Initiates scheduler to check for and requeue interrupted tasks"""
 
-    if CONFIG.test_mode or not CONFIG.execution.dsr_3_0:
+    if CONFIG.test_mode or not CONFIG.execution.use_dsr_3_0:
         return
 
     assert (
@@ -347,6 +347,7 @@ def initiate_interrupted_task_requeue_poll() -> None:
     )
 
 
+# pylint: disable=too-many-branches
 @celery_app.task(base=DatabaseTask, bind=True)
 def requeue_interrupted_tasks(self: DatabaseTask) -> None:
     """
