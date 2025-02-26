@@ -1,6 +1,7 @@
 import {
   stubDatasetCrud,
   stubPlus,
+  stubSystemAssets,
   stubSystemCrud,
   stubSystemIntegrations,
   stubSystemVendors,
@@ -461,6 +462,33 @@ describe("System management with Plus features", () => {
       cy.visit(ADD_SYSTEMS_MULTIPLE_ROUTE);
       cy.location().should((location) => {
         expect(location.pathname).to.eq(INDEX_ROUTE);
+      });
+    });
+  });
+
+  describe("asset list", () => {
+    beforeEach(() => {
+      stubSystemAssets();
+      cy.visit(`${SYSTEM_ROUTE}/configure/demo_analytics_system`);
+      cy.wait("@getSystem");
+    });
+
+    it("shows an empty state", () => {
+      cy.intercept("GET", "/api/v1/plus/system-assets/*", {
+        fixture: "empty-pagination",
+      }).as("getEmptySystemAssets");
+      cy.getByTestId("tab-Assets").click({ force: true });
+      cy.wait("@getEmptySystemAssets");
+      cy.getByTestId("empty-state").should("exist");
+    });
+
+    it("lists assets in the system assets tab", () => {
+      cy.getByTestId("tab-Assets").click({ force: true });
+      cy.wait("@getSystemAssets");
+      cy.getByTestId("row-0-col-name").should("contain", "ar_debug");
+      cy.getByTestId("row-0-col-locations").should("contain", "United States");
+      cy.getByTestId("row-1-col-parent").within(() => {
+        cy.get("span").should("have.length", 2);
       });
     });
   });
