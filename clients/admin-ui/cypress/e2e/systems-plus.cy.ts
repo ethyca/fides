@@ -466,7 +466,7 @@ describe("System management with Plus features", () => {
     });
   });
 
-  describe.only("asset list", () => {
+  describe("asset list", () => {
     beforeEach(() => {
       stubSystemAssets();
       cy.visit(`${SYSTEM_ROUTE}/configure/demo_analytics_system`);
