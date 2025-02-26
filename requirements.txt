@@ -19,6 +19,7 @@ fastapi[all]==0.111.0
 fastapi-pagination[sqlalchemy]==0.12.25
 fideslog==1.2.10
 firebase-admin==5.3.0
+flower==2.0.1
 GitPython==3.1.41
 httpx==0.23.1
 hvac==0.11.2

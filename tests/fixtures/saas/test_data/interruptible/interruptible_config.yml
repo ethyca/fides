@@ -1,0 +1,46 @@
+saas_config:
+  fides_key: <instance_fides_key>
+  name: Interruptible Service
+  type: custom
+  description: A test service that simulates requests that may be interrupted
+  version: 0.1.0
+
+  connector_params: []
+
+  client_config:
+    protocol: http
+    host: localhost
+
+  test_request:
+    method: GET
+    path: /api/v1/health
+
+  endpoints:
+    - name: users
+      requests:
+        read:
+          request_override: interruptible_request
+          param_values:
+            - name: email
+              identity: email
+    - name: orders
+      requests:
+        read:
+          request_override: interruptible_request
+          param_values:
+            - name: email
+              identity: email
+    - name: preferences
+      requests:
+        read:
+          request_override: interruptible_request
+          param_values:
+            - name: email
+              identity: email
+    - name: notifications
+      requests:
+        read:
+          request_override: interruptible_request
+          param_values:
+            - name: email
+              identity: email

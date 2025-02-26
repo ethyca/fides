@@ -26,6 +26,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Added support for queue-specific Celery workers [#5761](https://github.com/ethyca/fides/pull/5761)
 - Added support for AWS SES as an email provider [#5804](https://github.com/ethyca/fides/pull/5804)
 - Nested identity query support for BigQuery [#5814](https://github.com/ethyca/fides/pull/5814)
+- Added job that automatically requeues interrupted tasks for in progress privacy requests [#5800](https://github.com/ethyca/fides/pull/5800)
 
 ### Changed
 - Improved dataset validation for namespace metadata and dataset reachability [#5744](https://github.com/ethyca/fides/pull/5744)
