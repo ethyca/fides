@@ -135,18 +135,23 @@ class FidesopsRedis(Redis):
             return result
         return None
 
-    def push_encoded_object(self, key: str, obj: Any) -> int:
+    def push_encoded_object(
+        self, key: str, obj: Any, expire_time: int = CONFIG.redis.default_ttl_seconds
+    ) -> int:
         """Encode an object and append it to a list in Redis.
 
         Args:
             key: The Redis key for the list
             obj: The object to encode and append
+            expire_time: Time in seconds after which the key will expire. Defaults to CONFIG.redis.default_ttl_seconds.
 
         Returns:
             The length of the list after the push operation
         """
         encoded_entry = self.encode_obj(obj)
-        return self.rpush(key, encoded_entry)
+        list_length = self.rpush(key, encoded_entry)
+        self.expire(key, expire_time)
+        return list_length
 
 
 def get_cache(should_log: Optional[bool] = False) -> FidesopsRedis:
