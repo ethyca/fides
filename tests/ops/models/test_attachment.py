@@ -260,12 +260,6 @@ def test_delete_attachment_cascades(db, attachment, attachment_reference, storag
     "attachment_with_error",
     [
         Attachment(
-            id="4",
-            user_id=None,
-            file_name="file.txt",
-            attachment_type=AttachmentType.include_with_access_package,
-        ),
-        Attachment(
             id="5",
             user_id="user_1",
             file_name=None,

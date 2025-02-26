@@ -22,13 +22,11 @@ from loguru import logger as log
 
 def get_s3_client(config):
     session = get_aws_session(
-        auth_method=AWSAuthMethod.SECRET_KEYS.value,
+        auth_method=config.auth_method.value,
         storage_secrets=config.secrets
     )
-    return session.client("s3")
-
-def get_bucket_name(config: StorageConfig) -> str:
-    return f"{config.details[StorageDetails.BUCKET.value]}"
+    bucket_name = f"{config.details[StorageDetails.BUCKET.value]}"
+    return bucket_name, session.client("s3")
 
 
 def get_storage_config(db, storage_key) -> str:
@@ -111,12 +109,11 @@ class Attachment(Base):
     )
 
     def upload(self, db: Session, attachment: bytes, storage_key) -> None:
-        """Uploads an attachment to S3."""
+        """Uploads an attachment to S3 or local storage."""
         config = get_storage_config(db, storage_key)
 
         if config.type.value == StorageType.s3.value:
-            bucket_name = get_bucket_name(config)
-            s3_client = get_s3_client(config)
+            bucket_name, s3_client = get_s3_client(config)
             s3_client.put_object(Bucket=bucket_name, Key=self.id, Body=attachment)
             log.info(f"Uploaded {self.file_name} to S3 bucket {bucket_name}/{self.id}")
         elif config.type.value == StorageType.local.value:
@@ -135,8 +132,7 @@ class Attachment(Base):
         if config.type.value != StorageType.s3.value:
             raise ValueError(f"Unsupported storage: {config.type}")
 
-        bucket_name = get_bucket_name(config)
-        s3_client = get_s3_client(config)
+        bucket_name, s3_client = get_s3_client(config)
         return create_presigned_url_for_s3(s3_client, bucket_name, self.id)
 
     def retrieve_attachment(self, db: Session, storage_key: str) -> bytes:
@@ -144,8 +140,7 @@ class Attachment(Base):
         config = get_storage_config(db, storage_key)
 
         if config.type.value == StorageType.s3.value:
-            bucket_name = get_bucket_name(config)
-            s3_client = get_s3_client(config)
+            bucket_name, s3_client = get_s3_client(config)
             response = s3_client.get_object(Bucket=bucket_name, Key=self.id)
             return response["Body"].read()
         elif config.type.value == StorageType.local.value:
@@ -160,8 +155,7 @@ class Attachment(Base):
         config = get_storage_config(db, storage_key)
 
         if config.type.value == StorageType.s3.value:
-            bucket_name = get_bucket_name(config)
-            s3_client = get_s3_client(config)
+            bucket_name, s3_client = get_s3_client(config)
             s3_client.delete_object(Bucket=bucket_name, Key=self.id)
             log.info(f"Deleted {self.file_name} from S3 bucket {bucket_name}/{self.id}")
         elif config.type.value == StorageType.local.value:
