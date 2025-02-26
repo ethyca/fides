@@ -11,8 +11,8 @@ from typing import Dict
 
 import psycopg2
 import sqlalchemy as sa
-from loguru import logger
 from alembic import op
+from loguru import logger
 
 from fides.api.models.asset import Asset
 
