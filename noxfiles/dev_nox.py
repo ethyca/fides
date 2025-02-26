@@ -36,6 +36,7 @@ def shell(session: Session) -> None:
         )
 
 
+# pylint: disable=too-many-branches
 @nox_session()
 def dev(session: Session) -> None:
     """
@@ -51,6 +52,7 @@ def dev(session: Session) -> None:
         - pc = Build and run the Privacy Center
         - remote_debug = Run with remote debugging enabled (see docker-compose.remote-debug.yml)
         - worker = Run a Fides worker
+        - flower = Run Flower monitoring dashboard for Celery
         - child = Run a Fides child node
         - <datastore(s)> = Run a test datastore (e.g. 'mssql', 'mongodb')
 
@@ -61,21 +63,20 @@ def dev(session: Session) -> None:
     build(session, "dev")
     session.notify("teardown")
 
-    if "worker" in session.posargs:
-        session.run("docker", "compose", "up", "--wait", "worker", external=True)
+    workers = ["worker", "worker-privacy-preferences", "worker-dsr"]
 
-    if "worker-privacy-preferences" in session.posargs:
-        session.run(
-            "docker",
-            "compose",
-            "up",
-            "--wait",
-            "worker-privacy-preferences",
-            external=True,
-        )
+    for worker in workers:
+        if worker in session.posargs:
+            session.run("docker", "compose", "up", "--wait", worker, external=True)
 
-    if "worker-dsr" in session.posargs:
-        session.run("docker", "compose", "up", "--wait", "worker-dsr", external=True)
+    if "flower" in session.posargs:
+        # Only start Flower if worker is also enabled
+        if any(worker in session.posargs for worker in workers):
+            session.run("docker", "compose", "up", "-d", "flower", external=True)
+        else:
+            session.error(
+                "Flower requires the worker service. Please add 'worker' to your arguments."
+            )
 
     datastores = [
         datastore for datastore in session.posargs if datastore in ALL_DATASTORES
@@ -245,3 +246,46 @@ def quickstart(session: Session) -> None:
     build(session, "admin_ui")
     session.notify("teardown")
     run_infrastructure(datastores=["mongodb", "postgres"], run_quickstart=True)
+
+
+@nox_session()
+@parametrize(
+    "action",
+    [
+        param("dry", id="dry"),
+        param("live", id="live"),
+    ],
+)
+def delete_old_test_pypi_packages(session: Session, action: str) -> None:
+    """
+    Delete old (specifically, >1 year old) packages from the test pypi repository.
+    """
+    session.install("pypi-cleanup")
+
+    if action == "dry":
+        session.run(
+            "pypi-cleanup",
+            "-u",
+            "fides-ethyca",
+            "-p",
+            "ethyca-fides",
+            "-t",
+            "https://test.pypi.org",
+            "-d",
+            "365",
+            "-y",
+        )
+    elif action == "live":
+        session.run(
+            "pypi-cleanup",
+            "-u",
+            "fides-ethyca",
+            "-p",
+            "ethyca-fides",
+            "-t",
+            "https://test.pypi.org",
+            "-d",
+            "365",
+            "-y",
+            "--do-it",
+        )

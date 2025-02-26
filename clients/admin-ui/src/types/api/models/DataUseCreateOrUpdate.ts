@@ -20,7 +20,7 @@ export type DataUseCreateOrUpdate = {
    */
   is_default?: boolean;
   name?: string | null;
-  description: string | null;
+  description?: string | null;
   active?: boolean | null;
   fides_key?: string | null;
   tags?: Array<string> | null;

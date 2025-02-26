@@ -37,6 +37,7 @@ export const useDiscoveredAssetsColumns = () => {
       id: "name",
       cell: (props) => <DefaultCell value={props.getValue()} />,
       header: "Asset",
+      size: 300,
     }),
     columnHelper.accessor((row) => row.resource_type, {
       id: "resource_type",
@@ -53,9 +54,9 @@ export const useDiscoveredAssetsColumns = () => {
           />
         ),
       header: "System",
+      size: 200,
       meta: {
         noPadding: true,
-        width: "auto",
       },
     }),
     columnHelper.display({
@@ -64,8 +65,8 @@ export const useDiscoveredAssetsColumns = () => {
         <DiscoveredAssetDataUseCell asset={props.row.original} />
       ),
       header: "Categories of consent",
+      size: 400,
       meta: {
-        width: "auto",
         disableRowClick: true,
       },
     }),
@@ -106,7 +107,6 @@ export const useDiscoveredAssetsColumns = () => {
       ),
       header: "Actions",
       meta: {
-        width: "auto",
         disableRowClick: true,
       },
     }),

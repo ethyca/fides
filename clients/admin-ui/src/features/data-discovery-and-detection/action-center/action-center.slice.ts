@@ -137,7 +137,7 @@ const actionCenterApi = baseApi.injectEndpoints({
           system_key: params.systemKey,
         })),
       }),
-      invalidatesTags: ["Discovery Monitor Results"],
+      invalidatesTags: ["Discovery Monitor Results", "System Assets"],
     }),
     updateAssetsDataUse: build.mutation<
       any,

@@ -1,26 +1,28 @@
-import { StagedResourceType } from "~/features/data-discovery-and-detection/types/StagedResourceType";
-import { StagedResourceAPIResponse } from "~/types/api";
+import {
+  StagedResourceAPIResponse,
+  StagedResourceTypeValue,
+} from "~/types/api";
 
 export const findResourceType = (
   item: StagedResourceAPIResponse | undefined,
 ) => {
   if (!item) {
-    return StagedResourceType.NONE;
+    return undefined;
   }
   if (item.resource_type) {
-    return item.resource_type as StagedResourceType;
+    return item.resource_type;
   }
 
   // Fallback to match the resource type based on the presence of
   // nested resources.
   if (item.schemas?.length) {
-    return StagedResourceType.DATABASE;
+    return StagedResourceTypeValue.DATABASE;
   }
   if (item.tables?.length) {
-    return StagedResourceType.SCHEMA;
+    return StagedResourceTypeValue.SCHEMA;
   }
   if (item.fields?.length) {
-    return StagedResourceType.TABLE;
+    return StagedResourceTypeValue.TABLE;
   }
-  return StagedResourceType.FIELD;
+  return StagedResourceTypeValue.FIELD;
 };

@@ -517,7 +517,7 @@ export const stubFidesCloud = () => {
   }).as("getFidesCloud");
 };
 
-export const stubActionCenter = () => {
+export const stubWebsiteMonitor = () => {
   cy.intercept("GET", "/api/v1/config*", {
     body: {
       detection_discovery: {
@@ -560,6 +560,12 @@ export const stubActionCenter = () => {
   cy.intercept("PATCH", "/api/v1/plus/discovery-monitor/*/results", {
     response: 200,
   }).as("patchAssets");
+};
+
+export const stubSystemAssets = () => {
+  cy.intercept("GET", "/api/v1/plus/system-assets/*", {
+    fixture: "systems/system_assets",
+  }).as("getSystemAssets");
 };
 
 export const stubDataCatalog = () => {

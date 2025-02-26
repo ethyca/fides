@@ -8,15 +8,18 @@ import ResultStatusCell from "~/features/data-discovery-and-detection/tables/cel
 import ResultStatusBadgeCell from "~/features/data-discovery-and-detection/tables/cells/StagedResourceStatusBadgeCell";
 import { DiscoveryMonitorItem } from "~/features/data-discovery-and-detection/types/DiscoveryMonitorItem";
 import { ResourceChangeType } from "~/features/data-discovery-and-detection/types/ResourceChangeType";
-import { StagedResourceType } from "~/features/data-discovery-and-detection/types/StagedResourceType";
+import { StagedResourceTypeValue } from "~/types/api";
 
 import findProjectFromUrn from "../utils/findProjectFromUrn";
+
+const NAME_COLUMN_SIZE = 300;
+const ACTION_COLUMN_SIZE = 200;
 
 const useDetectionResultColumns = ({
   resourceType,
   changeTypeOverride,
 }: {
-  resourceType?: StagedResourceType;
+  resourceType?: StagedResourceTypeValue | undefined;
   changeTypeOverride?: ResourceChangeType;
 }) => {
   const columnHelper = createColumnHelper<DiscoveryMonitorItem>();
@@ -27,7 +30,7 @@ const useDetectionResultColumns = ({
     return { columns: defaultColumns };
   }
 
-  if (resourceType === StagedResourceType.SCHEMA) {
+  if (resourceType === StagedResourceTypeValue.SCHEMA) {
     const columns = [
       columnHelper.accessor((row) => row.name, {
         id: "name",
@@ -38,6 +41,7 @@ const useDetectionResultColumns = ({
           />
         ),
         header: (props) => <DefaultHeaderCell value="Name" {...props} />,
+        size: NAME_COLUMN_SIZE,
       }),
       columnHelper.accessor((row) => row.urn, {
         id: "project",
@@ -85,13 +89,16 @@ const useDetectionResultColumns = ({
           />
         ),
         header: "Actions",
-        size: 180,
+        size: ACTION_COLUMN_SIZE,
+        meta: {
+          disableRowClick: true,
+        },
       }),
     ];
     return { columns };
   }
 
-  if (resourceType === StagedResourceType.TABLE) {
+  if (resourceType === StagedResourceTypeValue.TABLE) {
     const columns = [
       columnHelper.accessor((row) => row.name, {
         id: "name",
@@ -102,6 +109,7 @@ const useDetectionResultColumns = ({
           />
         ),
         header: (props) => <DefaultHeaderCell value="Table name" {...props} />,
+        size: NAME_COLUMN_SIZE,
       }),
       columnHelper.accessor((row) => row.description, {
         id: "description",
@@ -139,12 +147,16 @@ const useDetectionResultColumns = ({
           <DetectionItemActionsCell resource={props.row.original} />
         ),
         header: "Actions",
+        size: ACTION_COLUMN_SIZE,
+        meta: {
+          disableRowClick: true,
+        },
       }),
     ];
     return { columns };
   }
 
-  if (resourceType === StagedResourceType.FIELD) {
+  if (resourceType === StagedResourceTypeValue.FIELD) {
     const columns = [
       columnHelper.accessor((row) => row.name, {
         id: "name",
@@ -155,6 +167,7 @@ const useDetectionResultColumns = ({
           />
         ),
         header: (props) => <DefaultHeaderCell value="Field name" {...props} />,
+        size: NAME_COLUMN_SIZE,
       }),
       columnHelper.accessor((row) => row.source_data_type, {
         id: "data-type",
@@ -197,6 +210,10 @@ const useDetectionResultColumns = ({
           <DetectionItemActionsCell resource={props.row.original} />
         ),
         header: "Actions",
+        size: ACTION_COLUMN_SIZE,
+        meta: {
+          disableRowClick: true,
+        },
       }),
     ];
     return { columns };

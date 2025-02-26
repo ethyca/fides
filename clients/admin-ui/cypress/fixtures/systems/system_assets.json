@@ -1,0 +1,91 @@
+{
+  "items": [
+    {
+      "id": "ass_adc5f62e-7a20-42ed-a24d-1ff9f63ddff6",
+      "name": "ar_debug",
+      "asset_type": "Cookie",
+      "system_id": "ctl_8b1826c1-a7dc-4449-8629-f269c4156d26",
+      "domain": ".doubleclick.net",
+      "parent": [
+        "https://www.googletagmanager.com/gtag/destination?id=DC-5290727&l=dataLayer&cx=c&gtm=45He52k0v72703797za200"
+      ],
+      "locations": ["us", "ca"],
+      "with_consent": false,
+      "data_uses": ["analytics"]
+    },
+    {
+      "id": "ass_25313ee9-32e9-46c9-bbc9-ec75d2839f9c",
+      "name": "IDE",
+      "asset_type": "Cookie",
+      "system_id": "ctl_8b1826c1-a7dc-4449-8629-f269c4156d26",
+      "domain": ".doubleclick.net",
+      "parent": [
+        "https://www.googletagmanager.com/gtag/destination?id=DC-5290727&l=dataLayer&cx=c&gtm=45He52k0v72703797za200",
+        "https://www.nytimes.com/"
+      ],
+      "locations": ["us", "ca"],
+      "with_consent": false,
+      "data_uses": ["analytics"]
+    },
+    {
+      "id": "ass_288e773c-66e9-4aca-ba78-256cf5685a60",
+      "name": "receive-cookie-deprecation",
+      "asset_type": "Cookie",
+      "system_id": "ctl_8b1826c1-a7dc-4449-8629-f269c4156d26",
+      "domain": ".doubleclick.net",
+      "parent": [],
+      "locations": ["us", "ca"],
+      "with_consent": false,
+      "data_uses": ["analytics"]
+    },
+    {
+      "id": "ass_6775537c-48c4-4da4-9123-2a8121291c17",
+      "name": "activityi",
+      "asset_type": "Browser Request",
+      "system_id": "ctl_8b1826c1-a7dc-4449-8629-f269c4156d26",
+      "domain": "td.doubleclick.net",
+      "parent": [
+        "https://www.googletagmanager.com/gtag/destination?id=DC-5290727&l=dataLayer&cx=c&gtm=45He52k0v72703797za200"
+      ],
+      "locations": ["us", "ca"],
+      "with_consent": false,
+      "data_uses": ["analytics"],
+      "base_url": "https://td.doubleclick.net/td/fls/rul/activityi"
+    },
+    {
+      "id": "ass_7dd11cbd-ddb2-4e4b-b4dc-0e690b1f71a8",
+      "name": "destination",
+      "asset_type": "Javascript tag",
+      "system_id": "ctl_8b1826c1-a7dc-4449-8629-f269c4156d26",
+      "domain": "www.googletagmanager.com",
+      "parent": [
+        "https://www.googletagmanager.com/gtm.js?id=GTM-P528B3&gtm_auth=tfAzqo1rYDLgYhmTnSjPqw&gtm_preview=env-130&gtm_cookies_win=x"
+      ],
+      "locations": ["us", "ca"],
+      "with_consent": false,
+      "data_uses": ["analytics"],
+      "base_url": "https://www.googletagmanager.com/gtag/destination"
+    },
+    {
+      "id": "ass_6c2b97dc-fd8c-46bd-8e1c-649244b20ecc",
+      "name": "gtm.js",
+      "asset_type": "Javascript tag",
+      "system_id": "ctl_8b1826c1-a7dc-4449-8629-f269c4156d26",
+      "domain": "www.googletagmanager.com",
+      "parent": [
+        "https://www.googletagmanager.com/gtm.js?id=GTM-P528B3&gtm_auth=tfAzqo1rYDLgYhmTnSjPqw&gtm_preview=env-130&gtm_cookies_win=x",
+        "https://www.nytimes.com/",
+        "https://www.googletagmanager.com/gtm.js?id=GTM-P528B3&gtm_auth=tfAzqo1rYDLgYhmTnSjPqw&gtm_preview=env-130&gtm_cookies_win=x",
+        "https://www.nytimes.com/"
+      ],
+      "locations": ["us", "ca"],
+      "with_consent": false,
+      "data_uses": ["analytics"],
+      "base_url": "https://www.googletagmanager.com/gtm.js"
+    }
+  ],
+  "total": 6,
+  "page": 1,
+  "size": 25,
+  "pages": 1
+}

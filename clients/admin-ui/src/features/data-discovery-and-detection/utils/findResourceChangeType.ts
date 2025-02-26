@@ -1,7 +1,7 @@
 import { ResourceChangeType } from "~/features/data-discovery-and-detection/types/ResourceChangeType";
-import { DiffStatus, StagedResource } from "~/types/api";
+import { DiffStatus, StagedResourceAPIResponse } from "~/types/api";
 
-const findResourceChangeType = (resource: StagedResource) => {
+const findResourceChangeType = (resource: StagedResourceAPIResponse) => {
   if (resource.diff_status === DiffStatus.ADDITION) {
     return ResourceChangeType.ADDITION;
   }

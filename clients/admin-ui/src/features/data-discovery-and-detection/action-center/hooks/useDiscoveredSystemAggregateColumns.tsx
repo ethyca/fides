@@ -42,9 +42,7 @@ export const useDiscoveredSystemAggregateColumns = (monitorId: string) => {
         <DiscoveredSystemStatusCell system={props.row.original} />
       ),
       header: "System",
-      meta: {
-        width: "auto",
-      },
+      size: 300,
     }),
     columnHelper.accessor((row) => row.total_updates, {
       id: "total_updates",
@@ -58,8 +56,8 @@ export const useDiscoveredSystemAggregateColumns = (monitorId: string) => {
         <DiscoveredSystemDataUseCell system={props.row.original} />
       ),
       header: "Categories of consent",
+      size: 400,
       meta: {
-        width: "auto",
         disableRowClick: true,
       },
     }),
@@ -99,7 +97,6 @@ export const useDiscoveredSystemAggregateColumns = (monitorId: string) => {
       ),
       header: "Actions",
       meta: {
-        width: "auto",
         disableRowClick: true,
       },
     }),

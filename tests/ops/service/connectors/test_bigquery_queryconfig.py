@@ -53,6 +53,14 @@ class TestBigQueryQueryConfig:
             CollectionAddress("bigquery_example_test_dataset", "address")
         ].to_mock_execution_node()
 
+    @pytest.fixture(scope="function")
+    def customer_profile_node(self, dataset_graph):
+        identity = {"email": ["customer-1@example.com", "customer-2@example.com"]}
+        bigquery_traversal = Traversal(dataset_graph, identity)
+        return bigquery_traversal.traversal_node_dict[
+            CollectionAddress("bigquery_example_test_dataset", "customer_profile")
+        ].to_mock_execution_node()
+
     @pytest.fixture
     def execution_node(
         self, bigquery_example_test_dataset_config_with_namespace_meta: DatasetConfig
@@ -106,6 +114,35 @@ class TestBigQueryQueryConfig:
                 input_data={"email": ["customer-1@example.com"]}
             ).text
             == expected_query
+        )
+
+    def test_generate_query_with_multiple_identities(
+        self, execution_node: ExecutionNode
+    ):
+        query_config = BigQueryQueryConfig(execution_node)
+        assert (
+            query_config.generate_query(
+                input_data={
+                    "email": ["customer-1@example.com", "customer-2@example.com"]
+                }
+            ).text
+            == "SELECT address_id, created, custom_id, email, extra_address_data, id, name FROM `customer` WHERE (email IN (:email_in_stmt_generated_0, :email_in_stmt_generated_1))"
+        )
+
+    def test_generate_query_with_nested_identity(
+        self, customer_profile_node: ExecutionNode
+    ):
+        query_config = BigQueryQueryConfig(customer_profile_node)
+        assert (
+            query_config.generate_query(
+                input_data={
+                    "contact_info.primary_email": [
+                        "customer-1@example.com",
+                        "customer-2@example.com",
+                    ],
+                }
+            ).text
+            == "SELECT address, contact_info, id FROM `customer_profile` WHERE (contact_info.primary_email IN (:contact_info_primary_email_in_stmt_generated_0, :contact_info_primary_email_in_stmt_generated_1))"
         )
 
     def test_generate_query_with_invalid_namespace_meta(

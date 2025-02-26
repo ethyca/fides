@@ -22,7 +22,7 @@ export type DataSubjectCreateOrUpdate = {
    */
   is_default?: boolean;
   name?: string | null;
-  description: string | null;
+  description?: string | null;
   active?: boolean | null;
   fides_key?: string | null;
   tags?: Array<string> | null;
