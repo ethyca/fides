@@ -1,7 +1,7 @@
 """Add Attachment and AttachmentReference tables
 
 Revision ID: bd875a8b5d96
-Revises: c961528edfc6
+Revises: 82883b0df5e4
 Create Date: 2025-02-19 14:09:07.124680
 
 """
@@ -12,7 +12,7 @@ from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = "bd875a8b5d96"
-down_revision = "c961528edfc6"
+down_revision = "82883b0df5e4"
 branch_labels = None
 depends_on = None
 
@@ -23,7 +23,7 @@ def upgrade():
     op.create_table(
         "attachment",
         sa.Column("id", sa.String(length=255), nullable=False),
-        sa.Column("user_id", sa.String(), nullable=False),
+        sa.Column("user_id", sa.String(), nullable=True),
         sa.Column("file_name", sa.String(), nullable=False),
         sa.Column("attachment_type", sa.String(), nullable=False),
         sa.Column(

@@ -69,7 +69,7 @@ class Attachment(Base):
     Stores information about an Attachment.
     """
 
-    user_id = Column(String, ForeignKey("fidesuser.id"), nullable=False)
+    user_id = Column(String, ForeignKey("fidesuser.id", ondelete="SET NULL"), nullable=True)
     file_name = Column(String, nullable=False)
     attachment_type = Column(EnumColumn(AttachmentType), nullable=False)
 

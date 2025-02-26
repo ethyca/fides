@@ -49,7 +49,7 @@ def attachment_setup(
     db.commit()
 
 
-def test_create_attachment(db, attachment_data):
+def test_create_attachment(db, attachment_data, user):
     """Test creating an attachment."""
     attachment = Attachment.create(db=db, data=attachment_data)
     retrieved_attachment = db.query(Attachment).filter_by(id=attachment.id).first()
@@ -58,6 +58,9 @@ def test_create_attachment(db, attachment_data):
     assert retrieved_attachment.user_id == attachment.user_id
     assert retrieved_attachment.file_name == attachment.file_name
     assert retrieved_attachment.attachment_type == attachment.attachment_type
+
+    assert attachment.user.id == user.id
+    assert attachment.user.first_name == user.first_name
 
 
 def test_create_attachment_reference(db, attachment, attachment_reference):
@@ -123,12 +126,6 @@ def test_delete_attachment_cascades(db, attachment, attachment_reference):
 @pytest.mark.parametrize(
     "attachment_with_error",
     [
-        Attachment(
-            id="4",
-            user_id=None,
-            file_name="file.txt",
-            attachment_type=AttachmentType.include_with_access_package,
-        ),
         Attachment(
             id="5",
             user_id="user_1",
