@@ -178,7 +178,7 @@ const TaxonomyEditDrawer = ({
             form={taxonomyForm}
             formId={TAXONOMY_FORM_ID}
             taxonomyType={taxonomyType}
-            readOnly={!canUserEditTaxonomy}
+            isDisabled={!canUserEditTaxonomy}
           />
         )}
         {customFields.isEnabled && !customFields.isLoading && (
