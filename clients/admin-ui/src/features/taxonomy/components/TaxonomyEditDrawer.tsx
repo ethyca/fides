@@ -15,6 +15,7 @@ import {
 import { useCustomFields } from "~/features/common/custom-fields";
 import { getErrorMessage } from "~/features/common/helpers";
 import { TrashCanOutlineIcon } from "~/features/common/Icon/TrashCanOutlineIcon";
+import { useHasPermission } from "~/features/common/Restrict";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { isErrorResult } from "~/types/errors";
 
@@ -28,7 +29,6 @@ import useTaxonomySlices from "../hooks/useTaxonomySlices";
 import { TaxonomyEntity } from "../types";
 import TaxonomyCustomFieldsForm from "./TaxonomyCustomFieldsForm";
 import TaxonomyEditForm from "./TaxonomyEditForm";
-import { useHasPermission } from "~/features/common/Restrict";
 
 interface TaxonomyEditDrawerProps {
   taxonomyItem?: TaxonomyEntity | null;
@@ -119,27 +119,23 @@ const TaxonomyEditDrawer = ({
         header={<EditDrawerHeader title={taxonomyItem?.name || ""} />}
         footer={
           <DrawerFooter justifyContent="space-between">
-            {taxonomyItem?.active ? (
-              <>
-                {canUserDeleteTaxonomy && (
-                  <Tooltip title="Delete label">
-                    <Button
-                      aria-label="delete"
-                      icon={<TrashCanOutlineIcon fontSize="small" />}
-                      onClick={onDeleteOpen}
-                      data-testid="delete-btn"
-                    />
-                  </Tooltip>
-                )}
-              </>
-            ) : (
+            {taxonomyItem?.active && canUserDeleteTaxonomy && (
+              <Tooltip title="Delete label">
+                <Button
+                  aria-label="delete"
+                  icon={<TrashCanOutlineIcon fontSize="small" />}
+                  onClick={onDeleteOpen}
+                  data-testid="delete-btn"
+                />
+              </Tooltip>
+            )}
+            {!taxonomyItem?.active && canUserEditTaxonomy && (
               <Tooltip title="Enable label">
                 <Button
                   aria-label="enable"
                   onClick={handleEnable}
                   data-testid="enable-btn"
                   icon={<EyeIcon fontSize="small" />}
-                  disabled={!canUserEditTaxonomy}
                 />
               </Tooltip>
             )}

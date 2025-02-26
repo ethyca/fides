@@ -35,5 +35,8 @@ export const taxonomyTypeToScopeRegistryEnum = (
         DELETE: ScopeRegistryEnum.DATA_SUBJECT_DELETE,
         READ: ScopeRegistryEnum.DATA_SUBJECT_READ,
       };
+    default: {
+      throw new Error(`Unknown taxonomy type: ${taxonomyType}`);
+    }
   }
 };

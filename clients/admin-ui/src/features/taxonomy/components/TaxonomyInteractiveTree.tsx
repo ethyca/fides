@@ -78,7 +78,7 @@ const TaxonomyInteractiveTree = ({
       },
       type: "taxonomyTreeNode",
     }),
-    [taxonomyType, taxonomyItems.length, onAddButtonClick],
+    [taxonomyType, taxonomyItems.length, onAddButtonClick, userCanAddLabels],
   );
 
   const nodes: Node[] = [rootNode];
