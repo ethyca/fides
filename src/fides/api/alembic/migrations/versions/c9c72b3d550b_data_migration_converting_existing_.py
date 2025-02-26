@@ -189,7 +189,8 @@ def downgrade():
             connection.execute(
                 sa.text(
                     "INSERT INTO cookies (id, created_at, updated_at, name, domain, system_id) "
-                    "VALUES (:id, NOW(), NOW(), :name, :domain, :privacy_declaration_id, :system_id)"
+                    "VALUES (:id, NOW(), NOW(), :name, :domain, :system_id)"
+                    "ON CONFLICT DO NOTHING"
                 ),
                 id=cookie_id,
                 name=row.name,
