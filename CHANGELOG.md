@@ -24,6 +24,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ### Added
 - DB model support for Web Monitoring [#5616](https://github.com/ethyca/fides/pull/5616) https://github.com/ethyca/fides/labels/db-migration
 - Added support for queue-specific Celery workers [#5761](https://github.com/ethyca/fides/pull/5761)
+- Nested identity query support for BigQuery [#5814](https://github.com/ethyca/fides/pull/5814)
 
 ### Changed
 - Improved dataset validation for namespace metadata and dataset reachability [#5744](https://github.com/ethyca/fides/pull/5744)
