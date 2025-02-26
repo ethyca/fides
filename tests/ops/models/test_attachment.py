@@ -85,7 +85,7 @@ def attachment_setup(
 def test_create_attachment_with_s3_storage(s3_client, db, attachment_data, attachment_file, storage_config, monkeypatch):
     """Test creating an attachment."""
 
-    def mock_get_s3_client():
+    def mock_get_s3_client(config):
         return s3_client
 
     monkeypatch.setattr(
@@ -123,7 +123,7 @@ def test_download_attachment_from_s3(
 ):
     """Test retrieving an attachment from S3."""
 
-    def mock_get_s3_client():
+    def mock_get_s3_client(config):
         return s3_client
 
     monkeypatch.setattr(
@@ -138,7 +138,7 @@ def test_download_attachment_from_s3(
 
 
 def test_retrieve_attachment_from_s3(s3_client, db, attachment, attachment_file, storage_config, monkeypatch):
-    def mock_get_s3_client():
+    def mock_get_s3_client(config):
         return s3_client
 
     monkeypatch.setattr(
@@ -167,7 +167,7 @@ def test_delete_attachment_from_s3(
     s3_client, db, attachment, attachment_file, storage_config, monkeypatch
 ):
     """Test deleting an attachment from S3."""
-    def mock_get_s3_client():
+    def mock_get_s3_client(config):
         return s3_client
 
     monkeypatch.setattr(

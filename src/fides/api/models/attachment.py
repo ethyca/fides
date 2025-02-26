@@ -20,18 +20,19 @@ from fides.api.util.aws_util import get_aws_session
 from loguru import logger as log
 
 
-def get_s3_client():
+def get_s3_client(config):
     session = get_aws_session(
         auth_method=AWSAuthMethod.SECRET_KEYS.value,
-        storage_secrets={
-            StorageSecrets.AWS_ACCESS_KEY_ID.value: os.environ["AWS_ACCESS_KEY_ID"],
-            StorageSecrets.AWS_SECRET_ACCESS_KEY.value: os.environ["AWS_SECRET_ACCESS_KEY"],
-        },
+        storage_secrets=config.secrets
     )
     return session.client("s3")
 
 def get_bucket_name(config: StorageConfig) -> str:
     return f"{config.details[StorageDetails.BUCKET.value]}"
+
+
+def get_storage_config(db, storage_key) -> str:
+        return StorageConfig.get_by(db=db, field="key", value=storage_key)
 
 class AttachmentType(str, EnumType):
     """
@@ -109,18 +110,13 @@ class Attachment(Base):
         uselist=True,
     )
 
-    def storage_config(self, db, storage_key) -> str:
-        return StorageConfig.get_by(
-            db=db, field="key", value=storage_key
-        )
-
     def upload(self, db: Session, attachment: bytes, storage_key) -> None:
         """Uploads an attachment to S3."""
-        config = self.storage_config(db, storage_key)
+        config = get_storage_config(db, storage_key)
 
         if config.type.value == StorageType.s3.value:
             bucket_name = get_bucket_name(config)
-            s3_client = get_s3_client()
+            s3_client = get_s3_client(config)
             s3_client.put_object(Bucket=bucket_name, Key=self.id, Body=attachment)
             log.info(f"Uploaded {self.file_name} to S3 bucket {bucket_name}/{self.id}")
         elif config.type.value == StorageType.local.value:
@@ -135,21 +131,21 @@ class Attachment(Base):
 
     def download_attachment_from_s3(self, db, storage_key) -> str:
         """Returns the presigned URL for an attachment in S3."""
-        config = self.storage_config(db, storage_key)
+        config = get_storage_config(db, storage_key)
         if config.type.value != StorageType.s3.value:
             raise ValueError(f"Unsupported storage: {config.type}")
 
         bucket_name = get_bucket_name(config)
-        s3_client = get_s3_client()
+        s3_client = get_s3_client(config)
         return create_presigned_url_for_s3(s3_client, bucket_name, self.id)
 
     def retrieve_attachment(self, db: Session, storage_key: str) -> bytes:
         """Returns the attachment from S3 in bytes form."""
-        config = self.storage_config(db, storage_key)
+        config = get_storage_config(db, storage_key)
 
         if config.type.value == StorageType.s3.value:
             bucket_name = get_bucket_name(config)
-            s3_client = get_s3_client()
+            s3_client = get_s3_client(config)
             response = s3_client.get_object(Bucket=bucket_name, Key=self.id)
             return response["Body"].read()
         elif config.type.value == StorageType.local.value:
@@ -161,11 +157,11 @@ class Attachment(Base):
 
     def delete_attachment_from_storage(self, db: Session, storage_key: str) -> None:
         """Deletes an attachment from S3 or local storage."""
-        config = self.storage_config(db, storage_key)
+        config = get_storage_config(db, storage_key)
 
         if config.type.value == StorageType.s3.value:
             bucket_name = get_bucket_name(config)
-            s3_client = get_s3_client()
+            s3_client = get_s3_client(config)
             s3_client.delete_object(Bucket=bucket_name, Key=self.id)
             log.info(f"Deleted {self.file_name} from S3 bucket {bucket_name}/{self.id}")
         elif config.type.value == StorageType.local.value:
