@@ -7,12 +7,8 @@ import pytest
 from fideslang.models import PrivacyDeclaration as PrivacyDeclarationSchema
 from fideslang.models import System, SystemMetadata
 from py._path.local import LocalPath
-from sqlalchemy import delete, select
-from sqlalchemy.exc import InvalidRequestError
 
-from fides.api.db.system import create_system, upsert_cookie_assets
-from fides.api.models.asset import Asset
-from fides.api.models.sql_models import Cookies, PrivacyDeclaration
+from fides.api.models.sql_models import PrivacyDeclaration
 from fides.api.models.sql_models import System as sql_System
 from fides.api.util.data_category import get_data_categories_map
 from fides.config import FidesConfig
