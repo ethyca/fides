@@ -206,7 +206,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Data migration to convert existing `Cookies` resources to `Asset` resources of type `Cookie` [#5776](https://github.com/ethyca/fides/pull/5776) https://github.com/ethyca/fides/labels/db-migration https://github.com/ethyca/fides/labels/high-risk
 
 ### Added
-- Data migration to convert existing `Cookies` resources to `Asset` resources of type `Cookie` [#5776](https://github.com/ethyca/fides/pull/5776)
+- Data migration to convert existing `Cookies` resources to `Asset` resources of type `Cookie` [#5776](https://github.com/ethyca/fides/pull/5776) https://github.com/ethyca/fides/labels/db-migration https://github.com/ethyca/fides/labels/high-risk
 
 ### Docs
 - Removed version pins in LDFLAGS & CFLAGS for local MSSQL builds [#5760](https://github.com/ethyca/fides/pull/5760)
