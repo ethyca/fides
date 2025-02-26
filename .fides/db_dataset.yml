@@ -82,6 +82,9 @@ dataset:
     - name: id
       data_categories:
       - system.operations
+    - name: storage_key
+      data_categories:
+      - system.operations
     - name: updated_at
       data_categories:
       - system.operations
