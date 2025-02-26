@@ -4,10 +4,10 @@ import pytest
 
 from fides.api.models.messaging import MessagingConfig
 from fides.api.schemas.messaging.messaging import (
-    MessagingServiceDetailsAWSSES,
-    MessagingServiceSecretsAWSSES,
+    MessagingServiceDetailsAWS_SES,
+    MessagingServiceSecretsAWS_SES,
 )
-from fides.service.messaging.aws_ses_service import AWS_SES_Service, AWSSESException
+from fides.service.messaging.aws_ses_service import AWS_SES_Service, AWS_SESException
 
 
 class TestAWS_SES_Service:
@@ -17,10 +17,10 @@ class TestAWS_SES_Service:
 
     @pytest.fixture
     def messaging_config(self):
-        details = MessagingServiceDetailsAWSSES(
+        details = MessagingServiceDetailsAWS_SES(
             aws_region="us-east-1", email_from="test@example.com", domain="example.com"
         )
-        secrets = MessagingServiceSecretsAWSSES(
+        secrets = MessagingServiceSecretsAWS_SES(
             auth_method="secret_keys",
             aws_access_key_id="fake_access_key",
             aws_secret_access_key="fake_secret_key",
@@ -98,7 +98,7 @@ class TestAWS_SES_Service:
         }
 
         with pytest.raises(
-            AWSSESException, match="Email test@example.com is not verified in SES."
+            AWS_SESException, match="Email test@example.com is not verified in SES."
         ):
             aws_ses_service.validate_email_and_domain_status()
 
@@ -119,7 +119,7 @@ class TestAWS_SES_Service:
         }
 
         with pytest.raises(
-            AWSSESException, match="Email test@example.com is not verified in SES."
+            AWS_SESException, match="Email test@example.com is not verified in SES."
         ):
             aws_ses_service.validate_email_and_domain_status()
 
@@ -141,7 +141,7 @@ class TestAWS_SES_Service:
         }
 
         with pytest.raises(
-            AWSSESException, match="Domain example.com is not verified in SES."
+            AWS_SESException, match="Domain example.com is not verified in SES."
         ):
             aws_ses_service.validate_email_and_domain_status()
 

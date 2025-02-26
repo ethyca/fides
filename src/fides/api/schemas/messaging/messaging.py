@@ -283,7 +283,7 @@ class MessagingServiceDetailsTwilioEmail(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
 
-class MessagingServiceDetailsAWSSES(BaseModel):
+class MessagingServiceDetailsAWS_SES(BaseModel):
     """The details required to represent an AWS SES email configuration."""
 
     email_from: str
@@ -359,7 +359,7 @@ class MessagingServiceSecretsTwilioEmail(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
 
-class MessagingServiceSecretsAWSSES(BaseAWSSchema):
+class MessagingServiceSecretsAWS_SES(BaseAWSSchema):
     """
     The secrets required to connect to AWS SES.
     Inherits basic AWS authentication schema.
@@ -377,7 +377,7 @@ class MessagingConfigBase(BaseModel):
             MessagingServiceDetailsMailgun,
             MessagingServiceDetailsTwilioEmail,
             MessagingServiceDetailsMailchimpTransactional,
-            MessagingServiceDetailsAWSSES,
+            MessagingServiceDetailsAWS_SES,
         ]
     ] = None
     model_config = ConfigDict(
@@ -426,7 +426,7 @@ class MessagingConfigRequestBase(MessagingConfigBase):
         if service_type == MessagingServiceType.twilio_email.value:
             MessagingServiceDetailsTwilioEmail.model_validate(details)
         if service_type == MessagingServiceType.aws_ses.value:
-            MessagingServiceDetailsAWSSES.model_validate(details)
+            MessagingServiceDetailsAWS_SES.model_validate(details)
 
 
 class MessagingConfigRequest(MessagingConfigRequestBase):
@@ -449,7 +449,7 @@ SUPPORTED_MESSAGING_SERVICE_SECRETS = Union[
     MessagingServiceSecretsTwilioSMS,
     MessagingServiceSecretsTwilioEmail,
     MessagingServiceSecretsMailchimpTransactional,
-    MessagingServiceSecretsAWSSES,
+    MessagingServiceSecretsAWS_SES,
 ]
 
 
