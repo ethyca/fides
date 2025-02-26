@@ -560,7 +560,9 @@ export const stubWebsiteMonitor = () => {
   cy.intercept("PATCH", "/api/v1/plus/discovery-monitor/*/results", {
     response: 200,
   }).as("patchAssets");
+};
 
+export const stubSystemAssets = () => {
   cy.intercept("GET", "/api/v1/plus/system-assets/*", {
     fixture: "systems/system_assets",
   }).as("getSystemAssets");

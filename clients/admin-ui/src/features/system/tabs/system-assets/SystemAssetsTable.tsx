@@ -76,6 +76,7 @@ const SystemAssetsTable = ({ system }: { system: SystemResponse }) => {
           <Empty
             image={Empty.PRESENTED_IMAGE_SIMPLE}
             description="No assets found"
+            data-testid="empty-state"
           />
         }
       />
