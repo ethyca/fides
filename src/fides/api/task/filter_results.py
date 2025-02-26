@@ -2,30 +2,30 @@ import itertools
 from collections import defaultdict
 from typing import Any, Dict, List, Optional, Set, Union
 
-from fideslang.validation import FidesKey
 from loguru import logger
 
 from fides.api.graph.config import CollectionAddress, FieldPath
+from fides.api.graph.graph import DatasetGraph
 from fides.api.util.collection_util import Row
 
 
 def filter_data_categories(
     access_request_results: Dict[str, List[Dict[str, Optional[Any]]]],
     target_categories: Set[str],
-    data_category_fields: Dict[CollectionAddress, Dict[FidesKey, List[FieldPath]]],
+    dataset_graph: DatasetGraph,
     rule_key: str = "",
     fides_connector_datasets: Optional[Set[str]] = None,
 ) -> Dict[str, List[Dict[str, Optional[Any]]]]:
     """Filter access request results to only return fields associated with the target data categories
     and subcategories.
 
-    Regarding subcategories,if data category "user.contact" is specified on one of the rule
+    Regarding subcategories, if data category "user.contact" is specified on one of the rule
     targets, for example, all fields on subcategories also apply, so ["user.contact.address.city",
     "user.contact.address.street", ...], etc.
 
     :param access_request_results: Dictionary of access request results for each of your collections
     :param target_categories: A set of data categories that we'd like to extract from access_request_results
-    :param data_category_fields: Data categories mapped to applicable fields for each collection
+    :param dataset_graph: The dataset graph where the data category mappings are accessed from
 
     :return: Filtered access request results that only contain fields matching the desired data categories.
     """
@@ -59,13 +59,28 @@ def filter_data_categories(
             itertools.chain(
                 *[
                     field_paths
-                    for cat, field_paths in data_category_fields[
+                    for cat, field_paths in dataset_graph.data_category_field_mapping[
                         CollectionAddress.from_string(node_address)
                     ].items()
                     if any(cat.startswith(tar) for tar in target_categories)
                 ]
             )
         )
+
+        collection_data_categories = set(
+            dataset_graph.nodes[
+                CollectionAddress.from_string(node_address)
+            ].collection.data_categories
+            or []
+        )
+
+        if collection_data_categories:
+            if any(
+                collection_category.startswith(tuple(target_categories))
+                for collection_category in collection_data_categories
+            ):
+                filtered_access_results[node_address].extend(results)
+                continue
 
         if not target_field_paths:
             continue

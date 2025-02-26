@@ -72,6 +72,7 @@ class AuthenticatedClient:
             headers=request_params.headers,
             params=request_params.query_params,
             data=request_params.body,
+            files=request_params.files,
         ).prepare()
 
         # add authentication if provided
@@ -218,6 +219,10 @@ class AuthenticatedClient:
 
         # extract the hostname from the complete URL and verify its safety
         deny_unsafe_hosts(urlparse(prepared_request.url).netloc)
+
+        # utf-8 encode the body before sending
+        if isinstance(prepared_request.body, str):
+            prepared_request.body = prepared_request.body.encode("utf-8")
 
         response = self.session.send(prepared_request)
 

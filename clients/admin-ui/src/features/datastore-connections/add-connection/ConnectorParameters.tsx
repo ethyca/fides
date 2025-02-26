@@ -7,22 +7,22 @@ import { useRouter } from "next/router";
 import React, { useCallback, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
-import { DATASTORE_CONNECTION_ROUTE } from "~/features/common/nav/v2/routes";
+import { DATASTORE_CONNECTION_ROUTE } from "~/features/common/nav/routes";
 import { SystemType } from "~/types/api";
 
 import { ConnectorParameters as DatabaseConnectorParameters } from "./database/ConnectorParameters";
 import { ConnectorParameters as EmailConnectorParameters } from "./email/ConnectorParameters";
 import { ConnectorParameters as ManualConnectorParameters } from "./manual/ConnectorParameters";
 import { ConnectorParameters as SassConnectorParameters } from "./sass/ConnectorParameters";
-import TestConnection from "./TestConnection";
+import { TestConnection } from "./TestConnection";
 
 type ConnectorParametersProp = {
   onConnectionCreated?: () => void;
 };
 
-export const ConnectorParameters: React.FC<ConnectorParametersProp> = ({
+export const ConnectorParameters = ({
   onConnectionCreated,
-}) => {
+}: ConnectorParametersProp) => {
   const router = useRouter();
   const { connectionOption } = useAppSelector(selectConnectionTypeState);
   const skip = connectionOption && connectionOption.type === SystemType.MANUAL;

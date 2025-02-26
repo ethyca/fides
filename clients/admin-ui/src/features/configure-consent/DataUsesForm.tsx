@@ -1,12 +1,8 @@
-import { Button, Spinner, VStack } from "fidesui";
+import { AntButton as Button, Spinner, VStack } from "fidesui";
 import { FieldArray, useFormikContext } from "formik";
 import { useEffect } from "react";
 
 import { useAppSelector } from "~/app/hooks";
-import {
-  CustomCreatableSelect,
-  CustomSelect,
-} from "~/features/common/form/inputs";
 import { dataUseIsConsentUse } from "~/features/configure-consent/vendor-transform";
 import {
   selectDataUseOptions,
@@ -18,6 +14,7 @@ import {
 } from "~/features/plus/plus.slice";
 import { transformDictDataUseToDeclaration } from "~/features/system/dictionary-form/helpers";
 
+import { ControlledSelect } from "../common/form/ControlledSelect";
 import {
   CONSENT_USE_OPTIONS,
   EMPTY_DECLARATION,
@@ -27,22 +24,19 @@ import {
 
 const DataUseBlock = ({
   index,
-  isSuggestion,
   disabled,
 }: {
   index: number;
-  isSuggestion: boolean;
   disabled?: boolean;
 }) => {
   useGetAllDataUsesQuery();
   const allDataUseOptions = useAppSelector(selectDataUseOptions);
-  const textColor = isSuggestion ? "complimentary.500" : "gray.800";
 
   const { values } = useFormikContext<FormValues>();
 
   const detailedDataUseOptions = allDataUseOptions.filter(
     (o) =>
-      o.value.split(".")[0] === values.privacy_declarations[index].consent_use
+      o.value.split(".")[0] === values.privacy_declarations[index].consent_use,
   );
 
   return (
@@ -54,37 +48,32 @@ const DataUseBlock = ({
       spacing={4}
       p={4}
     >
-      <CustomSelect
+      <ControlledSelect
         label="Consent category"
         tooltip="What is the system using the data for. For example, is it for third party advertising or perhaps simply providing system operations."
         name={`privacy_declarations.${index}.consent_use`}
         options={CONSENT_USE_OPTIONS}
-        variant="stacked"
+        layout="stacked"
         isRequired
-        isCustomOption
-        singleValueBlock
-        textColor={textColor}
-        isDisabled={disabled}
+        disabled={disabled}
       />
-      <CustomSelect
+      <ControlledSelect
+        allowClear
         label="Detailed consent category (optional)"
         tooltip="Select a more specific consent category"
         name={`privacy_declarations.${index}.data_use`}
         options={detailedDataUseOptions}
-        variant="stacked"
-        isCustomOption
-        singleValueBlock
-        textColor={textColor}
-        isDisabled={!values.privacy_declarations[index].consent_use || disabled}
+        layout="stacked"
+        disabled={!values.privacy_declarations[index].consent_use || disabled}
       />
-      <CustomCreatableSelect
+      <ControlledSelect
+        mode="tags"
         label="Cookie names"
         name={`privacy_declarations.${index}.cookieNames`}
         options={[]}
-        variant="stacked"
-        isMulti
-        textColor={textColor}
-        isDisabled={disabled}
+        layout="stacked"
+        disabled={disabled}
+        className="w-full"
       />
     </VStack>
   );
@@ -103,7 +92,7 @@ const DataUsesForm = ({
   const { vendor_id: vendorId } = values;
   const { isLoading } = useGetDictionaryDataUsesQuery(
     { vendor_id: vendorId as string },
-    { skip: !showSuggestions || vendorId == null }
+    { skip: !showSuggestions || vendorId == null },
   );
   const dictDataUses = useAppSelector(selectDictDataUses(vendorId || ""));
 
@@ -152,17 +141,13 @@ const DataUsesForm = ({
               key={declaration.data_use || idx}
               index={idx}
               disabled={disabled}
-              isSuggestion={showSuggestions}
             />
           ))}
           <Button
-            size="xs"
-            variant="ghost"
-            colorScheme="complimentary"
-            onClick={() => {
-              arrayHelpers.push(EMPTY_DECLARATION);
-            }}
-            disabled={lastDataUseIsEmpty || disabled}
+            onClick={() => arrayHelpers.push(EMPTY_DECLARATION)}
+            size="small"
+            type="text"
+            disabled={disabled || lastDataUseIsEmpty}
             data-testid="add-data-use-btn"
           >
             Add data use +

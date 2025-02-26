@@ -1,5 +1,6 @@
 # pylint: disable=missing-docstring, redefined-outer-name
 import os
+from types import SimpleNamespace
 from typing import Generator
 
 import pytest
@@ -7,6 +8,7 @@ from py._path.local import LocalPath
 from toml import dump, load
 
 from fides.config import FidesConfig
+from fides.config.cli_settings import CLISettings
 from fides.config.helpers import update_config_file
 from fides.config.utils import replace_config_value
 
@@ -70,3 +72,24 @@ def test_update_config_file_new_value(
     assert updated_config["user"][
         "analytics_opt_out"
     ], "updated_config.user.analytics_opt_out should be True"
+
+
+@pytest.mark.unit
+def test_cli_settings_get_server_url() -> None:
+    """Test the get_server_url method of CLISettings"""
+
+    # no path
+    validation_info = SimpleNamespace(
+        data={
+            "server_host": "test_host",
+            "server_protocol": "http",
+            "server_port": "8080",
+        }
+    )
+    server_url = CLISettings.get_server_url(info=validation_info, value="")
+    assert server_url == "http://test_host:8080"
+
+    # specifying a path
+    validation_info.data["server_host"] = "test_host/api/v1"
+    server_url = CLISettings.get_server_url(info=validation_info, value="")
+    assert server_url == "http://test_host:8080"

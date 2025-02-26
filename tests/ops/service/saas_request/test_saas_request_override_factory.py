@@ -8,8 +8,12 @@ from fides.api.common_exceptions import (
     NoSuchSaaSRequestOverrideException,
 )
 from fides.api.graph.traversal import TraversalNode
+from fides.api.models.consent_automation import ConsentableItem
 from fides.api.models.policy import Policy
+from fides.api.models.privacy_notice import UserConsentPreference
 from fides.api.models.privacy_request import PrivacyRequest
+from fides.api.schemas.consentable_item import ConsentWebhookResult
+from fides.api.schemas.saas.shared_schemas import ConsentPropagationStatus
 from fides.api.service.connectors.saas.authenticated_client import AuthenticatedClient
 from fides.api.service.saas_request.saas_request_override_factory import (
     SaaSRequestOverrideFactory,
@@ -79,11 +83,37 @@ def valid_consent_override(
     policy: Policy,
     privacy_request: PrivacyRequest,
     secrets: Dict[str, Any],
-) -> bool:
+) -> ConsentPropagationStatus:
     """
     A sample override function for consent requests with a valid function signature
     """
-    pass
+    return ConsentPropagationStatus.executed
+
+
+def valid_consent_update_override(
+    client: AuthenticatedClient,
+    secrets: Dict[str, Any],
+    input_data: Dict[str, List[Any]],
+    notice_id_to_preference_map: Dict[str, UserConsentPreference],
+    consentable_items_hierarchy: List[ConsentableItem],
+) -> ConsentPropagationStatus:
+    """
+    A sample override function for consent update requests with a valid function signature
+    """
+    return ConsentPropagationStatus.executed
+
+
+def valid_process_consent_webhook_override(
+    client: AuthenticatedClient,
+    secrets: Dict[str, Any],
+    payload: Any,
+    notice_id_to_preference_map: Dict[str, UserConsentPreference],
+    consentable_items: List[ConsentableItem],
+) -> ConsentWebhookResult:
+    """
+    A sample override function for process consent webhook requests with a valid function signature
+    """
+    return ConsentWebhookResult()
 
 
 @pytest.mark.unit_saas
@@ -177,6 +207,41 @@ class TestSaasRequestOverrideFactory:
         register(f_id, SaaSRequestType.OPT_OUT)(valid_consent_override)
         assert valid_consent_override == SaaSRequestOverrideFactory.get_override(
             f_id, SaaSRequestType.OPT_OUT
+        )
+
+        with pytest.raises(NoSuchSaaSRequestOverrideException) as exc:
+            SaaSRequestOverrideFactory.get_override(f_id, SaaSRequestType.READ)
+        assert f"Custom SaaS override '{f_id}' does not exist." in str(exc.value)
+
+    def test_register_update_consent_override(self):
+        """
+        Test registering a valid `update_consent` override function
+        """
+
+        f_id = uuid()
+        register(f_id, SaaSRequestType.UPDATE_CONSENT)(valid_consent_update_override)
+        assert valid_consent_update_override == SaaSRequestOverrideFactory.get_override(
+            f_id, SaaSRequestType.UPDATE_CONSENT
+        )
+
+        with pytest.raises(NoSuchSaaSRequestOverrideException) as exc:
+            SaaSRequestOverrideFactory.get_override(f_id, SaaSRequestType.READ)
+        assert f"Custom SaaS override '{f_id}' does not exist." in str(exc.value)
+
+    def test_register_process_consent_webhook_override(self):
+        """
+        Test registering a valid `process_consent_webhook` override function
+        """
+
+        f_id = uuid()
+        register(f_id, SaaSRequestType.PROCESS_CONSENT_WEBHOOK)(
+            valid_process_consent_webhook_override
+        )
+        assert (
+            valid_process_consent_webhook_override
+            == SaaSRequestOverrideFactory.get_override(
+                f_id, SaaSRequestType.PROCESS_CONSENT_WEBHOOK
+            )
         )
 
         with pytest.raises(NoSuchSaaSRequestOverrideException) as exc:

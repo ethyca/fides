@@ -3,19 +3,23 @@ Contains the code that sets up the API.
 """
 
 import os
+import re
 import sys
 from datetime import datetime, timezone
 from logging import WARNING
 from time import perf_counter
-from typing import Callable, Optional
+from typing import AsyncGenerator, Callable, Optional
 from urllib.parse import unquote
 
-from fastapi import HTTPException, Request, Response, status
-from fastapi.responses import FileResponse, HTMLResponse
+from fastapi import FastAPI, HTTPException, Request, Response, status
+from fastapi.encoders import jsonable_encoder
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
 from fideslog.sdk.python.event import AnalyticsEvent
 from loguru import logger
 from pyinstrument import Profiler
 from starlette.background import BackgroundTask
+from starlette.status import HTTP_422_UNPROCESSABLE_ENTITY
 from uvicorn import Config, Server
 
 import fides
@@ -26,7 +30,9 @@ from fides.api.app_setup import (
     run_database_startup,
 )
 from fides.api.common_exceptions import MalisciousUrlException
+from fides.api.cryptography.identity_salt import get_identity_salt
 from fides.api.middleware import handle_audit_log_resource
+from fides.api.migrations.hash_migration_job import initiate_bcrypt_migration_task
 from fides.api.schemas.analytics import Event, ExtraData
 
 # pylint: disable=wildcard-import, unused-wildcard-import
@@ -51,10 +57,68 @@ from fides.cli.utils import FIDES_ASCII_ART
 from fides.config import CONFIG, check_required_webserver_config_values
 
 IGNORED_AUDIT_LOG_RESOURCE_PATHS = {"/api/v1/login"}
+NEXT_JS_CATCH_ALL_SEGMENTS_RE = r"^\[{1,2}\.\.\.\w+\]{1,2}"  # https://nextjs.org/docs/pages/building-your-application/routing/dynamic-routes#catch-all-segments
 
 VERSION = fides.__version__
 
-app = create_fides_app()
+
+async def lifespan(wrapped_app: FastAPI) -> AsyncGenerator[None, None]:
+    """Run all of the required setup steps for the webserver.
+
+    **NOTE**: The order of operations here _is_ deliberate
+    and must be maintained.
+    """
+    start_time = perf_counter()
+    logger.info("Starting server setup...")
+
+    if not CONFIG.dev_mode:
+        sys.tracebacklimit = 0
+
+    log_startup()
+
+    await run_database_startup(wrapped_app)
+
+    check_redis()
+
+    if not scheduler.running:
+        scheduler.start()
+    if not async_scheduler.running:
+        async_scheduler.start()
+
+    # generate and/or cache the identity salt
+    get_identity_salt()
+
+    initiate_scheduled_batch_email_send()
+    initiate_poll_for_exited_privacy_request_tasks()
+    initiate_scheduled_dsr_data_removal()
+    initiate_bcrypt_migration_task()
+
+    logger.debug("Sending startup analytics events...")
+    # Avoid circular imports
+    from fides.api.analytics import in_docker_container, send_analytics_event
+
+    await send_analytics_event(
+        AnalyticsEvent(
+            docker=in_docker_container(),
+            event=Event.server_start.value,
+            event_created_at=datetime.now(tz=timezone.utc),
+        )
+    )
+
+    # It's just a random bunch of strings when serialized
+    if not CONFIG.logging.serialization:
+        logger.info(FIDES_ASCII_ART)
+
+    warn_root_user_enabled()
+
+    logger.info("Fides startup complete! v{}", VERSION)
+    startup_time = round(perf_counter() - start_time, 3)
+    logger.info("Server setup completed in {} seconds", startup_time)
+    yield  # All of this happens before the webserver comes up
+
+
+app = create_fides_app(lifespan=lifespan)  # type: ignore
+
 
 if CONFIG.dev_mode:
 
@@ -186,8 +250,9 @@ def sanitise_url_path(path: str) -> str:
     """Returns a URL path that does not contain any ../ or //"""
     path = unquote(path)
     path = os.path.normpath(path)
+
     for token in path.split("/"):
-        if ".." in token:
+        if ".." in token and not re.search(NEXT_JS_CATCH_ALL_SEGMENTS_RE, token):
             logger.warning(
                 f"Potentially dangerous use of URL hierarchy in path: {path}"
             )
@@ -259,56 +324,6 @@ def warn_root_user_enabled() -> None:
         )
 
 
-@app.on_event("startup")
-async def setup_server() -> None:
-    """Run all of the required setup steps for the webserver.
-
-    **NOTE**: The order of operations here _is_ deliberate
-    and must be maintained.
-    """
-    start_time = perf_counter()
-    logger.info("Starting server setup...")
-    if not CONFIG.dev_mode:
-        sys.tracebacklimit = 0
-
-    log_startup()
-
-    await run_database_startup(app)
-
-    check_redis()
-
-    if not scheduler.running:
-        scheduler.start()
-    if not async_scheduler.running:
-        async_scheduler.start()
-
-    initiate_scheduled_batch_email_send()
-    initiate_poll_for_exited_privacy_request_tasks()
-    initiate_scheduled_dsr_data_removal()
-
-    logger.debug("Sending startup analytics events...")
-    # Avoid circular imports
-    from fides.api.analytics import in_docker_container, send_analytics_event
-
-    await send_analytics_event(
-        AnalyticsEvent(
-            docker=in_docker_container(),
-            event=Event.server_start.value,
-            event_created_at=datetime.now(tz=timezone.utc),
-        )
-    )
-
-    # It's just a random bunch of strings when serialized
-    if not CONFIG.logging.serialization:
-        logger.info(FIDES_ASCII_ART)
-
-    warn_root_user_enabled()
-
-    logger.info("Fides startup complete! v{}", VERSION)
-    startup_time = round(perf_counter() - start_time, 3)
-    logger.info("Server setup completed in {} seconds", startup_time)
-
-
 def start_webserver(port: int = 8080) -> None:
     """Run the webserver."""
     check_required_webserver_config_values(config=CONFIG)
@@ -343,3 +358,19 @@ async def action_to_audit_log(
         except Exception as exc:
             logger.debug(exc)
     return await call_next(request)
+
+
+@app.exception_handler(RequestValidationError)
+async def request_validation_exception_handler(
+    request: Request, exc: RequestValidationError
+) -> JSONResponse:
+    """Prevents field input and pydantic error message URL from being returned in the response
+    For example, if someone is creating a user and the request fails, this prevents the user's
+    password from being returned in the error message
+    """
+    return JSONResponse(
+        status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+        content={
+            "detail": jsonable_encoder(exc.errors(), exclude={"input", "url", "ctx"})
+        },
+    )

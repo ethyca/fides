@@ -13,7 +13,7 @@ import Document, {
  */
 class SampleAppDocument extends Document {
   static async getInitialProps(
-    ctx: DocumentContext
+    ctx: DocumentContext,
   ): Promise<DocumentInitialProps> {
     const initialProps = await Document.getInitialProps(ctx);
     return initialProps;

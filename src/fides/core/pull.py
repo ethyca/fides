@@ -6,7 +6,7 @@ import yaml
 from fideslang import model_list
 from fideslang.manifests import load_yaml_into_dict
 
-from fides.common.utils import echo_green, print_divider
+from fides.common.utils import echo_green, echo_red, print_divider
 from fides.core.api_helpers import get_server_resource, list_server_resources
 from fides.core.utils import get_manifest_list
 
@@ -23,7 +23,9 @@ def write_manifest_file(manifest_path: str, manifest: Dict) -> None:
 
 
 def pull_existing_resources(
-    manifests_dir: str, url: str, headers: Dict[str, str]
+    manifests_dir: str,
+    url: str,
+    headers: Dict[str, str],
 ) -> List[str]:
     """
     Update all of the pre-existing local resources to match their
@@ -66,6 +68,43 @@ def pull_existing_resources(
     return existing_keys
 
 
+def pull_resource_by_key(
+    manifests_dir: str,
+    url: str,
+    headers: Dict[str, str],
+    fides_key: str,
+    resource_type: str,
+) -> None:
+    """
+    Pull a resource from the server by its fides_key and update the local manifest file if it exists,
+    otherwise a new manifest file at {manifests_dir}/{resource_type}.yaml
+    """
+    if manifests_dir[-1] == "/":
+        manifests_dir = manifests_dir[:-1]
+    manifest_path = f"{manifests_dir}/{resource_type}.yaml"
+    print(f"Pulling {resource_type} with fides_key: {fides_key}...", end=" ")
+    server_resource = get_server_resource(url, resource_type, fides_key, headers)
+    print("done.")
+
+    if server_resource:
+        try:
+            manifest = load_yaml_into_dict(manifest_path)
+        except FileNotFoundError:
+            print(
+                f"Manifest file {manifest_path} does not already exist and will be created"
+            )
+            manifest = {}
+        print("Writing out resource to file...", end=" ")
+        manifest[resource_type] = [server_resource]
+        write_manifest_file(manifest_path, manifest)
+        print("done.")
+
+    else:
+        echo_red(
+            f"{resource_type} with fides_key: {fides_key} not found on the server."
+        )
+
+
 def pull_missing_resources(
     manifest_path: str,
     url: str,
@@ -102,6 +141,8 @@ def pull(
     manifests_dir: str,
     url: str,
     headers: Dict[str, str],
+    fides_key: Optional[str],
+    resource_type: Optional[str],
     all_resources_file: Optional[str],
 ) -> None:
     """
@@ -110,9 +151,25 @@ def pull(
 
     If the 'all_resources_file' option is present, pull all other server resources
     into a local file.
+
+    If only `fides_key` is provided, only that resource will be pulled.
     """
+
+    if fides_key and resource_type:
+        pull_resource_by_key(
+            manifests_dir=manifests_dir,
+            url=url,
+            headers=headers,
+            fides_key=fides_key,
+            resource_type=resource_type,
+        )
+        echo_green("Pull complete.")
+        return
+
     existing_keys = pull_existing_resources(
-        manifests_dir=manifests_dir, url=url, headers=headers
+        manifests_dir=manifests_dir,
+        url=url,
+        headers=headers,
     )
 
     if all_resources_file:

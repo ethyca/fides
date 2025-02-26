@@ -25,13 +25,13 @@ In order to get started quickly with Fides, a sample project is bundled within t
 #### Minimum requirements (for all platforms)
 
 * [Docker](https://www.docker.com/products/docker-desktop) (version 20.10.11 or later)
-* [Python](https://www.python.org/downloads/) (version 3.8 through 3.10)
+* [Python](https://www.python.org/downloads/) (version 3.9 through 3.10)
 
 #### Download and install Fides
 
 > [!TIP]
 > We highly recommend setting up a Python virtual environment such as `venv` to install Fides into. For example:
-> 
+>
 > ```sh
 > mkdir ~/fides
 > cd ~/fides
@@ -62,7 +62,7 @@ If your browser does not open automatically, you should navigate to <http://loca
 The project contains:
 
 * The Fides Admin UI for managing privacy requests
-* The Fides [Privacy Center](https://docs.ethyca.com/fides/dsr_quickstart/privacy_center) for submitting requests
+* The Fides [Privacy Center](https://ethyca.com/docs/dev-docs/privacy-requests/privacy-center) for submitting requests
 * The sample "Cookie House" eCommerce site for testing
 * A DSR Directory on your computer to view results (`./fides_uploads`)
 
@@ -76,17 +76,17 @@ Use username `root_user` and password `Testpassword1!` to login, approve the req
 
 ### Next Steps
 
-Congratulations! You've just run an entire privacy request in under 5 minutes! Fides offers many more tools to help take control of your data privacy. To find out more, you can run a privacy request on [your own infrastructure](https://docs.ethyca.com/fides/dsr_quickstart/overview), discover [data mapping](https://docs.ethyca.com/fides/data_mapping/overview), or learn about the [Fides Taxonomy](https://ethyca.github.io/fideslang/).
+Congratulations! You've just run an entire privacy request in under 5 minutes! Fides offers many more tools to help take control of your data privacy. To find out more, you can run a privacy request on [your own infrastructure](https://ethyca.com/docs/tutorials/privacy-requests), discover [data mapping](https://ethyca.com/docs/tutorials/data-mapping), or learn about the [Fides Taxonomy](https://ethyca.github.io/fideslang/).
 
 ## :book: Learn More
 
-The Fides core team is committed to providing a variety of documentation to help get you started using Fides.  As such, all interactions are governed by the [Fides Code of Conduct](https://docs.ethyca.com/fides/community/code_of_conduct).
+The Fides core team is committed to providing a variety of documentation to help get you started using Fides.  As such, all interactions are governed by the [Fides Code of Conduct](https://ethyca.com/docs/community/code_of_conduct).
 
 ### Documentation
 
 For more information on getting started with Fides, how to configure and set up Fides, and more about the Fides ecosystem of open source projects:
 
-* Documentation: <https://docs.ethyca.com>
+* Documentation: <https://ethyca.com/docs>
 * Website: www.ethyca.com/fides
 
 ### Support
@@ -99,9 +99,9 @@ Join the conversation on:
 
 ### Contributing
 
-We welcome and encourage all types of contributions and improvements!  Please see our [contribution guide](https://docs.ethyca.com/fides/community/overview) to opening issues for bugs, new features, and security or experience enhancements.
+We welcome and encourage all types of contributions and improvements!  Please see our [contribution guide](https://ethyca.com/docs/community) to opening issues for bugs, new features, and security or experience enhancements.
 
-Read about the [Fides community](https://docs.ethyca.com/fides/community/hints_tips) or dive into the [contributor guides](https://docs.ethyca.com/fides/community/development/overview) for information about contributions, documentation, code style, testing and more. Ethyca is committed to fostering a safe and collaborative environment, such that all interactions are governed by the [Fides Code of Conduct](https://docs.ethyca.com/fides/community/code_of_conduct).
+Read about the [Fides community](https://ethyca.com/docs/community/hints_tips) or dive into the [contributor guides](https://ethyca.com/docs/community/development/overview) for information about contributions, documentation, code style, testing and more. Ethyca is committed to fostering a safe and collaborative environment, such that all interactions are governed by the [Fides Code of Conduct](https://ethyca.com/docs/community/code_of_conduct).
 
 ## :balance_scale: License
 
@@ -131,19 +131,19 @@ Fides is created and sponsored by Ethyca: a developer tools company building the
 
 By default, running `pip install ethyca-fides` locally will not install the optional Python libraries needed for Microsoft SQL Server, since these rely on additional system dependencies (`freetds`)! However, if you *do* want to connect to MSSQL, you have two options:
 1. Use our pre-built Docker images which install these optional dependencies automatically: [`ethyca/fides`](https://hub.docker.com/r/ethyca/fides). See our [Deployment Guide](https://ethyca.com/docs/dev-docs/configuration/deployment) for more!
-2. Install the required dependencies on your local development machine and run `pip install ethyca-fides[all]` to include "all" the optional libraries. Keep reading to learn more about this!
+2. Install the required dependencies on your local development machine and run `pip install "ethyca-fides[all]"` to include "all" the optional libraries. Keep reading to learn more about this!
 
 For local development setup on macOS, follow these steps:
 1. Install the required development libraries from Homebrew:
-```bash
+```zsh
 brew install freetds openssl
 ```
 2. Add the following to your shell (i.e. `.zshrc`) to ensure your compiler can access the `freetds` and `openssl` libraries, updating the paths & versions to match your local install:
-```bash
-export LDFLAGS="-L/opt/homebrew/Cellar/freetds/1.3.18/lib -L/opt/homebrew/Cellar/openssl@1.1/1.1.1u/lib"
-export CFLAGS="-I/opt/homebrew/Cellar/freetds/1.3.18/include"
+```zsh
+export LDFLAGS="-L/opt/homebrew/opt/freetds/lib -L/opt/homebrew/opt/openssl/lib"
+export CFLAGS="-I/opt/homebrew/opt/freetds/include"
 ```
 3. Reinstall Fides with MSSQL support by including the `all` extra requirement:
-```bash
-pip install ethyca-fides[all]
+```zsh
+pip install "ethyca-fides[all]"
 ```

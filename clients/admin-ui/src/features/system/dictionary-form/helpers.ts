@@ -2,7 +2,7 @@ import { PrivacyDeclarationResponse } from "~/types/api";
 import { DataUseDeclaration } from "~/types/dictionary-api";
 
 export const transformDictDataUseToDeclaration = (
-  dataUse: DataUseDeclaration
+  dataUse: DataUseDeclaration,
 ): Omit<PrivacyDeclarationResponse, "id"> => {
   // some data categories are nested on the backend, flatten them
   // https://github.com/ethyca/fides-services/issues/100

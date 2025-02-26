@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import Any, Dict, List, Optional, Type
 
+from pydantic import ConfigDict
 from sqlalchemy import Boolean, Column, String
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.declarative import declared_attr
@@ -18,8 +19,8 @@ DEFAULT_MESSAGING_TEMPLATES: Dict[str, Any] = {
     MessagingActionType.SUBJECT_IDENTITY_VERIFICATION.value: {
         "label": "Subject identity verification",
         "content": {
-            "subject": "Your one-time code is {{code}}",
-            "body": "Your privacy request verification code is {{code}}. Please return to the Privacy Center and enter the code to continue. This code will expire in {{minutes}} minutes.",
+            "subject": "Your one-time code is __CODE__",
+            "body": "Your privacy request verification code is __CODE__. Please return to the Privacy Center and enter the code to continue. This code will expire in __MINUTES__ minutes.",
         },
     },
     MessagingActionType.PRIVACY_REQUEST_RECEIPT.value: {
@@ -40,14 +41,14 @@ DEFAULT_MESSAGING_TEMPLATES: Dict[str, Any] = {
         "label": "Privacy request denied",
         "content": {
             "subject": "Your privacy request has been denied",
-            "body": "Your privacy request has been denied. {{denial_reason}}.",
+            "body": "Your privacy request has been denied. __DENIAL_REASON__.",
         },
     },
     MessagingActionType.PRIVACY_REQUEST_COMPLETE_ACCESS.value: {
         "label": "Access request completed",
         "content": {
             "subject": "Your data is ready to be downloaded",
-            "body": "Your access request has been completed and can be downloaded at {{download_link}}. For security purposes, this secret link will expire in {{days}} days.",
+            "body": "Your access request has been completed and can be downloaded at __DOWNLOAD_LINK__. For security purposes, this secret link will expire in __DAYS__ days.",
         },
     },
     MessagingActionType.PRIVACY_REQUEST_COMPLETE_DELETION.value: {
@@ -94,9 +95,7 @@ class MessagingTemplate(Base):
         lazy="selectin",
     )
     is_enabled = Column(Boolean, default=False, nullable=False)
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
     @classmethod
     def create(

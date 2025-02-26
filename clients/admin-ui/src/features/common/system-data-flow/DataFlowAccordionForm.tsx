@@ -9,8 +9,7 @@ import {
   AccordionIcon,
   AccordionItem,
   AccordionPanel,
-  Button,
-  ButtonGroup,
+  AntButton as Button,
   Flex,
   Spacer,
   Stack,
@@ -22,12 +21,10 @@ import {
 import { Form, Formik, FormikHelpers } from "formik";
 import React, { useEffect, useMemo, useState } from "react";
 
-import { useAppSelector } from "~/app/hooks";
 import {
   useGetAllSystemsQuery,
   useUpdateSystemMutation,
 } from "~/features/system";
-import { selectAllSystems } from "~/features/system/system.slice";
 import { DataFlow, System } from "~/types/api";
 
 const defaultInitialValues = {
@@ -53,8 +50,7 @@ export const DataFlowAccordionForm = ({
   const dataFlowSystemsModal = useDisclosure();
   const [updateSystemMutationTrigger] = useUpdateSystemMutation();
 
-  useGetAllSystemsQuery();
-  const systems = useAppSelector(selectAllSystems);
+  const { data: systems = [] } = useGetAllSystemsQuery();
 
   const initialDataFlows = useMemo(() => {
     let dataFlows = isIngress ? system.ingress : system.egress;
@@ -75,7 +71,7 @@ export const DataFlowAccordionForm = ({
 
   const handleSubmit = async (
     { dataFlowSystems }: FormValues,
-    { resetForm }: FormikHelpers<FormValues>
+    { resetForm }: FormikHelpers<FormValues>,
   ) => {
     const updatedSystem = {
       ...system,
@@ -144,13 +140,13 @@ export const DataFlowAccordionForm = ({
                   name={`${flowType} Data Flow`}
                 />
                 <Button
-                  colorScheme="primary"
-                  size="xs"
-                  width="fit-content"
                   onClick={dataFlowSystemsModal.onOpen}
+                  type="primary"
+                  size="small"
+                  icon={<GearLightIcon />}
+                  iconPosition="end"
+                  className="mb-4"
                   data-testid="assign-systems-btn"
-                  rightIcon={<GearLightIcon />}
-                  marginBottom={4}
                 >
                   {`Configure ${pluralFlowType.toLocaleLowerCase()}`}
                 </Button>
@@ -160,10 +156,8 @@ export const DataFlowAccordionForm = ({
                   onDataFlowSystemChange={setAssignedDataFlows}
                 />
 
-                <ButtonGroup marginTop={6}>
+                <div className="mt-6 flex gap-2">
                   <Button
-                    size="sm"
-                    variant="outline"
                     disabled={!dirty && assignedDataFlow === initialDataFlows}
                     onClick={() => {
                       setAssignedDataFlows(initialDataFlows);
@@ -171,20 +165,20 @@ export const DataFlowAccordionForm = ({
                         values: { dataFlowSystems: initialDataFlows },
                       });
                     }}
+                    data-testid="cancel-btn"
                   >
                     Cancel
                   </Button>
                   <Button
-                    size="sm"
-                    colorScheme="primary"
-                    type="submit"
-                    isLoading={isSubmitting}
+                    type="primary"
+                    htmlType="submit"
+                    loading={isSubmitting}
                     disabled={!dirty && assignedDataFlow === initialDataFlows}
                     data-testid="save-btn"
                   >
                     Save
                   </Button>
-                </ButtonGroup>
+                </div>
                 {/* By conditionally rendering the modal, we force it to reset its state
                 whenever it opens */}
                 {dataFlowSystemsModal.isOpen ? (

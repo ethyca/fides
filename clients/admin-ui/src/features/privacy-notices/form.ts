@@ -1,5 +1,10 @@
 import * as Yup from "yup";
 
+import { getOptionsFromMap } from "~/features/common/utils";
+import {
+  ENFORCEMENT_LEVEL_MAP,
+  MECHANISM_MAP,
+} from "~/features/privacy-notices/constants";
 import {
   ConsentMechanism,
   EnforcementLevel,
@@ -13,20 +18,11 @@ interface PrivacyNoticeUpdateOrCreate extends PrivacyNoticeCreation {
   id?: string;
 }
 
-export const CONSENT_MECHANISM_OPTIONS = [
-  {
-    label: "Opt in",
-    value: ConsentMechanism.OPT_IN,
-  },
-  {
-    label: "Opt out",
-    value: ConsentMechanism.OPT_OUT,
-  },
-  {
-    label: "Notice only",
-    value: ConsentMechanism.NOTICE_ONLY,
-  },
-];
+export const CONSENT_MECHANISM_OPTIONS = getOptionsFromMap(MECHANISM_MAP);
+
+export const ENFORCEMENT_LEVEL_OPTIONS = getOptionsFromMap(
+  ENFORCEMENT_LEVEL_MAP,
+);
 
 export const defaultInitialTranslations: NoticeTranslationCreate[] = [
   {
@@ -40,14 +36,15 @@ export const defaultInitialValues: PrivacyNoticeUpdateOrCreate = {
   name: "",
   consent_mechanism: ConsentMechanism.OPT_IN,
   data_uses: [],
-  enforcement_level: EnforcementLevel.SYSTEM_WIDE,
+  enforcement_level: EnforcementLevel.FRONTEND,
   // When creating, set to disabled to start
   disabled: true,
   translations: defaultInitialTranslations,
+  children: [],
 };
 
 export const transformPrivacyNoticeResponseToCreation = (
-  notice: PrivacyNoticeResponse
+  notice: PrivacyNoticeResponse,
 ): PrivacyNoticeUpdateOrCreate => ({
   name: notice.name ?? defaultInitialValues.name,
   consent_mechanism:
@@ -70,6 +67,7 @@ export const transformPrivacyNoticeResponseToCreation = (
         };
       })
     : defaultInitialTranslations,
+  children: notice.children,
 });
 
 export const ValidationSchema = Yup.object().shape({

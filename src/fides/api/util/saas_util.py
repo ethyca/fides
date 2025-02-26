@@ -9,6 +9,7 @@ from typing import Any, Dict, List, Optional, Set, Tuple, Union
 
 import pydash
 import yaml
+from fideslang.validation import FidesKey
 from multidimensional_urlencode import urlencode as multidimensional_urlencode
 
 from fides.api.common_exceptions import FidesopsException, ValidationError
@@ -201,6 +202,17 @@ def get_collection_erase_after(
     return collection.erase_after
 
 
+def get_collection_data_categories(
+    collections: List[Collection], name: str
+) -> Set[FidesKey]:
+    collection: Collection | None = next(
+        (collect for collect in collections if collect.name == name), None
+    )
+    if not collection:
+        return set()
+    return collection.data_categories
+
+
 def merge_datasets(dataset: GraphDataset, config_dataset: GraphDataset) -> GraphDataset:
     """
     Merges all Collections and Fields from the "config_dataset" into the "dataset".
@@ -223,6 +235,9 @@ def merge_datasets(dataset: GraphDataset, config_dataset: GraphDataset) -> Graph
         collections.append(
             Collection(
                 name=collection_name,
+                data_categories=get_collection_data_categories(
+                    dataset.collections, collection_name
+                ),
                 fields=list(field_dict.values()),
                 grouped_inputs=get_collection_grouped_inputs(
                     config_dataset.collections, collection_name
@@ -416,24 +431,6 @@ def map_param_values(
         query_params=query_params,
         body=formatted_body,
     )
-
-
-def get_identity(privacy_request: Optional[PrivacyRequest]) -> Optional[str]:
-    """
-    Returns a single identity or raises an exception if more than one identity is defined
-    """
-
-    if not privacy_request:
-        return None
-
-    identity_data: Dict[str, Any] = privacy_request.get_cached_identity_data()
-    # filters out keys where associated value is None or empty str
-    identities = list({k for k, v in identity_data.items() if v})
-    if len(identities) > 1:
-        raise FidesopsException(
-            "Only one identity can be specified for SaaS connector traversal"
-        )
-    return identities[0] if identities else None
 
 
 def get_identities(privacy_request: Optional[PrivacyRequest]) -> Set[str]:

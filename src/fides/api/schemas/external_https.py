@@ -1,6 +1,6 @@
 from typing import List, Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 from fides.api.schemas.redis_cache import Identity
 
@@ -13,22 +13,14 @@ class SecondPartyResponseFormat(BaseModel):
 
     derived_identity: Optional[Identity] = None
     halt: bool
-
-    class Config:
-        """Using enum values"""
-
-        use_enum_values = True
+    model_config = ConfigDict(use_enum_values=True)
 
 
 class PrivacyRequestResumeFormat(BaseModel):
     """Expected request body to resume a privacy request after it was paused by a webhook"""
 
     derived_identity: Optional[Identity] = {}  # type: ignore
-
-    class Config:
-        """Using enum values"""
-
-        use_enum_values = True
+    model_config = ConfigDict(use_enum_values=True)
 
 
 class WebhookJWE(BaseModel):

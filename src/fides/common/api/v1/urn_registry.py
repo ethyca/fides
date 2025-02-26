@@ -51,7 +51,13 @@ STORAGE_DEFAULT_BY_TYPE = "/storage/default/{storage_type}"
 
 
 # Email URLs
-MESSAGING_TEMPLATES = "/messaging/templates"
+BASIC_MESSAGING_TEMPLATES = "/messaging/templates"
+MESSAGING_TEMPLATE_DEFAULT_BY_TEMPLATE_TYPE = (
+    "/messaging/templates/default/{template_type}"
+)
+MESSAGING_TEMPLATES_SUMMARY = "/messaging/templates/summary"
+MESSAGING_TEMPLATES_BY_TEMPLATE_TYPE = "/messaging/templates/{template_type}"
+MESSAGING_TEMPLATE_BY_ID = "/messaging/templates/{template_id}"
 MESSAGING_CONFIG = "/messaging/config"
 MESSAGING_SECRETS = "/messaging/config/{config_key}/secret"
 MESSAGING_BY_KEY = "/messaging/config/{config_key}"
@@ -61,6 +67,7 @@ MESSAGING_STATUS = "/messaging/default/status"
 MESSAGING_DEFAULT_SECRETS = "/messaging/default/{service_type}/secret"
 MESSAGING_DEFAULT_BY_TYPE = "/messaging/default/{service_type}"
 MESSAGING_TEST = "/messaging/config/test"
+MESSAGING_EMAIL_INVITE_STATUS = "/messaging/email-invite/status"
 
 # Policy URLs
 POLICY_LIST = "/dsr/policy"
@@ -71,17 +78,24 @@ PRIVACY_REQUESTS = "/privacy-request"
 PRIVACY_REQUEST_APPROVE = "/privacy-request/administrate/approve"
 PRIVACY_REQUEST_AUTHENTICATED = "/privacy-request/authenticated"
 PRIVACY_REQUEST_BULK_RETRY = "/privacy-request/bulk/retry"
+PRIVACY_REQUEST_BULK_SOFT_DELETE = "/privacy-request/bulk/soft-delete"
 PRIVACY_REQUEST_DENY = "/privacy-request/administrate/deny"
+PRIVACY_REQUEST_SOFT_DELETE = "/privacy-request/{privacy_request_id}/soft-delete"
 REQUEST_STATUS_LOGS = "/privacy-request/{privacy_request_id}/log"
 REQUEST_TASKS = "/privacy-request/{privacy_request_id}/tasks"
 PRIVACY_REQUEST_REQUEUE = "/privacy-request/{privacy_request_id}/requeue"
+PRIVACY_REQUEST_RESUBMIT = "/privacy-request/{privacy_request_id}/resubmit"
 REQUEST_TASK_CALLBACK = "/request-task/callback"
-
+PRIVACY_REQUEST_ACCESS_RESULTS = "/privacy-request/{privacy_request_id}/access-results"
+PRIVACY_REQUEST_FILTERED_RESULTS = (
+    "/privacy-request/{privacy_request_id}/filtered-results"
+)
 
 PRIVACY_REQUEST_VERIFY_IDENTITY = "/privacy-request/{privacy_request_id}/verify"
 PRIVACY_REQUEST_RESUME = "/privacy-request/{privacy_request_id}/resume"
 PRIVACY_REQUEST_NOTIFICATIONS = "/privacy-request/notification"
 PRIVACY_REQUEST_RETRY = "/privacy-request/{privacy_request_id}/retry"
+PRIVACY_REQUEST_SEARCH = "/privacy-request/search"
 REQUEST_PREVIEW = "/privacy-request/preview"
 PRIVACY_REQUEST_MANUAL_WEBHOOK_ACCESS_INPUT = (
     "/privacy-request/{privacy_request_id}/access_manual_webhook/{connection_key}"
@@ -147,8 +161,12 @@ DATASET_CONFIG = "/datasetconfig"
 DATASET_VALIDATE = CONNECTION_BY_KEY + "/validate_dataset"
 CONNECTION_DATASETS = CONNECTION_BY_KEY + DATASETS
 DATASET_CONFIGS = CONNECTION_BY_KEY + DATASET_CONFIG
-DATASET_BY_KEY = CONNECTION_BY_KEY + DATASETS + "/{fides_key}"
-DATASETCONFIG_BY_KEY = CONNECTION_BY_KEY + DATASET_CONFIG + "/{fides_key}"
+DATASET_BY_KEY = CONNECTION_BY_KEY + DATASETS + "/{dataset_key}"
+DATASET_CONFIG_BY_KEY = CONNECTION_BY_KEY + DATASET_CONFIG + "/{dataset_key}"
+DATASET_INPUTS = DATASET_BY_KEY + "/inputs"
+DATASET_REACHABILITY = DATASET_BY_KEY + "/reachability"
+TEST_DATASET = DATASET_BY_KEY + "/test"
+DATASETS_CLEAN = DATASETS + "/clean"
 
 # YAML Collection URLs
 YAML_DATASETS = YAML + CONNECTION_DATASETS
@@ -167,6 +185,7 @@ INSTANTIATE_SYSTEM_CONNECTION = (
 
 # User URLs
 USERS = "/user"
+USER_ACCEPT_INVITE = "/user/accept-invite"
 USER_DETAIL = "/user/{user_id}"
 USER_PASSWORD_RESET = "/user/{user_id}/reset-password"
 USER_FORCE_PASSWORD_RESET = "/user/{user_id}/force-reset-password"

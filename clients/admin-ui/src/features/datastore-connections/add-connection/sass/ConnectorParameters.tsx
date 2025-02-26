@@ -4,7 +4,7 @@ import {
   selectConnectionTypeState,
   setConnection,
 } from "connection-type/connection-type.slice";
-import { ConnectionTypeSecretSchemaReponse } from "connection-type/types";
+import { ConnectionTypeSecretSchemaResponse } from "connection-type/types";
 import {
   useCreateUnlinkedSassConnectionConfigMutation,
   usePatchDatastoreConnectionMutation,
@@ -12,7 +12,6 @@ import {
 } from "datastore-connections/datastore-connection.slice";
 import {
   CreateSaasConnectionConfigRequest,
-  DatastoreConnectionRequest,
   DatastoreConnectionSecretsRequest,
 } from "datastore-connections/types";
 import { Box } from "fidesui";
@@ -20,13 +19,17 @@ import React, { useState } from "react";
 import { useDispatch } from "react-redux";
 
 import { useAppSelector } from "~/app/hooks";
+import {
+  AccessLevel,
+  CreateConnectionConfigurationWithSecrets,
+} from "~/types/api";
 
 import ConnectorParametersForm from "../forms/ConnectorParametersForm";
 import { formatKey } from "../helpers";
 import { SaasConnectorParametersFormFields } from "../types";
 
 type ConnectorParametersProps = {
-  data: ConnectionTypeSecretSchemaReponse;
+  data: ConnectionTypeSecretSchemaResponse;
   /**
    * Parent callback invoked when a connection is initially created
    */
@@ -37,11 +40,11 @@ type ConnectorParametersProps = {
   onTestConnectionClick: (value: any) => void;
 };
 
-export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
+export const ConnectorParameters = ({
   data,
   onConnectionCreated,
   onTestConnectionClick,
-}) => {
+}: ConnectorParametersProps) => {
   const dispatch = useDispatch();
   const { errorAlert, successAlert } = useAlert();
   const { handleError } = useAPIHelper();
@@ -53,7 +56,7 @@ export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const { connection, connectionOption } = useAppSelector(
-    selectConnectionTypeState
+    selectConnectionTypeState,
   );
 
   const [createSassConnectionConfig] =
@@ -68,8 +71,8 @@ export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
       setIsSubmitting(true);
       if (connection) {
         // Update existing Sass connector
-        const params1: DatastoreConnectionRequest = {
-          access: "write",
+        const params1: CreateConnectionConfigurationWithSecrets = {
+          access: AccessLevel.WRITE,
           connection_type: connection.connection_type,
           description: values.description,
           disabled: false,
@@ -88,16 +91,15 @@ export const ConnectorParameters: React.FC<ConnectorParametersProps> = ({
           Object.entries(data.properties).forEach((key) => {
             params2.secrets[key[0]] = values[key[0]];
           });
-          const payload2 = await updateDatastoreConnectionSecrets(
-            params2
-          ).unwrap();
+          const payload2 =
+            await updateDatastoreConnectionSecrets(params2).unwrap();
           if (payload2.test_status === "failed") {
             errorAlert(
               <>
                 <b>Message:</b> {payload2.msg}
                 <br />
                 <b>Failure Reason:</b> {payload2.failure_reason}
-              </>
+              </>,
             );
           } else {
             successAlert(`Connector successfully updated!`);

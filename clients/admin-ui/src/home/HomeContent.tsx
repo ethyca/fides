@@ -1,16 +1,17 @@
-import { Flex, SimpleGrid, Text } from "fidesui";
-import Link from "next/link";
+import { Flex, SimpleGrid } from "fidesui";
+import NextLink from "next/link";
 import * as React from "react";
 import { useMemo } from "react";
 
 import { useAppSelector } from "~/app/hooks";
+import CalloutNavCard from "~/features/common/CalloutNavCard";
 import { useFeatures } from "~/features/common/features";
 import { selectThisUsersScopes } from "~/features/user-management";
 
 import { MODULE_CARD_ITEMS } from "./constants";
 import { configureTiles } from "./tile-config";
 
-const HomeContent: React.FC = () => {
+const HomeContent = () => {
   const { plus, flags } = useFeatures();
   const userScopes = useAppSelector(selectThisUsersScopes);
 
@@ -22,7 +23,7 @@ const HomeContent: React.FC = () => {
         userScopes,
         flags,
       }),
-    [plus, userScopes, flags]
+    [plus, userScopes, flags],
   );
 
   return (
@@ -31,60 +32,13 @@ const HomeContent: React.FC = () => {
         {list
           .sort((a, b) => (a.sortOrder > b.sortOrder ? 1 : -1))
           .map((item) => (
-            <Link href={item.href} key={item.key} passHref>
-              <Flex
-                background={`${item.color}.50`}
-                borderRadius="8px"
-                flexDirection="column"
-                maxH="164px"
-                overflow="hidden"
-                padding="16px 16px 20px 16px"
-                maxW="469.33px"
-                border="1px solid"
-                borderColor="transparent"
-                _hover={{
-                  border: "1px solid",
-                  borderColor: `${item.color}.500`,
-                  cursor: "pointer",
-                }}
-                data-testid={`tile-${item.name}`}
-              >
-                <Flex
-                  alignItems="center"
-                  border="2px solid"
-                  borderColor={`${item.color}.300`}
-                  borderRadius="5.71714px"
-                  color={`${item.color}.300`}
-                  fontSize="22px"
-                  fontWeight="extrabold"
-                  h="48px"
-                  justifyContent="center"
-                  lineHeight="29px"
-                  w="48px"
-                >
-                  {item.title}
-                </Flex>
-                <Flex
-                  color={`${item.color}.800`}
-                  fontSize="16px"
-                  fontWeight="semibold"
-                  lineHeight="24px"
-                  mt="12px"
-                  mb="4px"
-                >
-                  {item.name}
-                  &nbsp; &#8594;
-                </Flex>
-                <Flex
-                  color="gray.500"
-                  fontSize="14px"
-                  h="40px"
-                  lineHeight="20px"
-                >
-                  <Text noOfLines={2}>{item.description}</Text>
-                </Flex>
-              </Flex>
-            </Link>
+            <NextLink href={item.href} key={item.key} className="flex">
+              <CalloutNavCard
+                title={item.name}
+                description={item.description}
+                color={item.color}
+              />
+            </NextLink>
           ))}
       </SimpleGrid>
     </Flex>

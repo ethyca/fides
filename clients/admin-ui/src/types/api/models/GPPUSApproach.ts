@@ -2,10 +2,8 @@
 /* tslint:disable */
 /* eslint-disable */
 
-/**
- * An enumeration.
- */
 export enum GPPUSApproach {
+  ALL = "all",
   NATIONAL = "national",
   STATE = "state",
 }

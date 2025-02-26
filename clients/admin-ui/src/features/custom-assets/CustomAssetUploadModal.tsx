@@ -1,8 +1,7 @@
 /* eslint-disable react/no-unescaped-entities */
 import {
+  AntButton as Button,
   Box,
-  Button,
-  ButtonGroup,
   Modal,
   ModalBody,
   ModalContent,
@@ -28,12 +27,12 @@ type RequestModalProps = {
   assetType: CustomAssetType;
 };
 
-const CustomAssetUploadModal: React.FC<RequestModalProps> = ({
+const CustomAssetUploadModal = ({
   isOpen,
   onClose,
   testId = "custom-asset-modal",
   assetType,
-}) => {
+}: RequestModalProps) => {
   const initialRef = useRef(null);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const toast = useToast();
@@ -124,32 +123,23 @@ const CustomAssetUploadModal: React.FC<RequestModalProps> = ({
             {renderFileText()}
           </Box>
         </ModalBody>
-        <ModalFooter>
-          <ButtonGroup
-            size="sm"
-            spacing="2"
-            width="100%"
-            display="flex"
-            justifyContent="right"
+        <ModalFooter className="flex w-full justify-end gap-2">
+          <Button
+            onClick={onClose}
+            data-testid="cancel-btn"
+            disabled={isLoading}
           >
-            <Button
-              variant="outline"
-              onClick={onClose}
-              data-testid="cancel-btn"
-              isDisabled={isLoading}
-            >
-              Cancel
-            </Button>
-            <Button
-              colorScheme="primary"
-              type="submit"
-              isDisabled={!uploadedFile || isLoading}
-              onClick={handleSubmit}
-              data-testid="submit-btn"
-            >
-              Submit
-            </Button>
-          </ButtonGroup>
+            Cancel
+          </Button>
+          <Button
+            type="primary"
+            htmlType="submit"
+            disabled={!uploadedFile || isLoading}
+            onClick={handleSubmit}
+            data-testid="submit-btn"
+          >
+            Submit
+          </Button>
         </ModalFooter>
       </ModalContent>
     </Modal>

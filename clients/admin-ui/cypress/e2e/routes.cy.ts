@@ -1,16 +1,30 @@
-import { stubPlus } from "cypress/support/stubs";
+import {
+  stubDatamap,
+  stubDatasetCrud,
+  stubLocations,
+  stubOpenIdProviders,
+  stubOrganizationCrud,
+  stubPlus,
+  stubPrivacyRequests,
+  stubTaxonomyEntities,
+} from "cypress/support/stubs";
 
 import {
   ADD_SYSTEMS_ROUTE,
   DATAMAP_ROUTE,
   LOCATIONS_ROUTE,
   PRIVACY_NOTICES_ROUTE,
-} from "~/features/common/nav/v2/routes";
+} from "~/features/common/nav/routes";
 import { RoleRegistryEnum } from "~/types/api";
 
 describe("Routes", () => {
   beforeEach(() => {
     cy.login();
+    stubOpenIdProviders();
+    stubPrivacyRequests();
+    stubTaxonomyEntities();
+    stubLocations();
+    stubDatamap();
   });
 
   describe("permissions", () => {
@@ -27,9 +41,7 @@ describe("Routes", () => {
 
     it("admins can access many routes", () => {
       cy.assumeRole(RoleRegistryEnum.OWNER);
-      cy.visit("/");
       cy.visit(ADD_SYSTEMS_ROUTE);
-      cy.wait("@getSystems");
       cy.getByTestId("add-systems");
       cy.visit("/privacy-requests");
       cy.getByTestId("privacy-requests");

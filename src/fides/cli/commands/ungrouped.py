@@ -1,7 +1,6 @@
 """Contains all of the ungrouped CLI commands for fides."""
 
 from datetime import datetime, timezone
-from typing import Optional
 
 import rich_click as click
 import yaml
@@ -19,6 +18,7 @@ from fides.cli.utils import (
     check_server,
     send_init_analytics,
     with_analytics,
+    with_server_health_check,
 )
 from fides.common.utils import (
     echo_green,
@@ -32,10 +32,8 @@ from fides.core import api as _api
 from fides.core import audit as _audit
 from fides.core import evaluate as _evaluate
 from fides.core import parse as _parse
-from fides.core import pull as _pull
 from fides.core import push as _push
 from fides.core.api_helpers import get_server_resource, list_server_resources
-from fides.core.utils import git_is_dirty
 
 
 @click.command()  # type: ignore
@@ -67,6 +65,7 @@ def delete(ctx: click.Context, resource_type: str, fides_key: str) -> None:
 @resource_type_argument
 @fides_key_argument
 @with_analytics
+@with_server_health_check
 def get_resource(ctx: click.Context, resource_type: str, fides_key: str) -> None:
     """
     View an object from the server.
@@ -86,6 +85,7 @@ def get_resource(ctx: click.Context, resource_type: str, fides_key: str) -> None
 @click.pass_context
 @resource_type_argument
 @with_analytics
+@with_server_health_check
 @click.option(
     "--verbose", "-v", is_flag=True, help="Displays the entire object list as YAML."
 )
@@ -178,15 +178,17 @@ def webserver(ctx: click.Context, port: int = 8080) -> None:
 
 @click.command()
 @click.pass_context
+@click.option("--queues", "-q", type=str, default="")
+@click.option("--exclude-queues", type=str, default="")
 @with_analytics
-def worker(ctx: click.Context) -> None:
+def worker(ctx: click.Context, queues: str = "", exclude_queues: str = "") -> None:
     """
     Start a Celery worker for the Fides webserver.
     """
     # This has to be here to avoid a circular dependency
     from fides.api.worker import start_worker
 
-    start_worker()
+    start_worker(queues, exclude_queues)
 
 
 @click.command()  # type: ignore
@@ -199,11 +201,11 @@ def worker(ctx: click.Context) -> None:
 )
 @manifests_dir_argument
 @with_analytics
+@with_server_health_check
 def push(ctx: click.Context, dry: bool, diff: bool, manifests_dir: str) -> None:
     """
     Parse local manifest files and upload them to the server.
     """
-
     config = ctx.obj["CONFIG"]
     taxonomy = _parse.parse(manifests_dir)
     _push.push(
@@ -307,36 +309,4 @@ def parse(ctx: click.Context, manifests_dir: str, verbose: bool = False) -> None
     """
     taxonomy = _parse.parse(manifests_dir=manifests_dir)
     if verbose:
-        pretty_echo(taxonomy.dict(), color="green")
-
-
-@click.command()  # type: ignore
-@click.pass_context
-@manifests_dir_argument
-@click.option(
-    "--all-resources",
-    "-a",
-    default=None,
-    help="Pulls all locally missing resources from the server into this file.",
-)
-@with_analytics
-def pull(ctx: click.Context, manifests_dir: str, all_resources: Optional[str]) -> None:
-    """
-    Update local resource files based on the state of the objects on the server.
-    """
-
-    # Make the resources that are pulled configurable
-    config = ctx.obj["CONFIG"]
-    # Do this to validate the manifests since they won't get parsed during the pull process
-    _parse.parse(manifests_dir)
-    if git_is_dirty(manifests_dir):
-        echo_red(
-            f"There are unstaged changes in your manifest directory: '{manifests_dir}' \nAborting pull!"
-        )
-        raise SystemExit(1)
-    _pull.pull(
-        url=config.cli.server_url,
-        manifests_dir=manifests_dir,
-        headers=config.user.auth_header,
-        all_resources_file=all_resources,
-    )
+        pretty_echo(taxonomy.model_dump(mode="json"), color="green")

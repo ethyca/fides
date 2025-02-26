@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import Any, Iterable, List, Optional
 
-from pydantic import validator
+from pydantic import field_validator
 
 from fides.api.custom_types import CssStr
 from fides.api.schemas.base_class import FidesSchema
@@ -23,6 +23,20 @@ class MinimalPrivacyExperienceConfig(FidesSchema):
     name: str
 
 
+class MinimalMessagingTemplate(FidesSchema):
+    """
+    Minimal representation of a messaging template.
+
+    NOTE: Add to this schema with care. Any fields added to
+    this response schema will be exposed in public-facing
+    (i.e. unauthenticated) API responses. If a field has
+    sensitive information, it should NOT be added to this schema!
+    """
+
+    id: str
+    type: str
+
+
 class PropertyType(Enum):
     website = "Website"
     other = "Other"
@@ -31,6 +45,16 @@ class PropertyType(Enum):
 class MinimalProperty(FidesSchema):
     id: str
     name: str
+
+
+class PropertyCreate(FidesSchema):
+    name: str
+    type: PropertyType
+    id: Optional[str] = None
+    experiences: List[MinimalPrivacyExperienceConfig]
+    privacy_center_config: Optional[PrivacyCenterConfig] = None
+    stylesheet: Optional[CssStr] = None
+    paths: List[str]
 
 
 class PublicPropertyResponse(FidesSchema):
@@ -51,11 +75,13 @@ class PublicPropertyResponse(FidesSchema):
     type: PropertyType
     id: Optional[str] = None
     experiences: List[MinimalPrivacyExperienceConfig]
-    privacy_center_config: Optional[PrivacyCenterConfig]
-    stylesheet: Optional[CssStr]
+    messaging_templates: Optional[List[MinimalMessagingTemplate]] = None
+    privacy_center_config: Optional[PrivacyCenterConfig] = None
+    stylesheet: Optional[CssStr] = None
     paths: List[str]
 
-    @validator("paths", pre=True)
+    @field_validator("paths", mode="before")
+    @classmethod
     def convert_to_list(cls, value: Any) -> Any:  # type: ignore[misc]
         """
         Convert the 'paths' value to a list if it is an iterable of strings.

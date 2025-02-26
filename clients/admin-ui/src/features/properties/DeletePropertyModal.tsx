@@ -4,7 +4,7 @@ import React from "react";
 
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import ConfirmationModal from "~/features/common/modals/ConfirmationModal";
-import { PROPERTIES_ROUTE } from "~/features/common/nav/v2/routes";
+import { PROPERTIES_ROUTE } from "~/features/common/nav/routes";
 import Restrict from "~/features/common/Restrict";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { useDeletePropertyMutation } from "~/features/properties/property.slice";
@@ -29,19 +29,16 @@ interface Props {
  *   triggerComponent={<Button>Delete Property</Button>}
  * />
  */
-const DeletePropertyModal: React.FC<Props> = ({
-  property,
-  triggerComponent,
-}) => {
+const DeletePropertyModal = ({ property, triggerComponent }: Props) => {
   const toast = useToast();
   const confirmationModal = useDisclosure();
   const [deletePropertyMutationTrigger] = useDeletePropertyMutation();
 
-  const isDisabled = property.experiences.length > 0;
+  const disabled = property.experiences.length > 0;
 
   const handleModalOpen = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
     e.stopPropagation();
-    if (!isDisabled) {
+    if (!disabled) {
       confirmationModal.onOpen();
     }
   };
@@ -62,12 +59,12 @@ const DeletePropertyModal: React.FC<Props> = ({
       <Tooltip
         label="All of the experiences on this property must be unlinked before the property can be deleted."
         placement="right"
-        isDisabled={!isDisabled}
+        isDisabled={!disabled}
       >
         <span>
           {React.cloneElement(triggerComponent, {
             onClick: handleModalOpen,
-            isDisabled,
+            disabled,
           })}
         </span>
       </Tooltip>

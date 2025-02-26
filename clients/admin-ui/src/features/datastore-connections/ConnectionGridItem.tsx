@@ -1,5 +1,5 @@
 import { formatDate } from "common/utils";
-import { Box, Button, Flex, Spacer, Text } from "fidesui";
+import { AntButton as Button, Box, Flex, Spacer, Text } from "fidesui";
 import React, { useMemo } from "react";
 
 import { useAppSelector } from "~/app/hooks";
@@ -10,15 +10,13 @@ import ConnectionMenu from "./ConnectionMenu";
 import ConnectionStatusBadge from "./ConnectionStatusBadge";
 import ConnectionTypeLogo from "./ConnectionTypeLogo";
 import { useLazyGetDatastoreConnectionStatusQuery } from "./datastore-connection.slice";
-import TestData from "./TestData";
+import { TestData } from "./TestData";
 
 type ConnectionGridItemProps = {
   connectionData: ConnectionConfigurationResponse;
 };
 
-const ConnectionGridItem: React.FC<ConnectionGridItemProps> = ({
-  connectionData,
-}) => {
+const ConnectionGridItem = ({ connectionData }: ConnectionGridItemProps) => {
   const [trigger, result] = useLazyGetDatastoreConnectionStatusQuery();
   const { connectionOptions } = useAppSelector(selectConnectionTypeState);
 
@@ -28,9 +26,9 @@ const ConnectionGridItem: React.FC<ConnectionGridItemProps> = ({
         (ct) =>
           ct.identifier === connectionData.connection_type ||
           (connectionData.saas_config &&
-            ct.identifier === connectionData.saas_config.type)
+            ct.identifier === connectionData.saas_config.type),
       ) || "ethyca",
-    [connectionData, connectionOptions]
+    [connectionData, connectionOptions],
   );
 
   return (
@@ -78,14 +76,11 @@ const ConnectionGridItem: React.FC<ConnectionGridItemProps> = ({
         />
         <Spacer />
         <Button
-          size="xs"
-          variant="outline"
+          size="small"
           onClick={() => {
             trigger(connectionData.key);
           }}
-          loadingText="Test"
-          isLoading={result.isLoading || result.isFetching}
-          spinnerPlacement="end"
+          loading={result.isLoading || result.isFetching}
         >
           Test
         </Button>

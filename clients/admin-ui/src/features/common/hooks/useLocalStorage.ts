@@ -6,13 +6,13 @@ Design taken from: https://usehooks.com/useLocalStorage/
 
 // eslint-disable-next-line import/prefer-default-export
 export function useLocalStorage<T = string>(
-  key: string,
-  initialValue: T
+  key: string | undefined,
+  initialValue: T,
 ): [T, Dispatch<SetStateAction<T>>] {
   // State to store our value
   // Pass initial state function to useState so logic is only executed once
   const [storedValue, setStoredValue] = useState<T>(() => {
-    if (typeof window === "undefined") {
+    if (typeof window === "undefined" || !key) {
       return initialValue;
     }
     try {
@@ -37,7 +37,7 @@ export function useLocalStorage<T = string>(
       // Save state
       setStoredValue(valueToStore);
       // Save to local storage
-      if (typeof window !== "undefined") {
+      if (typeof window !== "undefined" && !!key) {
         window.localStorage.setItem(key, JSON.stringify(valueToStore));
       }
     } catch (error) {

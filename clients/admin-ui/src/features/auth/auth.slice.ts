@@ -9,6 +9,7 @@ import { RoleRegistryEnum, ScopeRegistryEnum } from "~/types/api";
 import {
   LoginRequest,
   LoginResponse,
+  LoginWithOIDCRequest,
   LogoutRequest,
   LogoutResponse,
 } from "./types";
@@ -58,6 +59,13 @@ const authApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: () => ["Auth"],
     }),
+    loginWithOIDC: build.mutation<LoginResponse, LoginWithOIDCRequest>({
+      query: (data) => ({
+        url: `plus/openid-provider/${data.provider}/callback?code=${data.code}`,
+        method: "GET",
+      }),
+      invalidatesTags: () => ["Auth"],
+    }),
     logout: build.mutation<LogoutResponse, LogoutRequest>({
       query: () => ({
         url: "logout",
@@ -69,12 +77,25 @@ const authApi = baseApi.injectEndpoints({
       query: () => ({ url: `oauth/role` }),
       providesTags: ["Roles"],
     }),
+    acceptInvite: build.mutation<
+      LoginResponse,
+      LoginRequest & { inviteCode: string }
+    >({
+      query: ({ username, password, inviteCode }) => ({
+        url: "/user/accept-invite",
+        params: { username, invite_code: inviteCode },
+        method: "POST",
+        body: { new_password: password },
+      }),
+    }),
   }),
 });
 
 export const {
   useLoginMutation,
+  useLoginWithOIDCMutation,
   useLogoutMutation,
+  useAcceptInviteMutation,
   useGetRolesToScopesMappingQuery,
 } = authApi;
 export const { reducer } = authSlice;

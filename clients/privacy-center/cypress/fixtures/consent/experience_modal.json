@@ -1,0 +1,122 @@
+{
+  "items": [
+    {
+      "region": "us_ca",
+      "available_locales": ["en", "es", "fr-CA"],
+      "experience_config": {
+        "translations": [
+          {
+            "language": "en",
+            "accept_button_label": "Opt in to all",
+            "acknowledge_button_label": "OK",
+            "banner_description": "[banner] We use cookies and similar methods to recognize visitors and remember their preferences. We may also use them to measure ad campaign effectiveness, target ads, and analyze site traffic. Depending on your location, you may opt-in or opt out of the use of these technologies.",
+            "banner_title": "[banner] Manage your consent preferences",
+            "description": "We use cookies and similar methods to recognize visitors and remember their preferences. We may also use them to measure ad campaign effectiveness, target ads, and analyze site traffic. Depending on your location, you may opt-in or opt out of the use of these technologies.",
+            "modal_link_label": "Manage my consent preferences",
+            "is_default": true,
+            "privacy_policy_link_label": "Privacy Policy",
+            "privacy_policy_url": "https://privacy.example.com/",
+            "privacy_preferences_link_label": "Manage preferences",
+            "reject_button_label": "Opt out of all",
+            "save_button_label": "Save",
+            "title": "Manage your consent preferences",
+            "privacy_experience_config_history_id": "pri_exp-history-modal-en-000"
+          },
+          {
+            "language": "es",
+            "accept_button_label": "Participar en todo",
+            "acknowledge_button_label": "Aceptar",
+            "banner_description": "[banner] Usamos cookies y métodos similares para reconocer a los visitantes y recordar sus preferencias. También podemos usarlos para medir la eficacia de campañas publicitarias, dirigir anuncios y analizar el tráfico del sitio. En función de su ubicación, puede optar por participar o no en el uso de estas tecnologías.",
+            "banner_title": "[banner] Administrar sus preferencias de consentimiento",
+            "description": "Usamos cookies y métodos similares para reconocer a los visitantes y recordar sus preferencias. También podemos usarlos para medir la eficacia de campañas publicitarias, dirigir anuncios y analizar el tráfico del sitio. En función de su ubicación, puede optar por participar o no en el uso de estas tecnologías.",
+            "modal_link_label": "Administrar mis preferencias de consentimiento",
+            "is_default": false,
+            "privacy_policy_link_label": "Política de privacidad",
+            "privacy_policy_url": "https://privacy.example.com/",
+            "privacy_preferences_link_label": "Administrar preferencias",
+            "reject_button_label": "No participar en nada",
+            "save_button_label": "Guardar",
+            "title": "Administrar sus preferencias de consentimiento",
+            "privacy_experience_config_history_id": "pri_exp-history-modal-es-000"
+          },
+          {
+            "language": "fr-CA",
+            "accept_button_label": "Tout activer",
+            "acknowledge_button_label": "OK",
+            "banner_description": "[banner] Nous utilisons des témoins et des méthodes similaires pour reconnaitre les visiteurs et se souvenir de leurs préférences. Nous pouvons également les utiliser pour mesurer l’efficacité des campagnes de publicité, cibler les annonces et analyser le trafic du site. Selon votre emplacement, vous pouvez activer ou désactiver l’utilisation de ces technologies.",
+            "banner_title": "[banner] Gestion de vos préférences de consentement",
+            "description": "Nous utilisons des témoins et des méthodes similaires pour reconnaitre les visiteurs et se souvenir de leurs préférences. Nous pouvons également les utiliser pour mesurer l’efficacité des campagnes de publicité, cibler les annonces et analyser le trafic du site. Selon votre emplacement, vous pouvez activer ou désactiver l’utilisation de ces technologies.",
+            "modal_link_label": "Gérer mes préférences de consentement",
+            "is_default": false,
+            "privacy_policy_link_label": "Politique de confidentialité",
+            "privacy_preferences_link_label": "Gestion des préférences",
+            "reject_button_label": "Tout désactiver",
+            "save_button_label": "Sauvegarder",
+            "title": "Gestion de vos préférences de consentement",
+            "privacy_experience_config_history_id": "pri_exp-history-modal-fr-ca-000"
+          }
+        ],
+        "language": "en",
+        "dismissable": true,
+        "show_layer1_notices": false,
+        "layer1_button_options": "opt_in_opt_out",
+        "allow_language_selection": true,
+        "auto_detect_language": true,
+        "auto_subdomain_cookie_deletion": true,
+        "disabled": false,
+        "id": "pri_exp-modal-000",
+        "component": "modal",
+        "created_at": "2024-01-01T12:00:00.000000+00:00",
+        "updated_at": "2024-01-01T12:00:00.000000+00:00"
+      },
+      "id": "pri_exp-003-exp_modal",
+      "created_at": "2024-01-01T12:00:00.000000+00:00",
+      "updated_at": "2024-01-01T12:00:00.000000+00:00",
+      "privacy_notices": [
+        {
+          "name": "Data Sales and Sharing",
+          "notice_key": "data_sales_and_sharing",
+          "internal_description": null,
+          "origin": null,
+          "consent_mechanism": "opt_out",
+          "data_uses": [
+            "marketing.advertising.first_party.targeted",
+            "marketing.advertising.third_party.targeted"
+          ],
+          "enforcement_level": "frontend",
+          "disabled": false,
+          "has_gpc_flag": false,
+          "id": "pri_notice-data-sales-000",
+          "created_at": "2024-01-01T12:00:00.000000+00:00",
+          "updated_at": "2024-01-01T12:00:00.000000+00:00",
+          "default_preference": "opt_in",
+          "cookies": [],
+          "translations": [
+            {
+              "language": "en",
+              "title": "Data Sales and Sharing",
+              "description": "We may transfer or share your personal information to third parties in exchange for monetary or other valuable consideration or for the purposes of cross-contextual targeted advertising. You can learn more about what information is used for this purpose in our privacy notice.",
+              "privacy_notice_history_id": "pri_notice-history-data-sales-en-000"
+            },
+            {
+              "language": "es",
+              "title": "Venta e intercambio de datos",
+              "description": "Podemos transferir o compartir su información personal con terceros a cambio de una contraprestación monetaria u otro tipo de valor o con fines de publicidad dirigida en contextos cruzados. En nuestra política de privacidad encontrará más detalles sobre qué tipo de información se usa para este fin.",
+              "privacy_notice_history_id": "pri_notice-history-data-sales-es-000"
+            },
+            {
+              "language": "fr-CA",
+              "title": "Ventes et partage de données",
+              "description": "Nous pouvons transférer à ou partager vos informations personnelles avec des parties tierces en échange de contrepartie monétaire ou d’autres facteurs valables ou encore dans le but de publicité ciblée contextuelle croisée. Vous pouvez en apprendre plus sur l’information utilisée à ces fins dans notre avis de confidentialité.",
+              "privacy_notice_history_id": "pri_notice-history-data-sales-fr-ca-000"
+            }
+          ]
+        }
+      ],
+      "gvl": {}
+    }
+  ],
+  "total": 1,
+  "page": 1,
+  "size": 50
+}

@@ -1,10 +1,14 @@
+import threading
 import time
 import unittest.mock as mock
 from email.utils import formatdate
-from typing import Any, Dict
+from typing import Any, Dict, Generator
 
 import pytest
+from loguru import logger
 from requests import ConnectionError, Response, Session
+from werkzeug.serving import make_server
+from werkzeug.wrappers import Response as WerkzeugResponse
 
 from fides.api.common_exceptions import ClientUnsuccessfulException, ConnectionException
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType
@@ -20,7 +24,7 @@ from fides.api.util.saas_util import load_config_with_replacement
 @pytest.fixture
 def test_saas_config() -> Dict[str, Any]:
     return load_config_with_replacement(
-        "data/saas/config/segment_config.yml",
+        "data/saas/config/hubspot_config.yml",
         "<instance_fides_key>",
         "test_config",
     )
@@ -32,7 +36,7 @@ def test_connection_config(test_saas_config) -> ConnectionConfig:
         key="test_config",
         connection_type=ConnectionType.saas,
         saas_config=test_saas_config,
-        secrets={"access_token": "test_token"},
+        secrets={"private_app_token": "test_token"},
     )
 
 
@@ -57,6 +61,33 @@ def test_authenticated_client(
     return AuthenticatedClient(
         "https://ethyca.com", test_connection_config, test_client_config
     )
+
+
+@pytest.fixture
+def test_http_server() -> Generator[str, None, None]:
+    """
+    Creates a simple HTTP server for testing purposes.
+
+    This fixture sets up a Werkzeug server running on localhost with a
+    dynamically assigned port. The server responds to all requests with
+    a "Request received" message.
+
+    The server is automatically shut down after the test is complete.
+    """
+
+    def simple_app(environ, start_response):
+        logger.info("Request received")
+        response = WerkzeugResponse("Request received")
+        return response(environ, start_response)
+
+    server = make_server("localhost", 0, simple_app)
+    server_thread = threading.Thread(target=server.serve_forever)
+    server_thread.start()
+
+    yield f"http://{server.server_address[0]}:{server.server_address[1]}"
+
+    server.shutdown()
+    server_thread.join()
 
 
 @pytest.mark.unit_saas
@@ -144,6 +175,19 @@ class TestAuthenticatedClient:
             status_code=400,
             errors_to_ignore=[401],
         )
+
+    def test_sending_special_characters(
+        self, test_authenticated_client, test_http_server
+    ):
+        request_params = SaaSRequestParams(
+            method=HTTPMethod.POST,
+            path="/",
+            body='{"addr": "1234 Peterson’s Farm Rd."}',
+            headers={"Content-Type": "application/json"},
+        )
+
+        test_authenticated_client.uri = test_http_server
+        test_authenticated_client.send(request_params)
 
 
 @pytest.mark.unit_saas

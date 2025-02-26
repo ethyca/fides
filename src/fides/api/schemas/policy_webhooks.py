@@ -1,6 +1,7 @@
 from typing import List, Optional
 
 from fideslang.validation import FidesKey
+from pydantic import ConfigDict
 
 from fides.api.models.policy import WebhookDirection
 from fides.api.schemas.base_class import FidesSchema
@@ -13,47 +14,35 @@ class WebhookBase(FidesSchema):
     """Base schema for Webhooks"""
 
     direction: WebhookDirection
-    key: Optional[FidesKey]
-    name: Optional[str]
+    key: Optional[FidesKey] = None
+    name: Optional[str] = None
 
 
 class PolicyWebhookCreate(WebhookBase):
     """Request schema for creating/updating a Policy Webhook"""
 
     connection_config_key: FidesKey
-
-    class Config:
-        """Populate models with the raw value of enum fields, rather than the enum itself"""
-
-        use_enum_values = True
+    model_config = ConfigDict(use_enum_values=True)
 
 
 class PolicyWebhookResponse(WebhookBase):
     """Response schema after creating a PolicyWebhook"""
 
-    connection_config: Optional[ConnectionConfigurationResponse]
+    connection_config: Optional[ConnectionConfigurationResponse] = None
     order: int
-
-    class Config:
-        """Set orm_mode to True"""
-
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class PolicyWebhookUpdate(FidesSchema):
     """Request schema for updating a single webhook - fields are optional"""
 
-    direction: Optional[WebhookDirection]
-    name: Optional[str]
-    connection_config_key: Optional[FidesKey]
-    order: Optional[int]
-
-    class Config:
-        """Only the included attributes will be used"""
-
-        orm_mode = True
-        extra = "forbid"
-        use_enum_values = True
+    direction: Optional[WebhookDirection] = None
+    name: Optional[str] = None
+    connection_config_key: Optional[FidesKey] = None
+    order: Optional[int] = None
+    model_config = ConfigDict(
+        from_attributes=True, extra="forbid", use_enum_values=True
+    )
 
 
 class WebhookOrder(FidesSchema):
@@ -61,11 +50,7 @@ class WebhookOrder(FidesSchema):
 
     key: FidesKey
     order: int
-
-    class Config:
-        """Set orm_mode to True"""
-
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class PolicyWebhookUpdateResponse(FidesSchema):
@@ -81,8 +66,4 @@ class PolicyWebhookDeleteResponse(FidesSchema):
     """Response schema after deleting a webhook; new_order includes remaining reordered webhooks if applicable"""
 
     new_order: List[WebhookOrder]
-
-    class Config:
-        """Set orm_mode to True"""
-
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)

@@ -1,10 +1,10 @@
-import { Button, Heading, HStack, Stack } from "fidesui";
+import { AntButton as Button, Box, HStack, Stack, Text } from "fidesui";
 import { Form, Formik } from "formik";
 import { useState } from "react";
 import * as Yup from "yup";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
-import { CustomSelect, CustomTextInput } from "~/features/common/form/inputs";
+import { CustomTextInput } from "~/features/common/form/inputs";
 import {
   isErrorResult,
   ParsedError,
@@ -19,6 +19,8 @@ import {
 } from "~/types/api";
 import { RTKErrorResult } from "~/types/errors";
 
+import { ControlledSelect } from "../common/form/ControlledSelect";
+import { NextBreadcrumb } from "../common/nav/NextBreadcrumb";
 import {
   changeStep,
   selectOrganizationFidesKey,
@@ -72,7 +74,7 @@ const AuthenticateAwsForm = () => {
     successAlert(
       `Your scan was successfully completed, with ${systems.length} new systems detected!`,
       `Scan Successfully Completed`,
-      { isClosable: true }
+      { isClosable: true },
     );
   };
   const handleError = (error: RTKErrorResult["error"]) => {
@@ -128,19 +130,31 @@ const AuthenticateAwsForm = () => {
             ) : null}
             {!isSubmitting && !scannerError ? (
               <>
-                <Heading size="lg">Authenticate AWS Scanner</Heading>
-                <h2>
-                  To use the scanner to inventory systems in AWS, you must first
-                  authenticate to your AWS cloud by providing the following
-                  information:
-                </h2>
+                <Box>
+                  <NextBreadcrumb
+                    className="mb-4"
+                    items={[
+                      {
+                        title: "Add systems",
+                        href: "",
+                        onClick: (e) => {
+                          e.preventDefault();
+                          handleCancel();
+                        },
+                      },
+                      { title: "Authenticate AWS Scanner" },
+                    ]}
+                  />
+                  <Text>
+                    To use the scanner to inventory systems in AWS, you must
+                    first authenticate to your AWS cloud by providing the
+                    following information:
+                  </Text>
+                </Box>
                 <Stack>
                   <CustomTextInput
                     name="aws_access_key_id"
                     label="Access Key ID"
-                    // TODO(#724): These fields should link to the AWS docs, but that requires HTML
-                    // content instead of just a string label. The message would be:
-                    // "You can find more information about creating access keys and secrets on AWS docs here."
                     tooltip="The Access Key ID created by the cloud hosting provider."
                     isRequired
                   />
@@ -148,7 +162,6 @@ const AuthenticateAwsForm = () => {
                     type="password"
                     name="aws_secret_access_key"
                     label="Secret"
-                    // "You can find more about creating access keys and secrets on AWS docs here."
                     tooltip="The secret associated with the Access Key ID used for authentication."
                     isRequired
                   />
@@ -156,33 +169,30 @@ const AuthenticateAwsForm = () => {
                     type="password"
                     name="aws_session_token"
                     label="Session Token"
-                    // "You can find more about creating access keys and secrets on AWS docs here."
                     tooltip="The session token when using temporary credentials."
                   />
-                  <CustomSelect
+                  <ControlledSelect
                     name="region_name"
                     label="AWS Region"
-                    // "You can learn more about regions in AWS docs here."
                     tooltip="The geographic region of the cloud hosting provider you would like to scan."
                     options={AWS_REGION_OPTIONS}
                     isRequired
+                    placeholder="Select a region"
                   />
                 </Stack>
               </>
             ) : null}
             {!isSubmitting ? (
               <HStack>
-                <Button variant="outline" onClick={handleCancel}>
-                  Cancel
-                </Button>
+                <Button onClick={handleCancel}>Cancel</Button>
                 <Button
-                  type="submit"
-                  variant="primary"
-                  isDisabled={!dirty || !isValid}
-                  isLoading={isLoading}
+                  htmlType="submit"
+                  type="primary"
+                  disabled={!dirty || !isValid}
+                  loading={isLoading}
                   data-testid="submit-btn"
                 >
-                  Save and Continue
+                  Save and continue
                 </Button>
               </HStack>
             ) : null}

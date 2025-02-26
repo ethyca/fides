@@ -9,10 +9,18 @@
  */
 import type { TCData } from "@iabtechlabtcf/cmpapi";
 import { TCString } from "@iabtechlabtcf/core";
+
+import {
+  defaultShowModal,
+  FidesCookie,
+  isPrivacyExperience,
+  shouldResurfaceConsent,
+} from "./fides";
+import { blueconic } from "./integrations/blueconic";
 import { gtm } from "./integrations/gtm";
 import { meta } from "./integrations/meta";
 import { shopify } from "./integrations/shopify";
-
+import { isConsentOverride, raise } from "./lib/common-utils";
 import {
   FidesConfig,
   FidesExperienceTranslationOverrides,
@@ -24,33 +32,27 @@ import {
   OverrideType,
   PrivacyExperience,
 } from "./lib/consent-types";
-
-import { initializeTcfCmpApi } from "./lib/tcf";
+import { initializeDebugger } from "./lib/debugger";
+import { dispatchFidesEvent, onFidesEvent } from "./lib/events";
+import type { GppFunction } from "./lib/gpp/types";
+import { DEFAULT_MODAL_LINK_LABEL } from "./lib/i18n";
 import {
   getInitialCookie,
   getInitialFides,
   getOverridesByType,
   initialize,
+  UpdateExperienceFn,
 } from "./lib/initialize";
-import { dispatchFidesEvent } from "./lib/events";
-import {
-  debugLog,
-  FidesCookie,
-  defaultShowModal,
-  isPrivacyExperience,
-  shouldResurfaceConsent,
-} from "./fides";
-import { renderOverlay } from "./lib/tcf/renderOverlay";
-import type { GppFunction } from "./lib/gpp/types";
-import { makeStub } from "./lib/tcf/stub";
-import { customGetConsentPreferences } from "./services/external/preferences";
+import { initOverlay } from "./lib/initOverlay";
+import { initializeTcfCmpApi } from "./lib/tcf";
 import { decodeFidesString } from "./lib/tcf/fidesString";
+import { renderOverlay } from "./lib/tcf/renderOverlay";
+import { makeStub } from "./lib/tcf/stub";
 import {
   buildTcfEntitiesFromCookieAndFidesString,
   updateExperienceFromCookieConsentTcf,
 } from "./lib/tcf/utils";
-import { DEFAULT_MODAL_LINK_LABEL } from "./lib/i18n";
-import { raise } from "./lib/common-utils";
+import { customGetConsentPreferences } from "./services/external/preferences";
 
 declare global {
   interface Window {
@@ -61,7 +63,7 @@ declare global {
       command: string,
       version: number,
       callback: (tcData: TCData, success: boolean) => void,
-      parameter?: number | string
+      parameter?: number | string,
     ) => void;
     __gpp?: GppFunction;
     __gppLocator?: Window;
@@ -74,16 +76,10 @@ const updateWindowFides = (fidesGlobal: FidesGlobal) => {
   }
 };
 
-const updateExperience = ({
+const updateExperience: UpdateExperienceFn = ({
   cookie,
   experience,
-  debug = false,
   isExperienceClientSideFetched,
-}: {
-  cookie: FidesCookie;
-  experience: PrivacyExperience;
-  debug?: boolean;
-  isExperienceClientSideFetched: boolean;
 }): Partial<PrivacyExperience> => {
   if (!isExperienceClientSideFetched) {
     // If it's not client side fetched, we don't update anything since the cookie has already
@@ -94,14 +90,13 @@ const updateExperience = ({
   // We need the cookie.fides_string to attach user preference to an experience.
   // If this does not exist, we should assume no user preference has been given and leave the experience as is.
   if (cookie.fides_string) {
-    debugLog(
-      debug,
+    fidesDebugger(
       "Overriding preferences from client-side fetched experience with cookie fides_string consent",
-      cookie.fides_string
+      cookie.fides_string,
     );
     const tcfEntities = buildTcfEntitiesFromCookieAndFidesString(
       experience,
-      cookie
+      cookie,
     );
     return tcfEntities;
   }
@@ -121,13 +116,27 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
     (this.config as FidesConfig) ??
     raise("Fides must be initialized with a configuration object");
 
+  initializeDebugger(!!config.options?.debug);
+
   this.config = config; // no matter how the config is set, we want to store it on the global object
   updateWindowFides(this);
+
+  dispatchFidesEvent(
+    "FidesInitializing",
+    undefined,
+    this.config.options.debug,
+    {
+      gppEnabled:
+        this.config.options.gppEnabled ||
+        this.config.experience?.gpp_settings?.enabled,
+      tcfEnabled: this.config.options.tcfEnabled,
+    },
+  );
 
   const optionsOverrides: Partial<FidesInitOptionsOverrides> =
     getOverridesByType<Partial<FidesInitOptionsOverrides>>(
       OverrideType.OPTIONS,
-      config
+      config,
     );
   makeStub({
     gdprAppliesDefault: optionsOverrides?.fidesTcfGdprApplies,
@@ -135,7 +144,7 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
   const experienceTranslationOverrides: Partial<FidesExperienceTranslationOverrides> =
     getOverridesByType<Partial<FidesExperienceTranslationOverrides>>(
       OverrideType.EXPERIENCE_TRANSLATION,
-      config
+      config,
     );
   const consentPrefsOverrides: GetPreferencesFnResp | null =
     await customGetConsentPreferences(config);
@@ -179,9 +188,8 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
       };
       this.cookie = { ...this.cookie, ...updatedCookie };
     } catch (error) {
-      debugLog(
-        config.options.debug,
-        `Could not decode tcString from ${fidesString}, it may be invalid. ${error}`
+      fidesDebugger(
+        `Could not decode tcString from ${fidesString}, it may be invalid. ${error}`,
       );
     }
   }
@@ -204,9 +212,11 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
   const updatedFides = await initialize({
     ...config,
     fides: this,
+    initOverlay,
     renderOverlay,
     updateExperience,
     overrides,
+    propertyId: config.propertyId,
   });
   Object.assign(this, updatedFides);
   updateWindowFides(this);
@@ -233,8 +243,8 @@ const _Fides: FidesGlobal = {
     modalLinkId: null,
     privacyCenterUrl: "",
     fidesApiUrl: "",
-    serverSideFidesApiUrl: "",
     tcfEnabled: true,
+    gppEnabled: false,
     fidesEmbed: false,
     fidesDisableSaveApi: false,
     fidesDisableNoticesServedApi: false,
@@ -249,11 +259,14 @@ const _Fides: FidesGlobal = {
     base64Cookie: false,
     fidesPrimaryColor: null,
     fidesClearCookie: false,
+    showFidesBrandLink: false,
+    fidesConsentOverride: null,
   },
   fides_meta: {},
   identity: {},
   tcf_consent: {},
   saved_consent: {},
+  blueconic,
   gtm,
   init,
   config: undefined,
@@ -263,9 +276,15 @@ const _Fides: FidesGlobal = {
     }
     return this.init();
   },
+  initialized: false,
+  onFidesEvent,
   shouldShowExperience() {
     if (!isPrivacyExperience(this.experience)) {
       // Nothing to show if there's no experience
+      return false;
+    }
+    if (isConsentOverride(this.options)) {
+      // If consent preference was automatic, we should not show the experience
       return false;
     }
     if (!this.cookie) {
@@ -274,10 +293,9 @@ const _Fides: FidesGlobal = {
     return shouldResurfaceConsent(
       this.experience,
       this.cookie,
-      this.saved_consent
+      this.saved_consent,
     );
   },
-  initialized: false,
   meta,
   shopify,
   showModal: defaultShowModal,
@@ -289,11 +307,11 @@ if (typeof window !== "undefined") {
 }
 
 // Export everything from ./lib/* to use when importing fides-tcf.mjs as a module
-export * from "./lib/initOverlay";
 export * from "./lib/consent-context";
 export * from "./lib/consent-types";
 export * from "./lib/consent-utils";
-export * from "./lib/shared-consent-utils";
 export * from "./lib/consent-value";
 export * from "./lib/cookie";
 export * from "./lib/events";
+export * from "./lib/initOverlay";
+export * from "./lib/shared-consent-utils";

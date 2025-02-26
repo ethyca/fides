@@ -21,5 +21,5 @@ const EMPTY_PURPOSES: PurposesResponse = {
 export const selectPurposes: (state: RootState) => PurposesResponse =
   createSelector(
     purposeApi.endpoints.getPurposes.select(),
-    ({ data }) => data || EMPTY_PURPOSES
+    ({ data }) => data || EMPTY_PURPOSES,
   );

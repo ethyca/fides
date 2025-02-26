@@ -17,6 +17,8 @@ from loguru import logger
 from sqlalchemy import text
 from sqlalchemy.engine import ResultProxy
 
+from fides.api.alembic.migrations.helpers.database_functions import generate_record_id
+
 # revision identifiers, used by Alembic.
 
 revision = "14acee6f5459"
@@ -177,10 +179,6 @@ KNOWN_EXISTING_EXPERIENCE_CONFIGS = {
     "pri-097a-d00d-40b6-a08f-f8e50def-pri",
     "a4974670-abad-471f-9084-2cb-tcf-over",
 }
-
-
-def generate_record_id(prefix):
-    return prefix + "_" + str(uuid.uuid4())
 
 
 # this ties a DB record ID to our logical identifier of the type of OOB experience.
@@ -847,7 +845,7 @@ def migrate_notices(bind):
             SELECT :record_id, name, description, origin, consent_mechanism, data_uses, :new_version, disabled, enforcement_level, has_gpc_flag, internal_description, notice_key, gpp_field_mapping, framework, :language, title, translation_id, privacy_notice_id
             FROM privacynoticehistory
             WHERE version = :current_version AND
-            privacy_notice_id = :privacy_notice_id 
+            privacy_notice_id = :privacy_notice_id
             ORDER BY created_at DESC LIMIT 1
         """
         )

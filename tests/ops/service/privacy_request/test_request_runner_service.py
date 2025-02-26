@@ -1,27 +1,23 @@
 # pylint: disable=missing-docstring, redefined-outer-name
 import time
-from datetime import datetime, timezone
 from typing import Any, Dict, List, Set
 from unittest import mock
 from unittest.mock import ANY, Mock, call
-from uuid import uuid4
 
 import pydash
 import pytest
-from boto3.dynamodb.types import TypeDeserializer
 from pydantic import ValidationError
-from sqlalchemy import column, select, table
 from sqlalchemy.orm import Session
+from sqlalchemy.orm.attributes import flag_modified
 
 from fides.api.common_exceptions import (
     ClientUnsuccessfulException,
     PrivacyRequestPaused,
 )
-from fides.api.graph.config import CollectionAddress, FieldPath
 from fides.api.graph.graph import DatasetGraph
 from fides.api.models.application_config import ApplicationConfig
-from fides.api.models.audit_log import AuditLog, AuditLogAction
-from fides.api.models.policy import CurrentStep, PolicyPostWebhook
+from fides.api.models.datasetconfig import DatasetConfig
+from fides.api.models.policy import PolicyPostWebhook
 from fides.api.models.privacy_request import (
     ActionType,
     CheckpointActionRequired,
@@ -31,42 +27,28 @@ from fides.api.models.privacy_request import (
     PrivacyRequest,
     PrivacyRequestStatus,
 )
-from fides.api.schemas.external_https import SecondPartyResponseFormat
-from fides.api.schemas.masking.masking_configuration import (
-    HmacMaskingConfiguration,
-    MaskingConfiguration,
-)
+from fides.api.schemas.masking.masking_configuration import MaskingConfiguration
 from fides.api.schemas.masking.masking_secrets import MaskingSecretCache
 from fides.api.schemas.messaging.messaging import (
     AccessRequestCompleteBodyParams,
     MessagingActionType,
     MessagingServiceType,
 )
-from fides.api.schemas.policy import Rule
+from fides.api.schemas.policy import CurrentStep, Rule
 from fides.api.schemas.privacy_request import Consent
 from fides.api.schemas.redis_cache import Identity
-from fides.api.schemas.saas.saas_config import SaaSRequest
-from fides.api.schemas.saas.shared_schemas import HTTPMethod, SaaSRequestParams
-from fides.api.service.connectors.dynamodb_connector import DynamoDBConnector
-from fides.api.service.connectors.saas_connector import SaaSConnector
-from fides.api.service.connectors.sql_connector import (
-    RedshiftConnector,
-    SnowflakeConnector,
-)
 from fides.api.service.masking.strategy.masking_strategy import MaskingStrategy
-from fides.api.service.masking.strategy.masking_strategy_hmac import HmacMaskingStrategy
 from fides.api.service.privacy_request.request_runner_service import (
     build_consent_dataset_graph,
     needs_batch_email_send,
     run_webhooks_and_report_status,
 )
-from fides.api.util.data_category import DataCategory
 from fides.common.api.v1.urn_registry import REQUEST_TASK_CALLBACK, V1_URL_PREFIX
 from fides.config import CONFIG
 
 PRIVACY_REQUEST_TASK_TIMEOUT = 5
 # External services take much longer to return
-PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL = 30
+PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL = 100
 
 
 @pytest.fixture(scope="function")
@@ -376,1608 +358,6 @@ def get_privacy_request_results(
     return PrivacyRequest.get(db=db, object_id=privacy_request.id)
 
 
-@pytest.mark.integration_postgres
-@pytest.mark.integration
-@mock.patch("fides.api.service.privacy_request.request_runner_service.upload")
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
-)
-def test_upload_access_results_has_data_category_field_mapping(
-    upload_mock: Mock,
-    postgres_example_test_dataset_config_read_access,
-    postgres_integration_db,
-    db,
-    policy,
-    dsr_version,
-    request,
-    run_privacy_request_task,
-):
-    """
-    Ensure we are passing along a correctly populated data_category_field_mapping to the 'upload' function
-    that publishes the access request output.
-    """
-    upload_mock.return_value = "http://www.data-download-url"
-
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
-    customer_email = "customer-1@example.com"
-    data = {
-        "requested_at": "2021-08-30T16:09:37.359Z",
-        "policy_key": policy.key,
-        "identity": {"email": customer_email},
-    }
-
-    pr = get_privacy_request_results(
-        db,
-        policy,
-        run_privacy_request_task,
-        data,
-    )
-
-    # sanity check that acccess results returned as expected
-    results = pr.get_raw_access_results()
-    assert len(results.keys()) == 11
-
-    # what we're really testing - ensure data_category_field_mapping arg is well-populated
-    args, kwargs = upload_mock.call_args
-    data_category_field_mapping = kwargs["data_category_field_mapping"]
-
-    # make sure the category field mapping generally looks as we expect
-    address_mapping = data_category_field_mapping[
-        CollectionAddress.from_string("postgres_example_test_dataset:address")
-    ]
-    assert len(address_mapping) >= 5
-    assert address_mapping["user.contact.address.street"] == [
-        FieldPath("house"),
-        FieldPath("street"),
-    ]
-    product_mapping = data_category_field_mapping[
-        CollectionAddress.from_string("postgres_example_test_dataset:product")
-    ]
-    assert len(product_mapping) >= 1
-    assert product_mapping["system.operations"] == [
-        FieldPath(
-            "id",
-        ),
-        FieldPath(
-            "name",
-        ),
-        FieldPath(
-            "price",
-        ),
-    ]
-
-
-@pytest.mark.integration_postgres
-@pytest.mark.integration
-@mock.patch("fides.api.service.privacy_request.request_runner_service.upload")
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
-)
-def test_upload_access_results_has_data_use_map(
-    upload_mock: Mock,
-    postgres_example_test_dataset_config_read_access,
-    postgres_integration_db,
-    db,
-    policy,
-    dsr_version,
-    request,
-    run_privacy_request_task,
-):
-    """
-    Ensure we are passing along a correctly populated data_use_map to the 'upload' function
-    that publishes the access request output.
-    """
-    upload_mock.return_value = "http://www.data-download-url"
-
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
-    customer_email = "customer-1@example.com"
-    data = {
-        "requested_at": "2021-08-30T16:09:37.359Z",
-        "policy_key": policy.key,
-        "identity": {"email": customer_email},
-    }
-
-    pr = get_privacy_request_results(
-        db,
-        policy,
-        run_privacy_request_task,
-        data,
-    )
-
-    # sanity check that access results returned as expected
-    results = pr.get_raw_access_results()
-    assert len(results.keys()) == 11
-
-    # what we're really testing - ensure data_use_map arg is well-populated
-    args, kwargs = upload_mock.call_args
-    data_use_map = kwargs["data_use_map"]
-
-    assert data_use_map == {
-        "postgres_example_test_dataset:report": "{'marketing.advertising'}",
-        "postgres_example_test_dataset:employee": "{'marketing.advertising'}",
-        "postgres_example_test_dataset:customer": "{'marketing.advertising'}",
-        "postgres_example_test_dataset:service_request": "{'marketing.advertising'}",
-        "postgres_example_test_dataset:visit": "{'marketing.advertising'}",
-        "postgres_example_test_dataset:address": "{'marketing.advertising'}",
-        "postgres_example_test_dataset:login": "{'marketing.advertising'}",
-        "postgres_example_test_dataset:orders": "{'marketing.advertising'}",
-        "postgres_example_test_dataset:payment_card": "{'marketing.advertising'}",
-        "postgres_example_test_dataset:order_item": "{'marketing.advertising'}",
-        "postgres_example_test_dataset:product": "{'marketing.advertising'}",
-    }
-
-
-@pytest.mark.integration_postgres
-@pytest.mark.integration
-@mock.patch("fides.api.models.privacy_request.PrivacyRequest.trigger_policy_webhook")
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
-)
-def test_create_and_process_access_request_postgres(
-    trigger_webhook_mock,
-    postgres_example_test_dataset_config_read_access,
-    postgres_integration_db,
-    db,
-    cache,
-    dsr_version,
-    request,
-    policy,
-    policy_pre_execution_webhooks,
-    policy_post_execution_webhooks,
-    run_privacy_request_task,
-):
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
-    customer_email = "customer-1@example.com"
-    data = {
-        "requested_at": "2021-08-30T16:09:37.359Z",
-        "policy_key": policy.key,
-        "identity": {"email": customer_email},
-    }
-
-    pr = get_privacy_request_results(
-        db,
-        policy,
-        run_privacy_request_task,
-        data,
-    )
-
-    results = pr.get_raw_access_results()
-    assert len(results.keys()) == 11
-
-    for key in results.keys():
-        assert results[key] is not None
-        assert results[key] != {}
-
-    result_key_prefix = f"postgres_example_test_dataset:"
-    customer_key = result_key_prefix + "customer"
-    assert results[customer_key][0]["email"] == customer_email
-
-    visit_key = result_key_prefix + "visit"
-    assert results[visit_key][0]["email"] == customer_email
-    log_id = pr.execution_logs[0].id
-    pr_id = pr.id
-
-    finished_audit_log: AuditLog = AuditLog.filter(
-        db=db,
-        conditions=(
-            (AuditLog.privacy_request_id == pr_id)
-            & (AuditLog.action == AuditLogAction.finished)
-        ),
-    ).first()
-
-    assert finished_audit_log is not None
-
-    # Both pre-execution webhooks and both post-execution webhooks were called
-    assert trigger_webhook_mock.call_count == 4
-
-    for webhook in policy_pre_execution_webhooks:
-        webhook.delete(db=db)
-
-    for webhook in policy_post_execution_webhooks:
-        webhook.delete(db=db)
-
-    policy.delete(db=db)
-    pr.delete(db=db)
-    assert not pr in db  # Check that `pr` has been expunged from the session
-    assert ExecutionLog.get(db, object_id=log_id).privacy_request_id == pr_id
-
-
-@pytest.mark.integration_postgres
-@pytest.mark.integration
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
-)
-@mock.patch("fides.api.models.privacy_request.PrivacyRequest.trigger_policy_webhook")
-def test_create_and_process_access_request_with_custom_identities_postgres(
-    trigger_webhook_mock,
-    postgres_example_test_dataset_config_read_access,
-    postgres_example_test_extended_dataset_config,
-    postgres_integration_db,
-    db,
-    cache,
-    policy,
-    dsr_version,
-    request,
-    policy_pre_execution_webhooks,
-    policy_post_execution_webhooks,
-    run_privacy_request_task,
-):
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
-    customer_email = "customer-1@example.com"
-    loyalty_id = "CH-1"
-    data = {
-        "requested_at": "2021-08-30T16:09:37.359Z",
-        "policy_key": policy.key,
-        "identity": {
-            "email": customer_email,
-            "loyalty_id": {"label": "Loyalty ID", "value": loyalty_id},
-        },
-    }
-
-    pr = get_privacy_request_results(
-        db,
-        policy,
-        run_privacy_request_task,
-        data,
-    )
-
-    results = pr.get_raw_access_results()
-    assert len(results.keys()) == 12
-
-    for key in results.keys():
-        assert results[key] is not None
-        assert results[key] != {}
-
-    result_key_prefix = f"postgres_example_test_dataset:"
-    customer_key = result_key_prefix + "customer"
-    assert results[customer_key][0]["email"] == customer_email
-
-    visit_key = result_key_prefix + "visit"
-    assert results[visit_key][0]["email"] == customer_email
-
-    loyalty_key = f"postgres_example_test_extended_dataset:loyalty"
-    assert results[loyalty_key][0]["id"] == loyalty_id
-
-    log_id = pr.execution_logs[0].id
-    pr_id = pr.id
-
-    finished_audit_log: AuditLog = AuditLog.filter(
-        db=db,
-        conditions=(
-            (AuditLog.privacy_request_id == pr_id)
-            & (AuditLog.action == AuditLogAction.finished)
-        ),
-    ).first()
-
-    assert finished_audit_log is not None
-
-    # Both pre-execution webhooks and both post-execution webhooks were called
-    assert trigger_webhook_mock.call_count == 4
-
-    for webhook in policy_pre_execution_webhooks:
-        webhook.delete(db=db)
-
-    for webhook in policy_post_execution_webhooks:
-        webhook.delete(db=db)
-
-    policy.delete(db=db)
-    pr.delete(db=db)
-    assert not pr in db  # Check that `pr` has been expunged from the session
-    assert ExecutionLog.get(db, object_id=log_id).privacy_request_id == pr_id
-
-
-@pytest.mark.integration_postgres
-@pytest.mark.integration
-@pytest.mark.usefixtures(
-    "postgres_example_test_dataset_config_skipped_login_collection",
-    "postgres_integration_db",
-    "cache",
-)
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
-)
-def test_create_and_process_access_request_with_valid_skipped_collection(
-    db,
-    policy,
-    run_privacy_request_task,
-    dsr_version,
-    request,
-):
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
-    customer_email = "customer-1@example.com"
-    data = {
-        "requested_at": "2021-08-30T16:09:37.359Z",
-        "policy_key": policy.key,
-        "identity": {"email": customer_email},
-    }
-
-    pr = get_privacy_request_results(
-        db,
-        policy,
-        run_privacy_request_task,
-        data,
-    )
-
-    results = pr.get_raw_access_results()
-    assert len(results.keys()) == 10
-
-    assert "login" not in results.keys()
-
-    result_key_prefix = f"postgres_example_test_dataset:"
-    customer_key = result_key_prefix + "customer"
-    assert results[customer_key][0]["email"] == customer_email
-
-    assert AuditLog.filter(
-        db=db,
-        conditions=(
-            (AuditLog.privacy_request_id == pr.id)
-            & (AuditLog.action == AuditLogAction.finished)
-        ),
-    ).first()
-
-
-@pytest.mark.integration_postgres
-@pytest.mark.integration
-@pytest.mark.usefixtures(
-    "postgres_example_test_dataset_config_skipped_address_collection",
-    "postgres_integration_db",
-    "cache",
-)
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
-)
-def test_create_and_process_access_request_with_invalid_skipped_collection(
-    db,
-    policy,
-    dsr_version,
-    request,
-    run_privacy_request_task,
-):
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
-    customer_email = "customer-1@example.com"
-    data = {
-        "requested_at": "2021-08-30T16:09:37.359Z",
-        "policy_key": policy.key,
-        "identity": {"email": customer_email},
-    }
-
-    pr = get_privacy_request_results(
-        db,
-        policy,
-        run_privacy_request_task,
-        data,
-    )
-
-    results = pr.get_raw_access_results()
-    assert len(results.keys()) == 0
-
-    db.refresh(pr)
-
-    assert pr.status == PrivacyRequestStatus.error
-
-
-@pytest.mark.integration
-@mock.patch("fides.api.models.privacy_request.PrivacyRequest.trigger_policy_webhook")
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
-)
-def test_create_and_process_access_request_mssql(
-    trigger_webhook_mock,
-    mssql_example_test_dataset_config,
-    mssql_integration_db,
-    db,
-    cache,
-    policy,
-    dsr_version,
-    request,
-    policy_pre_execution_webhooks,
-    policy_post_execution_webhooks,
-    run_privacy_request_task,
-):
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
-    customer_email = "customer-1@example.com"
-    data = {
-        "requested_at": "2021-08-30T16:09:37.359Z",
-        "policy_key": policy.key,
-        "identity": {"email": customer_email},
-    }
-
-    pr = get_privacy_request_results(
-        db,
-        policy,
-        run_privacy_request_task,
-        data,
-    )
-
-    results = pr.get_raw_access_results()
-    assert len(results.keys()) == 11
-
-    for key in results.keys():
-        assert results[key] is not None
-        assert results[key] != {}
-
-    result_key_prefix = f"mssql_example_test_dataset:"
-    customer_key = result_key_prefix + "customer"
-    assert results[customer_key][0]["email"] == customer_email
-
-    visit_key = result_key_prefix + "visit"
-    assert results[visit_key][0]["email"] == customer_email
-    # Both pre-execution webhooks and both post-execution webhooks were called
-    assert trigger_webhook_mock.call_count == 4
-    pr.delete(db=db)
-
-
-@pytest.mark.integration
-@mock.patch("fides.api.models.privacy_request.PrivacyRequest.trigger_policy_webhook")
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
-)
-def test_create_and_process_access_request_mysql(
-    trigger_webhook_mock,
-    mysql_example_test_dataset_config,
-    mysql_integration_db,
-    db,
-    cache,
-    policy,
-    dsr_version,
-    request,
-    policy_pre_execution_webhooks,
-    policy_post_execution_webhooks,
-    run_privacy_request_task,
-):
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
-    customer_email = "customer-1@example.com"
-    data = {
-        "requested_at": "2021-08-30T16:09:37.359Z",
-        "policy_key": policy.key,
-        "identity": {"email": customer_email},
-    }
-
-    pr = get_privacy_request_results(
-        db,
-        policy,
-        run_privacy_request_task,
-        data,
-    )
-
-    results = pr.get_raw_access_results()
-    assert len(results.keys()) == 11
-
-    for key in results.keys():
-        assert results[key] is not None
-        assert results[key] != {}
-
-    result_key_prefix = f"mysql_example_test_dataset:"
-    customer_key = result_key_prefix + "customer"
-    assert results[customer_key][0]["email"] == customer_email
-
-    visit_key = result_key_prefix + "visit"
-    assert results[visit_key][0]["email"] == customer_email
-    # Both pre-execution webhooks and both post-execution webhooks were called
-    assert trigger_webhook_mock.call_count == 4
-    pr.delete(db=db)
-
-
-@pytest.mark.integration_mariadb
-@pytest.mark.integration
-@mock.patch("fides.api.models.privacy_request.PrivacyRequest.trigger_policy_webhook")
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
-)
-def test_create_and_process_access_request_mariadb(
-    trigger_webhook_mock,
-    mariadb_example_test_dataset_config,
-    mariadb_integration_db,
-    db,
-    cache,
-    policy,
-    dsr_version,
-    request,
-    policy_pre_execution_webhooks,
-    policy_post_execution_webhooks,
-    run_privacy_request_task,
-):
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
-    customer_email = "customer-1@example.com"
-    data = {
-        "requested_at": "2021-08-30T16:09:37.359Z",
-        "policy_key": policy.key,
-        "identity": {"email": customer_email},
-    }
-
-    pr = get_privacy_request_results(
-        db,
-        policy,
-        run_privacy_request_task,
-        data,
-    )
-
-    results = pr.get_raw_access_results()
-    assert len(results.keys()) == 11
-
-    for key in results.keys():
-        assert results[key] is not None
-        assert results[key] != {}
-
-    result_key_prefix = "mariadb_example_test_dataset:"
-    customer_key = result_key_prefix + "customer"
-    assert results[customer_key][0]["email"] == customer_email
-
-    visit_key = result_key_prefix + "visit"
-    assert results[visit_key][0]["email"] == customer_email
-    # Both pre-execution webhooks and both post-execution webhooks were called
-    assert trigger_webhook_mock.call_count == 4
-    pr.delete(db=db)
-
-
-@pytest.mark.integration_saas
-@mock.patch("fides.api.models.privacy_request.PrivacyRequest.trigger_policy_webhook")
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
-)
-def test_create_and_process_access_request_saas_mailchimp(
-    trigger_webhook_mock,
-    mailchimp_connection_config,
-    mailchimp_dataset_config,
-    db,
-    cache,
-    policy,
-    policy_pre_execution_webhooks,
-    policy_post_execution_webhooks,
-    dsr_version,
-    request,
-    mailchimp_identity_email,
-    run_privacy_request_task,
-):
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
-    customer_email = mailchimp_identity_email
-    data = {
-        "requested_at": "2021-08-30T16:09:37.359Z",
-        "policy_key": policy.key,
-        "identity": {"email": customer_email},
-    }
-
-    pr = get_privacy_request_results(
-        db,
-        policy,
-        run_privacy_request_task,
-        data,
-        task_timeout=PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL,
-    )
-    results = pr.get_raw_access_results()
-    assert len(results.keys()) == 3
-
-    for key in results.keys():
-        assert results[key] is not None
-        assert results[key] != {}
-
-    result_key_prefix = f"mailchimp_instance:"
-    member_key = result_key_prefix + "member"
-    assert results[member_key][0]["email_address"] == customer_email
-
-    # Both pre-execution webhooks and both post-execution webhooks were called
-    assert trigger_webhook_mock.call_count == 4
-
-    pr.delete(db=db)
-
-
-@pytest.mark.integration_saas
-@mock.patch("fides.api.models.privacy_request.PrivacyRequest.trigger_policy_webhook")
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
-)
-def test_create_and_process_erasure_request_saas(
-    _,
-    mailchimp_connection_config,
-    mailchimp_dataset_config,
-    db,
-    cache,
-    erasure_policy_hmac,
-    generate_auth_header,
-    dsr_version,
-    request,
-    mailchimp_identity_email,
-    reset_mailchimp_data,
-    run_privacy_request_task,
-):
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
-    customer_email = mailchimp_identity_email
-    data = {
-        "requested_at": "2021-08-30T16:09:37.359Z",
-        "policy_key": erasure_policy_hmac.key,
-        "identity": {"email": customer_email},
-    }
-
-    pr = get_privacy_request_results(
-        db,
-        erasure_policy_hmac,
-        run_privacy_request_task,
-        data,
-        task_timeout=PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL,
-    )
-
-    connector = SaaSConnector(mailchimp_connection_config)
-    connector.set_saas_request_state(
-        SaaSRequest(path="test_path", method=HTTPMethod.GET)
-    )  # dummy request as connector requires it
-    request: SaaSRequestParams = SaaSRequestParams(
-        method=HTTPMethod.GET,
-        path="/3.0/search-members",
-        query_params={"query": mailchimp_identity_email},
-    )
-    resp = connector.create_client().send(request)
-    body = resp.json()
-    merge_fields = body["exact_matches"]["members"][0]["merge_fields"]
-
-    masking_configuration = HmacMaskingConfiguration()
-    masking_strategy = HmacMaskingStrategy(masking_configuration)
-
-    assert (
-        merge_fields["FNAME"]
-        == masking_strategy.mask(
-            [reset_mailchimp_data["merge_fields"]["FNAME"]], pr.id
-        )[0]
-    )
-    assert (
-        merge_fields["LNAME"]
-        == masking_strategy.mask(
-            [reset_mailchimp_data["merge_fields"]["LNAME"]], pr.id
-        )[0]
-    )
-
-    pr.delete(db=db)
-
-
-@pytest.mark.integration_saas
-@mock.patch("fides.api.models.privacy_request.PrivacyRequest.trigger_policy_webhook")
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
-)
-def test_create_and_process_access_request_saas_hubspot(
-    trigger_webhook_mock,
-    connection_config_hubspot,
-    dataset_config_hubspot,
-    db,
-    cache,
-    policy,
-    policy_pre_execution_webhooks,
-    policy_post_execution_webhooks,
-    dsr_version,
-    request,
-    hubspot_identity_email,
-    run_privacy_request_task,
-):
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
-    customer_email = hubspot_identity_email
-    data = {
-        "requested_at": "2021-08-30T16:09:37.359Z",
-        "policy_key": policy.key,
-        "identity": {"email": customer_email},
-    }
-
-    pr = get_privacy_request_results(
-        db,
-        policy,
-        run_privacy_request_task,
-        data,
-        task_timeout=PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL,
-    )
-    results = pr.get_raw_access_results()
-    assert len(results.keys()) == 4
-
-    for key in results.keys():
-        assert results[key] is not None
-        assert results[key] != {}
-
-    result_key_prefix = f"hubspot_instance:"
-    contacts_key = result_key_prefix + "contacts"
-    assert results[contacts_key][0]["properties"]["email"] == customer_email
-
-    # Both pre-execution webhooks and both post-execution webhooks were called
-    assert trigger_webhook_mock.call_count == 4
-
-    pr.delete(db=db)
-
-
-@pytest.mark.integration_postgres
-@pytest.mark.integration
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
-)
-def test_create_and_process_erasure_request_specific_category_postgres(
-    postgres_integration_db,
-    postgres_example_test_dataset_config,
-    cache,
-    db,
-    generate_auth_header,
-    erasure_policy,
-    dsr_version,
-    request,
-    read_connection_config,
-    run_privacy_request_task,
-):
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
-    customer_email = "customer-1@example.com"
-    customer_id = 1
-    data = {
-        "requested_at": "2021-08-30T16:09:37.359Z",
-        "policy_key": erasure_policy.key,
-        "identity": {"email": customer_email},
-    }
-
-    stmt = select("*").select_from(table("customer"))
-    res = postgres_integration_db.execute(stmt).all()
-
-    pr = get_privacy_request_results(
-        db,
-        erasure_policy,
-        run_privacy_request_task,
-        data,
-    )
-    pr.delete(db=db)
-
-    stmt = select(
-        column("id"),
-        column("name"),
-    ).select_from(table("customer"))
-    res = postgres_integration_db.execute(stmt).all()
-
-    customer_found = False
-    for row in res:
-        if customer_id == row.id:
-            customer_found = True
-            # Check that the `name` field is `None`
-            assert row.name is None
-    assert customer_found
-
-
-@pytest.mark.integration_mssql
-@pytest.mark.integration
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
-)
-def test_create_and_process_erasure_request_specific_category_mssql(
-    mssql_integration_db,
-    mssql_example_test_dataset_config,
-    cache,
-    db,
-    dsr_version,
-    request,
-    generate_auth_header,
-    erasure_policy,
-    run_privacy_request_task,
-):
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
-    customer_email = "customer-1@example.com"
-    customer_id = 1
-    data = {
-        "requested_at": "2021-08-30T16:09:37.359Z",
-        "policy_key": erasure_policy.key,
-        "identity": {"email": customer_email},
-    }
-
-    pr = get_privacy_request_results(
-        db,
-        erasure_policy,
-        run_privacy_request_task,
-        data,
-    )
-    pr.delete(db=db)
-
-    stmt = select(
-        column("id"),
-        column("name"),
-    ).select_from(table("customer"))
-    res = mssql_integration_db.execute(stmt).all()
-
-    customer_found = False
-    for row in res:
-        if customer_id == row.id:
-            customer_found = True
-            # Check that the `name` field is `None`
-            assert row.name is None
-    assert customer_found
-
-
-@pytest.mark.integration_mysql
-@pytest.mark.integration
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
-)
-def test_create_and_process_erasure_request_specific_category_mysql(
-    mysql_integration_db,
-    mysql_example_test_dataset_config,
-    cache,
-    db,
-    dsr_version,
-    request,
-    generate_auth_header,
-    erasure_policy,
-    run_privacy_request_task,
-):
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
-    customer_email = "customer-1@example.com"
-    customer_id = 1
-    data = {
-        "requested_at": "2021-08-30T16:09:37.359Z",
-        "policy_key": erasure_policy.key,
-        "identity": {"email": customer_email},
-    }
-
-    pr = get_privacy_request_results(
-        db,
-        erasure_policy,
-        run_privacy_request_task,
-        data,
-    )
-    pr.delete(db=db)
-
-    stmt = select(
-        column("id"),
-        column("name"),
-    ).select_from(table("customer"))
-    res = mysql_integration_db.execute(stmt).all()
-
-    customer_found = False
-    for row in res:
-        if customer_id == row.id:
-            customer_found = True
-            # Check that the `name` field is `None`
-            assert row.name is None
-    assert customer_found
-
-
-@pytest.mark.integration_mariadb
-@pytest.mark.integration
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
-)
-def test_create_and_process_erasure_request_specific_category_mariadb(
-    mariadb_example_test_dataset_config,
-    mariadb_integration_db,
-    cache,
-    db,
-    dsr_version,
-    request,
-    generate_auth_header,
-    erasure_policy,
-    run_privacy_request_task,
-):
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
-    customer_email = "customer-1@example.com"
-    customer_id = 1
-    data = {
-        "requested_at": "2021-08-30T16:09:37.359Z",
-        "policy_key": erasure_policy.key,
-        "identity": {"email": customer_email},
-    }
-
-    pr = get_privacy_request_results(
-        db,
-        erasure_policy,
-        run_privacy_request_task,
-        data,
-    )
-    pr.delete(db=db)
-
-    stmt = select(
-        column("id"),
-        column("name"),
-    ).select_from(table("customer"))
-    res = mariadb_integration_db.execute(stmt).all()
-
-    customer_found = False
-    for row in res:
-        if customer_id == row.id:
-            customer_found = True
-            # Check that the `name` field is `None`
-            assert row.name is None
-    assert customer_found
-
-
-@pytest.mark.integration_postgres
-@pytest.mark.integration
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
-)
-def test_create_and_process_erasure_request_generic_category(
-    postgres_integration_db,
-    postgres_example_test_dataset_config,
-    cache,
-    db,
-    dsr_version,
-    request,
-    generate_auth_header,
-    erasure_policy,
-    run_privacy_request_task,
-):
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
-    # It's safe to change this here since the `erasure_policy` fixture is scoped
-    # at function level
-    target = erasure_policy.rules[0].targets[0]
-    target.data_category = DataCategory("user.contact").value
-    target.save(db=db)
-
-    email = "customer-2@example.com"
-    customer_id = 2
-    data = {
-        "requested_at": "2021-08-30T16:09:37.359Z",
-        "policy_key": erasure_policy.key,
-        "identity": {"email": email},
-    }
-
-    pr = get_privacy_request_results(
-        db,
-        erasure_policy,
-        run_privacy_request_task,
-        data,
-    )
-    pr.delete(db=db)
-
-    stmt = select(
-        column("id"),
-        column("email"),
-        column("name"),
-    ).select_from(table("customer"))
-    res = postgres_integration_db.execute(stmt).all()
-
-    customer_found = False
-    for row in res:
-        if customer_id == row.id:
-            customer_found = True
-            # Check that the `email` field is `None` and that its data category
-            # ("user.contact.email") has been erased by the parent
-            # category ("user.contact")
-            assert row.email is None
-            assert row.name is not None
-        else:
-            # There are two rows other rows, and they should not have been erased
-            assert row.email in ["customer-1@example.com", "jane@example.com"]
-    assert customer_found
-
-
-@pytest.mark.integration_postgres
-@pytest.mark.integration
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
-)
-def test_create_and_process_erasure_request_aes_generic_category(
-    postgres_integration_db,
-    postgres_example_test_dataset_config,
-    cache,
-    db,
-    dsr_version,
-    request,
-    generate_auth_header,
-    erasure_policy_aes,
-    run_privacy_request_task,
-):
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
-    # It's safe to change this here since the `erasure_policy` fixture is scoped
-    # at function level
-    target = erasure_policy_aes.rules[0].targets[0]
-    target.data_category = DataCategory("user.contact").value
-    target.save(db=db)
-
-    email = "customer-2@example.com"
-    customer_id = 2
-    data = {
-        "requested_at": "2021-08-30T16:09:37.359Z",
-        "policy_key": erasure_policy_aes.key,
-        "identity": {"email": email},
-    }
-
-    pr = get_privacy_request_results(
-        db,
-        erasure_policy_aes,
-        run_privacy_request_task,
-        data,
-    )
-    pr.delete(db=db)
-
-    stmt = select(
-        column("id"),
-        column("email"),
-        column("name"),
-    ).select_from(table("customer"))
-    res = postgres_integration_db.execute(stmt).all()
-
-    customer_found = False
-    for row in res:
-        if customer_id == row.id:
-            customer_found = True
-            # Check that the `email` field is not original val and that its data category
-            # ("user.contact.email") has been erased by the parent
-            # category ("user.contact").
-            # masked val for `email` field will change per new privacy request, so the best
-            # we can do here is test that the original val has been changed
-            assert row[1] != "customer-2@example.com"
-            assert row[2] is not None
-        else:
-            # There are two rows other rows, and they should not have been erased
-            assert row[1] in ["customer-1@example.com", "jane@example.com"]
-    assert customer_found
-
-
-@pytest.mark.integration_postgres
-@pytest.mark.integration
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
-)
-def test_create_and_process_erasure_request_with_table_joins(
-    postgres_integration_db,
-    postgres_example_test_dataset_config,
-    db,
-    cache,
-    dsr_version,
-    request,
-    erasure_policy,
-    run_privacy_request_task,
-):
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
-    # It's safe to change this here since the `erasure_policy` fixture is scoped
-    # at function level
-    target = erasure_policy.rules[0].targets[0]
-    target.data_category = DataCategory("user.financial").value
-    target.save(db=db)
-
-    customer_email = "customer-1@example.com"
-    customer_id = 1
-    data = {
-        "requested_at": "2021-08-30T16:09:37.359Z",
-        "policy_key": erasure_policy.key,
-        "identity": {"email": customer_email},
-    }
-
-    pr = get_privacy_request_results(
-        db,
-        erasure_policy,
-        run_privacy_request_task,
-        data,
-    )
-    pr.delete(db=db)
-
-    stmt = select(
-        column("customer_id"),
-        column("id"),
-        column("ccn"),
-        column("code"),
-        column("name"),
-    ).select_from(table("payment_card"))
-    res = postgres_integration_db.execute(stmt).all()
-
-    card_found = False
-    for row in res:
-        if row.customer_id == customer_id:
-            card_found = True
-            assert row.ccn is None
-            assert row.code is None
-            assert row.name is None
-
-    assert card_found is True
-
-
-@pytest.mark.integration_postgres
-@pytest.mark.integration
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
-)
-def test_create_and_process_erasure_request_read_access(
-    postgres_integration_db,
-    postgres_example_test_dataset_config_read_access,
-    db,
-    cache,
-    erasure_policy,
-    dsr_version,
-    request,
-    run_privacy_request_task,
-):
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
-    customer_email = "customer-2@example.com"
-    customer_id = 2
-    data = {
-        "requested_at": "2021-08-30T16:09:37.359Z",
-        "policy_key": erasure_policy.key,
-        "identity": {"email": customer_email},
-    }
-
-    pr = get_privacy_request_results(
-        db,
-        erasure_policy,
-        run_privacy_request_task,
-        data,
-    )
-    errored_execution_logs = pr.execution_logs.filter_by(status="error")
-    assert errored_execution_logs.count() == 9
-    assert (
-        errored_execution_logs[0].message
-        == "No values were erased since this connection "
-        "my_postgres_db_1_read_config has not been given write access"
-    )
-    pr.delete(db=db)
-
-    stmt = select(
-        column("id"),
-        column("name"),
-    ).select_from(table("customer"))
-    res = postgres_integration_db.execute(stmt).all()
-
-    customer_found = False
-    for row in res:
-        if customer_id == row.id:
-            customer_found = True
-            # Check that the `name` field is NOT `None`. We couldn't erase, because the ConnectionConfig only had
-            # "read" access
-            assert row.name is not None
-    assert customer_found
-
-
-@pytest.fixture(scope="function")
-def snowflake_resources(
-    snowflake_example_test_dataset_config,
-):
-    snowflake_connection_config = (
-        snowflake_example_test_dataset_config.connection_config
-    )
-    snowflake_client = SnowflakeConnector(snowflake_connection_config).client()
-    uuid = str(uuid4())
-    customer_email = f"customer-{uuid}@example.com"
-    formatted_customer_email = f"'{customer_email}'"
-    customer_name = f"{uuid}"
-    formatted_customer_name = f"'{customer_name}'"
-
-    stmt = 'select max("id") from "customer";'
-    res = snowflake_client.execute(stmt).all()
-    customer_id = res[0][0] + 1
-
-    stmt = f"""
-    insert into "customer" ("id", "email", "name", "variant_eg")
-    select {customer_id}, {formatted_customer_email}, {formatted_customer_name}, to_variant({formatted_customer_name});
-    """
-    res = snowflake_client.execute(stmt).all()
-    assert res[0][0] == 1
-    yield {
-        "email": customer_email,
-        "formatted_email": formatted_customer_email,
-        "name": customer_name,
-        "id": customer_id,
-        "client": snowflake_client,
-    }
-    # Remove test data and close Snowflake connection in teardown
-    stmt = f'delete from "customer" where "email" = {formatted_customer_email};'
-    res = snowflake_client.execute(stmt).all()
-    assert res[0][0] == 1
-
-
-@pytest.mark.integration_external
-@pytest.mark.integration_snowflake
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
-)
-def test_create_and_process_access_request_snowflake(
-    snowflake_resources,
-    db,
-    cache,
-    policy,
-    dsr_version,
-    request,
-    run_privacy_request_task,
-):
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
-    customer_email = snowflake_resources["email"]
-    customer_name = snowflake_resources["name"]
-    data = {
-        "requested_at": "2021-08-30T16:09:37.359Z",
-        "policy_key": policy.key,
-        "identity": {"email": customer_email},
-    }
-    pr = get_privacy_request_results(
-        db,
-        policy,
-        run_privacy_request_task,
-        data,
-        task_timeout=PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL,
-    )
-    results = pr.get_raw_access_results()
-    customer_table_key = f"snowflake_example_test_dataset:customer"
-    assert len(results[customer_table_key]) == 1
-    assert results[customer_table_key][0]["email"] == customer_email
-    assert results[customer_table_key][0]["name"] == customer_name
-
-    pr.delete(db=db)
-
-
-@pytest.mark.integration_external
-@pytest.mark.integration_snowflake
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
-)
-def test_create_and_process_erasure_request_snowflake(
-    snowflake_example_test_dataset_config,
-    snowflake_resources,
-    integration_config: Dict[str, str],
-    db,
-    cache,
-    dsr_version,
-    request,
-    erasure_policy,
-    run_privacy_request_task,
-):
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
-    customer_email = snowflake_resources["email"]
-    snowflake_client = snowflake_resources["client"]
-    formatted_customer_email = snowflake_resources["formatted_email"]
-    data = {
-        "requested_at": "2021-08-30T16:09:37.359Z",
-        "policy_key": erasure_policy.key,
-        "identity": {"email": customer_email},
-    }
-    pr = get_privacy_request_results(
-        db,
-        erasure_policy,
-        run_privacy_request_task,
-        data,
-        task_timeout=PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL,
-    )
-    pr.delete(db=db)
-
-    stmt = f'select "name", "variant_eg" from "customer" where "email" = {formatted_customer_email};'
-    res = snowflake_client.execute(stmt).all()
-    for row in res:
-        assert row.name is None
-        assert row.variant_eg is None
-
-
-@pytest.fixture(scope="function")
-def redshift_resources(
-    redshift_example_test_dataset_config,
-):
-    redshift_connection_config = redshift_example_test_dataset_config.connection_config
-    connector = RedshiftConnector(redshift_connection_config)
-    redshift_client = connector.client()
-    with redshift_client.connect() as connection:
-        connector.set_schema(connection)
-        uuid = str(uuid4())
-        customer_email = f"customer-{uuid}@example.com"
-        customer_name = f"{uuid}"
-
-        stmt = "select max(id) from customer;"
-        res = connection.execute(stmt)
-        customer_id = res.all()[0][0] + 1
-
-        stmt = "select max(id) from address;"
-        res = connection.execute(stmt)
-        address_id = res.all()[0][0] + 1
-
-        city = "Test City"
-        state = "TX"
-        stmt = f"""
-        insert into address (id, house, street, city, state, zip)
-        values ({address_id}, '{111}', 'Test Street', '{city}', '{state}', '55555');
-        """
-        connection.execute(stmt)
-
-        stmt = f"""
-            insert into customer (id, email, name, address_id)
-            values ({customer_id}, '{customer_email}', '{customer_name}', '{address_id}');
-        """
-        connection.execute(stmt)
-
-        yield {
-            "email": customer_email,
-            "name": customer_name,
-            "id": customer_id,
-            "client": redshift_client,
-            "address_id": address_id,
-            "city": city,
-            "state": state,
-            "connector": connector,
-        }
-        # Remove test data and close Redshift connection in teardown
-        stmt = f"delete from customer where email = '{customer_email}';"
-        connection.execute(stmt)
-
-        stmt = f'delete from address where "id" = {address_id};'
-        connection.execute(stmt)
-
-
-@pytest.mark.integration_external
-@pytest.mark.integration_redshift
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
-)
-def test_create_and_process_access_request_redshift(
-    redshift_resources,
-    db,
-    cache,
-    policy,
-    run_privacy_request_task,
-    dsr_version,
-    request,
-):
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
-    customer_email = redshift_resources["email"]
-    customer_name = redshift_resources["name"]
-    data = {
-        "requested_at": "2021-08-30T16:09:37.359Z",
-        "policy_key": policy.key,
-        "identity": {"email": customer_email},
-    }
-    pr = get_privacy_request_results(
-        db,
-        policy,
-        run_privacy_request_task,
-        data,
-        task_timeout=PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL,
-    )
-    results = pr.get_raw_access_results()
-    customer_table_key = f"redshift_example_test_dataset:customer"
-    assert len(results[customer_table_key]) == 1
-    assert results[customer_table_key][0]["email"] == customer_email
-    assert results[customer_table_key][0]["name"] == customer_name
-
-    address_table_key = f"redshift_example_test_dataset:address"
-
-    city = redshift_resources["city"]
-    state = redshift_resources["state"]
-    assert len(results[address_table_key]) == 1
-    assert results[address_table_key][0]["city"] == city
-    assert results[address_table_key][0]["state"] == state
-
-    pr.delete(db=db)
-
-
-@pytest.mark.integration_external
-@pytest.mark.integration_redshift
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
-)
-def test_create_and_process_erasure_request_redshift(
-    redshift_example_test_dataset_config,
-    redshift_resources,
-    integration_config: Dict[str, str],
-    db,
-    cache,
-    erasure_policy,
-    dsr_version,
-    request,
-    run_privacy_request_task,
-):
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
-    customer_email = redshift_resources["email"]
-    data = {
-        "requested_at": "2021-08-30T16:09:37.359Z",
-        "policy_key": erasure_policy.key,
-        "identity": {"email": customer_email},
-    }
-
-    # Should erase customer name
-    pr = get_privacy_request_results(
-        db,
-        erasure_policy,
-        run_privacy_request_task,
-        data,
-        task_timeout=PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL,
-    )
-    pr.delete(db=db)
-
-    connector = redshift_resources["connector"]
-    redshift_client = redshift_resources["client"]
-    with redshift_client.connect() as connection:
-        connector.set_schema(connection)
-        stmt = f"select name from customer where email = '{customer_email}';"
-        res = connection.execute(stmt).all()
-        for row in res:
-            assert row.name is None
-
-        address_id = redshift_resources["address_id"]
-        stmt = f"select 'id', city, state from address where id = {address_id};"
-        res = connection.execute(stmt).all()
-        for row in res:
-            # Not yet masked because these fields aren't targeted by erasure policy
-            assert row.city == redshift_resources["city"]
-            assert row.state == redshift_resources["state"]
-
-    target = erasure_policy.rules[0].targets[0]
-    target.data_category = "user.contact.address.state"
-    target.save(db=db)
-
-    # Should erase state fields on address table
-    pr = get_privacy_request_results(
-        db,
-        erasure_policy,
-        run_privacy_request_task,
-        data,
-        task_timeout=PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL,
-    )
-    pr.delete(db=db)
-
-    connector = redshift_resources["connector"]
-    redshift_client = redshift_resources["client"]
-    with redshift_client.connect() as connection:
-        connector.set_schema(connection)
-
-        address_id = redshift_resources["address_id"]
-        stmt = f"select 'id', city, state from address where id = {address_id};"
-        res = connection.execute(stmt).all()
-        for row in res:
-            # State field was targeted by erasure policy but city was not
-            assert row.city is not None
-            assert row.state is None
-
-
-@pytest.mark.integration_external
-@pytest.mark.integration_bigquery
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
-)
-def test_create_and_process_access_request_bigquery(
-    bigquery_resources,
-    db,
-    cache,
-    policy,
-    dsr_version,
-    request,
-    run_privacy_request_task,
-):
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
-    customer_email = bigquery_resources["email"]
-    customer_name = bigquery_resources["name"]
-    data = {
-        "requested_at": "2021-08-30T16:09:37.359Z",
-        "policy_key": policy.key,
-        "identity": {"email": customer_email},
-    }
-    pr = get_privacy_request_results(
-        db,
-        policy,
-        run_privacy_request_task,
-        data,
-        task_timeout=PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL,
-    )
-    results = pr.get_raw_access_results()
-    customer_table_key = f"bigquery_example_test_dataset:customer"
-    assert len(results[customer_table_key]) == 1
-    assert results[customer_table_key][0]["email"] == customer_email
-    assert results[customer_table_key][0]["name"] == customer_name
-
-    address_table_key = f"bigquery_example_test_dataset:address"
-
-    city = bigquery_resources["city"]
-    state = bigquery_resources["state"]
-    assert len(results[address_table_key]) == 1
-    assert results[address_table_key][0]["city"] == city
-    assert results[address_table_key][0]["state"] == state
-
-    pr.delete(db=db)
-
-
-@pytest.mark.integration_external
-@pytest.mark.integration_bigquery
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
-)
-def test_create_and_process_erasure_request_bigquery(
-    bigquery_example_test_dataset_config,
-    bigquery_resources,
-    integration_config: Dict[str, str],
-    db,
-    cache,
-    dsr_version,
-    request,
-    erasure_policy,
-    run_privacy_request_task,
-):
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
-    customer_email = bigquery_resources["email"]
-    data = {
-        "requested_at": "2021-08-30T16:09:37.359Z",
-        "policy_key": erasure_policy.key,
-        "identity": {"email": customer_email},
-    }
-
-    # Should erase customer name
-    pr = get_privacy_request_results(
-        db,
-        erasure_policy,
-        run_privacy_request_task,
-        data,
-        task_timeout=PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL,
-    )
-    pr.delete(db=db)
-
-    bigquery_client = bigquery_resources["client"]
-    with bigquery_client.connect() as connection:
-        stmt = f"select name from customer where email = '{customer_email}';"
-        res = connection.execute(stmt).all()
-        for row in res:
-            assert row.name is None
-
-        address_id = bigquery_resources["address_id"]
-        stmt = f"select 'id', city, state from address where id = {address_id};"
-        res = connection.execute(stmt).all()
-        for row in res:
-            # Not yet masked because these fields aren't targeted by erasure policy
-            assert row.city == bigquery_resources["city"]
-            assert row.state == bigquery_resources["state"]
-
-    target = erasure_policy.rules[0].targets[0]
-    target.data_category = "user.contact.address.state"
-    target.save(db=db)
-
-    # Should erase state fields on address table
-    pr = get_privacy_request_results(
-        db,
-        erasure_policy,
-        run_privacy_request_task,
-        data,
-        task_timeout=PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL,
-    )
-    pr.delete(db=db)
-
-    bigquery_client = bigquery_resources["client"]
-    with bigquery_client.connect() as connection:
-        address_id = bigquery_resources["address_id"]
-        stmt = f"select 'id', city, state from address where id = {address_id};"
-        res = connection.execute(stmt).all()
-        for row in res:
-            # State field was targeted by erasure policy but city was not
-            assert row.city is not None
-            assert row.state is None
-
-
 class TestRunPrivacyRequestRunsWebhooks:
     @mock.patch(
         "fides.api.models.privacy_request.PrivacyRequest.trigger_policy_webhook"
@@ -2058,8 +438,8 @@ class TestRunPrivacyRequestRunsWebhooks:
         privacy_request,
         policy_pre_execution_webhooks,
     ):
-        mock_trigger_policy_webhook.side_effect = ValidationError(
-            errors={}, model=SecondPartyResponseFormat
+        mock_trigger_policy_webhook.side_effect = ValidationError.from_exception_data(
+            title="Validation Error", line_errors=[]
         )
 
         proceed = run_webhooks_and_report_status(db, privacy_request, PolicyPreWebhook)
@@ -2566,11 +946,10 @@ class TestPrivacyRequestsManualWebhooks:
         }
 
 
-@pytest.mark.integration_saas
 def test_build_consent_dataset_graph(
     postgres_example_test_dataset_config_read_access,
     mysql_example_test_dataset_config,
-    mailchimp_transactional_dataset_config,
+    saas_example_dataset_config,
 ):
     """Currently returns a DatasetGraph made up of resources that have consent requests defined
     in the saas config"""
@@ -2578,12 +957,12 @@ def test_build_consent_dataset_graph(
         [
             postgres_example_test_dataset_config_read_access,
             mysql_example_test_dataset_config,
-            mailchimp_transactional_dataset_config,
+            saas_example_dataset_config,
         ]
     )
     assert len(dataset_graph.nodes.keys()) == 1
     assert [col_addr.value for col_addr in dataset_graph.nodes.keys()] == [
-        "mailchimp_transactional_instance:mailchimp_transactional_instance"
+        "saas_connector_example:saas_connector_example"
     ]
 
 
@@ -2640,7 +1019,9 @@ class TestConsentEmailStep:
         identity = Identity(email="customer_1#@example.com", ljt_readerID="12345")
         privacy_request_with_consent_policy.cache_identity(identity)
         privacy_request_with_consent_policy.consent_preferences = [
-            Consent(data_use="marketing.advertising", opt_in=False).dict()
+            Consent(data_use="marketing.advertising", opt_in=False).model_dump(
+                mode="json"
+            )
         ]
         privacy_request_with_consent_policy.save(db)
 
@@ -2701,7 +1082,9 @@ class TestConsentEmailStep:
         self, db, privacy_request_with_consent_policy
     ):
         privacy_request_with_consent_policy.consent_preferences = [
-            Consent(data_use="marketing.advertising", opt_in=False).dict()
+            Consent(data_use="marketing.advertising", opt_in=False).model_dump(
+                mode="json"
+            )
         ]
         privacy_request_with_consent_policy.save(db)
         assert not needs_batch_email_send(
@@ -2724,7 +1107,9 @@ class TestConsentEmailStep:
         self, db, privacy_request_with_consent_policy
     ):
         privacy_request_with_consent_policy.consent_preferences = [
-            Consent(data_use="marketing.advertising", opt_in=False).dict()
+            Consent(data_use="marketing.advertising", opt_in=False).model_dump(
+                mode="json"
+            )
         ]
         privacy_request_with_consent_policy.save(db)
         assert not needs_batch_email_send(
@@ -2748,7 +1133,9 @@ class TestConsentEmailStep:
         self, db, privacy_request_with_consent_policy
     ):
         privacy_request_with_consent_policy.consent_preferences = [
-            Consent(data_use="marketing.advertising", opt_in=False).dict()
+            Consent(data_use="marketing.advertising", opt_in=False).model_dump(
+                mode="json"
+            )
         ]
         privacy_request_with_consent_policy.save(db)
         assert needs_batch_email_send(
@@ -2849,376 +1236,242 @@ class TestConsentEmailStep:
         )
 
 
-@pytest.fixture(scope="function")
-def dynamodb_resources(
-    dynamodb_example_test_dataset_config,
-):
-    dynamodb_connection_config = dynamodb_example_test_dataset_config.connection_config
-    dynamodb_client = DynamoDBConnector(dynamodb_connection_config).client()
-    uuid = str(uuid4())
-    customer_email = f"customer-{uuid}@example.com"
-    customer_name = f"{uuid}"
+class TestAsyncCallbacks:
+    @mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
+    @pytest.mark.parametrize(
+        "dsr_version",
+        ["use_dsr_3_0", "use_dsr_2_0"],
+    )
+    def test_async_callback_access_request(
+        self,
+        mock_send,
+        api_client,
+        saas_example_async_dataset_config,
+        saas_async_example_connection_config: Dict[str, str],
+        db,
+        policy,
+        dsr_version,
+        request,
+        run_privacy_request_task,
+    ):
+        """Demonstrate end-to-end support for tasks expecting async callbacks for DSR 3.0"""
+        request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+        mock_send().json.return_value = {"id": "123"}
 
-    ## document and remove remaining comments if we can't get the bigger test running
-    items = {
-        "customer_identifier": [
-            {
-                "customer_id": {"S": customer_name},
-                "email": {"S": customer_email},
-                "name": {"S": customer_name},
-                "created": {"S": datetime.now(timezone.utc).isoformat()},
-            }
-        ],
-        "customer": [
-            {
-                "id": {"S": customer_name},
-                "name": {"S": customer_name},
-                "email": {"S": customer_email},
-                "address_id": {"L": [{"S": customer_name}, {"S": customer_name}]},
-                "personal_info": {"M": {"gender": {"S": "male"}, "age": {"S": "99"}}},
-                "created": {"S": datetime.now(timezone.utc).isoformat()},
-            }
-        ],
-        "address": [
-            {
-                "id": {"S": customer_name},
-                "city": {"S": "city"},
-                "house": {"S": "house"},
-                "state": {"S": "state"},
-                "street": {"S": "street"},
-                "zip": {"S": "zip"},
-            }
-        ],
-        "login": [
-            {
-                "customer_id": {"S": customer_name},
-                "login_date": {"S": "2023-01-01"},
-                "name": {"S": customer_name},
-                "email": {"S": customer_email},
-            },
-            {
-                "customer_id": {"S": customer_name},
-                "login_date": {"S": "2023-01-02"},
-                "name": {"S": customer_name},
-                "email": {"S": customer_email},
-            },
-        ],
-    }
+        pr = get_privacy_request_results(
+            db,
+            policy,
+            run_privacy_request_task,
+            {"identity": {"email": "customer-1@example.com"}},
+            task_timeout=120,
+        )
+        db.refresh(pr)
 
-    for table_name, rows in items.items():
-        for item in rows:
-            res = dynamodb_client.put_item(
-                TableName=table_name,
-                Item=item,
+        if dsr_version == "use_dsr_3_0":
+            assert pr.status == PrivacyRequestStatus.in_processing
+
+            request_tasks = pr.access_tasks
+            assert request_tasks[0].status == ExecutionLogStatus.complete
+
+            # SaaS Request was marked as needing async results, so the Request
+            # Task was put in a paused state
+            assert request_tasks[1].status == ExecutionLogStatus.awaiting_processing
+            assert request_tasks[1].collection_address == "saas_async_config:user"
+
+            # Terminator task is downstream so it is still in a pending state
+            assert request_tasks[2].status == ExecutionLogStatus.pending
+
+            jwe_token = mock_send.call_args[0][0].headers["reply-to-token"]
+            auth_header = {"Authorization": "Bearer " + jwe_token}
+            # Post to callback URL to supply access results async
+            # This requeues task and proceeds downstream
+            api_client.post(
+                V1_URL_PREFIX + REQUEST_TASK_CALLBACK,
+                headers=auth_header,
+                json={"access_results": [{"id": 1, "user_id": "abcde", "state": "VA"}]},
             )
-            assert res["ResponseMetadata"]["HTTPStatusCode"] == 200
-
-    yield {
-        "email": customer_email,
-        "formatted_email": customer_email,
-        "name": customer_name,
-        "customer_id": uuid,
-        "client": dynamodb_client,
-    }
-    # Remove test data and close Dynamodb connection in teardown
-    delete_items = {
-        "customer_identifier": [{"email": {"S": customer_email}}],
-        "customer": [{"id": {"S": customer_name}}],
-        "address": [{"id": {"S": customer_name}}],
-        "login": [
-            {
-                "customer_id": {"S": customer_name},
-                "login_date": {"S": "2023-01-01"},
-            },
-            {
-                "customer_id": {"S": customer_name},
-                "login_date": {"S": "2023-01-02"},
-            },
-        ],
-    }
-    for table_name, rows in delete_items.items():
-        for item in rows:
-            res = dynamodb_client.delete_item(
-                TableName=table_name,
-                Key=item,
-            )
-            assert res["ResponseMetadata"]["HTTPStatusCode"] == 200
-
-
-@pytest.mark.integration_external
-@pytest.mark.integration_dynamodb
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
-)
-def test_create_and_process_empty_access_request_dynamodb(
-    db,
-    cache,
-    policy,
-    dsr_version,
-    request,
-    run_privacy_request_task,
-):
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
-    data = {
-        "requested_at": "2021-08-30T16:09:37.359Z",
-        "policy_key": policy.key,
-        "identity": {"email": "thiscustomerdoesnot@exist.com"},
-    }
-
-    pr = get_privacy_request_results(
-        db,
-        policy,
-        run_privacy_request_task,
-        data,
-        task_timeout=PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL,
-    )
-    # Here the results should be empty as no data will be located for that identity
-    results = pr.get_raw_access_results()
-    pr.delete(db=db)
-    assert results == {}
-
-
-@pytest.mark.integration_external
-@pytest.mark.integration_dynamodb
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
-)
-def test_create_and_process_access_request_dynamodb(
-    dynamodb_resources,
-    db,
-    cache,
-    policy,
-    run_privacy_request_task,
-    dsr_version,
-    request,
-):
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
-    customer_email = dynamodb_resources["email"]
-    customer_name = dynamodb_resources["name"]
-    customer_id = dynamodb_resources["customer_id"]
-    data = {
-        "requested_at": "2021-08-30T16:09:37.359Z",
-        "policy_key": policy.key,
-        "identity": {"email": customer_email},
-    }
-
-    pr = get_privacy_request_results(
-        db,
-        policy,
-        run_privacy_request_task,
-        data,
-        task_timeout=PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL,
-    )
-    results = pr.get_raw_access_results()
-    customer_table_key = f"dynamodb_example_test_dataset:customer"
-    address_table_key = f"dynamodb_example_test_dataset:address"
-    login_table_key = f"dynamodb_example_test_dataset:login"
-    assert len(results[customer_table_key]) == 1
-    assert len(results[address_table_key]) == 1
-    assert len(results[login_table_key]) == 2
-    assert results[customer_table_key][0]["email"] == customer_email
-    assert results[customer_table_key][0]["name"] == customer_name
-    assert results[customer_table_key][0]["id"] == customer_id
-    assert results[address_table_key][0]["id"] == customer_id
-    assert results[login_table_key][0]["name"] == customer_name
-
-    pr.delete(db=db)
-
-
-@pytest.mark.integration_external
-@pytest.mark.integration_dynamodb
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
-)
-def test_create_and_process_erasure_request_dynamodb(
-    dynamodb_example_test_dataset_config,
-    dynamodb_resources,
-    integration_config: Dict[str, str],
-    db,
-    cache,
-    erasure_policy,
-    dsr_version,
-    request,
-    run_privacy_request_task,
-):
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
-    customer_email = dynamodb_resources["email"]
-    dynamodb_client = dynamodb_resources["client"]
-    customer_id = dynamodb_resources["customer_id"]
-    customer_name = dynamodb_resources["name"]
-    data = {
-        "requested_at": "2021-08-30T16:09:37.359Z",
-        "policy_key": erasure_policy.key,
-        "identity": {"email": customer_email},
-    }
-    pr = get_privacy_request_results(
-        db,
-        erasure_policy,
-        run_privacy_request_task,
-        data,
-        task_timeout=PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL,
-    )
-    pr.delete(db=db)
-    deserializer = TypeDeserializer()
-    customer = dynamodb_client.get_item(
-        TableName="customer",
-        Key={"id": {"S": customer_id}},
-    )
-    customer_identifier = dynamodb_client.get_item(
-        TableName="customer_identifier",
-        Key={"email": {"S": customer_email}},
-    )
-    login = dynamodb_client.get_item(
-        TableName="login",
-        Key={
-            "customer_id": {"S": customer_name},
-            "login_date": {"S": "2023-01-01"},
-        },
-    )
-    assert deserializer.deserialize(customer["Item"]["name"]) == None
-    assert deserializer.deserialize(customer_identifier["Item"]["name"]) == None
-    assert deserializer.deserialize(login["Item"]["name"]) == None
-
-
-@mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
-)
-def test_async_callback_access_request(
-    mock_send,
-    api_client,
-    saas_example_async_dataset_config,
-    saas_async_example_connection_config: Dict[str, str],
-    db,
-    policy,
-    dsr_version,
-    request,
-    run_privacy_request_task,
-):
-    """Demonstrate end-to-end support for tasks expecting async callbacks for DSR 3.0"""
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-    mock_send().json.return_value = {"id": "123"}
-
-    pr = get_privacy_request_results(
-        db,
-        policy,
-        run_privacy_request_task,
-        {"identity": {"email": "customer-1@example.com"}},
-        task_timeout=120,
-    )
-    db.refresh(pr)
-
-    if dsr_version == "use_dsr_3_0":
-        assert pr.status == PrivacyRequestStatus.in_processing
-
-        request_tasks = pr.access_tasks
-        assert request_tasks[0].status == ExecutionLogStatus.complete
-
-        # SaaS Request was marked as needing async results, so the Request
-        # Task was put in a paused state
-        assert request_tasks[1].status == ExecutionLogStatus.awaiting_processing
-        assert request_tasks[1].collection_address == "saas_async_config:user"
-
-        # Terminator task is downstream so it is still in a pending state
-        assert request_tasks[2].status == ExecutionLogStatus.pending
-
-        jwe_token = mock_send.call_args[0][0].headers["reply-to-token"]
-        auth_header = {"Authorization": "Bearer " + jwe_token}
-        # Post to callback URL to supply access results async
-        # This requeues task and proceeds downstream
-        api_client.post(
-            V1_URL_PREFIX + REQUEST_TASK_CALLBACK,
-            headers=auth_header,
-            json={"access_results": [{"id": 1, "user_id": "abcde", "state": "VA"}]},
-        )
-        db.refresh(pr)
-        assert pr.status == PrivacyRequestStatus.complete
-        assert pr.get_raw_access_results() == {
-            "saas_async_config:user": [{"id": 1, "user_id": "abcde", "state": "VA"}]
-        }
-        # User data supplied async was filtered before being returned to the end user
-        assert pr.get_filtered_final_upload() == {
-            "access_request_rule": {
-                "saas_async_config:user": [{"state": "VA", "id": 1}]
+            db.refresh(pr)
+            assert pr.status == PrivacyRequestStatus.complete
+            assert pr.get_raw_access_results() == {
+                "saas_async_config:user": [{"id": 1, "user_id": "abcde", "state": "VA"}]
             }
-        }
-    else:
-        # Async Access Requests not supported for DSR 2.0 - the given
-        # node cannot be paused
-        assert pr.status == PrivacyRequestStatus.complete
+            # User data supplied async was filtered before being returned to the end user
+            assert pr.get_filtered_final_upload() == {
+                "access_request_rule": {
+                    "saas_async_config:user": [{"state": "VA", "id": 1}]
+                }
+            }
+        else:
+            # Async Access Requests not supported for DSR 2.0 - the given
+            # node cannot be paused
+            assert pr.status == PrivacyRequestStatus.complete
 
-
-@mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
-@pytest.mark.parametrize(
-    "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
-)
-def test_async_callback_erasure_request(
-    mock_send,
-    saas_example_async_dataset_config,
-    saas_async_example_connection_config: Dict[str, str],
-    db,
-    api_client,
-    erasure_policy,
-    dsr_version,
-    request,
-    run_privacy_request_task,
-):
-    """Demonstrate end-to-end support for erasure tasks expecting async callbacks for DSR 3.0"""
-    mock_send().json.return_value = {"id": "123"}
-
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
-
-    pr = get_privacy_request_results(
-        db,
-        erasure_policy,
-        run_privacy_request_task,
-        {"identity": {"email": "customer-1@example.com"}},
-        task_timeout=120,
+    @mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
+    @pytest.mark.parametrize(
+        "dsr_version",
+        ["use_dsr_3_0", "use_dsr_2_0"],
     )
+    def test_async_callback_erasure_request(
+        self,
+        mock_send,
+        saas_example_async_dataset_config,
+        saas_async_example_connection_config: Dict[str, str],
+        db,
+        api_client,
+        erasure_policy,
+        dsr_version,
+        request,
+        run_privacy_request_task,
+    ):
+        """Demonstrate end-to-end support for erasure tasks expecting async callbacks for DSR 3.0"""
+        mock_send().json.return_value = {"id": "123"}
 
-    if dsr_version == "use_dsr_3_0":
-        # Access async task fired first
-        assert pr.access_tasks[1].status == ExecutionLogStatus.awaiting_processing
-        jwe_token = mock_send.call_args[0][0].headers["reply-to-token"]
-        auth_header = {"Authorization": "Bearer " + jwe_token}
-        # Post to callback URL to supply access results async
-        # This requeues task and proceeds downstream
-        response = api_client.post(
-            V1_URL_PREFIX + REQUEST_TASK_CALLBACK,
-            headers=auth_header,
-            json={"access_results": [{"id": 1, "user_id": "abcde", "state": "VA"}]},
+        request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+
+        pr = get_privacy_request_results(
+            db,
+            erasure_policy,
+            run_privacy_request_task,
+            {"identity": {"email": "customer-1@example.com"}},
+            task_timeout=120,
         )
-        assert response.status_code == 200
 
-        # Erasure task is also expected async results and is now paused
-        assert pr.erasure_tasks[1].status == ExecutionLogStatus.awaiting_processing
-        jwe_token = mock_send.call_args[0][0].headers["reply-to-token"]
-        auth_header = {"Authorization": "Bearer " + jwe_token}
-        # Post to callback URL to supply erasure results async
-        # This requeues task and proceeds downstream to complete privacy request
-        response = api_client.post(
-            V1_URL_PREFIX + REQUEST_TASK_CALLBACK,
-            headers=auth_header,
-            json={"rows_masked": 2},
+        if dsr_version == "use_dsr_3_0":
+            # Access async task fired first
+            assert pr.access_tasks[1].status == ExecutionLogStatus.awaiting_processing
+            jwe_token = mock_send.call_args[0][0].headers["reply-to-token"]
+            auth_header = {"Authorization": "Bearer " + jwe_token}
+            # Post to callback URL to supply access results async
+            # This requeues task and proceeds downstream
+            response = api_client.post(
+                V1_URL_PREFIX + REQUEST_TASK_CALLBACK,
+                headers=auth_header,
+                json={"access_results": [{"id": 1, "user_id": "abcde", "state": "VA"}]},
+            )
+            assert response.status_code == 200
+
+            # Erasure task is also expected async results and is now paused
+            assert pr.erasure_tasks[1].status == ExecutionLogStatus.awaiting_processing
+            jwe_token = mock_send.call_args[0][0].headers["reply-to-token"]
+            auth_header = {"Authorization": "Bearer " + jwe_token}
+            # Post to callback URL to supply erasure results async
+            # This requeues task and proceeds downstream to complete privacy request
+            response = api_client.post(
+                V1_URL_PREFIX + REQUEST_TASK_CALLBACK,
+                headers=auth_header,
+                json={"rows_masked": 2},
+            )
+            assert response.status_code == 200
+
+            db.refresh(pr)
+            assert pr.status == PrivacyRequestStatus.complete
+
+            assert pr.erasure_tasks[1].rows_masked == 2
+            assert pr.erasure_tasks[1].status == ExecutionLogStatus.complete
+
+        else:
+            # Async Erasure Requests not supported for DSR 2.0 - the given
+            # node cannot be paused
+            db.refresh(pr)
+            assert pr.status == PrivacyRequestStatus.complete
+
+
+class TestDatasetReferenceValidation:
+    @pytest.mark.usefixtures("dataset_config")
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.access_runner"
+    )
+    @pytest.mark.parametrize(
+        "dsr_version",
+        ["use_dsr_3_0", "use_dsr_2_0"],
+    )
+    def test_dataset_reference_validation_success(
+        self,
+        run_access,
+        db: Session,
+        privacy_request: PrivacyRequest,
+        run_privacy_request_task,
+        request,
+        dsr_version,
+    ):
+        """Test that successful dataset reference validation is logged"""
+
+        request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+
+        # Run privacy request
+        run_privacy_request_task.delay(privacy_request.id).get(
+            timeout=PRIVACY_REQUEST_TASK_TIMEOUT
         )
-        assert response.status_code == 200
 
-        db.refresh(pr)
-        assert pr.status == PrivacyRequestStatus.complete
+        # Verify success log was created
+        success_logs = privacy_request.execution_logs.filter_by(status="complete").all()
 
-        assert pr.erasure_tasks[1].rows_masked == 2
-        assert pr.erasure_tasks[1].status == ExecutionLogStatus.complete
+        validation_logs = [
+            log
+            for log in success_logs
+            if log.dataset_name == "Dataset reference validation"
+        ]
 
-    else:
-        # Async Erasure Requests not supported for DSR 2.0 - the given
-        # node cannot be paused
-        db.refresh(pr)
-        assert pr.status == PrivacyRequestStatus.complete
+        assert len(validation_logs) == 1
+        log = validation_logs[0]
+        assert log.connection_key is None
+        assert log.collection_name is None
+        assert (
+            log.message
+            == f"Dataset reference validation successful for privacy request: {privacy_request.id}"
+        )
+        assert log.action_type == privacy_request.policy.get_action_type()
+
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.access_runner"
+    )
+    @pytest.mark.parametrize(
+        "dsr_version",
+        ["use_dsr_3_0", "use_dsr_2_0"],
+    )
+    def test_dataset_reference_validation_error(
+        self,
+        run_access,
+        db: Session,
+        privacy_request: PrivacyRequest,
+        dataset_config: DatasetConfig,
+        run_privacy_request_task,
+        request,
+        dsr_version,
+    ):
+        """Test that dataset reference validation errors are logged"""
+
+        request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+
+        # Add invalid dataset reference that will cause validation error
+        dataset_config.ctl_dataset.collections[0]["fields"][0]["fides_meta"] = {
+            "references": [
+                {"dataset": "invalid_dataset", "field": "invalid_collection.field"}
+            ]
+        }
+        flag_modified(dataset_config.ctl_dataset, "collections")
+        dataset_config.save(db)
+
+        # Run privacy request
+        run_privacy_request_task.delay(privacy_request.id).get(
+            timeout=PRIVACY_REQUEST_TASK_TIMEOUT
+        )
+
+        # Verify error log was created
+        error_logs = privacy_request.execution_logs.filter_by(status="error").all()
+
+        validation_logs = [
+            log
+            for log in error_logs
+            if log.dataset_name == "Dataset reference validation"
+        ]
+
+        assert len(validation_logs) == 1
+        log = validation_logs[0]
+        assert log.connection_key is None
+        assert log.collection_name is None
+        assert (
+            "Referenced object invalid_dataset:invalid_collection:field from dataset postgres_example_subscriptions_dataset does not exist"
+            in log.message
+        )
+        assert log.action_type == privacy_request.policy.get_action_type()

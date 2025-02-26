@@ -4,11 +4,8 @@ import { ReactNode } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import { useFeatures } from "~/features/common/features";
-import {
-  CustomCheckbox,
-  CustomRadioGroup,
-  CustomSwitch,
-} from "~/features/common/form/inputs";
+import ControlledRadioGroup from "~/features/common/form/ControlledRadioGroup";
+import { CustomCheckbox, CustomSwitch } from "~/features/common/form/inputs";
 import { selectGppSettings } from "~/features/privacy-requests";
 import { GPPApplicationConfigResponse, GPPUSApproach } from "~/types/api";
 
@@ -44,9 +41,9 @@ const GppConfiguration = () => {
         {isEnabled ? (
           <>
             <Section title="GPP U.S.">
-              <CustomRadioGroup
+              <ControlledRadioGroup
                 name="gpp.us_approach"
-                variant="stacked"
+                layout="stacked"
                 defaultFirstSelected={false}
                 options={[
                   {
@@ -60,6 +57,12 @@ const GppConfiguration = () => {
                     value: GPPUSApproach.STATE,
                     tooltip:
                       "When state-by-state is selected, Fides will only present consent to consumers and save their preferences if they are located in a state that is supported by the GPP. The consent options presented to consumers will vary depending on the regulations in each state.",
+                  },
+                  {
+                    label: "Enable US National and State-by-State notices",
+                    value: GPPUSApproach.ALL,
+                    tooltip:
+                      "When enabled, Fides can be configured to serve the National and U.S. state notices. This mode is intended to provide consent coverage to U.S. states with new privacy laws where GPP support lags behind the effective date of state laws.",
                   },
                 ]}
               />
@@ -76,14 +79,14 @@ const GppConfiguration = () => {
                   name="gpp.mspa_service_provider_mode"
                   variant="switchFirst"
                   tooltip="Enable service provider mode if you do not engage in any sales or sharing of personal information."
-                  isDisabled={values.gpp.mspa_opt_out_option_mode}
+                  isDisabled={Boolean(values.gpp.mspa_opt_out_option_mode)}
                 />
                 <CustomSwitch
                   label="Enable MSPA opt-out option mode"
                   name="gpp.mspa_opt_out_option_mode"
                   variant="switchFirst"
                   tooltip="Enable opt-out option mode if you engage or may engage in the sales or sharing of personal information, or process any information for the purpose of targeted advertising."
-                  isDisabled={values.gpp.mspa_service_provider_mode}
+                  isDisabled={Boolean(values.gpp.mspa_service_provider_mode)}
                 />
               </Section>
             ) : null}

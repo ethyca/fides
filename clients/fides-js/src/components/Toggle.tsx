@@ -1,6 +1,7 @@
 import { h } from "preact";
 
 const Toggle = ({
+  label,
   name,
   id,
   checked,
@@ -9,6 +10,7 @@ const Toggle = ({
   onLabel,
   offLabel,
 }: {
+  label: string;
   name: string;
   id: string;
   checked: boolean;
@@ -17,29 +19,23 @@ const Toggle = ({
   onLabel?: string;
   offLabel?: string;
 }) => {
-  const labelId = `toggle-${id}`;
   const labelText = checked ? onLabel : offLabel;
   return (
-    <label
-      className="fides-toggle"
-      htmlFor={name}
-      data-testid={`toggle-${name}`}
-      id={labelId}
-    >
+    <div className="fides-toggle" data-testid={`toggle-${label}`}>
       <input
         type="checkbox"
         name={name}
+        aria-label={label}
         className="fides-toggle-input"
         onChange={() => {
           onChange(id);
         }}
         checked={checked}
         role="switch"
-        aria-labelledby={labelId}
         disabled={disabled}
       />
       <span className="fides-toggle-display">{labelText}</span>
-    </label>
+    </div>
   );
 };
 

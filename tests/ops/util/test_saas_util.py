@@ -17,6 +17,7 @@ from fides.api.util.saas_util import (
 )
 
 
+@pytest.mark.unit_saas
 class TestMergeDatasets:
     """
     Multiple scenarios for merging SaaS config references with SaaS datasets.
@@ -65,7 +66,6 @@ class TestMergeDatasets:
         assert len(query_field.references) == 0
         assert query_field.identity == "email"
 
-    @pytest.mark.unit_saas
     def test_add_reference(self):
         """Augment a SaaS dataset collection with a dataset reference"""
 
@@ -121,7 +121,6 @@ class TestMergeDatasets:
             "from",
         )
 
-    @pytest.mark.unit_saas
     def test_add_with_object_fields(self):
         """Verify complex SaaS dataset fields are preserved after merging"""
         saas_dataset = GraphDataset(
@@ -167,7 +166,6 @@ class TestMergeDatasets:
         assert isinstance(name_field, ObjectField)
         assert len(name_field.fields) == 2
 
-    @pytest.mark.unit_saas
     def test_merge_same_scalar_field(self):
         """Merge two scalar fields between datsets with the same collection/field name"""
         saas_dataset = GraphDataset(
@@ -210,7 +208,6 @@ class TestMergeDatasets:
         assert len(collection.fields) == 1
         assert len(collection.fields[0].references) == 1
 
-    @pytest.mark.unit_saas
     def test_merge_same_object_field(self):
         """Merge a scalar and object field between datsets with the same collection/field name"""
         saas_dataset = GraphDataset(
@@ -253,7 +250,46 @@ class TestMergeDatasets:
         assert len(name_field.fields) == 2
         assert name_field.identity == "email"
 
+    def test_merge_into_dataset_with_data_categories(self):
+        """Verify that the data categories in the target dataset are preserved after merging"""
+        saas_dataset = GraphDataset(
+            name="saas_dataset",
+            collections=[
+                Collection(
+                    name="member",
+                    data_categories={"user"},
+                    fields=[
+                        ObjectField(
+                            name="name",
+                            fields={
+                                "first": ScalarField(name="first"),
+                                "last": ScalarField(name="last"),
+                            },
+                        )
+                    ],
+                )
+            ],
+            connection_key="connection_key",
+        )
 
+        saas_config = GraphDataset(
+            name="saas_config",
+            collections=[
+                Collection(
+                    name="member",
+                    fields=[
+                        ScalarField(name="name", identity="email"),
+                    ],
+                )
+            ],
+            connection_key="connection_key",
+        )
+
+        merged_dataset = merge_datasets(saas_dataset, saas_config)
+        assert merged_dataset.collections[0].data_categories == {"user"}
+
+
+@pytest.mark.unit_saas
 class TestAssignPlaceholders:
     def test_string_value(self):
         assert assign_placeholders("domain", {}) == "domain"
@@ -430,7 +466,7 @@ class TestAssignPlaceholders:
                 '{"user": {"name": "<user.name>", "age": <user.age>}}',
                 {"user": {"age": 28}},
             )
-            == None
+            is None
         )
 
     def test_replacing_with_object_values(self):
@@ -470,6 +506,7 @@ class TestAssignPlaceholders:
         )
 
 
+@pytest.mark.unit_saas
 class TestUnflattenDict:
     def test_empty_dict(self):
         assert unflatten_dict({}) == {}
@@ -566,29 +603,32 @@ class TestUnflattenDict:
             unflatten_dict({"": "1"}, separator=None)
 
 
-def test_replace_version():
-    # base case
-    assert (
-        replace_version("saas_config:\n  version: 0.0.1\n  key: example", "0.0.2")
-        == "saas_config:\n  version: 0.0.2\n  key: example"
-    )
-
-    # ignore extra spaces
-    assert (
-        replace_version("saas_config:\n  version:  0.0.1\n  key: example", "0.0.2")
-        == "saas_config:\n  version: 0.0.2\n  key: example"
-    )
-
-    # version not found
-    replace_version(
-        "saas_config:\n  key: example", "1.0.0"
-    ) == "saas_config:\n  key: example"
-
-    # occurrences of *version: in the rest of the config
-    assert (
-        replace_version(
-            "saas_config:\n  version: 0.0.1\n  key: example\n  other_version: 0.0.2",
-            "0.0.3",
+@pytest.mark.unit_saas
+class TestReplaceVersion:
+    def test_replace_version(self):
+        # base case
+        assert (
+            replace_version("saas_config:\n  version: 0.0.1\n  key: example", "0.0.2")
+            == "saas_config:\n  version: 0.0.2\n  key: example"
         )
-        == "saas_config:\n  version: 0.0.3\n  key: example\n  other_version: 0.0.2"
-    )
+
+        # ignore extra spaces
+        assert (
+            replace_version("saas_config:\n  version:  0.0.1\n  key: example", "0.0.2")
+            == "saas_config:\n  version: 0.0.2\n  key: example"
+        )
+
+        # version not found
+        assert (
+            replace_version("saas_config:\n  key: example", "1.0.0")
+            == "saas_config:\n  key: example"
+        )
+
+        # occurrences of *version: in the rest of the config
+        assert (
+            replace_version(
+                "saas_config:\n  version: 0.0.1\n  key: example\n  other_version: 0.0.2",
+                "0.0.3",
+            )
+            == "saas_config:\n  version: 0.0.3\n  key: example\n  other_version: 0.0.2"
+        )

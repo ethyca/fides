@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import List, Optional
+from typing import Annotated, Any, Dict, List, Optional
 
 from fastapi import Depends
 from fastapi.params import Query, Security
@@ -9,7 +9,7 @@ from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
 from fideslang.validation import FidesKey
 from loguru import logger
-from pydantic import conlist
+from pydantic import Field
 from sqlalchemy import null, or_
 from sqlalchemy.orm import Session
 from sqlalchemy_utils import escape_like
@@ -172,7 +172,7 @@ def get_connection_detail(
 def patch_connections(
     *,
     db: Session = Depends(deps.get_db),
-    configs: conlist(CreateConnectionConfigurationWithSecrets, max_items=50),  # type: ignore
+    configs: Annotated[List[CreateConnectionConfigurationWithSecrets], Field(max_length=50)],  # type: ignore
 ) -> BulkPutConnectionConfiguration:
     """
     Given a list of connection config data elements, optionally containing the secrets,
@@ -196,6 +196,28 @@ def delete_connection(
     delete_connection_config(db, connection_key)
 
 
+def validate_and_update_secrets(
+    connection_key: FidesKey,
+    connection_config: ConnectionConfig,
+    db: Session,
+    unvalidated_secrets: connection_secrets_schemas,
+    verify: Optional[bool],
+) -> TestStatusMessage:
+    connection_config.secrets = validate_secrets(
+        db, unvalidated_secrets, connection_config
+    ).model_dump(mode="json")
+    # Save validated secrets, regardless of whether they've been verified.
+    logger.info("Updating connection config secrets for '{}'", connection_key)
+    connection_config.save(db=db)
+
+    msg = f"Secrets updated for ConnectionConfig with key: {connection_key}."
+
+    if verify:
+        return connection_status(connection_config, msg, db)
+
+    return TestStatusMessage(msg=msg, test_status=None)
+
+
 @router.put(
     CONNECTION_SECRETS,
     status_code=HTTP_200_OK,
@@ -217,18 +239,47 @@ def put_connection_config_secrets(
     """
     connection_config = get_connection_config_or_error(db, connection_key)
 
-    connection_config.secrets = validate_secrets(
-        db, unvalidated_secrets, connection_config
-    ).dict()
-    # Save validated secrets, regardless of whether they've been verified.
-    logger.info("Updating connection config secrets for '{}'", connection_key)
-    connection_config.save(db=db)
+    return validate_and_update_secrets(
+        connection_key, connection_config, db, unvalidated_secrets, verify
+    )
 
-    msg = f"Secrets updated for ConnectionConfig with key: {connection_key}."
-    if verify:
-        return connection_status(connection_config, msg, db)
 
-    return TestStatusMessage(msg=msg, test_status=None)
+@router.patch(
+    CONNECTION_SECRETS,
+    status_code=HTTP_200_OK,
+    dependencies=[Security(verify_oauth_client, scopes=[CONNECTION_CREATE_OR_UPDATE])],
+    response_model=TestStatusMessage,
+)
+def patch_connection_config_secrets(
+    connection_key: FidesKey,
+    *,
+    db: Session = Depends(deps.get_db),
+    unvalidated_secrets: connection_secrets_schemas,
+    verify: Optional[bool] = True,
+) -> TestStatusMessage:
+    """
+    Partially update secrets that will be used to connect to a specified connection_type.
+
+    The specific secrets will be connection-dependent. For example, the components needed to connect to a Postgres DB
+    will differ from Dynamo DB.
+    """
+    connection_config = get_connection_config_or_error(db, connection_key)
+
+    existing_secrets: Optional[Dict[str, Any]] = connection_config.secrets
+
+    # We create the new secrets object by combining the existing secrets with the new secrets.
+    patched_secrets = {}
+    if existing_secrets:
+        patched_secrets = {**existing_secrets}
+
+    patched_secrets = {
+        **patched_secrets,
+        **unvalidated_secrets,  # type: ignore[dict-item]
+    }
+
+    return validate_and_update_secrets(
+        connection_key, connection_config, db, patched_secrets, verify  # type: ignore[arg-type]
+    )
 
 
 @router.get(

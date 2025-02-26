@@ -4,6 +4,7 @@ from fastapi import HTTPException, Query
 from fastapi.params import Security
 from fastapi_pagination import Page, Params, paginate
 from fastapi_pagination.bases import AbstractPage
+from fastapi_pagination.utils import disable_installed_extensions_check
 from starlette.status import HTTP_404_NOT_FOUND
 
 from fides.api.common_exceptions import NoSuchConnectionTypeSecretSchemaError
@@ -24,6 +25,10 @@ from fides.common.api.v1.urn_registry import (
     CONNECTION_TYPES,
     V1_URL_PREFIX,
 )
+
+# FastAPI is saying that because cassandra is installed, we should use fastapi_pagination.ext.cassandra here,
+# which is not relevant
+disable_installed_extensions_check()
 
 router = APIRouter(tags=["Connection Types"], prefix=V1_URL_PREFIX)
 

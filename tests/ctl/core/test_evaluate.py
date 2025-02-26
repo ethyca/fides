@@ -176,7 +176,7 @@ def test_hydrate_missing_resources(test_config: FidesConfig) -> None:
             ),
         ],
         system=[
-            System.construct(
+            System.model_construct(
                 name="test_dc",
                 fides_key="test_dc",
                 description="test description",
@@ -555,7 +555,7 @@ def test_failed_evaluation_error_message(
     expected_error_message = string_cleaner(
         """
   'message': '',
-  'status': <StatusEnum.FAIL: 'FAIL'>,
+  'status': 'FAIL',
   'violations': [ { 'detail': 'Declaration (Share Political Opinions) of '
                               'system (customer_data_sharing_system) failed '
                               'rule (reject_targeted_marketing) from policy '

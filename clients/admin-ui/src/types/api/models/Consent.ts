@@ -7,7 +7,7 @@
  */
 export type Consent = {
   data_use: string;
-  data_use_description?: string;
+  data_use_description?: string | null;
   opt_in: boolean;
   has_gpc_flag?: boolean;
   conflicts_with_gpc?: boolean;

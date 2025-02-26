@@ -23,7 +23,7 @@ def get_okta_client(okta_config: Optional[OktaConfig]) -> OktaClient:
 
     Enabled raiseException config to facilitate exception handling
     """
-    config_dict = okta_config.dict() if okta_config else {}
+    config_dict = okta_config.model_dump(mode="json") if okta_config else {}
     config_dict["raiseException"] = True
     okta_client = OktaClient(config_dict)
     return okta_client

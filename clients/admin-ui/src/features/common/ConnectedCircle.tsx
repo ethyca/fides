@@ -3,7 +3,7 @@ import { Box, BoxProps } from "fidesui";
 const ConnectedCircle = ({
   connected,
   ...other
-}: { connected?: boolean } & BoxProps) => {
+}: { connected?: boolean | null } & BoxProps) => {
   let color = "red.500";
   if (connected == null) {
     color = "gray.300";

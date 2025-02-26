@@ -152,9 +152,31 @@
       "data_type": "string",
       "schema_name": "test_dataset_1",
       "database_name": "prj-bigquery-418515"
+    },
+    {
+      "urn": "my_bigquery_monitor.prj-bigquery-418515.test_dataset_1.consent-reports-20.address",
+      "user_assigned_data_categories": [],
+      "name": "address",
+      "description": null,
+      "monitor_config_id": "my_bigquery_monitor",
+      "updated_at": null,
+      "source_modified": null,
+      "classifications": [],
+      "diff_status": "addition",
+      "child_diff_statuses": {},
+      "table_name": "consent-reports-20",
+      "parent_table_urn": "my_bigquery_monitor.prj-bigquery-418515.test_dataset_1.consent-reports-20",
+      "data_type": "string",
+      "schema_name": "test_dataset_1",
+      "database_name": "prj-bigquery-418515",
+      "sub_field_urns": [
+        "my_bigquery_monitor.prj-bigquery-418515.test_dataset_1.consent-reports-20.address.City",
+        "my_bigquery_monitor.prj-bigquery-418515.test_dataset_1.consent-reports-20.address.State",
+        "my_bigquery_monitor.prj-bigquery-418515.test_dataset_1.consent-reports-20.address.Zip"
+      ]
     }
   ],
-  "total": 9,
+  "total": 10,
   "page": 1,
   "size": 25,
   "pages": 1

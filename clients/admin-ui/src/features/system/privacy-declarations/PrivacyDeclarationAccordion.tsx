@@ -22,10 +22,10 @@ interface AccordionProps extends DataProps {
   privacyDeclarations: PrivacyDeclarationResponse[];
   onEdit: (
     oldDeclaration: PrivacyDeclarationResponse,
-    newDeclaration: PrivacyDeclarationResponse
+    newDeclaration: PrivacyDeclarationResponse,
   ) => Promise<PrivacyDeclarationResponse[] | undefined>;
   onDelete: (
-    declaration: PrivacyDeclarationResponse
+    declaration: PrivacyDeclarationResponse,
   ) => Promise<PrivacyDeclarationResponse[] | undefined>;
   includeCustomFields?: boolean;
   includeCookies?: boolean;

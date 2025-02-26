@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import ClassVar, List, Optional
 
 from pydantic import Field
 
@@ -16,7 +16,7 @@ class MySQLSchema(ConnectionConfigSecretsSchema):
         description="The hostname or IP address of the server where the database is running.",
     )
     port: int = Field(
-        3306,
+        default=3306,
         title="Port",
         description="The network port number on which the server is listening for incoming connections (default: 3306).",
     )
@@ -29,11 +29,11 @@ class MySQLSchema(ConnectionConfigSecretsSchema):
         None,
         title="Password",
         description="The password used to authenticate and access the database.",
-        sensitive=True,
+        json_schema_extra={"sensitive": True},
     )
     dbname: str = Field(
-        description="The name of the specific database within the database server that you want to connect to.",
         title="Database",
+        description="The name of the specific database within the database server that you want to connect to.",
     )
     ssh_required: bool = Field(
         False,
@@ -41,7 +41,7 @@ class MySQLSchema(ConnectionConfigSecretsSchema):
         description="Indicates whether an SSH tunnel is required for the connection. Enable this option if your MySQL server is behind a firewall and requires SSH tunneling for remote connections.",
     )
 
-    _required_components: List[str] = ["host", "dbname"]
+    _required_components: ClassVar[List[str]] = ["host", "dbname"]
 
 
 class MySQLDocsSchema(MySQLSchema, NoValidationSchema):

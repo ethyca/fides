@@ -43,10 +43,10 @@ const selectDictSuggestionSlice = (state: RootState) => state.dictSuggestions;
 
 export const selectSuggestions = createSelector(
   selectDictSuggestionSlice,
-  (state) => state.suggestions
+  (state) => state.suggestions,
 );
 
 export const selectLockedForGVL = createSelector(
   selectDictSuggestionSlice,
-  (state) => state.lockedForGVL
+  (state) => state.lockedForGVL,
 );

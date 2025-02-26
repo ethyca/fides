@@ -86,7 +86,7 @@ const privacyNoticesApi = baseApi.injectEndpoints({
         providesTags: (result, error, arg) => [
           { type: "Privacy Notices", id: arg },
         ],
-      }
+      },
     ),
     getAvailableNoticeTranslations: build.query<
       Array<NoticeTranslation>,
@@ -127,7 +127,7 @@ export const privacyNoticesSlice = createSlice({
   reducers: {
     setActivePrivacyNoticeId: (
       draftState,
-      action: PayloadAction<string | undefined>
+      action: PayloadAction<string | undefined>,
     ) => {
       draftState.activePrivacyNoticeId = action.payload;
     },
@@ -141,22 +141,22 @@ export const { reducer } = privacyNoticesSlice;
 const selectPrivacyNotices = (state: RootState) => state.privacyNotices;
 export const selectPage = createSelector(
   selectPrivacyNotices,
-  (state) => state.page
+  (state) => state.page,
 );
 
 export const selectPageSize = createSelector(
   selectPrivacyNotices,
-  (state) => state.pageSize
+  (state) => state.pageSize,
 );
 
 const emptyPrivacyNotices: LimitedPrivacyNoticeResponseSchema[] = [];
 export const selectAllPrivacyNotices = createSelector(
   [(RootState) => RootState, selectPage, selectPageSize],
   (RootState, page, pageSize) => {
-    const data = privacyNoticesApi.endpoints.getAllPrivacyNotices.select({
+    const data: any = privacyNoticesApi.endpoints.getAllPrivacyNotices.select({
       page,
       size: pageSize,
     })(RootState)?.data;
     return data ? data.items : emptyPrivacyNotices;
-  }
+  },
 );

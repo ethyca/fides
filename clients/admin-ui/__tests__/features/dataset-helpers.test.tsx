@@ -1,16 +1,10 @@
 import {
   getUpdatedCollectionFromField,
-  getUpdatedDatasetFromClassifyDataset,
   getUpdatedDatasetFromCollection,
   getUpdatedDatasetFromField,
   removeCollectionFromDataset,
-  removeFieldFromDataset,
 } from "~/features/dataset/helpers";
 import {
-  mockClassification,
-  mockClassifyCollection,
-  mockClassifyDataset,
-  mockClassifyField,
   mockDataset,
   mockDatasetCollection,
   mockDatasetField,
@@ -28,7 +22,7 @@ describe("dataset helpers", () => {
       const updatedCollection = getUpdatedCollectionFromField(
         collection,
         newField,
-        0
+        0,
       );
       expect(updatedCollection.fields[0].name).toEqual(newName);
     });
@@ -44,7 +38,7 @@ describe("dataset helpers", () => {
       const updatedDataset = getUpdatedDatasetFromCollection(
         dataset,
         updatedCollection,
-        0
+        0,
       );
       expect(updatedDataset.collections[0].description).toEqual(newDescription);
     });
@@ -56,7 +50,7 @@ describe("dataset helpers", () => {
       const newField = { ...originalField, ...{ name: newName } };
       const collection = mockDatasetCollection({
         fields: [
-          mockDatasetCollection(),
+          mockDatasetCollection() as any,
           mockDatasetCollection(),
           mockDatasetCollection({ fields: [originalField] }),
         ],
@@ -70,124 +64,15 @@ describe("dataset helpers", () => {
         dataset,
         newField,
         collectionIndex,
-        fieldIndex
+        fieldIndex,
       );
       expect(
-        updatedDataset.collections[collectionIndex].fields[fieldIndex].name
+        updatedDataset.collections[collectionIndex].fields[fieldIndex].name,
       ).toEqual(newName);
-    });
-
-    it("should update a Dataset from a ClassifyInstance", () => {
-      const originalDataset = mockDataset({
-        collections: [
-          mockDatasetCollection({
-            name: "users",
-            fields: [
-              // Field without data categories:
-              mockDatasetField({
-                name: "email",
-                data_categories: [],
-              }),
-              // Field with data categories:
-              mockDatasetField({
-                name: "state",
-                data_categories: ["system.operations"],
-              }),
-              // Field without a corresponding classify field:
-              mockDatasetField({
-                name: "shoe_size",
-                data_categories: [],
-              }),
-            ],
-          }),
-        ],
-      });
-      const classifyDataset = mockClassifyDataset({
-        collections: [
-          mockClassifyCollection({
-            name: "users",
-            fields: [
-              mockClassifyField({
-                name: "email",
-                classifications: [
-                  mockClassification({
-                    label: "user.contact",
-                    aggregated_score: 0.75,
-                  }),
-                  mockClassification({
-                    label: "user.email",
-                    aggregated_score: 0.95,
-                  }),
-                ],
-              }),
-              mockClassifyField({
-                name: "state",
-                classifications: [
-                  mockClassification({
-                    label: "user.address",
-                  }),
-                ],
-              }),
-            ],
-          }),
-        ],
-      });
-
-      const updatedDataset = getUpdatedDatasetFromClassifyDataset(
-        originalDataset,
-        classifyDataset,
-        classifyDataset.collections[0].name
-      );
-
-      // It should return a new object.
-      expect(updatedDataset).not.toBe(originalDataset);
-      // A field without any categories should be filled in with the high score suggestion.
-      expect(updatedDataset.collections[0].fields[0].data_categories).toEqual([
-        "user.email",
-      ]);
-      // A field that already has a category should be unchanged.
-      expect(updatedDataset.collections[0].fields[1].data_categories).toEqual([
-        "system.operations",
-      ]);
-      // A field that had no classification match should be unchanged.
-      expect(updatedDataset.collections[0].fields[2].data_categories).toEqual(
-        []
-      );
     });
   });
 
   describe("removing from datasets", () => {
-    it("should be able to remove a dataset field", () => {
-      const deleteName = "remove me";
-      const fieldToBeRemoved = mockDatasetField({ name: deleteName });
-      const collection = mockDatasetCollection({
-        fields: [mockDatasetField(), fieldToBeRemoved, mockDatasetField()],
-      });
-      const dataset = mockDataset({
-        collections: [
-          mockDatasetCollection(),
-          mockDatasetCollection(),
-          collection,
-        ],
-      });
-      const fieldIndex = 1;
-      const collectionIndex = 2;
-      const updatedDataset = removeFieldFromDataset(
-        dataset,
-        collectionIndex,
-        fieldIndex
-      );
-
-      expect(updatedDataset.collections[collectionIndex].fields).toHaveLength(
-        2
-      );
-      expect(
-        updatedDataset.collections[collectionIndex].fields.filter(
-          (f) => f.name === deleteName
-        )
-      ).toHaveLength(0);
-    });
-
     it("should be able to remove a dataset collection", () => {
       const deleteName = "remove me";
       const collection = mockDatasetCollection({ name: deleteName });
@@ -201,11 +86,11 @@ describe("dataset helpers", () => {
       const collectionIndex = 1;
       const updatedDataset = removeCollectionFromDataset(
         dataset,
-        collectionIndex
+        collectionIndex,
       );
       expect(updatedDataset.collections).toHaveLength(2);
       expect(
-        updatedDataset.collections.filter((f) => f.name === deleteName)
+        updatedDataset.collections.filter((f) => f.name === deleteName),
       ).toHaveLength(0);
     });
   });

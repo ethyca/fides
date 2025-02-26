@@ -1,13 +1,6 @@
-import produce from "immer";
+import { get } from "lodash";
 
-import {
-  Classification,
-  ClassifyDataset,
-  ClassifyField,
-  Dataset,
-  DatasetCollection,
-  DatasetField,
-} from "~/types/api";
+import { Dataset, DatasetCollection, DatasetField } from "~/types/api";
 
 /**
  * Because there is only one /dataset endpoint which handles dataset, collection,
@@ -23,7 +16,7 @@ import {
 export const getUpdatedDatasetFromCollection = (
   dataset: Dataset,
   collection: DatasetCollection,
-  collectionIndex: number
+  collectionIndex: number,
 ) => {
   const newCollections = dataset.collections.map((c, idx) => {
     if (idx === collectionIndex) {
@@ -37,7 +30,7 @@ export const getUpdatedDatasetFromCollection = (
 export const getUpdatedCollectionFromField = (
   collection: DatasetCollection,
   field: DatasetField,
-  fieldIndex: number
+  fieldIndex: number,
 ) => {
   const newFields = collection.fields.map((f, idx) => {
     if (idx === fieldIndex) {
@@ -52,101 +45,65 @@ export const getUpdatedDatasetFromField = (
   dataset: Dataset,
   field: DatasetField,
   collectionIndex: number,
-  fieldIndex: number
+  fieldIndex: number,
 ) => {
   const collection = dataset.collections[collectionIndex];
   const updatedCollection = getUpdatedCollectionFromField(
     collection,
     field,
-    fieldIndex
+    fieldIndex,
   );
   return getUpdatedDatasetFromCollection(
     dataset,
     updatedCollection,
-    collectionIndex
-  );
-};
-
-export const getTopClassification = (
-  classifyField: ClassifyField
-): Classification =>
-  classifyField.classifications.reduce((maxClassification, next) => {
-    if (
-      (maxClassification.aggregated_score ?? 0) < (next.aggregated_score ?? 0)
-    ) {
-      return next;
-    }
-    return maxClassification;
-  });
-
-/**
- * Returns a new dataset object with the top-scoring classification results filling in data
- * categories that were left blank on the dataset. Uses immer to efficiently modify a draft object.
- */
-export const getUpdatedDatasetFromClassifyDataset = (
-  dataset: Dataset,
-  classifyDataset: ClassifyDataset,
-  activeCollection: string | undefined
-): Dataset =>
-  produce(dataset, (draftDataset) => {
-    const classifyCollectionMap = new Map(
-      classifyDataset.collections.map((c) => [c.name, c])
-    );
-
-    draftDataset.collections.forEach((draftCollection) => {
-      const classifyCollection = classifyCollectionMap.get(
-        draftCollection.name
-      );
-
-      if (activeCollection && classifyCollection?.name !== activeCollection) {
-        return;
-      }
-
-      const classifyFieldMap = new Map(
-        classifyCollection?.fields?.map((f) => [f.name, f])
-      );
-
-      draftCollection.fields.forEach((draftField) => {
-        if (
-          draftField.data_categories &&
-          draftField.data_categories.length > 0
-        ) {
-          return;
-        }
-
-        const classifyField = classifyFieldMap.get(draftField.name);
-        if (!(classifyField && classifyField.classifications.length > 0)) {
-          return;
-        }
-
-        const topClassification = getTopClassification(classifyField);
-
-        draftField.data_categories = [topClassification.label];
-      });
-    });
-  });
-
-export const removeFieldFromDataset = (
-  dataset: Dataset,
-  collectionIndex: number,
-  fieldIndex: number
-): Dataset => {
-  const collection = dataset.collections[collectionIndex];
-  const newFields = collection.fields.filter((f, idx) => idx !== fieldIndex);
-  const updatedCollection = { ...collection, ...{ fields: newFields } };
-  return getUpdatedDatasetFromCollection(
-    dataset,
-    updatedCollection,
-    collectionIndex
+    collectionIndex,
   );
 };
 
 export const removeCollectionFromDataset = (
   dataset: Dataset,
-  collectionIndex: number
+  collectionIndex: number,
 ): Dataset => {
   const newCollections = dataset.collections.filter(
-    (c, idx) => idx !== collectionIndex
+    (c, idx) => idx !== collectionIndex,
   );
   return { ...dataset, ...{ collections: newCollections } };
+};
+
+/**
+ * Returns the path that can be used to navigate a dataset object.
+ * example return values: "collections[0].fields[1]"
+ * We can then use the object path to get or update properties in the dataset object
+ */
+
+interface GetDatasetPathParams {
+  dataset: Dataset;
+  collectionName: string;
+  subfields?: string[];
+}
+
+export const getDatasetPath = ({
+  dataset,
+  collectionName,
+  subfields,
+}: GetDatasetPathParams) => {
+  let path = "";
+  const collectionIndex = dataset.collections.findIndex(
+    (collection) => collection.name === collectionName,
+  );
+  path += `collections[${collectionIndex}]`;
+
+  if (!subfields) {
+    return path;
+  }
+
+  subfields.forEach((subfieldName) => {
+    const field: DatasetField = get(dataset, path);
+    const subfieldIndex = field.fields!.findIndex(
+      (subfield) => subfield.name === subfieldName,
+    );
+    path += `.fields[${subfieldIndex}]`;
+  });
+
+  return path;
 };

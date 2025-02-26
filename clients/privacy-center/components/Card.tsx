@@ -8,12 +8,7 @@ type CardProps = {
   onClick: () => void;
 };
 
-const Card: React.FC<CardProps> = ({
-  title,
-  iconPath,
-  description,
-  onClick,
-}) => (
+const Card = ({ title, iconPath, description, onClick }: CardProps) => (
   <Flex
     as="button"
     bg="white"
@@ -47,17 +42,19 @@ const Card: React.FC<CardProps> = ({
         "0px 10px 15px -3px rgba(0, 0, 0, 0.1), 0px 4px 6px -2px rgba(0, 0, 0, 0.05)",
       outline: "none",
     }}
+    border="1px solid"
+    borderColor="transparent"
   >
     <Image alt={description} boxSize="32px" src={iconPath} />
     <Text
-      color="gray.600"
+      color="gray.800"
       fontSize="md"
       fontWeight="semibold"
       lineHeight="24px"
     >
       {title}
     </Text>
-    <Text color="gray.600" fontSize="xs" fontWeight="normal" lineHeight="16px">
+    <Text color="gray.800" fontSize="xs" fontWeight="normal" lineHeight="16px">
       {description}
     </Text>
   </Flex>

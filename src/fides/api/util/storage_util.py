@@ -38,7 +38,7 @@ def get_schema_for_secrets(
         )
 
     try:
-        return schema.parse_obj(secrets)  # type: ignore
+        return schema.model_validate(secrets)  # type: ignore
     except ValidationError as exc:
         # Pydantic requires validators raise either a ValueError, TypeError, or AssertionError
         # so this exception is cast into a `ValueError`.

@@ -1,0 +1,65 @@
+minimum_pre_commit_version: "2"
+
+# To use hooks on the pre-commit stage only, run
+# pre-commit install --hook-type pre-commit
+fail_fast: true
+repos:
+  - repo: local
+    hooks:
+      - id: gitleaks-pre-commit
+        name: gitleaks-pre-commit
+        description: Detect hardcoded secrets pre-commit using Gitleaks
+        entry: gitleaks protect --verbose --no-banner --redact --staged
+        language: system
+        stages: [commit]
+
+      - id: gitleaks-pre-push
+        # To use this pre-push hook, run
+        # pre-commit install --hook-type pre-push
+        name: gitleaks-pre-push
+        description: Detect hardcoded secrets pre-push using Gitleaks
+        entry: gitleaks detect --verbose --no-banner --redact --log-opts "origin..HEAD"
+        language: system
+        stages: [push]
+
+      - id: black
+        name: black
+        description: Format code using Black
+        entry: nox -s "black(fix)" --
+        language: system
+        types: [python]
+
+      - id: isort
+        name: isort
+        description: Sort imports alphabetically
+        entry: nox -s "isort(fix)" --
+        language: system
+        types: [python]
+
+      - id: mypy
+        name: mypy
+        description: Check for type hints
+        entry: nox -s "mypy" --
+        language: system
+        types: [python]
+
+      - id: pylint
+        name: pylint
+        description: Check for linting errors
+        entry: nox -s "pylint" --
+        language: system
+        types: [python]
+
+      - id: npm-run-format
+        name: npm-run-format
+        description: Check for frontend linting errors
+        entry: sh -c 'cd clients; npm run format'
+        language: system
+        types: [javascript, jsx, ts, tsx]
+
+      - id: npm-run-lint
+        name: npm-run-lint
+        description: Check for frontend linting errors
+        entry: sh -c 'cd clients; npm run lint:fix'
+        language: system
+        types: [javascript, jsx, ts, tsx]

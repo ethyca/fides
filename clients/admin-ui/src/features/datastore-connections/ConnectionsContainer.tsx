@@ -19,7 +19,7 @@ import {
 } from "./datastore-connection.slice";
 import { DatastoreConnectionParams } from "./types";
 
-const ConnectionsContainer: React.FC = () => {
+const ConnectionsContainer = () => {
   const mounted = useRef(false);
   const dispatch = useAppDispatch();
   const { connectionOptions } = useAppSelector(selectConnectionTypeState);
@@ -29,15 +29,15 @@ const ConnectionsContainer: React.FC = () => {
     debounce(
       (updatedFilters: React.SetStateAction<DatastoreConnectionParams>) =>
         setCachedFilters(updatedFilters),
-      250
-    )
+      250,
+    ),
   );
 
   const { data: connectionTypesData } = useGetAllConnectionTypesQuery(
     {
       search: "",
     },
-    { skip: connectionOptions.length > 0 }
+    { skip: connectionOptions.length > 0 },
   );
 
   const {
@@ -48,6 +48,12 @@ const ConnectionsContainer: React.FC = () => {
   } = useGetAllDatastoreConnectionsQuery(cachedFilters);
 
   const hasData = datastoreConnectionsData!?.items?.length > 0;
+  const hasFilters =
+    !!filters.search ||
+    !!filters.connection_type ||
+    !!filters.system_type ||
+    !!filters.disabled_status ||
+    !!filters.test_status;
 
   useEffect(() => {
     dispatch(setOrphanedFromSystem(true));
@@ -81,7 +87,7 @@ const ConnectionsContainer: React.FC = () => {
             total={datastoreConnectionsData!?.total}
           />
         ) : (
-          <ConnectionsEmptyState />
+          <ConnectionsEmptyState hasFilters={hasFilters} />
         ))}
     </>
   );

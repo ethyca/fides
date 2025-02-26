@@ -10,7 +10,7 @@ import {
 import NextLink from "next/link";
 import React from "react";
 
-import { DATASTORE_CONNECTION_ROUTE } from "~/features/common/nav/v2/routes";
+import { DATASTORE_CONNECTION_ROUTE } from "~/features/common/nav/routes";
 import { ConnectionType } from "~/types/api";
 
 import { AccessLevel } from "./constants";
@@ -25,13 +25,13 @@ interface ConnectionMenuProps {
   access_type: AccessLevel;
 }
 
-const ConnectionMenu: React.FC<ConnectionMenuProps> = ({
+const ConnectionMenu = ({
   connection_key,
   disabled,
   connection_type,
   access_type,
   name,
-}) => (
+}: ConnectionMenuProps) => (
   <Menu>
     <MenuButton
       as={Button}
@@ -47,18 +47,16 @@ const ConnectionMenu: React.FC<ConnectionMenuProps> = ({
         shadow="xl"
         data-testid={`connection-menu-${name}`}
       >
-        <NextLink
+        <MenuItem
+          as={NextLink}
           href={`${DATASTORE_CONNECTION_ROUTE}/${encodeURIComponent(
-            connection_key
+            connection_key,
           )}`}
+          _focus={{ color: "complimentary.500", bg: "gray.100" }}
+          data-testid="configure-btn"
         >
-          <MenuItem
-            _focus={{ color: "complimentary.500", bg: "gray.100" }}
-            data-testid="configure-btn"
-          >
-            Configure
-          </MenuItem>
-        </NextLink>
+          Configure
+        </MenuItem>
         <DisableConnectionModal
           connection_key={connection_key}
           disabled={disabled}
@@ -67,7 +65,7 @@ const ConnectionMenu: React.FC<ConnectionMenuProps> = ({
           name={name}
           isSwitch={false}
         />
-        <DeleteConnectionModal connection_key={connection_key} />
+        <DeleteConnectionModal showMenu connection_key={connection_key} />
       </MenuList>
     </Portal>
   </Menu>

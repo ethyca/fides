@@ -1,7 +1,7 @@
 import {
+  AntButton as Button,
+  AntSwitch as Switch,
   Box,
-  IconButton,
-  Switch,
   Table,
   Tbody,
   Td,
@@ -39,8 +39,8 @@ export const AssignSystemsDeleteTable = ({
   const onDelete = (system: System) => {
     onAssignedSystemChange(
       assignedSystems.filter(
-        (assignedSystem) => assignedSystem.fides_key !== system.fides_key
-      )
+        (assignedSystem) => assignedSystem.fides_key !== system.fides_key,
+      ),
     );
   };
 
@@ -61,12 +61,9 @@ export const AssignSystemsDeleteTable = ({
           >
             <Td>{system.name}</Td>
             <Td textAlign="end">
-              <IconButton
-                background="gray.50"
+              <Button
                 aria-label="Unassign system from user"
                 icon={<TrashCanSolidIcon />}
-                variant="outline"
-                size="sm"
                 onClick={() => onDelete(system)}
                 data-testid="unassign-btn"
               />
@@ -89,13 +86,13 @@ const AssignSystemsTable = ({
 }) => {
   const handleToggle = (system: System) => {
     const isAssigned = !!assignedSystems.find(
-      (assigned) => assigned.fides_key === system.fides_key
+      (assigned) => assigned.fides_key === system.fides_key,
     );
     if (isAssigned) {
       onChange(
         assignedSystems.filter(
-          (assignedSystem) => assignedSystem.fides_key !== system.fides_key
-        )
+          (assignedSystem) => assignedSystem.fides_key !== system.fides_key,
+        ),
       );
     } else {
       onChange([...assignedSystems, system]);
@@ -119,7 +116,7 @@ const AssignSystemsTable = ({
         <Tbody>
           {allSystems.map((system) => {
             const isAssigned = !!assignedSystems.find(
-              (assigned) => assigned.fides_key === system.fides_key
+              (assigned) => assigned.fides_key === system.fides_key,
             );
             return (
               <Tr
@@ -130,7 +127,7 @@ const AssignSystemsTable = ({
                 <Td>{system.name}</Td>
                 <Td>
                   <Switch
-                    isChecked={isAssigned}
+                    checked={isAssigned}
                     onChange={() => handleToggle(system)}
                     data-testid="assign-switch"
                   />

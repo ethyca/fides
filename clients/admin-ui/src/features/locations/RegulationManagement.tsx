@@ -1,6 +1,6 @@
 import {
+  AntButton as Button,
   Box,
-  Button,
   SimpleGrid,
   Text,
   useDisclosure,
@@ -14,7 +14,7 @@ import { useMemo, useState } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";
 import ConfirmationModal from "~/features/common/modals/ConfirmationModal";
-import { LOCATIONS_ROUTE } from "~/features/common/nav/v2/routes";
+import { LOCATIONS_ROUTE } from "~/features/common/nav/routes";
 import SearchBar from "~/features/common/SearchBar";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import ToastLink from "~/features/common/ToastLink";
@@ -40,7 +40,7 @@ const RegulationManagement = ({
   const toast = useToast();
   const confirmationDisclosure = useDisclosure();
   const [draftSelections, setDraftSelections] = useState<Array<Selection>>(
-    data.regulations ?? []
+    data.regulations ?? [],
   );
   const [search, setSearch] = useState("");
   const [patchLocationsRegulationsMutationTrigger, { isLoading: isSaving }] =
@@ -78,8 +78,8 @@ const RegulationManagement = ({
             Fides has automatically associated the relevant locations with your
             regulation choices.
             <ToastLink onClick={goToLocations}>View locations here.</ToastLink>
-          </Text>
-        )
+          </Text>,
+        ),
       );
     }
   };
@@ -87,7 +87,7 @@ const RegulationManagement = ({
   const handleDraftChange = (updatedSelections: Array<Selection>) => {
     const updated = draftSelections.map((draftSelection) => {
       const updatedSelection = updatedSelections.find(
-        (s) => s.id === draftSelection.id
+        (s) => s.id === draftSelection.id,
       );
       return updatedSelection ?? draftSelection;
     });
@@ -103,7 +103,6 @@ const RegulationManagement = ({
           placeholder="Search"
           search={search}
           onClear={() => setSearch("")}
-          data-testid="search-bar"
         />
       </Box>
       <SimpleGrid columns={{ base: 1, md: 2, xl: 3 }} spacing={6} width="100%">
@@ -111,7 +110,7 @@ const RegulationManagement = ({
           ([continent, regulations]) => {
             const selected = draftSelections
               .filter(
-                (s) => regulations.find((r) => r.id === s.id) && s.selected
+                (s) => regulations.find((r) => r.id === s.id) && s.selected,
               )
               .map((s) => s.id);
             const handleChange = (newSelected: string[]) => {
@@ -132,7 +131,7 @@ const RegulationManagement = ({
                 onChange={handleChange}
               />
             );
-          }
+          },
         )}
       </SimpleGrid>
       <ConfirmationModal
@@ -147,17 +146,16 @@ const RegulationManagement = ({
         isCentered
         icon={<WarningIcon color="orange" />}
       />
-      {showSave ? (
+      {showSave && (
         <Button
-          colorScheme="primary"
-          size="sm"
+          type="primary"
           onClick={confirmationDisclosure.onOpen}
-          isLoading={isSaving}
+          loading={isSaving}
           data-testid="save-btn"
         >
           Save
         </Button>
-      ) : null}
+      )}
     </VStack>
   );
 };

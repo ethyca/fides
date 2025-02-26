@@ -45,7 +45,7 @@ const MOCK_NODES = [
 describe("Checkbox tree", () => {
   it("renders just the top level nodes when none are selected", () => {
     const { getByTestId, queryByTestId } = render(
-      <CheckboxTree nodes={MOCK_NODES} selected={[]} onSelected={jest.fn()} />
+      <CheckboxTree nodes={MOCK_NODES} selected={[]} onSelected={jest.fn()} />,
     );
     expect(getByTestId("checkbox-grandparent")).toBeInTheDocument();
     expect(getByTestId("checkbox-great uncle")).toBeInTheDocument();
@@ -56,7 +56,7 @@ describe("Checkbox tree", () => {
 
   it("can expand children", () => {
     const { getByTestId, queryByTestId } = render(
-      <CheckboxTree nodes={MOCK_NODES} selected={[]} onSelected={jest.fn()} />
+      <CheckboxTree nodes={MOCK_NODES} selected={[]} onSelected={jest.fn()} />,
     );
     expect(queryByTestId("checkbox-parent")).toBeNull();
     fireEvent.click(getByTestId("expand-grandparent"));
@@ -75,7 +75,7 @@ describe("Checkbox tree", () => {
         nodes={MOCK_NODES}
         selected={[]}
         onSelected={handleSelected}
-      />
+      />,
     );
     fireEvent.click(getByTestId("checkbox-great uncle"));
     expect(handleSelected).toBeCalledTimes(1);
@@ -89,10 +89,10 @@ describe("Checkbox tree", () => {
         nodes={MOCK_NODES}
         selected={["great uncle"]}
         onSelected={handleSelected}
-      />
+      />,
     );
     expect(
-      getByTestId("checkbox-great uncle").querySelector("span")
+      getByTestId("checkbox-great uncle").querySelector("span"),
     ).toHaveAttribute("data-checked");
     fireEvent.click(getByTestId("checkbox-great uncle"));
     expect(handleSelected).toBeCalledTimes(1);
@@ -111,7 +111,7 @@ describe("Checkbox tree", () => {
           "great uncle",
         ]}
         onSelected={handleSelected}
-      />
+      />,
     );
     fireEvent.click(getByTestId("checkbox-grandparent"));
     expect(handleSelected).toBeCalledTimes(1);
@@ -125,7 +125,7 @@ describe("Checkbox tree", () => {
         nodes={MOCK_NODES}
         selected={["grandparent.parent.child", "great uncle"]}
         onSelected={handleSelected}
-      />
+      />,
     );
     fireEvent.click(getByTestId("checkbox-child"));
     expect(handleSelected).toBeCalledTimes(1);
@@ -139,19 +139,19 @@ describe("Checkbox tree", () => {
         nodes={MOCK_NODES}
         selected={["grandparent"]}
         onSelected={handleSelected}
-      />
+      />,
     );
     expect(
-      getByTestId("checkbox-grandparent").querySelector("span")
+      getByTestId("checkbox-grandparent").querySelector("span"),
     ).toHaveAttribute("data-checked");
     expect(
-      getByTestId("checkbox-parent").querySelector("span")
+      getByTestId("checkbox-parent").querySelector("span"),
     ).toHaveAttribute("data-checked");
     expect(getByTestId("checkbox-child").querySelector("span")).toHaveAttribute(
-      "data-checked"
+      "data-checked",
     );
     expect(getByTestId("checkbox-grandparent")).not.toHaveAttribute(
-      "data-disabled"
+      "data-disabled",
     );
     expect(getByTestId("checkbox-child")).toHaveAttribute("data-disabled");
   });
@@ -163,17 +163,17 @@ describe("Checkbox tree", () => {
         nodes={MOCK_NODES}
         selected={["grandparent.parent.child"]}
         onSelected={handleSelected}
-      />
+      />,
     );
 
     expect(
-      getByTestId("checkbox-grandparent").querySelector("span")
+      getByTestId("checkbox-grandparent").querySelector("span"),
     ).toHaveAttribute("data-indeterminate");
     expect(
-      getByTestId("checkbox-parent").querySelector("span")
+      getByTestId("checkbox-parent").querySelector("span"),
     ).toHaveAttribute("data-indeterminate");
     expect(getByTestId("checkbox-child").querySelector("span")).toHaveAttribute(
-      "data-checked"
+      "data-checked",
     );
   });
 
@@ -184,19 +184,19 @@ describe("Checkbox tree", () => {
         nodes={MOCK_NODES}
         selected={["grandparent.parent.child", "grandparent.parent.sibling"]}
         onSelected={handleSelected}
-      />
+      />,
     );
     expect(
-      getByTestId("checkbox-grandparent").querySelector("span")
+      getByTestId("checkbox-grandparent").querySelector("span"),
     ).toHaveAttribute("data-indeterminate");
     expect(
-      getByTestId("checkbox-parent").querySelector("span")
+      getByTestId("checkbox-parent").querySelector("span"),
     ).toHaveAttribute("data-checked");
     expect(getByTestId("checkbox-child").querySelector("span")).toHaveAttribute(
-      "data-checked"
+      "data-checked",
     );
     expect(
-      getByTestId("checkbox-sibling").querySelector("span")
+      getByTestId("checkbox-sibling").querySelector("span"),
     ).toHaveAttribute("data-checked");
   });
 
@@ -206,14 +206,14 @@ describe("Checkbox tree", () => {
         nodes={MOCK_NODES}
         selected={["grandparent.parent.child"]}
         onSelected={jest.fn()}
-      />
+      />,
     );
     expect(getByTestId("checkbox-child")).toBeInTheDocument();
   });
 
   it("does not render an expanding arrow when node has no children", () => {
     const { getByTestId, queryByTestId } = render(
-      <CheckboxTree nodes={MOCK_NODES} selected={[]} onSelected={jest.fn()} />
+      <CheckboxTree nodes={MOCK_NODES} selected={[]} onSelected={jest.fn()} />,
     );
     expect(getByTestId("expand-grandparent")).toBeInTheDocument();
     expect(queryByTestId("expand-great uncle")).toBeNull();
@@ -233,7 +233,7 @@ describe("Checkbox tree", () => {
       expect(
         getDescendantsAndCurrent(MOCK_NODES, "grandparent")
           .map((d) => d.value)
-          .sort()
+          .sort(),
       ).toEqual(
         [
           "grandparent",
@@ -242,43 +242,43 @@ describe("Checkbox tree", () => {
           "grandparent.parent.sibling",
           "grandparent.aunt",
           "grandparent.aunt_second",
-        ].sort()
+        ].sort(),
       );
       expect(
         getDescendantsAndCurrent(MOCK_NODES, "grandparent.parent")
           .map((d) => d.value)
-          .sort()
+          .sort(),
       ).toEqual(
         [
           "grandparent.parent",
           "grandparent.parent.child",
           "grandparent.parent.sibling",
-        ].sort()
+        ].sort(),
       );
       expect(
         getDescendantsAndCurrent(MOCK_NODES, "grandparent.parent.child").map(
-          (d) => d.value
-        )
+          (d) => d.value,
+        ),
       ).toEqual(["grandparent.parent.child"]);
 
       // make sure aunt_second does not sneak in
       expect(
         getDescendantsAndCurrent(MOCK_NODES, "grandparent.aunt").map(
-          (d) => d.value
-        )
+          (d) => d.value,
+        ),
       ).toEqual(["grandparent.aunt"]);
     });
 
     it("can determine if an ancestor is selected", () => {
       expect(
-        ancestorIsSelected(["grandparent"], "grandparent.parent")
+        ancestorIsSelected(["grandparent"], "grandparent.parent"),
       ).toBeTruthy();
       expect(ancestorIsSelected(["grandparent"], "great uncle")).toBeFalsy();
       expect(
-        ancestorIsSelected(["grandparent"], "grandparent.parent.child")
+        ancestorIsSelected(["grandparent"], "grandparent.parent.child"),
       ).toBeTruthy();
       expect(
-        ancestorIsSelected(["grandparent.parent"], "grandparent.parent.child")
+        ancestorIsSelected(["grandparent.parent"], "grandparent.parent.child"),
       ).toBeTruthy();
       expect(ancestorIsSelected(["grandparent"], "grandparent")).toBeFalsy();
     });

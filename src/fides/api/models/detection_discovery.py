@@ -1,26 +1,21 @@
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
-from typing import Any, Dict, Iterable, Optional, Type
+from typing import Any, Dict, Iterable, List, Optional, Type
 
-from sqlalchemy import ARRAY, Column, DateTime, ForeignKey, String
+from loguru import logger
+from sqlalchemy import ARRAY, Boolean, Column, DateTime, ForeignKey, String, func
 from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.ext.mutable import MutableDict
+from sqlalchemy.future import select
 from sqlalchemy.orm import Session, relationship
+from sqlalchemy.orm.query import Query
 
 from fides.api.db.base_class import Base, FidesBase
 from fides.api.models.connectionconfig import ConnectionConfig
-
-# class MonitorExecution(BaseModel):
-#     id: str
-#     monitor_config_id: str
-#     status: Optional[str]
-#     started: Optional[datetime]
-#     completed: Optional[datetime]
-#     classification_instances: List[str] = PydanticField(
-#         default_factory=list
-#     )  # TODO: formalize to FK
+from fides.api.models.sql_models import System  # type: ignore[attr-defined]
 
 
 class DiffStatus(Enum):
@@ -40,6 +35,7 @@ class MonitorFrequency(Enum):
     DAILY = "Daily"
     WEEKLY = "Weekly"
     MONTHLY = "Monthly"
+    NOT_SCHEDULED = "Not scheduled"
 
 
 class MonitorConfig(Base):
@@ -66,6 +62,14 @@ class MonitorConfig(Base):
         server_default="{}",
         default=dict,
     )  # the databases to which the monitor is scoped
+    excluded_databases = Column(
+        ARRAY(String),
+        index=False,
+        unique=False,
+        nullable=False,
+        server_default="{}",
+        default=dict,
+    )  # the databases to which the monitor is not scoped
     monitor_execution_trigger = Column(
         MutableDict.as_mutable(JSONB),
         index=False,
@@ -89,9 +93,27 @@ class MonitorConfig(Base):
     )  # monitor parameters that are specific per datasource
     # these are held as an untyped JSON dict (in the DB) to stay flexible
 
+    last_monitored = Column(
+        DateTime(timezone=True),
+        nullable=True,
+    )  # when the monitor was last executed
+
+    enabled = Column(
+        Boolean,
+        default=True,
+        nullable=False,
+        server_default="t",
+    )
+
     # TODO: many-to-many link to users assigned as data stewards; likely will need a join-table
 
     connection_config = relationship(ConnectionConfig)
+
+    executions = relationship(
+        "MonitorExecution",
+        cascade="all, delete-orphan",
+        backref="monitor_config",
+    )
 
     @property
     def connection_config_key(self) -> str:
@@ -115,7 +137,7 @@ class MonitorConfig(Base):
             not self.monitor_execution_trigger
             or self.monitor_execution_trigger.get("hour", None) is None
         ):
-            return None
+            return MonitorFrequency.NOT_SCHEDULED
         if self.monitor_execution_trigger.get("day", None) is not None:
             return MonitorFrequency.MONTHLY
         if self.monitor_execution_trigger.get("day_of_week", None) is not None:
@@ -123,9 +145,23 @@ class MonitorConfig(Base):
         return MonitorFrequency.DAILY
 
     def update(self, db: Session, *, data: dict[str, Any]) -> FidesBase:
-        """Override the base class `update` to derive the `execution_trigger` dict field"""
+        """
+        Override the base class `update` to validate database include/exclude
+        and derive the `execution_trigger` dict field
+        """
+        MonitorConfig.database_include_exclude_list_is_valid(data)
         MonitorConfig.derive_execution_trigger_dict(data)
         return super().update(db=db, data=data)
+
+    @classmethod
+    def database_include_exclude_list_is_valid(cls, data: Dict[str, Any]) -> None:
+        """Check that both include and exclude have not both been set"""
+        include = data.get("databases", [])
+        exclude = data.get("excluded_databases", [])
+        if include and exclude:
+            raise ValueError(
+                "Both `databases` and `excluded_databases` cannot be set at the same time."
+            )
 
     @classmethod
     def create(
@@ -135,7 +171,11 @@ class MonitorConfig(Base):
         data: dict[str, Any],
         check_name: bool = True,
     ) -> MonitorConfig:
-        """Override the base class `create` to derive the `execution_trigger` dict field"""
+        """
+        Override the base class `create` to validate database include/exclude
+        and derive the `execution_trigger` dict field
+        """
+        MonitorConfig.database_include_exclude_list_is_valid(data)
         MonitorConfig.derive_execution_trigger_dict(data)
         return super().create(db=db, data=data, check_name=check_name)
 
@@ -167,6 +207,9 @@ class MonitorConfig(Base):
         """
         execution_frequency = data.pop("execution_frequency", None)
         execution_start_date = data.pop("execution_start_date", None)
+        if execution_frequency == MonitorFrequency.NOT_SCHEDULED:
+            data["monitor_execution_trigger"] = None
+            return
         if execution_frequency and execution_start_date:
             cron_trigger_dict = {}
             cron_trigger_dict["start_date"] = execution_start_date
@@ -190,11 +233,38 @@ class StagedResource(Base):
     urn = Column(String, index=True, unique=True, nullable=False)
     resource_type = Column(String, index=True, nullable=True)
     description = Column(String, nullable=True)
-    monitor_config_id = Column(String, nullable=True)  # just a "soft" pointer, for now
+    monitor_config_id = Column(
+        String,
+        index=True,  # indexed because we frequently need to slice by monitor config ID
+        nullable=True,
+    )  # just a "soft" pointer, for now TODO: make this a FK
+
+    # for now, this is just used for web monitor resources.
+    system_id = Column(
+        String,
+        ForeignKey(System.id_field_path),
+        nullable=True,
+        index=True,
+    )
+
+    # TODO: we should be able to enable the below relationship, but it
+    # confuses different functionality since 'system' means different
+    # things depending on whether the resource is a datastore or web monitor
+    # staged resource
+    #    system = relationship(System)
+
+    # the Compass vendor ID associated with the StagedResource.
+    # only used for web monitor resources
+    vendor_id = Column(
+        String,
+        nullable=True,
+        index=True,  # indexed because we frequently need to slice by vendor ID
+    )
+
     source_modified = Column(
         DateTime(timezone=True),
         nullable=True,
-    )  # when the table was modified in the datasource
+    )  # when the resource was modified in the datasource
     classifications = Column(
         ARRAY(JSONB),
         nullable=False,
@@ -234,10 +304,49 @@ class StagedResource(Base):
         default=dict,
     )
 
+    data_uses = Column(
+        ARRAY(String),
+        nullable=False,
+        server_default="{}",
+        default=dict,
+    )
+
     @classmethod
     def get_urn(cls, db: Session, urn: str) -> Optional[StagedResource]:
         """Utility to retrieve the staged resource with the given URN"""
         return cls.get_by(db=db, field="urn", value=urn)
+
+    @classmethod
+    def get_urn_list(cls, db: Session, urns: Iterable[str]) -> Iterable[StagedResource]:
+        """
+        Utility to retrieve all staged resources with the given URNs
+        """
+        results = db.execute(select(StagedResource).where(StagedResource.urn.in_(urns)))
+        return results.scalars().all()
+
+    @classmethod
+    async def get_urn_async(
+        cls, db: AsyncSession, urn: str
+    ) -> Optional[StagedResource]:
+        """
+        Utility to retrieve the staged resource with the given URN using an async session
+        """
+        results = await db.execute(
+            select(StagedResource).where(StagedResource.urn == urn)
+        )
+        return results.scalars().first()
+
+    @classmethod
+    async def get_urn_list_async(
+        cls, db: AsyncSession, urns: List[str]
+    ) -> Optional[List[StagedResource]]:
+        """
+        Utility to retrieve the staged resource with the given URN using an async session
+        """
+        results = await db.execute(
+            select(StagedResource).where(StagedResource.urn.in_(urns))
+        )
+        return results.scalars().all()
 
     def add_child_diff_status(self, diff_status: DiffStatus) -> None:
         """Increments the specified child diff status"""
@@ -261,3 +370,65 @@ class StagedResource(Base):
             )
             if parent_resource:
                 parent_resource.add_child_diff_status(DiffStatus.ADDITION)
+
+
+class MonitorExecution(Base):
+    """
+    Monitor execution record used for data detection and discovery.
+
+    Each monitor execution references `MonitorConfig`, which provide it with underlying
+    configuration details used in connecting to the external data store.
+    """
+
+    monitor_config_key = Column(
+        String,
+        ForeignKey(MonitorConfig.key),
+        nullable=False,
+        index=True,
+    )
+    status = Column(String, nullable=True)
+    started = Column(
+        DateTime(timezone=True), nullable=True, default=datetime.now(timezone.utc)
+    )
+    completed = Column(DateTime(timezone=True), nullable=True)
+    classification_instances = Column(
+        ARRAY(String),
+        index=False,
+        unique=False,
+        nullable=False,
+        default=list,
+    )
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+    )
+
+
+def fetch_staged_resources_by_type_query(
+    resource_type: str,
+    monitor_config_ids: Optional[List[str]] = None,
+    show_hidden: bool = False,
+) -> Query[StagedResource]:
+    """
+    Fetches staged resources by type and monitor config ID. Optionally filters out muted staged resources ("hidden").
+    """
+    logger.info(
+        f"Fetching staged resources of type {resource_type}, show_hidden={show_hidden}, monitor_config_ids={monitor_config_ids}"
+    )
+    query = select(StagedResource).where(StagedResource.resource_type == resource_type)
+
+    if monitor_config_ids:
+        query = query.filter(StagedResource.monitor_config_id.in_(monitor_config_ids))
+    if not show_hidden:
+        from sqlalchemy import or_
+
+        query = query.filter(
+            or_(
+                StagedResource.diff_status != DiffStatus.MUTED.value,
+                StagedResource.diff_status.is_(None),
+            )
+        )
+
+    return query

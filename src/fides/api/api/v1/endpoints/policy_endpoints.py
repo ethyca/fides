@@ -1,12 +1,12 @@
-from typing import Any, Dict, List, Optional
+from typing import Annotated, Any, Dict, List, Optional
 
-from fastapi import Body, Depends, Security
+from fastapi import Depends, Security
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
 from fideslang.validation import FidesKey
 from loguru import logger
-from pydantic import conlist
+from pydantic import Field
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 from starlette.exceptions import HTTPException
@@ -56,14 +56,14 @@ def get_policy_list(
     """
     Return a paginated list of all Policy records in this system
     """
-    logger.info("Finding all policies with pagination params '{}'", params)
+    logger.debug("Finding all policies with pagination params '{}'", params)
     policies = Policy.query(db=db).order_by(Policy.created_at.desc())
     return paginate(policies, params=params)
 
 
 def get_policy_or_error(db: Session, policy_key: FidesKey) -> Policy:
     """Helper method to load Policy or throw a 404"""
-    logger.info("Finding policy with key '{}'", policy_key)
+    logger.debug("Finding policy with key '{}'", policy_key)
     policy = Policy.get_by(db=db, field="key", value=policy_key)
     if not policy:
         raise HTTPException(
@@ -103,7 +103,7 @@ def create_or_update_policies(
         scopes=[scope_registry.POLICY_CREATE_OR_UPDATE],
     ),
     db: Session = Depends(deps.get_db),
-    data: conlist(schemas.Policy, max_items=50) = Body(...),  # type: ignore
+    data: Annotated[List[schemas.Policy], Field(max_length=50)],  # type: ignore
 ) -> schemas.BulkPutPolicyResponse:
     """
     Given a list of policy data elements, create or update corresponding Policy objects
@@ -160,7 +160,7 @@ def get_rule_or_error(db: Session, policy_key: FidesKey, rule_key: FidesKey) -> 
     Also throws a 404 if a `Policy` with the given key can't be found.
     """
     policy = get_policy_or_error(db, policy_key)
-    logger.info("Finding rule with key '{}'", rule_key)
+    logger.debug("Finding rule with key '{}'", rule_key)
     rule = Rule.filter(
         db=db,
         conditions=((Rule.policy_id == policy.id) & (Rule.key == rule_key)),
@@ -191,7 +191,7 @@ def get_rule_list(
     Throws a 404 if the given `Policy` can't be found.
     """
     policy = get_policy_or_error(db, policy_key)
-    logger.info(
+    logger.debug(
         "Finding all rules for policy {} with pagination params '{}'",
         policy_key,
         params,
@@ -234,7 +234,7 @@ def create_or_update_rules(
     ),
     policy_key: FidesKey,
     db: Session = Depends(deps.get_db),
-    input_data: conlist(schemas.RuleCreate, max_items=50) = Body(...),  # type: ignore
+    input_data: Annotated[List[schemas.RuleCreate], Field(max_length=50)],  # type: ignore
 ) -> schemas.BulkPutRuleResponse:
     """
     Given a list of Rule data elements, create or update corresponding Rule objects
@@ -282,7 +282,7 @@ def create_or_update_rules(
 
         masking_strategy_data = None
         if schema.masking_strategy:
-            masking_strategy_data = schema.masking_strategy.dict()
+            masking_strategy_data = schema.masking_strategy.model_dump(mode="json")
 
         try:
             rule = Rule.create_or_update(
@@ -382,7 +382,7 @@ def get_rule_target_or_error(
     Helper method to load Rule Target or throw a 404.
     Also throws a 404 if a `Policy` or `Rule` with the given keys can't be found.
     """
-    logger.info("Finding rule target with key '{}'", rule_target_key)
+    logger.debug("Finding rule target with key '{}'", rule_target_key)
     rule: Rule = get_rule_or_error(db, policy_key, rule_key)
     rule_target = RuleTarget.filter(
         db=db,
@@ -417,7 +417,7 @@ def get_rule_target_list(
     Throws a 404 if the given `Rule` or `Policy` can't be found.
     """
     rule = get_rule_or_error(db, policy_key, rule_key)
-    logger.info(
+    logger.debug(
         "Finding all rule targets for rule {} with pagination params '{}'",
         rule_key,
         params,
@@ -484,7 +484,7 @@ def create_or_update_rule_targets(
     policy_key: FidesKey,
     rule_key: FidesKey,
     db: Session = Depends(deps.get_db),
-    input_data: conlist(schemas.RuleTarget, max_items=50) = Body(...),  # type: ignore
+    input_data: Annotated[List[schemas.RuleTarget], Field(max_length=50)],  # type: ignore
 ) -> schemas.BulkPutRuleTargetResponse:
     """
     Given a list of Rule data elements, create corresponding Rule objects

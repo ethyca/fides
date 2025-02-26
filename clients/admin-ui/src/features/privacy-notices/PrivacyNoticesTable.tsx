@@ -18,16 +18,17 @@ import {
   TableSkeletonLoader,
   useServerSidePagination,
 } from "common/table/v2";
-import { Button, Flex, HStack, Text, VStack } from "fidesui";
+import { AntButton as Button, Flex, HStack, Text, VStack } from "fidesui";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
 import { useEffect, useMemo } from "react";
 
-import { PRIVACY_NOTICES_ROUTE } from "~/features/common/nav/v2/routes";
+import { PRIVACY_NOTICES_ROUTE } from "~/features/common/nav/routes";
 import { useHasPermission } from "~/features/common/Restrict";
 import { useGetHealthQuery } from "~/features/plus/plus.slice";
 import {
   EnablePrivacyNoticeCell,
+  getNoticeChildren,
   getRegions,
   MechanismCell,
   PrivacyNoticeStatusCell,
@@ -47,37 +48,39 @@ const emptyNoticeResponse = {
   pages: 1,
 };
 
-const EmptyTableNotice = () => (
-  <VStack
-    mt={6}
-    p={10}
-    spacing={4}
-    borderRadius="base"
-    maxW="70%"
-    data-testid="no-results-notice"
-    alignSelf="center"
-    margin="auto"
-  >
-    <VStack>
-      <Text fontSize="md" fontWeight="600">
-        No privacy notices found.
-      </Text>
-      <Text fontSize="sm">
-        Click &quot;Add a privacy notice&quot; to add your first privacy notice
-        to Fides.
-      </Text>
-    </VStack>
-    <NextLink href={`${PRIVACY_NOTICES_ROUTE}/new`}>
+const EmptyTableNotice = () => {
+  return (
+    <VStack
+      mt={6}
+      p={10}
+      spacing={4}
+      borderRadius="base"
+      maxW="70%"
+      data-testid="no-results-notice"
+      alignSelf="center"
+      margin="auto"
+    >
+      <VStack>
+        <Text fontSize="md" fontWeight="600">
+          No privacy notices found.
+        </Text>
+        <Text fontSize="sm">
+          Click &quot;Add a privacy notice&quot; to add your first privacy
+          notice to Fides.
+        </Text>
+      </VStack>
       <Button
-        size="xs"
-        colorScheme="primary"
+        href={`${PRIVACY_NOTICES_ROUTE}/new`}
+        role="link"
+        size="small"
+        type="primary"
         data-testid="add-privacy-notice-btn"
       >
         Add a privacy notice +
       </Button>
-    </NextLink>
-  </VStack>
-);
+    </VStack>
+  );
+};
 const columnHelper = createColumnHelper<LimitedPrivacyNoticeResponseSchema>();
 
 export const PrivacyNoticesTable = () => {
@@ -152,7 +155,6 @@ export const PrivacyNoticesTable = () => {
             ),
           header: (props) => <DefaultHeaderCell value="Locations" {...props} />,
           meta: {
-            displayText: "Locations",
             showHeaderMenu: true,
           },
         }),
@@ -169,6 +171,23 @@ export const PrivacyNoticesTable = () => {
             ) : null,
           header: (props) => <DefaultHeaderCell value="Framework" {...props} />,
         }),
+        columnHelper.accessor((row) => row.children, {
+          id: "children",
+          cell: (props) =>
+            getNoticeChildren(props.getValue())?.length ? (
+              <GroupCountBadgeCell
+                suffix="Children"
+                value={getNoticeChildren(props.getValue())}
+                {...props}
+              />
+            ) : (
+              <DefaultCell value="Unassigned" />
+            ),
+          header: (props) => <DefaultHeaderCell value="Children" {...props} />,
+          meta: {
+            showHeaderMenu: true,
+          },
+        }),
         userCanUpdate &&
           columnHelper.accessor((row) => row.disabled, {
             id: "enable",
@@ -177,7 +196,7 @@ export const PrivacyNoticesTable = () => {
             meta: { disableRowClick: true },
           }),
       ].filter(Boolean) as ColumnDef<LimitedPrivacyNoticeResponseSchema, any>[],
-    [userCanUpdate]
+    [userCanUpdate],
   );
 
   const tableInstance = useReactTable<LimitedPrivacyNoticeResponseSchema>({
@@ -190,6 +209,7 @@ export const PrivacyNoticesTable = () => {
     state: {
       expanded: true,
     },
+    columnResizeMode: "onChange",
   });
 
   const onRowClick = ({ id }: LimitedPrivacyNoticeResponseSchema) => {
@@ -207,12 +227,12 @@ export const PrivacyNoticesTable = () => {
         {userCanUpdate && (
           <TableActionBar>
             <HStack alignItems="center" spacing={4} marginLeft="auto">
-              <NextLink href={`${PRIVACY_NOTICES_ROUTE}/new`}>
-                <Button
-                  size="xs"
-                  colorScheme="primary"
-                  data-testid="add-privacy-notice-btn"
-                >
+              <NextLink
+                href={`${PRIVACY_NOTICES_ROUTE}/new`}
+                passHref
+                legacyBehavior
+              >
+                <Button type="primary" data-testid="add-privacy-notice-btn">
                   Add a privacy notice +
                 </Button>
               </NextLink>
@@ -225,7 +245,7 @@ export const PrivacyNoticesTable = () => {
           emptyTableNotice={<EmptyTableNotice />}
         />
         <PaginationBar
-          totalRows={totalRows}
+          totalRows={totalRows || 0}
           pageSizes={PAGE_SIZES}
           setPageSize={setPageSize}
           onPreviousPageClick={onPreviousPageClick}

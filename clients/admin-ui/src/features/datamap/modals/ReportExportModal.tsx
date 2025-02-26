@@ -1,4 +1,10 @@
-import { Flex, FormControl, FormLabel, Select, Text } from "fidesui";
+import {
+  AntSelect as Select,
+  Flex,
+  FormControl,
+  FormLabel,
+  Text,
+} from "fidesui";
 import { useState } from "react";
 
 import StandardDialog, {
@@ -13,7 +19,7 @@ interface ReportExportModalProps
 
 const ReportExportModal = (props: ReportExportModalProps): JSX.Element => {
   const [downloadType, setDownloadType] = useState<ExportFormat>(
-    ExportFormat.csv
+    ExportFormat.csv,
   );
   const { onConfirm } = props;
 
@@ -32,15 +38,18 @@ const ReportExportModal = (props: ReportExportModalProps): JSX.Element => {
           number of rows, the file may take a few minutes to process.
         </Text>
         <FormControl>
-          <FormLabel>Choose Format</FormLabel>
+          <FormLabel htmlFor="format">Choose Format</FormLabel>
           <Select
+            id="format"
             value={downloadType}
-            onChange={(e) => setDownloadType(e.target.value as ExportFormat)}
+            onChange={setDownloadType}
             data-testid="export-format-select"
-          >
-            <option value={ExportFormat.csv}>CSV</option>
-            <option value={ExportFormat.xlsx}>XLSX</option>
-          </Select>
+            options={[
+              { value: ExportFormat.csv, label: "CSV" },
+              { value: ExportFormat.xlsx, label: "XLSX" },
+            ]}
+            className="w-full"
+          />
         </FormControl>
       </Flex>
     </StandardDialog>

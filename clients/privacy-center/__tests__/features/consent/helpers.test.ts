@@ -1,7 +1,7 @@
 import { ConsentContext } from "fides-js";
 
 import { makeNoticeConsent } from "~/features/consent/helpers";
-import { ConfigConsentOption } from "~/types/config";
+import { ConfigConsentOption } from "~/types/api";
 
 describe("makeNoticeConsent", () => {
   // Some display options don't matter for these tests.
@@ -46,7 +46,7 @@ describe("makeNoticeConsent", () => {
           consentOptions: [dataUseSharingGanDefault],
           fidesKeyToConsent: {},
           consentContext,
-        })
+        }),
       ).toEqual({
         data_sharing: true,
         google_analytics: true,
@@ -61,7 +61,7 @@ describe("makeNoticeConsent", () => {
             [dataUseGanDefault.fidesDataUseKey]: false,
           },
           consentContext,
-        })
+        }),
       ).toEqual({
         google_analytics: false,
       });
@@ -76,7 +76,7 @@ describe("makeNoticeConsent", () => {
             [dataUseSalesGads.fidesDataUseKey]: true,
           },
           consentContext,
-        })
+        }),
       ).toEqual({
         data_sales: false,
         google_ads: true,
@@ -92,7 +92,7 @@ describe("makeNoticeConsent", () => {
             [dataUseSalesGads.fidesDataUseKey]: true,
           },
           consentContext,
-        })
+        }),
       ).toEqual({
         data_sales: true,
         google_ads: true,
@@ -121,7 +121,7 @@ describe("makeNoticeConsent", () => {
           consentOptions: [dataUseSalesDefaultNoGpc],
           fidesKeyToConsent: {},
           consentContext,
-        })
+        }),
       ).toEqual({
         data_sales: false,
       });
@@ -135,7 +135,7 @@ describe("makeNoticeConsent", () => {
             [dataUseSalesDefaultNoGpc.fidesDataUseKey]: true,
           },
           consentContext,
-        })
+        }),
       ).toEqual({
         data_sales: true,
       });

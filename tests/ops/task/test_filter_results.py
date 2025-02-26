@@ -3,8 +3,11 @@ from datetime import datetime
 
 import pytest
 from bson import ObjectId
+from fideslang.models import Dataset
 
-from fides.api.graph.config import CollectionAddress, FieldPath
+from fides.api.graph.config import FieldPath
+from fides.api.graph.graph import DatasetGraph
+from fides.api.models.datasetconfig import convert_dataset_to_graph
 from fides.api.task.filter_results import (
     filter_data_categories,
     remove_empty_containers,
@@ -529,24 +532,58 @@ class TestFilterResults:
             ]
         }
 
-        data_category_fields = {
-            CollectionAddress("postgres_example", "supplies"): {
-                "A": [FieldPath("foods", "fruits", "apples"), FieldPath("clothing")],
-                "B": [FieldPath("foods", "vegetables")],
-                "C": [
-                    FieldPath("foods", "grains", "rice"),
-                    FieldPath("foods", "grains", "wheat"),
-                ],
-                "D": [],
-                "E": [
-                    FieldPath("foods", "fruits", "berries", "strawberries"),
-                    FieldPath("foods", "fruits", "oranges"),
-                ],
-            }
+        dataset = {
+            "fides_key": "postgres_example",
+            "name": "postgres_example",
+            "collections": [
+                {
+                    "name": "supplies",
+                    "fields": [
+                        {
+                            "name": "foods",
+                            "fields": [
+                                {
+                                    "name": "fruits",
+                                    "fields": [
+                                        {"name": "apples", "data_categories": ["A"]},
+                                        {
+                                            "name": "berries",
+                                            "fields": [
+                                                {
+                                                    "name": "strawberries",
+                                                    "data_categories": ["E"],
+                                                }
+                                            ],
+                                        },
+                                        {"name": "oranges", "data_categories": ["E"]},
+                                    ],
+                                },
+                                {"name": "vegetables", "data_categories": ["B"]},
+                                {
+                                    "name": "grains",
+                                    "fields": [
+                                        {"name": "rice", "data_categories": ["C"]},
+                                        {"name": "wheat", "data_categories": ["C"]},
+                                    ],
+                                },
+                            ],
+                        },
+                        {"name": "clothing", "data_categories": ["A"]},
+                    ],
+                }
+            ],
         }
 
+        dataset_graph = DatasetGraph(
+            *[
+                convert_dataset_to_graph(
+                    Dataset.model_validate(dataset), "postgres_example"
+                )
+            ]
+        )
+
         only_a_categories = filter_data_categories(
-            copy.deepcopy(access_request_results), {"A"}, data_category_fields
+            copy.deepcopy(access_request_results), {"A"}, dataset_graph
         )
 
         assert only_a_categories == {
@@ -556,7 +593,7 @@ class TestFilterResults:
         }
 
         only_b_categories = filter_data_categories(
-            copy.deepcopy(access_request_results), {"B"}, data_category_fields
+            copy.deepcopy(access_request_results), {"B"}, dataset_graph
         )
         assert only_b_categories == {
             "postgres_example:supplies": [
@@ -569,7 +606,7 @@ class TestFilterResults:
         }
 
         only_c_categories = filter_data_categories(
-            copy.deepcopy(access_request_results), {"C"}, data_category_fields
+            copy.deepcopy(access_request_results), {"C"}, dataset_graph
         )
         assert only_c_categories == {
             "postgres_example:supplies": [
@@ -578,12 +615,12 @@ class TestFilterResults:
         }
 
         only_d_categories = filter_data_categories(
-            copy.deepcopy(access_request_results), {"D"}, data_category_fields
+            copy.deepcopy(access_request_results), {"D"}, dataset_graph
         )
         assert only_d_categories == {}
 
         only_e_categories = filter_data_categories(
-            copy.deepcopy(access_request_results), {"E"}, data_category_fields
+            copy.deepcopy(access_request_results), {"E"}, dataset_graph
         )
         assert only_e_categories == {
             "postgres_example:supplies": [
@@ -611,15 +648,41 @@ class TestFilterResults:
             ]
         }
 
-        data_category_fields = {
-            CollectionAddress("postgres_example", "flights"): {
-                "A": [FieldPath("people", "passenger_ids")],
-                "B": [FieldPath("people", "pilot_ids")],
-            }
+        dataset = {
+            "fides_key": "postgres_example",
+            "name": "postgres_example",
+            "collections": [
+                {
+                    "name": "flights",
+                    "fields": [
+                        {
+                            "name": "people",
+                            "fields": [
+                                {
+                                    "name": "passenger_ids",
+                                    "data_categories": ["A"],
+                                },
+                                {
+                                    "name": "pilot_ids",
+                                    "data_categories": ["B"],
+                                },
+                            ],
+                        },
+                    ],
+                }
+            ],
         }
 
+        dataset_graph = DatasetGraph(
+            *[
+                convert_dataset_to_graph(
+                    Dataset.model_validate(dataset), "postgres_example"
+                )
+            ]
+        )
+
         only_a_category = filter_data_categories(
-            copy.deepcopy(access_request_results), {"A"}, data_category_fields
+            copy.deepcopy(access_request_results), {"A"}, dataset_graph
         )
 
         # Nested array field retrieved
@@ -630,7 +693,7 @@ class TestFilterResults:
         }
 
         only_b_category = filter_data_categories(
-            copy.deepcopy(access_request_results), {"B"}, data_category_fields
+            copy.deepcopy(access_request_results), {"B"}, dataset_graph
         )
         assert only_b_category == {
             "postgres_example:flights": [{"people": {"pilot_ids": [123, 12, 112]}}]
@@ -698,289 +761,345 @@ class TestFilterResults:
 
         target_categories = {"user"}
 
-        data_category_fields = {
-            CollectionAddress.from_string("postgres_example:address"): {
-                "user.contact.address.city": [
-                    FieldPath(
-                        "city",
-                    )
-                ],
-                "user.contact.address.street": [
-                    FieldPath(
-                        "house",
-                    ),
-                    FieldPath(
-                        "street",
-                    ),
-                ],
-                "system.operations": [
-                    FieldPath(
-                        "id",
-                    )
-                ],
-                "user.contact.address.state": [
-                    FieldPath(
-                        "state",
-                    )
-                ],
-                "user.contact.address.postal_code": [
-                    FieldPath(
-                        "zip",
-                    )
-                ],
-            },
-            CollectionAddress.from_string("postgres_example:customer"): {
-                "system.operations": [
-                    FieldPath(
-                        "address_id",
-                    ),
-                    FieldPath(
-                        "created",
-                    ),
-                ],
-                "user.contact.email": [
-                    FieldPath(
-                        "email",
-                    )
-                ],
-                "user.unique_id": [
-                    FieldPath(
-                        "id",
-                    )
-                ],
-                "user.name": [
-                    FieldPath(
-                        "name",
-                    )
-                ],
-            },
-            CollectionAddress.from_string("postgres_example:employee"): {
-                "system.operations": [
-                    FieldPath(
-                        "address_id",
-                    )
-                ],
-                "user.contact.email": [
-                    FieldPath(
-                        "email",
-                    )
-                ],
-                "user.unique_id": [
-                    FieldPath(
-                        "id",
-                    )
-                ],
-                "user.name": [
-                    FieldPath(
-                        "name",
-                    )
-                ],
-            },
-            CollectionAddress.from_string("postgres_example:login"): {
-                "user.unique_id": [
-                    FieldPath(
-                        "customer_id",
-                    )
-                ],
-                "system.operations": [
-                    FieldPath(
-                        "id",
-                    )
-                ],
-                "user.sensor": [
-                    FieldPath(
-                        "time",
-                    )
-                ],
-            },
-            CollectionAddress.from_string("postgres_example:order_item"): {
-                "system.operations": [
-                    FieldPath(
-                        "order_id",
-                    ),
-                    FieldPath(
-                        "product_id",
-                    ),
-                    FieldPath(
-                        "quantity",
-                    ),
-                ]
-            },
-            CollectionAddress.from_string("postgres_example:orders"): {
-                "user.unique_id": [
-                    FieldPath(
-                        "customer_id",
-                    )
-                ],
-                "system.operations": [
-                    FieldPath(
-                        "id",
-                    ),
-                    FieldPath(
-                        "shipping_address_id",
-                    ),
-                ],
-            },
-            CollectionAddress.from_string("postgres_example:payment_card"): {
-                "system.operations": [
-                    FieldPath(
-                        "billing_address_id",
-                    ),
-                    FieldPath(
-                        "id",
-                    ),
-                ],
-                "user.financial.bank_account": [
-                    FieldPath(
-                        "ccn",
-                    )
-                ],
-                "user.financial": [
-                    FieldPath(
-                        "code",
-                    ),
-                    FieldPath(
-                        "name",
-                    ),
-                ],
-                "user.unique_id": [
-                    FieldPath(
-                        "customer_id",
-                    )
-                ],
-                "user": [
-                    FieldPath(
-                        "preferred",
-                    )
-                ],
-            },
-            CollectionAddress.from_string("postgres_example:product"): {
-                "system.operations": [
-                    FieldPath(
-                        "id",
-                    ),
-                    FieldPath(
-                        "name",
-                    ),
-                    FieldPath(
-                        "price",
-                    ),
-                ]
-            },
-            CollectionAddress.from_string("postgres_example:report"): {
-                "user.contact.email": [
-                    FieldPath(
-                        "email",
-                    )
-                ],
-                "system.operations": [
-                    FieldPath(
-                        "id",
-                    ),
-                    FieldPath(
-                        "month",
-                    ),
-                    FieldPath(
-                        "name",
-                    ),
-                    FieldPath(
-                        "total_visits",
-                    ),
-                    FieldPath(
-                        "year",
-                    ),
-                ],
-            },
-            CollectionAddress.from_string("postgres_example:service_request"): {
-                "user.contact.email": [
-                    FieldPath(
-                        "alt_email",
-                    )
-                ],
-                "system.operations": [
-                    FieldPath(
-                        "closed",
-                    ),
-                    FieldPath(
-                        "email",
-                    ),
-                    FieldPath(
-                        "id",
-                    ),
-                    FieldPath(
-                        "opened",
-                    ),
-                ],
-                "user.unique_id": [
-                    FieldPath(
-                        "employee_id",
-                    )
-                ],
-            },
-            CollectionAddress.from_string("postgres_example:visit"): {
-                "user.contact.email": [
-                    FieldPath(
-                        "email",
-                    )
-                ],
-                "system.operations": [
-                    FieldPath(
-                        "last_visit",
-                    )
-                ],
-            },
-            CollectionAddress.from_string("mongo_test:customer_details"): {
-                "system.operations": [
-                    FieldPath(
-                        "_id",
-                    )
-                ],
-                "user.demographic.date_of_birth": [
-                    FieldPath(
-                        "birthday",
-                    )
-                ],
-                "user.unique_id": [
-                    FieldPath(
-                        "customer_id",
-                    )
-                ],
-                "user.demographic.gender": [
-                    FieldPath(
-                        "gender",
-                    )
-                ],
-                "user.job_title": [FieldPath("workplace_info", "position")],
-            },
-            CollectionAddress.from_string("mongo_test:customer_feedback"): {
-                "system.operations": [
-                    FieldPath(
-                        "_id",
-                    )
-                ],
-                "user.contact.phone_number": [
-                    FieldPath("customer_information", "phone")
-                ],
-                "user": [
-                    FieldPath(
-                        "message",
-                    ),
-                    FieldPath(
-                        "rating",
-                    ),
-                ],
-            },
-            CollectionAddress.from_string("mongo_test:internal_customer_profile"): {
-                "user": [
-                    FieldPath(
-                        "derived_interests",
-                    )
-                ]
-            },
+        postgres_dataset = {
+            "fides_key": "postgres_example",
+            "name": "postgres_example",
+            "collections": [
+                {
+                    "name": "address",
+                    "fields": [
+                        {
+                            "name": "city",
+                            "data_categories": ["user.contact.address.city"],
+                        },
+                        {
+                            "name": "house",
+                            "data_categories": ["user.contact.address.street"],
+                        },
+                        {
+                            "name": "street",
+                            "data_categories": ["user.contact.address.street"],
+                        },
+                        {
+                            "name": "id",
+                            "data_categories": ["system.operations"],
+                        },
+                        {
+                            "name": "state",
+                            "data_categories": ["user.contact.address.state"],
+                        },
+                        {
+                            "name": "zip",
+                            "data_categories": ["user.contact.address.postal_code"],
+                        },
+                    ],
+                },
+                {
+                    "name": "customer",
+                    "fields": [
+                        {
+                            "name": "address_id",
+                            "data_categories": ["system.operations"],
+                        },
+                        {
+                            "name": "created",
+                            "data_categories": ["system.operations"],
+                        },
+                        {
+                            "name": "email",
+                            "data_categories": ["user.contact.email"],
+                        },
+                        {
+                            "name": "id",
+                            "data_categories": ["user.unique_id"],
+                        },
+                        {
+                            "name": "name",
+                            "data_categories": ["user.name"],
+                        },
+                    ],
+                },
+                {
+                    "name": "employee",
+                    "fields": [
+                        {
+                            "name": "address_id",
+                            "data_categories": ["system.operations"],
+                        },
+                        {
+                            "name": "email",
+                            "data_categories": ["user.contact.email"],
+                        },
+                        {
+                            "name": "id",
+                            "data_categories": ["user.unique_id"],
+                        },
+                        {
+                            "name": "name",
+                            "data_categories": ["user.name"],
+                        },
+                    ],
+                },
+                {
+                    "name": "login",
+                    "fields": [
+                        {
+                            "name": "customer_id",
+                            "data_categories": ["user.unique_id"],
+                        },
+                        {
+                            "name": "id",
+                            "data_categories": ["system.operations"],
+                        },
+                        {
+                            "name": "time",
+                            "data_categories": ["user.sensor"],
+                        },
+                    ],
+                },
+                {
+                    "name": "order_item",
+                    "fields": [
+                        {
+                            "name": "order_id",
+                            "data_categories": ["system.operations"],
+                        },
+                        {
+                            "name": "product_id",
+                            "data_categories": ["system.operations"],
+                        },
+                        {
+                            "name": "quantity",
+                            "data_categories": ["system.operations"],
+                        },
+                    ],
+                },
+                {
+                    "name": "orders",
+                    "fields": [
+                        {
+                            "name": "customer_id",
+                            "data_categories": ["user.unique_id"],
+                        },
+                        {
+                            "name": "id",
+                            "data_categories": ["system.operations"],
+                        },
+                        {
+                            "name": "shipping_address_id",
+                            "data_categories": ["system.operations"],
+                        },
+                    ],
+                },
+                {
+                    "name": "payment_card",
+                    "fields": [
+                        {
+                            "name": "billing_address_id",
+                            "data_categories": ["system.operations"],
+                        },
+                        {
+                            "name": "id",
+                            "data_categories": ["system.operations"],
+                        },
+                        {
+                            "name": "ccn",
+                            "data_categories": ["user.financial.bank_account"],
+                        },
+                        {
+                            "name": "code",
+                            "data_categories": ["user.financial"],
+                        },
+                        {
+                            "name": "name",
+                            "data_categories": ["user.financial"],
+                        },
+                        {
+                            "name": "customer_id",
+                            "data_categories": ["user.unique_id"],
+                        },
+                        {
+                            "name": "preferred",
+                            "data_categories": ["user"],
+                        },
+                    ],
+                },
+                {
+                    "name": "product",
+                    "fields": [
+                        {
+                            "name": "id",
+                            "data_categories": ["system.operations"],
+                        },
+                        {
+                            "name": "name",
+                            "data_categories": ["system.operations"],
+                        },
+                        {
+                            "name": "price",
+                            "data_categories": ["system.operations"],
+                        },
+                    ],
+                },
+                {
+                    "name": "report",
+                    "fields": [
+                        {
+                            "name": "email",
+                            "data_categories": ["user.contact.email"],
+                        },
+                        {
+                            "name": "id",
+                            "data_categories": ["system.operations"],
+                        },
+                        {
+                            "name": "month",
+                            "data_categories": ["system.operations"],
+                        },
+                        {
+                            "name": "name",
+                            "data_categories": ["system.operations"],
+                        },
+                        {
+                            "name": "total_visits",
+                            "data_categories": ["system.operations"],
+                        },
+                        {
+                            "name": "year",
+                            "data_categories": ["system.operations"],
+                        },
+                    ],
+                },
+                {
+                    "name": "service_request",
+                    "fields": [
+                        {
+                            "name": "alt_email",
+                            "data_categories": ["user.contact.email"],
+                        },
+                        {
+                            "name": "closed",
+                            "data_categories": ["system.operations"],
+                        },
+                        {
+                            "name": "email",
+                            "data_categories": ["system.operations"],
+                        },
+                        {
+                            "name": "id",
+                            "data_categories": ["system.operations"],
+                        },
+                        {
+                            "name": "opened",
+                            "data_categories": ["system.operations"],
+                        },
+                        {
+                            "name": "employee_id",
+                            "data_categories": ["user.unique_id"],
+                        },
+                    ],
+                },
+                {
+                    "name": "visit",
+                    "fields": [
+                        {
+                            "name": "email",
+                            "data_categories": ["user.contact.email"],
+                        },
+                        {
+                            "name": "last_visit",
+                            "data_categories": ["system.operations"],
+                        },
+                    ],
+                },
+            ],
         }
 
+        mongo_dataset = {
+            "fides_key": "mongo_test",
+            "name": "mongo_test",
+            "collections": [
+                {
+                    "name": "customer_details",
+                    "fields": [
+                        {
+                            "name": "_id",
+                            "data_categories": ["system.operations"],
+                        },
+                        {
+                            "name": "birthday",
+                            "data_categories": ["user.demographic.date_of_birth"],
+                        },
+                        {
+                            "name": "customer_id",
+                            "data_categories": ["user.unique_id"],
+                        },
+                        {
+                            "name": "gender",
+                            "data_categories": ["user.demographic.gender"],
+                        },
+                        {
+                            "name": "workplace_info",
+                            "fields": [
+                                {
+                                    "name": "position",
+                                    "data_categories": ["user.job_title"],
+                                }
+                            ],
+                        },
+                    ],
+                },
+                {
+                    "name": "customer_feedback",
+                    "fields": [
+                        {
+                            "name": "_id",
+                            "data_categories": ["system.operations"],
+                        },
+                        {
+                            "name": "customer_information",
+                            "fields": [
+                                {
+                                    "name": "phone",
+                                    "data_categories": ["user.contact.phone_number"],
+                                }
+                            ],
+                        },
+                        {
+                            "name": "message",
+                            "data_categories": ["user"],
+                        },
+                        {
+                            "name": "rating",
+                            "data_categories": ["user"],
+                        },
+                    ],
+                },
+                {
+                    "name": "internal_customer_profile",
+                    "fields": [
+                        {
+                            "name": "derived_interests",
+                            "data_categories": ["user"],
+                        }
+                    ],
+                },
+            ],
+        }
+
+        dataset_graph = DatasetGraph(
+            *[
+                convert_dataset_to_graph(
+                    Dataset.model_validate(postgres_dataset), "postgres_example"
+                ),
+                convert_dataset_to_graph(
+                    Dataset.model_validate(mongo_dataset), "mongo_test"
+                ),
+            ]
+        )
+
         filtered_results = filter_data_categories(
-            copy.deepcopy(jane_results), target_categories, data_category_fields
+            copy.deepcopy(jane_results), target_categories, dataset_graph
         )
         expected_results = {
             "mongo_test:customer_details": [
@@ -1031,3 +1150,147 @@ class TestFilterResults:
         )
 
         assert "Did not find a result entry" in loguru_caplog.text
+
+    def test_filter_by_collection_level_parent_data_category(self):
+        """
+        Verify that collection-level data categories apply to all child fields, even if the fields aren't explicitly defined in the dataset
+        """
+
+        access_request_results = {
+            "postgres_example:supplies": [
+                {
+                    "foods": {
+                        "vegetables": True,
+                        "fruits": {
+                            "apples": True,
+                            "oranges": False,
+                            "berries": {"strawberries": True, "blueberries": False},
+                        },
+                        "grains": {"rice": False, "wheat": True},
+                    },
+                    "clothing": True,
+                }
+            ]
+        }
+
+        dataset = {
+            "fides_key": "postgres_example",
+            "name": "postgres_example",
+            "collections": [
+                {
+                    "name": "supplies",
+                    "data_categories": ["user.content"],
+                    "fields": [],
+                }
+            ],
+        }
+
+        dataset_graph = DatasetGraph(
+            *[
+                convert_dataset_to_graph(
+                    Dataset.model_validate(dataset), "postgres_example"
+                )
+            ]
+        )
+
+        # here we filter by the `user` data category and since the collection-level
+        # data category of `user.content` is a subset of `user`, we'll return all the fields,
+        # even if they're not specified in the dataset
+        assert (
+            filter_data_categories(
+                copy.deepcopy(access_request_results), {"user"}, dataset_graph
+            )
+            == access_request_results
+        )
+
+    def test_filter_by_collection_level_child_data_category(self):
+        access_request_results = {
+            "postgres_example:supplies": [
+                {
+                    "foods": {
+                        "vegetables": True,
+                        "fruits": {
+                            "apples": True,
+                            "oranges": False,
+                            "berries": {"strawberries": True, "blueberries": False},
+                        },
+                        "grains": {"rice": False, "wheat": True},
+                    },
+                    "clothing": True,
+                }
+            ]
+        }
+
+        dataset = {
+            "fides_key": "postgres_example",
+            "name": "postgres_example",
+            "collections": [
+                {
+                    "name": "supplies",
+                    "data_categories": ["user"],
+                    "fields": [
+                        {"name": "clothing", "data_categories": ["user.content"]}
+                    ],
+                }
+            ],
+        }
+
+        dataset_graph = DatasetGraph(
+            *[
+                convert_dataset_to_graph(
+                    Dataset.model_validate(dataset), "postgres_example"
+                )
+            ]
+        )
+
+        # Here we filter by the `user.content` which is more specific than the collection-level
+        # data category of `user` so we won't use collection-level filtering.
+        # Verify the field level data category filtering is still used.
+        assert filter_data_categories(
+            copy.deepcopy(access_request_results), {"user.content"}, dataset_graph
+        ) == {"postgres_example:supplies": [{"clothing": True}]}
+
+    def test_filter_by_collection_level_exact_data_category(self):
+        access_request_results = {
+            "postgres_example:supplies": [
+                {
+                    "foods": {
+                        "vegetables": True,
+                        "fruits": {
+                            "apples": True,
+                            "oranges": False,
+                            "berries": {"strawberries": True, "blueberries": False},
+                        },
+                        "grains": {"rice": False, "wheat": True},
+                    },
+                    "clothing": True,
+                }
+            ]
+        }
+
+        dataset = {
+            "fides_key": "postgres_example",
+            "name": "postgres_example",
+            "collections": [
+                {
+                    "name": "supplies",
+                    "data_categories": ["user.content"],
+                    "fields": [],
+                }
+            ],
+        }
+
+        dataset_graph = DatasetGraph(
+            *[
+                convert_dataset_to_graph(
+                    Dataset.model_validate(dataset), "postgres_example"
+                )
+            ]
+        )
+
+        assert (
+            filter_data_categories(
+                copy.deepcopy(access_request_results), {"user.content"}, dataset_graph
+            )
+            == access_request_results
+        )

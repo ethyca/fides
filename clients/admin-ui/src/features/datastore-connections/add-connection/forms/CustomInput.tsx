@@ -23,6 +23,7 @@ type CustomInputProps = {
   helpIconVisibility?: boolean;
   isRequired?: boolean;
   label?: string;
+  placeholder?: string;
   type?: InputType;
 };
 
@@ -32,10 +33,12 @@ const CustomInput = ({
   helpIconVisibility = false,
   isRequired = false,
   label,
+  placeholder,
   type = "text",
   ...props
 }: CustomInputProps & FieldHookConfig<string>) => {
-  const [field, meta] = useField(props);
+  const { id, autoFocus } = props as FieldHookConfig<string>;
+  const [field, meta] = useField<string>(props as FieldHookConfig<string>);
 
   return (
     <FormControl
@@ -48,7 +51,7 @@ const CustomInput = ({
           color="gray.900"
           fontSize="14px"
           fontWeight="semibold"
-          htmlFor={props.id || props.name}
+          htmlFor={id}
           minWidth="150px"
         >
           {label}
@@ -66,7 +69,7 @@ const CustomInput = ({
             <NumberInputField
               {...field}
               autoComplete="off"
-              autoFocus={props.autoFocus}
+              autoFocus={autoFocus}
             />
             <NumberInputStepper>
               <NumberIncrementStepper />
@@ -78,10 +81,10 @@ const CustomInput = ({
           <Input
             {...field}
             autoComplete="off"
-            autoFocus={props.autoFocus}
+            autoFocus={autoFocus}
             color="gray.700"
             isDisabled={disabled}
-            placeholder={props.placeholder}
+            placeholder={placeholder}
             size="sm"
           />
         )}
@@ -89,9 +92,9 @@ const CustomInput = ({
           <Textarea
             {...field}
             autoComplete="off"
-            autoFocus={props.autoFocus}
+            autoFocus={autoFocus}
             color="gray.700"
-            placeholder={props.placeholder}
+            placeholder={placeholder}
             resize="none"
             size="sm"
             value={field.value || ""}

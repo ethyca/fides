@@ -1,4 +1,4 @@
-import { ButtonGroup, Flex, IconButton, Spacer, Text, useToast } from "fidesui";
+import { AntButton as Button, Flex, Spacer, Text, useToast } from "fidesui";
 import { Form, Formik } from "formik";
 import { useRouter } from "next/router";
 import React, { useState } from "react";
@@ -8,7 +8,7 @@ import { useAppSelector } from "~/app/hooks";
 import { getErrorMessage } from "~/features/common/helpers";
 import { DesktopIcon } from "~/features/common/Icon/DesktopIcon";
 import { MobileIcon } from "~/features/common/Icon/MobileIcon";
-import { PRIVACY_EXPERIENCE_ROUTE } from "~/features/common/nav/v2/routes";
+import { PRIVACY_EXPERIENCE_ROUTE } from "~/features/common/nav/routes";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import {
   defaultInitialValues,
@@ -101,10 +101,18 @@ const ConfigurePrivacyExperience = ({
   const allPrivacyNotices = useAppSelector(selectAllPrivacyNotices);
 
   const initialValues = passedInExperience
-    ? transformConfigResponseToCreate(passedInExperience)
+    ? {
+        ...defaultInitialValues,
+        ...transformConfigResponseToCreate(passedInExperience),
+      }
     : defaultInitialValues;
 
   const handleSubmit = async (values: ExperienceConfigCreate) => {
+    // Ignore placeholder TCF notice. It is used only as a UX cue that TCF purposes will always exist
+    // eslint-disable-next-line no-param-reassign
+    values.privacy_notice_ids = values.privacy_notice_ids?.filter(
+      (item) => item !== "tcf_purposes_placeholder",
+    );
     const valuesToSubmit = {
       ...values,
       disabled: passedInExperience?.disabled ?? true,
@@ -130,8 +138,8 @@ const ConfigurePrivacyExperience = ({
         successToastParams(
           `Privacy experience successfully ${
             passedInExperience ? "updated" : "created"
-          }`
-        )
+          }`,
+        ),
       );
       router.push(PRIVACY_EXPERIENCE_ROUTE);
     }
@@ -152,7 +160,7 @@ const ConfigurePrivacyExperience = ({
 
   const handleCreateNewTranslation = (language: SupportedLanguage) => {
     const availableTranslation = passedInTranslations?.find(
-      (t) => t.language === language
+      (t) => t.language === language,
     );
     if (availableTranslation) {
       setUsingOOBValues(true);
@@ -211,20 +219,20 @@ const ConfigurePrivacyExperience = ({
                 PREVIEW
               </Text>
               <Spacer />
-              <ButtonGroup size="sm" variant="outline" isAttached>
-                <IconButton
+              <div className="flex gap-2">
+                <Button
                   icon={<MobileIcon />}
                   aria-label="View mobile preview"
                   onClick={() => setIsMobilePreview(true)}
-                  bgColor={isMobilePreview ? "gray.200" : undefined}
+                  className={isMobilePreview ? "bg-gray-200" : undefined}
                 />
-                <IconButton
+                <Button
                   icon={<DesktopIcon />}
                   aria-label="View desktop preview"
                   onClick={() => setIsMobilePreview(false)}
-                  bgColor={!isMobilePreview ? "gray.200" : undefined}
+                  className={!isMobilePreview ? "bg-gray-200" : undefined}
                 />
-              </ButtonGroup>
+              </div>
             </Flex>
             <Preview
               allPrivacyNotices={allPrivacyNotices}

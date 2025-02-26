@@ -1,4 +1,6 @@
 import json
+import random
+import time
 from datetime import datetime
 from typing import List, Optional
 
@@ -23,17 +25,19 @@ from starlette.status import (
 )
 
 from fides.api.api import deps
-from fides.api.api.deps import get_db
+from fides.api.api.deps import get_config_proxy, get_db
 from fides.api.api.v1.endpoints.user_permission_endpoints import validate_user_id
-from fides.api.common_exceptions import AuthenticationError, AuthorizationError
+from fides.api.common_exceptions import AuthenticationError
 from fides.api.cryptography.cryptographic_util import b64_str_to_str
 from fides.api.cryptography.schemas.jwt import JWE_PAYLOAD_CLIENT_ID
 from fides.api.models.client import ClientDetail
 from fides.api.models.fides_user import FidesUser
+from fides.api.models.fides_user_invite import FidesUserInvite
 from fides.api.models.fides_user_permissions import FidesUserPermissions
 from fides.api.models.sql_models import System  # type: ignore[attr-defined]
 from fides.api.oauth.roles import APPROVER, VIEWER
 from fides.api.oauth.utils import (
+    create_temporary_user_for_login_flow,
     extract_payload,
     get_current_user,
     oauth2_scheme,
@@ -50,6 +54,11 @@ from fides.api.schemas.user import (
     UserResponse,
     UserUpdate,
 )
+from fides.api.service.user.fides_user_service import (
+    accept_invite,
+    invite_user,
+    perform_login,
+)
 from fides.api.util.api_router import APIRouter
 from fides.common.api.scope_registry import (
     SCOPE_REGISTRY,
@@ -65,8 +74,14 @@ from fides.common.api.scope_registry import (
 from fides.common.api.v1 import urn_registry as urls
 from fides.common.api.v1.urn_registry import V1_URL_PREFIX
 from fides.config import CONFIG, FidesConfig, get_config
+from fides.config.config_proxy import ConfigProxy
 
 router = APIRouter(tags=["Users"], prefix=V1_URL_PREFIX)
+
+
+ARTIFICIAL_TEMP_USER = create_temporary_user_for_login_flow(
+    CONFIG
+)  # To reduce likelihood of timing attacks.  Creating once and holding in memory
 
 
 def get_system_by_fides_key(db: Session, system_key: FidesKey) -> System:
@@ -127,7 +142,7 @@ async def update_user(
             db=db,
         )
 
-    user.update(db=db, data=data.dict())
+    user.update(db=db, data=data.model_dump(mode="json"))
     logger.info("Updated user with id: '{}'.", user.id)
     return user
 
@@ -158,7 +173,7 @@ def update_user_password(
             status_code=HTTP_401_UNAUTHORIZED, detail="Incorrect password."
         )
 
-    current_user.update_password(db=db, new_password=b64_str_to_str(data.new_password))
+    current_user.update_password(db=db, new_password=data.new_password)
 
     logger.info("Updated user with id: '{}'.", current_user.id)
     return current_user
@@ -187,7 +202,7 @@ def force_update_password(
             detail=f"User with ID {user_id} does not exist.",
         )
 
-    user.update_password(db=db, new_password=b64_str_to_str(data.new_password))
+    user.update_password(db=db, new_password=data.new_password)
     logger.info("Updated user with id: '{}'.", user.id)
     return user
 
@@ -407,7 +422,7 @@ def create_user(
     *,
     db: Session = Depends(get_db),
     user_data: UserCreate,
-    config: FidesConfig = Depends(get_config),
+    config_proxy: ConfigProxy = Depends(get_config_proxy),
 ) -> FidesUser:
     """
     Create a user given a username and password.
@@ -421,8 +436,8 @@ def create_user(
     # The root user is not stored in the database so make sure here that the user name
     # is not the same as the root user name.
     if (
-        config.security.root_username
-        and config.security.root_username == user_data.username
+        config_proxy.security.root_username
+        and config_proxy.security.root_username == user_data.username
     ):
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST, detail="Username already exists."
@@ -435,7 +450,19 @@ def create_user(
             status_code=HTTP_400_BAD_REQUEST, detail="Username already exists."
         )
 
-    user = FidesUser.create(db=db, data=user_data.dict())
+    user = FidesUser.get_by(db, field="email_address", value=user_data.email_address)
+
+    if user:
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail="User with this email address already exists.",
+        )
+
+    user = FidesUser.create(db=db, data=user_data.model_dump(mode="json"))
+
+    # invite user via email
+    invite_user(db=db, config_proxy=config_proxy, user=user)
+
     logger.info("Created user with id: '{}'.", user.id)
     FidesUserPermissions.create(
         db=db,
@@ -482,7 +509,7 @@ def get_user(*, db: Session = Depends(get_db), user_id: str) -> FidesUser:
     if user is None:
         raise HTTPException(status_code=HTTP_404_NOT_FOUND, detail="User not found")
 
-    logger.info("Returning user with id: '{}'.", user_id)
+    logger.debug("Returning user with id: '{}'.", user_id)
     return user
 
 
@@ -502,7 +529,7 @@ def get_users(
     if username:
         query = query.filter(FidesUser.username.ilike(f"%{escape_like(username)}%"))
 
-    logger.info("Returning a paginated list of users.")
+    logger.debug("Returning a paginated list of users.")
 
     return paginate(query.order_by(FidesUser.created_at.desc()), params=params)
 
@@ -522,6 +549,8 @@ def user_login(
     generate a token."""
     user: FidesUser
     client: ClientDetail
+    should_raise_exception: bool = False
+
     if (
         config.security.root_username
         and config.security.root_password
@@ -559,18 +588,15 @@ def user_login(
             db, field="username", value=user_data.username
         )
 
-        invalid_user_error_msg = "Incorrect username or password."
-
         if not user_check:
-            raise HTTPException(
-                status_code=HTTP_403_FORBIDDEN, detail=invalid_user_error_msg
-            )
+            # Postpone raising the exception to reduce the time differences between
+            # login flows for valid and invalid users. Instead, create a temporary user
+            # on which we'll perform parallel operations
+            should_raise_exception = True
+            user_check = ARTIFICIAL_TEMP_USER
 
         if not user_check.credentials_valid(user_data.password):
-            raise HTTPException(
-                status_code=HTTP_403_FORBIDDEN,
-                detail=invalid_user_error_msg,
-            )
+            should_raise_exception = True
 
         # We have already checked for None but mypy still complains. This prevents mypy
         # from complaining.
@@ -581,49 +607,85 @@ def user_login(
             config.security.oauth_client_id_length_bytes,
             config.security.oauth_client_secret_length_bytes,
             user,
+            skip_save=should_raise_exception,
         )
 
     logger.info("Creating login access token")
     access_code = client.create_access_code_jwe(config.security.app_encryption_key)
+
+    # Sleep for a random time period
+    time.sleep(random.uniform(0.00, 0.50))
+
+    if should_raise_exception:
+        # Now raise postponed exception!
+        raise HTTPException(
+            status_code=HTTP_403_FORBIDDEN, detail="Incorrect username or password."
+        )
+
     return UserLoginResponse(
         user_data=user,
         token_data=AccessToken(access_token=access_code),
     )
 
 
-def perform_login(
-    db: Session,
-    client_id_byte_length: int,
-    client_secret_btye_length: int,
-    user: FidesUser,
-) -> ClientDetail:
-    """Performs a login by updating the FidesUser instance and creating and returning
-    an associated ClientDetail.
+def verify_invite_code(
+    username: str,
+    invite_code: str,
+    db: Session = Depends(get_db),
+) -> FidesUserInvite:
     """
+    Security dependency to verify the invite code.
+    Returns the validated FidesUserInvite if all the checks pass.
+    """
+    user_invite = FidesUserInvite.get_by(db, field="username", value=username)
 
-    client = user.client
-    if not client:
-        logger.info("Creating client for login")
-        client, _ = ClientDetail.create_client_and_secret(
-            db,
-            client_id_byte_length,
-            client_secret_btye_length,
-            scopes=[],  # type: ignore
-            roles=user.permissions.roles,  # type: ignore
-            systems=user.system_ids,  # type: ignore
-            user_id=user.id,
+    if not user_invite:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail="User not found.",
         )
-    else:
-        # Refresh the client just in case - for example, scopes and roles were added via the db directly.
-        client.roles = user.permissions.roles  # type: ignore
-        client.systems = user.system_ids  # type: ignore
-        client.save(db)
 
-    if not user.permissions.roles and not user.systems:  # type: ignore
-        logger.warning("User {} needs roles or systems to login.", user.id)
-        raise AuthorizationError(detail="Not Authorized for this action")
+    if not user_invite.invite_code_valid(invite_code):
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail="Invite code is invalid.",
+        )
 
-    user.last_login_at = datetime.utcnow()
-    user.save(db)
+    if user_invite.is_expired():
+        raise HTTPException(
+            status_code=HTTP_400_BAD_REQUEST,
+            detail="Invite code has expired.",
+        )
 
-    return client
+    return user_invite
+
+
+@router.post(
+    urls.USER_ACCEPT_INVITE,
+)
+def accept_user_invite(
+    *,
+    db: Session = Depends(get_db),
+    config: FidesConfig = Depends(get_config),
+    user_data: UserForcePasswordReset,
+    verified_invite: FidesUserInvite = Depends(verify_invite_code),
+) -> UserLoginResponse:
+    """Sets the password and enables the user if a valid username and invite code are provided."""
+
+    user: Optional[FidesUser] = FidesUser.get_by(
+        db=db, field="username", value=verified_invite.username
+    )
+    if not user:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail=f"User with username {verified_invite.username} does not exist.",
+        )
+
+    user, access_code = accept_invite(
+        db=db, config=config, user=user, new_password=user_data.new_password
+    )
+
+    return UserLoginResponse(
+        user_data=user,
+        token_data=AccessToken(access_token=access_code),
+    )

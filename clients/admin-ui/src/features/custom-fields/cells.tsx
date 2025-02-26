@@ -14,14 +14,8 @@ import {
 import { useUpdateCustomFieldDefinitionMutation } from "~/features/plus/plus.slice";
 import { CustomFieldDefinitionWithId, ResourceTypes } from "~/types/api";
 
-export const ValueTextCell = ({
-  getValue,
-}: CellContext<CustomFieldDefinitionWithId, string>) => (
-  <DefaultCell value={getValue()} />
-);
-
 export const ResourceTypeCell = (
-  cellProps: CellContext<CustomFieldDefinitionWithId, ResourceTypes>
+  cellProps: CellContext<CustomFieldDefinitionWithId, ResourceTypes>,
 ) => {
   const mappedValue =
     // eslint-disable-next-line react/destructuring-assignment

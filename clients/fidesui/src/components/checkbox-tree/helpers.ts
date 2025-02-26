@@ -17,7 +17,7 @@ export const getAncestorsAndCurrent = (nodeName: string) => {
 
 export const ancestorIsSelected = (selected: string[], nodeName: string) => {
   const ancestors = getAncestorsAndCurrent(nodeName).filter(
-    (a) => a !== nodeName
+    (a) => a !== nodeName,
   );
   const intersection = selected.filter((s) => ancestors.includes(s));
   return intersection.length > 0;
@@ -35,7 +35,7 @@ export const matchNodeOrDescendant = (value: string, match: string) => {
 
 export const getDescendantsAndCurrent = (
   nodes: TreeNodes,
-  nodeName: string
+  nodeName: string,
 ): TreeNodes => {
   const descendants: TreeNode[] = [];
   nodes.forEach((node) => {

@@ -26,15 +26,15 @@ import {
 import DatasetConfiguration from "./DatasetConfiguration";
 import DSRCustomization from "./manual/DSRCustomization";
 
-const ConfigureConnector: React.FC = () => {
+const ConfigureConnector = () => {
   const dispatch = useDispatch();
   const mounted = useRef(false);
   const [canRedirect, setCanRedirect] = useState(false);
   const { connection, connectionOption } = useAppSelector(
-    selectConnectionTypeState
+    selectConnectionTypeState,
   );
   const connector = CONNECTOR_PARAMETERS_OPTIONS.find(
-    (o) => o.type === connectionOption?.type
+    (o) => o.type === connectionOption?.type,
   );
   const [selectedItem, setSelectedItem] = useState(connector?.options[0]);
 
@@ -85,7 +85,7 @@ const ConfigureConnector: React.FC = () => {
       }
       return result;
     },
-    [connection?.key, connector?.options]
+    [connection?.key, connector?.options],
   );
 
   const handleNavChange = useCallback(
@@ -102,7 +102,7 @@ const ConfigureConnector: React.FC = () => {
       }
       setSelectedItem(value);
     },
-    [dispatch]
+    [dispatch],
   );
 
   useEffect(() => {
@@ -120,7 +120,7 @@ const ConfigureConnector: React.FC = () => {
       handleNavChange(
         connectionOption?.type !== SystemType.MANUAL
           ? ConfigurationSettings.DATASET_CONFIGURATION
-          : ConfigurationSettings.DSR_CUSTOMIZATION
+          : ConfigurationSettings.DSR_CUSTOMIZATION,
       );
       if (canRedirect) {
         setCanRedirect(false);
@@ -140,7 +140,7 @@ const ConfigureConnector: React.FC = () => {
         data={getTabs()}
         flexGrow={1}
         index={connector?.options.findIndex(
-          (option) => option === selectedItem
+          (option) => option === selectedItem,
         )}
         isLazy
       />

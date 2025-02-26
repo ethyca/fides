@@ -2,6 +2,7 @@
   "items": [
     {
       "region": "us_ca",
+      "available_locales": ["en", "es", "fr-CA"],
       "experience_config": {
         "translations": [
           {
@@ -57,15 +58,18 @@
         ],
         "language": "en",
         "dismissable": true,
+        "show_layer1_notices": false,
+        "layer1_button_options": "opt_in_opt_out",
         "allow_language_selection": true,
         "auto_detect_language": true,
+        "auto_subdomain_cookie_deletion": true,
         "disabled": false,
         "id": "pri_exp-banner-modal-000",
         "component": "banner_and_modal",
         "created_at": "2024-01-01T12:00:00.000000+00:00",
         "updated_at": "2024-01-01T12:00:00.000000+00:00"
       },
-      "id": "pri_exp-000",
+      "id": "pri_exp-002-exp_banner_modal",
       "created_at": "2024-01-01T12:00:00.000000+00:00",
       "updated_at": "2024-01-01T12:00:00.000000+00:00",
       "privacy_notices": [
@@ -178,8 +182,7 @@
           ]
         }
       ],
-      "gvl": {},
-      "gvl_translations": {}
+      "gvl": {}
     }
   ],
   "total": 1,

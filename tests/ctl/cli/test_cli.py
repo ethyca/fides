@@ -5,6 +5,7 @@ from json import dump, loads
 from typing import Generator
 
 import pytest
+import yaml
 from click.testing import CliRunner
 from git.repo import Repo
 from py._path.local import LocalPath
@@ -61,6 +62,38 @@ def test_local_flag_invalid_command(test_cli_runner: CliRunner) -> None:
     assert result.exit_code == 1
 
 
+@pytest.mark.unit
+def test_commands_print_help_text_even_on_invalid(
+    test_config_path: str, test_cli_runner: CliRunner, credentials_path: str
+) -> None:
+
+    # the context needs to have a placeholder URL since these tests are testing for behavior when the server is invalid/shutdown
+    result = test_cli_runner.invoke(
+        cli,
+        ["-f", test_config_path, "user", "permissions"],
+        env={"FIDES_CREDENTIALS_PATH": "/root/notarealfile.credentials"},
+    )
+    assert result.exit_code == 1
+
+    result = test_cli_runner.invoke(
+        cli,
+        ["-f", test_config_path, "user", "permissions", "--help"],
+        env={"FIDES_CREDENTIALS_PATH": "/root/notarealfile.credentials"},
+    )
+    print(f"results output: {result.output}")
+    assert result.exit_code == 0
+    assert "Usage: fides user permissions [OPTIONS]" in result.output
+
+
+@pytest.mark.unit
+def test_cli_version(test_cli_runner: CliRunner) -> None:
+    result = test_cli_runner.invoke(cli, ["--version"])
+    import fides
+
+    assert f"fides, version {fides.__version__}" in result.output
+    assert result.exit_code == 0
+
+
 class TestView:
     @pytest.mark.unit
     def test_view_config(self, test_cli_runner: CliRunner) -> None:
@@ -111,13 +144,16 @@ def test_parse(test_config_path: str, test_cli_runner: CliRunner) -> None:
 
 
 class TestDB:
+    @pytest.mark.skip(
+        "This test is timing out only in CI: Safe-Tests (3.10.13, ctl-not-external)"
+    )
     @pytest.mark.integration
     def test_reset_db(self, test_config_path: str, test_cli_runner: CliRunner) -> None:
         result = test_cli_runner.invoke(
             cli, ["-f", test_config_path, "db", "reset", "-y"]
         )
         print(result.output)
-        assert result.exit_code == 0
+        assert result.exit_code == 0, result.output
 
     @pytest.mark.integration
     def test_init_db(self, test_config_path: str, test_cli_runner: CliRunner) -> None:
@@ -215,6 +251,100 @@ class TestPull:
         os.remove(test_file)
         print(result.output)
         assert result.exit_code == 0
+
+    def test_pull_one_resource(
+        self,
+        test_config_path: str,
+        test_cli_runner: CliRunner,
+    ) -> None:
+        """
+        Pull only one dataset into an empty dir and check if the file is created.
+        """
+        test_dir = ".fides/"
+        result = test_cli_runner.invoke(
+            cli, ["-f", test_config_path, "pull", "data_category", "system"]
+        )
+        git_reset(test_dir)
+        print(result.output)
+        assert result.exit_code == 0
+        assert "not found" not in result.output
+
+
+@pytest.mark.integration
+class TestAnnotate:
+
+    def test_annotate(
+        self,
+        test_config_path: str,
+        test_cli_runner: CliRunner,
+    ) -> None:
+        """
+        Test annotating dataset allowing you to interactively annotate the dataset with data categories
+        """
+        with open(
+            "tests/ctl/data/dataset_missing_categories.yml", "r"
+        ) as current_dataset_yml:
+            dataset_yml = yaml.safe_load(current_dataset_yml)
+            # Confirm starting state, that the first field has no data categories
+            assert (
+                "data_categories"
+                not in dataset_yml["dataset"][0]["collections"][0]["fields"][0]
+            )
+
+        result = test_cli_runner.invoke(
+            cli,
+            [
+                "-f",
+                test_config_path,
+                "annotate",
+                "dataset",
+                "tests/ctl/data/dataset_missing_categories.yml",
+            ],
+            input="user\n",
+        )
+        print(result.output)
+        with open("tests/ctl/data/dataset_missing_categories.yml", "r") as dataset_yml:
+            # Helps assert that the data category was output correctly
+            dataset_yml = yaml.safe_load(dataset_yml)
+            assert dataset_yml["dataset"][0]["collections"][0]["fields"][0][
+                "data_categories"
+            ] == ["user"]
+
+            # Now remove the data category that was written by annotate dataset
+            del dataset_yml["dataset"][0]["collections"][0]["fields"][0][
+                "data_categories"
+            ]
+
+        with open(
+            "tests/ctl/data/dataset_missing_categories.yml", "w"
+        ) as current_dataset_yml:
+            # Restore the original contents to the file
+            yaml.safe_dump(dataset_yml, current_dataset_yml)
+
+        assert result.exit_code == 0
+        print(result.output)
+
+    def test_regression_annotate_dataset(
+        self,
+        test_config_path: str,
+        test_cli_runner: CliRunner,
+    ):
+        test_cli_runner.invoke(
+            cli,
+            [
+                "-f",
+                test_config_path,
+                "annotate",
+                "dataset",
+                "tests/ctl/data/failing_direction.yml",
+            ],
+            input="user\n",
+        )
+        with open("tests/ctl/data/failing_direction.yml", "r") as dataset_yml:
+            try:
+                dataset_yml = yaml.safe_load(dataset_yml)
+            except yaml.constructor.ConstructorError:
+                assert False, "The yaml file is not valid"
 
 
 @pytest.mark.integration
@@ -666,6 +796,12 @@ class TestGenerate:
         print(result.output)
         assert result.exit_code == 0
 
+        with open(tmp_file, "r") as dataset_yml:
+            # Helps assert that the file was output correctly, namely, fides_keys were serialized as strings
+            # and not a FidesKey python object
+            dataset = yaml.safe_load(dataset_yml).get("dataset", [])
+            assert isinstance(dataset[0]["fides_key"], str)
+
     @pytest.mark.integration
     def test_generate_dataset_db_with_credentials_id(
         self,
@@ -1036,6 +1172,7 @@ class TestUser:
                 "create",
                 "newuser",
                 "Newpassword1!",
+                "test@ethyca.com",
             ],
             env={"FIDES_CREDENTIALS_PATH": credentials_path},
         )

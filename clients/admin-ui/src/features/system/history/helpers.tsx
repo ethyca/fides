@@ -44,7 +44,7 @@ export const getUiLabel = (key: string): string => {
 /** Determines if a field was added, modified, or removed as part of modification */
 const categorizeFieldModifications = (
   before: Record<string, any>,
-  after: Record<string, any>
+  after: Record<string, any>,
 ) => {
   const uniqueKeys = new Set([...Object.keys(before), ...Object.keys(after)]);
 
@@ -170,7 +170,7 @@ export const describeSystemChange = (history: SystemHistoryResponse) => {
 /** Replaces system keys with system names (if available) */
 export const assignSystemNames = (
   history: SystemHistoryResponse,
-  systems: SystemResponse[]
+  systems: SystemResponse[],
 ): SystemHistoryResponse => {
   const transformList = (list: any[]): string[] =>
     list.map((item) => {
@@ -203,7 +203,7 @@ export const assignSystemNames = (
 /** Replaces vendor IDs with vendor names */
 export const assignVendorLabels = (
   history: SystemHistoryResponse,
-  dictionaryOptions: DictOption[]
+  dictionaryOptions: DictOption[],
 ): SystemHistoryResponse => {
   // Return the unmodified history if dictionaryOptions is empty
   if (_.isEmpty(dictionaryOptions)) {
@@ -228,7 +228,7 @@ export const assignVendorLabels = (
 
 /** Modifies the privacy_declaration lists in the before and after objects to match in length */
 export const alignPrivacyDeclarations = (
-  history: SystemHistoryResponse
+  history: SystemHistoryResponse,
 ): SystemHistoryResponse => {
   const before = history.before.privacy_declarations || [];
   const after = history.after.privacy_declarations || [];
@@ -239,13 +239,13 @@ export const alignPrivacyDeclarations = (
 
   allNames.forEach((data_use) => {
     const firstItem = before.find(
-      (item: PrivacyDeclaration) => item.data_use === data_use
+      (item: PrivacyDeclaration) => item.data_use === data_use,
     ) || {
       data_use: "",
       data_categories: [],
     };
     const secondItem = after.find(
-      (item: PrivacyDeclaration) => item.data_use === data_use
+      (item: PrivacyDeclaration) => item.data_use === data_use,
     ) || {
       data_use: "",
       data_categories: [],
@@ -270,7 +270,7 @@ export const alignPrivacyDeclarations = (
 /** Makes sure the before and after custom_field objects have the same keys
  * to align the rendering of the fields in the diff modal */
 export const alignSystemCustomFields = (
-  history: SystemHistoryResponse
+  history: SystemHistoryResponse,
 ): SystemHistoryResponse => {
   const beforeCustomFields = { ...history.before.custom_fields };
   const afterCustomFields = { ...history.after.custom_fields };
@@ -304,7 +304,7 @@ export const alignSystemCustomFields = (
 
 /** Makes sure the custom fields object on privacy declarations have the same keys */
 export const alignPrivacyDeclarationCustomFields = (
-  history: SystemHistoryResponse
+  history: SystemHistoryResponse,
 ): SystemHistoryResponse => {
   // If privacy_declarations[0].custom_fields isn't defined, return the unmodified history object
   if (

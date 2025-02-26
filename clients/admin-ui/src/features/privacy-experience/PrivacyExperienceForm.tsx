@@ -1,8 +1,8 @@
 import {
+  AntButton as Button,
+  AntSelectProps as SelectProps,
   ArrowForwardIcon,
   Box,
-  Button,
-  ButtonGroup,
   Collapse,
   Divider,
   Flex,
@@ -11,22 +11,19 @@ import {
 } from "fidesui";
 import { useFormikContext } from "formik";
 import { useRouter } from "next/router";
-import { useState } from "react";
+import { useMemo } from "react";
 
 import { useAppSelector } from "~/app/hooks";
-import {
-  CustomSelect,
-  CustomSwitch,
-  CustomTextInput,
-} from "~/features/common/form/inputs";
-import BackButton from "~/features/common/nav/v2/BackButton";
-import { PRIVACY_EXPERIENCE_ROUTE } from "~/features/common/nav/v2/routes";
+import { CustomSwitch, CustomTextInput } from "~/features/common/form/inputs";
+import BackButton from "~/features/common/nav/BackButton";
+import { PRIVACY_EXPERIENCE_ROUTE } from "~/features/common/nav/routes";
 import { PRIVACY_NOTICE_REGION_RECORD } from "~/features/common/privacy-notice-regions";
 import ScrollableList from "~/features/common/ScrollableList";
 import {
   selectLocationsRegulations,
   useGetLocationsRegulationsQuery,
 } from "~/features/locations/locations.slice";
+import { Layer1ButtonOption } from "~/features/privacy-experience/form/constants";
 import { getSelectedRegionIds } from "~/features/privacy-experience/form/helpers";
 import { selectAllLanguages } from "~/features/privacy-experience/language.slice";
 import {
@@ -42,13 +39,17 @@ import {
 } from "~/features/properties/property.slice";
 import {
   ComponentType,
+  ConsentMechanism,
   ExperienceConfigCreate,
   ExperienceTranslation,
   LimitedPrivacyNoticeResponseSchema,
+  Property,
   SupportedLanguage,
 } from "~/types/api";
 
-const componentTypeOptions = [
+import { ControlledSelect } from "../common/form/ControlledSelect";
+
+const componentTypeOptions: SelectProps["options"] = [
   {
     label: "Banner and modal",
     value: ComponentType.BANNER_AND_MODAL,
@@ -61,7 +62,24 @@ const componentTypeOptions = [
     label: "Privacy center",
     value: ComponentType.PRIVACY_CENTER,
   },
+  {
+    label: "Headless",
+    value: ComponentType.HEADLESS,
+  },
 ];
+
+const buttonLayoutOptions: SelectProps["options"] = [
+  {
+    label: "Opt In/Opt Out",
+    value: Layer1ButtonOption.OPT_IN_OPT_OUT,
+  },
+  {
+    label: "Acknowledge",
+    value: Layer1ButtonOption.ACKNOWLEDGE,
+  },
+];
+
+const TCF_PLACEHOLDER_ID = "tcf_purposes_placeholder";
 
 export const PrivacyExperienceConfigColumnLayout = ({
   buttonPanel,
@@ -80,6 +98,17 @@ export const PrivacyExperienceConfigColumnLayout = ({
   </Flex>
 );
 
+function privacyNoticeIdsWithTcfId(values: ExperienceConfigCreate): string[] {
+  if (!values.privacy_notice_ids) {
+    return [TCF_PLACEHOLDER_ID];
+  }
+  const noticeIdsWithTcfId = values.privacy_notice_ids;
+  if (!noticeIdsWithTcfId.includes(TCF_PLACEHOLDER_ID)) {
+    noticeIdsWithTcfId.push(TCF_PLACEHOLDER_ID);
+  }
+  return noticeIdsWithTcfId;
+}
+
 export const PrivacyExperienceForm = ({
   allPrivacyNotices,
   translationsEnabled,
@@ -93,16 +122,41 @@ export const PrivacyExperienceForm = ({
 }) => {
   const router = useRouter();
 
-  const [editingStyle, setEditingStyle] = useState<boolean>(false);
-  const { values, setFieldValue, dirty, isValid, isSubmitting } =
+  const { values, setFieldValue, dirty, isValid, isSubmitting, initialValues } =
     useFormikContext<ExperienceConfigCreate>();
   const noticePage = useAppSelector(selectNoticePage);
   const noticePageSize = useAppSelector(selectNoticePageSize);
   useGetAllPrivacyNoticesQuery({ page: noticePage, size: noticePageSize });
 
+  const allPrivacyNoticesWithTcfPlaceholder: LimitedPrivacyNoticeResponseSchema[] =
+    useMemo(() => {
+      const noticesWithTcfPlaceholder = [...allPrivacyNotices];
+      if (!noticesWithTcfPlaceholder.some((n) => n.id === TCF_PLACEHOLDER_ID)) {
+        noticesWithTcfPlaceholder.push({
+          name: "TCF Purposes",
+          id: TCF_PLACEHOLDER_ID,
+          notice_key: TCF_PLACEHOLDER_ID,
+          data_uses: [],
+          consent_mechanism: ConsentMechanism.NOTICE_ONLY,
+          disabled: false,
+        });
+      }
+      return noticesWithTcfPlaceholder;
+    }, [allPrivacyNotices]);
+
   const getPrivacyNoticeName = (id: string) => {
-    const notice = allPrivacyNotices.find((n) => n.id === id);
+    const notice = allPrivacyNoticesWithTcfPlaceholder.find((n) => n.id === id);
     return notice?.name ?? id;
+  };
+
+  const filterNoticesForOnlyParentNotices = (
+    allNotices: LimitedPrivacyNoticeResponseSchema[],
+  ): LimitedPrivacyNoticeResponseSchema[] => {
+    const childrenNoticeIds: FlatArray<(string[] | undefined)[], 1>[] =
+      allNotices.map((n) => n.children?.map((child) => child.id)).flat();
+    return (
+      allPrivacyNotices.filter((n) => !childrenNoticeIds.includes(n.id)) ?? []
+    );
   };
 
   useGetLocationsRegulationsQuery();
@@ -126,35 +180,21 @@ export const PrivacyExperienceForm = ({
   useGetAllPropertiesQuery({ page: propertyPage, size: propertyPageSize });
   const allProperties = useAppSelector(selectAllProperties);
 
-  if (editingStyle) {
-    return (
-      <>
-        <Button onClick={() => setEditingStyle(false)}>
-          Back to main form
-        </Button>
-        <Text>Editing experience style coming soon™</Text>
-      </>
-    );
-  }
-
   const buttonPanel = (
-    <ButtonGroup size="sm" borderTop="1px solid #DEE5EE" p={4}>
-      <Button
-        variant="outline"
-        onClick={() => router.push(PRIVACY_EXPERIENCE_ROUTE)}
-      >
+    <div className="flex justify-between border-t border-[#DEE5EE] p-4">
+      <Button onClick={() => router.push(PRIVACY_EXPERIENCE_ROUTE)}>
         Cancel
       </Button>
       <Button
-        type="submit"
-        colorScheme="primary"
+        htmlType="submit"
+        type="primary"
         data-testid="save-btn"
-        isDisabled={isSubmitting || !dirty || !isValid}
-        isLoading={isSubmitting}
+        disabled={isSubmitting || !dirty || !isValid}
+        loading={isSubmitting}
       >
         Save
       </Button>
-    </ButtonGroup>
+    </div>
   );
 
   return (
@@ -170,20 +210,21 @@ export const PrivacyExperienceForm = ({
         isRequired
         variant="stacked"
       />
-      {values.component !== ComponentType.TCF_OVERLAY ? (
-        <CustomSelect
+      {values.component !== ComponentType.TCF_OVERLAY && (
+        <ControlledSelect
           name="component"
           id="component"
           options={componentTypeOptions}
-          label="Experience Type"
-          variant="stacked"
-          isDisabled={!!values.component}
+          label="Experience type"
+          layout="stacked"
+          disabled={!!initialValues.component}
           isRequired
         />
-      ) : null}
+      )}
       <Collapse
         in={
-          values.component && values.component !== ComponentType.PRIVACY_CENTER
+          values.component !== ComponentType.PRIVACY_CENTER &&
+          values.component !== ComponentType.HEADLESS
         }
         animateOpacity
       >
@@ -196,12 +237,25 @@ export const PrivacyExperienceForm = ({
           />
         </Box>
       </Collapse>
+      <Collapse
+        in={values.component === ComponentType.BANNER_AND_MODAL}
+        animateOpacity
+      >
+        <ControlledSelect
+          name="layer1_button_options"
+          id="layer1_button_options"
+          options={buttonLayoutOptions}
+          label="Banner options"
+          layout="stacked"
+          disabled={values.component !== ComponentType.BANNER_AND_MODAL}
+        />
+      </Collapse>
       <ScrollableList
         label="Associated properties"
         addButtonLabel="Add property"
         idField="id"
         nameField="name"
-        allItems={allProperties.map((property) => ({
+        allItems={allProperties.map((property: Property) => ({
           id: property.id,
           name: property.name,
         }))}
@@ -212,22 +266,58 @@ export const PrivacyExperienceForm = ({
         baseTestId="property"
       />
       <Divider />
-      {values.component !== ComponentType.TCF_OVERLAY ? (
-        <>
-          <Heading fontSize="md" fontWeight="semibold">
-            Privacy notices
-          </Heading>
-          <ScrollableList
-            addButtonLabel="Add privacy notice"
-            allItems={allPrivacyNotices.map((n) => n.id)}
-            values={values.privacy_notice_ids ?? []}
-            setValues={(newValues) =>
-              setFieldValue("privacy_notice_ids", newValues)
+      <Heading fontSize="md" fontWeight="semibold">
+        Privacy notices
+      </Heading>
+      {values.component === ComponentType.TCF_OVERLAY ? (
+        <ScrollableList<string>
+          addButtonLabel="Add privacy notice"
+          allItems={allPrivacyNoticesWithTcfPlaceholder.map((n) => n.id)}
+          values={privacyNoticeIdsWithTcfId(values)}
+          setValues={(newValues) =>
+            setFieldValue("privacy_notice_ids", newValues)
+          }
+          // @ts-ignore
+          canDeleteItem={(item: string): boolean => {
+            return Boolean(item !== TCF_PLACEHOLDER_ID);
+          }}
+          getTooltip={(item: string): string | undefined => {
+            if (item === TCF_PLACEHOLDER_ID) {
+              return "TCF Purposes are required by the framework and cannot be deleted.";
             }
-            getItemLabel={getPrivacyNoticeName}
-            draggable
-            baseTestId="privacy-notice"
-          />
+            return undefined;
+          }}
+          getItemLabel={getPrivacyNoticeName}
+          draggable
+          baseTestId="privacy-notice"
+        />
+      ) : (
+        <ScrollableList<string>
+          addButtonLabel="Add privacy notice"
+          allItems={filterNoticesForOnlyParentNotices(allPrivacyNotices).map(
+            (n) => n.id,
+          )}
+          values={values.privacy_notice_ids ?? []}
+          setValues={(newValues) =>
+            setFieldValue("privacy_notice_ids", newValues)
+          }
+          getItemLabel={getPrivacyNoticeName}
+          draggable
+          baseTestId="privacy-notice"
+        />
+      )}
+      {values.component === ComponentType.BANNER_AND_MODAL ? (
+        <>
+          <Collapse in={!!values.privacy_notice_ids?.length} animateOpacity>
+            <Box p="1px">
+              <CustomSwitch
+                name="show_layer1_notices"
+                id="show_layer1_notices"
+                label="Add privacy notices to banner"
+                variant="stacked"
+              />
+            </Box>
+          </Collapse>
           <Divider />
         </>
       ) : null}
@@ -278,15 +368,21 @@ export const PrivacyExperienceForm = ({
         </>
       ) : (
         <Button
-          variant="outline"
-          size="sm"
-          rightIcon={<ArrowForwardIcon />}
+          icon={<ArrowForwardIcon />}
+          iconPosition="end"
           onClick={() => onSelectTranslation(values.translations![0])}
           data-testid="edit-experience-btn"
         >
           Edit experience text
         </Button>
       )}
+      <CustomSwitch
+        name="auto_subdomain_cookie_deletion"
+        id="auto_subdomain_cookie_deletion"
+        label="Automatically delete subdomain cookies"
+        variant="stacked"
+        tooltip="If enabled, automatically deletes cookies set on subdomains in addition to main domain where appropriate. Recommended to enable for full consent compliance."
+      />
     </PrivacyExperienceConfigColumnLayout>
   );
 };

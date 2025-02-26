@@ -1,6 +1,6 @@
 from typing import List, Optional, Union
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 from fides.api.models.connectionconfig import ConnectionType
 from fides.api.schemas.connection_configuration.enums.system_type import SystemType
@@ -15,13 +15,8 @@ class ConnectionSystemTypeMap(BaseModel):
     identifier: Union[ConnectionType, str]
     type: SystemType
     human_readable: str
-    encoded_icon: Optional[str]
+    encoded_icon: Optional[str] = None
     authorization_required: Optional[bool] = False
-    user_guide: Optional[str]
+    user_guide: Optional[str] = None
     supported_actions: List[ActionType]
-
-    class Config:
-        """Use enum values and set orm mode"""
-
-        use_enum_values = True
-        orm_mode = True
+    model_config = ConfigDict(use_enum_values=True, from_attributes=True)

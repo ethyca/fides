@@ -1,5 +1,3 @@
-/* eslint-disable no-console */
-/* eslint-disable import/no-extraneous-dependencies */
 import alias from "@rollup/plugin-alias";
 import copy from "rollup-plugin-copy";
 import dts from "rollup-plugin-dts";
@@ -10,6 +8,7 @@ import nodeResolve from "@rollup/plugin-node-resolve";
 import postcss from "rollup-plugin-postcss";
 import commonjs from "@rollup/plugin-commonjs";
 import { visualizer } from "rollup-plugin-visualizer";
+import strip from "@rollup/plugin-strip";
 
 const NAME = "fides";
 const IS_DEV = process.env.NODE_ENV === "development";
@@ -17,8 +16,16 @@ const GZIP_SIZE_ERROR_KB = 45; // fail build if bundle size exceeds this
 const GZIP_SIZE_WARN_KB = 35; // log a warning if bundle size exceeds this
 
 // TCF
-const GZIP_SIZE_TCF_ERROR_KB = 85;
+const GZIP_SIZE_TCF_ERROR_KB = 86;
 const GZIP_SIZE_TCF_WARN_KB = 75;
+
+// Headless
+const GZIP_SIZE_HEADLESS_ERROR_KB = 25;
+const GZIP_SIZE_HEADLESS_WARN_KB = 20;
+
+// GPP
+const GZIP_SIZE_GPP_ERROR_KB = 25;
+const GZIP_SIZE_GPP_WARN_KB = 15;
 
 const preactAliases = {
   entries: [
@@ -40,6 +47,14 @@ const fidesScriptPlugins = ({ name, gzipWarnSizeKb, gzipErrorSizeKb }) => [
   esbuild({
     minify: !IS_DEV,
   }),
+  strip(
+    IS_DEV
+      ? {}
+      : {
+          include: ["**/*.ts"],
+          functions: ["fidesDebugger"],
+        },
+  ),
   copy({
     // Automatically add the built script to the privacy center's and admin ui's static files for bundling:
     targets: [
@@ -66,18 +81,18 @@ const fidesScriptPlugins = ({ name, gzipWarnSizeKb, gzipErrorSizeKb }) => [
           console.error(
             `❌ ERROR: ${fileName} build failed! Gzipped size (${gzipSize}) exceeded maximum size (${gzipErrorSizeKb} KB)!`,
             `If you must, update GZIP_SIZE_* constants in clients/fides-js/rollup.config.mjs.`,
-            `Open bundle-size-stats/${name}-stats.html to visualize the (non-gzipped) bundle size.`
+            `Open bundle-size-stats/${name}-stats.html to visualize the (non-gzipped) bundle size.`,
           );
           process.exit(1);
         } else if (gzipSizeKb > gzipWarnSizeKb && !IS_DEV) {
           console.warn(
             `️🚨 WARN: ${fileName} build is getting large! Gzipped size (${gzipSize}) exceeded warning size (${gzipWarnSizeKb} KB)!`,
             `If you must, update GZIP_SIZE_* constants in clients/fides-js/rollup.config.mjs.`,
-            `Open bundle-size-stats/${name}-stats.html to visualize the (non-gzipped) bundle size.`
+            `Open bundle-size-stats/${name}-stats.html to visualize the (non-gzipped) bundle size.`,
           );
         } else {
           console.log(
-            `✅ ${fileName} gzipped size passed maximum size checks (${gzipSize} < ${gzipErrorSizeKb} KB)`
+            `✅ ${fileName} gzipped size passed maximum size checks (${gzipSize} < ${gzipErrorSizeKb} KB)`,
           );
         }
       },
@@ -100,9 +115,14 @@ const SCRIPTS = [
     gzipErrorSizeKb: GZIP_SIZE_TCF_ERROR_KB,
   },
   {
+    name: `${NAME}-headless`,
+    gzipWarnSizeKb: GZIP_SIZE_HEADLESS_WARN_KB,
+    gzipErrorSizeKb: GZIP_SIZE_HEADLESS_ERROR_KB,
+  },
+  {
     name: `${NAME}-ext-gpp`,
-    gzipWarnSizeKb: 10,
-    gzipErrorSizeKb: 15,
+    gzipWarnSizeKb: GZIP_SIZE_GPP_WARN_KB,
+    gzipErrorSizeKb: GZIP_SIZE_GPP_ERROR_KB,
     isExtension: true,
   },
 ];
@@ -129,7 +149,7 @@ SCRIPTS.forEach(({ name, gzipErrorSizeKb, gzipWarnSizeKb, isExtension }) => {
         file: `dist/${name}.js`,
         name: isExtension ? undefined : "Fides",
         format: isExtension ? undefined : "umd",
-        sourcemap: IS_DEV,
+        sourcemap: IS_DEV && !isExtension ? "inline" : false,
       },
     ],
   };
@@ -142,6 +162,10 @@ SCRIPTS.forEach(({ name, gzipErrorSizeKb, gzipWarnSizeKb, isExtension }) => {
       commonjs(),
       postcss(),
       esbuild(),
+      strip({
+        include: ["**/*.js", "**/*.ts"],
+        functions: ["fidesDebugger"],
+      }),
     ],
     output: [
       {

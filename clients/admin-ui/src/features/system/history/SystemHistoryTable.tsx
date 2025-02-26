@@ -1,5 +1,15 @@
 /* eslint-disable no-param-reassign */
-import { Button, Flex, Table, Tbody, Td, Text, Thead, Tr } from "fidesui";
+import {
+  AntButton as Button,
+  Flex,
+  Table,
+  Tbody,
+  Td,
+  Text,
+  Thead,
+  Tr,
+} from "fidesui";
+import palette from "fidesui/src/palette/palette.module.scss";
 import React, { useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
@@ -9,7 +19,7 @@ import {
   selectAllDictEntries,
   useGetSystemHistoryQuery,
 } from "~/features/plus/plus.slice";
-import { selectAllSystems } from "~/features/system/system.slice";
+import { useGetAllSystemsQuery } from "~/features/system/system.slice";
 import { SystemHistoryResponse } from "~/types/api";
 import { SystemResponse } from "~/types/api/models/SystemResponse";
 
@@ -41,7 +51,7 @@ const SystemHistoryTable = ({ system }: Props) => {
   const [selectedHistory, setSelectedHistory] =
     useState<SystemHistoryResponse | null>(null);
   const dictionaryOptions = useAppSelector(selectAllDictEntries);
-  const systems = useAppSelector(selectAllSystems);
+  const { data: systems = [] } = useGetAllSystemsQuery();
 
   const systemHistories = data?.items || [];
 
@@ -67,7 +77,8 @@ const SystemHistoryTable = ({ system }: Props) => {
 
   const { formattedTime, formattedDate } = formatDateAndTime(system.created_at);
 
-  const totalPages = data ? Math.ceil(data.total / ITEMS_PER_PAGE) : 0;
+  const totalPages =
+    data && data.total ? Math.ceil(data.total / ITEMS_PER_PAGE) : 0;
 
   const handleNextPage = () => {
     if (currentPage < totalPages) {
@@ -90,7 +101,7 @@ const SystemHistoryTable = ({ system }: Props) => {
               p="16px"
               fontSize="12px"
               border="1px solid #E2E8F0"
-              background="#F7FAFC"
+              background={palette.FIDESUI_NEUTRAL_50}
             >
               System created on {formattedDate} at {formattedTime}
             </Td>
@@ -136,25 +147,18 @@ const SystemHistoryTable = ({ system }: Props) => {
             {data?.total || 0}
           </Text>
           <Button
-            size="xs"
-            width="24px"
-            variant="outline"
-            paddingX={0}
-            marginRight={2}
+            size="small"
+            className="mr-2"
             onClick={handlePrevPage}
             disabled={currentPage === 1}
-          >
-            <PrevArrow />
-          </Button>
+            icon={<PrevArrow />}
+          />
           <Button
-            size="xs"
-            variant="outline"
-            paddingX={0}
+            size="small"
             onClick={handleNextPage}
             disabled={currentPage === totalPages || totalPages === 0}
-          >
-            <NextArrow />
-          </Button>
+            icon={<NextArrow />}
+          />
         </Flex>
       )}
       <SystemHistoryModal

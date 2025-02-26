@@ -1,7 +1,7 @@
 import { useAlert } from "common/hooks/useAlert";
-import { Button, Flex, ModalFooter, SimpleGrid, Text, VStack } from "fidesui";
+import { AntButton as Button, Flex, ModalFooter, Text, VStack } from "fidesui";
 import yaml, { YAMLException } from "js-yaml";
-import React, { useRef, useState } from "react";
+import React, { Fragment, useRef, useState } from "react";
 
 import { Editor, isYamlException } from "~/features/common/yaml/helpers";
 import YamlError from "~/features/common/yaml/YamlError";
@@ -12,24 +12,26 @@ type YamlEditorFormProps = {
   data: Dataset[];
   isSubmitting: boolean;
   onChange: (value: Dataset) => void;
+  onSubmit?: () => void;
   isLoading?: boolean;
   onCancel?: () => void;
   disabled?: boolean;
 };
 
-const YamlEditor: React.FC<YamlEditorFormProps> = ({
+const YamlEditor = ({
   data = [],
   isSubmitting = false,
   onCancel,
+  onSubmit,
   disabled,
   isLoading,
   onChange,
-}) => {
+}: YamlEditorFormProps) => {
   const monacoRef = useRef(null);
   const { errorAlert } = useAlert();
   const yamlData = data.length > 0 ? yaml.dump(data) : undefined;
   const [yamlError, setYamlError] = useState(
-    undefined as unknown as YAMLException
+    undefined as unknown as YAMLException,
   );
   const [isTouched, setIsTouched] = useState(false);
   const [isEmptyState, setIsEmptyState] = useState(!yamlData);
@@ -64,7 +66,12 @@ const YamlEditor: React.FC<YamlEditorFormProps> = ({
       setIsTouched(true);
       validate(value as string);
       setIsEmptyState(!value || value.trim() === "");
-      onChange(yaml.load(value || "", { json: true }) as Dataset);
+      const yamlDoc = yaml.load(value || "", { json: true });
+      if (Array.isArray(yamlDoc)) {
+        onChange(yamlDoc[0] as Dataset);
+      } else {
+        onChange(yamlDoc as Dataset);
+      }
       checkForOverWrittenKeys();
     } catch (error) {
       if (isYamlException(error)) {
@@ -75,11 +82,19 @@ const YamlEditor: React.FC<YamlEditorFormProps> = ({
     }
   };
 
+  const handleSubmit = () => {
+    onSubmit?.();
+    onCancel?.();
+  };
+
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleMount = (editor: any, _monaco: any) => {
     monacoRef.current = editor;
     (monacoRef.current as any).focus();
   };
+
+  const submitDisabled =
+    disabled || isEmptyState || !isTouched || !!yamlError || isSubmitting;
 
   return (
     <Flex gap="97px">
@@ -107,41 +122,37 @@ const YamlEditor: React.FC<YamlEditorFormProps> = ({
             {overWrittenKeys.map((key, i) => {
               const isLast = i === overWrittenKeys.length - 1;
               return (
-                <>
+                <Fragment key={key}>
                   <Text color="complimentary.500" as="span" fontWeight="bold">
                     {key}
                   </Text>
                   {isLast ? "." : ", "}
-                </>
+                </Fragment>
               );
             })}
           </Text>
         ) : null}
         <ModalFooter>
-          <SimpleGrid columns={2} width="100%">
-            {onCancel ? (
+          <div className="flex w-full justify-end gap-4">
+            {onCancel && (
               <Button
-                variant="outline"
-                mr={3}
                 onClick={onCancel}
                 data-testid="cancel-btn"
-                isDisabled={isLoading}
+                disabled={isLoading}
               >
                 Cancel
               </Button>
-            ) : null}
+            )}
             <Button
-              colorScheme="primary"
-              onClick={onCancel}
+              type="primary"
+              onClick={handleSubmit}
               data-testid="continue-btn"
-              isDisabled={
-                disabled || isEmptyState || !!yamlError || isSubmitting
-              }
-              isLoading={isSubmitting || isLoading}
+              disabled={submitDisabled}
+              loading={isSubmitting || isLoading}
             >
               Confirm
             </Button>
-          </SimpleGrid>
+          </div>
         </ModalFooter>
       </VStack>
       {isTouched && (isEmptyState || yamlError) && (

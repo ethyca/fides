@@ -360,7 +360,7 @@ def upsert_dataset_config_from_template(
         "fides_key": template_values.instance_key,
         "dataset": dataset_from_template,  # Currently used for upserting a CTL Dataset
     }
-    dataset_config = DatasetConfig.upsert_with_ctl_dataset(db, data=data)
+    dataset_config = DatasetConfig.create_or_update(db, data=data)
     return dataset_config
 
 
@@ -388,7 +388,9 @@ def update_saas_configs(db: Session) -> None:
             conditions=(ConnectionConfig.saas_config["type"].astext == connector_type),
         ).all()
         for connection_config in connection_configs:
-            saas_config_instance = SaaSConfig.parse_obj(connection_config.saas_config)
+            saas_config_instance = SaaSConfig.model_validate(
+                connection_config.saas_config
+            )
             if parse_version(saas_config_instance.version) < template_version:
                 logger.info(
                     "Updating SaaS config instance '{}' of type '{}' as its version, {}, was found to be lower than the template version {}",

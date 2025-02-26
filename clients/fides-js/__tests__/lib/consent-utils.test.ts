@@ -76,6 +76,6 @@ describe("getWindowObjFromPath", () => {
     ({ path, window, expected }) => {
       windowSpy.mockImplementation(() => window);
       expect(getWindowObjFromPath(path as any)).toStrictEqual(expected);
-    }
+    },
   );
 });

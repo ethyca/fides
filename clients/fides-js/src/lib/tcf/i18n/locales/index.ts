@@ -1,6 +1,5 @@
 /* eslint-disable object-shorthand */
 import type { Locale, Messages } from "../../../i18n";
-
 /**
  * Statically load all the pre-localized dictionaries from the ./locales directory.
  *

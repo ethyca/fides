@@ -11,8 +11,8 @@ import type { SupportedLanguage } from "./SupportedLanguage";
  */
 export type NoticeTranslationResponse = {
   language: SupportedLanguage;
-  title?: string;
-  description?: string;
+  title?: string | null;
+  description?: string | null;
   /**
    * The versioned artifact of the translation and its Privacy Notice. Should be supplied when saving privacy preferences.
    */

@@ -35,19 +35,25 @@ saas_config:
 
   consent_requests:
     opt_in:
-      method: POST
-      path: /allowlists/add
-      body: |
-        {
-          "first_name": "<custom_privacy_request_fields.first_name>"
-        }
+      - method: POST
+        path: /allowlists/add
+        body: |
+          {
+            "first_name": "<custom_privacy_request_fields.first_name>"
+          }
     opt_out:
-      method: POST
-      path: /allowlists/delete
-      body: |
-        {
-          "first_name": "<custom_privacy_request_fields.first_name>"
-        }
+      - method: POST
+        path: /allowlists/delete
+        body: |
+          {
+            "first_name": "<custom_privacy_request_fields.first_name>"
+          }
+      - method: POST
+        path: /rejects/add
+        body: |
+          {
+            "first_name": "<custom_privacy_request_fields.first_name>"
+          }
 
   endpoints:
     - name: messages
@@ -95,6 +101,13 @@ saas_config:
               - name: email
                 identity: email
             data_path: exact_matches.members
+            client_config:
+              protocol: https
+              host: <domain>
+              authentication:
+                strategy: bearer
+                configuration:
+                  token: <api_key>
           - method: GET
             path: /3.0/search-members
             query_params:
@@ -104,6 +117,14 @@ saas_config:
               - name: phone
                 identity: phone
             data_path: exact_matches.members
+            client_config:
+              protocol: https
+              host: <domain>
+              authentication:
+                strategy: bearer
+                configuration:
+                  token: <api_key>
+
         update:
           method: PUT
           path: /3.0/lists/<list_id>/members/<subscriber_hash>
@@ -344,3 +365,76 @@ saas_config:
                 - dataset: saas_connector_example
                   field: users.list_ids
                   direction: from
+    - name: request_with_output_template
+      requests:
+        read:
+          method: GET
+          path: /v1/partial_data
+          param_values:
+            - name: email
+              identity: email
+          output: |
+            {
+              <all_object_fields>,
+              "email": "<email>"
+            }
+    - name: request_with_invalid_output_template
+      requests:
+        read:
+          method: GET
+          path: /v1/partial_data
+          param_values:
+            - name: email
+              identity: email
+          output: |
+            {
+              <all_object_fields>
+              "email": "<email>"
+            }
+    - name: standalone_output_template
+      requests:
+        read:
+          param_values:
+            - name: email
+              identity: email
+          output: |
+            {
+              "email": "<email>"
+            }
+    - name: complex_template_example
+      requests:
+        read:
+          - method: GET
+            path: /v1/orders/<site_id>
+            query_params:
+              - name: status
+                value: open
+            param_values:
+              - name: site_id
+                references:
+                  - dataset: saas_connector_example
+                    field: accounts.site_id
+                    direction: from
+            output: |
+              {
+                <all_object_fields>,
+                "status": "open",
+                "site_id": "<site_id>"
+              }
+          - method: GET
+            path: /v1/orders/<site_id>
+            query_params:
+              - name: status
+                value: closed
+            param_values:
+              - name: site_id
+                references:
+                  - dataset: saas_connector_example
+                    field: accounts.site_id
+                    direction: from
+            output: |
+              {
+                <all_object_fields>,
+                "status": "closed",
+                "site_id": "<site_id>"
+              }

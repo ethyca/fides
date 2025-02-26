@@ -31,7 +31,7 @@ def secrets_are_valid(
 def _s3_authenticator(secrets: Dict[StorageSecrets, Any]) -> bool:
     """Authenticates secrets for s3, returns true if secrets are valid"""
     try:
-        get_aws_session(AWSAuthMethod.SECRET_KEYS.value, secrets.dict())  # type: ignore
+        get_aws_session(AWSAuthMethod.SECRET_KEYS.value, secrets.model_dump(mode="json"))  # type: ignore
         return True
     except ClientError:
         return False

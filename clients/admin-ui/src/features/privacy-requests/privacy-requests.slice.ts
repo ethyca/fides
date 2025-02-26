@@ -2,14 +2,18 @@ import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 import { baseApi } from "~/features/common/api.slice";
 import {
+  ActionType,
   BulkPostPrivacyRequests,
   GPPApplicationConfigResponse,
   PlusApplicationConfig as ApplicationConfig,
   PrivacyCenterConfig,
+  PrivacyRequestAccessResults,
   PrivacyRequestCreate,
   PrivacyRequestNotificationInfo,
+  PrivacyRequestStatus,
   SecurityApplicationConfig,
 } from "~/types/api";
+import { PrivacyRequestSource } from "~/types/api/models/PrivacyRequestSource";
 
 import type { RootState } from "../../app/store";
 import { BASE_URL } from "../../constants";
@@ -26,7 +30,6 @@ import {
   PrivacyRequestEntity,
   PrivacyRequestParams,
   PrivacyRequestResponse,
-  PrivacyRequestStatus,
   RetryRequests,
   StorageConfigResponse,
 } from "./types";
@@ -34,7 +37,9 @@ import {
 // Helpers
 export function mapFiltersToSearchParams({
   status,
+  action_type,
   id,
+  fuzzy_search_str,
   from,
   to,
   page,
@@ -58,8 +63,12 @@ export function mapFiltersToSearchParams({
   return {
     include_identities: "true",
     include_custom_privacy_request_fields: "true",
+    ...(action_type && action_type.length > 0
+      ? { action_type: action_type.join("&action_type=") }
+      : {}),
     ...(status && status.length > 0 ? { status: status.join("&status=") } : {}),
     ...(id ? { request_id: id } : {}),
+    ...(fuzzy_search_str ? { fuzzy_search_str } : {}),
     ...(fromISO ? { created_gt: fromISO.toISOString() } : {}),
     ...(toISO ? { created_lt: toISO.toISOString() } : {}),
     ...(page ? { page: `${page}` } : {}),
@@ -75,6 +84,7 @@ export const requestCSVDownload = async ({
   from,
   to,
   status,
+  action_type,
   token,
 }: PrivacyRequestParams & { token: string | null }) => {
   if (!token) {
@@ -88,6 +98,7 @@ export const requestCSVDownload = async ({
         from,
         to,
         status,
+        action_type,
       }),
       download_csv: "true",
     })}`,
@@ -97,10 +108,14 @@ export const requestCSVDownload = async ({
         Authorization: `Bearer ${token}`,
         "X-Fides-Source": "fidesops-admin-ui",
       },
-    }
+    },
   )
-    .then((response) => {
+    .then(async (response) => {
       if (!response.ok) {
+        if (response.status === 400) {
+          const errorData = await response.json();
+          throw new Error(errorData.detail || "Bad request error");
+        }
         throw new Error("Got a bad response from the server");
       }
       return response.blob();
@@ -115,10 +130,12 @@ export const requestCSVDownload = async ({
 };
 
 export const selectPrivacyRequestFilters = (
-  state: RootState
+  state: RootState,
 ): PrivacyRequestParams => ({
+  action_type: state.subjectRequests.action_type,
   from: state.subjectRequests.from,
   id: state.subjectRequests.id,
+  fuzzy_search_str: state.subjectRequests.fuzzy_search_str,
   page: state.subjectRequests.page,
   size: state.subjectRequests.size,
   sort_direction: state.subjectRequests.sort_direction,
@@ -138,10 +155,12 @@ export const selectRetryRequests = (state: RootState): RetryRequests => ({
 
 // Subject requests state (filters, etc.)
 type SubjectRequestsState = {
+  action_type?: ActionType[];
   checkAll: boolean;
   errorRequests: string[];
   from: string;
   id: string;
+  fuzzy_search_str?: string;
   page: number;
   size: number;
   sort_direction?: string;
@@ -187,13 +206,23 @@ export const subjectRequestsSlice = createSlice({
       page: initialState.page,
       id: action.payload,
     }),
+    setFuzzySearchStr: (state, action: PayloadAction<string>) => ({
+      ...state,
+      page: initialState.page,
+      fuzzy_search_str: action.payload,
+    }),
     setRequestStatus: (
       state,
-      action: PayloadAction<PrivacyRequestStatus[]>
+      action: PayloadAction<PrivacyRequestStatus[]>,
     ) => ({
       ...state,
       page: initialState.page,
       status: action.payload,
+    }),
+    setRequestActionType: (state, action: PayloadAction<ActionType[]>) => ({
+      ...state,
+      page: initialState.page,
+      action_type: action.payload,
     }),
     setRequestTo: (state, action: PayloadAction<string>) => ({
       ...state,
@@ -232,8 +261,10 @@ export const {
   setRequestFrom,
   setRequestId,
   setRequestStatus,
+  setRequestActionType,
   setRequestTo,
   setRetryRequests,
+  setFuzzySearchStr,
   setSortDirection,
   setSortField,
   setVerbose,
@@ -276,13 +307,23 @@ export const privacyRequestApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Request"],
     }),
+    softDeleteRequest: build.mutation<
+      PrivacyRequestEntity,
+      Partial<PrivacyRequestEntity> & Pick<PrivacyRequestEntity, "id">
+    >({
+      query: ({ id }) => ({
+        url: `privacy-request/${id}/soft-delete`,
+        method: "POST",
+      }),
+      invalidatesTags: ["Request"],
+    }),
     getAllPrivacyRequests: build.query<
       PrivacyRequestResponse,
       Partial<PrivacyRequestParams>
     >({
       query: (filters) => ({
         url: `privacy-request?${decodeURIComponent(
-          new URLSearchParams(mapFiltersToSearchParams(filters)).toString()
+          new URLSearchParams(mapFiltersToSearchParams(filters)).toString(),
         )}`,
       }),
       providesTags: () => ["Request"],
@@ -302,11 +343,15 @@ export const privacyRequestApi = baseApi.injectEndpoints({
       query: (payload) => ({
         url: `privacy-request/authenticated`,
         method: "POST",
-        body: payload,
+        body: payload.map((item) => ({
+          ...item,
+          source: PrivacyRequestSource.REQUEST_MANAGER,
+        })),
       }),
       invalidatesTags: () => ["Request"],
     }),
     getNotification: build.query<PrivacyRequestNotificationInfo, void>({
+      // NOTE: This will intentionally return a 404 with `details` if the notification is not yet set.
       query: () => ({
         url: `privacy-request/notification`,
       }),
@@ -315,7 +360,7 @@ export const privacyRequestApi = baseApi.injectEndpoints({
         const cloneResponse = { ...response };
         if (cloneResponse.email_addresses?.length > 0) {
           cloneResponse.email_addresses = cloneResponse.email_addresses.filter(
-            (item) => item !== ""
+            (item) => item !== "",
           );
         }
         return cloneResponse;
@@ -490,6 +535,44 @@ export const privacyRequestApi = baseApi.injectEndpoints({
         url: `plus/privacy-center-config`,
       }),
     }),
+    getPrivacyRequestAccessResults: build.query<
+      PrivacyRequestAccessResults,
+      { privacy_request_id: string }
+    >({
+      query: ({ privacy_request_id }) => ({
+        method: "GET",
+        url: `privacy-request/${privacy_request_id}/access-results`,
+      }),
+    }),
+    getFilteredResults: build.query<
+      {
+        privacy_request_id: string;
+        status: PrivacyRequestStatus;
+        results: {
+          [key: string]: Array<Record<string, any>>;
+        };
+      },
+      { privacy_request_id: string }
+    >({
+      query: ({ privacy_request_id }) => ({
+        method: "GET",
+        url: `privacy-request/${privacy_request_id}/filtered-results`,
+      }),
+    }),
+    getTestLogs: build.query<
+      Array<{
+        timestamp: string;
+        level: string;
+        module_info: string;
+        message: string;
+      }>,
+      { privacy_request_id: string }
+    >({
+      query: ({ privacy_request_id }) => ({
+        method: "GET",
+        url: `privacy-request/${privacy_request_id}/logs`,
+      }),
+    }),
   }),
 });
 
@@ -497,6 +580,7 @@ export const {
   useApproveRequestMutation,
   useBulkRetryMutation,
   useDenyRequestMutation,
+  useSoftDeleteRequestMutation,
   useGetAllPrivacyRequestsQuery,
   usePostPrivacyRequestMutation,
   useGetNotificationQuery,
@@ -518,6 +602,9 @@ export const {
   useCreateMessagingConfigurationMutation,
   useCreateMessagingConfigurationSecretsMutation,
   useCreateTestConnectionMessageMutation,
+  useGetPrivacyRequestAccessResultsQuery,
+  useGetFilteredResultsQuery,
+  useGetTestLogsQuery,
 } = privacyRequestApi;
 
 export type CORSOrigins = Pick<SecurityApplicationConfig, "cors_origins">;
@@ -563,7 +650,7 @@ export const selectCORSOrigins: (state: RootState) => CORSOriginsSettings =
         },
       };
       return currentCORSOriginSettings;
-    }
+    },
   );
 
 export const selectApplicationConfig = () =>
@@ -574,14 +661,14 @@ export const selectApplicationConfig = () =>
         api_set: true,
       }),
     ],
-    (_, { data }) => data as ApplicationConfig
+    (_, { data }) => data as ApplicationConfig,
   );
 
 const defaultGppSettings: GPPApplicationConfigResponse = {
   enabled: false,
 };
 export const selectGppSettings: (
-  state: RootState
+  state: RootState,
 ) => GPPApplicationConfigResponse = createSelector(
   [
     (state) => state,
@@ -602,5 +689,5 @@ export const selectGppSettings: (
       return config.gpp;
     }
     return defaultGppSettings;
-  }
+  },
 );

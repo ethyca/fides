@@ -17,6 +17,7 @@ from fides.api.models.connectionconfig import (
     ConnectionType,
 )
 from fides.api.models.datasetconfig import DatasetConfig
+from fides.api.models.detection_discovery import MonitorConfig
 from fides.api.models.manual_webhook import AccessManualWebhook
 from fides.api.models.privacy_request import PrivacyRequestStatus
 from fides.api.models.sql_models import Dataset
@@ -383,7 +384,7 @@ class TestPatchConnections:
         assert 422 == response.status_code
         assert (
             json.loads(response.text)["detail"][0]["msg"]
-            == "ensure this value has at most 50 items"
+            == "List should have at most 50 items after validation, not 51"
         )
 
     @mock.patch("fides.api.util.connection_util.queue_privacy_request")
@@ -525,6 +526,7 @@ class TestPatchConnections:
         )
         assert postgres_resource.access.value == "read"
         assert postgres_resource.disabled
+
         assert postgres_resource.secrets == payload[0]["secrets"]
 
         mongo_connection = response_body["succeeded"][1]
@@ -1340,14 +1342,14 @@ class TestDeleteConnection:
         generate_auth_header,
     ) -> None:
         secrets = {
-            "domain": "test_sendgrid_domain",
-            "api_key": "test_sendgrid_api_key",
+            "domain": "test_hubspot_domain",
+            "private_app_token": "test_hubspot_api_key",
         }
         connection_config, dataset_config = instantiate_connector(
             db,
-            "sendgrid",
-            "secondary_sendgrid_instance",
-            "Sendgrid ConnectionConfig description",
+            "hubspot",
+            "secondary_hubspot_instance",
+            "hubspot ConnectionConfig description",
             secrets,
         )
         dataset = dataset_config.ctl_dataset
@@ -1363,6 +1365,33 @@ class TestDeleteConnection:
         )
         assert db.query(DatasetConfig).filter_by(id=dataset_config.id).first() is None
         assert db.query(Dataset).filter_by(id=dataset.id).first() is None
+
+    def test_delete_connection_config_with_related_monitors(
+        self,
+        api_client: TestClient,
+        db: Session,
+        generate_role_header,
+        connection_config: ConnectionConfig,
+        monitor_config: MonitorConfig,
+        monitor_config_2: MonitorConfig,
+    ):
+        auth_header = generate_role_header(roles=[OWNER])
+
+        # Save ids of monitor configs before deletion to use in query
+        id_monitor_config_1 = monitor_config.id
+        id_monitor_config_2 = monitor_config_2.id
+
+        response = api_client.delete(
+            f"{V1_URL_PREFIX}{CONNECTIONS}/{connection_config.key}", headers=auth_header
+        )
+
+        assert response.status_code == 204
+        assert (
+            db.query(ConnectionConfig).filter_by(key=connection_config.key).first()
+        ) is None
+
+        assert db.query(MonitorConfig).filter_by(id=id_monitor_config_1).first() is None
+        assert db.query(MonitorConfig).filter_by(id=id_monitor_config_2).first() is None
 
 
 class TestPutConnectionConfigSecrets:
@@ -1420,10 +1449,9 @@ class TestPutConnectionConfigSecrets:
             json=payload,
         )
         assert resp.status_code == 422
-        assert json.loads(resp.text)["detail"][0]["msg"] == "field required"
         assert (
-            json.loads(resp.text)["detail"][1]["msg"]
-            == "PostgreSQLSchema must be supplied all of: ['host', 'dbname']."
+            resp.json()["detail"][0]["msg"]
+            == "Value error, PostgreSQLSchema must be supplied all of: ['host', 'dbname']."
         )
 
         payload = {
@@ -1438,8 +1466,14 @@ class TestPutConnectionConfigSecrets:
         )
         assert resp.status_code == 422
         assert (
-            json.loads(resp.text)["detail"][0]["msg"] == "value is not a valid integer"
+            json.loads(resp.text)["detail"][0]["msg"]
+            == "Input should be a valid integer, unable to parse string as an integer"
         )
+        assert set(resp.json()["detail"][0].keys()) == {
+            "loc",
+            "msg",
+            "type",
+        }  # Assert url, input, ctx keys have been removed to suppress sensitive information
 
     def test_put_connection_config_secrets(
         self,
@@ -1552,6 +1586,236 @@ class TestPutConnectionConfigSecrets:
         )
         assert resp.status_code == 200
 
+    def test_put_dynamic_erasure_email_connection_config_secrets(
+        self,
+        url,
+        api_client: TestClient,
+        db: Session,
+        generate_auth_header,
+        dynamic_erasure_email_connection_config_no_secrets,
+        dynamic_email_address_config_dataset_config,
+    ) -> None:
+        """Note: this test does not attempt to send an email, via use of verify query param."""
+        url = f"{V1_URL_PREFIX}{CONNECTIONS}/{dynamic_erasure_email_connection_config_no_secrets.key}/secret"
+        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
+        payload = {
+            "test_email_address": "test@example.com",
+            "third_party_vendor_name": {
+                "dataset": dynamic_email_address_config_dataset_config.fides_key,
+                "field": "dynamic_email_address_config.vendor_name",
+                "direction": "from",
+            },
+            "recipient_email_address": {
+                "dataset": dynamic_email_address_config_dataset_config.fides_key,
+                "field": "dynamic_email_address_config.email_address",
+                "direction": "from",
+            },
+            "advanced_settings": {
+                "identity_types": {
+                    "email": True,
+                    "phone_number": False,
+                }
+            },
+        }
+        resp = api_client.put(
+            url + "?verify=False",
+            headers=auth_header,
+            json=payload,
+        )
+        assert resp.status_code == 200
+        assert (
+            json.loads(resp.text)["msg"]
+            == f"Secrets updated for ConnectionConfig with key: {dynamic_erasure_email_connection_config_no_secrets.key}."
+        )
+        db.refresh(dynamic_erasure_email_connection_config_no_secrets)
+
+        assert dynamic_erasure_email_connection_config_no_secrets.secrets == {
+            "test_email_address": "test@example.com",
+            "recipient_email_address": {
+                "dataset": dynamic_email_address_config_dataset_config.fides_key,
+                "field": "dynamic_email_address_config.email_address",
+                "direction": "from",
+            },
+            "advanced_settings": {
+                "identity_types": {
+                    "email": True,
+                    "phone_number": False,
+                }
+            },
+            "third_party_vendor_name": {
+                "dataset": dynamic_email_address_config_dataset_config.fides_key,
+                "field": "dynamic_email_address_config.vendor_name",
+                "direction": "from",
+            },
+        }
+        assert (
+            dynamic_erasure_email_connection_config_no_secrets.last_test_timestamp
+            is None
+        )
+        assert (
+            dynamic_erasure_email_connection_config_no_secrets.last_test_succeeded
+            is None
+        )
+
+    def test_put_dynamic_erasure_email_connection_config_invalid_secrets(
+        self,
+        url,
+        api_client: TestClient,
+        db: Session,
+        generate_auth_header,
+        dynamic_erasure_email_connection_config_no_secrets,
+    ) -> None:
+        """Note: this test does not attempt to send an email, via use of verify query param."""
+        url = f"{V1_URL_PREFIX}{CONNECTIONS}/{dynamic_erasure_email_connection_config_no_secrets.key}/secret"
+        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
+        payload = {
+            "test_email_address": "test@example.com",
+            "third_party_vendor_name": {
+                "dataset": "nonexistent_dataset",
+                "field": "dynamic_email_address_config.vendor_name",
+                "direction": "from",
+            },
+            "recipient_email_address": {
+                "dataset": "nonexistent_dataset",
+                "field": "dynamic_email_address_config.email_address",
+                "direction": "from",
+            },
+            "advanced_settings": {
+                "identity_types": {
+                    "email": True,
+                    "phone_number": False,
+                }
+            },
+        }
+        resp = api_client.put(
+            url + "?verify=False",
+            headers=auth_header,
+            json=payload,
+        )
+        assert resp.status_code == 422
+        assert (
+            json.loads(resp.text)["detail"]
+            == "Unknown dataset 'nonexistent_dataset' referenced by external reference"
+        )
+        db.refresh(dynamic_erasure_email_connection_config_no_secrets)
+
+        assert dynamic_erasure_email_connection_config_no_secrets.secrets == None
+        assert (
+            dynamic_erasure_email_connection_config_no_secrets.last_test_timestamp
+            is None
+        )
+        assert (
+            dynamic_erasure_email_connection_config_no_secrets.last_test_succeeded
+            is None
+        )
+
+    def test_put_dynamic_erasure_email_connection_config_mismatched_datasets(
+        self,
+        url,
+        api_client: TestClient,
+        db: Session,
+        generate_auth_header,
+        dynamic_erasure_email_connection_config_no_secrets,
+        dynamic_email_address_config_dataset_config,
+        dynamic_email_address_config_dataset_config_second_dataset,
+    ) -> None:
+        """Note: this test does not attempt to send an email, via use of verify query param."""
+        url = f"{V1_URL_PREFIX}{CONNECTIONS}/{dynamic_erasure_email_connection_config_no_secrets.key}/secret"
+        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
+        payload = {
+            "test_email_address": "test@example.com",
+            "third_party_vendor_name": {
+                "dataset": dynamic_email_address_config_dataset_config.fides_key,
+                "field": "dynamic_email_address_config.vendor_name",
+                "direction": "from",
+            },
+            "recipient_email_address": {
+                "dataset": dynamic_email_address_config_dataset_config_second_dataset.fides_key,
+                "field": "dynamic_email_address_config.email_address",
+                "direction": "from",
+            },
+            "advanced_settings": {
+                "identity_types": {
+                    "email": True,
+                    "phone_number": False,
+                }
+            },
+        }
+        resp = api_client.put(
+            url + "?verify=False",
+            headers=auth_header,
+            json=payload,
+        )
+        assert resp.status_code == 422
+        assert (
+            json.loads(resp.text)["detail"]
+            == "Recipient email address and third party vendor name must reference the same dataset"
+        )
+        db.refresh(dynamic_erasure_email_connection_config_no_secrets)
+
+        assert dynamic_erasure_email_connection_config_no_secrets.secrets == None
+        assert (
+            dynamic_erasure_email_connection_config_no_secrets.last_test_timestamp
+            is None
+        )
+        assert (
+            dynamic_erasure_email_connection_config_no_secrets.last_test_succeeded
+            is None
+        )
+
+    def test_put_dynamic_erasure_email_connection_config_mismatched_collections(
+        self,
+        url,
+        api_client: TestClient,
+        db: Session,
+        generate_auth_header,
+        dynamic_erasure_email_connection_config_no_secrets,
+        dynamic_email_address_config_dataset_config_second_dataset,
+    ) -> None:
+        """Note: this test does not attempt to send an email, via use of verify query param."""
+        url = f"{V1_URL_PREFIX}{CONNECTIONS}/{dynamic_erasure_email_connection_config_no_secrets.key}/secret"
+        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
+        payload = {
+            "test_email_address": "test@example.com",
+            "third_party_vendor_name": {
+                "dataset": dynamic_email_address_config_dataset_config_second_dataset.fides_key,
+                "field": "dynamic_email_address_config.vendor_name",
+                "direction": "from",
+            },
+            "recipient_email_address": {
+                "dataset": dynamic_email_address_config_dataset_config_second_dataset.fides_key,
+                "field": "dynamic_email_address_config_2.email_address2",
+                "direction": "from",
+            },
+            "advanced_settings": {
+                "identity_types": {
+                    "email": True,
+                    "phone_number": False,
+                }
+            },
+        }
+        resp = api_client.put(
+            url + "?verify=False",
+            headers=auth_header,
+            json=payload,
+        )
+        assert resp.status_code == 422
+        assert (
+            json.loads(resp.text)["detail"]
+            == "Recipient email address and third party vendor name must reference the same collection"
+        )
+        db.refresh(dynamic_erasure_email_connection_config_no_secrets)
+
+        assert dynamic_erasure_email_connection_config_no_secrets.secrets == None
+        assert (
+            dynamic_erasure_email_connection_config_no_secrets.last_test_timestamp
+            is None
+        )
+        assert (
+            dynamic_erasure_email_connection_config_no_secrets.last_test_succeeded
+            is None
+        )
+
     def test_put_connection_config_redshift_secrets(
         self,
         api_client: TestClient,
@@ -1648,6 +1912,21 @@ class TestPutConnectionConfigSecrets:
         assert bigquery_connection_config_without_secrets.last_test_timestamp is None
         assert bigquery_connection_config_without_secrets.last_test_succeeded is None
 
+        payload = {
+            "dataset": "some-dataset",
+            "keyfile_creds": "bad_creds",
+        }
+        resp = api_client.put(
+            url + "?verify=False",
+            headers=auth_header,
+            json=payload,
+        )
+        assert set(resp.json()["detail"][0].keys()) == {
+            "type",
+            "loc",
+            "msg",
+        }  # url, input, and ctx have been removed to help suppress sensitive information
+
     def test_put_connection_config_snowflake_secrets(
         self,
         api_client: TestClient,
@@ -1683,6 +1962,8 @@ class TestPutConnectionConfigSecrets:
             "password": "test_password",
             "account_identifier": "flso2222test",
             "database_name": "test",
+            "private_key": None,
+            "private_key_passphrase": None,
             "schema_name": "schema",
             "warehouse_name": "warehouse",
             "role_name": None,
@@ -1721,6 +2002,132 @@ class TestPutConnectionConfigSecrets:
         }
         assert https_connection_config.last_test_timestamp is None
         assert https_connection_config.last_test_succeeded is None
+
+    def test_put_datahub_connection_config_secrets(
+        self,
+        api_client: TestClient,
+        db: Session,
+        generate_auth_header,
+        datahub_connection_config_no_secrets,
+    ):
+        """
+        Note: this test does not call DataHub, via use of verify query param.
+        """
+        url = f"{V1_URL_PREFIX}{CONNECTIONS}/{datahub_connection_config_no_secrets.key}/secret"
+        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
+        payload = {
+            "datahub_server_url": "https://datahub.example.com",
+            "datahub_token": "test",
+            "frequency": "weekly",
+        }
+        resp = api_client.put(
+            url + "?verify=False",
+            headers=auth_header,
+            json=payload,
+        )
+        assert resp.status_code == 200
+        assert (
+            json.loads(resp.text)["msg"]
+            == f"Secrets updated for ConnectionConfig with key: {datahub_connection_config_no_secrets.key}."
+        )
+
+        db.refresh(datahub_connection_config_no_secrets)
+        assert datahub_connection_config_no_secrets.secrets == {
+            "datahub_server_url": "https://datahub.example.com",
+            "datahub_token": "test",
+            "frequency": "weekly",
+            "glossary_node": "FidesDataCategories",
+        }
+        assert datahub_connection_config_no_secrets.last_test_timestamp is None
+        assert datahub_connection_config_no_secrets.last_test_succeeded is None
+
+    def test_put_datahub_connection_config_secrets_default_frequency(
+        self,
+        api_client: TestClient,
+        db: Session,
+        generate_auth_header,
+        datahub_connection_config_no_secrets,
+    ):
+        """
+        Note: this test does not call DataHub, via use of verify query param.
+        """
+        url = f"{V1_URL_PREFIX}{CONNECTIONS}/{datahub_connection_config_no_secrets.key}/secret"
+        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
+        payload = {
+            "datahub_server_url": "https://datahub.example.com",
+            "datahub_token": "test",
+        }
+        resp = api_client.put(
+            url + "?verify=False",
+            headers=auth_header,
+            json=payload,
+        )
+        assert resp.status_code == 200
+        assert (
+            json.loads(resp.text)["msg"]
+            == f"Secrets updated for ConnectionConfig with key: {datahub_connection_config_no_secrets.key}."
+        )
+
+        db.refresh(datahub_connection_config_no_secrets)
+        assert datahub_connection_config_no_secrets.secrets == {
+            "datahub_server_url": "https://datahub.example.com",
+            "datahub_token": "test",
+            "frequency": "daily",
+            "glossary_node": "FidesDataCategories",
+        }
+        assert datahub_connection_config_no_secrets.last_test_timestamp is None
+        assert datahub_connection_config_no_secrets.last_test_succeeded is None
+
+    def test_put_datahub_connection_config_secrets_missing_url(
+        self,
+        api_client: TestClient,
+        db: Session,
+        generate_auth_header,
+        datahub_connection_config_no_secrets,
+    ):
+        """
+        Note: this test does not call DataHub, via use of verify query param.
+        """
+        url = f"{V1_URL_PREFIX}{CONNECTIONS}/{datahub_connection_config_no_secrets.key}/secret"
+        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
+        payload = {"datahub_token": "test", "frequency": "weekly"}
+        resp = api_client.put(
+            url + "?verify=False",
+            headers=auth_header,
+            json=payload,
+        )
+        assert resp.status_code == 422
+        assert (
+            resp.json()["detail"][0]["msg"]
+            == "Value error, DatahubSchema must be supplied all of: ['datahub_server_url', 'datahub_token']."
+        )
+
+    def test_put_datahub_connection_config_secrets_missing_token(
+        self,
+        api_client: TestClient,
+        db: Session,
+        generate_auth_header,
+        datahub_connection_config_no_secrets,
+    ):
+        """
+        Note: this test does not call DataHub, via use of verify query param.
+        """
+        url = f"{V1_URL_PREFIX}{CONNECTIONS}/{datahub_connection_config_no_secrets.key}/secret"
+        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
+        payload = {
+            "datahub_server_url": "https://datahub.example.com",
+            "frequency": "weekly",
+        }
+        resp = api_client.put(
+            url + "?verify=False",
+            headers=auth_header,
+            json=payload,
+        )
+        assert resp.status_code == 422
+        assert (
+            resp.json()["detail"][0]["msg"]
+            == "Value error, DatahubSchema must be supplied all of: ['datahub_server_url', 'datahub_token']."
+        )
 
     @pytest.mark.unit_saas
     def test_put_saas_example_connection_config_secrets(
@@ -1817,3 +2224,151 @@ class TestPutConnectionConfigSecrets:
             body["detail"]
             == f"A SaaS config to validate the secrets is unavailable for this connection config, please add one via {SAAS_CONFIG}"
         )
+
+
+class TestPatchConnectionConfigSecrets:
+    def test_patch_connection_config_secrets_not_authenticated(
+        self, api_client: TestClient, generate_auth_header, connection_config
+    ) -> None:
+        url = f"{V1_URL_PREFIX}{CONNECTIONS}/{connection_config.key}/secret"
+        resp = api_client.patch(url, headers={})
+        assert resp.status_code == 401
+
+    def test_patch_connection_config_secrets_wrong_scope(
+        self, api_client: TestClient, generate_auth_header, connection_config
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[CONNECTION_READ])
+        url = f"{V1_URL_PREFIX}{CONNECTIONS}/{connection_config.key}/secret"
+        resp = api_client.patch(
+            url,
+            headers=auth_header,
+        )
+        assert resp.status_code == 403
+
+    def test_patch_connection_config_secrets(
+        self,
+        api_client: TestClient,
+        db: Session,
+        generate_auth_header,
+        connection_config,
+    ) -> None:
+        """Note: this test does not attempt to actually connect to the db, via use of verify query param."""
+        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
+        url = f"{V1_URL_PREFIX}{CONNECTIONS}/{connection_config.key}/secret"
+        payload = {
+            "host": "localhost",
+            "port": "1234",
+        }
+        resp = api_client.patch(
+            url + "?verify=False",
+            headers=auth_header,
+            json=payload,
+        )
+
+        previous_secrets = connection_config.secrets
+        assert resp.status_code == 200
+        assert (
+            json.loads(resp.text)["msg"]
+            == f"Secrets updated for ConnectionConfig with key: {connection_config.key}."
+        )
+        db.refresh(connection_config)
+        assert connection_config.secrets == {
+            "host": "localhost",
+            "port": 1234,
+            "dbname": previous_secrets["dbname"],
+            "username": previous_secrets["username"],
+            "password": previous_secrets["password"],
+            "db_schema": None,  # Was not set in the payload nor in the fixture
+            "ssh_required": False,  # Was not set in the payload nor in the fixture
+        }
+        assert connection_config.last_test_timestamp is None
+        assert connection_config.last_test_succeeded is None
+
+    def test_patch_connection_config_bigquery_secrets(
+        self,
+        api_client: TestClient,
+        db: Session,
+        generate_auth_header,
+        bigquery_connection_config_without_secrets,
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
+        url = f"{V1_URL_PREFIX}{CONNECTIONS}/{bigquery_connection_config_without_secrets.key}/secret"
+
+        # First we populate the secrets with a PUT request
+        put_payload = {
+            "dataset": "some-dataset",
+            "keyfile_creds": {
+                "type": "service_account",
+                "project_id": "project-12345",
+                "private_key_id": "qo28cy4nlwu",
+                "private_key": "test_private_key",
+                "client_email": "something@project-12345.iam.gserviceaccount.com",
+                "client_id": "287345028734538",
+                "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+                "token_uri": "https://oauth2.googleapis.com/token",
+                "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+                "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/something%40project-12345.iam.gserviceaccount.com",
+            },
+        }
+        resp = api_client.patch(
+            url + "?verify=False",
+            headers=auth_header,
+            json=put_payload,
+        )
+        assert resp.status_code == 200
+
+        # Change a single field
+        payload = {
+            "dataset": "new-dataset",
+        }
+        resp = api_client.patch(
+            url + "?verify=False",
+            headers=auth_header,
+            json=payload,
+        )
+        assert resp.status_code == 200
+        assert (
+            json.loads(resp.text)["msg"]
+            == f"Secrets updated for ConnectionConfig with key: {bigquery_connection_config_without_secrets.key}."
+        )
+        db.refresh(bigquery_connection_config_without_secrets)
+
+        # Only dataset should have changed
+        assert bigquery_connection_config_without_secrets.secrets == {
+            "keyfile_creds": put_payload["keyfile_creds"],
+            "dataset": "new-dataset",
+        }
+        assert bigquery_connection_config_without_secrets.last_test_timestamp is None
+        assert bigquery_connection_config_without_secrets.last_test_succeeded is None
+
+    def test_patch_http_connection_config_secrets(
+        self,
+        api_client: TestClient,
+        db: Session,
+        generate_auth_header,
+        https_connection_config,
+    ) -> None:
+        """Note: HTTP Connection Configs don't attempt to test secrets"""
+        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
+        url = f"{V1_URL_PREFIX}{CONNECTIONS}/{https_connection_config.key}/secret"
+        payload = {"authorization": "test_authorization123"}
+
+        resp = api_client.patch(
+            url,
+            headers=auth_header,
+            json=payload,
+        )
+        assert resp.status_code == 200
+        body = json.loads(resp.text)
+        assert (
+            body["msg"]
+            == f"Secrets updated for ConnectionConfig with key: {https_connection_config.key}."
+        )
+        assert body["test_status"] == "skipped"
+        db.refresh(https_connection_config)
+        assert https_connection_config.secrets == {
+            "url": "http://example.com",  # original value
+            "authorization": "test_authorization123",  # new value
+        }
+        assert https_connection_config.last_test_timestamp is None
+        assert https_connection_config.last_test_succeeded is None

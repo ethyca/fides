@@ -1,4 +1,4 @@
-import { Box, Button, Text, useToast, VStack } from "fidesui";
+import { AntButton as Button, Box, Text, useToast, VStack } from "fidesui";
 import { Form, Formik } from "formik";
 import { useRouter } from "next/router";
 import { useDispatch } from "react-redux";
@@ -8,6 +8,7 @@ import { useFeatures } from "~/features/common/features";
 import { CustomSwitch, CustomTextInput } from "~/features/common/form/inputs";
 import { getErrorMessage } from "~/features/common/helpers";
 import ConfirmationModal from "~/features/common/modals/ConfirmationModal";
+import { DATASET_DETAIL_ROUTE } from "~/features/common/nav/routes";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { DEFAULT_ORGANIZATION_FIDES_KEY } from "~/features/organization";
 import { useCreateClassifyInstanceMutation } from "~/features/plus/plus.slice";
@@ -33,7 +34,7 @@ const ValidationSchema = Yup.object().shape({
   // show the confirmation modal if the form is invalid.
   classifyConfirmed: Yup.boolean().when(["url", "classify"], {
     is: (url: string, classify: boolean) => url && classify,
-    then: Yup.boolean().equals([true]),
+    then: () => Yup.boolean().equals([true]),
   }),
 });
 
@@ -55,7 +56,7 @@ const DatabaseConnectForm = () => {
    * Trigger the generate mutation and pick out the result dataset or the error if generate failed.
    */
   const generate = async (
-    values: FormValues
+    values: FormValues,
   ): Promise<
     | {
         error: string;
@@ -96,7 +97,7 @@ const DatabaseConnectForm = () => {
    * has not yet been persisted.
    */
   const create = async (
-    datasetBody: Dataset
+    datasetBody: Dataset,
   ): Promise<
     | {
         error: string;
@@ -171,7 +172,7 @@ const DatabaseConnectForm = () => {
 
     // Usually only one dataset needs to be created, but create them all just in case.
     const createResults = await Promise.all(
-      generateResult.datasets.map((dataset) => create(dataset))
+      generateResult.datasets.map((dataset) => create(dataset)),
     );
     const createResult =
       createResults.find((result) => "error" in result) ?? createResults[0];
@@ -183,9 +184,12 @@ const DatabaseConnectForm = () => {
     // Default generate flow:
     if (!values.classify) {
       toast(
-        successToastParams(`Generated ${createResult.dataset.name} dataset`)
+        successToastParams(`Generated ${createResult.dataset.name} dataset`),
       );
-      router.push(`/dataset/${createResult.dataset.fides_key}`);
+      router.push({
+        pathname: DATASET_DETAIL_ROUTE,
+        query: { datasetId: createResult.dataset.fides_key },
+      });
       return;
     }
 
@@ -241,11 +245,10 @@ const DatabaseConnectForm = () => {
 
             <Box>
               <Button
-                size="sm"
-                colorScheme="primary"
-                type="submit"
-                isLoading={isSubmitting || isLoading}
-                isDisabled={isSubmitting || isLoading}
+                type="primary"
+                htmlType="submit"
+                loading={isSubmitting || isLoading}
+                disabled={isSubmitting || isLoading}
                 data-testid="create-dataset-btn"
               >
                 Generate dataset

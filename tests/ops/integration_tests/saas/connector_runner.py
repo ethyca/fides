@@ -8,6 +8,7 @@ from fides.api.cryptography import cryptographic_util
 from fides.api.graph.config import CollectionAddress, GraphDataset
 from fides.api.graph.graph import DatasetGraph
 from fides.api.graph.traversal import Traversal, TraversalNode
+from fides.api.models.application_config import ApplicationConfig
 from fides.api.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
@@ -100,6 +101,7 @@ class ConnectorRunner:
         access_policy: Policy,
         identities: Dict[str, Any],
         privacy_request_id: Optional[str] = None,
+        skip_collection_verification: Optional[bool] = False,
     ) -> Dict[str, List[Row]]:
         """Access request for a given access policy and identities"""
 
@@ -142,11 +144,13 @@ class ConnectorRunner:
             identities,
             self.db,
         )
-        # verify we returned at least one row for each collection in the dataset
-        for collection in self.dataset["collections"]:
-            assert len(
-                access_results[f"{fides_key}:{collection['name']}"]
-            ), f"No rows returned for collection '{collection['name']}'"
+
+        if not skip_collection_verification:
+            # verify we returned at least one row for each collection in the dataset
+            for collection in self.dataset["collections"]:
+                assert len(
+                    access_results[f"{fides_key}:{collection['name']}"]
+                ), f"No rows returned for collection '{collection['name']}'"
         return access_results
 
     async def strict_erasure_request(
@@ -155,6 +159,7 @@ class ConnectorRunner:
         erasure_policy: Policy,
         identities: Dict[str, Any],
         privacy_request_id: Optional[str] = None,
+        skip_access_results_check: Optional[bool] = False,
     ) -> Tuple[Dict, Dict]:
         """
         Erasure request with masking_strict set to true,
@@ -164,6 +169,7 @@ class ConnectorRunner:
         # store the existing masking_strict value so we can reset it at the end of the test
         masking_strict = CONFIG.execution.masking_strict
         CONFIG.execution.masking_strict = True
+        ApplicationConfig.update_config_set(self.db, CONFIG)
 
         access_results, erasure_results = await self._base_erasure_request(
             access_policy, erasure_policy, identities, privacy_request_id
@@ -171,6 +177,7 @@ class ConnectorRunner:
 
         # reset masking_strict value
         CONFIG.execution.masking_strict = masking_strict
+        ApplicationConfig.update_config_set(self.db, CONFIG)
         return access_results, erasure_results
 
     async def non_strict_erasure_request(
@@ -179,6 +186,7 @@ class ConnectorRunner:
         erasure_policy: Policy,
         identities: Dict[str, Any],
         privacy_request_id: Optional[str] = None,
+        skip_access_results_check: Optional[bool] = False,
     ) -> Tuple[Dict, Dict]:
         """
         Erasure request with masking_strict set to false,
@@ -189,13 +197,19 @@ class ConnectorRunner:
         # store the existing masking_strict value so we can reset it at the end of the test
         masking_strict = CONFIG.execution.masking_strict
         CONFIG.execution.masking_strict = False
+        ApplicationConfig.update_config_set(self.db, CONFIG)
 
         access_results, erasure_results = await self._base_erasure_request(
-            access_policy, erasure_policy, identities, privacy_request_id
+            access_policy,
+            erasure_policy,
+            identities,
+            privacy_request_id,
+            skip_access_results_check,
         )
 
         # reset masking_strict value
         CONFIG.execution.masking_strict = masking_strict
+        ApplicationConfig.update_config_set(self.db, CONFIG)
         return access_results, erasure_results
 
     async def old_consent_request(
@@ -292,6 +306,7 @@ class ConnectorRunner:
         erasure_policy: Policy,
         identities: Dict[str, Any],
         privacy_request_id: Optional[str] = None,
+        skip_access_results_check: Optional[bool] = False,
     ) -> Tuple[Dict, Dict]:
         from tests.conftest import access_runner_tester, erasure_runner_tester
 
@@ -337,15 +352,16 @@ class ConnectorRunner:
             self.db,
         )
 
-        if (
-            ActionType.access
-            in SaaSConfig(**self.connection_config.saas_config).supported_actions
-        ):
-            # verify we returned at least one row for each collection in the dataset
-            for collection in self.dataset["collections"]:
-                assert len(
-                    access_results[f"{fides_key}:{collection['name']}"]
-                ), f"No rows returned for collection '{collection['name']}'"
+        if not skip_access_results_check:
+            if (
+                ActionType.access
+                in SaaSConfig(**self.connection_config.saas_config).supported_actions
+            ):
+                # verify we returned at least one row for each collection in the dataset
+                for collection in self.dataset["collections"]:
+                    assert len(
+                        access_results[f"{fides_key}:{collection['name']}"]
+                    ), f"No rows returned for collection '{collection['name']}'"
 
         erasure_results = erasure_runner_tester(
             privacy_request,

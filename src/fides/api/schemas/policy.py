@@ -2,6 +2,7 @@ from enum import Enum as EnumType
 from typing import Any, Dict, List, Optional
 
 from fideslang.validation import FidesKey
+from pydantic import ConfigDict
 
 from fides.api.schemas.api import BulkResponse, BulkUpdateFailed
 from fides.api.schemas.base_class import FidesSchema
@@ -15,6 +16,18 @@ class ActionType(str, EnumType):
     consent = "consent"
     erasure = "erasure"
     update = "update"
+
+
+class CurrentStep(EnumType):
+    pre_webhooks = "pre_webhooks"
+    access = "access"
+    upload_access = "upload_access"
+    erasure = "erasure"
+    finalize_erasure = "finalize_erasure"
+    consent = "consent"
+    finalize_consent = "finalize_consent"
+    email_post_send = "email_post_send"
+    post_webhooks = "post_webhooks"
 
 
 # action types we actively support in policies/requests
@@ -56,29 +69,21 @@ class PolicyMaskingSpecResponse(FidesSchema):
 class RuleTarget(FidesSchema):
     """An external representation of a Rule's target DataCategory within a Fidesops Policy"""
 
-    name: Optional[str]
-    key: Optional[FidesKey]
+    name: Optional[str] = None
+    key: Optional[FidesKey] = None
     # `data_category` is type str so that we can validate its contents against the DB records
     # outside of the schemas
     data_category: str
-
-    class Config:
-        """Populate models with the raw value of enum fields, rather than the enum itself"""
-
-        use_enum_values = True
+    model_config = ConfigDict(use_enum_values=True)
 
 
 class RuleBase(FidesSchema):
     """An external representation of a Rule within a Fidesops Policy"""
 
     name: str
-    key: Optional[FidesKey]
+    key: Optional[FidesKey] = None
     action_type: ActionType
-
-    class Config:
-        """Populate models with the raw value of enum fields, rather than the enum itself"""
-
-        use_enum_values = True
+    model_config = ConfigDict(use_enum_values=True)
 
 
 class RuleCreate(RuleBase):
@@ -87,8 +92,8 @@ class RuleCreate(RuleBase):
     over a composite object.
     """
 
-    storage_destination_key: Optional[FidesKey]
-    masking_strategy: Optional[PolicyMaskingSpec]
+    storage_destination_key: Optional[FidesKey] = None
+    masking_strategy: Optional[PolicyMaskingSpec] = None
 
 
 class RuleResponse(RuleBase):
@@ -97,8 +102,8 @@ class RuleResponse(RuleBase):
     of the `PolicyMaskingSpec` that omits the configuration to avoid exposing secrets.
     """
 
-    storage_destination: Optional[StorageDestinationResponse]
-    masking_strategy: Optional[PolicyMaskingSpecResponse]
+    storage_destination: Optional[StorageDestinationResponse] = None
+    masking_strategy: Optional[PolicyMaskingSpecResponse] = None
 
 
 class RuleResponseWithTargets(RuleBase):
@@ -108,38 +113,33 @@ class RuleResponseWithTargets(RuleBase):
     configuration to avoid exposing secrets.
     """
 
-    targets: Optional[List[RuleTarget]]
-    storage_destination: Optional[StorageDestinationResponse]
-    masking_strategy: Optional[PolicyMaskingSpecResponse]
+    targets: Optional[List[RuleTarget]] = None
+    storage_destination: Optional[StorageDestinationResponse] = None
+    masking_strategy: Optional[PolicyMaskingSpecResponse] = None
 
 
 class Rule(RuleBase):
     """A representation of a Rule that features all storage destination data."""
 
-    storage_destination: Optional[StorageDestinationResponse]
-    masking_strategy: Optional[PolicyMaskingSpec]
+    storage_destination: Optional[StorageDestinationResponse] = None
+    masking_strategy: Optional[PolicyMaskingSpec] = None
 
 
 class Policy(FidesSchema):
     """An external representation of a Fidesops Policy"""
 
     name: str
-    key: Optional[FidesKey]
-    drp_action: Optional[DrpAction]
-    execution_timeframe: Optional[int]
-
-    class Config:
-        """Populate models with the raw value of enum fields, rather than the enum itself"""
-
-        use_enum_values = True
-        orm_mode = True
+    key: Optional[FidesKey] = None
+    drp_action: Optional[DrpAction] = None
+    execution_timeframe: Optional[int] = None
+    model_config = ConfigDict(use_enum_values=True, from_attributes=True)
 
 
 class PolicyResponse(Policy):
     """A holistic view of a Policy record, including all foreign keys by default."""
 
-    rules: Optional[List[RuleResponse]]
-    drp_action: Optional[DrpAction]
+    rules: Optional[List[RuleResponse]] = None
+    drp_action: Optional[DrpAction] = None
 
 
 class BulkPutRuleTargetResponse(BulkResponse):

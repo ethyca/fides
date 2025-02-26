@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { useAlert } from "~/features/common/hooks";
-import { DATASTORE_CONNECTION_ROUTE } from "~/features/common/nav/v2/routes";
+import { DATASTORE_CONNECTION_ROUTE } from "~/features/common/nav/routes";
 import {
   connectionTypeApi,
   selectConnectionTypes,
@@ -24,20 +24,20 @@ import {
 const EditDatastoreConnection: NextPage = () => {
   const dispatch = useAppDispatch();
   const router = useRouter();
+  const { id } = router.query;
   const { errorAlert } = useAlert();
   const connectionOptions = useAppSelector(selectConnectionTypes);
-  const [isFetching, setIsFetching] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   const getConnectionOption = (
     data: ConnectionConfigurationResponse,
-    options: ConnectionSystemTypeMap[]
+    options: ConnectionSystemTypeMap[],
   ): ConnectionSystemTypeMap | undefined => {
     const item = options.find(
       (option) =>
         (option.identifier === data.connection_type &&
           option.identifier !== ConnectionType.SAAS) ||
-        option.identifier === data.saas_config?.type
+        option.identifier === data.saas_config?.type,
     );
     return item;
   };
@@ -50,22 +50,21 @@ const EditDatastoreConnection: NextPage = () => {
 
     const fetchConnectionData = async (key: string) => {
       try {
-        setIsFetching(true);
         const promises: any[] = [];
         promises.push(
           dispatch(
             datastoreConnectionApi.endpoints.getDatastoreConnectionByKey.initiate(
-              key
-            )
-          )
+              key,
+            ),
+          ),
         );
         if (connectionOptions.length === 0) {
           promises.push(
             dispatch(
               connectionTypeApi.endpoints.getAllConnectionTypes.initiate({
                 search: "",
-              })
-            )
+              }),
+            ),
           );
         }
         const results = await Promise.allSettled(promises);
@@ -78,10 +77,9 @@ const EditDatastoreConnection: NextPage = () => {
           ];
           const item = getConnectionOption(
             (results[0] as any).value.data,
-            options
+            options,
           );
           dispatch(setConnectionOption(item));
-          setIsFetching(false);
           setIsLoading(false);
         } else {
           handleError();
@@ -91,13 +89,13 @@ const EditDatastoreConnection: NextPage = () => {
       }
     };
 
-    const { id } = router.query;
-    if (id && !isFetching && isLoading) {
+    if (id) {
       fetchConnectionData(id as string);
     }
 
     return () => {};
-  }, [connectionOptions, dispatch, errorAlert, isFetching, isLoading, router]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
 
   return (
     <>

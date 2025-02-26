@@ -6,7 +6,7 @@ import { type RootState } from "~/app/store";
 import { selectHealth } from "~/features/common/health.slice";
 import { selectInitialConnections } from "~/features/datastore-connections";
 import { selectHealth as selectPlusHealth } from "~/features/plus/plus.slice";
-import { selectAllSystems } from "~/features/system";
+import { selectSystemsCount } from "~/features/system";
 import flagDefaults from "~/flags.json";
 
 import { configureFlags, flagsForEnv } from "./config";
@@ -26,7 +26,10 @@ type FeaturesState = {
   showNotificationBanner: boolean;
 };
 
-const initialState: FeaturesState = { flags: {}, showNotificationBanner: true };
+const initialState: FeaturesState = {
+  flags: {},
+  showNotificationBanner: true,
+};
 
 export const featuresSlice = createSlice({
   name: "features",
@@ -40,7 +43,7 @@ export const featuresSlice = createSlice({
         flag: FN;
         env?: Env;
         value: ValueFor<FlagConfig, FN>;
-      }>
+      }>,
     ) {
       const { development, test, production } =
         draftState.flags[payload.flag] ?? FLAG_CONFIG[payload.flag];
@@ -68,12 +71,12 @@ export const { reducer } = featuresSlice;
 export const selectFeatures = (state: RootState) => state.features;
 export const selectFlags = createSelector(
   selectFeatures,
-  (state) => state.flags
+  (state) => state.flags,
 );
 export const selectEnvFlags = createSelector(
   selectFlags,
   (flags): FlagsFor<FlagConfig> =>
-    flagsForEnv({ ...FLAG_CONFIG, ...flags }, process.env.NEXT_PUBLIC_APP_ENV)
+    flagsForEnv({ ...FLAG_CONFIG, ...flags }, process.env.NEXT_PUBLIC_APP_ENV),
 );
 
 /**
@@ -82,9 +85,8 @@ export const selectEnvFlags = createSelector(
  */
 export const selectShowNotificationBanner = createSelector(
   selectFeatures,
-  (state) => state.showNotificationBanner
+  (state) => state.showNotificationBanner,
 );
-
 export const { setShowNotificationBanner } = featuresSlice.actions;
 
 export const useFlags = () => {
@@ -93,7 +95,7 @@ export const useFlags = () => {
 
   const defaults = useMemo(
     () => flagsForEnv(FLAG_CONFIG, process.env.NEXT_PUBLIC_APP_ENV),
-    []
+    [],
   );
 
   const override = useCallback(
@@ -109,10 +111,10 @@ export const useFlags = () => {
           flag,
           env: process.env.NEXT_PUBLIC_APP_ENV,
           value,
-        })
+        }),
       );
     },
-    [dispatch]
+    [dispatch],
   );
 
   const reset = useCallback(() => {
@@ -144,7 +146,7 @@ export type Features = {
 export const useFeatures = (): Features => {
   const health = useAppSelector(selectHealth);
   const plusHealth = useAppSelector(selectPlusHealth);
-  const allSystems = useAppSelector(selectAllSystems);
+  const systemsCount = useAppSelector(selectSystemsCount);
   const initialConnections = useAppSelector(selectInitialConnections);
 
   const version = health?.version;
@@ -160,8 +162,6 @@ export const useFeatures = (): Features => {
   const fidesCloud = plusHealth ? !!plusHealth?.fides_cloud?.enabled : false;
 
   const tcf = plusHealth ? !!plusHealth.tcf.enabled : false;
-
-  const systemsCount = allSystems?.length ?? 0;
 
   const connectionsCount = initialConnections?.total ?? 0;
 

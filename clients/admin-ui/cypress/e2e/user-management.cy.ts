@@ -1,3 +1,5 @@
+import { stubOpenIdProviders, stubUserManagement } from "cypress/support/stubs";
+
 import { utf8ToB64 } from "~/features/common/utils";
 import { RoleRegistryEnum } from "~/types/api";
 
@@ -6,13 +8,14 @@ const USER_1_ID = "fid_ee8f54ce-19f7-4640-b311-1cc1e77e7166";
 
 describe("User management", () => {
   beforeEach(() => {
+    cy.intercept("GET", "/api/v1/messaging/email-invite/status", {
+      body: {
+        enabled: false,
+      },
+    });
+    stubOpenIdProviders();
+    stubUserManagement();
     cy.login();
-    cy.intercept("/api/v1/user?*", {
-      fixture: "user-management/users.json",
-    }).as("getAllUsers");
-    cy.intercept("/api/v1/user/*", { fixture: "user-management/user.json" }).as(
-      "getUser"
-    );
     cy.intercept("/api/v1/user/*/permission", {
       fixture: "user-management/permissions.json",
     }).as("getPermissions");
@@ -39,7 +42,7 @@ describe("User management", () => {
         cy.getByTestId(`row-${CYPRESS_USER_ID}`).click();
         cy.url().should(
           "contain",
-          `/user-management/profile/${CYPRESS_USER_ID}`
+          `/user-management/profile/${CYPRESS_USER_ID}`,
         );
 
         // can edit their name
@@ -93,6 +96,35 @@ describe("User management", () => {
         .first();
       cy.getByTestId("user-systems-badge");
       cy.contains("4");
+    });
+
+    it("can see invite sent field", () => {
+      cy.visit("/user-management");
+      cy.wait("@getAllUsers");
+      cy.getByTestId(`row-${USER_1_ID}`).within(() => {
+        cy.getByTestId("invite-sent-badge");
+      });
+      cy.getByTestId(`row-${CYPRESS_USER_ID}`).within(() => {
+        cy.getByTestId("invite-sent-badge").should("not.exist");
+      });
+    });
+  });
+
+  describe("Create users", () => {
+    it("can set a user's password if email messaging is not configured", () => {
+      cy.visit(`/user-management/new`);
+      cy.getByTestId("input-password");
+    });
+
+    it("cannot set a user's password if email messaging is enabled", () => {
+      cy.intercept("GET", "/api/v1/messaging/email-invite/status", {
+        body: {
+          enabled: true,
+        },
+      });
+      cy.visit(`/user-management/new`);
+      cy.getByTestId("input-email_address");
+      cy.getByTestId("input-password").should("not.exist");
     });
   });
 
@@ -176,7 +208,7 @@ describe("User management", () => {
           body: {
             ...permissions,
             total_scopes: permissions.total_scopes.filter(
-              (scope) => scope !== "user:password-reset"
+              (scope) => scope !== "user:password-reset",
             ),
           },
         }).as("getUserPermissionWithoutPasswordReset");
@@ -217,7 +249,7 @@ describe("User management", () => {
       cy.getByTestId("input-usernameConfirmation").blur();
       cy.getByTestId("submit-btn").should("be.disabled");
       cy.getByTestId("error-usernameConfirmation").contains(
-        "Confirmation input must match the username"
+        "Confirmation input must match the username",
       );
 
       // now enter the proper thing
@@ -254,7 +286,7 @@ describe("User management", () => {
   describe("Permission assignment", () => {
     beforeEach(() => {
       cy.intercept("PUT", "/api/v1/user/*/permission", { body: {} }).as(
-        "updatePermission"
+        "updatePermission",
       );
     });
 
@@ -342,7 +374,6 @@ describe("User management", () => {
         beforeEach(() => {
           cy.visit(`/user-management/profile/${USER_1_ID}`);
           cy.getByTestId("tab-Permissions").click();
-          cy.wait("@getSystems");
           cy.wait("@getUserManagedSystems");
         });
 
@@ -352,7 +383,7 @@ describe("User management", () => {
           cy.getByTestId("downgrade-to-approver-confirmation-modal").within(
             () => {
               cy.getByTestId("continue-btn").click();
-            }
+            },
           );
           cy.wait("@updatePermission");
         });
@@ -362,7 +393,6 @@ describe("User management", () => {
         beforeEach(() => {
           cy.visit(`/user-management/profile/${USER_1_ID}`);
           cy.getByTestId("tab-Permissions").click();
-          cy.wait("@getSystems");
           cy.wait("@getUserManagedSystems");
           cy.getByTestId("assign-systems-delete-table");
         });
@@ -405,9 +435,11 @@ describe("User management", () => {
             });
 
             // the select all toggle should no longer be selected
-            cy.getByTestId("assign-all-systems-toggle").within(() => {
-              cy.get("span").should("not.have.attr", "data-checked");
-            });
+            cy.getByTestId("assign-all-systems-toggle").should(
+              "have.attr",
+              "aria-checked",
+              "false",
+            );
           });
           cy.getByTestId("confirm-btn").click();
           cy.getByTestId("save-btn").click();
@@ -423,17 +455,21 @@ describe("User management", () => {
         });
 
         it("can use the select all toggle to unassign systems", () => {
-          cy.getByTestId("assign-all-systems-toggle").within(() => {
-            cy.get("span").should("have.attr", "data-checked");
-          });
+          cy.getByTestId("assign-all-systems-toggle").should(
+            "have.attr",
+            "aria-checked",
+            "true",
+          );
           // all toggles in every row should be checked
 
           cy.getByTestId("assign-systems-modal-body").within(() => {
             systems.forEach((fidesKey) => {
               cy.getByTestId(`row-${fidesKey}`).within(() => {
-                cy.getByTestId("assign-switch").within(() => {
-                  cy.get("span").should("have.attr", "data-checked");
-                });
+                cy.getByTestId("assign-switch").should(
+                  "have.attr",
+                  "aria-checked",
+                  "true",
+                );
               });
             });
           });
@@ -443,9 +479,11 @@ describe("User management", () => {
           cy.getByTestId("assign-systems-modal-body").within(() => {
             systems.forEach((fidesKey) => {
               cy.getByTestId(`row-${fidesKey}`).within(() => {
-                cy.getByTestId("assign-switch").within(() => {
-                  cy.get("span").should("not.have.attr", "data-checked");
-                });
+                cy.getByTestId("assign-switch").should(
+                  "have.attr",
+                  "aria-checked",
+                  "false",
+                );
               });
             });
           });
@@ -469,23 +507,29 @@ describe("User management", () => {
             ["demo_marketing_system", "demo_analytics_system"].forEach(
               (fidesKey) => {
                 cy.getByTestId(`row-${fidesKey}`).within(() => {
-                  cy.getByTestId("assign-switch").within(() => {
-                    cy.get("span").should("not.have.attr", "data-checked");
-                  });
+                  cy.getByTestId("assign-switch").should(
+                    "have.attr",
+                    "aria-checked",
+                    "false",
+                  );
                 });
-              }
+              },
             );
 
             // the one that was not in the search should not have been affected
             cy.getByTestId("system-search").clear();
             cy.getByTestId(`row-fidesctl_system`).within(() => {
-              cy.getByTestId("assign-switch").within(() => {
-                cy.get("span").should("have.attr", "data-checked");
-              });
+              cy.getByTestId("assign-switch").should(
+                "have.attr",
+                "aria-checked",
+                "true",
+              );
             });
-            cy.getByTestId("assign-all-systems-toggle").within(() => {
-              cy.get("span").should("not.have.attr", "data-checked");
-            });
+            cy.getByTestId("assign-all-systems-toggle").should(
+              "have.attr",
+              "aria-checked",
+              "false",
+            );
 
             // now do the reverse: toggle on while filtered
             // toggle everyone off by clicking on the all toggle twice
@@ -496,9 +540,11 @@ describe("User management", () => {
             cy.getByTestId("assign-all-systems-toggle").click();
             cy.getByTestId("system-search").clear();
             cy.getByTestId(`row-fidesctl_system`).within(() => {
-              cy.getByTestId("assign-switch").within(() => {
-                cy.get("span").should("not.have.attr", "data-checked");
-              });
+              cy.getByTestId("assign-switch").should(
+                "have.attr",
+                "aria-checked",
+                "false",
+              );
             });
           });
         });

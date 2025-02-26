@@ -1,3 +1,6 @@
 node_modules
 dist
-.eslintrc.json
+jest.config.js
+rollup.config.mjs
+.eslintrc*
+src/lib/gpp/modules

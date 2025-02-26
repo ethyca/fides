@@ -1,4 +1,5 @@
 import { Link, LinkProps } from "fidesui";
+
 import useI18n from "~/common/hooks/useI18n";
 import { PrivacyExperienceResponse } from "~/types/api";
 
@@ -14,7 +15,7 @@ const PrivacyPolicyLink = ({
   }
 
   const experienceConfigTranslation = selectExperienceConfigTranslation(
-    experience.experience_config
+    experience.experience_config,
   );
   const { privacy_policy_link_label: label, privacy_policy_url: url } =
     experienceConfigTranslation;
@@ -22,6 +23,7 @@ const PrivacyPolicyLink = ({
   if (!label || !url) {
     return null;
   }
+
   return (
     <Link
       href={url}

@@ -1,4 +1,10 @@
-import { Box, Button, ButtonProps, forwardRef, Text } from "fidesui";
+import {
+  AntButton as Button,
+  Box,
+  forwardRef,
+  RepeatClockIcon,
+  Text,
+} from "fidesui";
 import { ForwardedRef, useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
@@ -14,13 +20,12 @@ import {
 import { PrivacyRequestEntity } from "../types";
 
 type ReprocessButtonProps = {
-  buttonProps?: ButtonProps;
   handleBlur?: (ref: ForwardedRef<any>) => void;
   subjectRequest?: PrivacyRequestEntity;
 };
 
 const ReprocessButton = forwardRef(
-  ({ buttonProps, handleBlur, subjectRequest }: ReprocessButtonProps, ref) => {
+  ({ handleBlur, subjectRequest }: ReprocessButtonProps, ref) => {
     const dispatch = useAppDispatch();
     const [isReprocessing, setIsReprocessing] = useState(false);
     const { errorAlert, successAlert } = useAlert();
@@ -37,7 +42,7 @@ const ReprocessButton = forwardRef(
         errorAlert(
           getErrorMessage(payload.error),
           `DSR batch automation has failed due to the following:`,
-          { duration: null }
+          { duration: null },
         );
       } else {
         if (payload.data.failed.length > 0) {
@@ -51,7 +56,7 @@ const ReprocessButton = forwardRef(
               details.
             </Box>,
             undefined,
-            { containerStyle: { maxWidth: "max-content" }, duration: null }
+            { containerStyle: { maxWidth: "max-content" }, duration: null },
           );
         }
         if (payload.data.succeeded.length > 0) {
@@ -71,7 +76,7 @@ const ReprocessButton = forwardRef(
         errorAlert(
           getErrorMessage(payload.error),
           `DSR automation has failed for this privacy request due to the following:`,
-          { duration: null }
+          { duration: null },
         );
       } else {
         successAlert(`Privacy request is now being reprocessed.`);
@@ -85,28 +90,19 @@ const ReprocessButton = forwardRef(
 
     return (
       <Button
-        {...buttonProps}
-        isDisabled={isReprocessing}
-        isLoading={isReprocessing}
-        loadingText="Reprocessing"
+        disabled={isReprocessing}
+        loading={isReprocessing}
         onClick={
           subjectRequest ? handleSingleReprocessClick : handleBulkReprocessClick
         }
         ref={ref}
-        spinnerPlacement="end"
-        variant="outline"
-        _hover={{
-          bg: "gray.100",
-        }}
-        _loading={{
-          opacity: 1,
-          div: { opacity: 0.4 },
-        }}
+        size="small"
+        icon={<RepeatClockIcon />}
       >
         Reprocess
       </Button>
     );
-  }
+  },
 );
 
 export default ReprocessButton;

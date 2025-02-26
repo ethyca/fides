@@ -52,7 +52,7 @@ The specific keys provided in the `Fides.consent` property are determined
 based on your Fides configuration, and are provided to the browser based on
 the user's location, property ID, etc.
 
-#### Example
+#### Examples
 
 A `Fides.consent` value showing the user has opted-out of data sales & sharing:
 ```ts
@@ -60,8 +60,6 @@ A `Fides.consent` value showing the user has opted-out of data sales & sharing:
   "data_sales_and_sharing": false
 }
 ```
-
-#### Example
 
 A `Fides.consent` value showing the user has opted-in to analytics, but not marketing:
 ```ts
@@ -113,7 +111,7 @@ The modal's "Trigger link label" text can be customized, per regulation, for eac
 Use this function to get the label in the appropriate language for the user's current locale.
 To always return in the default language only, pass the `disableLocalization` option as `true`.
 
-#### Example
+#### Examples
 
 Getting the link text in the user's current locale (eg. Spanish):
 ```ts
@@ -125,11 +123,9 @@ Getting the link text in the default locale to match other links on the page:
 console.log(Fides.getModalLinkLabel({ disableLocalization: true })); // "Your Privacy Choices"
 ```
 
-#### Example
-
 Applying the link text to a custom modal link element:
 ```html
-<button class="my-custom-show-modal" id="fides-modal-link-label" onclick="Fides.showModal()" />
+<button class="my-custom-show-modal" id="fides-modal-link-label" onclick="Fides.showModal()"><button>
 <script>
  document.getElementById('fides-modal-link-label').innerText = Fides.getModalLinkLabel();
 </script>
@@ -138,7 +134,7 @@ Applying the link text to a custom modal link element:
 #### Parameters
 
 | Parameter | Type |
-| :------ | :------ |
+| ------ | ------ |
 | `options`? | `object` |
 | `options.disableLocalization`? | `boolean` |
 
@@ -174,7 +170,9 @@ the `modalLinkId` global setting on the Fides Privacy Center to prevent the
 automated searching for, and binding the click event to, the modal link. If using
 Fides Cloud, contact Ethyca Support for details on adjusting global settings.
 
-#### Example
+This function is not available for Headless experiences.
+
+#### Examples
 
 Showing the FidesJS modal via an `onclick` handler on a custom button element:
 ```html
@@ -201,8 +199,6 @@ Showing/hiding the custom element using the `fides-overlay-modal-link` CSS class
   display: inline;
 }
 ```
-
-#### Example
 
 Showing the FidesJS modal programmatically in a JavaScript function:
 ```ts
@@ -263,7 +259,7 @@ However, initialization can be called manually if needed - for example to delay
 initialization until after your own custom JavaScript has run to set up some
 config options. In this case, you can disable the automatic initialization
 by including the query param `initialize=false` in the Fides script URL
-(see /docs/dev-docs/js/privacy-center-fidesjs-hosting for details).
+(see (Privacy Center FidesJS Hosting)[/docs/dev-docs/js/privacy-center-fidesjs-hosting] for details).
 You will then need to call `Fides.init()` manually at the appropriate time.
 
 This function can also be used to reinitialize FidesJS. This is useful when
@@ -277,12 +273,48 @@ such as the `fides_overrides` global or the query params.
 #### Parameters
 
 | Parameter | Type |
-| :------ | :------ |
+| ------ | ------ |
 | `config`? | `any` |
 
 #### Returns
 
 `Promise`\<`void`\>
+
+***
+
+### onFidesEvent()
+
+> **onFidesEvent**: (`type`, `callback`) => () => `void`
+
+An alternative way to subscribe to Fides events. The same events are supported, except the callback
+receives the event details directly. This is useful in restricted environments where you can't
+directly access `window.addEventListener`.
+
+Returns an unsubscribe function that can be called to remove the event listener.
+
+#### Example
+
+```ts
+const unsubscribe = Fides.onFidesEvent("FidesUpdated", (detail) => {
+  console.log(detail.consent);
+  unsubscribe();
+});
+```
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `type` | `any` | The type of event to listen for, such as `FidesInitialized`, `FidesUpdated`, etc. |
+| `callback` | (`detail`) => `void` | The callback function to call when the event is triggered |
+
+#### Returns
+
+`Function`
+
+##### Returns
+
+`void`
 
 ***
 

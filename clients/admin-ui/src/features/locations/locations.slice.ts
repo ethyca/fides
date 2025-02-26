@@ -47,11 +47,11 @@ const emptyLocationRegulation: LocationRegulationResponse = {
   regulations: [],
 };
 export const selectLocationsRegulations: (
-  state: RootState
+  state: RootState,
 ) => LocationRegulationResponse = createSelector(
   [
     (RootState) => RootState,
     locationsApi.endpoints.getLocationsRegulations.select(),
   ],
-  (RootState, { data }) => data ?? emptyLocationRegulation
+  (RootState, { data }) => data ?? emptyLocationRegulation,
 );

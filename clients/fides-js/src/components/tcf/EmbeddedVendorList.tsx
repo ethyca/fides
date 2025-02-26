@@ -1,17 +1,15 @@
 import { h } from "preact";
 
-import { I18n } from "../../lib/i18n";
+import { useI18n } from "../../lib/i18n/i18n-context";
 import { EmbeddedVendor } from "../../lib/tcf/types";
-
 import PagingButtons, { usePaging } from "../PagingButtons";
 
 const EmbeddedVendorList = ({
-  i18n,
   vendors: totalVendors,
 }: {
-  i18n: I18n;
   vendors: EmbeddedVendor[];
 }) => {
+  const { i18n } = useI18n();
   const {
     activeChunk: vendors,
     totalPages,
@@ -32,7 +30,7 @@ const EmbeddedVendorList = ({
       </span>
       <ul className="fides-tcf-purpose-vendor-list">
         {vendors.map((v) => (
-          <li>{v.name}</li>
+          <li key={v.id}>{v.name}</li>
         ))}
       </ul>
       {totalPages > 1 ? <PagingButtons {...paging} /> : null}

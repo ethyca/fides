@@ -1,5 +1,11 @@
 import { TrashCanSolidIcon } from "common/Icon/TrashCanSolidIcon";
-import { Badge, ButtonGroup, IconButton, Td, Tr, useDisclosure } from "fidesui";
+import {
+  AntButton as Button,
+  AntTag as Tag,
+  Td,
+  Tr,
+  useDisclosure,
+} from "fidesui";
 import { useRouter } from "next/router";
 import React from "react";
 import {
@@ -9,7 +15,7 @@ import {
 
 import { useAppSelector } from "~/app/hooks";
 import { selectUser } from "~/features/auth";
-import { USER_MANAGEMENT_ROUTE } from "~/features/common/nav/v2/routes";
+import { USER_MANAGEMENT_ROUTE } from "~/features/common/nav/routes";
 import Restrict, { useHasPermission } from "~/features/common/Restrict";
 import { ROLES } from "~/features/user-management/constants";
 import { ScopeRegistryEnum } from "~/types/api";
@@ -21,7 +27,7 @@ interface UserManagementRowProps {
   user: User;
 }
 
-const UserManagementRow: React.FC<UserManagementRowProps> = ({ user }) => {
+const UserManagementRow = ({ user }: UserManagementRowProps) => {
   const router = useRouter();
   const deleteModal = useDisclosure();
   const loggedInUser = useAppSelector(selectUser);
@@ -45,7 +51,7 @@ const UserManagementRow: React.FC<UserManagementRowProps> = ({ user }) => {
   if (userPermissions && userPermissions.roles) {
     userPermissions.roles.forEach((permissionRole) => {
       const matchingRole = ROLES.find(
-        (role) => role.roleKey === permissionRole
+        (role) => role.roleKey === permissionRole,
       );
       if (matchingRole) {
         permissionsLabels.push(matchingRole.permissions_label);
@@ -62,7 +68,15 @@ const UserManagementRow: React.FC<UserManagementRowProps> = ({ user }) => {
         data-testid={`row-${user.id}`}
       >
         <Td pl={0} py={1} onClick={handleEditUser}>
-          {user.username}
+          {user.username}{" "}
+          {user.disabled && (
+            <Tag color="success" data-testid="invite-sent-badge">
+              Invite sent
+            </Tag>
+          )}
+        </Td>
+        <Td pl={0} py={1} onClick={handleEditUser}>
+          {user.email_address}
         </Td>
         <Td pl={0} py={1} onClick={handleEditUser}>
           {user.first_name}
@@ -72,56 +86,27 @@ const UserManagementRow: React.FC<UserManagementRowProps> = ({ user }) => {
         </Td>
         <Td pl={0} py={1} onClick={handleEditUser}>
           {permissionsLabels.map((permission) => (
-            <Badge
-              bg="gray.500"
-              color="white"
-              paddingLeft="2"
-              textTransform="none"
-              paddingRight="8px"
-              height="18px"
-              lineHeight="18px"
-              borderRadius="6px"
-              fontWeight="500"
-              textAlign="center"
-              data-testid="user-permissions-badge"
-              key={permission}
-            >
+            <Tag data-testid="user-permissions-badge" key={permission}>
               {permission}
-            </Badge>
+            </Tag>
           ))}
         </Td>
         <Td pl={0} py={1} onClick={handleEditUser}>
-          <Badge
-            bg="gray.500"
-            color="white"
-            paddingLeft="2"
-            textTransform="none"
-            paddingRight="8px"
-            height="18px"
-            lineHeight="18px"
-            borderRadius="6px"
-            fontWeight="500"
-            textAlign="center"
-            data-testid="user-systems-badge"
-          >
+          <Tag className="text-center" data-testid="user-systems-badge">
             {userSystems ? userSystems.length : 0}
-          </Badge>
+          </Tag>
         </Td>
         <Td pl={0} py={1} onClick={handleEditUser}>
           {user.created_at ? new Date(user.created_at).toUTCString() : null}
         </Td>
         <Restrict scopes={[ScopeRegistryEnum.USER_DELETE]}>
           <Td pr={0} py={1} textAlign="end" position="relative">
-            <ButtonGroup>
-              <IconButton
-                aria-label="delete"
-                icon={<TrashCanSolidIcon />}
-                variant="outline"
-                size="sm"
-                onClick={deleteModal.onOpen}
-                data-testid="delete-user-btn"
-              />
-            </ButtonGroup>
+            <Button
+              aria-label="delete"
+              icon={<TrashCanSolidIcon />}
+              onClick={deleteModal.onOpen}
+              data-testid="delete-user-btn"
+            />
           </Td>
         </Restrict>
       </Tr>

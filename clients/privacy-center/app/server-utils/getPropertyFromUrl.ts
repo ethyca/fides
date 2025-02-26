@@ -20,12 +20,13 @@ const getPropertyFromUrl = async ({
       {
         method: "GET",
         headers,
-      }
+      },
     );
     if (response.ok) {
       result = await response.json();
     }
   } catch (e) {
+    // eslint-disable-next-line no-console
     console.log("Request to find property failed", e);
   }
 

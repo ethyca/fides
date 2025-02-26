@@ -1,6 +1,6 @@
 import { SerializedError } from "@reduxjs/toolkit";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query";
-import { Box, Button, Stack, useToast } from "fidesui";
+import { AntButton as Button, Box, Stack, useToast } from "fidesui";
 import { Form, Formik, FormikHelpers } from "formik";
 import { useMemo } from "react";
 import * as Yup from "yup";
@@ -41,11 +41,11 @@ export const defaultInitialValues: OrganizationFormValues = {
 // put these transform functions in place ahead of time to make future updates
 // easier to make
 export const transformOrganizationToFormValues = (
-  organization: Organization
+  organization: Organization,
 ): OrganizationFormValues => ({ ...organization });
 
 export const transformFormValuesToOrganization = (
-  formValues: OrganizationFormValues
+  formValues: OrganizationFormValues,
 ): Organization => ({
   description: formValues.description,
   fides_key: formValues.fides_key,
@@ -70,24 +70,26 @@ export const OrganizationForm = ({
       organization
         ? transformOrganizationToFormValues(organization)
         : defaultInitialValues,
-    [organization]
+    [organization],
   );
 
   const toast = useToast();
 
   const handleSubmit = async (
     values: OrganizationFormValues,
-    formikHelpers: FormikHelpers<OrganizationFormValues>
+    formikHelpers: FormikHelpers<OrganizationFormValues>,
   ) => {
     const organizationBody = transformFormValuesToOrganization(values);
 
     const handleResult = (
-      result: { data: {} } | { error: FetchBaseQueryError | SerializedError }
+      result:
+        | { data: object }
+        | { error: FetchBaseQueryError | SerializedError },
     ) => {
       if (isErrorResult(result)) {
         const errorMsg = getErrorMessage(
           result.error,
-          "An unexpected error occurred while editing the organization. Please try again."
+          "An unexpected error occurred while editing the organization. Please try again.",
         );
         toast(errorToastParams(errorMsg));
       } else {
@@ -143,11 +145,10 @@ export const OrganizationForm = ({
             />
             <Box textAlign="right">
               <Button
-                type="submit"
-                variant="primary"
-                size="sm"
-                isDisabled={isLoading || !dirty || !isValid}
-                isLoading={isLoading}
+                htmlType="submit"
+                type="primary"
+                disabled={isLoading || !dirty || !isValid}
+                loading={isLoading}
                 data-testid="save-btn"
               >
                 Save

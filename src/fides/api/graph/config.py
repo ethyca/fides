@@ -78,13 +78,16 @@ Field identities:
 
 from __future__ import annotations
 
+import copy
 from abc import ABC, abstractmethod
 from collections import defaultdict
 from dataclasses import dataclass
+from re import match, search
 from typing import Any, Callable, Dict, List, Literal, Optional, Set, Tuple, Union
 
+from fideslang.models import FieldMaskingStrategyOverride, MaskingStrategyOverride
 from fideslang.validation import FidesKey
-from pydantic import BaseModel, validator
+from pydantic import BaseModel, ConfigDict, field_serializer, field_validator
 
 from fides.api.common_exceptions import FidesopsException
 from fides.api.graph.data_type import (
@@ -256,24 +259,36 @@ class Field(BaseModel, ABC):
     """references to other fields in any other datasets"""
     identity: Optional[SeedAddress] = None
     """an optional pointer to an arbitrary key in an expected json package provided as a seed value"""
-    data_categories: Optional[List[FidesKey]]
+    data_categories: Optional[List[FidesKey]] = None
     data_type_converter: DataTypeConverter = DataType.no_op.value
     return_all_elements: Optional[bool] = None
+    masking_strategy_override: Optional[FieldMaskingStrategyOverride] = None
     # Should field be returned by query if it is in an entrypoint array field, or just if it matches query?
+    custom_request_field: Optional[str] = None
 
     """Known type of held data"""
-    length: Optional[int]
+    length: Optional[int] = None
     """Known length of held data"""
 
     is_array: bool = False
 
     read_only: Optional[bool] = None
     """Optionally specify if a field is read-only, meaning it can't be updated or deleted. """
+    model_config = ConfigDict(arbitrary_types_allowed=True)
 
-    class Config:
-        """for pydantic incorporation of custom non-pydantic types"""
+    @field_serializer("data_type_converter")
+    def serialize_data_type_converter(
+        self, data_type_converter: DataTypeConverter
+    ) -> Optional[str]:
+        """Help Pydantic V2 serialize this unknown type"""
+        return data_type_converter.name if data_type_converter.name else None
 
-        arbitrary_types_allowed = True
+    @field_serializer("references")
+    def serialize_references(
+        self, references: List[Tuple[FieldAddress, Optional[EdgeDirection]]]
+    ) -> List[Tuple[str, Optional[str]]]:
+        """Help Pydantic V2 serialize this unknown type"""
+        return [(ref[0].value, ref[1] if ref else None) for ref in references]
 
     @abstractmethod
     def cast(self, value: Any) -> Optional[Any]:
@@ -283,6 +298,7 @@ class Field(BaseModel, ABC):
         """return the data type name"""
         return self.data_type_converter.name
 
+    @abstractmethod
     def collect_matching(self, func: Callable[[Field], bool]) -> Dict[FieldPath, Field]:
         """Find fields or subfields satisfying the input function"""
 
@@ -321,22 +337,6 @@ class ObjectField(Field):
     """A field that represents a json dict structure."""
 
     fields: Dict[str, Field]
-
-    @validator("data_categories")
-    @classmethod
-    def validate_data_categories(
-        cls, value: Optional[List[FidesKey]]
-    ) -> Optional[List[FidesKey]]:
-        """To prevent mismatches between data categories on an ObjectField and a nested ScalarField, only
-        allow data categories to be defined on the individual fields.
-
-        This shouldn't be hit unless an ObjectField is declared directly.
-        """
-        if value:
-            raise ValueError(
-                "ObjectFields cannot be given data_categories; annotate the sub-fields instead."
-            )
-        return value
 
     def cast(self, value: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         """Cast the input value into the form represented by data_type."""
@@ -392,6 +392,8 @@ def generate_field(
     sub_fields: List[Field],
     return_all_elements: Optional[bool],
     read_only: Optional[bool],
+    custom_request_field: Optional[str],
+    masking_strategy_override: Optional[FieldMaskingStrategyOverride],
 ) -> Field:
     """Generate a graph field."""
 
@@ -415,15 +417,33 @@ def generate_field(
         is_array=is_array,
         return_all_elements=return_all_elements,
         read_only=read_only,
+        custom_request_field=custom_request_field,
+        masking_strategy_override=masking_strategy_override,
     )
 
 
 @dataclass
-class MaskingOverride:
-    """Data class to store override params related to data masking"""
+class MaskingTruncation:
+    """Data class to store truncation params related to data masking"""
 
     data_type_converter: Optional[DataTypeConverter]
     length: Optional[int]
+
+
+# for now, we only support BQ partitioning, so the clause pattern we expect is BQ-specific
+BIGQUERY_PARTITION_CLAUSE_PATTERN = r"^`(?P<field_1>[a-zA-Z0-9_]*)` ([<|>][=]?) (?P<operand_1>[a-zA-Z0-9_\s(),\.\"\'\-]*)(\sAND `(?P<field_2>[a-zA-Z0-9_]*)` ([<|>][=]?) (?P<operand_2>[a-zA-Z0-9_\s(),\.\"\'\-]*))?$"
+# protected keywords that are _not_ allowed in the operands, to avoid any potential malicious execution.
+PROHIBITED_KEYWORDS = [
+    "UNION",
+    "INSERT",
+    "UPDATE",
+    "CREATE",
+    "DROP",
+    "SELECT",
+    "CHAR",
+    "HAVING",
+    "EXEC",
+]
 
 
 class Collection(BaseModel):
@@ -437,6 +457,9 @@ class Collection(BaseModel):
     erase_after: Set[CollectionAddress] = set()
     # An optional set of dependent fields that need to be queried together
     grouped_inputs: Set[str] = set()
+    data_categories: Set[FidesKey] = set()
+    masking_strategy_override: Optional[MaskingStrategyOverride] = None
+    partitioning: Optional[Dict] = None
 
     @property
     def field_dict(self) -> Dict[FieldPath, Field]:
@@ -480,6 +503,29 @@ class Collection(BaseModel):
             if field.identity
         }
 
+    def custom_request_fields(self) -> Dict[FieldPath, str]:
+        """
+        Return custom request fields included in the table,
+        i.e fields whose values may come in a custom request field on a DSR.
+
+        E.g if the collection is defined like:
+        - name: publishers
+        - fields:
+            - name: id
+              fides_meta:
+                identity: true
+            - name: site_id
+              fides_meta:
+                custom_request_field: tenant_id
+
+        Then this returns a dictionary of the form {FieldPath("site_id"): "tenant_id"}
+        """
+        return {
+            field_path: field.custom_request_field
+            for field_path, field in self.field_dict.items()
+            if field.custom_request_field
+        }
+
     def field(self, field_path: FieldPath) -> Optional[Field]:
         """Return Field (looked up by FieldPath) if on Collection or None if not found"""
         return self.field_dict[field_path] if field_path in self.field_dict else None
@@ -520,7 +566,7 @@ class Collection(BaseModel):
         See Config > json_encoders for some of the fields that needed special handling for serialization for
         database storage.
         """
-        data = data.copy()
+        data = copy.deepcopy(data)
 
         def build_field(serialized_field: dict) -> Field:
             """Convert a serialized field on RequestTask.collection.fields into a Scalar Field
@@ -548,12 +594,12 @@ class Collection(BaseModel):
                     field_name: build_field(fld)
                     for field_name, fld in serialized_field["fields"].items()
                 }
-                converted = ObjectField.parse_obj(serialized_field)
+                converted = ObjectField.model_validate(serialized_field)
                 converted.references = converted_references
                 converted.data_type_converter = data_type_converter
                 return converted
 
-            converted = ScalarField.parse_obj(serialized_field)
+            converted = ScalarField.model_validate(serialized_field)
             converted.references = converted_references
             converted.data_type_converter = data_type_converter
             return converted
@@ -571,23 +617,108 @@ class Collection(BaseModel):
             CollectionAddress.from_string(addr_string)
             for addr_string in data.get("erase_after", [])
         }
+        data["partitioning"] = data.get("partitioning")
 
-        return Collection.parse_obj(data)
+        return Collection.model_validate(data)
 
-    class Config:
-        """for pydantic incorporation of custom non-pydantic types"""
+    @field_serializer("data_type_converter", check_fields=False)
+    def serialize_data_type_converter(
+        self, data_type_converter: DataTypeConverter
+    ) -> Optional[str]:
+        """Help Pydantic V2 serialize this unknown type"""
+        return data_type_converter.name if data_type_converter.name else None
 
-        arbitrary_types_allowed = True
+    @field_serializer("after")
+    def serialize_after(self, after: Set[CollectionAddress]) -> Set[str]:
+        """Help Pydantic V2 serialize this unknown type"""
+        return {aft.value for aft in after}
+
+    @field_serializer("erase_after")
+    def serialize_erase_after(self, erase_after: Set[CollectionAddress]) -> Set[str]:
+        """Help Pydantic V2 serialize this unknown type"""
+        return {aft.value for aft in erase_after}
+
+    model_config = ConfigDict(
+        arbitrary_types_allowed=True,
         # This supports running Collection.json() to serialize less standard
         # types so it can be saved to the database under RequestTask.collection
-        json_encoders = {
+        json_encoders={
             Set: lambda val: list(  # pylint: disable=unhashable-member,unnecessary-lambda
                 val
             ),
             DataTypeConverter: lambda dtc: dtc.name if dtc.name else None,
             FieldAddress: lambda fa: fa.value,
             CollectionAddress: lambda ca: ca.value,
-        }
+        },
+    )
+
+    @field_validator("partitioning")
+    @classmethod
+    def validate_partitioning(
+        cls, partitioning: Optional[Dict[str, Any]]
+    ) -> Optional[Dict[str, Any]]:
+        """
+        Validates the `partitioning` dict field.
+
+        The `partitioning` dict field is untyped in Fideslang, but here we enforce
+        that it has the required and expected `where_clauses` key, whose value must be
+        a list of strings.
+
+        The string values are validated to ensure they match the expected syntax, which
+        is strictly prescribed. The string values MUST be a valid SQL clause that defines
+        a partition window, with the form:
+
+        ```
+        `column_1` >(=) [some value] AND `column_1` <(=) [some value]
+        ```
+
+        To be clear, some notable constraints on the input:
+        - the clause string must begin by referencing a column name wrapped by backticks (`)
+        - the clause string must compare that first column with a `<>(=)` operator, and may
+        include at most one other conditional with a `<>(=)` operator that's joined to the first
+        conditional via an AND operator
+        - if the clause string contains a second conditional, it must reference the same column name
+        as the first conditional, also wrapped by backticks
+        - column names (wrapped by backticks) must always be on the _left_ side of the `<>(=)`operator
+        in its conditional
+
+        """
+        if not partitioning:
+            return partitioning
+
+        # NOTE: when we deprecate `where_clause` partitioning in favor of a more proper partitioning DSL,
+        # we should be sure to still support the existing `where_clause` partition definition on
+        # any in-progress DSRs so that they can run through to completion.
+        if where_clauses := partitioning.get("where_clauses"):
+            if not isinstance(where_clauses, List) or not all(
+                isinstance(where_clause, str) for where_clause in where_clauses
+            ):
+                raise ValueError("`where_clauses` must be a list of strings!")
+            for partition_clause in where_clauses:
+                if matching := match(
+                    BIGQUERY_PARTITION_CLAUSE_PATTERN, partition_clause
+                ):
+                    # check that if there are two field comparison sub-clauses, they reference the same field, e.g.:
+                    # "`my_field_1` > 5 AND `my_field_1` <= 10", not "`my_field_1` > 5 AND `my_field_1` <= 10"
+                    if matching["field_2"] is not None and (
+                        matching["field_1"] != matching["field_2"]
+                    ):
+                        raise ValueError(
+                            f"Partition clause must have matching fields. Identified non-matching field references '{matching['field_1']}' and '{matching['field_2']}"
+                        )
+
+                    for prohibited_keyword in PROHIBITED_KEYWORDS:
+                        search_str = prohibited_keyword.lower() + r"\s"
+                        if search(search_str, partition_clause.lower()):
+                            raise ValueError(
+                                "Prohibited keyword referenced in partition clause"
+                            )
+                else:
+                    raise ValueError("Unsupported partition clause format")
+            return partitioning
+        raise ValueError(
+            "`where_clauses` must be specified in `partitioning` specification!"
+        )
 
 
 class GraphDataset(BaseModel):

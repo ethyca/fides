@@ -1,5 +1,5 @@
 import {
-  Badge,
+  AntTag as Tag,
   Flex,
   Heading,
   Modal,
@@ -10,6 +10,7 @@ import {
   ModalOverlay,
   Spacer,
 } from "fidesui";
+import palette from "fidesui/src/palette/palette.module.scss";
 
 import { SystemHistoryResponse } from "~/types/api";
 
@@ -38,7 +39,7 @@ const getBadges = (before: Record<string, any>, after: Record<string, any>) => {
   }
 
   const hasOtherFields = [...Object.keys(before), ...Object.keys(after)].some(
-    (key) => !specialFields.has(key)
+    (key) => !specialFields.has(key),
   );
 
   if (!hasPrivacyDeclarations && hasOtherFields) {
@@ -59,7 +60,7 @@ const SystemHistoryModal = ({ selectedHistory, isOpen, onClose }: Props) => (
     <ModalOverlay />
     <ModalContent>
       <ModalHeader
-        backgroundColor="#F7FAFC"
+        backgroundColor={palette.FIDESUI_NEUTRAL_50}
         borderTopLeftRadius="8px"
         borderTopRightRadius="8px"
         borderBottom="1px solid #E2E8F0"
@@ -70,21 +71,15 @@ const SystemHistoryModal = ({ selectedHistory, isOpen, onClose }: Props) => (
             <>
               {getBadges(selectedHistory.before, selectedHistory.after).map(
                 (badge, index) => (
-                  <Badge
+                  <Tag
                     // eslint-disable-next-line react/no-array-index-key
                     key={index}
-                    marginLeft="8px"
-                    fontSize="10px"
-                    padding="0px 4px"
-                    variant="solid"
-                    lineHeight="18px"
-                    height="18px"
-                    backgroundColor="#718096"
-                    borderRadius="2px"
+                    color="minos"
+                    className="ml-2"
                   >
                     {badge}
-                  </Badge>
-                )
+                  </Tag>
+                ),
               )}
             </>
           )}

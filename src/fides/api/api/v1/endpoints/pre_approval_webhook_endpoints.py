@@ -1,4 +1,4 @@
-from typing import List
+from typing import Annotated, List
 
 from fastapi import Body, Depends, Security
 from fastapi_pagination import Page, Params
@@ -6,7 +6,7 @@ from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
 from fideslang.validation import FidesKey
 from loguru import logger
-from pydantic import conlist
+from pydantic import Field
 from sqlalchemy.orm import Session
 from starlette.exceptions import HTTPException
 from starlette.status import HTTP_200_OK, HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND
@@ -39,7 +39,9 @@ def get_pre_approval_webhook_list(
     """
     Return a paginated list of all PreApprovalWebhook records in this system
     """
-    logger.info("Finding all pre_approval webhooks with pagination params '{}'", params)
+    logger.debug(
+        "Finding all pre_approval webhooks with pagination params '{}'", params
+    )
     pre_approval_webhooks = PreApprovalWebhook.query(db=db).order_by(
         PreApprovalWebhook.created_at.desc()
     )
@@ -50,7 +52,7 @@ def get_pre_approval_webhook_or_error(
     db: Session, webhook_key: FidesKey
 ) -> PreApprovalWebhook:
     """Helper method to load PreApprovalWebhook or throw a 404"""
-    logger.info("Finding PreApprovalWebhook with key '{}'", webhook_key)
+    logger.debug("Finding PreApprovalWebhook with key '{}'", webhook_key)
     pre_approval_webhook = PreApprovalWebhook.get_by(
         db=db, field="key", value=webhook_key
     )
@@ -91,7 +93,7 @@ def get_pre_approval_webhook_detail(
 def create_or_update_pre_execution_webhooks(
     *,
     db: Session = Depends(deps.get_db),
-    webhooks: conlist(schemas.PreApprovalWebhookCreate, max_items=50) = Body(...),  # type: ignore
+    webhooks: Annotated[List[schemas.PreApprovalWebhookCreate], Field(max_length=50)],  # type: ignore
 ) -> List[PreApprovalWebhook]:
     """
     Create or update the list of Pre-Approval Webhooks that run as soon as a request is created.
@@ -102,7 +104,7 @@ def create_or_update_pre_execution_webhooks(
     pre_approval_webhooks = PreApprovalWebhook.query(db=db)
 
     keys = [
-        get_key_from_data(webhook.dict(), PreApprovalWebhook.__name__)
+        get_key_from_data(webhook.model_dump(mode="json"), PreApprovalWebhook.__name__)
         for webhook in webhooks
     ]
     names = [webhook.name for webhook in webhooks]
@@ -171,7 +173,7 @@ def update_pre_execution_webhook(
     """PATCH a single Pre-Approval Webhook that runs as soon as Privacy Request is created."""
 
     loaded_webhook = get_pre_approval_webhook_or_error(db, webhook_key)
-    data = webhook_body.dict(exclude_none=True)
+    data = webhook_body.model_dump(exclude_none=True)
 
     if data.get("connection_config_key"):
         connection_config = get_connection_config_or_error(

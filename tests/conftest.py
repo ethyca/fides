@@ -13,6 +13,7 @@ import yaml
 from fastapi import Query
 from fastapi.testclient import TestClient
 from fideslang import DEFAULT_TAXONOMY, models
+from fideslang.models import System as SystemSchema
 from httpx import AsyncClient
 from loguru import logger
 from sqlalchemy.engine.base import Engine
@@ -28,9 +29,11 @@ from fides.api.cryptography.schemas.jwt import (
     JWE_PAYLOAD_SYSTEMS,
 )
 from fides.api.db.ctl_session import sync_engine
+from fides.api.db.system import create_system
 from fides.api.main import app
 from fides.api.models.privacy_request import (
     EXITED_EXECUTION_LOG_STATUSES,
+    RequestTask,
     generate_request_callback_pre_approval_jwe,
     generate_request_callback_resume_jwe,
 )
@@ -40,6 +43,7 @@ from fides.api.oauth.roles import APPROVER, CONTRIBUTOR, OWNER, VIEWER_AND_APPRO
 from fides.api.schemas.messaging.messaging import MessagingServiceType
 from fides.api.task.graph_runners import access_runner, consent_runner, erasure_runner
 from fides.api.tasks import celery_app
+from fides.api.tasks.scheduled.scheduler import async_scheduler, scheduler
 from fides.api.util.cache import get_cache
 from fides.api.util.collection_util import Row
 from fides.common.api.scope_registry import SCOPE_REGISTRY
@@ -47,9 +51,13 @@ from fides.config import get_config
 from fides.config.config_proxy import ConfigProxy
 from tests.fixtures.application_fixtures import *
 from tests.fixtures.bigquery_fixtures import *
+from tests.fixtures.datahub_fixtures import *
+from tests.fixtures.detection_discovery_fixtures import *
 from tests.fixtures.dynamodb_fixtures import *
 from tests.fixtures.email_fixtures import *
 from tests.fixtures.fides_connector_example_fixtures import *
+from tests.fixtures.google_cloud_sql_mysql_fixtures import *
+from tests.fixtures.google_cloud_sql_postgres_fixtures import *
 from tests.fixtures.integration_fixtures import *
 from tests.fixtures.manual_fixtures import *
 from tests.fixtures.manual_webhook_fixtures import *
@@ -58,10 +66,13 @@ from tests.fixtures.mongodb_fixtures import *
 from tests.fixtures.mssql_fixtures import *
 from tests.fixtures.mysql_fixtures import *
 from tests.fixtures.postgres_fixtures import *
+from tests.fixtures.rds_mysql_fixtures import *
+from tests.fixtures.rds_postgres_fixtures import *
 from tests.fixtures.redshift_fixtures import *
 from tests.fixtures.saas import *
 from tests.fixtures.saas_erasure_order_fixtures import *
 from tests.fixtures.saas_example_fixtures import *
+from tests.fixtures.scylladb_fixtures import *
 from tests.fixtures.snowflake_fixtures import *
 from tests.fixtures.timescale_fixtures import *
 
@@ -70,6 +81,33 @@ CONFIG = get_config()
 TEST_CONFIG_PATH = "tests/ctl/test_config.toml"
 TEST_INVALID_CONFIG_PATH = "tests/ctl/test_invalid_config.toml"
 TEST_DEPRECATED_CONFIG_PATH = "tests/ctl/test_deprecated_config.toml"
+
+
+@pytest.fixture(scope="session")
+def db(api_client, config):
+    """Return a connection to the test DB"""
+    # Create the test DB engine
+    assert config.test_mode
+    assert requests.post != api_client.post
+    engine = get_db_engine(
+        database_uri=config.database.sqlalchemy_test_database_uri,
+    )
+
+    create_citext_extension(engine)
+
+    if not scheduler.running:
+        scheduler.start()
+    if not async_scheduler.running:
+        async_scheduler.start()
+
+    SessionLocal = get_db_session(config, engine=engine)
+    the_session = SessionLocal()
+    # Setup above...
+
+    yield the_session
+    # Teardown below...
+    the_session.close()
+    engine.dispose()
 
 
 @pytest.fixture(scope="session")
@@ -118,7 +156,6 @@ async def async_session(test_client):
 @pytest.mark.asyncio
 async def async_session_temp(test_client):
     assert CONFIG.test_mode
-    assert requests.post == test_client.post
 
     create_citext_extension(sync_engine)
 
@@ -275,6 +312,7 @@ def application_user(db, oauth_client):
         data={
             "username": unique_username,
             "password": "test_password",
+            "email_address": f"{unique_username}@ethyca.com",
             "first_name": "Test",
             "last_name": "User",
         },
@@ -291,6 +329,7 @@ def user(db):
         data={
             "username": "test_fidesops_user",
             "password": "TESTdcnG@wzJeu0&%3Qe2fGo7",
+            "email_address": "fides.user@ethyca.com",
         },
     )
     client = ClientDetail(
@@ -374,14 +413,14 @@ def resources_dict():
     """
     resources_dict = {
         "data_category": models.DataCategory(
-            organization_fides_key=1,
+            organization_fides_key="1",
             fides_key="user.custom",
             parent_key="user",
             name="Custom Data Category",
             description="Custom Data Category",
         ),
         "dataset": models.Dataset(
-            organization_fides_key=1,
+            organization_fides_key="1",
             fides_key="test_sample_db_dataset",
             name="Sample DB Dataset",
             description="This is a Sample Database Dataset",
@@ -406,18 +445,38 @@ def resources_dict():
                             path="another.another.path",
                             data_categories=["user.contact.email"],
                         ),
+                        models.DatasetField(
+                            name="address",
+                            description="example top level field for nesting",
+                            path="table.address",
+                            data_categories=["user.contact.address"],
+                            fields=[
+                                models.DatasetField(
+                                    name="city",
+                                    description="example city field",
+                                    path="table.address.city",
+                                    data_categories=["user.contact.address.city"],
+                                ),
+                                models.DatasetField(
+                                    name="state",
+                                    description="example state field",
+                                    path="table.address.state",
+                                    data_categories=["user.contact.address.state"],
+                                ),
+                            ],
+                        ),
                     ],
                 )
             ],
         ),
         "data_subject": models.DataSubject(
-            organization_fides_key=1,
+            organization_fides_key="1",
             fides_key="custom_subject",
             name="Custom Data Subject",
             description="Custom Data Subject",
         ),
         "data_use": models.DataUse(
-            organization_fides_key=1,
+            organization_fides_key="1",
             fides_key="custom_data_use",
             name="Custom Data Use",
             description="Custom Data Use",
@@ -431,7 +490,7 @@ def resources_dict():
             description="Test Organization",
         ),
         "policy": models.Policy(
-            organization_fides_key=1,
+            organization_fides_key="1",
             fides_key="test_policy",
             name="Test Policy",
             version="1.3",
@@ -445,7 +504,7 @@ def resources_dict():
             data_subjects=models.PrivacyRule(matches="ANY", values=[]),
         ),
         "system": models.System(
-            organization_fides_key=1,
+            organization_fides_key="1",
             fides_key="test_system",
             system_type="SYSTEM",
             name="Test System",
@@ -1070,6 +1129,7 @@ def owner_user(db):
         data={
             "username": "test_fides_owner_user",
             "password": "TESTdcnG@wzJeu0&%3Qe2fGo7",
+            "email_address": "owner.user@ethyca.com",
         },
     )
     client = ClientDetail(
@@ -1096,6 +1156,7 @@ def approver_user(db):
         data={
             "username": "test_fides_viewer_user",
             "password": "TESTdcnG@wzJeu0&%3Qe2fGo7",
+            "email_address": "approver.user@ethyca.com",
         },
     )
     client = ClientDetail(
@@ -1122,6 +1183,7 @@ def viewer_user(db):
         data={
             "username": "test_fides_viewer_user",
             "password": "TESTdcnG@wzJeu0&%3Qe2fGo7",
+            "email_address": "viewer2.user@ethyca.com",
         },
     )
     client = ClientDetail(
@@ -1147,6 +1209,7 @@ def contributor_user(db):
         data={
             "username": "test_fides_contributor_user",
             "password": "TESTdcnG@wzJeu0&%3Qe2fGo7",
+            "email_address": "contributor.user@ethyca.com",
         },
     )
     client = ClientDetail(
@@ -1175,6 +1238,7 @@ def viewer_and_approver_user(db):
         data={
             "username": "test_fides_viewer_and_approver_user",
             "password": "TESTdcnG@wzJeu0&%3Qe2fGo7",
+            "email_address": "viewerapprover.user@ethyca.com",
         },
     )
     client = ClientDetail(
@@ -1238,6 +1302,97 @@ def system(db: Session) -> System:
     return system
 
 
+@pytest.fixture()
+@pytest.mark.asyncio
+async def system_async(async_session):
+    """Creates a system for testing with an async session, to be used in async tests"""
+    resource = SystemSchema(
+        fides_key=str(uuid4()),
+        organization_fides_key="default_organization",
+        name="test_system_1",
+        system_type="test",
+        privacy_declarations=[],
+    )
+
+    system = await create_system(
+        resource, async_session, CONFIG.security.oauth_root_client_id
+    )
+    return system
+
+
+@pytest.fixture(scope="function")
+def system_hidden(db: Session) -> Generator[System, None, None]:
+    system = System.create(
+        db=db,
+        data={
+            "fides_key": f"system_key-f{uuid4()}",
+            "name": f"system-{uuid4()}",
+            "description": "fixture-made-system set as hidden",
+            "organization_fides_key": "default_organization",
+            "system_type": "Service",
+            "hidden": True,
+        },
+    )
+
+    db.refresh(system)
+    yield system
+    db.delete(system)
+
+
+@pytest.fixture(scope="function")
+def system_with_cleanup(db: Session) -> Generator[System, None, None]:
+    system = System.create(
+        db=db,
+        data={
+            "fides_key": f"system_key-f{uuid4()}",
+            "name": f"system-{uuid4()}",
+            "description": "fixture-made-system",
+            "organization_fides_key": "default_organization",
+            "system_type": "Service",
+        },
+    )
+
+    privacy_declaration = PrivacyDeclaration.create(
+        db=db,
+        data={
+            "name": "Collect data for marketing",
+            "system_id": system.id,
+            "data_categories": ["user.device.cookie_id"],
+            "data_use": "marketing.advertising",
+            "data_subjects": ["customer"],
+            "dataset_references": None,
+            "egress": None,
+            "ingress": None,
+        },
+    )
+
+    Cookies.create(
+        db=db,
+        data={
+            "name": "test_cookie",
+            "path": "/",
+            "privacy_declaration_id": privacy_declaration.id,
+            "system_id": system.id,
+        },
+        check_name=False,
+    )
+
+    ConnectionConfig.create(
+        db=db,
+        data={
+            "system_id": system.id,
+            "connection_type": "bigquery",
+            "name": "test_connection",
+            "secrets": {"password": "test_password"},
+            "access": "write",
+        },
+    )
+
+    db.refresh(system)
+    yield system
+    db.delete(system)
+
+
 @pytest.fixture(scope="function")
 def system_with_dataset_references(db: Session) -> System:
     ctl_dataset = CtlDataset.create_from_dataset_dict(
@@ -1294,7 +1449,78 @@ def system_with_undeclared_data_categories(db: Session) -> System:
 
 
 @pytest.fixture(scope="function")
-def privacy_declaration_with_dataset_references(db: Session) -> System:
+def system_with_a_single_dataset_reference(db: Session) -> System:
+    first_dataset = CtlDataset.create_from_dataset_dict(
+        db,
+        {
+            "fides_key": f"dataset_key-f{uuid4()}",
+            "collections": [
+                {
+                    "name": "loyalty",
+                    "fields": [
+                        {
+                            "name": "id",
+                            "data_categories": ["user.unique_id"],
+                        },
+                    ],
+                }
+            ],
+        },
+    )
+    second_dataset = CtlDataset.create_from_dataset_dict(
+        db,
+        {
+            "fides_key": f"dataset_key-f{uuid4()}",
+            "collections": [
+                {
+                    "name": "customer",
+                    "fields": [
+                        {
+                            "name": "shipping_info",
+                            "fields": [
+                                {
+                                    "name": "street",
+                                    "data_categories": ["user.contact.address.street"],
+                                }
+                            ],
+                        },
+                        {
+                            "name": "first_name",
+                            "data_categories": ["user.name.first"],
+                        },
+                    ],
+                },
+                {
+                    "name": "activity",
+                    "fields": [
+                        {
+                            "name": "last_login",
+                            "data_categories": ["user.behavior"],
+                        },
+                    ],
+                },
+            ],
+        },
+    )
+    system = System.create(
+        db=db,
+        data={
+            "fides_key": f"system_key-f{uuid4()}",
+            "name": f"system-{uuid4()}",
+            "description": "fixture-made-system",
+            "organization_fides_key": "default_organization",
+            "system_type": "Service",
+            "dataset_references": [first_dataset.fides_key, second_dataset.fides_key],
+        },
+    )
+
+    return system
+
+
+@pytest.fixture(scope="function")
+def privacy_declaration_with_single_dataset_reference(
+    db: Session,
+) -> PrivacyDeclaration:
     ctl_dataset = CtlDataset.create_from_dataset_dict(
         db,
         {
@@ -1342,7 +1568,91 @@ def privacy_declaration_with_dataset_references(db: Session) -> System:
 
 
 @pytest.fixture(scope="function")
-def system_multiple_decs(db: Session, system: System) -> System:
+def privacy_declaration_with_multiple_dataset_references(
+    db: Session,
+) -> PrivacyDeclaration:
+    first_dataset = CtlDataset.create_from_dataset_dict(
+        db,
+        {
+            "fides_key": f"dataset_key-f{uuid4()}",
+            "collections": [
+                {
+                    "name": "loyalty",
+                    "fields": [
+                        {
+                            "name": "id",
+                            "data_categories": ["user.unique_id"],
+                        },
+                    ],
+                }
+            ],
+        },
+    )
+    second_dataset = CtlDataset.create_from_dataset_dict(
+        db,
+        {
+            "fides_key": f"dataset_key-f{uuid4()}",
+            "collections": [
+                {
+                    "name": "customer",
+                    "fields": [
+                        {
+                            "name": "shipping_info",
+                            "fields": [
+                                {
+                                    "name": "street",
+                                    "data_categories": ["user.contact.address.street"],
+                                }
+                            ],
+                        },
+                        {
+                            "name": "first_name",
+                            "data_categories": ["user.name.first"],
+                        },
+                    ],
+                },
+                {
+                    "name": "activity",
+                    "fields": [
+                        {
+                            "name": "last_login",
+                            "data_categories": ["user.behavior"],
+                        },
+                    ],
+                },
+            ],
+        },
+    )
+    system = System.create(
+        db=db,
+        data={
+            "fides_key": f"system_key-f{uuid4()}",
+            "name": f"system-{uuid4()}",
+            "description": "fixture-made-system",
+            "organization_fides_key": "default_organization",
+            "system_type": "Service",
+        },
+    )
+
+    privacy_declaration = PrivacyDeclaration.create(
+        db=db,
+        data={
+            "name": "Collect data for third party sharing",
+            "system_id": system.id,
+            "data_categories": ["user.device.cookie_id"],
+            "data_use": "third_party_sharing",
+            "data_subjects": ["customer"],
+            "dataset_references": [first_dataset.fides_key, second_dataset.fides_key],
+            "egress": None,
+            "ingress": None,
+        },
+    )
+
+    return privacy_declaration
+
+
+@pytest.fixture(scope="function")
+def system_multiple_decs(db: Session, system: System) -> Generator[System, None, None]:
     """
     Add an additional PrivacyDeclaration onto the base System to test scenarios with
     multiple PrivacyDeclarations on a given system
@@ -1362,15 +1672,15 @@ def system_multiple_decs(db: Session, system: System) -> System:
     )
 
     db.refresh(system)
-    return system
+    yield system
 
 
 @pytest.fixture(scope="function")
-def system_third_party_sharing(db: Session) -> System:
+def system_third_party_sharing(db: Session) -> Generator[System, None, None]:
     system_third_party_sharing = System.create(
         db=db,
         data={
-            "fides_key": f"system_key-f{uuid4()}",
+            "fides_key": f"system_third_party_sharing-f{uuid4()}",
             "name": f"system-{uuid4()}",
             "description": "fixture-made-system",
             "organization_fides_key": "default_organization",
@@ -1392,7 +1702,8 @@ def system_third_party_sharing(db: Session) -> System:
         },
     )
     db.refresh(system_third_party_sharing)
-    return system_third_party_sharing
+    yield system_third_party_sharing
+    db.delete(system_third_party_sharing)
 
 
 @pytest.fixture(scope="function")
@@ -1471,10 +1782,56 @@ def system_manager_client(db, system):
     client.delete(db)
 
 
+@pytest.fixture
+def connection_client(db, connection_config):
+    """Return a client assigned to a connection for authentication purposes."""
+    client = ClientDetail(
+        hashed_secret="thisisatest",
+        salt="thisisstillatest",
+        roles=[],
+        systems=[],
+        connections=[connection_config.id],
+    )
+    db.add(client)
+    db.commit()
+    db.refresh(client)
+    yield client
+    client.delete(db)
+
+
 @pytest.fixture(scope="function", autouse=True)
 def load_default_data_uses(db):
     for data_use in DEFAULT_TAXONOMY.data_use:
         # weirdly, only in some test scenarios, we already have the default taxonomy
         # loaded, in which case the create will throw an error. so we first check existence.
         if DataUse.get_by(db, field="name", value=data_use.name) is None:
-            DataUse.create(db=db, data=data_use.dict())
+            DataUse.create(db=db, data=data_use.model_dump(mode="json"))
+
+
+@pytest.fixture
+def owner_auth_header(owner_user):
+    return generate_role_header_for_user(owner_user, owner_user.client.roles)
+
+
+@pytest.fixture
+def contributor_auth_header(contributor_user):
+    return generate_role_header_for_user(
+        contributor_user, contributor_user.client.roles
+    )
+
+
+@pytest.fixture
+def viewer_auth_header(viewer_user):
+    return generate_role_header_for_user(viewer_user, viewer_user.client.roles)
+
+
+@pytest.fixture
+def approver_auth_header(approver_user):
+    return generate_role_header_for_user(approver_user, approver_user.client.roles)
+
+
+@pytest.fixture
+def viewer_and_approver_auth_header(viewer_and_approver_user):
+    return generate_role_header_for_user(
+        viewer_and_approver_user, viewer_and_approver_user.client.roles
+    )

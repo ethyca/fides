@@ -1,6 +1,6 @@
 import { ItemOption } from "common/dropdown/types";
 
-import { DATASTORE_CONNECTION_ROUTE } from "~/features/common/nav/v2/routes";
+import { DATASTORE_CONNECTION_ROUTE } from "~/features/common/nav/routes";
 import { SystemType } from "~/types/api";
 
 import { AddConnectionStep, ConnectorParameterOption } from "./types";
@@ -53,7 +53,7 @@ export const CONNECTOR_PARAMETERS_OPTIONS: ConnectorParameterOption[] = [
 ];
 
 export const DEFAULT_CONNECTION_TYPE_FILTER = CONNECTION_TYPE_FILTER_MAP.get(
-  "Show all"
+  "Show all",
 )?.value as string;
 
 export const STEPS: AddConnectionStep[] = [

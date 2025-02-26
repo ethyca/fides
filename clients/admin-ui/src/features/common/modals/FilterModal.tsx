@@ -3,8 +3,8 @@ import {
   AccordionIcon,
   AccordionItem,
   AccordionPanel,
+  AntButton as Button,
   Box,
-  Button,
   Checkbox,
   Divider,
   Heading,
@@ -23,7 +23,7 @@ import React, { ReactNode, useState } from "react";
 
 export const getQueryParamsFromList = (
   optionList: Option[],
-  queryParam: string
+  queryParam: string,
 ) => {
   const checkedOptions = optionList.filter((option) => option.isChecked);
   return checkedOptions.length > 0
@@ -125,8 +125,7 @@ export const AccordionMultifieldFilter = ({
         </SimpleGrid>
         {!isViewingMore && areExtraOptionsAvailable ? (
           <Button
-            size="sm"
-            variant="ghost"
+            type="text"
             onClick={() => {
               setIsViewingMore(true);
             }}
@@ -136,8 +135,7 @@ export const AccordionMultifieldFilter = ({
         ) : null}
         {isViewingMore && areExtraOptionsAvailable ? (
           <Button
-            size="sm"
-            variant="ghost"
+            type="text"
             onClick={() => {
               setIsViewingMore(false);
             }}
@@ -194,21 +192,10 @@ export const FilterModal = ({
       </ModalBody>
       <ModalFooter>
         <Box display="flex" justifyContent="space-between" width="100%">
-          <Button
-            variant="outline"
-            size="sm"
-            mr={3}
-            onClick={resetFilters}
-            flexGrow={1}
-          >
+          <Button onClick={resetFilters} className="mr-3 grow">
             Reset filters
           </Button>
-          <Button
-            colorScheme="primary"
-            size="sm"
-            onClick={onClose}
-            flexGrow={1}
-          >
+          <Button type="primary" onClick={onClose} className="grow">
             Done
           </Button>
         </Box>

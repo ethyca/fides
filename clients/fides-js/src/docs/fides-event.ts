@@ -5,10 +5,11 @@
  * documentation, since it's mostly just noise there - the list of events on
  * {@link FidesEvent} provides a good reference. But when coding, it's still
  * useful to have this union type around!
- * 
+ *
  * @private
  */
 export type FidesEventType =
+  | "FidesInitializing"
   | "FidesInitialized"
   | "FidesUpdating"
   | "FidesUpdated"
@@ -41,10 +42,14 @@ export type FidesEventType =
  *
  * ### List of FidesEvent Types
  *
+ * - `FidesInitializing`: Dispatched when initialization begins, which happens
+ * immediately once the FidesJS script is loaded. If `Fides.init()` is called
+ * multiple times, this event will also be dispatched each time.
+ *
  * - `FidesInitialized`: Dispatched when initialization is complete and the
  * current user's consent preferences - either previously saved or applicable
  * defaults - have been set on the `Fides` global object.
- * 
+ *
  * - `FidesUpdating`: Dispatched when a user action (e.g. accepting all, saving
  * changes, applying GPC) has started updating the user's consent preferences.
  * This event is dispatched immediately once the changes are made, but before
@@ -58,7 +63,7 @@ export type FidesEventType =
  * object, `fides_consent` cookie on the user's device, and the Fides API. To
  * receive an event that fires before these changes are saved, use the
  * `FidesUpdating` event instead.
- * 
+ *
  * - `FidesUIShown`: Dispatched whenever a FidesJS UI component is rendered and
  * shown to the current user (banner, modal, etc.). The specific component shown
  * can be obtained from the `detail.extraDetails.servingComponent` property on
@@ -69,6 +74,8 @@ export type FidesEventType =
  * "dirty").
  *
  * - `FidesModalClosed`: Dispatched whenever the FidesJS modal is closed.
+ *
+ * **Note**: The events `FidesUIShown`, `FidesUIChanged`, and `FidesModalClosed` are not available in a Headless experience, as they are specific to the FidesJS UI components.
  *
  */
 export interface FidesEvent extends CustomEvent {
@@ -107,7 +114,7 @@ export interface FidesEvent extends CustomEvent {
       /**
        * Whether the user should be shown the consent experience. Only available on FidesInitialized events.
        */
-     shouldShowExperience?: boolean;
+      shouldShowExperience?: boolean;
 
       /**
        * What consent method (if any) caused this event.
@@ -115,4 +122,4 @@ export interface FidesEvent extends CustomEvent {
       consentMethod?: "accept" | "reject" | "save" | "dismiss" | "gpc";
     };
   };
-};
+}

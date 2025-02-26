@@ -1,13 +1,15 @@
 import { useRouter } from "next/router";
-import { ReactNode } from "react";
+import { ReactNode, useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { LOGIN_ROUTE, VERIFY_AUTH_INTERVAL } from "~/constants";
-import { useNav } from "~/features/common/nav/v2/hooks";
+import { useNav } from "~/features/common/nav/hooks";
 import { useGetHealthQuery } from "~/features/plus/plus.slice";
 import { useGetUserPermissionsQuery } from "~/features/user-management";
 
 import { logout, selectToken, selectUser } from "./auth.slice";
+
+const REDIRECT_IGNORES = ["/", "/login"];
 
 const useProtectedRoute = (redirectUrl: string) => {
   const router = useRouter();
@@ -21,6 +23,7 @@ const useProtectedRoute = (redirectUrl: string) => {
   });
   const plusQuery = useGetHealthQuery();
   const nav = useNav({ path: router.pathname });
+  const [redirectFrom, setRedirectFrom] = useState<string | undefined>();
 
   if (!token || !userId || permissionsQuery.isError) {
     // Reset the user information in redux only if we have stale information
@@ -28,7 +31,23 @@ const useProtectedRoute = (redirectUrl: string) => {
       dispatch(logout());
     }
     if (typeof window !== "undefined") {
-      router.push(redirectUrl);
+      const query = REDIRECT_IGNORES.includes(window.location.pathname)
+        ? undefined
+        : { redirect: window.location.pathname };
+      if (
+        redirectFrom !== window.location.pathname &&
+        window.location.pathname !== redirectUrl
+      ) {
+        setRedirectFrom(window.location.pathname);
+        router
+          .push({
+            pathname: redirectUrl,
+            query,
+          })
+          .then(() => {
+            setRedirectFrom(undefined);
+          });
+      }
     }
     return { authenticated: false, hasAccess: false };
   }

@@ -6,9 +6,9 @@ import Layout from "~/features/common/Layout";
 import HomeBanner from "./HomeBanner";
 import HomeContent from "./HomeContent";
 
-const HomeContainer: React.FC = () => (
-  <Layout title="Home" mainProps={{ padding: 0 }}>
-    <Flex direction="column" gap={10}>
+const HomeContainer = () => (
+  <Layout title="Home" padded={false}>
+    <Flex direction="column" gap={10} pb={6}>
       <HomeBanner />
       <HomeContent />
     </Flex>

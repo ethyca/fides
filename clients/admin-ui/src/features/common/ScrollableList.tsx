@@ -1,12 +1,11 @@
-import { Select } from "chakra-react-select";
 import {
+  AntButton as Button,
+  AntSelect as Select,
   Box,
-  Button,
   ChakraProps,
   DeleteIcon,
   DragHandleIcon,
   Flex,
-  IconButton,
   List,
   SmallAddIcon,
   Text,
@@ -14,7 +13,7 @@ import {
 import { motion, Reorder, useDragControls } from "framer-motion";
 import { useState } from "react";
 
-import { Label, Option, SELECT_STYLES } from "~/features/common/form/inputs";
+import { Label, Option } from "~/features/common/form/inputs";
 import QuestionTooltip from "~/features/common/QuestionTooltip";
 
 const ScrollableListItem = <T extends unknown>({
@@ -22,6 +21,7 @@ const ScrollableListItem = <T extends unknown>({
   label,
   draggable,
   onDeleteItem,
+  tooltip,
   onRowClick,
   maxH = 10,
   rowTestId,
@@ -30,6 +30,7 @@ const ScrollableListItem = <T extends unknown>({
   label: string;
   draggable?: boolean;
   onDeleteItem?: (item: T) => void;
+  tooltip?: string;
   onRowClick?: (item: T) => void;
   maxH?: number;
   rowTestId: string;
@@ -46,18 +47,20 @@ const ScrollableListItem = <T extends unknown>({
         px={2}
         align="center"
         role="group"
+        className="group"
         borderY="1px"
         my="-1px"
         borderColor="gray.200"
         _hover={onRowClick ? { bgColor: "gray.100" } : undefined}
         bgColor="white"
+        position="relative"
       >
-        {draggable ? (
+        {draggable && (
           <DragHandleIcon
             onPointerDown={(e) => dragControls.start(e)}
             cursor="grab"
           />
-        ) : null}
+        )}
         <Flex
           direction="row"
           gap={2}
@@ -82,21 +85,17 @@ const ScrollableListItem = <T extends unknown>({
           >
             {label}
           </Text>
+          {tooltip ? <QuestionTooltip label={tooltip} /> : null}
         </Flex>
-        {onDeleteItem ? (
-          <IconButton
+        {onDeleteItem && (
+          <Button
             aria-label="Delete"
             onClick={() => onDeleteItem(item)}
-            icon={<DeleteIcon />}
-            size="xs"
-            variant="outline"
-            bgColor="white"
-            visibility="hidden"
-            alignSelf="end"
-            mb={2}
-            _groupHover={{ visibility: "visible" }}
+            icon={<DeleteIcon boxSize={3} />}
+            size="small"
+            className="invisible absolute right-2 bg-white group-hover:visible"
           />
-        ) : null}
+        )}
       </Flex>
     </Reorder.Item>
   );
@@ -116,34 +115,34 @@ const ScrollableListAdd = ({
   const [isAdding, setIsAdding] = useState<boolean>(false);
   const [selectValue, setSelectValue] = useState<Option | undefined>(undefined);
 
-  const handleElementSelected = (event: any) => {
-    onOptionSelected(event);
+  const handleElementSelected = (value: Option) => {
+    onOptionSelected(value);
     setIsAdding(false);
     setSelectValue(undefined);
   };
 
   return isAdding ? (
-    <Box w="full" data-testid={`select-${baseTestId}`}>
+    <Box w="full">
       <Select
-        chakraStyles={SELECT_STYLES}
-        size="sm"
+        labelInValue
+        placeholder="Select..."
+        filterOption={(input, option) =>
+          (option?.label ?? "").toLowerCase().includes(input.toLowerCase())
+        }
         value={selectValue}
         options={options}
-        onChange={(e: any) => handleElementSelected(e)}
-        autoFocus
-        menuPosition="fixed"
-        menuPlacement="auto"
-        classNamePrefix={`select-${baseTestId}`}
+        onChange={handleElementSelected}
+        className="w-full"
+        data-testid={`select-${baseTestId}`}
       />
     </Box>
   ) : (
     <Button
       onClick={() => setIsAdding(true)}
-      w="full"
-      size="sm"
-      variant="outline"
-      rightIcon={<SmallAddIcon boxSize={4} />}
       data-testid={`add-${baseTestId}`}
+      block
+      icon={<SmallAddIcon boxSize={4} />}
+      iconPosition="end"
     >
       {label}
     </Button>
@@ -161,6 +160,7 @@ const ScrollableList = <T extends unknown>({
   values,
   setValues,
   canDeleteItem,
+  getTooltip,
   onRowClick,
   selectOnAdd,
   getItemLabel,
@@ -178,6 +178,7 @@ const ScrollableList = <T extends unknown>({
   values: T[];
   setValues: (newOrder: T[]) => void;
   canDeleteItem?: (item: T) => boolean;
+  getTooltip?: (item: T) => string | undefined;
   onRowClick?: (item: T) => void;
   selectOnAdd?: boolean;
   getItemLabel?: (item: T) => string;
@@ -193,7 +194,7 @@ const ScrollableList = <T extends unknown>({
   const unselectedValues = allItems.every((item) => typeof item === "string")
     ? allItems.filter((item) => values.every((v) => v !== item))
     : allItems.filter((item) =>
-        values.every((v) => getItemId(v) !== getItemId(item))
+        values.every((v) => getItemId(v) !== getItemId(item)),
       );
 
   const handleDeleteItem = (item: T) => {
@@ -265,6 +266,9 @@ const ScrollableList = <T extends unknown>({
               draggable
               maxH={maxHeight}
               rowTestId={`${baseTestId}-row-${itemId}`}
+              tooltip={
+                getTooltip && getTooltip(item) ? getTooltip(item) : undefined
+              }
             />
           );
         })}
@@ -282,6 +286,9 @@ const ScrollableList = <T extends unknown>({
               label={getItemDisplayName(item)}
               onRowClick={onRowClick}
               onDeleteItem={handleDeleteItem}
+              tooltip={
+                getTooltip && getTooltip(item) ? getTooltip(item) : undefined
+              }
               maxH={maxHeight}
               rowTestId={`${baseTestId}-row-${itemId}`}
             />
@@ -304,7 +311,7 @@ const ScrollableList = <T extends unknown>({
         <ScrollableListAdd
           label={addButtonLabel ?? "Add new"}
           options={unselectedValues.map((value) =>
-            createOptionFromValue(value)
+            createOptionFromValue(value),
           )}
           onOptionSelected={handleAddNewValue}
           baseTestId={baseTestId}

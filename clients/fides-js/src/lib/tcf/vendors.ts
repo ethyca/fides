@@ -1,4 +1,4 @@
-import { PrivacyExperience } from "../consent-types";
+import { PrivacyExperience, PrivacyExperienceMinimal } from "../consent-types";
 import {
   GVLJson,
   TCFVendorConsentRecord,
@@ -33,7 +33,7 @@ export const decodeVendorId = (vendorId: TCFVendorRelationships["id"]) => {
  */
 export const vendorGvlEntry = (
   vendorId: TCFVendorRelationships["id"],
-  gvl: GVLJson | undefined
+  gvl: GVLJson | undefined,
 ) => {
   if (!gvl) {
     return undefined;
@@ -53,10 +53,26 @@ export const vendorIsAc = (vendorId: TCFVendorRelationships["id"]) =>
 export const uniqueGvlVendorIds = (experience: PrivacyExperience): number[] => {
   const { tcf_vendor_relationships: vendors = [] } = experience;
 
-  // Filter to just i.e. [gvl.2, gvl.4]
   const gvlIds = vendors
     .map((v) => v.id)
     .filter((uid) => vendorGvlEntry(uid, experience.gvl));
+  // Return [2,4] as numbers
+  return gvlIds.map((uid) => +decodeVendorId(uid).id);
+};
+
+export const uniqueGvlVendorIdsFromMinimal = (
+  experienceMinimal: PrivacyExperienceMinimal,
+): number[] => {
+  const combinedIds = [
+    ...(experienceMinimal.tcf_vendor_consent_ids || []),
+    ...(experienceMinimal.tcf_vendor_legitimate_interest_ids || []),
+  ];
+  // creating a set automatically removes duplicates
+  const uniqueCombinedSet = new Set(combinedIds);
+
+  const gvlIds = [...uniqueCombinedSet].filter((uid) =>
+    vendorGvlEntry(uid, experienceMinimal.gvl),
+  );
   // Return [2,4] as numbers
   return gvlIds.map((uid) => +decodeVendorId(uid).id);
 };
@@ -93,7 +109,7 @@ const transformVendorDataToVendorRecords = ({
 };
 
 export const transformExperienceToVendorRecords = (
-  experience: PrivacyExperience
+  experience: PrivacyExperience,
 ): VendorRecord[] => {
   const {
     tcf_vendor_consents: consentVendors = [],

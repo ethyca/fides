@@ -1,12 +1,16 @@
 import { stubPlus } from "cypress/support/stubs";
 
-import { GLOBAL_CONSENT_CONFIG_ROUTE } from "~/features/common/nav/v2/routes";
+import { GLOBAL_CONSENT_CONFIG_ROUTE } from "~/features/common/nav/routes";
 
 describe("Consent settings", () => {
   beforeEach(() => {
     cy.intercept("GET", "/api/v1/plus/tcf/purpose_overrides", { body: [] });
     cy.intercept("PATCH", "/api/v1/plus/tcf/purpose_overrides", { body: {} });
     stubPlus(true);
+    cy.intercept("GET", "/api/v1/purposes", {
+      purposes: ["test"],
+      special_purposes: ["test"],
+    }).as("getPurposes");
     cy.login();
   });
 
@@ -44,26 +48,23 @@ describe("Consent settings", () => {
       cy.getByTestId("consent-configuration");
       cy.getByTestId("setting-Global Privacy Platform").within(() => {
         cy.get("p").contains("GPP status Enabled");
-        cy.getByTestId("option-national").should(
-          "not.have.attr",
-          "data-checked"
-        );
-        cy.getByTestId("option-state").should("have.attr", "data-checked");
+        cy.getByTestId("option-national").should("not.have.attr", "checked");
+        cy.getByTestId("option-state").should("have.attr", "checked");
         cy.getByTestId("input-gpp.mspa_covered_transactions").should(
           "not.have.attr",
-          "data-checked"
+          "data-checked",
         );
         cy.getByTestId("input-gpp.mspa_service_provider_mode").should(
           "not.have.attr",
-          "data-checked"
+          "data-checked",
         );
         cy.getByTestId("input-gpp.mspa_opt_out_option_mode").should(
           "not.have.attr",
-          "data-checked"
+          "data-checked",
         );
         cy.getByTestId("input-gpp.enable_tcfeu_string").should(
           "not.have.attr",
-          "data-checked"
+          "data-checked",
         );
       });
     });
@@ -74,23 +75,26 @@ describe("Consent settings", () => {
       cy.visit(GLOBAL_CONSENT_CONFIG_ROUTE);
       cy.getByTestId("setting-Global Privacy Platform").within(() => {
         cy.get("p").contains("GPP status Enabled");
-        cy.getByTestId("option-national").should("have.attr", "data-checked");
-        cy.getByTestId("option-state").should("not.have.attr", "data-checked");
+        cy.getByTestId("option-national").should("have.attr", "checked");
+        cy.getByTestId("option-state").should("not.have.attr", "checked");
         cy.getByTestId("input-gpp.mspa_covered_transactions").should(
           "have.attr",
-          "data-checked"
+          "data-checked",
         );
         cy.getByTestId("input-gpp.mspa_service_provider_mode").should(
           "have.attr",
-          "data-checked"
+          "aria-checked",
+          "true",
         );
         cy.getByTestId("input-gpp.mspa_opt_out_option_mode").should(
-          "not.have.attr",
-          "data-checked"
+          "have.attr",
+          "aria-checked",
+          "false",
         );
         cy.getByTestId("input-gpp.enable_tcfeu_string").should(
           "have.attr",
-          "data-checked"
+          "aria-checked",
+          "true",
         );
       });
     });
@@ -115,17 +119,17 @@ describe("Consent settings", () => {
         cy.getByTestId("input-gpp.mspa_service_provider_mode").click();
         cy.getByTestId("input-gpp.mspa_opt_out_option_mode").should(
           "have.attr",
-          "data-disabled"
+          "disabled",
         );
         cy.getByTestId("input-gpp.mspa_service_provider_mode").click();
         cy.getByTestId("input-gpp.mspa_opt_out_option_mode").should(
           "not.have.attr",
-          "data-disabled"
+          "disabled",
         );
         cy.getByTestId("input-gpp.mspa_opt_out_option_mode").click();
         cy.getByTestId("input-gpp.mspa_service_provider_mode").should(
           "have.attr",
-          "data-disabled"
+          "disabled",
         );
       });
     });

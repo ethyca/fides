@@ -5,7 +5,7 @@ from typing import Any, Dict, List, Optional, Tuple, Type, Union
 
 from fideslang.default_taxonomy import DEFAULT_TAXONOMY
 from fideslang.validation import FidesKey
-from pydantic import BaseModel, Extra, root_validator
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from fides.api.custom_types import PhoneNumber, SafeStr
 from fides.api.schemas import Msg
@@ -63,7 +63,20 @@ class MessagingActionType(str, Enum):
     PRIVACY_REQUEST_COMPLETE_DELETION = "privacy_request_complete_deletion"
     PRIVACY_REQUEST_REVIEW_DENY = "privacy_request_review_deny"
     PRIVACY_REQUEST_REVIEW_APPROVE = "privacy_request_review_approve"
+    USER_INVITE = "user_invite"
     TEST_MESSAGE = "test_message"
+
+
+CONFIGURABLE_MESSAGING_ACTION_TYPES: Tuple[str, ...] = (
+    # These messaging action types are configurable in Admin-UI, and thus are the only templates that apply to the
+    # property-specific messaging feature. The other action types as associated with hard-coded templates in Fides.
+    MessagingActionType.SUBJECT_IDENTITY_VERIFICATION.value,
+    MessagingActionType.PRIVACY_REQUEST_RECEIPT.value,
+    MessagingActionType.PRIVACY_REQUEST_COMPLETE_ACCESS.value,
+    MessagingActionType.PRIVACY_REQUEST_COMPLETE_DELETION.value,
+    MessagingActionType.PRIVACY_REQUEST_REVIEW_DENY.value,
+    MessagingActionType.PRIVACY_REQUEST_REVIEW_APPROVE.value,
+)
 
 
 class ErrorNotificationBodyParams(BaseModel):
@@ -101,7 +114,9 @@ class AccessRequestCompleteBodyParams(BaseModel):
 class RequestReviewDenyBodyParams(BaseModel):
     """Body params required for privacy request review deny template"""
 
-    rejection_reason: Optional[SafeStr]
+    rejection_reason: Optional[SafeStr] = None
+
+    model_config = ConfigDict(extra="forbid")
 
 
 class ConsentPreferencesByUser(BaseModel):
@@ -119,7 +134,8 @@ class ConsentPreferencesByUser(BaseModel):
         MinimalPrivacyPreferenceHistorySchema
     ]  # Privacy preferences for new workflow
 
-    @root_validator
+    @model_validator(mode="before")
+    @classmethod
     def transform_data_use_format(cls, values: Dict[str, Any]) -> Dict[str, Any]:
         """Transform a data use fides_key to a corresponding name if possible"""
         consent_preferences = values.get("consent_preferences") or []
@@ -127,7 +143,8 @@ class ConsentPreferencesByUser(BaseModel):
             preference.data_use = next(
                 (
                     data_use.name
-                    for data_use in DEFAULT_TAXONOMY.data_use or []
+                    for data_use in DEFAULT_TAXONOMY.data_use  # pylint:disable=not-an-iterable
+                    or []
                     if data_use.fides_key == preference.data_use
                 ),
                 preference.data_use,
@@ -153,10 +170,15 @@ class ErasureRequestBodyParams(BaseModel):
     identities: List[str]
 
 
+class UserInviteBodyParams(BaseModel):
+    """Body params required to send a user invite email"""
+
+    username: str
+    invite_code: str
+
+
 class FidesopsMessage(
     BaseModel,
-    smart_union=True,
-    arbitrary_types_allowed=True,
 ):
     """A mapping of action_type to body_params"""
 
@@ -169,8 +191,38 @@ class FidesopsMessage(
             RequestReviewDenyBodyParams,
             AccessRequestCompleteBodyParams,
             ErasureRequestBodyParams,
+            ErrorNotificationBodyParams,
+            UserInviteBodyParams,
         ]
-    ]
+    ] = None
+
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
+    @model_validator(mode="after")
+    def validate_body_params_match_action_type(self) -> "FidesopsMessage":
+
+        valid_body_params_for_action_type = {
+            MessagingActionType.CONSENT_REQUEST: None,  # Don't validate this one
+            MessagingActionType.CONSENT_REQUEST_EMAIL_FULFILLMENT: ConsentEmailFulfillmentBodyParams,
+            MessagingActionType.SUBJECT_IDENTITY_VERIFICATION: SubjectIdentityVerificationBodyParams,
+            MessagingActionType.PRIVACY_REQUEST_RECEIPT: RequestReceiptBodyParams,
+            MessagingActionType.PRIVACY_REQUEST_REVIEW_DENY: RequestReviewDenyBodyParams,
+            MessagingActionType.PRIVACY_REQUEST_REVIEW_APPROVE: None,  # No body params for this action type
+            MessagingActionType.PRIVACY_REQUEST_COMPLETE_ACCESS: AccessRequestCompleteBodyParams,
+            MessagingActionType.MESSAGE_ERASURE_REQUEST_FULFILLMENT: ErasureRequestBodyParams,
+            MessagingActionType.PRIVACY_REQUEST_ERROR_NOTIFICATION: ErrorNotificationBodyParams,
+            MessagingActionType.USER_INVITE: UserInviteBodyParams,
+        }
+
+        valid_body_params = valid_body_params_for_action_type.get(
+            self.action_type, None
+        )
+        if valid_body_params and not isinstance(self.body_params, valid_body_params):
+            raise ValueError(
+                f"Invalid body params for action type {self.action_type}. Expected {valid_body_params.__name__}, got {type(self.body_params).__name__}"
+            )
+
+        return self
 
 
 class EmailForActionType(BaseModel):
@@ -204,11 +256,7 @@ class MessagingServiceDetailsMailchimpTransactional(BaseModel):
     """The details required to represent a Mailchimp Transactional email configuration."""
 
     email_from: str
-
-    class Config:
-        """Restrict adding other fields through this schema."""
-
-        extra = Extra.forbid
+    model_config = ConfigDict(extra="forbid")
 
 
 class MessagingServiceDetailsMailgun(BaseModel):
@@ -217,22 +265,14 @@ class MessagingServiceDetailsMailgun(BaseModel):
     is_eu_domain: Optional[bool] = False
     api_version: Optional[str] = "v3"
     domain: str
-
-    class Config:
-        """Restrict adding other fields through this schema."""
-
-        extra = Extra.forbid
+    model_config = ConfigDict(extra="forbid")
 
 
 class MessagingServiceDetailsTwilioEmail(BaseModel):
     """The details required to represent a Twilio email configuration."""
 
     twilio_email_from: str
-
-    class Config:
-        """Restrict adding other fields through this schema."""
-
-        extra = Extra.forbid
+    model_config = ConfigDict(extra="forbid")
 
 
 class MessagingServiceSecrets(Enum):
@@ -258,22 +298,14 @@ class MessagingServiceSecretsMailchimpTransactional(BaseModel):
     """The secrets required to connect to Mailchimp Transactional."""
 
     mailchimp_transactional_api_key: str
-
-    class Config:
-        """Restrict adding other fields through this schema."""
-
-        extra = Extra.forbid
+    model_config = ConfigDict(extra="forbid")
 
 
 class MessagingServiceSecretsMailgun(BaseModel):
     """The secrets required to connect to Mailgun."""
 
     mailgun_api_key: str
-
-    class Config:
-        """Restrict adding other fields through this schema."""
-
-        extra = Extra.forbid
+    model_config = ConfigDict(extra="forbid")
 
 
 class MessagingServiceSecretsTwilioSMS(BaseModel):
@@ -281,15 +313,12 @@ class MessagingServiceSecretsTwilioSMS(BaseModel):
 
     twilio_account_sid: str
     twilio_auth_token: str
-    twilio_messaging_service_sid: Optional[str]
-    twilio_sender_phone_number: Optional[PhoneNumber]
+    twilio_messaging_service_sid: Optional[str] = None
+    twilio_sender_phone_number: Optional[PhoneNumber] = None
+    model_config = ConfigDict(extra="forbid")
 
-    class Config:
-        """Restrict adding other fields through this schema."""
-
-        extra = Extra.forbid
-
-    @root_validator
+    @model_validator(mode="before")
+    @classmethod
     def validate_fields(cls, values: Dict[str, Any]) -> Dict[str, Any]:
         sender_phone = values.get("twilio_sender_phone_number")
         if not values.get("twilio_messaging_service_sid") and not sender_phone:
@@ -303,11 +332,7 @@ class MessagingServiceSecretsTwilioEmail(BaseModel):
     """The secrets required to connect to twilio email."""
 
     twilio_api_key: str
-
-    class Config:
-        """Restrict adding other fields through this schema."""
-
-        extra = Extra.forbid
+    model_config = ConfigDict(extra="forbid")
 
 
 class MessagingConfigBase(BaseModel):
@@ -320,18 +345,17 @@ class MessagingConfigBase(BaseModel):
             MessagingServiceDetailsTwilioEmail,
             MessagingServiceDetailsMailchimpTransactional,
         ]
-    ]
-
-    class Config:
-        use_enum_values = False
-        orm_mode = True
-        extra = Extra.forbid
+    ] = None
+    model_config = ConfigDict(
+        use_enum_values=False, from_attributes=True, extra="forbid"
+    )
 
 
 class MessagingConfigRequestBase(MessagingConfigBase):
     """Base model shared by messaging config requests to provide validation on request inputs"""
 
-    @root_validator(pre=True)
+    @model_validator(mode="before")
+    @classmethod
     def validate_fields(cls, values: Dict[str, Any]) -> Dict[str, Any]:
         service_type = values.get("service_type")
         if service_type:
@@ -365,7 +389,7 @@ class MessagingConfigRequest(MessagingConfigRequestBase):
     """Messaging Config Request Schema"""
 
     name: str
-    key: Optional[FidesKey]
+    key: Optional[FidesKey] = None
 
 
 class MessagingConfigResponse(MessagingConfigBase):
@@ -373,10 +397,7 @@ class MessagingConfigResponse(MessagingConfigBase):
 
     name: str
     key: FidesKey
-
-    class Config:
-        orm_mode = True
-        use_enum_values = True
+    model_config = ConfigDict(from_attributes=True, use_enum_values=True)
 
 
 SUPPORTED_MESSAGING_SERVICE_SECRETS = Union[
@@ -416,41 +437,99 @@ class MessagingConfigStatusMessage(BaseModel):
     detail: Optional[str] = None
 
 
-class MessagingTemplateBase(BaseModel):
+class BasicMessagingTemplateBase(BaseModel):
     type: str
-    content: Dict[str, Any]
+    content: Dict[str, Any] = Field(
+        examples=[
+            {
+                "subject": "Message subject",
+                "body": "Custom message body",
+            }
+        ]
+    )
 
 
-class MessagingTemplateRequest(MessagingTemplateBase):
+class BasicMessagingTemplateRequest(BasicMessagingTemplateBase):
     pass
 
 
-class MessagingTemplateResponse(MessagingTemplateBase):
+class BasicMessagingTemplateResponse(BasicMessagingTemplateBase):
     label: str
 
 
-class BulkPutMessagingTemplateResponse(BulkResponse):
-    succeeded: List[MessagingTemplateResponse]
+class BulkPutBasicMessagingTemplateResponse(BulkResponse):
+    succeeded: List[BasicMessagingTemplateResponse]
     failed: List[BulkUpdateFailed]
 
 
+class UserEmailInviteStatus(BaseModel):
+    enabled: bool
+
+
 class MessagingTemplateWithPropertiesBase(BaseModel):
-    id: Optional[str]  # Since summary returns db or defaults, this can be null
+    id: str
     type: str
     is_enabled: bool
-    properties: Optional[List[MinimalProperty]]
+    properties: Optional[List[MinimalProperty]] = None
+
+    model_config = ConfigDict(from_attributes=True, use_enum_values=True)
+
+
+class MessagingTemplateDefault(BaseModel):
+    type: str
+    is_enabled: bool
+    content: Dict[str, Any] = Field(
+        examples=[
+            {
+                "subject": "Message subject",
+                "body": "Custom message body",
+            }
+        ]
+    )
 
 
 class MessagingTemplateWithPropertiesSummary(MessagingTemplateWithPropertiesBase):
-    pass
+
+    model_config = ConfigDict(from_attributes=True, use_enum_values=True)
 
 
 class MessagingTemplateWithPropertiesDetail(MessagingTemplateWithPropertiesBase):
-    content: Dict[str, Any]
+    content: Dict[str, Any] = Field(
+        examples=[
+            {
+                "subject": "Message subject",
+                "body": "Custom message body",
+            }
+        ]
+    )
+
+    model_config = ConfigDict(from_attributes=True, use_enum_values=True)
 
 
 class MessagingTemplateWithPropertiesBodyParams(BaseModel):
 
-    content: Dict[str, Any]
-    properties: Optional[List[str]]
+    content: Dict[str, Any] = Field(
+        examples=[
+            {
+                "subject": "Message subject",
+                "body": "Custom message body",
+            }
+        ]
+    )
+    properties: Optional[List[str]] = None
     is_enabled: bool
+
+
+class MessagingTemplateWithPropertiesPatchBodyParams(BaseModel):
+
+    content: Optional[Dict[str, Any]] = Field(
+        None,
+        examples=[
+            {
+                "subject": "Message subject",
+                "body": "Custom message body",
+            }
+        ],
+    )
+    properties: Optional[List[str]] = None
+    is_enabled: Optional[bool] = None

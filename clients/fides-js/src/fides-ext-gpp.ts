@@ -11,33 +11,43 @@ import {
   CmpStatus,
   SignalStatus,
   TcfEuV2,
-  UsCaV1,
-  UsCoV1,
-  UsCtV1,
-  UsNatV1,
-  UsUtV1,
-  UsVaV1,
+  UsCa,
+  UsCo,
+  UsCt,
+  UsDe,
+  UsFl,
+  UsIa,
+  UsMt,
+  UsNat,
+  UsNe,
+  UsNh,
+  UsNj,
+  UsTn,
+  UsTx,
+  UsUt,
+  UsVa,
 } from "@iabgpp/cmpapi";
-import { makeStub } from "./lib/gpp/stub";
-import { extractTCStringForCmpApi } from "./lib/tcf/events";
-import {
-  allNoticesAreDefaultOptIn,
-  isPrivacyExperience,
-  shouldResurfaceConsent,
-} from "./lib/consent-utils";
-import { ETHYCA_CMP_ID } from "./lib/tcf/constants";
+
+import { FidesEvent } from "./fides";
 import type {
   FidesGlobal,
   FidesOptions,
   NoticeConsent,
   PrivacyNoticeWithPreference,
 } from "./lib/consent-types";
-import { GPPUSApproach, GppFunction } from "./lib/gpp/types";
-import { FidesEvent } from "./fides";
+import {
+  allNoticesAreDefaultOptIn,
+  isPrivacyExperience,
+  shouldResurfaceConsent,
+} from "./lib/consent-utils";
+import { makeStub } from "./lib/gpp/stub";
+import { GppFunction, GPPUSApproach } from "./lib/gpp/types";
 import {
   setGppNoticesProvidedFromExperience,
   setGppOptOutsFromCookieAndExperience,
 } from "./lib/gpp/us-notices";
+import { ETHYCA_CMP_ID } from "./lib/tcf/constants";
+import { extractTCStringForCmpApi } from "./lib/tcf/events";
 
 const CMP_VERSION = 1;
 
@@ -64,7 +74,7 @@ declare global {
 const userHasExistingPrefs = (
   savedConsent: NoticeConsent | undefined,
   fides_string: string | undefined,
-  notices: Array<PrivacyNoticeWithPreference> | undefined
+  notices: Array<PrivacyNoticeWithPreference> | undefined,
 ): boolean => {
   if (!savedConsent) {
     return false;
@@ -76,8 +86,8 @@ const userHasExistingPrefs = (
     notices &&
       Object.entries(savedConsent).some(
         ([key, val]) =>
-          key in notices.map((i) => i.notice_key) && val !== undefined
-      )
+          key in notices.map((i) => i.notice_key) && val !== undefined,
+      ),
   );
 };
 
@@ -114,13 +124,37 @@ const getSupportedApis = () => {
       if (window.Fides.options.tcfEnabled && gppSettings.enable_tcfeu_string) {
         supportedApis.push(`${TcfEuV2.ID}:${TcfEuV2.NAME}`);
       }
-      if (gppSettings.us_approach === GPPUSApproach.NATIONAL) {
-        supportedApis.push(`${UsNatV1.ID}:${UsNatV1.NAME}`);
+      fidesDebugger("GPP settings", gppSettings);
+      if (
+        gppSettings.us_approach === GPPUSApproach.NATIONAL ||
+        gppSettings.us_approach === GPPUSApproach.ALL
+      ) {
+        fidesDebugger("GPP: setting US National APIs");
+        supportedApis.push(`${UsNat.ID}:${UsNat.NAME}`);
       }
-      if (gppSettings.us_approach === GPPUSApproach.STATE) {
+      if (
+        gppSettings.us_approach === GPPUSApproach.STATE ||
+        gppSettings.us_approach === GPPUSApproach.ALL
+      ) {
+        fidesDebugger("GPP: setting US State APIs");
         // TODO: include the states based off of locations/regulations.
         // For now, hard code all of them. https://ethyca.atlassian.net/browse/PROD-1595
-        [UsCaV1, UsCoV1, UsCtV1, UsUtV1, UsVaV1].forEach((state) => {
+        [
+          UsCa,
+          UsCo,
+          UsCt,
+          UsUt,
+          UsVa,
+          UsDe,
+          UsFl,
+          UsIa,
+          UsMt,
+          UsNe,
+          UsNh,
+          UsNj,
+          UsTn,
+          UsTx,
+        ].forEach((state) => {
           supportedApis.push(`${state.ID}:${state.NAME}`);
         });
       }
@@ -135,7 +169,12 @@ const initializeGppCmpApi = () => {
   cmpApi.setCmpStatus(CmpStatus.LOADED);
   window.addEventListener("FidesInitialized", (event) => {
     // TODO (PROD-1439): re-evaluate if GPP is "cheating" accessing window.Fides instead of using the event details only
-    const { experience, saved_consent: savedConsent, options } = window.Fides;
+    const {
+      experience,
+      saved_consent: savedConsent,
+      options,
+      geolocation,
+    } = window.Fides;
     const isTcfEnabled = options.tcfEnabled;
     cmpApi.setSupportedAPIs(getSupportedApis());
     // Set status to ready immediately upon initialization, if either:
@@ -149,7 +188,7 @@ const initializeGppCmpApi = () => {
           !userHasExistingPrefs(
             savedConsent,
             event.detail.fides_string,
-            experience.privacy_notices
+            experience.privacy_notices,
           )))
     ) {
       const tcSet = setTcString(event, cmpApi);
@@ -172,6 +211,20 @@ const initializeGppCmpApi = () => {
         cmpApi.setApplicableSections([-1]);
       }
       cmpApi.setSignalStatus(SignalStatus.READY);
+
+      // mimics __gpp('ping', console.log);
+      fidesDebugger(
+        `GPP: CMP status and configuration for ${geolocation?.location}`,
+        {
+          cmpStatus: cmpApi.getCmpStatus(),
+          cmpDisplayStatus: cmpApi.getCmpDisplayStatus(),
+          signalStatus: cmpApi.getSignalStatus(),
+          supportedAPIs: cmpApi.getSupportedAPIs(),
+          applicableSections: cmpApi.getApplicableSections(),
+          gppString: cmpApi.getGppString(),
+          parsedSections: cmpApi.getObject(),
+        },
+      );
     }
   });
 
@@ -187,7 +240,7 @@ const initializeGppCmpApi = () => {
         !userHasExistingPrefs(
           savedConsent,
           event.detail.fides_string,
-          experience.privacy_notices
+          experience.privacy_notices,
         )
       ) {
         cmpApi.setSignalStatus(SignalStatus.READY);
@@ -246,4 +299,8 @@ const initializeGppCmpApi = () => {
     cmpApi.setSignalStatus(SignalStatus.READY);
   });
 };
-initializeGppCmpApi();
+window.addEventListener("FidesInitializing", (event) => {
+  if (event.detail.extraDetails?.gppEnabled) {
+    initializeGppCmpApi();
+  }
+});

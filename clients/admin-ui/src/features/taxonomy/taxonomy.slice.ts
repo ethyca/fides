@@ -25,7 +25,7 @@ const taxonomyApi = baseApi.injectEndpoints({
       invalidatesTags: ["Data Categories"],
     }),
 
-    createDataCategory: build.mutation<DataCategory, DataCategory>({
+    createDataCategory: build.mutation<DataCategory, Partial<DataCategory>>({
       query: (dataCategory) => ({
         url: `data_category`,
         method: "POST",
@@ -47,6 +47,7 @@ const taxonomyApi = baseApi.injectEndpoints({
 
 export const {
   useGetAllDataCategoriesQuery,
+  useLazyGetAllDataCategoriesQuery,
   useUpdateDataCategoryMutation,
   useDeleteDataCategoryMutation,
   useCreateDataCategoryMutation,
@@ -76,27 +77,27 @@ const emptyDataCategories: DataCategory[] = [];
 export const selectDataCategories: (state: RootState) => DataCategory[] =
   createSelector(
     taxonomyApi.endpoints.getAllDataCategories.select(),
-    ({ data }) => data ?? emptyDataCategories
+    ({ data }) => data ?? emptyDataCategories,
   );
 
 export const selectEnabledDataCategories: (state: RootState) => DataCategory[] =
   createSelector(
     taxonomyApi.endpoints.getAllDataCategories.select(),
-    ({ data }) => data?.filter((dc) => dc.active) ?? emptyDataCategories
+    ({ data }) => data?.filter((dc) => dc.active) ?? emptyDataCategories,
   );
 
 export const selectDataCategoriesMap: (
-  state: RootState
+  state: RootState,
 ) => Map<string, DataCategory> = createSelector(
   selectDataCategories,
-  (dataCategories) => new Map(dataCategories.map((dc) => [dc.fides_key, dc]))
+  (dataCategories) => new Map(dataCategories.map((dc) => [dc.fides_key, dc])),
 );
 
 const selectTaxonomy = (state: RootState) => state.taxonomy;
 
 export const selectIsAddFormOpen = createSelector(
   selectTaxonomy,
-  (state) => state.isAddFormOpen
+  (state) => state.isAddFormOpen,
 );
 
 export const { reducer } = taxonomySlice;

@@ -1,38 +1,41 @@
 import { SerializedError } from "@reduxjs/toolkit";
-import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query";
-import { useAPIHelper } from "common/hooks";
+import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import {
+  AntButton as Button,
+  AntTag as Tag,
   Box,
-  Button,
-  ButtonGroup,
   Flex,
   HStack,
-  IconButton,
   Stack,
   Text,
   useDisclosure,
   useToast,
 } from "fidesui";
 import { Form, Formik } from "formik";
-import NextLink from "next/link";
+import { useRouter } from "next/router";
 import React from "react";
 import DeleteUserModal from "user-management/DeleteUserModal";
 import * as Yup from "yup";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
+import { useFlags } from "~/features/common/features";
 import { CustomTextInput } from "~/features/common/form/inputs";
 import { passwordValidation } from "~/features/common/form/validation";
+import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { TrashCanSolidIcon } from "~/features/common/Icon/TrashCanSolidIcon";
-import { USER_MANAGEMENT_ROUTE } from "~/features/common/nav/v2/routes";
-import { successToastParams } from "~/features/common/toast";
+import { USER_MANAGEMENT_ROUTE } from "~/features/common/nav/routes";
+import { errorToastParams, successToastParams } from "~/features/common/toast";
+import { useGetEmailInviteStatusQuery } from "~/features/messaging/messaging.slice";
+import { useGetAllOpenIDProvidersQuery } from "~/features/openid-authentication/openprovider.slice";
 
 import PasswordManagement from "./PasswordManagement";
-import { User } from "./types";
+import { User, UserCreate, UserCreateResponse } from "./types";
 import { selectActiveUser, setActiveUserId } from "./user-management.slice";
 
-const defaultInitialValues = {
+const defaultInitialValues: UserCreate = {
   username: "",
   first_name: "",
+  email_address: "",
   last_name: "",
   password: "",
 };
@@ -41,6 +44,7 @@ export type FormValues = typeof defaultInitialValues;
 
 const ValidationSchema = Yup.object().shape({
   username: Yup.string().required().label("Username"),
+  email_address: Yup.string().email().required().label("Email address"),
   first_name: Yup.string().label("First name"),
   last_name: Yup.string().label("Last name"),
   password: passwordValidation.label("Password"),
@@ -48,9 +52,8 @@ const ValidationSchema = Yup.object().shape({
 
 export interface Props {
   onSubmit: (values: FormValues) => Promise<
-    | void
     | {
-        data: User;
+        data: User | UserCreateResponse;
       }
     | {
         error: FetchBaseQueryError | SerializedError;
@@ -61,22 +64,27 @@ export interface Props {
 }
 
 const UserForm = ({ onSubmit, initialValues, canEditNames }: Props) => {
+  const router = useRouter();
   const toast = useToast();
   const dispatch = useAppDispatch();
   const deleteModal = useDisclosure();
 
-  const { handleError } = useAPIHelper();
-
   const activeUser = useAppSelector(selectActiveUser);
+  const { data: emailInviteStatus } = useGetEmailInviteStatusQuery();
+  const inviteUsersViaEmail = emailInviteStatus?.enabled;
+  const { flags } = useFlags();
 
   const isNewUser = !activeUser;
   const nameDisabled = isNewUser ? false : !canEditNames;
+  const showPasswordField = isNewUser && !inviteUsersViaEmail;
 
   const handleSubmit = async (values: FormValues) => {
     // first either update or create the user
-    const result = await onSubmit(values);
-    if (result && "error" in result) {
-      handleError(result.error);
+    const { password, ...payloadWithoutPassword } = values;
+    const payload = showPasswordField ? values : payloadWithoutPassword;
+    const result = await onSubmit(payload);
+    if (isErrorResult(result)) {
+      toast(errorToastParams(getErrorMessage(result.error)));
       return;
     }
     toast(
@@ -85,19 +93,32 @@ const UserForm = ({ onSubmit, initialValues, canEditNames }: Props) => {
           isNewUser
             ? "User created. By default, new users are set to the Viewer role. To change the role, please go to the Permissions tab."
             : "User updated."
-        }`
-      )
+        }`,
+      ),
     );
-    if (result && result.data) {
+    if (result?.data) {
       dispatch(setActiveUserId(result.data.id));
     }
   };
 
   // The password field is only available when creating a new user.
   // Otherwise, it is within the UpdatePasswordModal
-  const validationSchema = isNewUser
-    ? ValidationSchema
-    : ValidationSchema.omit(["password"]);
+  let validationSchema: Yup.ObjectSchema<Yup.AnyObject> = ValidationSchema;
+
+  const { data: openidProviders } = useGetAllOpenIDProvidersQuery();
+
+  const passwordFieldIsRequired =
+    !flags.ssoAuthentication || !openidProviders?.length;
+
+  if (!passwordFieldIsRequired) {
+    validationSchema = ValidationSchema.shape({
+      password: passwordValidation.optional().label("Password"),
+    });
+  }
+
+  validationSchema = showPasswordField
+    ? validationSchema
+    : validationSchema.omit(["password"]);
 
   return (
     <Formik
@@ -116,18 +137,25 @@ const UserForm = ({ onSubmit, initialValues, canEditNames }: Props) => {
                   fontSize="sm"
                   fontWeight="semibold"
                 >
-                  Profile
+                  Profile{" "}
+                  {activeUser?.disabled && (
+                    <Tag
+                      color="success"
+                      className="ml-2"
+                      data-testid="invite-sent-badge"
+                    >
+                      Invite sent
+                    </Tag>
+                  )}
                 </Text>
                 <Box marginLeft="auto">
                   <HStack>
                     <PasswordManagement />
                     {!isNewUser ? (
                       <Box>
-                        <IconButton
+                        <Button
                           aria-label="delete"
                           icon={<TrashCanSolidIcon />}
-                          variant="outline"
-                          size="sm"
                           onClick={deleteModal.onOpen}
                           data-testid="delete-user-btn"
                         />
@@ -146,6 +174,13 @@ const UserForm = ({ onSubmit, initialValues, canEditNames }: Props) => {
                 isRequired
               />
               <CustomTextInput
+                name="email_address"
+                label="Email address"
+                variant="block"
+                placeholder="Enter email of user"
+                isRequired
+              />
+              <CustomTextInput
                 name="first_name"
                 label="First Name"
                 variant="block"
@@ -159,7 +194,7 @@ const UserForm = ({ onSubmit, initialValues, canEditNames }: Props) => {
                 placeholder="Enter last name of user"
                 disabled={nameDisabled}
               />
-              {!activeUser ? (
+              {showPasswordField ? (
                 <CustomTextInput
                   name="password"
                   label="Password"
@@ -167,29 +202,27 @@ const UserForm = ({ onSubmit, initialValues, canEditNames }: Props) => {
                   placeholder="********"
                   type="password"
                   tooltip="Password must contain at least 8 characters, 1 number, 1 capital letter, 1 lowercase letter, and at least 1 symbol."
-                  isRequired
+                  isRequired={passwordFieldIsRequired}
                 />
               ) : null}
             </Stack>
-            <ButtonGroup size="sm">
-              <NextLink href={USER_MANAGEMENT_ROUTE} passHref>
-                <Button variant="outline" mr={3}>
-                  Cancel
-                </Button>
-              </NextLink>
+            <div>
               <Button
-                type="submit"
-                bg="primary.800"
-                _hover={{ bg: "primary.400" }}
-                _active={{ bg: "primary.500" }}
-                colorScheme="primary"
+                onClick={() => router.push(USER_MANAGEMENT_ROUTE)}
+                className="mr-3"
+              >
+                Cancel
+              </Button>
+              <Button
+                htmlType="submit"
+                type="primary"
                 disabled={!dirty || !isValid}
-                isLoading={isSubmitting}
+                loading={isSubmitting}
                 data-testid="save-user-btn"
               >
                 Save
               </Button>
-            </ButtonGroup>
+            </div>
           </Stack>
         </Form>
       )}

@@ -4,11 +4,11 @@ import ConnectedCircle from "../common/ConnectedCircle";
 import { formatDate } from "../common/utils";
 
 type TestDataProps = {
-  succeeded?: boolean;
+  succeeded?: boolean | null;
   timestamp: string | number;
 };
 
-const TestData: React.FC<TestDataProps> = ({ succeeded, timestamp }) => {
+export const TestData = ({ succeeded, timestamp }: TestDataProps) => {
   const date = timestamp ? formatDate(timestamp) : "";
   const testText = timestamp
     ? `Last tested on ${date}`
@@ -29,5 +29,3 @@ const TestData: React.FC<TestDataProps> = ({ succeeded, timestamp }) => {
     </>
   );
 };
-
-export default TestData;

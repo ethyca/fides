@@ -2,7 +2,7 @@ import os
 from typing import Generator
 
 import pytest
-from sqlalchemy import inspect
+from sqlalchemy import func, inspect, select, table
 from toml import load as load_toml
 
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType
@@ -54,7 +54,7 @@ def redshift_test_engine() -> Generator:
         database=database,
         db_schema=db_schema,
     )
-    connection_config.secrets = schema.dict()
+    connection_config.secrets = schema.model_dump(mode="json")
 
     connector: RedshiftConnector = get_connector(connection_config)
     engine = connector.client()
@@ -98,7 +98,7 @@ def snowflake_test_engine() -> Generator:
         name="My Snowflake Config",
         key="test_snowflake_key",
         connection_type=ConnectionType.snowflake,
-        secrets=schema.dict(),
+        secrets=schema.model_dump(mode="json"),
     )
     connector: SnowflakeConnector = get_connector(connection_config)
     engine = connector.client()
@@ -180,5 +180,66 @@ def test_bigquery_example_data(bigquery_test_engine):
             "report",
             "service_request",
             "visit",
+            "visit_partitioned",
         ]
     )
+
+
+@pytest.mark.integration_external
+@pytest.mark.integration_google_cloud_sql_mysql
+def test_google_cloud_sql_mysql_example_data(google_cloud_sql_mysql_integration_db):
+    """Confirm that the example database is populated with simulated data"""
+    expected_counts = {
+        "product": 3,
+        "address": 3,
+        "customer": 2,
+        "employee": 2,
+        "payment_card": 2,
+        "orders": 4,
+        "order_item": 5,
+        "visit": 2,
+        "login": 7,
+        "service_request": 4,
+        "report": 4,
+    }
+
+    for table_name, expected_count in expected_counts.items():
+        # NOTE: we could use text() here, but we want to avoid SQL string
+        # templating as much as possible. instead, use the table() helper to
+        # dynamically generate the FROM clause for each table_name
+        count_sql = select(func.count()).select_from(table(table_name))
+        assert (
+            google_cloud_sql_mysql_integration_db.execute(count_sql).scalar()
+            == expected_count
+        )
+
+
+@pytest.mark.integration_external
+@pytest.mark.integration_google_cloud_sql_postgres
+def test_google_cloud_sql_postgres_example_data(
+    google_cloud_sql_postgres_integration_db,
+):
+    """Confirm that the example database is populated with simulated data"""
+    expected_counts = {
+        "product": 3,
+        "address": 3,
+        "customer": 2,
+        "employee": 2,
+        "payment_card": 2,
+        "orders": 4,
+        "order_item": 5,
+        "visit": 2,
+        "login": 7,
+        "service_request": 4,
+        "report": 4,
+    }
+
+    for table_name, expected_count in expected_counts.items():
+        # NOTE: we could use text() here, but we want to avoid SQL string
+        # templating as much as possible. instead, use the table() helper to
+        # dynamically generate the FROM clause for each table_name
+        count_sql = select(func.count()).select_from(table(table_name))
+        assert (
+            google_cloud_sql_postgres_integration_db.execute(count_sql).scalar()
+            == expected_count
+        )

@@ -36,12 +36,23 @@ class ComponentType(Enum):
     modal = "modal"
     privacy_center = "privacy_center"
     tcf_overlay = "tcf_overlay"  # TCF Banner + modal combined
+    headless = "headless"
+
+
+class Layer1ButtonOption(Enum):
+    """
+    Layer 1 button options - not formalized in the db
+    """
+
+    ACKNOWLEDGE = "acknowledge"
+    OPT_IN_OPT_OUT = "opt_in_opt_out"
 
 
 # Fides JS UX Types - there should only be one of these defined per region
 FidesJSUXTypes: List[ComponentType] = [
     ComponentType.banner_and_modal,
     ComponentType.modal,
+    ComponentType.headless,
 ]
 
 # Fides JS Overlay Types - there should only be one of these defined per region + property
@@ -49,6 +60,7 @@ FidesJSOverlayTypes: List[ComponentType] = [
     ComponentType.banner_and_modal,
     ComponentType.modal,
     ComponentType.tcf_overlay,
+    ComponentType.headless,
 ]
 
 
@@ -68,9 +80,25 @@ class PrivacyExperienceConfigBase:
     auto_detect_language = Column(
         Boolean,
     )
+    auto_subdomain_cookie_deletion = Column(
+        Boolean,
+        nullable=True,
+        default=True,
+    )  # base is nullable for privacy experience config history
+
     disabled = Column(Boolean, nullable=False, default=True)
 
     dismissable = Column(Boolean)
+
+    show_layer1_notices = Column(Boolean, nullable=True, default=False)
+
+    @declared_attr
+    def layer1_button_options(cls) -> Column:
+        return Column(
+            EnumColumn(Layer1ButtonOption),
+            nullable=True,
+            index=False,
+        )
 
     @declared_attr
     def component(cls) -> Column:
@@ -92,6 +120,9 @@ class ExperienceConfigTemplate(PrivacyExperienceConfigBase, Base):
     auto_detect_language = Column(
         Boolean, nullable=False, default=True, server_default="t"
     )  # Overrides PrivacyExperienceConfigBase to make non-nullable
+    auto_subdomain_cookie_deletion = Column(
+        Boolean, nullable=False, default=True, server_default="t"
+    )  # Overrides PrivacyExperienceConfigBase to make non-nullable
     dismissable = Column(
         Boolean, nullable=False, default=True, server_default="t"
     )  # Overrides PrivacyExperienceConfigBase to make non-nullable
@@ -111,7 +142,7 @@ class ExperienceConfigTemplate(PrivacyExperienceConfigBase, Base):
 
 
 class ExperienceTranslationBase:
-    """Base schema for fields shared between ExperienceTranslation and PrivacyExperienceHistory.
+    """Base schema for fields shared between ExperienceTranslation and PrivacyExperienceConfigHistory.
 
     These are translated fields
     """
@@ -136,6 +167,7 @@ class ExperienceTranslationBase:
     privacy_policy_link_label = Column(String)
     privacy_policy_url = Column(String)
     privacy_preferences_link_label = Column(String)
+    purpose_header = Column(String)
     modal_link_label = Column(String)
     reject_button_label = Column(String)
     save_button_label = Column(String)
@@ -153,6 +185,9 @@ class PrivacyExperienceConfig(PrivacyExperienceConfigBase, Base):
         Boolean, nullable=False, default=False, server_default="f"
     )  # Overrides PrivacyExperienceConfigBase to make non-nullable
     auto_detect_language = Column(
+        Boolean, nullable=False, default=True, server_default="t"
+    )  # Overrides PrivacyExperienceConfigBase to make non-nullable
+    auto_subdomain_cookie_deletion = Column(
         Boolean, nullable=False, default=True, server_default="t"
     )  # Overrides PrivacyExperienceConfigBase to make non-nullable
     disabled = Column(
@@ -535,7 +570,6 @@ class PrivacyExperience(Base):
     tcf_system_consents: List = []
     tcf_system_legitimate_interests: List = []
     gvl: Optional[Dict] = {}
-    gvl_translations: Optional[Dict] = {}
     # TCF Developer-Friendly Meta added at runtime as the result of build_tc_data_for_mobile
     meta: Dict = {}
 

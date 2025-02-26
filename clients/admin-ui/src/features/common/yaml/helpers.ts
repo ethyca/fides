@@ -5,7 +5,7 @@ import dynamic from "next/dynamic";
 export const Editor = dynamic(
   // @ts-ignore
   () => import("@monaco-editor/react").then((mod) => mod.default),
-  { ssr: false }
+  { ssr: false },
 );
 
 export const isYamlException = (error: unknown): error is YAMLException =>

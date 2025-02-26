@@ -1,5 +1,11 @@
-const path = require("path");
-const { version } = require("./package.json");
+const isDebugMode = process.env.FIDES_PRIVACY_CENTER__DEBUG === "true";
+const debugMarker = "=>";
+globalThis.fidesDebugger = isDebugMode
+  ? (...args) => console.log(`\x1b[33m${debugMarker}\x1b[0m`, ...args)
+  : () => {};
+globalThis.fidesError = isDebugMode
+  ? (...args) => console.log(`\x1b[31m${debugMarker}\x1b[0m`, ...args)
+  : () => {};
 
 const withBundleAnalyzer = require("@next/bundle-analyzer")({
   enabled: process.env.ANALYZE === "true",
@@ -16,7 +22,8 @@ const withTM = require("next-transpile-modules")([
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  reactStrictMode: true,
+  // `reactStrictMode` must be false for Chakra v2 modals to behave properly. See https://github.com/chakra-ui/chakra-ui/issues/5321#issuecomment-1219327270
+  reactStrictMode: false,
   poweredByHeader: false,
   env: {
     version: "1.2.3",

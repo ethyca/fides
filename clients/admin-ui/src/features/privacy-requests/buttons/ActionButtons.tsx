@@ -1,20 +1,18 @@
-import { ButtonGroup } from "fidesui";
-import React from "react";
+import { Flex } from "fidesui";
 
 import { useAppSelector } from "~/app/hooks";
+import ReprocessButton from "~/features/privacy-requests/buttons/ReprocessButton";
+import ConfigureAlerts from "~/features/privacy-requests/drawers/ConfigureAlerts";
+import { selectRetryRequests } from "~/features/privacy-requests/privacy-requests.slice";
 
-import { selectRetryRequests } from "../privacy-requests.slice";
-import MoreButton from "./MoreButton";
-import ReprocessButton from "./ReprocessButton";
-
-const ActionButtons: React.FC = () => {
+const ActionButtons = () => {
   const { errorRequests } = useAppSelector(selectRetryRequests);
 
   return (
-    <ButtonGroup flexDirection="row" size="sm" spacing="8px" variant="outline">
+    <Flex gap={4}>
       {errorRequests?.length > 0 && <ReprocessButton />}
-      <MoreButton />
-    </ButtonGroup>
+      <ConfigureAlerts />
+    </Flex>
   );
 };
 

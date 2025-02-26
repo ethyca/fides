@@ -2,8 +2,7 @@ import {
   Alert,
   AlertDescription,
   AlertIcon,
-  Button,
-  ButtonGroup,
+  AntButton as Button,
   Modal,
   ModalBody,
   ModalCloseButton,
@@ -24,7 +23,7 @@ import * as Yup from "yup";
 import { useAppDispatch } from "~/app/hooks";
 import { CustomTextInput } from "~/features/common/form/inputs";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
-import { USER_MANAGEMENT_ROUTE } from "~/features/common/nav/v2/routes";
+import { USER_MANAGEMENT_ROUTE } from "~/features/common/nav/routes";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 
 import { User } from "./types";
@@ -95,7 +94,12 @@ const DeleteUserModal = ({
               <ModalHeader>Delete User</ModalHeader>
               <ModalCloseButton />
               <ModalBody>
-                <Alert status="warning" overflow="visible">
+                <Alert
+                  status="warning"
+                  overflow="visible"
+                  colorScheme="warn"
+                  marginBottom={4}
+                >
                   <AlertIcon />
                   <AlertDescription>
                     <Text as="span" mb={2}>
@@ -126,21 +130,21 @@ const DeleteUserModal = ({
               </ModalBody>
 
               <ModalFooter>
-                <ButtonGroup size="sm" spacing="2" width="100%">
-                  <Button onClick={onClose} variant="outline" width="50%">
+                <div className="flex w-full gap-2">
+                  <Button onClick={onClose} className="w-1/2">
                     Cancel
                   </Button>
                   <Button
-                    colorScheme="primary"
+                    type="primary"
                     disabled={!dirty || !isValid}
-                    isLoading={isSubmitting}
-                    type="submit"
-                    width="50%"
+                    loading={isSubmitting}
+                    htmlType="submit"
+                    className="w-1/2"
                     data-testid="submit-btn"
                   >
                     Delete User
                   </Button>
-                </ButtonGroup>
+                </div>
               </ModalFooter>
             </Form>
           )}

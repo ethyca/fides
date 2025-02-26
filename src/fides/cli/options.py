@@ -13,6 +13,18 @@ from fideslang import model_list
 # If/when that issue is resolved, they can be removed.
 
 
+def diff_flag(command: Callable) -> Callable:
+    """Print any diffs between the local & server objects"""
+    command = click.option(
+        "--diff",
+        is_flag=True,
+        help="Print any diffs between the local & server objects",
+    )(
+        command
+    )  # type: ignore
+    return command
+
+
 def coverage_threshold_option(command: Callable) -> Callable:
     """An option decorator that sets a required coverage percentage."""
     command = click.option(
@@ -28,10 +40,22 @@ def coverage_threshold_option(command: Callable) -> Callable:
 
 
 def resource_type_argument(command: Callable) -> Callable:
-    "Add the resource_type option."
+    "Add the resource_type argument."
     command = click.argument(
         "resource_type",
         type=click.Choice(model_list, case_sensitive=False),
+    )(
+        command
+    )  # type: ignore
+    return command
+
+
+def resource_type_option(command: Callable) -> Callable:
+    "Add the resource_type option."
+    command = click.option(
+        "--resource-type",
+        default="",
+        help=f"Choose from {str(model_list)}",
     )(
         command
     )  # type: ignore
@@ -329,4 +353,9 @@ def username_argument(command: Callable) -> Callable:
 
 def password_argument(command: Callable) -> Callable:
     command = click.argument("password", type=str)(command)  # type: ignore
+    return command
+
+
+def email_address_argument(command: Callable) -> Callable:
+    command = click.argument("email_address", type=str)(command)  # type: ignore
     return command

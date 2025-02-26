@@ -174,6 +174,10 @@ This checklist should be copy/pasted into the final pre-release PR, and checked 
 
 Additionally, there is a robust [Release Process](https://ethyca.atlassian.net/wiki/spaces/EN/pages/2545483802/Release+Process+Fides) page available in Confluence (_internal only_).
 
+
+> [!WARNING]
+> THIS RELEASE BRANCH PULL REQUEST SHOULD NOT BE MERGED! IT IS FOR TRACEABILITY PURPOSES ONLY!
+
 ### Pre-Release Steps
 
 #### General
@@ -214,6 +218,12 @@ Run these from within the test environment shell:
 * [ ] DSR approval succeeds
 * [ ] DSR execution succeeds
 
+### User Permissions
+
+- [ ] Verify user creation
+- [ ] Verify a Viewer can view all systems
+- [ ] Verify a Data Steward can edit systems they are assigned
+
 #### Documentation
 
 * [ ] Verify that the CHANGELOG is formatted correctly and clean up verbiage where needed
@@ -239,6 +249,6 @@ When publishing the release, be sure to include the following sections in the re
 * [ ] Smoke test the PyPi & DockerHub releases:
     * [ ] Create a fresh venv with `python3 -m venv 2_12_0_venv`
     * [ ] Activate the venv `source 2_12_0_venv/bin/activate`
-    * [ ] `pip install ethyca-fides` 
+    * [ ] `pip install ethyca-fides`
     * [ ] `fides deploy up`
 * [ ] Announce the release!

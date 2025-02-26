@@ -137,13 +137,13 @@ interface I18n {
 const i18n: I18n = setupI18n();
 
 export {
-  type Locale,
-  type Messages,
-  type MessageDescriptor,
-  type Language,
   type I18n,
+  type Language,
+  type Locale,
+  type MessageDescriptor,
+  type Messages,
 };
 
 export { i18n };
-export * from "./i18n-utils";
 export * from "./i18n-constants";
+export * from "./i18n-utils";

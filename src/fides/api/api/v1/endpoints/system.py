@@ -1,14 +1,18 @@
-from typing import Dict, List, Optional
+import datetime
+from typing import Annotated, Dict, List, Optional, Union
 
-from fastapi import Depends, HTTPException, Response, Security
+from fastapi import Depends, HTTPException, Query, Response, Security
 from fastapi_pagination import Page, Params
 from fastapi_pagination.bases import AbstractPage
+from fastapi_pagination.ext.async_sqlalchemy import paginate as async_paginate
 from fastapi_pagination.ext.sqlalchemy import paginate
 from fideslang.models import System as SystemSchema
 from fideslang.validation import FidesKey
 from loguru import logger
-from pydantic.types import conlist
+from pydantic import Field
+from sqlalchemy import or_
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
 from sqlalchemy.orm import Session
 from starlette import status
 from starlette.status import HTTP_200_OK, HTTP_204_NO_CONTENT, HTTP_404_NOT_FOUND
@@ -30,10 +34,12 @@ from fides.api.db.system import (
 )
 from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType
 from fides.api.models.fides_user import FidesUser
-from fides.api.models.sql_models import System  # type:ignore[attr-defined]
+from fides.api.models.sql_models import (  # type:ignore[attr-defined]
+    PrivacyDeclaration,
+    System,
+)
 from fides.api.oauth.system_manager_oauth_util import (
     verify_oauth_client_for_system_from_fides_key,
-    verify_oauth_client_for_system_from_fides_key_cli,
     verify_oauth_client_for_system_from_request_body_cli,
 )
 from fides.api.oauth.utils import get_current_user, verify_oauth_client_prod
@@ -50,6 +56,7 @@ from fides.api.schemas.connection_configuration.connection_secrets import (
 from fides.api.schemas.connection_configuration.saas_config_template_values import (
     SaasConnectionTemplateValues,
 )
+from fides.api.schemas.filter_params import FilterParams
 from fides.api.schemas.system import BasicSystemResponse, SystemResponse
 from fides.api.util.api_router import APIRouter
 from fides.api.util.connection_util import (
@@ -59,6 +66,7 @@ from fides.api.util.connection_util import (
     patch_connection_configs,
     validate_secrets,
 )
+from fides.api.util.filter_utils import apply_filters_to_query
 from fides.common.api.scope_registry import (
     CONNECTION_CREATE_OR_UPDATE,
     CONNECTION_DELETE,
@@ -120,7 +128,7 @@ def get_system_connections(
 )
 def patch_connections(
     fides_key: str,
-    configs: conlist(CreateConnectionConfigurationWithSecrets, max_items=50),  # type: ignore
+    configs: Annotated[List[CreateConnectionConfigurationWithSecrets], Field(max_length=50)],  # type: ignore
     db: Session = Depends(deps.get_db),
 ) -> BulkPutConnectionConfiguration:
     """
@@ -168,13 +176,16 @@ def patch_connection_secrets(
     if connection_config.secrets is not None:
         for key, value in connection_config.secrets.items():
             if key not in unvalidated_secrets:
+                # unvalidated_secrets is actually a dictionary here.  connection_secrets_schemas
+                # are just provided for documentation but the data was not parsed up front.
+                # That happens below in validate_secrets.
                 unvalidated_secrets[key] = value  # type: ignore
     else:
         connection_config.secrets = {}
 
     validated_secrets = validate_secrets(
         db, unvalidated_secrets, connection_config
-    ).dict()
+    ).model_dump(mode="json")
 
     for key, value in validated_secrets.items():
         connection_config.secrets[key] = value  # type: ignore
@@ -294,6 +305,12 @@ async def upsert(
 
 @SYSTEM_ROUTER.delete(
     "/{fides_key}",
+    dependencies=[
+        Security(
+            verify_oauth_client_prod,
+            scopes=[SYSTEM_DELETE],
+        )
+    ],
     responses={
         status.HTTP_403_FORBIDDEN: {
             "content": {
@@ -311,10 +328,7 @@ async def upsert(
     },
 )
 async def delete(
-    fides_key: str = Security(
-        verify_oauth_client_for_system_from_fides_key_cli,
-        scopes=[SYSTEM_DELETE],
-    ),  # Security dependency defined here instead of the path operation decorator so we have access to the fides_key
+    fides_key: str,
     # to retrieve the System and also return a value
     db: AsyncSession = Depends(get_async_db),
 ) -> Dict:
@@ -326,7 +340,9 @@ async def delete(
     async with db.begin():
         await db.delete(system_to_delete)
     # Convert the resource to a dict explicitly for the response
-    deleted_resource_dict = SystemSchema.from_orm(system_to_delete).dict()
+    deleted_resource_dict = SystemSchema.model_validate(system_to_delete).model_dump(
+        mode="json"
+    )
     return {
         "message": "resource deleted",
         "resource": deleted_resource_dict,
@@ -364,14 +380,97 @@ async def create(
             scopes=[SYSTEM_READ],
         )
     ],
-    response_model=List[BasicSystemResponse],
-    name="List",
+    response_model=Union[List[BasicSystemResponse], Page[BasicSystemResponse]],
+    name="List systems (optionally paginated)",
 )
 async def ls(  # pylint: disable=invalid-name
     db: AsyncSession = Depends(get_async_db),
+    size: Optional[int] = Query(None, ge=1, le=100),
+    page: Optional[int] = Query(None, ge=1),
+    search: Optional[str] = None,
+    data_uses: Optional[List[FidesKey]] = Query(None),
+    data_categories: Optional[List[FidesKey]] = Query(None),
+    data_subjects: Optional[List[FidesKey]] = Query(None),
+    show_deleted: Optional[bool] = Query(False),
 ) -> List:
-    """Get a list of all of the resources of this type."""
-    return await list_resource(System, db)
+    """Get a list of all of the Systems.
+    If any parameters or filters are provided the response will be paginated and/or filtered.
+    Otherwise all Systems will be returned (this may be a slow operation if there are many systems,
+    so using the pagination parameters is recommended).
+    """
+    if not (size or page or search or data_uses or data_categories or data_subjects):
+        # if no advanced parameters are passed, we return a very basic list of all System resources
+        # to maintain backward compatibility of the original API, which backs some important client usages, e.g. the fides CLI
+
+        return await list_resource(System, db)
+
+    query = select(System)
+
+    pagination_params = Params(page=page or 1, size=size or 50)
+    # Need to join with PrivacyDeclaration in order to be able to filter
+    # by data use, data category, and data subject
+    if any([data_uses, data_categories, data_subjects]):
+        query = query.outerjoin(
+            PrivacyDeclaration, System.id == PrivacyDeclaration.system_id
+        )
+
+    # Filter out any vendor deleted systems, unless explicitly asked for
+    if not show_deleted:
+        query = query.filter(
+            or_(
+                System.vendor_deleted_date.is_(None),
+                System.vendor_deleted_date >= datetime.datetime.now(),
+            )
+        )
+
+    filter_params = FilterParams(
+        search=search,
+        data_uses=data_uses,
+        data_categories=data_categories,
+        data_subjects=data_subjects,
+    )
+    filtered_query = apply_filters_to_query(
+        query=query,
+        filter_params=filter_params,
+        search_model=System,
+        taxonomy_model=PrivacyDeclaration,
+    )
+
+    # Add a distinct so we only get one row per system
+    duplicates_removed = filtered_query.distinct(System.id)
+
+    return await async_paginate(db, duplicates_removed, pagination_params)
+
+
+@SYSTEM_ROUTER.patch(
+    "/hidden",
+    response_model=Dict,
+    dependencies=[
+        Security(
+            verify_oauth_client_prod,
+            scopes=[SYSTEM_UPDATE],
+        )
+    ],
+)
+def patch_hidden(
+    fides_keys: List[str],
+    hidden: bool,
+    db: Session = Depends(deps.get_db),
+) -> Dict:
+    """
+    Patch the hidden status of a list of systems. Request body must be a list of system Fides keys.
+    """
+    systems = db.execute(select(System).filter(System.fides_key.in_(fides_keys)))
+    systems = systems.scalars().all()
+
+    for system in systems:
+        system.hidden = hidden
+    db.commit()
+
+    return {
+        "message": "Updated hidden status for systems",
+        "updated": len(systems),
+    }
 
 
 @SYSTEM_ROUTER.get(

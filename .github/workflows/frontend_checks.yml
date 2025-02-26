@@ -44,7 +44,8 @@ jobs:
       - name: Format
         run: npm run format:ci
 
-      - name: Build
+      - name: Build FidesJS # needed for type checks
+        working-directory: clients/fides-js
         run: npm run build
 
       - name: Unit test (${{ matrix.clients }})
@@ -74,11 +75,12 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Build
+      - name: Build FidesJS
+        working-directory: clients/fides-js
         run: npm run build
 
       - name: Cypress E2E Tests (${{ matrix.clients }})
-        uses: cypress-io/github-action@v4
+        uses: cypress-io/github-action@v6
         with:
           working-directory: clients/${{ matrix.clients }}
           install: false
@@ -91,35 +93,3 @@ jobs:
         with:
           name: cypress-videos-${{ matrix.clients }}
           path: /home/runner/work/fides/fides/clients/${{ matrix.clients }}/cypress/videos/*.mp4
-
-  Clients-Cypress-Component:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [20.x]
-        clients:
-          - "admin-ui"
-    defaults:
-      run:
-        working-directory: clients
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ matrix.node-version }}
-
-      - name: Install dependencies
-        run: npm install
-
-      - name: Build
-        run: npm run build
-
-      - name: Cypress Component Tests (${{ matrix.clients }})
-        uses: cypress-io/github-action@v4
-        with:
-          working-directory: clients/${{ matrix.clients }}
-          install: false
-          component: true

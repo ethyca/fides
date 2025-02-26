@@ -9,7 +9,7 @@ from typing import Any, Dict, List, Optional, Set, Tuple, Union
 
 from celery.result import AsyncResult
 from loguru import logger
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from sqlalchemy import (
     Boolean,
     Column,
@@ -24,6 +24,7 @@ from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.mutable import MutableDict, MutableList
 from sqlalchemy.orm import Query, RelationshipProperty, Session, backref, relationship
 from sqlalchemy.orm.dynamic import AppenderQuery
+from sqlalchemy.sql import text
 from sqlalchemy_utils.types.encrypted.encrypted_type import (
     AesGcmEngine,
     StringEncryptedType,
@@ -35,7 +36,11 @@ from fides.api.common_exceptions import (
     NoCachedManualWebhookEntry,
     PrivacyRequestPaused,
 )
-from fides.api.cryptography.cryptographic_util import hash_with_salt
+from fides.api.cryptography.cryptographic_util import (
+    hash_credential_with_salt,
+    hash_value_with_salt,
+)
+from fides.api.cryptography.identity_salt import get_identity_salt
 from fides.api.db.base_class import Base  # type: ignore[attr-defined]
 from fides.api.db.base_class import JSONTypeOverride
 from fides.api.db.util import EnumColumn
@@ -44,12 +49,12 @@ from fides.api.graph.config import (
     TERMINATOR_ADDRESS,
     CollectionAddress,
 )
+from fides.api.migrations.hash_migration_mixin import HashMigrationMixin
 from fides.api.models.audit_log import AuditLog
 from fides.api.models.client import ClientDetail
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.manual_webhook import AccessManualWebhook
 from fides.api.models.policy import (
-    CurrentStep,
     Policy,
     PolicyPreWebhook,
     WebhookDirection,
@@ -68,7 +73,14 @@ from fides.api.schemas.external_https import (
     WebhookJWE,
 )
 from fides.api.schemas.masking.masking_secrets import MaskingSecretCache
-from fides.api.schemas.policy import ActionType
+from fides.api.schemas.policy import ActionType, CurrentStep
+from fides.api.schemas.privacy_request import (
+    CheckpointActionRequired,
+    ExecutionLogStatus,
+    ManualAction,
+    PrivacyRequestSource,
+    PrivacyRequestStatus,
+)
 from fides.api.schemas.redis_cache import (
     CustomPrivacyRequestField as CustomPrivacyRequestFieldSchema,
 )
@@ -94,7 +106,9 @@ from fides.api.util.cache import (
 from fides.api.util.collection_util import Row, extract_key_for_address
 from fides.api.util.constants import API_DATE_FORMAT
 from fides.api.util.custom_json_encoder import CustomJSONEncoder
+from fides.api.util.decrypted_identity_automaton import DecryptedIdentityAutomatonMixin
 from fides.api.util.identity_verification import IdentityVerificationMixin
+from fides.api.util.logger import Pii
 from fides.api.util.logger_context_utils import Contextualizable, LoggerContextKeys
 from fides.common.api.scope_registry import (
     PRIVACY_REQUEST_CALLBACK_RESUME,
@@ -116,57 +130,9 @@ EXECUTION_CHECKPOINTS = [
 ]
 
 
-class ManualAction(FidesSchema):
-    """
-    Surface how to retrieve or mask data in a database-agnostic way
-
-    - 'locators' are similar to the SQL "WHERE" information.
-    - 'get' contains a list of fields that should be retrieved from the source
-    - 'update' is a dictionary of fields and the replacement value/masking strategy
-    """
-
-    locators: Dict[str, Any]
-    get: Optional[List[str]]
-    update: Optional[Dict[str, Any]]
-
-
-class CheckpointActionRequired(FidesSchema):
-    """Describes actions needed on a particular checkpoint.
-
-    Examples are a paused collection that needs manual input, a failed collection that
-    needs to be restarted, or a collection where instructions need to be emailed to a third
-    party to complete the request.
-    """
-
-    step: CurrentStep
-    collection: Optional[CollectionAddress]
-    action_needed: Optional[List[ManualAction]] = None
-
-    class Config:
-        arbitrary_types_allowed = True
-
-
 EmailRequestFulfillmentBodyParams = Dict[
     CollectionAddress, Optional[CheckpointActionRequired]
 ]
-
-
-class PrivacyRequestStatus(str, EnumType):
-    """Enum for privacy request statuses, reflecting where they are in the Privacy Request Lifecycle"""
-
-    identity_unverified = "identity_unverified"
-    requires_input = "requires_input"
-    pending = (
-        "pending"  # Privacy Request likely awaiting approval, if hanging in this state.
-    )
-    approved = "approved"
-    denied = "denied"
-    in_processing = "in_processing"
-    complete = "complete"
-    paused = "paused"
-    awaiting_email_send = "awaiting_email_send"
-    canceled = "canceled"
-    error = "error"
 
 
 class CallbackType(EnumType):
@@ -189,12 +155,8 @@ class SecondPartyRequestFormat(BaseModel):
     direction: WebhookDirection
     callback_type: CallbackType
     identity: Identity
-    policy_action: Optional[ActionType]
-
-    class Config:
-        """Using enum values"""
-
-        use_enum_values = True
+    policy_action: Optional[ActionType] = None
+    model_config = ConfigDict(use_enum_values=True)
 
 
 def generate_request_callback_resume_jwe(webhook: PolicyPreWebhook) -> str:
@@ -207,7 +169,7 @@ def generate_request_callback_resume_jwe(webhook: PolicyPreWebhook) -> str:
         iat=datetime.now().isoformat(),
     )
     return generate_jwe(
-        json.dumps(jwe.dict()),
+        json.dumps(jwe.model_dump(mode="json")),
         CONFIG.security.app_encryption_key,
     )
 
@@ -222,7 +184,7 @@ def generate_request_callback_pre_approval_jwe(webhook: PreApprovalWebhook) -> s
         iat=datetime.now().isoformat(),
     )
     return generate_jwe(
-        json.dumps(jwe.dict()),
+        json.dumps(jwe.model_dump(mode="json")),
         CONFIG.security.app_encryption_key,
     )
 
@@ -238,14 +200,14 @@ def generate_request_task_callback_jwe(request_task: RequestTask) -> str:
         iat=datetime.now().isoformat(),
     )
     return generate_jwe(
-        json.dumps(jwe.dict()),
+        json.dumps(jwe.model_dump(mode="json")),
         CONFIG.security.app_encryption_key,
     )
 
 
 class PrivacyRequest(
-    IdentityVerificationMixin, Contextualizable, Base
-):  # pylint: disable=R0904
+    IdentityVerificationMixin, DecryptedIdentityAutomatonMixin, Contextualizable, Base
+):  # pylint: disable=R0904,too-many-instance-attributes
     """
     The DB ORM model to describe current and historic PrivacyRequests.
     A privacy request is a database record representing the request's
@@ -268,6 +230,11 @@ class PrivacyRequest(
     reviewed_at = Column(DateTime(timezone=True), nullable=True)
     # Who approved/denied the request
     reviewed_by = Column(
+        String,
+        ForeignKey(FidesUser.id_field_path, ondelete="SET NULL"),
+        nullable=True,
+    )
+    submitted_by = Column(
         String,
         ForeignKey(FidesUser.id_field_path, ondelete="SET NULL"),
         nullable=True,
@@ -300,6 +267,12 @@ class PrivacyRequest(
     cancel_reason = Column(String(200))
     canceled_at = Column(DateTime(timezone=True), nullable=True)
     consent_preferences = Column(MutableList.as_mutable(JSONB), nullable=True)
+    source = Column(EnumColumn(PrivacyRequestSource), nullable=True)
+
+    # A PrivacyRequest can be soft deleted, so we store when it was deleted
+    deleted_at = Column(DateTime(timezone=True), nullable=True)
+    # and who deleted it
+    deleted_by = Column(String, nullable=True)
 
     # passive_deletes="all" prevents execution logs from having their privacy_request_id set to null when
     # a privacy_request is deleted.  We want to retain for record-keeping.
@@ -414,21 +387,38 @@ class PrivacyRequest(
 
         return super().create(db=db, data=data, check_name=check_name)
 
-    def delete(self, db: Session) -> None:
+    def clear_cached_values(self) -> None:
         """
-        Clean up the cached and persisted data related to this privacy request before
-        deleting this object from the database
+        Clears all cached values associated with this privacy request from Redis.
         """
+        logger.info(f"Clearing cached values for privacy request {self.id}")
         cache: FidesopsRedis = get_cache()
         all_keys = get_all_cache_keys_for_privacy_request(privacy_request_id=self.id)
         for key in all_keys:
             cache.delete(key)
 
+    def delete(self, db: Session) -> None:
+        """
+        Clean up the cached and persisted data related to this privacy request before
+        deleting this object from the database
+        """
+        self.clear_cached_values()
+
         for provided_identity in self.provided_identities:  # type: ignore[attr-defined]
             provided_identity.delete(db=db)
         super().delete(db=db)
 
-    def cache_identity(self, identity: Identity) -> None:
+    def soft_delete(self, db: Session, user_id: Optional[str]) -> None:
+        """
+        Soft delete the privacy request, marking it as deleted and setting the user who deleted it.
+        """
+        self.deleted_at = datetime.utcnow()
+        self.deleted_by = user_id
+        self.save(db)
+
+    def cache_identity(
+        self, identity: Union[Identity, Dict[str, LabeledIdentity]]
+    ) -> None:
         """Sets the identity's values at their specific locations in the Fides app cache"""
         cache: FidesopsRedis = get_cache()
 
@@ -511,6 +501,14 @@ class PrivacyRequest(
                     data=provided_identity_data,
                 )
 
+        # Simultaneously add identities to automaton for fuzzy search
+        if CONFIG.execution.fuzzy_search_enabled:
+            try:
+                self.add_identities_to_automaton()
+            except Exception as exc:
+                # This should never affect the ability to create privacy requests
+                logger.error(f"Could not add identities to Automaton: {Pii(str(exc))}")
+
     def persist_custom_privacy_request_fields(
         self,
         db: Session,
@@ -575,6 +573,12 @@ class PrivacyRequest(
         self.identity_verified_at = datetime.utcnow()
         self.save(db)
         return self
+
+    def get_cached_encryption_key(self) -> Optional[str]:
+        """Gets the cached encryption key for this privacy request."""
+        cache: FidesopsRedis = get_cache()
+        encryption_key = cache.get(get_encryption_cache_key(self.id, "key"))
+        return encryption_key
 
     def get_cached_task_id(self) -> Optional[str]:
         """Gets the cached task ID for this privacy request."""
@@ -764,11 +768,11 @@ class PrivacyRequest(
         Dynamically creates a Pydantic model from the manual_webhook to use to validate the input_data
         """
         cache: FidesopsRedis = get_cache()
-        parsed_data = manual_webhook.fields_schema.parse_obj(input_data)
+        parsed_data = manual_webhook.fields_schema.model_validate(input_data)
 
         cache.set_encoded_object(
             f"WEBHOOK_MANUAL_ACCESS_INPUT__{self.id}__{manual_webhook.id}",
-            parsed_data.dict(),
+            parsed_data.model_dump(mode="json"),
         )
 
     def cache_manual_webhook_erasure_input(
@@ -780,11 +784,11 @@ class PrivacyRequest(
         Dynamically creates a Pydantic model from the manual_webhook to use to validate the input_data
         """
         cache: FidesopsRedis = get_cache()
-        parsed_data = manual_webhook.erasure_fields_schema.parse_obj(input_data)
+        parsed_data = manual_webhook.erasure_fields_schema.model_validate(input_data)
 
         cache.set_encoded_object(
             f"WEBHOOK_MANUAL_ERASURE_INPUT__{self.id}__{manual_webhook.id}",
-            parsed_data.dict(),
+            parsed_data.model_dump(mode="json"),
         )
 
     def get_manual_webhook_access_input_strict(
@@ -802,10 +806,12 @@ class PrivacyRequest(
         )
 
         if cached_results:
-            data: Dict[str, Any] = manual_webhook.fields_schema.parse_obj(
+            data: Dict[str, Any] = manual_webhook.fields_schema.model_validate(
                 cached_results
-            ).dict(exclude_unset=True)
-            if set(data.keys()) != set(manual_webhook.fields_schema.__fields__.keys()):
+            ).model_dump(exclude_unset=True)
+            if set(data.keys()) != set(
+                manual_webhook.fields_schema.model_fields.keys()
+            ):
                 raise ManualWebhookFieldsUnset(
                     f"Fields unset for privacy_request_id '{self.id}' for connection config '{manual_webhook.connection_config.key}'"
                 )
@@ -829,11 +835,11 @@ class PrivacyRequest(
         )
 
         if cached_results:
-            data: Dict[str, Any] = manual_webhook.erasure_fields_schema.parse_obj(
+            data: Dict[str, Any] = manual_webhook.erasure_fields_schema.model_validate(
                 cached_results
-            ).dict(exclude_unset=True)
+            ).model_dump(exclude_unset=True)
             if set(data.keys()) != set(
-                manual_webhook.erasure_fields_schema.__fields__.keys()
+                manual_webhook.erasure_fields_schema.model_fields.keys()
             ):
                 raise ManualWebhookFieldsUnset(
                     f"Fields unset for privacy_request_id '{self.id}' for connection config '{manual_webhook.connection_config.key}'"
@@ -855,9 +861,9 @@ class PrivacyRequest(
             privacy_request=self, manual_webhook=manual_webhook
         )
         if cached_results:
-            return manual_webhook.fields_non_strict_schema.parse_obj(
+            return manual_webhook.fields_non_strict_schema.model_validate(
                 cached_results
-            ).dict()
+            ).model_dump(mode="json")
         return manual_webhook.empty_fields_dict
 
     def get_manual_webhook_erasure_input_non_strict(
@@ -872,9 +878,9 @@ class PrivacyRequest(
             privacy_request=self, manual_webhook=manual_webhook
         )
         if cached_results:
-            return manual_webhook.erasure_fields_non_strict_schema.parse_obj(
+            return manual_webhook.erasure_fields_non_strict_schema.model_validate(
                 cached_results
-            ).dict()
+            ).model_dump(mode="json")
         return manual_webhook.empty_fields_dict
 
     def cache_data_use_map(self, value: Dict[str, Set[str]]) -> None:
@@ -930,7 +936,7 @@ class PrivacyRequest(
             self.id,
         )
         https_connector.execute(  # type: ignore
-            request_body.dict(),
+            request_body.model_dump(mode="json"),
             response_expected=False,
             additional_headers=headers,
         )
@@ -972,7 +978,7 @@ class PrivacyRequest(
             "Calling webhook '{}' for privacy_request '{}'", webhook.key, self.id
         )
         response: Optional[SecondPartyResponseFormat] = https_connector.execute(  # type: ignore
-            request_body.dict(),
+            request_body.model_dump(mode="json"),
             response_expected=response_expected,
             additional_headers=headers,
         )
@@ -983,7 +989,7 @@ class PrivacyRequest(
 
         # Cache any new identities
         if response_body.derived_identity and any(
-            [response_body.derived_identity.dict().values()]
+            [response_body.derived_identity.model_dump(mode="json").values()]
         ):
             logger.info(
                 "Updating known identities on privacy request '{}' from webhook '{}'.",
@@ -1006,7 +1012,7 @@ class PrivacyRequest(
         """Dispatches this PrivacyRequest throughout the Fidesops System"""
         if self.started_processing_at is None:
             self.started_processing_at = datetime.utcnow()
-        if self.status == PrivacyRequestStatus.pending:
+        if self.status in [PrivacyRequestStatus.pending, PrivacyRequestStatus.approved]:
             self.status = PrivacyRequestStatus.in_processing
         self.save(db=db)
 
@@ -1081,7 +1087,10 @@ class PrivacyRequest(
         )
 
     def get_log_context(self) -> Dict[LoggerContextKeys, Any]:
-        return {LoggerContextKeys.privacy_request_id: self.id}
+        context = {LoggerContextKeys.privacy_request_id: self.id}
+        if self.source:
+            context[LoggerContextKeys.privacy_request_source] = self.source.value
+        return context
 
     @property
     def access_tasks(self) -> Query:
@@ -1247,6 +1256,50 @@ class PrivacyRequest(
         """Fetched the same filtered access results we uploaded to the user"""
         return self.filtered_final_upload or {}
 
+    def add_success_execution_log(
+        self,
+        db: Session,
+        connection_key: Optional[str],
+        dataset_name: Optional[str],
+        collection_name: Optional[str],
+        message: str,
+        action_type: ActionType,
+    ) -> ExecutionLog:
+        return ExecutionLog.create(
+            db=db,
+            data={
+                "privacy_request_id": self.id,
+                "connection_key": connection_key,
+                "dataset_name": dataset_name,
+                "collection_name": collection_name,
+                "status": ExecutionLogStatus.complete,
+                "message": message,
+                "action_type": action_type,
+            },
+        )
+
+    def add_error_execution_log(
+        self,
+        db: Session,
+        connection_key: Optional[str],
+        dataset_name: Optional[str],
+        collection_name: Optional[str],
+        message: str,
+        action_type: ActionType,
+    ) -> ExecutionLog:
+        return ExecutionLog.create(
+            db=db,
+            data={
+                "privacy_request_id": self.id,
+                "connection_key": connection_key,
+                "dataset_name": dataset_name,
+                "collection_name": collection_name,
+                "status": ExecutionLogStatus.error,
+                "message": message,
+                "action_type": action_type,
+            },
+        )
+
 
 class PrivacyRequestError(Base):
     """The DB ORM model to track PrivacyRequests error message status."""
@@ -1254,7 +1307,9 @@ class PrivacyRequestError(Base):
     message_sent = Column(Boolean, nullable=False, default=False)
     privacy_request_id = Column(
         String,
-        ForeignKey(PrivacyRequest.id_field_path),
+        ForeignKey(
+            PrivacyRequest.id_field_path, ondelete="CASCADE", onupdate="CASCADE"
+        ),
         nullable=False,
     )
 
@@ -1311,7 +1366,7 @@ class ProvidedIdentityType(EnumType):
     external_id = "external_id"
 
 
-class ProvidedIdentity(Base):  # pylint: disable=R0904
+class ProvidedIdentity(HashMigrationMixin, Base):  # pylint: disable=R0904
     """
     A table for storing identity fields and values provided at privacy request
     creation time.
@@ -1319,7 +1374,9 @@ class ProvidedIdentity(Base):  # pylint: disable=R0904
 
     privacy_request_id = Column(
         String,
-        ForeignKey(PrivacyRequest.id_field_path),
+        ForeignKey(
+            PrivacyRequest.id_field_path, ondelete="CASCADE", onupdate="CASCADE"
+        ),
     )
     privacy_request = relationship(
         PrivacyRequest,
@@ -1363,19 +1420,43 @@ class ProvidedIdentity(Base):  # pylint: disable=R0904
     )
 
     @classmethod
+    def bcrypt_hash_value(
+        cls,
+        value: MultiValue,
+        encoding: str = "UTF-8",
+    ) -> str:
+        """
+        Temporary function used to hash values to the previously used bcrypt hashes.
+        This can be removed once the bcrypt to SHA-256 migration is complete.
+        """
+
+        SALT = "$2b$12$UErimNtlsE6qgYf2BrI1Du"
+        value_str = str(value)
+        hashed_value = hash_credential_with_salt(
+            value_str.encode(encoding),
+            SALT.encode(encoding),
+        )
+        return hashed_value
+
+    @classmethod
     def hash_value(
         cls,
         value: MultiValue,
         encoding: str = "UTF-8",
     ) -> str:
         """Utility function to hash the value with a generated salt"""
-        SALT = "$2b$12$UErimNtlsE6qgYf2BrI1Du"
+        SALT = get_identity_salt()
         value_str = str(value)
-        hashed_value = hash_with_salt(
+        hashed_value = hash_value_with_salt(
             value_str.encode(encoding),
             SALT.encode(encoding),
         )
         return hashed_value
+
+    def migrate_hashed_fields(self) -> None:
+        if value := self.encrypted_value.get("value"):
+            self.hashed_value = self.hash_value(value)
+        self.is_hash_migrated = True
 
     def as_identity_schema(self) -> Identity:
         """Creates an Identity schema from a ProvidedIdentity record in the application DB."""
@@ -1396,14 +1477,16 @@ class ProvidedIdentity(Base):  # pylint: disable=R0904
         return Identity(**identity_dict)
 
 
-class CustomPrivacyRequestField(Base):
+class CustomPrivacyRequestField(HashMigrationMixin, Base):
     @declared_attr
     def __tablename__(self) -> str:
         return "custom_privacy_request_field"
 
     privacy_request_id = Column(
         String,
-        ForeignKey(PrivacyRequest.id_field_path),
+        ForeignKey(
+            PrivacyRequest.id_field_path, ondelete="CASCADE", onupdate="CASCADE"
+        ),
     )
     privacy_request = relationship(
         PrivacyRequest,
@@ -1442,25 +1525,58 @@ class CustomPrivacyRequestField(Base):
     )  # Type bytea in the db
 
     @classmethod
-    def hash_value(
+    def bcrypt_hash_value(
         cls,
         value: MultiValue,
         encoding: str = "UTF-8",
-    ) -> Union[str, List[str]]:
-        """Utility function to hash the value(s) with a generated salt"""
+    ) -> Optional[str]:
+        """
+        Temporary function used to hash values to the previously used bcrypt hashes.
+        This can be removed once the bcrypt to SHA-256 migration is complete.
+        """
 
         def hash_single_value(value: Union[str, int]) -> str:
             SALT = "$2b$12$UErimNtlsE6qgYf2BrI1Du"
             value_str = str(value)
-            hashed_value = hash_with_salt(
+            hashed_value = hash_credential_with_salt(
                 value_str.encode(encoding),
                 SALT.encode(encoding),
             )
             return hashed_value
 
         if isinstance(value, list):
-            return [hash_single_value(item) for item in value]
+            # Skip hashing lists: this avoids us hashing and later indexing potentially large values and our index
+            # is not useful for array search anyway
+            return None
         return hash_single_value(value)
+
+    @classmethod
+    def hash_value(
+        cls,
+        value: MultiValue,
+        encoding: str = "UTF-8",
+    ) -> Optional[str]:
+        """Utility function to hash the value(s) with a generated salt"""
+
+        def hash_single_value(value: Union[str, int]) -> str:
+            SALT = get_identity_salt()
+            value_str = str(value)
+            hashed_value = hash_value_with_salt(
+                value_str.encode(encoding),
+                SALT.encode(encoding),
+            )
+            return hashed_value
+
+        if isinstance(value, list):
+            # Skip hashing lists: this avoids us hashing and later indexing potentially large values and our index
+            # is not useful for array search anyway
+            return None
+        return hash_single_value(value)
+
+    def migrate_hashed_fields(self) -> None:
+        if value := self.encrypted_value.get("value"):
+            self.hashed_value = self.hash_value(value)  # type: ignore
+        self.is_hash_migrated = True
 
 
 class Consent(Base):
@@ -1499,7 +1615,6 @@ class ConsentRequest(IdentityVerificationMixin, Base):
 
     property_id = Column(
         String,
-        index=True,
         nullable=True,
     )
     provided_identity_id = Column(
@@ -1523,6 +1638,8 @@ class ConsentRequest(IdentityVerificationMixin, Base):
         DateTime(timezone=True),
         nullable=True,
     )
+
+    source = Column(EnumColumn(PrivacyRequestSource), nullable=True)
 
     privacy_request_id = Column(String, ForeignKey(PrivacyRequest.id), nullable=True)
     privacy_request = relationship(PrivacyRequest)
@@ -1613,7 +1730,7 @@ def cache_action_required(
 
     cache.set_encoded_object(
         cache_key,
-        action_required.dict() if action_required else None,
+        action_required.model_dump() if action_required else None,
     )
 
 
@@ -1632,18 +1749,6 @@ def get_action_required_details(
         return _parse_cache_to_checkpoint_action_required(cached_stopped)
 
     return None
-
-
-class ExecutionLogStatus(EnumType):
-    """Enum for execution log statuses, reflecting where they are in their workflow"""
-
-    in_processing = "in_processing"
-    pending = "pending"
-    complete = "complete"
-    error = "error"
-    awaiting_processing = "paused"  # "paused" in the database to avoid a migration, but use "awaiting_processing" in the app
-    retrying = "retrying"
-    skipped = "skipped"
 
 
 COMPLETED_EXECUTION_LOG_STATUSES = [
@@ -1697,6 +1802,20 @@ class ExecutionLog(Base):
         index=True,
     )
 
+    # Use clock_timestamp() instead of NOW() to get the actual current time at row creation,
+    # regardless of transaction state. This prevents timestamp caching within transactions
+    # and ensures more accurate creation times.
+    # https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-CURRENT
+
+    created_at = Column(
+        DateTime(timezone=True), server_default=text("clock_timestamp()")
+    )
+    updated_at = Column(
+        DateTime(timezone=True),
+        server_default=text("clock_timestamp()"),
+        onupdate=text("clock_timestamp()"),
+    )
+
 
 def can_run_checkpoint(
     request_checkpoint: CurrentStep, from_checkpoint: Optional[CurrentStep] = None
@@ -1742,6 +1861,23 @@ class TraversalDetails(FidesSchema):
     incoming_edges: List[Tuple[str, str]]
     outgoing_edges: List[Tuple[str, str]]
     input_keys: List[str]
+
+    # TODO: remove this method once we support custom request fields in DSR graph.
+    @classmethod
+    def create_empty_traversal(cls, connection_key: str) -> TraversalDetails:
+        """
+        Creates an "empty" TraversalDetails object that only has the dataset connection key set.
+        This is a bit of a hacky workaround needed to implement the Dynamic Erasure Emails feature,
+        and should be needed only until we support custom request fields as entry points to the DSR graph.
+        This is needed because custom request field nodes aren't currently reachable, so they don't have
+        a real TraversalNode associated to them.
+        """
+        return cls(
+            dataset_connection_key=connection_key,
+            incoming_edges=[],
+            outgoing_edges=[],
+            input_keys=[],
+        )
 
 
 class RequestTask(Base):
@@ -1911,11 +2047,9 @@ class RequestTask(Base):
 
         if not tasks_complete and should_log:
             logger.debug(
-                "Upstream tasks incomplete for {} task {}. Privacy Request: {}, Request Task {}.",
+                "Upstream tasks incomplete for {} task {}.",
                 self.action_type.value,
                 self.collection_address,
-                self.privacy_request_id,
-                self.id,
             )
 
         return tasks_complete
@@ -1943,24 +2077,20 @@ class RequestTask(Base):
 
         if should_log:
             logger.debug(
-                "Celery Task ID {} found for {} task {}. Privacy Request: {}, Request Task {}.",
+                "Celery Task ID {} found for {} task {}.",
                 celery_task_id,
                 self.action_type.value,
                 self.collection_address,
-                self.privacy_request_id,
-                self.id,
             )
 
         task_in_flight: bool = celery_tasks_in_flight([celery_task_id])
 
         if task_in_flight and should_log:
             logger.debug(
-                "Celery Task {} already processing for {} task {}. Privacy Request: {}, Request Task {}.",
+                "Celery Task {} already processing for {} task {}.",
                 celery_task_id,
                 self.action_type.value,
                 self.collection_address,
-                self.privacy_request_id,
-                self.id,
             )
 
         return task_in_flight

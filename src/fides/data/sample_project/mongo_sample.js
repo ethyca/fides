@@ -14,6 +14,7 @@ db.createUser(
 db.customer_details.insert([
     {
         "customer_id": 1,
+        "customer_uuid": new UUID('3b241101-e2bb-4255-8caf-4136c566a962'),
         "gender": "male",
         "birthday": new ISODate("1988-01-10"),
         "workplace_info": {  // Discovered object field

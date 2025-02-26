@@ -2,10 +2,10 @@
  * Helper functions to set the GPP CMP API based on Fides values
  */
 
-import { CmpApi, UsNatV1Field } from "@iabgpp/cmpapi";
+import { CmpApi, UsNatField } from "@iabgpp/cmpapi";
 
-import { FIDES_REGION_TO_GPP_SECTION } from "./constants";
 import { FidesCookie, PrivacyExperience } from "../consent-types";
+import { FIDES_REGION_TO_GPP_SECTION } from "./constants";
 import { GPPSection, GPPSettings, GPPUSApproach } from "./types";
 
 const US_NATIONAL_REGION = "us";
@@ -26,15 +26,15 @@ const setMspaSections = ({
   const mspaFields = [
     {
       gppSettingField: gppSettings.mspa_covered_transactions,
-      cmpApiField: UsNatV1Field.MSPA_COVERED_TRANSACTION,
+      cmpApiField: UsNatField.MSPA_COVERED_TRANSACTION,
     },
     {
       gppSettingField: gppSettings.mspa_opt_out_option_mode,
-      cmpApiField: UsNatV1Field.MSPA_OPT_OUT_OPTION_MODE,
+      cmpApiField: UsNatField.MSPA_OPT_OUT_OPTION_MODE,
     },
     {
       gppSettingField: gppSettings.mspa_service_provider_mode,
-      cmpApiField: UsNatV1Field.MSPA_SERVICE_PROVIDER_MODE,
+      cmpApiField: UsNatField.MSPA_SERVICE_PROVIDER_MODE,
     },
   ];
   mspaFields.forEach(({ gppSettingField, cmpApiField }) => {
@@ -85,11 +85,17 @@ export const setGppNoticesProvidedFromExperience = ({
     gpp_settings: gppSettings,
   } = experience;
   const usApproach = gppSettings?.us_approach;
-  const gppRegion = deriveGppFieldRegion({
+  let gppRegion = deriveGppFieldRegion({
     experienceRegion,
     usApproach,
   });
-  const gppSection = FIDES_REGION_TO_GPP_SECTION[gppRegion];
+  let gppSection = FIDES_REGION_TO_GPP_SECTION[gppRegion];
+
+  if (!gppSection && usApproach === GPPUSApproach.ALL) {
+    // if we're using the "all" approach, and the user's state isn't supported yet, we should default to national.
+    gppRegion = US_NATIONAL_REGION;
+    gppSection = FIDES_REGION_TO_GPP_SECTION[gppRegion];
+  }
 
   if (
     !gppSection ||
@@ -105,7 +111,7 @@ export const setGppNoticesProvidedFromExperience = ({
   notices.forEach((notice) => {
     const { gpp_field_mapping: fieldMapping } = notice;
     const gppNotices = fieldMapping?.find(
-      (fm) => fm.region === gppRegion
+      (fm) => fm.region === gppRegion,
     )?.notice;
     if (gppNotices) {
       gppNotices.forEach((gppNotice) => {
@@ -142,11 +148,17 @@ export const setGppOptOutsFromCookieAndExperience = ({
     gpp_settings: gppSettings,
   } = experience;
   const usApproach = gppSettings?.us_approach;
-  const gppRegion = deriveGppFieldRegion({
+  let gppRegion = deriveGppFieldRegion({
     experienceRegion,
     usApproach,
   });
-  const gppSection = FIDES_REGION_TO_GPP_SECTION[gppRegion];
+  let gppSection = FIDES_REGION_TO_GPP_SECTION[gppRegion];
+
+  if (!gppSection && usApproach === GPPUSApproach.ALL) {
+    // if we're using the all approach, and the current state isn't supported, we should default to national
+    gppRegion = US_NATIONAL_REGION;
+    gppSection = FIDES_REGION_TO_GPP_SECTION[gppRegion];
+  }
 
   if (
     !gppSection ||
@@ -167,7 +179,7 @@ export const setGppOptOutsFromCookieAndExperience = ({
     if (privacyNotice) {
       const { gpp_field_mapping: fieldMapping } = privacyNotice;
       const gppMechanisms = fieldMapping?.find(
-        (fm) => fm.region === gppRegion
+        (fm) => fm.region === gppRegion,
       )?.mechanism;
       if (gppMechanisms) {
         gppMechanisms.forEach((gppMechanism) => {

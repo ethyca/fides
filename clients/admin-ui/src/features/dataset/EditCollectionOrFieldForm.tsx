@@ -1,17 +1,14 @@
 import { Stack } from "fidesui";
 import { Form, Formik } from "formik";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useSelector } from "react-redux";
 
 import { CustomTextInput } from "~/features/common/form/inputs";
-import { initialDataCategories } from "~/features/plus/helpers";
-import { selectClassifyInstanceField } from "~/features/plus/plus.slice";
 import { selectDataCategories } from "~/features/taxonomy/taxonomy.slice";
 import { DatasetCollection, DatasetField } from "~/types/api";
 
 import { COLLECTION, FIELD } from "./constants";
 import DataCategoryInput from "./DataCategoryInput";
-import { DataCategoryWithConfidence } from "./types";
 
 export const FORM_ID = "edit-collection-or-field-form";
 
@@ -25,48 +22,25 @@ interface Props {
   // NOTE: If you're adding more checks on dataType, refactor this into two
   // components instead and remove this prop.
   dataType: "collection" | "field";
+  showDataCategories?: boolean;
 }
 
-const EditCollectionOrFieldForm = ({ values, onSubmit, dataType }: Props) => {
+const EditCollectionOrFieldForm = ({
+  values,
+  onSubmit,
+  dataType,
+  showDataCategories = true,
+}: Props) => {
   const initialValues: FormValues = {
     description: values.description ?? "",
     data_categories: values.data_categories,
   };
   const allEnabledDataCategories = useSelector(selectDataCategories).filter(
-    (category) => category.active
+    (category) => category.active,
   );
 
-  // This data is only relevant for editing a field. Maybe another reason to split the field/
-  // collection cases into two components.
-  const classifyField = useSelector(selectClassifyInstanceField);
-  const mostLikelyCategories: DataCategoryWithConfidence[] | undefined =
-    useMemo(() => {
-      if (!(allEnabledDataCategories && classifyField)) {
-        return undefined;
-      }
-
-      const dataCategoryMap = new Map(
-        allEnabledDataCategories.map((dc) => [dc.fides_key, dc])
-      );
-      return classifyField.classifications.map(
-        ({ label, aggregated_score }) => {
-          const dc = dataCategoryMap.get(label);
-
-          return {
-            fides_key: label,
-            confidence: aggregated_score,
-            ...dc,
-          };
-        }
-      );
-    }, [allEnabledDataCategories, classifyField]);
-
   const [checkedDataCategories, setCheckedDataCategories] = useState<string[]>(
-    () =>
-      initialDataCategories({
-        dataCategories: initialValues.data_categories,
-        mostLikelyCategories,
-      })
+    initialValues.data_categories || [],
   );
 
   const descriptionTooltip =
@@ -97,13 +71,14 @@ const EditCollectionOrFieldForm = ({ values, onSubmit, dataType }: Props) => {
             tooltip={descriptionTooltip}
             data-testid="description-input"
           />
-          <DataCategoryInput
-            dataCategories={allEnabledDataCategories}
-            mostLikelyCategories={mostLikelyCategories}
-            checked={checkedDataCategories}
-            onChecked={setCheckedDataCategories}
-            tooltip={dataCategoryTooltip}
-          />
+          {showDataCategories && (
+            <DataCategoryInput
+              dataCategories={allEnabledDataCategories}
+              checked={checkedDataCategories}
+              onChecked={setCheckedDataCategories}
+              tooltip={dataCategoryTooltip}
+            />
+          )}
         </Stack>
       </Form>
     </Formik>

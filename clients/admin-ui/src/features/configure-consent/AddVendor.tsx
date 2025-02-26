@@ -1,8 +1,7 @@
 import {
+  AntButton as Button,
+  AntButtonProps as ButtonProps,
   Box,
-  Button,
-  ButtonGroup,
-  ButtonProps,
   useDisclosure,
   useToast,
   VStack,
@@ -20,7 +19,10 @@ import {
   selectDictEntry,
   useGetAllDictionaryEntriesQuery,
 } from "~/features/plus/plus.slice";
-import { selectAllSystems, useCreateSystemMutation } from "~/features/system";
+import {
+  useCreateSystemMutation,
+  useLazyGetSystemsQuery,
+} from "~/features/system";
 import {
   selectLockedForGVL,
   selectSuggestions,
@@ -37,8 +39,8 @@ import {
   isErrorResult,
   VendorSources,
 } from "../common/helpers";
+import FormModal from "../common/modals/FormModal";
 import { errorToastParams, successToastParams } from "../common/toast";
-import AddModal from "./AddModal";
 import { EMPTY_DECLARATION, FormValues } from "./constants";
 import DataUsesForm from "./DataUsesForm";
 
@@ -48,23 +50,21 @@ const defaultInitialValues: FormValues = {
   privacy_declarations: [EMPTY_DECLARATION],
 };
 
-type ButtonVariant = "primary" | "outline";
-
 const AddVendor = ({
   buttonLabel,
-  buttonVariant = "primary",
   onButtonClick,
+  buttonProps,
 }: {
   buttonLabel?: string;
-  buttonVariant?: ButtonVariant;
   onButtonClick?: () => void;
+  buttonProps?: ButtonProps;
 }) => {
   const toast = useToast();
   const { isOpen, onOpen, onClose } = useDisclosure();
 
   const dispatch = useAppDispatch();
 
-  const systems = useAppSelector(selectAllSystems);
+  const [getSystemQueryTrigger] = useLazyGetSystemsQuery();
 
   const ValidationSchema = useMemo(
     () =>
@@ -72,9 +72,14 @@ const AddVendor = ({
         name: Yup.string()
           .required()
           .label("Vendor name")
-          .test("is-unique", "", (value, context) => {
-            const takenSystemNames = systems.map((s) => s.name);
-            if (takenSystemNames.some((name) => name === value)) {
+          .test("is-unique", "", async (value, context) => {
+            const { data } = await getSystemQueryTrigger({
+              page: 1,
+              size: 10,
+              search: value,
+            });
+            const similarSystemNames = data?.items || [];
+            if (similarSystemNames.some((s) => s.name === value)) {
               return context.createError({
                 message: `You already have a vendor called "${value}". Please specify a unique name for this vendor.`,
               });
@@ -82,7 +87,7 @@ const AddVendor = ({
             return true;
           }),
       }),
-    [systems]
+    [getSystemQueryTrigger],
   );
 
   // Subscribe and get dictionary values
@@ -111,7 +116,7 @@ const AddVendor = ({
 
   const handleSubmit = async (
     values: FormValues,
-    helpers: FormikHelpers<FormValues>
+    helpers: FormikHelpers<FormValues>,
   ) => {
     const transformedDeclarations = values.privacy_declarations
       .filter((dec) => dec.consent_use !== EMPTY_DECLARATION.consent_use)
@@ -163,7 +168,7 @@ const AddVendor = ({
     handleCloseModal();
   };
 
-  const handleVendorSelected = (vendorId?: string) => {
+  const handleVendorSelected = (vendorId?: string | null) => {
     if (!dictionaryService) {
       return;
     }
@@ -188,23 +193,12 @@ const AddVendor = ({
     }
   };
 
-  const openButtonStyles: ButtonProps =
-    buttonVariant === "primary"
-      ? {
-          size: "sm",
-          colorScheme: "primary",
-        }
-      : {
-          size: "xs",
-          variant: "outline",
-        };
-
   return (
     <>
       <Button
         onClick={handleOpenButtonClicked}
         data-testid="add-vendor-btn"
-        {...openButtonStyles}
+        {...buttonProps}
       >
         {buttonLabel}
       </Button>
@@ -216,7 +210,7 @@ const AddVendor = ({
         innerRef={formRef}
       >
         {({ dirty, isValid, resetForm }) => (
-          <AddModal
+          <FormModal
             isOpen={isOpen}
             onClose={handleCloseModal}
             title="Add a vendor"
@@ -229,6 +223,7 @@ const AddVendor = ({
                     <VendorSelector
                       label="Vendor name"
                       options={dictionaryOptions}
+                      isLoading={isLoading}
                       onVendorSelected={handleVendorSelected}
                       isCreate
                       lockedForGVL={lockedForGVL}
@@ -248,13 +243,8 @@ const AddVendor = ({
                     isCreate
                     disabled={lockedForGVL}
                   />
-                  <ButtonGroup
-                    size="sm"
-                    width="100%"
-                    justifyContent="space-between"
-                  >
+                  <div className="flex w-full justify-between">
                     <Button
-                      variant="outline"
                       onClick={() => {
                         handleCloseModal();
                         resetForm();
@@ -263,19 +253,19 @@ const AddVendor = ({
                       Cancel
                     </Button>
                     <Button
-                      type="submit"
-                      variant="primary"
-                      isDisabled={isLoading || !dirty || !isValid}
-                      isLoading={isLoading}
+                      type="primary"
+                      htmlType="submit"
+                      disabled={isLoading || !dirty || !isValid}
+                      loading={isLoading}
                       data-testid="save-btn"
                     >
                       Save vendor
                     </Button>
-                  </ButtonGroup>
+                  </div>
                 </VStack>
               </Form>
             </Box>
-          </AddModal>
+          </FormModal>
         )}
       </Formik>
     </>

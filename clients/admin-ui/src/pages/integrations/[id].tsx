@@ -1,7 +1,6 @@
 import {
+  AntButton as Button,
   Box,
-  Button,
-  ButtonGroup,
   Flex,
   Spacer,
   Spinner,
@@ -12,23 +11,26 @@ import { useRouter } from "next/router";
 
 import DataTabs, { TabData } from "~/features/common/DataTabs";
 import Layout from "~/features/common/Layout";
-import { INTEGRATION_MANAGEMENT_ROUTE } from "~/features/common/nav/v2/routes";
+import { INTEGRATION_MANAGEMENT_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 import { useGetDatastoreConnectionByKeyQuery } from "~/features/datastore-connections";
 import useTestConnection from "~/features/datastore-connections/useTestConnection";
-import BigQueryOverview, {
-  BigQueryInstructions,
-} from "~/features/integrations/bigqueryOverviewCopy";
+import getIntegrationTypeInfo, {
+  SUPPORTED_INTEGRATIONS,
+} from "~/features/integrations/add-integration/allIntegrationTypes";
 import MonitorConfigTab from "~/features/integrations/configure-monitor/MonitorConfigTab";
 import ConfigureIntegrationModal from "~/features/integrations/ConfigureIntegrationModal";
 import ConnectionStatusNotice from "~/features/integrations/ConnectionStatusNotice";
 import IntegrationBox from "~/features/integrations/IntegrationBox";
+import useIntegrationOption from "~/features/integrations/useIntegrationOption";
 
 const IntegrationDetailView: NextPage = () => {
   const { query } = useRouter();
   const id = Array.isArray(query.id) ? query.id[0] : query.id;
   const { data: connection, isLoading: integrationIsLoading } =
     useGetDatastoreConnectionByKeyQuery(id ?? "");
+
+  const integrationOption = useIntegrationOption(connection?.connection_type);
 
   const {
     testConnection,
@@ -37,6 +39,19 @@ const IntegrationDetailView: NextPage = () => {
   } = useTestConnection(connection);
 
   const { onOpen, isOpen, onClose } = useDisclosure();
+
+  const { overview, instructions } = getIntegrationTypeInfo(
+    connection?.connection_type,
+  );
+
+  const router = useRouter();
+  if (
+    !!connection &&
+    !SUPPORTED_INTEGRATIONS.includes(connection.connection_type)
+  ) {
+    router.push(INTEGRATION_MANAGEMENT_ROUTE);
+  }
+
   const tabs: TabData[] = [
     {
       label: "Connection",
@@ -53,10 +68,10 @@ const IntegrationDetailView: NextPage = () => {
               <ConnectionStatusNotice testData={testData} />
             </Flex>
             <Spacer />
-            <ButtonGroup size="sm" variant="outline">
+            <div className="flex gap-4">
               <Button
                 onClick={testConnection}
-                isLoading={testIsLoading}
+                loading={testIsLoading}
                 data-testid="test-connection-btn"
               >
                 Test connection
@@ -64,39 +79,49 @@ const IntegrationDetailView: NextPage = () => {
               <Button onClick={onOpen} data-testid="manage-btn">
                 Manage
               </Button>
-            </ButtonGroup>
+            </div>
           </Flex>
           <ConfigureIntegrationModal
             isOpen={isOpen}
             onClose={onClose}
             connection={connection!}
           />
-          <BigQueryOverview />
-          <BigQueryInstructions />
+          {overview}
+          {instructions}
         </Box>
       ),
     },
     {
       label: "Data discovery",
-      content: <MonitorConfigTab integration={connection!} />,
+      content: (
+        <MonitorConfigTab
+          integration={connection!}
+          integrationOption={integrationOption}
+        />
+      ),
     },
   ];
 
   return (
     <Layout title="Integrations">
       <PageHeader
-        breadcrumbs={[
+        heading="Integrations"
+        breadcrumbItems={[
           {
-            title: "Integrations",
-            link: INTEGRATION_MANAGEMENT_ROUTE,
+            title: "All integrations",
+            href: INTEGRATION_MANAGEMENT_ROUTE,
           },
           {
             title: connection?.name ?? connection?.key ?? "",
           },
         ]}
       >
-        <IntegrationBox integration={connection} />
-        {integrationIsLoading ? <Spinner /> : <DataTabs data={tabs} isLazy />}
+        <IntegrationBox integration={connection} showDeleteButton />
+        {integrationIsLoading ? (
+          <Spinner />
+        ) : (
+          !!connection && <DataTabs data={tabs} isLazy />
+        )}
       </PageHeader>
     </Layout>
   );

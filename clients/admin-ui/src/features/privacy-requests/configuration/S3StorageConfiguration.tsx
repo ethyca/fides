@@ -1,8 +1,9 @@
-import { Box, Button, Divider, Heading, Stack } from "fidesui";
+import { AntButton as Button, Box, Divider, Heading, Stack } from "fidesui";
 import { Form, Formik } from "formik";
 import { useState } from "react";
 
-import { CustomSelect, CustomTextInput } from "~/features/common/form/inputs";
+import { ControlledSelect } from "~/features/common/form/ControlledSelect";
+import { CustomTextInput } from "~/features/common/form/inputs";
 import { isErrorResult } from "~/features/common/helpers";
 import { useAlert, useAPIHelper } from "~/features/common/hooks";
 import { storageTypes } from "~/features/privacy-requests/constants";
@@ -53,7 +54,7 @@ const S3StorageConfiguration = ({ storageDetails }: SavedStorageDetails) => {
   };
 
   const handleSubmitStorageConfiguration = async (
-    newValues: StorageDetails["storageDetails"]
+    newValues: StorageDetails["storageDetails"],
   ) => {
     const result = await saveStorageDetails({
       type: storageTypes.s3,
@@ -102,7 +103,7 @@ const S3StorageConfiguration = ({ storageDetails }: SavedStorageDetails) => {
           {({ isSubmitting, handleReset }) => (
             <Form>
               <Stack mt={5} spacing={5}>
-                <CustomSelect
+                <ControlledSelect
                   name="format"
                   label="Format"
                   options={[
@@ -112,7 +113,7 @@ const S3StorageConfiguration = ({ storageDetails }: SavedStorageDetails) => {
                   data-testid="format"
                   isRequired
                 />
-                <CustomSelect
+                <ControlledSelect
                   name="auth_method"
                   label="Auth method"
                   options={[
@@ -130,21 +131,14 @@ const S3StorageConfiguration = ({ storageDetails }: SavedStorageDetails) => {
                 />
               </Stack>
 
-              <Button
-                onClick={() => handleReset()}
-                mt={5}
-                mr={2}
-                size="sm"
-                variant="outline"
-              >
+              <Button onClick={() => handleReset()} className="mr-2 mt-5">
                 Cancel
               </Button>
               <Button
-                mt={5}
-                isDisabled={isSubmitting}
-                type="submit"
-                colorScheme="primary"
-                size="sm"
+                htmlType="submit"
+                className="mt-5"
+                disabled={isSubmitting}
+                type="primary"
                 data-testid="save-btn"
               >
                 Save
@@ -179,21 +173,14 @@ const S3StorageConfiguration = ({ storageDetails }: SavedStorageDetails) => {
                     />
                   </Stack>
                   <Box mt={10}>
-                    <Button
-                      onClick={() => handleReset()}
-                      mt={5}
-                      mr={2}
-                      size="sm"
-                      variant="outline"
-                    >
+                    <Button onClick={() => handleReset()} className="mr-2 mt-5">
                       Cancel
                     </Button>
                     <Button
-                      mt={5}
-                      isDisabled={isSubmitting}
-                      type="submit"
-                      colorScheme="primary"
-                      size="sm"
+                      disabled={isSubmitting}
+                      htmlType="submit"
+                      type="primary"
+                      className="mt-5"
                       data-testid="save-btn"
                     >
                       Save

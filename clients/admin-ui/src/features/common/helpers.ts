@@ -19,7 +19,7 @@ const DEFAULT_ERROR_MESSAGE = "An unexpected error occurred. Please try again.";
 
 export const getErrorMessage = (
   error: RTKErrorResult["error"],
-  defaultMsg = DEFAULT_ERROR_MESSAGE
+  defaultMsg = DEFAULT_ERROR_MESSAGE,
 ) => {
   if (isAPIError(error)) {
     if (isDetailStringErrorData(error.data)) {
@@ -44,7 +44,7 @@ export const getErrorMessage = (
  * Type predicate to narrow an unknown error to `FetchBaseQueryError`
  */
 export function isFetchBaseQueryError(
-  error: unknown
+  error: unknown,
 ): error is FetchBaseQueryError {
   return typeof error === "object" && error != null && "status" in error;
 }
@@ -53,7 +53,7 @@ export function isFetchBaseQueryError(
  * Type predicate to narrow an unknown error to an object with a string 'message' property
  */
 export function isErrorWithMessage(
-  error: unknown
+  error: unknown,
 ): error is { message: string } {
   return (
     typeof error === "object" &&
@@ -97,7 +97,7 @@ export function isErrorWithDetail(error: unknown): error is ResponseError {
 }
 
 export function isErrorWithDetailArray(
-  error: unknown
+  error: unknown,
 ): error is ValidationError {
   return (
     typeof error === "object" &&
@@ -117,7 +117,7 @@ export const parseError = (
   defaultError = {
     status: 500,
     message: DEFAULT_ERROR_MESSAGE,
-  }
+  },
 ): ParsedError => {
   if (isParsingError(error)) {
     // This case is known to come up for Internal Server Errors which cannot be parsed as JSON.

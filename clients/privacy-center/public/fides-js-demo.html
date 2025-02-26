@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
   <head>
     <title>fides-js script demo page</title>
@@ -24,7 +24,7 @@
       })();
       var deleteCookie = function () {
         document.cookie =
-          "fides_consent=;expires=Thu, 01 Jan 1970 00:00:01 GMT;";
+          "fides_consent=;Path=/;expires='Thu, 01 Jan 1970 00:00:01 GMT';";
         location.reload();
       };
     </script>
@@ -35,6 +35,8 @@
       pre {
         background-color: #eee;
         padding: 16px;
+        white-space: pre-wrap;
+        overflow-y: auto;
       }
       #fides-modal-link {
         border: none;
@@ -115,6 +117,9 @@
 
       <h2>Consent Options</h2>
       <pre id="consent-options"></pre>
+
+      <h2>Property id</h2>
+      <pre id="property-id"></pre>
     </main>
   </body>
 
@@ -134,7 +139,7 @@
         document.getElementById("consent-json").textContent = JSON.stringify(
           Fides.consent,
           null,
-          2
+          2,
         );
 
         // Pretty-print the fides experience config object and add it to the page.
@@ -149,7 +154,14 @@
         document.getElementById("consent-options").textContent = JSON.stringify(
           Fides.options,
           null,
-          2
+          2,
+        );
+
+        // Pretty-print the fides property id  and add it to the page.
+        document.getElementById("property-id").textContent = JSON.stringify(
+          Fides.config.propertyId,
+          null,
+          2,
         );
 
         // Test behavior of integrations that can be configured without/before their platform scripts.
@@ -157,6 +169,12 @@
           consent: Fides.consent.tracking,
           dataUse: Fides.consent.data_sales,
         });
+
+        // update the modal link label if it's not already set. This is useful for displaying the correct language after fides has initialized and the user's language has been detected.
+        const modalLink = document.getElementById("fides-modal-link");
+        if (!!modalLink) {
+          modalLink.innerText = Fides.getModalLinkLabel();
+        }
       };
 
       // Handle both synchronous & asynchronous initialization
@@ -165,6 +183,38 @@
       } else {
         window.addEventListener("FidesInitialized", onInitialized);
       }
+      window.addEventListener("FidesUpdated", () => {
+        console.log("Fides has been updated");
+        document.getElementById("consent-json").textContent = JSON.stringify(
+          Fides.consent,
+          null,
+          2,
+        );
+      });
+
+      window.addEventListener("FidesUIShown", () => {
+        // Log event timing
+        const fidesLoaded = performance
+          .getEntriesByType("resource")
+          .find((entry) => entry.name.includes("fides"));
+        const fidesEvents = performance
+          .getEntriesByType("mark")
+          .filter((entry) => entry.name.includes("Fides"));
+
+        const fidesTiming = {};
+        fidesTiming[
+          `fides.js (${(fidesLoaded.encodedBodySize / 1000).toFixed(2)} kB)`
+        ] = {
+          "Time (ms)": parseFloat(fidesLoaded.responseEnd.toFixed(2)),
+        };
+        fidesEvents.map((entry) => {
+          const name = entry.name;
+          fidesTiming[name] = {
+            "Time (ms)": parseFloat(entry.startTime.toFixed(2)),
+          };
+        });
+        console.table(fidesTiming);
+      });
     })();
   </script>
 </html>

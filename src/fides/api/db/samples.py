@@ -5,15 +5,13 @@ sample project at src/fides/data/sample_project.
 See load_samples() in seed.py for usage.
 """
 
-from typing import Dict, List, Optional, TextIO
+from importlib.resources import files
+from typing import IO, Dict, List, Optional
 
 import yaml
 from expandvars import expandvars  # type: ignore
 from fideslang.models import Taxonomy
 from fideslang.validation import FidesKey
-
-# DEFER: This can be changed to importlib.resources once we drop support for Python 3.8
-from importlib_resources import files
 
 from fides.api.schemas.connection_configuration.connection_config import (
     CreateConnectionConfigurationWithSecrets,
@@ -104,7 +102,7 @@ def load_sample_connections_from_project() -> List[SampleConnection]:
             yaml_dict = load_sample_yaml_file(file, expand_vars=True)
             connections = yaml_dict.get("connection", [])
             sample_connections.extend(
-                [SampleConnection.parse_obj(e) for e in connections]
+                [SampleConnection.model_validate(e) for e in connections]
             )
 
     # Exclude any connections whose "secrets" dict has empty values
@@ -122,7 +120,7 @@ def load_sample_connections_from_project() -> List[SampleConnection]:
     return valid_connections
 
 
-def load_sample_yaml_file(file: TextIO, expand_vars: bool = True) -> Dict:
+def load_sample_yaml_file(file: IO, expand_vars: bool = True) -> Dict:
     yaml_str = file.read()
     if expand_vars:
         return yaml.safe_load(expandvars(yaml_str))

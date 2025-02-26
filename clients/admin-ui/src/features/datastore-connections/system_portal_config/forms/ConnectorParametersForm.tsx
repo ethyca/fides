@@ -1,14 +1,13 @@
-import { Option, SelectInput } from "common/form/inputs";
+import { Option } from "common/form/inputs";
 import {
   ConnectionTypeSecretSchemaProperty,
-  ConnectionTypeSecretSchemaReponse,
+  ConnectionTypeSecretSchemaResponse,
 } from "connection-type/types";
 import { useLazyGetDatastoreConnectionStatusQuery } from "datastore-connections/datastore-connection.slice";
 import DSRCustomizationModal from "datastore-connections/system_portal_config/forms/DSRCustomizationForm/DSRCustomizationModal";
 import {
-  Box,
-  Button,
-  ButtonGroup,
+  AntButton as Button,
+  AntSelect as Select,
   CircleHelpIcon,
   Flex,
   FormControl,
@@ -31,7 +30,7 @@ import { DatastoreConnectionStatus } from "src/features/datastore-connections/ty
 
 import { useFeatures } from "~/features/common/features";
 import DisableConnectionModal from "~/features/datastore-connections/DisableConnectionModal";
-import DatasetConfigField from "~/features/datastore-connections/system_portal_config/forms/fields/DatasetConfigField/DatasetConfigField";
+import SelectDataset from "~/features/datastore-connections/system_portal_config/forms/SelectDataset";
 import {
   ConnectionConfigurationResponse,
   ConnectionSystemTypeMap,
@@ -51,7 +50,7 @@ export interface TestConnectionResponse {
 }
 
 type ConnectorParametersFormProps = {
-  secretsSchema?: ConnectionTypeSecretSchemaReponse;
+  secretsSchema?: ConnectionTypeSecretSchemaResponse;
   defaultValues: ConnectionConfigFormValues;
   isSubmitting: boolean;
   isAuthorizing: boolean;
@@ -64,6 +63,10 @@ type ConnectorParametersFormProps = {
    */
   onTestConnectionClick: (value: TestConnectionResponse) => void;
   /**
+   * Parent callback when Test Dataset is clicked
+   */
+  onTestDatasetsClick: () => void;
+  /**
    * Text for the test button. Defaults to "Test connection"
    */
   testButtonLabel?: string;
@@ -71,30 +74,33 @@ type ConnectorParametersFormProps = {
    * Parent callback when Authorize Connection is clicked
    */
   onAuthorizeConnectionClick: (values: ConnectionConfigFormValues) => void;
-  connectionConfig?: ConnectionConfigurationResponse;
+  connectionConfig?: ConnectionConfigurationResponse | null;
   connectionOption: ConnectionSystemTypeMap;
   isCreatingConnectionConfig: boolean;
+  initialDatasets?: string[];
   datasetDropdownOptions: Option[];
   onDelete: () => void;
   deleteResult: any;
 };
 
-const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
+export const ConnectorParametersForm = ({
   secretsSchema,
   defaultValues,
   isSubmitting = false,
   isAuthorizing = false,
   onSaveClick,
   onTestConnectionClick,
+  onTestDatasetsClick,
   onAuthorizeConnectionClick,
   testButtonLabel = "Test integration",
   connectionOption,
   connectionConfig,
+  initialDatasets,
   datasetDropdownOptions,
   isCreatingConnectionConfig,
   onDelete,
   deleteResult,
-}) => {
+}: ConnectorParametersFormProps) => {
   const [trigger, { isLoading, isFetching }] =
     useLazyGetDatastoreConnectionStatusQuery();
   const { plus: isPlusEnabled } = useFeatures();
@@ -143,7 +149,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
 
   const getFormField = (
     key: string,
-    item: ConnectionTypeSecretSchemaProperty
+    item: ConnectionTypeSecretSchemaProperty,
   ): JSX.Element => (
     <Field
       id={`secrets.${key}`}
@@ -160,15 +166,18 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
         const error = form.errors.secrets && form.errors.secrets[key];
         const touch = form.touched.secrets ? form.touched.secrets[key] : false;
 
+        const isBoolean = item.type === "boolean";
+        const isInteger = item.type === "integer";
+
         return (
           <FormControl
             display="flex"
-            isRequired={isRequiredSecretValue(key)}
+            isRequired={isRequiredSecretValue(key) && !isBoolean}
             isInvalid={error && touch}
           >
             {getFormLabel(key, item.title)}
             <VStack align="flex-start" w="inherit">
-              {item.type !== "integer" && (
+              {!isInteger && !isBoolean && (
                 <Input
                   {...field}
                   type={item.sensitive ? "password" : "text"}
@@ -178,7 +187,17 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
                   size="sm"
                 />
               )}
-              {item.type === "integer" && (
+              {isBoolean && (
+                <Select
+                  value={!!field.value}
+                  onChange={(value) => form.setFieldValue(field.name, value)}
+                  options={[
+                    { label: "False", value: false },
+                    { label: "True", value: true },
+                  ]}
+                />
+              )}
+              {isInteger && (
                 <NumberInput
                   allowMouseWheel
                   color="gray.700"
@@ -236,7 +255,11 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
       ).map((action) => action.toString());
 
       // @ts-ignore
-      initialValues.secrets = { ...connectionConfig.secrets };
+      initialValues.secrets = connectionConfig.secrets
+        ? _.cloneDeep(connectionConfig.secrets)
+        : {};
+
+      initialValues.dataset = initialDatasets;
 
       // check if we need we need to pre-process any secrets values
       // we currently only need to do this for Fides dataset references
@@ -245,19 +268,19 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
         Object.entries(secretsSchema.properties).forEach(([key, schema]) => {
           if (schema.allOf?.[0].$ref === FIDES_DATASET_REFERENCE) {
             const datasetReference = initialValues.secrets[key];
-            initialValues.secrets[
-              key
-            ] = `${datasetReference.dataset}.${datasetReference.field}`;
+            if (datasetReference) {
+              initialValues.secrets[key] =
+                `${datasetReference.dataset}.${datasetReference.field}`;
+            }
           }
         });
       }
-
       return initialValues;
     }
 
     if (_.isEmpty(initialValues.enabled_actions)) {
       initialValues.enabled_actions = connectionOption.supported_actions.map(
-        (action) => action.toString()
+        (action) => action.toString(),
       );
     }
 
@@ -271,7 +294,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
    * @returns ConnectionConfigFormValues - The processed values.
    */
   const preprocessValues = (
-    values: ConnectionConfigFormValues
+    values: ConnectionConfigFormValues,
   ): ConnectionConfigFormValues => {
     const updatedValues = _.cloneDeep(values);
     if (secretsSchema) {
@@ -301,7 +324,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
 
   const handleAuthorizeConnectionClick = async (
     values: ConnectionConfigFormValues,
-    props: FormikProps<ConnectionConfigFormValues>
+    props: FormikProps<ConnectionConfigFormValues>,
   ) => {
     const errors = await props.validateForm();
 
@@ -314,7 +337,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
   };
 
   const handleTestConnectionClick = async (
-    props: FormikProps<ConnectionConfigFormValues>
+    props: FormikProps<ConnectionConfigFormValues>,
   ) => {
     const errors = await props.validateForm();
 
@@ -336,12 +359,12 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
       validateOnBlur={false}
       validateOnChange={false}
     >
-      {(props: FormikProps<ConnectionConfigFormValues>) => {
+      {(props) => {
         const authorized = !props.dirty && connectionConfig?.authorized;
         return (
           <Form noValidate>
             <VStack align="stretch" gap="16px">
-              <ButtonGroup size="sm" spacing="8px" variant="outline">
+              <div className="flex flex-row">
                 {connectionConfig ? (
                   <DisableConnectionModal
                     connection_key={connectionConfig?.key}
@@ -358,7 +381,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
                     deleteResult={deleteResult}
                   />
                 ) : null}
-              </ButtonGroup>
+              </div>
               {/* Connection Identifier */}
               {!!connectionConfig?.key && (
                 <Field id="instance_key" name="instance_key">
@@ -377,7 +400,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
                           size="sm"
                         />
                         <FormErrorMessage>
-                          {props.errors.instance_key}
+                          {props.errors.instance_key as string}
                         </FormErrorMessage>
                       </VStack>
                       <Tooltip
@@ -407,7 +430,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
                         return null;
                       }
                       return getFormField(key, item);
-                    }
+                    },
                   )
                 : null}
               {isPlusEnabled && (
@@ -441,24 +464,26 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
                       {/* Known as enabled_actions throughout the front-end and back-end but it's displayed to the user as "Request types" */}
                       {getFormLabel("enabled_actions", "Request types")}
                       <VStack align="flex-start" w="inherit">
-                        <Box width="100%">
-                          <SelectInput
-                            options={connectionOption.supported_actions.map(
-                              (action) => ({
-                                label: _.upperFirst(action),
-                                value: action,
-                              })
-                            )}
-                            fieldName={field.name}
-                            size="sm"
-                            isMulti
-                            isDisabled={
-                              connectionOption.supported_actions.length === 1
-                            }
-                          />
-                        </Box>
+                        <Select
+                          {...field}
+                          placeholder="Select..."
+                          mode="multiple"
+                          options={connectionOption.supported_actions.map(
+                            (action) => ({
+                              label: _.upperFirst(action),
+                              value: action,
+                            }),
+                          )}
+                          onChange={(value) => {
+                            form.setFieldValue(field.name, value);
+                          }}
+                          disabled={
+                            connectionOption.supported_actions.length === 1
+                          }
+                          className="w-full"
+                        />
                         <FormErrorMessage>
-                          {props.errors.enabled_actions}
+                          {props.errors.enabled_actions as string}
                         </FormErrorMessage>
                       </VStack>
                       <Tooltip
@@ -480,38 +505,37 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
                 </Field>
               )}
               {SystemType.DATABASE === connectionOption.type &&
-              !isCreatingConnectionConfig ? (
-                <DatasetConfigField
-                  dropdownOptions={datasetDropdownOptions}
-                  connectionConfig={connectionConfig}
-                />
-              ) : null}
-              <ButtonGroup size="sm" spacing="8px" variant="outline">
+                !isCreatingConnectionConfig && (
+                  <SelectDataset options={datasetDropdownOptions} />
+                )}
+              <div className="flex gap-4">
                 {!connectionOption.authorization_required || authorized ? (
                   <Button
-                    colorScheme="gray.700"
-                    isDisabled={
+                    disabled={
                       !connectionConfig?.key ||
                       isSubmitting ||
                       deleteResult.isLoading
                     }
-                    isLoading={isLoading || isFetching}
-                    loadingText="Testing"
+                    loading={isLoading || isFetching}
                     onClick={() => handleTestConnectionClick(props)}
-                    variant="outline"
+                    data-testid="test-connection-button"
                   >
                     {testButtonLabel}
                   </Button>
                 ) : null}
+                {isPlusEnabled &&
+                  SystemType.DATABASE === connectionOption.type &&
+                  !_.isEmpty(initialDatasets) && (
+                    <Button onClick={() => onTestDatasetsClick()}>
+                      Test datasets
+                    </Button>
+                  )}
                 {connectionOption.authorization_required && !authorized ? (
                   <Button
-                    colorScheme="gray.700"
-                    isLoading={isAuthorizing}
-                    loadingText="Authorizing"
+                    loading={isAuthorizing}
                     onClick={() =>
                       handleAuthorizeConnectionClick(props.values, props)
                     }
-                    variant="outline"
                   >
                     Authorize integration
                   </Button>
@@ -521,20 +545,14 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
                 ) : null}
                 <Spacer />
                 <Button
-                  bg="primary.800"
-                  color="white"
-                  isDisabled={deleteResult.isLoading || isSubmitting}
-                  isLoading={isSubmitting}
-                  loadingText="Submitting"
-                  size="sm"
-                  variant="solid"
-                  type="submit"
-                  _active={{ bg: "primary.500" }}
-                  _hover={{ bg: "primary.400" }}
+                  type="primary"
+                  disabled={deleteResult.isLoading || isSubmitting}
+                  loading={isSubmitting}
+                  htmlType="submit"
                 >
                   Save
                 </Button>
-              </ButtonGroup>
+              </div>
             </VStack>
           </Form>
         );
@@ -542,5 +560,3 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
     </Formik>
   );
 };
-
-export default ConnectorParametersForm;

@@ -7,7 +7,7 @@ import { ConnectionStatusData } from "~/features/integrations/ConnectionStatusNo
 import { ConnectionConfigurationResponse } from "~/types/api";
 
 const useTestConnection = (
-  integration: ConnectionConfigurationResponse | undefined
+  integration: ConnectionConfigurationResponse | undefined,
 ) => {
   const [
     connectionTestTrigger,
@@ -26,7 +26,7 @@ const useTestConnection = (
         status: "error",
         description: getErrorMessage(
           result.error,
-          "Unable to test connection. Please try again."
+          "Unable to test connection. Please try again.",
         ),
       });
     } else if (result.data?.test_status === "succeeded") {
@@ -42,7 +42,7 @@ const useTestConnection = (
       : integration?.last_test_timestamp,
     succeeded: data
       ? data.test_status === "succeeded"
-      : integration?.last_test_succeeded,
+      : Boolean(integration?.last_test_succeeded),
   };
 
   const isLoading = queryIsLoading || isFetching;

@@ -10,6 +10,7 @@
         "mspa_service_provider_mode": false,
         "enable_tcfeu_string": true
       },
+      "available_locales": ["en", "es"],
       "experience_config": {
         "translations": [
           {
@@ -49,8 +50,11 @@
         ],
         "language": "en",
         "dismissable": true,
+        "show_layer1_notices": false,
+        "layer1_button_options": "opt_in_opt_out",
         "allow_language_selection": true,
         "auto_detect_language": true,
+        "auto_subdomain_cookie_deletion": true,
         "disabled": false,
         "id": "pri_exp-gpp-banner-modal-000",
         "component": "banner_and_modal",
@@ -129,7 +133,6 @@
         }
       ],
       "gvl": {},
-      "gvl_translations": {},
       "meta": {
         "version_hash": null,
         "accept_all_fides_string": null,

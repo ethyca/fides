@@ -1,4 +1,8 @@
-import { ButtonProps, forwardRef, useDisclosure } from "fidesui";
+import {
+  AntButtonProps as ButtonProps,
+  forwardRef,
+  useDisclosure,
+} from "fidesui";
 import { ReactNode } from "react";
 
 import DenyPrivacyRequestModal from "~/features/privacy-requests/DenyPrivacyRequestModal";
@@ -44,7 +48,7 @@ const DenyButton = forwardRef<DenyButtonProps, "button">(
         />
       </>
     );
-  }
+  },
 );
 
 export default DenyButton;

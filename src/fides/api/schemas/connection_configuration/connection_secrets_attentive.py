@@ -7,8 +7,8 @@ from fides.api.schemas.connection_configuration.connection_secrets_email import 
 
 
 class AttentiveSchema(EmailSchema):
-    third_party_vendor_name: str = "Attentive"
-    recipient_email_address: EmailStr = EmailStr("privacy@attentive.com")
+    third_party_vendor_name: str = "Attentive Email"
+    recipient_email_address: EmailStr = "privacy@attentive.com"
 
 
 class AttentiveDocsSchema(AttentiveSchema, NoValidationSchema):

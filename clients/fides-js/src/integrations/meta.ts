@@ -16,7 +16,7 @@ declare global {
         method: "dataProcessingOptions",
         options: Array<DataProcessingOption>,
         country?: 0 | 1,
-        state?: 0 | 1000
+        state?: 0 | 1000,
       ): void;
       (method: "consent", consent: "revoke" | "grant"): void;
       (method: "init", pixelId: string): void;

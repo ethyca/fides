@@ -2,12 +2,11 @@ import { useAPIHelper } from "common/hooks";
 import { selectConnectionTypeState } from "connection-type/connection-type.slice";
 import {
   ConnectionTypeSecretSchemaProperty,
-  ConnectionTypeSecretSchemaReponse,
+  ConnectionTypeSecretSchemaResponse,
 } from "connection-type/types";
 import { useLazyGetDatastoreConnectionStatusQuery } from "datastore-connections/datastore-connection.slice";
 import {
-  Button,
-  ButtonGroup,
+  AntButton as Button,
   CircleHelpIcon,
   Flex,
   FormControl,
@@ -39,7 +38,7 @@ import { fillInDefaults } from "./helpers";
 const FIDES_DATASET_REFERENCE = "#/definitions/FidesDatasetReference";
 
 type ConnectorParametersFormProps = {
-  data: ConnectionTypeSecretSchemaReponse;
+  data: ConnectionTypeSecretSchemaResponse;
   defaultValues:
     | DatabaseConnectorParametersFormFields
     | SaasConnectorParametersFormFields;
@@ -58,19 +57,19 @@ type ConnectorParametersFormProps = {
   testButtonLabel?: string;
 };
 
-const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
+const ConnectorParametersForm = ({
   data,
   defaultValues,
   isSubmitting = false,
   onSaveClick,
   onTestConnectionClick,
-  testButtonLabel = "Test connection",
-}) => {
+  testButtonLabel = "Test integration",
+}: ConnectorParametersFormProps) => {
   const mounted = useRef(false);
   const { handleError } = useAPIHelper();
 
   const { connection, connectionOption } = useAppSelector(
-    selectConnectionTypeState
+    selectConnectionTypeState,
   );
 
   const [trigger, result] = useLazyGetDatastoreConnectionStatusQuery();
@@ -125,7 +124,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
 
   const getFormField = (
     key: string,
-    item: ConnectionTypeSecretSchemaProperty
+    item: ConnectionTypeSecretSchemaProperty,
   ): JSX.Element => (
     <Field
       id={key}
@@ -149,6 +148,7 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
             {item.type !== "integer" && (
               <Input
                 {...field}
+                value={field.value || ""}
                 placeholder={getPlaceholder(item)}
                 autoComplete="off"
                 color="gray.700"
@@ -361,33 +361,24 @@ const ConnectorParametersForm: React.FC<ConnectorParametersFormProps> = ({
               }
               return getFormField(key, item);
             })}
-            <ButtonGroup size="sm" spacing="8px" variant="outline">
+            <div className="flex gap-2">
               <Button
-                colorScheme="gray.700"
-                isDisabled={!connection?.key}
-                isLoading={result.isLoading || result.isFetching}
-                loadingText="Testing"
+                disabled={!connection?.key}
+                loading={result.isLoading || result.isFetching}
                 onClick={handleTestConnectionClick}
-                variant="outline"
+                data-testid="test-connection-button"
               >
                 {testButtonLabel}
               </Button>
               <Button
-                bg="primary.800"
-                color="white"
-                isDisabled={isSubmitting}
-                isLoading={isSubmitting}
-                loadingText="Submitting"
-                size="sm"
-                variant="solid"
-                type="submit"
-                _active={{ bg: "primary.500" }}
-                _disabled={{ opacity: "inherit" }}
-                _hover={{ bg: "primary.400" }}
+                htmlType="submit"
+                type="primary"
+                disabled={isSubmitting}
+                loading={isSubmitting}
               >
                 Save
               </Button>
-            </ButtonGroup>
+            </div>
           </VStack>
         </Form>
       )}

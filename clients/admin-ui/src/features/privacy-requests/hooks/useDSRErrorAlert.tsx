@@ -2,6 +2,7 @@ import { Box, Text } from "fidesui";
 import { useEffect, useState } from "react";
 
 import { useAlert } from "~/features/common/hooks";
+import { PrivacyRequestStatus } from "~/types/api";
 
 import {
   useGetAllPrivacyRequestsQuery,
@@ -29,7 +30,7 @@ export const useDSRErrorAlert = () => {
   const [skip, setSkip] = useState(true);
   const TOAST_ID = "dsrErrorAlert";
   const DEFAULT_POLLING_INTERVAL = 15000;
-  const STATUS = "error";
+  const STATUS = PrivacyRequestStatus.ERROR;
 
   const { data: notification } = useGetNotificationQuery();
   const { data } = useGetAllPrivacyRequestsQuery(
@@ -39,7 +40,7 @@ export const useDSRErrorAlert = () => {
     {
       pollingInterval: DEFAULT_POLLING_INTERVAL,
       skip,
-    }
+    },
   );
 
   useEffect(() => {
@@ -77,7 +78,7 @@ export const useDSRErrorAlert = () => {
         containerStyle: { maxWidth: "max-content" },
         duration: null,
         id: TOAST_ID,
-      }
+      },
     );
   };
 

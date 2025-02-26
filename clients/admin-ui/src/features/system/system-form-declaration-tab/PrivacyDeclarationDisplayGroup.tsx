@@ -1,11 +1,10 @@
 import {
+  AntButton as Button,
   Box,
-  Button,
   DeleteIcon,
   Divider,
   Heading,
   HStack,
-  IconButton,
   LinkBox,
   LinkOverlay,
   SmallAddIcon,
@@ -27,59 +26,65 @@ const PrivacyDeclarationRow = ({
   handleEdit,
 }: {
   declaration: PrivacyDeclarationResponse;
-  title?: string;
+  title?: string | null;
   handleDelete?: (dec: PrivacyDeclarationResponse) => void;
   handleEdit: (dec: PrivacyDeclarationResponse) => void;
 }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   return (
     <>
-      <Box px={6} py={4} data-testid={`row-${declaration.data_use}`}>
-        <HStack>
-          <LinkBox
-            onClick={() => handleEdit(declaration)}
-            w="100%"
-            h="100%"
-            cursor="pointer"
-          >
-            <LinkOverlay>
+      <LinkBox
+        w="100%"
+        h="100%"
+        cursor="pointer"
+        _hover={{ backgroundColor: "gray.50" }}
+      >
+        <Box px={6} py={4} data-testid={`row-${declaration.data_use}`}>
+          <HStack>
+            <LinkOverlay
+              onClick={() => handleEdit(declaration)}
+              role="button"
+              tabIndex={0}
+            >
               <Text>{title || declaration.data_use}</Text>
             </LinkOverlay>
-          </LinkBox>
-          <Spacer />
-          {handleDelete ? (
-            <>
-              <IconButton
-                aria-label="delete-declaration"
-                variant="outline"
-                zIndex={2}
-                size="sm"
-                onClick={onOpen}
-                data-testid="delete-btn"
-              >
-                <DeleteIcon />
-              </IconButton>
-              <ConfirmationModal
-                isOpen={isOpen}
-                onClose={onClose}
-                onConfirm={() => handleDelete(declaration)}
-                title="Delete data use declaration"
-                message={
-                  <Text>
-                    You are about to delete the data use declaration{" "}
-                    <Text color="complimentary.500" as="span" fontWeight="bold">
-                      {title || declaration.data_use}
+            <Spacer />
+            {handleDelete ? (
+              <>
+                <Button
+                  aria-label="delete-declaration"
+                  className="z-[2]"
+                  onClick={onOpen}
+                  data-testid="delete-btn"
+                >
+                  <DeleteIcon />
+                </Button>
+                <ConfirmationModal
+                  isOpen={isOpen}
+                  onClose={onClose}
+                  onConfirm={() => handleDelete(declaration)}
+                  title="Delete data use declaration"
+                  message={
+                    <Text>
+                      You are about to delete the data use declaration{" "}
+                      <Text
+                        color="complimentary.500"
+                        as="span"
+                        fontWeight="bold"
+                      >
+                        {title || declaration.data_use}
+                      </Text>
+                      , including all its cookies. Are you sure you want to
+                      continue?
                     </Text>
-                    , including all its cookies. Are you sure you want to
-                    continue?
-                  </Text>
-                }
-                isCentered
-              />
-            </>
-          ) : null}
-        </HStack>
-      </Box>
+                  }
+                  isCentered
+                />
+              </>
+            ) : null}
+          </HStack>
+        </Box>
+      </LinkBox>
       <Divider />
     </>
   );
@@ -140,7 +145,7 @@ export const PrivacyDeclarationDisplayGroup = ({
 }: Props) => {
   const declarationTitle = (declaration: PrivacyDeclarationResponse) => {
     const dataUse = allDataUses.filter(
-      (du) => du.fides_key === declaration.data_use
+      (du) => du.fides_key === declaration.data_use,
     )[0];
     if (dataUse) {
       return declaration.name
@@ -159,13 +164,9 @@ export const PrivacyDeclarationDisplayGroup = ({
         !lockedForGVL ? (
           <Button
             onClick={handleAdd}
-            size="xs"
-            px={2}
-            py={1}
-            backgroundColor="primary.800"
-            color="white"
-            fontWeight="600"
-            rightIcon={<SmallAddIcon boxSize={4} />}
+            size="small"
+            icon={<SmallAddIcon boxSize={4} />}
+            iconPosition="end"
             data-testid="add-btn"
           >
             Add data use

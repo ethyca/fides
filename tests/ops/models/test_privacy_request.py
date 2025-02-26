@@ -15,7 +15,7 @@ from fides.api.common_exceptions import (
     PrivacyRequestPaused,
 )
 from fides.api.graph.config import CollectionAddress
-from fides.api.models.policy import CurrentStep, Policy
+from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import (
     CheckpointActionRequired,
     ConsentRequest,
@@ -27,7 +27,7 @@ from fides.api.models.privacy_request import (
     ProvidedIdentity,
     can_run_checkpoint,
 )
-from fides.api.schemas.policy import ActionType
+from fides.api.schemas.policy import ActionType, CurrentStep
 from fides.api.schemas.privacy_request import CustomPrivacyRequestField
 from fides.api.schemas.redis_cache import Identity, LabeledIdentity
 from fides.api.util.cache import (
@@ -271,6 +271,23 @@ def test_delete_privacy_request_removes_cached_data(
     assert cache.get(key) is None
 
 
+@pytest.mark.parametrize(
+    "privacy_request,expected_status",
+    [
+        ("privacy_request_status_approved", PrivacyRequestStatus.in_processing),
+        ("privacy_request_status_pending", PrivacyRequestStatus.in_processing),
+        ("privacy_request_status_canceled", PrivacyRequestStatus.canceled),
+    ],
+)
+def test_privacy_request_moves_to_in_processing(
+    db: Session, request, privacy_request, expected_status
+):
+    pr: PrivacyRequest = request.getfixturevalue(privacy_request)
+    pr.start_processing(db)
+    db.refresh(pr)
+    assert pr.status == expected_status
+
+
 class TestPrivacyRequestTriggerWebhooks:
     def test_trigger_one_way_policy_webhook(
         self,
@@ -292,7 +309,7 @@ class TestPrivacyRequestTriggerWebhooks:
                     "privacy_request_id": privacy_request.id,
                     "direction": webhook.direction.value,
                     "callback_type": webhook.prefix,
-                    "identity": identity.dict(),
+                    "identity": identity.model_dump(mode="json"),
                 },
                 status_code=500,
             )
@@ -319,7 +336,7 @@ class TestPrivacyRequestTriggerWebhooks:
                     "privacy_request_id": privacy_request.id,
                     "direction": webhook.direction.value,
                     "callback_type": webhook.prefix,
-                    "identity": identity.dict(),
+                    "identity": identity.model_dump(mode="json"),
                 },
                 status_code=500,
             )
@@ -345,7 +362,7 @@ class TestPrivacyRequestTriggerWebhooks:
                     "privacy_request_id": privacy_request.id,
                     "direction": webhook.direction.value,
                     "callback_type": webhook.prefix,
-                    "identity": identity.dict(),
+                    "identity": identity.model_dump(mode="json"),
                     "halt": False,
                 },
                 status_code=200,
@@ -373,7 +390,7 @@ class TestPrivacyRequestTriggerWebhooks:
                     "privacy_request_id": privacy_request.id,
                     "direction": webhook.direction.value,
                     "callback_type": webhook.prefix,
-                    "identity": identity.dict(),
+                    "identity": identity.model_dump(mode="json"),
                     "halt": True,
                 },
                 status_code=200,
@@ -401,7 +418,7 @@ class TestPrivacyRequestTriggerWebhooks:
                     "privacy_request_id": privacy_request.id,
                     "direction": webhook.direction.value,
                     "callback_type": webhook.prefix,
-                    "identity": identity.dict(),
+                    "identity": identity.model_dump(mode="json"),
                     "derived_identity": {"phone_number": "+5555555555"},
                     "halt": False,
                 },
@@ -435,7 +452,7 @@ class TestPrivacyRequestTriggerWebhooks:
                     "privacy_request_id": privacy_request.id,
                     "direction": webhook.direction.value,
                     "callback_type": webhook.prefix,
-                    "identity": identity.dict(),
+                    "identity": identity.model_dump(mode="json"),
                 },
                 status_code=200,
             )
@@ -450,7 +467,7 @@ class TestPrivacyRequestTriggerWebhooks:
                     "privacy_request_id": privacy_request.id,
                     "direction": webhook.direction.value,
                     "callback_type": webhook.prefix,
-                    "identity": identity.dict(),
+                    "identity": identity.model_dump(mode="json"),
                     "derived_identity": {"unsupported_identity": "1200 Fides Road"},
                     "halt": True,
                 },

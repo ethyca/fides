@@ -3,14 +3,18 @@ import pytest
 from fides.api.models.connectionconfig import ConnectionType
 from fides.api.models.policy import ActionType
 from fides.api.schemas.connection_configuration.enums.system_type import SystemType
+from fides.api.schemas.storage.storage import AWSAuthMethod
 from fides.api.service.connectors.saas.connector_registry_service import (
     ConnectorRegistry,
 )
-from fides.api.util.connection_type import get_connection_types
+from fides.api.util.connection_type import (
+    get_connection_type_secret_schema,
+    get_connection_types,
+)
 
 
 def test_get_connection_types():
-    data = get_connection_types()
+    data = [obj.model_dump(mode="json") for obj in get_connection_types()]
     assert (
         len(data) == len(ConnectionType) + len(ConnectorRegistry.connector_types()) - 4
     )  # there are 4 connection types that are not returned by the endpoint
@@ -38,10 +42,10 @@ def test_get_connection_types():
         ],
     } in data
 
-    assert "saas" not in [item.identifier for item in data]
-    assert "https" not in [item.identifier for item in data]
-    assert "custom" not in [item.identifier for item in data]
-    assert "manual" not in [item.identifier for item in data]
+    assert "saas" not in [item["identifier"] for item in data]
+    assert "https" not in [item["identifier"] for item in data]
+    assert "custom" not in [item["identifier"] for item in data]
+    assert "manual" not in [item["identifier"] for item in data]
 
     assert {
         "identifier": ConnectionType.sovrn.value,
@@ -54,26 +58,16 @@ def test_get_connection_types():
     } in data
 
 
-DOORDASH = "doordash"
-GOOGLE_ANALYTICS = "google_analytics"
-MAILCHIMP_TRANSACTIONAL = "mailchimp_transactional"
-SEGMENT = "segment"
+HUBSPOT = "hubspot"
+MAILCHIMP = "mailchimp"
 STRIPE = "stripe"
-ZENDESK = "zendesk"
 
 
 @pytest.fixture
 def connection_type_objects():
-    google_analytics_template = ConnectorRegistry.get_connector_template(
-        GOOGLE_ANALYTICS
-    )
-    mailchimp_transactional_template = ConnectorRegistry.get_connector_template(
-        MAILCHIMP_TRANSACTIONAL
-    )
-    stripe_template = ConnectorRegistry.get_connector_template("stripe")
-    zendesk_template = ConnectorRegistry.get_connector_template("zendesk")
-    doordash_template = ConnectorRegistry.get_connector_template(DOORDASH)
-    segment_template = ConnectorRegistry.get_connector_template(SEGMENT)
+    hubspot_template = ConnectorRegistry.get_connector_template(HUBSPOT)
+    mailchimp_template = ConnectorRegistry.get_connector_template(MAILCHIMP)
+    stripe_template = ConnectorRegistry.get_connector_template(STRIPE)
 
     return {
         ConnectionType.postgres.value: {
@@ -94,38 +88,26 @@ def connection_type_objects():
             "user_guide": None,
             "supported_actions": [ActionType.access.value, ActionType.erasure.value],
         },
-        GOOGLE_ANALYTICS: {
-            "identifier": GOOGLE_ANALYTICS,
+        HUBSPOT: {
+            "identifier": HUBSPOT,
             "type": SystemType.saas.value,
-            "human_readable": google_analytics_template.human_readable,
-            "encoded_icon": google_analytics_template.icon,
-            "authorization_required": google_analytics_template.authorization_required,
-            "user_guide": google_analytics_template.user_guide,
+            "human_readable": hubspot_template.human_readable,
+            "encoded_icon": hubspot_template.icon,
+            "authorization_required": hubspot_template.authorization_required,
+            "user_guide": hubspot_template.user_guide,
             "supported_actions": [
-                action.value for action in google_analytics_template.supported_actions
+                action.value for action in hubspot_template.supported_actions
             ],
         },
-        MAILCHIMP_TRANSACTIONAL: {
-            "identifier": MAILCHIMP_TRANSACTIONAL,
+        MAILCHIMP: {
+            "identifier": MAILCHIMP,
             "type": SystemType.saas.value,
-            "human_readable": mailchimp_transactional_template.human_readable,
-            "encoded_icon": mailchimp_transactional_template.icon,
-            "authorization_required": mailchimp_transactional_template.authorization_required,
-            "user_guide": mailchimp_transactional_template.user_guide,
+            "human_readable": mailchimp_template.human_readable,
+            "encoded_icon": mailchimp_template.icon,
+            "authorization_required": mailchimp_template.authorization_required,
+            "user_guide": mailchimp_template.user_guide,
             "supported_actions": [
-                action.value
-                for action in mailchimp_transactional_template.supported_actions
-            ],
-        },
-        SEGMENT: {
-            "identifier": SEGMENT,
-            "type": SystemType.saas.value,
-            "human_readable": segment_template.human_readable,
-            "encoded_icon": segment_template.icon,
-            "authorization_required": segment_template.authorization_required,
-            "user_guide": segment_template.user_guide,
-            "supported_actions": [
-                action.value for action in segment_template.supported_actions
+                action.value for action in mailchimp_template.supported_actions
             ],
         },
         STRIPE: {
@@ -139,28 +121,6 @@ def connection_type_objects():
                 action.value for action in stripe_template.supported_actions
             ],
         },
-        ZENDESK: {
-            "identifier": ZENDESK,
-            "type": SystemType.saas.value,
-            "human_readable": zendesk_template.human_readable,
-            "encoded_icon": zendesk_template.icon,
-            "authorization_required": zendesk_template.authorization_required,
-            "user_guide": zendesk_template.user_guide,
-            "supported_actions": [
-                action.value for action in zendesk_template.supported_actions
-            ],
-        },
-        DOORDASH: {
-            "identifier": DOORDASH,
-            "type": SystemType.saas.value,
-            "human_readable": doordash_template.human_readable,
-            "encoded_icon": doordash_template.icon,
-            "authorization_required": doordash_template.authorization_required,
-            "user_guide": doordash_template.user_guide,
-            "supported_actions": [
-                action.value for action in doordash_template.supported_actions
-            ],
-        },
         ConnectionType.sovrn.value: {
             "identifier": ConnectionType.sovrn.value,
             "type": SystemType.email.value,
@@ -170,10 +130,10 @@ def connection_type_objects():
             "user_guide": None,
             "supported_actions": [ActionType.consent.value],
         },
-        ConnectionType.attentive.value: {
-            "identifier": ConnectionType.attentive.value,
+        ConnectionType.attentive_email.value: {
+            "identifier": ConnectionType.attentive_email.value,
             "type": SystemType.email.value,
-            "human_readable": "Attentive",
+            "human_readable": "Attentive Email",
             "encoded_icon": None,
             "authorization_required": False,
             "user_guide": None,
@@ -187,15 +147,14 @@ def connection_type_objects():
     [
         (
             [ActionType.consent],
-            [GOOGLE_ANALYTICS, MAILCHIMP_TRANSACTIONAL, ConnectionType.sovrn.value],
+            [ConnectionType.sovrn.value],
             [
                 ConnectionType.postgres.value,
                 ConnectionType.manual_webhook.value,
-                DOORDASH,
+                HUBSPOT,
+                MAILCHIMP,
                 STRIPE,
-                ZENDESK,
-                SEGMENT,
-                ConnectionType.attentive.value,
+                ConnectionType.attentive_email.value,
             ],
         ),
         (
@@ -203,83 +162,67 @@ def connection_type_objects():
             [
                 ConnectionType.postgres.value,
                 ConnectionType.manual_webhook.value,
-                DOORDASH,
-                SEGMENT,
+                HUBSPOT,
+                MAILCHIMP,
                 STRIPE,
-                ZENDESK,
             ],
             [
-                GOOGLE_ANALYTICS,
-                MAILCHIMP_TRANSACTIONAL,
                 ConnectionType.sovrn.value,
-                ConnectionType.attentive.value,
+                ConnectionType.attentive_email.value,
             ],
         ),
         (
             [ActionType.erasure],
             [
                 ConnectionType.postgres.value,
-                SEGMENT,  # segment has DPR so it is an erasure
+                HUBSPOT,
                 STRIPE,
-                ZENDESK,
-                ConnectionType.attentive.value,
+                MAILCHIMP,
+                ConnectionType.attentive_email.value,
                 ConnectionType.manual_webhook.value,
             ],
             [
-                GOOGLE_ANALYTICS,
-                MAILCHIMP_TRANSACTIONAL,
-                DOORDASH,  # doordash does not have erasures
                 ConnectionType.sovrn.value,
             ],
         ),
         (
             [ActionType.consent, ActionType.access],
             [
-                GOOGLE_ANALYTICS,
-                MAILCHIMP_TRANSACTIONAL,
+                HUBSPOT,
+                MAILCHIMP,
                 ConnectionType.sovrn.value,
                 ConnectionType.postgres.value,
                 ConnectionType.manual_webhook.value,
-                DOORDASH,
-                SEGMENT,
                 STRIPE,
-                ZENDESK,
             ],
             [
-                ConnectionType.attentive.value,
+                ConnectionType.attentive_email.value,
             ],
         ),
         (
             [ActionType.consent, ActionType.erasure],
             [
-                GOOGLE_ANALYTICS,
-                MAILCHIMP_TRANSACTIONAL,
+                MAILCHIMP,
+                HUBSPOT,
                 ConnectionType.sovrn.value,
                 ConnectionType.postgres.value,
-                SEGMENT,  # segment has DPR so it is an erasure
                 STRIPE,
-                ZENDESK,
-                ConnectionType.attentive.value,
+                ConnectionType.attentive_email.value,
                 ConnectionType.manual_webhook.value,
             ],
-            [
-                DOORDASH,  # doordash does not have erasures
-            ],
+            [],
         ),
         (
             [ActionType.access, ActionType.erasure],
             [
                 ConnectionType.postgres.value,
                 ConnectionType.manual_webhook.value,
-                DOORDASH,
-                SEGMENT,
+                MAILCHIMP,
+                HUBSPOT,
                 STRIPE,
-                ZENDESK,
-                ConnectionType.attentive.value,
+                ConnectionType.attentive_email.value,
             ],
             [
-                GOOGLE_ANALYTICS,
-                MAILCHIMP_TRANSACTIONAL,
                 ConnectionType.sovrn.value,
             ],
         ),
@@ -288,7 +231,10 @@ def connection_type_objects():
 def test_get_connection_types_action_type_filter(
     action_types, assert_in_data, assert_not_in_data, connection_type_objects
 ):
-    data = get_connection_types(action_types=action_types)
+    data = [
+        obj.model_dump(mode="json")
+        for obj in get_connection_types(action_types=action_types)
+    ]
 
     for connection_type in assert_in_data:
         obj = connection_type_objects[connection_type]
@@ -297,3 +243,20 @@ def test_get_connection_types_action_type_filter(
     for connection_type in assert_not_in_data:
         obj = connection_type_objects[connection_type]
         assert obj not in data
+
+
+def test_get_connection_type_secret_schemas_aws():
+    """
+    AWS secret schemas have inheritance from a base class, and have provided some issues in the past.
+
+    This test covers their JSON schema serialization behavior to ensure there aren't regressions.
+    """
+
+    dynamo_db_schema = get_connection_type_secret_schema(connection_type="dynamodb")
+    dynamodb_required = dynamo_db_schema["required"]
+    assert "region_name" in dynamodb_required
+    assert "auth_method" in dynamodb_required
+
+    s3_secret_schema = get_connection_type_secret_schema(connection_type="s3")
+    s3_required = s3_secret_schema["required"]
+    assert "auth_method" in s3_required

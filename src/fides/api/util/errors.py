@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import Optional
+
 from fastapi import HTTPException, status
 
 
@@ -72,13 +74,42 @@ class ForbiddenError(HTTPException):
     To be raised when a user cannot modify an entity.
     """
 
-    def __init__(self, resource_type: str, fides_key: str) -> None:
+    def __init__(
+        self,
+        resource_type: str,
+        fides_key: str,
+        error_message: str = "user does not have permission to modify",
+    ) -> None:
         detail = {
-            "error": "user does not have permission to modify",
+            "error": error_message,
             "resource_type": resource_type,
             "fides_key": fides_key,
         }
         super().__init__(status.HTTP_403_FORBIDDEN, detail=detail)
+
+
+class ForbiddenIsDefaultTaxonomyError(ForbiddenError):
+    """
+    To be raised when a user cannot modify a resource from the default Fideslang taxonomy (`is_default` is True)
+    """
+
+    def __init__(
+        self,
+        resource_type: str,
+        fides_key: str,
+        action: str = "modify",
+        error_message: Optional[str] = None,
+    ) -> None:
+        default_error_message = (
+            "cannot modify 'is_default' field on an existing resource"
+            if action == "modify"
+            else f"cannot {action} a resource where 'is_default' is true"
+        )
+
+        error = error_message or default_error_message
+        super().__init__(
+            resource_type=resource_type, fides_key=fides_key, error_message=error
+        )
 
 
 def get_full_exception_name(exception: Exception) -> str:
@@ -91,5 +122,5 @@ def get_full_exception_name(exception: Exception) -> str:
     return module + "." + exception.__class__.__name__
 
 
-class FunctionalityNotConfigured(Exception):
+class RedisNotConfigured(Exception):
     """Custom exception for when invoked functionality is unavailable due to configuration."""

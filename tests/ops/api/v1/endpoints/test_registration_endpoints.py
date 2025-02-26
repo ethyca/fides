@@ -6,6 +6,26 @@ from fides.api.models.registration import UserRegistration
 from fides.common.api.v1.urn_registry import REGISTRATION, V1_URL_PREFIX
 
 
+class TestUserRegistrationModel:
+
+    def test_registration_as_log(self, db):
+        EXAMPLE_ANALYTICS_ID = "example-analytics-id"
+        OPT_IN = True
+
+        user_reg = UserRegistration.create(
+            db,
+            data={
+                "user_email": "user@example.com",
+                "user_organization": "Example Org.",
+                "analytics_id": EXAMPLE_ANALYTICS_ID,
+                "opt_in": OPT_IN,
+            },
+        )
+
+        fideslog_reg = user_reg.as_fideslog()
+        assert fideslog_reg.organization == "Example Org."
+
+
 class TestUserRegistration:
     """Tests for the UserRegistration API, configured during `fides deploy`."""
 

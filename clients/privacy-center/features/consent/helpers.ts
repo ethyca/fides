@@ -5,18 +5,16 @@ import {
   resolveLegacyConsentValue,
 } from "fides-js";
 
-import {
-  ConfigConsentOption,
-  LegacyConsentConfig,
-  ConsentConfig,
-} from "~/types/config";
+import { ConfigConsentOption } from "~/types/api";
+import { ConsentConfig, LegacyConsentConfig } from "~/types/config";
+
 import { FidesKeyToConsent } from "./types";
 
 /**
  * Ascertain whether a consentConfig is V1 or V2 based upon the presence of a `button` key
  */
 export function isV1ConsentConfig(
-  consentConfig: LegacyConsentConfig | ConsentConfig | undefined
+  consentConfig: LegacyConsentConfig | ConsentConfig | undefined,
 ): consentConfig is LegacyConsentConfig {
   return (
     typeof consentConfig === "object" &&
@@ -62,8 +60,8 @@ export const makeNoticeConsent = ({
   const consent: NoticeConsent = {};
   consentOptions.forEach((option) => {
     const defaultValue = resolveLegacyConsentValue(
-      option.default,
-      consentContext
+      option.default!,
+      consentContext,
     );
     const value = fidesKeyToConsent[option.fidesDataUseKey] ?? defaultValue;
 
@@ -96,7 +94,7 @@ export const getGpcStatus = ({
     return GpcStatus.NONE;
   }
 
-  if (value === consentOption.default.globalPrivacyControl) {
+  if (value === consentOption.default?.globalPrivacyControl) {
     return GpcStatus.APPLIED;
   }
 

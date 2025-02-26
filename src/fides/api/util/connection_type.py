@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Set
+from typing import Any, Dict, Set
 
 from fides.api.common_exceptions import NoSuchConnectionTypeSecretSchemaError
 from fides.api.models.connectionconfig import ConnectionType
@@ -26,6 +26,115 @@ from fides.api.service.connectors.saas.connector_registry_service import (
 from fides.api.util.saas_util import load_config_from_string
 
 
+def transform_v2_to_v1_in_place(schema: Dict[str, Any]) -> None:
+    """Transform connection secrets from Pydantic V2 format to V1 format for backwards compatibility
+    since Connection secrets UI is built off of this data.
+
+    This is error prone and is subject to change as we add more types of schemas.
+    We should consider a refactor of both the frontend and backend here.
+    """
+
+    def swap_defs_with_definitions(defn: str) -> str:
+        """Reverting to v1 schema format for definitions"""
+        return defn.replace("#/$defs", "#/definitions")
+
+    def transform_any_of(field_attributes_mapping: Dict[str, Any]) -> None:
+        for attributes in field_attributes_mapping.values():
+            # Transforming Pydantic V2 schemas -> Pydantic V1 schemas
+            if attributes.get("anyOf"):
+                anyOf = attributes.get("anyOf")
+                for type_annotation in anyOf:
+                    # If field has a null default, V2 returns multiple types in a list
+                    # of anyOf which isn't compatible with current UI.  Returning
+                    # the first non-null type instead.
+                    #
+                    # BEFORE
+                    # "test_email_address": {
+                    #  "anyOf": [
+                    #          {
+                    #           "format": "email",
+                    #           "type": "string"
+                    #         },
+                    #         {
+                    #           "type": "null"
+                    #         }
+                    #       ]
+                    #   }
+                    # AFTER
+                    #   "test_email_address": {
+                    #       "type": "string",
+                    #       "format": "email"
+                    #   },
+                    if "type" in type_annotation and type_annotation["type"] != "null":
+                        for key, val in type_annotation.items():
+                            attributes[key] = val
+                        break
+                    # Nested schemas have more complex formatting, they reference a
+                    # more detailed definition elsewhere in the schema
+                    # Advanced settings don't appear to be connected in the UI.
+                    # BEFORE
+                    #   "advanced_settings": {
+                    #       "anyOf": [
+                    #             {
+                    #               "$ref": "#/$defs/AdvancedSettings"
+                    #             },
+                    #             {
+                    #               "type": "null"
+                    #             }
+                    #       ]
+                    #   }
+                    # AFTER
+                    #     "advanced_settings": {
+                    #       "title": "Advanced Settings",
+                    #       "default": {
+                    #         "identity_types": {
+                    #           "email": true,
+                    #           "phone_number": false
+                    #         }
+                    #       },
+                    #       "allOf": [
+                    #         {
+                    #           "$ref": "#/definitions/AdvancedSettings"
+                    #         }
+                    #       ]
+                    #     }
+                    if "$ref" in type_annotation:
+                        attributes["allOf"] = [
+                            {
+                                "$ref": swap_defs_with_definitions(
+                                    type_annotation["$ref"]
+                                )
+                            }
+                        ]
+                        break
+
+                attributes.pop("anyOf")
+
+            if "default" in attributes and attributes["default"] is None:
+                # Backwards compatible with UI, this affects what fields
+                # show up as required
+                attributes.pop("default")
+
+            if attributes.get("$ref"):
+                # V1 called it "#/$defs", V2 dalls it "#/definitions/"
+                attributes["$ref"] = swap_defs_with_definitions(attributes["$ref"])
+
+    transform_any_of(schema["properties"])
+
+    for attributes in schema["properties"].values():
+        if attributes.get("allOf"):
+            for defs in attributes.get("allOf"):
+                for key, val in defs.items():
+                    defs[key] = swap_defs_with_definitions(val)
+
+    if schema.get("$defs"):
+        schema["definitions"] = schema.get("$defs")
+        schema.pop("$defs")
+        for key, definition in schema["definitions"].items():
+            if definition.get("properties"):
+                transform_any_of(definition["properties"])
+
+
 def get_connection_type_secret_schema(*, connection_type: str) -> dict[str, Any]:
     """Returns the secret fields that should be supplied to authenticate with a particular connection type.
 
@@ -39,7 +148,9 @@ def get_connection_type_secret_schema(*, connection_type: str) -> dict[str, Any]
         )
 
     if connection_type in [db_type.value for db_type in ConnectionType]:
-        return secrets_schemas[connection_type].schema()
+        schema = secrets_schemas[connection_type].schema()
+        transform_v2_to_v1_in_place(schema)
+        return schema
 
     connector_template = ConnectorRegistry.get_connector_template(connection_type)
     if not connector_template:
@@ -49,6 +160,7 @@ def get_connection_type_secret_schema(*, connection_type: str) -> dict[str, Any]
 
     config = SaaSConfig(**load_config_from_string(connector_template.config))
     schema = SaaSSchemaFactory(config).get_saas_schema().schema()
+    transform_v2_to_v1_in_place(schema)
 
     # rearrange the default order of the properties generated by Pydantic
     # to reflect the order defined in the connector_params and external_references
@@ -57,7 +169,7 @@ def get_connection_type_secret_schema(*, connection_type: str) -> dict[str, Any]
         order.extend(
             [
                 external_reference.name
-                for external_reference in config.external_references
+                for external_reference in config.external_references  # pylint:disable=not-an-iterable
             ]
         )
 
@@ -67,6 +179,13 @@ def get_connection_type_secret_schema(*, connection_type: str) -> dict[str, Any]
             schema["properties"].items(), key=lambda item: order.index(item[0])
         )
     }
+    if schema.get("additionalProperties"):
+        schema.pop("additionalProperties")
+
+    # set an empty array for the 'required' key, if there are no required fields on the schema
+    # this helps the FE, which is expecting _some_ value here, even if it's an empty list
+    if "required" not in schema:
+        schema["required"] = []
     return schema
 
 
@@ -101,16 +220,17 @@ def get_connection_types(
     if (system_type == SystemType.database or system_type is None) and (
         ActionType.access in action_types or ActionType.erasure in action_types
     ):
-        database_types: list[str] = sorted(
+        database_types: list[ConnectionType] = sorted(
             [
-                conn_type.value
+                conn_type
                 for conn_type in ConnectionType
                 if conn_type
                 not in [
-                    ConnectionType.attentive,
+                    ConnectionType.attentive_email,
                     ConnectionType.fides,
                     ConnectionType.generic_consent_email,
                     ConnectionType.generic_erasure_email,
+                    ConnectionType.dynamic_erasure_email,
                     ConnectionType.https,
                     ConnectionType.manual,
                     ConnectionType.manual_webhook,
@@ -118,14 +238,15 @@ def get_connection_types(
                     ConnectionType.sovrn,
                 ]
                 and is_match(conn_type.value)
-            ]
+            ],
+            key=lambda x: x.value,
         )
         connection_system_types.extend(
             [
                 ConnectionSystemTypeMap(
                     identifier=item,
-                    type=SystemType.database,
-                    human_readable=ConnectionType(item).human_readable,
+                    type=item.system_type,
+                    human_readable=item.human_readable,
                     supported_actions=[ActionType.access, ActionType.erasure],
                 )
                 for item in database_types
@@ -216,4 +337,5 @@ def get_connection_types(
                 for email_type in email_types
             ]
         )
+
     return connection_system_types

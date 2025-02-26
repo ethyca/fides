@@ -1,3 +1,5 @@
+from unittest.mock import Mock
+
 import pytest
 from sqlalchemy.orm import Session
 
@@ -406,3 +408,91 @@ def test_rule_get_storage_destination_not_found(
 
     with pytest.raises(StorageConfigNotFoundException):
         rule_storage_config = rule.get_storage_destination(db)
+
+
+# using mocks to avoid a more complicated setup of Policy and TraversalNode fixtures
+class TestPolicyAppliesTo:
+    def test_applies_to_exact_match(self):
+        mock_node = Mock()
+        mock_node.get_data_categories.return_value = {"user.contact"}
+
+        policy = Policy()
+        policy.get_access_target_categories = Mock(return_value=["user.contact"])
+        policy.get_erasure_target_categories = Mock(return_value=[])
+
+        assert policy.applies_to(mock_node) is True
+
+    def test_applies_to_prefix_match(self):
+        mock_node = Mock()
+        mock_node.get_data_categories.return_value = {"user.contact.email"}
+
+        policy = Policy()
+        policy.get_access_target_categories = Mock(return_value=["user.contact"])
+        policy.get_erasure_target_categories = Mock(return_value=[])
+
+        assert policy.applies_to(mock_node) is True
+
+    def test_does_not_apply_to_different_category(self):
+        mock_node = Mock()
+        mock_node.get_data_categories.return_value = {"system.operations"}
+
+        policy = Policy()
+        policy.get_access_target_categories = Mock(return_value=["user.contact"])
+        policy.get_erasure_target_categories = Mock(return_value=[])
+
+        assert policy.applies_to(mock_node) is False
+
+    def test_applies_to_either_access_or_erasure_categories(self):
+        mock_node = Mock()
+        mock_node.get_data_categories.return_value = {"user.preferences"}
+
+        policy = Policy()
+        policy.get_access_target_categories = Mock(return_value=["user.contact"])
+        policy.get_erasure_target_categories = Mock(return_value=["user.preferences"])
+
+        assert policy.applies_to(mock_node) is True
+
+    def test_applies_to_multiple_node_categories(self):
+        mock_node = Mock()
+        mock_node.get_data_categories.return_value = {
+            "system.operations",
+            "user.contact.email",
+        }
+
+        policy = Policy()
+        policy.get_access_target_categories = Mock(return_value=["user.contact"])
+        policy.get_erasure_target_categories = Mock(return_value=[])
+
+        assert policy.applies_to(mock_node) is True
+
+    def test_applies_to_multiple_target_categories(self):
+        mock_node = Mock()
+        mock_node.get_data_categories.return_value = {"system.operations"}
+
+        policy = Policy()
+        policy.get_access_target_categories = Mock(
+            return_value=["user.contact", "system"]
+        )
+        policy.get_erasure_target_categories = Mock(return_value=[])
+
+        assert policy.applies_to(mock_node) is True
+
+    def test_applies_to_empty_node_categories(self):
+        mock_node = Mock()
+        mock_node.get_data_categories.return_value = set()
+
+        policy = Policy()
+        policy.get_access_target_categories = Mock(return_value=["user.contact"])
+        policy.get_erasure_target_categories = Mock(return_value=[])
+
+        assert policy.applies_to(mock_node) is False
+
+    def test_applies_to_empty_target_categories(self):
+        mock_node = Mock()
+        mock_node.get_data_categories.return_value = {"user.contact"}
+
+        policy = Policy()
+        policy.get_access_target_categories = Mock(return_value=[])
+        policy.get_erasure_target_categories = Mock(return_value=[])
+
+        assert policy.applies_to(mock_node) is False

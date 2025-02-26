@@ -5,7 +5,7 @@ import {
 } from "cypress/support/stubs";
 
 import { PrivacyRequestEntity } from "~/features/privacy-requests/types";
-import { RoleRegistryEnum } from "~/types/api";
+import { PrivacyRequestStatus, RoleRegistryEnum } from "~/types/api";
 
 describe("Privacy Requests", () => {
   beforeEach(() => {
@@ -19,7 +19,7 @@ describe("Privacy Requests", () => {
       cy.visit("/privacy-requests");
       cy.wait("@getPrivacyRequests");
 
-      cy.getByTestIdPrefix("privacy-request-row").as("rows");
+      cy.get("tr").as("rows");
 
       // Annoyingly fancy, I know, but this selects the containing rows that have a badge with the
       // matching status text -- as opposed to just filtering by status which would yield the badge
@@ -29,7 +29,7 @@ describe("Privacy Requests", () => {
           .get("@rows")
           .getByTestId("request-status-badge")
           .filter(`:contains('${status}')`)
-          .closest("[data-testid^='privacy-request-row']");
+          .closest("tr");
 
       selectByStatus("New").as("rowsNew");
       selectByStatus("Completed").as("rowsCompleted");
@@ -44,16 +44,7 @@ describe("Privacy Requests", () => {
     });
 
     it("allows navigation to the details of request", () => {
-      cy.get("@rowsNew")
-        .first()
-        .within(() => {
-          cy.getByTestId("privacy-request-more-btn").click();
-        });
-
-      cy.getByTestId("privacy-request-more-menu")
-        .contains("View Details")
-        .click();
-
+      cy.get("@rowsNew").first().click();
       cy.location("pathname").should("match", /^\/privacy-requests\/pri.+/);
     });
 
@@ -61,9 +52,6 @@ describe("Privacy Requests", () => {
       cy.get("@rowsNew")
         .first()
         .within(() => {
-          // The approve button shows up on hover, but there isn't a good way to simulate that in
-          // tests. Instead we click on the menu button to make all the controls appear.
-          cy.getByTestId("privacy-request-more-btn").click();
           cy.getByTestId("privacy-request-approve-btn").click();
         });
 
@@ -78,7 +66,6 @@ describe("Privacy Requests", () => {
       cy.get("@rowsNew")
         .first()
         .within(() => {
-          cy.getByTestId("privacy-request-more-btn").click();
           cy.getByTestId("privacy-request-deny-btn").click();
         });
 
@@ -90,6 +77,18 @@ describe("Privacy Requests", () => {
       cy.wait("@denyPrivacyRequest")
         .its("request.body.request_ids")
         .should("have.length", 1);
+    });
+
+    it("allows deleting a new request", () => {
+      cy.get("@rowsNew")
+        .first()
+        .within(() => {
+          cy.getByTestId("privacy-request-delete-btn").click();
+        });
+      cy.getByTestId("confirmation-modal");
+      cy.getByTestId("continue-btn").click();
+
+      cy.wait("@softDeletePrivacyRequest");
     });
   });
 
@@ -106,7 +105,6 @@ describe("Privacy Requests", () => {
         cy.contains("Request ID").parent().contains(/pri_/);
         cy.getByTestId("request-status-badge").contains("New");
       });
-      cy.getByTestId("pii-toggle").click();
     });
 
     it("allows approving a new request", () => {
@@ -129,6 +127,47 @@ describe("Privacy Requests", () => {
       cy.wait("@denyPrivacyRequest")
         .its("request.body.request_ids")
         .should("have.length", 1);
+    });
+
+    it("shouldn't show the download button for pending requests", () => {
+      cy.getByTestId("download-results-btn").should("not.exist");
+    });
+  });
+
+  describe("downloading access requests", () => {
+    beforeEach(() => {
+      cy.assumeRole(RoleRegistryEnum.OWNER);
+      cy.get<PrivacyRequestEntity>("@privacyRequest").then((privacyRequest) => {
+        cy.visit(`/privacy-requests/${privacyRequest.id}`);
+      });
+    });
+
+    it("can download completed access request results", () => {
+      cy.intercept("GET", "/api/v1/privacy-request/*/access-results", {
+        body: { access_result_urls: ["https://example.com/"] },
+      }).as("getAccessResultURL");
+      stubPrivacyRequests(PrivacyRequestStatus.COMPLETE);
+      cy.wait("@getAccessResultURL");
+      cy.getByTestId("download-results-btn").should("not.be.disabled");
+    });
+
+    it("can't download when request info is stored locally", () => {
+      cy.intercept("GET", "/api/v1/privacy-request/*/access-results", {
+        body: { access_result_urls: ["your local fides_uploads folder"] },
+      }).as("getAccessResultURL");
+      stubPrivacyRequests(PrivacyRequestStatus.COMPLETE);
+      cy.wait("@getAccessResultURL");
+      cy.getByTestId("download-results-btn").should("be.disabled");
+    });
+
+    it("doesn't show the button for non-access requests", () => {
+      stubPrivacyRequests(PrivacyRequestStatus.COMPLETE, {
+        name: "test",
+        rules: [],
+        key: "test",
+      });
+      cy.wait("@getPrivacyRequest");
+      cy.getByTestId("download-results-btn").should("not.exist");
     });
   });
 
@@ -174,7 +213,7 @@ describe("Privacy Requests", () => {
         const { body } = interception.request;
         expect(body.service_type).to.eql("mailgun");
         cy.contains(
-          "Mailgun email successfully updated. You can now enter your security key."
+          "Mailgun email successfully updated. You can now enter your security key.",
         );
       });
     });
@@ -185,7 +224,7 @@ describe("Privacy Requests", () => {
       cy.getByTestId("save-btn").click();
       cy.wait("@createMessagingConfiguration").then(() => {
         cy.contains(
-          "Twilio email successfully updated. You can now enter your security key."
+          "Twilio email successfully updated. You can now enter your security key.",
         );
       });
     });
@@ -235,17 +274,20 @@ describe("Privacy Requests", () => {
       it("shows configured fields and values", () => {
         cy.getByTestId("submit-request-btn").click();
         cy.wait("@getPrivacyCenterConfig");
-        cy.getSelectValueContainer("input-policy_key").type("a{enter}");
+
+        cy.getByTestId("controlled-select-policy_key").antSelect(
+          "Access your data",
+        );
         cy.getByTestId("input-identity.phone").should("not.exist");
         cy.getByTestId("input-identity.email").should("exist");
         cy.getByTestId(
-          "input-custom_privacy_request_fields.required_field.value"
+          "input-custom_privacy_request_fields.required_field.value",
         ).should("exist");
         cy.getByTestId(
-          "input-custom_privacy_request_fields.hidden_field.value"
-        ).should("not.exist");
+          "input-custom_privacy_request_fields.hidden_field.value",
+        ).should("exist");
         cy.getByTestId(
-          "input-custom_privacy_request_fields.field_with_default_value.value"
+          "input-custom_privacy_request_fields.field_with_default_value.value",
         ).should("have.value", "The default value");
         cy.getByTestId("submit-btn").should("be.disabled");
       });
@@ -253,11 +295,14 @@ describe("Privacy Requests", () => {
       it("can submit a privacy request", () => {
         cy.getByTestId("submit-request-btn").click();
         cy.wait("@getPrivacyCenterConfig");
-        cy.getSelectValueContainer("input-policy_key").type("a{enter}");
+        cy.getByTestId("controlled-select-policy_key").type("a{enter}");
         cy.getByTestId("input-identity.email").type("email@ethyca.com");
         cy.getByTestId(
-          "input-custom_privacy_request_fields.required_field.value"
+          "input-custom_privacy_request_fields.required_field.value",
         ).type("A value for the required field");
+        cy.getByTestId(
+          "input-custom_privacy_request_fields.hidden_field.value",
+        ).type("A value for the hidden but required field");
         cy.getByTestId("input-is_verified").click();
         cy.intercept("POST", "/api/v1/privacy-request/authenticated", {
           statusCode: 200,

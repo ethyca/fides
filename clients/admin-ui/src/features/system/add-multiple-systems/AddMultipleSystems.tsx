@@ -30,15 +30,14 @@ import {
 } from "common/table/v2";
 import { errorToastParams, successToastParams } from "common/toast";
 import {
-  Badge,
+  AntButton as Button,
+  AntTag as Tag,
+  AntTooltip as Tooltip,
   Box,
-  Button,
   Flex,
   HStack,
   Spinner,
-  Tag,
   Text,
-  Tooltip,
   useDisclosure,
   useToast,
   VStack,
@@ -48,7 +47,7 @@ import { useEffect, useMemo, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import ConfirmationModal from "~/features/common/modals/ConfirmationModal";
-import { INDEX_ROUTE } from "~/features/common/nav/v2/routes";
+import { INDEX_ROUTE } from "~/features/common/nav/routes";
 import AddVendor from "~/features/configure-consent/AddVendor";
 import {
   DictSystems,
@@ -64,8 +63,8 @@ export const VendorSourceCell = ({ value }: { value: string }) => {
   const labels = vendorSourceLabels[source] ?? { label: "", fullName: "" };
   return (
     <Flex alignItems="center" justifyContent="center" height="100%" mr="2">
-      <Tooltip label={labels.fullName} placement="top">
-        <Badge>{labels.label}</Badge>
+      <Tooltip title={labels.fullName}>
+        <Tag>{labels.label}</Tag>
       </Tooltip>
     </Flex>
   );
@@ -102,7 +101,10 @@ const EmptyTableNotice = () => (
       vendors by selecting the "Add custom vendor" button below.`}
       </Text>
     </VStack>
-    <AddVendor buttonLabel="Add custom vendor" />
+    <AddVendor
+      buttonLabel="Add custom vendor"
+      buttonProps={{ type: "primary" }}
+    />
   </VStack>
 );
 
@@ -188,7 +190,7 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
         filterFn: "arrIncludesSome",
       }),
     ],
-    [allRowsLinkedToSystem, systemText, isTcfEnabled]
+    [allRowsLinkedToSystem, systemText, isTcfEnabled],
   );
 
   const tableInstance = useReactTable<MultipleSystemTable>({
@@ -260,8 +262,8 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
           successToastParams(
             `Successfully added ${
               vendorIds.length
-            } ${systemText.toLocaleLowerCase()}`
-          )
+            } ${systemText.toLocaleLowerCase()}${vendorIds.length > 1 ? "s" : ""}`,
+          ),
         );
       }
     }
@@ -270,20 +272,6 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
   const anyNewSelectedRows = tableInstance
     .getSelectedRowModel()
     .rows.some((row) => !row.original.linked_system);
-
-  const isTooltipDisabled = useMemo(() => {
-    /*
-      The tooltip surrounding the add button is conditionally displayed.
-
-      It displays if no rows have been selected or if all of the vendors
-      are already linked to systems
-    */
-    if (!anyNewSelectedRows || allRowsLinkedToSystem) {
-      return false;
-    }
-
-    return true;
-  }, [anyNewSelectedRows, allRowsLinkedToSystem]);
 
   if (!dictionaryService && !isLoadingHealthCheck) {
     router.push(INDEX_ROUTE);
@@ -333,7 +321,7 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
         onConfirm={addVendors}
         title="Confirmation"
         message={`You are about to add ${totalSelectSystemsLength.toLocaleString(
-          "en"
+          "en",
         )} ${systemText.toLocaleLowerCase()}${
           totalSelectSystemsLength > 1 ? "s" : ""
         }`}
@@ -357,19 +345,12 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
               <Text fontWeight="700" fontSize="sm" lineHeight="2" ml={4}>
                 {totalSelectSystemsLength.toLocaleString("en")} selected
               </Text>
-              <Tooltip
-                label={toolTipText}
-                shouldWrapChildren
-                placement="top"
-                isDisabled={isTooltipDisabled}
-              >
+              <Tooltip title={toolTipText}>
                 <Button
                   onClick={onOpen}
                   data-testid="add-multiple-systems-btn"
-                  size="xs"
-                  variant="outline"
                   disabled={!anyNewSelectedRows}
-                  ml={4}
+                  className="ml-4"
                 >
                   Add
                 </Button>
@@ -378,7 +359,7 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
           ) : null}
         </Flex>
         <HStack spacing={4} alignItems="center">
-          <AddVendor buttonLabel="Add custom vendor" buttonVariant="outline" />
+          <AddVendor buttonLabel="Add custom vendor" />
           {isTcfEnabled ? (
             // Wrap in a span so it is consistent height with the add button, whose
             // Tooltip wraps a span
@@ -386,15 +367,10 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
               <Button
                 onClick={onOpenFilter}
                 data-testid="filter-multiple-systems-btn"
-                size="xs"
-                variant="outline"
               >
-                Filter{" "}
+                Filter
                 {totalFilters > 0 ? (
-                  <Tag borderRadius="full" size="sm" ml={2}>
-                    {" "}
-                    {totalFilters}{" "}
-                  </Tag>
+                  <Tag className="mr-0">{totalFilters}</Tag>
                 ) : null}
               </Button>
             </span>
@@ -420,7 +396,7 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
       />
       <PaginationBar
         pageSizes={PAGE_SIZES}
-        totalRows={totalRows}
+        totalRows={totalRows || 0}
         onPreviousPageClick={onPreviousPageClick}
         isPreviousPageDisabled={isPreviousPageDisabled}
         onNextPageClick={onNextPageClick}

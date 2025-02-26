@@ -8,7 +8,7 @@ import {
   BoxProps,
   Text,
 } from "fidesui";
-import { Fragment, useState } from "react";
+import { Fragment, ReactNode, useState } from "react";
 
 import { TreeNode } from "./types";
 
@@ -89,7 +89,7 @@ const AccordionTree = ({
         <AccordionPanel p={0}>
           {node.children.map((childNode) => (
             <Fragment key={childNode.value}>
-              {createTree(childNode, level + 1)}
+              {createTree(childNode, level + 1) as ReactNode}
             </Fragment>
           ))}
         </AccordionPanel>

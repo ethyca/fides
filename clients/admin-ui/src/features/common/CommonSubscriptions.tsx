@@ -1,13 +1,13 @@
 import { useAppSelector } from "~/app/hooks";
 import { useGetHealthQuery } from "~/features/common/health.slice";
 import { useGetHealthQuery as useGetPlusHealthQuery } from "~/features/plus/plus.slice";
-import { useGetAllSystemsQuery } from "~/features/system/system.slice";
+import { useGetSystemsQuery } from "~/features/system";
 import { selectThisUsersScopes } from "~/features/user-management";
 
 const useCommonSubscriptions = () => {
   useGetHealthQuery();
   useGetPlusHealthQuery();
-  useGetAllSystemsQuery();
+  useGetSystemsQuery({ page: 1, size: 1 }); // used to preload systems count on selectSystemsCount
   useAppSelector(selectThisUsersScopes);
 };
 

@@ -1,18 +1,18 @@
+import { Column } from "@tanstack/react-table";
 import {
   Accordion,
   AccordionButton,
   AccordionIcon,
   AccordionItem,
   AccordionPanel,
+  AntButton as Button,
   Box,
-  Button,
   Checkbox,
   Heading,
   SimpleGrid,
   Text,
 } from "fidesui";
-import { useState } from "react";
-import { ColumnInstance } from "react-table";
+import { ReactNode, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import { DatamapRow } from "~/features/datamap";
@@ -31,7 +31,7 @@ type AccordionMultiFieldCheckBoxProps = {
   filterValue: FieldValueToIsSelected;
   toggleFilterOption: (
     option: keyof FieldValueToIsSelected,
-    isSelected: boolean
+    isSelected: boolean,
   ) => void;
 };
 
@@ -44,7 +44,7 @@ const AccordionMultiFieldCheckBox = ({
   const categoriesMap = useAppSelector(selectDataCategoriesMap);
   const displayText =
     columnId === DATA_CATEGORY_COLUMN_ID
-      ? categoriesMap.get(option)?.name ?? option
+      ? (categoriesMap.get(option)?.name ?? option)
       : option;
   return (
     <Checkbox
@@ -78,17 +78,14 @@ const AccordionMultiFieldCheckBox = ({
 };
 
 interface AccordionMultiFieldProps {
-  column: ColumnInstance<DatamapRow> & {
-    filterValue?: FieldValueToIsSelected | undefined;
-    rows: DatamapRow[];
-  };
+  column: Column<DatamapRow, unknown>;
 }
 
 export type ClearFilterRef = { clearFilter(): void };
 
 const AccordionMultifieldFilter = ({ column }: AccordionMultiFieldProps) => {
   const { filterValue, toggleFilterOption, options } =
-    useAccordionMultifieldFilter(column);
+    useAccordionMultifieldFilter({ column });
 
   const [isViewingMore, setIsViewingMore] = useState(false);
   const numDefaultOptions = 15;
@@ -108,7 +105,7 @@ const AccordionMultifieldFilter = ({ column }: AccordionMultiFieldProps) => {
               justifyContent="center"
               textAlign="left"
             >
-              {column.Header}
+              {column.columnDef.header as ReactNode}
             </Box>
             <AccordionIcon />
           </AccordionButton>
@@ -127,8 +124,7 @@ const AccordionMultifieldFilter = ({ column }: AccordionMultiFieldProps) => {
           </SimpleGrid>
           {!isViewingMore && areExtraOptionsAvailable ? (
             <Button
-              size="sm"
-              variant="ghost"
+              type="text"
               onClick={() => {
                 setIsViewingMore(true);
               }}
@@ -138,8 +134,7 @@ const AccordionMultifieldFilter = ({ column }: AccordionMultiFieldProps) => {
           ) : null}
           {isViewingMore && areExtraOptionsAvailable ? (
             <Button
-              size="sm"
-              variant="ghost"
+              type="text"
               onClick={() => {
                 setIsViewingMore(false);
               }}

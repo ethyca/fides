@@ -1,9 +1,8 @@
 import { debounce } from "common/utils";
 import {
+  AntButton as Button,
   ArrowDownLineIcon,
   Box,
-  Button,
-  ButtonProps,
   Flex,
   Input,
   InputGroup,
@@ -69,14 +68,10 @@ type SelectDropdownProps = {
    * Disable the control
    */
   disabled?: boolean;
-  /**
-   * Menu button props
-   */
-  menuButtonProps?: ButtonProps;
 };
 
 type UseConnectionListDropDown = {
-  connectionConfig?: ConnectionConfigurationResponse;
+  connectionConfig?: ConnectionConfigurationResponse | null;
 };
 
 export const useConnectionListDropDown = ({
@@ -92,9 +87,9 @@ export const useConnectionListDropDown = ({
   const sortedItems = useMemo(
     () =>
       [...connectionOptions].sort((a, b) =>
-        a.human_readable > b.human_readable ? 1 : -1
+        a.human_readable > b.human_readable ? 1 : -1,
       ),
-    [connectionOptions]
+    [connectionOptions],
   );
 
   const dropDownOptions = useMemo(() => {
@@ -102,7 +97,7 @@ export const useConnectionListDropDown = ({
     sortedItems?.map((i) =>
       options.set(i.human_readable, {
         value: i,
-      })
+      }),
     );
     return options;
   }, [sortedItems]);
@@ -114,9 +109,9 @@ export const useConnectionListDropDown = ({
         (ct) =>
           ct.identifier === connectionConfig?.connection_type ||
           (connectionConfig?.saas_config &&
-            ct.identifier === connectionConfig?.saas_config.type)
+            ct.identifier === connectionConfig?.saas_config.type),
       )?.type || "ethyca",
-    [connectionConfig, connectionOptions]
+    [connectionConfig, connectionOptions],
   );
 
   useMemo(() => {
@@ -124,7 +119,7 @@ export const useConnectionListDropDown = ({
       (ct) =>
         (connectionConfig?.saas_config &&
           ct.identifier === connectionConfig?.saas_config.type) ||
-        ct.identifier === connectionConfig?.connection_type
+        ct.identifier === connectionConfig?.connection_type,
     );
     if (initialSelectedValue) {
       setSelectedValue(initialSelectedValue);
@@ -134,15 +129,14 @@ export const useConnectionListDropDown = ({
   return { dropDownOptions, selectedValue, setSelectedValue, systemType };
 };
 
-const ConnectionListDropdown: React.FC<SelectDropdownProps> = ({
+const ConnectionListDropdown = ({
   disabled,
   hasClear = true,
   label,
   list,
-  menuButtonProps,
   onChange,
   selectedValue,
-}) => {
+}: SelectDropdownProps) => {
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Hooks
@@ -163,7 +157,7 @@ const ConnectionListDropdown: React.FC<SelectDropdownProps> = ({
   };
 
   const selectedText = [...list].find(
-    ([, option]) => option.value.identifier === selectedValue?.identifier
+    ([, option]) => option.value.identifier === selectedValue?.identifier,
   )?.[0];
 
   const handleSearchChange = useCallback(
@@ -173,20 +167,20 @@ const ConnectionListDropdown: React.FC<SelectDropdownProps> = ({
         setTimeout(() => inputRef.current?.focus(), 0);
       }
     },
-    []
+    [],
   );
 
   const debounceHandleSearchChange = useMemo(
     () => debounce(handleSearchChange, 100),
-    [handleSearchChange]
+    [handleSearchChange],
   );
 
   const filteredListItems = useMemo(
     () =>
       [...list].filter((l) =>
-        l[0].toLowerCase().includes(searchTerm.toLowerCase())
+        l[0].toLowerCase().includes(searchTerm.toLowerCase()),
       ),
-    [list, searchTerm]
+    [list, searchTerm],
   );
 
   return (
@@ -202,22 +196,15 @@ const ConnectionListDropdown: React.FC<SelectDropdownProps> = ({
         as={Button}
         color={selectedText ? "complimentary.500" : undefined}
         disabled={disabled}
-        fontWeight="normal"
-        rightIcon={<ArrowDownLineIcon />}
-        size="sm"
-        variant="outline"
-        _active={{
-          bg: "none",
-        }}
-        _hover={{
-          bg: "none",
-        }}
-        {...menuButtonProps}
+        icon={<ArrowDownLineIcon />}
+        iconPosition="end"
+        className="!bg-transparent text-left hover:bg-transparent active:bg-transparent"
         data-testid="select-dropdown-btn"
         width="272px"
-        textAlign="left"
       >
-        <Text isTruncated>{selectedText ?? label}</Text>
+        <Text noOfLines={1} style={{ wordBreak: "break-all" }}>
+          {selectedText ?? label}
+        </Text>
       </MenuButton>
       {isOpen ? (
         <MenuList
@@ -255,7 +242,7 @@ const ConnectionListDropdown: React.FC<SelectDropdownProps> = ({
               cursor="auto"
               p="8px"
             >
-              <Button onClick={handleClear} size="xs" variant="outline">
+              <Button onClick={handleClear} size="small">
                 Clear
               </Button>
             </Flex>
@@ -289,7 +276,12 @@ const ConnectionListDropdown: React.FC<SelectDropdownProps> = ({
                   }}
                 >
                   <ConnectionTypeLogo data={option.value} />
-                  <Text ml={2} fontSize="0.75rem" isTruncated>
+                  <Text
+                    ml={2}
+                    fontSize="0.75rem"
+                    noOfLines={1}
+                    wordBreak="break-all"
+                  >
                     {key}
                   </Text>
                 </MenuItem>

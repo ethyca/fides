@@ -1,4 +1,4 @@
-import { ButtonGroup, CheckIcon, Flex, ViewOffIcon } from "fidesui";
+import { AntFlex as Flex, CheckIcon, ViewOffIcon } from "fidesui";
 
 import ActionButton from "~/features/data-discovery-and-detection/ActionButton";
 import {
@@ -16,7 +16,7 @@ const DiscoveryFieldBulkActions = ({
   const [muteResourceMutationTrigger, { isLoading: isMuteLoading }] =
     useMuteResourcesMutation();
 
-  const isLoading = isPromoteLoading || isMuteLoading;
+  const anyActionIsLoading = isPromoteLoading || isMuteLoading;
 
   const handleIgnoreClicked = async (urns: string[]) => {
     await muteResourceMutationTrigger({
@@ -31,29 +31,26 @@ const DiscoveryFieldBulkActions = ({
   };
 
   return (
-    <Flex
-      direction="row"
-      align="center"
-      justify="center"
-      w="full"
-      data-testid="bulk-actions-menu"
-    >
-      <ButtonGroup>
+    <Flex data-testid="bulk-actions-menu">
+      <div className="flex gap-2">
         <ActionButton
           title="Confirm all"
           icon={<CheckIcon />}
           onClick={() => handleConfirmClicked([resourceUrn])}
-          disabled={isLoading}
-          variant="solid"
-          colorScheme="primary"
+          disabled={anyActionIsLoading}
+          loading={isPromoteLoading}
+          type="primary"
+          size="middle"
         />
         <ActionButton
           title="Ignore all"
           icon={<ViewOffIcon />}
-          disabled={isLoading}
           onClick={() => handleIgnoreClicked([resourceUrn])}
+          disabled={anyActionIsLoading}
+          loading={isMuteLoading}
+          size="middle"
         />
-      </ButtonGroup>
+      </div>
     </Flex>
   );
 };

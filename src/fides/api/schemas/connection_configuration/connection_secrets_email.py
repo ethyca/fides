@@ -1,6 +1,6 @@
-from typing import Any, Dict, List, Optional
+from typing import List, Optional, TypeVar
 
-from pydantic import BaseModel, EmailStr, Extra, root_validator
+from pydantic import BaseModel, ConfigDict, EmailStr, model_validator
 
 from fides.api.schemas.base_class import NoValidationSchema
 
@@ -14,35 +14,45 @@ class AdvancedSettings(BaseModel):
     identity_types: IdentityTypes
 
 
-class EmailSchema(BaseModel):
-    """Schema to validate the secrets needed for a generic email connector"""
+T = TypeVar("T")
 
-    third_party_vendor_name: str
-    recipient_email_address: EmailStr
-    test_email_address: Optional[EmailStr]  # Email to send a connection test email
+
+class BaseEmailSchema(
+    BaseModel,
+):
+    """
+    Base Email Schema that contains the fields common to all email schemas.
+    Used to validate secrets for all email connectors
+    """
+
+    test_email_address: Optional[EmailStr] = (
+        None  # Email to send a connection test email
+    )
 
     # the default value is temporary until we allow users to customize the identity types from the front-end
     advanced_settings: AdvancedSettings = AdvancedSettings(
         identity_types=IdentityTypes(email=True, phone_number=False)
     )
+    model_config = ConfigDict(extra="forbid", from_attributes=True)
 
-    class Config:
-        """Only permit selected secret fields to be stored."""
-
-        extra = Extra.forbid
-        orm_mode = True
-
-    @root_validator
-    def validate_fields(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+    @model_validator(mode="after")
+    def validate_fields(self) -> "BaseEmailSchema":
         """At least one identity or browser identity needs to be specified on setup"""
-        advanced_settings = values.get("advanced_settings")
+        advanced_settings = self.advanced_settings
         if not advanced_settings:
             raise ValueError("Must supply advanced settings.")
 
         identities = advanced_settings.identity_types
         if not identities.email and not identities.phone_number:
             raise ValueError("Must supply at least one identity_type.")
-        return values
+        return self
+
+
+class EmailSchema(BaseEmailSchema):
+    """Schema to validate the secrets needed for a generic email connector"""
+
+    third_party_vendor_name: str
+    recipient_email_address: EmailStr
 
 
 class EmailDocsSchema(EmailSchema, NoValidationSchema):
@@ -73,10 +83,10 @@ class ExtendedEmailSchema(EmailSchema):
         )
     )
 
-    @root_validator
-    def validate_fields(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+    @model_validator(mode="after")
+    def validate_fields(self) -> "ExtendedEmailSchema":
         """At least one identity or browser identity needs to be specified on setup"""
-        advanced_settings = values.get("advanced_settings")
+        advanced_settings = self.advanced_settings
         if not advanced_settings:
             raise ValueError("Must supply advanced settings.")
 
@@ -87,4 +97,4 @@ class ExtendedEmailSchema(EmailSchema):
             and not identities.cookie_ids
         ):
             raise ValueError("Must supply at least one identity_type.")
-        return values
+        return self

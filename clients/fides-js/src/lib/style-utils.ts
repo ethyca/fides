@@ -80,7 +80,7 @@ export enum ColorFormat {
 export const generateLighterColor = (
   color: string | Hsl,
   format: ColorFormat,
-  grade: 1 | 2
+  grade: 1 | 2,
 ): string => {
   const hsl: Hsl | null =
     format === ColorFormat.HEX ? hexToHSL(color as string) : (color as Hsl);

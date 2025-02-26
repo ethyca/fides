@@ -41,33 +41,36 @@ module = [
   "cassandra.*",
   "celery.*",
   "citext.*",
+  "click_default_group.*",
   "dask.*",
   "deepdiff.*",
   "defusedxml.ElementTree.*",
   "fideslog.*",
   "firebase_admin.*",
   "google.api_core.*",
-  "nh3.*",
   "joblib.*",
   "jose.*",
   "jwt.*",
   "multidimensional_urlencode.*",
   "networkx.*",
+  "nh3.*",
   "okta.*",
   "pandas.*",
+  "pg8000.*",
   "plotly.*",
   "pydash.*",
+  "pygtrie.*",
   "pymongo.*",
+  "pymysql.*",
   "RestrictedPython.*",
   "sendgrid.*",
   "snowflake.*",
+  "sqlalchemy_utils.*",
   "sqlalchemy.ext.*",
   "sqlalchemy.future.*",
-  "sqlalchemy_utils.*",
   "twilio.*",
   "uvicorn.*",
   "validators.*",
-  "pygtrie.*",
 ]
 ignore_missing_imports = true
 
@@ -101,6 +104,7 @@ exclude = '''
 ###########
 [tool.isort]
 known_first_party = ["versioneer"]
+known_third_party = ["nox"]
 profile = "black"
 line_length = 88
 src_paths = ["src", "tests", "noxfiles"]
@@ -112,6 +116,7 @@ src_paths = ["src", "tests", "noxfiles"]
 disable=[
     "bad-option-value",
     "broad-except",
+    "broad-exception-raised",
     "consider-using-f-string",
     "dangerous-default-value",
     "duplicate-code",
@@ -185,6 +190,10 @@ markers = [
     "integration_postgres",
     "integration_mongodb",
     "integration_mssql",
+    "integration_google_cloud_sql_mysql",
+    "integration_google_cloud_sql_postgres",
+    "integration_rds_mysql",
+    "integration_rds_postgres",
     "integration_redshift",
     "integration_snowflake",
     "integration_mariadb",

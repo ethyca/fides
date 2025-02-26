@@ -1,8 +1,6 @@
-import {
-  ConsentOptionCreate,
-  PrivacyNoticeResponseWithUserPreferences,
-} from "~/types/api";
 import { CONSENT_COOKIE_NAME, FidesCookie } from "fides-js";
+
+import { ConsentOptionCreate, PrivacyNoticeResponse } from "../../types/api";
 import { API_URL } from "../support/constants";
 
 const VERIFICATION_CODE = "112358";
@@ -26,11 +24,11 @@ describe("Privacy notice driven consent", () => {
     cy.window().then((win) => {
       win.localStorage.setItem(
         "consentRequestId",
-        JSON.stringify("consent-request-id")
+        JSON.stringify("consent-request-id"),
       );
       win.localStorage.setItem(
         "verificationCode",
-        JSON.stringify(VERIFICATION_CODE)
+        JSON.stringify(VERIFICATION_CODE),
       );
     });
 
@@ -45,7 +43,7 @@ describe("Privacy notice driven consent", () => {
     cy.intercept(
       "POST",
       `${API_URL}/consent-request/consent-request-id/verify`,
-      { fixture: "consent/verify" }
+      { fixture: "consent/verify" },
     ).as("postConsentRequestVerify");
 
     // Location intercept
@@ -64,13 +62,13 @@ describe("Privacy notice driven consent", () => {
       `${API_URL}/consent-request/consent-request-id/privacy-preferences*`,
       {
         fixture: "consent/privacy_preferences.json",
-      }
+      },
     ).as("patchPrivacyPreference");
     // Consent reporting intercept
     cy.intercept(
       "PATCH",
       `${API_URL}/consent-request/consent-request-id/notices-served`,
-      { fixture: "consent/notices_served.json" }
+      { fixture: "consent/notices_served.json" },
     ).as("patchNoticesServed");
   });
 
@@ -88,10 +86,10 @@ describe("Privacy notice driven consent", () => {
     it("populates its header from the experience config", () => {
       cy.wait("@getExperience");
       cy.getByTestId("consent-heading").contains(
-        "Manage your consent preferences"
+        "Manage your consent preferences",
       );
       cy.getByTestId("consent-description").contains(
-        "We use cookies and similar methods"
+        "We use cookies and similar methods",
       );
     });
 
@@ -150,20 +148,20 @@ describe("Privacy notice driven consent", () => {
         expect(code).to.eql(VERIFICATION_CODE);
         expect(id).to.eql(PRIVACY_CONFIG_HISTORY_ID);
         expect(
-          preferences.map((p: ConsentOptionCreate) => p.preference)
+          preferences.map((p: ConsentOptionCreate) => p.preference),
         ).to.eql(["opt_in", "opt_in", "acknowledge"]);
         // Wait for toast so that we know cookie is ready to be inspected
         cy.get("#toast-1-title").contains(
-          "Your consent preferences have been saved"
+          "Your consent preferences have been saved",
         );
         // Should update the cookie
         cy.waitUntilCookieExists(CONSENT_COOKIE_NAME).then(() => {
           cy.getCookie(CONSENT_COOKIE_NAME).then((cookieJson) => {
             const cookie = JSON.parse(
-              decodeURIComponent(cookieJson!.value)
+              decodeURIComponent(cookieJson!.value),
             ) as FidesCookie;
             expect(body.browser_identity.fides_user_device_id).to.eql(
-              cookie.identity.fides_user_device_id
+              cookie.identity.fides_user_device_id,
             );
             const expectedConsent = {
               advertising: true,
@@ -203,10 +201,10 @@ describe("Privacy notice driven consent", () => {
         const { body } = interception.request;
         cy.getCookie(CONSENT_COOKIE_NAME).then((cookieJson) => {
           const savedCookie = JSON.parse(
-            decodeURIComponent(cookieJson!.value)
+            decodeURIComponent(cookieJson!.value),
           ) as FidesCookie;
           expect(body.browser_identity.fides_user_device_id).to.eql(
-            savedCookie.identity.fides_user_device_id
+            savedCookie.identity.fides_user_device_id,
           );
         });
       });
@@ -216,7 +214,7 @@ describe("Privacy notice driven consent", () => {
       beforeEach(() => {
         // First seed the browser with the cookies that are listed in the notices
         cy.fixture("consent/experience_privacy_center.json").then((data) => {
-          const notices: PrivacyNoticeResponseWithUserPreferences[] =
+          const notices: PrivacyNoticeResponse[] =
             data.items[0].privacy_notices;
 
           const allCookies = notices.map((notice) => notice.cookies).flat();
@@ -228,7 +226,7 @@ describe("Privacy notice driven consent", () => {
           });
           cy.getAllCookies().then((cookies) => {
             expect(
-              cookies.filter((c) => c.name !== CONSENT_COOKIE_NAME).length
+              cookies.filter((c) => c.name !== CONSENT_COOKIE_NAME).length,
             ).to.eql(allCookies.length);
           });
           cy.wrap(notices).as("notices");
@@ -246,12 +244,12 @@ describe("Privacy notice driven consent", () => {
         cy.wait("@patchPrivacyPreference").then(() => {
           // Use waitUntil to help with CI
           cy.waitUntil(() =>
-            cy.getAllCookies().then((cookies) => cookies.length === 1)
+            cy.getAllCookies().then((cookies) => cookies.length === 1),
           ).then(() => {
             // There should be no cookies related to the privacy notices around
             cy.getAllCookies().then((cookies) => {
               const filteredCookies = cookies.filter(
-                (c) => c.name !== CONSENT_COOKIE_NAME
+                (c) => c.name !== CONSENT_COOKIE_NAME,
               );
               expect(filteredCookies.length).to.eql(0);
             });
@@ -274,19 +272,19 @@ describe("Privacy notice driven consent", () => {
         cy.wait("@patchPrivacyPreference").then(() => {
           // Use waitUntil to help with CI
           cy.waitUntil(() =>
-            cy.getAllCookies().then((cookies) => cookies.length === 2)
+            cy.getAllCookies().then((cookies) => cookies.length === 2),
           ).then(() => {
             // The first notice's cookies should still be around
             // But there should be none of the second cookie's
             cy.getAllCookies().then((cookies) => {
               const filteredCookies = cookies.filter(
-                (c) => c.name !== CONSENT_COOKIE_NAME
+                (c) => c.name !== CONSENT_COOKIE_NAME,
               );
               expect(filteredCookies.length).to.eql(1);
               cy.get("@notices").then((notices: any) => {
                 expect(filteredCookies[0]).to.have.property(
                   "name",
-                  notices[0].cookies[0].name
+                  notices[0].cookies[0].name,
                 );
               });
             });
@@ -306,7 +304,7 @@ describe("Privacy notice driven consent", () => {
         cy.wait("@patchPrivacyPreference").then(() => {
           cy.getAllCookies().then((cookies) => {
             const filteredCookies = cookies.filter(
-              (c) => c.name !== CONSENT_COOKIE_NAME
+              (c) => c.name !== CONSENT_COOKIE_NAME,
             );
             expect(filteredCookies.length).to.eql(0);
           });
@@ -352,7 +350,7 @@ describe("Privacy notice driven consent", () => {
         const { body } = interception.request;
         const { preferences } = body;
         expect(
-          preferences.map((p: ConsentOptionCreate) => p.preference)
+          preferences.map((p: ConsentOptionCreate) => p.preference),
         ).to.eql(["opt_in", "opt_out", "acknowledge"]);
       });
     });
@@ -380,6 +378,140 @@ describe("Privacy notice driven consent", () => {
           const expected = interception.response?.body.served_notice_history_id;
           expect(served_notice_history_id).to.eql(expected);
         });
+      });
+    });
+  });
+
+  describe("Hierarchical notices (notices with children)", () => {
+    beforeEach(() => {
+      // Experience intercept
+      cy.intercept("GET", `${API_URL}/privacy-experience/*`, {
+        fixture: "consent/experience_privacy_center_hierarchical.json",
+      }).as("getExperience");
+    });
+
+    it("renders hierarchical notices correctly", () => {
+      cy.visit("/consent");
+      cy.getByTestId("consent");
+      cy.overrideSettings(SETTINGS);
+      cy.wait("@getExperience");
+
+      cy.getByTestId("consent-item-pri_notice-advertising-000").within(() => {
+        // Child items
+        cy.getByTestId("toggle-Weekly Newsletter").should("exist");
+        cy.getByTestId("toggle-Monthly Newsletter").should("exist");
+      });
+
+      cy.getByTestId("consent-item-pri_notice-analytics-000");
+      cy.getByTestId("consent-item-pri_notice-essential-000");
+    });
+
+    it("parent toggle should toggle all children", () => {
+      cy.visit("/consent");
+      cy.getByTestId("consent");
+      cy.overrideSettings(SETTINGS);
+      cy.wait("@getExperience");
+
+      cy.getByTestId("consent-item-pri_notice-advertising-000")
+        .click()
+        .within(() => {
+          cy.getByTestId("toggle-Advertising").should("not.be.checked");
+          cy.getByTestId("toggle-Weekly Newsletter")
+            .getToggle()
+            .should("not.be.checked");
+          cy.getByTestId("toggle-Monthly Newsletter")
+            .getToggle()
+            .should("not.be.checked");
+
+          cy.getByTestId("toggle-Advertising").getToggle().check();
+          cy.getByTestId("toggle-Weekly Newsletter")
+            .getToggle()
+            .should("be.checked");
+          cy.getByTestId("toggle-Monthly Newsletter")
+            .getToggle()
+            .should("be.checked");
+
+          cy.getByTestId("toggle-Advertising").getToggle().uncheck();
+          cy.getByTestId("toggle-Weekly Newsletter")
+            .getToggle()
+            .should("not.be.checked");
+          cy.getByTestId("toggle-Monthly Newsletter")
+            .getToggle()
+            .should("not.be.checked");
+        });
+    });
+
+    it("toggle all children should toggle parent", () => {
+      cy.visit("/consent");
+      cy.getByTestId("consent");
+      cy.overrideSettings(SETTINGS);
+      cy.wait("@getExperience");
+
+      cy.getByTestId("consent-item-pri_notice-advertising-000")
+        .click()
+        .within(() => {
+          cy.getByTestId("toggle-Advertising")
+            .getToggle()
+            .should("not.be.checked");
+          cy.getByTestId("toggle-Weekly Newsletter")
+            .getToggle()
+            .should("not.be.checked");
+          cy.getByTestId("toggle-Monthly Newsletter")
+            .getToggle()
+            .should("not.be.checked");
+
+          cy.getByTestId("toggle-Weekly Newsletter").getToggle().check();
+          cy.getByTestId("toggle-Monthly Newsletter").getToggle().check();
+
+          cy.getByTestId("toggle-Advertising").getToggle().should("be.checked");
+        });
+    });
+
+    it("can save hierarchical notices", () => {
+      cy.visit("/consent");
+      cy.getByTestId("consent");
+      cy.overrideSettings(SETTINGS);
+      cy.wait("@getExperience");
+
+      cy.getByTestId("consent-item-pri_notice-advertising-000").click();
+      cy.getByTestId("toggle-Weekly Newsletter").should("be.visible");
+      cy.getByTestId("toggle-Weekly Newsletter").getToggle().check();
+      cy.getByTestId("toggle-Monthly Newsletter").should("be.visible");
+      cy.getByTestId("toggle-Monthly Newsletter").getToggle().check();
+
+      cy.getByTestId("save-btn").click();
+
+      cy.wait("@patchPrivacyPreference").then((interception) => {
+        const { preferences } = interception.request.body;
+
+        const CHILD_PRIVACY_NOTICE_HISTORY_ID_1 =
+          "pri_notice-weekly-newsletter-advertising-en-001";
+        const CHILD_PRIVACY_NOTICE_HISTORY_ID_2 =
+          "pri_notice-monthly-newsletter-advertising-en-001";
+
+        const expected = [
+          {
+            preference: "opt_in",
+            privacy_notice_history_id: PRIVACY_NOTICE_HISTORY_ID_1,
+          },
+          {
+            preference: "opt_in",
+            privacy_notice_history_id: CHILD_PRIVACY_NOTICE_HISTORY_ID_1,
+          },
+          {
+            preference: "opt_in",
+            privacy_notice_history_id: CHILD_PRIVACY_NOTICE_HISTORY_ID_2,
+          },
+          {
+            preference: "opt_in",
+            privacy_notice_history_id: PRIVACY_NOTICE_HISTORY_ID_2,
+          },
+          {
+            preference: "acknowledge",
+            privacy_notice_history_id: PRIVACY_NOTICE_HISTORY_ID_3,
+          },
+        ];
+        expect(preferences).to.eql(expected);
       });
     });
   });

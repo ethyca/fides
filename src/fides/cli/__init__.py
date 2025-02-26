@@ -23,6 +23,7 @@ from .commands.annotate import annotate
 from .commands.db import database
 from .commands.deploy import deploy
 from .commands.generate import generate
+from .commands.pull import pull
 from .commands.scan import scan
 from .commands.ungrouped import (
     delete,
@@ -31,7 +32,6 @@ from .commands.ungrouped import (
     init,
     list_resources,
     parse,
-    pull,
     push,
     status,
     webserver,
@@ -41,7 +41,7 @@ from .commands.user import user
 from .commands.view import view
 from .exceptions import LocalModeException
 
-CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
+CONTEXT_SETTINGS = {"help_option_names": ["-h", "--help"]}
 LOCAL_COMMANDS = [deploy, evaluate, generate, init, scan, parse, view, webserver]
 LOCAL_COMMAND_NAMES = {command.name for command in LOCAL_COMMANDS}
 API_COMMANDS = [
@@ -57,9 +57,6 @@ API_COMMANDS = [
     user,
 ]
 ALL_COMMANDS = API_COMMANDS + LOCAL_COMMANDS
-SERVER_CHECK_COMMAND_NAMES = {
-    command.name for command in API_COMMANDS if command.name not in ["status", "worker"]
-}
 VERSION = fides.__version__
 APP = fides.__name__
 PACKAGE = "ethyca-fides"
@@ -108,10 +105,6 @@ def cli(ctx: Context, config_path: str, local: bool) -> None:
     # Run the help command if no subcommand is passed
     if not command:
         echo(cli.get_help(ctx))
-
-    # Check the server health and version if an API command is invoked
-    if command in SERVER_CHECK_COMMAND_NAMES:
-        check_server(VERSION, str(config.cli.server_url), quiet=True)
 
     # Analytics requires explicit opt-in
     no_analytics = config.user.analytics_opt_out

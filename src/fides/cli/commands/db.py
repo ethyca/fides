@@ -3,7 +3,7 @@
 import rich_click as click
 
 from fides.cli.options import yes_flag
-from fides.cli.utils import with_analytics
+from fides.cli.utils import with_analytics, with_server_health_check
 from fides.common.utils import echo_red, handle_cli_response
 from fides.core import api as _api
 
@@ -19,6 +19,7 @@ def database(ctx: click.Context) -> None:
 @database.command(name="init", deprecated=True)
 @click.pass_context
 @with_analytics
+@with_server_health_check
 def db_init(ctx: click.Context) -> None:
     """
     Runs all upgrade migrations for the Fides database.
@@ -40,6 +41,7 @@ def db_init(ctx: click.Context) -> None:
 @database.command(name="upgrade")
 @click.pass_context
 @with_analytics
+@with_server_health_check
 def db_upgrade(ctx: click.Context) -> None:
     """
     Runs all upgrade migrations for the Fides database.
@@ -60,6 +62,7 @@ def db_upgrade(ctx: click.Context) -> None:
 @click.pass_context
 @yes_flag
 @with_analytics
+@with_server_health_check
 def db_reset(ctx: click.Context, yes: bool) -> None:
     """
     Reset the database back to its initial state.

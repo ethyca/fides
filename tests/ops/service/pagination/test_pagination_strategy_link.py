@@ -49,6 +49,42 @@ def response_with_empty_string_link():
     return response
 
 
+@pytest.fixture(scope="function")
+def response_with_has_next_conditional_true():
+    response = Response()
+    response._content = bytes(
+        json.dumps(
+            {
+                "customers": [{"id": 1}, {"id": 2}, {"id": 3}],
+                "links": {
+                    "next": "https://domain.com/customers?page=def",
+                    "hasNext": True,
+                },
+            }
+        ),
+        "utf-8",
+    )
+    return response
+
+
+@pytest.fixture(scope="function")
+def response_with_has_next_conditional_false():
+    response = Response()
+    response._content = bytes(
+        json.dumps(
+            {
+                "customers": [{"id": 1}, {"id": 2}, {"id": 3}],
+                "links": {
+                    "next": "https://domain.com/customers?page=abc",
+                    "hasNext": False,
+                },
+            }
+        ),
+        "utf-8",
+    )
+    return response
+
+
 def test_link_in_headers(response_with_header_link):
     config = LinkPaginationConfiguration(source="headers", rel="next")
     request_params: SaaSRequestParams = SaaSRequestParams(
@@ -132,10 +168,54 @@ def test_link_in_body_empty_string(response_with_empty_string_link):
     assert next_request is None
 
 
+## TODO: Tests for when the link exists but there is a conditional boolean that checks if there is a next page
+def test_link_in_body_with_conditional_boolean_true(
+    response_with_has_next_conditional_true,
+):
+    config = LinkPaginationConfiguration(
+        source="body", path="links.next", has_next="links.hasNext"
+    )
+    request_params: SaaSRequestParams = SaaSRequestParams(
+        method=HTTPMethod.GET,
+        path="/customers",
+        query_params={"page": "abc"},
+    )
+
+    paginator = LinkPaginationStrategy(config)
+    next_request: Optional[SaaSRequestParams] = paginator.get_next_request(
+        request_params, {}, response_with_has_next_conditional_true, "customers"
+    )
+
+    assert next_request == SaaSRequestParams(
+        method=HTTPMethod.GET,
+        path="/customers",
+        query_params={"page": "def"},
+    )
+
+
+def test_link_in_body_with_conditional_boolean_false(
+    response_with_has_next_conditional_false,
+):
+    config = LinkPaginationConfiguration(
+        source="body", path="links.next", has_next="links.hasNext"
+    )
+    request_params: SaaSRequestParams = SaaSRequestParams(
+        method=HTTPMethod.GET,
+        path="/customers",
+        query_params={"page": "abc"},
+    )
+
+    paginator = LinkPaginationStrategy(config)
+    next_request: Optional[SaaSRequestParams] = paginator.get_next_request(
+        request_params, {}, response_with_has_next_conditional_false, "customers"
+    )
+    assert next_request is None
+
+
 def test_wrong_source():
     with pytest.raises(ValueError) as exc:
         LinkPaginationConfiguration(source="somewhere", path="links.next")
-    assert "value is not a valid enumeration member" in str(exc.value)
+    assert "Input should be 'headers' or 'body'" in str(exc.value)
 
 
 def test_config_mismatch():

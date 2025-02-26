@@ -1,5 +1,6 @@
-from typing import Optional, Tuple
+from typing import Any, Dict, Optional, Tuple
 
+from fideslang.models import Dataset
 from fideslang.validation import FidesKey
 
 from fides.api.graph.config import (
@@ -7,20 +8,13 @@ from fides.api.graph.config import (
     CollectionAddress,
     FieldAddress,
     GraphDataset,
-    ObjectField,
     ScalarField,
 )
-from fides.api.graph.data_type import (
-    DataType,
-    IntTypeConverter,
-    NoOpTypeConverter,
-    ObjectIdTypeConverter,
-    ObjectTypeConverter,
-    StringTypeConverter,
-)
+from fides.api.graph.data_type import DataType
 from fides.api.graph.graph import DatasetGraph
 from fides.api.graph.traversal import Traversal
 from fides.api.models.connectionconfig import ConnectionConfig
+from fides.api.models.datasetconfig import convert_dataset_to_graph
 
 str_converter = DataType.string.value
 bool_converter = DataType.boolean.value
@@ -28,10 +22,774 @@ obj_converter = DataType.object.value
 int_converter = DataType.integer.value
 
 
+def postgres_dataset_dict(db_name: str) -> Dict[str, Any]:
+    """Returns a dictionary representing a sample Postgres dataset"""
+    return {
+        "fides_key": db_name,
+        "name": db_name,
+        "collections": [
+            {
+                "name": "customer",
+                "fields": [
+                    {
+                        "name": "id",
+                        "fides_meta": {"primary_key": True, "data_type": "integer"},
+                    },
+                    {"name": "name", "fides_meta": {"data_type": "string"}},
+                    {
+                        "name": "email",
+                        "fides_meta": {"data_type": "string", "identity": "email"},
+                    },
+                    {
+                        "name": "address_id",
+                        "fides_meta": {
+                            "references": [
+                                {
+                                    "dataset": db_name,
+                                    "field": "address.id",
+                                    "direction": "to",
+                                }
+                            ]
+                        },
+                    },
+                ],
+            },
+            {
+                "name": "address",
+                "after": [f"{db_name}.customer", f"{db_name}.orders"],
+                "fields": [
+                    {"name": "id", "fides_meta": {"primary_key": True}},
+                    {"name": "street", "fides_meta": {"data_type": "string"}},
+                    {"name": "city", "fides_meta": {"data_type": "string"}},
+                    {"name": "state", "fides_meta": {"data_type": "string"}},
+                    {"name": "zip", "fides_meta": {"data_type": "string"}},
+                ],
+            },
+            {
+                "name": "orders",
+                "fields": [
+                    {"name": "id", "fides_meta": {"primary_key": True}},
+                    {
+                        "name": "customer_id",
+                        "fides_meta": {
+                            "references": [
+                                {
+                                    "dataset": db_name,
+                                    "field": "customer.id",
+                                    "direction": "from",
+                                }
+                            ]
+                        },
+                    },
+                    {
+                        "name": "shipping_address_id",
+                        "fides_meta": {
+                            "references": [
+                                {
+                                    "dataset": db_name,
+                                    "field": "address.id",
+                                    "direction": "to",
+                                }
+                            ]
+                        },
+                    },
+                    {
+                        "name": "payment_card_id",
+                        "fides_meta": {
+                            "data_type": "string",
+                            "references": [
+                                {
+                                    "dataset": db_name,
+                                    "field": "payment_card.id",
+                                    "direction": "to",
+                                }
+                            ],
+                        },
+                    },
+                ],
+            },
+            {
+                "name": "payment_card",
+                "fields": [
+                    {
+                        "name": "id",
+                        "fides_meta": {"primary_key": True, "data_type": "string"},
+                    },
+                    {"name": "name", "fides_meta": {"data_type": "string"}},
+                    {"name": "ccn"},
+                    {
+                        "name": "customer_id",
+                        "fides_meta": {
+                            "references": [
+                                {
+                                    "dataset": db_name,
+                                    "field": "customer.id",
+                                    "direction": "from",
+                                }
+                            ]
+                        },
+                    },
+                    {
+                        "name": "billing_address_id",
+                        "fides_meta": {
+                            "references": [
+                                {
+                                    "dataset": db_name,
+                                    "field": "address.id",
+                                    "direction": "to",
+                                }
+                            ]
+                        },
+                    },
+                ],
+            },
+        ],
+    }
+
+
+def mongo_dataset_dict(mongo_db_name: str, postgres_db_name: str) -> GraphDataset:
+    """Returns a dictionary representing a sample MongoDB dataset"""
+    return {
+        "fides_key": mongo_db_name,
+        "name": mongo_db_name,
+        "collections": [
+            {
+                "name": "address",
+                "fields": [
+                    {"name": "_id", "fides_meta": {"primary_key": True}},
+                    {
+                        "name": "id",
+                        "fides_meta": {
+                            "references": [
+                                {
+                                    "dataset": postgres_db_name,
+                                    "field": "customer.address_id",
+                                    "direction": "from",
+                                }
+                            ]
+                        },
+                    },
+                    {"name": "street", "fides_meta": {"data_type": "string"}},
+                    {"name": "city", "fides_meta": {"data_type": "string"}},
+                    {"name": "state", "fides_meta": {"data_type": "string"}},
+                    {"name": "zip", "fides_meta": {"data_type": "string"}},
+                ],
+            },
+            {
+                "name": "orders",
+                "fields": [
+                    {"name": "_id", "fides_meta": {"primary_key": True}},
+                    {
+                        "name": "customer_id",
+                        "fides_meta": {
+                            "references": [
+                                {
+                                    "dataset": postgres_db_name,
+                                    "field": "customer.id",
+                                    "direction": "from",
+                                }
+                            ]
+                        },
+                    },
+                    {"name": "payment_card_id", "fides_meta": {"data_type": "string"}},
+                ],
+            },
+            {
+                "name": "aircraft",
+                "fields": [
+                    {
+                        "name": "_id",
+                        "fides_meta": {
+                            "primary_key": True,
+                            "data_type": "object_id",
+                        },
+                    },
+                    {
+                        "name": "model",
+                        "fides_meta": {"data_type": "string"},
+                    },
+                    {
+                        "name": "planes",
+                        "fides_meta": {
+                            "data_type": "string[]",
+                            "references": [
+                                {
+                                    "dataset": mongo_db_name,
+                                    "field": "flights.plane",
+                                    "direction": "from",
+                                }
+                            ],
+                        },
+                    },
+                ],
+            },
+            {
+                "name": "conversations",
+                "fields": [
+                    {
+                        "name": "_id",
+                        "fides_meta": {
+                            "primary_key": True,
+                            "data_type": "object_id",
+                        },
+                    },
+                    {
+                        "name": "thread",
+                        "fides_meta": {"data_type": "object"},
+                        "fields": [
+                            {
+                                "name": "comment",
+                                "fides_meta": {
+                                    "data_type": "string",
+                                },
+                            },
+                            {
+                                "name": "message",
+                                "fides_meta": {
+                                    "data_type": "string",
+                                },
+                            },
+                            {
+                                "name": "chat_name",
+                                "fides_meta": {
+                                    "data_type": "string",
+                                },
+                            },
+                            {
+                                "name": "ccn",
+                                "fides_meta": {
+                                    "data_type": "string",
+                                },
+                            },
+                        ],
+                    },
+                ],
+            },
+            {
+                "name": "customer_details",
+                "fields": [
+                    {
+                        "name": "_id",
+                        "fides_meta": {
+                            "primary_key": True,
+                        },
+                    },
+                    {
+                        "name": "birthday",
+                        "fides_meta": {"data_type": "string"},
+                    },
+                    {
+                        "name": "children",
+                        "fides_meta": {"data_type": "string[]"},
+                    },
+                    {
+                        "name": "comments",
+                        "fides_meta": {"data_type": "object[]"},
+                        "fields": [
+                            {
+                                "name": "comment_id",
+                                "fides_meta": {
+                                    "data_type": "string",
+                                    "references": [
+                                        {
+                                            "dataset": mongo_db_name,
+                                            "field": "conversations.thread.comment",
+                                            "direction": "to",
+                                        }
+                                    ],
+                                },
+                            }
+                        ],
+                    },
+                    {
+                        "name": "customer_id",
+                        "fides_meta": {
+                            "references": [
+                                {
+                                    "dataset": "postgres_example",
+                                    "field": "customer.id",
+                                    "direction": "from",
+                                }
+                            ],
+                        },
+                    },
+                    {
+                        "name": "emergency_contacts",
+                        "fides_meta": {"data_type": "object[]"},
+                        "fields": [
+                            {
+                                "name": "name",
+                                "fides_meta": {
+                                    "data_type": "string",
+                                },
+                            },
+                            {
+                                "name": "relationship",
+                                "fides_meta": {
+                                    "data_type": "string",
+                                },
+                            },
+                            {
+                                "name": "phone",
+                                "fides_meta": {
+                                    "data_type": "string",
+                                },
+                            },
+                        ],
+                    },
+                    {
+                        "name": "gender",
+                        "fides_meta": {"data_type": "string"},
+                    },
+                    {
+                        "name": "travel_identifiers",
+                        "fides_meta": {"data_type": "string[]"},
+                    },
+                    {
+                        "name": "workplace_info",
+                        "fides_meta": {"data_type": "object"},
+                        "fields": [
+                            {
+                                "name": "employer",
+                                "fides_meta": {
+                                    "data_type": "string",
+                                },
+                            },
+                            {
+                                "name": "position",
+                                "fides_meta": {
+                                    "data_type": "string",
+                                },
+                            },
+                            {
+                                "name": "direct_reports",
+                                "fides_meta": {"data_type": "string[]"},
+                            },
+                        ],
+                    },
+                ],
+            },
+            {
+                "name": "customer_feedback",
+                "fields": [
+                    {
+                        "name": "_id",
+                        "fides_meta": {
+                            "primary_key": True,
+                            "data_type": "object_id",
+                        },
+                    },
+                    {
+                        "name": "customer_information",
+                        "fides_meta": {"data_type": "object"},
+                        "fields": [
+                            {
+                                "name": "email",
+                                "fides_meta": {
+                                    "data_type": "string",
+                                    "identity": "email",
+                                },
+                            },
+                            {
+                                "name": "phone",
+                                "fides_meta": {
+                                    "data_type": "string",
+                                },
+                            },
+                            {
+                                "name": "internal_customer_id",
+                                "fides_meta": {
+                                    "data_type": "string",
+                                },
+                            },
+                        ],
+                    },
+                    {
+                        "name": "date",
+                        "fides_meta": {"data_type": "string"},
+                    },
+                    {
+                        "name": "message",
+                        "fides_meta": {"data_type": "string"},
+                    },
+                    {
+                        "name": "rating",
+                        "fides_meta": {"data_type": "integer"},
+                    },
+                ],
+            },
+            {
+                "name": "employee",
+                "fields": [
+                    {
+                        "name": "_id",
+                        "fides_meta": {
+                            "primary_key": True,
+                            "data_type": "object_id",
+                        },
+                    },
+                    {
+                        "name": "email",
+                        "fides_meta": {
+                            "data_type": "string",
+                            "identity": "email",
+                        },
+                    },
+                    {
+                        "name": "id",
+                        "fides_meta": {
+                            "primary_key": True,
+                            "references": [
+                                {
+                                    "dataset": mongo_db_name,
+                                    "field": "flights.pilots",
+                                    "direction": "from",
+                                }
+                            ],
+                        },
+                    },
+                    {
+                        "name": "name",
+                        "fides_meta": {"data_type": "string"},
+                    },
+                ],
+            },
+            {
+                "name": "flights",
+                "fields": [
+                    {
+                        "name": "_id",
+                        "fides_meta": {
+                            "primary_key": True,
+                            "data_type": "object_id",
+                        },
+                    },
+                    {
+                        "name": "date",
+                    },
+                    {
+                        "name": "flight_no",
+                    },
+                    {
+                        "name": "passenger_information",
+                        "fides_meta": {"data_type": "object"},
+                        "fields": [
+                            {
+                                "name": "passenger_ids",
+                                "fides_meta": {
+                                    "data_type": "string[]",
+                                    "references": [
+                                        {
+                                            "dataset": "mongo_test",
+                                            "field": "customer_details.travel_identifiers",
+                                            "direction": "from",
+                                        }
+                                    ],
+                                },
+                            },
+                            {
+                                "name": "full_name",
+                                "fides_meta": {
+                                    "data_type": "string",
+                                },
+                            },
+                        ],
+                    },
+                    {
+                        "name": "pilots",
+                        "fides_meta": {"data_type": "string[]"},
+                    },
+                    {
+                        "name": "plane",
+                        "fides_meta": {"data_type": "integer"},
+                    },
+                ],
+            },
+            {
+                "name": "internal_customer_profile",
+                "fields": [
+                    {
+                        "name": "_id",
+                        "fides_meta": {
+                            "primary_key": True,
+                            "data_type": "object_id",
+                        },
+                    },
+                    {
+                        "name": "customer_identifiers",
+                        "fides_meta": {"data_type": "object"},
+                        "fields": [
+                            {
+                                "name": "internal_id",
+                                "fides_meta": {
+                                    "data_type": "string",
+                                    "references": [
+                                        {
+                                            "dataset": mongo_db_name,
+                                            "field": "customer_feedback.customer_information.internal_customer_id",
+                                            "direction": "from",
+                                        }
+                                    ],
+                                },
+                            },
+                            {
+                                "name": "derived_emails",
+                                "fides_meta": {
+                                    "data_type": "string[]",
+                                    "identity": "email",
+                                },
+                            },
+                            {
+                                "name": "derived_phone",
+                                "fides_meta": {
+                                    "data_type": "string[]",
+                                    "identity": "phone_number",
+                                    "return_all_elements": True,
+                                },
+                            },
+                        ],
+                    },
+                    {
+                        "name": "derived_interests",
+                        "fides_meta": {"data_type": "string[]"},
+                    },
+                ],
+            },
+            {
+                "name": "rewards",
+                "fields": [
+                    {
+                        "name": "_id",
+                        "fides_meta": {
+                            "primary_key": True,
+                            "data_type": "object_id",
+                        },
+                    },
+                    {
+                        "name": "owner",
+                        "fides_meta": {
+                            "data_type": "object[]",
+                            "identity": "email",
+                            "return_all_elements": True,
+                        },
+                        "fields": [
+                            {
+                                "name": "phone",
+                                "fides_meta": {
+                                    "data_type": "string[]",
+                                    "references": [
+                                        {
+                                            "dataset": mongo_db_name,
+                                            "field": "internal_customer_profile.customer_identifiers.derived_phone",
+                                            "direction": "from",
+                                        }
+                                    ],
+                                },
+                            },
+                            {"name": "shopper_name"},
+                        ],
+                    },
+                    {
+                        "name": "points",
+                        "fides_meta": {"data_type": "string"},
+                    },
+                    {
+                        "name": "expiration_date",
+                    },
+                ],
+            },
+        ],
+    }
+
+
+def scylladb_dataset_dict(db_name: str) -> Dict[str, Any]:
+    return {
+        "fides_key": db_name,
+        "data_categories": [],
+        "description": "ScyllaDB dataset containing a users table and user_activity table.",
+        "name": db_name,
+        "collections": [
+            {
+                "name": "users",
+                "fields": [
+                    {
+                        "name": "age",
+                        "data_categories": ["user.demographic.age_range"],
+                        "fides_meta": {"data_type": "integer"},
+                    },
+                    {
+                        "name": "alternative_contacts",
+                        "data_categories": ["user.contact.email"],
+                    },
+                    {"name": "ascii_data", "data_categories": ["system"]},
+                    {"name": "big_int_data", "data_categories": ["system"]},
+                    {"name": "do_not_contact", "data_categories": ["user.contact"]},
+                    {
+                        "name": "double_data",
+                        "data_categories": ["user.location.imprecise"],
+                    },
+                    {"name": "duration", "data_categories": ["system"]},
+                    {
+                        "name": "email",
+                        "data_categories": ["user.contact.email"],
+                        "fides_meta": {"identity": "email", "data_type": "string"},
+                    },
+                    {
+                        "name": "float_data",
+                        "data_categories": ["user.location.imprecise"],
+                        "fides_meta": {"data_type": "float"},
+                    },
+                    {"name": "last_contacted", "data_categories": ["user.contact.url"]},
+                    {
+                        "name": "logins",
+                        "data_categories": ["system"],
+                    },
+                    {
+                        "name": "name",
+                        "data_categories": ["user.name"],
+                        "fides_meta": {"data_type": "string"},
+                    },
+                    {
+                        "name": "states_lived",
+                        "data_categories": ["user.contact.address"],
+                    },
+                    {"name": "timestamp", "data_categories": ["system"]},
+                    {
+                        "name": "user_id",
+                        "data_categories": ["user.unique_id"],
+                        "fides_meta": {"data_type": "integer", "primary_key": True},
+                    },
+                    {"name": "uuid", "data_categories": ["user.government_id"]},
+                ],
+            },
+            {
+                "name": "user_activity",
+                "fields": [
+                    {
+                        "name": "user_id",
+                        "data_categories": ["user.unique_id"],
+                        "fides_meta": {
+                            "references": [
+                                {
+                                    "dataset": db_name,
+                                    "field": "users.user_id",
+                                    "direction": "from",
+                                }
+                            ],
+                            "data_type": "integer",
+                            "primary_key": True,
+                        },
+                    },
+                    {
+                        "name": "timestamp",
+                        "data_categories": ["user.behavior"],
+                        "fides_meta": {"data_type": "string", "primary_key": True},
+                    },
+                    {
+                        "name": "user_agent",
+                        "data_categories": ["user.device"],
+                        "fides_meta": {"data_type": "string"},
+                    },
+                    {
+                        "name": "activity_type",
+                        "data_categories": ["user.behavior"],
+                        "fides_meta": {"data_type": "string"},
+                    },
+                ],
+            },
+            {
+                "name": "payment_methods",
+                "fields": [
+                    {
+                        "name": "payment_method_id",
+                        "data_categories": ["system.operations"],
+                        "fides_meta": {"data_type": "integer", "primary_key": True},
+                    },
+                    {
+                        "name": "user_id",
+                        "data_categories": ["user.unique_id"],
+                        "fides_meta": {
+                            "references": [
+                                {
+                                    "dataset": db_name,
+                                    "field": "users.user_id",
+                                    "direction": "from",
+                                }
+                            ],
+                            "data_type": "integer",
+                        },
+                    },
+                    {
+                        "name": "card_number",
+                        "data_categories": ["user.payment"],
+                        "fides_meta": {"data_type": "integer"},
+                    },
+                    {"name": "expiration_date", "data_categories": ["user.payment"]},
+                ],
+            },
+            {
+                "name": "orders",
+                "fields": [
+                    {
+                        "name": "order_id",
+                        "data_categories": ["system.operations"],
+                        "fides_meta": {"data_type": "integer", "primary_key": True},
+                    },
+                    {
+                        "name": "payment_method_id",
+                        "data_categories": ["system.operations"],
+                        "fides_meta": {
+                            "data_type": "integer",
+                            "references": [
+                                {
+                                    "dataset": db_name,
+                                    "field": "payment_methods.payment_method_id",
+                                    "direction": "from",
+                                }
+                            ],
+                        },
+                    },
+                    {
+                        "name": "order_amount",
+                        "data_categories": ["user.behavior.purchase_history"],
+                        "fides_meta": {"data_type": "integer"},
+                    },
+                    {
+                        "name": "order_date",
+                        "data_categories": ["user.behavior.purchase_history"],
+                    },
+                    {
+                        "name": "order_description",
+                        "data_categories": ["user.behavior.purchase_history"],
+                        "fides_meta": {"data_type": "string"},
+                    },
+                ],
+            },
+        ],
+    }
+
+
+def postgres_db_graph_dataset(db_name: str, connection_key) -> GraphDataset:
+    dataset = postgres_dataset_dict(db_name)
+    return convert_dataset_to_graph(Dataset.model_validate(dataset), connection_key)
+
+
+def scylla_db_graph_dataset(db_name: str) -> GraphDataset:
+    dataset = scylladb_dataset_dict(db_name)
+    return convert_dataset_to_graph(Dataset.model_validate(dataset), db_name)
+
+
+def mongo_db_graph_dataset(
+    mongo_db_name: str, postgres_db_name: str, connection_key: str
+) -> GraphDataset:
+    dataset = mongo_dataset_dict(mongo_db_name, postgres_db_name)
+    return convert_dataset_to_graph(Dataset.model_validate(dataset), connection_key)
+
+
 def integration_db_mongo_graph(
     db_name: str, connection_key: FidesKey
 ) -> Tuple[GraphDataset, DatasetGraph]:
-    dataset = integration_db_dataset(db_name, connection_key)
+    dataset = postgres_db_graph_dataset(db_name, connection_key)
     for coll in dataset.collections:
         id_field = next(f for f in coll.fields if f.name == "id")
         id_field.primary_key = False
@@ -45,475 +803,20 @@ def integration_db_mongo_graph(
     return dataset, DatasetGraph(dataset)
 
 
+def integration_scylladb_graph(db_name: str) -> DatasetGraph:
+    dataset = scylla_db_graph_dataset(db_name)
+    return DatasetGraph(dataset)
+
+
 def combined_mongo_postgresql_graph(
     postgres_config: ConnectionConfig, mongo_config: ConnectionConfig
 ) -> Tuple[GraphDataset, GraphDataset]:
-    postgres_dataset = integration_db_dataset("postgres_example", postgres_config.key)
-
-    mongo_addresses = Collection(
-        name="address",
-        fields=[
-            ScalarField(name="_id", primary_key=True),
-            ScalarField(
-                name="id",
-                references=[
-                    (FieldAddress("postgres_example", "customer", "address_id"), "from")
-                ],
-            ),
-            ScalarField(name="street", data_type_converter=str_converter),
-            ScalarField(name="city", data_type_converter=str_converter),
-            ScalarField(name="state", data_type_converter=str_converter),
-            ScalarField(name="zip", data_type_converter=str_converter),
-        ],
+    postgres_dataset = postgres_db_graph_dataset(
+        "postgres_example", postgres_config.key
     )
-    mongo_orders = Collection(
-        name="orders",
-        fields=[
-            ScalarField(name="_id", primary_key=True),
-            ScalarField(
-                name="customer_id",
-                references=[
-                    (FieldAddress("postgres_example", "customer", "id"), "from")
-                ],
-            ),
-            ScalarField(
-                name="payment_card_id",
-                data_type_converter=str_converter,
-            ),
-        ],
+    mongo_dataset = mongo_db_graph_dataset(
+        "mongo_test", "postgres_example", mongo_config.key
     )
-
-    aircraft = Collection(
-        name="aircraft",
-        fields=[
-            ScalarField(
-                name="_id",
-                data_type_converter=ObjectIdTypeConverter(),
-                is_array=False,
-                primary_key=True,
-            ),
-            ScalarField(
-                name="model",
-                data_type_converter=StringTypeConverter(),
-                is_array=False,
-            ),
-            ScalarField(
-                name="planes",
-                data_type_converter=StringTypeConverter(),
-                is_array=True,
-                references=[(FieldAddress("mongo_test", "flights", "plane"), "from")],
-            ),
-        ],
-        after=set(),
-    )
-
-    conversations = Collection(
-        name="conversations",
-        fields=[
-            ScalarField(
-                name="_id",
-                data_type_converter=ObjectIdTypeConverter(),
-                is_array=False,
-                primary_key=True,
-            ),
-            ObjectField(
-                name="thread",
-                data_type_converter=ObjectTypeConverter(),
-                is_array=False,
-                fields={
-                    "comment": ScalarField(
-                        name="comment",
-                        data_type_converter=StringTypeConverter(),
-                        is_array=False,
-                    ),
-                    "message": ScalarField(
-                        name="message",
-                        data_type_converter=StringTypeConverter(),
-                        is_array=False,
-                    ),
-                    "chat_name": ScalarField(
-                        name="chat_name",
-                        data_type_converter=StringTypeConverter(),
-                        is_array=False,
-                    ),
-                    "ccn": ScalarField(
-                        name="ccn",
-                        data_type_converter=StringTypeConverter(),
-                        is_array=False,
-                    ),
-                },
-            ),
-        ],
-        after=set(),
-    )
-
-    customer_details = Collection(
-        name="customer_details",
-        fields=[
-            ScalarField(
-                name="_id",
-                data_type_converter=NoOpTypeConverter(),
-                is_array=False,
-                primary_key=True,
-            ),
-            ScalarField(
-                name="birthday",
-                data_type_converter=StringTypeConverter(),
-                is_array=False,
-            ),
-            ScalarField(
-                name="children",
-                data_type_converter=StringTypeConverter(),
-                is_array=True,
-            ),
-            ObjectField(
-                name="comments",
-                data_type_converter=ObjectTypeConverter(),
-                is_array=True,
-                fields={
-                    "name": ScalarField(
-                        name="comment_id",
-                        data_type_converter=StringTypeConverter(),
-                        is_array=False,
-                        references=[
-                            (
-                                FieldAddress(
-                                    "mongo_test", "conversations", "thread", "comment"
-                                ),
-                                "to",
-                            )
-                        ],
-                    )
-                },
-            ),
-            ScalarField(
-                name="customer_id",
-                data_type_converter=NoOpTypeConverter(),
-                is_array=False,
-                references=[
-                    (
-                        FieldAddress("postgres_example", "customer", "id"),
-                        "from",
-                    )
-                ],
-            ),
-            ObjectField(
-                name="emergency_contacts",
-                data_type_converter=ObjectTypeConverter(),
-                is_array=True,
-                fields={
-                    "name": ScalarField(
-                        name="name",
-                        data_type_converter=StringTypeConverter(),
-                        is_array=False,
-                    ),
-                    "relationship": ScalarField(
-                        name="relationship",
-                        data_type_converter=StringTypeConverter(),
-                        is_array=False,
-                    ),
-                    "phone": ScalarField(
-                        name="phone",
-                        data_type_converter=StringTypeConverter(),
-                        is_array=False,
-                    ),
-                },
-            ),
-            ScalarField(
-                name="gender",
-                data_type_converter=StringTypeConverter(),
-                is_array=False,
-            ),
-            ScalarField(
-                name="travel_identifiers",
-                data_type_converter=StringTypeConverter(),
-                is_array=True,
-            ),
-            ObjectField(
-                name="workplace_info",
-                data_type_converter=ObjectTypeConverter(),
-                is_array=False,
-                fields={
-                    "employer": ScalarField(
-                        name="employer",
-                        data_type_converter=StringTypeConverter(),
-                        is_array=False,
-                    ),
-                    "position": ScalarField(
-                        name="position",
-                        data_type_converter=StringTypeConverter(),
-                        is_array=False,
-                    ),
-                    "direct_reports": ScalarField(
-                        name="direct_reports",
-                        data_type_converter=StringTypeConverter(),
-                        is_array=True,
-                    ),
-                },
-            ),
-        ],
-        after=set(),
-    )
-    customer_feedback = Collection(
-        name="customer_feedback",
-        fields=[
-            ScalarField(
-                name="_id",
-                data_type_converter=ObjectIdTypeConverter(),
-                is_array=False,
-                primary_key=True,
-            ),
-            ObjectField(
-                name="customer_information",
-                data_type_converter=ObjectTypeConverter(),
-                is_array=False,
-                fields={
-                    "email": ScalarField(
-                        name="email",
-                        data_type_converter=StringTypeConverter(),
-                        is_array=False,
-                        identity="email",
-                    ),
-                    "phone": ScalarField(
-                        name="phone",
-                        data_type_converter=StringTypeConverter(),
-                        is_array=False,
-                    ),
-                    "internal_customer_id": ScalarField(
-                        name="internal_customer_id",
-                        data_type_converter=StringTypeConverter(),
-                        is_array=False,
-                    ),
-                },
-            ),
-            ScalarField(
-                name="date",
-                data_type_converter=StringTypeConverter(),
-                is_array=False,
-            ),
-            ScalarField(
-                name="message",
-                data_type_converter=StringTypeConverter(),
-                is_array=False,
-            ),
-            ScalarField(
-                name="rating",
-                data_type_converter=IntTypeConverter(),
-                is_array=False,
-            ),
-        ],
-        after=set(),
-    )
-    employee = Collection(
-        name="employee",
-        fields=[
-            ScalarField(
-                name="_id",
-                data_type_converter=ObjectIdTypeConverter(),
-                is_array=False,
-                primary_key=True,
-            ),
-            ScalarField(
-                name="email",
-                data_type_converter=StringTypeConverter(),
-                is_array=False,
-                identity="email",
-            ),
-            ScalarField(
-                name="id",
-                data_type_converter=NoOpTypeConverter(),
-                is_array=False,
-                references=[(FieldAddress("mongo_test", "flights", "pilots"), "from")],
-                primary_key=True,
-            ),
-            ScalarField(
-                name="name",
-                data_type_converter=StringTypeConverter(),
-                is_array=False,
-            ),
-        ],
-        after=set(),
-    )
-    flights = Collection(
-        name="flights",
-        fields=[
-            ScalarField(
-                name="_id",
-                data_type_converter=ObjectIdTypeConverter(),
-                is_array=False,
-                primary_key=True,
-            ),
-            ScalarField(
-                name="date", data_type_converter=NoOpTypeConverter(), is_array=False
-            ),
-            ScalarField(
-                name="flight_no",
-                data_type_converter=NoOpTypeConverter(),
-                is_array=False,
-            ),
-            ObjectField(
-                name="passenger_information",
-                data_type_converter=ObjectTypeConverter(),
-                is_array=False,
-                fields={
-                    "passenger_ids": ScalarField(
-                        name="passenger_ids",
-                        data_type_converter=StringTypeConverter(),
-                        is_array=True,
-                        references=[
-                            (
-                                FieldAddress(
-                                    "mongo_test",
-                                    "customer_details",
-                                    "travel_identifiers",
-                                ),
-                                "from",
-                            )
-                        ],
-                    ),
-                    "full_name": ScalarField(
-                        name="full_name",
-                        data_type_converter=StringTypeConverter(),
-                        is_array=False,
-                    ),
-                },
-            ),
-            ScalarField(
-                name="pilots",
-                data_type_converter=StringTypeConverter(),
-                is_array=True,
-            ),
-            ScalarField(
-                name="plane", data_type_converter=IntTypeConverter(), is_array=False
-            ),
-        ],
-        after=set(),
-    )
-    internal_customer_profile = Collection(
-        name="internal_customer_profile",
-        fields=[
-            ScalarField(
-                name="_id",
-                data_type_converter=ObjectIdTypeConverter(),
-                is_array=False,
-                primary_key=True,
-            ),
-            ObjectField(
-                name="customer_identifiers",
-                data_type_converter=ObjectTypeConverter(),
-                is_array=False,
-                fields={
-                    "internal_id": ScalarField(
-                        name="internal_id",
-                        data_type_converter=StringTypeConverter(),
-                        is_array=False,
-                        references=[
-                            (
-                                FieldAddress(
-                                    "mongo_test",
-                                    "customer_feedback",
-                                    "customer_information",
-                                    "internal_customer_id",
-                                ),
-                                "from",
-                            )
-                        ],
-                    ),
-                    "derived_emails": ScalarField(
-                        name="derived_emails",
-                        data_type_converter=StringTypeConverter(),
-                        is_array=True,
-                        identity="email",
-                    ),
-                    "derived_phone": ScalarField(
-                        name="derived_phone",
-                        data_type_converter=StringTypeConverter(),
-                        is_array=True,
-                        identity="phone_number",
-                        return_all_elements=True,
-                    ),
-                },
-            ),
-            ScalarField(
-                name="derived_interests",
-                data_type_converter=StringTypeConverter(),
-                is_array=True,
-            ),
-        ],
-        after=set(),
-    )
-    rewards = Collection(
-        name="rewards",
-        fields=[
-            ScalarField(
-                name="_id",
-                data_type_converter=ObjectIdTypeConverter(),
-                is_array=False,
-                primary_key=True,
-            ),
-            ObjectField(
-                name="owner",
-                data_type_converter=StringTypeConverter(),
-                is_array=True,
-                identity="email",
-                return_all_elements=True,
-                fields={
-                    "phone": ScalarField(
-                        return_all_elements=True,
-                        name="phone",
-                        data_type_converter=StringTypeConverter(),
-                        is_array=False,
-                        references=[
-                            (
-                                FieldAddress(
-                                    "mongo_test",
-                                    "internal_customer_profile",
-                                    "customer_identifiers",
-                                    "derived_phone",
-                                ),
-                                "from",
-                            )
-                        ],
-                    ),
-                    "shopper_name": ScalarField(
-                        return_all_elements=True,
-                        name="shopper_name",
-                        data_type_converter=NoOpTypeConverter(),
-                        is_array=False,
-                    ),
-                },
-            ),
-            ScalarField(
-                name="points",
-                data_type_converter=StringTypeConverter(),
-                is_array=False,
-            ),
-            ScalarField(
-                name="expiration_date",
-                data_type_converter=NoOpTypeConverter(),
-                is_array=False,
-            ),
-        ],
-        after=set(),
-    )
-
-    mongo_dataset = GraphDataset(
-        name="mongo_test",
-        collections=[
-            mongo_addresses,
-            mongo_orders,
-            aircraft,
-            conversations,
-            customer_details,
-            customer_feedback,
-            employee,
-            flights,
-            internal_customer_profile,
-            rewards,
-        ],
-        connection_key=mongo_config.key,
-    )
-
     return mongo_dataset, postgres_dataset
 
 
@@ -563,81 +866,9 @@ def manual_graph_dataset(db_name: str, postgres_db_name) -> GraphDataset:
 
 
 def postgres_and_manual_nodes(postgres_db_name: str, manual_db_name: str):
-    postgres_db = integration_db_dataset(postgres_db_name, postgres_db_name)
+    postgres_db = postgres_db_graph_dataset(postgres_db_name, postgres_db_name)
     manual_db = manual_graph_dataset(manual_db_name, postgres_db_name)
     return DatasetGraph(postgres_db, manual_db)
-
-
-def integration_db_dataset(db_name: str, connection_key: FidesKey) -> GraphDataset:
-    """A traversal that maps tables in the postgresql test database"""
-    customers = Collection(
-        name="customer",
-        fields=[
-            ScalarField(name="id", primary_key=True, data_type_converter=int_converter),
-            ScalarField(name="name", data_type_converter=str_converter),
-            ScalarField(
-                name="email", identity="email", data_type_converter=str_converter
-            ),
-            ScalarField(
-                name="address_id",
-                references=[(FieldAddress(db_name, "address", "id"), "to")],
-            ),
-        ],
-    )
-    addresses = Collection(
-        name="address",
-        after={
-            CollectionAddress(db_name, "Customer"),
-            CollectionAddress(db_name, "orders"),
-        },
-        fields=[
-            ScalarField(name="id", primary_key=True),
-            ScalarField(name="street", data_type_converter=str_converter),
-            ScalarField(name="city", data_type_converter=str_converter),
-            ScalarField(name="state", data_type_converter=str_converter),
-            ScalarField(name="zip", data_type_converter=str_converter),
-        ],
-    )
-    orders = Collection(
-        name="orders",
-        fields=[
-            ScalarField(name="id", primary_key=True),
-            ScalarField(
-                name="customer_id",
-                references=[(FieldAddress(db_name, "customer", "id"), "from")],
-            ),
-            ScalarField(
-                name="shipping_address_id",
-                references=[(FieldAddress(db_name, "address", "id"), "to")],
-            ),
-            ScalarField(
-                name="payment_card_id",
-                references=[(FieldAddress(db_name, "payment_card", "id"), "to")],
-                data_type_converter=str_converter,
-            ),
-        ],
-    )
-    payment_cards = Collection(
-        name="payment_card",
-        fields=[
-            ScalarField(name="id", data_type_converter=str_converter, primary_key=True),
-            ScalarField(name="name", data_type_converter=str_converter),
-            ScalarField(name="ccn"),
-            ScalarField(
-                name="customer_id",
-                references=[(FieldAddress(db_name, "customer", "id"), "from")],
-            ),
-            ScalarField(
-                name="billing_address_id",
-                references=[(FieldAddress(db_name, "address", "id"), "to")],
-            ),
-        ],
-    )
-    return GraphDataset(
-        name=db_name,
-        collections=[customers, addresses, orders, payment_cards],
-        connection_key=connection_key,
-    )
 
 
 def integration_db_graph(
@@ -646,7 +877,7 @@ def integration_db_graph(
     """A traversal that maps tables in the postgresql test database"""
     if not connection_key:
         connection_key = db_name
-    return DatasetGraph(integration_db_dataset(db_name, connection_key))
+    return DatasetGraph(postgres_db_graph_dataset(db_name, connection_key))
 
 
 def traversal_paired_dependency() -> Traversal:

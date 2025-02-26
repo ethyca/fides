@@ -59,7 +59,7 @@ def redshift_connection_config(db: Session) -> Generator:
             database=database,
             db_schema=db_schema,
         )
-        connection_config.secrets = schema.dict()
+        connection_config.secrets = schema.model_dump(mode="json")
         connection_config.save(db=db)
 
     yield connection_config

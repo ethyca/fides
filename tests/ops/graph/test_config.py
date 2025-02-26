@@ -2,8 +2,8 @@ import json
 
 import pydantic
 import pytest
+from fideslang.models import MaskingStrategies
 
-from fides.api.common_exceptions import ValidationError
 from fides.api.graph.config import *
 from fides.api.graph.data_type import (
     BooleanTypeConverter,
@@ -96,6 +96,7 @@ class TestFieldAddress:
 collection_to_serialize = ds = Collection(
     name="t3",
     skip_processing=False,
+    masking_strategy_override=None,
     fields=[
         ScalarField(
             name="f1",
@@ -119,11 +120,14 @@ collection_to_serialize = ds = Collection(
     after={CollectionAddress("i", "j")},
     erase_after={CollectionAddress("g", "h")},
     grouped_inputs={"test_param"},
+    data_categories={"user"},
 )
 
 serialized_collection = {
     "name": "t3",
     "skip_processing": False,
+    "masking_strategy_override": None,
+    "partitioning": None,
     "fields": [
         {
             "name": "f1",
@@ -136,6 +140,8 @@ serialized_collection = {
             "length": None,
             "is_array": False,
             "read_only": None,
+            "custom_request_field": None,
+            "masking_strategy_override": None,
         },
         {
             "name": "f2",
@@ -148,6 +154,8 @@ serialized_collection = {
             "length": None,
             "is_array": False,
             "read_only": None,
+            "custom_request_field": None,
+            "masking_strategy_override": None,
         },
         {
             "name": "f3",
@@ -160,6 +168,8 @@ serialized_collection = {
             "length": None,
             "is_array": True,
             "read_only": False,
+            "custom_request_field": None,
+            "masking_strategy_override": None,
         },
         {
             "name": "f4",
@@ -172,6 +182,8 @@ serialized_collection = {
             "length": None,
             "is_array": False,
             "read_only": None,
+            "custom_request_field": None,
+            "masking_strategy_override": None,
             "fields": {
                 "f5": {
                     "name": "f5",
@@ -184,6 +196,8 @@ serialized_collection = {
                     "length": None,
                     "is_array": False,
                     "read_only": None,
+                    "custom_request_field": None,
+                    "masking_strategy_override": None,
                 }
             },
         },
@@ -191,6 +205,7 @@ serialized_collection = {
     "after": ["i:j"],
     "erase_after": ["g:h"],
     "grouped_inputs": ["test_param"],
+    "data_categories": ["user"],
 }
 
 
@@ -355,12 +370,128 @@ class TestCollection:
         }
 
     def test_collection_json(self):
-        json_collection = json.loads(collection_to_serialize.json())
+        json_collection = json.loads(
+            collection_to_serialize.model_dump_json(serialize_as_any=True)
+        )
         assert json_collection == serialized_collection
 
     def test_parse_from_task(self):
         parsed = Collection.parse_from_request_task(serialized_collection)
         assert parsed == collection_to_serialize
+
+    def test_parse_from_task_without_data_categories(self):
+        """
+        Verify that a collection stored without data categories can still be deserialized.
+        """
+        del serialized_collection["data_categories"]
+        parsed = Collection.parse_from_request_task(serialized_collection)
+        assert parsed.data_categories == set()
+
+    @pytest.mark.parametrize(
+        "where_clauses,validation_error",
+        [
+            (
+                [
+                    "`created` > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1000 DAY) AND `created` <= CURRENT_TIMESTAMP()",
+                    "`created` > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 2000 DAY) AND `created` <= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1000 DAY)",
+                ],
+                None,
+            ),
+            (
+                [
+                    "`created` > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1000 DAY) AND `created` <= CURRENT_TIMESTAMP()",
+                    "`created` <= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1000 DAY)",  # we support only a single comparison for 'terminal' partition windows
+                ],
+                None,
+            ),
+            (
+                [
+                    "`_pt` > TIMESTAMP(''2020-01-01'') AND `_pt` <= CURRENT_TIMESTAMP()",
+                    "`_pt` > TIMESTAMP(''2019-01-01'') AND `_pt` <= TIMESTAMP(''2019-01-01'')",
+                ],
+                None,
+            ),
+            (
+                [
+                    "`created` > 4 OR 1 = 1",  # comparison operators after an OR are not permitted
+                    "`created` > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 2000 DAY) AND `created` <= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1000 DAY)",
+                ],
+                "Unsupported partition clause format",
+            ),
+            (
+                [
+                    "`created` > 4) OR 1 > 0",  # comparison operators after an OR are not permitted
+                ],
+                "Unsupported partition clause format",
+            ),
+            (
+                [
+                    "`created` > 4; drop table user",  # semi-colons are not allowed, so stacked queries are prevented
+                ],
+                "Unsupported partition clause format",
+            ),
+            (
+                [
+                    "`created` > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 2000 DAY) AND `foobar` <= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1000 DAY)",  # field names in comparison must match
+                ],
+                "Partition clause must have matching fields",
+            ),
+            (
+                [
+                    "`created` > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1000 DAY) AND `created` <= CURRENT_TIMESTAMP()) OR 1 > 0",  # comparison operators after an OR are not permitted
+                ],
+                "Unsupported partition clause format",
+            ),
+            (
+                [
+                    "`created` > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1000 DAY)) UNION\nSELECT password from user"  # union is a protected keyword not allowed in an operand
+                ],
+                "Prohibited keyword referenced in partition clause",
+            ),
+        ],
+    )
+    def test_parse_from_task_with_partitioning(self, where_clauses, validation_error):
+        """
+        Verify that a collection stored with partitioning specification goes through proper validation
+        """
+        serialized_collection_with_partitioning = {
+            "name": "partitioning_collection",
+            "partitioning": {"where_clauses": where_clauses},
+            "fields": [],
+        }
+        if validation_error is None:
+            parsed = Collection.parse_from_request_task(
+                serialized_collection_with_partitioning
+            )
+            assert parsed.partitioning == {"where_clauses": where_clauses}
+        else:
+            with pytest.raises(pydantic.ValidationError) as e:
+                Collection.parse_from_request_task(
+                    serialized_collection_with_partitioning
+                )
+            assert validation_error in str(e)
+
+    def test_collection_masking_strategy_override(self):
+        ds = Collection(
+            name="t3",
+            masking_strategy_override=MaskingStrategyOverride(
+                strategy=MaskingStrategies.DELETE
+            ),
+            fields=[],
+        )
+
+        assert ds.masking_strategy_override == MaskingStrategyOverride(
+            strategy=MaskingStrategies.DELETE
+        )
+
+        serialized_collection_with_masking_override = {
+            "name": "t3",
+            "masking_strategy_override": {"strategy": "delete"},
+            "fields": [],
+        }
+
+        coll = ds.parse_from_request_task(serialized_collection_with_masking_override)
+        assert coll == ds
 
 
 class TestField:
@@ -380,6 +511,8 @@ class TestField:
             sub_fields=[],
             return_all_elements=None,
             read_only=None,
+            custom_request_field=None,
+            masking_strategy_override=None,
         )
         array_field = generate_field(
             name="arr",
@@ -393,6 +526,8 @@ class TestField:
             sub_fields=[],
             return_all_elements=True,
             read_only=None,
+            custom_request_field=None,
+            masking_strategy_override=None,
         )
         object_field = generate_field(
             name="obj",
@@ -406,6 +541,8 @@ class TestField:
             sub_fields=[string_field, array_field],
             return_all_elements=None,
             read_only=None,
+            custom_request_field=None,
+            masking_strategy_override=None,
         )
         object_array_field = generate_field(
             name="obj_a",
@@ -419,6 +556,23 @@ class TestField:
             sub_fields=[string_field, object_field],
             return_all_elements=None,
             read_only=None,
+            custom_request_field=None,
+            masking_strategy_override=None,
+        )
+        custom_request_field = generate_field(
+            name="custom_field",
+            data_categories=["category"],
+            identity="identity",
+            data_type_name="string",
+            references=[],
+            is_pk=False,
+            length=0,
+            is_array=False,
+            sub_fields=[],
+            return_all_elements=None,
+            read_only=None,
+            custom_request_field="site_id",
+            masking_strategy_override=None,
         )
 
         assert _is_string_field(string_field)
@@ -437,6 +591,8 @@ class TestField:
         )
         assert object_array_field.fields["obj"] == object_field
 
+        assert custom_request_field.custom_request_field == "site_id"
+
     def test_field_data_type(self):
         field = ScalarField(
             name="string test", data_type_converter=StringTypeConverter()
@@ -452,7 +608,7 @@ class TestField:
         assert field.data_type() == "None"
 
         field = ObjectField(
-            name="integer test", data_type_converter=ObjectTypeConverter(), fields=[]
+            name="integer test", data_type_converter=ObjectTypeConverter(), fields={}
         )
         assert field.data_type() == "object"
 
@@ -520,20 +676,22 @@ class TestField:
             data_categories=["user.contact.address.street"],
         )
 
-        with pytest.raises(pydantic.error_wrappers.ValidationError):
-            generate_field(
-                name="obj",
-                data_categories=["A.B.C"],
-                identity="identity",
-                data_type_name="object",
-                references=[],
-                is_pk=False,
-                length=0,
-                is_array=False,
-                sub_fields=[apt_no_sub_field],
-                return_all_elements=None,
-                read_only=False,
-            )
+        field = generate_field(
+            name="obj",
+            data_categories=["A.B.C"],
+            identity="identity",
+            data_type_name="object",
+            references=[],
+            is_pk=False,
+            length=0,
+            is_array=False,
+            sub_fields=[apt_no_sub_field],
+            return_all_elements=None,
+            read_only=False,
+            custom_request_field=None,
+            masking_strategy_override=None,
+        )
+        assert field
 
     def test_generate_read_only_scalar_field(self):
         field = generate_field(
@@ -548,6 +706,8 @@ class TestField:
             sub_fields=[],
             return_all_elements=None,
             read_only=True,
+            custom_request_field=None,
+            masking_strategy_override=None,
         )
         assert isinstance(field, ScalarField)
         assert field.read_only

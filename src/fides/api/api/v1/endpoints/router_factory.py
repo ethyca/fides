@@ -4,16 +4,11 @@ Contains all of the factory functions to generate generic CRUD endpoints.
 
 Mostly used for `ctl`-related objects.
 """
-
 from typing import Dict, List
 
-from fastapi import Depends, HTTPException, Response, Security, status
+from fastapi import Depends, Response, Security, status
 from fideslang import FidesModelType
-from fideslang.models import Dataset
-from fideslang.validation import FidesKey
-from pydantic import ValidationError as PydanticValidationError
 from sqlalchemy.ext.asyncio import AsyncSession
-from starlette.status import HTTP_422_UNPROCESSABLE_ENTITY
 
 from fides.api.db.crud import (
     create_resource,
@@ -24,13 +19,8 @@ from fides.api.db.crud import (
     upsert_resources,
 )
 from fides.api.db.ctl_session import get_async_db
-from fides.api.models.sql_models import (
-    DataCategory,
-    ModelWithDefaultField,
-    sql_model_map,
-)
+from fides.api.models.sql_models import ModelWithDefaultField, sql_model_map
 from fides.api.oauth.utils import verify_oauth_client_prod
-from fides.api.schemas.dataset import validate_data_categories_against_db
 from fides.api.util import errors
 from fides.api.util.api_router import APIRouter
 from fides.api.util.endpoint_utils import (
@@ -41,30 +31,6 @@ from fides.api.util.endpoint_utils import (
     forbid_if_editing_is_default,
 )
 from fides.common.api.scope_registry import CREATE, DELETE, READ, UPDATE
-
-
-async def get_data_categories_from_db(async_session: AsyncSession) -> List[FidesKey]:
-    """Similar method to one on the ops side except this uses an async session to retrieve data categories"""
-    resources = await list_resource(DataCategory, async_session)
-    data_categories = [res.fides_key for res in resources]
-    return data_categories
-
-
-async def validate_data_categories(
-    dataset: Dataset, async_session: AsyncSession
-) -> None:
-    """
-    Validate DataCategories on Datasets based on existing DataCategories in the database.
-    """
-    try:
-        defined_data_categories: List[FidesKey] = await get_data_categories_from_db(
-            async_session
-        )
-        validate_data_categories_against_db(dataset, defined_data_categories)
-    except PydanticValidationError as e:
-        raise HTTPException(
-            status_code=HTTP_422_UNPROCESSABLE_ENTITY, detail=e.errors()
-        )
 
 
 def generic_router_factory(fides_model: FidesModelType, model_type: str) -> APIRouter:
@@ -142,11 +108,12 @@ def create_router_factory(fides_model: FidesModelType, model_type: str) -> APIRo
         will return a `403 Forbidden`.
         """
         sql_model = sql_model_map[model_type]
-        if isinstance(resource, Dataset):
-            await validate_data_categories(resource, db)
-        if isinstance(sql_model, ModelWithDefaultField) and resource.is_default:
-            raise errors.ForbiddenError(model_type, resource.fides_key)
-        return await create_resource(sql_model, resource.dict(), db)
+        if isinstance(resource, ModelWithDefaultField) and resource.is_default:
+            raise errors.ForbiddenIsDefaultTaxonomyError(
+                model_type, resource.fides_key, action="create"
+            )
+
+        return await create_resource(sql_model, resource.model_dump(mode="json"), db)
 
     return router
 
@@ -244,10 +211,8 @@ def update_router_factory(fides_model: FidesModelType, model_type: str) -> APIRo
         with a `403 Forbidden` if attempted.
         """
         sql_model = sql_model_map[model_type]
-        if isinstance(resource, Dataset):
-            await validate_data_categories(resource, db)
         await forbid_if_editing_is_default(sql_model, resource.fides_key, resource, db)
-        return await update_resource(sql_model, resource.dict(), db)
+        return await update_resource(sql_model, resource.model_dump(mode="json"), db)
 
     return router
 
@@ -323,11 +288,7 @@ def upsert_router_factory(fides_model: FidesModelType, model_type: str) -> APIRo
         """
 
         sql_model = sql_model_map[model_type]
-        resource_dicts = [resource.dict() for resource in resources]
-        for resource in resources:
-            if isinstance(resource, Dataset):
-                await validate_data_categories(resource, db)
-
+        resource_dicts = [resource.model_dump(mode="json") for resource in resources]
         await forbid_if_editing_any_is_default(sql_model, resource_dicts, db)
         result = await upsert_resources(sql_model, resource_dicts, db)
         response.status_code = (
@@ -386,7 +347,9 @@ def delete_router_factory(fides_model: FidesModelType, model_type: str) -> APIRo
         await forbid_if_default(sql_model, fides_key, db)
         deleted_resource = await delete_resource(sql_model, fides_key, db)
         # Convert the resource to a dict explicitly for the response
-        deleted_resource_dict = fides_model.from_orm(deleted_resource).dict()
+        deleted_resource_dict = fides_model.model_validate(deleted_resource).model_dump(
+            mode="json"
+        )
         return {
             "message": "resource deleted",
             "resource": deleted_resource_dict,

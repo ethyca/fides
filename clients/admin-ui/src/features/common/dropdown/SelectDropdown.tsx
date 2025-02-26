@@ -1,7 +1,6 @@
 import {
+  AntButton as Button,
   ArrowDownLineIcon,
-  Button,
-  ButtonProps,
   Flex,
   Menu,
   MenuButton,
@@ -43,22 +42,17 @@ type SelectDropdownProps = {
    * Disable the control
    */
   disabled?: boolean;
-  /**
-   * Menu button props
-   */
-  menuButtonProps?: ButtonProps;
 };
 
-const SelectDropdown: React.FC<SelectDropdownProps> = ({
+const SelectDropdown = ({
   disabled = false,
   enableSorting = true,
   hasClear = true,
   label,
   list,
-  menuButtonProps,
   onChange,
   selectedValue,
-}) => {
+}: SelectDropdownProps) => {
   // Hooks
   const [isOpen, setIsOpen] = useState(false);
 
@@ -75,30 +69,24 @@ const SelectDropdown: React.FC<SelectDropdownProps> = ({
   };
 
   const selectedText = [...list].find(
-    ([, option]) => option.value === selectedValue
+    ([, option]) => option.value === selectedValue,
   )?.[0];
+
+  const colorClass = selectedText ? "text-primary-900" : "text-gray-500";
 
   return (
     <Menu isLazy onClose={handleClose} onOpen={handleOpen} strategy="fixed">
       <MenuButton
         aria-label={selectedText ?? label}
         as={Button}
-        color={selectedText ? "complimentary.500" : undefined}
         disabled={disabled}
-        fontWeight="normal"
-        rightIcon={<ArrowDownLineIcon />}
-        size="sm"
-        variant="outline"
-        _active={{
-          bg: "none",
-        }}
-        _hover={{
-          bg: "none",
-        }}
-        {...menuButtonProps}
+        icon={<ArrowDownLineIcon />}
+        className={`hover:bg-none active:bg-none ${colorClass}`}
         data-testid="select-dropdown-btn"
       >
-        <Text isTruncated>{selectedText ?? label}</Text>
+        <Text noOfLines={1} wordBreak="break-all">
+          {selectedText ?? label}
+        </Text>
       </MenuButton>
       {isOpen ? (
         <MenuList lineHeight="1rem" p="0" data-testid="select-dropdown-list">
@@ -109,7 +97,7 @@ const SelectDropdown: React.FC<SelectDropdownProps> = ({
               cursor="auto"
               p="8px"
             >
-              <Button onClick={handleClear} size="xs" variant="outline">
+              <Button onClick={handleClear} size="small">
                 Clear
               </Button>
             </Flex>
@@ -145,7 +133,7 @@ const SelectDropdown: React.FC<SelectDropdownProps> = ({
                   <Text fontSize="0.75rem">{key}</Text>
                 </MenuItem>
               </Tooltip>
-            )
+            ),
           )}
         </MenuList>
       ) : null}

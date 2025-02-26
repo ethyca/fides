@@ -8,6 +8,8 @@ from fides.api.common_exceptions import (
     InvalidSaaSRequestOverrideException,
     NoSuchSaaSRequestOverrideException,
 )
+from fides.api.schemas.consentable_item import ConsentableItem, ConsentWebhookResult
+from fides.api.schemas.saas.shared_schemas import ConsentPropagationStatus
 from fides.api.util.collection_util import Row
 
 
@@ -24,6 +26,22 @@ class SaaSRequestType(Enum):
     DELETE = "delete"
     OPT_IN = "opt_in"
     OPT_OUT = "opt_out"
+    GET_CONSENTABLE_ITEMS = "get_consentable_items"
+    UPDATE_CONSENT = "update_consent"
+    PROCESS_CONSENT_WEBHOOK = "process_consent_webhook"
+
+
+RequestOverrideFunction = Callable[
+    ...,
+    Union[
+        ConsentWebhookResult,
+        List[ConsentableItem],
+        List[Row],
+        ConsentPropagationStatus,
+        int,
+        None,
+    ],
+]
 
 
 class SaaSRequestOverrideFactory:
@@ -32,9 +50,7 @@ class SaaSRequestOverrideFactory:
     user-defined functions that act as overrides to SaaS request execution
     """
 
-    registry: Dict[
-        SaaSRequestType, Dict[str, Callable[..., Union[List[Row], int, bool, None]]]
-    ] = {}
+    registry: Dict[SaaSRequestType, Dict[str, RequestOverrideFunction]] = {}
     valid_overrides: Dict[SaaSRequestType, str] = {}
 
     # initialize each request type's inner dicts with an empty dict
@@ -44,8 +60,8 @@ class SaaSRequestOverrideFactory:
 
     @classmethod
     def register(cls, name: str, request_types: List[SaaSRequestType]) -> Callable[
-        [Callable[..., Union[List[Row], int, bool, None]]],
-        Callable[..., Union[List[Row], int, bool, None]],
+        [RequestOverrideFunction],
+        RequestOverrideFunction,
     ]:
         """
         Decorator to register the custom-implemented SaaS request override
@@ -60,8 +76,8 @@ class SaaSRequestOverrideFactory:
             )
 
         def wrapper(
-            override_function: Callable[..., Union[List[Row], int, bool, None]],
-        ) -> Callable[..., Union[List[Row], int, bool, None]]:
+            override_function: RequestOverrideFunction,
+        ) -> RequestOverrideFunction:
             for request_type in request_types:
                 logger.debug(
                     "Registering new SaaS request override function '{}' under name '{}' for SaaSRequestType {}",
@@ -83,6 +99,12 @@ class SaaSRequestOverrideFactory:
                     validate_update_override_function(override_function)
                 elif request_type in (SaaSRequestType.OPT_IN, SaaSRequestType.OPT_OUT):
                     validate_consent_override_function(override_function)
+                elif request_type == SaaSRequestType.GET_CONSENTABLE_ITEMS:
+                    validate_get_consentable_item_function(override_function)
+                elif request_type == SaaSRequestType.UPDATE_CONSENT:
+                    validate_update_consent_function(override_function)
+                elif request_type == SaaSRequestType.PROCESS_CONSENT_WEBHOOK:
+                    validate_process_consent_webhook_function(override_function)
                 else:
                     raise ValueError(
                         f"Invalid SaaSRequestType '{request_type}' provided for SaaS request override function"
@@ -109,16 +131,16 @@ class SaaSRequestOverrideFactory:
     @classmethod
     def get_override(
         cls, override_function_name: str, request_type: SaaSRequestType
-    ) -> Callable[..., Union[List[Row], int, bool, None]]:
+    ) -> RequestOverrideFunction:
         """
         Returns the request override function given the name.
         Raises NoSuchSaaSRequestOverrideException if the named override
         does not exist.
         """
         try:
-            override_function: Callable[..., Union[List[Row], int, bool, None]] = (
-                cls.registry[request_type][override_function_name]
-            )
+            override_function: RequestOverrideFunction = cls.registry[request_type][
+                override_function_name
+            ]
         except KeyError:
             raise NoSuchSaaSRequestOverrideException(
                 f"Custom SaaS override '{override_function_name}' does not exist. Valid custom SaaS override classes for SaaSRequestType {request_type} are [{cls.valid_overrides[request_type]}]"
@@ -199,17 +221,46 @@ def validate_consent_override_function(f: Callable) -> None:
     the functions that are used for overrides, but we check to ensure that
     the function meets the framework's basic expectations.
 
-    Specifically, the validation checks that function's return type is `bool`
+    Specifically, the validation checks that function's return type is `ConsentPropagationStatus`
     and that it declares at least 4 parameters.
     """
     sig: Signature = signature(f)
-    if sig.return_annotation is not bool:
+    if sig.return_annotation is not ConsentPropagationStatus:
         raise InvalidSaaSRequestOverrideException(
-            "Provided SaaS request override function must return a bool"
+            "Provided SaaS request override function must return a ConsentPropagationStatus"
         )
     if len(sig.parameters) < 4:
         raise InvalidSaaSRequestOverrideException(
             "Provided SaaS request override function must declare at least 4 parameters"
+        )
+
+
+def validate_get_consentable_item_function(f: Callable) -> None:
+    pass
+
+
+def validate_update_consent_function(f: Callable) -> None:
+    """Used for notice-based SaaS consent flow"""
+    sig: Signature = signature(f)
+    if sig.return_annotation is not ConsentPropagationStatus:
+        raise InvalidSaaSRequestOverrideException(
+            "Provided SaaS update consent function must return a ConsentPropagationStatus"
+        )
+    if len(sig.parameters) < 5:
+        raise InvalidSaaSRequestOverrideException(
+            "Provided SaaS update consent function must declare at least 4 parameters"
+        )
+
+
+def validate_process_consent_webhook_function(f: Callable) -> None:
+    sig: Signature = signature(f)
+    if sig.return_annotation is not ConsentWebhookResult:
+        raise InvalidSaaSRequestOverrideException(
+            "Provided SaaS process consent webhook function must return a ConsentWebhookResult"
+        )
+    if len(sig.parameters) < 5:
+        raise InvalidSaaSRequestOverrideException(
+            "Provided SaaS process consent webhook function must declare at least 5 parameters"
         )
 
 

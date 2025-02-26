@@ -1,10 +1,12 @@
+import palette from "fidesui/src/palette/palette.module.scss";
+
 import {
   ADD_SYSTEMS_ROUTE,
   CONFIGURE_CONSENT_ROUTE,
   DATAMAP_ROUTE,
   PRIVACY_REQUESTS_ROUTE,
   SYSTEM_ROUTE,
-} from "~/features/common/nav/v2/routes";
+} from "~/features/common/nav/routes";
 import { ScopeRegistryEnum } from "~/types/api";
 
 import { ModuleCardConfig } from "./types";
@@ -22,7 +24,7 @@ export enum ModuleCardKeys {
 
 export const MODULE_CARD_ITEMS: ModuleCardConfig[] = [
   {
-    color: "blue",
+    color: palette.FIDESUI_SANDSTONE,
     description:
       "Explore the systems and data flow across your organization and create custom reports.",
     href: `${DATAMAP_ROUTE}`,
@@ -35,7 +37,7 @@ export const MODULE_CARD_ITEMS: ModuleCardConfig[] = [
     scopes: [ScopeRegistryEnum.DATAMAP_READ],
   },
   {
-    color: "orange",
+    color: palette.FIDESUI_OLIVE,
     description: "Add third party applications and databases to your data map",
     href: `${ADD_SYSTEMS_ROUTE}`,
     key: ModuleCardKeys.ADD_SYSTEMS,
@@ -45,7 +47,7 @@ export const MODULE_CARD_ITEMS: ModuleCardConfig[] = [
     scopes: [ScopeRegistryEnum.SYSTEM_CREATE],
   },
   {
-    color: "purple",
+    color: palette.FIDESUI_TERRACOTTA,
     description:
       "Review system information for all systems in your organization",
     href: `${SYSTEM_ROUTE}`,
@@ -57,7 +59,7 @@ export const MODULE_CARD_ITEMS: ModuleCardConfig[] = [
     requiresSystems: true,
   },
   {
-    color: "pink",
+    color: palette.FIDESUI_MINOS,
     description:
       "Review, approve and process privacy requests across your systems on behalf of your users.",
     href: `${PRIVACY_REQUESTS_ROUTE}`,
@@ -69,7 +71,7 @@ export const MODULE_CARD_ITEMS: ModuleCardConfig[] = [
     requiresConnections: true,
   },
   {
-    color: "green",
+    color: palette.FIDESUI_NECTAR,
     description:
       "Manage privacy notices and experiences for all domains in your organization",
     href: `${CONFIGURE_CONSENT_ROUTE}`,

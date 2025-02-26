@@ -15,11 +15,7 @@ from fides.api.models.privacy_notice import (
     UserConsentPreference,
 )
 from fides.api.models.privacy_preference import PrivacyPreferenceHistory
-from fides.api.models.privacy_request import (
-    ExecutionLog,
-    ExecutionLogStatus,
-    PrivacyRequest,
-)
+from fides.api.models.privacy_request import ExecutionLog, PrivacyRequest
 from fides.api.schemas.connection_configuration.connection_secrets_email import (
     AdvancedSettingsWithExtendedIdentityTypes,
     ExtendedEmailSchema,
@@ -33,14 +29,16 @@ from fides.api.schemas.messaging.messaging import (
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.privacy_notice import PrivacyNoticeHistorySchema
 from fides.api.schemas.privacy_preference import MinimalPrivacyPreferenceHistorySchema
-from fides.api.schemas.privacy_request import Consent
+from fides.api.schemas.privacy_request import Consent, ExecutionLogStatus
 from fides.api.schemas.redis_cache import Identity
 from fides.api.service.connectors.base_email_connector import (
     BaseEmailConnector,
-    get_email_messaging_config_service_type,
     get_org_name,
 )
-from fides.api.service.messaging.message_dispatch_service import dispatch_message
+from fides.api.service.messaging.message_dispatch_service import (
+    dispatch_message,
+    get_email_messaging_config_service_type,
+)
 from fides.api.util.consent_util import (
     add_complete_system_status_for_consent_reporting,
     add_errored_system_status_for_consent_reporting,
@@ -83,7 +81,7 @@ class GenericConsentEmailConnector(BaseEmailConnector):
         try:
             if not self.config.test_email_address:
                 raise MessageDispatchException(
-                    f"Cannot test connection. No test email defined for {self.configuration.name}"
+                    f"Cannot test connection. No test email defined for {self.configuration.key}"
                 )
 
             logger.info("Starting test connection to {}", self.configuration.key)
@@ -137,7 +135,11 @@ class GenericConsentEmailConnector(BaseEmailConnector):
             )
 
         except MessageDispatchException as exc:
-            logger.info("Email consent connector test failed with exception {}", exc)
+            logger.info(
+                "Email consent connector test for {} failed with exception {}",
+                self.configuration.key,
+                exc,
+            )
             return ConnectionTestStatus.failed
         return ConnectionTestStatus.succeeded
 
@@ -177,12 +179,12 @@ class GenericConsentEmailConnector(BaseEmailConnector):
             db=db,
             data={
                 "connection_key": self.configuration.key,
-                "dataset_name": self.configuration.name,
-                "collection_name": self.configuration.name,
+                "dataset_name": self.configuration.name_or_key,
+                "collection_name": self.configuration.name_or_key,
                 "privacy_request_id": privacy_request.id,
                 "action_type": ActionType.consent,
                 "status": ExecutionLogStatus.skipped,
-                "message": f"Consent email skipped for '{self.configuration.name}'",
+                "message": f"Consent email skipped for '{self.configuration.name_or_key}'",
             },
         )
         for pref in privacy_request.privacy_preferences:  # type: ignore[attr-defined]
@@ -197,12 +199,12 @@ class GenericConsentEmailConnector(BaseEmailConnector):
             db=db,
             data={
                 "connection_key": self.configuration.key,
-                "dataset_name": self.configuration.name,
-                "collection_name": self.configuration.name,
+                "dataset_name": self.configuration.name_or_key,
+                "collection_name": self.configuration.name_or_key,
                 "privacy_request_id": privacy_request.id,
                 "action_type": ActionType.consent,
                 "status": ExecutionLogStatus.error,
-                "message": f"Consent email send error for '{self.configuration.name}'",
+                "message": f"Consent email send error for '{self.configuration.name_or_key}'",
             },
         )
         add_errored_system_status_for_consent_reporting(
@@ -235,7 +237,7 @@ class GenericConsentEmailConnector(BaseEmailConnector):
             filtered_privacy_request_schemas: List[
                 MinimalPrivacyPreferenceHistorySchema
             ] = [
-                MinimalPrivacyPreferenceHistorySchema.from_orm(privacy_pref)
+                MinimalPrivacyPreferenceHistorySchema.model_validate(privacy_pref)
                 for privacy_pref in filtered_privacy_preference_records
             ]
 
@@ -265,13 +267,13 @@ class GenericConsentEmailConnector(BaseEmailConnector):
             logger.info(
                 "Skipping consent email send for connector: '{}'. "
                 "No corresponding user identities found for pending privacy requests.",
-                self.configuration.name,
+                self.configuration.key,
             )
             return
 
         logger.info(
             "Sending batched consent email for connector {}...",
-            self.configuration.name,
+            self.configuration.key,
         )
 
         db = Session.object_session(self.configuration)
@@ -286,7 +288,11 @@ class GenericConsentEmailConnector(BaseEmailConnector):
                 test_mode=False,
             )
         except MessageDispatchException as exc:
-            logger.info("Consent email failed with exception {}", exc)
+            logger.info(
+                "Consent email for connector {} failed with exception {}",
+                self.configuration.key,
+                exc,
+            )
             for privacy_request in privacy_requests:
                 if privacy_request.id not in skipped_privacy_requests:
                     self.add_errored_log(db, privacy_request)
@@ -298,12 +304,12 @@ class GenericConsentEmailConnector(BaseEmailConnector):
                     db=db,
                     data={
                         "connection_key": self.configuration.key,
-                        "dataset_name": self.configuration.name,
+                        "dataset_name": self.configuration.name_or_key,
                         "privacy_request_id": privacy_request.id,
-                        "collection_name": self.configuration.name,
+                        "collection_name": self.configuration.name_or_key,
                         "action_type": ActionType.consent,
                         "status": ExecutionLogStatus.complete,
-                        "message": f"Consent email instructions dispatched for '{self.configuration.name}'",
+                        "message": f"Consent email instructions dispatched for '{self.configuration.name_or_key}'",
                     },
                 )
                 add_complete_system_status_for_consent_reporting(

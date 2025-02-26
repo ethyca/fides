@@ -36,7 +36,7 @@ class TestSystemHistory:
     async def test_system_information_changes(
         self, db, async_session_temp, system: System
     ):
-        system_schema = SystemSchema.from_orm(system)
+        system_schema = SystemSchema.model_validate(system)
         system_schema.description = "Test system"
         _, updated = await update_system(
             system_schema, async_session_temp, CONFIG.security.oauth_root_client_id
@@ -52,7 +52,7 @@ class TestSystemHistory:
     async def test_privacy_declaration_changes(
         self, db, async_session_temp, system: System
     ):
-        system_schema = SystemSchema.from_orm(system)
+        system_schema = SystemSchema.model_validate(system)
         system_schema.privacy_declarations = (
             PrivacyDeclarationSchema(
                 name="declaration-name",
@@ -74,7 +74,7 @@ class TestSystemHistory:
         assert system_histories[0].edited_by == CONFIG.security.root_username
 
     async def test_ingress_egress_changes(self, db, async_session_temp, system: System):
-        system_schema = SystemSchema.from_orm(system)
+        system_schema = SystemSchema.model_validate(system)
         system_schema.ingress = [DataFlowSchema(fides_key="upstream", type="system")]
         system_schema.egress = [DataFlowSchema(fides_key="user", type="user")]
         _, updated = await update_system(
@@ -88,7 +88,7 @@ class TestSystemHistory:
         assert len(system_histories) == 1
 
     async def test_multiple_changes(self, db, async_session_temp, system: System):
-        system_schema = SystemSchema.from_orm(system)
+        system_schema = SystemSchema.model_validate(system)
         system_schema.description = "Test system"
         system_schema.privacy_declarations = (
             PrivacyDeclarationSchema(
@@ -114,7 +114,7 @@ class TestSystemHistory:
             assert system_history.edited_by == CONFIG.security.root_username
 
     async def test_no_changes(self, db, async_session_temp, system: System):
-        system_schema = SystemSchema.from_orm(system)
+        system_schema = SystemSchema.model_validate(system)
         _, updated = await update_system(
             system_schema, async_session_temp, CONFIG.security.oauth_root_client_id
         )
@@ -131,7 +131,7 @@ class TestSystemHistory:
         self, db, async_session_temp, system: System
     ):
         """If user id doesn't map to a user in the db or the root user, we just return the original user string"""
-        system_schema = SystemSchema.from_orm(system)
+        system_schema = SystemSchema.model_validate(system)
         system_schema.description = "Test system"
         updated_system, updated = await update_system(
             system_schema, async_session_temp, "automatic_system_update"

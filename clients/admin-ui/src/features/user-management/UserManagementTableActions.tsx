@@ -1,9 +1,9 @@
-import { Button, Stack } from "fidesui";
-import NextLink from "next/link";
+import { AntButton as Button, Stack } from "fidesui";
+import { useRouter } from "next/router";
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 
-import { USER_MANAGEMENT_ROUTE } from "~/features/common/nav/v2/routes";
+import { USER_MANAGEMENT_ROUTE } from "~/features/common/nav/routes";
 import Restrict from "~/features/common/Restrict";
 import SearchBar from "~/features/common/SearchBar";
 import { ScopeRegistryEnum } from "~/types/api";
@@ -23,8 +23,9 @@ const useUserManagementTableActions = () => {
   };
 };
 
-const UserManagementTableActions: React.FC = () => {
+const UserManagementTableActions = () => {
   const { handleSearchChange, username } = useUserManagementTableActions();
+  const router = useRouter();
 
   return (
     <Stack direction="row" spacing={4} mb={6}>
@@ -34,16 +35,14 @@ const UserManagementTableActions: React.FC = () => {
         placeholder="Search by Username"
       />
       <Restrict scopes={[ScopeRegistryEnum.USER_CREATE]}>
-        <NextLink href={`${USER_MANAGEMENT_ROUTE}/new`} passHref>
-          <Button
-            colorScheme="primary"
-            flexShrink={0}
-            size="sm"
-            data-testid="add-new-user-btn"
-          >
-            Add New User
-          </Button>
-        </NextLink>
+        <Button
+          onClick={() => router.push(`${USER_MANAGEMENT_ROUTE}/new`)}
+          type="primary"
+          className="shrink-0"
+          data-testid="add-new-user-btn"
+        >
+          Add new user
+        </Button>
       </Restrict>
     </Stack>
   );

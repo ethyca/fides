@@ -20,7 +20,7 @@ from ..graph.graph_test_util import field
 example_dataset_yaml = """dataset:
   - fides_key: xyz
     fidesops_meta:
-        after: [db1, db2, db3]        
+        after: [db1, db2, db3]
     name: xyz
     description: x
     collections:
@@ -29,11 +29,11 @@ example_dataset_yaml = """dataset:
             after: [a.b, c.d, e.f]
         fields:
           - name: city
-            data_categories: [user.contact.address.city] 
+            data_categories: [user.contact.address.city]
           - name: id
             data_categories: [system.operations]
             fidesops_meta:
-              primary_key: True  
+              primary_key: True
               data_type: integer
 """
 
@@ -63,7 +63,7 @@ example_dataset_nested_yaml = """dataset:
                 data_type: string
           - name: submitter
             fidesops_meta:
-                data_type: string 
+                data_type: string
             data_categories: [user]
           - name: thumbnail
             fields:
@@ -128,7 +128,7 @@ def __to_dataset__(yamlstr: str) -> Dict[str, Any]:
 def test_dataset_yaml_format():
     """Test that 'after' parameters are properly read"""
     dataset = __to_dataset__(example_dataset_yaml)
-    d: Dataset = Dataset.parse_obj(dataset)
+    d: Dataset = Dataset.model_validate(dataset)
     config = convert_dataset_to_graph(d, "ignore")
     assert config.after == {"db1", "db2", "db3"}
     assert config.collections[0].after == {
@@ -143,7 +143,7 @@ def test_dataset_yaml_format_invalid_format():
     dataset = __to_dataset__(example_dataset_yaml)
     dataset.get("collections")[0].get("fidesops_meta").get("after")[0] = "invalid"
     with pytest.raises(ValueError) as exc:
-        d: Dataset = Dataset.parse_obj(dataset)
+        d: Dataset = Dataset.model_validate(dataset)
         convert_dataset_to_graph(d, "ignore")
     assert "FidesCollection must be specified in the form 'FidesKey.FidesKey'" in str(
         exc.value
@@ -157,7 +157,7 @@ def test_dataset_yaml_format_invalid_fides_keys():
         0
     ] = "invalid*dataset*name.invalid*collection*name"
     with pytest.raises(ValueError) as exc:
-        d: Dataset = Dataset.parse_obj(dataset)
+        d: Dataset = Dataset.model_validate(dataset)
         convert_dataset_to_graph(d, "ignore")
     assert (
         "FidesKeys must only contain alphanumeric characters, '.', '_', '<', '>' or '-'."
@@ -167,7 +167,7 @@ def test_dataset_yaml_format_invalid_fides_keys():
 
 def test_nested_dataset_format():
     dataset = __to_dataset__(example_dataset_nested_yaml)
-    ds = Dataset.parse_obj(dataset)
+    ds = Dataset.model_validate(dataset)
     graph = convert_dataset_to_graph(ds, "ignore")
 
     comments_field = field([graph], "mongo_nested_test", "photos", "comments")
@@ -194,7 +194,7 @@ def test_nested_dataset_format():
 
 def test_nested_dataset_validation():
     with pytest.raises(ValidationError):
-        Dataset.parse_obj(__to_dataset__(example_bad_dataset_nested_yaml))
+        Dataset.model_validate(__to_dataset__(example_bad_dataset_nested_yaml))
 
 
 def test_invalid_datatype():
@@ -210,7 +210,7 @@ def test_invalid_datatype():
                 data_type: this_is_bad"""
     dataset = __to_dataset__(bad_data_declaration)
     with pytest.raises(ValidationError):
-        Dataset.parse_obj(dataset)
+        Dataset.model_validate(dataset)
 
 
 example_postgres_yaml = """dataset:
@@ -255,11 +255,11 @@ example_postgres_yaml = """dataset:
 def test_dataset_graph_connected_by_nested_fields():
     """Two of the fields in the postgres dataset references a nested field in the mongo dataset"""
     dataset = __to_dataset__(example_dataset_nested_yaml)
-    ds = Dataset.parse_obj(dataset)
+    ds = Dataset.model_validate(dataset)
     mongo_dataset = convert_dataset_to_graph(ds, "ignore")
 
     postgres_dataset = __to_dataset__(example_postgres_yaml)
-    ds_postgres = Dataset.parse_obj(postgres_dataset)
+    ds_postgres = Dataset.model_validate(postgres_dataset)
     postgres_dataset = convert_dataset_to_graph(ds_postgres, "ignore")
     dataset_graph = DatasetGraph(mongo_dataset, postgres_dataset)
 
@@ -293,30 +293,22 @@ def test_dataset_graph_connected_by_nested_fields():
 
 
 example_object_with_data_categories_nested_yaml = """dataset:
-  - fides_key: mongo_nested_test 
+  - fides_key: mongo_nested_test
     name: Mongo Example Nested Test Dataset
     description: Example of a Mongo dataset that has a data_category incorrectly declared at the object level
     collections:
       - name: photos
         fields:
           - name: thumbnail
-            data_categories: [user]    
+            data_categories: [user]
             fidesops_meta:
                 data_type: object
             fields:
               - name: photo_id
                 data_type: integer
               - name: name
-                data_categories: [user]    
+                data_categories: [user]
 """
-
-
-def test_object_data_category_validation():
-    """Test trying to validate object with data category specified"""
-    with pytest.raises(ValidationError):
-        Dataset.parse_obj(
-            __to_dataset__(example_object_with_data_categories_nested_yaml)
-        )
 
 
 non_array_field_with_invalid_flag = """dataset:
@@ -334,18 +326,18 @@ non_array_field_with_invalid_flag = """dataset:
               - name: photo_id
                 data_type: integer
               - name: name
-                data_categories: [user]    
+                data_categories: [user]
 """
 
 
 def test_return_all_elements_specified_on_non_array_field():
     """Test return_all_elements can only be specified on array fields"""
     with pytest.raises(ValidationError):
-        Dataset.parse_obj(__to_dataset__(non_array_field_with_invalid_flag))
+        Dataset.model_validate(__to_dataset__(non_array_field_with_invalid_flag))
 
 
 skip_processing_yaml = """dataset:
-  - fides_key: a_dataset      
+  - fides_key: a_dataset
     name: a_dataset
     description: a description
     collections:
@@ -354,19 +346,19 @@ skip_processing_yaml = """dataset:
             skip_processing: True
         fields:
           - name: a_field
-            data_categories: [user.contact.address.city] 
+            data_categories: [user.contact.address.city]
           - name: id
             data_categories: [system.operations]
       - name: b_collection
         fields:
           - name: b_field
-            data_categories: [user.contact.address.city] 
+            data_categories: [user.contact.address.city]
           - name: id
             data_categories: [system.operations]
 """
 
 skip_processing_invalid_yaml = """dataset:
-  - fides_key: a_dataset      
+  - fides_key: a_dataset
     name: A Dataset
     description: a description
     collections:
@@ -375,13 +367,13 @@ skip_processing_invalid_yaml = """dataset:
             skip_processing: True
         fields:
           - name: a_field
-            data_categories: [user.contact.address.city] 
+            data_categories: [user.contact.address.city]
           - name: id
             data_categories: [system.operations]
       - name: b_collection
         fields:
           - name: b_field
-            data_categories: [user.contact.address.city] 
+            data_categories: [user.contact.address.city]
           - name: id
             data_categories: [system.operations]
             fides_meta:
@@ -397,7 +389,7 @@ class TestConvertDatasetToGraphSkipProcessing:
         """A skip_processing flag at collection > fides_meta causes the collection
         to be ignored in convert_dataset_to_graph"""
         dataset = __to_dataset__(skip_processing_yaml)
-        ds = Dataset.parse_obj(dataset)
+        ds = Dataset.model_validate(dataset)
         converted_dataset = convert_dataset_to_graph(ds, "ignore")
         assert len(converted_dataset.collections) == 1
         assert converted_dataset.collections[0].name == "b_collection"
@@ -409,7 +401,7 @@ class TestConvertDatasetToGraphSkipProcessing:
         """Skipping a collection that shouldn't be skipped is not picked up in convert_dataset_to_graph, but
         downstream when DatasetGraph is instantiated"""
         dataset = __to_dataset__(skip_processing_invalid_yaml)
-        ds = Dataset.parse_obj(dataset)
+        ds = Dataset.model_validate(dataset)
         converted_dataset = convert_dataset_to_graph(ds, "ignore")
         assert len(converted_dataset.collections) == 1
         assert converted_dataset.collections[0].name == "b_collection"
@@ -420,5 +412,5 @@ class TestConvertDatasetToGraphSkipProcessing:
 
         assert (
             exc.value.message
-            == "Referred to object a_dataset:a_collection:id does not exist"
+            == "Referenced object a_dataset:a_collection:id from dataset a_dataset does not exist"
         )

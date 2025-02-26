@@ -110,7 +110,7 @@ export interface Fides {
    * @example
    * Applying the link text to a custom modal link element:
    * ```html
-   * <button class="my-custom-show-modal" id="fides-modal-link-label" onclick="Fides.showModal()" />
+   * <button class="my-custom-show-modal" id="fides-modal-link-label" onclick="Fides.showModal()"><button>
    * <script>
    *  document.getElementById('fides-modal-link-label').innerText = Fides.getModalLinkLabel();
    * </script>
@@ -140,6 +140,8 @@ export interface Fides {
    * the `modalLinkId` global setting on the Fides Privacy Center to prevent the
    * automated searching for, and binding the click event to, the modal link. If using
    * Fides Cloud, contact Ethyca Support for details on adjusting global settings.
+   *
+   * This function is not available for Headless experiences.
    *
    *
    * @example
@@ -215,7 +217,7 @@ export interface Fides {
    * initialization until after your own custom JavaScript has run to set up some
    * config options. In this case, you can disable the automatic initialization
    * by including the query param `initialize=false` in the Fides script URL
-   * (see {@link /docs/dev-docs/js/privacy-center-fidesjs-hosting} for details).
+   * (see (Privacy Center FidesJS Hosting)[/docs/dev-docs/js/privacy-center-fidesjs-hosting] for details).
    * You will then need to call `Fides.init()` manually at the appropriate time.
    *
    * This function can also be used to reinitialize FidesJS. This is useful when
@@ -229,11 +231,31 @@ export interface Fides {
   init: (config?: any) => Promise<void>;
 
   /**
+   * An alternative way to subscribe to Fides events. The same events are supported, except the callback
+   * receives the event details directly. This is useful in restricted environments where you can't
+   * directly access `window.addEventListener`.
+   *
+   * Returns an unsubscribe function that can be called to remove the event listener.
+   *
+   * @example
+   * ```ts
+   * const unsubscribe = Fides.onFidesEvent("FidesUpdated", (detail) => {
+   *   console.log(detail.consent);
+   *   unsubscribe();
+   * });
+   * ```
+   *
+   * @param type The type of event to listen for, such as `FidesInitialized`, `FidesUpdated`, etc.
+   * @param callback The callback function to call when the event is triggered
+   */
+  onFidesEvent: (type: any, callback: (detail: any) => void) => () => void;
+
+  /**
    * @deprecated
    * `Fides.init()` can now be used directly instead of `Fides.reinitialize()`.
    */
   reinitialize: () => Promise<void>;
-  
+
   /**
    * Check if the FidesJS experience should be shown to the user. This function
    * will return `true` if the user's session (location, property ID, etc.)
@@ -257,7 +279,7 @@ export interface Fides {
 
   /**
    * @internal
-   */ 
+   */
   cookie?: any;
 
   /**
@@ -308,4 +330,9 @@ export interface Fides {
    * @internal
    */
   shopify: (options: any) => void;
+
+  /**
+   * @internal
+   */
+  blueconic: (options?: { approach: "onetrust" }) => void;
 }

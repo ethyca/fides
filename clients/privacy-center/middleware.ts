@@ -6,6 +6,9 @@ export default function middleware(request: NextRequest) {
     path: request.nextUrl.pathname,
   };
 
-  /* eslint-disable no-console */
-  console.info(JSON.stringify(logDict));
+  const debug = process.env.FIDES_PRIVACY_CENTER__DEBUG === "true";
+  if (debug) {
+    /* eslint-disable no-console */
+    console.info(JSON.stringify(logDict));
+  }
 }

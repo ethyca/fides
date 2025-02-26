@@ -1,11 +1,11 @@
 import { GetServerSideProps } from "next";
 import Head from "next/head";
-import Script from "next/script";
 import { useRouter } from "next/router";
-import { Product } from "../types";
+import Script from "next/script";
 
 import Home from "../components/Home";
 import pool from "../lib/db";
+import { Product } from "../types";
 
 interface Props {
   gtmContainerId: string | null;
@@ -27,7 +27,7 @@ export const getServerSideProps: GetServerSideProps<Props> = async () => {
   let gtmContainerId = null;
   if (
     process.env.FIDES_SAMPLE_APP__GOOGLE_TAG_MANAGER_CONTAINER_ID?.match(
-      VALID_GTM_REGEX
+      VALID_GTM_REGEX,
     )
   ) {
     gtmContainerId =
@@ -74,6 +74,7 @@ const IndexPage = ({ gtmContainerId, privacyCenterUrl, products }: Props) => {
       ensures that fides.js fires earlier than other scripts, but isn't a best
       practice.
       */}
+      {/* eslint-disable-next-line @next/next/no-before-interactive-script-outside-document */}
       <Script
         id="fides-js"
         strategy="beforeInteractive"
@@ -97,6 +98,15 @@ const IndexPage = ({ gtmContainerId, privacyCenterUrl, products }: Props) => {
           `}
         </Script>
       ) : null}
+      {/* Support for Flutter InAppWebView communication https://inappwebview.dev/docs/webview/javascript/communication */}
+      {/* eslint-disable-next-line @next/next/no-before-interactive-script-outside-document */}
+      <Script id="flutter-inappwebview" strategy="beforeInteractive">
+        {`window.addEventListener("FidesInitialized", function() {
+            Fides.onFidesEvent("FidesUpdated", (detail) => {
+              window.flutter_inappwebview?.callHandler('FidesUpdated', detail);
+            });
+          }, {once: true});`}
+      </Script>
       <Home privacyCenterUrl={privacyCenterUrl} products={products} />
     </>
   );

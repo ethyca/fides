@@ -1,14 +1,10 @@
 import { Stack } from "fidesui";
 import { Form, Formik } from "formik";
-import { useState } from "react";
-import { useSelector } from "react-redux";
 
-import { selectDataCategories } from "~/features/taxonomy/taxonomy.slice";
 import { Dataset } from "~/types/api";
 
 import { CustomTextInput } from "../common/form/inputs";
 import { DATASET } from "./constants";
-import DataCategoryInput from "./DataCategoryInput";
 
 export const FORM_ID = "edit-field-drawer";
 
@@ -25,17 +21,12 @@ const EditDatasetForm = ({ values, onSubmit }: Props) => {
     description: values.description ?? "",
     data_categories: values.data_categories,
   };
-  const allDataCategories = useSelector(selectDataCategories);
-
-  const [checkedDataCategories, setCheckedDataCategories] = useState<string[]>(
-    initialValues.data_categories ?? []
-  );
 
   const handleSubmit = (formValues: FormValues) => {
     // data categories need to be handled separately since they are not a typical form element
     const newValues = {
       ...formValues,
-      ...{ data_categories: checkedDataCategories },
+      data_categories: values.data_categories || [],
     };
     onSubmit(newValues);
   };
@@ -49,18 +40,14 @@ const EditDatasetForm = ({ values, onSubmit }: Props) => {
             label="Name"
             tooltip={DATASET.name.tooltip}
             data-testid="name-input"
+            variant="block"
           />
           <CustomTextInput
             name="description"
             label="Description"
             tooltip={DATASET.description.tooltip}
             data-testid="description-input"
-          />
-          <DataCategoryInput
-            dataCategories={allDataCategories}
-            checked={checkedDataCategories}
-            onChecked={setCheckedDataCategories}
-            tooltip={DATASET.data_categories.tooltip}
+            variant="block"
           />
         </Stack>
       </Form>

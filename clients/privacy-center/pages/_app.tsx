@@ -1,28 +1,29 @@
-import App, { AppContext, AppInitialProps, AppProps } from "next/app";
-import { useMemo } from "react";
-import { ErrorBoundary } from "react-error-boundary";
-import { Provider } from "react-redux";
-import { PersistGate } from "redux-persist/integration/react";
-
 import "@fontsource/inter/400.css";
 import "@fontsource/inter/500.css";
 import "@fontsource/inter/600.css";
 import "@fontsource/inter/700.css";
+import "../theme/global.scss";
+
+import { FidesUIProvider } from "fidesui";
+import App, { AppContext, AppInitialProps, AppProps } from "next/app";
+import { ReactNode, useMemo } from "react";
+import { ErrorBoundary } from "react-error-boundary";
+import { Provider } from "react-redux";
+import { PersistGate } from "redux-persist/integration/react";
 
 import {
   loadPrivacyCenterEnvironment,
   PrivacyCenterEnvironment,
 } from "~/app/server-environment";
 import store, { persistor } from "~/app/store";
+import { I18nProvider } from "~/common/i18nContext";
 import Error from "~/components/Error";
 import Layout from "~/components/Layout";
 import { loadConfig } from "~/features/common/config.slice";
+import { loadProperty } from "~/features/common/property.slice";
 import { loadSettings } from "~/features/common/settings.slice";
 import { loadStyles } from "~/features/common/styles.slice";
 import theme from "~/theme";
-import { I18nProvider } from "~/common/i18nContext";
-import { FidesUIProvider } from "fidesui";
-import { loadProperty } from "~/features/common/property.slice";
 
 interface PrivacyCenterProps {
   serverEnvironment?: PrivacyCenterEnvironment;
@@ -43,7 +44,7 @@ interface PrivacyCenterProps {
  * (see https://beta.nextjs.org/docs/upgrade-guide)
  */
 export async function getInitialProps(
-  context: AppContext
+  context: AppContext,
 ): Promise<PrivacyCenterProps & AppInitialProps> {
   // NOTE: NextJS *requires* we call this and merge the results into the output
   // see https://nextjs.org/docs/advanced-features/custom-app#caveats
@@ -69,7 +70,7 @@ export async function getInitialProps(
   };
 }
 
-const SafeHydrate: React.FC = ({ children }) => (
+const SafeHydrate = ({ children }: { children: ReactNode }) => (
   <div suppressHydrationWarning>
     {typeof window === "undefined" ? null : children}
   </div>

@@ -3,23 +3,20 @@ from enum import Enum as EnumType
 from typing import Any, Dict, List, Optional, Type, Union
 
 from fideslang.validation import FidesKey
-from pydantic import Field, validator
+from pydantic import ConfigDict, Field, field_serializer, field_validator
 
 from fides.api.custom_types import SafeStr
+from fides.api.graph.config import CollectionAddress
 from fides.api.models.audit_log import AuditLogAction
-from fides.api.models.privacy_request import (
-    CheckpointActionRequired,
-    ExecutionLogStatus,
-    PrivacyRequestStatus,
-)
 from fides.api.schemas.api import BulkResponse, BulkUpdateFailed
 from fides.api.schemas.base_class import FidesSchema
-from fides.api.schemas.policy import ActionType
+from fides.api.schemas.policy import ActionType, CurrentStep
 from fides.api.schemas.policy import PolicyResponse as PolicySchema
 from fides.api.schemas.redis_cache import CustomPrivacyRequestField, Identity
 from fides.api.schemas.user import PrivacyRequestReviewer
 from fides.api.util.collection_util import Row
 from fides.api.util.encryption.aes_gcm_encryption_scheme import verify_encryption_key
+from fides.api.util.enums import ColumnSort
 from fides.config import CONFIG
 
 
@@ -39,17 +36,12 @@ class PrivacyRequestDRPStatusResponse(FidesSchema):
 
     request_id: str
     received_at: datetime
-    expected_by: Optional[datetime]
-    processing_details: Optional[str]
+    expected_by: Optional[datetime] = None
+    processing_details: Optional[str] = None
     status: PrivacyRequestDRPStatus
-    reason: Optional[str]
-    user_verification_url: Optional[str]
-
-    class Config:
-        """Set orm_mode and use_enum_values"""
-
-        orm_mode = True
-        use_enum_values = True
+    reason: Optional[str] = None
+    user_verification_url: Optional[str] = None
+    model_config = ConfigDict(from_attributes=True, use_enum_values=True)
 
 
 class Consent(FidesSchema):
@@ -75,13 +67,31 @@ class ConsentReport(Consent):
     updated_at: datetime
 
 
+class PrivacyRequestSource(str, EnumType):
+    """
+    The source where the privacy request originated from
+
+    - Privacy Center: Request created from the Privacy Center
+    - Request Manager: Request submitted from the Admin UI's Request manager page
+    - Consent Webhook: Request created as a side-effect of a consent webhook request (bidirectional consent)
+    - Fides.js: Request created as a side-effect of a privacy preference update from Fides.js
+    - Dataset Test: Standalone dataset test
+    """
+
+    privacy_center = "Privacy Center"
+    request_manager = "Request Manager"
+    consent_webhook = "Consent Webhook"
+    fides_js = "Fides.js"
+    dataset_test = "Dataset Test"
+
+
 class PrivacyRequestCreate(FidesSchema):
     """Data required to create a PrivacyRequest"""
 
-    external_id: Optional[str]
-    started_processing_at: Optional[datetime]
-    finished_processing_at: Optional[datetime]
-    requested_at: Optional[datetime]
+    external_id: Optional[str] = None
+    started_processing_at: Optional[datetime] = None
+    finished_processing_at: Optional[datetime] = None
+    requested_at: Optional[datetime] = None
     identity: Identity
     consent_request_id: Optional[str] = None
     custom_privacy_request_fields: Optional[Dict[str, CustomPrivacyRequestField]] = None
@@ -89,8 +99,10 @@ class PrivacyRequestCreate(FidesSchema):
     encryption_key: Optional[str] = None
     property_id: Optional[str] = None
     consent_preferences: Optional[List[Consent]] = None  # TODO Slated for deprecation
+    source: Optional[PrivacyRequestSource] = None
 
-    @validator("encryption_key")
+    @field_validator("encryption_key")
+    @classmethod
     def validate_encryption_key(
         cls: Type["PrivacyRequestCreate"], value: Optional[str] = None
     ) -> Optional[str]:
@@ -100,12 +112,24 @@ class PrivacyRequestCreate(FidesSchema):
         return value
 
 
+class PrivacyRequestResubmit(PrivacyRequestCreate):
+    """Schema used to copy a privacy request for resubmission"""
+
+    id: str
+    reviewed_at: Optional[datetime] = None
+    reviewed_by: Optional[str] = None
+    identity_verified_at: Optional[datetime] = None
+    custom_privacy_request_fields_approved_at: Optional[datetime] = None
+    custom_privacy_request_fields_approved_by: Optional[str] = None
+
+
 class ConsentRequestCreate(FidesSchema):
     """Data required to create a consent PrivacyRequest"""
 
     identity: Identity
     custom_privacy_request_fields: Optional[Dict[str, CustomPrivacyRequestField]] = None
-    property_id: Optional[str]
+    property_id: Optional[str] = None
+    source: Optional[PrivacyRequestSource] = None
 
 
 class FieldsAffectedResponse(FidesSchema):
@@ -114,45 +138,44 @@ class FieldsAffectedResponse(FidesSchema):
     path: Optional[str]
     field_name: Optional[str]
     data_categories: Optional[List[str]]
+    model_config = ConfigDict(from_attributes=True, use_enum_values=True)
 
-    class Config:
-        """Set orm_mode and use_enum_values"""
 
-        orm_mode = True
-        use_enum_values = True
+class ExecutionLogStatus(EnumType):
+    """Enum for execution log statuses, reflecting where they are in their workflow"""
+
+    in_processing = "in_processing"
+    pending = "pending"
+    complete = "complete"
+    error = "error"
+    awaiting_processing = "paused"  # "paused" in the database to avoid a migration, but use "awaiting_processing" in the app
+    retrying = "retrying"
+    skipped = "skipped"
 
 
 class ExecutionLogStatusSerializeOverride(FidesSchema):
     """Override to serialize "paused" Execution Logs as awaiting_processing instead"""
 
-    class Config:
-        """Set orm_mode and use_enum_values"""
+    status: ExecutionLogStatus
+    model_config = ConfigDict(from_attributes=True, use_enum_values=False)
 
-        orm_mode = True
-        use_enum_values = False  # Used in conjunction with the "dict" override below
-
-    def dict(self, *args: Any, **kwargs: Any) -> Dict:
+    @field_serializer("status")
+    def serialize_status(self, status: ExecutionLogStatus) -> str:
+        """For statuses, we want to use the name instead of the value
+        This is for backwards compatibility where we are repurposing the "paused" status
+        to read "awaiting processing"
         """
-        When serializing, use the Execution Log Status name instead of the value
-
-        This is because our "awaiting_processing" status is "paused" in the db,
-        but we want to use "awaiting_processing" everywhere in the app.
-        """
-        data = super().dict(*args, **kwargs)
-        if isinstance(data.get("status"), ExecutionLogStatus):
-            data["status"] = data["status"].name
-        return data
+        return status.name
 
 
 class ExecutionLogResponse(ExecutionLogStatusSerializeOverride):
     """Schema for the embedded ExecutionLogs associated with a PrivacyRequest"""
 
-    collection_name: Optional[str]
-    fields_affected: Optional[List[FieldsAffectedResponse]]
-    message: Optional[str]
+    collection_name: Optional[str] = None
+    fields_affected: Optional[List[FieldsAffectedResponse]] = None
+    message: Optional[str] = None
     action_type: ActionType
-    status: ExecutionLogStatus
-    updated_at: Optional[datetime]
+    updated_at: Optional[datetime] = None
 
 
 class PrivacyRequestTaskSchema(ExecutionLogStatusSerializeOverride):
@@ -160,7 +183,6 @@ class PrivacyRequestTaskSchema(ExecutionLogStatusSerializeOverride):
 
     id: str
     collection_address: str
-    status: ExecutionLogStatus
     created_at: datetime
     updated_at: datetime
     upstream_tasks: List[str]
@@ -171,33 +193,73 @@ class PrivacyRequestTaskSchema(ExecutionLogStatusSerializeOverride):
 class ExecutionLogDetailResponse(ExecutionLogResponse):
     """Schema for the detailed ExecutionLogs when accessed directly"""
 
-    connection_key: Optional[str]
-    dataset_name: Optional[str]
+    connection_key: Optional[str] = None
+    dataset_name: Optional[str] = None
 
 
-class ExecutionAndAuditLogResponse(ExecutionLogStatusSerializeOverride):
+class ExecutionAndAuditLogResponse(FidesSchema):
     """Schema for the combined ExecutionLogs and Audit Logs
     associated with a PrivacyRequest"""
 
-    connection_key: Optional[str]
-    collection_name: Optional[str]
-    fields_affected: Optional[List[FieldsAffectedResponse]]
-    message: Optional[str]
-    action_type: Optional[ActionType]
-    status: Optional[Union[ExecutionLogStatus, AuditLogAction]]
-    updated_at: Optional[datetime]
-    user_id: Optional[str]
+    connection_key: Optional[str] = None
+    collection_name: Optional[str] = None
+    fields_affected: Optional[List[FieldsAffectedResponse]] = None
+    message: Optional[str] = None
+    action_type: Optional[ActionType] = None
+    status: Optional[Union[ExecutionLogStatus, AuditLogAction, str]] = None
+    updated_at: Optional[datetime] = None
+    user_id: Optional[str] = None
+    model_config = ConfigDict(populate_by_name=True)
 
-    class Config:
-        """Set orm_mode and allow population by field name"""
+    @field_serializer("status")
+    def serialize_status(
+        self, status: Optional[Union[ExecutionLogStatus, AuditLogAction, str]]
+    ) -> Optional[str]:
+        """For statuses, we want to use the name instead of the value
+        This is for backwards compatibility where we are repurposing the "paused" status
+        to read "awaiting processing"
 
-        allow_population_by_field_name = True
+        Generally, status will be a string here because we had to convert both ExecutionLogStatuses
+        and AuditLogAction statuses to strings so we could union both resources into the same query
+        """
+        if isinstance(status, (AuditLogAction, ExecutionLogStatus)):
+            return status.name if status else None
+
+        return "awaiting_processing" if status == "paused" else status
 
 
 class RowCountRequest(FidesSchema):
     """Schema for a user to manually confirm data erased for a collection"""
 
     row_count: int
+
+
+class ManualAction(FidesSchema):
+    """
+    Surface how to retrieve or mask data in a database-agnostic way
+
+    - 'locators' are similar to the SQL "WHERE" information.
+    - 'get' contains a list of fields that should be retrieved from the source
+    - 'update' is a dictionary of fields and the replacement value/masking strategy
+    """
+
+    locators: Dict[str, Any]
+    get: Optional[List[str]]
+    update: Optional[Dict[str, Any]]
+
+
+class CheckpointActionRequired(FidesSchema):
+    """Describes actions needed on a particular checkpoint.
+
+    Examples are a paused collection that needs manual input, a failed collection that
+    needs to be restarted, or a collection where instructions need to be emailed to a third
+    party to complete the request.
+    """
+
+    step: CurrentStep
+    collection: Optional[CollectionAddress] = None
+    action_needed: Optional[List[ManualAction]] = None
+    model_config = ConfigDict(arbitrary_types_allowed=True)
 
 
 class CheckpointActionRequiredDetails(CheckpointActionRequired):
@@ -220,38 +282,54 @@ class PrivacyRequestNotificationInfo(FidesSchema):
     notify_after_failures: int
 
 
+class PrivacyRequestStatus(str, EnumType):
+    """Enum for privacy request statuses, reflecting where they are in the Privacy Request Lifecycle"""
+
+    identity_unverified = "identity_unverified"
+    requires_input = "requires_input"
+    pending = (
+        "pending"  # Privacy Request likely awaiting approval, if hanging in this state.
+    )
+    approved = "approved"
+    denied = "denied"
+    in_processing = "in_processing"
+    complete = "complete"
+    paused = "paused"
+    awaiting_email_send = "awaiting_email_send"
+    canceled = "canceled"
+    error = "error"
+
+
 class PrivacyRequestResponse(FidesSchema):
     """Schema to check the status of a PrivacyRequest"""
 
     id: str
-    created_at: Optional[datetime]
-    started_processing_at: Optional[datetime]
-    reviewed_at: Optional[datetime]
-    reviewed_by: Optional[str]
-    reviewer: Optional[PrivacyRequestReviewer]
-    finished_processing_at: Optional[datetime]
-    identity_verified_at: Optional[datetime]
-    paused_at: Optional[datetime]
+    created_at: Optional[datetime] = None
+    started_processing_at: Optional[datetime] = None
+    reviewed_at: Optional[datetime] = None
+    reviewed_by: Optional[str] = None
+    reviewer: Optional[PrivacyRequestReviewer] = None
+    finished_processing_at: Optional[datetime] = None
+    identity_verified_at: Optional[datetime] = None
+    paused_at: Optional[datetime] = None
     status: PrivacyRequestStatus
-    external_id: Optional[str]
+    external_id: Optional[str] = None
     # This field intentionally doesn't use the Identity schema
     # as it is an API response field, and we don't want to reveal any more
     # about our PII structure than is explicitly stored in the cache on request
     # creation.
-    identity: Optional[Dict[str, Union[Optional[str], Dict[str, Any]]]]
-    custom_privacy_request_fields: Optional[Dict[str, Any]]
+    identity: Optional[Dict[str, Union[Optional[str], Dict[str, Any]]]] = None
+    custom_privacy_request_fields: Optional[Dict[str, Any]] = None
     policy: PolicySchema
     action_required_details: Optional[CheckpointActionRequiredDetails] = None
-    resume_endpoint: Optional[str]
-    days_left: Optional[int]
-    custom_privacy_request_fields_approved_by: Optional[str]
-    custom_privacy_request_fields_approved_at: Optional[datetime]
-
-    class Config:
-        """Set orm_mode and use_enum_values"""
-
-        orm_mode = True
-        use_enum_values = True
+    resume_endpoint: Optional[str] = None
+    days_left: Optional[int] = None
+    custom_privacy_request_fields_approved_by: Optional[str] = None
+    custom_privacy_request_fields_approved_at: Optional[datetime] = None
+    source: Optional[PrivacyRequestSource] = None
+    deleted_at: Optional[datetime] = None
+    deleted_by: Optional[str] = None
+    model_config = ConfigDict(from_attributes=True, use_enum_values=True)
 
 
 class PrivacyRequestVerboseResponse(PrivacyRequestResponse):
@@ -261,29 +339,30 @@ class PrivacyRequestVerboseResponse(PrivacyRequestResponse):
     execution_and_audit_logs_by_dataset: Dict[
         str, List[ExecutionAndAuditLogResponse]
     ] = Field(alias="results")
-
-    class Config:
-        """Allow the results field to be populated by the 'PrivacyRequest.execution_logs_by_dataset' property"""
-
-        allow_population_by_field_name = True
+    model_config = ConfigDict(populate_by_name=True)
 
 
 class ReviewPrivacyRequestIds(FidesSchema):
     """Pass in a list of privacy request ids"""
 
-    request_ids: List[str] = Field(..., max_items=50)
+    request_ids: List[str] = Field(..., max_length=50)
 
 
 class DenyPrivacyRequests(ReviewPrivacyRequestIds):
     """Pass in a list of privacy request ids and rejection reason"""
 
-    reason: Optional[SafeStr]
+    reason: Optional[SafeStr] = None
 
 
 class BulkPostPrivacyRequests(BulkResponse):
     """Schema with mixed success/failure responses for Bulk Create of PrivacyRequest responses."""
 
     succeeded: List[PrivacyRequestResponse]
+    failed: List[BulkUpdateFailed]
+
+
+class BulkSoftDeletePrivacyRequests(BulkResponse):
+    succeeded: List[str]
     failed: List[BulkUpdateFailed]
 
 
@@ -307,11 +386,11 @@ class ConsentWithExecutableStatus(FidesSchema):
 class ConsentPreferencesWithVerificationCode(FidesSchema):
     """Schema for consent preferences including the verification code."""
 
-    code: Optional[str]
+    code: Optional[str] = None
     consent: List[Consent]
     policy_key: Optional[FidesKey] = None
-    executable_options: Optional[List[ConsentWithExecutableStatus]]
-    browser_identity: Optional[Identity]
+    executable_options: Optional[List[ConsentWithExecutableStatus]] = None
+    browser_identity: Optional[Identity] = None
 
 
 class ConsentRequestResponse(FidesSchema):
@@ -339,3 +418,86 @@ class RequestTaskCallbackRequest(FidesSchema):
     rows_masked: Optional[int] = Field(
         default=None, description="Number of records masked, as an integer"
     )
+
+
+class PrivacyRequestFilter(FidesSchema):
+    request_id: Optional[str] = None
+    identities: Optional[Dict[str, Any]] = Field(
+        None, examples=[{"email": "user@example.com", "loyalty_id": "CH-1"}]
+    )
+    fuzzy_search_str: Optional[str] = (
+        None  # catch-all for any strings we want to fuzzy-search privacy requests on. Currently only applies to identities and privacy request ids
+    )
+    custom_privacy_request_fields: Optional[Dict[str, Any]] = Field(
+        None, examples=[{"site_id": "abc", "subscriber_id": "123"}]
+    )
+    status: Optional[Union[PrivacyRequestStatus, List[PrivacyRequestStatus]]] = None
+    created_lt: Optional[datetime] = None
+    created_gt: Optional[datetime] = None
+    started_lt: Optional[datetime] = None
+    started_gt: Optional[datetime] = None
+    completed_lt: Optional[datetime] = None
+    completed_gt: Optional[datetime] = None
+    errored_lt: Optional[datetime] = None
+    errored_gt: Optional[datetime] = None
+    external_id: Optional[str] = None
+    action_type: Optional[ActionType] = None
+    verbose: Optional[bool] = False
+    include_identities: Optional[bool] = False
+    include_custom_privacy_request_fields: Optional[bool] = False
+    include_deleted_requests: Optional[bool] = False
+    download_csv: Optional[bool] = False
+    sort_field: str = "created_at"
+    sort_direction: ColumnSort = ColumnSort.DESC
+
+    model_config = ConfigDict(extra="forbid")
+
+    @field_validator("status")
+    @classmethod
+    def validate_status_field(
+        cls,
+        field_value: Union[PrivacyRequestStatus, List[PrivacyRequestStatus]],
+    ) -> List[PrivacyRequestStatus]:
+        """
+        Keeps the status field flexible but converts a single value to a list for consistent processing.
+        """
+        if isinstance(field_value, PrivacyRequestStatus):
+            return [field_value]
+        return field_value
+
+
+class PrivacyRequestAccessResults(FidesSchema):
+    """Schema for the access results of a PrivacyRequest"""
+
+    access_result_urls: List[str]
+
+
+class TestPrivacyRequest(FidesSchema):
+    """Schema containing the data for a test privacy request"""
+
+    privacy_request_id: str
+
+
+class FilteredPrivacyRequestResults(FidesSchema):
+    """Schema representing the status and results of a test privacy request"""
+
+    privacy_request_id: str
+    status: PrivacyRequestStatus
+    results: Union[Dict[str, Any], str]
+
+
+class LogEntry(FidesSchema):
+    """Schema representing a single log entry"""
+
+    timestamp: str
+    level: str
+    module_info: str
+    message: str
+
+
+class TestPrivacyRequestLogs(FidesSchema):
+    """Schema representing the logs of a test privacy request"""
+
+    privacy_request_id: str
+    status: PrivacyRequestStatus
+    logs: Union[List[LogEntry], str]

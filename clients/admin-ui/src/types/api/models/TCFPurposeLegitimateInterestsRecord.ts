@@ -29,7 +29,7 @@ export type TCFPurposeLegitimateInterestsRecord = {
    * The fideslang default taxonomy data uses that are associated with the purpose.
    */
   data_uses: Array<string>;
-  default_preference?: UserConsentPreference;
+  default_preference?: UserConsentPreference | null;
   vendors?: Array<EmbeddedVendor>;
   systems?: Array<EmbeddedVendor>;
 };

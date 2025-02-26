@@ -71,31 +71,34 @@ class TestPrivacyCenterConfig:
             consent_option.executable = True
 
         with pytest.raises(ValueError) as exc:
-            ConsentConfigPage(**consent_page.dict(by_alias=True))
+            ConsentConfigPage(**consent_page.model_dump(by_alias=True))
         assert "Cannot have more than one consent option be executable." in str(
             exc.value
         )
 
     def test_serialize_by_alias(self, privacy_center_config: PrivacyCenterConfig):
-        assert "includeConsent" in privacy_center_config.dict(by_alias=True).keys()
+        assert (
+            "includeConsent" in privacy_center_config.model_dump(by_alias=True).keys()
+        )
         assert (
             "consentOptions"
-            in privacy_center_config.consent.page.dict(by_alias=True).keys()
+            in privacy_center_config.consent.page.model_dump(by_alias=True).keys()
         )
         for field in ["cookieKeys", "fidesDataUseKey"]:
             assert (
                 field
                 in privacy_center_config.consent.page.consent_options[0]
-                .dict(by_alias=True)
+                .model_dump(by_alias=True)
                 .keys()
             )
         for field in ["confirmButtonText", "cancelButtonText", "modalTitle"]:
             assert (
-                field in privacy_center_config.consent.button.dict(by_alias=True).keys()
+                field
+                in privacy_center_config.consent.button.model_dump(by_alias=True).keys()
             )
         assert (
             "globalPrivacyControl"
             in privacy_center_config.consent.page.consent_options[0]
-            .default.dict(by_alias=True)
+            .default.model_dump(by_alias=True)
             .keys()
         )

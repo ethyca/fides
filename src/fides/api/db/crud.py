@@ -4,7 +4,7 @@ generated programmatically for each resource.
 """
 
 from collections import defaultdict
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Tuple, Type, TypeVar
 
 from fastapi import HTTPException
 from loguru import logger as log
@@ -19,19 +19,22 @@ from sqlalchemy.future import select
 from sqlalchemy.sql import Select
 from starlette.status import HTTP_422_UNPROCESSABLE_ENTITY
 
-from fides.api.db.base import Base  # type: ignore[attr-defined]
 from fides.api.models.sql_models import (  # type: ignore[attr-defined]
     CustomField,
     CustomFieldDefinition,
+    FidesBase,
     ResourceTypes,
 )
 from fides.api.util import errors
 
+# Helps return type be linked to the type of the parameter
+T = TypeVar("T", bound="FidesBase")
+
 
 # CRUD Functions
 async def create_resource(
-    sql_model: Base, resource_dict: Dict, async_session: AsyncSession
-) -> Base:
+    sql_model: Type[T], resource_dict: Dict, async_session: AsyncSession
+) -> T:
     """Create a resource in the database."""
     with log.contextualize(
         sql_model=sql_model.__name__, fides_key=resource_dict["fides_key"]
@@ -53,7 +56,7 @@ async def create_resource(
         async with async_session.begin():
             try:
                 log.debug("Creating resource")
-                query = _insert(sql_model).values(resource_dict)
+                query = _insert(sql_model.__table__).values(resource_dict)
                 await async_session.execute(query)
             except SQLAlchemyError:
                 sa_error = errors.QueryError()
@@ -68,7 +71,7 @@ async def create_resource(
 async def get_custom_fields_filtered(
     async_session: AsyncSession,
     resource_types_to_ids: Dict[ResourceTypes, List[str]] = defaultdict(list),
-) -> Base:
+) -> FidesBase:
     """
     Utility function to construct a filtered query for custom field values based on provided mapping of
     resource types to resource IDs.
@@ -113,11 +116,11 @@ async def get_custom_fields_filtered(
 
 
 async def get_resource(
-    sql_model: Base,
+    sql_model: Type[T],
     fides_key: str,
     async_session: AsyncSession,
     raise_not_found: bool = True,
-) -> Base:
+) -> T:
     """
     Get a resource from the database by its FidesKey.
 
@@ -146,13 +149,13 @@ async def get_resource(
 
 
 async def get_resource_with_custom_fields(
-    sql_model: Base, fides_key: str, async_session: AsyncSession
+    sql_model: Type[T], fides_key: str, async_session: AsyncSession
 ) -> Dict[str, Any]:
     """Get a resource from the databse by its FidesKey including it's custom fields.
 
     Returns a dictionary of that resource.
     """
-    resource = await get_resource(sql_model, fides_key, async_session)
+    resource: T = await get_resource(sql_model, fides_key, async_session)
     resource_dict = resource.__dict__
     resource_dict.pop("_sa_instance_state", None)
 
@@ -198,7 +201,7 @@ async def get_resource_with_custom_fields(
     return resource_dict
 
 
-async def list_resource(sql_model: Base, async_session: AsyncSession) -> List[Base]:
+async def list_resource(sql_model: Type[T], async_session: AsyncSession) -> List[T]:
     """
     Get a list of all of the resources of this type from the database.
 
@@ -209,8 +212,8 @@ async def list_resource(sql_model: Base, async_session: AsyncSession) -> List[Ba
 
 
 async def list_resource_query(
-    async_session: AsyncSession, query: Select, sql_model: Base = Base
-) -> List[Base]:
+    async_session: AsyncSession, query: Select, sql_model: Type[T]
+) -> List[T]:
     """
     Utility function to wrap a select query in generic "list_resource" execution handling.
     Wrapping includes execution against the DB session, logging and error handling.
@@ -233,7 +236,7 @@ async def list_resource_query(
 
 
 async def update_resource(
-    sql_model: Base, resource_dict: Dict, async_session: AsyncSession
+    sql_model: Type[T], resource_dict: Dict, async_session: AsyncSession
 ) -> Dict:
     """Update a resource in the database by its fides_key."""
 
@@ -246,7 +249,7 @@ async def update_resource(
             try:
                 log.debug("Updating resource")
                 await async_session.execute(
-                    _update(sql_model)
+                    _update(sql_model.__table__)
                     .where(sql_model.fides_key == resource_dict["fides_key"])
                     .values(resource_dict)
                 )
@@ -261,7 +264,7 @@ async def update_resource(
 
 
 async def upsert_resources(
-    sql_model: Base, resource_dicts: List[Dict], async_session: AsyncSession
+    sql_model: Type[T], resource_dicts: List[Dict], async_session: AsyncSession
 ) -> Tuple[int, int]:
     """
     Insert new resources into the database. If a resource already exists,
@@ -278,7 +281,7 @@ async def upsert_resources(
             try:
                 log.debug("Upserting resources")
                 insert_stmt = (
-                    _insert(sql_model)
+                    _insert(sql_model.__table__)
                     .values(resource_dicts)
                     .returning(
                         (column("xmax") == 0),  # Row was inserted
@@ -308,12 +311,13 @@ async def upsert_resources(
                 log.bind(error=error.detail["error"]).info(  # type: ignore[index]
                     "Failed to upsert resources"
                 )
+                log.exception(error)
                 raise error
 
 
 async def delete_resource(
-    sql_model: Base, fides_key: str, async_session: AsyncSession
-) -> Base:
+    sql_model: Type[T], fides_key: str, async_session: AsyncSession
+) -> T:
     """
     Delete a resource by its fides_key.
 
@@ -329,7 +333,7 @@ async def delete_resource(
                 if hasattr(sql_model, "parent_key"):
                     log.debug("Deleting resource and its children")
                     query = (
-                        _delete(sql_model)
+                        _delete(sql_model.__table__)
                         .where(
                             or_(
                                 sql_model.fides_key == fides_key,
@@ -340,7 +344,9 @@ async def delete_resource(
                     )
                 else:
                     log.debug("Deleting resource")
-                    query = _delete(sql_model).where(sql_model.fides_key == fides_key)
+                    query = _delete(sql_model.__table__).where(
+                        sql_model.fides_key == fides_key
+                    )
                 await async_session.execute(query)
             except IntegrityError as err:
                 raw_error_text: str = err.orig.args[0]

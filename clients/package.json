@@ -1,4 +1,6 @@
 {
+  "name": "clients",
+  "private": true,
   "workspaces": [
     "admin-ui",
     "fides-js",
@@ -20,6 +22,7 @@
     "format:ci": "turbo run format:ci",
     "test": "turbo run test",
     "test:ci": "turbo run test:ci",
+    "typecheck": "turbo run typecheck",
     "prod-export-admin-ui": "turbo run prod-export --filter=admin-ui",
     "export-admin-ui": "turbo run export --filter=admin-ui",
     "cy-ui:start": "turbo run cy:start --filter=admin-ui",
@@ -30,6 +33,7 @@
     "openapi:generate": "turbo run openapi:generate"
   },
   "devDependencies": {
-    "turbo": "^1.9.3"
-  }
+    "turbo": "^2.2.3"
+  },
+  "packageManager": "npm@10.8.3"
 }

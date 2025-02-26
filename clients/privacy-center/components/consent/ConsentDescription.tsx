@@ -1,4 +1,5 @@
 import { Box, Text, TextProps } from "fidesui";
+
 import { useAppSelector } from "~/app/hooks";
 import useI18n from "~/common/hooks/useI18n";
 import { useConfig } from "~/features/common/config.slice";
@@ -6,10 +7,10 @@ import { selectIsNoticeDriven } from "~/features/common/settings.slice";
 
 const TEXT_PROPS: TextProps = {
   fontSize: ["small", "medium"],
-  fontWeight: "medium",
+  fontWeight: "normal",
   maxWidth: 624,
   textAlign: "center",
-  color: "gray.600",
+  color: "gray.800",
 };
 
 const ConsentDescription = () => {

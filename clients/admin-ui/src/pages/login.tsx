@@ -1,44 +1,138 @@
 import Head from "common/Head";
 import Image from "common/Image";
 import {
+  AntButton as Button,
   Box,
-  Button,
+  Center,
   chakra,
   Flex,
-  FormControl,
-  FormErrorMessage,
-  FormLabel,
   Heading,
-  Input,
   Stack,
+  usePrefersReducedMotion,
   useToast,
 } from "fidesui";
 import { Formik } from "formik";
+// Framer is bundled as part of chakra. TODO: had trouble with package.json's when
+// trying to make framer a first level dev dependency
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { motion } from "framer-motion";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
+import { ParsedUrlQuery } from "querystring";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import * as Yup from "yup";
 
-import { login, selectToken, useLoginMutation } from "../features/auth";
+import {
+  login,
+  selectToken,
+  useAcceptInviteMutation,
+  useLoginMutation,
+} from "~/features/auth";
+import { CustomTextInput } from "~/features/common/form/inputs";
+import { passwordValidation } from "~/features/common/form/validation";
+import { useGetAllOpenIDProvidersSimpleQuery } from "~/features/openid-authentication/openprovider.slice";
+
+const parseQueryParam = (query: ParsedUrlQuery) => {
+  const validPathRegex = /^\/[\w/-]*$/;
+  const {
+    username: rawUsername,
+    invite_code: rawInviteCode,
+    redirect: rawRedirect,
+  } = query;
+  const redirectDecoded =
+    typeof rawRedirect === "string"
+      ? decodeURIComponent(rawRedirect)
+      : undefined;
+  return {
+    username: typeof rawUsername === "string" ? rawUsername : undefined,
+    inviteCode: typeof rawInviteCode === "string" ? rawInviteCode : undefined,
+    redirect:
+      redirectDecoded && validPathRegex.test(redirectDecoded)
+        ? redirectDecoded
+        : undefined,
+  };
+};
+
+const Animation = () => {
+  const primary800 = "rgba(17, 20, 57, 1)";
+  const icon = {
+    hidden: {
+      opacity: 0,
+      pathLength: 0,
+      fill: "rgba(255, 255, 255, 0)",
+    },
+    visible: {
+      opacity: 1,
+      pathLength: 1,
+      fill: primary800,
+    },
+  };
+  return (
+    <Center position="absolute">
+      <motion.svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 64 64"
+        // eslint-disable-next-line tailwindcss/no-custom-classname
+        className="item"
+        width={46}
+        height={46}
+        style={{
+          stroke: primary800,
+          strokeWidth: 1,
+        }}
+      >
+        <motion.path
+          d="M0 0H0V64H64V0Z"
+          variants={icon}
+          initial="hidden"
+          animate="visible"
+          transition={{
+            default: { duration: 2, ease: "easeInOut" },
+            fill: { duration: 2, ease: [1, 0, 0.8, 1] },
+          }}
+        />
+      </motion.svg>
+    </Center>
+  );
+};
 
 const useLogin = () => {
-  const [loginRequest, { isLoading }] = useLoginMutation();
+  const [loginRequest] = useLoginMutation();
+  const [acceptInviteRequest] = useAcceptInviteMutation();
+  const [showAnimation, setShowAnimation] = useState(false);
+  // If the user prefers no motion, don't show the animation
+  const reduceMotion = usePrefersReducedMotion();
   const token = useSelector(selectToken);
   const toast = useToast();
   const router = useRouter();
   const dispatch = useDispatch();
+  const { username, inviteCode, redirect } = parseQueryParam(router.query);
 
   const initialValues = {
-    email: "",
+    username: username ?? "",
     password: "",
   };
 
+  const isFromInvite = inviteCode !== undefined;
+
   const onSubmit = async (values: typeof initialValues) => {
     const credentials = {
-      username: values.email,
+      username: values.username,
       password: values.password,
     };
+
     try {
-      const user = await loginRequest(credentials).unwrap();
+      let user;
+      if (isFromInvite) {
+        user = await acceptInviteRequest({
+          ...credentials,
+          inviteCode,
+        }).unwrap();
+      } else {
+        user = await loginRequest(credentials).unwrap();
+      }
+      setShowAnimation(true);
       dispatch(login(user));
     } catch (error) {
       // eslint-disable-next-line no-console
@@ -51,47 +145,78 @@ const useLogin = () => {
     }
   };
 
-  const validate = (values: typeof initialValues) => {
-    const errors: {
-      email?: string;
-      password?: string;
-    } = {};
+  const validationSchema = Yup.object().shape({
+    username: Yup.string().required().label("Username"),
+    password: isFromInvite
+      ? passwordValidation.label("Password")
+      : Yup.string().required().label("Password"),
+  });
 
-    if (!values.email) {
-      errors.email = "Required";
+  useEffect(() => {
+    if (token) {
+      const destination = redirect ?? "/";
+      if (showAnimation && !reduceMotion) {
+        const timer = setTimeout(() => {
+          router.push(destination).then(() => {
+            setShowAnimation(false);
+          });
+        }, 2000);
+        return () => {
+          clearTimeout(timer);
+        };
+      }
+      router.push(destination);
     }
-
-    if (!values.password) {
-      errors.password = "Required";
-    }
-
-    return errors;
-  };
-
-  if (token) {
-    router.push("/");
-  }
+    return () => {};
+  }, [token, router, redirect, showAnimation, reduceMotion]);
 
   return {
+    isFromInvite,
+    showAnimation,
+    inviteCode,
     initialValues,
-    isLoading,
     onSubmit,
-    validate,
+    validationSchema,
   };
 };
 
-const Login: NextPage = () => {
-  const { isLoading, ...formikProps } = useLogin();
+const OAuthLoginButtons = () => {
+  const { data: openidProviders } = useGetAllOpenIDProvidersSimpleQuery();
+
   return (
-    <Formik {...formikProps}>
-      {({
-        errors,
-        handleBlur,
-        handleChange,
-        handleSubmit,
-        touched,
-        values,
-      }) => (
+    <Center>
+      <Stack spacing={4} width="100%">
+        {openidProviders?.map((provider) => (
+          <Button
+            key={provider.identifier}
+            href={`/api/v1/plus/openid-provider/${provider.identifier}/authorize`}
+            icon={
+              <Image
+                src={`/images/oauth-login/${provider.provider}.svg`}
+                alt={`${provider.provider} icon`}
+                width={20}
+                height={20}
+              />
+            }
+            className="w-full"
+          >
+            Sign in with {provider.name}
+          </Button>
+        ))}
+      </Stack>
+    </Center>
+  );
+};
+
+const Login: NextPage = () => {
+  const { isFromInvite, showAnimation, inviteCode, ...formikProps } =
+    useLogin();
+
+  const submitButtonText = isFromInvite ? "Setup user" : "Sign in";
+
+  return (
+    <Formik {...formikProps} enableReinitialize>
+      {({ handleSubmit, isValid, isSubmitting, dirty }) => (
         <Flex width="100%" justifyContent="center">
           <Head />
 
@@ -109,9 +234,9 @@ const Login: NextPage = () => {
               <Box display={["none", "none", "block"]}>
                 <Image
                   src="/logo.svg"
-                  alt="FidesUI logo"
-                  width="156px"
-                  height="48px"
+                  alt="Fides logo"
+                  width={205}
+                  height={46}
                 />
               </Box>
               <Stack align="center" spacing={[0, 0, 6]}>
@@ -140,9 +265,9 @@ const Login: NextPage = () => {
                       <Flex justifyContent="center">
                         <Image
                           src="/logo.svg"
-                          alt="FidesUI logo"
-                          width="156px"
-                          height="48px"
+                          alt="Fides logo"
+                          width={205}
+                          height={46}
                         />
                       </Flex>
                       <Heading fontSize="3xl" colorScheme="primary">
@@ -155,66 +280,49 @@ const Login: NextPage = () => {
                       width="100%"
                     >
                       <Stack spacing={6}>
-                        <FormControl
-                          isInvalid={touched.email && Boolean(errors.email)}
-                        >
-                          <FormLabel htmlFor="email" fontWeight="medium">
-                            Username
-                          </FormLabel>
-                          <Input
-                            autoFocus
-                            id="email"
-                            name="email"
-                            aria-label="email"
-                            focusBorderColor="primary.500"
-                            placeholder="username"
-                            onChange={handleChange}
-                            onBlur={handleBlur}
-                            value={values.email}
-                            isInvalid={touched.email && Boolean(errors.email)}
-                            data-testid="input-username"
-                          />
-                          <FormErrorMessage>{errors.email}</FormErrorMessage>
-                        </FormControl>
-
-                        <FormControl
-                          isInvalid={
-                            touched.password && Boolean(errors.password)
+                        <CustomTextInput
+                          name="username"
+                          label="Username"
+                          variant="stacked"
+                          size="md"
+                          disabled={isFromInvite}
+                        />
+                        <CustomTextInput
+                          name="password"
+                          label={isFromInvite ? "Set new password" : "Password"}
+                          autoComplete={
+                            isFromInvite ? "new-password" : "current-password"
                           }
-                        >
-                          <FormLabel htmlFor="password" fontWeight="medium">
-                            Password
-                          </FormLabel>
-                          <Input
-                            autoComplete="off"
-                            id="password"
-                            name="password"
-                            focusBorderColor="primary.500"
-                            type="password"
-                            aria-label="password"
-                            value={values.password}
-                            onChange={handleChange}
-                            onBlur={handleBlur}
-                            isInvalid={
-                              touched.password && Boolean(errors.password)
+                          type="password"
+                          variant="stacked"
+                          size="md"
+                        />
+                        <Center>
+                          <motion.div
+                            className="w-full"
+                            animate={
+                              showAnimation
+                                ? {
+                                    width: ["100%", "10%"],
+                                    borderRadius: ["5%", "0%"],
+                                  }
+                                : undefined
                             }
-                            data-testid="input-password"
-                          />
-                          <FormErrorMessage>{errors.password}</FormErrorMessage>
-                        </FormControl>
-
-                        <Button
-                          type="submit"
-                          bg="primary.800"
-                          _hover={{ bg: "primary.400" }}
-                          _active={{ bg: "primary.500" }}
-                          disabled={!values.email || !values.password}
-                          isLoading={isLoading}
-                          colorScheme="primary"
-                          data-testid="sign-in-btn"
-                        >
-                          Sign in
-                        </Button>
+                          >
+                            <Button
+                              htmlType="submit"
+                              type="primary"
+                              disabled={!isValid || !dirty}
+                              data-testid="sign-in-btn"
+                              loading={isSubmitting}
+                              className="w-full"
+                            >
+                              {showAnimation ? "" : submitButtonText}
+                            </Button>
+                          </motion.div>
+                          {showAnimation ? <Animation /> : null}
+                        </Center>
+                        <OAuthLoginButtons />
                       </Stack>
                     </chakra.form>
                   </Stack>

@@ -1,7 +1,6 @@
 import { useHasPermission } from "common/Restrict";
 import {
-  Button,
-  ButtonGroup,
+  AntButton as Button,
   Flex,
   Spinner,
   Stack,
@@ -10,13 +9,13 @@ import {
   useToast,
 } from "fidesui";
 import { Form, Formik } from "formik";
-import NextLink from "next/link";
+import { useRouter } from "next/router";
 import React, { useEffect, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import ConfirmationModal from "~/features/common/modals/ConfirmationModal";
-import { USER_MANAGEMENT_ROUTE } from "~/features/common/nav/v2/routes";
+import { USER_MANAGEMENT_ROUTE } from "~/features/common/nav/routes";
 import QuestionTooltip from "~/features/common/QuestionTooltip";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { ROLES } from "~/features/user-management/constants";
@@ -40,6 +39,7 @@ export type FormValues = typeof defaultInitialValues;
 
 const PermissionsForm = () => {
   const toast = useToast();
+  const router = useRouter();
   const activeUserId = useAppSelector(selectActiveUserId);
   useGetUserManagedSystemsQuery(activeUserId as string, {
     skip: !activeUserId,
@@ -51,7 +51,7 @@ const PermissionsForm = () => {
   } = useDisclosure();
   const initialManagedSystems = useAppSelector(selectActiveUsersManagedSystems);
   const [assignedSystems, setAssignedSystems] = useState<System[]>(
-    initialManagedSystems
+    initialManagedSystems,
   );
   const [updateUserManagedSystemsTrigger] =
     useUpdateUserManagedSystemsMutation();
@@ -64,7 +64,7 @@ const PermissionsForm = () => {
     activeUserId ?? "",
     {
       skip: !activeUserId,
-    }
+    },
   );
 
   const [updateUserPermissionMutationTrigger] =
@@ -82,7 +82,7 @@ const PermissionsForm = () => {
     // If we attempt to assign systems to the approver role, the BE will throw an error,
     // so we skip calling the endpoint.
     const skipAssigningSystems = values.roles.includes(
-      RoleRegistryEnum.APPROVER
+      RoleRegistryEnum.APPROVER,
     );
 
     const userPermissionsResult = await updateUserPermissionMutationTrigger({
@@ -186,20 +186,20 @@ const PermissionsForm = () => {
                 );
               })}
             </Stack>
-            <ButtonGroup size="sm">
-              <NextLink href={USER_MANAGEMENT_ROUTE} passHref>
-                <Button variant="outline">Cancel</Button>
-              </NextLink>
+            <div>
+              <Button onClick={() => router.push(USER_MANAGEMENT_ROUTE)}>
+                Cancel
+              </Button>
               <Button
-                colorScheme="primary"
-                type="submit"
-                isLoading={isSubmitting}
+                type="primary"
+                htmlType="submit"
+                loading={isSubmitting}
                 disabled={!dirty && assignedSystems === initialManagedSystems}
                 data-testid="save-btn"
               >
                 Save
               </Button>
-            </ButtonGroup>
+            </div>
           </Stack>
           <ConfirmationModal
             isOpen={chooseApproverIsOpen}

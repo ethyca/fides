@@ -1,6 +1,6 @@
 import { h } from "preact";
 
-import { I18n } from "../../lib/i18n";
+import { useI18n } from "../../lib/i18n/i18n-context";
 
 interface Option {
   /**
@@ -11,16 +11,15 @@ interface Option {
 }
 
 const RadioGroup = <T extends Option>({
-  i18n,
   active,
   options,
   onChange,
 }: {
-  i18n: I18n;
   options: T[];
   active: T;
   onChange: (filter: T) => void;
 }) => {
+  const { i18n } = useI18n();
   const handleClick = (filter: T) => {
     onChange(filter);
   };
@@ -31,6 +30,7 @@ const RadioGroup = <T extends Option>({
         const selected = option.value === active.value;
         return (
           <button
+            key={option.value}
             role="radio"
             type="button"
             aria-checked={selected}

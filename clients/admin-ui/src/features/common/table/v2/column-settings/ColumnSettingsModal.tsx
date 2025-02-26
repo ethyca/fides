@@ -1,7 +1,7 @@
 import { Table as TableInstance } from "@tanstack/react-table";
 import {
+  AntButton as Button,
   Box,
-  Button,
   Modal,
   ModalBody,
   ModalCloseButton,
@@ -18,6 +18,7 @@ import {
 } from "fidesui";
 import { useCallback, useMemo } from "react";
 
+import { getColumnHeaderText } from "../util";
 import {
   DraggableColumn,
   DraggableColumnList,
@@ -28,9 +29,12 @@ type ColumnSettingsModalProps<T> = {
   isOpen: boolean;
   onClose: () => void;
   headerText: string;
+  columnNameMap: Record<string, string>;
   prefixColumns: string[];
   tableInstance: TableInstance<T>;
+  savedCustomReportId: string;
   onColumnOrderChange: (columns: string[]) => void;
+  onColumnVisibilityChange: (columnVisibility: Record<string, boolean>) => void;
 };
 
 export const ColumnSettingsModal = <T,>({
@@ -38,8 +42,11 @@ export const ColumnSettingsModal = <T,>({
   onClose,
   headerText,
   tableInstance,
+  columnNameMap,
   prefixColumns,
+  savedCustomReportId,
   onColumnOrderChange,
+  onColumnVisibilityChange,
 }: ColumnSettingsModalProps<T>) => {
   const initialColumns = useMemo(
     () =>
@@ -48,7 +55,10 @@ export const ColumnSettingsModal = <T,>({
         .filter((c) => !prefixColumns.includes(c.id))
         .map((c) => ({
           id: c.id,
-          displayText: c.columnDef?.meta?.displayText || c.id,
+          displayText: getColumnHeaderText({
+            columnNameMap,
+            columnId: c.id,
+          }),
           isVisible:
             tableInstance.getState().columnVisibility[c.id] ?? c.getIsVisible(),
         }))
@@ -68,8 +78,9 @@ export const ColumnSettingsModal = <T,>({
           }
           return aIndex - bIndex;
         }),
+    // watch savedCustomReportId so that when a saved report is loaded, we can update these column definitions to match
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    []
+    [savedCustomReportId, columnNameMap],
   );
   const columnEditor = useEditableColumns({
     columns: initialColumns,
@@ -80,24 +91,23 @@ export const ColumnSettingsModal = <T,>({
       ...prefixColumns,
       ...columnEditor.columns.map((c) => c.id),
     ];
-    onColumnOrderChange(newColumnOrder);
-    tableInstance.setColumnVisibility(
-      columnEditor.columns.reduce(
-        (acc: Record<string, boolean>, current: DraggableColumn) => {
-          // eslint-disable-next-line no-param-reassign
-          acc[current.id] = current.isVisible;
-          return acc;
-        },
-        {}
-      )
+    const newColumnVisibility = columnEditor.columns.reduce(
+      (acc: Record<string, boolean>, current: DraggableColumn) => {
+        // eslint-disable-next-line no-param-reassign
+        acc[current.id] = current.isVisible;
+        return acc;
+      },
+      {},
     );
+    onColumnOrderChange(newColumnOrder);
+    onColumnVisibilityChange(newColumnVisibility);
     onClose();
   }, [
     onClose,
     prefixColumns,
-    tableInstance,
     columnEditor.columns,
     onColumnOrderChange,
+    onColumnVisibilityChange,
   ]);
 
   return (
@@ -105,7 +115,7 @@ export const ColumnSettingsModal = <T,>({
       <ModalOverlay />
       <ModalContent>
         <ModalHeader pb={0}>{headerText}</ModalHeader>
-        <ModalCloseButton />
+        <ModalCloseButton data-testid="column-settings-close-button" />
         <ModalBody>
           <Text fontSize="sm" color="gray.500" mb={2}>
             You can toggle columns on and off to hide or show them in the table.
@@ -127,21 +137,14 @@ export const ColumnSettingsModal = <T,>({
         </ModalBody>
         <ModalFooter>
           <Box display="flex" justifyContent="space-between" width="100%">
-            <Button
-              variant="outline"
-              size="sm"
-              mr={3}
-              onClick={onClose}
-              flexGrow={1}
-            >
+            <Button onClick={onClose} className="mr-3 grow">
               Cancel
             </Button>
             <Button
-              data-testid="save-button"
-              colorScheme="primary"
-              size="sm"
               onClick={handleSave}
-              flexGrow={1}
+              type="primary"
+              className="grow"
+              data-testid="save-button"
             >
               Save
             </Button>

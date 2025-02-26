@@ -1,5 +1,5 @@
 import {
-  Button,
+  AntButton as Button,
   chakra,
   FormControl,
   FormLabel,
@@ -65,9 +65,8 @@ const useOrganizationInfoForm = () => {
       };
 
       if (!existingOrg) {
-        const createOrganizationResult = await createOrganization(
-          organizationBody
-        );
+        const createOrganizationResult =
+          await createOrganization(organizationBody);
 
         if (isErrorResult(createOrganizationResult)) {
           const errorMsg = getErrorMessage(createOrganizationResult.error);
@@ -81,9 +80,8 @@ const useOrganizationInfoForm = () => {
         toast.closeAll();
         handleSuccess(organizationBody);
       } else {
-        const updateOrganizationResult = await updateOrganization(
-          organizationBody
-        );
+        const updateOrganizationResult =
+          await updateOrganization(organizationBody);
 
         if (isErrorResult(updateOrganizationResult)) {
           const errorMsg = getErrorMessage(updateOrganizationResult.error);
@@ -197,13 +195,13 @@ const OrganizationInfoForm = () => {
           </FormControl>
         </Stack>
         <Button
-          type="submit"
-          variant="primary"
-          isDisabled={!values.name || !values.description}
-          isLoading={isSubmitting}
+          type="primary"
+          htmlType="submit"
+          disabled={!values.name || !values.description}
+          loading={isSubmitting}
           data-testid="submit-btn"
         >
-          Save and Continue
+          Save and continue
         </Button>
       </Stack>
     </chakra.form>

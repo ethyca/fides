@@ -17,7 +17,7 @@ from fides.api.schemas.policy import ActionType
 from fides.api.schemas.redis_cache import Identity
 from fides.api.service.connectors.base_connector import BaseConnector
 from fides.api.service.connectors.fides.fides_client import FidesClient
-from fides.api.service.connectors.query_config import QueryConfig
+from fides.api.service.connectors.query_configs.query_config import QueryConfig
 from fides.api.util.collection_util import Row
 from fides.api.util.errors import FidesError
 
@@ -48,6 +48,7 @@ class FidesConnector(BaseConnector[FidesClient]):
     def query_config(self, node: ExecutionNode) -> QueryConfig[Any]:
         """Return the query config that corresponds to this connector type"""
         # no query config for fides connectors
+        raise NotImplementedError()
 
     def create_client(self) -> FidesClient:
         """Returns a client used to connect to a Fides instance"""

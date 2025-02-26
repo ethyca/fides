@@ -5,7 +5,7 @@ type SortArrowProps = {
   up?: boolean;
 };
 
-const SortArrow: React.FC<SortArrowProps> = ({ up }) => {
+const SortArrow = ({ up }: SortArrowProps) => {
   if (up === undefined) {
     return (
       <Icon width="24px" height="26px" viewBox="0 0 24 26" fill="none">

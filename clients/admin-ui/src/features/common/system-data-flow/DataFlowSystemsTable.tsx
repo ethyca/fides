@@ -1,4 +1,14 @@
-import { Box, Switch, Table, Tbody, Td, Text, Th, Thead, Tr } from "fidesui";
+import {
+  AntSwitch as Switch,
+  Box,
+  Table,
+  Tbody,
+  Td,
+  Text,
+  Th,
+  Thead,
+  Tr,
+} from "fidesui";
 import { useFormikContext } from "formik";
 import React from "react";
 
@@ -20,11 +30,11 @@ const DataFlowSystemsTable = ({
   const { setFieldValue } = useFormikContext();
   const handleToggle = (system: System) => {
     const isAssigned = !!dataFlowSystems.find(
-      (assigned) => assigned.fides_key === system.fides_key
+      (assigned) => assigned.fides_key === system.fides_key,
     );
     if (isAssigned) {
       const updatedDataFlows = dataFlowSystems.filter(
-        (assignedSystem) => assignedSystem.fides_key !== system.fides_key
+        (assignedSystem) => assignedSystem.fides_key !== system.fides_key,
       );
       setFieldValue("dataFlowSystems", updatedDataFlows);
       onChange(updatedDataFlows);
@@ -56,7 +66,7 @@ const DataFlowSystemsTable = ({
         <Tbody>
           {allSystems.map((system) => {
             const isAssigned = !!dataFlowSystems.find(
-              (assigned) => assigned.fides_key === system.fides_key
+              (assigned) => assigned.fides_key === system.fides_key,
             );
             return (
               <Tr
@@ -71,7 +81,7 @@ const DataFlowSystemsTable = ({
                 </Td>
                 <Td textAlign="right">
                   <Switch
-                    isChecked={isAssigned}
+                    checked={isAssigned}
                     onChange={() => handleToggle(system)}
                     data-testid="assign-switch"
                   />

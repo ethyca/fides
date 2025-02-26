@@ -1,11 +1,11 @@
 import itertools
 from typing import Any, Dict, Generator, List, Optional
 
+from boto3 import Session
 from boto3.dynamodb.types import TypeDeserializer
 from botocore.exceptions import ClientError
 from loguru import logger
 
-import fides.connectors.aws as aws_connector
 from fides.api.common_exceptions import ConnectionException
 from fides.api.graph.execution import ExecutionNode
 from fides.api.models.connectionconfig import ConnectionTestStatus
@@ -15,11 +15,14 @@ from fides.api.schemas.connection_configuration.connection_secrets_dynamodb impo
     DynamoDBSchema,
 )
 from fides.api.service.connectors.base_connector import BaseConnector
-from fides.api.service.connectors.query_config import DynamoDBQueryConfig, QueryConfig
+from fides.api.service.connectors.query_configs.dynamodb_query_config import (
+    DynamoDBQueryConfig,
+)
+from fides.api.service.connectors.query_configs.query_config import QueryConfig
+from fides.api.util.aws_util import get_aws_session
 from fides.api.util.collection_util import Row
 from fides.api.util.logger import Pii
 from fides.connectors.models import (
-    AWSConfig,
     ConnectorAuthFailureException,
     ConnectorFailureException,
 )
@@ -38,14 +41,13 @@ class DynamoDBConnector(BaseConnector[Any]):  # type: ignore
         """Returns a client for a DynamoDB instance"""
         config = DynamoDBSchema(**self.configuration.secrets or {})
         try:
-            aws_config = AWSConfig(
-                region_name=config.region_name,
-                aws_access_key_id=config.aws_access_key_id,
-                aws_secret_access_key=config.aws_secret_access_key,
+            aws_session: Session = get_aws_session(
+                config.auth_method.value,  # pylint: disable=no-member
+                config.model_dump(),  # type: ignore[arg-type]
+                config.aws_assume_role_arn,
             )
-            return aws_connector.get_aws_client(
-                service="dynamodb", aws_config=aws_config
-            )
+
+            return aws_session.client("dynamodb")
         except ValueError:
             raise ConnectionException("Value Error connecting to AWS DynamoDB.")
 

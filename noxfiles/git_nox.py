@@ -85,6 +85,7 @@ def tag(session: nox.Session, action: str) -> None:
         - tag(dry) = Show the tag that would be applied.
         - tag(push) = Tag the current commit and push it. NOTE: This will trigger a new CI job to publish the tag.
     """
+    # pip3.10 install GitPython
     from git.repo import Repo
 
     repo = Repo()

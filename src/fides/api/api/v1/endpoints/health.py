@@ -32,7 +32,7 @@ class DatabaseHealthCheck(BaseModel):
     """Database Healthcheck Schema"""
 
     database: str
-    database_revision: Optional[str]
+    database_revision: Optional[str] = None
 
 
 class WorkerHealthCheck(BaseModel):
@@ -88,7 +88,7 @@ async def database_health(db: Session = Depends(get_db)) -> Dict:
 
     response = DatabaseHealthCheck(
         database=db_health, database_revision=revision if revision else "unknown"
-    ).dict()
+    ).model_dump(mode="json")
 
     if db_health != "healthy":
         raise HTTPException(
@@ -130,7 +130,7 @@ async def workers_health() -> Dict:
     """Confirm that the API is running and healthy."""
     response = WorkerHealthCheck(
         workers_enabled=False, workers=[], queue_counts={}
-    ).dict()
+    ).model_dump(mode="json")
 
     fides_is_using_workers = not celery_app.conf["task_always_eager"]
     if fides_is_using_workers:
@@ -179,7 +179,7 @@ async def health() -> Dict:
         webserver="healthy",
         version=str(fides.__version__),
         cache=cache_health,
-    ).dict()
+    ).model_dump(mode="json")
 
     for _, value in response.items():
         if value == "unhealthy":

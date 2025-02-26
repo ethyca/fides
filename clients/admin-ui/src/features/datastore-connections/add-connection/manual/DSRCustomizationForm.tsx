@@ -6,8 +6,8 @@ import React from "react";
 import * as Yup from "yup";
 
 import { useAppSelector } from "~/app/hooks";
-import { CustomSelect } from "~/features/common/form/inputs";
-import { DATASTORE_CONNECTION_ROUTE } from "~/features/common/nav/v2/routes";
+import { ControlledSelect } from "~/features/common/form/ControlledSelect";
+import { DATASTORE_CONNECTION_ROUTE } from "~/features/common/nav/routes";
 import { useGetAllDataCategoriesQuery } from "~/features/taxonomy";
 import { selectDataCategories } from "~/features/taxonomy/taxonomy.slice";
 
@@ -21,11 +21,11 @@ type DSRCustomizationFormProps = {
   onSaveClick: (values: any, actions: any) => void;
 };
 
-const DSRCustomizationForm: React.FC<DSRCustomizationFormProps> = ({
+const DSRCustomizationForm = ({
   data = [],
   isSubmitting = false,
   onSaveClick,
-}) => {
+}: DSRCustomizationFormProps) => {
   const { isLoading: isLoadingDataCategories } = useGetAllDataCategoriesQuery();
   const allDataCategories = useAppSelector(selectDataCategories);
 
@@ -81,7 +81,7 @@ const DSRCustomizationForm: React.FC<DSRCustomizationFormProps> = ({
               .max(200, "DSR Package Label has a maximum of 200 characters")
               .label("DSR Package Label"),
             data_categories: Yup.array(Yup.string()).label("Data Categories"),
-          })
+          }),
         ),
       })}
     >
@@ -137,16 +137,16 @@ const DSRCustomizationForm: React.FC<DSRCustomizationFormProps> = ({
                                 />
                               </Box>
                               <Box minH="57px" w="416px">
-                                <CustomSelect
+                                <ControlledSelect
                                   name={`fields.${index}.data_categories`}
                                   options={allDataCategories.map(
                                     (data_category) => ({
                                       value: data_category.fides_key,
                                       label: data_category.fides_key,
-                                    })
+                                    }),
                                   )}
                                   isRequired
-                                  isMulti
+                                  mode="multiple"
                                 />
                               </Box>
                               <Box

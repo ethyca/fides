@@ -6,7 +6,7 @@ from typing import Dict, List, Optional
 
 from fideslang import manifests
 from fideslang.models import Organization, System
-from pydantic import AnyHttpUrl
+from fideslang.validation import AnyHttpUrlString
 
 from fides.common.utils import echo_green, echo_red, handle_cli_response
 from fides.connectors.models import AWSConfig, OktaConfig
@@ -62,9 +62,9 @@ def generate_resource_tagging_systems(
     client = aws_connector.get_aws_client(
         service="resourcegroupstaggingapi", aws_config=aws_config
     )
-    resource_arns = aws_connector.get_tagging_resources(client=client)
+    resources = aws_connector.get_tagging_resources(client=client)
     resource_tagging_systems = aws_connector.create_resource_tagging_systems(
-        resource_arns=resource_arns, organization_key=organization_key
+        resources=resources, organization_key=organization_key
     )
     return resource_tagging_systems
 
@@ -72,7 +72,7 @@ def generate_resource_tagging_systems(
 def get_organization(
     organization_key: str,
     manifest_organizations: List[Organization],
-    url: AnyHttpUrl,
+    url: AnyHttpUrlString,
     headers: Dict[str, str],
 ) -> Optional[Organization]:
     """
@@ -88,7 +88,7 @@ def get_organization(
         return taxonomy_organization
 
     server_organization = get_server_resource(
-        url=url,
+        url=str(url),
         resource_type="organization",
         resource_key=organization_key,
         headers=headers,
@@ -102,7 +102,7 @@ def get_organization(
         )
         raise SystemExit(1)
 
-    parsed_organization = Organization.parse_obj(server_organization)
+    parsed_organization = Organization.model_validate(server_organization)
     assert isinstance(parsed_organization, Organization)
     return parsed_organization
 
@@ -143,7 +143,7 @@ def write_system_manifest(
     """
     manifests.write_manifest(
         file_name,
-        [i.dict(exclude_none=not include_null) for i in systems],
+        [i.model_dump(exclude_none=not include_null) for i in systems],
         "system",
     )
     echo_green(f"Generated system manifest written to {file_name}")
@@ -154,11 +154,11 @@ def generate_system_aws(
     include_null: bool,
     organization_key: str,
     aws_config: Optional[AWSConfig],
-    url: AnyHttpUrl,
+    url: AnyHttpUrlString,
     headers: Dict[str, str],
 ) -> str:
     """
-    Connect to an aws account by leveraging a valid boto3 environment varible
+    Connect to an aws account by leveraging a valid boto3 environment variable
     configuration and extract tracked resource to write a System manifest with.
     """
 
@@ -202,7 +202,7 @@ def generate_system_okta(
     okta_config: Optional[OktaConfig],
     file_name: str,
     include_null: bool,
-    url: AnyHttpUrl,
+    url: AnyHttpUrlString,
     headers: Dict[str, str],
 ) -> str:
     """
@@ -228,14 +228,14 @@ def generate_system_okta(
 
 
 def get_all_server_systems(
-    url: AnyHttpUrl, headers: Dict[str, str], exclude_systems: List[System]
+    url: AnyHttpUrlString, headers: Dict[str, str], exclude_systems: List[System]
 ) -> List[System]:
     """
     Get a list of all of the Systems that exist on the server. Excludes any systems
     provided in exclude_systems
     """
     ls_response = handle_cli_response(
-        api.ls(url=url, resource_type="system", headers=headers), verbose=False
+        api.ls(url=str(url), resource_type="system", headers=headers), verbose=False
     )
     exclude_system_keys = [system.fides_key for system in exclude_systems]
     system_keys = [
@@ -248,7 +248,10 @@ def get_all_server_systems(
     system_list = [
         System.validate(x)
         for x in get_server_resources(
-            url=url, resource_type="system", headers=headers, existing_keys=system_keys
+            url=str(url),
+            resource_type="system",
+            headers=headers,
+            existing_keys=system_keys,
         )
     ]
 
@@ -365,11 +368,11 @@ def scan_system_aws(
     organization_key: str,
     aws_config: Optional[AWSConfig],
     coverage_threshold: int,
-    url: AnyHttpUrl,
+    url: AnyHttpUrlString,
     headers: Dict[str, str],
 ) -> None:
     """
-    Connect to an aws account by leveraging a valid boto3 environment varible
+    Connect to an aws account by leveraging a valid boto3 environment variable
     configuration and compares tracked resources to existing systems.
     """
 
@@ -416,7 +419,7 @@ def scan_system_okta(
     organization_key: str,
     okta_config: Optional[OktaConfig],
     coverage_threshold: int,
-    url: AnyHttpUrl,
+    url: AnyHttpUrlString,
     headers: Dict[str, str],
 ) -> None:
     """

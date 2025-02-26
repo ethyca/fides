@@ -319,12 +319,12 @@ class TestExecutionNode:
             ],
         }
 
-    @pytest.mark.usefixtures("sentry_connection_config_without_secrets")
+    @pytest.mark.usefixtures("saas_external_example_connection_config")
     def test_grouped_fields(
-        self, db, privacy_request, sentry_dataset_config_without_secrets
+        self, db, privacy_request, saas_external_example_dataset_config
     ):
         """Test that a config with grouped inputs (sentry saas connector) has grouped inputs persisted"""
-        merged_graph = sentry_dataset_config_without_secrets.get_graph()
+        merged_graph = saas_external_example_dataset_config.get_graph()
         graph = DatasetGraph(merged_graph)
 
         identity = {"email": "customer-1@example.com"}
@@ -342,7 +342,7 @@ class TestExecutionNode:
         )
 
         issues_task = privacy_request.access_tasks.filter(
-            RequestTask.collection_address == "sentry_dataset:issues"
+            RequestTask.collection_address == "saas_connector_external_example:users"
         ).first()
         execution_node = ExecutionNode(issues_task)
         assert execution_node.grouped_fields == {

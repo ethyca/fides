@@ -8,6 +8,7 @@
  * Object used to hold application specific metadata for a dataset
  */
 export type DatasetMetadata = {
-  resource_id?: string;
-  after?: Array<string>;
+  resource_id?: string | null;
+  after?: Array<string> | null;
+  namespace?: null;
 };

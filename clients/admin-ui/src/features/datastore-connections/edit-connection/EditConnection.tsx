@@ -3,8 +3,8 @@ import React, { useEffect, useMemo, useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import DataTabs, { TabData } from "~/features/common/DataTabs";
-import BackButton from "~/features/common/nav/v2/BackButton";
-import { DATASTORE_CONNECTION_ROUTE } from "~/features/common/nav/v2/routes";
+import { DATASTORE_CONNECTION_ROUTE } from "~/features/common/nav/routes";
+import PageHeader from "~/features/common/PageHeader";
 import {
   reset,
   selectConnectionTypeState,
@@ -22,13 +22,13 @@ import DSRCustomization from "../add-connection/manual/DSRCustomization";
 import { ConnectorParameterOption } from "../add-connection/types";
 import ConnectionTypeLogo from "../ConnectionTypeLogo";
 
-const EditConnection: React.FC = () => {
+const EditConnection = () => {
   const dispatch = useAppDispatch();
   const { connection, connectionOption } = useAppSelector(
-    selectConnectionTypeState
+    selectConnectionTypeState,
   );
   const [connector, setConnector] = useState(
-    undefined as unknown as ConnectorParameterOption
+    undefined as unknown as ConnectorParameterOption,
   );
 
   const getTabs = useMemo(
@@ -70,13 +70,13 @@ const EditConnection: React.FC = () => {
       }
       return result;
     },
-    [connection?.key, connector?.options]
+    [connection?.key, connector?.options],
   );
 
   useEffect(() => {
     if (connectionOption) {
       const item = CONNECTOR_PARAMETERS_OPTIONS.find(
-        (o) => o.type === connectionOption?.type
+        (o) => o.type === connectionOption?.type,
       );
       if (item) {
         setConnector(item);
@@ -91,9 +91,15 @@ const EditConnection: React.FC = () => {
 
   return connection && connectionOption ? (
     <>
-      <BackButton backPath={DATASTORE_CONNECTION_ROUTE} />
+      <PageHeader
+        heading="Connection manager"
+        breadcrumbItems={[
+          { title: "All connections", href: DATASTORE_CONNECTION_ROUTE },
+          { title: connection.name },
+        ]}
+      />
       <Heading
-        fontSize="2xl"
+        fontSize="md"
         fontWeight="semibold"
         maxHeight="40px"
         mb="4px"

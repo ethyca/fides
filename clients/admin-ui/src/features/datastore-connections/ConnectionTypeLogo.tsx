@@ -12,16 +12,23 @@ import {
   CONNECTOR_LOGOS_PATH,
   FALLBACK_CONNECTOR_LOGOS_PATH,
 } from "./constants";
-import { isConnectionSystemTypeMap, isDatastoreConnection } from "./types";
 
 type ConnectionTypeLogoProps = {
   data: string | ConnectionConfigurationResponse | ConnectionSystemTypeMap;
 };
 
-const ConnectionTypeLogo: React.FC<ConnectionTypeLogoProps & ImageProps> = ({
+const isDatastoreConnection = (
+  obj: any,
+): obj is ConnectionConfigurationResponse =>
+  (obj as ConnectionConfigurationResponse).connection_type !== undefined;
+
+const isConnectionSystemTypeMap = (obj: any): obj is ConnectionSystemTypeMap =>
+  (obj as ConnectionSystemTypeMap).encoded_icon !== undefined;
+
+const ConnectionTypeLogo = ({
   data,
   ...props
-}) => {
+}: ConnectionTypeLogoProps & ImageProps) => {
   const getImageSrc = (): string => {
     if (isConnectionSystemTypeMap(data) && data.encoded_icon) {
       return `data:image/svg+xml;base64,${data.encoded_icon}`;
@@ -34,12 +41,12 @@ const ConnectionTypeLogo: React.FC<ConnectionTypeLogoProps & ImageProps> = ({
           (data.connection_type.toString() !== ConnectionType.SAAS &&
             data.connection_type.toString() === k) ||
           (data.connection_type.toString() === ConnectionType.SAAS &&
-            data.saas_config?.type?.toString() === k.toString())
+            data.saas_config?.type?.toString() === k.toString()),
       );
     } else if (isConnectionSystemTypeMap(data)) {
       const { identifier } = data;
       item = [...CONNECTION_TYPE_LOGO_MAP].find(
-        ([k]) => k.toLowerCase() === identifier.toLowerCase()
+        ([k]) => k.toLowerCase() === identifier.toLowerCase(),
       );
     }
     return item

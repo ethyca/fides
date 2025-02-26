@@ -1,14 +1,18 @@
 """This module handles finding and parsing fides configuration files."""
 
 # pylint: disable=C0115,C0116, E0213
-from typing import Dict, List, Optional, Pattern, Tuple, Union
+from typing import List, Optional, Pattern, Tuple, Union
 
 import validators
-from pydantic import Field, validator
+from pydantic import Field, SerializeAsAny, ValidationInfo, field_validator
+from pydantic_settings import SettingsConfigDict
 from slowapi.wrappers import parse_many  # type: ignore
 
-from fides.api.cryptography.cryptographic_util import generate_salt, hash_with_salt
-from fides.api.custom_types import URLOrigin
+from fides.api.cryptography.cryptographic_util import (
+    generate_salt,
+    hash_credential_with_salt,
+)
+from fides.api.custom_types import URLOriginString
 from fides.api.oauth.roles import OWNER
 from fides.common.api.scope_registry import SCOPE_REGISTRY
 
@@ -31,7 +35,7 @@ class SecuritySettings(FidesSettings):
     app_encryption_key: str = Field(
         default="", description="The key used to sign Fides API access tokens."
     )
-    cors_origins: List[URLOrigin] = Field(
+    cors_origins: SerializeAsAny[List[URLOriginString]] = Field(
         default_factory=list,
         description="A list of client addresses allowed to communicate with the Fides webserver.",
     )
@@ -47,7 +51,7 @@ class SecuritySettings(FidesSettings):
         default="UTF-8", description="Text encoding to use for the application."
     )
     env: str = Field(
-        default="dev",
+        default="prod",
         description="The default, `dev`, does not apply authentication to endpoints typically used by the CLI. The other option, `prod`, requires authentication for _all_ endpoints that may contain sensitive information.",
     )
     identity_verification_attempt_limit: int = Field(
@@ -115,6 +119,14 @@ class SecuritySettings(FidesSettings):
         default=None,
         description="If set, this can be used in conjunction with root_password to log in without first creating a user in the database.",
     )
+    subject_request_download_ui_enabled: bool = Field(
+        default=False,
+        description="If set to True, the user interface will display a download button for subject requests.",
+    )
+    dsr_testing_tools_enabled: bool = Field(
+        default=False,
+        description="If set to True, contributor and owner roles will be able to run test privacy requests.",
+    )
     subject_request_download_link_ttl_seconds: int = Field(
         default=432000,
         description="The number of seconds that a pre-signed download URL when using S3 storage will be valid. The default is equal to 5 days.",
@@ -144,10 +156,10 @@ class SecuritySettings(FidesSettings):
         description="The timeout in seconds for tunnel connection (open_channel timeout)",
     )
 
-    @validator("app_encryption_key")
+    @field_validator("app_encryption_key", mode="before")
     @classmethod
     def validate_encryption_key_length(
-        cls, v: Optional[str], values: Dict[str, str]
+        cls, v: Optional[str], info: ValidationInfo
     ) -> Optional[str]:
         """Validate the encryption key is exactly 32 characters"""
 
@@ -155,13 +167,13 @@ class SecuritySettings(FidesSettings):
         if v == "":
             return v
 
-        if v is None or len(v.encode(values.get("encoding", "UTF-8"))) != 32:
+        if v is None or len(v.encode(info.data.get("encoding", "UTF-8"))) != 32:
             raise ValueError(
                 "APP_ENCRYPTION_KEY value must be exactly 32 characters long"
             )
         return v
 
-    @validator("cors_origins", pre=True)
+    @field_validator("cors_origins", mode="before")
     @classmethod
     def assemble_cors_origins(cls, v: Union[str, List[str]]) -> Union[List[str], str]:
         """Return a list of valid origins for CORS requests"""
@@ -183,29 +195,31 @@ class SecuritySettings(FidesSettings):
             return v
         raise ValueError(v)
 
-    @validator("oauth_root_client_secret_hash")
+    @field_validator("oauth_root_client_secret_hash", mode="before")
     @classmethod
     def assemble_root_access_token(
-        cls, v: Optional[str], values: Dict[str, str]
+        cls, v: Optional[str], info: ValidationInfo
     ) -> Optional[Tuple]:
         """
         Sets a hashed value of the root access key.
         This is hashed as it is not wise to return a plaintext for of the
         root credential anywhere in the system.
         """
-        value = values.get("oauth_root_client_secret", "")
+        value = info.data.get("oauth_root_client_secret", "")
 
         if not value:
             return None
 
-        encoding = values.get("encoding", "UTF-8")
+        encoding = info.data.get("encoding", "UTF-8")
 
         salt = generate_salt()
-        hashed_client_id = hash_with_salt(value.encode(encoding), salt.encode(encoding))
+        hashed_client_id = hash_credential_with_salt(
+            value.encode(encoding), salt.encode(encoding)
+        )
         oauth_root_client_secret_hash = (hashed_client_id, salt.encode(encoding))  # type: ignore
         return oauth_root_client_secret_hash
 
-    @validator("request_rate_limit")
+    @field_validator("request_rate_limit")
     @classmethod
     def validate_request_rate_limit(
         cls,
@@ -226,7 +240,7 @@ class SecuritySettings(FidesSettings):
             raise ValueError(message)
         return v
 
-    @validator("env")
+    @field_validator("env")
     @classmethod
     def validate_env(
         cls,
@@ -238,5 +252,4 @@ class SecuritySettings(FidesSettings):
             raise ValueError(message)
         return v
 
-    class Config:
-        env_prefix = ENV_PREFIX
+    model_config = SettingsConfigDict(env_prefix=ENV_PREFIX)

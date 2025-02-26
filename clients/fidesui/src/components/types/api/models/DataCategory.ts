@@ -14,16 +14,16 @@ export type DataCategory = {
    * Defines the Organization that this resource belongs to.
    */
   organization_fides_key?: string;
-  tags?: Array<string>;
+  tags?: Array<string> | null;
   /**
    * Human-Readable name for this resource.
    */
-  name?: string;
+  name?: string | null;
   /**
    * A detailed description of what this resource is.
    */
-  description?: string;
-  parent_key?: string;
+  description?: string | null;
+  parent_key?: string | null;
   /**
    * Denotes whether the resource is part of the default taxonomy or not.
    */

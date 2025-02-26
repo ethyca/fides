@@ -1,20 +1,29 @@
 import { DataFlowAccordion } from "common/system-data-flow/DataFlowAccordion";
-import { Box, Text, useToast } from "fidesui";
+import { Box, Link, Text, useToast } from "fidesui";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { type TabData } from "~/features/common/DataTabs";
-import { useFeatures } from "~/features/common/features";
+import { useFeatures, useFlags } from "~/features/common/features";
 import {
   DirtyFormConfirmationModal,
   useIsAnyFormDirty,
 } from "~/features/common/hooks/useIsAnyFormDirty";
 import { useSystemOrDatamapRoute } from "~/features/common/hooks/useSystemOrDatamapRoute";
-import { DEFAULT_TOAST_PARAMS } from "~/features/common/toast";
+import {
+  EDIT_SYSTEM_ROUTE,
+  INTEGRATION_MANAGEMENT_ROUTE,
+} from "~/features/common/nav/routes";
+import {
+  DEFAULT_TOAST_PARAMS,
+  errorToastParams,
+  successToastParams,
+} from "~/features/common/toast";
 import ToastLink from "~/features/common/ToastLink";
 import ConnectionForm from "~/features/datastore-connections/system_portal_config/ConnectionForm";
+import { ConsentAutomationForm } from "~/features/datastore-connections/system_portal_config/ConsentAutomationForm";
 import {
   setLockedForGVL,
   setSuggestions,
@@ -28,6 +37,38 @@ import {
 } from "~/features/system/system.slice";
 import SystemInformationForm from "~/features/system/SystemInformationForm";
 import { SystemResponse } from "~/types/api";
+
+const SYSTEM_TABS = {
+  INFORMATION: {
+    index: 0,
+    hash: "#information",
+  },
+  DATA_USES: {
+    index: 1,
+    hash: "#data-uses",
+  },
+  DATA_FLOW: {
+    index: 2,
+    hash: "#data-flow",
+  },
+  INTEGRATIONS: {
+    index: 3,
+    hash: "#integrations",
+  },
+  HISTORY: {
+    index: 4,
+    hash: "#history",
+  },
+} as const;
+
+const getTabFromHash = (hash: string) => {
+  const normalizedHash = hash.startsWith("#") ? hash : `#${hash}`;
+  return Object.values(SYSTEM_TABS).find((tab) => tab.hash === normalizedHash);
+};
+
+const getTabFromIndex = (index: number) => {
+  return Object.values(SYSTEM_TABS).find((tab) => tab.index === index);
+};
 
 // The toast doesn't seem to handle next links well, so use buttons with onClick
 // handlers instead
@@ -54,28 +95,41 @@ const ToastMessage = ({
 
 const useSystemFormTabs = ({
   isCreate,
-  initialTabIndex,
 }: {
   initialTabIndex?: number;
   /** If true, then some editing features will not be enabled */
   isCreate?: boolean;
 }) => {
-  const [tabIndex, setTabIndex] = useState(initialTabIndex);
+  const router = useRouter();
+
+  // Get initial tab index based on URL hash
+  const getInitialTabIndex = (): number => {
+    const hash: string = router.asPath.split("#")[1];
+    return hash
+      ? (getTabFromHash(hash)?.index ?? SYSTEM_TABS.INFORMATION.index)
+      : SYSTEM_TABS.INFORMATION.index;
+  };
+
+  const [tabIndex, setTabIndex] = useState(getInitialTabIndex());
+
   const [showSaveMessage, setShowSaveMessage] = useState(false);
   const { systemOrDatamapRoute } = useSystemOrDatamapRoute();
-  const router = useRouter();
   const toast = useToast();
   const dispatch = useAppDispatch();
   const activeSystem = useAppSelector(selectActiveSystem) as SystemResponse;
   const [systemProcessesPersonalData, setSystemProcessesPersonalData] =
     useState<boolean | undefined>(undefined);
   const { plus: isPlusEnabled } = useFeatures();
+  const {
+    flags: { dataDiscoveryAndDetection },
+  } = useFlags();
+  const { plus: hasPlus } = useFeatures();
 
   // Once we have saved the system basics, subscribe to the query so that activeSystem
   // stays up to date when redux invalidates the cache (for example, when we patch a connection config)
   const { data: systemFromApi } = useGetSystemByFidesKeyQuery(
     activeSystem?.fides_key,
-    { skip: !activeSystem }
+    { skip: !activeSystem },
   );
 
   useEffect(() => {
@@ -95,6 +149,11 @@ const useSystemFormTabs = ({
         setShowSaveMessage(true);
       }
       dispatch(setActiveSystem(system));
+      router.push({
+        pathname: EDIT_SYSTEM_ROUTE,
+        query: { id: system.fides_key },
+      });
+
       const toastParams = {
         ...DEFAULT_TOAST_PARAMS,
         description: (
@@ -113,7 +172,7 @@ const useSystemFormTabs = ({
       };
       toast({ ...toastParams });
     },
-    [activeSystem, dispatch, router, systemOrDatamapRoute, toast]
+    [activeSystem, dispatch, router, systemOrDatamapRoute, toast],
   );
 
   useEffect(() => {
@@ -137,14 +196,52 @@ const useSystemFormTabs = ({
 
   const onTabChange = useCallback(
     (index: number) => {
-      attemptAction().then((modalConfirmed: boolean) => {
+      attemptAction().then(async (modalConfirmed: boolean) => {
         if (modalConfirmed) {
+          const { status } = router.query;
+          if (status) {
+            if (status === "succeeded") {
+              toast(successToastParams(`Integration successfully authorized.`));
+            } else {
+              toast(errorToastParams(`Failed to authorize integration.`));
+            }
+          }
+
+          // Update local state first
           setTabIndex(index);
+
+          // Update URL if router is ready
+          if (router.isReady) {
+            const tab = getTabFromIndex(index);
+            if (tab) {
+              const newQuery = { ...router.query };
+              delete newQuery.status;
+
+              await router.replace(
+                {
+                  pathname: router.pathname,
+                  query: newQuery,
+                  hash: tab.hash,
+                },
+                undefined,
+                { shallow: true },
+              );
+            }
+          }
         }
       });
     },
-    [attemptAction]
+    [attemptAction, router, toast],
   );
+
+  useEffect(() => {
+    const { status } = router.query;
+    if (status) {
+      onTabChange(SYSTEM_TABS.INTEGRATIONS.index);
+    }
+  }, [router.query, onTabChange]);
+
+  const showNewIntegrationNotice = hasPlus && dataDiscoveryAndDetection;
 
   const tabData: TabData[] = [
     {
@@ -161,16 +258,18 @@ const useSystemFormTabs = ({
           {showSaveMessage ? (
             <Box backgroundColor="gray.100" px={6} py={3}>
               <Text
-                color="gray.500"
+                color="primary.900"
                 fontSize="sm"
                 data-testid="save-help-message"
               >
                 Now that you have saved this new system it is{" "}
-                <NextLink href={systemOrDatamapRoute} passHref>
-                  <Text as="a" textDecor="underline">
-                    ready to view in your data map
-                  </Text>
-                </NextLink>
+                <Link
+                  as={NextLink}
+                  href={systemOrDatamapRoute}
+                  textDecor="underline"
+                >
+                  ready to view in your data map
+                </Link>
                 . You can return to this setup at any time to add privacy
                 declarations to this system.
               </Text>
@@ -219,15 +318,31 @@ const useSystemFormTabs = ({
       content: activeSystem ? (
         <Box width={{ base: "100%", lg: "70%" }}>
           <Box px={6} paddingBottom={2}>
-            <Text fontSize="sm" lineHeight={5} fontWeight="medium">
-              Integrations are used to process privacy requests for access,
-              erasure, portability, rectification, and consent.
+            <Text fontSize="sm" lineHeight={5}>
+              {showNewIntegrationNotice ? (
+                <>
+                  Add an integration to start managing privacy requests and
+                  consent. Visit{" "}
+                  <Link href={INTEGRATION_MANAGEMENT_ROUTE} color="link.900">
+                    Integration Management
+                  </Link>{" "}
+                  to set up monitoring on databases.
+                </>
+              ) : (
+                "Integrations are used to process privacy requests for access erasure, portability, rectification, and consent."
+              )}
             </Text>
           </Box>
           <ConnectionForm
             connectionConfig={activeSystem.connection_configs}
             systemFidesKey={activeSystem.fides_key}
           />
+          {activeSystem.connection_configs?.key && (
+            <ConsentAutomationForm
+              m={6}
+              connectionKey={activeSystem.connection_configs?.key}
+            />
+          )}
         </Box>
       ) : null,
       isDisabled: !activeSystem,

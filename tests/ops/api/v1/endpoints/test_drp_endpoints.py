@@ -16,11 +16,7 @@ from fides.api.models.privacy_request import (
     PrivacyRequestStatus,
 )
 from fides.api.schemas.privacy_request import PrivacyRequestDRPStatus
-from fides.api.util.cache import (
-    cache_task_tracking_key,
-    get_drp_request_body_cache_key,
-    get_identity_cache_key,
-)
+from fides.api.util.cache import cache_task_tracking_key, get_drp_request_body_cache_key
 from fides.common.api.scope_registry import (
     POLICY_READ,
     PRIVACY_REQUEST_READ,
@@ -43,7 +39,7 @@ class TestCreateDrpPrivacyRequest:
         return V1_URL_PREFIX + DRP_EXERCISE
 
     @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
     )
     def test_create_drp_privacy_request(
         self,
@@ -108,7 +104,7 @@ class TestCreateDrpPrivacyRequest:
         assert run_access_request_mock.called
 
     @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
     )
     def test_create_drp_privacy_request_unsupported_identity_props(
         self,
@@ -250,7 +246,7 @@ class TestCreateDrpPrivacyRequest:
         "fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher"
     )
     @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
     )
     def test_create_drp_privacy_request_error_notification(
         self,
@@ -445,7 +441,9 @@ class TestGetPrivacyRequestDRP:
         assert expected_drp_status.value == response.json()["status"]
         assert privacy_request_with_drp_action.id == response.json()["request_id"]
         assert (
-            privacy_request_with_drp_action.requested_at.isoformat()
+            privacy_request_with_drp_action.requested_at.isoformat().replace(
+                "+00:00", "Z"
+            )
             == response.json()["received_at"]
         )
 

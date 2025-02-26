@@ -26,7 +26,7 @@ export const usePollForClassifications = ({
     {
       skip,
       pollingInterval: shouldPoll ? POLL_INTERVAL_SECONDS * 1000 : undefined,
-    }
+    },
   );
 
   const isClassificationFinished = result.data
@@ -34,7 +34,7 @@ export const usePollForClassifications = ({
         (c) =>
           c.status === ClassificationStatus.COMPLETE ||
           c.status === ClassificationStatus.FAILED ||
-          c.status === ClassificationStatus.REVIEWED
+          c.status === ClassificationStatus.REVIEWED,
       )
     : false;
 

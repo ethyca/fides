@@ -1,11 +1,11 @@
 import type { NextPage } from "next";
 
-import Layout from "~/features/common/Layout";
+import FixedLayout from "~/features/common/FixedLayout";
 import PrivacyRequestsContainer from "~/features/privacy-requests/PrivacyRequestsContainer";
 
 const PrivacyRequests: NextPage = () => (
-  <Layout title="Privacy Requests">
+  <FixedLayout title="Privacy Requests">
     <PrivacyRequestsContainer />
-  </Layout>
+  </FixedLayout>
 );
 export default PrivacyRequests;

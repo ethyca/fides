@@ -1,25 +1,24 @@
-import { v4 as uuidv4 } from "uuid";
-import { getCookie, removeCookie, setCookie, Types } from "typescript-cookie";
 import { decode as base64_decode, encode as base64_encode } from "base-64";
+import Cookies, { CookiesStatic } from "js-cookie";
+import { v4 as uuidv4 } from "uuid";
 
 import { ConsentContext } from "./consent-context";
-import { resolveLegacyConsentValue } from "./consent-value";
 import {
-  NoticeConsent,
-  Cookies,
+  Cookies as CookiesType,
   FidesCookie,
   LegacyConsentConfig,
+  NoticeConsent,
   PrivacyExperience,
   PrivacyNoticeWithPreference,
   SaveConsentPreference,
 } from "./consent-types";
-import { debugLog } from "./consent-utils";
-import type { TcfOtherConsent, TcfSavePreferences } from "./tcf/types";
-import { FIDES_SYSTEM_COOKIE_KEY_MAP } from "./tcf/constants";
+import { resolveLegacyConsentValue } from "./consent-value";
 import {
   transformConsentToFidesUserPreference,
   transformUserPreferenceToBoolean,
 } from "./shared-consent-utils";
+import { FIDES_SYSTEM_COOKIE_KEY_MAP } from "./tcf/constants";
+import type { TcfOtherConsent, TcfSavePreferences } from "./tcf/types";
 
 /**
  * Save the cookie under the name "fides_consent" for 365 days
@@ -28,27 +27,30 @@ export const CONSENT_COOKIE_NAME = "fides_consent";
 export const CONSENT_COOKIE_MAX_AGE_DAYS = 365;
 
 /**
- * The typescript-cookie default codec has a more conservative strategy in order to
+ * The js-cookie default codec has a more conservative strategy in order to
  * comply with the exact requirements of RFC 6265. For ease of use in external pages,
  * we instead use encode/decodeURIComponent which are available in every browser.
  *
- * See: https://github.com/carhartl/typescript-cookie#encoding
+ * See: https://www.npmjs.com/package/js-cookie#converters
  */
-const CODEC: Types.CookieCodecConfig<string, string> = {
-  decodeName: decodeURIComponent,
-  decodeValue: decodeURIComponent,
-  encodeName: encodeURIComponent,
-  encodeValue: encodeURIComponent,
-};
+
+const cookies: CookiesStatic = Cookies.withConverter({
+  read(value) {
+    return decodeURIComponent(value);
+  },
+  write(value) {
+    return encodeURIComponent(value);
+  },
+});
 
 export const consentCookieObjHasSomeConsentSet = (
-  consent: NoticeConsent | undefined
+  consent: NoticeConsent | undefined,
 ): boolean => {
   if (!consent) {
     return false;
   }
   return Object.values(consent).some(
-    (val: boolean | undefined) => val !== undefined
+    (val: boolean | undefined) => val !== undefined,
   );
 };
 
@@ -93,14 +95,12 @@ export const makeFidesCookie = (consent?: NoticeConsent): FidesCookie => {
  * Retrieve cookie by name
  */
 export const getCookieByName = (cookieName: string): string | undefined =>
-  getCookie(cookieName, CODEC);
+  cookies.get(cookieName);
 
 /**
  * Retrieve and decode fides consent cookie
  */
-export const getFidesConsentCookie = (
-  debug: boolean = false
-): FidesCookie | undefined => {
+export const getFidesConsentCookie = (): FidesCookie | undefined => {
   const cookieString = getCookieByName(CONSENT_COOKIE_NAME);
   if (!cookieString) {
     return undefined;
@@ -112,7 +112,7 @@ export const getFidesConsentCookie = (
     try {
       return JSON.parse(base64_decode(cookieString));
     } catch (e) {
-      debugLog(debug, `Unable to read consent cookie`, e);
+      fidesDebugger(`Unable to read consent cookie`, e);
       return undefined;
     }
   }
@@ -128,8 +128,7 @@ export const getFidesConsentCookie = (
  */
 export const getOrMakeFidesCookie = (
   defaults?: NoticeConsent,
-  debug: boolean = false,
-  fidesClearCookie: boolean = false
+  fidesClearCookie: boolean = false,
 ): FidesCookie => {
   // Create a default cookie and set the configured consent defaults
   const defaultCookie = makeFidesCookie(defaults);
@@ -146,10 +145,9 @@ export const getOrMakeFidesCookie = (
   // Check for an existing cookie for this device
   let parsedCookie: FidesCookie | undefined = getFidesConsentCookie();
   if (!parsedCookie) {
-    debugLog(
-      debug,
+    fidesDebugger(
       `No existing Fides consent cookie found, returning defaults.`,
-      parsedCookie
+      parsedCookie,
     );
     return defaultCookie;
   }
@@ -175,15 +173,15 @@ export const getOrMakeFidesCookie = (
       ...parsedCookie.consent,
     };
     parsedCookie.consent = updatedConsent;
-    // since console.log is synchronous, we stringify to accurately read the parsedCookie obj
-    debugLog(
-      debug,
+    // since fidesDebugger is synchronous, we stringify to accurately read the parsedCookie obj
+    fidesDebugger(
       `Applied existing consent to data from existing Fides consent cookie.`,
-      JSON.stringify(parsedCookie)
+      JSON.stringify(parsedCookie),
     );
     return parsedCookie;
   } catch (err) {
-    debugLog(debug, `Unable to read consent cookie: invalid JSON.`, err);
+    // eslint-disable-next-line no-console
+    console.error(`Unable to read consent cookie: invalid JSON.`, err);
     return defaultCookie;
   }
 };
@@ -199,7 +197,7 @@ export const getOrMakeFidesCookie = (
  */
 export const saveFidesCookie = (
   cookie: FidesCookie,
-  base64Cookie: boolean = false
+  base64Cookie: boolean = false,
 ) => {
   if (typeof document === "undefined") {
     return;
@@ -221,18 +219,13 @@ export const saveFidesCookie = (
   for (let i = 1; i <= hostnameParts.length; i += 1) {
     // This loop guarantees to get the top-level hostname because that's the smallest one browsers will let you set cookies in. We test a given suffix for whether we are able to set cookies, if not we try the next suffix until we find the one that works.
     topViableDomain = hostnameParts.slice(-i).join(".");
-    const c = setCookie(
-      CONSENT_COOKIE_NAME,
-      encodedCookie,
-      {
-        // An explicit path ensures this is always set to the entire domain.
-        path: "/",
-        // An explicit domain allows subdomains to access the cookie.
-        domain: topViableDomain,
-        expires: CONSENT_COOKIE_MAX_AGE_DAYS,
-      },
-      CODEC
-    );
+    const c = cookies.set(CONSENT_COOKIE_NAME, encodedCookie, {
+      // An explicit path ensures this is always set to the entire domain.
+      path: "/",
+      // An explicit domain allows subdomains to access the cookie.
+      domain: topViableDomain,
+      expires: CONSENT_COOKIE_MAX_AGE_DAYS,
+    });
     if (c) {
       const savedCookie = getFidesConsentCookie();
       // If it's a new cookie, then checking for an existing cookie would be enough. But, if the cookie is being updated then we need to also check if the updatedAt is the same. Otherwise, we would be breaking on the TLD (eg. .com) here.
@@ -256,36 +249,36 @@ export const saveFidesCookie = (
 export const updateExperienceFromCookieConsentNotices = ({
   experience,
   cookie,
-  debug,
 }: {
   experience: PrivacyExperience;
   cookie: FidesCookie;
-  debug?: boolean;
 }): PrivacyExperience => {
+  // If the given experience has no notices, return immediately and do not mutate
+  // the experience object in any way
+  if (!experience.privacy_notices) {
+    return experience;
+  }
   // DEFER (PROD-1568) - instead of updating experience here, push this logic into UI
   const noticesWithConsent: PrivacyNoticeWithPreference[] | undefined =
     experience.privacy_notices?.map((notice) => {
       const preference = Object.keys(cookie.consent).includes(notice.notice_key)
         ? transformConsentToFidesUserPreference(
             Boolean(cookie.consent[notice.notice_key]),
-            notice.consent_mechanism
+            notice.consent_mechanism,
           )
         : undefined;
       return { ...notice, current_preference: preference };
     });
 
-  if (debug) {
-    debugLog(
-      debug,
-      `Returning updated pre-fetched experience with user consent.`,
-      experience
-    );
-  }
+  fidesDebugger(
+    `Returning updated pre-fetched experience with user consent.`,
+    experience,
+  );
   return { ...experience, privacy_notices: noticesWithConsent };
 };
 
 export const transformTcfPreferencesToCookieKeys = (
-  tcfPreferences: TcfSavePreferences
+  tcfPreferences: TcfSavePreferences,
 ): TcfOtherConsent => {
   const cookieKeys: TcfOtherConsent = {};
   FIDES_SYSTEM_COOKIE_KEY_MAP.forEach(({ cookieKey }) => {
@@ -294,7 +287,7 @@ export const transformTcfPreferencesToCookieKeys = (
       preferences.map((pref) => [
         pref.id,
         transformUserPreferenceToBoolean(pref.preference),
-      ])
+      ]),
     );
   });
   return cookieKeys;
@@ -313,7 +306,6 @@ export const transformTcfPreferencesToCookieKeys = (
 export const makeConsentDefaultsLegacy = (
   config: LegacyConsentConfig | undefined,
   context: ConsentContext,
-  debug: boolean
 ): NoticeConsent => {
   const defaults: NoticeConsent = {};
   config?.options.forEach(({ cookieKeys, default: current }) => {
@@ -333,20 +325,40 @@ export const makeConsentDefaultsLegacy = (
       defaults[cookieKey] = previous && value;
     });
   });
-  debugLog(debug, `Returning defaults for legacy config.`, defaults);
+  fidesDebugger(`Returning defaults for legacy config.`, defaults);
   return defaults;
 };
 
 /**
  * Given a list of cookies, deletes them from the browser
+ * Optionally removes subdomain cookies as well
  */
-export const removeCookiesFromBrowser = (cookies: Cookies[]) => {
-  cookies.forEach((cookie) => {
-    removeCookie(cookie.name, {
+export const removeCookiesFromBrowser = (
+  cookiesToRemove: CookiesType[],
+  removeSubdomainCookies: boolean = true,
+) => {
+  cookiesToRemove.forEach((cookie) => {
+    cookies.remove(cookie.name, {
       path: cookie.path ?? "/",
       domain: cookie.domain,
     });
+    if (removeSubdomainCookies) {
+      const { hostname } = window.location;
+      cookies.remove(cookie.name, { domain: `.${hostname}` });
+    }
   });
+};
+
+export const buildCookieConsentFromConsentPreferences = (
+  consentPreferencesToSave: SaveConsentPreference[],
+): NoticeConsent => {
+  const noticeMap = new Map<string, boolean>(
+    consentPreferencesToSave.map(({ notice, consentPreference }) => [
+      notice.notice_key,
+      transformUserPreferenceToBoolean(consentPreference),
+    ]),
+  );
+  return Object.fromEntries(noticeMap);
 };
 
 /**
@@ -354,18 +366,11 @@ export const removeCookiesFromBrowser = (cookies: Cookies[]) => {
  */
 export const updateCookieFromNoticePreferences = async (
   oldCookie: FidesCookie,
-  consentPreferencesToSave: SaveConsentPreference[]
+  consentPreferencesToSave: SaveConsentPreference[],
 ): Promise<FidesCookie> => {
-  const noticeMap = new Map<string, boolean>(
-    consentPreferencesToSave.map(({ notice, consentPreference }) => [
-      notice.notice_key,
-      transformUserPreferenceToBoolean(consentPreference),
-    ])
-  );
-  const consentCookieKey: NoticeConsent = Object.fromEntries(noticeMap);
   return {
     ...oldCookie,
-    consent: consentCookieKey,
+    consent: buildCookieConsentFromConsentPreferences(consentPreferencesToSave),
   };
 };
 
@@ -376,7 +381,7 @@ export const updateCookieFromNoticePreferences = async (
  * values with newer values from the experience.
  */
 export const getConsentStateFromExperience = (
-  experience: PrivacyExperience
+  experience: PrivacyExperience,
 ): NoticeConsent => {
   const consent: NoticeConsent = {};
   if (!experience.privacy_notices) {
@@ -385,11 +390,11 @@ export const getConsentStateFromExperience = (
   experience.privacy_notices.forEach((notice) => {
     if (notice.current_preference) {
       consent[notice.notice_key] = transformUserPreferenceToBoolean(
-        notice.current_preference
+        notice.current_preference,
       );
     } else if (notice.default_preference) {
       consent[notice.notice_key] = transformUserPreferenceToBoolean(
-        notice.default_preference
+        notice.default_preference,
       );
     }
   });

@@ -1,8 +1,9 @@
 import json
 import random
-from typing import List
+from typing import Any, Dict, List
 from unittest import mock
 from unittest.mock import Mock
+from uuid import uuid4
 
 import pytest
 from requests import Response
@@ -11,12 +12,15 @@ from starlette.status import HTTP_200_OK, HTTP_204_NO_CONTENT, HTTP_404_NOT_FOUN
 
 from fides.api.common_exceptions import (
     AwaitingAsyncTaskCallback,
+    FidesopsException,
     SkippingConsentPropagation,
 )
 from fides.api.graph.execution import ExecutionNode
 from fides.api.graph.graph import DatasetGraph, Node
 from fides.api.graph.traversal import Traversal, TraversalNode
+from fides.api.models.consent_automation import ConsentAutomation
 from fides.api.models.policy import Policy
+from fides.api.models.privacy_notice import UserConsentPreference
 from fides.api.models.privacy_request import (
     ExecutionLogStatus,
     PrivacyRequest,
@@ -24,11 +28,18 @@ from fides.api.models.privacy_request import (
     RequestTask,
 )
 from fides.api.oauth.utils import extract_payload
+from fides.api.schemas.consentable_item import ConsentableItem
 from fides.api.schemas.redis_cache import Identity
 from fides.api.schemas.saas.saas_config import ParamValue, SaaSConfig, SaaSRequest
-from fides.api.schemas.saas.shared_schemas import HTTPMethod
+from fides.api.schemas.saas.shared_schemas import ConsentPropagationStatus, HTTPMethod
 from fides.api.service.connectors import get_connector
+from fides.api.service.connectors.saas.authenticated_client import AuthenticatedClient
 from fides.api.service.connectors.saas_connector import SaaSConnector
+from fides.api.service.saas_request.saas_request_override_factory import (
+    SaaSRequestOverrideFactory,
+    SaaSRequestType,
+    register,
+)
 from fides.api.task.create_request_tasks import (
     collect_tasks_fn,
     persist_initial_erasure_request_tasks,
@@ -36,6 +47,23 @@ from fides.api.task.create_request_tasks import (
 )
 from fides.config import CONFIG
 from tests.ops.graph.graph_test_util import generate_node
+
+
+def uuid():
+    return str(uuid4())
+
+
+def valid_consent_update_override(
+    client: AuthenticatedClient,
+    secrets: Dict[str, Any],
+    input_data: Dict[str, List[Any]],
+    notice_id_to_preference_map: Dict[str, UserConsentPreference],
+    consentable_items_hierarchy: List[ConsentableItem],
+) -> ConsentPropagationStatus:
+    """
+    A sample override function for consent update requests with a valid function signature
+    """
+    return ConsentPropagationStatus.executed
 
 
 @pytest.mark.unit_saas
@@ -364,7 +392,11 @@ class TestSaasConnector:
 
     @mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
     def test_skip_missing_param_values_masking(
-        self, mock_send: Mock, saas_example_config, saas_example_connection_config
+        self,
+        mock_send: Mock,
+        privacy_request,
+        saas_example_config,
+        saas_example_connection_config,
     ):
         """
         Verifies skip_missing_param_values behavior for Connector.mask_data.
@@ -396,7 +428,7 @@ class TestSaasConnector:
             connector.mask_data(
                 execution_node,
                 Policy(),
-                PrivacyRequest(id="123"),
+                privacy_request,
                 request_task,
                 [{"customer_id": 1}],
             )
@@ -413,7 +445,7 @@ class TestSaasConnector:
             connector.mask_data(
                 execution_node,
                 Policy(),
-                PrivacyRequest(id="123"),
+                privacy_request,
                 request_task,
                 [{"customer_id": 1}],
             )
@@ -426,7 +458,7 @@ class TestSaasConnector:
             connector.mask_data(
                 execution_node,
                 Policy(),
-                PrivacyRequest(id="123"),
+                privacy_request,
                 request_task,
                 [{"customer_id": 1}],
             )
@@ -434,36 +466,163 @@ class TestSaasConnector:
         )
 
 
+@pytest.mark.unit_saas
+class TestSaaSConnectorOutputTemplate:
+    @mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
+    def test_request_with_output_template(
+        self, mock_send, saas_example_config, saas_example_connection_config
+    ):
+        mock_send().json.return_value = {"id": "123"}
+
+        saas_config = SaaSConfig(**saas_example_config)
+        graph = saas_config.get_graph(saas_example_connection_config.secrets)
+        node = Node(
+            graph,
+            next(
+                collection
+                for collection in graph.collections
+                if collection.name == "request_with_output_template"
+            ),
+        )
+        traversal_node = TraversalNode(node)
+        request_task = traversal_node.to_mock_request_task()
+        execution_node = ExecutionNode(request_task)
+        connector: SaaSConnector = get_connector(saas_example_connection_config)
+
+        assert connector.retrieve_data(
+            execution_node,
+            Policy(),
+            PrivacyRequest(id="123"),
+            request_task,
+            {"email": ["test@example.com"]},
+        ) == [{"id": "123", "email": "test@example.com"}]
+
+    def test_output_template_only(
+        self, saas_example_config, saas_example_connection_config
+    ):
+        saas_config = SaaSConfig(**saas_example_config)
+        graph = saas_config.get_graph(saas_example_connection_config.secrets)
+        node = Node(
+            graph,
+            next(
+                collection
+                for collection in graph.collections
+                if collection.name == "standalone_output_template"
+            ),
+        )
+        traversal_node = TraversalNode(node)
+        request_task = traversal_node.to_mock_request_task()
+        execution_node = ExecutionNode(request_task)
+        connector: SaaSConnector = get_connector(saas_example_connection_config)
+        assert connector.retrieve_data(
+            execution_node,
+            Policy(),
+            PrivacyRequest(id="123"),
+            request_task,
+            {"email": ["test@example.com"]},
+        ) == [{"email": "test@example.com"}]
+
+    @mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
+    def test_output_template_multiple_requests_and_input_values(
+        self, mock_send, saas_example_config, saas_example_connection_config
+    ):
+        mock_send().json.return_value = [{"id": "123"}, {"id": "456"}]
+
+        saas_config = SaaSConfig(**saas_example_config)
+        graph = saas_config.get_graph(saas_example_connection_config.secrets)
+        node = Node(
+            graph,
+            next(
+                collection
+                for collection in graph.collections
+                if collection.name == "complex_template_example"
+            ),
+        )
+        traversal_node = TraversalNode(node)
+        request_task = traversal_node.to_mock_request_task()
+        execution_node = ExecutionNode(request_task)
+        connector: SaaSConnector = get_connector(saas_example_connection_config)
+        assert connector.retrieve_data(
+            execution_node,
+            Policy(),
+            PrivacyRequest(id="123"),
+            request_task,
+            {"email": ["test@example.com"], "site_id": ["site-1", "site-2"]},
+        ) == [
+            {"id": "123", "site_id": "site-1", "status": "open"},
+            {"id": "456", "site_id": "site-1", "status": "open"},
+            {"id": "123", "site_id": "site-2", "status": "open"},
+            {"id": "456", "site_id": "site-2", "status": "open"},
+            {"id": "123", "site_id": "site-1", "status": "closed"},
+            {"id": "456", "site_id": "site-1", "status": "closed"},
+            {"id": "123", "site_id": "site-2", "status": "closed"},
+            {"id": "456", "site_id": "site-2", "status": "closed"},
+        ]
+
+    @mock.patch("fides.api.service.connectors.saas_connector.AuthenticatedClient.send")
+    def test_request_with_invalid_output_template(
+        self, mock_send, saas_example_config, saas_example_connection_config
+    ):
+        mock_send().json.return_value = {"id": "123"}
+
+        saas_config = SaaSConfig(**saas_example_config)
+        graph = saas_config.get_graph(saas_example_connection_config.secrets)
+        node = Node(
+            graph,
+            next(
+                collection
+                for collection in graph.collections
+                if collection.name == "request_with_invalid_output_template"
+            ),
+        )
+        traversal_node = TraversalNode(node)
+        request_task = traversal_node.to_mock_request_task()
+        execution_node = ExecutionNode(request_task)
+        connector: SaaSConnector = get_connector(saas_example_connection_config)
+
+        with pytest.raises(FidesopsException) as exc:
+            assert connector.retrieve_data(
+                execution_node,
+                Policy(),
+                PrivacyRequest(id="123"),
+                request_task,
+                {"email": ["test@example.com"]},
+            ) == [{"id": "123", "email": "test@example.com"}]
+        assert "Failed to parse value as JSON" in str(exc)
+
+
 @pytest.mark.integration_saas
 class TestSaaSConnectorMethods:
     def test_client_config_set_depending_on_state(
-        self, db: Session, segment_connection_config, segment_dataset_config
+        self, db: Session, saas_example_connection_config, saas_example_dataset_config
     ):
-        connector: SaaSConnector = get_connector(segment_connection_config)
+        connector: SaaSConnector = get_connector(saas_example_connection_config)
         connector.set_saas_request_state(
             SaaSRequest(path="test_path", method=HTTPMethod.GET)
         )
         # Base ClientConfig uses bearer auth
-        assert connector.get_client_config().authentication.strategy == "bearer"
+        assert connector.get_client_config().authentication.strategy == "basic"
 
-        segment_user_endpoint = next(
-            end for end in connector.saas_config.endpoints if end.name == "segment_user"
+        saas_example_member_endpoint = next(
+            end for end in connector.saas_config.endpoints if end.name == "member"
         )
-        saas_requests: List[SaaSRequest] = segment_user_endpoint.requests.read
+        saas_requests: List[SaaSRequest] = saas_example_member_endpoint.requests.read
         for saas_request in saas_requests:
             connector.set_saas_request_state(saas_request)
 
             client = connector.create_client()
-            # ClientConfig on read segment user request uses basic auth, updating the state should result in the new strategy for client
-            assert client.client_config.authentication.strategy == "basic"
-            assert connector.get_client_config().authentication.strategy == "basic"
+            # ClientConfig on read saas_example member request uses bearer auth, updating the state should result in the new strategy for client
+            assert client.client_config.authentication.strategy == "bearer"
+            assert connector.get_client_config().authentication.strategy == "bearer"
 
     def test_rate_limit_config_set_depending_on_state(
-        self, db: Session, segment_connection_config, segment_dataset_config
+        self, db: Session, saas_example_connection_config, saas_example_dataset_config
     ):
         rate_limit_config = {"limits": [{"rate": 1, "period": "second"}]}
-        segment_connection_config.saas_config["rate_limit_config"] = rate_limit_config
-        connector: SaaSConnector = get_connector(segment_connection_config)
+        saas_example_connection_config.saas_config["rate_limit_config"] = (
+            rate_limit_config
+        )
+        connector: SaaSConnector = get_connector(saas_example_connection_config)
         connector.set_saas_request_state(
             SaaSRequest(path="test_path", method=HTTPMethod.GET)
         )
@@ -482,12 +641,8 @@ class TestSaaSConnectorMethods:
 
 @pytest.mark.integration_saas
 class TestConsentRequests:
-    def test_get_consent_requests_by_preference(
-        self, mailchimp_transactional_connection_config
-    ):
-        connector: SaaSConnector = get_connector(
-            mailchimp_transactional_connection_config
-        )
+    def test_get_consent_requests_by_preference(self, saas_example_connection_config):
+        connector: SaaSConnector = get_connector(saas_example_connection_config)
 
         opt_in_request: List[SaaSRequest] = (
             connector._get_consent_requests_by_preference(opt_in=True)
@@ -507,10 +662,10 @@ class TestSaasConnectorRunConsentRequest:
         self,
         consent_policy,
         privacy_request_with_consent_policy,
-        mailchimp_transactional_connection_config_no_secrets,
+        saas_example_connection_config,
         db,
     ):
-        connector = get_connector(mailchimp_transactional_connection_config_no_secrets)
+        connector = get_connector(saas_example_connection_config)
         with pytest.raises(SkippingConsentPropagation) as exc:
             traversal_node = TraversalNode(generate_node("a", "b", "c", "c2"))
             request_task = traversal_node.to_mock_request_task()
@@ -531,17 +686,17 @@ class TestSaasConnectorRunConsentRequest:
         system,
         consent_policy,
         privacy_request_with_consent_policy,
-        mailchimp_transactional_connection_config_no_secrets,
+        saas_example_connection_config,
         privacy_preference_history_us_ca_provide,
     ):
         """System has an advertising data use and this privacy notice for the preference has a provide data use"""
-        mailchimp_transactional_connection_config_no_secrets.system_id = system.id
+        saas_example_connection_config.system_id = system.id
         privacy_preference_history_us_ca_provide.privacy_request_id = (
             privacy_request_with_consent_policy.id
         )
         privacy_preference_history_us_ca_provide.save(db)
 
-        connector = get_connector(mailchimp_transactional_connection_config_no_secrets)
+        connector = get_connector(saas_example_connection_config)
         with pytest.raises(SkippingConsentPropagation) as exc:
             traversal_node = TraversalNode(generate_node("a", "b", "c", "c2"))
             request_task = traversal_node.to_mock_request_task()
@@ -568,7 +723,7 @@ class TestSaasConnectorRunConsentRequest:
         consent_policy,
         privacy_request_with_consent_policy,
         privacy_preference_history_fr_provide_service_frontend_only,
-        mailchimp_transactional_connection_config_no_secrets,
+        saas_example_connection_config,
     ):
         """Can only propagate preferences that have a system wide enforcement level"""
         privacy_preference_history_fr_provide_service_frontend_only.privacy_request_id = (
@@ -576,7 +731,7 @@ class TestSaasConnectorRunConsentRequest:
         )
         privacy_preference_history_fr_provide_service_frontend_only.save(db)
 
-        connector = get_connector(mailchimp_transactional_connection_config_no_secrets)
+        connector = get_connector(saas_example_connection_config)
         with pytest.raises(SkippingConsentPropagation) as exc:
             traversal_node = TraversalNode(generate_node("a", "b", "c", "c2"))
             request_task = traversal_node.to_mock_request_task()
@@ -602,13 +757,13 @@ class TestSaasConnectorRunConsentRequest:
         db,
         system,
         consent_policy,
-        mailchimp_transactional_connection_config_no_secrets,
+        saas_example_connection_config,
         privacy_preference_history,
     ):
         """We need a matching identity for the connector in order to send the request
-        Mailchimp Transactional set up to fail if no email supplied
+        saas_example set up to fail if no first_name supplied
         """
-        mailchimp_transactional_connection_config_no_secrets.system_id = system.id
+        saas_example_connection_config.system_id = system.id
         privacy_request = PrivacyRequest(
             id=f"test_consent_request_task_{random.randint(0, 1000)}",
             status=PrivacyRequestStatus.pending,
@@ -617,7 +772,7 @@ class TestSaasConnectorRunConsentRequest:
         privacy_preference_history.privacy_request_id = privacy_request.id
         privacy_preference_history.save(db)
 
-        connector = get_connector(mailchimp_transactional_connection_config_no_secrets)
+        connector = get_connector(saas_example_connection_config)
         with pytest.raises(ValueError):
             traversal_node = TraversalNode(generate_node("a", "b", "c", "c2"))
             request_task = traversal_node.to_mock_request_task()
@@ -641,14 +796,13 @@ class TestSaasConnectorRunConsentRequest:
         db,
         system,
         consent_policy,
-        google_analytics_connection_config_without_secrets,
+        saas_example_opt_out_only_connection_config,
         privacy_preference_history,
     ):
-        """We need a matching identity for the connector in order to send the google_analytics_connection_config_without_secrets
-        Google Analytics set up to skip instead of fail if we don't have the ga client id.
-        There's no guarantee that a ga cookie is in the browser
+        """We need a matching identity for the connector in order to send the saas_example_connection_config
+        Saas_Example set up to skip instead of fail if we don't have the ga client id.
         """
-        google_analytics_connection_config_without_secrets.system_id = system.id
+        saas_example_opt_out_only_connection_config.system_id = system.id
 
         privacy_request = PrivacyRequest(
             id=f"test_consent_request_task_{random.randint(0, 1000)}",
@@ -658,7 +812,7 @@ class TestSaasConnectorRunConsentRequest:
         privacy_preference_history.privacy_request_id = privacy_request.id
         privacy_preference_history.save(db)
 
-        connector = get_connector(google_analytics_connection_config_without_secrets)
+        connector = get_connector(saas_example_opt_out_only_connection_config)
         with pytest.raises(SkippingConsentPropagation) as exc:
             traversal_node = TraversalNode(generate_node("a", "b", "c", "c2"))
             request_task = traversal_node.to_mock_request_task()
@@ -682,12 +836,12 @@ class TestSaasConnectorRunConsentRequest:
         self,
         system,
         consent_policy,
-        google_analytics_connection_config_without_secrets,
+        saas_example_opt_out_only_connection_config,
         privacy_preference_history,
         db,
     ):
-        """User is expressing an opt in preference here but GA only has an opt out preference defined"""
-        google_analytics_connection_config_without_secrets.system_id = system.id
+        """User is expressing an opt in preference here but only has an opt out preference defined"""
+        saas_example_opt_out_only_connection_config.system_id = system.id
 
         privacy_request = PrivacyRequest(
             id=f"test_consent_request_task_{random.randint(0, 1000)}",
@@ -699,7 +853,7 @@ class TestSaasConnectorRunConsentRequest:
         privacy_preference_history.privacy_request_id = privacy_request.id
         privacy_preference_history.save(db)
 
-        connector = get_connector(google_analytics_connection_config_without_secrets)
+        connector = get_connector(saas_example_opt_out_only_connection_config)
         with pytest.raises(SkippingConsentPropagation) as exc:
             traversal_node = TraversalNode(generate_node("a", "b", "c", "c2"))
             request_task = traversal_node.to_mock_request_task()
@@ -727,14 +881,14 @@ class TestSaasConnectorRunConsentRequest:
         consent_policy,
         privacy_request_with_consent_policy,
         privacy_preference_history,
-        mailchimp_transactional_connection_config_no_secrets,
+        saas_example_consent_preferences_connection_config,
     ):
         privacy_preference_history.privacy_request_id = (
             privacy_request_with_consent_policy.id
         )
         privacy_preference_history.save(db)
 
-        connector = get_connector(mailchimp_transactional_connection_config_no_secrets)
+        connector = get_connector(saas_example_consent_preferences_connection_config)
         traversal_node = TraversalNode(generate_node("a", "b", "c", "c2"))
         request_task = traversal_node.to_mock_request_task()
         execution_node = traversal_node.to_mock_execution_node()
@@ -749,22 +903,92 @@ class TestSaasConnectorRunConsentRequest:
         assert mock_send.called
         db.refresh(privacy_preference_history)
         assert privacy_preference_history.affected_system_status == {
-            mailchimp_transactional_connection_config_no_secrets.system_key: "complete"
+            saas_example_consent_preferences_connection_config.system_key: "complete"
         }, "Updated to skipped in graph task, not updated here"
+
+    def test_preferences_executable_notice_based_consent(
+        self,
+        db,
+        mocker,
+        consent_policy,
+        privacy_request_with_consent_policy,
+        privacy_preference_history,
+        saas_example_connection_config,
+    ):
+        # Create consentable items linked to Iterable
+        consentable_items = [
+            {
+                "type": "Channel",
+                "external_id": 1,
+                "name": "Marketing channel (email)",
+                "children": [
+                    {
+                        "type": "Message type",
+                        "external_id": 1,
+                        "name": "Weekly Ads",
+                    }
+                ],
+            }
+        ]
+
+        consent_automation = ConsentAutomation.create_or_update(
+            db,
+            data={
+                "connection_config_id": saas_example_connection_config.id,
+                "consentable_items": consentable_items,
+            },
+        )
+
+        # Register update consent override fn
+        name = saas_example_connection_config.saas_config["type"]
+        register(name, SaaSRequestType.UPDATE_CONSENT)(valid_consent_update_override)
+        assert valid_consent_update_override == SaaSRequestOverrideFactory.get_override(
+            name, SaaSRequestType.UPDATE_CONSENT
+        )
+
+        # Create privacy notice history record
+        privacy_preference_history.privacy_request_id = (
+            privacy_request_with_consent_policy.id
+        )
+        privacy_preference_history.notice_key = "example_privacy_notice_1"
+        privacy_preference_history.save(db)
+
+        # Build and run consent request
+        connector = get_connector(saas_example_connection_config)
+        traversal_node = TraversalNode(generate_node("a", "b", "c", "c2"))
+        request_task = traversal_node.to_mock_request_task()
+        execution_node = traversal_node.to_mock_execution_node()
+
+        spy = mocker.spy(SaaSRequestOverrideFactory, "get_override")
+
+        connector.run_consent_request(
+            node=execution_node,
+            policy=consent_policy,
+            privacy_request=privacy_request_with_consent_policy,
+            identity_data={"ljt_readerID": "abcde"},
+            request_task=request_task,
+            session=db,
+        )
+
+        # Asserts
+        spy.assert_called_once_with(name, SaaSRequestType.UPDATE_CONSENT)
+        db.refresh(privacy_preference_history)
+        assert privacy_preference_history.affected_system_status == {
+            saas_example_connection_config.system_key: "complete"
+        }, "Updated to skipped in graph task, not updated here"
+
+        # Cleanup
+        consent_automation.delete(db)
 
 
 class TestRelevantConsentIdentities:
-    def test_no_consent_requests(
-        self, mailchimp_transactional_connection_config_no_secrets
-    ):
-        connector = get_connector(mailchimp_transactional_connection_config_no_secrets)
+    def test_no_consent_requests(self, saas_example_connection_config):
+        connector = get_connector(saas_example_connection_config)
 
         connector.relevant_consent_identities([], {"customer_1@example.com"}) == {}
 
-    def test_no_identity_data(
-        self, mailchimp_transactional_connection_config_no_secrets
-    ):
-        connector = get_connector(mailchimp_transactional_connection_config_no_secrets)
+    def test_no_identity_data(self, saas_example_connection_config):
+        connector = get_connector(saas_example_connection_config)
 
         request = SaaSRequest(
             method=HTTPMethod.POST,
@@ -774,10 +998,8 @@ class TestRelevantConsentIdentities:
         )
         assert connector.relevant_consent_identities([request], {}) == {}
 
-    def test_get_relevant_identities_only(
-        self, mailchimp_transactional_connection_config_no_secrets
-    ):
-        connector = get_connector(mailchimp_transactional_connection_config_no_secrets)
+    def test_get_relevant_identities_only(self, saas_example_connection_config):
+        connector = get_connector(saas_example_connection_config)
 
         request = SaaSRequest(
             method=HTTPMethod.POST,

@@ -1,38 +1,47 @@
 import { h } from "preact";
 import { useCallback, useRef } from "preact/hooks";
-import { I18n } from "../../lib/i18n";
+
 import { PrivacyExperience } from "../../lib/consent-types";
-import { EnabledIds } from "../../lib/tcf/types";
-import TcfPurposes from "./TcfPurposes";
-import type { UpdateEnabledIds } from "./TcfOverlay";
-import TcfFeatures from "./TcfFeatures";
-import TcfVendors from "./TcfVendors";
+import { useI18n } from "../../lib/i18n/i18n-context";
+import {
+  EnabledIds,
+  PrivacyNoticeWithBestTranslation,
+} from "../../lib/tcf/types";
 import InfoBox from "../InfoBox";
+import TcfFeatures from "./TcfFeatures";
+import TcfPurposes from "./TcfPurposes";
+import TcfVendors from "./TcfVendors";
 
 const KEY_ARROW_RIGHT = "ArrowRight";
 const KEY_ARROW_LEFT = "ArrowLeft";
 
+export interface UpdateEnabledIds {
+  newEnabledIds: string[];
+  modelType: keyof EnabledIds;
+}
+
 const TcfTabs = ({
-  i18n,
   experience,
+  customNotices,
   enabledIds,
   onChange,
   activeTabIndex,
   onTabChange,
 }: {
-  i18n: I18n;
   experience: PrivacyExperience;
+  customNotices: PrivacyNoticeWithBestTranslation[] | undefined;
   enabledIds: EnabledIds;
   onChange: (payload: EnabledIds) => void;
   activeTabIndex: number;
   onTabChange: (tabIndex: number) => void;
 }) => {
+  const { i18n } = useI18n();
   const handleUpdateDraftState = useCallback(
     ({ newEnabledIds, modelType }: UpdateEnabledIds) => {
       const updated = { ...enabledIds, [modelType]: newEnabledIds };
       onChange(updated);
     },
-    [enabledIds, onChange]
+    [enabledIds, onChange],
   );
 
   const tcfTabs = [
@@ -43,11 +52,12 @@ const TcfTabs = ({
         <div>
           <InfoBox>{i18n.t("static.tcf.purposes.description")}</InfoBox>
           <TcfPurposes
-            i18n={i18n}
             allPurposesConsent={experience.tcf_purpose_consents}
+            allCustomPurposesConsent={customNotices}
             allPurposesLegint={experience.tcf_purpose_legitimate_interests}
             allSpecialPurposes={experience.tcf_special_purposes}
             enabledPurposeConsentIds={enabledIds.purposesConsent}
+            enabledCustomPurposeConsentIds={enabledIds.customPurposesConsent}
             enabledPurposeLegintIds={enabledIds.purposesLegint}
             enabledSpecialPurposeIds={enabledIds.specialPurposes}
             onChange={handleUpdateDraftState}
@@ -62,7 +72,6 @@ const TcfTabs = ({
         <div>
           <InfoBox>{i18n.t("static.tcf.features.description")}</InfoBox>
           <TcfFeatures
-            i18n={i18n}
             allFeatures={experience.tcf_features}
             allSpecialFeatures={experience.tcf_special_features}
             enabledFeatureIds={enabledIds.features}
@@ -79,7 +88,6 @@ const TcfTabs = ({
         <div>
           <InfoBox>{i18n.t("static.tcf.vendors.description")}</InfoBox>
           <TcfVendors
-            i18n={i18n}
             experience={experience}
             enabledVendorConsentIds={enabledIds.vendorsConsent}
             enabledVendorLegintIds={enabledIds.vendorsLegint}

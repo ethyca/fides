@@ -19,20 +19,28 @@
       "datastore-connections/*": ["src/features/datastore-connections/*"],
       "privacy-requests/*": ["src/features/privacy-requests/*"],
       "subject-request/*": ["src/features/subject-request/*"],
-      "user-management/*": ["src/features/user-management/*"]
+      "user-management/*": ["src/features/user-management/*"],
+      "react": ["./node_modules/@types/react"]
     },
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "sourceMap": true,
     "strict": true,
-    "target": "es5"
+    "target": "es5",
+    "types": ["@testing-library/jest-dom"],
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ]
   },
   "include": [
     "next-env.d.ts",
     "app-env.d.ts",
     "**/*.ts",
     "**/*.tsx",
-    "**/*.d.ts"
+    "**/*.d.ts",
+    ".next/types/**/*.ts"
   ],
-  "exclude": ["node_modules", "cypress/**/*.ts", "cypress/**/*.tsx"]
+  "exclude": ["node_modules", "cypress", "./cypress.config.ts"]
 }

@@ -7,9 +7,10 @@ import {
   Dataset,
   GenerateRequestPayload,
   GenerateResponse,
+  Page_Dataset_,
 } from "~/types/api";
-
-import { EditableType } from "./types";
+import { PaginationQueryParams } from "~/types/common/PaginationQueryParams";
+import { SearchQueryParams } from "~/types/common/SearchQueryParams";
 
 export interface State {
   activeDatasetFidesKey?: string;
@@ -17,7 +18,6 @@ export interface State {
   activeCollectionIndex?: number;
   activeFieldIndex?: number;
   // Controls whether the edit drawer is open and what is being edited.
-  activeEditor?: EditableType;
 }
 
 const initialState: State = {};
@@ -27,8 +27,24 @@ interface DatasetDeleteResponse {
   resource: Dataset;
 }
 
+interface DatasetFiltersQueryParams {
+  exclude_saas_datasets?: boolean;
+  only_unlinked_datasets?: boolean;
+}
+
 const datasetApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
+    getDatasets: build.query<
+      Page_Dataset_,
+      PaginationQueryParams & SearchQueryParams & DatasetFiltersQueryParams
+    >({
+      query: (params) => ({
+        method: "GET",
+        url: `dataset`,
+        params,
+      }),
+      providesTags: () => ["Datasets"],
+    }),
     getAllDatasets: build.query<Dataset[], void>({
       query: () => ({ url: `dataset` }),
       providesTags: () => ["Datasets"],
@@ -57,7 +73,7 @@ const datasetApi = baseApi.injectEndpoints({
         method: "PUT",
         body: dataset,
       }),
-      invalidatesTags: ["Dataset"],
+      invalidatesTags: ["Datasets", "Dataset"],
     }),
     // we accept 'unknown' as well since the user can paste anything in, and we rely
     // on the backend to do the validation for us
@@ -99,6 +115,7 @@ const datasetApi = baseApi.injectEndpoints({
 });
 
 export const {
+  useGetDatasetsQuery,
   useGetAllDatasetsQuery,
   useGetAllFilteredDatasetsQuery,
   useGetDatasetByKeyQuery,
@@ -115,7 +132,7 @@ export const datasetSlice = createSlice({
   reducers: {
     setActiveDatasetFidesKey: (
       draftState,
-      action: PayloadAction<string | undefined>
+      action: PayloadAction<string | undefined>,
     ) => {
       if (draftState.activeDatasetFidesKey === action.payload) {
         return;
@@ -128,7 +145,7 @@ export const datasetSlice = createSlice({
     },
     setActiveCollectionIndex: (
       draftState,
-      action: PayloadAction<number | undefined>
+      action: PayloadAction<number | undefined>,
     ) => {
       if (draftState.activeCollectionIndex === action.payload) {
         return;
@@ -140,15 +157,9 @@ export const datasetSlice = createSlice({
     },
     setActiveFieldIndex: (
       draftState,
-      action: PayloadAction<number | undefined>
+      action: PayloadAction<number | undefined>,
     ) => {
       draftState.activeFieldIndex = action.payload;
-    },
-    setActiveEditor: (
-      draftState,
-      action: PayloadAction<EditableType | undefined>
-    ) => {
-      draftState.activeEditor = action.payload;
     },
   },
 });
@@ -157,7 +168,6 @@ export const {
   setActiveDatasetFidesKey,
   setActiveCollectionIndex,
   setActiveFieldIndex,
-  setActiveEditor,
 } = datasetSlice.actions;
 
 export const { reducer } = datasetSlice;
@@ -168,7 +178,7 @@ const emptyDatasets: Dataset[] = [];
 export const selectAllDatasets: (state: RootState) => Dataset[] =
   createSelector(
     [(RootState) => RootState, datasetApi.endpoints.getAllDatasets.select()],
-    (RootState, { data }) => data ?? emptyDatasets
+    (RootState, { data }) => data ?? emptyDatasets,
   );
 
 export const selectAllFilteredDatasets: (state: RootState) => Dataset[] =
@@ -179,11 +189,11 @@ export const selectAllFilteredDatasets: (state: RootState) => Dataset[] =
         onlyUnlinkedDatasets: false,
       }),
     ],
-    (RootState, { data }) => data ?? emptyDatasets
+    (RootState, { data }) => data ?? emptyDatasets,
   );
 export const selectActiveDatasetFidesKey = createSelector(
   selectDataset,
-  (state) => state.activeDatasetFidesKey
+  (state) => state.activeDatasetFidesKey,
 );
 export const selectActiveDataset: (state: RootState) => Dataset | undefined =
   createSelector(
@@ -191,37 +201,33 @@ export const selectActiveDataset: (state: RootState) => Dataset | undefined =
     (RootState, fidesKey) =>
       fidesKey !== undefined
         ? datasetApi.endpoints.getDatasetByKey.select(fidesKey)(RootState)?.data
-        : undefined
+        : undefined,
   );
 
 export const selectActiveCollections = createSelector(
   selectActiveDataset,
-  (dataset) => dataset?.collections
+  (dataset) => dataset?.collections,
 );
 export const selectActiveCollectionIndex = createSelector(
   selectDataset,
-  (state) => state.activeCollectionIndex
+  (state) => state.activeCollectionIndex,
 );
 export const selectActiveCollection = createSelector(
   [selectActiveCollectionIndex, selectActiveCollections],
   (index, collections) =>
-    index !== undefined && collections ? collections[index] : undefined
+    index !== undefined && collections ? collections[index] : undefined,
 );
 
 export const selectActiveFields = createSelector(
   [selectActiveCollection],
-  (collection) => collection?.fields
+  (collection) => collection?.fields,
 );
 export const selectActiveFieldIndex = createSelector(
   selectDataset,
-  (state) => state.activeFieldIndex
+  (state) => state.activeFieldIndex,
 );
 export const selectActiveField = createSelector(
   [selectActiveFieldIndex, selectActiveFields],
-  (index, fields) => (index !== undefined && fields ? fields[index] : undefined)
-);
-
-export const selectActiveEditor = createSelector(
-  selectDataset,
-  (state) => state.activeEditor
+  (index, fields) =>
+    index !== undefined && fields ? fields[index] : undefined,
 );

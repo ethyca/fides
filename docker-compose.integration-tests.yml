@@ -23,9 +23,8 @@ services:
       - "0.0.0.0:6432:5432"
 
   mysql-test:
-    image: mysql:8
+    image: mysql:9
     platform: linux/amd64
-    command: --mysql-native-password=ON
     restart: always
     environment:
       - MYSQL_HOST=mysql_example

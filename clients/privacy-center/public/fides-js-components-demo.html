@@ -1,7 +1,7 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
   <head>
-    <title>fides-js script demo page</title>
+    <title>fides-js script components demo page</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <!--
@@ -10,29 +10,30 @@
       will pass a geolocation query param to fides.js
     -->
     <script>
+      const params = new URLSearchParams(window.location.search);
       (function () {
         const tcfEnabled = window.fidesConfig?.options?.tcfEnabled;
-        const params = new URLSearchParams(window.location.search);
+        const gppEnabled =
+          window.fidesConfig?.experience?.gpp_settings?.enabled;
         const geolocation = params.get("geolocation");
-        const src = `/fides.js?e2e=true${tcfEnabled ? "&tcf=true" : ""}${
+        const src = `/fides.js?initialize=false${
+          tcfEnabled ? "&tcf=true" : ""
+        }${gppEnabled ? "&gpp=true" : ""}${
           !!params.size ? `&${params.toString()}` : ""
         }`;
 
         document.write('<script src="' + src + '"><\/script>');
       })();
-      (function () {
-        if (window.fidesConfig?.experience?.gpp_settings?.enabled)
-          document.write('<script src="./lib/fides-ext-gpp.js"><\/script>');
-      })();
       var deleteCookie = function () {
         document.cookie =
-          "fides_consent=;expires=Thu, 01 Jan 1970 00:00:01 GMT;";
+          "fides_consent=;Path=/;expires='Thu, 01 Jan 1970 00:00:01 GMT';";
         location.reload();
       };
     </script>
     <script>
       // Our cypress test suite requires injecting consent options through an obj on window
       // we default to the below for dev purposes
+      const init = params.get("init");
       var fidesConfig = window.fidesConfig || {
         consent: {
           options: [
@@ -55,6 +56,7 @@
           updated_at: "2024-01-01T12:00:00.000000+00:00",
           region: "us_ca",
           component: "banner_and_modal",
+          available_locales: ["en", "es"],
           experience_config: {
             id: "pri_222",
             created_at: "2024-01-01T12:00:00.000000+00:00",
@@ -64,14 +66,18 @@
             disabled: false,
             is_default: true,
             dismissable: true,
+            show_layer1_notices: false,
+            layer1_button_options: "opt_in_opt_out",
             allow_language_selection: true,
             auto_detect_language: true,
+            auto_subdomain_cookie_deletion: true,
             language: "en",
             accept_button_label: "Accept Test",
             acknowledge_button_label: "Acknowledge Test",
             banner_description: "Banner Description Test",
             banner_title: "Banner Title Test",
             description: "Description Test",
+            purpose_header: "Purpose Header Test",
             privacy_policy_link_label: "Privacy Policy Test",
             privacy_policy_url: "https://privacy.example.com/",
             privacy_preferences_link_label: "Manage Preferences Test",
@@ -86,6 +92,7 @@
                 banner_description: "Banner Description Test",
                 banner_title: "Banner Title Test",
                 description: "Description Test",
+                purpose_header: "Purpose Header Test",
                 modal_link_label: "Link Label Test",
                 is_default: true,
                 privacy_policy_link_label: "Privacy Policy Test",
@@ -103,6 +110,7 @@
                 banner_description: "Descripción del Banner de Prueba",
                 banner_title: "Título del Banner de Prueba",
                 description: "Descripción de la Prueba",
+                purpose_header: "Prueba de Encabezado de Propósito",
                 modal_link_label: "Prueba de etiqueta",
                 is_default: true,
                 privacy_policy_link_label: "Política de Privacidad de Prueba",
@@ -199,10 +207,13 @@
           privacyCenterUrl: "http://localhost:3001",
           fidesApiUrl: "http://localhost:8080/api/v1",
           fidesPrimaryColor: "#008000",
+          showFidesBrandLink: true,
         },
       };
-      window.Fides.init(fidesConfig);
-      Fides.gtm();
+      if (init !== "false") {
+        window.Fides.init(fidesConfig);
+        Fides.gtm();
+      }
     </script>
 
     <style>
@@ -215,6 +226,8 @@
       pre {
         background-color: #eee;
         padding: 16px;
+        white-space: pre-wrap;
+        overflow-y: auto;
       }
       #fides-modal-link {
         border: none;
@@ -279,6 +292,9 @@
 
       <h2>Consent Options</h2>
       <pre id="consent-options"></pre>
+
+      <h2>Property id</h2>
+      <pre id="property-id"></pre>
     </main>
   </body>
 
@@ -298,7 +314,7 @@
         document.getElementById("consent-json").textContent = JSON.stringify(
           Fides.consent,
           null,
-          2
+          2,
         );
 
         // Pretty-print the fides experience config object and add it to the page.
@@ -313,7 +329,14 @@
         document.getElementById("consent-options").textContent = JSON.stringify(
           Fides.options,
           null,
-          2
+          2,
+        );
+
+        // Pretty-print the fides property id  and add it to the page.
+        document.getElementById("property-id").textContent = JSON.stringify(
+          Fides.config.propertyId,
+          null,
+          2,
         );
 
         // Test behavior of integrations that can be configured without/before their platform scripts.

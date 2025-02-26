@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from "react";
+import { getOrMakeFidesCookie, saveFidesCookie } from "fides-js";
 import {
   Button,
   chakra,
@@ -12,23 +12,24 @@ import {
   Text,
   useToast,
 } from "fidesui";
-import { getOrMakeFidesCookie, saveFidesCookie } from "fides-js";
 import { useFormik } from "formik";
 import { Headers } from "headers-polyfill";
+import React, { ReactNode, useEffect, useMemo } from "react";
 import * as Yup from "yup";
 
-import { ErrorToastOptions } from "~/common/toast-options";
 import { addCommonHeaders } from "~/common/CommonHeaders";
-import { defaultIdentityInput } from "~/constants";
-import { PhoneInput } from "~/components/phone-input";
+import { ErrorToastOptions } from "~/common/toast-options";
 import { FormErrorMessage } from "~/components/FormErrorMessage";
+import { ModalViews, VerificationType } from "~/components/modals/types";
 import {
   emailValidation,
   phoneValidation,
 } from "~/components/modals/validation";
-import { ModalViews, VerificationType } from "~/components/modals/types";
+import { PhoneInput } from "~/components/phone-input";
+import { defaultIdentityInput } from "~/constants";
 import { useConfig } from "~/features/common/config.slice";
 import { useSettings } from "~/features/common/settings.slice";
+import { PrivacyRequestSource } from "~/types/api/models/PrivacyRequestSource";
 
 type KnownKeys = {
   email: string;
@@ -68,7 +69,7 @@ const useConsentRequestForm = ({
       ...Object.fromEntries(
         Object.entries(customPrivacyRequestFields)
           .filter(([, field]) => !field.hidden)
-          .map(([key, field]) => [key, field.default_value || ""])
+          .map(([key, field]) => [key, field.default_value || ""]),
       ),
     },
     onSubmit: async (values) => {
@@ -84,7 +85,7 @@ const useConsentRequestForm = ({
               ? field.default_value
               : customPrivacyRequestFieldValues[key] || "",
           },
-        ])
+        ]),
       );
 
       const body = {
@@ -95,6 +96,7 @@ const useConsentRequestForm = ({
           fides_user_device_id: cookie.identity.fides_user_device_id,
         },
         custom_privacy_request_fields: transformedCustomPrivacyRequestFields,
+        source: PrivacyRequestSource.PRIVACY_CENTER,
       };
       const handleError = ({
         title,
@@ -121,7 +123,7 @@ const useConsentRequestForm = ({
             method: "POST",
             headers,
             body: JSON.stringify(body),
-          }
+          },
         );
         const data = await response.json();
         if (!response.ok) {
@@ -160,7 +162,7 @@ const useConsentRequestForm = ({
       }
     },
     validationSchema: Yup.object().shape({
-      email: emailValidation(identityInputs?.email).test(
+      email: emailValidation(identityInputs?.email!).test(
         "one of email or phone entered",
         "You must enter an email",
         (value, context) => {
@@ -168,9 +170,9 @@ const useConsentRequestForm = ({
             return Boolean(context.parent.email);
           }
           return true;
-        }
+        },
       ),
-      phone: phoneValidation(identityInputs?.phone).test(
+      phone: phoneValidation(identityInputs?.phone!).test(
         "one of email or phone entered",
         "You must enter a phone number",
         (value, context) => {
@@ -178,7 +180,7 @@ const useConsentRequestForm = ({
             return Boolean(context.parent.phone);
           }
           return true;
-        }
+        },
       ),
       ...Object.fromEntries(
         Object.entries(customPrivacyRequestFields)
@@ -191,7 +193,7 @@ const useConsentRequestForm = ({
                 ? Yup.string().required(`${label} is required`)
                 : Yup.string().notRequired(),
             ];
-          })
+          }),
       ),
     }),
   });
@@ -208,14 +210,14 @@ type ConsentRequestFormProps = {
   successHandler: () => void;
 };
 
-const ConsentRequestForm: React.FC<ConsentRequestFormProps> = ({
+const ConsentRequestForm = ({
   isOpen,
   onClose,
   setCurrentView,
   setConsentRequestId,
   isVerificationRequired,
   successHandler,
-}) => {
+}: ConsentRequestFormProps) => {
   const {
     errors,
     handleBlur,
@@ -241,7 +243,7 @@ const ConsentRequestForm: React.FC<ConsentRequestFormProps> = ({
   const config = useConfig();
 
   const requiredInputs = Object.entries(identityInputs).filter(
-    ([, required]) => required === "required"
+    ([, required]) => required === "required",
   );
   // it's ok to bypass the dirty check if there are no required inputs
   const dirtyCheck = requiredInputs.length === 0 ? true : dirty;
@@ -255,19 +257,19 @@ const ConsentRequestForm: React.FC<ConsentRequestFormProps> = ({
       </ModalHeader>
       <chakra.form onSubmit={handleSubmit} data-testid="consent-request-form">
         <ModalBody>
-          <Text fontSize="sm" color="gray.600" mb={4}>
+          <Text fontSize="sm" color="gray.800" mb={4}>
             {config.consent?.button.description}
           </Text>
           {config.consent?.button.description_subtext?.map(
             (paragraph, index) => (
               // eslint-disable-next-line react/no-array-index-key
-              <Text fontSize="sm" color="gray.600" mb={4} key={index}>
+              <Text fontSize="sm" color="gray.800" mb={4} key={index}>
                 {paragraph}
               </Text>
-            )
+            ),
           )}
           {isVerificationRequired ? (
-            <Text fontSize="sm" color="gray.600" mb={4}>
+            <Text fontSize="sm" color="gray.800" mb={4}>
               We will send you a verification code.
             </Text>
           ) : null}
@@ -330,7 +332,9 @@ const ConsentRequestForm: React.FC<ConsentRequestFormProps> = ({
                     onBlur={handleBlur}
                     value={values[key]}
                   />
-                  <FormErrorMessage>{errors[key]}</FormErrorMessage>
+                  <FormErrorMessage>
+                    {errors[key] as ReactNode}
+                  </FormErrorMessage>
                 </FormControl>
               ))}
           </Stack>

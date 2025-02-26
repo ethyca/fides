@@ -3,7 +3,7 @@ import ConnectionListDropdown, {
   useConnectionListDropDown,
 } from "datastore-connections/system_portal_config/ConnectionListDropdown";
 import OrphanedConnectionModal from "datastore-connections/system_portal_config/OrphanedConnectionModal";
-import { Box, Button, Flex, Stack, useDisclosure } from "fidesui";
+import { AntButton as Button, Box, Flex, Stack, useDisclosure } from "fidesui";
 import React, { useEffect, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
@@ -27,7 +27,7 @@ export type ConnectionOption = {
 };
 
 type Props = {
-  connectionConfig?: ConnectionConfigurationResponse;
+  connectionConfig?: ConnectionConfigurationResponse | null;
   systemFidesKey: string;
 };
 
@@ -69,7 +69,7 @@ const ConnectionForm = ({ connectionConfig, systemFidesKey }: Props) => {
             label="Integration type"
             selectedValue={selectedConnectionOption}
             onChange={setSelectedConnectionOption}
-            disabled={connectionConfig && connectionConfig !== null}
+            disabled={Boolean(connectionConfig && connectionConfig !== null)}
           />
           {!connectionConfig && orphanedConnectionConfigs.length > 0 ? (
             <OrphanedConnectionModal
@@ -80,13 +80,10 @@ const ConnectionForm = ({ connectionConfig, systemFidesKey }: Props) => {
 
           <Restrict scopes={[ScopeRegistryEnum.CONNECTOR_TEMPLATE_REGISTER]}>
             <Button
-              variant="outline"
-              type="submit"
-              minWidth="auto"
+              htmlType="submit"
               data-testid="upload-btn"
-              size="sm"
               onClick={uploadTemplateModal.onOpen}
-              marginLeft={2}
+              className="ml-2"
             >
               Upload integration
             </Button>
@@ -98,39 +95,18 @@ const ConnectionForm = ({ connectionConfig, systemFidesKey }: Props) => {
           onClose={uploadTemplateModal.onClose}
         />
       </Flex>
-
-      {selectedConnectionOption?.type === SystemType.DATABASE ? (
+      {selectedConnectionOption?.type &&
+      [
+        SystemType.DATABASE,
+        SystemType.DATA_CATALOG,
+        SystemType.SAAS,
+        SystemType.MANUAL,
+        SystemType.EMAIL,
+      ].includes(selectedConnectionOption.type) ? (
         <ConnectorParameters
           connectionConfig={connectionConfig}
-          setSelectedConnectionOption={setSelectedConnectionOption}
-          connectionOption={selectedConnectionOption}
-          systemFidesKey={systemFidesKey}
-        />
-      ) : null}
-      {selectedConnectionOption?.type === SystemType.SAAS &&
-      selectedConnectionOption ? (
-        <ConnectorParameters
           connectionOption={selectedConnectionOption}
           setSelectedConnectionOption={setSelectedConnectionOption}
-          connectionConfig={connectionConfig}
-          systemFidesKey={systemFidesKey}
-        />
-      ) : null}
-      {selectedConnectionOption?.type === SystemType.MANUAL &&
-      selectedConnectionOption ? (
-        <ConnectorParameters
-          connectionOption={selectedConnectionOption}
-          setSelectedConnectionOption={setSelectedConnectionOption}
-          connectionConfig={connectionConfig}
-          systemFidesKey={systemFidesKey}
-        />
-      ) : null}
-      {selectedConnectionOption?.type === SystemType.EMAIL &&
-      selectedConnectionOption ? (
-        <ConnectorParameters
-          connectionOption={selectedConnectionOption}
-          setSelectedConnectionOption={setSelectedConnectionOption}
-          connectionConfig={connectionConfig}
           systemFidesKey={systemFidesKey}
         />
       ) : null}

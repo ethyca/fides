@@ -59,13 +59,31 @@ def dynamodb_connection_config(
     aws_secret_access_key = integration_config.get("dynamodb_example", {}).get(
         "aws_secret_access_key"
     ) or os.environ.get("DYNAMODB_ACCESS_KEY")
+    aws_assume_role_arn = integration_config.get("dynamodb_example", {}).get(
+        "aws_assume_role_arn"
+    ) or os.environ.get("DYNAMODB_ASSUME_ROLE_ARN")
+
+    if not aws_access_key_id:
+        raise RuntimeError("DynamoDB access key ID must be set!")
+
+    if not aws_secret_access_key:
+        raise RuntimeError("DynamoDB secret access key must be set!")
+
+    if not region:
+        raise RuntimeError("DynamoDB region must be set!")
+
+    if not aws_assume_role_arn:
+        raise RuntimeError("DynamoDB assume role ARN must be set!")
+
     if region is not None:
         schema = DynamoDBSchema(
+            auth_method="secret_keys",
             region_name=region,
             aws_access_key_id=aws_access_key_id,
             aws_secret_access_key=aws_secret_access_key,
+            aws_assume_role_arn=aws_assume_role_arn,
         )
-        dynamodb_connection_config.secrets = schema.dict()
+        dynamodb_connection_config.secrets = schema.model_dump(mode="json")
         dynamodb_connection_config.save(db=db)
     yield dynamodb_connection_config
 

@@ -1,6 +1,8 @@
 import json
+from typing import Type
 
 import pytest
+from botocore.client import BaseClient
 from pymongo import MongoClient
 from sqlalchemy.engine import URL, Engine
 from sqlalchemy.orm import Session
@@ -12,16 +14,17 @@ from fides.api.models.connectionconfig import ConnectionTestStatus
 from fides.api.service.connectors import (
     MongoDBConnector,
     PostgreSQLConnector,
+    RDSMySQLConnector,
+    RDSPostgresConnector,
     SaaSConnector,
     ScyllaConnector,
     get_connector,
 )
-from fides.api.service.connectors.saas.authenticated_client import AuthenticatedClient
-from fides.api.service.connectors.sql_connector import (
-    MariaDBConnector,
+from fides.api.service.connectors.mariadb_connector import MariaDBConnector
+from fides.api.service.connectors.microsoft_sql_server_connector import (
     MicrosoftSQLServerConnector,
-    MySQLConnector,
 )
+from fides.api.service.connectors.mysql_connector import MySQLConnector
 from fides.common.api.scope_registry import (
     CONNECTION_CREATE_OR_UPDATE,
     CONNECTION_READ,
@@ -271,7 +274,7 @@ class TestPostgresConnector:
 @pytest.mark.integration
 class TestMySQLConnectionPutSecretsAPI:
     @pytest.fixture(scope="function")
-    def url(self, oauth_client, policy, connection_config_mysql) -> str:
+    def url(self, connection_config_mysql) -> str:
         return f"{V1_URL_PREFIX}{CONNECTIONS}/{connection_config_mysql.key}/secret"
 
     def test_mysql_db_connection_incorrect_secrets(
@@ -357,7 +360,7 @@ class TestMySQLConnectionPutSecretsAPI:
 @pytest.mark.integration
 class TestMySQLConnectionTestSecretsAPI:
     @pytest.fixture(scope="function")
-    def url(self, oauth_client, policy, connection_config_mysql) -> str:
+    def url(self, connection_config_mysql) -> str:
         return f"{V1_URL_PREFIX}{CONNECTIONS}/{connection_config_mysql.key}/test"
 
     def test_connection_configuration_test_not_authenticated(
@@ -365,7 +368,6 @@ class TestMySQLConnectionTestSecretsAPI:
         url,
         api_client: TestClient,
         db: Session,
-        generate_auth_header,
         connection_config_mysql,
     ) -> None:
         assert connection_config_mysql.last_test_timestamp is None
@@ -463,9 +465,7 @@ class TestMySQLConnectionTestSecretsAPI:
 class TestMySQLConnector:
     def test_mysql_db_connector(
         self,
-        api_client: TestClient,
         db: Session,
-        generate_auth_header,
         connection_config_mysql,
         mysql_example_secrets,
     ) -> None:
@@ -1190,7 +1190,10 @@ class TestSaaSConnectionPutSecretsAPI:
         assert resp.status_code == 422
 
         body = json.loads(resp.text)
-        assert body["detail"][0]["msg"] == "field required"
+        assert (
+            body["detail"][0]["msg"]
+            == "Value error, mailchimp_schema must be supplied all of: [domain, username, api_key]."
+        )
 
     def test_saas_connection_connect_with_extra_secrets(
         self,
@@ -1397,3 +1400,60 @@ class TestScyllaDBConnector:
         integration_scylladb_config.save(db)
         connector = ScyllaConnector(integration_scylladb_config)
         assert connector.test_connection() == ConnectionTestStatus.succeeded
+
+
+@pytest.mark.integration_external
+@pytest.mark.integration_rds_mysql
+class TestRDSMySQLConnector:
+    def test_connector(
+        self,
+        rds_mysql_connection_config,
+    ) -> None:
+        connector = get_connector(rds_mysql_connection_config)
+        assert connector.__class__ == RDSMySQLConnector
+        assert connector.rds_client
+
+    def test_test_connection(
+        self,
+        db: Session,
+        rds_mysql_connection_config,
+    ) -> None:
+        connector = get_connector(rds_mysql_connection_config)
+        assert connector.test_connection() == ConnectionTestStatus.succeeded
+
+        rds_mysql_connection_config.secrets["aws_secret_access_key"] = "bad_key"
+        rds_mysql_connection_config.save(db)
+        connector = get_connector(rds_mysql_connection_config)
+        with pytest.raises(ConnectionException):
+            connector.test_connection()
+
+
+@pytest.mark.integration_external
+@pytest.mark.integration_rds_postgres
+class TestRDSPostgresConnector:
+    def test_connector(
+        self,
+        rds_postgres_connection_config,
+    ) -> None:
+        connector = get_connector(rds_postgres_connection_config)
+        assert connector.__class__ == RDSPostgresConnector
+        assert connector.rds_client
+
+    def test_test_connection(
+        self,
+        db: Session,
+        rds_postgres_connection_config,
+    ) -> None:
+        connector = get_connector(rds_postgres_connection_config)
+        assert connector.test_connection() == ConnectionTestStatus.succeeded
+
+    def test_test_wrong_connection(
+        self,
+        db: Session,
+        rds_postgres_connection_config,
+    ) -> None:
+        rds_postgres_connection_config.secrets["aws_secret_access_key"] = "bad_key"
+        rds_postgres_connection_config.save(db)
+        connector = get_connector(rds_postgres_connection_config)
+        with pytest.raises(ConnectionException):
+            connector.test_connection()

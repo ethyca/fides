@@ -1,73 +1,75 @@
-/* eslint-disable react/no-unstable-nested-components */
 import {
-  createColumnHelper,
   getCoreRowModel,
   getExpandedRowModel,
   getGroupedRowModel,
-  TableState,
   useReactTable,
 } from "@tanstack/react-table";
 import {
   ColumnSettingsModal,
-  DefaultCell,
-  DefaultHeaderCell,
   FidesTableV2,
   GlobalFilterV2,
-  GroupCountBadgeCell,
   PaginationBar,
   TableActionBar,
   TableSkeletonLoader,
   useServerSidePagination,
 } from "common/table/v2";
 import {
-  Button,
+  AntButton as Button,
   ChevronDownIcon,
   Flex,
-  IconButton,
   Menu,
   MenuButton,
+  MenuItem,
   MenuItemOption,
   MenuList,
+  MoreIcon,
   useDisclosure,
+  useToast,
 } from "fidesui";
-import _, { isArray, map } from "lodash";
-import { useEffect, useMemo, useState } from "react";
+import { Form, Formik, FormikState } from "formik";
+import { debounce } from "lodash";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
-import { useLocalStorage } from "~/features/common/hooks/useLocalStorage";
+import { CustomReportColumn } from "~/features/common/custom-reports/types";
 import useTaxonomies from "~/features/common/hooks/useTaxonomies";
 import { DownloadLightIcon } from "~/features/common/Icon";
+import { useHasPermission } from "~/features/common/Restrict";
 import { getQueryParamsFromArray } from "~/features/common/utils";
-import {
-  DATAMAP_LOCAL_STORAGE_KEYS,
-  ExportFormat,
-} from "~/features/datamap/constants";
+import { ExportFormat } from "~/features/datamap/constants";
 import {
   useExportMinimalDatamapReportMutation,
   useGetMinimalDatamapReportQuery,
 } from "~/features/datamap/datamap.slice";
 import DatamapDrawer from "~/features/datamap/datamap-drawer/DatamapDrawer";
 import ReportExportModal from "~/features/datamap/modals/ReportExportModal";
-import {
-  DatamapReportFilterModal,
-  DatamapReportFilterSelections,
-} from "~/features/datamap/reporting/DatamapReportFilterModal";
+import { DatamapReportFilterModal } from "~/features/datamap/reporting/DatamapReportFilterModal";
 import {
   selectAllCustomFieldDefinitions,
   useGetAllCustomFieldDefinitionsQuery,
   useGetHealthQuery,
 } from "~/features/plus/plus.slice";
 import {
-  CustomField,
+  CustomReportResponse,
   DATAMAP_GROUPING,
-  DatamapReport as BaseDatamapReport,
   Page_DatamapReport_,
+  ReportType,
+  ScopeRegistryEnum,
 } from "~/types/api";
 
-// Extend the base datamap report type to also have custom fields
-type DatamapReport = BaseDatamapReport & Record<string, CustomField["value"]>;
-
-const columnHelper = createColumnHelper<DatamapReport>();
+import { CustomReportTemplates } from "../../common/custom-reports/CustomReportTemplates";
+import { DATAMAP_LOCAL_STORAGE_KEYS, DEFAULT_COLUMN_NAMES } from "./constants";
+import { DatamapReportWithCustomFields as DatamapReport } from "./datamap-report";
+import {
+  DEFAULT_COLUMN_FILTERS,
+  DEFAULT_COLUMN_VISIBILITY,
+  useDatamapReport,
+} from "./datamap-report-context";
+import {
+  getDatamapReportColumns,
+  getDefaultColumn,
+} from "./DatamapReportTableColumns";
+import { getColumnOrder, getGrouping, getPrefixColumns } from "./utils";
 
 const emptyMinimalDatamapReportResponse: Page_DatamapReport_ = {
   items: [],
@@ -77,120 +79,10 @@ const emptyMinimalDatamapReportResponse: Page_DatamapReport_ = {
   pages: 1,
 };
 
-// Custom fields are prepended by `system_` or `privacy_declaration_`
-const CUSTOM_FIELD_SYSTEM_PREFIX = "system_";
-const CUSTOM_FIELD_DATA_USE_PREFIX = "privacy_declaration_";
-
-// eslint-disable-next-line @typescript-eslint/naming-convention
-enum COLUMN_IDS {
-  SYSTEM_NAME = "system_name",
-  DATA_USE = "data_use",
-  DATA_CATEGORY = "data_categories",
-  DATA_SUBJECT = "data_subjects",
-  LEGAL_NAME = "legal_name",
-  DPO = "dpo",
-  LEGAL_BASIS_FOR_PROCESSING = "legal_basis_for_processing",
-  ADMINISTRATING_DEPARTMENT = "administrating_department",
-  COOKIE_MAX_AGE_SECONDS = "cookie_max_age_seconds",
-  PRIVACY_POLICY = "privacy_policy",
-  LEGAL_ADDRESS = "legal_address",
-  COOKIE_REFRESH = "cookie_refresh",
-  DATA_SECURITY_PRACTICES = "data_security_practices",
-  DATA_SHARED_WITH_THIRD_PARTIES = "DATA_SHARED_WITH_THIRD_PARTIES",
-  DATA_STEWARDS = "data_stewards",
-  DECLARATION_NAME = "declaration_name",
-  DESCRIPTION = "description",
-  DOES_INTERNATIONAL_TRANSFERS = "does_international_transfers",
-  DPA_LOCATION = "dpa_location",
-  EGRESS = "egress",
-  EXEMPT_FROM_PRIVACY_REGULATIONS = "exempt_from_privacy_regulations",
-  FEATURES = "features",
-  FIDES_KEY = "fides_key",
-  FLEXIBLE_LEGAL_BASIS_FOR_PROCESSING = "flexible_legal_basis_for_processing",
-  IMPACT_ASSESSMENT_LOCATION = "impact_assessment_location",
-  INGRESS = "ingress",
-  JOINT_CONTROLLER_INFO = "joint_controller_info",
-  LEGAL_BASIS_FOR_PROFILING = "legal_basis_for_profiling",
-  LEGAL_BASIS_FOR_TRANSFERS = "legal_basis_for_transfers",
-  LEGITIMATE_INTEREST_DISCLOSURE_URL = "legitimate_interest_disclosure_url",
-  LINK_TO_PROCESSOR_CONTRACT = "link_to_processor_contract",
-  PROCESSES_PERSONAL_DATA = "processes_personal_data",
-  REASON_FOR_EXEMPTION = "reason_for_exemption",
-  REQUIRES_DATA_PROTECTION_ASSESSMENTS = "requires_data_protection_assessments",
-  RESPONSIBILITY = "responsibility",
-  RETENTION_PERIOD = "retention_period",
-  SHARED_CATEGORIES = "shared_categories",
-  SPECIAL_CATEGORY_LEGAL_BASIS = "special_category_legal_basis",
-  SYSTEM_DEPENDENCIES = "system_dependencies",
-  THIRD_COUNTRY_SAFEGUARDS = "third_country_safeguards",
-  THIRD_PARTIES = "third_parties",
-  USES_COOKIES = "uses_cookies",
-  USES_NON_COOKIE_ACCESS = "uses_non_cookie_access",
-  USES_PROFILING = "uses_profiling",
-  SYSTEM_UNDECLARED_DATA_CATEGORIES = "system_undeclared_data_categories",
-  DATA_USE_UNDECLARED_DATA_CATEGORIES = "data_use_undeclared_data_categories",
-}
-
-const getGrouping = (groupBy: DATAMAP_GROUPING) => {
-  let grouping: string[] = [];
-  switch (groupBy) {
-    case DATAMAP_GROUPING.SYSTEM_DATA_USE: {
-      grouping = [COLUMN_IDS.SYSTEM_NAME];
-      break;
-    }
-    case DATAMAP_GROUPING.DATA_USE_SYSTEM: {
-      grouping = [COLUMN_IDS.DATA_USE];
-      break;
-    }
-    default:
-      grouping = [COLUMN_IDS.SYSTEM_NAME];
-  }
-  return grouping;
-};
-const getColumnOrder = (groupBy: DATAMAP_GROUPING) => {
-  let columnOrder: string[] = [];
-  if (DATAMAP_GROUPING.SYSTEM_DATA_USE === groupBy) {
-    columnOrder = [
-      COLUMN_IDS.SYSTEM_NAME,
-      COLUMN_IDS.DATA_USE,
-      COLUMN_IDS.DATA_CATEGORY,
-      COLUMN_IDS.DATA_SUBJECT,
-    ];
-  }
-  if (DATAMAP_GROUPING.DATA_USE_SYSTEM === groupBy) {
-    columnOrder = [
-      COLUMN_IDS.DATA_USE,
-      COLUMN_IDS.SYSTEM_NAME,
-      COLUMN_IDS.DATA_CATEGORY,
-      COLUMN_IDS.DATA_SUBJECT,
-    ];
-  }
-  return columnOrder;
-};
-
-const getPrefixColumns = (groupBy: DATAMAP_GROUPING) => {
-  let columnOrder: string[] = [];
-  if (DATAMAP_GROUPING.SYSTEM_DATA_USE === groupBy) {
-    columnOrder = [COLUMN_IDS.SYSTEM_NAME, COLUMN_IDS.DATA_USE];
-  }
-  if (DATAMAP_GROUPING.DATA_USE_SYSTEM === groupBy) {
-    columnOrder = [COLUMN_IDS.DATA_USE, COLUMN_IDS.SYSTEM_NAME];
-  }
-  return columnOrder;
-};
-
 export const DatamapReportTable = () => {
-  const [tableState, setTableState] = useLocalStorage<TableState | undefined>(
-    "datamap-report-table-state",
-    undefined
-  );
-  const storedTableState = useMemo(
-    // snag the stored table state from local storage if it exists and use it to initialize the tableInstance.
-    // memoize this so we don't get stuck in a loop as the tableState gets updated during the session.
-    () => tableState,
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    []
-  );
+  const userCanSeeReports = useHasPermission([
+    ScopeRegistryEnum.CUSTOM_REPORT_READ,
+  ]);
   const { isLoading: isLoadingHealthCheck } = useGetHealthQuery();
   const {
     PAGE_SIZES,
@@ -206,6 +98,7 @@ export const DatamapReportTable = () => {
     setTotalPages,
     resetPageIndexToDefault,
   } = useServerSidePagination();
+  const toast = useToast({ id: "datamap-report-toast" });
 
   const {
     isOpen: isFilterModalOpen,
@@ -220,59 +113,67 @@ export const DatamapReportTable = () => {
     isLoading: isLoadingFidesLang,
   } = useTaxonomies();
 
-  const [selectedDataUseFilters, setSelectedDataUseFilters] =
-    useState<string>();
-  const [selectedDataCategoriesFilters, setSelectedDataCategoriesFilters] =
-    useState<string>();
-  const [selectedDataSubjectFilters, setSelectedDataSubjectFilters] =
-    useState<string>();
-  const [selectedSystemId, setSelectedSystemId] = useState<string>();
+  const [selectedSystemId, setSelectedSystemId] = useState<string>(); // for opening the drawer
+
+  const {
+    savedCustomReportId,
+    setSavedCustomReportId,
+    groupBy,
+    setGroupBy,
+    selectedFilters,
+    setSelectedFilters,
+    columnOrder,
+    setColumnOrder,
+    columnVisibility,
+    setColumnVisibility,
+    columnSizing,
+    setColumnSizing,
+    columnNameMapOverrides,
+    setColumnNameMapOverrides,
+  } = useDatamapReport();
 
   const [groupChangeStarted, setGroupChangeStarted] = useState<boolean>(false);
-  const [globalFilter, setGlobalFilter] = useState<string>("");
-  const updateGlobalFilter = (searchTerm: string) => {
-    resetPageIndexToDefault();
-    setGlobalFilter(searchTerm);
-  };
-
-  const [groupBy, setGroupBy] = useLocalStorage<DATAMAP_GROUPING>(
-    DATAMAP_LOCAL_STORAGE_KEYS.GROUP_BY,
-    DATAMAP_GROUPING.SYSTEM_DATA_USE
-  );
-
-  const [columnOrder, setColumnOrder] = useLocalStorage<string[]>(
-    DATAMAP_LOCAL_STORAGE_KEYS.COLUMN_ORDER,
-    getColumnOrder(groupBy)
-  );
-
-  const [grouping, setGrouping] = useLocalStorage<string[]>(
-    DATAMAP_LOCAL_STORAGE_KEYS.TABLE_GROUPING,
-    getGrouping(groupBy)
-  );
-
   const onGroupChange = (group: DATAMAP_GROUPING) => {
+    setSavedCustomReportId("");
     setGroupBy(group);
     setGroupChangeStarted(true);
     resetPageIndexToDefault();
+  };
+
+  const [globalFilter, setGlobalFilter] = useState<string>("");
+  const updateGlobalFilter = useCallback(
+    (searchTerm: string) => {
+      resetPageIndexToDefault();
+      setGlobalFilter(searchTerm);
+    },
+    [resetPageIndexToDefault, setGlobalFilter],
+  );
+
+  const reportQuery = {
+    pageIndex,
+    pageSize,
+    groupBy,
+    search: globalFilter,
+    dataUses: getQueryParamsFromArray(selectedFilters.dataUses, "data_uses"),
+    dataSubjects: getQueryParamsFromArray(
+      selectedFilters.dataSubjects,
+      "data_subjects",
+    ),
+    dataCategories: getQueryParamsFromArray(
+      selectedFilters.dataCategories,
+      "data_categories",
+    ),
   };
 
   const {
     data: datamapReport,
     isLoading: isReportLoading,
     isFetching: isReportFetching,
-  } = useGetMinimalDatamapReportQuery({
-    pageIndex,
-    pageSize,
-    groupBy,
-    search: globalFilter,
-    dataUses: selectedDataUseFilters,
-    dataSubjects: selectedDataSubjectFilters,
-    dataCategories: selectedDataCategoriesFilters,
-  });
+  } = useGetMinimalDatamapReportQuery(reportQuery);
 
   const [
     exportMinimalDatamapReport,
-    { isLoading: isExportingReport, isSuccess: isExportReportSuccess },
+    { isLoading: isExportingReport, isError: isExportReportError },
   ] = useExportMinimalDatamapReportMutation();
 
   const { data, totalRows } = useMemo(() => {
@@ -293,681 +194,39 @@ export const DatamapReportTable = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [datamapReport]);
 
-  useEffect(() => {
-    // changing the groupBy should wait until the data is loaded to update the grouping
-    const newGrouping = getGrouping(groupBy);
-    if (datamapReport) {
-      setGrouping(newGrouping);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [datamapReport]);
-
   // Get custom fields
   useGetAllCustomFieldDefinitionsQuery();
   const customFields = useAppSelector(selectAllCustomFieldDefinitions);
 
-  const customFieldColumns = useMemo(() => {
-    // Determine custom field keys by
-    // 1. If they aren't in our expected, static, columns
-    // 2. If they start with one of the custom field prefixes
-    const datamapKeys = datamapReport?.items?.length
-      ? Object.keys(datamapReport.items[0])
-      : [];
-    const defaultKeys = Object.values(COLUMN_IDS);
-    const customFieldKeys = datamapKeys
-      .filter((k) => !defaultKeys.includes(k as COLUMN_IDS))
-      .filter(
-        (k) =>
-          k.startsWith(CUSTOM_FIELD_DATA_USE_PREFIX) ||
-          k.startsWith(CUSTOM_FIELD_SYSTEM_PREFIX)
-      );
+  // Column renaming
+  const [isRenamingColumns, setIsRenamingColumns] = useState(false);
+  const handleColumnRenaming = (values: Record<string, string>) => {
+    setSavedCustomReportId("");
+    setColumnNameMapOverrides(values);
+    setIsRenamingColumns(false);
+  };
 
-    // Create column objects for each custom field key
-    const columns = customFieldKeys.map((key) => {
-      // We need to figure out the original custom field object in order to see
-      // if the value is a string[], which would want `showHeaderMenu=true`
-      const customField = customFields.find((cf) =>
-        key.includes(_.snakeCase(cf.name))
-      );
-      const keyWithoutPrefix = key.replace(
-        /^(system_|privacy_declaration_)/,
-        ""
-      );
-      const displayText = _.upperFirst(keyWithoutPrefix.replaceAll("_", " "));
-      return columnHelper.accessor((row) => row[key], {
-        id: key,
-        cell: (props) =>
-          // Conditionally render the Group cell if we have more than one value.
-          // Alternatively, could check the customField type
-          Array.isArray(props.getValue()) ? (
-            <GroupCountBadgeCell value={props.getValue()} {...props} />
-          ) : (
-            <DefaultCell value={props.getValue() as string} />
-          ),
-        header: (props) => <DefaultHeaderCell value={displayText} {...props} />,
-        meta: {
-          displayText,
-          showHeaderMenu: customField?.field_type === "string[]",
-        },
-      });
-    });
-
-    return columns;
-  }, [datamapReport, customFields]);
-
-  const tcfColumns = useMemo(
-    () => [
-      columnHelper.accessor((row) => row.system_name, {
-        enableGrouping: true,
-        id: COLUMN_IDS.SYSTEM_NAME,
-        cell: (props) => <DefaultCell value={props.getValue()} />,
-        header: (props) => <DefaultHeaderCell value="System" {...props} />,
-        meta: {
-          displayText: "System",
-          onCellClick: (row) => {
-            setSelectedSystemId(row.fides_key);
-          },
-        },
-      }),
-      columnHelper.accessor((row) => row.data_uses, {
-        id: COLUMN_IDS.DATA_USE,
-        cell: (props) => {
-          const value = props.getValue();
-          return (
-            <GroupCountBadgeCell
-              suffix="data uses"
-              value={
-                isArray(value)
-                  ? map(value, getDataUseDisplayName)
-                  : getDataUseDisplayName(value || "")
-              }
-              {...props}
-            />
-          );
-        },
-        header: (props) => <DefaultHeaderCell value="Data use" {...props} />,
-        meta: {
-          displayText: "Data use",
-        },
-      }),
-      columnHelper.accessor((row) => row.data_categories, {
-        id: COLUMN_IDS.DATA_CATEGORY,
-        cell: (props) => {
-          const value = props.getValue();
-
-          return (
-            <GroupCountBadgeCell
-              suffix="data categories"
-              value={
-                isArray(value)
-                  ? map(value, getDataCategoryDisplayName)
-                  : getDataCategoryDisplayName(value || "")
-              }
-              {...props}
-            />
-          );
-        },
-        header: (props) => (
-          <DefaultHeaderCell value="Data categories" {...props} />
-        ),
-        meta: {
-          displayText: "Data categories",
-          showHeaderMenu: true,
-        },
-      }),
-      columnHelper.accessor((row) => row.data_subjects, {
-        id: COLUMN_IDS.DATA_SUBJECT,
-        cell: (props) => {
-          const value = props.getValue();
-
-          return (
-            <GroupCountBadgeCell
-              suffix="data subjects"
-              value={
-                isArray(value)
-                  ? map(value, getDataSubjectDisplayName)
-                  : getDataSubjectDisplayName(value || "")
-              }
-              {...props}
-            />
-          );
-        },
-        header: (props) => (
-          <DefaultHeaderCell value="Data subject" {...props} />
-        ),
-        meta: {
-          displayText: "Data subject",
-          showHeaderMenu: true,
-        },
-      }),
-      columnHelper.accessor((row) => row.legal_name, {
-        id: COLUMN_IDS.LEGAL_NAME,
-        cell: (props) => <DefaultCell value={props.getValue()} />,
-        header: (props) => <DefaultHeaderCell value="Legal name" {...props} />,
-        meta: {
-          displayText: "Legal name",
-        },
-      }),
-      columnHelper.accessor((row) => row.dpo, {
-        id: COLUMN_IDS.DPO,
-        cell: (props) => <DefaultCell value={props.getValue()} />,
-        header: (props) => (
-          <DefaultHeaderCell value="Data privacy officer" {...props} />
-        ),
-        meta: {
-          displayText: "Data privacy officer",
-        },
-      }),
-      columnHelper.accessor((row) => row.legal_basis_for_processing, {
-        id: COLUMN_IDS.LEGAL_BASIS_FOR_PROCESSING,
-        cell: (props) => <DefaultCell value={props.getValue()} />,
-        header: (props) => (
-          <DefaultHeaderCell value="Legal basis for processing" {...props} />
-        ),
-        meta: {
-          displayText: "Legal basis for processing",
-        },
-      }),
-      columnHelper.accessor((row) => row.administrating_department, {
-        id: COLUMN_IDS.ADMINISTRATING_DEPARTMENT,
-        cell: (props) => <DefaultCell value={props.getValue()} />,
-        header: (props) => (
-          <DefaultHeaderCell value="Administrating department" {...props} />
-        ),
-        meta: {
-          displayText: "Administrating department",
-        },
-      }),
-      columnHelper.accessor((row) => row.cookie_max_age_seconds, {
-        id: COLUMN_IDS.COOKIE_MAX_AGE_SECONDS,
-        cell: (props) => <DefaultCell value={props.getValue()} />,
-        header: (props) => (
-          <DefaultHeaderCell value="Cookie max age seconds" {...props} />
-        ),
-        meta: {
-          displayText: "Cookie max age seconds",
-        },
-      }),
-      columnHelper.accessor((row) => row.privacy_policy, {
-        id: COLUMN_IDS.PRIVACY_POLICY,
-        cell: (props) => <DefaultCell value={props.getValue()} />,
-        header: (props) => (
-          <DefaultHeaderCell value="Privacy policy" {...props} />
-        ),
-        meta: {
-          displayText: "Privacy policy",
-        },
-      }),
-      columnHelper.accessor((row) => row.legal_address, {
-        id: COLUMN_IDS.LEGAL_ADDRESS,
-        cell: (props) => <DefaultCell value={props.getValue()} />,
-        header: (props) => (
-          <DefaultHeaderCell value="Legal address" {...props} />
-        ),
-        meta: {
-          displayText: "Legal address",
-        },
-      }),
-      columnHelper.accessor((row) => row.cookie_refresh, {
-        id: COLUMN_IDS.COOKIE_REFRESH,
-        cell: (props) => <DefaultCell value={props.getValue()} />,
-        header: (props) => (
-          <DefaultHeaderCell
-            value="Cookie refresh"
-            table={props.table}
-            header={props.header}
-            column={props.column}
-          />
-        ),
-        meta: {
-          displayText: "Cookie refresh",
-        },
-      }),
-      columnHelper.accessor((row) => row.data_security_practices, {
-        id: COLUMN_IDS.DATA_SECURITY_PRACTICES,
-        cell: (props) => <DefaultCell value={props.getValue()} />,
-        header: (props) => (
-          <DefaultHeaderCell value="Data security practices" {...props} />
-        ),
-        meta: {
-          displayText: "Data security practices",
-        },
-      }),
-      columnHelper.accessor((row) => row.data_shared_with_third_parties, {
-        id: COLUMN_IDS.DATA_SHARED_WITH_THIRD_PARTIES,
-        cell: (props) => <DefaultCell value={props.getValue()} />,
-        header: (props) => (
-          <DefaultHeaderCell
-            value="Data shared with third parties"
-            {...props}
-          />
-        ),
-        meta: {
-          displayText: "Data shared with third parties",
-        },
-      }),
-      columnHelper.accessor((row) => row.data_stewards, {
-        id: COLUMN_IDS.DATA_STEWARDS,
-        cell: (props) => (
-          <GroupCountBadgeCell
-            suffix="data stewards"
-            value={props.getValue()}
-            {...props}
-          />
-        ),
-        header: (props) => (
-          <DefaultHeaderCell value="Data stewards" {...props} />
-        ),
-        meta: {
-          displayText: "Data stewards",
-          showHeaderMenu: true,
-        },
-      }),
-      columnHelper.accessor((row) => row.declaration_name, {
-        id: COLUMN_IDS.DECLARATION_NAME,
-        cell: (props) => <DefaultCell value={props.getValue()} />,
-        header: (props) => (
-          <DefaultHeaderCell value="Declaration name" {...props} />
-        ),
-        meta: {
-          displayText: "Declaration name",
-        },
-      }),
-      columnHelper.accessor((row) => row.does_international_transfers, {
-        id: COLUMN_IDS.DOES_INTERNATIONAL_TRANSFERS,
-        cell: (props) => <DefaultCell value={props.getValue()} />,
-        header: (props) => (
-          <DefaultHeaderCell value="Does international transfers" {...props} />
-        ),
-        meta: {
-          displayText: "Does international transfers",
-        },
-      }),
-      columnHelper.accessor((row) => row.dpa_location, {
-        id: COLUMN_IDS.DPA_LOCATION,
-        cell: (props) => <DefaultCell value={props.getValue()} />,
-        header: (props) => (
-          <DefaultHeaderCell value="DPA Location" {...props} />
-        ),
-        meta: {
-          displayText: "DPA Location",
-        },
-      }),
-      columnHelper.accessor((row) => row.egress, {
-        id: COLUMN_IDS.EGRESS,
-        cell: (props) => (
-          <GroupCountBadgeCell
-            suffix="egress"
-            value={props.getValue()}
-            {...props}
-          />
-        ),
-        header: (props) => <DefaultHeaderCell value="Egress" {...props} />,
-        meta: {
-          displayText: "Egress",
-          showHeaderMenu: true,
-        },
-      }),
-      columnHelper.accessor((row) => row.exempt_from_privacy_regulations, {
-        id: COLUMN_IDS.EXEMPT_FROM_PRIVACY_REGULATIONS,
-        cell: (props) => <DefaultCell value={props.getValue()} />,
-        header: (props) => (
-          <DefaultHeaderCell
-            value="Exempt from privacy regulations"
-            {...props}
-          />
-        ),
-        meta: {
-          displayText: "Exempt from privacy regulations",
-        },
-      }),
-      columnHelper.accessor((row) => row.features, {
-        id: COLUMN_IDS.FEATURES,
-        cell: (props) => (
-          <GroupCountBadgeCell
-            suffix="features"
-            value={props.getValue()}
-            {...props}
-          />
-        ),
-        header: (props) => <DefaultHeaderCell value="Features" {...props} />,
-        meta: {
-          displayText: "Features",
-          showHeaderMenu: true,
-        },
-      }),
-      columnHelper.accessor((row) => row.fides_key, {
-        id: COLUMN_IDS.FIDES_KEY,
-        cell: (props) => <DefaultCell value={props.getValue()} />,
-        header: (props) => <DefaultHeaderCell value="Fides key" {...props} />,
-        meta: {
-          displayText: "Fides key",
-        },
-      }),
-      columnHelper.accessor((row) => row.flexible_legal_basis_for_processing, {
-        id: COLUMN_IDS.FLEXIBLE_LEGAL_BASIS_FOR_PROCESSING,
-        cell: (props) => <DefaultCell value={props.getValue()} />,
-        header: (props) => (
-          <DefaultHeaderCell
-            value="Flexible legal basis for processing"
-            {...props}
-          />
-        ),
-        meta: {
-          displayText: "Flexible legal basis for processing",
-        },
-      }),
-      columnHelper.accessor((row) => row.impact_assessment_location, {
-        id: COLUMN_IDS.IMPACT_ASSESSMENT_LOCATION,
-        cell: (props) => <DefaultCell value={props.getValue()} />,
-        header: (props) => (
-          <DefaultHeaderCell value="Impact assessment location" {...props} />
-        ),
-        meta: {
-          displayText: "Impact assessment location",
-        },
-      }),
-      columnHelper.accessor((row) => row.ingress, {
-        id: COLUMN_IDS.INGRESS,
-        cell: (props) => (
-          <GroupCountBadgeCell
-            suffix="ingress"
-            value={props.getValue()}
-            {...props}
-          />
-        ),
-        header: (props) => <DefaultHeaderCell value="Ingress" {...props} />,
-        meta: {
-          displayText: "Ingress",
-          showHeaderMenu: true,
-        },
-      }),
-      columnHelper.accessor((row) => row.joint_controller_info, {
-        id: COLUMN_IDS.JOINT_CONTROLLER_INFO,
-        cell: (props) => <DefaultCell value={props.getValue()} />,
-        header: (props) => (
-          <DefaultHeaderCell value="Joint controller info" {...props} />
-        ),
-        meta: {
-          displayText: "Joint controller info",
-        },
-      }),
-      columnHelper.accessor((row) => row.legal_basis_for_profiling, {
-        id: COLUMN_IDS.LEGAL_BASIS_FOR_PROFILING,
-        cell: (props) => (
-          <GroupCountBadgeCell
-            suffix="profiles"
-            value={props.getValue()}
-            {...props}
-          />
-        ),
-        header: (props) => (
-          <DefaultHeaderCell value="Legal basis for profiling" {...props} />
-        ),
-        meta: {
-          displayText: "Legal basis for profiling",
-          showHeaderMenu: true,
-        },
-      }),
-      columnHelper.accessor((row) => row.legal_basis_for_transfers, {
-        id: COLUMN_IDS.LEGAL_BASIS_FOR_TRANSFERS,
-        cell: (props) => (
-          <GroupCountBadgeCell
-            suffix="transfers"
-            value={props.getValue()}
-            {...props}
-          />
-        ),
-        header: (props) => (
-          <DefaultHeaderCell value="Legal basis for transfers" {...props} />
-        ),
-        meta: {
-          displayText: "Legal basis for transfers",
-          showHeaderMenu: true,
-        },
-      }),
-      columnHelper.accessor((row) => row.legitimate_interest_disclosure_url, {
-        id: COLUMN_IDS.LEGITIMATE_INTEREST_DISCLOSURE_URL,
-        cell: (props) => <DefaultCell value={props.getValue()} />,
-        header: (props) => (
-          <DefaultHeaderCell
-            value="Legitimate interest disclosure url"
-            {...props}
-          />
-        ),
-        meta: {
-          displayText: "Legitimate interest disclosure url",
-        },
-      }),
-      columnHelper.accessor((row) => row.link_to_processor_contract, {
-        id: COLUMN_IDS.LINK_TO_PROCESSOR_CONTRACT,
-        cell: (props) => <DefaultCell value={props.getValue()} />,
-        header: (props) => (
-          <DefaultHeaderCell value="Link to processor contract" {...props} />
-        ),
-        meta: {
-          displayText: "Link to processor contract",
-        },
-      }),
-      columnHelper.accessor((row) => row.processes_personal_data, {
-        id: COLUMN_IDS.PROCESSES_PERSONAL_DATA,
-        cell: (props) => <DefaultCell value={props.getValue()} />,
-        header: (props) => (
-          <DefaultHeaderCell value="Processes personal data" {...props} />
-        ),
-        meta: {
-          displayText: "Processes personal data",
-        },
-      }),
-      columnHelper.accessor((row) => row.reason_for_exemption, {
-        id: COLUMN_IDS.REASON_FOR_EXEMPTION,
-        cell: (props) => <DefaultCell value={props.getValue()} />,
-        header: (props) => (
-          <DefaultHeaderCell value="Reason for exemption" {...props} />
-        ),
-        meta: {
-          displayText: "Reason for exemption",
-        },
-      }),
-      columnHelper.accessor((row) => row.requires_data_protection_assessments, {
-        id: COLUMN_IDS.REQUIRES_DATA_PROTECTION_ASSESSMENTS,
-        cell: (props) => <DefaultCell value={props.getValue()} />,
-        header: (props) => (
-          <DefaultHeaderCell
-            value="Requires data protection assessments"
-            {...props}
-          />
-        ),
-        meta: {
-          displayText: "Requires data protection assessments",
-        },
-      }),
-      columnHelper.accessor((row) => row.responsibility, {
-        id: COLUMN_IDS.RESPONSIBILITY,
-        cell: (props) => (
-          <GroupCountBadgeCell
-            suffix="responsibilitlies"
-            value={props.getValue()}
-            {...props}
-          />
-        ),
-        header: (props) => (
-          <DefaultHeaderCell value="Responsibility" {...props} />
-        ),
-        meta: {
-          displayText: "Responsibility",
-          showHeaderMenu: true,
-        },
-      }),
-      columnHelper.accessor((row) => row.retention_period, {
-        id: COLUMN_IDS.RETENTION_PERIOD,
-        cell: (props) => <DefaultCell value={props.getValue()} />,
-        header: (props) => (
-          <DefaultHeaderCell value="Retention period" {...props} />
-        ),
-        meta: {
-          displayText: "Retention period",
-        },
-      }),
-      columnHelper.accessor((row) => row.shared_categories, {
-        id: COLUMN_IDS.SHARED_CATEGORIES,
-        cell: (props) => (
-          <GroupCountBadgeCell
-            suffix="shared categories"
-            value={props.getValue()}
-            {...props}
-          />
-        ),
-        header: (props) => (
-          <DefaultHeaderCell value="Shared categories" {...props} />
-        ),
-        meta: {
-          displayText: "Shared categories",
-          showHeaderMenu: true,
-        },
-      }),
-      columnHelper.accessor((row) => row.special_category_legal_basis, {
-        id: COLUMN_IDS.SPECIAL_CATEGORY_LEGAL_BASIS,
-        cell: (props) => <DefaultCell value={props.getValue()} />,
-        header: (props) => (
-          <DefaultHeaderCell value="Special category legal basis" {...props} />
-        ),
-        meta: {
-          displayText: "Special category legal basis",
-        },
-      }),
-      columnHelper.accessor((row) => row.system_dependencies, {
-        id: COLUMN_IDS.SYSTEM_DEPENDENCIES,
-        cell: (props) => (
-          <GroupCountBadgeCell
-            suffix="dependencies"
-            value={props.getValue()}
-            {...props}
-          />
-        ),
-        header: (props) => (
-          <DefaultHeaderCell value="System dependencies" {...props} />
-        ),
-        meta: {
-          displayText: "System dependencies",
-          showHeaderMenu: true,
-        },
-      }),
-      columnHelper.accessor((row) => row.third_country_safeguards, {
-        id: COLUMN_IDS.THIRD_COUNTRY_SAFEGUARDS,
-        cell: (props) => <DefaultCell value={props.getValue()} />,
-        header: (props) => (
-          <DefaultHeaderCell value="Third country safeguards" {...props} />
-        ),
-        meta: {
-          displayText: "Third country safeguards",
-        },
-      }),
-      columnHelper.accessor((row) => row.third_parties, {
-        id: COLUMN_IDS.THIRD_PARTIES,
-        cell: (props) => <DefaultCell value={props.getValue()} />,
-        header: (props) => (
-          <DefaultHeaderCell value="Third parties" {...props} />
-        ),
-        meta: {
-          displayText: "Third parties",
-        },
-      }),
-      columnHelper.accessor((row) => row.system_undeclared_data_categories, {
-        id: COLUMN_IDS.SYSTEM_UNDECLARED_DATA_CATEGORIES,
-        cell: (props) => {
-          const value = props.getValue();
-
-          return (
-            <GroupCountBadgeCell
-              suffix="system undeclared data categories"
-              value={
-                isArray(value)
-                  ? map(value, getDataCategoryDisplayName)
-                  : getDataCategoryDisplayName(value || "")
-              }
-              {...props}
-            />
-          );
-        },
-        header: (props) => (
-          <DefaultHeaderCell
-            value="System undeclared data categories"
-            {...props}
-          />
-        ),
-        meta: {
-          displayText: "System undeclared data categories",
-          showHeaderMenu: true,
-        },
-      }),
-      columnHelper.accessor((row) => row.data_use_undeclared_data_categories, {
-        id: COLUMN_IDS.DATA_USE_UNDECLARED_DATA_CATEGORIES,
-        cell: (props) => {
-          const value = props.getValue();
-
-          return (
-            <GroupCountBadgeCell
-              suffix="data use undeclared data categories"
-              value={
-                isArray(value)
-                  ? map(value, getDataCategoryDisplayName)
-                  : getDataCategoryDisplayName(value || "")
-              }
-              {...props}
-            />
-          );
-        },
-        header: (props) => (
-          <DefaultHeaderCell
-            value="Data use undeclared data categories"
-            {...props}
-          />
-        ),
-        meta: {
-          displayText: "Data use undeclared data categories",
-          showHeaderMenu: true,
-        },
-      }),
-      columnHelper.accessor((row) => row.uses_cookies, {
-        id: COLUMN_IDS.USES_COOKIES,
-        cell: (props) => <DefaultCell value={props.getValue()} />,
-        header: (props) => (
-          <DefaultHeaderCell value="Uses cookies" {...props} />
-        ),
-        meta: {
-          displayText: "Uses cookies",
-        },
-      }),
-      columnHelper.accessor((row) => row.uses_non_cookie_access, {
-        id: COLUMN_IDS.USES_NON_COOKIE_ACCESS,
-        cell: (props) => <DefaultCell value={props.getValue()} />,
-        header: (props) => (
-          <DefaultHeaderCell value="Uses non cookie access" {...props} />
-        ),
-        meta: {
-          displayText: "Uses non cookie access",
-        },
-      }),
-      columnHelper.accessor((row) => row.uses_profiling, {
-        id: COLUMN_IDS.USES_PROFILING,
-        cell: (props) => <DefaultCell value={props.getValue()} />,
-        header: (props) => (
-          <DefaultHeaderCell value="Uses profiling" {...props} />
-        ),
-        meta: {
-          displayText: "Uses profiling",
-        },
-      }),
-      // Tack on the custom field columns to the end
-      ...customFieldColumns,
-    ],
+  const columns = useMemo(
+    () =>
+      datamapReport
+        ? getDatamapReportColumns({
+            onSelectRow: (row) => setSelectedSystemId(row.fides_key),
+            getDataUseDisplayName,
+            getDataCategoryDisplayName,
+            getDataSubjectDisplayName,
+            datamapReport,
+            customFields,
+            isRenaming: isRenamingColumns,
+          })
+        : [],
     [
-      customFieldColumns,
       getDataUseDisplayName,
       getDataSubjectDisplayName,
       getDataCategoryDisplayName,
-    ]
+      datamapReport,
+      customFields,
+      isRenamingColumns,
+    ],
   );
 
   const {
@@ -983,17 +242,41 @@ export const DatamapReportTable = () => {
   } = useDisclosure();
 
   const onExport = (downloadType: ExportFormat) => {
+    const columnMap: Record<string, CustomReportColumn> = {};
+    Object.entries(columnVisibility).forEach(([key, isVisible]) => {
+      columnMap[key] = {
+        enabled: isVisible,
+      };
+    });
+
+    Object.entries(columnNameMapOverrides).forEach(([key, label]) => {
+      if (columnMap[key]) {
+        columnMap[key].label = label;
+      } else {
+        columnMap[key] = {
+          label,
+          enabled: columnVisibility[key] ?? true,
+        };
+      }
+    });
     exportMinimalDatamapReport({
-      pageIndex,
-      pageSize,
-      groupBy,
-      search: globalFilter,
-      dataUses: selectedDataUseFilters,
-      dataSubjects: selectedDataSubjectFilters,
-      dataCategories: selectedDataCategoriesFilters,
+      ...reportQuery,
       format: downloadType,
+      report_id: savedCustomReportId,
+      report: {
+        name: "",
+        type: "datamap",
+        config: {
+          column_map: columnMap,
+          table_state: {
+            groupBy,
+            filters: selectedFilters,
+            columnOrder,
+          },
+        },
+      },
     }).then(() => {
-      if (isExportReportSuccess) {
+      if (!isExportReportError) {
         onExportReportClose();
       }
     });
@@ -1003,31 +286,60 @@ export const DatamapReportTable = () => {
     getCoreRowModel: getCoreRowModel(),
     getGroupedRowModel: getGroupedRowModel(),
     getExpandedRowModel: getExpandedRowModel(),
-    columns: tcfColumns,
     manualPagination: true,
+    enableColumnResizing: true,
+    columnResizeMode: "onChange",
+    columns,
+    defaultColumn: getDefaultColumn(
+      { ...DEFAULT_COLUMN_NAMES, ...columnNameMapOverrides },
+      isRenamingColumns,
+    ),
     data,
     initialState: {
-      columnVisibility: {
-        [COLUMN_IDS.SYSTEM_UNDECLARED_DATA_CATEGORIES]: false,
-        [COLUMN_IDS.DATA_USE_UNDECLARED_DATA_CATEGORIES]: false,
-      },
-      ...storedTableState,
-    },
-    state: {
       expanded: true,
-      grouping,
+      columnSizing,
       columnOrder,
-    },
-    columnResizeMode: "onChange",
-    enableColumnResizing: true,
-    onStateChange: (updater) => {
-      const valueToStore =
-        updater instanceof Function
-          ? updater(tableInstance.getState())
-          : updater;
-      setTableState(valueToStore);
+      columnVisibility,
+      grouping: getGrouping(groupBy),
     },
   });
+
+  useEffect(() => {
+    if (groupBy && !!tableInstance && !!datamapReport) {
+      if (tableInstance.getState().columnOrder.length === 0) {
+        const tableColumnIds = tableInstance.getAllColumns().map((c) => c.id);
+        setColumnOrder(getColumnOrder(groupBy, tableColumnIds));
+      } else {
+        setColumnOrder(
+          getColumnOrder(groupBy, tableInstance.getState().columnOrder),
+        );
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [groupBy, tableInstance, datamapReport]);
+
+  useEffect(() => {
+    // changing the groupBy should wait until the data is loaded to update the grouping
+    const newGrouping = getGrouping(groupBy);
+    if (datamapReport) {
+      tableInstance.setGrouping(newGrouping);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [datamapReport]);
+
+  const debouncedSetColumnSizing = useMemo(
+    () => debounce(setColumnSizing, 300),
+    [setColumnSizing],
+  );
+
+  useEffect(() => {
+    // update stored column sizing when it changes
+    const colSizing = tableInstance.getState().columnSizing;
+    if (colSizing) {
+      debouncedSetColumnSizing(colSizing);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tableInstance.getState().columnSizing]);
 
   const getMenuDisplayValue = () => {
     switch (groupBy) {
@@ -1043,37 +355,134 @@ export const DatamapReportTable = () => {
     }
   };
 
+  const handleSavedReport = (
+    savedReport: CustomReportResponse | null,
+    resetColumnNameForm: (
+      nextState?: Partial<FormikState<Record<string, string>>> | undefined,
+    ) => void,
+  ) => {
+    if (!savedReport && !savedCustomReportId) {
+      return;
+    }
+    if (!savedReport) {
+      try {
+        setSavedCustomReportId("");
+
+        /* NOTE: we can't just use tableInstance.reset() here because it will reset the table to the initial state, which is likely to include report settings that were saved in the user's local storage. Instead, we need to reset each individual setting to its default value. */
+
+        // reset column visibility (must happen before updating order)
+        setColumnVisibility(DEFAULT_COLUMN_VISIBILITY);
+        tableInstance.toggleAllColumnsVisible(true);
+        tableInstance.setColumnVisibility(DEFAULT_COLUMN_VISIBILITY);
+
+        // reset column order (must happen prior to updating groupBy)
+        setColumnOrder([]);
+        tableInstance.setColumnOrder([]);
+
+        // reset groupBy and filters (will automatically update the tableinstance)
+        setGroupBy(DATAMAP_GROUPING.SYSTEM_DATA_USE);
+        setSelectedFilters(DEFAULT_COLUMN_FILTERS);
+
+        // reset column names
+        setColumnNameMapOverrides({});
+        resetColumnNameForm({ values: {} });
+      } catch (error: any) {
+        toast({
+          status: "error",
+          description: "There was a problem resetting the report.",
+        });
+      }
+      return;
+    }
+    try {
+      if (savedReport.config?.table_state) {
+        const {
+          groupBy: savedGroupBy,
+          filters: savedFilters,
+          columnOrder: savedColumnOrder,
+        } = savedReport.config.table_state;
+        const savedColumnVisibility: Record<string, boolean> = {};
+
+        Object.entries(savedReport.config.column_map ?? {}).forEach(
+          ([key, value]) => {
+            savedColumnVisibility[key] = value.enabled || false;
+          },
+        );
+
+        if (savedGroupBy) {
+          // No need to manually update the tableInstance here; setting the groupBy will trigger the useEffect to update the grouping.
+          setGroupBy(savedGroupBy);
+        }
+        if (savedFilters) {
+          setSelectedFilters(savedFilters);
+        }
+        if (savedColumnOrder) {
+          setColumnOrder(savedColumnOrder);
+          tableInstance.setColumnOrder(savedColumnOrder);
+        }
+        if (savedColumnVisibility) {
+          setColumnVisibility(savedColumnVisibility);
+          tableInstance.setColumnVisibility(savedColumnVisibility);
+        }
+      }
+      if (savedReport.config?.column_map) {
+        const columnNameMap: Record<string, string> = {};
+        Object.entries(savedReport.config.column_map ?? {}).forEach(
+          ([key, value]) => {
+            if (value.label) {
+              columnNameMap[key] = value.label;
+            }
+          },
+        );
+        setColumnNameMapOverrides(columnNameMap);
+        resetColumnNameForm({ values: columnNameMap });
+      }
+      setSavedCustomReportId(savedReport.id);
+      toast({
+        status: "success",
+        description: "Report applied successfully.",
+      });
+    } catch (error: any) {
+      toast({
+        status: "error",
+        description: "There was a problem applying report.",
+      });
+    }
+  };
+
   if (isReportLoading || isLoadingHealthCheck || isLoadingFidesLang) {
     return <TableSkeletonLoader rowHeight={36} numRows={15} />;
   }
 
-  const handleFilterChange = (newFilters: DatamapReportFilterSelections) => {
-    setSelectedDataUseFilters(
-      getQueryParamsFromArray(newFilters.dataUses, "data_uses")
-    );
-    setSelectedDataCategoriesFilters(
-      getQueryParamsFromArray(newFilters.dataCategories, "data_categories")
-    );
-    setSelectedDataSubjectFilters(
-      getQueryParamsFromArray(newFilters.dataSubjects, "data_subjects")
-    );
-  };
-
   return (
     <Flex flex={1} direction="column" overflow="auto">
       <DatamapReportFilterModal
+        columnNameMap={{ ...DEFAULT_COLUMN_NAMES, ...columnNameMapOverrides }}
+        selectedFilters={selectedFilters}
         isOpen={isFilterModalOpen}
         onClose={onFilterModalClose}
-        onFilterChange={handleFilterChange}
+        onFilterChange={(newFilters) => {
+          setSavedCustomReportId("");
+          setSelectedFilters(newFilters);
+        }}
       />
       <ColumnSettingsModal<DatamapReport>
         isOpen={isColumnSettingsOpen}
         onClose={onColumnSettingsClose}
         headerText="Data map settings"
+        columnNameMap={{ ...DEFAULT_COLUMN_NAMES, ...columnNameMapOverrides }}
         prefixColumns={getPrefixColumns(groupBy)}
         tableInstance={tableInstance}
+        savedCustomReportId={savedCustomReportId}
         onColumnOrderChange={(newColumnOrder) => {
+          setSavedCustomReportId("");
+          tableInstance.setColumnOrder(newColumnOrder);
           setColumnOrder(newColumnOrder);
+        }}
+        onColumnVisibilityChange={(newColumnVisibility) => {
+          setSavedCustomReportId("");
+          tableInstance.setColumnVisibility(newColumnVisibility);
+          setColumnVisibility(newColumnVisibility);
         }}
       />
       <ReportExportModal
@@ -1082,79 +491,161 @@ export const DatamapReportTable = () => {
         onConfirm={onExport}
         isLoading={isExportingReport}
       />
-      <TableActionBar>
-        <GlobalFilterV2
-          globalFilter={globalFilter}
-          setGlobalFilter={updateGlobalFilter}
-          placeholder="System name, Fides key, or ID"
-        />
-        <Flex alignItems="center" gap={2}>
-          <Menu>
-            <MenuButton
-              as={Button}
-              size="xs"
-              variant="outline"
-              rightIcon={<ChevronDownIcon />}
-              spinnerPlacement="end"
-              isLoading={groupChangeStarted}
-              loadingText={`Group by ${getMenuDisplayValue()}`}
-              data-testid="group-by-menu"
-            >
-              Group by {getMenuDisplayValue()}
-            </MenuButton>
-            <MenuList zIndex={11} data-testid="group-by-menu-list">
-              <MenuItemOption
-                onClick={() => {
-                  onGroupChange(DATAMAP_GROUPING.SYSTEM_DATA_USE);
-                }}
-                isChecked={DATAMAP_GROUPING.SYSTEM_DATA_USE === groupBy}
-                value={DATAMAP_GROUPING.SYSTEM_DATA_USE}
-                data-testid="group-by-system-data-use"
-              >
-                System
-              </MenuItemOption>
-              <MenuItemOption
-                onClick={() => {
-                  onGroupChange(DATAMAP_GROUPING.DATA_USE_SYSTEM);
-                }}
-                isChecked={DATAMAP_GROUPING.DATA_USE_SYSTEM === groupBy}
-                value={DATAMAP_GROUPING.DATA_USE_SYSTEM}
-                data-testid="group-by-data-use-system"
-              >
-                Data use
-              </MenuItemOption>
-            </MenuList>
-          </Menu>
-          <Button
-            data-testid="edit-columns-btn"
-            size="xs"
-            variant="outline"
-            onClick={onColumnSettingsOpen}
-          >
-            Edit columns
-          </Button>
-          <Button
-            data-testid="filter-multiple-systems-btn"
-            size="xs"
-            variant="outline"
-            onClick={onFilterModalOpen}
-          >
-            Filter
-          </Button>
-          <IconButton
-            aria-label="Export report"
-            data-testid="export-btn"
-            size="xs"
-            variant="outline"
-            onClick={onExportReportOpen}
-            icon={<DownloadLightIcon />}
-          />
-        </Flex>
-      </TableActionBar>
 
-      <FidesTableV2<DatamapReport> tableInstance={tableInstance} />
+      <Formik
+        initialValues={columnNameMapOverrides}
+        onSubmit={handleColumnRenaming}
+      >
+        {({ submitForm, resetForm }) => (
+          <>
+            <TableActionBar>
+              <GlobalFilterV2
+                globalFilter={globalFilter}
+                setGlobalFilter={updateGlobalFilter}
+                placeholder="System name, Fides key, or ID"
+              />
+              <Flex alignItems="center" gap={2}>
+                {userCanSeeReports && (
+                  <CustomReportTemplates
+                    reportType={ReportType.DATAMAP}
+                    savedReportId={savedCustomReportId}
+                    tableStateToSave={{
+                      groupBy,
+                      filters: selectedFilters,
+                      columnOrder,
+                      columnVisibility,
+                    }}
+                    currentColumnMap={columnNameMapOverrides}
+                    onCustomReportSaved={(customReport) =>
+                      handleSavedReport(customReport, resetForm)
+                    }
+                    onSavedReportDeleted={() => {
+                      setSavedCustomReportId("");
+                    }}
+                  />
+                )}
+                <Menu>
+                  <MenuButton
+                    as={Button}
+                    icon={<ChevronDownIcon />}
+                    iconPosition="end"
+                    loading={groupChangeStarted}
+                    data-testid="group-by-menu"
+                  >
+                    Group by {getMenuDisplayValue()}
+                  </MenuButton>
+                  <MenuList zIndex={11} data-testid="group-by-menu-list">
+                    <MenuItemOption
+                      onClick={() => {
+                        onGroupChange(DATAMAP_GROUPING.SYSTEM_DATA_USE);
+                      }}
+                      isChecked={DATAMAP_GROUPING.SYSTEM_DATA_USE === groupBy}
+                      value={DATAMAP_GROUPING.SYSTEM_DATA_USE}
+                      data-testid="group-by-system-data-use"
+                    >
+                      System
+                    </MenuItemOption>
+                    <MenuItemOption
+                      onClick={() => {
+                        onGroupChange(DATAMAP_GROUPING.DATA_USE_SYSTEM);
+                      }}
+                      isChecked={DATAMAP_GROUPING.DATA_USE_SYSTEM === groupBy}
+                      value={DATAMAP_GROUPING.DATA_USE_SYSTEM}
+                      data-testid="group-by-data-use-system"
+                    >
+                      Data use
+                    </MenuItemOption>
+                  </MenuList>
+                </Menu>
+                <Button
+                  data-testid="filter-multiple-systems-btn"
+                  onClick={onFilterModalOpen}
+                >
+                  Filter
+                </Button>
+                <Button
+                  aria-label="Export report"
+                  data-testid="export-btn"
+                  onClick={onExportReportOpen}
+                  icon={<DownloadLightIcon ml="1.5px" />}
+                />
+                <Menu placement="bottom-end">
+                  <MenuButton
+                    as={Button}
+                    icon={<MoreIcon className="rotate-90" />}
+                    data-testid="more-menu"
+                    aria-label="More options"
+                    className="w-6 gap-0"
+                  />
+                  <MenuList data-testid="more-menu-list">
+                    <MenuItem
+                      onClick={onColumnSettingsOpen}
+                      data-testid="edit-columns-btn"
+                    >
+                      Edit columns
+                    </MenuItem>
+                    <MenuItem
+                      onClick={() => setIsRenamingColumns(true)}
+                      data-testid="rename-columns-btn"
+                    >
+                      Rename columns
+                    </MenuItem>
+                  </MenuList>
+                </Menu>
+                {isRenamingColumns && (
+                  <div className="flex gap-2">
+                    <Button
+                      size="small"
+                      data-testid="rename-columns-reset-btn"
+                      onClick={() => {
+                        setColumnNameMapOverrides({});
+                        setSavedCustomReportId("");
+                        resetForm({ values: {} });
+                        setIsRenamingColumns(false);
+                      }}
+                    >
+                      Reset all
+                    </Button>
+                    <Button
+                      size="small"
+                      data-testid="rename-columns-cancel-btn"
+                      onClick={() => {
+                        resetForm({ values: columnNameMapOverrides });
+                        setIsRenamingColumns(false);
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      size="small"
+                      type="primary"
+                      htmlType="submit"
+                      data-testid="rename-columns-apply-btn"
+                      onClick={submitForm}
+                    >
+                      Apply
+                    </Button>
+                  </div>
+                )}
+              </Flex>
+            </TableActionBar>
+            <Form>
+              <FidesTableV2<DatamapReport>
+                tableInstance={tableInstance}
+                columnExpandStorageKey={
+                  DATAMAP_LOCAL_STORAGE_KEYS.COLUMN_EXPANSION_STATE
+                }
+                columnWrapStorageKey={
+                  DATAMAP_LOCAL_STORAGE_KEYS.WRAPPING_COLUMNS
+                }
+              />
+            </Form>
+          </>
+        )}
+      </Formik>
+
       <PaginationBar
-        totalRows={totalRows}
+        totalRows={totalRows || 0}
         pageSizes={PAGE_SIZES}
         setPageSize={setPageSize}
         onPreviousPageClick={onPreviousPageClick}

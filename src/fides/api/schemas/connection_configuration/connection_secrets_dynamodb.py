@@ -1,36 +1,23 @@
-from typing import List
+from typing import ClassVar, List
 
 from pydantic import Field
 
 from fides.api.schemas.base_class import NoValidationSchema
-from fides.api.schemas.connection_configuration.connection_secrets import (
-    ConnectionConfigSecretsSchema,
+from fides.api.schemas.connection_configuration.connection_secrets_base_aws import (
+    BaseAWSSchema,
 )
 
 
-class DynamoDBSchema(ConnectionConfigSecretsSchema):
+class DynamoDBSchema(BaseAWSSchema):
     """Schema to validate the secrets needed to connect to an Amazon DynamoDB cluster"""
 
     region_name: str = Field(
         title="Region",
         description="The AWS region where your DynamoDB table is located (ex. us-west-2).",
     )
-    aws_access_key_id: str = Field(
-        title="Access Key ID",
-        description="Part of the credentials that provide access to your AWS account.",
-    )
-    aws_secret_access_key: str = Field(
-        title="Secret Access Key",
-        description="Part of the credentials that provide access to your AWS account.",
-        sensitive=True,
-    )
 
-    # TODO: include an aws_assume_role_arn and more closely follow the pattern in `connection_secrets_s3`
-
-    _required_components: List[str] = [
-        "region_name",
-        "aws_access_key_id",
-        "aws_secret_access_key",
+    _required_components: ClassVar[List[str]] = BaseAWSSchema._required_components + [
+        "region_name"
     ]
 
 

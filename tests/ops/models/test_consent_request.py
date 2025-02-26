@@ -1,6 +1,8 @@
 from unittest import mock
 from unittest.mock import MagicMock
 
+import pytest
+
 from fides.api.api.v1.endpoints.consent_request_endpoints import (
     queue_privacy_request_to_propagate_consent_old_workflow,
 )
@@ -19,7 +21,7 @@ from fides.api.schemas.privacy_request import (
     ConsentWithExecutableStatus,
     PrivacyRequestResponse,
 )
-from fides.api.schemas.redis_cache import Identity
+from fides.api.schemas.redis_cache import CustomPrivacyRequestField, Identity
 
 paused_location = CollectionAddress("test_dataset", "test_collection")
 
@@ -118,34 +120,45 @@ def test_consent_request(db):
 
 
 class TestQueuePrivacyRequestToPropagateConsentHelper:
+
+    @pytest.mark.usefixtures("allow_custom_privacy_request_field_collection_enabled")
     @mock.patch(
-        "fides.api.api.v1.endpoints.consent_request_endpoints.create_privacy_request_func"
+        "fides.service.privacy_request.privacy_request_service.PrivacyRequestService.create_bulk_privacy_requests"
     )
     def test_queue_privacy_request_to_propagate_consent(
         self, mock_create_privacy_request, db, consent_policy
     ):
-        custom_fields = {"first_name": {"label": "First name", "value": "John"}}
-        mock_consent_request = MagicMock(spec=ConsentRequest)
-        mock_consent_request.id = "123"
-        mock_consent_request.get_persisted_custom_privacy_request_fields.return_value = (
-            custom_fields
-        )
-        mock_create_privacy_request.return_value = BulkPostPrivacyRequests(
-            succeeded=[
-                PrivacyRequestResponse(
-                    id="fake_privacy_request_id",
-                    status=PrivacyRequestStatus.pending,
-                    policy=PolicyResponse.from_orm(consent_policy),
-                )
-            ],
-            failed=[],
-        )
         provided_identity_data = {
             "privacy_request_id": None,
             "field_name": "email",
             "encrypted_value": {"value": "test@email.com"},
         }
         provided_identity = ProvidedIdentity.create(db, data=provided_identity_data)
+
+        consent_request = ConsentRequest.create(
+            db=db,
+            data={
+                "provided_identity_id": provided_identity.id,
+            },
+        )
+
+        custom_fields = {
+            "first_name": CustomPrivacyRequestField(label="First name", value="John")
+        }
+        consent_request.persist_custom_privacy_request_fields(
+            db=db, custom_privacy_request_fields=custom_fields
+        )
+
+        mock_create_privacy_request.return_value = BulkPostPrivacyRequests(
+            succeeded=[
+                PrivacyRequestResponse(
+                    id="fake_privacy_request_id",
+                    status=PrivacyRequestStatus.pending,
+                    policy=PolicyResponse.model_validate(consent_policy),
+                )
+            ],
+            failed=[],
+        )
 
         consent_preferences = ConsentPreferences(
             consent=[{"data_use": "marketing.advertising", "opt_in": False}]
@@ -161,57 +174,57 @@ class TestQueuePrivacyRequestToPropagateConsentHelper:
             provided_identity=provided_identity,
             policy=DEFAULT_CONSENT_POLICY,
             consent_preferences=consent_preferences,
-            consent_request=mock_consent_request,
+            consent_request=consent_request,
             executable_consents=executable_consents,
         )
         assert mock_create_privacy_request.called
 
+        call_args = mock_create_privacy_request.call_args[0][0]
         call_kwargs = mock_create_privacy_request.call_args[1]
-        assert call_kwargs["db"] == db
-        assert call_kwargs["data"][0].identity.email == "test@email.com"
-        assert len(call_kwargs["data"][0].consent_preferences) == 1
-        assert (
-            call_kwargs["data"][0].consent_preferences[0].data_use
-            == "marketing.advertising"
-        )
-        assert call_kwargs["data"][0].consent_preferences[0].opt_in is False
+
+        request_data = call_args[0]
+        assert request_data.identity.email == "test@email.com"
+        assert len(request_data.consent_preferences) == 1
+        assert request_data.consent_preferences[0].data_use == "marketing.advertising"
+        assert request_data.consent_preferences[0].opt_in is False
+
         assert (
             call_kwargs["authenticated"] is True
         ), "We already validated identity with a verification code earlier in the request"
 
-        assert call_kwargs["data"][0].custom_privacy_request_fields == custom_fields
+        custom_fields = request_data.custom_privacy_request_fields
+        if custom_fields:
+            for label, value in custom_fields.items():
+                custom_fields[label] = value.model_dump(mode="json")
+
+        assert custom_fields == {"first_name": {"label": "First name", "value": "John"}}
 
         provided_identity.delete(db)
 
     @mock.patch(
-        "fides.api.api.v1.endpoints.consent_request_endpoints.create_privacy_request_func"
+        "fides.service.privacy_request.privacy_request_service.PrivacyRequestService.create_bulk_privacy_requests"
     )
     def test_do_not_queue_privacy_request_if_no_executable_preferences(
         self, mock_create_privacy_request, db, consent_policy
     ):
-        custom_fields = {"first_name": {"label": "First name", "value": "John"}}
-        mock_consent_request = MagicMock(spec=ConsentRequest)
-        mock_consent_request.id = "123"
-        mock_consent_request.get_persisted_custom_privacy_request_fields.return_value = (
-            custom_fields
-        )
-        mock_create_privacy_request.return_value = BulkPostPrivacyRequests(
-            succeeded=[
-                PrivacyRequestResponse(
-                    id="fake_privacy_request_id",
-                    status=PrivacyRequestStatus.pending,
-                    policy=PolicyResponse.from_orm(consent_policy),
-                )
-            ],
-            failed=[],
-        )
         provided_identity_data = {
             "privacy_request_id": None,
             "field_name": "email",
             "encrypted_value": {"value": "test@email.com"},
         }
         provided_identity = ProvidedIdentity.create(db, data=provided_identity_data)
-
+        consent_request = ConsentRequest.create(
+            db=db,
+            data={
+                "provided_identity_id": provided_identity.id,
+            },
+        )
+        custom_fields = {
+            "first_name": CustomPrivacyRequestField(label="First name", value="John")
+        }
+        consent_request.persist_custom_privacy_request_fields(
+            db=db, custom_privacy_request_fields=custom_fields
+        )
         consent_preferences = ConsentPreferences(
             consent=[{"data_use": "marketing.advertising", "opt_in": False}]
         )
@@ -221,7 +234,7 @@ class TestQueuePrivacyRequestToPropagateConsentHelper:
             provided_identity=provided_identity,
             policy=DEFAULT_CONSENT_POLICY,
             consent_preferences=consent_preferences,
-            consent_request=mock_consent_request,
+            consent_request=consent_request,
             executable_consents=[
                 ConsentWithExecutableStatus(
                     data_use="marketing.advertising", executable=False
@@ -231,34 +244,41 @@ class TestQueuePrivacyRequestToPropagateConsentHelper:
 
         assert not mock_create_privacy_request.called
 
+    @pytest.mark.usefixtures("allow_custom_privacy_request_field_collection_enabled")
     @mock.patch(
-        "fides.api.api.v1.endpoints.consent_request_endpoints.create_privacy_request_func"
+        "fides.service.privacy_request.privacy_request_service.PrivacyRequestService.create_bulk_privacy_requests"
     )
     def test_merge_in_browser_identity_with_provided_identity(
         self, mock_create_privacy_request, db, consent_policy
     ):
-        custom_fields = {"first_name": {"label": "First name", "value": "John"}}
-        mock_consent_request = MagicMock(spec=ConsentRequest)
-        mock_consent_request.id = "123"
-        mock_consent_request.get_persisted_custom_privacy_request_fields.return_value = (
-            custom_fields
-        )
-        mock_create_privacy_request.return_value = BulkPostPrivacyRequests(
-            succeeded=[
-                PrivacyRequestResponse(
-                    id="fake_privacy_request_id",
-                    status=PrivacyRequestStatus.pending,
-                    policy=PolicyResponse.from_orm(consent_policy),
-                )
-            ],
-            failed=[],
-        )
         provided_identity_data = {
             "privacy_request_id": None,
             "field_name": "email",
             "encrypted_value": {"value": "test@email.com"},
         }
         provided_identity = ProvidedIdentity.create(db, data=provided_identity_data)
+        consent_request = ConsentRequest.create(
+            db=db,
+            data={
+                "provided_identity_id": provided_identity.id,
+            },
+        )
+        custom_fields = {
+            "first_name": CustomPrivacyRequestField(label="First name", value="John")
+        }
+        consent_request.persist_custom_privacy_request_fields(
+            db=db, custom_privacy_request_fields=custom_fields
+        )
+        mock_create_privacy_request.return_value = BulkPostPrivacyRequests(
+            succeeded=[
+                PrivacyRequestResponse(
+                    id="fake_privacy_request_id",
+                    status=PrivacyRequestStatus.pending,
+                    policy=PolicyResponse.model_validate(consent_policy),
+                )
+            ],
+            failed=[],
+        )
         browser_identity = Identity(ga_client_id="user_id_from_browser")
 
         consent_preferences = ConsentPreferences(
@@ -270,7 +290,7 @@ class TestQueuePrivacyRequestToPropagateConsentHelper:
             provided_identity=provided_identity,
             policy=DEFAULT_CONSENT_POLICY,
             consent_preferences=consent_preferences,
-            consent_request=mock_consent_request,
+            consent_request=consent_request,
             executable_consents=[
                 ConsentWithExecutableStatus(
                     data_use="marketing.advertising", executable=True
@@ -280,11 +300,19 @@ class TestQueuePrivacyRequestToPropagateConsentHelper:
         )
 
         assert mock_create_privacy_request.called
-        call_kwargs = mock_create_privacy_request.call_args[1]
-        identity_of_privacy_request = call_kwargs["data"][0].identity
+
+        request_data = mock_create_privacy_request.call_args[0][0]
+        request = request_data[0]
+
+        identity_of_privacy_request = request.identity
         assert identity_of_privacy_request.email == "test@email.com"
         assert identity_of_privacy_request.ga_client_id == browser_identity.ga_client_id
 
-        assert call_kwargs["data"][0].custom_privacy_request_fields == custom_fields
+        custom_fields = request.custom_privacy_request_fields
+        if custom_fields:
+            for label, value in custom_fields.items():
+                custom_fields[label] = value.model_dump(mode="json")
+
+        assert custom_fields == {"first_name": {"label": "First name", "value": "John"}}
 
         provided_identity.delete(db)

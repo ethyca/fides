@@ -2,8 +2,11 @@
   "name": "Example modal experience",
   "disabled": true,
   "dismissable": true,
+  "show_layer1_notices": false,
+  "layer1_button_options": "opt_in_opt_out",
   "allow_language_selection": false,
   "auto_detect_language": true,
+  "auto_subdomain_cookie_deletion": true,
   "regions": ["us_ca", "us_co", "us_ct", "us_ut", "us_va"],
   "id": "pri_001",
   "created_at": "2024-03-22T20:06:27.119285+00:00",
@@ -55,6 +58,7 @@
       "save_button_label": "Save",
       "title": "Manage your consent preferences",
       "banner_description": null,
+      "purpose_header": "We use data for the following purposes",
       "description": "We use cookies and similar methods to recognize visitors and remember their preferences. We may also use them to measure ad campaign effectiveness, target ads, and analyze site traffic. Depending on your location, you may opt-in or opt out of the use of these technologies.",
       "privacy_experience_config_history_id": "pri_4aab49f4-8dfd-4f4b-a004-feda16971e2c"
     },
@@ -71,6 +75,7 @@
       "save_button_label": "Enregistrer",
       "title": "Gestion du consentement et des préférences",
       "banner_description": null,
+      "purpose_header": "Nous utilisons les données aux fins suivantes",
       "description": "Nous utilisons des cookies et des méthodes similaires pour reconnaître les visiteurs de ce site et nous souvenir de leurs préférences. Nous pouvons également les utiliser pour mesurer l’efficacité d’une campagne publicitaire, proposer des publicités ciblées et analyser le trafic du site. En fonction de votre emplacement géographique, vous pouvez choisir d’accepter ou de refuser l’utilisation de ces technologies."
     }
   ],

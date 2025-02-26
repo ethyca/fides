@@ -11,6 +11,7 @@ connection:
       dbname: $FIDES_DEPLOY__CONNECTORS__POSTGRES__DBNAME
       username: $FIDES_DEPLOY__CONNECTORS__POSTGRES__USERNAME
       password: $FIDES_DEPLOY__CONNECTORS__POSTGRES__PASSWORD
+      ssh_required: $FIDES_DEPLOY__CONNECTORS__POSTGRES__SSH_REQUIRED
   - key: cookie_house_loyalty_database
     name: Postgres Connector (Loyalty)
     connection_type: postgres
@@ -68,3 +69,15 @@ connection:
     access: write
     secrets:
       api_key: $FIDES_DEPLOY__CONNECTORS__MAILCHIMP_TRANSACTIONAL_API_KEY
+  - key: cookie_house_custom_request_fields_database
+    name: Postgres Connector (Custom Request Fields)
+    connection_type: postgres
+    access: write
+    dataset: postgres_example_custom_request_field_dataset
+    system_key: cookie_house_custom_request_fields_database
+    secrets:
+      host: $FIDES_DEPLOY__CONNECTORS__POSTGRES__HOST
+      port: $FIDES_DEPLOY__CONNECTORS__POSTGRES__PORT
+      dbname: $FIDES_DEPLOY__CONNECTORS__POSTGRES__DBNAME
+      username: $FIDES_DEPLOY__CONNECTORS__POSTGRES__USERNAME
+      password: $FIDES_DEPLOY__CONNECTORS__POSTGRES__PASSWORD

@@ -22,7 +22,15 @@ class FidesopsException(Exception):
 
 
 class TraversalError(FidesopsException):
-    """Fidesops error with the names of all nodes that could not be reached."""
+    """Error with the names of all nodes that could not be reached."""
+
+
+class UnreachableNodesError(TraversalError):
+    """Error with the names of all nodes that could not be reached, inherits from TraversalError."""
+
+
+class UnreachableEdgesError(TraversalError):
+    """Error with the names of all edges that could not be reached, inherits from TraversalError."""
 
 
 class ValidationError(FidesopsException):
@@ -203,6 +211,14 @@ class EmailTemplateUnhandledActionType(FidesopsException):
     """Custom Exception - Email Template Unhandled ActionType Error"""
 
 
+class EmailTemplateNotFoundException(FidesopsException):
+    """Custom Exception - Email Template Not Found"""
+
+
+class MessagingTemplateValidationException(FidesopsException):
+    """Custom Exception - Messaging Template Could Not Be Created, Updated, or Deleted"""
+
+
 class OAuth2TokenException(FidesopsException):
     """Custom Exception - Unable to access or refresh OAuth2 tokens for SaaS connector"""
 
@@ -239,8 +255,8 @@ class NoSuchStrategyException(ValueError):
     """Exception for when a masking strategy does not exist"""
 
 
-class FunctionalityNotConfigured(Exception):
-    """Custom exception for when invoked functionality is unavailable due to configuration."""
+class RedisNotConfigured(Exception):
+    """Redis cache is unavailable due to configuration"""
 
 
 class InvalidSaaSRequestOverrideException(ValueError):
@@ -361,3 +377,11 @@ class KeyValidationError(Exception):
 
 class MissingConfig(Exception):
     """Custom exception for when no valid configuration file is provided."""
+
+
+class MonitorConfigNotFoundException(BaseException):
+    """MonitorConfig could not be found"""
+
+
+class MissingNamespaceSchemaException(BaseException):
+    """Attempting to use namespace fides_meta without specifying the schema to validate it."""

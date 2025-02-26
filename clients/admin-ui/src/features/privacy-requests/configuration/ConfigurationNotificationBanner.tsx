@@ -1,7 +1,7 @@
-import { Box, Button, Stack, Text } from "fidesui";
+import { AntButton as Button, Box, Stack, Text } from "fidesui";
 import { useRouter } from "next/router";
 
-import { PRIVACY_REQUESTS_CONFIGURATION_ROUTE } from "~/features/common/nav/v2/routes";
+import { PRIVACY_REQUESTS_CONFIGURATION_ROUTE } from "~/features/common/nav/routes";
 
 const ConfigurationNotificationBanner = () => {
   const router = useRouter();
@@ -29,9 +29,7 @@ const ConfigurationNotificationBanner = () => {
           <Text fontWeight="semibold">
             Configure your storage and messaging provider
           </Text>
-          <Button size="sm" variant="outline" onClick={handleClick}>
-            Configure
-          </Button>
+          <Button onClick={handleClick}>Configure</Button>
         </Stack>
 
         <Text>

@@ -1,6 +1,6 @@
 import {
+  AntButton as Button,
   Box,
-  Button,
   SimpleGrid,
   Text,
   useDisclosure,
@@ -19,7 +19,7 @@ import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { LocationRegulationResponse, Selection } from "~/types/api";
 import { isErrorResult } from "~/types/errors";
 
-import { REGULATIONS_ROUTE } from "../common/nav/v2/routes";
+import { REGULATIONS_ROUTE } from "../common/nav/routes";
 import ToastLink from "../common/ToastLink";
 import LocationPickerCard from "./LocationPickerCard";
 import { usePatchLocationsRegulationsMutation } from "./locations.slice";
@@ -29,7 +29,7 @@ const LocationManagement = ({ data }: { data: LocationRegulationResponse }) => {
   const toast = useToast();
   const confirmationDisclosure = useDisclosure();
   const [draftSelections, setDraftSelections] = useState<Array<Selection>>(
-    data.locations ?? []
+    data.locations ?? [],
   );
   const [search, setSearch] = useState("");
   const [patchLocationsRegulationsMutationTrigger, { isLoading: isSaving }] =
@@ -39,9 +39,9 @@ const LocationManagement = ({ data }: { data: LocationRegulationResponse }) => {
     () =>
       groupLocationsByContinent(
         data.locations || [],
-        data.location_groups || []
+        data.location_groups || [],
       ),
-    [data]
+    [data],
   );
 
   const showSave = !_.isEqual(draftSelections, data.locations);
@@ -73,8 +73,8 @@ const LocationManagement = ({ data }: { data: LocationRegulationResponse }) => {
             <ToastLink onClick={goToRegulations}>
               View regulations here.
             </ToastLink>
-          </Text>
-        )
+          </Text>,
+        ),
       );
     }
   };
@@ -83,7 +83,7 @@ const LocationManagement = ({ data }: { data: LocationRegulationResponse }) => {
   const handleDraftChange = (updatedSelections: Array<Selection>) => {
     const updated = draftSelections.map((draftSelection) => {
       const updatedSelection = updatedSelections.find(
-        (s) => s.id === draftSelection.id
+        (s) => s.id === draftSelection.id,
       );
       return updatedSelection ?? draftSelection;
     });
@@ -98,7 +98,6 @@ const LocationManagement = ({ data }: { data: LocationRegulationResponse }) => {
           placeholder="Search"
           search={search}
           onClear={() => setSearch("")}
-          data-testid="search-bar"
         />
       </Box>
       <SimpleGrid columns={{ base: 1, md: 2, xl: 3 }} spacing={6} width="100%">
@@ -113,13 +112,13 @@ const LocationManagement = ({ data }: { data: LocationRegulationResponse }) => {
                 .filter(
                   (d) =>
                     continentData.locations.find((l) => l.id === d.id) &&
-                    d.selected
+                    d.selected,
                 )
                 .map((d) => d.id)}
               onChange={handleDraftChange}
               search={search}
             />
-          )
+          ),
         )}
       </SimpleGrid>
       <ConfirmationModal
@@ -136,10 +135,9 @@ const LocationManagement = ({ data }: { data: LocationRegulationResponse }) => {
       />
       {showSave ? (
         <Button
-          colorScheme="primary"
-          size="sm"
+          type="primary"
           onClick={confirmationDisclosure.onOpen}
-          isLoading={isSaving}
+          loading={isSaving}
           data-testid="save-btn"
         >
           Save

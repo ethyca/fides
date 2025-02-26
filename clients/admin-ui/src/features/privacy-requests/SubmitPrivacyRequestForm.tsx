@@ -1,12 +1,8 @@
-import { Button, ButtonGroup, Stack } from "fidesui";
+import { AntButton as Button, Stack } from "fidesui";
 import { Form, Formik } from "formik";
 import { lazy } from "yup";
 
-import {
-  CustomCheckbox,
-  CustomSelect,
-  CustomTextInput,
-} from "~/features/common/form/inputs";
+import { CustomCheckbox, CustomTextInput } from "~/features/common/form/inputs";
 import {
   findActionFromPolicyKey,
   generateValidationSchemaFromAction,
@@ -18,6 +14,8 @@ import {
   PrivacyRequestCreate,
   PrivacyRequestOption,
 } from "~/types/api";
+
+import { ControlledSelect } from "../common/form/ControlledSelect";
 
 export type PrivacyRequestSubmitFormValues = PrivacyRequestCreate & {
   is_verified: boolean;
@@ -32,7 +30,7 @@ const defaultInitialValues: PrivacyRequestSubmitFormValues = {
 const IdentityFields = ({
   identityInputs,
 }: {
-  identityInputs?: IdentityInputs;
+  identityInputs?: IdentityInputs | null;
 }) => {
   if (!identityInputs) {
     return null;
@@ -43,7 +41,7 @@ const IdentityFields = ({
         <CustomTextInput
           name="identity.email"
           label="User email address"
-          isRequired={identityInputs.email === IdentityInputs.email.REQUIRED}
+          isRequired={identityInputs.email === "required"}
           variant="stacked"
         />
       ) : null}
@@ -51,7 +49,7 @@ const IdentityFields = ({
         <CustomTextInput
           name="identity.phone_number"
           label="User phone number"
-          isRequired={identityInputs.phone === IdentityInputs.phone.REQUIRED}
+          isRequired={identityInputs.phone === "required"}
           variant="stacked"
         />
       ) : null}
@@ -65,7 +63,7 @@ const CustomFields = ({
   customFieldInputs?: Record<
     string,
     fides__api__schemas__privacy_center_config__CustomPrivacyRequestField
-  >;
+  > | null;
 }) => {
   if (!customFieldInputs) {
     return null;
@@ -73,17 +71,15 @@ const CustomFields = ({
   const allInputs = Object.entries(customFieldInputs);
   return (
     <>
-      {allInputs.map(([fieldName, fieldInfo]) =>
-        !fieldInfo.hidden ? (
-          <CustomTextInput
-            name={`custom_privacy_request_fields.${fieldName}.value`}
-            key={fieldName}
-            label={fieldInfo.label}
-            isRequired={fieldInfo.required}
-            variant="stacked"
-          />
-        ) : null
-      )}
+      {allInputs.map(([fieldName, fieldInfo]) => (
+        <CustomTextInput
+          name={`custom_privacy_request_fields.${fieldName}.value`}
+          key={fieldName}
+          label={fieldInfo.label}
+          isRequired={Boolean(fieldInfo.required)}
+          variant="stacked"
+        />
+      ))}
     </>
   );
 };
@@ -104,27 +100,27 @@ const SubmitPrivacyRequestForm = ({
       validationSchema={() =>
         lazy((values) =>
           generateValidationSchemaFromAction(
-            findActionFromPolicyKey(values.policy_key, config?.actions)
-          )
+            findActionFromPolicyKey(values.policy_key, config?.actions),
+          ),
         )
       }
     >
       {({ values, dirty, isValid, isSubmitting, setFieldValue }) => {
         const currentAction = findActionFromPolicyKey(
           values.policy_key,
-          config?.actions
+          config?.actions,
         );
 
-        const handleResetCustomFields = (e: any) => {
+        const handleResetCustomFields = (value: string) => {
           // when selecting a new request type, populate the Formik state with
           // labels and default values for the corresponding custom fields
-          const newAction = findActionFromPolicyKey(e.value, config?.actions);
+          const newAction = findActionFromPolicyKey(value, config?.actions);
           if (!newAction?.custom_privacy_request_fields) {
             setFieldValue(`custom_privacy_request_fields`, undefined);
             return;
           }
           const newCustomFields = Object.entries(
-            newAction.custom_privacy_request_fields
+            newAction.custom_privacy_request_fields,
           )
             .map(([fieldName, fieldInfo]) => ({
               [fieldName]: {
@@ -139,7 +135,7 @@ const SubmitPrivacyRequestForm = ({
         return (
           <Form>
             <Stack spacing={6} mb={2}>
-              <CustomSelect
+              <ControlledSelect
                 name="policy_key"
                 label="Request type"
                 options={
@@ -148,8 +144,8 @@ const SubmitPrivacyRequestForm = ({
                     value: action.policy_key,
                   })) ?? []
                 }
-                onChange={(e: any) => handleResetCustomFields(e)}
-                variant="stacked"
+                onChange={handleResetCustomFields}
+                layout="stacked"
                 isRequired
               />
               <IdentityFields identityInputs={currentAction?.identity_inputs} />
@@ -160,21 +156,18 @@ const SubmitPrivacyRequestForm = ({
                 name="is_verified"
                 label="I confirm that I have verified this user information"
               />
-              <ButtonGroup alignSelf="end" spacing={0}>
-                <Button variant="outline" size="sm" onClick={onCancel} mr={4}>
-                  Cancel
-                </Button>
+              <div className="flex gap-4 self-end">
+                <Button onClick={onCancel}>Cancel</Button>
                 <Button
-                  type="submit"
-                  colorScheme="primary"
-                  size="sm"
-                  isDisabled={!values.is_verified || !dirty || !isValid}
-                  isLoading={isSubmitting}
+                  htmlType="submit"
+                  type="primary"
+                  disabled={!values.is_verified || !dirty || !isValid}
+                  loading={isSubmitting}
                   data-testid="submit-btn"
                 >
-                  Submit
+                  Create
                 </Button>
-              </ButtonGroup>
+              </div>
             </Stack>
           </Form>
         );

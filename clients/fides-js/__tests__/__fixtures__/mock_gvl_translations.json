@@ -532,7 +532,9 @@
     }
   },
   "es": {
+    "gvlSpecificationVersion": 3,
     "vendorListVersion": 40,
+    "tcfPolicyVersion": 4,
     "lastUpdated": "2024-01-01T12:00:00Z",
     "purposes": {
       "1": {

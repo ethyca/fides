@@ -24,7 +24,7 @@ const dataSubjectsApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Data Subjects"],
     }),
-    createDataSubject: build.mutation<DataSubject, DataSubject>({
+    createDataSubject: build.mutation<DataSubject, Partial<DataSubject>>({
       query: (dataSubject) => ({
         url: `data_subject`,
         method: "POST",
@@ -45,6 +45,7 @@ const dataSubjectsApi = baseApi.injectEndpoints({
 
 export const {
   useGetAllDataSubjectsQuery,
+  useLazyGetAllDataSubjectsQuery,
   useUpdateDataSubjectMutation,
   useCreateDataSubjectMutation,
   useDeleteDataSubjectMutation,
@@ -66,18 +67,18 @@ export const selectDataSubjects: (state: RootState) => DataSubject[] =
       (RootState) => RootState,
       dataSubjectsApi.endpoints.getAllDataSubjects.select(),
     ],
-    (RootState, { data }) => data ?? emptyDataSubjects
+    (RootState, { data }) => data ?? emptyDataSubjects,
   );
 
 export const selectEnabledDataSubjects = createSelector(
   selectDataSubjects,
-  (dataSubjects) => dataSubjects.filter((ds) => ds.active) ?? emptyDataSubjects
+  (dataSubjects) => dataSubjects.filter((ds) => ds.active) ?? emptyDataSubjects,
 );
 
 export const selectDataSubjectsMap = createSelector(
   selectDataSubjects,
   (dataSubjects) =>
-    new Map(dataSubjects.map((dataSubject) => [dataSubject.name, dataSubject]))
+    new Map(dataSubjects.map((dataSubject) => [dataSubject.name, dataSubject])),
 );
 
 export const { reducer } = dataSubjectsSlice;

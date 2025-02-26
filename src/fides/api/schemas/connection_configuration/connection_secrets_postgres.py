@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import ClassVar, List, Optional
 
 from pydantic import Field
 
@@ -29,13 +29,14 @@ class PostgreSQLSchema(ConnectionConfigSecretsSchema):
         None,
         title="Password",
         description="The password used to authenticate and access the database.",
-        sensitive=True,
+        json_schema_extra={"sensitive": True},
     )
     dbname: str = Field(
         title="Database",
         description="The name of the specific database within the database server that you want to connect to.",
     )
     db_schema: Optional[str] = Field(
+        default=None,
         title="Schema",
         description="The default schema to be used for the database connection (defaults to public).",
     )
@@ -45,7 +46,7 @@ class PostgreSQLSchema(ConnectionConfigSecretsSchema):
         description="Indicates whether an SSH tunnel is required for the connection. Enable this option if your PostgreSQL server is behind a firewall and requires SSH tunneling for remote connections.",
     )
 
-    _required_components: List[str] = [
+    _required_components: ClassVar[List[str]] = [
         "host",
         "dbname",
     ]

@@ -4,15 +4,34 @@
   "files.trimFinalNewlines": true,
   "files.trimTrailingWhitespace": true,
   "eslint.workingDirectories": [
+    "./clients",
     "./clients/admin-ui",
+    "./clients/admin-ui/cypress",
     "./clients/fides-js",
     "./clients/fidesui",
     "./clients/privacy-center",
+    "./clients/privacy-center/cypress",
     "./clients/cypress-e2e",
     "./clients/sample-app"
   ],
   "typescript.enablePromptUseWorkspaceTsdk": true,
   "typescript.tsdk": "./clients/node_modules/typescript/lib",
   "editor.defaultFormatter": "esbenp.prettier-vscode",
-  "typescript.preferences.importModuleSpecifier": "non-relative"
+  "editor.codeActionsOnSave": {
+    "source.fixAll": "explicit"
+  },
+  "[javascript, typescript, typescriptreact]": {
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": "explicit"
+    }
+  },
+  "[python]": {
+    "editor.defaultFormatter": "ms-python.black-formatter"
+  },
+  "[markdown]": {
+    "editor.formatOnSave": false
+  },
+  "files.associations": {
+    "*.css": "tailwindcss"
+  }
 }

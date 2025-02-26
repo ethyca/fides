@@ -1,17 +1,17 @@
 import {
-  Button,
-  FilterLightIcon,
+  AntButton as Button,
+  AntTag as Tag,
   Flex,
-  Tag,
   Text,
   useDisclosure,
 } from "fidesui";
-import React, { useContext } from "react";
+import { uniq } from "lodash";
+import React, { useContext, useMemo } from "react";
 
 import { useFeatures } from "~/features/common/features";
 import QuestionTooltip from "~/features/common/QuestionTooltip";
+import { GlobalFilterV2 } from "~/features/common/table/v2";
 import DatamapTableContext from "~/features/datamap/datamap-table/DatamapTableContext";
-import GlobalFilter from "~/features/datamap/datamap-table/filters/global-accordion-filter/global-accordion-filter";
 import FilterModal from "~/features/datamap/modals/FilterModal";
 
 const useSettingsBar = () => {
@@ -28,22 +28,26 @@ const useSettingsBar = () => {
   };
 };
 
-const SettingsBar: React.FC = () => {
+const SettingsBar = () => {
   const { isFilterModalOpen, onFilterModalOpen, onFilterModalClose } =
     useSettingsBar();
 
   const { tableInstance } = useContext(DatamapTableContext);
   const { systemsCount: totalSystemsCount, dictionaryService: compassEnabled } =
     useFeatures();
+
+  const rowModel = tableInstance?.getRowModel();
+  const uniqueSystemKeysFromFilteredRows = useMemo(() => {
+    const rows = rowModel?.rows || [];
+    return uniq(rows?.map((row) => row.original["system.fides_key"]));
+  }, [rowModel]);
+
   if (!tableInstance) {
     return null;
   }
 
-  const filteredSystemsCount = tableInstance.rows?.length || 0;
-  const totalFiltersApplied = tableInstance?.state.filters
-    .map<boolean[]>((f) => Object.values(f.value))
-    .flatMap((f) => f)
-    .filter((f) => f === true).length;
+  const filteredSystemsCount = uniqueSystemKeysFromFilteredRows.length;
+  const totalFiltersApplied = tableInstance.getState().columnFilters.length;
 
   return (
     <>
@@ -56,8 +60,8 @@ const SettingsBar: React.FC = () => {
         columnGap={4}
       >
         <Flex flexGrow={1}>
-          <GlobalFilter
-            globalFilter={tableInstance.state.globalFilter}
+          <GlobalFilterV2
+            globalFilter={tableInstance.getState().globalFilter}
             setGlobalFilter={tableInstance.setGlobalFilter}
           />
         </Flex>
@@ -72,29 +76,10 @@ const SettingsBar: React.FC = () => {
               ) : null}
             </Flex>
           ) : null}
-          <Button
-            aria-label="Open Filter Settings"
-            variant="solid"
-            backgroundColor="#824EF2"
-            color="white"
-            size="sm"
-            onClick={onFilterModalOpen}
-            _hover={{ opacity: 0.8 }}
-            _active={{
-              opacity: 0.8,
-            }}
-            rightIcon={<FilterLightIcon />}
-          >
+          <Button aria-label="Open Filter Settings" onClick={onFilterModalOpen}>
             Filter
             {totalFiltersApplied > 0 ? (
-              <Tag
-                ml={2}
-                backgroundColor="complimentary.800"
-                borderRadius="full"
-                color="white"
-              >
-                {totalFiltersApplied}
-              </Tag>
+              <Tag className="ml-2">{totalFiltersApplied}</Tag>
             ) : null}
           </Button>
         </Flex>

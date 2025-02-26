@@ -1,6 +1,6 @@
 import {
+  AntButton as Button,
   Box,
-  Button,
   ExternalLinkIcon,
   Flex,
   SecondaryLink,
@@ -30,7 +30,7 @@ const useSystemInfo = (system: System) => {
   const toast = useToast();
   const handleUpsertSystem = async (
     values: SystemInfoFormValues,
-    helpers: FormikHelpers<SystemInfoFormValues>
+    helpers: FormikHelpers<SystemInfoFormValues>,
   ) => {
     const requestBody: System[] = [
       {
@@ -114,19 +114,17 @@ const SystemInfo = ({ system }: SystemInfoProps) => {
               </Box>
               <Box marginTop={3}>
                 <CustomTextArea
-                  label="System Description"
+                  label="System description"
                   name="description"
                   variant="stacked"
                 />
               </Box>
               <Flex marginTop={6} justifyContent="flex-end">
                 <Button
-                  textAlign="right"
-                  type="submit"
+                  htmlType="submit"
                   disabled={!dirty || !isValid}
-                  colorScheme="primary"
-                  isLoading={isSubmitting}
-                  size="sm"
+                  loading={isSubmitting}
+                  type="primary"
                 >
                   Save
                 </Button>

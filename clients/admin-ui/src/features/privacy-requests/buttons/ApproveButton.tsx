@@ -1,4 +1,8 @@
-import { ButtonProps, forwardRef, useDisclosure } from "fidesui";
+import {
+  AntButtonProps as ButtonProps,
+  forwardRef,
+  useDisclosure,
+} from "fidesui";
 import { ReactNode } from "react";
 
 import ApprovePrivacyRequestModal from "~/features/privacy-requests/ApprovePrivacyRequestModal";
@@ -48,7 +52,7 @@ const ApproveButton = forwardRef<ApproveButtonProps, "button">(
         />
       </>
     );
-  }
+  },
 );
 
 export default ApproveButton;

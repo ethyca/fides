@@ -26,6 +26,7 @@ from fides.common.api.scope_registry import (
     PRIVACY_EXPERIENCE_READ,
     PRIVACY_NOTICE_READ,
     PRIVACY_REQUEST_CALLBACK_RESUME,
+    PRIVACY_REQUEST_DELETE,
     PRIVACY_REQUEST_NOTIFICATIONS_CREATE_OR_UPDATE,
     PRIVACY_REQUEST_NOTIFICATIONS_READ,
     PRIVACY_REQUEST_READ,
@@ -76,10 +77,12 @@ approver_scopes = [
     PRIVACY_REQUEST_CALLBACK_RESUME,
     PRIVACY_REQUEST_UPLOAD_DATA,
     PRIVACY_REQUEST_VIEW_DATA,
+    PRIVACY_REQUEST_DELETE,
+    USER_READ,  # allows approver to view user management table and update their own password
 ]
 
 
-viewer_scopes = [  # Intentionally omitted USER_PERMISSION_READ
+viewer_scopes = [  # Intentionally omitted USER_PERMISSION_READ and PRIVACY_REQUEST_READ
     CLI_OBJECTS_READ,
     CLIENT_READ,
     CONNECTION_READ,
@@ -99,7 +102,6 @@ viewer_scopes = [  # Intentionally omitted USER_PERMISSION_READ
     POLICY_READ,
     PRIVACY_EXPERIENCE_READ,
     PRIVACY_NOTICE_READ,
-    PRIVACY_REQUEST_READ,
     PRIVACY_REQUEST_NOTIFICATIONS_READ,
     RULE_READ,
     SCOPE_READ,

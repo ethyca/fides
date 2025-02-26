@@ -1,9 +1,8 @@
-import SelectDropdown from "common/dropdown/SelectDropdown";
-import { Box } from "fidesui";
 import React from "react";
 import { useSelector } from "react-redux";
 
 import { useAppDispatch } from "~/app/hooks";
+import { FilterSelect } from "~/features/common/dropdown/FilterSelect";
 
 import { CONNECTION_TYPE_FILTER_MAP } from "../add-connection/constants";
 import {
@@ -11,16 +10,18 @@ import {
   setSystemType,
 } from "../datastore-connection.slice";
 
-export type SystemTypeFilterProps = {
-  width?: string;
-};
-
-const SystemTypeFilter: React.FC<SystemTypeFilterProps> = ({ width }) => {
+const SystemTypeFilter = () => {
   // eslint-disable-next-line @typescript-eslint/naming-convention
   const { system_type } = useSelector(selectDatastoreConnectionFilters);
 
   const list = new Map(CONNECTION_TYPE_FILTER_MAP);
   list.delete("Show all");
+  const options = [...list].map(([key, value]) => {
+    return {
+      value: value.value,
+      label: key,
+    };
+  });
 
   // Hooks
   const dispatch = useAppDispatch();
@@ -31,16 +32,13 @@ const SystemTypeFilter: React.FC<SystemTypeFilterProps> = ({ width }) => {
   };
 
   return (
-    <Box>
-      <SelectDropdown
-        enableSorting={false}
-        label="System Type"
-        list={list}
-        menuButtonProps={{ width }}
-        onChange={handleChange}
-        selectedValue={system_type?.toString()}
-      />
-    </Box>
+    <FilterSelect
+      placeholder="System Type"
+      options={options}
+      onChange={handleChange}
+      defaultValue={system_type?.toString() || undefined}
+      data-testid="system-type-filter"
+    />
   );
 };
 

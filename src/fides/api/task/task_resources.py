@@ -13,6 +13,8 @@ from fides.api.service.connectors import (
     BigQueryConnector,
     DynamoDBConnector,
     FidesConnector,
+    GoogleCloudSQLMySQLConnector,
+    GoogleCloudSQLPostgresConnector,
     MariaDBConnector,
     MicrosoftSQLServerConnector,
     MongoDBConnector,
@@ -20,6 +22,7 @@ from fides.api.service.connectors import (
     PostgreSQLConnector,
     RedshiftConnector,
     SaaSConnector,
+    ScyllaConnector,
     SnowflakeConnector,
     TimescaleConnector,
 )
@@ -73,10 +76,19 @@ class Connections:
             return TimescaleConnector(connection_config)
         if connection_config.connection_type == ConnectionType.dynamodb:
             return DynamoDBConnector(connection_config)
+        if connection_config.connection_type == ConnectionType.google_cloud_sql_mysql:
+            return GoogleCloudSQLMySQLConnector(connection_config)
+        if (
+            connection_config.connection_type
+            == ConnectionType.google_cloud_sql_postgres
+        ):
+            return GoogleCloudSQLPostgresConnector(connection_config)
         if connection_config.connection_type == ConnectionType.fides:
             return FidesConnector(connection_config)
         if connection_config.connection_type == ConnectionType.s3:
             return S3Connector(connection_config)
+        if connection_config.connection_type == ConnectionType.scylla:
+            return ScyllaConnector(connection_config)
         raise NotImplementedError(
             f"No connector available for {connection_config.connection_type}"
         )
@@ -187,5 +199,5 @@ class TaskResources:
         self.connections.close() to close connections to External Databases.  This is
         really important to avoid opening up too many connections.
         """
-        logger.debug("Closing all task resources for {}", self.request.id)
+        logger.debug("Closing all task resources")
         self.connections.close()

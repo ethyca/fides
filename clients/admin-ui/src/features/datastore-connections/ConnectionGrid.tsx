@@ -37,10 +37,7 @@ type ConnectionGridProps = {
   total: number;
 };
 
-const ConnectionGrid: React.FC<ConnectionGridProps> = ({
-  items = [],
-  total = 0,
-}) => {
+const ConnectionGrid = ({ items = [], total = 0 }: ConnectionGridProps) => {
   const { page, size, handleNextPage, handlePreviousPage } =
     useConnectionGrid();
   const columns = 3;

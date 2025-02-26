@@ -1,5 +1,5 @@
-import type { NextApiRequest } from "next";
 import { UserGeolocation } from "fides-js";
+import type { NextApiRequest } from "next";
 
 /**
  * Regex to validate a [ISO 3166-2](https://en.wikipedia.org/wiki/ISO_3166-2) code:
@@ -37,14 +37,14 @@ export const LOCATION_HEADERS = [
  *
  */
 export const lookupGeolocation = async (
-  req: NextApiRequest
+  req: NextApiRequest,
 ): Promise<UserGeolocation | null> => {
   // Check for a provided "geolocation" query param
   const { geolocation: geolocationQuery } = req.query;
   if (typeof geolocationQuery === "string") {
     if (!VALID_ISO_3166_LOCATION_REGEX.test(geolocationQuery)) {
       throw new Error(
-        `Provided location (${geolocationQuery}) query parameter is not in ISO 3166 format.`
+        `Provided location (${geolocationQuery}) query parameter is not in ISO 3166 format.`,
       );
     }
 

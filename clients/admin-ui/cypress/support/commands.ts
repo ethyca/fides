@@ -4,11 +4,11 @@ import { STORAGE_ROOT_KEY } from "~/constants";
 import { RoleRegistryEnum, ScopeRegistryEnum } from "~/types/api";
 
 Cypress.Commands.add("getByTestId", (selector, options) =>
-  cy.get(`[data-testid='${selector}']`, options)
+  cy.get(`[data-testid='${selector}']`, options),
 );
 
 Cypress.Commands.add("getByTestIdPrefix", (prefix, options) =>
-  cy.get(`[data-testid^='${prefix}']`, options)
+  cy.get(`[data-testid^='${prefix}']`, options),
 );
 
 Cypress.Commands.add("login", () => {
@@ -24,7 +24,7 @@ Cypress.Commands.add("login", () => {
         // https://github.com/rt2zz/redux-persist/issues/489#issuecomment-336928988
         JSON.stringify({
           auth: JSON.stringify(authState),
-        })
+        }),
       );
     });
     cy.intercept("/api/v1/user/*/permission", {
@@ -36,10 +36,6 @@ Cypress.Commands.add("login", () => {
 const getSelectOptionList = (selectorId: string) =>
   cy.getByTestId(selectorId).click().find(`.custom-select__menu-list`);
 
-Cypress.Commands.add("getSelectValueContainer", (selectorId) =>
-  cy.getByTestId(selectorId).find(`.custom-select__value-container`)
-);
-
 Cypress.Commands.add("selectOption", (selectorId, optionText) => {
   getSelectOptionList(selectorId).contains(optionText).click();
 });
@@ -48,14 +44,14 @@ Cypress.Commands.add(
   "removeMultiValue",
   (selectorId: string, optionText: string) =>
     cy
-      .getSelectValueContainer(selectorId)
+      .getByTestId(selectorId)
       .contains(optionText)
       .siblings(".custom-select__multi-value__remove")
-      .click()
+      .click(),
 );
 
 Cypress.Commands.add("clearSingleValue", (selectorId) =>
-  cy.getByTestId(selectorId).find(".custom-select__clear-indicator").click()
+  cy.getByTestId(selectorId).find(".custom-select__clear-indicator").click(),
 );
 
 Cypress.Commands.add("assumeRole", (role) => {
@@ -95,7 +91,7 @@ declare global {
           Cypress.Timeoutable &
           Cypress.Withinable &
           Cypress.Shadow
-      >
+      >,
     ) => Chainable<JQuery<HTMLElement>>;
 
     interface Chainable {
@@ -126,20 +122,13 @@ declare global {
        */
       assumeRole(role: RoleRegistryEnum): void;
       /**
-       * Get the container of a CustomSelect
-       * @example cy.selectValueContainer("input-allow_list_id")
-       */
-      getSelectValueContainer(
-        selectorId: string
-      ): Chainable<JQuery<HTMLElement>>;
-      /**
-       * Selects an option from a CustomSelect component
+       * @deprecated Selects an option from a CustomSelect component
        *
-       * @example cy.selectOption("input-allow_list_id", "Prime numbers");
+       * @example cy.getByTestId("input-allow_list_id").antSelect("Prime numbers")
        */
       selectOption(
         selectorId: string,
-        optionText: string
+        optionText: string,
       ): Chainable<JQuery<HTMLElement>>;
       /**
        * Removes a value from a CustomSelect that is a multiselect

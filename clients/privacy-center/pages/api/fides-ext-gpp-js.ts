@@ -4,9 +4,9 @@
  * https://nextjs.org/docs/pages/api-reference/next-config-js/headers#cache-control
  */
 
+import { CacheControl, stringify } from "cache-control-parser";
 import { promises as fsPromises } from "fs";
 import type { NextApiRequest, NextApiResponse } from "next";
-import { CacheControl, stringify } from "cache-control-parser";
 
 import { LOCATION_HEADERS } from "~/common/geolocation";
 
@@ -32,7 +32,7 @@ const GPP_JS_MAX_AGE_SECONDS = 60 * 60;
  */
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse
+  res: NextApiResponse,
 ) {
   const gppJsFile = "public/lib/fides-ext-gpp.js";
 

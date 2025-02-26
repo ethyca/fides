@@ -8,7 +8,6 @@ from io import BytesIO
 from typing import Any, Dict, Optional, Set, Union
 
 import pandas as pd
-from boto3 import Session
 from botocore.exceptions import ClientError, ParamValidationError
 from loguru import logger
 
@@ -65,7 +64,7 @@ def write_to_in_memory_buffer(
     :param data: Dict
     :param request_id: str, The privacy request id
     """
-    logger.info("Writing data to in-memory buffer")
+    logger.debug("Writing data to in-memory buffer")
 
     if resp_format == ResponseFormat.json.value:
         json_str = json.dumps(data, indent=2, default=storage_json_encoder)
@@ -102,9 +101,7 @@ def write_to_in_memory_buffer(
     raise NotImplementedError(f"No handling for response format {resp_format}.")
 
 
-def create_presigned_url_for_s3(
-    s3_client: Session, bucket_name: str, file_key: str
-) -> str:
+def create_presigned_url_for_s3(s3_client: Any, bucket_name: str, file_key: str) -> str:
     """ "Generate a presigned URL to share an S3 object
 
     :param s3_client: s3 base client

@@ -1,5 +1,7 @@
 import { stubOrganizationCrud } from "cypress/support/stubs";
 
+import { ORGANIZATION_MANAGEMENT_ROUTE } from "~/features/common/nav/routes";
+
 describe("Organization page", () => {
   beforeEach(() => {
     cy.login();
@@ -10,26 +12,28 @@ describe("Organization page", () => {
 
   it("can navigate to the Organization page", () => {
     cy.visit("/");
+    cy.getByTestId("Settings-nav-group").click();
+    cy.getByTestId("Organization-nav-link").click();
     cy.getByTestId("Organization-nav-link").click();
     cy.getByTestId("organization-management");
   });
 
   describe("can view organization configuration", () => {
     beforeEach(() => {
-      cy.visit("/management/organization");
+      cy.visit(ORGANIZATION_MANAGEMENT_ROUTE);
     });
 
     it("can display a loading state while fetching organization configuration", () => {
       cy.getByTestId("organization-form").within(() => {
         cy.getByTestId("input-fides_key").should(
           "have.value",
-          "default_organization"
+          "default_organization",
         );
         cy.getByTestId("input-fides_key").should("be.disabled");
         cy.getByTestId("input-name").should("be.disabled");
         cy.getByTestId("input-description").should("be.empty");
         cy.getByTestId("save-btn").should("be.disabled");
-        cy.getByTestId("save-btn").get(".chakra-spinner");
+        cy.getByTestId("save-btn").get(".ant-btn-loading-icon");
       });
       cy.wait("@getOrganization");
       cy.getByTestId("input-name").should("be.enabled");
@@ -47,18 +51,18 @@ describe("Organization page", () => {
           (organization) => {
             cy.getByTestId("input-fides_key").should(
               "have.value",
-              "default_organization"
+              "default_organization",
             );
             cy.getByTestId("input-fides_key").should("be.disabled");
             cy.getByTestId("input-name").should(
               "have.value",
-              organization.name
+              organization.name,
             );
             cy.getByTestId("input-description").should(
               "have.value",
-              organization.description
+              organization.description,
             );
-          }
+          },
         );
       });
     });
@@ -67,7 +71,7 @@ describe("Organization page", () => {
   describe("can edit organization configuration", () => {
     beforeEach(() => {
       stubOrganizationCrud();
-      cy.visit("/management/organization");
+      cy.visit(ORGANIZATION_MANAGEMENT_ROUTE);
     });
 
     it("can edit name & description fields", () => {
@@ -87,7 +91,7 @@ describe("Organization page", () => {
             expect(body.name).to.eql(organization.name);
             expect(body.description).to.eql(organization.description);
           });
-        }
+        },
       );
       cy.getByTestId("toast-success-msg");
     });

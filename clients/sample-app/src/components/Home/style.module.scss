@@ -9,6 +9,7 @@
 
 .main {
   flex-grow: 1;
+  padding-inline: 24px;
 }
 
 .products {
@@ -20,6 +21,12 @@
   max-width: 744px;
   margin: 0 auto;
   margin-top: 77px;
+
+  @media screen and (max-width: 768px) {
+    & {
+      justify-content: center;
+    }
+  }
 }
 
 .product {
@@ -29,12 +36,19 @@
   width: 232px;
 
   &:hover {
-    box-shadow: 0px 20px 25px -5px rgba(0, 0, 0, 0.1),
+    box-shadow:
+      0px 20px 25px -5px rgba(0, 0, 0, 0.1),
       0px 10px 10px -5px rgba(0, 0, 0, 0.04);
   }
 
   img {
     margin-bottom: 8px;
+  }
+
+  @media screen and (max-width: 768px) {
+    & {
+      width: 100%;
+    }
   }
 }
 
@@ -56,6 +70,12 @@
 
 .purchase {
   margin-top: 10px;
+
+  @media screen and (max-width: 768px) {
+    & {
+      width: 100%;
+    }
+  }
 }
 
 .footer {
@@ -77,6 +97,12 @@
   a:hover {
     color: #5b301d;
   }
+
+  @media screen and (max-width: 768px) {
+    & {
+      flex-direction: column;
+    }
+  }
 }
 
 .modalLink {
@@ -97,4 +123,10 @@
   right: 0;
   margin: 1em;
   color: #171923;
+
+  @media screen and (max-width: 768px) {
+    & {
+      position: relative;
+    }
+  }
 }

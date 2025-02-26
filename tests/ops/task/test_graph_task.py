@@ -431,27 +431,27 @@ def test_sql_dry_run_queries(db) -> None:
 
     assert (
         env[CollectionAddress("mysql", "Customer")]
-        == "SELECT customer_id,name,email,contact_address_id FROM Customer WHERE email = ?"
+        == 'SELECT customer_id, name, email, contact_address_id FROM "Customer" WHERE (email = ?)'
     )
 
     assert (
         env[CollectionAddress("mysql", "User")]
-        == "SELECT id,user_id,name FROM User WHERE user_id = ?"
+        == 'SELECT id, user_id, name FROM "User" WHERE (user_id = ?)'
     )
 
     assert (
         env[CollectionAddress("postgres", "Order")]
-        == "SELECT order_id,customer_id,shipping_address_id,billing_address_id FROM Order WHERE customer_id IN (?, ?)"
+        == 'SELECT order_id, customer_id, shipping_address_id, billing_address_id FROM "Order" WHERE (customer_id IN (?, ?))'
     )
 
     assert (
         env[CollectionAddress("mysql", "Address")]
-        == "SELECT id,street,city,state,zip FROM Address WHERE id IN (?, ?)"
+        == 'SELECT id, street, city, state, zip FROM "Address" WHERE (id IN (?, ?))'
     )
 
     assert (
         env[CollectionAddress("mssql", "Address")]
-        == "SELECT id,street,city,state,zip FROM Address WHERE id IN (:id_in_stmt_generated_0, :id_in_stmt_generated_1)"
+        == "SELECT id, street, city, state, zip FROM Address WHERE id IN (:id_in_stmt_generated_0, :id_in_stmt_generated_1)"
     )
 
 
@@ -477,17 +477,17 @@ def test_mongo_dry_run_queries(db) -> None:
 
     assert (
         env[CollectionAddress("postgres", "customer")]
-        == "db.postgres.customer.find({'email': ?}, {'id': 1, 'name': 1, 'email': 1, 'address_id': 1})"
+        == "db.postgres.customer.find({'email': ?}, {'address_id': 1, 'email': 1, 'id': 1, 'name': 1})"
     )
 
     assert (
         env[CollectionAddress("postgres", "orders")]
-        == "db.postgres.orders.find({'customer_id': {'$in': [?, ?]}}, {'id': 1, 'customer_id': 1, 'shipping_address_id': 1, 'payment_card_id': 1})"
+        == "db.postgres.orders.find({'customer_id': {'$in': [?, ?]}}, {'customer_id': 1, 'id': 1, 'payment_card_id': 1, 'shipping_address_id': 1})"
     )
 
     assert (
         env[CollectionAddress("postgres", "address")]
-        == "db.postgres.address.find({'id': {'$in': [?, ?]}}, {'id': 1, 'street': 1, 'city': 1, 'state': 1, 'zip': 1})"
+        == "db.postgres.address.find({'id': {'$in': [?, ?]}}, {'city': 1, 'id': 1, 'state': 1, 'street': 1, 'zip': 1})"
     )
 
 
@@ -728,7 +728,7 @@ class TestFormatDataUseMapForCaching:
                 },
             ],
         )
-        ctl_dataset = CtlDataset(**ds.dict())
+        ctl_dataset = CtlDataset(**ds.model_dump(mode="json"))
 
         db.add(ctl_dataset)
         db.commit()
@@ -928,20 +928,18 @@ class TestGraphTaskAffectedConsentSystems:
     def mock_graph_task(
         self,
         db,
-        mailchimp_transactional_connection_config_no_secrets,
+        saas_example_connection_config,
         privacy_request_with_consent_policy,
     ):
         task_resources = TaskResources(
             privacy_request_with_consent_policy,
             privacy_request_with_consent_policy.policy,
-            [mailchimp_transactional_connection_config_no_secrets],
+            [saas_example_connection_config],
             EMPTY_REQUEST_TASK,
             db,
         )
         tn = TraversalNode(generate_node("a", "b", "c", "c2"))
-        tn.node.dataset.connection_key = (
-            mailchimp_transactional_connection_config_no_secrets.key
-        )
+        tn.node.dataset.connection_key = saas_example_connection_config.key
         task_resources.privacy_request_task = tn.to_mock_request_task()
         return GraphTask(task_resources)
 
@@ -978,10 +976,10 @@ class TestGraphTaskAffectedConsentSystems:
         db.refresh(privacy_preference_history_us_ca_provide)
 
         assert privacy_preference_history.affected_system_status == {
-            "mailchimp_transactional_instance": "skipped"
+            "saas_connector_example": "skipped"
         }
         assert privacy_preference_history_us_ca_provide.affected_system_status == {
-            "mailchimp_transactional_instance": "skipped"
+            "saas_connector_example": "skipped"
         }
 
         logs = (
@@ -1002,7 +1000,7 @@ class TestGraphTaskAffectedConsentSystems:
         self,
         mock_run_consent_request,
         mark_current_and_downstream_nodes_as_failed_mock,
-        mailchimp_transactional_connection_config_no_secrets,
+        saas_example_connection_config,
         mock_graph_task,
         db,
         privacy_request_with_consent_policy,
@@ -1023,7 +1021,7 @@ class TestGraphTaskAffectedConsentSystems:
         cache_initial_status_and_identities_for_consent_reporting(
             db,
             privacy_request_with_consent_policy,
-            mailchimp_transactional_connection_config_no_secrets,
+            saas_example_connection_config,
             relevant_preferences=[privacy_preference_history_us_ca_provide],
             relevant_user_identities={"email": "customer-1@example.com"},
         )
@@ -1035,10 +1033,10 @@ class TestGraphTaskAffectedConsentSystems:
         db.refresh(privacy_preference_history_us_ca_provide)
 
         assert privacy_preference_history.affected_system_status == {
-            "mailchimp_transactional_instance": "skipped"
+            "saas_connector_example": "skipped"
         }
         assert privacy_preference_history_us_ca_provide.affected_system_status == {
-            "mailchimp_transactional_instance": "error"
+            "saas_connector_example": "error"
         }
 
         logs = (

@@ -1,6 +1,5 @@
 import {
-  Button,
-  ButtonGroup,
+  AntButton as Button,
   Modal,
   ModalBody,
   ModalCloseButton,
@@ -49,8 +48,8 @@ const useNewPasswordModal = (id: string) => {
     } else {
       toast(
         successToastParams(
-          "Successfully reset user's password. Please inform the user of their new password."
-        )
+          "Successfully reset user's password. Please inform the user of their new password.",
+        ),
       );
       modal.onClose();
     }
@@ -72,12 +71,7 @@ const NewPasswordModal = ({ id }: Props) => {
 
   return (
     <>
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={onOpen}
-        data-testid="reset-password-btn"
-      >
+      <Button onClick={onOpen} data-testid="reset-password-btn">
         Reset password
       </Button>
       <Modal isCentered isOpen={isOpen} onClose={onClose}>
@@ -101,6 +95,7 @@ const NewPasswordModal = ({ id }: Props) => {
                       placeholder="********"
                       type="password"
                       tooltip="Password must contain at least 8 characters, 1 number, 1 capital letter, 1 lowercase letter, and at least 1 symbol."
+                      autoComplete="new-password"
                     />
                     <CustomTextInput
                       name="passwordConfirmation"
@@ -108,26 +103,27 @@ const NewPasswordModal = ({ id }: Props) => {
                       placeholder="********"
                       type="password"
                       tooltip="Must match above password."
+                      autoComplete="confirm-password"
                     />
                   </Stack>
                 </ModalBody>
 
                 <ModalFooter>
-                  <ButtonGroup size="sm" spacing="2" width="100%">
-                    <Button onClick={onClose} variant="outline" width="50%">
+                  <div className="w-full gap-2">
+                    <Button onClick={onClose} className="w-1/2">
                       Cancel
                     </Button>
                     <Button
-                      colorScheme="primary"
+                      type="primary"
                       disabled={!dirty || !isValid}
-                      isLoading={isSubmitting}
-                      type="submit"
-                      width="50%"
+                      loading={isSubmitting}
+                      htmlType="submit"
+                      className="w-1/2"
                       data-testid="submit-btn"
                     >
                       Change Password
                     </Button>
-                  </ButtonGroup>
+                  </div>
                 </ModalFooter>
               </Form>
             )}

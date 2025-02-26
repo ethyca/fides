@@ -72,6 +72,7 @@ dataset:
                 fidesops_meta:
                   data_type: string
               - name: ADDRESS
+                data_type: object[]
                 fields:
                   - name: addr1
                     data_categories: [user.contact.address.street]
@@ -97,10 +98,12 @@ dataset:
                     data_categories: [user.contact.address.country]
                     fidesops_meta:
                       data_type: string
+                      read_only: true
               - name: PHONE
                 data_categories: [user.contact.phone_number]
                 fidesops_meta:
                   data_type: string
+                  read_only: true
               - name: BIRTHDAY
                 data_categories: [user.demographic.date_of_birth]
                 fidesops_meta:
@@ -216,6 +219,10 @@ dataset:
             data_categories: [system.operations]
             fidesops_meta:
               data_type: string
+          - name: site_id
+            data_categories: [system.operations]
+            fidesops_meta:
+              data_type: string
       - name: mailing_lists
         fields:
           - name: list_id
@@ -231,6 +238,30 @@ dataset:
               data_type: integer
               primary_key: True
       - name: skipped_collection
+        fields:
+          - name: id
+            fides_meta:
+              data_type: integer
+              primary_key: True
+      - name: request_with_output_template
+        fields:
+          - name: id
+            fides_meta:
+              data_type: integer
+              primary_key: True
+      - name: request_with_invalid_output_template
+        fields:
+          - name: id
+            fides_meta:
+              data_type: integer
+              primary_key: True
+      - name: standalone_output_template
+        fields:
+          - name: id
+            fides_meta:
+              data_type: integer
+              primary_key: True
+      - name: complex_template_example
         fields:
           - name: id
             fides_meta:

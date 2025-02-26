@@ -1,6 +1,14 @@
 import { SerializedError } from "@reduxjs/toolkit";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query/fetchBaseQuery";
-import { Box, Button, Collapse, Heading, Stack, Text, useToast } from "fidesui";
+import {
+  AntButton as Button,
+  Box,
+  Collapse,
+  Heading,
+  Stack,
+  Text,
+  useToast,
+} from "fidesui";
 import { Form, Formik, FormikHelpers } from "formik";
 import { useMemo } from "react";
 import * as Yup from "yup";
@@ -11,11 +19,7 @@ import {
   useCustomFields,
 } from "~/features/common/custom-fields";
 import { useFeatures } from "~/features/common/features/features.slice";
-import {
-  CustomSelect,
-  CustomSwitch,
-  CustomTextInput,
-} from "~/features/common/form/inputs";
+import { CustomSwitch, CustomTextInput } from "~/features/common/form/inputs";
 import {
   extractVendorSource,
   getErrorMessage,
@@ -35,9 +39,7 @@ import {
   setSuggestions,
 } from "~/features/system/dictionary-form/dict-suggestion.slice";
 import {
-  DictSuggestionCreatableSelect,
   DictSuggestionNumberInput,
-  DictSuggestionSelect,
   DictSuggestionSwitch,
   DictSuggestionTextArea,
   DictSuggestionTextInput,
@@ -50,14 +52,16 @@ import {
   transformSystemToFormValues,
 } from "~/features/system/form";
 import {
-  selectAllSystems,
   useCreateSystemMutation,
+  useGetAllSystemsQuery,
+  useLazyGetSystemsQuery,
   useUpdateSystemMutation,
 } from "~/features/system/system.slice";
 import SystemFormInputGroup from "~/features/system/SystemFormInputGroup";
 import VendorSelector from "~/features/system/VendorSelector";
 import { ResourceTypes, SystemResponse } from "~/types/api";
 
+import { ControlledSelect } from "../common/form/ControlledSelect";
 import { usePrivacyDeclarationData } from "./privacy-declarations/hooks";
 import {
   legalBasisForProfilingOptions,
@@ -69,7 +73,7 @@ const SystemHeading = ({ system }: { system?: SystemResponse }) => {
   const isManual = !system;
   const headingName = isManual
     ? "your new system"
-    : system.name ?? "this system";
+    : (system.name ?? "this system");
 
   return (
     <Heading as="h3" size="lg">
@@ -91,7 +95,7 @@ const SystemInformationForm = ({
   withHeader,
   children,
 }: Props) => {
-  const systems = useAppSelector(selectAllSystems);
+  const { data: systems = [] } = useGetAllSystemsQuery();
 
   const dispatch = useAppDispatch();
   const customFields = useCustomFields({
@@ -109,11 +113,13 @@ const SystemInformationForm = ({
       passedInSystem
         ? transformSystemToFormValues(
             passedInSystem,
-            customFields.customFieldValues
+            customFields.customFieldValues,
           )
         : defaultInitialValues,
-    [passedInSystem, customFields.customFieldValues]
+    [passedInSystem, customFields.customFieldValues],
   );
+
+  const [getSystemQueryTrigger] = useLazyGetSystemsQuery();
 
   const ValidationSchema = useMemo(
     () =>
@@ -121,11 +127,17 @@ const SystemInformationForm = ({
         name: Yup.string()
           .required()
           .label("System name")
-          .test("is-unique", "", (value, context) => {
-            const takenSystemNames = systems
-              .map((s) => s.name)
-              .filter((name) => name !== initialValues.name);
-            if (takenSystemNames.some((name) => name === value)) {
+          .test("is-unique", "", async (value, context) => {
+            const { data } = await getSystemQueryTrigger({
+              page: 1,
+              size: 10,
+              search: value,
+            });
+            const systemResults = data?.items || [];
+            const similarSystemNames = systemResults.filter(
+              (s) => s.name !== initialValues.name,
+            );
+            if (similarSystemNames.some((s) => s.name === value)) {
               return context.createError({
                 message: `You already have a system called "${value}". Please specify a unique name for this system.`,
               });
@@ -134,7 +146,7 @@ const SystemInformationForm = ({
           }),
         privacy_policy: Yup.string().min(1).url().nullable(),
       }),
-    [systems, initialValues.name]
+    [getSystemQueryTrigger, initialValues.name],
   );
 
   const features = useFeatures();
@@ -155,9 +167,9 @@ const SystemInformationForm = ({
     () =>
       Boolean(
         passedInSystem &&
-          systems?.some((s) => s.fides_key === passedInSystem?.fides_key)
+          systems?.some((s) => s.fides_key === passedInSystem?.fides_key),
       ),
-    [passedInSystem, systems]
+    [passedInSystem, systems],
   );
 
   const datasetSelectOptions = useMemo(
@@ -168,14 +180,14 @@ const SystemInformationForm = ({
             label: ds.name ? ds.name : ds.fides_key,
           }))
         : [],
-    [dataProps.allDatasets]
+    [dataProps.allDatasets],
   );
 
   const toast = useToast();
 
   const handleSubmit = async (
     values: FormValues,
-    formikHelpers: FormikHelpers<FormValues>
+    formikHelpers: FormikHelpers<FormValues>,
   ) => {
     let dictionaryDeclarations;
     if (values.vendor_id && values.privacy_declarations.length === 0) {
@@ -189,7 +201,7 @@ const SystemInformationForm = ({
         if (!isNotFoundError) {
           const dataUseErrorMsg = getErrorMessage(
             dataUseQueryResult.error,
-            `A problem occurred while fetching data uses from Fides Compass for your system.  Please try again.`
+            `A problem occurred while fetching data uses from Fides Compass for your system.  Please try again.`,
           );
           toast({ status: "error", description: dataUseErrorMsg });
         }
@@ -215,13 +227,13 @@ const SystemInformationForm = ({
     const handleResult = (
       result:
         | { data: SystemResponse }
-        | { error: FetchBaseQueryError | SerializedError }
+        | { error: FetchBaseQueryError | SerializedError },
     ) => {
       if (isErrorResult(result)) {
         const attemptedAction = isEditing ? "editing" : "creating";
         const errorMsg = getErrorMessage(
           result.error,
-          `An unexpected error occurred while ${attemptedAction} the system. Please try again.`
+          `An unexpected error occurred while ${attemptedAction} the system. Please try again.`,
         );
         toast({
           status: "error",
@@ -248,7 +260,7 @@ const SystemInformationForm = ({
     handleResult(result);
   };
 
-  const handleVendorSelected = (newVendorId: string | undefined) => {
+  const handleVendorSelected = (newVendorId?: string | null) => {
     if (!features.dictionaryService) {
       return;
     }
@@ -330,7 +342,8 @@ const SystemInformationForm = ({
                 tooltip="What services does this system perform?"
                 disabled={lockedForGVL}
               />
-              <DictSuggestionCreatableSelect
+              <ControlledSelect
+                mode="tags"
                 id="tags"
                 name="tags"
                 label="System Tags"
@@ -342,20 +355,20 @@ const SystemInformationForm = ({
                       }))
                     : []
                 }
+                layout="stacked"
                 tooltip="Are there any tags to associate with this system?"
-                isMulti
                 disabled={lockedForGVL}
               />
             </SystemFormInputGroup>
             <SystemFormInputGroup heading="Dataset reference">
-              <CustomSelect
+              <ControlledSelect
                 name="dataset_references"
                 label="Dataset references"
                 options={datasetSelectOptions}
                 tooltip="Is there a dataset configured for this system?"
-                isMulti
-                variant="stacked"
-                isDisabled={lockedForGVL}
+                mode="multiple"
+                layout="stacked"
+                disabled={lockedForGVL}
               />
             </SystemFormInputGroup>
             <SystemFormInputGroup heading="Data processing properties">
@@ -419,12 +432,13 @@ const SystemInformationForm = ({
                         }}
                       >
                         <Box mt={4}>
-                          <DictSuggestionSelect
+                          <ControlledSelect
+                            mode="multiple"
+                            layout="stacked"
                             name="legal_basis_for_profiling"
                             label="Legal basis for profiling"
                             options={legalBasisForProfilingOptions}
                             tooltip="What is the legal basis under which profiling is performed?"
-                            isMulti
                             disabled={lockedForGVL}
                             isRequired={values.uses_profiling}
                           />
@@ -446,12 +460,13 @@ const SystemInformationForm = ({
                         }}
                       >
                         <Box mt={4}>
-                          <DictSuggestionSelect
+                          <ControlledSelect
+                            mode="multiple"
+                            layout="stacked"
                             name="legal_basis_for_transfers"
                             label="Legal basis for transfer"
                             options={legalBasisForTransferOptions}
                             tooltip="What is the legal basis under which the data is transferred?"
-                            isMulti
                             isRequired={values.does_international_transfers}
                             disabled={lockedForGVL}
                           />
@@ -561,12 +576,13 @@ const SystemInformationForm = ({
                     lockedForGVL
                   }
                 />
-                <DictSuggestionSelect
+                <ControlledSelect
+                  mode="multiple"
+                  layout="stacked"
                   label="Responsibility"
                   name="responsibility"
                   options={responsibilityOptions}
                   tooltip="What is the role of the business with regard to data processing?"
-                  isMulti
                   disabled={
                     !values.processes_personal_data ||
                     values.exempt_from_privacy_regulations ||
@@ -624,11 +640,10 @@ const SystemInformationForm = ({
           </Stack>
           <Box mt={6}>
             <Button
-              type="submit"
-              variant="primary"
-              size="sm"
-              isDisabled={isLoading || !dirty || !isValid}
-              isLoading={isLoading}
+              htmlType="submit"
+              type="primary"
+              disabled={isLoading || !dirty || !isValid}
+              loading={isLoading}
               data-testid="save-btn"
             >
               Save

@@ -13,7 +13,7 @@ export type BigQueryDocsSchema = {
    */
   keyfile_creds: fides__api__schemas__connection_configuration__connection_secrets_bigquery__KeyfileCreds;
   /**
-   * The dataset within your BigQuery project that contains the tables you want to access.
+   * Only provide a dataset to scope discovery monitors and privacy request automation to a specific BigQuery dataset. In most cases, this can be left blank.
    */
-  dataset?: string;
+  dataset?: string | null;
 };

@@ -12,13 +12,13 @@ describe("fides.js API route", () => {
       // 2) ...includes a call to Fides.init with a config JSON that...
       // 3) ...is populated with the config.json options
       expect(response.body)
-        .to.match(/^\s+\(function/, "should be an IIFE")
+        .to.match(/^\(function/, "should be an IIFE")
         .to.match(/\}\)\(\);\s+$/, "should be an IIFE");
       expect(response.body)
-        .to.match(/var fidesConfig = \{/, "should bundle Fides.init")
-        .to.match(/Fides.init\(fidesConfig\);/, "should bundle Fides.init");
+        .to.match(/window.Fides.config = \{/, "should bundle Fides.init")
+        .to.match(/Fides.init\(\);/, "should call Fides.init");
       const matches = response.body.match(
-        /var fidesConfig = (?<json>\{.*?\});/
+        /window.Fides.config = (?<json>\{.*?\});/,
       );
       expect(matches).to.have.nested.property("groups.json");
       expect(JSON.parse(matches.groups.json))
@@ -44,9 +44,9 @@ describe("fides.js API route", () => {
   describe("when pre-fetching geolocation", () => {
     it("returns geolocation if provided as a '?geolocation' query param", () => {
       cy.request("/fides.js?geolocation=US-CA").then((response) => {
-        expect(response.body).to.match(/var fidesConfig = \{/);
+        expect(response.body).to.match(/window.Fides.config = \{/);
         const matches = response.body.match(
-          /var fidesConfig = (?<json>\{.*?\});/
+          /window.Fides.config = (?<json>\{.*?\});/,
         );
         expect(JSON.parse(matches.groups.json))
           .to.have.nested.property("geolocation")
@@ -66,9 +66,9 @@ describe("fides.js API route", () => {
           "CloudFront-Viewer-Country-Region": "IDF",
         },
       }).then((response) => {
-        expect(response.body).to.match(/var fidesConfig = \{/);
+        expect(response.body).to.match(/window.Fides.config = \{/);
         const matches = response.body.match(
-          /var fidesConfig = (?<json>\{.*?\});/
+          /window.Fides.config = (?<json>\{.*?\});/,
         );
         expect(JSON.parse(matches.groups.json))
           .to.have.nested.property("geolocation")

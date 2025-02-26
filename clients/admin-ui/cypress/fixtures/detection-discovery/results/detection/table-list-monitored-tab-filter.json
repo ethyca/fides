@@ -1,0 +1,35 @@
+{
+  "items": [
+    {
+      "urn": "my_bigquery_monitor.prj-bigquery-418515.test_dataset_1.consent-reports-20",
+      "user_assigned_data_categories": [],
+      "name": "consent-reports-20",
+      "description": null,
+      "monitor_config_id": "my_bigquery_monitor",
+      "updated_at": null,
+      "source_modified": "2024-03-27T21:47:09.915000+00:00",
+      "classifications": [],
+      "diff_status": "monitored",
+      "child_diff_statuses": {},
+      "parent_schema": "my_bigquery_monitor.prj-bigquery-418515.test_dataset_1",
+      "schema_name": "test_dataset_1",
+      "num_rows": 19,
+      "fields": [
+        "my_bigquery_monitor.prj-bigquery-418515.test_dataset_1.consent-reports-20.Created",
+        "my_bigquery_monitor.prj-bigquery-418515.test_dataset_1.consent-reports-20.Fides_user_device",
+        "my_bigquery_monitor.prj-bigquery-418515.test_dataset_1.consent-reports-20.User_geography",
+        "my_bigquery_monitor.prj-bigquery-418515.test_dataset_1.consent-reports-20.Preference",
+        "my_bigquery_monitor.prj-bigquery-418515.test_dataset_1.consent-reports-20.Notice_title",
+        "my_bigquery_monitor.prj-bigquery-418515.test_dataset_1.consent-reports-20.Phone_number",
+        "my_bigquery_monitor.prj-bigquery-418515.test_dataset_1.consent-reports-20.Request_origin",
+        "my_bigquery_monitor.prj-bigquery-418515.test_dataset_1.consent-reports-20.Method",
+        "my_bigquery_monitor.prj-bigquery-418515.test_dataset_1.consent-reports-20.Email"
+      ],
+      "database_name": "prj-bigquery-418515"
+    }
+  ],
+  "total": 2,
+  "page": 1,
+  "size": 25,
+  "pages": 1
+}

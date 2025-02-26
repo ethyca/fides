@@ -6,8 +6,8 @@ import {
   useGetAllConnectionTypesQuery,
 } from "connection-type/connection-type.slice";
 import {
+  AntButton as Button,
   Box,
-  Button,
   Center,
   Flex,
   Input,
@@ -33,7 +33,7 @@ import { ScopeRegistryEnum } from "~/types/api";
 import ConnectionTypeFilter from "./ConnectionTypeFilter";
 import ConnectionTypeList from "./ConnectionTypeList";
 
-const ChooseConnection: React.FC = () => {
+const ChooseConnection = () => {
   const dispatch = useDispatch();
   const mounted = useRef(false);
   const { step } = useAppSelector(selectConnectionTypeState);
@@ -48,21 +48,21 @@ const ChooseConnection: React.FC = () => {
         dispatch(setSearch(event.target.value));
       }
     },
-    [dispatch]
+    [dispatch],
   );
 
   const debounceHandleSearchChange = useMemo(
     () => debounce(handleSearchChange, 250),
-    [handleSearchChange]
+    [handleSearchChange],
   );
 
   const sortedItems = useMemo(
     () =>
       data?.items &&
       [...data.items].sort((a, b) =>
-        a.human_readable > b.human_readable ? 1 : -1
+        a.human_readable > b.human_readable ? 1 : -1,
       ),
-    [data]
+    [data],
   );
 
   const handleUploadButtonClick = () => {
@@ -109,12 +109,10 @@ const ChooseConnection: React.FC = () => {
         </InputGroup>
         <Restrict scopes={[ScopeRegistryEnum.CONNECTOR_TEMPLATE_REGISTER]}>
           <Button
-            colorScheme="primary"
-            type="submit"
-            minWidth="auto"
-            data-testid="upload-btn"
-            size="sm"
             onClick={handleUploadButtonClick}
+            type="primary"
+            htmlType="submit"
+            data-testid="upload-btn"
           >
             Upload connector
           </Button>

@@ -46,12 +46,7 @@ const DEFAULT_ACTIVE_COLUMNS = [
   SYSTEM_DESCRIPTION,
 ];
 
-const DEPRECATED_COLUMNS = [
-  "third_country_combined",
-  "system.third_country_safeguards",
-  "dataset.fides_key",
-  "system.link_to_processor_contract",
-];
+const DEPRECATED_COLUMNS = ["third_country_combined", "dataset.fides_key"];
 
 // API endpoints
 const datamapApi = baseApi.injectEndpoints({
@@ -107,6 +102,8 @@ const datamapApi = baseApi.injectEndpoints({
         dataCategories?: string;
         dataSubjects?: string;
         format?: ExportFormat;
+        report_id?: string;
+        report?: object;
       }
     >({
       query: ({
@@ -118,6 +115,8 @@ const datamapApi = baseApi.injectEndpoints({
         dataCategories,
         dataSubjects,
         format,
+        report_id,
+        report,
       }) => {
         let queryString = `page=${pageIndex}&size=${pageSize}&group_by=${groupBy}`;
         if (dataUses) {
@@ -132,11 +131,16 @@ const datamapApi = baseApi.injectEndpoints({
         if (search) {
           queryString += `&search=${search}`;
         }
+        if (report_id) {
+          queryString += `&report_id=${report_id}`;
+        }
         return {
           url: `plus/datamap/minimal/${format}?${queryString}`,
+          method: "POST",
+          body: { report },
           responseHandler: async (response) => {
             const filename = await getFileNameFromContentDisposition(
-              response.headers.get("content-disposition")
+              response.headers.get("content-disposition"),
             );
             const arrayBuffer = await response.arrayBuffer();
             const blob = new Blob([arrayBuffer], {
@@ -161,36 +165,17 @@ const datamapApi = baseApi.injectEndpoints({
       providesTags: ["Datamap"],
       transformResponse: (data: DatamapResponse) => {
         const columnHeaderData = Object.entries(data[0]).filter(
-          ([value]) => DEPRECATED_COLUMNS.indexOf(value) === -1
+          ([value]) => DEPRECATED_COLUMNS.indexOf(value) === -1,
         );
 
-        const NON_DEFAULT_COLUMNS = columnHeaderData
-          .filter(([value]) => DEFAULT_ACTIVE_COLUMNS.indexOf(value) === -1)
-          .map(([value]) => value);
-
-        const DEFAULT_COLUMN_ORDER: { [key: string]: number } = {};
-
-        for (let i = 0, len = DEFAULT_ACTIVE_COLUMNS.length; i < len; i += 1) {
-          DEFAULT_COLUMN_ORDER[DEFAULT_ACTIVE_COLUMNS[i]] = i;
-        }
-
-        for (let i = 0, len = NON_DEFAULT_COLUMNS.length; i < len; i += 1) {
-          DEFAULT_COLUMN_ORDER[NON_DEFAULT_COLUMNS[i]] =
-            i + DEFAULT_ACTIVE_COLUMNS.length;
-        }
-
         return {
-          columns: columnHeaderData
-            .sort(
-              (a, b) => DEFAULT_COLUMN_ORDER[a[0]] - DEFAULT_COLUMN_ORDER[b[0]]
-            )
-            .map(([value, displayText], index) => ({
-              isVisible: DEFAULT_ACTIVE_COLUMNS.indexOf(value) > -1,
-              text:
-                value in COLUMN_NAME_MAP ? COLUMN_NAME_MAP[value] : displayText,
-              value,
-              id: index,
-            })),
+          columns: columnHeaderData.map(([value, displayText], index) => ({
+            isVisible: DEFAULT_ACTIVE_COLUMNS.indexOf(value) > -1,
+            text:
+              value in COLUMN_NAME_MAP ? COLUMN_NAME_MAP[value] : displayText,
+            value,
+            id: index,
+          })),
           rows: data.slice(1),
         };
       },
@@ -219,7 +204,7 @@ const initialState: SettingsState = {
 
 export const mergeColumns = <T extends { value: string }>(
   columns: T[] | undefined,
-  updatedColumns: T[]
+  updatedColumns: T[],
 ) => {
   /*
   this happens the first load of the table when no columns
@@ -231,11 +216,11 @@ export const mergeColumns = <T extends { value: string }>(
 
   const currentColumnKeys = new Set(columns.map((column) => column.value));
   const updatedColumnKeys = new Set(
-    updatedColumns.map((column) => column.value)
+    updatedColumns.map((column) => column.value),
   );
 
   const newColumnKeys = new Set(
-    [...updatedColumnKeys].filter((x) => !currentColumnKeys.has(x))
+    [...updatedColumnKeys].filter((x) => !currentColumnKeys.has(x)),
   );
 
   /*
@@ -246,7 +231,7 @@ export const mergeColumns = <T extends { value: string }>(
   updated columns.
    */
   const removedColumns = new Set(
-    [...currentColumnKeys].filter((x) => !updatedColumnKeys.has(x))
+    [...currentColumnKeys].filter((x) => !updatedColumnKeys.has(x)),
   );
 
   return [
@@ -268,7 +253,7 @@ export const datamapSlice = createSlice({
     loadColumns(draftState, { payload }: PayloadAction<DatamapColumn[]>) {
       draftState.columns = mergeColumns<DatamapColumn>(
         draftState.columns,
-        payload
+        payload,
       );
     },
     setIsGettingStarted(draftState, { payload }: PayloadAction<boolean>) {
@@ -281,12 +266,12 @@ const selectSettings = (state: RootState) => state.datamap;
 
 export const selectColumns = createSelector(
   selectSettings,
-  (settings) => settings.columns
+  (settings) => settings.columns,
 );
 
 export const selectIsGettingStarted = createSelector(
   selectSettings,
-  (settings) => settings.isGettingStarted
+  (settings) => settings.isGettingStarted,
 );
 
 export const { setColumns, loadColumns, setIsGettingStarted } =

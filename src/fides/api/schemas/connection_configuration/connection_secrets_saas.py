@@ -1,8 +1,15 @@
 import abc
-from typing import Any, Dict, List, Type
+from typing import Any, Dict, List, Optional, Type, Union
 
 from fideslang.models import FidesDatasetReference
-from pydantic import BaseModel, Extra, Field, PrivateAttr, create_model, root_validator
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+    PrivateAttr,
+    create_model,
+    model_validator,
+)
 from pydantic.fields import FieldInfo
 from sqlalchemy.orm import Session
 
@@ -20,16 +27,15 @@ class SaaSSchema(BaseModel, abc.ABC):
     Fields are added during runtime based on the connector_params and any
     external_references in the passed in saas_config"""
 
-    @root_validator
+    @model_validator(mode="before")
     @classmethod
-    def required_components_supplied(  # type: ignore
-        cls, values: Dict[str, Any]
-    ) -> Dict[str, Any]:
+    def required_components_supplied(cls, values: Dict) -> Dict[str, Any]:  # type: ignore
         """Validate that the minimum required components have been supplied."""
-
         # check required components are present
         required_components = [
-            name for name, attributes in cls.__fields__.items() if attributes.required
+            name
+            for name, attributes in cls.model_fields.items()
+            if attributes.is_required()
         ]
         min_fields_present = all(
             values.get(component) for component in required_components
@@ -69,6 +75,10 @@ class SaaSSchema(BaseModel, abc.ABC):
 
     @classmethod
     def get_connector_param(cls, name: str) -> Dict[str, Any]:
+        if not cls.__private_attributes__:
+            # Not sure why this was needed for Pydantic V2.
+            # This was to address 'NoneType' object has no attribute 'default'
+            return {}
         return cls.__private_attributes__.get("_connector_params").default.get(name)  # type: ignore
 
     @classmethod
@@ -79,14 +89,9 @@ class SaaSSchema(BaseModel, abc.ABC):
             if "external_reference" in property and property["external_reference"]
         ]
 
-    class Config:
-        """
-        Certain SaaS workflows need to save secrets that are not part of the schema,
-        such as access and refresh tokens for OAuth2. So we allow extra fields
-        """
-
-        extra = Extra.ignore
-        orm_mode = True
+    model_config = ConfigDict(
+        extra="allow", from_attributes=True, hide_input_in_errors=True
+    )
 
 
 class SaaSSchemaFactory:
@@ -105,11 +110,16 @@ class SaaSSchemaFactory:
         for connector_param in self.saas_config.connector_params:
             param_type = list if connector_param.multiselect else str
             field_definitions[connector_param.name] = (
-                Field(
-                    title=connector_param.label,
-                    description=connector_param.description,
-                    default=connector_param.default_value,
-                    sensitive=connector_param.sensitive,
+                (
+                    Optional[
+                        Union[str, List[str], int, List[int]]
+                    ],  # This matches the type of ConnectorParams.default_value
+                    Field(
+                        title=connector_param.label,
+                        description=connector_param.description,
+                        default=connector_param.default_value,
+                        json_schema_extra={"sensitive": connector_param.sensitive},
+                    ),
                 )
                 if connector_param.default_value
                 else (
@@ -117,7 +127,7 @@ class SaaSSchemaFactory:
                     FieldInfo(
                         title=connector_param.label,
                         description=connector_param.description,
-                        sensitive=connector_param.sensitive,
+                        json_schema_extra={"sensitive": connector_param.sensitive},
                     ),
                 )
             )
@@ -128,7 +138,9 @@ class SaaSSchemaFactory:
                     FieldInfo(
                         title=external_reference.label,
                         description=external_reference.description,
-                        external_reference=True,  # metadata added so we can identify these secret schema fields as external references
+                        json_schema_extra={
+                            "external_reference": True
+                        },  # metadata added so we can identify these secret schema fields as external references
                     ),
                 )
         SaaSSchema.__doc__ = f"{str(self.saas_config.type).capitalize()} secrets schema"  # Dynamically override the docstring to create a description

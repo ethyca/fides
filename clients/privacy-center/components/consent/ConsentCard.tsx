@@ -1,4 +1,5 @@
 import React from "react";
+
 import Card from "~/components/Card";
 
 type ConsentCardProps = {
@@ -8,12 +9,12 @@ type ConsentCardProps = {
   onOpen: () => void;
 };
 
-const ConsentCard: React.FC<ConsentCardProps> = ({
+const ConsentCard = ({
   title,
   iconPath,
   description,
   onOpen,
-}) => (
+}: ConsentCardProps) => (
   <Card
     title={title}
     iconPath={iconPath}

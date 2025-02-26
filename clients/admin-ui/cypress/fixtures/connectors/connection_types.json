@@ -7,6 +7,30 @@
       "encoded_icon": null
     },
     {
+      "identifier": "google_cloud_sql_mysql",
+      "type": "database",
+      "human_readable": "Google Cloud SQL for MySQL",
+      "encoded_icon": null
+    },
+    {
+      "identifier": "google_cloud_sql_postgres",
+      "type": "database",
+      "human_readable": "Google Cloud SQL for PostgreSQL",
+      "encoded_icon": null
+    },
+    {
+      "identifier": "rds_mysql",
+      "type": "database",
+      "human_readable": "RDS MySQL",
+      "encoded_icon": null
+    },
+    {
+      "identifier": "rds_postgres",
+      "type": "database",
+      "human_readable": "RDS Postgres",
+      "encoded_icon": null
+    },
+    {
       "identifier": "mariadb",
       "type": "database",
       "human_readable": "MariaDB",
@@ -72,6 +96,15 @@
       "type": "saas",
       "human_readable": "Shopify",
       "encoded_icon": null
+    },
+    {
+      "identifier": "iterable",
+      "type": "saas",
+      "human_readable": "Iterable",
+      "encoded_icon": null,
+      "authorization_required": false,
+      "user_guide": "https://docs.ethyca.com/user-guides/integrations/saas-integrations/iterable",
+      "supported_actions": ["erasure", "consent"]
     }
   ],
   "total": 10,

@@ -1,4 +1,4 @@
-import { PAGE_SIZE, chunkItems } from "../../src/lib/paging";
+import { chunkItems, PAGE_SIZE } from "../../src/lib/paging";
 
 describe("chunkItems", () => {
   it.each([

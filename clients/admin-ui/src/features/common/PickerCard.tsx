@@ -1,7 +1,7 @@
 import {
-  Badge,
+  AntButton as Button,
+  AntTag as Tag,
   Box,
-  Button,
   Checkbox,
   CheckboxGroup,
   Flex,
@@ -9,45 +9,9 @@ import {
 } from "fidesui";
 import { ReactNode } from "react";
 
+import { usePicker } from "~/features/common/hooks/usePicker";
+
 export const NUM_TO_SHOW = 5;
-
-export const usePicker = <T extends { id: string; name: string }>({
-  items,
-  selected,
-  onChange,
-}: {
-  items: T[];
-  selected: Array<string>;
-  onChange: (newSelected: Array<string>) => void;
-}) => {
-  const allSelected =
-    items.every((item) => selected.includes(item.id)) && !!items.length;
-  const someSelected =
-    items.some((item) => selected.includes(item.id)) && !!items.length;
-
-  const handleToggleSelection = (id: string) => {
-    if (selected.includes(id)) {
-      onChange(selected.filter((s) => s !== id));
-    } else {
-      onChange([...selected, id]);
-    }
-  };
-
-  const handleToggleAll = () => {
-    if (allSelected) {
-      onChange([]);
-    } else {
-      onChange(items.map((i) => i.id));
-    }
-  };
-
-  return {
-    allSelected,
-    someSelected,
-    handleToggleAll,
-    handleToggleSelection,
-  };
-};
 
 export interface CheckboxListProps<T> {
   title: string;
@@ -123,14 +87,9 @@ export const PickerCheckboxList = <T extends { id: string; name: string }>({
         {toggle ?? null}
       </Flex>
       {numSelected > 0 ? (
-        <Badge
-          colorScheme="purple"
-          variant="solid"
-          width="fit-content"
-          data-testid="num-selected-badge"
-        >
+        <Tag className="w-fit" data-testid="num-selected-badge">
           {numSelected} selected
-        </Badge>
+        </Tag>
       ) : null}
       <VStack paddingLeft="6" fontSize="sm" alignItems="start" spacing="2">
         <CheckboxGroup colorScheme="complimentary">
@@ -153,9 +112,9 @@ export const PickerCheckboxList = <T extends { id: string; name: string }>({
       </VStack>
       {onViewMore ? (
         <Button
-          size="xs"
-          variant="ghost"
+          size="small"
           onClick={onViewMore}
+          type="text"
           data-testid="view-more-btn"
         >
           View more

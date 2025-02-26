@@ -3,14 +3,15 @@
 # pylint: disable=C0115,C0116, E0213
 
 from copy import deepcopy
-from typing import Dict, Optional, Union, cast
+from typing import Dict, Optional, cast
 from urllib.parse import quote, quote_plus, urlencode
 
-from pydantic import Field, PostgresDsn, validator
+from pydantic import Field, PostgresDsn, ValidationInfo, field_validator
+from pydantic_settings import SettingsConfigDict
 
 from fides.config.utils import get_test_mode
 
-from .fides_settings import FidesSettings
+from .fides_settings import FidesSettings, port_integer_converter
 
 ENV_PREFIX = "FIDES__DATABASE__"
 
@@ -29,6 +30,18 @@ class DatabaseSettings(FidesSettings):
     api_engine_max_overflow: int = Field(
         default=50,
         description="Number of additional 'overflow' concurrent database connections Fides will use for API requests if the pool reaches the limit. These overflow connections are discarded afterwards and not maintained.",
+    )
+    api_engine_keepalives_idle: int = Field(
+        default=30,
+        description="Number of seconds of inactivity before the client sends a TCP keepalive packet to verify the database connection is still alive.",
+    )
+    api_engine_keepalives_interval: int = Field(
+        default=10,
+        description="Number of seconds between TCP keepalive retries if the initial keepalive packet receives no response. These are client-side retries.",
+    )
+    api_engine_keepalives_count: int = Field(
+        default=5,
+        description="Maximum number of TCP keepalive retries before the client considers the connection dead and closes it.",
     )
     db: str = Field(
         default="default_db", description="The name of the application database."
@@ -59,6 +72,18 @@ class DatabaseSettings(FidesSettings):
     task_engine_max_overflow: int = Field(
         default=50,
         description="Number of additional 'overflow' concurrent database connections Fides will use for executing privacy request tasks, either locally or on each worker, if the pool reaches the limit. These overflow connections are discarded afterwards and not maintained.",
+    )
+    task_engine_keepalives_idle: int = Field(
+        default=30,
+        description="Number of seconds of inactivity before the client sends a TCP keepalive packet to verify the database connection is still alive.",
+    )
+    task_engine_keepalives_interval: int = Field(
+        default=10,
+        description="Number of seconds between TCP keepalive retries if the initial keepalive packet receives no response. These are client-side retries.",
+    )
+    task_engine_keepalives_count: int = Field(
+        default=5,
+        description="Maximum number of TCP keepalive retries before the client considers the connection dead and closes it.",
     )
     test_db: str = Field(
         default="default_test_db",
@@ -96,51 +121,57 @@ class DatabaseSettings(FidesSettings):
         exclude=True,
     )
 
-    @validator("password", pre=True)
+    @field_validator("password", mode="before")
+    @classmethod
     def escape_password(cls, value: Optional[str]) -> Optional[str]:
         """Escape password"""
         if value and isinstance(value, str):
             return quote_plus(value)
         return value
 
-    @validator("sync_database_uri", pre=True)
+    @field_validator("sync_database_uri", mode="before")
     @classmethod
     def assemble_sync_database_uri(
-        cls, value: Optional[str], values: Dict[str, Union[str, Dict]]
+        cls, value: Optional[str], info: ValidationInfo
     ) -> str:
         """Join DB connection credentials into a connection string"""
         if isinstance(value, str) and value:
             return value
 
-        db_name = values["test_db"] if get_test_mode() else values["db"]
+        port: int = port_integer_converter(info)
+        db_name = info.data.get("test_db") if get_test_mode() else info.data.get("db")
         return str(
-            PostgresDsn.build(
+            PostgresDsn.build(  # pylint: disable=no-member
                 scheme="postgresql+psycopg2",
-                user=values["user"],
-                password=values["password"],
-                host=values["server"],
-                port=values.get("port"),
-                path=f"/{db_name or ''}",
-                query=urlencode(
-                    cast(Dict, values["params"]), quote_via=quote, safe="/"
+                username=info.data.get("user"),
+                password=info.data.get("password"),
+                host=info.data.get("server"),
+                port=port,
+                path=f"{db_name or ''}",
+                query=(
+                    urlencode(
+                        cast(Dict, info.data.get("params")), quote_via=quote, safe="/"
+                    )
+                    if info.data.get("params")
+                    else None
                 ),
             )
         )
 
-    @validator("async_database_uri", pre=True)
+    @field_validator("async_database_uri", mode="before")
     @classmethod
     def assemble_async_database_uri(
-        cls, value: Optional[str], values: Dict[str, Union[str, Dict]]
+        cls, value: Optional[str], info: ValidationInfo
     ) -> str:
         """Join DB connection credentials into an async connection string."""
         if isinstance(value, str) and value:
             return value
 
-        db_name = values["test_db"] if get_test_mode() else values["db"]
+        db_name = info.data.get("test_db") if get_test_mode() else info.data.get("db")
 
         # Workaround https://github.com/MagicStack/asyncpg/issues/737
         # Required due to the unique way in which Asyncpg handles SSL
-        params = cast(Dict, deepcopy(values["params"]))
+        params = cast(Dict, deepcopy(info.data.get("params")))
         if "sslmode" in params:
             params["ssl"] = params.pop("sslmode")
         # This must be constructed in fides.api.db.session as part of the ssl context
@@ -148,61 +179,69 @@ class DatabaseSettings(FidesSettings):
         params.pop("sslrootcert", None)
         # End workaround
 
+        port: int = port_integer_converter(info)
         return str(
-            PostgresDsn.build(
+            PostgresDsn.build(  # pylint: disable=no-member
                 scheme="postgresql+asyncpg",
-                user=values["user"],
-                password=values["password"],
-                host=values["server"],
-                port=values.get("port"),
-                path=f"/{db_name or ''}",
-                query=urlencode(params, quote_via=quote, safe="/"),
+                username=info.data.get("user"),
+                password=info.data.get("password"),
+                host=info.data.get("server"),
+                port=port,
+                path=f"{db_name or ''}",
+                query=urlencode(params, quote_via=quote, safe="/") if params else None,
             )
         )
 
-    @validator("sqlalchemy_database_uri", pre=True)
+    @field_validator("sqlalchemy_database_uri", mode="before")
     @classmethod
-    def assemble_db_connection(
-        cls, v: Optional[str], values: Dict[str, Union[str, Dict]]
-    ) -> str:
+    def assemble_db_connection(cls, v: Optional[str], info: ValidationInfo) -> str:
         """Join DB connection credentials into a synchronous connection string."""
         if isinstance(v, str) and v:
             return v
+
+        port: int = port_integer_converter(info)
         return str(
-            PostgresDsn.build(
+            PostgresDsn.build(  # pylint: disable=no-member
                 scheme="postgresql",
-                user=values["user"],
-                password=values["password"],
-                host=values["server"],
-                port=values.get("port"),
-                path=f"/{values.get('db') or ''}",
-                query=urlencode(
-                    cast(Dict, values["params"]), quote_via=quote, safe="/"
+                username=info.data.get("user"),
+                password=info.data.get("password"),
+                host=info.data.get("server"),
+                port=port,
+                path=f"{info.data.get('db') or ''}",
+                query=(
+                    urlencode(
+                        cast(Dict, info.data.get("params")), quote_via=quote, safe="/"
+                    )
+                    if info.data.get("params")
+                    else None
                 ),
             )
         )
 
-    @validator("sqlalchemy_test_database_uri", pre=True)
+    @field_validator("sqlalchemy_test_database_uri", mode="before")
     @classmethod
-    def assemble_test_db_connection(
-        cls, v: Optional[str], values: Dict[str, Union[str, Dict]]
-    ) -> str:
+    def assemble_test_db_connection(cls, v: Optional[str], info: ValidationInfo) -> str:
         """Join DB connection credentials into a connection string"""
         if isinstance(v, str) and v:
             return v
+
+        port: int = port_integer_converter(info)
         return str(
-            PostgresDsn.build(
+            PostgresDsn.build(  # pylint: disable=no-member
                 scheme="postgresql",
-                user=values["user"],
-                password=values["password"],
-                host=values["server"],
-                port=values["port"],
-                path=f"/{values.get('test_db') or ''}",
-                query=urlencode(
-                    cast(Dict, values["params"]), quote_via=quote, safe="/"
+                username=info.data.get("user"),
+                password=info.data.get("password"),
+                host=info.data.get("server"),
+                port=port,
+                path=f"{info.data.get('test_db') or ''}",
+                query=(
+                    urlencode(
+                        cast(Dict, info.data.get("params")), quote_via=quote, safe="/"
+                    )
+                    if info.data.get("params")
+                    else None
                 ),
             )
         )
 
-    class Config:
-        env_prefix = ENV_PREFIX
+    model_config = SettingsConfigDict(env_prefix=ENV_PREFIX, coerce_numbers_to_str=True)

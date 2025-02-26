@@ -1,4 +1,4 @@
-import { ConnectionTypeSecretSchemaReponse } from "~/features/connection-type/types";
+import { ConnectionTypeSecretSchemaResponse } from "~/features/connection-type/types";
 
 /**
  * Fill in default values based off of a schema. Use schema defaults if they exist, otherwise use passed-in defaults
@@ -6,8 +6,8 @@ import { ConnectionTypeSecretSchemaReponse } from "~/features/connection-type/ty
 export const fillInDefaults = (
   defaultValues: Record<string, any>,
   connectionSchema: {
-    properties: ConnectionTypeSecretSchemaReponse["properties"];
-  }
+    properties: ConnectionTypeSecretSchemaResponse["properties"];
+  },
 ) => {
   const filledInValues = { ...defaultValues };
   Object.entries(connectionSchema.properties).forEach((key) => {

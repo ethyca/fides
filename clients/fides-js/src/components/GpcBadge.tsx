@@ -1,14 +1,10 @@
 import { h } from "preact";
-import { GpcStatus } from "../lib/consent-types";
-import type { I18n } from "../lib/i18n";
 
-export const GpcBadge = ({
-  i18n,
-  status,
-}: {
-  i18n: I18n;
-  status: GpcStatus;
-}) => {
+import { GpcStatus } from "../lib/consent-types";
+import { useI18n } from "../lib/i18n/i18n-context";
+
+export const GpcBadge = ({ status }: { status: GpcStatus }) => {
+  const { i18n } = useI18n();
   const gpcLabel = i18n.t("static.gpc");
   const statusValue = status.valueOf();
   let statusLabel = "";

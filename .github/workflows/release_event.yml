@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Send Repository Dispatch Event
-        uses: peter-evans/repository-dispatch@v2
+        uses: peter-evans/repository-dispatch@v3
         with:
           client-payload: '{"tag": "${{ github.event.release.tag_name }}", "url": "${{ github.event.release.html_url }}"}'
           event-type: new-fides-release
@@ -20,7 +20,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Send Repository Dispatch Event
-        uses: peter-evans/repository-dispatch@v2
+        uses: peter-evans/repository-dispatch@v3
         with:
           client-payload: '{"tag": "${{ github.event.release.tag_name }}", "url": "${{ github.event.release.html_url }}"}'
           event-type: new-fides-release
@@ -31,7 +31,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Send Repository Dispatch Event
-        uses: peter-evans/repository-dispatch@v2
+        uses: peter-evans/repository-dispatch@v3
         with:
           client-payload: '{"tag": "${{ github.event.release.tag_name }}", "url": "${{ github.event.release.html_url }}"}'
           event-type: new-fides-release

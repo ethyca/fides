@@ -41,6 +41,7 @@ def get_db_engine(connection_string: str) -> Engine:
     )
     if "redshift" in connection_string:
         connect_args["sslmode"] = "prefer"
+        connect_args["connect_timeout"] = 60
     try:
         engine = sqlalchemy.create_engine(connection_string, connect_args=connect_args)
     except Exception as err:
@@ -58,8 +59,15 @@ def validate_db_engine(connection_string: str) -> None:
     """
     Use SQLAlchemy to create a DB engine.
     """
+    # Pymssql doesn't support this arg
+    connect_args: Dict[str, Any] = (
+        {"connect_timeout": 10} if "pymssql" not in connection_string else {}
+    )
+    if "redshift" in connection_string:
+        connect_args["sslmode"] = "prefer"
+        connect_args["connect_timeout"] = 60
     try:
-        engine = sqlalchemy.create_engine(connection_string)
+        engine = sqlalchemy.create_engine(connection_string, connect_args=connect_args)
         with engine.begin() as connection:
             connection.execute("SELECT 1")
     except SQLAlchemyError as error:
@@ -75,12 +83,10 @@ def get_all_level_fields(fields: list) -> Iterator[DatasetField]:
         yield field
         if isinstance(field, dict):
             if field["fields"]:
-                for nested_field in get_all_level_fields(field["fields"]):
-                    yield nested_field
+                yield from get_all_level_fields(field["fields"])
         else:
             if field.fields:
-                for nested_field in get_all_level_fields(field.fields):
-                    yield nested_field
+                yield from get_all_level_fields(field.fields)
 
 
 def get_manifest_list(manifests_dir: str) -> List[str]:
@@ -162,7 +168,7 @@ def git_is_dirty(dir_to_check: str = ".") -> bool:
 def write_credentials_file(credentials: Credentials, credentials_path: str) -> str:
     """Write the user credentials file."""
     with open(credentials_path, "w", encoding="utf-8") as credentials_file:
-        credentials_file.write(toml.dumps(credentials.dict()))
+        credentials_file.write(toml.dumps(credentials.model_dump(mode="json")))
     return credentials_path
 
 
@@ -182,7 +188,7 @@ def read_credentials_file(
     if not isfile(credentials_path):
         raise FileNotFoundError
     with open(credentials_path, "r", encoding="utf-8") as credentials_file:
-        credentials = Credentials.parse_obj(toml.load(credentials_file))
+        credentials = Credentials.model_validate(toml.load(credentials_file))
     return credentials
 
 

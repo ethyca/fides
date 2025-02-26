@@ -9,6 +9,7 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { Box, Flex, Text, VStack } from "fidesui";
+import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";
 
 import {
@@ -18,17 +19,23 @@ import {
   TableSkeletonLoader,
   useServerSidePagination,
 } from "~/features/common/table/v2";
+import DetectionResultFilterTabs from "~/features/data-discovery-and-detection/DetectionResultFilterTabs";
 import { useGetMonitorResultsQuery } from "~/features/data-discovery-and-detection/discovery-detection.slice";
 import useDiscoveryResultColumns from "~/features/data-discovery-and-detection/hooks/useDiscoveryResultColumns";
+import useDiscoveryResultsFilterTabs, {
+  DiscoveryResultsFilterTabsIndexEnum,
+} from "~/features/data-discovery-and-detection/hooks/useDiscoveryResultsFilterTabs";
 import useDiscoveryRoutes from "~/features/data-discovery-and-detection/hooks/useDiscoveryRoutes";
+import IconLegendTooltip from "~/features/data-discovery-and-detection/IndicatorLegend";
 import DiscoveryFieldBulkActions from "~/features/data-discovery-and-detection/tables/DiscoveryFieldBulkActions";
 import DiscoveryTableBulkActions from "~/features/data-discovery-and-detection/tables/DiscoveryTableBulkActions";
-import { DiscoveryMonitorItem } from "~/features/data-discovery-and-detection/types/DiscoveryMonitorItem";
 import { StagedResourceType } from "~/features/data-discovery-and-detection/types/StagedResourceType";
 import { findResourceType } from "~/features/data-discovery-and-detection/utils/findResourceType";
-import { DiffStatus, StagedResource } from "~/types/api";
+import getResourceRowName from "~/features/data-discovery-and-detection/utils/getResourceRowName";
+import isNestedField from "~/features/data-discovery-and-detection/utils/isNestedField";
+import { StagedResource, StagedResourceAPIResponse } from "~/types/api";
 
-import SearchInput from "../SearchInput";
+import { SearchInput } from "../SearchInput";
 
 const EMPTY_RESPONSE = {
   items: [],
@@ -63,17 +70,21 @@ interface MonitorResultTableProps {
 }
 
 const DiscoveryResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
-  const diffStatusFilter: DiffStatus[] = [
-    DiffStatus.CLASSIFICATION_ADDITION,
-    DiffStatus.CLASSIFICATION_UPDATE,
-  ];
-
-  const childDiffStatusFilter: DiffStatus[] = [
-    DiffStatus.CLASSIFICATION_ADDITION,
-    DiffStatus.CLASSIFICATION_UPDATE,
-  ];
-
+  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
+
+  const {
+    filterTabs,
+    setFilterTabIndex,
+    filterTabIndex,
+    activeDiffFilters,
+    activeChildDiffFilters,
+  } = useDiscoveryResultsFilterTabs({
+    initialFilterTabIndex: router.query?.filterTabIndex
+      ? Number(router.query?.filterTabIndex)
+      : undefined,
+  });
+
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
 
   const {
@@ -88,7 +99,18 @@ const DiscoveryResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
     endRange,
     pageIndex,
     setTotalPages,
+    resetPageIndexToDefault,
   } = useServerSidePagination();
+
+  useEffect(() => {
+    resetPageIndexToDefault();
+  }, [
+    resourceUrn,
+    searchQuery,
+    resetPageIndexToDefault,
+    activeDiffFilters,
+    activeChildDiffFilters,
+  ]);
 
   const {
     isFetching,
@@ -98,16 +120,12 @@ const DiscoveryResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
     staged_resource_urn: resourceUrn,
     page: pageIndex,
     size: pageSize,
-    child_diff_status: childDiffStatusFilter,
-    diff_status: diffStatusFilter,
+    child_diff_status: activeChildDiffFilters,
+    diff_status: activeDiffFilters,
     search: searchQuery,
   });
 
-  const resourceType = findResourceType(
-    resources?.items[0] as DiscoveryMonitorItem
-  );
-
-  const isField = resourceType === StagedResourceType.FIELD;
+  const resourceType = findResourceType(resources?.items[0]);
 
   const {
     items: data,
@@ -121,19 +139,20 @@ const DiscoveryResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
 
   const { columns } = useDiscoveryResultColumns({ resourceType });
 
-  const resourceColumns: ColumnDef<StagedResource, any>[] = useMemo(
+  const resourceColumns: ColumnDef<StagedResourceAPIResponse, any>[] = useMemo(
     () => columns,
-    [columns]
+    [columns],
   );
 
   const { navigateToDiscoveryResults } = useDiscoveryRoutes();
 
-  const handleRowClicked = !isField
-    ? (row: StagedResource) =>
-        navigateToDiscoveryResults({ resourceUrn: row.urn })
-    : undefined;
+  const handleRowClicked = (row: StagedResource) =>
+    navigateToDiscoveryResults({ resourceUrn: row.urn, filterTabIndex });
 
-  const tableInstance = useReactTable<StagedResource>({
+  const getRowIsClickable = (row: StagedResource) =>
+    resourceType !== StagedResourceType.FIELD || isNestedField(row);
+
+  const tableInstance = useReactTable<StagedResourceAPIResponse>({
     getCoreRowModel: getCoreRowModel(),
     getGroupedRowModel: getGroupedRowModel(),
     getExpandedRowModel: getExpandedRowModel(),
@@ -143,8 +162,9 @@ const DiscoveryResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
     state: {
       rowSelection,
     },
-    getRowId: (row) => row.urn,
+    getRowId: getResourceRowName,
     data,
+    columnResizeMode: "onChange",
   });
 
   const selectedUrns = Object.keys(rowSelection).filter((k) => rowSelection[k]);
@@ -155,31 +175,35 @@ const DiscoveryResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
 
   return (
     <>
+      <DetectionResultFilterTabs
+        filterTabs={filterTabs}
+        filterTabIndex={filterTabIndex}
+        onChange={setFilterTabIndex}
+      />
       <TableActionBar>
-        <Flex gap={6}>
-          <Box w={400} flexShrink={0}>
+        <Flex gap={6} align="center">
+          <Box flexShrink={0}>
             <SearchInput value={searchQuery} onChange={setSearchQuery} />
           </Box>
-          {!!selectedUrns.length && (
-            <Flex align="center">
-              {resourceType === StagedResourceType.TABLE && (
-                <DiscoveryTableBulkActions selectedUrns={selectedUrns} />
-              )}
-            </Flex>
-          )}
-          {resourceType === StagedResourceType.FIELD && (
+          <IconLegendTooltip />
+        </Flex>
+        {resourceType === StagedResourceType.TABLE && !!selectedUrns.length && (
+          <DiscoveryTableBulkActions selectedUrns={selectedUrns} />
+        )}
+        {resourceType === StagedResourceType.FIELD &&
+          filterTabIndex !==
+            DiscoveryResultsFilterTabsIndexEnum.UNMONITORED && (
             <DiscoveryFieldBulkActions resourceUrn={resourceUrn!} />
           )}
-        </Flex>
       </TableActionBar>
       <FidesTableV2
         tableInstance={tableInstance}
         onRowClick={handleRowClicked}
+        getRowIsClickable={getRowIsClickable}
         emptyTableNotice={<EmptyTableNotice />}
-        overflow="visible"
       />
       <PaginationBar
-        totalRows={totalRows}
+        totalRows={totalRows || 0}
         pageSizes={PAGE_SIZES}
         setPageSize={setPageSize}
         onPreviousPageClick={onPreviousPageClick}

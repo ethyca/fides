@@ -2,14 +2,22 @@ import {
   ChakraProvider as BaseChakraProvider,
   ChakraProviderProps,
 } from "@chakra-ui/react";
+import { ConfigProvider as BaseAntDesignProvider, ThemeConfig } from "antd/lib";
+import { ReactNode } from "react";
 
 import { theme as defaultTheme } from "./FidesUITheme";
 
+export interface FidesUIProviderProps {
+  children: ReactNode;
+  antTheme?: ThemeConfig;
+  theme?: ChakraProviderProps["theme"];
+}
 export const FidesUIProvider = ({
   children,
   theme = defaultTheme,
-}: ChakraProviderProps) => (
-  <BaseChakraProvider theme={theme}>{children}</BaseChakraProvider>
+  antTheme,
+}: FidesUIProviderProps) => (
+  <BaseAntDesignProvider theme={antTheme}>
+    <BaseChakraProvider theme={theme}>{children}</BaseChakraProvider>
+  </BaseAntDesignProvider>
 );
-
-export type { ChakraProviderProps as FidesProviderProps } from "@chakra-ui/react";

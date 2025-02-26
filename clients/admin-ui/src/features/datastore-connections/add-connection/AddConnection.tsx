@@ -4,14 +4,14 @@ import {
   setStep,
 } from "connection-type/connection-type.slice";
 import ConnectionTypeLogo from "datastore-connections/ConnectionTypeLogo";
-import { Box, Heading, Text } from "fidesui";
+import { AntSpace as Space, AntTypography as Typography } from "fidesui";
 import { useRouter } from "next/router";
 import React, { useCallback, useEffect } from "react";
 import { useDispatch } from "react-redux";
 
 import { useAppSelector } from "~/app/hooks";
-import BackButton from "~/features/common/nav/v2/BackButton";
-import { DATASTORE_CONNECTION_ROUTE } from "~/features/common/nav/v2/routes";
+import { DATASTORE_CONNECTION_ROUTE } from "~/features/common/nav/routes";
+import PageHeader from "~/features/common/PageHeader";
 
 import ChooseConnection from "./ChooseConnection";
 import ConfigureConnector from "./ConfigureConnector";
@@ -19,13 +19,15 @@ import { STEPS } from "./constants";
 import { replaceURL } from "./helpers";
 import { AddConnectionStep } from "./types";
 
-const AddConnection: React.FC = () => {
+const { Title } = Typography;
+
+const AddConnection = () => {
   const dispatch = useDispatch();
   const router = useRouter();
   const { connectorType, step: currentStep } = router.query;
 
   const { connection, connectionOption, step } = useAppSelector(
-    selectConnectionTypeState
+    selectConnectionTypeState,
   );
 
   useEffect(() => {
@@ -58,7 +60,7 @@ const AddConnection: React.FC = () => {
         case 3:
           value = s.label.replace(
             "{identifier}",
-            connectionOption!.human_readable
+            connectionOption!.human_readable,
           );
           break;
         default:
@@ -67,29 +69,29 @@ const AddConnection: React.FC = () => {
       }
       return value;
     },
-    [connectionOption]
+    [connectionOption],
   );
 
   return (
     <>
-      <BackButton backPath={DATASTORE_CONNECTION_ROUTE} />
-      <Heading
-        fontSize="2xl"
-        fontWeight="semibold"
-        maxHeight="40px"
-        mb="4px"
-        whiteSpace="nowrap"
+      <PageHeader
+        heading="Connections"
+        breadcrumbItems={[
+          { title: "Unlinked connections", href: DATASTORE_CONNECTION_ROUTE },
+          { title: "New connection" },
+        ]}
       >
-        <Box alignItems="center" display="flex">
-          {connectionOption && (
-            <>
+        <Title level={3} style={{ marginBottom: 0 }} className="mt-4">
+          {connectionOption ? (
+            <Space>
               <ConnectionTypeLogo data={connectionOption} />
-              <Text ml="8px">{getLabel(step)}</Text>
-            </>
+              {getLabel(step)}
+            </Space>
+          ) : (
+            getLabel(step)
           )}
-          {!connectionOption && <Text>{getLabel(step)}</Text>}
-        </Box>
-      </Heading>
+        </Title>
+      </PageHeader>
       {(() => {
         switch (step.stepId) {
           case 1:

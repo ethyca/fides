@@ -4,16 +4,13 @@
 
 import type { ConditionalValue } from "./ConditionalValue";
 
-/**
- * A base template for all other Fides Schemas to inherit from.
- */
 export type ConfigConsentOption = {
   cookieKeys?: Array<string>;
-  default?: boolean | ConditionalValue;
+  default?: boolean | ConditionalValue | null;
   description: string;
   fidesDataUseKey: string;
-  highlight?: boolean;
+  highlight?: boolean | null;
   name: string;
   url: string;
-  executable?: boolean;
+  executable?: boolean | null;
 };

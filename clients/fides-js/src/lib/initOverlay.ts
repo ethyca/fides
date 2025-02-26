@@ -1,9 +1,7 @@
 import { ContainerNode, render } from "preact";
 
-import { ComponentType } from "./consent-types";
-import { debugLog } from "./consent-utils";
-
 import { OverlayProps } from "../components/types";
+import { ComponentType } from "./consent-types";
 import { ColorFormat, generateLighterColor } from "./style-utils";
 
 const FIDES_EMBED_CONTAINER_ID = "fides-embed-container";
@@ -29,25 +27,23 @@ export const initOverlay = async ({
   cookie,
   savedConsent,
   renderOverlay,
+  propertyId,
+  translationOverrides,
 }: OverlayProps & {
-  renderOverlay: (props: OverlayProps, parent: ContainerNode) => void;
+  renderOverlay?: (props: OverlayProps, parent: ContainerNode) => void;
 }): Promise<void> => {
-  debugLog(options.debug, "Initializing Fides consent overlays...");
+  fidesDebugger("Initializing Fides consent overlays...");
 
-  async function renderFidesOverlay(): Promise<void> {
+  const renderFidesOverlay = async (): Promise<void> => {
     try {
-      debugLog(
-        options.debug,
-        "Rendering Fides overlay CSS & HTML into the DOM..."
-      );
+      fidesDebugger("Injecting Fides overlay CSS & HTML into the DOM...");
 
       // If this function is called multiple times (e.g. due to calling
       // Fides.reinitialize() or similar), first ensure we unmount any
       // previously rendered instances
       if (renderedParentElem) {
-        debugLog(
-          options.debug,
-          "Detected that Fides overlay was previously rendered! Unmounting previous instance from the DOM."
+        fidesDebugger(
+          "Detected that Fides overlay was previously rendered! Unmounting previous instance from the DOM.",
         );
 
         /**
@@ -67,18 +63,19 @@ export const initOverlay = async ({
 
       // update CSS variables based on configured primary color
       if (options.fidesPrimaryColor) {
+        fidesDebugger("setting primary color to", options.fidesPrimaryColor);
         document.documentElement.style.setProperty(
           "--fides-overlay-primary-color",
-          options.fidesPrimaryColor
+          options.fidesPrimaryColor,
         );
         const lighterPrimaryColor: string = generateLighterColor(
           options.fidesPrimaryColor,
           ColorFormat.HEX,
-          1
+          1,
         );
         document.documentElement.style.setProperty(
           "--fides-overlay-primary-button-background-hover-color",
-          lighterPrimaryColor
+          lighterPrimaryColor,
         );
       }
 
@@ -88,9 +85,8 @@ export const initOverlay = async ({
         parentElem = document.getElementById(FIDES_EMBED_CONTAINER_ID);
         if (!parentElem) {
           // wait until the hosting page's container element is available before proceeding in this script and attempting to render the embedded overlay. This is useful for dynamic (SPA) pages and pages that load the modal link element after the Fides script has loaded.
-          debugLog(
-            options.debug,
-            `Embed container not found (#${FIDES_EMBED_CONTAINER_ID}), waiting for it to be added to the DOM...`
+          fidesDebugger(
+            `Embed container not found (#${FIDES_EMBED_CONTAINER_ID}), waiting for it to be added to the DOM...`,
           );
           const checkEmbedContainer = async () =>
             new Promise<void>((resolve) => {
@@ -118,9 +114,8 @@ export const initOverlay = async ({
           options.overlayParentId || FIDES_OVERLAY_DEFAULT_ID;
         parentElem = document.getElementById(overlayParentId);
         if (!parentElem) {
-          debugLog(
-            options.debug,
-            `Parent element not found (#${overlayParentId}), creating and appending to body...`
+          fidesDebugger(
+            `Parent element not found (#${overlayParentId}), creating and appending to body...`,
           );
           // Create our own parent element and prepend to body
           parentElem = document.createElement("div");
@@ -132,15 +127,16 @@ export const initOverlay = async ({
 
       if (!parentElem) {
         return await Promise.reject(
-          new Error("There was a problem rendering the Fides overlay.")
+          new Error("There was a problem rendering the Fides overlay."),
         );
       }
 
       if (
-        experience.experience_config?.component === ComponentType.MODAL ||
-        experience.experience_config?.component ===
-          ComponentType.BANNER_AND_MODAL ||
-        experience.experience_config?.component === ComponentType.TCF_OVERLAY
+        !!renderOverlay &&
+        (experience.experience_config?.component === ComponentType.MODAL ||
+          experience.experience_config?.component ===
+            ComponentType.BANNER_AND_MODAL ||
+          experience.experience_config?.component === ComponentType.TCF_OVERLAY)
       ) {
         // Render the Overlay to the DOM!
         renderOverlay(
@@ -151,29 +147,30 @@ export const initOverlay = async ({
             fidesRegionString,
             cookie,
             savedConsent,
+            propertyId,
+            translationOverrides,
           },
-          parentElem
+          parentElem,
         );
-        debugLog(options.debug, "Fides overlay is now in the DOM!");
+        fidesDebugger("Fides overlay is now in the DOM!");
         renderedParentElem = parentElem;
       }
       return await Promise.resolve();
     } catch (e) {
-      debugLog(options.debug, e);
+      fidesDebugger(e);
       return Promise.reject(e);
     }
-  }
+  };
 
   // Ensure we only render the overlay to the document once it's interactive
   // NOTE: do not wait for "complete" state, as this can delay rendering on sites with heavy assets
   if (document?.readyState === "loading") {
-    debugLog(
-      options.debug,
-      "document readyState is not yet 'interactive', adding 'readystatechange' event listener and waiting..."
+    fidesDebugger(
+      "document readyState is not yet 'interactive', adding 'readystatechange' event listener and waiting...",
     );
     document.addEventListener("readystatechange", async () => {
       if (document.readyState === "interactive") {
-        debugLog(options.debug, "document fully loaded and parsed");
+        fidesDebugger("document fully loaded and parsed");
         renderFidesOverlay();
       }
     });

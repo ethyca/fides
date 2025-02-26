@@ -1,6 +1,7 @@
 import cytoscape from "cytoscape";
 import klay from "cytoscape-klay";
 import { Box } from "fidesui";
+import palette from "fidesui/src/palette/palette.module.scss";
 import dynamic from "next/dynamic";
 import React, { useContext, useEffect, useMemo, useState } from "react";
 
@@ -16,6 +17,9 @@ const CytoscapeWrapper = dynamic(() => import("react-cytoscapejs"), {
 });
 
 cytoscape.use(klay);
+if (process.env.NODE_ENV !== "development") {
+  cytoscape.warnings(false);
+}
 
 type UseCytoscapeGraphProps = {
   data: SpatialData;
@@ -52,9 +56,9 @@ const useCytoscapeGraph = ({ data }: { data: SpatialData }) => {
         edgeSpacingFactor: 1.3,
       },
     }),
-    []
+    [],
   );
-  const backgroundColor = "#f7fafc";
+  const backgroundColor = palette.FIDESUI_NEUTRAL_50;
   const styleSheet: cytoscape.Stylesheet[] = useMemo(
     () => [
       {
@@ -125,7 +129,7 @@ const useCytoscapeGraph = ({ data }: { data: SpatialData }) => {
         },
       },
     ],
-    []
+    [backgroundColor],
   );
 
   return {
@@ -181,7 +185,7 @@ const CytoscapeGraph = ({
        */
       datamapGraphRef.current = undefined;
     },
-    [datamapGraphRef]
+    [datamapGraphRef],
   );
 
   useEffect(() => {
@@ -213,7 +217,7 @@ const CytoscapeGraph = ({
           elements={elements}
           style={{ height: "100%", width: "100%", backgroundColor }}
           stylesheet={styleSheet}
-          wheelSensitivity={0.085}
+          wheelSensitivity={0.085} // before changing the value, test the behavior on a mouse and a trackpad
           layout={layoutConfig}
         />
       </Box>

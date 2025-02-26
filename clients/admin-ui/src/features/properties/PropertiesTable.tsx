@@ -20,9 +20,9 @@ import {
 import { Flex, HStack, Text, VStack } from "fidesui";
 import _ from "lodash";
 import { useRouter } from "next/router";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
-import { PROPERTIES_ROUTE } from "~/features/common/nav/v2/routes";
+import { EDIT_PROPERTY_ROUTE } from "~/features/common/nav/routes";
 import Restrict, { useHasPermission } from "~/features/common/Restrict";
 import { useGetHealthQuery } from "~/features/plus/plus.slice";
 import { useGetAllPropertiesQuery } from "~/features/properties/property.slice";
@@ -60,7 +60,10 @@ const EmptyTableNotice = () => (
         <Text fontSize="sm">
           Click “Add property” to add your first property to Fides.
         </Text>
-        <AddPropertyButton buttonLabel="Add property" buttonVariant="primary" />
+        <AddPropertyButton
+          buttonLabel="Add property"
+          buttonProps={{ type: "primary" }}
+        />
       </Restrict>
     </VStack>
   </VStack>
@@ -88,10 +91,13 @@ export const PropertiesTable = () => {
   const router = useRouter();
   const [globalFilter, setGlobalFilter] = useState<string>();
 
-  const updateGlobalFilter = (searchTerm: string) => {
-    resetPageIndexToDefault();
-    setGlobalFilter(searchTerm);
-  };
+  const updateGlobalFilter = useCallback(
+    (searchTerm: string) => {
+      resetPageIndexToDefault();
+      setGlobalFilter(searchTerm);
+    },
+    [resetPageIndexToDefault, setGlobalFilter],
+  );
 
   const {
     isFetching,
@@ -136,7 +142,6 @@ export const PropertiesTable = () => {
         ),
         header: (props) => <DefaultHeaderCell value="Experience" {...props} />,
         meta: {
-          displayText: "Experience",
           showHeaderMenu: true,
         },
       }),
@@ -146,7 +151,7 @@ export const PropertiesTable = () => {
         cell: ({ row }) => <PropertyActions property={row.original} />,
       }),
     ],
-    []
+    [],
   );
 
   const tableInstance = useReactTable<Property>({
@@ -159,11 +164,15 @@ export const PropertiesTable = () => {
     state: {
       expanded: true,
     },
+    columnResizeMode: "onChange",
   });
 
   const onRowClick = (property: Property) => {
     if (userCanUpdate) {
-      router.push(`${PROPERTIES_ROUTE}/${property.id}`);
+      router.push({
+        pathname: EDIT_PROPERTY_ROUTE,
+        query: { id: property.id },
+      });
     }
   };
 
@@ -181,10 +190,7 @@ export const PropertiesTable = () => {
           />
           <HStack alignItems="center" spacing={4}>
             <Restrict scopes={[ScopeRegistryEnum.PROPERTY_CREATE]}>
-              <AddPropertyButton
-                buttonLabel="Add property"
-                buttonVariant="outline"
-              />
+              <AddPropertyButton buttonLabel="Add property" />
             </Restrict>
           </HStack>
         </TableActionBar>
@@ -194,7 +200,7 @@ export const PropertiesTable = () => {
           emptyTableNotice={<EmptyTableNotice />}
         />
         <PaginationBar
-          totalRows={totalRows}
+          totalRows={totalRows || 0}
           pageSizes={PAGE_SIZES}
           setPageSize={setPageSize}
           onPreviousPageClick={onPreviousPageClick}

@@ -17,6 +17,7 @@ class TestPropertySchema:
             "name": "Test Property",
             "type": PropertyType.website,
             "experiences": [],
+            "messaging_templates": [],
             "paths": paths,
         }
         prop = Property(**data)
@@ -34,6 +35,7 @@ class TestPropertySchema:
             "name": "Test Property",
             "type": PropertyType.website,
             "experiences": [],
+            "messaging_templates": [],
             "paths": paths,
         }
         with pytest.raises(ValueError):

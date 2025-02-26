@@ -4,10 +4,10 @@ import re
 from enum import Enum
 from typing import Any, Dict, List, Optional, Set, Type
 
-from fideslang.validation import FidesKey
+from fideslang.validation import FidesKey, validate_fides_key
 from sqlalchemy import Boolean, Column
 from sqlalchemy import Enum as EnumColumn
-from sqlalchemy import Float, ForeignKey, String, UniqueConstraint, or_
+from sqlalchemy import Float, ForeignKey, String, UniqueConstraint, or_, text
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB
 from sqlalchemy.ext.mutable import MutableList
 from sqlalchemy.orm import RelationshipProperty, Session, relationship
@@ -20,15 +20,12 @@ from fides.api.models import (
     dry_update_data,
     update_if_modified,
 )
-from fides.api.models.experience_notices import ExperienceNotices
-from fides.api.models.location_regulation_selections import (
-    DeprecatedNoticeRegion,
-    PrivacyNoticeRegion,
-)
+from fides.api.models.location_regulation_selections import DeprecatedNoticeRegion
 from fides.api.models.sql_models import (  # type: ignore[attr-defined]
     Cookies,
     PrivacyDeclaration,
     System,
+    get_system_data_uses,
 )
 from fides.api.schemas.language import SupportedLanguage
 
@@ -111,7 +108,7 @@ class PrivacyNoticeBase:
         if not isinstance(name, str):
             raise Exception("Privacy notice keys must be generated from a string.")
         notice_key: str = re.sub(r"\s+", "_", name.lower().strip())
-        return FidesKey(FidesKey.validate(notice_key))
+        return FidesKey(validate_fides_key(notice_key))
 
 
 class PrivacyNoticeTemplate(PrivacyNoticeBase, Base):
@@ -142,6 +139,10 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
     accepts or rejects to indicate their consent for particular data uses
     """
 
+    id = Column(
+        String(255), primary_key=True, index=True, default=FidesBase.generate_uuid
+    )
+
     origin = Column(
         String,
         ForeignKey(PrivacyNoticeTemplate.id_field_path),
@@ -152,6 +153,23 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
         backref="privacy_notice",
         lazy="selectin",
         order_by="NoticeTranslation.created_at",
+    )
+
+    parent_id = Column(
+        String,
+        ForeignKey("privacynotice.id", ondelete="SET NULL"),
+        nullable=True,
+    )
+    children: "RelationshipProperty[List[PrivacyNotice]]" = relationship(
+        "PrivacyNotice",
+        back_populates="parent",
+        cascade="all",
+        passive_deletes=True,
+    )
+    parent: "RelationshipProperty[Optional[PrivacyNotice]]" = relationship(
+        "PrivacyNotice",
+        back_populates="children",
+        remote_side=[id],
     )
 
     @hybridproperty
@@ -193,32 +211,84 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
         ).all()
 
     @property
-    def systems_applicable(self) -> bool:
-        """Return if any systems overlap with this notice's data uses"""
+    def calculated_systems_applicable(self) -> bool:
+        """Convenience property to return if any systems overlap with this notice's data uses
+
+        This is used in the Plus API
+        """
         db = Session.object_session(self)
-        for system in db.query(System):
-            if self.applies_to_system(system):
-                return True
-        return False
+
+        all_system_data_uses: Set[str] = get_system_data_uses(db, include_parents=True)
+        return bool(set(self.data_uses).intersection(all_system_data_uses))
 
     @property
-    def configured_regions(self) -> List[PrivacyNoticeRegion]:
-        """Convenience property to look up which regions are using these Notices."""
-        from fides.api.models.privacy_experience import PrivacyExperience
+    def configured_regions_for_notice(self) -> List[str]:
+        """Convenience property to look up which regions are using these Notices.
 
+        This is used in the Plus API
+        """
         db = Session.object_session(self)
-        configured_regions = (
-            db.query(PrivacyExperience.region)
-            .join(
-                ExperienceNotices,
-                PrivacyExperience.experience_config_id
-                == ExperienceNotices.experience_config_id,
-            )
-            .filter(ExperienceNotices.notice_id == self.id)
-            .group_by(PrivacyExperience.region)
-            .order_by(PrivacyExperience.region.asc())
+
+        # Raw sql for performance
+        experience_regions_cursor_result = db.execute(
+            text(
+                """
+            SELECT array_agg(distinct(privacyexperience.region) order by privacyexperience.region) AS regions
+            FROM privacynotice
+               JOIN experiencenotices
+                 ON experiencenotices.notice_id = :privacy_notice_id
+               JOIN privacyexperienceconfig
+                 ON privacyexperienceconfig.id = experiencenotices.experience_config_id
+               JOIN privacyexperience
+                 ON privacyexperience.experience_config_id = privacyexperienceconfig.id
+            GROUP BY privacynotice.id
+            """
+            ),
+            {"privacy_notice_id": self.id},
         )
-        return [region[0] for region in configured_regions]
+        res = [result for result in experience_regions_cursor_result]
+        return res[0]["regions"] if res else []
+
+    @classmethod
+    def fetch_and_validate_notices(
+        cls,
+        db: Session,
+        child_notices: List[Dict[str, Any]],
+        parent_id: Optional[str] = None,
+    ) -> List[PrivacyNotice]:
+        """
+        Retrieves existing notices from the database and validates their linkage status.
+
+        This function performs two main checks:
+        1. Ensures all specified notices exist in the database.
+        2. Verifies that notices are not linked to a different parent than the one specified.
+        """
+
+        notice_map = {
+            child_notice["id"]: child_notice["name"] for child_notice in child_notices
+        }
+        child_notice_ids = set(notice_map.keys())
+        existing_notices: List[PrivacyNotice] = (
+            db.query(cls).filter(cls.id.in_(child_notice_ids)).all()
+        )
+
+        if missing_ids := child_notice_ids - {notice.id for notice in existing_notices}:
+            missing_names = [notice_map[id] for id in missing_ids]
+            raise ValueError(
+                f"The following notices do not exist: {', '.join(missing_names)}"
+            )
+
+        if linked_ids := {
+            notice.id
+            for notice in existing_notices
+            if notice.parent_id is not None and notice.parent_id != parent_id
+        }:
+            linked_names = [notice_map[id] for id in linked_ids]
+            raise ValueError(
+                f"The following notices are already linked to another notice: {', '.join(linked_names)}"
+            )
+
+        return existing_notices
 
     @classmethod
     def create(
@@ -237,7 +307,17 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
         about the notice and the translation to which the user supplied a consent preference.
         """
         translations = data.pop("translations", []) or []
-        created = super().create(db=db, data=data, check_name=check_name)
+        child_notices = data.pop("children", []) or []
+
+        # return an error before the actual creation if the children are not valid
+        existing_notices = cls.fetch_and_validate_notices(db, child_notices)
+
+        created: PrivacyNotice = super().create(db=db, data=data, check_name=check_name)
+
+        # automatically links and unlinks at the DB level with this assignment
+        created.children = existing_notices
+        db.commit()
+
         data.pop(
             "id", None
         )  # Default Notices have id specified but we don't want to use the same id for the historical record
@@ -259,13 +339,21 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
 
     def update(self, db: Session, *, data: dict[str, Any]) -> PrivacyNotice:
         """
-        Updates the Privacy Notice and its translations.
+        Updates the Privacy Notice, child privacy notices, and its translations.
 
+        - Links or unlinks child privacy notices to match the children in the request
         - Upserts or deletes supplied translations to match translations in the request
         - For each remaining translation, create a historical record if the base notice
         or translation changed.
         """
         request_translations = data.pop("translations", [])
+        child_notices = data.pop("children", [])
+
+        existing_notices = PrivacyNotice.fetch_and_validate_notices(
+            db, child_notices, self.id
+        )
+        # automatically links and unlinks at the DB level with this assignment
+        self.children = existing_notices
 
         # Performs a patch update of the base privacy notice
         base_notice_updated: bool = update_if_modified(self, db=db, data=data)
@@ -315,6 +403,7 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
         # This relationship needs to be removed before the dry_update
         # to prevent the dry update from being added to Session.new
         updated_attributes.pop("translations", [])
+        updated_attributes.pop("children", [])
 
         # create a new object with the updated attribute data to keep this
         # ORM object (i.e., `self`) pristine
@@ -460,6 +549,7 @@ def create_historical_record_for_notice_and_translation(
     existing_version: float = notice_translation.version or 0.0
     history_data: dict = create_historical_data_from_record(privacy_notice)
     history_data.pop("translations", None)
+    history_data.pop("parent_id", None)
 
     updated_translation_data: dict = create_historical_data_from_record(
         notice_translation

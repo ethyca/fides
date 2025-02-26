@@ -1,4 +1,4 @@
-import { Heading, Spinner, Stack, Text } from "fidesui";
+import { Heading, Link, Spinner, Stack, Text } from "fidesui";
 import NextLink from "next/link";
 
 import { usePrivacyDeclarationData } from "~/features/system/privacy-declarations/hooks";
@@ -16,13 +16,13 @@ const PrivacyDeclarationStep = ({ system }: Props) => {
   });
 
   const allEnabledDataCategories = dataProps.allDataCategories.filter(
-    (category) => category.active
+    (category) => category.active,
   );
 
   const allEnabledDataUses = dataProps.allDataUses.filter((use) => use.active);
 
   const allEnabledDataSubjects = dataProps.allDataSubjects.filter(
-    (subject) => subject.active
+    (subject) => subject.active,
   );
 
   const filteredDataProps = {
@@ -44,11 +44,9 @@ const PrivacyDeclarationStep = ({ system }: Props) => {
         of personal information are collected for this purpose and for which
         categories of data subjects. To update the available categories and
         uses, please visit{" "}
-        <NextLink href="/taxonomy" passHref>
-          <Text as="a" color="complimentary.600">
-            Manage taxonomy
-          </Text>
-        </NextLink>
+        <Link as={NextLink} href="/taxonomy" color="link.900">
+          Manage taxonomy
+        </Link>
         .
       </Text>
       {isLoading ? (

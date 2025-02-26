@@ -38,7 +38,7 @@ const Layout = ({
 
   const { data: activeMessagingProvider } = useGetActiveMessagingProviderQuery(
     undefined,
-    { skip }
+    { skip },
   );
 
   const { data: activeStorage } = useGetActiveStorageQuery(undefined, {

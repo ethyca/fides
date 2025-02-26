@@ -1,26 +1,41 @@
-import { Box, Button, ButtonGroup, Flex, Text } from "fidesui";
+import {
+  AntButton as Button,
+  AntTag as Tag,
+  Box,
+  Flex,
+  Text,
+  Wrap,
+} from "fidesui";
+import { ReactNode } from "react";
 
-import Tag from "~/features/common/Tag";
 import ConnectionTypeLogo from "~/features/datastore-connections/ConnectionTypeLogo";
+import DeleteConnectionModal from "~/features/datastore-connections/DeleteConnectionModal";
 import useTestConnection from "~/features/datastore-connections/useTestConnection";
+import getIntegrationTypeInfo from "~/features/integrations/add-integration/allIntegrationTypes";
 import ConnectionStatusNotice from "~/features/integrations/ConnectionStatusNotice";
 import { ConnectionConfigurationResponse } from "~/types/api";
-
-const BIGQUERY_TAGS = ["Data Warehouse", "BigQuery", "Discovery", "Inventory"];
 
 const IntegrationBox = ({
   integration,
   showTestNotice,
-  buttonLabel = "Configure",
+  otherButtons,
+  showDeleteButton,
+  configureButtonLabel = "Configure",
   onConfigureClick,
 }: {
   integration?: ConnectionConfigurationResponse;
   showTestNotice?: boolean;
-  buttonLabel?: string;
+  otherButtons?: ReactNode;
+  showDeleteButton?: boolean;
+  configureButtonLabel?: string;
   onConfigureClick?: () => void;
 }) => {
   const { testConnection, isLoading, testData } =
     useTestConnection(integration);
+
+  const integrationTypeInfo = getIntegrationTypeInfo(
+    integration?.connection_type,
+  );
 
   return (
     <Box
@@ -28,7 +43,6 @@ const IntegrationBox = ({
       borderWidth={1}
       borderRadius="lg"
       overflow="hidden"
-      height="114px"
       padding="12px"
       marginBottom="24px"
       data-testid={`integration-info-${integration?.key}`}
@@ -43,32 +57,39 @@ const IntegrationBox = ({
             <ConnectionStatusNotice testData={testData} />
           ) : (
             <Text color="gray.700" fontSize="sm" fontWeight="semibold" mt={1}>
-              Data Warehouse
+              {integrationTypeInfo.category}
             </Text>
           )}
         </Flex>
-        <ButtonGroup size="sm" variant="outline">
+        <div className="flex gap-4">
+          {showDeleteButton && integration && (
+            <DeleteConnectionModal
+              showMenu={false}
+              connection_key={integration.key}
+            />
+          )}
           {showTestNotice && (
             <Button
               onClick={testConnection}
-              isLoading={isLoading}
+              loading={isLoading}
               data-testid="test-connection-btn"
             >
               Test connection
             </Button>
           )}
+          {otherButtons}
           {onConfigureClick && (
             <Button onClick={onConfigureClick} data-testid="configure-btn">
-              {buttonLabel}
+              {configureButtonLabel}
             </Button>
           )}
-        </ButtonGroup>
+        </div>
       </Flex>
-      <Flex marginTop="16px">
-        {BIGQUERY_TAGS.map((item) => (
+      <Wrap marginTop="16px">
+        {integrationTypeInfo.tags.map((item) => (
           <Tag key={item}>{item}</Tag>
         ))}
-      </Flex>
+      </Wrap>
     </Box>
   );
 };

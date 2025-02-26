@@ -3,9 +3,10 @@ from __future__ import annotations
 from typing import Any, Callable, Iterable, List, Optional, Set
 
 from fastapi.applications import FastAPI
-from pydantic import AnyUrl
+from pydantic import SerializeAsAny
 from sqlalchemy.orm import Session
 
+from fides.api.custom_types import AnyHttpUrlStringRemovesSlash, URLOriginString
 from fides.api.models.application_config import ApplicationConfig
 from fides.api.schemas.storage.storage import StorageType
 from fides.api.util.cors_middleware_utils import update_cors_middleware
@@ -82,6 +83,13 @@ class ConfigProxyBase:
         )
 
 
+class AdminUISettingsProxy(ConfigProxyBase):
+    prefix = "admin_ui"
+
+    enabled: bool
+    url: SerializeAsAny[Optional[AnyHttpUrlStringRemovesSlash]] = None
+
+
 class NotificationSettingsProxy(ConfigProxyBase):
     prefix = "notifications"
 
@@ -98,6 +106,7 @@ class ExecutionSettingsProxy(ConfigProxyBase):
     subject_identity_verification_required: bool
     disable_consent_identity_verification: bool
     require_manual_request_approval: bool
+    masking_strict: bool
 
     def __getattribute__(self, name: str) -> Any:
         """
@@ -132,7 +141,7 @@ class SecuritySettingsProxy(ConfigProxyBase):
     # for advanced usage of non-URLs, e.g. wildcards (`*`), the related
     # `cors_origin_regex` property should be used.
     # this is explicitly _not_ accessible via API - it must be used with care.
-    cors_origins: List[AnyUrl]
+    cors_origins: SerializeAsAny[List[URLOriginString]]
 
 
 class ConsentSettingsProxy(ConfigProxyBase):
@@ -163,6 +172,7 @@ class ConfigProxy:
     """
 
     def __init__(self, db: Session) -> None:
+        self.admin_ui = AdminUISettingsProxy(db)
         self.notifications = NotificationSettingsProxy(db)
         self.execution = ExecutionSettingsProxy(db)
         self.storage = StorageSettingsProxy(db)

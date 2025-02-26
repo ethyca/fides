@@ -221,7 +221,7 @@ class TestApplicationConfigModel:
         ApplicationConfig.update_config_set(db, CONFIG)
         # check a few specific config properties of different types on the database record
         db_config = ApplicationConfig.get_config_set(db)
-        assert dumps(db_config) == CONFIG.json()
+        assert dumps(db_config, separators=(",", ":")) == CONFIG.model_dump_json()
 
         # change a few config values, set the db record, ensure it's updated
         notification_service_type = CONFIG.notifications.notification_service_type
@@ -244,7 +244,7 @@ class TestApplicationConfigModel:
         # now we update the db record and all values should align again
         ApplicationConfig.update_config_set(db, CONFIG)
         db_config = ApplicationConfig.get_config_set(db)
-        assert dumps(db_config) == CONFIG.json()
+        assert dumps(db_config, separators=(",", ":")) == CONFIG.model_dump_json()
 
         # reset config values to initial values to ensure we don't mess up any state
         CONFIG.notifications.notification_service_type = notification_service_type

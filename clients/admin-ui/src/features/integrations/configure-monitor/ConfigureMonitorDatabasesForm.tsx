@@ -1,120 +1,122 @@
-import { Button, ButtonGroup, Flex, Spinner } from "fidesui";
-import { useEffect, useState } from "react";
+import { AntButton as Button, Flex, Text, Tooltip, useToast } from "fidesui";
 
-import useQueryResultToast from "~/features/common/form/useQueryResultToast";
-import { PickerCheckboxList } from "~/features/common/PickerCard";
-import {
-  PaginationBar,
-  useServerSidePagination,
-} from "~/features/common/table/v2";
-import {
-  useGetDatabasesByMonitorQuery,
-  usePutDiscoveryMonitorMutation,
-} from "~/features/data-discovery-and-detection/discovery-detection.slice";
+import FidesSpinner from "~/features/common/FidesSpinner";
+import { usePaginatedPicker } from "~/features/common/hooks/usePicker";
+import QuestionTooltip from "~/features/common/QuestionTooltip";
+import { DEFAULT_TOAST_PARAMS } from "~/features/common/toast";
+import MonitorDatabasePicker from "~/features/integrations/configure-monitor/MonitorDatabasePicker";
+import useCumulativeGetDatabases from "~/features/integrations/configure-monitor/useCumulativeGetDatabases";
 import { MonitorConfig } from "~/types/api";
-import { isErrorResult } from "~/types/errors";
 
-const EMPTY_RESPONSE = {
-  items: [] as string[],
-  total: 0,
-  page: 1,
-  size: 50,
-  pages: 0,
-};
+const TOOLTIP_COPY =
+  "Selecting a project will monitor all current and future datasets within that project.";
+const TIMEOUT_COPY =
+  "Loading resources is taking longer than expected. The monitor has been saved and is tracking all available resources. You can return later to limit its scope if needed";
 
 const ConfigureMonitorDatabasesForm = ({
   monitor,
+  isEditing,
+  isSubmitting,
+  integrationKey,
+  onSubmit,
   onClose,
 }: {
   monitor: MonitorConfig;
+  isEditing?: boolean;
+  isSubmitting?: boolean;
+  integrationKey: string;
+  onSubmit: (monitor: MonitorConfig) => void;
   onClose: () => void;
 }) => {
-  const { toastResult } = useQueryResultToast({
-    defaultSuccessMsg: "Monitor updated successfully",
-    defaultErrorMsg: "A problem occurred while updating this monitor",
-  });
+  const toast = useToast();
 
-  const {
-    PAGE_SIZES,
-    pageSize,
-    setPageSize,
-    onPreviousPageClick,
-    isPreviousPageDisabled,
-    onNextPageClick,
-    isNextPageDisabled,
-    startRange,
-    endRange,
-    pageIndex,
-    setTotalPages,
-  } = useServerSidePagination();
-
-  const { data, isLoading, isFetching } = useGetDatabasesByMonitorQuery({
-    page: pageIndex,
-    size: pageSize,
-    monitor_config_id: monitor.key!,
-  });
-  const {
-    items: databases,
-    total: totalRows,
-    pages: totalPages,
-  } = data ?? EMPTY_RESPONSE;
-
-  useEffect(() => {
-    setTotalPages(totalPages);
-  }, [totalPages, setTotalPages]);
-
-  const [putMonitorMutationTrigger] = usePutDiscoveryMonitorMutation();
-
-  const [selected, setSelected] = useState<string[]>(monitor.databases ?? []);
-
-  const handleSave = async () => {
-    const payload = { ...monitor, databases: selected };
-    const result = await putMonitorMutationTrigger(payload);
-    toastResult(result);
-    if (!isErrorResult(result)) {
-      onClose();
-    }
+  const handleTimeout = () => {
+    onSubmit({ ...monitor, databases: [] });
+    toast({
+      ...DEFAULT_TOAST_PARAMS,
+      status: "info",
+      description: TIMEOUT_COPY,
+    });
+    onClose();
   };
 
-  if (isLoading) {
-    return (
-      <Flex align="center" justify="center">
-        <Spinner />
-      </Flex>
-    );
+  const {
+    databases,
+    totalDatabases: totalRows,
+    fetchMore,
+    reachedEnd,
+    isLoading: refetchPending,
+    initialIsLoading,
+  } = useCumulativeGetDatabases(integrationKey, handleTimeout);
+
+  const initialSelected = monitor?.databases ?? [];
+
+  const {
+    selected,
+    excluded,
+    allSelected,
+    someSelected,
+    handleToggleItemSelected,
+    handleToggleAll,
+  } = usePaginatedPicker({
+    initialSelected,
+    initialExcluded: [],
+    initialAllSelected: isEditing && !initialSelected.length,
+    itemCount: totalRows,
+  });
+
+  const handleSave = () => {
+    const payload = {
+      ...monitor,
+      excluded_databases: excluded,
+      databases: allSelected ? [] : selected,
+    };
+    onSubmit(payload);
+  };
+
+  const saveIsDisabled = !allSelected && selected.length === 0;
+
+  if (initialIsLoading) {
+    return <FidesSpinner my={12} />;
   }
 
   return (
     <>
-      <Flex p={4}>
-        <PickerCheckboxList
-          title="Select all projects"
-          items={databases.map((d) => ({ id: d, name: d }))}
+      <Flex p={4} direction="column">
+        <Flex direction="row" mb={4} gap={1} align="center">
+          <Text fontSize="sm">Select projects to monitor</Text>
+          <QuestionTooltip label={TOOLTIP_COPY} />
+        </Flex>
+        <MonitorDatabasePicker
+          items={databases}
+          totalItemCount={totalRows}
           selected={selected}
-          onChange={setSelected}
-          numSelected={selected.length}
-          indeterminate={[]}
+          excluded={excluded}
+          allSelected={allSelected}
+          someSelected={someSelected}
+          moreLoading={refetchPending}
+          handleToggleSelection={handleToggleItemSelected}
+          handleToggleAll={handleToggleAll}
+          onMoreClick={!reachedEnd ? fetchMore : undefined}
         />
       </Flex>
-      <PaginationBar
-        totalRows={totalRows}
-        pageSizes={PAGE_SIZES}
-        setPageSize={setPageSize}
-        onPreviousPageClick={onPreviousPageClick}
-        isPreviousPageDisabled={isPreviousPageDisabled || isFetching}
-        onNextPageClick={onNextPageClick}
-        isNextPageDisabled={isNextPageDisabled || isFetching}
-        startRange={startRange}
-        endRange={endRange}
-      />
-      <ButtonGroup size="sm" w="full" justifyContent="space-between" mt={4}>
-        <Button onClick={onClose} variant="outline">
-          Cancel
-        </Button>
-        <Button onClick={handleSave} variant="primary" data-testid="save-btn">
-          Save
-        </Button>
-      </ButtonGroup>
+      <div className="mt-4 flex w-full justify-between">
+        <Button onClick={onClose}>Cancel</Button>
+        <Tooltip
+          label="Select one or more projects to save"
+          isDisabled={!saveIsDisabled}
+        >
+          <Button
+            onClick={handleSave}
+            loading={isSubmitting}
+            type="primary"
+            data-testid="save-btn"
+            disabled={saveIsDisabled}
+          >
+            Save
+          </Button>
+        </Tooltip>
+      </div>
     </>
   );
 };

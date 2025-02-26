@@ -1,4 +1,4 @@
-import { Box, Button, Stack, useToast } from "fidesui";
+import { AntButton as Button, Box, Stack, useToast } from "fidesui";
 import { useEffect, useState } from "react";
 
 import { useAppDispatch } from "~/app/hooks";
@@ -74,8 +74,8 @@ const LoadDataFlowScanner = () => {
 
         toast(
           successToastParams(
-            `Your scan was successfully completed, with ${systemsToRegister.length} new systems detected!`
-          )
+            `Your scan was successfully completed, with ${systemsToRegister.length} new systems detected!`,
+          ),
         );
         dispatch(setSystemsForReview(systemsToRegister));
         dispatch(changeStep());
@@ -93,11 +93,7 @@ const LoadDataFlowScanner = () => {
       <Stack>
         <ScannerError error={scannerError} />
         <Box>
-          <Button
-            variant="outline"
-            onClick={handleCancel}
-            data-testid="cancel-btn"
-          >
+          <Button onClick={handleCancel} data-testid="cancel-btn">
             Cancel
           </Button>
         </Box>

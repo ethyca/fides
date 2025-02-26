@@ -6,18 +6,19 @@
  */
 
 import { CmpApi, TCData } from "@iabtechlabtcf/cmpapi";
-import { TCModel, TCString, GVL, Segment } from "@iabtechlabtcf/core";
+import { GVL, Segment, TCModel, TCString } from "@iabtechlabtcf/core";
 
+import { PrivacyExperience, PrivacyExperienceMinimal } from "./consent-types";
+import { ETHYCA_CMP_ID, FIDES_SEPARATOR } from "./tcf/constants";
+import { extractTCStringForCmpApi } from "./tcf/events";
 import { EnabledIds } from "./tcf/types";
 import {
   decodeVendorId,
-  vendorIsAc,
-  vendorGvlEntry,
   uniqueGvlVendorIds,
+  uniqueGvlVendorIdsFromMinimal,
+  vendorGvlEntry,
+  vendorIsAc,
 } from "./tcf/vendors";
-import { PrivacyExperience } from "./consent-types";
-import { ETHYCA_CMP_ID, FIDES_SEPARATOR } from "./tcf/constants";
-import { extractTCStringForCmpApi } from "./tcf/events";
 
 // TCF
 const CMP_VERSION = 1;
@@ -42,8 +43,8 @@ const generateAcString = ({
       ]
         .filter((id) => vendorIsAc(id))
         // Convert gacp.42 --> 42
-        .map((id) => decodeVendorId(id).id)
-    )
+        .map((id) => decodeVendorId(id).id),
+    ),
   );
   const vendorIds = uniqueIds.sort((a, b) => Number(a) - Number(b)).join(".");
 
@@ -59,7 +60,7 @@ export const generateFidesString = async ({
   tcStringPreferences,
 }: {
   tcStringPreferences?: EnabledIds;
-  experience: PrivacyExperience;
+  experience: PrivacyExperience | PrivacyExperienceMinimal;
 }): Promise<string> => {
   let encodedString = "";
   try {
@@ -75,7 +76,10 @@ export const generateFidesString = async ({
     tcModel.supportOOB = false;
 
     // Narrow the GVL to say we've only showed these vendors provided by our experience
-    tcModel.gvl.narrowVendorsTo(uniqueGvlVendorIds(experience));
+    const gvlUID = experience.minimal_tcf
+      ? uniqueGvlVendorIdsFromMinimal(experience as PrivacyExperienceMinimal)
+      : uniqueGvlVendorIds(experience as PrivacyExperience);
+    tcModel.gvl.narrowVendorsTo(gvlUID);
 
     if (tcStringPreferences) {
       // Set vendors on tcModel
@@ -86,9 +90,18 @@ export const generateFidesString = async ({
         }
       });
       tcStringPreferences.vendorsLegint.forEach((vendorId) => {
-        if (vendorGvlEntry(vendorId, experience.gvl)) {
-          const thisVendor = experience.tcf_vendor_legitimate_interests?.filter(
-            (v) => v.id === vendorId
+        if (experience.minimal_tcf) {
+          (
+            experience as PrivacyExperienceMinimal
+          ).tcf_vendor_legitimate_interest_ids?.forEach((vlid) => {
+            const { id } = decodeVendorId(vlid);
+            tcModel.vendorLegitimateInterests.set(+id);
+          });
+        } else if (vendorGvlEntry(vendorId, experience.gvl)) {
+          const thisVendor = (
+            experience as PrivacyExperience
+          ).tcf_vendor_legitimate_interests?.filter(
+            (v) => v.id === vendorId,
           )[0];
 
           const vendorPurposes = thisVendor?.purpose_legitimate_interests;
@@ -98,7 +111,7 @@ export const generateFidesString = async ({
             const legIntPurposeIds = vendorPurposes.map((p) => p.id);
             if (
               legIntPurposeIds.filter((id) =>
-                FORBIDDEN_LEGITIMATE_INTEREST_PURPOSE_IDS.includes(id)
+                FORBIDDEN_LEGITIMATE_INTEREST_PURPOSE_IDS.includes(id),
               ).length
             ) {
               skipSetLegInt = true;

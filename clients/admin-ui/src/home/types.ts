@@ -15,6 +15,7 @@ export interface ModuleCardConfig extends ModuleCard {
   requiresSystems?: boolean;
   requiresConnections?: boolean;
   requiresPlus?: boolean;
+  requiresOss?: boolean;
   scopes: ScopeRegistryEnum[];
   requiresFlag?: FlagNames;
 }

@@ -1,11 +1,11 @@
-import { Box, Button, Heading, Stack } from "fidesui";
+import { AntButton as Button, Box, Stack } from "fidesui";
 import type { NextPage } from "next";
 import { useState } from "react";
 
 import { useFeatures } from "~/features/common/features";
 import Layout from "~/features/common/Layout";
-import BackButton from "~/features/common/nav/v2/BackButton";
-import { DATASET_ROUTE } from "~/features/common/nav/v2/routes";
+import { DATASET_ROUTE } from "~/features/common/nav/routes";
+import PageHeader from "~/features/common/PageHeader";
 import QuestionTooltip from "~/features/common/QuestionTooltip";
 import DatabaseConnectForm from "~/features/dataset/DatabaseConnectForm";
 import DatasetYamlForm from "~/features/dataset/DatasetYamlForm";
@@ -17,29 +17,31 @@ const NewDataset: NextPage = () => {
   >(null);
   return (
     <Layout title="Create New Dataset">
-      <BackButton backPath={DATASET_ROUTE} />
-      <Heading mb={8} fontSize="2xl" fontWeight="semibold">
-        Create New Dataset
-      </Heading>
+      <PageHeader
+        heading="Datasets"
+        breadcrumbItems={[
+          {
+            title: "All datasets",
+            href: DATASET_ROUTE,
+          },
+          { title: "Create new" },
+        ]}
+      />
+
       <Stack spacing={8}>
         <Box>
           <Button
-            size="sm"
-            mr={2}
-            variant="outline"
             onClick={() => setGenerateMethod("yaml")}
-            isActive={generateMethod === "yaml"}
             data-testid="upload-yaml-btn"
+            className="mr-2"
           >
             Upload a Dataset YAML
           </Button>
           <Button
-            size="sm"
-            mr={2}
-            variant="outline"
             onClick={() => setGenerateMethod("database")}
-            isActive={generateMethod === "database"}
-            isDisabled={features.flags.dataDiscoveryAndDetection}
+            ghost={generateMethod === "database"}
+            disabled={features.flags.dataDiscoveryAndDetection}
+            className="mr-2"
             data-testid="connect-db-btn"
           >
             Connect to a database

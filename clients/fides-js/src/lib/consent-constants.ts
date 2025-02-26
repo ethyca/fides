@@ -1,8 +1,8 @@
 import {
   FidesExperienceTranslationOverrides,
   FidesInitOptionsOverrides,
-  OverrideExperienceTranslations,
   FidesOptions,
+  OverrideExperienceTranslations,
 } from "./consent-types";
 import { LOCALE_REGEX } from "./i18n/i18n-constants";
 
@@ -85,6 +85,12 @@ export const FIDES_OVERRIDE_OPTIONS_VALIDATOR_MAP: {
     overrideKey: "fides_clear_cookie",
     validationRegex: /(.*)/,
   },
+  {
+    overrideName: "fidesConsentOverride",
+    overrideType: "string",
+    overrideKey: "fides_consent_override",
+    validationRegex: /^(accept|reject)$/,
+  },
 ];
 
 /**
@@ -124,3 +130,14 @@ export const FIDES_OVERRIDE_EXPERIENCE_LANGUAGE_VALIDATOR_MAP: {
 ];
 
 export const FIDES_OVERLAY_WRAPPER = "fides-overlay-wrapper";
+export const FIDES_I18N_ICON = "fides-i18n-icon";
+
+export const MARKETING_CONSENT_KEYS = [
+  "marketing",
+  "data_sales_and_sharing",
+  "data_sales_sharing_gpp_us_state",
+  "data_sharing_gpp_us_state",
+  "data_sales_gpp_us_state",
+  "targeted_advertising_gpp_us_state",
+  "sales_sharing_targeted_advertising_gpp_us_national",
+];

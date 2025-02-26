@@ -1,5 +1,6 @@
 import type { Identifier, XYCoord } from "dnd-core";
 import {
+  AntSwitch as Switch,
   Box,
   FormControl,
   FormLabel,
@@ -7,7 +8,6 @@ import {
   List,
   ListIcon,
   ListItem,
-  Switch,
 } from "fidesui";
 import produce from "immer";
 import React, { useCallback, useEffect, useRef, useState } from "react";
@@ -114,23 +114,21 @@ const useDraggableColumnListItem = ({
 
   drag(drop(ref));
 
-  const handleColumnVisibleToggle = (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    setColumnVisible(index, event.target.checked);
+  const handleColumnVisibleToggle = (checked: boolean) => {
+    setColumnVisible(index, checked);
   };
 
   return { isDragging, ref, handlerId, preview, handleColumnVisibleToggle };
 };
 
-const DraggableColumnListItem: React.FC<DraggableColumnListItemProps> = ({
+const DraggableColumnListItem = ({
   id,
   index,
   isVisible,
   moveColumn,
   setColumnVisible,
   text,
-}) => {
+}: DraggableColumnListItemProps) => {
   const { ref, isDragging, handlerId, preview, handleColumnVisibleToggle } =
     useDraggableColumnListItem({
       index,
@@ -144,11 +142,18 @@ const DraggableColumnListItem: React.FC<DraggableColumnListItemProps> = ({
       alignItems="center"
       display="flex"
       minWidth={0}
-      ref={preview}
+      ref={(element) => {
+        preview(element);
+      }}
       data-handler-id={handlerId}
       opacity={isDragging ? 0.2 : 1}
+      data-testid={`column-list-item-${id}`}
     >
-      <Box ref={ref} cursor={isDragging ? "grabbing" : "grab"}>
+      <Box
+        ref={ref}
+        cursor={isDragging ? "grabbing" : "grab"}
+        data-testid={`column-dragger-${id}`}
+      >
         <ListIcon
           as={GripDotsVerticalIcon}
           color="gray.300"
@@ -176,10 +181,8 @@ const DraggableColumnListItem: React.FC<DraggableColumnListItemProps> = ({
           {text}
         </FormLabel>
         <Switch
-          colorScheme="complimentary"
           id={`${id}`}
-          mr={2}
-          isChecked={isVisible}
+          checked={isVisible}
           onChange={handleColumnVisibleToggle}
         />
       </FormControl>
@@ -199,14 +202,14 @@ export const useEditableColumns = ({
   columns: DraggableColumn[];
 }): EditableColumns => {
   const [columns, setColumns] = useState<DraggableColumn[]>(
-    initialColumns ?? []
+    initialColumns ?? [],
   );
 
   useEffect(() => {
     setColumns(
       initialColumns?.map((c) => ({
         ...c,
-      })) || []
+      })) || [],
     );
   }, [initialColumns]);
 
@@ -216,7 +219,7 @@ export const useEditableColumns = ({
         const dragged = draft[dragIndex];
         draft.splice(dragIndex, 1);
         draft.splice(hoverIndex, 0, dragged);
-      })
+      }),
     );
   }, []);
 
@@ -226,7 +229,7 @@ export const useEditableColumns = ({
         if (draft[index]) {
           draft[index].isVisible = isVisible;
         }
-      })
+      }),
     );
   }, []);
 

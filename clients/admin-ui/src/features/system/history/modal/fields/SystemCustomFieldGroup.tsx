@@ -12,10 +12,10 @@ interface SystemCustomFieldGroupProps {
   resourceType: ResourceTypes;
 }
 
-const SystemCustomFieldGroup: React.FC<SystemCustomFieldGroupProps> = ({
+const SystemCustomFieldGroup = ({
   customFields = {},
   resourceType,
-}) => {
+}: SystemCustomFieldGroupProps) => {
   const { idToCustomFieldDefinition } = useCustomFields({
     resourceType,
   });
@@ -25,7 +25,7 @@ const SystemCustomFieldGroup: React.FC<SystemCustomFieldGroupProps> = ({
    */
   const isMultivalued = (name: string): boolean =>
     Array.from(idToCustomFieldDefinition.values()).some(
-      (value) => value.name === name && !!value.allow_list_id
+      (value) => value.name === name && !!value.allow_list_id,
     );
 
   const prefix =
@@ -51,7 +51,7 @@ const SystemCustomFieldGroup: React.FC<SystemCustomFieldGroupProps> = ({
             label={fieldName}
             name={`${prefix}.${fieldName}`}
           />
-        )
+        ),
       )}
     </SystemDataGroup>
   );

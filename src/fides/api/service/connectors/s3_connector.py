@@ -9,7 +9,7 @@ from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest, RequestTask
 from fides.api.schemas.connection_configuration.connection_secrets_s3 import S3Schema
 from fides.api.service.connectors.base_connector import BaseConnector
-from fides.api.service.connectors.query_config import QueryConfig
+from fides.api.service.connectors.query_configs.query_config import QueryConfig
 from fides.api.util.aws_util import get_aws_session
 from fides.api.util.collection_util import Row
 
@@ -25,8 +25,8 @@ class S3Connector(BaseConnector):
         """Returns a client for s3"""
         config = S3Schema(**self.configuration.secrets or {})
         return get_aws_session(
-            auth_method=config.auth_method.value,
-            storage_secrets=config.dict(),  # type: ignore
+            auth_method=config.auth_method.value,  # pylint: disable=no-member
+            storage_secrets=config.model_dump(mode="json"),  # type: ignore
             assume_role_arn=config.aws_assume_role_arn,
         )
 
@@ -57,6 +57,7 @@ class S3Connector(BaseConnector):
         input_data: Dict[str, List[Any]],
     ) -> List[Row]:
         """DSR execution not yet supported for S3"""
+        return []
 
     def mask_data(
         self,
@@ -67,6 +68,7 @@ class S3Connector(BaseConnector):
         rows: List[Row],
     ) -> int:
         """DSR execution not yet supported for S3"""
+        return 0
 
     def close(self) -> None:
         """Close any held resources"""

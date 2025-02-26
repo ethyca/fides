@@ -1,8 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import {
+  AntButton as Button,
   Box,
-  Button,
-  ButtonGroup,
   Divider,
   Drawer,
   DrawerBody,
@@ -24,18 +23,14 @@ import { PatchUploadManualWebhookDataRequest } from "privacy-requests/types";
 import React, { useRef } from "react";
 import * as Yup from "yup";
 
-import { ManualInputData } from "./types";
+import { ManualProcessingDetailProps } from "./types";
 
-type ManualAccessProcessingDetailProps = {
-  connectorName: string;
-  data: ManualInputData;
-  isSubmitting: boolean;
-  onSaveClick: (params: PatchUploadManualWebhookDataRequest) => void;
-};
-
-const ManualAccessProcessingDetail: React.FC<
-  ManualAccessProcessingDetailProps
-> = ({ connectorName, data, isSubmitting = false, onSaveClick }) => {
+const ManualAccessProcessingDetail = ({
+  connectorName,
+  data,
+  isSubmitting = false,
+  onSaveClick,
+}: ManualProcessingDetailProps) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const firstField = useRef(null);
 
@@ -52,28 +47,12 @@ const ManualAccessProcessingDetail: React.FC<
   return (
     <>
       {data?.checked && (
-        <Button
-          color="gray.700"
-          fontSize="xs"
-          h="24px"
-          onClick={onOpen}
-          variant="outline"
-          w="58px"
-        >
+        <Button onClick={onOpen} size="small">
           Review
         </Button>
       )}
       {!data?.checked && (
-        <Button
-          color="white"
-          bg="primary.800"
-          fontSize="xs"
-          h="24px"
-          onClick={onOpen}
-          w="127px"
-          _hover={{ bg: "primary.400" }}
-          _active={{ bg: "primary.500" }}
-        >
+        <Button onClick={onOpen} size="small" type="primary">
           Begin manual input
         </Button>
       )}
@@ -149,25 +128,16 @@ const ManualAccessProcessingDetail: React.FC<
                 </Form>
               </DrawerBody>
               <DrawerFooter justifyContent="flex-start">
-                <ButtonGroup size="sm" spacing="8px" variant="outline">
-                  <Button onClick={onClose} variant="outline">
-                    Cancel
-                  </Button>
+                <div className="flex gap-2">
+                  <Button onClick={onClose}>Cancel</Button>
                   <Button
-                    bg="primary.800"
-                    color="white"
                     form="manual-detail-form"
-                    isLoading={isSubmitting}
-                    loadingText="Submitting"
-                    size="sm"
-                    variant="solid"
-                    type="submit"
-                    _active={{ bg: "primary.500" }}
-                    _hover={{ bg: "primary.400" }}
+                    loading={isSubmitting}
+                    htmlType="submit"
                   >
                     Save
                   </Button>
-                </ButtonGroup>
+                </div>
               </DrawerFooter>
             </DrawerContent>
           </Drawer>

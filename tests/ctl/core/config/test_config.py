@@ -66,7 +66,7 @@ def test_get_config_default() -> None:
     """Check that get_config loads default values when given an empty TOML."""
     config = get_config()
     assert config.database.api_engine_pool_size == 50
-    assert config.security.env == "dev"
+    assert config.security.env == "prod"
     assert config.security.app_encryption_key == ""
     assert config.logging.level == "INFO"
 
@@ -152,6 +152,7 @@ def test_get_config_cache() -> None:
         "FIDES__USER__ENCRYPTION_KEY": "test_key_one",
         "FIDES__CLI__SERVER_HOST": "test",
         "FIDES__CLI__SERVER_PORT": "8080",
+        "FIDES__ADMIN_UI__URL": "http://localhost:3000/",
         "FIDES__CREDENTIALS__POSTGRES_1__CONNECTION_STRING": "postgresql+psycopg2://fides:env_variable.com:5439/fidesctl_test",
         **REQUIRED_ENV_VARS,
     },
@@ -159,11 +160,14 @@ def test_get_config_cache() -> None:
 )
 @pytest.mark.unit
 def test_config_from_env_vars() -> None:
-    "Test building a config from env vars."
+    """Test building a config from env vars."""
     config = get_config()
 
     assert config.user.encryption_key == "test_key_one"
-    assert config.cli.server_url == "http://test:8080"
+    assert (
+        config.cli.server_url == "http://test:8080"
+    )  # No trailing slash because this is constructed from components
+    assert config.admin_ui.url == "http://localhost:3000"  # Trailing slash is removed
     assert (
         config.credentials["postgres_1"]["connection_string"]
         == "postgresql+psycopg2://fides:env_variable.com:5439/fidesctl_test"
@@ -243,8 +247,8 @@ def test_config_from_path() -> None:
     """Test reading config using the FIDES__CONFIG_PATH option."""
     config = get_config()
     print(os.environ)
-    assert config.admin_ui.enabled == True
-    assert config.execution.require_manual_request_approval == True
+    assert config.admin_ui.enabled is True
+    assert config.execution.require_manual_request_approval is True
 
 
 @patch.dict(
@@ -532,5 +536,5 @@ def test_get_config_ac_mode_without_tc_mode() -> None:
 
     assert (
         exc.value.errors()[0]["msg"]
-        == "AC cannot be enabled unless TCF mode is also enabled."
+        == "Value error, AC cannot be enabled unless TCF mode is also enabled."
     )

@@ -1,19 +1,19 @@
-import React from "react";
 import {
-  ModalHeader,
-  ModalFooter,
-  ModalBody,
-  Text,
   Button,
-  Image,
   HStack,
+  Image,
+  ModalBody,
+  ModalFooter,
+  ModalHeader,
+  Text,
 } from "fidesui";
+import React from "react";
 
 type RequestSubmittedProps = {
   onClose: () => void;
 };
 
-const RequestSubmitted: React.FC<RequestSubmittedProps> = ({ onClose }) => (
+const RequestSubmitted = ({ onClose }: RequestSubmittedProps) => (
   <>
     <HStack justifyContent="center" data-testid="request-submitted">
       <Image

@@ -7,6 +7,7 @@ from sendgrid.helpers.mail import Email, To
 from sqlalchemy.orm import Session
 
 from fides.api.common_exceptions import MessageDispatchException
+from fides.api.models.application_config import ApplicationConfig
 from fides.api.models.messaging import MessagingConfig
 from fides.api.models.privacy_notice import (
     ConsentMechanism,
@@ -25,6 +26,7 @@ from fides.api.schemas.messaging.messaging import (
     MessagingServiceType,
     RequestReviewDenyBodyParams,
     SubjectIdentityVerificationBodyParams,
+    UserInviteBodyParams,
 )
 from fides.api.schemas.privacy_notice import PrivacyNoticeHistorySchema
 from fides.api.schemas.privacy_preference import MinimalPrivacyPreferenceHistorySchema
@@ -39,6 +41,7 @@ from fides.api.service.messaging.message_dispatch_service import (
     _twilio_sms_dispatcher,
     dispatch_message,
 )
+from fides.config import CONFIG
 
 
 @pytest.fixture
@@ -106,8 +109,8 @@ class TestMessageDispatchService:
     Test scenario:
     ✅︎ Property-specific messaging is enabled
     ❌ No template configured for action type
-    
-    Result: Email is not sent. An explicit messaging template with matching action type is needed to send emails for 
+
+    Result: Email is not sent. An explicit messaging template with matching action type is needed to send emails for
     property-specific messaging
     """
 
@@ -137,7 +140,7 @@ class TestMessageDispatchService:
     Test scenario:
     ❌ Property-specific messaging is disabled
     ✅︎ Has template configured for action type
-    
+
     Result: Email sent the template configured with matching action type.
     """
 
@@ -175,7 +178,7 @@ class TestMessageDispatchService:
     Test scenario:
     ❌ Property-specific messaging is disabled
     ❌ No template configured for action type
-    
+
     Result: Email sent with default messaging template.
     """
 
@@ -214,7 +217,7 @@ class TestMessageDispatchService:
     ✅︎ Has template configured for action type
     ❌ No property id attached to template
     ❌ No property id in request
-    
+
     Result: Email not sent. There was no explicit property id linked to the template with matching action type.
     """
 
@@ -247,7 +250,7 @@ class TestMessageDispatchService:
     ✅︎ Has template configured for action type
     ✅︎ Default property id attached to template
     ❌ No property id in request
-    
+
     Result: Email sent using template linked to default property id. If no property id was received, we assume
     the default property id to look up the associated messaging template.
     """
@@ -291,7 +294,7 @@ class TestMessageDispatchService:
     ✅︎ Has template configured for action type
     ❌ No property attached to template
     ✅ Default property id in request
-    
+
     Result: Email not sent. There was no explicit property id linked to the template with matching action type.
     """
 
@@ -325,7 +328,7 @@ class TestMessageDispatchService:
    ✅︎ Has template configured for action type
    ✅ Property attached to template
    ✅ Matching property id in request
-   
+
    Result: Email sent using template with with property id
    """
 
@@ -570,8 +573,8 @@ class TestMessageDispatchService:
             "+19198675309",
         )
 
-    def test_fidesops_email_parse_object(self):
-        FidesopsMessage.parse_obj(
+    def test_fidesops_email_model_validateect(self):
+        FidesopsMessage.model_validate(
             {
                 "action_type": MessagingActionType.MESSAGE_ERASURE_REQUEST_FULFILLMENT,
                 "body_params": {
@@ -582,7 +585,7 @@ class TestMessageDispatchService:
             }
         )
 
-        FidesopsMessage.parse_obj(
+        FidesopsMessage.model_validate(
             {
                 "action_type": MessagingActionType.SUBJECT_IDENTITY_VERIFICATION,
                 "body_params": {
@@ -748,7 +751,7 @@ class TestMessageDispatchService:
 
     def test_dispatch_invalid_action_type(self, db):
         with pytest.raises(MessageDispatchException):
-            dispatch_message(db, "bad", None, None)
+            dispatch_message(db, "bad", to_identity=None, service_type=None)
 
     def test_dispatcher_from_config_type_unknown(self):
         assert _get_dispatcher_from_config_type("bad") is None
@@ -843,6 +846,46 @@ class TestMessageDispatchService:
                 body=body,
             ),
             "sovrn_test@example.com",
+        )
+
+    @pytest.fixture
+    def mock_config_admin_ui_url(self, db):
+        original_value = CONFIG.admin_ui.url
+        CONFIG.admin_ui.url = "http://localhost:3000"
+        ApplicationConfig.update_config_set(db, CONFIG)
+        yield
+        CONFIG.admin_ui.url = original_value
+        ApplicationConfig.update_config_set(db, CONFIG)
+
+    @pytest.mark.usefixtures("mock_config_admin_ui_url")
+    @mock.patch(
+        "fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher"
+    )
+    def test_email_dispatch_user_invite_email(
+        self,
+        mock_mailgun_dispatcher: Mock,
+        db: Session,
+        messaging_config,
+    ) -> None:
+        dispatch_message(
+            db=db,
+            action_type=MessagingActionType.USER_INVITE,
+            to_identity=Identity(**{"email": "test@example.com"}),
+            service_type=MessagingServiceType.mailgun.value,
+            message_body_params=UserInviteBodyParams(
+                username="test", invite_code="123"
+            ),
+        )
+
+        body = '<!DOCTYPE html>\n<html lang="en">\n  <head>\n    <meta charset="UTF-8" />\n    <title>Welcome to Fides</title>\n  </head>\n  <body>\n    <main>\n      <p>You\'ve been invited to join Fides, click <a href=http://localhost:3000/login?invite_code=123&username=test>here</a> to accept the invite and setup your account.</p>\n    </main>\n  </body>\n</html>'
+
+        mock_mailgun_dispatcher.assert_called_with(
+            messaging_config,
+            EmailForActionType(
+                subject="Welcome to Fides",
+                body=body,
+            ),
+            "test@example.com",
         )
 
 

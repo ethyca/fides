@@ -9,10 +9,11 @@ export type AddConnectionStep = {
 };
 
 export type ConnectionConfigFormValues = {
-  description: string;
-  name: string;
+  description?: string;
+  name?: string;
   instance_key?: string;
   enabled_actions?: string[];
+  dataset?: string[];
   [key: string]: any;
 };
 

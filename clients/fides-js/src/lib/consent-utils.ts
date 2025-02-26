@@ -1,3 +1,8 @@
+import {
+  FIDES_OVERRIDE_EXPERIENCE_LANGUAGE_VALIDATOR_MAP,
+  FIDES_OVERRIDE_OPTIONS_VALIDATOR_MAP,
+  VALID_ISO_3166_LOCATION_REGEX,
+} from "./consent-constants";
 import { ConsentContext } from "./consent-context";
 import {
   ComponentType,
@@ -10,33 +15,14 @@ import {
   NoticeConsent,
   OverrideType,
   PrivacyExperience,
+  PrivacyExperienceMinimal,
   PrivacyNotice,
   PrivacyNoticeWithPreference,
   UserConsentPreference,
   UserGeolocation,
 } from "./consent-types";
-import { TcfModelsRecord } from "./tcf/types";
-import {
-  FIDES_OVERRIDE_EXPERIENCE_LANGUAGE_VALIDATOR_MAP,
-  FIDES_OVERRIDE_OPTIONS_VALIDATOR_MAP,
-  VALID_ISO_3166_LOCATION_REGEX,
-} from "./consent-constants";
 import { noticeHasConsentInCookie } from "./shared-consent-utils";
-
-/**
- * Wrapper around 'console.log' that only logs output when the 'debug' banner
- * option is truthy
- */
-type ConsoleLogParameters = Parameters<typeof console.log>;
-export const debugLog = (
-  enabled: boolean = false,
-  ...args: ConsoleLogParameters
-): void => {
-  if (enabled) {
-    // eslint-disable-next-line no-console
-    console.log(...args);
-  }
-};
+import { TcfModelsRecord } from "./tcf/types";
 
 /**
  * Returns true if the provided input is a valid PrivacyExperience object.
@@ -46,7 +32,11 @@ export const debugLog = (
  * for the given geolocation.
  */
 export const isPrivacyExperience = (
-  obj: PrivacyExperience | undefined | EmptyExperience
+  obj:
+    | PrivacyExperience
+    | PrivacyExperienceMinimal
+    | undefined
+    | EmptyExperience,
 ): obj is PrivacyExperience => {
   // Return false for all non-object types
   if (!obj || typeof obj !== "object") {
@@ -66,13 +56,13 @@ export const isPrivacyExperience = (
 };
 
 export const allNoticesAreDefaultOptIn = (
-  notices: Array<PrivacyNoticeWithPreference> | undefined
+  notices: Array<PrivacyNoticeWithPreference> | undefined,
 ): boolean =>
   Boolean(
     notices &&
       notices.every(
-        (notice) => notice.default_preference === UserConsentPreference.OPT_IN
-      )
+        (notice) => notice.default_preference === UserConsentPreference.OPT_IN,
+      ),
   );
 
 /**
@@ -81,13 +71,11 @@ export const allNoticesAreDefaultOptIn = (
  */
 export const constructFidesRegionString = (
   geoLocation?: UserGeolocation | null,
-  debug: boolean = false
 ): string | null => {
-  debugLog(debug, "constructing geolocation...");
+  fidesDebugger("constructing geolocation...");
   if (!geoLocation) {
-    debugLog(
-      debug,
-      "cannot construct user location since geoLocation is undefined or null"
+    fidesDebugger(
+      "cannot construct user location since geoLocation is undefined or null",
     );
     return null;
   }
@@ -96,14 +84,17 @@ export const constructFidesRegionString = (
     VALID_ISO_3166_LOCATION_REGEX.test(geoLocation.location)
   ) {
     // Fides backend requires underscore deliminator
-    return geoLocation.location.replace("-", "_").toLowerCase();
+    const regionString = geoLocation.location.replace("-", "_").toLowerCase();
+    fidesDebugger(`using geolocation: ${regionString}`);
+    return regionString;
   }
   if (geoLocation.country && geoLocation.region) {
-    return `${geoLocation.country.toLowerCase()}_${geoLocation.region.toLowerCase()}`;
+    const regionString = `${geoLocation.country.toLowerCase()}_${geoLocation.region.toLowerCase()}`;
+    fidesDebugger(`using geolocation: ${regionString}`);
+    return regionString;
   }
-  debugLog(
-    debug,
-    "cannot construct user location from provided geoLocation params..."
+  fidesDebugger(
+    "cannot construct user location from provided geoLocation params...",
   );
   return null;
 };
@@ -113,22 +104,18 @@ export const constructFidesRegionString = (
  */
 export const validateOptions = (options: FidesInitOptions): boolean => {
   // Check if options is an invalid type
-  debugLog(
-    options.debug,
-    "Validating Fides consent overlay options...",
-    options
-  );
+  fidesDebugger("Validating Fides config options...", options);
   if (typeof options !== "object") {
     return false;
   }
 
   if (!options.fidesApiUrl) {
-    debugLog(options.debug, "Invalid options: fidesApiUrl is required!");
+    fidesDebugger("Invalid options: fidesApiUrl is required!");
     return false;
   }
 
   if (!options.privacyCenterUrl) {
-    debugLog(options.debug, "Invalid options: privacyCenterUrl is required!");
+    fidesDebugger("Invalid options: privacyCenterUrl is required!");
     return false;
   }
 
@@ -138,10 +125,9 @@ export const validateOptions = (options: FidesInitOptions): boolean => {
     // eslint-disable-next-line no-new
     new URL(options.fidesApiUrl);
   } catch (e) {
-    debugLog(
-      options.debug,
+    fidesDebugger(
       "Invalid options: privacyCenterUrl or fidesApiUrl is an invalid URL!",
-      options.privacyCenterUrl
+      options.privacyCenterUrl,
     );
     return false;
   }
@@ -150,7 +136,7 @@ export const validateOptions = (options: FidesInitOptions): boolean => {
 };
 
 export const getOverrideValidatorMapByType = (
-  overrideType: OverrideType
+  overrideType: OverrideType,
 ):
   | typeof FIDES_OVERRIDE_OPTIONS_VALIDATOR_MAP
   | typeof FIDES_OVERRIDE_EXPERIENCE_LANGUAGE_VALIDATOR_MAP
@@ -161,42 +147,40 @@ export const getOverrideValidatorMapByType = (
       return FIDES_OVERRIDE_OPTIONS_VALIDATOR_MAP;
     case OverrideType.EXPERIENCE_TRANSLATION:
       return FIDES_OVERRIDE_EXPERIENCE_LANGUAGE_VALIDATOR_MAP;
+    default:
+      return null;
   }
-  return null;
 };
 
 /**
  * Determines whether experience is valid and relevant notices exist within the experience
  */
 export const experienceIsValid = (
-  effectiveExperience: PrivacyExperience | undefined | EmptyExperience,
-  options: FidesInitOptions
+  effectiveExperience:
+    | PrivacyExperience
+    | PrivacyExperienceMinimal
+    | undefined
+    | EmptyExperience,
 ): boolean => {
   if (!isPrivacyExperience(effectiveExperience)) {
-    debugLog(
-      options.debug,
-      "No relevant experience found. Skipping overlay initialization."
-    );
+    fidesDebugger("No relevant experience found.");
     return false;
   }
   const expConfig = effectiveExperience.experience_config;
   if (!expConfig) {
-    debugLog(
-      options.debug,
-      "No experience config found for experience. Skipping overlay initialization."
-    );
+    fidesDebugger("No config found for experience.");
     return false;
   }
   if (
     !(
       expConfig.component === ComponentType.MODAL ||
       expConfig.component === ComponentType.BANNER_AND_MODAL ||
-      expConfig.component === ComponentType.TCF_OVERLAY
+      expConfig.component === ComponentType.TCF_OVERLAY ||
+      expConfig.component === ComponentType.HEADLESS
     )
   ) {
-    debugLog(
-      options.debug,
-      "No experience found with modal, banner_and_modal, or tcf_overlay component. Skipping overlay initialization."
+    fidesDebugger(
+      "No experience found with modal, banner_and_modal, tcf_overlay, or headless component.",
     );
     return false;
   }
@@ -207,10 +191,7 @@ export const experienceIsValid = (
       effectiveExperience.privacy_notices.length > 0
     )
   ) {
-    debugLog(
-      options.debug,
-      `Privacy experience has no notices. Skipping overlay initialization.`
-    );
+    fidesDebugger(`Privacy experience has no notices.`);
     return false;
   }
 
@@ -228,22 +209,26 @@ export const getTcfDefaultPreference = (tcfObject: TcfModelsRecord) =>
  * or if an experience's version hash does not match up.
  */
 export const shouldResurfaceConsent = (
-  experience: PrivacyExperience,
+  experience: PrivacyExperience | PrivacyExperienceMinimal,
   cookie: FidesCookie,
-  savedConsent: NoticeConsent
+  savedConsent: NoticeConsent,
 ): boolean => {
+  // Always resurface consent for TCF unless the saved version_hash matches
   if (experience.experience_config?.component === ComponentType.TCF_OVERLAY) {
     if (experience.meta?.version_hash) {
       return experience.meta.version_hash !== cookie.tcf_version_hash;
     }
-    // Ensure we always resurface consent for TCF if for some reason experience does not have version_hash
     return true;
   }
-  // Do not surface consent for null or empty notices
+  // Never surface consent for modal-only or headless experiences
   if (
-    experience?.privacy_notices == null ||
-    experience.privacy_notices.length === 0
+    experience.experience_config?.component === ComponentType.MODAL ||
+    experience.experience_config?.component === ComponentType.HEADLESS
   ) {
+    return false;
+  }
+  // Do not surface consent for null or empty notices
+  if (!(experience as PrivacyExperience)?.privacy_notices?.length) {
     return false;
   }
   // Always resurface if there is no prior consent
@@ -255,9 +240,9 @@ export const shouldResurfaceConsent = (
   // TODO (PROD-1792): we should *also* resurface in the special case where the
   // saved consent is only recorded with a consentMethod of "dismiss"
   return Boolean(
-    !experience.privacy_notices?.every((notice) =>
-      noticeHasConsentInCookie(notice, savedConsent)
-    )
+    !(experience as PrivacyExperience).privacy_notices?.every((notice) =>
+      noticeHasConsentInCookie(notice, savedConsent),
+    ),
   );
 };
 
@@ -280,7 +265,7 @@ export const shouldResurfaceConsent = (
  * ```
  */
 export const getWindowObjFromPath = (
-  path: string[]
+  path: string[],
 ): FidesOptions | undefined => {
   // Implicitly start from the global "window" object
   if (path[0] === "window") {
@@ -327,8 +312,5 @@ export const getGpcStatusFromNotice = ({
 };
 
 export const defaultShowModal = () => {
-  debugLog(
-    window.Fides.options.debug,
-    "The current experience does not support displaying a modal."
-  );
+  fidesDebugger("The current experience does not support displaying a modal.");
 };

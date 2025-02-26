@@ -21,19 +21,19 @@ describe("Connectors", () => {
         "/api/v1/connection/postgres_connector/datasetconfig",
         {
           fixture: "connectors/datasetconfig.json",
-        }
+        },
       ).as("getPostgresConnectorDatasetconfig");
 
       cy.intercept("POST", "/api/v1/dataset/upsert", { body: {} }).as(
-        "upsertDataset"
+        "upsertDataset",
       );
       cy.intercept(
         "PATCH",
         "/api/v1/connection/postgres_connector/datasetconfig",
-        { body: {} }
+        { body: {} },
       ).as("patchDatasetconfig");
       cy.intercept("GET", "/api/v1/dataset", { fixture: "datasets.json" }).as(
-        "getDatasets"
+        "getDatasets",
       );
     });
 
@@ -50,7 +50,13 @@ describe("Connectors", () => {
     });
 
     it("Should allow saving a dataset configuration via dropdown", () => {
-      cy.visit("/datastore-connection/postgres_connector");
+      cy.visit("/datastore-connection");
+      cy.getByTestId("connection-grid-item-postgres_connector").within(() => {
+        cy.getByTestId("connection-menu-btn").click();
+      });
+      cy.getByTestId("connection-menu-postgres_connector").within(() => {
+        cy.getByTestId("configure-btn").click();
+      });
       cy.getByTestId("tab-Dataset configuration").click();
       cy.wait("@getPostgresConnectorDatasetconfig");
 
@@ -59,12 +65,13 @@ describe("Connectors", () => {
       // The dataset dropdown selector should have the value of the existing connected dataset
       cy.getByTestId("save-dataset-link-btn").should("be.enabled");
       cy.getByTestId("dataset-selector").should(
-        "have.value",
-        "postgres_example_test_dataset"
+        "have.text",
+        "postgres_example_test_dataset",
       );
 
       // Change the linked dataset
-      cy.getByTestId("dataset-selector").select("demo_users_dataset_2");
+      cy.getByTestId("dataset-selector").antSelect("demo_users_dataset_2");
+
       cy.getByTestId("save-dataset-link-btn").click();
 
       cy.wait("@patchDatasetconfig").then((interception) => {
@@ -78,12 +85,18 @@ describe("Connectors", () => {
     });
 
     it("Should allow saving a dataset configuration via yaml", () => {
-      cy.visit("/datastore-connection/postgres_connector");
+      cy.visit("/datastore-connection");
+      cy.getByTestId("connection-grid-item-postgres_connector").within(() => {
+        cy.getByTestId("connection-menu-btn").click();
+      });
+      cy.getByTestId("connection-menu-postgres_connector").within(() => {
+        cy.getByTestId("configure-btn").click();
+      });
       cy.getByTestId("tab-Dataset configuration").click();
       cy.wait("@getPostgresConnectorDatasetconfig");
 
       // Unset the linked dataset, which should switch the save button enable-ness
-      cy.getByTestId("dataset-selector").select("Select");
+      cy.getByTestId("dataset-selector").antClearSelect();
       cy.getByTestId("save-dataset-link-btn").should("be.disabled");
       // The monaco yaml editor takes a bit to load
       // eslint-disable-next-line cypress/no-unnecessary-waiting
@@ -97,7 +110,7 @@ describe("Connectors", () => {
       cy.wait("@upsertDataset").then((interception) => {
         expect(interception.request.body.length).to.eql(1);
         expect(interception.request.body[0].fides_key).to.eql(
-          "postgres_example_test_dataset"
+          "postgres_example_test_dataset",
         );
       });
       cy.wait("@patchDatasetconfig").then((interception) => {
@@ -119,10 +132,16 @@ describe("Connectors", () => {
           body: {
             items: [],
           },
-        }
+        },
       ).as("getEmptyPostgresConnectorDatasetconfig");
 
-      cy.visit("/datastore-connection/postgres_connector");
+      cy.visit("/datastore-connection");
+      cy.getByTestId("connection-grid-item-postgres_connector").within(() => {
+        cy.getByTestId("connection-menu-btn").click();
+      });
+      cy.getByTestId("connection-menu-postgres_connector").within(() => {
+        cy.getByTestId("configure-btn").click();
+      });
       cy.getByTestId("tab-Dataset configuration").click();
       cy.wait("@getEmptyPostgresConnectorDatasetconfig");
       cy.getByTestId("dataset-selector-section").should("not.exist");
@@ -144,9 +163,7 @@ describe("Connectors", () => {
 
     it("allows the user to add an email connector", () => {
       cy.visit("/datastore-connection/new");
-      cy.getByTestId("select-dropdown-btn").click();
-      cy.getByTestId("select-dropdown-list").contains("Email connectors");
-      cy.getByTestId("select-dropdown-btn").click();
+      cy.getByTestId("connection-type-filter").antSelect("Email connectors");
       cy.getByTestId("sovrn-item").click();
       cy.url().should("contain", "/new?step=2");
 

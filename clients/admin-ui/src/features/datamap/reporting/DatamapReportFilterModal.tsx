@@ -8,7 +8,7 @@ import {
   Box,
   Heading,
 } from "fidesui";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import CheckboxTree from "~/features/common/CheckboxTree";
@@ -30,22 +30,24 @@ import {
   useGetAllDataCategoriesQuery,
 } from "~/features/taxonomy/taxonomy.slice";
 
-export type DatamapReportFilterSelections = {
-  dataUses: string[];
-  dataSubjects: string[];
-  dataCategories: string[];
-};
+import { DatamapReportFilterSelections } from "../types";
 
 interface DatamapReportFilterModalProps
   extends Omit<StandardDialogProps, "children" | "onConfirm"> {
+  columnNameMap: Record<string, string>;
+  selectedFilters: DatamapReportFilterSelections;
   onFilterChange: (selectedFilters: DatamapReportFilterSelections) => void;
 }
 
+interface FilterModalAccordionItemProps extends AccordionItemProps {
+  label: string;
+  children: React.ReactNode;
+}
 const FilterModalAccordionItem = ({
   label,
   children,
   ...props
-}: { label: string } & AccordionItemProps): JSX.Element => (
+}: FilterModalAccordionItemProps) => (
   <AccordionItem {...props}>
     <Heading>
       <AccordionButton
@@ -63,33 +65,54 @@ const FilterModalAccordionItem = ({
 );
 
 export const DatamapReportFilterModal = ({
-  onClose,
+  columnNameMap,
+  selectedFilters,
   onFilterChange,
+  onClose,
   ...props
 }: DatamapReportFilterModalProps): JSX.Element => {
   useGetAllDataUsesQuery();
   useGetAllDataSubjectsQuery();
   useGetAllDataCategoriesQuery();
 
+  const {
+    dataUses: selectedDataUses,
+    dataSubjects: selectedDataSubjects,
+    dataCategories: selectedDataCategories,
+  } = selectedFilters;
+
   const dataUses = useAppSelector(selectDataUses);
   const dataSubjects = useAppSelector(selectDataSubjects);
   const dataCategories = useAppSelector(selectDataCategories);
 
-  const [checkedUses, setCheckedUses] = useState<string[]>([]);
-  const [checkedSubjects, setCheckedSubjects] = useState<string[]>([]);
-  const [checkedCategories, setCheckedCategories] = useState<string[]>([]);
+  const [checkedUses, setCheckedUses] = useState<string[]>(selectedDataUses);
+  const [checkedSubjects, setCheckedSubjects] =
+    useState<string[]>(selectedDataSubjects);
+  const [checkedCategories, setCheckedCategories] = useState<string[]>(
+    selectedDataCategories,
+  );
+
+  useEffect(() => {
+    setCheckedUses(selectedDataUses);
+  }, [selectedDataUses]);
+  useEffect(() => {
+    setCheckedSubjects(selectedDataSubjects);
+  }, [selectedDataSubjects]);
+  useEffect(() => {
+    setCheckedCategories(selectedDataCategories);
+  }, [selectedDataCategories]);
 
   const dataUseNodes: TreeNode[] = useMemo(
     () => transformTaxonomyEntityToNodes(dataUses),
-    [dataUses]
+    [dataUses],
   );
   const dataSubjectNodes: TreeNode[] = useMemo(
     () => transformTaxonomyEntityToNodes(dataSubjects),
-    [dataSubjects]
+    [dataSubjects],
   );
   const dataCategoryNodes: TreeNode[] = useMemo(
     () => transformTaxonomyEntityToNodes(dataCategories),
-    [dataCategories]
+    [dataCategories],
   );
 
   const resetFilters = () => {
@@ -112,6 +135,7 @@ export const DatamapReportFilterModal = ({
     });
     onClose();
   };
+
   return (
     <StandardDialog
       heading="Filter Datamap Report"
@@ -124,7 +148,7 @@ export const DatamapReportFilterModal = ({
       data-testid="datamap-report-filter-modal"
     >
       <Accordion allowToggle>
-        <FilterModalAccordionItem label="Data uses">
+        <FilterModalAccordionItem label={columnNameMap.data_uses}>
           <CheckboxTree
             nodes={dataUseNodes}
             selected={checkedUses}
@@ -132,7 +156,7 @@ export const DatamapReportFilterModal = ({
             data-testid="filter-modal-checkbox-tree-uses"
           />
         </FilterModalAccordionItem>
-        <FilterModalAccordionItem label="Data categories">
+        <FilterModalAccordionItem label={columnNameMap.data_categories}>
           <CheckboxTree
             nodes={dataCategoryNodes}
             selected={checkedCategories}
@@ -140,7 +164,7 @@ export const DatamapReportFilterModal = ({
             data-testid="filter-modal-checkbox-tree-categories"
           />
         </FilterModalAccordionItem>
-        <FilterModalAccordionItem label="Data subjects">
+        <FilterModalAccordionItem label={columnNameMap.data_subjects}>
           <CheckboxTree
             nodes={dataSubjectNodes}
             selected={checkedSubjects}

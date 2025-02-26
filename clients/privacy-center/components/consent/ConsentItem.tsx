@@ -1,24 +1,25 @@
-import React from "react";
+import { GpcStatus } from "fides-js";
 import {
   Box,
+  ExternalLinkIcon,
   Flex,
   HStack,
   Link,
   Spacer,
   Stack,
   Text,
-  ExternalLinkIcon,
 } from "fidesui";
+import React from "react";
 
-import { GpcStatus } from "fides-js";
 import { GpcBadge, GpcInfo } from "~/features/consent/GpcMessages";
+
 import Toggle from "./Toggle";
 
 export type ConsentItemProps = {
   id: string;
   name: string;
   description: string;
-  highlight?: boolean;
+  highlight?: boolean | null;
   url?: string;
   value: boolean;
   gpcStatus: GpcStatus;
@@ -38,7 +39,7 @@ const ConsentItem = ({
   disabled,
 }: ConsentItemProps) => (
   <Box
-    backgroundColor={highlight ? "gray.100" : undefined}
+    backgroundColor={highlight ? "gray.75" : undefined}
     borderRadius="md"
     data-testid={`consent-item-${id}`}
     paddingY={3}
@@ -47,7 +48,7 @@ const ConsentItem = ({
   >
     <Stack>
       <Flex direction="row">
-        <Text fontSize="lg" fontWeight="bold" color="gray.600" mb="4px">
+        <Text fontSize="lg" fontWeight="bold" color="gray.800" mb="4px">
           {name}
         </Text>
         <Spacer />
@@ -58,7 +59,7 @@ const ConsentItem = ({
 
       <HStack spacing={10} justifyContent="space-between">
         <Stack>
-          <Text fontSize="sm" fontWeight="medium" color="gray.600" mb="2px">
+          <Text fontSize="sm" fontWeight="medium" color="gray.800" mb="2px">
             {description}
           </Text>
           {url ? (
@@ -79,6 +80,7 @@ const ConsentItem = ({
 
         <Box>
           <Toggle
+            label={name}
             name={id}
             id={id}
             disabled={disabled}

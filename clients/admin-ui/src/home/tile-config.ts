@@ -19,6 +19,8 @@ export const configureTiles = ({
 
   if (!hasPlus) {
     filteredConfig = filteredConfig.filter((c) => !c.requiresPlus);
+  } else {
+    filteredConfig = filteredConfig.filter((c) => !c.requiresOss);
   }
 
   const filteredByScope: ModuleCardConfig[] = [];

@@ -1,6 +1,6 @@
 import { Box, Flex, Text } from "fidesui";
 import { FieldArray, useFormikContext } from "formik";
-import { ChangeEvent, FC } from "react";
+import { ChangeEvent } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import { CustomSwitch } from "~/features/common/form/inputs";
@@ -13,10 +13,15 @@ type FormPurposeOverride = {
   is_legitimate_interest: boolean;
 };
 
-const LegalBasisContainer: FC<{
+const LegalBasisContainer = ({
+  children,
+  purpose,
+  endCol,
+}: {
+  children: React.ReactNode;
   purpose: number;
   endCol?: boolean;
-}> = ({ children, purpose, endCol }) => {
+}) => {
   const hiddenPurposes = [1, 3, 4, 5, 6];
 
   return (
@@ -130,11 +135,11 @@ const PurposeOverrides = () => {
                       if (!e.target.checked) {
                         setFieldValue(
                           `purposeOverrides[${index}].is_consent`,
-                          false
+                          false,
                         );
                         setFieldValue(
                           `purposeOverrides[${index}].is_legitimate_interest`,
-                          false
+                          false,
                         );
                       }
                     }}

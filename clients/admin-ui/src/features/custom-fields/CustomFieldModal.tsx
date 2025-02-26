@@ -53,10 +53,10 @@ const initialValuesTemplate: FormValues = {
 };
 
 const optionalAllowValues = Yup.array(
-  Yup.string().optional().label("allowed_values")
+  Yup.string().optional().label("allowed_values"),
 );
 const requiredAllowedValues = Yup.array(
-  Yup.string().required("List item is required")
+  Yup.string().required("List item is required"),
 )
   .min(1, "Must add at least one list value")
   .label("allowed_values");
@@ -77,7 +77,7 @@ const requiredValidationSchema = Yup.object().shape({
 
 const transformCustomField = (
   customField: CustomFieldDefinitionWithId | undefined,
-  allowList: AllowList | undefined
+  allowList: AllowList | undefined,
 ): FormValues | undefined => {
   if (!customField) {
     return undefined;
@@ -138,7 +138,7 @@ export const CustomFieldModal = ({
     });
 
   const [validationSchema, setNewValidationSchema] = useState(
-    optionalValidationSchema
+    optionalValidationSchema,
   );
 
   if (isLoadingAllowList || !isOpen) {
@@ -160,13 +160,13 @@ export const CustomFieldModal = ({
   const handleSubmit = async (values: FormValues) => {
     if (
       [FieldTypes.SINGLE_SELECT, FieldTypes.MULTIPLE_SELECT].includes(
-        values.field_type
+        values.field_type,
       )
     ) {
       const uniqueValues = new Set(
         values.allow_list?.allowed_values
           .map((v) => v.toLowerCase().trim())
-          .map((v) => v)
+          .map((v) => v),
       );
       if (uniqueValues.size < values.allow_list!.allowed_values.length) {
         errorAlert("List item value must be unique");
@@ -202,7 +202,7 @@ export const CustomFieldModal = ({
 
     if (
       [FieldTypes.SINGLE_SELECT, FieldTypes.OPEN_TEXT].includes(
-        values.field_type
+        values.field_type,
       )
     ) {
       // eslint-disable-next-line no-param-reassign
@@ -224,7 +224,7 @@ export const CustomFieldModal = ({
     if ("error" in result) {
       errorAlert(
         getErrorMessage(result.error),
-        `Custom field has failed to save due to the following:`
+        `Custom field has failed to save due to the following:`,
       );
     } else {
       onClose();
@@ -244,7 +244,6 @@ export const CustomFieldModal = ({
       <ModalOverlay />
       <ModalContent
         id="modal-content"
-        textAlign="center"
         data-testid="custom-field-modal"
         maxHeight="80%"
         overflowY="auto"
@@ -254,7 +253,6 @@ export const CustomFieldModal = ({
           fontWeight="semibold"
           lineHeight={5}
           fontSize="sm"
-          textAlign="left"
           py="18px"
           px={6}
           height="56px"

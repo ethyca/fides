@@ -9,7 +9,7 @@ from fideslang import manifests
 from fideslang.manifests import ingest_manifests
 from fideslang.models import Dataset, DatasetCollection, DatasetField
 from fideslang.parse import parse_dict
-from fideslang.validation import FidesKey, FidesValidationError
+from fideslang.validation import FidesKey, FidesValidationError, validate_fides_key
 
 from fides.common.utils import echo_green
 from fides.config import FidesConfig
@@ -36,7 +36,7 @@ def validate_data_categories(
 
     """
     for category in categories:
-        FidesKey.validate(category)
+        validate_fides_key(category)
         if category not in valid_categories:
             raise ValueError
 
@@ -82,7 +82,7 @@ def get_data_categories_annotation(
                 dataset_member, valid_categories
             )
 
-    return [FidesKey(value) for value in user_response]
+    return [str(FidesKey(value)) for value in user_response]  # type: ignore
 
 
 def annotate_dataset(
@@ -109,7 +109,7 @@ def annotate_dataset(
     output_dataset = []
 
     datasets = [
-        Dataset.parse_obj(dataset)
+        Dataset.model_validate(dataset)
         for dataset in ingest_manifests(dataset_file)["dataset"]
     ]
     raw_resources = api_helpers.list_server_resources(
@@ -135,7 +135,7 @@ def annotate_dataset(
     existing_categories: List[str] = [resource.fides_key for resource in resources]
 
     for dataset in datasets:
-        current_dataset = Dataset.parse_obj(dataset)
+        current_dataset = Dataset.model_validate(dataset)
         try:
             click.secho(f"\n####\nAnnotating Dataset: [{current_dataset.name}]")
 
@@ -156,14 +156,18 @@ def annotate_dataset(
             )
 
             if include_null:
-                output_dataset.append(current_dataset.dict())
+                output_dataset.append(current_dataset.model_dump(mode="json"))
             else:
-                output_dataset.append(current_dataset.dict(exclude_none=True))
+                output_dataset.append(
+                    current_dataset.model_dump(mode="json", exclude_none=True)
+                )
         except AnnotationAbortError:
             if include_null:
-                output_dataset.append(current_dataset.dict())
+                output_dataset.append(current_dataset.model_dump(mode="json"))
             else:
-                output_dataset.append(current_dataset.dict(exclude_none=True))
+                output_dataset.append(
+                    current_dataset.model_dump(mode="json", exclude_none=True)
+                )
             break
     manifests.write_manifest(dataset_file, output_dataset, "dataset")
     echo_green("Annotation process complete.")
@@ -200,7 +204,6 @@ def annotate_fields(
     """
     Check for data_categories at the field level
     """
-
     for field in get_all_level_fields(table.fields):
         if not field.data_categories:
             click.secho(

@@ -1,3 +1,5 @@
+from typing import Optional
+
 from nox import Session
 
 from constants_nox import (
@@ -11,7 +13,7 @@ from constants_nox import (
     START_APP,
     START_APP_WITH_EXTERNAL_POSTGRES,
 )
-from run_infrastructure import OPS_TEST_DIR, run_infrastructure
+from run_infrastructure import API_TEST_DIR, OPS_TEST_DIR, run_infrastructure
 
 
 def pytest_lib(session: Session, coverage_arg: str) -> None:
@@ -90,28 +92,57 @@ def pytest_ctl(session: Session, mark: str, coverage_arg: str) -> None:
         session.run(*LOGIN, external=True)
         run_command = (
             *EXEC,
+            "timeout",
+            "--signal=INT",
+            "360",
             "pytest",
             coverage_arg,
             "tests/ctl/",
             "-m",
             mark,
+            "--full-trace",
         )
         session.run(*run_command, external=True)
 
 
-def pytest_ops(session: Session, mark: str, coverage_arg: str) -> None:
+def pytest_ops(
+    session: Session,
+    mark: str,
+    coverage_arg: str,
+    subset_dir: Optional[str] = None,
+) -> None:
     """Runs fidesops tests."""
     session.notify("teardown")
     if mark == "unit":
         session.run(*START_APP, external=True)
-        run_command = (
-            *EXEC,
-            "pytest",
-            coverage_arg,
-            OPS_TEST_DIR,
-            "-m",
-            "not integration and not integration_external and not integration_saas",
-        )
+        if subset_dir == "api":
+            run_command = (
+                *EXEC,
+                "pytest",
+                coverage_arg,
+                API_TEST_DIR,
+                "-m",
+                "not integration and not integration_external and not integration_saas",
+            )
+        elif subset_dir == "non-api":
+            run_command = (
+                *EXEC,
+                "pytest",
+                coverage_arg,
+                OPS_TEST_DIR,
+                f"--ignore={API_TEST_DIR}",
+                "-m",
+                "not integration and not integration_external and not integration_saas",
+            )
+        else:
+            run_command = (
+                *EXEC,
+                "pytest",
+                coverage_arg,
+                OPS_TEST_DIR,
+                "-m",
+                "not integration and not integration_external and not integration_saas",
+            )
         session.run(*run_command, external=True)
     elif mark == "integration":
         # The coverage_arg is hardcoded in 'run_infrastructure.py'
@@ -147,6 +178,10 @@ def pytest_ops(session: Session, mark: str, coverage_arg: str) -> None:
             "-e",
             "SNOWFLAKE_TEST_PASSWORD",
             "-e",
+            "SNOWFLAKE_TEST_PRIVATE_KEY",
+            "-e",
+            "SNOWFLAKE_TEST_PRIVATE_KEY_PASSPHRASE",
+            "-e",
             "SNOWFLAKE_TEST_WAREHOUSE_NAME",
             "-e",
             "SNOWFLAKE_TEST_DATABASE_NAME",
@@ -157,11 +192,55 @@ def pytest_ops(session: Session, mark: str, coverage_arg: str) -> None:
             "-e",
             "BIGQUERY_DATASET",
             "-e",
+            "BIGQUERY_ENTERPRISE_KEYFILE_CREDS",
+            "-e",
+            "BIGQUERY_ENTERPRISE_DATASET",
+            "-e",
+            "GOOGLE_CLOUD_SQL_MYSQL_DB_IAM_USER",
+            "-e",
+            "GOOGLE_CLOUD_SQL_MYSQL_INSTANCE_CONNECTION_NAME",
+            "-e",
+            "GOOGLE_CLOUD_SQL_MYSQL_DATABASE_NAME",
+            "-e",
+            "GOOGLE_CLOUD_SQL_MYSQL_KEYFILE_CREDS",
+            "-e",
+            "GOOGLE_CLOUD_SQL_POSTGRES_DB_IAM_USER",
+            "-e",
+            "GOOGLE_CLOUD_SQL_POSTGRES_INSTANCE_CONNECTION_NAME",
+            "-e",
+            "GOOGLE_CLOUD_SQL_POSTGRES_DATABASE_NAME",
+            "-e",
+            "GOOGLE_CLOUD_SQL_POSTGRES_DATABASE_SCHEMA_NAME",
+            "-e",
+            "GOOGLE_CLOUD_SQL_POSTGRES_KEYFILE_CREDS",
+            "-e",
+            "RDS_MYSQL_AWS_ACCESS_KEY_ID",
+            "-e",
+            "RDS_MYSQL_AWS_SECRET_ACCESS_KEY",
+            "-e",
+            "RDS_MYSQL_DB_USERNAME",
+            "-e",
+            "RDS_MYSQL_DB_INSTANCE",
+            "-e",
+            "RDS_MYSQL_DB_NAME",
+            "-e",
+            "RDS_MYSQL_REGION",
+            "-e",
+            "RDS_POSTGRES_AWS_ACCESS_KEY_ID",
+            "-e",
+            "RDS_POSTGRES_AWS_SECRET_ACCESS_KEY",
+            "-e",
+            "RDS_POSTGRES_DB_USERNAME",
+            "-e",
+            "RDS_POSTGRES_REGION",
+            "-e",
             "DYNAMODB_REGION",
             "-e",
             "DYNAMODB_ACCESS_KEY_ID",
             "-e",
             "DYNAMODB_ACCESS_KEY",
+            "-e",
+            "DYNAMODB_ASSUME_ROLE_ARN",
             CI_ARGS_EXEC,
             CONTAINER_NAME,
             "pytest",
@@ -197,6 +276,8 @@ def pytest_ops(session: Session, mark: str, coverage_arg: str) -> None:
             CI_ARGS_EXEC,
             CONTAINER_NAME,
             "pytest",
+            "--reruns",
+            "3",
             coverage_arg,
             OPS_TEST_DIR,
             "-m",

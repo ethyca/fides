@@ -23,6 +23,7 @@ type CustomInputProps = {
   helpIconVisibility?: boolean;
   isRequired?: boolean;
   label?: string;
+  placeholder?: string;
   type?: InputType;
 };
 
@@ -32,6 +33,7 @@ const CustomInput = ({
   helpIconVisibility = false,
   isRequired = false,
   label,
+  placeholder,
   type = "text",
   ...props
 }: CustomInputProps & FieldHookConfig<string>) => {
@@ -81,7 +83,7 @@ const CustomInput = ({
             autoFocus={props.autoFocus}
             color="gray.700"
             isDisabled={disabled}
-            placeholder={props.placeholder}
+            placeholder={placeholder}
             size="sm"
           />
         )}
@@ -91,7 +93,7 @@ const CustomInput = ({
             autoComplete="off"
             autoFocus={props.autoFocus}
             color="gray.700"
-            placeholder={props.placeholder}
+            placeholder={placeholder}
             resize="none"
             size="sm"
             value={field.value || ""}

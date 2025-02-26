@@ -48,6 +48,116 @@
           "description": "User's unique ID",
           "data_categories": ["user.unique_id"],
           "fields": null
+        },
+        {
+          "name": "workplace_info",
+          "description": null,
+          "data_categories": null,
+          "fides_meta": {
+            "references": null,
+            "identity": null,
+            "primary_key": null,
+            "data_type": "object",
+            "length": null,
+            "return_all_elements": null,
+            "read_only": null
+          },
+          "fields": [
+            {
+              "name": "employer",
+              "description": null,
+              "data_categories": null,
+              "fides_meta": {
+                "references": null,
+                "identity": null,
+                "primary_key": null,
+                "data_type": "object",
+                "length": null,
+                "return_all_elements": null,
+                "read_only": null
+              },
+              "fields": [
+                {
+                  "name": "name",
+                  "description": null,
+                  "data_categories": ["user.name"],
+                  "fides_meta": {
+                    "references": null,
+                    "identity": null,
+                    "primary_key": null,
+                    "data_type": "string",
+                    "length": null,
+                    "return_all_elements": null,
+                    "read_only": null
+                  },
+                  "fields": null
+                },
+                {
+                  "name": "address",
+                  "description": null,
+                  "data_categories": ["user.childrens"],
+                  "fides_meta": {
+                    "references": null,
+                    "identity": null,
+                    "primary_key": null,
+                    "data_type": "string",
+                    "length": null,
+                    "return_all_elements": null,
+                    "read_only": null
+                  },
+                  "fields": null
+                },
+                {
+                  "name": "phone",
+                  "description": "",
+                  "data_categories": [
+                    "user.financial.credit_card",
+                    "user.contact.address.city"
+                  ],
+                  "fides_meta": {
+                    "references": null,
+                    "identity": null,
+                    "primary_key": null,
+                    "data_type": "string",
+                    "length": null,
+                    "return_all_elements": null,
+                    "read_only": null
+                  },
+                  "fields": null
+                }
+              ]
+            },
+            {
+              "name": "position",
+              "description": "",
+              "data_categories": ["user.content"],
+              "fides_meta": {
+                "references": null,
+                "identity": null,
+                "primary_key": null,
+                "data_type": "string",
+                "length": null,
+                "return_all_elements": null,
+                "read_only": null
+              },
+              "fields": null
+            },
+            {
+              "name": "direct_reports",
+              "description": "anotherdescription",
+              "data_categories": ["user.name"],
+              "fides_meta": {
+                "references": null,
+                "identity": null,
+                "primary_key": null,
+                "data_type": "string[]",
+                "length": null,
+                "return_all_elements": null,
+                "read_only": null
+              },
+              "fields": null
+            }
+          ]
         }
       ]
     },
@@ -75,6 +185,66 @@
           "fields": null
         }
       ]
+    },
+    {
+      "name": "example_table",
+      "description": "Example description",
+      "data_categories": [],
+      "fields": [
+        {
+          "name": "example_nested_field",
+          "description": null,
+          "data_categories": null,
+          "fides_meta": null,
+          "fields": [
+            {
+              "name": "example_success_nested_field",
+              "description": "Can save data category changes on nested field",
+              "data_categories": ["user.device"],
+              "fides_meta": null,
+              "fields": []
+            },
+            {
+              "name": "example_failure_nested_field.1",
+              "description": "Fail to save data category changes on nested field with '.' in name",
+              "data_categories": [],
+              "fides_meta": null,
+              "fields": [
+                {
+                  "name": "some.thing/Stupid-that's_redicuLous&",
+                  "description": "tesing some random string",
+                  "data_categories": [],
+                  "fides_meta": null,
+                  "fields": [
+                    {
+                      "name": "another.dumb:th!ng",
+                      "description": "tesing some random string",
+                      "data_categories": ["user.location"],
+                      "fides_meta": null,
+                      "fields": null
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "example_success_field",
+          "description": "Can save data category changes",
+          "data_categories": ["user.device"],
+          "fides_meta": null,
+          "fields": null
+        },
+        {
+          "name": "example_success_field.1",
+          "description": "Can save data category changes",
+          "data_categories": ["user.device"],
+          "fides_meta": null,
+          "fields": null
+        }
+      ],
+      "fides_meta": null
     }
   ]
 }

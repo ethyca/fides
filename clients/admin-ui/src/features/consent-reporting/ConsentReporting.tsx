@@ -1,5 +1,5 @@
 import {
-  Button,
+  AntButton as Button,
   HStack,
   Input,
   InputGroup,
@@ -24,7 +24,7 @@ const ConsentReporting = () => {
     if (result.isError) {
       const message = getErrorMessage(
         result.error,
-        "A problem occurred while generating your consent report.  Please try again."
+        "A problem occurred while generating your consent report.  Please try again.",
       );
       toast({ status: "error", description: message });
     } else {
@@ -64,9 +64,8 @@ const ConsentReporting = () => {
       </InputGroup>
       <Button
         onClick={handleDownloadClicked}
-        isLoading={isLoading}
-        colorScheme="primary"
-        size="sm"
+        loading={isLoading}
+        type="primary"
         data-testid="download-btn"
       >
         Download report

@@ -120,7 +120,9 @@ class TestStorageConfigModel:
         storage_incoming_one.name = storage_config.name
 
         with pytest.raises(KeyOrNameAlreadyExists):
-            StorageConfig.create_or_update(db=db, data=storage_incoming_one.dict())
+            StorageConfig.create_or_update(
+                db=db, data=storage_incoming_one.model_dump(mode="json")
+            )
 
     def test_create_storage_config(
         self,
@@ -129,7 +131,7 @@ class TestStorageConfigModel:
         storage_details_s3,
     ):
         storage_config = StorageConfig.create_or_update(
-            db=db, data=storage_incoming_one.dict()
+            db=db, data=storage_incoming_one.model_dump(mode="json")
         )
 
         assert storage_config.name == "test storage destination 1"
@@ -295,6 +297,6 @@ class TestStorageConfigModel:
                 details={StorageDetails.NAMING.value: FileNaming.request_id.value},
             )
         assert (
-            "Only JSON or HTML upload format are supported for local storage destinations."
-            in str(e)
+            "Value error, Only JSON or HTML upload format are supported for local storage destinations."
+            in str(e._excinfo[1])
         )

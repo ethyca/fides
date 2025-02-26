@@ -8,5 +8,5 @@ import type { Consent } from "./Consent";
  * Schema for consent preferences.
  */
 export type ConsentPreferences = {
-  consent?: Array<Consent>;
+  consent?: Array<Consent> | null;
 };

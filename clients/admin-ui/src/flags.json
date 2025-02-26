@@ -35,5 +35,35 @@
     "development": true,
     "test": true,
     "production": false
+  },
+  "dataCatalog": {
+    "description": "Data catalog view",
+    "development": true,
+    "test": true,
+    "production": false
+  },
+  "webMonitor": {
+    "description": "Monitor websites for activity",
+    "development": true,
+    "test": true,
+    "production": false
+  },
+  "ssoAuthentication": {
+    "description": "SSO Authentication Providers (OpenID)",
+    "development": true,
+    "test": true,
+    "production": false
+  },
+  "downloadAccessRequestResults": {
+    "description": "Download access data from completed requests",
+    "development": true,
+    "test": true,
+    "production": false
+  },
+  "datahub": {
+    "description": "Share Fides data categories with your Datahub instance",
+    "development": true,
+    "test": true,
+    "production": false
   }
 }

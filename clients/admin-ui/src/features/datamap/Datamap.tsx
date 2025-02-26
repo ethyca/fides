@@ -1,3 +1,8 @@
+/**
+ * NOTE: This component relates to the Spatial Datamap.
+ * For the Data Map Report component, see DatamapReportTable.tsx.
+ */
+
 import { Box, Center, Flex, Spinner } from "fidesui";
 import dynamic from "next/dynamic";
 import { useCallback, useContext, useState } from "react";
@@ -6,7 +11,7 @@ import { useAppSelector } from "~/app/hooks";
 import { useIsAnyFormDirty } from "~/features/common/hooks/useIsAnyFormDirty";
 import DatamapDrawer from "~/features/datamap/datamap-drawer/DatamapDrawer";
 import { DatamapGraphContext } from "~/features/datamap/datamap-graph/DatamapGraphContext";
-import { useTableInstance } from "~/features/datamap/datamap-table/hooks/";
+import { useDatamapTable } from "~/features/datamap/datamap-table/hooks/useDatamapTable";
 import SettingsBar from "~/features/datamap/SettingsBar";
 
 import { selectIsGettingStarted } from "./datamap.slice";
@@ -14,7 +19,7 @@ import GetStarted from "./GetStarted";
 
 const SpatialDatamap = dynamic(
   () => import("~/features/datamap/SpatialDatamap"),
-  { ssr: false }
+  { ssr: false },
 );
 
 const useHome = () => {
@@ -34,7 +39,7 @@ const useHome = () => {
         }
       });
     },
-    [attemptAction, setSelectedSystemIdInner]
+    [attemptAction, setSelectedSystemIdInner],
   );
 
   const resetSelectedSystemId = useCallback(() => {
@@ -63,7 +68,7 @@ const Datamap = () => {
     selectedSystemId,
     resetSelectedSystemId,
   } = useHome();
-  const { isLoading } = useTableInstance();
+  const { isLoading } = useDatamapTable();
   if (isLoading) {
     return (
       <Center width="100%" flex="1">

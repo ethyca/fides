@@ -1,4 +1,5 @@
-import { ComponentChildren, VNode, h } from "preact";
+import { ComponentChildren, h, VNode } from "preact";
+
 import { useDisclosure } from "../lib/hooks";
 import Toggle from "./Toggle";
 
@@ -17,7 +18,7 @@ const DataUseToggle = ({
   includeToggle = true,
 }: {
   noticeKey: string;
-  title?: string;
+  title: string;
   checked: boolean;
   onToggle: (noticeKey: string) => void;
   children?: ComponentChildren;
@@ -36,9 +37,12 @@ const DataUseToggle = ({
     onToggle: toggleDescription,
   } = useDisclosure({ id: noticeKey });
 
-  const handleKeyDown = (event: KeyboardEvent) => {
+  const handleKeyDown = (event: KeyboardEvent, isClickable: boolean) => {
     if (event.code === "Space" || event.code === "Enter") {
-      toggleDescription();
+      event.preventDefault();
+      if (isClickable) {
+        toggleDescription();
+      }
     }
   };
 
@@ -57,7 +61,7 @@ const DataUseToggle = ({
         <span
           role="button"
           tabIndex={0}
-          onKeyDown={isClickable ? handleKeyDown : undefined}
+          onKeyDown={(e) => handleKeyDown(e, isClickable)}
           {...buttonProps}
           className={
             isHeader
@@ -67,21 +71,24 @@ const DataUseToggle = ({
         >
           <span className="fides-flex-center fides-justify-space-between">
             {title}
-            {badge ? <span className="fides-notice-badge">{badge}</span> : null}
           </span>
-          {gpcBadge}
         </span>
-        {includeToggle ? (
-          <Toggle
-            name={title || ""}
-            id={noticeKey}
-            checked={checked}
-            onChange={onToggle}
-            disabled={disabled}
-            onLabel={onLabel}
-            offLabel={offLabel}
-          />
-        ) : null}
+        <span className="fides-notice-toggle-controls">
+          {gpcBadge}
+          {badge ? <span className="fides-notice-badge">{badge}</span> : null}
+          {includeToggle ? (
+            <Toggle
+              label={title}
+              name={noticeKey}
+              id={noticeKey}
+              checked={checked}
+              onChange={onToggle}
+              disabled={disabled}
+              onLabel={onLabel}
+              offLabel={offLabel}
+            />
+          ) : null}
+        </span>
       </div>
       {children ? <div {...getDisclosureProps()}>{children}</div> : null}
     </div>

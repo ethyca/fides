@@ -1,4 +1,4 @@
-import { Button, Heading, HStack, Stack } from "fidesui";
+import { AntButton as Button, Box, HStack, Stack, Text } from "fidesui";
 import { Form, Formik } from "formik";
 import { useState } from "react";
 import * as Yup from "yup";
@@ -19,6 +19,7 @@ import {
 } from "~/types/api";
 import { RTKErrorResult } from "~/types/errors";
 
+import { NextBreadcrumb } from "../common/nav/NextBreadcrumb";
 import {
   changeStep,
   selectOrganizationFidesKey,
@@ -59,7 +60,7 @@ const AuthenticateOktaForm = () => {
     successAlert(
       `Your scan was successfully completed, with ${systems.length} new systems detected!`,
       `Scan Successfully Completed`,
-      { isClosable: true }
+      { isClosable: true },
     );
   };
   const handleError = (error: RTKErrorResult["error"]) => {
@@ -113,12 +114,27 @@ const AuthenticateOktaForm = () => {
             {scannerError ? <ScannerError error={scannerError} /> : null}
             {!isSubmitting && !scannerError ? (
               <>
-                <Heading size="lg">Authenticate Okta Scanner</Heading>
-                <h2>
-                  To use the scanner to inventory systems in Okta, you must
-                  first authenticate to your Okta account by providing the
-                  following information:
-                </h2>
+                <Box>
+                  <NextBreadcrumb
+                    className="mb-4"
+                    items={[
+                      {
+                        title: "Add systems",
+                        href: "",
+                        onClick: (e) => {
+                          e.preventDefault();
+                          handleCancel();
+                        },
+                      },
+                      { title: "Authenticate Okta Scanner" },
+                    ]}
+                  />
+                  <Text>
+                    To use the scanner to inventory systems in Okta, you must
+                    first authenticate to your Okta account by providing the
+                    following information:
+                  </Text>
+                </Box>
                 <Stack>
                   <CustomTextInput
                     name="orgUrl"
@@ -136,17 +152,15 @@ const AuthenticateOktaForm = () => {
             ) : null}
             {!isSubmitting ? (
               <HStack>
-                <Button variant="outline" onClick={handleCancel}>
-                  Cancel
-                </Button>
+                <Button onClick={handleCancel}>Cancel</Button>
                 <Button
-                  type="submit"
-                  variant="primary"
-                  isDisabled={!dirty || !isValid}
-                  isLoading={isLoading}
+                  htmlType="submit"
+                  type="primary"
+                  disabled={!dirty || !isValid}
+                  loading={isLoading}
                   data-testid="submit-btn"
                 >
-                  Save and Continue
+                  Save and continue
                 </Button>
               </HStack>
             ) : null}

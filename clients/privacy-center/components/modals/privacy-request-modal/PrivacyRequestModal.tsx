@@ -1,19 +1,19 @@
 import React, { useCallback, useState } from "react";
 
 import { useConfig } from "~/features/common/config.slice";
+import { PrivacyRequestOption } from "~/types/api";
 
 import RequestModal from "../RequestModal";
-import PrivacyRequestForm from "./PrivacyRequestForm";
-import VerificationForm from "../VerificationForm";
-import RequestSubmitted from "./RequestSubmitted";
-
 import { ModalViews, VerificationType } from "../types";
+import VerificationForm from "../VerificationForm";
+import PrivacyRequestForm from "./PrivacyRequestForm";
+import RequestSubmitted from "./RequestSubmitted";
 
 export const usePrivacyRequestModal = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [openAction, setOpenAction] = useState<string | null>(null);
   const [currentView, setCurrentView] = useState<ModalViews>(
-    ModalViews.PrivacyRequest
+    ModalViews.PrivacyRequest,
   );
   const [privacyRequestId, setPrivacyRequestId] = useState<string>("");
 
@@ -58,7 +58,7 @@ export type RequestModalProps = {
   successHandler: () => void;
 };
 
-export const PrivacyRequestModal: React.FC<RequestModalProps> = ({
+export const PrivacyRequestModal = ({
   isOpen,
   onClose,
   openAction,
@@ -68,10 +68,12 @@ export const PrivacyRequestModal: React.FC<RequestModalProps> = ({
   setPrivacyRequestId,
   isVerificationRequired,
   successHandler,
-}) => {
+}: RequestModalProps) => {
   const config = useConfig();
   const action = openAction
-    ? config.actions.filter(({ policy_key }) => policy_key === openAction)[0]
+    ? (config.actions as Array<PrivacyRequestOption>).find(
+        ({ policy_key }) => policy_key === openAction,
+      )
     : null;
 
   if (!action) {

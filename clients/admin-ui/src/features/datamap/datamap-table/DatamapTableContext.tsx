@@ -1,23 +1,25 @@
+import { Table } from "@tanstack/react-table";
 import React from "react";
-import { TableInstance } from "react-table";
 
 import { DatamapRow } from "../datamap.slice";
 
-export class DatamapTableContextValue {
-  tableInstance: TableInstance<DatamapRow> | null;
+type DatamapTableInstance = Table<DatamapRow>;
 
-  constructor(tableInstance: TableInstance<DatamapRow> | null = null) {
+export class DatamapTableContextValue {
+  tableInstance: DatamapTableInstance | null;
+
+  constructor(tableInstance: DatamapTableInstance | null = null) {
     this.tableInstance = tableInstance;
     this.updateTableInstance = this.updateTableInstance.bind(this);
   }
 
-  updateTableInstance(tableInstance: TableInstance<DatamapRow>) {
+  updateTableInstance(tableInstance: DatamapTableInstance) {
     this.tableInstance = tableInstance;
   }
 }
 
 const DatamapTableContext = React.createContext<DatamapTableContextValue>(
-  new DatamapTableContextValue()
+  new DatamapTableContextValue(),
 );
 
 export default DatamapTableContext;

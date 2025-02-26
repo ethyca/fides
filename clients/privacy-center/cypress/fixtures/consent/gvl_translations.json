@@ -1,0 +1,1064 @@
+{
+  "en": {
+    "gvlSpecificationVersion": 3,
+    "vendorListVersion": 40,
+    "tcfPolicyVersion": 4,
+    "lastUpdated": "2024-01-01T12:00:00Z",
+    "purposes": {
+      "1": {
+        "id": 1,
+        "name": "Store and/or access information on a device",
+        "description": "Cookies, device or similar online identifiers (e.g. login-based identifiers, randomly assigned identifiers, network based identifiers) together with other information (e.g. browser type and information, language, screen size, supported technologies etc.) can be stored or read on your device to recognise it each time it connects to an app or to a website, for one or several of the purposes presented here.",
+        "illustrations": [
+          "Most purposes explained in this notice rely on the storage or accessing of information from your device when you use an app or visit a website. For example, a vendor or publisher might need to store a cookie on your device during your first visit on a website, to be able to recognise your device during your next visits (by accessing this cookie each time)."
+        ]
+      },
+      "2": {
+        "id": 2,
+        "name": "Use limited data to select advertising",
+        "description": "Advertising presented to you on this service can be based on limited data, such as the website or app you are using, your non-precise location, your device type or which content you are (or have been) interacting with (for example, to limit the number of times an ad is presented to you).",
+        "illustrations": [
+          "A car manufacturer wants to promote its electric vehicles to environmentally conscious users living in the city after office hours. The advertising is presented on a page with related content (such as an article on climate change actions) after 6:30 p.m. to users whose non-precise location suggests that they are in an urban zone.",
+          "A large producer of watercolour paints wants to carry out an online advertising campaign for its latest watercolour range, diversifying its audience to reach as many amateur and professional artists as possible and avoiding showing the ad next to mismatched content (for instance, articles about how to paint your house). The number of times that the ad has been presented to you is detected and limited, to avoid presenting it too often."
+        ]
+      },
+      "3": {
+        "id": 3,
+        "name": "Create profiles for personalised advertising",
+        "description": "Information about your activity on this service (such as forms you submit, content you look at) can be stored and combined with other information about you (for example, information from your previous activity on this service and other websites or apps) or similar users. This is then used to build or improve a profile about you (that might include possible interests and personal aspects). Your profile can be used (also later) to present advertising that appears more relevant based on your possible interests by this and other entities.",
+        "illustrations": [
+          "If you read several articles about the best bike accessories to buy, this information could be used to create a profile about your interest in bike accessories. Such a profile may be used or improved later on, on the same or a different website or app to present you with advertising for a particular bike accessory brand. If you also look at a configurator for a vehicle on a luxury car manufacturer website, this information could be combined with your interest in bikes to refine your profile and make an assumption that you are interested in luxury cycling gear.",
+          "An apparel company wishes to promote its new line of high-end baby clothes. It gets in touch with an agency that has a network of clients with high income customers (such as high-end supermarkets) and asks the agency to create profiles of young parents or couples who can be assumed to be wealthy and to have a new child, so that these can later be used to present advertising within partner apps based on those profiles."
+        ]
+      },
+      "4": {
+        "id": 4,
+        "name": "Use profiles to select personalised advertising",
+        "description": "Advertising presented to you on this service can be based on your advertising profiles, which can reflect your activity on this service or other websites or apps (like the forms you submit, content you look at), possible interests and personal aspects.",
+        "illustrations": [
+          "An online retailer wants to advertise a limited sale on running shoes. It wants to target advertising to users who previously looked at running shoes on its mobile app. Tracking technologies might be used to recognise that you have previously used the mobile app to consult running shoes, in order to present you with the corresponding advertisement on the app.",
+          "A profile created for personalised advertising in relation to a person having searched for bike accessories on a website can be used to present the relevant advertisement for bike accessories on a mobile app of another organisation."
+        ]
+      },
+      "5": {
+        "id": 5,
+        "name": "Create profiles to personalise content",
+        "description": "Information about your activity on this service (for instance, forms you submit, non-advertising content you look at) can be stored and combined with other information about you (such as your previous activity on this service or other websites or apps) or similar users. This is then used to build or improve a profile about you (which might for example include possible interests and personal aspects). Your profile can be used (also later) to present content that appears more relevant based on your possible interests, such as by adapting the order in which content is shown to you, so that it is even easier for you to find content that matches your interests.",
+        "illustrations": [
+          "You read several articles on how to build a treehouse on a social media platform. This information might be added to a profile to mark your interest in content related to outdoors as well as do-it-yourself guides (with the objective of allowing the personalisation of content, so that for example you are presented with more blog posts and articles on treehouses and wood cabins in the future).",
+          "You have viewed three videos on space exploration across different TV apps. An unrelated news platform with which you have had no contact builds a profile based on that viewing behaviour, marking space exploration as a topic of possible interest for other videos."
+        ]
+      },
+      "6": {
+        "id": 6,
+        "name": "Use profiles to select personalised content",
+        "description": "Content presented to you on this service can be based on your content personalisation profiles, which can reflect your activity on this or other services (for instance, the forms you submit, content you look at), possible interests and personal aspects. This can for example be used to adapt the order in which content is shown to you, so that it is even easier for you to find (non-advertising) content that matches your interests.",
+        "illustrations": [
+          "You read articles on vegetarian food on a social media platform and then use the cooking app of an unrelated company. The profile built about you on the social media platform will be used to present you vegetarian recipes on the welcome screen of the cooking app.",
+          "You have viewed three videos about rowing across different websites. An unrelated video sharing platform will recommend five other videos on rowing that may be of interest to you when you use your TV app, based on a profile built about you when you visited those different websites to watch online videos."
+        ]
+      },
+      "7": {
+        "id": 7,
+        "name": "Measure advertising performance",
+        "description": "Information regarding which advertising is presented to you and how you interact with it can be used to determine how well an advert has worked for you or other users and whether the goals of the advertising were reached. For instance, whether you saw an ad, whether you clicked on it, whether it led you to buy a product or visit a website, etc. This is very helpful to understand the relevance of advertising campaigns.",
+        "illustrations": [
+          "You have clicked on an advertisement about a “black Friday” discount by an online shop on the website of a publisher and purchased a product. Your click will be linked to this purchase. Your interaction and that of other users will be measured to know how many clicks on the ad led to a purchase.",
+          "You are one of very few to have clicked on an advertisement about an “international appreciation day” discount by an online gift shop within the app of a publisher. The publisher wants to have reports to understand how often a specific ad placement within the app, and notably the “international appreciation day” ad, has been viewed or clicked by you and other users, in order to help the publisher and its partners (such as agencies) optimise ad placements."
+        ]
+      },
+      "8": {
+        "id": 8,
+        "name": "Measure content performance",
+        "description": "Information regarding which content is presented to you and how you interact with it can be used to determine whether the (non-advertising) content e.g. reached its intended audience and matched your interests. For instance, whether you read an article, watch a video, listen to a podcast or look at a product description, how long you spent on this service and the web pages you visit etc. This is very helpful to understand the relevance of (non-advertising) content that is shown to you. ",
+        "illustrations": [
+          "You have read a blog post about hiking on a mobile app of a publisher and followed a link to a recommended and related post. Your interactions will be recorded as showing that the initial hiking post was useful to you and that it was successful in interesting you in the related post. This will be measured to know whether to produce more posts on hiking in the future and where to place them on the home screen of the mobile app.",
+          "You were presented a video on fashion trends, but you and several other users stopped watching after 30 seconds. This information is then used to evaluate the right length of future videos on fashion trends."
+        ]
+      },
+      "9": {
+        "id": 9,
+        "name": "Understand audiences through statistics or combinations of data from different sources",
+        "description": "Reports can be generated based on the combination of data sets (like user profiles, statistics, market research, analytics data) regarding your interactions and those of other users with advertising or (non-advertising) content to identify common characteristics (for instance, to determine which target audiences are more receptive to an ad campaign or to certain contents).",
+        "illustrations": [
+          "The owner of an online bookstore wants commercial reporting showing the proportion of visitors who consulted and left its site without buying, or consulted and bought the last celebrity autobiography of the month, as well as the average age and the male/female distribution of each category. Data relating to your navigation on its site and to your personal characteristics is then used and combined with other such data to produce these statistics.",
+          "An advertiser wants to better understand the type of audience interacting with its adverts. It calls upon a research institute to compare the characteristics of users who interacted with the ad with typical attributes of users of similar platforms, across different devices. This comparison reveals to the advertiser that its ad audience is mainly accessing the adverts through mobile devices and is likely in the 45-60 age range."
+        ]
+      },
+      "10": {
+        "id": 10,
+        "name": "Develop and improve services",
+        "description": "Information about your activity on this service, such as your interaction with ads or content, can be very helpful to improve products and services and to build new products and services based on user interactions, the type of audience, etc. This specific purpose does not include the development or improvement of user profiles and identifiers.",
+        "illustrations": [
+          "A technology platform working with a social media provider notices a growth in mobile app users, and sees based on their profiles that many of them are connecting through mobile connections. It uses a new technology to deliver ads that are formatted for mobile devices and that are low-bandwidth, to improve their performance.",
+          "An advertiser is looking for a way to display ads on a new type of consumer device. It collects information regarding the way users interact with this new kind of device to determine whether it can build a new mechanism for displaying advertising on this type of device."
+        ]
+      },
+      "11": {
+        "id": 11,
+        "name": "Use limited data to select content",
+        "description": "Content presented to you on this service can be based on limited data, such as the website or app you are using, your non-precise location, your device type, or which content you are (or have been) interacting with (for example, to limit the number of times a video or an article is presented to you).",
+        "illustrations": [
+          "A travel magazine has published an article on its website about the new online courses proposed by a language school, to improve travelling experiences abroad. The school’s blog posts are inserted directly at the bottom of the page, and selected on the basis of your non-precise location (for instance, blog posts explaining the course curriculum for different languages than the language of the country you are situated in).",
+          "A sports news mobile app has started a new section of articles covering the most recent football games. Each article includes videos hosted by a separate streaming platform showcasing the highlights of each match. If you fast-forward a video, this information may be used to select a shorter video to play next."
+        ]
+      }
+    },
+    "specialPurposes": {
+      "1": {
+        "id": 1,
+        "name": "Ensure security, prevent and detect fraud, and fix errors\n",
+        "description": "Your data can be used to monitor for and prevent unusual and possibly fraudulent activity (for example, regarding advertising, ad clicks by bots), and ensure systems and processes work properly and securely. It can also be used to correct any problems you, the publisher or the advertiser may encounter in the delivery of content and ads and in your interaction with them.",
+        "illustrations": [
+          "An advertising intermediary delivers ads from various advertisers to its network of partnering websites. It notices a large increase in clicks on ads relating to one advertiser, and uses data regarding the source of the clicks to determine that 80% of the clicks come from bots rather than humans."
+        ]
+      },
+      "2": {
+        "id": 2,
+        "name": "Deliver and present advertising and content",
+        "description": "Certain information (like an IP address or device capabilities) is used to ensure the technical compatibility of the content or advertising, and to facilitate the transmission of the content or ad to your device.",
+        "illustrations": [
+          "Clicking on a link in an article might normally send you to another page or part of the article. To achieve this, 1°) your browser sends a request to a server linked to the website, 2°) the server answers back (“here is the article you asked for”), using technical information automatically included in the request sent by your device, to properly display the information / images that are part of the article you asked for. Technically, such exchange of information is necessary to deliver the content that appears on your screen."
+        ]
+      }
+    },
+    "features": {
+      "1": {
+        "id": 1,
+        "name": "Match and combine data from other data sources",
+        "description": "Information about your activity on this service may be matched and combined with other information relating to you and originating from various sources (for instance your activity on a separate online service, your use of a loyalty card in-store, or your answers to a survey), in support of the purposes explained in this notice.",
+        "illustrations": []
+      },
+      "2": {
+        "id": 2,
+        "name": "Link different devices",
+        "description": "In support of the purposes explained in this notice, your device might be considered as likely linked to other devices that belong to you or your household (for instance because you are logged in to the same service on both your phone and your computer, or because you may use the same Internet connection on both devices).",
+        "illustrations": []
+      },
+      "3": {
+        "id": 3,
+        "name": "Identify devices based on information transmitted automatically",
+        "description": "Your device might be distinguished from other devices based on information it automatically sends when accessing the Internet (for instance, the IP address of your Internet connection or the type of browser you are using) in support of the purposes exposed in this notice.",
+        "illustrations": []
+      }
+    },
+    "specialFeatures": {
+      "1": {
+        "id": 1,
+        "name": "Use precise geolocation data",
+        "description": "With your acceptance, your precise location (within a radius of less than 500 metres) may be used in support of the purposes explained in this notice.",
+        "illustrations": []
+      },
+      "2": {
+        "id": 2,
+        "name": "Actively scan device characteristics for identification",
+        "description": "With your acceptance, certain characteristics specific to your device might be requested and used to distinguish it from other devices (such as the installed fonts or plugins, the resolution of your screen) in support of the purposes explained in this notice.",
+        "illustrations": []
+      }
+    },
+    "stacks": {
+      "1": {
+        "id": 1,
+        "purposes": [],
+        "specialFeatures": [1, 2],
+        "name": "Precise geolocation data, and identification through device scanning",
+        "description": "Precise geolocation and information about device characteristics can be used."
+      },
+      "2": {
+        "id": 2,
+        "purposes": [2, 7],
+        "specialFeatures": [],
+        "name": "Advertising based on limited data and advertising measurement",
+        "description": "Advertising can be presented based on limited data. Advertising performance can be measured."
+      },
+      "3": {
+        "id": 3,
+        "purposes": [2, 3, 4],
+        "specialFeatures": [],
+        "name": "Personalised advertising",
+        "description": "Advertising can be personalised based on your profile. Your activity on this service can be used to build or improve a profile about you for personalised advertising."
+      },
+      "4": {
+        "id": 4,
+        "purposes": [2, 7, 9],
+        "specialFeatures": [],
+        "name": "Advertising based on limited data, advertising measurement, and understanding of the audiences",
+        "description": "Advertising can be presented based on limited data. Advertising performance can be measured. Reports can be generated based on your activity and those of others."
+      },
+      "5": {
+        "id": 5,
+        "purposes": [2, 3, 7],
+        "specialFeatures": [],
+        "name": "Advertising based on limited data, personalised advertising profile, and advertising measurement",
+        "description": "Advertising can be presented based on limited data. Your activity on this service can be used to build or improve a profile about you for personalised advertising. Advertising performance can be measured."
+      },
+      "6": {
+        "id": 6,
+        "purposes": [2, 4, 7],
+        "specialFeatures": [],
+        "name": "Selection of personalised advertising and advertising measurement",
+        "description": "Advertising can be personalised based on your profile. Advertising performance can be measured."
+      },
+      "7": {
+        "id": 7,
+        "purposes": [2, 4, 7, 9],
+        "specialFeatures": [],
+        "name": "Selection of personalised advertising, advertising measurement, and audience research",
+        "description": "Advertising can be personalised based on your profile. Advertising performance can be measured. Reports can be generated based on your activity and those of others."
+      },
+      "8": {
+        "id": 8,
+        "purposes": [2, 3, 4, 7],
+        "specialFeatures": [],
+        "name": "Personalised advertising and advertising measurement",
+        "description": "Advertising can be personalised based on your profile. Your activity on this service can be used to build or improve a profile about you for personalised advertising. Advertising performance can be measured."
+      },
+      "9": {
+        "id": 9,
+        "purposes": [2, 3, 4, 7, 9],
+        "specialFeatures": [],
+        "name": "Personalised advertising, advertising measurement, and audience research",
+        "description": "Advertising can be personalised based on your profile. Your activity on this service can be used to build or improve a profile about you for personalised advertising. Advertising performance can be measured. Reports can be generated based on your activity and those of others."
+      },
+      "10": {
+        "id": 10,
+        "purposes": [3, 4],
+        "specialFeatures": [],
+        "name": "Personalised advertising",
+        "description": "Advertising can be personalised based on your profile. Your activity on this service can be used to build or improve a profile about you for personalised advertising."
+      },
+      "11": {
+        "id": 11,
+        "purposes": [5, 6],
+        "specialFeatures": [],
+        "name": "Personalised content",
+        "description": "Content can be personalised based on your profile. Your activity on this service can be used to build or improve a profile about you for personalised content."
+      },
+      "12": {
+        "id": 12,
+        "purposes": [6, 8, 11],
+        "specialFeatures": [],
+        "name": "Selection of personalised content and content measurement",
+        "description": "Content can be personalised based on your profile. Content performance can be measured."
+      },
+      "13": {
+        "id": 13,
+        "purposes": [6, 8, 9, 11],
+        "specialFeatures": [],
+        "name": "Selection of personalised content, content measurement and audience research\n",
+        "description": "Content can be personalised based on your profile. Content performance can be measured. Reports can be generated based on your activity and those of others.Content can be personalised based on your profile. Content performance can be measured. Reports can be generated based on your activity and those of others. "
+      },
+      "14": {
+        "id": 14,
+        "purposes": [5, 6, 8, 11],
+        "specialFeatures": [],
+        "name": "Personalised content and content measurement",
+        "description": "Content can be personalised based on your profile. Your activity on this service can be used to build or improve a profile about you for personalised content. Content performance can be measured."
+      },
+      "15": {
+        "id": 15,
+        "purposes": [5, 6, 8, 9, 11],
+        "specialFeatures": [],
+        "name": "Personalised content, content measurement and audience research",
+        "description": "Content can be personalised based on your profile. Your activity on this service can be used to build or improve a profile about you for personalised content. Content performance can be measured. Reports can be generated based on your activity and those of others."
+      },
+      "16": {
+        "id": 16,
+        "purposes": [5, 6, 8, 9, 10, 11],
+        "specialFeatures": [],
+        "name": "Personalised content, content measurement, audience research, and services development",
+        "description": "Content can be personalised based on your profile. Your activity on this service can be used to build or improve a profile about you for personalised content. Content performance can be measured. Reports can be generated based on your activity and those of others. Your activity on this service can help develop and improve products and services."
+      },
+      "17": {
+        "id": 17,
+        "purposes": [7, 8, 9],
+        "specialFeatures": [],
+        "name": "Advertising and content measurement, and audience research",
+        "description": "Advertising and content performance can be measured. Reports can be generated based on your activity and those of others."
+      },
+      "18": {
+        "id": 18,
+        "purposes": [7, 8],
+        "specialFeatures": [],
+        "name": "Advertising and content measurement",
+        "description": "Advertising and content performance can be measured. "
+      },
+      "19": {
+        "id": 19,
+        "purposes": [7, 9],
+        "specialFeatures": [],
+        "name": "Advertising measurement and audience research",
+        "description": "Advertising can be measured. Reports can be generated based on your activity and those of others."
+      },
+      "20": {
+        "id": 20,
+        "purposes": [7, 8, 9, 10],
+        "specialFeatures": [],
+        "name": "Advertising and content measurement, audience research, and services development",
+        "description": "Advertising and content performance can be measured. Your activity on this service can help develop and improve products and services. Reports can be generated based on your activity and those of others. "
+      },
+      "21": {
+        "id": 21,
+        "purposes": [8, 9, 10],
+        "specialFeatures": [],
+        "name": "Content measurement, audience research and services development.",
+        "description": "Content performance can be measured. Reports can be generated based on your activity and those of others. Your activity on this service can help develop and improve products and services."
+      },
+      "22": {
+        "id": 22,
+        "purposes": [8, 10],
+        "specialFeatures": [],
+        "name": "Content measurement and services development",
+        "description": "Content performance can be measured. Your activity on this service can help develop and improve products and services."
+      },
+      "23": {
+        "id": 23,
+        "purposes": [2, 4, 6, 7, 8, 11],
+        "specialFeatures": [],
+        "name": "Selection of personalised advertising and content, advertising and content measurement",
+        "description": "Advertising and content can be personalised based on your profile. Advertising and content performance can be measured."
+      },
+      "24": {
+        "id": 24,
+        "purposes": [2, 4, 6, 7, 8, 9, 11],
+        "specialFeatures": [],
+        "name": "Selection of personalised advertising and content, advertising and content measurement, and audience research",
+        "description": "Advertising and content can be personalised based on your profile. Advertising and content performance can be measured. Reports can be generated based on your activity and those of others. Data can be used to build or improve user experience, systems, and software."
+      },
+      "25": {
+        "id": 25,
+        "purposes": [2, 3, 4, 5, 6, 7, 8, 11],
+        "specialFeatures": [],
+        "name": "Personalised advertising and content, advertising and content measurement",
+        "description": "Advertising and content can be personalised based on your profile. Your activity on this service can be used to build or improve a profile about you for personalised advertising or content. Advertising and content performance can be measured."
+      },
+      "26": {
+        "id": 26,
+        "purposes": [2, 3, 4, 5, 6, 7, 8, 9, 11],
+        "specialFeatures": [],
+        "name": "Personalised advertising and content, advertising and content measurement, and audience research",
+        "description": "Advertising and content can be personalised based on your profile. Your activity on this service can be used to build or improve a profile about you for personalised advertising or content. Advertising and content performance can be measured. Reports can be generated based on your activity and those of others. "
+      },
+      "27": {
+        "id": 27,
+        "purposes": [3, 5],
+        "specialFeatures": [],
+        "name": "Personalised advertising and content profile",
+        "description": "Your activity on this service can be used to build or improve a profile about you for personalised advertising or content."
+      },
+      "28": {
+        "id": 28,
+        "purposes": [2, 4, 6, 11],
+        "specialFeatures": [],
+        "name": "Selection of personalised advertising and content",
+        "description": "Advertising and content can be personalised based on your profile."
+      },
+      "29": {
+        "id": 29,
+        "purposes": [2, 7, 8, 9],
+        "specialFeatures": [],
+        "name": "Advertising based on limited data, advertising and content measurement, and audience research",
+        "description": "Advertising can be presented based on limited data. Advertising and content performance can be measured. Reports can be generated based on your activity and those of others."
+      },
+      "30": {
+        "id": 30,
+        "purposes": [2, 4, 5, 6, 7, 8, 9, 11],
+        "specialFeatures": [],
+        "name": "Selection of personalised advertising, personalised content, advertising and content measurement, and audience research\n",
+        "description": "Advertising and content can be personalised based on your profile. Your activity on this service can be used to build or improve a profile about you for personalised advertising or content. Advertising and content performance can be measured. Reports can be generated based on your activity and those of others."
+      },
+      "31": {
+        "id": 31,
+        "purposes": [2, 4, 5, 6, 7, 8, 9, 10, 11],
+        "specialFeatures": [],
+        "name": "Selection of personalised advertising, personalised content, advertising and content measurement, audience research, and services development",
+        "description": "Advertising and content can be personalised based on your profile. Your activity on this service can be used to build or improve a profile about you for personalised content. Advertising and content performance can be measured. Reports can be generated based on your activity and those of others. Your activity on this service can help develop and improve products and services."
+      },
+      "32": {
+        "id": 32,
+        "purposes": [2, 5, 6, 7, 8, 9, 11],
+        "specialFeatures": [],
+        "name": "Advertising based on limited data, personalised content, advertising and content measurement, and audience research",
+        "description": "Advertising can be presented based on limited data. Content can be personalised based on your profile. Your activity on this service can be used to build or improve a profile about you for personalised content. Advertising and content performance can be measured. Reports can be generated based on your activity and those of others."
+      },
+      "33": {
+        "id": 33,
+        "purposes": [2, 5, 6, 7, 8, 9, 10, 11],
+        "specialFeatures": [],
+        "name": "Advertising based on limited data, personalised content, advertising and content measurement, audience research, and services development",
+        "description": "Advertising can be presented based on limited data. Content can be personalised based on your profile. Your activity on this service can be used to build or improve a profile about you for personalised content. Advertising and content performance can be measured. Reports can be generated based on your activity and those of others. Your activity on this service can help develop and improve products and services."
+      },
+      "34": {
+        "id": 34,
+        "purposes": [2, 5, 6, 8, 9, 11],
+        "specialFeatures": [],
+        "name": "Advertising based on limited data, personalised content, content measurement, and audience research",
+        "description": "Advertising can be presented based on limited data. Content can be personalised based on your profile. Your activity on this service can be used to build or improve a profile about you for personalised content. Advertising and content performance can be measured. Reports can be generated based on your activity and those of others."
+      },
+      "35": {
+        "id": 35,
+        "purposes": [2, 5, 6, 8, 9, 10, 11],
+        "specialFeatures": [],
+        "name": "Advertising based on limited data, personalised content, content measurement, audience research and services development",
+        "description": "Advertising can be presented based on limited data. Content can be personalised based on your profile. Your activity on this service can be used to build or improve a profile about you for personalised content. Content performance can be measured. Reports can be generated based on your activity and those of others. Your activity on this service can help develop and improve products and services."
+      },
+      "36": {
+        "id": 36,
+        "purposes": [2, 5, 6, 7, 11],
+        "specialFeatures": [],
+        "name": "Advertising based on limited data, personalised content, and advertising measurement",
+        "description": "Advertising can be presented based on limited data. Content can be personalised based on your profile. Your activity on this service can be used to build or improve a profile about you for personalised content. Advertising performance can be measured."
+      },
+      "37": {
+        "id": 37,
+        "purposes": [2, 5, 6, 7, 10, 11],
+        "specialFeatures": [],
+        "name": "Advertising based on limited data, personalised content, advertising measurement, and services development",
+        "description": "Advertising can be presented based on limited data. Content can be personalised based on your profile. Your activity on this service can be used to build or improve a profile about you for personalised content. Advertising performance can be measured. Your activity on this service can help develop and improve products and services."
+      },
+      "38": {
+        "id": 38,
+        "purposes": [2, 3, 4, 7, 10],
+        "specialFeatures": [],
+        "name": "Personalised advertising, advertising measurement, and services development",
+        "description": "Advertising can be personalised based on your profile.Your activity on this service can be used to build or improve a profile about you for personalised advertising. Advertising performance can be measured. Your activity on this service can help develop and improve products and services."
+      },
+      "39": {
+        "id": 39,
+        "purposes": [2, 3, 4, 7, 9, 10],
+        "specialFeatures": [],
+        "name": "Personalised advertising, advertising measurement, audience research and services development",
+        "description": "Advertising can be personalised based on your profile. Your activity on this service can be used to build or improve a profile about you for personalised advertising. Advertising performance can be measured. Reports can be generated based on your activity and those of others. Your activity on this service can help develop and improve products and services."
+      },
+      "40": {
+        "id": 40,
+        "purposes": [2, 3, 4, 7, 8, 9, 10],
+        "specialFeatures": [],
+        "name": "Personalised advertising, advertising and content measurement, audience research and services development",
+        "description": "Advertising can be personalised based on your profile.Your activity on this service can be used to build or improve a profile about you for personalised advertising. Advertising and content performance can be measured. Reports can be generated based on your activity and those of others. Your activity on this service can help develop and improve products and services."
+      },
+      "41": {
+        "id": 41,
+        "purposes": [2, 3, 4, 6, 7, 8, 9, 10, 11],
+        "specialFeatures": [],
+        "name": "Personalised advertising, selection of personalised content, advertising and content measurement, audience research and services development",
+        "description": "Advertising and content can be personalised based on your profile. Your activity on this service can be used to build or improve a profile about you for personalised advertising. Advertising and content performance can be measured. Reports can be generated based on your activity and those of others. Your activity on this service can help develop and improve products and services."
+      },
+      "42": {
+        "id": 42,
+        "purposes": [2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+        "specialFeatures": [],
+        "name": "Personalised advertising and content, advertising and content measurement, audience research and services development\n",
+        "description": "Advertising and content can be personalised based on your profile. Your activity on this service can be used to build or improve a profile about you for personalised advertising and content. Advertising and content performance can be measured. Reports can be generated based on your activity and those of others. Your activity on this service can help develop and improve products and services."
+      },
+      "43": {
+        "id": 43,
+        "purposes": [8, 11],
+        "specialFeatures": [],
+        "name": "Content based on limited data and content measurement",
+        "description": "Content can be selected based on limited data. Content performance can be measured."
+      },
+      "44": {
+        "id": 44,
+        "purposes": [5, 6, 11],
+        "specialFeatures": [],
+        "name": "Personalised content",
+        "description": "Content can be personalised based on your profile. Your activity on this service can be used to build or improve a profile about you for personalised content."
+      },
+      "45": {
+        "id": 45,
+        "purposes": [2, 7, 9, 10],
+        "specialFeatures": [],
+        "name": "Advertising based on limited data, advertising measurement, audience research and services development",
+        "description": "Advertising can be presented based on limited data. Advertising performance can be measured. Reports can be generated based on your activity and those of others.Your activity on this service can help develop and improve products and services."
+      }
+    },
+    "dataCategories": {
+      "1": {
+        "id": 1,
+        "name": "IP addresses",
+        "description": "Your IP address is a number assigned by your Internet Service Provider to any Internet connection. It is not always specific to your device and is not always a stable identifier.\nIt is used to route information on the Internet and display online content (including ads) on your connected device."
+      },
+      "2": {
+        "id": 2,
+        "name": "Device characteristics",
+        "description": "Technical characteristics about the device you are using that are not unique to you, such as the language, the time zone or the operating system."
+      },
+      "3": {
+        "id": 3,
+        "name": "Device identifiers",
+        "description": "A device identifier is a unique string of characters assigned to your device or browser by means of a cookie or other storage technologies. \nIt may be created or accessed to recognise your device e.g. across web pages from the same site or across multiple sites or apps."
+      },
+      "4": {
+        "id": 4,
+        "name": "Probabilistic identifiers",
+        "description": "A probabilistic identifier can be created by combining characteristics associated with your device (the type of browser or operating system used) and the IP address of the Internet connection. If you give your agreement, additional characteristics (e.g. the installed font or screen resolution) can also be combined to improve precision of the probabilistic identifier.\nSuch an identifier is considered \"probabilistic\" because several devices can share the same characteristics and Internet connection. It may be used to recognise your device across e.g. web pages from the same site or across multiple sites or apps."
+      },
+      "5": {
+        "id": 5,
+        "name": "Authentication-derived identifiers",
+        "description": "Where an identifier is created on the basis of authentication data, such as contact details associated with online accounts you have created on websites or apps (e.g. e-mail address, phone number) or customer identifiers (e.g. identifier provided by your telecom operator), that identifier may be used to recognise you across websites, apps and devices when you are logged-in with the same contact details."
+      },
+      "6": {
+        "id": 6,
+        "name": "Browsing and interaction data",
+        "description": "Your online activity such as the websites you visit, apps you are using, the content you search for on this service,  or your interactions with content or ads, such as the number of times you have seen a specific content or ad or whether you clicked on it.\n"
+      },
+      "7": {
+        "id": 7,
+        "name": "User-provided data",
+        "description": "The information you may have provided by way of declaration via a form (e.g. feedback, a comment) or when creating an account (e.g. your age, your occupation)."
+      },
+      "8": {
+        "id": 8,
+        "name": "Non-precise location data",
+        "description": "An approximation of your location, expressed as an area with a radius of at least 500 meters. Your approximate location can be deduced from e.g. the IP address of your connection."
+      },
+      "9": {
+        "id": 9,
+        "name": "Precise location data",
+        "description": "Your precise location within a radius of less than 500 meters based on your GPS coordinates. It may be used only with your acceptance."
+      },
+      "10": {
+        "id": 10,
+        "name": "Users’ profiles",
+        "description": "Certain characteristics (e.g. your possible interests, your purchase intentions, your consumer profile) may be inferred or modeled from your previous online activity (e.g. the content you viewed or the service you used, your time spent on various online content and services) or the information you have provided (e.g. your age, your occupation)."
+      },
+      "11": {
+        "id": 11,
+        "name": "Privacy choices",
+        "description": "Your preferences regarding the processing of your data, based on the information you have received."
+      }
+    }
+  },
+  "es": {
+    "vendorListVersion": 40,
+    "lastUpdated": "2024-01-01T12:00:00Z",
+    "purposes": {
+      "1": {
+        "id": 1,
+        "name": "Almacenar la información en un dispositivo y/o acceder a ella\n\n",
+        "description": "Las cookies, los identificadores de dispositivos o los identificadores online de similares características (p. ej., los identificadores basados en inicio de sesión, los identificadores asignados aleatoriamente, los identificadores basados en la red), junto con otra información (p. ej., la información y el tipo del navegador, el idioma, el tamaño de la pantalla, las tecnologías compatibles, etc.), pueden almacenarse o leerse en tu dispositivo a fin de reconocerlo siempre que se conecte a una aplicación o a una página web para una o varias de los finalidades que se recogen en el presente texto.",
+        "illustrations": [
+          "La mayoría de las finalidades que se explican en este texto dependen del almacenamiento o del acceso a la información de tu dispositivo cuando utilizas una aplicación o visitas una página web. Por ejemplo, es posible que un proveedor o un editor/medio de comunicación necesiten almacenar una cookie en tu dispositivo la primera vez que visite una página web a fin de poder reconocer tu dispositivo las próximas veces que vuelva a visitarla (accediendo a esta cookie cada vez que lo haga)."
+        ]
+      },
+      "2": {
+        "id": 2,
+        "name": "Uso de datos limitados para seleccionar anuncios básicos",
+        "description": "La publicidad que se presenta en este servicio puede basarse en datos limitados, tales como la página web o la aplicación que esté utilizando, tu ubicación no precisa, el tipo de dispositivo o el contenido con el que está interactuando (o con el que ha interactuado) (por ejemplo, para limitar el número de veces que se  presenta un anuncio concreto).",
+        "illustrations": [
+          "Un fabricante de automóviles quiere promocionar sus vehículos eléctricos a los usuarios respetuosos con el medioambiente que viven en la ciudad fuera del horario laboral. La publicidad se presenta en una página con contenido relacionado (como un artículo sobre medidas contra el cambio climático) después de las 18:30 h a los usuarios cuya ubicación no precisa sugiera que se encuentran en una zona urbana.",
+          "Un importante fabricante de acuarelas quiere realizar una campaña publicitaria en Internet para dar a conocer su última gama de acuarelas con la finalidad de llegar tanto a artistas aficionados como a profesionales y, a su vez, se evite mostrar el anuncio junto a otro contenido no relacionado (por ejemplo, artículos sobre cómo pintar una casa). Se detectará y limitará el número de veces que se ha presentado el anuncio a fin de no mostrarlo demasiadas veces."
+        ]
+      },
+      "3": {
+        "id": 3,
+        "name": "Crear perfiles para publicidad personalizada\n",
+        "description": "La información sobre tu actividad en este servicio (por ejemplo, los formularios que rellenes, el contenido que estás consumiendo) puede almacenarse y combinarse con otra información que se tenga sobre tu persona o sobre usuarios similares(por ejemplo, información sobre tu actividad previa en este servicio y en otras páginas web o aplicaciones). Posteriormente, esto se utilizará para crear o mejorar un perfil sobre tu persona (que podría incluir posibles intereses y aspectos personales). Tu perfil puede utilizarse (también en un momento posterior) para mostrarte publicidad que pueda parecerte más relevante en función de tus posibles intereses, ya sea por parte nuestra o de terceros.",
+        "illustrations": [
+          "Si lees varios artículos sobre los mejores accesorios para bicicletas del mercado, esta información podría utilizarse para crear un perfil sobre tu interés en accesorios para bicicletas. Dicho perfil puede utilizarse o mejorarse en el futuro, a través de la misma página web/aplicación o de otra diferente para presentarte publicidad de accesorios para bicicleta de una marca específica. Si asimismo visitas un configurador para vehículos en la página web de un fabricante de coches de lujo, esta información podría combinarse con tu interés en las bicicletas para perfeccionar tu perfil y así asumir tu interés por accesorios de alta gama para bicicletas.",
+          "Una empresa de ropa quiere promocionar su nueva colección de ropa de alta gama para bebés. Esta se pone en contacto con una agencia que cuenta con una red de clientes con altos ingresos (como, por ejemplo, supermercados de alta gama) y pide a la agencia que cree perfiles de padres o parejas jóvenes cuyos grandes ingresos y reciente paternidad/maternidad puedan suponerse de modo que dichos perfiles puedan utilizarse posteriormente para mostrar publicidad dentro de aplicaciones de socios basadas en esos perfiles."
+        ]
+      },
+      "4": {
+        "id": 4,
+        "name": "Utilizar perfiles para seleccionar la publicidad personalizada\n",
+        "description": "La publicidad presentada en este servicio puede basarse en tus perfiles publicitarios, que pueden reflejar tuactividad en este servicio, en otras páginas web o aplicaciones (tales como los formularios con los que interactuas o el contenido que visualizas), tus posibles intereses y los aspectos personales.\n\n",
+        "illustrations": [
+          "Un minorista que opera en Internet quiere promocionar unas rebajas limitadas de zapatillas para correr. Quiere dirigir esa publicidad a los usuarios que en el pasado han buscado zapatillas para correr en su aplicación móvil. Con el fin de presentarte el anuncio correspondiente dentro de la aplicación. Las tecnologías de seguimiento pueden utilizarse para determinar tu uso previo de la aplicación móvil para buscar zapatillas para correr. \n\n",
+          "Un perfil que se haya creado para la presentación de publicidad personalizada en relación con una persona que haya buscado accesorios para bicicletas en una página web también puede utilizarse para mostrar el anuncio pertinente de accesorios para bicicletas en una aplicación móvil de otra organización."
+        ]
+      },
+      "5": {
+        "id": 5,
+        "name": "Crear un perfil para personalizar el contenido\n",
+        "description": "La información sobre tu actividad en este servicio (por ejemplo, los formularios con los que interactuas  o el contenido no publicitario que visualizas) puede almacenarse y combinarse con otra información relativa a tu persona (por ejemplo, tu actividad pasada en este servicio o en otras páginas web o aplicaciones) o sobre otros usuarios de similares características. Posteriormente, esto se utiliza para la creación o la mejora de tu perfil (que podría incluir, por ejemplo, tus posibles intereses y aspectos personales). Tu perfil se puede utilizar (también en el futuro) para presentar aquel contenido que parezca más relevante en función de tus posibles intereses; por ejemplo, adaptando el orden en el que se muestra el contenido para que sea aún más sencillo encontrar el que coincida con tus intereses.\n\n",
+        "illustrations": [
+          "En una plataforma de redes sociales has leído varios artículos sobre cómo construir una casa en un árbol  Esta información podría añadirse a un perfil determinado para indicar tuinterés en el contenido relacionado con la naturaleza, así como en los tutoriales de bricolaje (con el objetivo de permitir la personalización del contenido, de modo que en el futuro, por ejemplo, se te muestren más publicaciones de blogs y artículos sobre casas en árboles y cabañas de madera).",
+          "Has visualizado tres vídeos sobre la exploración espacial en diferentes aplicaciones de televisión. Una plataforma de noticias sin relación con las anteriores y con la que no has tenido contacto en el pasado crea un perfil basado en esa conducta de visualización marcando la exploración del espacio como un tema de tu posible interés para para otros vídeos."
+        ]
+      },
+      "6": {
+        "id": 6,
+        "name": "Uso de perfiles para la selección de contenido personalizado\n",
+        "description": "El contenido que se te presenta en este servicio puede basarse en un perfil de personalización de contenido, lo que puede reflejar tu actividad en este u otros servicios (por ejemplo, los formularios que envías o el contenido que visualizas), tus posibles intereses y aspectos personales. Un ejemplo de lo anterior sería la adaptación del orden en el que se te presenta el contenido, para que así te resulte más sencillo encontrar el contenido (no publicitario) que coincida con tus intereses.",
+        "illustrations": [
+          "Has leído unos artículos sobre comida vegetariana en una plataforma de redes sociales. Posteriormente has usado una aplicación de cocina de una empresa sin relación con la anterior plataforma. El perfil que se ha creado sobre tu persona en la plataforma de redes sociales se utilizará para mostrarte recetas vegetarianas en la pantalla de bienvenida de la aplicación de cocina. ",
+          "Has visualizado tres vídeos sobre remo en páginas web diferentes. Una plataforma de video, no relacionada con la página web en la que has visualizado los vídeos sobre remo, pero basandose en el perfil creado cuando visistaste dicha web, podrá recomendarte otros 5 vídeos sobre remo cuando utilices la plataforma de video a través de tu televisor .\n\n"
+        ]
+      },
+      "7": {
+        "id": 7,
+        "name": "Medir el rendimiento de la publicidad",
+        "description": "La información sobre qué publicidad se te presenta y sobre la forma en que interactúas con ella puede utilizarse para determinar lo bien que ha funcionado un anuncio en tu caso o en el de otros usuarios y si se han alcanzado los objetivos publicitarios. Por ejemplo, si has visualizado un anuncio, si has hecho clic sobre el mismo, si eso te ha llevado posteriormente a comprar un producto o a visitar una página web, etc. Esto resulta muy útil para comprender la relevancia de las campañas publicitarias.",
+        "illustrations": [
+          "Has hecho clic en un anuncio en una página web/medio de comunicación sobre descuentos realizados por una tienda online con motivo del “Black Friday” online y posteriormente has comprado un producto. Ese clic que has hecho estará vinculado a esa compra. Tu interacción y la de otros usuarios se medirán para saber el número de clics en el anuncio que han terminado en compra.",
+          "Usted es una de las pocas personas que ha hecho clic en un anuncio que promociona un descuento por el “Día de la madre”de una tienda de regalos en Internet dentro de la aplicación de una web/medio de comunicación.\nEl medio de comunicación quiere contar con informes para comprender con qué frecuencia usted y otros usuarios han visualizado o han hecho clic en un anuncio determinado dentro de la aplicación y, en particular, en el anuncio del “Día de la madre” para así ayudar al medio de comunicación y a sus socios (por ejemplo, las agencias de publicidad) a optimizar la ubicación de los anuncios.\n\n"
+        ]
+      },
+      "8": {
+        "id": 8,
+        "name": "Medir el rendimiento del contenido",
+        "description": "La información sobre qué contenido se te presenta y sobre la forma en que interactúas con él puede utilizarse para determinar, por ejemplo, si el contenido (no publicitario) ha llegado a su público previsto y ha coincidido con sus intereses.  Por ejemplo, si hasleído un artículo, si has visualizado un vídeo, si has escuchado un “pódcast” o si has consultado la descripción de un producto, cuánto tiempo has pasado en esos servicios y en las páginas web que has visitado, etc. Esto resulta muy útil para comprender la relevancia del contenido (no publicitario) que se te muestra.",
+        "illustrations": [
+          "Has leído una publicación en un blog sobre senderismo desde la aplicación móvil de un editor/medio de comunicación y has seguido un enlace a una publicación recomendada y relacionada con esa publicación. Tus interacciones se registrarán para indicar que la publicación inicial sobre senderismo te ha resultado útil y que la misma ha tenido éxito a la hora de ganarse tu interés en la publicación relacionada. Esto se medirá para saber si deben publicarse más contenidos sobre senderismo en el futuro y para saber dónde emplazarlos en la pantalla de inicio de la aplicación móvil.",
+          "Se te ha presentado un vídeo sobre tendencias de moda, pero tu y otros usuarios habéis dejado de visualizarlo transcurridos unos 30 segundos. Esta información se utilizará para valorar la duración óptima de los futuros vídeos sobre tendencias de moda."
+        ]
+      },
+      "9": {
+        "id": 9,
+        "name": "Comprender al público a través de estadísticas o a través de la combinación de datos procedentes de diferentes fuentes",
+        "description": "Se pueden generar informes basados en la combinación de conjuntos de datos (como perfiles de usuario, estadísticas, estudios de mercado, datos analíticos) respecto a tus interacciones y las de otros usuarios con el contenido publicitario (o no publicitario) para identificar las características comunes (por ejemplo, para determinar qué público objetivo es más receptivo a una campaña publicitaria o a ciertos contenidos).\n\n",
+        "illustrations": [
+          "El propietario de una librería que opera en Internet quiere contar con informes comerciales que muestren la proporción de visitantes que han visitado su página y se han ido sin comprar nada o que han consultado y comprado la última autobiografía publicada, así como la edad media y la distribución de género para cada uno de los dos grupos de visitantes. Posteriormente, los datos relacionados con la navegación que realizas en su página y sobre tus características personales se utilizan y combinan con otros datos para crear estas estadísticas.\n\n",
+          "Un anunciante quiere tener una mayor comprensión del tipo de público que interactúa con sus anuncios. Por ello, acude a un instituto de investigación con el fin de comparar las características de los usuarios que han interactuado con el anuncio con los atributos típicos de usuarios de plataformas similares en diferentes dispositivos. Esta comparación revela al anunciante que su público publicitario está accediendo principalmente a los anuncios a través de dispositivos móviles y que es probable que su rango de edad se encuentre entre los 45 y los 60 años.\n\n"
+        ]
+      },
+      "10": {
+        "id": 10,
+        "name": "Desarrollo y mejora de los servicios",
+        "description": "La información sobre tu actividad en este servicio, como tu interacción con los anuncios o con el contenido, puede resultar muy útil para mejorar productos y  servicios, así como para crear otros nuevos en base a las interacciones de los usuarios, el tipo de audiencia, etc. Esta finalidad específica no incluye el desarrollo ni la mejora de los perfiles de usuario y de identificadores.",
+        "illustrations": [
+          "Una plataforma tecnológica que opera con un proveedor de redes sociales observa un crecimiento en los usuarios de aplicaciones móviles y se da cuenta de que, en funciónde sus perfiles, muchos de ellos se conectan a través de conexiones móviles. La plataforma utiliza una tecnología nueva para mostrar anuncios con un formato óptimo para los dispositivos móviles y con un ancho de banda bajo a fin de mejorar su rendimiento.",
+          "Un anunciante está buscando una forma de mostrar anuncios en un nuevo tipo de dispositivo.\nEl anunciante recopila información sobre la forma en que los usuarios interactúan con este nuevo tipo de dispositivo con el fin de determinar si puede crear un nuevo mecanismo para mostrar la publicidad en ese tipo de dispositivo."
+        ]
+      },
+      "11": {
+        "id": 11,
+        "name": "Uso de datos limitados con el objetivo de seleccionar el contenido",
+        "description": "El contenido que se presenta en este servicio puede basarse en datos limitados,  como por ejemplo la página web o la aplicación que esté utilizando, tu ubicación no precisa, el tipo de dispositivo o el contenido con el que estás interactuando (o con el que has interactuado) (por ejemplo, para limitar el número de veces que se te presenta un vídeo o un artículo en concreto).",
+        "illustrations": [
+          "Una revista de viajes, para mejorar las experiencias de viaje en el extranjero, ha publicado en su página web un artículo sobre  nuevos cursos que ofrece una escuela de idiomas por Internet. Las publicaciones del blog de la escuela se insertan directamente en la parte inferior de la página y se seleccionan en función de la ubicación no precisa del usuario (por ejemplo, publicaciones del blog que explican el plan de estudios del curso para idiomas diferentes al del país en el que este te encuentras).",
+          "Una aplicación móvil de noticias deportivas ha iniciado una nueva sección de artículos sobre los últimos partidos de fútbol. Cada artículo incluye vídeos alojados por una plataforma de streaming independiente que muestra los aspectos destacados de cada partido. Si adelantas un vídeo, esta información puede utilizarse para determinar que el siguiente vídeo a reproducir sea de menor duración. \n\n"
+        ]
+      }
+    },
+    "specialPurposes": {
+      "1": {
+        "id": 1,
+        "name": "Garantizar la seguridad, evitar y detectar fraudes, y eliminar fallos",
+        "description": "Tus datos pueden utilizarse para supervisar y evitar las actividades inusuales y potencialmente fraudulentas (por ejemplo, en relación con la publicidad, o con actividad realizada por bots), así como para asegurar que los sistemas y los procesos funcionen de forma correcta y segura. Asimismo, se puede utilizar para corregir cualquier problema que tú, el editor/medio de comunicación o el anunciante podáis encontraros a la hora de la entrega del contenido y los anuncios, así como en tu interacción con ellos.",
+        "illustrations": [
+          "Un intermediario publicitario entrega anuncios de varios anunciantes a su red de páginas web asociadas. Este observa un gran aumento en el número de clics en anuncios relacionados con un anunciante y utiliza datos sobre la fuente de los clics para determinar que el 80 % de ellos provienen de bots y no de humanos."
+        ]
+      },
+      "2": {
+        "id": 2,
+        "name": "Ofrecer y presentar publicidad y contenido\n",
+        "description": "Cierta información (como una dirección IP o las capacidades del dispositivo) se utiliza para garantizar la compatibilidad técnica del contenido o de la publicidad, así como para facilitar la transmisión del contenido o del anuncio a tu dispositivo.",
+        "illustrations": [
+          "Hacer clic en el enlace de un artículo normalmente puede redirigirte a otra página o a otra parte del artículo. Para lograrlo: 1.°) Tu navegador envía una solicitud a un servidor vinculado a la página web. 2.°) El servidor responde, redirigiéndote al artículo, o parte del mismo, que has solicitado. Esa respuesta utiliza información técnica que se incluye de forma automática en la solicitud enviada por tu dispositivo a través del navegador. Dicha información técnica se utiliza con la finalidad de mostrar correctamente la información o imágenes que forman parte del artículo solicitado. Técnicamente, dicho intercambio de información es necesario para mostrar el contenido que visualizas tú pantalla.\n\n"
+        ]
+      }
+    },
+    "features": {
+      "1": {
+        "id": 1,
+        "name": "Cotejo y combinación de datos procedentes de otras fuentes de información",
+        "description": "La información en relación con tu actividad en este servicio puede cotejarse y combinarse con otra información sobre tu persona procedente de diversas fuentes (por ejemplo, tu actividad en un servicio en línea independiente, tu uso de una tarjeta de fidelización en la tienda o tus respuestas a una encuesta) en apoyo de los fines que se explican en este documento.",
+        "illustrations": []
+      },
+      "2": {
+        "id": 2,
+        "name": "Vincular diferentes dispositivos\n",
+        "description": "En apoyo de las finalidades que se explican en este documento, tú dispositivo podría considerarse como vinculado a otros dispositivos que te pertenezcan o sean de tu hogar(por ejemplo, porque ha iniciado sesión en el mismo servicio tanto desde tu teléfono como desde tu ordenador, o porque podrías haber utilizado la misma conexión a Internet en ambos dispositivos).",
+        "illustrations": []
+      },
+      "3": {
+        "id": 3,
+        "name": "Identificación de dispositivos en función de la información transmitida de forma automática",
+        "description": "Tu dispositivo podría distinguirse de otros en función de la información que envía de forma automática al acceder a Internet (por ejemplo, la dirección IP de tu conexión a Internet o el tipo de navegador que estás utilizando) en apoyo de los fines que se exponen en este documento.",
+        "illustrations": []
+      }
+    },
+    "specialFeatures": {
+      "1": {
+        "id": 1,
+        "name": "Utilizar datos de localización geográfica precisa",
+        "description": "Al contar con tu aprobación, tu ubicación exacta (dentro de un radio inferior a 500 metros) podrá utilizarse para apoyar las finalidades que se explican en este documento.",
+        "illustrations": []
+      },
+      "2": {
+        "id": 2,
+        "name": "Analizar activamente las características del dispositivo para su identificación",
+        "description": "Con tu aceptación, se pueden solicitar y utilizar ciertas características específicas de tu dispositivo para distinguirlo de otros (por ejemplo, las fuentes o complementos instalados y la resolución de su pantalla) en apoyo de las finalidades que se explican en este documento.",
+        "illustrations": []
+      }
+    },
+    "stacks": {
+      "1": {
+        "id": 1,
+        "purposes": [],
+        "specialFeatures": [1, 2],
+        "name": "Datos de localización geográfica precisa e identificación mediante análisis de dispositivos\n",
+        "description": "Se puede utilizar la localización geográfica precisa y la información sobre las características del dispositivo"
+      },
+      "2": {
+        "id": 2,
+        "purposes": [2, 7],
+        "specialFeatures": [],
+        "name": "Publicidad basada en datos limitados y medición publicitaria",
+        "description": "La publicidad puede presentarse en función de datos limitados. El rendimiento de la publicidad puede medirse.\n\n"
+      },
+      "3": {
+        "id": 3,
+        "purposes": [2, 3, 4],
+        "specialFeatures": [],
+        "name": "Publicidad personalizada \n",
+        "description": "La publicidad puede personalizarse basándose en tu perfil. Tu actividad en este servicio puede utilizarse para crear o mejorar un perfil sobre tu persona para recibir publicidad personalizada.\n"
+      },
+      "4": {
+        "id": 4,
+        "purposes": [2, 7, 9],
+        "specialFeatures": [],
+        "name": "Publicidad basada en datos limitados, medición publicitaria e investigación de audiencias\n",
+        "description": "La publicidad puede presentarse en función de datos limitados. El rendimiento de la publicidad puede medirse. Los informes pueden generarse en función de tu actividad y la de otros usuarios."
+      },
+      "5": {
+        "id": 5,
+        "purposes": [2, 3, 7],
+        "specialFeatures": [],
+        "name": " Publicidad basada en datos limitados, perfil publicitario personalizado y medición publicitaria\n\n",
+        "description": "La publicidad puede presentarse en función de datos limitados. Tu actividad en este servicio puede utilizarse para crear o mejorar un perfil sobre tu persona para recibir publicidad personalizada. El rendimiento de la publicidad puede medirse."
+      },
+      "6": {
+        "id": 6,
+        "purposes": [2, 4, 7],
+        "specialFeatures": [],
+        "name": "Selección de publicidad personalizada y medición publicitaria",
+        "description": "La publicidad puede personalizarse basándose en tu perfil. El rendimiento de la publicidad puede medirse."
+      },
+      "7": {
+        "id": 7,
+        "purposes": [2, 4, 7, 9],
+        "specialFeatures": [],
+        "name": "Selección de publicidad personalizada, medición publicitaria e investigación de audiencia",
+        "description": "La publicidad puede personalizarse basándose en tu perfil. El rendimiento de la publicidad puede medirse. Los informes pueden generarse en función de tu actividad y la de otros usuarios."
+      },
+      "8": {
+        "id": 8,
+        "purposes": [2, 3, 4, 7],
+        "specialFeatures": [],
+        "name": "Publicidad personalizada y medición publicitaria",
+        "description": "La publicidad puede personalizarse basándose en tu perfil. Tu actividad en este servicio puede utilizarse para crear o mejorar un perfil sobre tu persona para recibir publicidad personalizada. El rendimiento de la publicidad puede medirse.\n"
+      },
+      "9": {
+        "id": 9,
+        "purposes": [2, 3, 4, 7, 9],
+        "specialFeatures": [],
+        "name": "Publicidad personalizada, medición publicitaria e investigación de audiencia",
+        "description": "La publicidad puede personalizarse basándose en tu perfil. Tu actividad en este servicio puede utilizarse para crear o mejorar un perfil sobre tu persona para recibir publicidad personalizada. El rendimiento de la publicidad puede medirse. Los informes pueden generarse en función de tu actividad y la de otros usuarios."
+      },
+      "10": {
+        "id": 10,
+        "purposes": [3, 4],
+        "specialFeatures": [],
+        "name": "Publicidad personalizada",
+        "description": "La publicidad puede personalizarse basándose en tu perfil. Tu actividad en este servicio puede utilizarse para crear o mejorar un perfil sobre tu persona para recibir publicidad personalizada."
+      },
+      "11": {
+        "id": 11,
+        "purposes": [5, 6],
+        "specialFeatures": [],
+        "name": "Contenido personalizado",
+        "description": "El contenido puede personalizarse basándose en tu perfil. Tu actividad en este servicio puede utilizarse para crear o mejorar un perfil sobre tu persona para recibir contenido personalizado.\n\n"
+      },
+      "12": {
+        "id": 12,
+        "purposes": [6, 8, 11],
+        "specialFeatures": [],
+        "name": "Selección de contenido personalizado y medición del contenido",
+        "description": "El contenido puede personalizarse basándose en tu perfil. Se puede medir el rendimiento del contenido.\n"
+      },
+      "13": {
+        "id": 13,
+        "purposes": [6, 8, 9, 11],
+        "specialFeatures": [],
+        "name": "Selección del contenido personalizado, medición del contenido e información sobre la audiencia\n",
+        "description": "El contenido puede personalizarse basándose en tu perfil. Se puede medir el rendimiento del contenido. Los informes pueden generarse en función de tu actividad y de la actividad de otros usuarios. El contenido puede personalizarse en función de tu perfil. Se puede medir el rendimiento del contenido. Los informes pueden generarse en función de tu actividad y la de otros usuarios. "
+      },
+      "14": {
+        "id": 14,
+        "purposes": [5, 6, 8, 11],
+        "specialFeatures": [],
+        "name": "Contenido personalizado y medición del contenido",
+        "description": "El contenido puede personalizarse basándose en tu perfil. Tu actividad en este servicio puede utilizarse para crear o mejorar un perfil sobre tu persona para recibir contenido personalizado. Se puede medir el rendimiento del contenido."
+      },
+      "15": {
+        "id": 15,
+        "purposes": [5, 6, 8, 9, 11],
+        "specialFeatures": [],
+        "name": "Contenido personalizado, medición del contenido e información sobre la audiencia",
+        "description": "El contenido puede personalizarse basándose en tu perfil. tu actividad en este servicio puede utilizarse para crear o mejorar un perfil sobre tu persona para recibir contenido personalizado. Se puede medir el rendimiento del contenido. Los informes pueden generarse en función de tu actividad y la de otros usuarios."
+      },
+      "16": {
+        "id": 16,
+        "purposes": [5, 6, 8, 9, 10, 11],
+        "specialFeatures": [],
+        "name": "Contenido personalizado, medición del contenido, información sobre la audiencia y desarrollo de servicios",
+        "description": "El contenido puede personalizarse basándose en tu perfil. Tu actividad en este servicio puede utilizarse para crear o mejorar un perfil sobre tu persona para recibir contenido personalizado. Se puede medir el rendimiento del contenido. Los informes pueden generarse en función de tu actividad y la de otros usuarios. tu actividad en este servicio puede ayudar a desarrollar y mejorar productos y servicios."
+      },
+      "17": {
+        "id": 17,
+        "purposes": [7, 8, 9],
+        "specialFeatures": [],
+        "name": "Medición de publicidad y contenido e investigación de audiencia",
+        "description": "El rendimiento de la publicidad y del contenido puede medirse. Los informes pueden generarse en función de tu actividad y la de otros usuarios."
+      },
+      "18": {
+        "id": 18,
+        "purposes": [7, 8],
+        "specialFeatures": [],
+        "name": "Medición de la publicidad y del contenido\n\n",
+        "description": "El rendimiento de la publicidad y del contenido puede  medirse."
+      },
+      "19": {
+        "id": 19,
+        "purposes": [7, 9],
+        "specialFeatures": [],
+        "name": "Medición publicitaria e investigación de audiencia",
+        "description": "La publicidad puede medirse. Los informes pueden generarse en función de tu actividad y la de otros usuarios."
+      },
+      "20": {
+        "id": 20,
+        "purposes": [7, 8, 9, 10],
+        "specialFeatures": [],
+        "name": "Medición de la publicidad y del contenido, investigación de audiencia y desarrollo de servicios",
+        "description": "El rendimiento de la publicidad y del contenido puede medirse. Tu actividad en este servicio puede ayudar a desarrollar y mejorar productos y servicios. Los informes pueden generarse en función de tu actividad y la de otros usuarios. \n"
+      },
+      "21": {
+        "id": 21,
+        "purposes": [8, 9, 10],
+        "specialFeatures": [],
+        "name": "Medición del contenido, investigación de audiencia y desarrollo de servicios.",
+        "description": "Se puede medir el rendimiento del contenido. Los informes pueden generarse en función de tu actividad y la de otros usuarios. Tu actividad en este servicio puede ayudar a desarrollar y mejorar productos y servicios."
+      },
+      "22": {
+        "id": 22,
+        "purposes": [8, 10],
+        "specialFeatures": [],
+        "name": "Medición del contenido y desarrollo de servicios",
+        "description": "Se puede medir el rendimiento del contenido. Tu actividad en este servicio puede ayudar a desarrollar y mejorar productos y servicios.\n"
+      },
+      "23": {
+        "id": 23,
+        "purposes": [2, 4, 6, 7, 8, 11],
+        "specialFeatures": [],
+        "name": "Selección de la publicidad y del contenido personalizados, medición de la publicidad y del contenido",
+        "description": "La publicidad y el contenido pueden personalizarse basándose en tu perfil. El rendimiento de la publicidad y del contenido puede  medirse.\n"
+      },
+      "24": {
+        "id": 24,
+        "purposes": [2, 4, 6, 7, 8, 9, 11],
+        "specialFeatures": [],
+        "name": "Selección de la publicidad y del contenido personalizados, medición de la publicidad y del contenido, e investigación de audiencia",
+        "description": "La publicidad y el contenido pueden personalizarse basándose en tu perfil. El rendimiento de la publicidad y del contenido puede  medirse. Los informes pueden generarse en función de tu actividad y la de otros usuarios. Los datos pueden utilizarse para elaborar o mejorar la experiencia del usuario, los sistemas y el software."
+      },
+      "25": {
+        "id": 25,
+        "purposes": [2, 3, 4, 5, 6, 7, 8, 11],
+        "specialFeatures": [],
+        "name": "Publicidad y contenido personalizados, medición de anuncios y del contenido\n",
+        "description": "La publicidad y el contenido pueden personalizarse basándose en tu perfil. Tu actividad en este servicio puede utilizarse para crear o mejorar un perfil sobre tu persona para recibir publicidad o contenido personalizados. El rendimiento de la publicidad y del contenido puede  medirse."
+      },
+      "26": {
+        "id": 26,
+        "purposes": [2, 3, 4, 5, 6, 7, 8, 9, 11],
+        "specialFeatures": [],
+        "name": " Publicidad y contenido personalizados, medición de anuncios y del contenido, e investigación de audiencia\n",
+        "description": "La publicidad y el contenido pueden personalizarse basándose en tu perfil. Tu actividad en este servicio puede utilizarse para crear o mejorar un perfil sobre tu persona para recibir publicidad o contenido personalizados. El rendimiento de la publicidad y del contenido puede  medirse. Los informes pueden generarse en función de tu actividad y la de otros usuarios. \n"
+      },
+      "27": {
+        "id": 27,
+        "purposes": [3, 5],
+        "specialFeatures": [],
+        "name": "Publicidad personalizada y perfil de contenido\n",
+        "description": "La publicidad y el contenido pueden personalizarse basándose en tu perfil. Tu actividad en este servicio puede utilizarse para crear o mejorar un perfil sobre tu persona para recibir publicidad o contenido personalizados. El rendimiento de la publicidad y del contenido puede  medirse."
+      },
+      "28": {
+        "id": 28,
+        "purposes": [2, 4, 6, 11],
+        "specialFeatures": [],
+        "name": "Selección de publicidad y contenido personalizados\n",
+        "description": "La publicidad y el contenido pueden personalizarse basándose en tu perfil."
+      },
+      "29": {
+        "id": 29,
+        "purposes": [2, 7, 8, 9],
+        "specialFeatures": [],
+        "name": "Publicidad basada en datos limitados, medición de los anuncios y del contenido, e investigación de audiencia\n\n",
+        "description": "La publicidad puede presentarse en función de datos limitados. El rendimiento de la publicidad y del contenido puede  medirse. Los informes pueden generarse en función de tu actividad y la de otros usuarios. \n"
+      },
+      "30": {
+        "id": 30,
+        "purposes": [2, 4, 5, 6, 7, 8, 9, 11],
+        "specialFeatures": [],
+        "name": "Selección de la publicidad y del contenido personalizados, medición de la publicidad y del contenido, e investigación de audiencia",
+        "description": "La publicidad y el contenido pueden personalizarse basándose en tu perfil. Tu actividad en este servicio puede utilizarse para crear o mejorar un perfil sobre tu persona para recibir publicidad o contenido personalizados. El rendimiento de la publicidad y del contenido puede  medirse. Los informes pueden generarse en función de tu actividad y la de otros usuarios."
+      },
+      "31": {
+        "id": 31,
+        "purposes": [2, 4, 5, 6, 7, 8, 9, 10, 11],
+        "specialFeatures": [],
+        "name": "Selección de la publicidad y del contenido personalizados, medición de la publicidad y del contenido, investigación de audiencia y desarrollo de servicios",
+        "description": "La publicidad y el contenido pueden personalizarse basándose en tu perfil. Tu actividad en este servicio puede utilizarse para crear o mejorar un perfil sobre tu persona para recibir contenido personalizado. El rendimiento de la publicidad y del contenido puede  medirse. Los informes pueden generarse en función de tu actividad y la de otros usuarios. Tu actividad en este servicio puede ayudar a desarrollar y mejorar productos y servicios.\n"
+      },
+      "32": {
+        "id": 32,
+        "purposes": [2, 5, 6, 7, 8, 9, 11],
+        "specialFeatures": [],
+        "name": "Publicidad basada en datos limitados, contenido personalizado, medición de la publicidad y del contenido, e investigación de audiencia\n",
+        "description": "La publicidad puede presentarse en función de datos limitados. El contenido puede personalizarse basándose en tu perfil. Tu actividad en este servicio puede utilizarse para crear o mejorar un perfil sobre tu persona para recibir contenido personalizado. El rendimiento de la publicidad y del contenido puede medirse. Los informes pueden generarse en función de tu actividad y la de otros usuarios. \n"
+      },
+      "33": {
+        "id": 33,
+        "purposes": [2, 5, 6, 7, 8, 9, 10, 11],
+        "specialFeatures": [],
+        "name": "Publicidad basada en datos limitados, contenido personalizado, medición de la publicidad y del contenido, investigación de audiencia y desarrollo de servicios\n",
+        "description": "La publicidad puede presentarse en función de datos limitados. El contenido puede personalizarse basándose en tu perfil. Tu actividad en este servicio puede utilizarse para crear o mejorar un perfil sobre tu persona para recibir contenido personalizado. El rendimiento de la publicidad y del contenido puede medirse. Los informes pueden generarse en función de tu actividad y la de otros usuarios. Tu actividad en este servicio puede ayudar a desarrollar y mejorar productos y servicios."
+      },
+      "34": {
+        "id": 34,
+        "purposes": [2, 5, 6, 8, 9, 11],
+        "specialFeatures": [],
+        "name": "Publicidad basada en datos limitados, contenido personalizado, medición de contenido e investigación de audiencia",
+        "description": "La publicidad puede presentarse en función de datos limitados. El contenido puede personalizarse basándose en tu perfil. Tu actividad en este servicio puede utilizarse para crear o mejorar un perfil sobre tu persona para recibir contenido personalizado. El rendimiento de la publicidad y del contenido puede medirse. Los informes pueden generarse en función de tu actividad y la de otros usuarios."
+      },
+      "35": {
+        "id": 35,
+        "purposes": [2, 5, 6, 8, 9, 10, 11],
+        "specialFeatures": [],
+        "name": "Publicidad basada en datos limitados, contenido personalizado, medición de contenido, investigación de audiencia y desarrollo de servicios\n",
+        "description": "La publicidad puede presentarse en función de datos limitados. El contenido puede personalizarse basándose en tu perfil. Tu actividad en este servicio puede utilizarse para crear o mejorar un perfil sobre tu persona para recibir contenido personalizado. Se puede medir el rendimiento del contenido. Los informes pueden generarse en función de tu actividad y la de otros usuarios. Tu actividad en este servicio puede ayudar a desarrollar y mejorar productos y servicios.\n"
+      },
+      "36": {
+        "id": 36,
+        "purposes": [2, 5, 6, 7, 11],
+        "specialFeatures": [],
+        "name": "Publicidad basada en datos limitados, contenido personalizado y medición publicitaria\n",
+        "description": "La publicidad puede presentarse en función de datos limitados. El contenido puede personalizarse basándose en tu perfil. Tu actividad en este servicio puede utilizarse para crear o mejorar un perfil sobre tu persona para recibir contenido personalizado. El rendimiento de la publicidad puede medirse.\n"
+      },
+      "37": {
+        "id": 37,
+        "purposes": [2, 5, 6, 7, 10, 11],
+        "specialFeatures": [],
+        "name": "Publicidad basada en datos limitados, contenido personalizado, medición de la publicidad y desarrollo de servicios\n",
+        "description": "La publicidad puede presentarse en función de datos limitados. El contenido puede personalizarse basándose en tu perfil. Tu actividad en este servicio puede utilizarse para crear o mejorar un perfil sobre tu persona para recibir contenido personalizado. El rendimiento de la publicidad puede medirse. Tu actividad en este servicio puede ayudar a desarrollar y mejorar productos y servicios.\n"
+      },
+      "38": {
+        "id": 38,
+        "purposes": [2, 3, 4, 7, 10],
+        "specialFeatures": [],
+        "name": "Publicidad personalizada, medición de la publicidad y desarrollo de servicios\n",
+        "description": "La publicidad puede personalizarse en función de tu perfil. Tu actividad en este servicio puede utilizarse para crear o mejorar un perfil sobre tu persona para recibir publicidad personalizada. El rendimiento de la publicidad puede medirse. Tu actividad en este servicio puede ayudar a desarrollar y mejorar productos y servicios."
+      },
+      "39": {
+        "id": 39,
+        "purposes": [2, 3, 4, 7, 9, 10],
+        "specialFeatures": [],
+        "name": "Publicidad personalizada, medición de publicidad, investigación de audiencia y desarrollo de servicios\n",
+        "description": "La publicidad puede personalizarse basándose en tu perfil. Tu actividad en este servicio puede utilizarse para crear o mejorar un perfil sobre tu persona para recibir publicidad personalizada. El rendimiento de la publicidad puede medirse. Los informes pueden generarse en función de tu actividad y la de otros usuarios. Tu actividad en este servicio puede ayudar a desarrollar y mejorar productos y servicios."
+      },
+      "40": {
+        "id": 40,
+        "purposes": [2, 3, 4, 7, 8, 9, 10],
+        "specialFeatures": [],
+        "name": "Publicidad personalizada, medición de contenido y publicidad, investigación de audiencia y desarrollo de servicios",
+        "description": "La publicidad puede personalizarse en función de tu perfil. Tu actividad en este servicio puede utilizarse para crear o mejorar un perfil sobre tu persona para recibir publicidad personalizada. El rendimiento de la publicidad y del contenido puede medirse. Los informes pueden generarse en función de tu actividad y la de otros usuarios. Tu actividad en este servicio puede ayudar a desarrollar y mejorar productos y servicios.\n"
+      },
+      "41": {
+        "id": 41,
+        "purposes": [2, 3, 4, 6, 7, 8, 9, 10, 11],
+        "specialFeatures": [],
+        "name": "Publicidad personalizada, selección de contenido personalizado, medición de la publicidad y del contenido, investigación de audiencia y desarrollo de servicios\n",
+        "description": "La publicidad y el contenido pueden personalizarse basándose en tu perfil. Tu actividad en este servicio puede utilizarse para crear o mejorar un perfil sobre tu persona para recibir publicidad personalizada. El rendimiento de la publicidad y del contenido puede medirse. Los informes pueden generarse en función de tu actividad y la de otros usuarios. Tu actividad en este servicio puede ayudar a desarrollar y mejorar productos y servicios.\n"
+      },
+      "42": {
+        "id": 42,
+        "purposes": [2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+        "specialFeatures": [],
+        "name": "Publicidad y contenido personalizados, medición de publicidad y contenido, investigación de audiencia y desarrollo de servicios\n",
+        "description": "La publicidad y el contenido pueden personalizarse basándose en tu perfil. Tu actividad en este servicio puede utilizarse para crear o mejorar un perfil sobre tu persona para recibir publicidad o contenido personalizados. El rendimiento de la publicidad y del contenido puede medirse. Los informes pueden generarse en función de tu actividad y la de otros usuarios. Tu actividad en este servicio puede ayudar a desarrollar y mejorar productos y servicios."
+      },
+      "43": {
+        "id": 43,
+        "purposes": [8, 11],
+        "specialFeatures": [],
+        "name": "Contenido basado en datos limitados y medición del contenido",
+        "description": "El contenido se puede seleccionar en función de datos limitados. Se puede medir el rendimiento del contenido."
+      },
+      "44": {
+        "id": 44,
+        "purposes": [5, 6, 11],
+        "specialFeatures": [],
+        "name": "Contenido personalizado",
+        "description": "El contenido puede personalizarse basándose en tu perfil. Tu actividad en este servicio puede utilizarse para crear o mejorar un perfil sobre tu persona para recibir contenido personalizado."
+      },
+      "45": {
+        "id": 45,
+        "purposes": [2, 7, 9, 10],
+        "specialFeatures": [],
+        "name": "Publicidad basada en datos limitados, medición de la publicidad, investigación de audiencia y desarrollo de servicios",
+        "description": "La publicidad puede presentarse en función de datos limitados. El rendimiento de la publicidad puede medirse. Los informes se pueden generar en función de tu actividad y la de otros. Tu actividad en este servicio puede ayudar a desarrollar y mejorar productos y servicios."
+      }
+    },
+    "dataCategories": {
+      "1": {
+        "id": 1,
+        "name": "Direcciones IP",
+        "description": "La dirección IP es un número asignado por el proveedor de servicios de Internet a cualquier conexión a Internet. No es siempre un número específico de tu dispositivo y ni tampoco un identificador estable. Se utiliza para enviar información por Internet y mostrar contenido online (incluidos anuncios) en el dispositivo por el que estás conectado a internet."
+      },
+      "2": {
+        "id": 2,
+        "name": "Características del dispositivo",
+        "description": "Las características técnicas del dispositivo que está utilizando que no son únicas para tu persona, como el idioma, la zona horaria o el sistema operativo."
+      },
+      "3": {
+        "id": 3,
+        "name": "Identificadores del dispositivo",
+        "description": "Un identificador de dispositivo es una cadena única de caracteres asignados a tu dispositivo o navegador mediante una cookie u otras tecnologías de almacenamiento. Se puede crear o acceder a él para reconocer tu dispositivo, p. ej., en páginas web del mismo sitio o en múltiples sitios o aplicaciones."
+      },
+      "4": {
+        "id": 4,
+        "name": "Identificadores probabilísticos",
+        "description": "Se puede crear un identificador probabilístico combinando las características asociadas con tu dispositivo (el tipo de navegador o sistema operativo utilizado) y la dirección IP de la conexión a Internet. Si das tu consentimiento, también se podrán combinar otras características (p. ej., la fuente instalada o la resolución de pantalla) para mejorar la precisión del identificador probabilístico. Este identificador se considera «probabilístico» porque varios dispositivos pueden compartir las mismas características y conexión a Internet. Se puede emplear para reconocer tu dispositivo, p. ej., en páginas web del mismo sitio o en múltiples sitios o aplicaciones."
+      },
+      "5": {
+        "id": 5,
+        "name": "Identificadores determinísticos (derivados de la autenticación)",
+        "description": "Cuando se crea un identificador en función de unos datos de autenticación, como los datos de contacto asociados a cuentas que haya creado en sitios web o aplicaciones (p. ej., la dirección de correo electrónico o el número de teléfono) o identificadores de clientes (p. ej., el identificador proporcionado por tu operador de telecomunicaciones), ese identificador puede utilizarse para reconocerte en sitios web, aplicaciones y dispositivos cuando inicie sesión con los mismos datos de contacto."
+      },
+      "6": {
+        "id": 6,
+        "name": "Datos de navegación e interacción",
+        "description": "Tu actividad en línea, como los sitios web que visita, las aplicaciones que está utilizando, el contenido que busca en este servicio, o tus interacciones con contenido o anuncios, como el número de veces que has visto un contenido o anuncio específico, o si has hecho clic en él."
+      },
+      "7": {
+        "id": 7,
+        "name": "Datos declarativos",
+        "description": "La información que puede haber proporcionado mediante una declaración a través de un formulario (p. ej., comentarios) o al crear una cuenta (p. ej., tu edad o profesión)."
+      },
+      "8": {
+        "id": 8,
+        "name": "Datos de localización geográfica no precisa",
+        "description": "Una aproximación de tu ubicación que se muestra como una zona con un radio de, al menos, 500 metros. Tu ubicación aproximada puede deducirse de, por ejemplo, la dirección IP de tu conexión."
+      },
+      "9": {
+        "id": 9,
+        "name": "Datos de localización geográfica precisa",
+        "description": "Tu ubicación precisa dentro de un radio inferior a 500 metros en función de tus coordenadas GPS. Solo se podrá utilizar si otorgas tu consentimiento."
+      },
+      "10": {
+        "id": 10,
+        "name": "Inferencias o segmentación de audiencia",
+        "description": "Ciertas características (p. ej., tus intereses, intenciones de compra y el perfil de consumidor) pueden inferirse o crearse a partir de tu actividad online anterior (p. ej., el contenido que has visto o el servicio que utilizó, el tiempo que has dedicado a varios contenidos y servicios online) o la información que has proporcionado (p. ej., tu edad o profesión)."
+      },
+      "11": {
+        "id": 11,
+        "name": "Configuración de privacidad",
+        "description": "Tus preferencias con respecto al tratamiento de datos, en función de la información que haya recibido."
+      }
+    }
+  }
+}

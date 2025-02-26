@@ -2,7 +2,7 @@
  * A component for choosing a role, meant to be embedded in a Formik form
  */
 import {
-  Button,
+  AntButton as Button,
   Flex,
   GreenCheckCircleIcon,
   Stack,
@@ -77,9 +77,8 @@ const RoleOption = ({
             <Button
               disabled={isDisabled}
               title={buttonTitle}
-              colorScheme="primary"
-              size="xs"
-              width="fit-content"
+              type="primary"
+              size="small"
               onClick={assignSystemsModal.onOpen}
               data-testid="assign-systems-btn"
             >
@@ -108,10 +107,6 @@ const RoleOption = ({
   return (
     <Button
       onClick={handleRoleChange}
-      justifyContent="start"
-      variant="outline"
-      height="inherit"
-      p={4}
       data-testid={`role-option-${label}`}
       title={buttonTitle}
       disabled={isDisabled}

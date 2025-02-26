@@ -33,7 +33,7 @@ class TestStorageUtil:
                     "fake_key": "aws_secret_access_key",
                 },
             )
-        assert "extra fields not permitted" in str(e)
+        assert "Extra inputs are not permitted" in str(e)
 
     def test_get_schema_for_secrets(self):
         secrets = get_schema_for_secrets(

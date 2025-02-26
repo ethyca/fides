@@ -67,17 +67,17 @@ class TestCustomConnectorTemplateLoader:
         CustomConnectorTemplateLoader._instance = None
 
     @pytest.fixture
-    def zendesk_config(self) -> str:
-        return load_yaml_as_string("data/saas/config/zendesk_config.yml")
+    def hubspot_config(self) -> str:
+        return load_yaml_as_string("data/saas/config/hubspot_config.yml")
 
     @pytest.fixture
-    def zendesk_dataset(self) -> str:
-        return load_yaml_as_string("data/saas/dataset/zendesk_dataset.yml")
+    def hubspot_dataset(self) -> str:
+        return load_yaml_as_string("data/saas/dataset/hubspot_dataset.yml")
 
     @pytest.fixture
-    def replaceable_zendesk_config(self) -> str:
+    def replaceable_hubspot_config(self) -> str:
         return load_yaml_as_string(
-            "tests/fixtures/saas/test_data/replaceable_zendesk_config.yml"
+            "tests/fixtures/saas/test_data/replaceable_hubspot_config.yml"
         )
 
     @pytest.fixture
@@ -87,22 +87,22 @@ class TestCustomConnectorTemplateLoader:
         )
 
     @pytest.fixture
-    def replaceable_zendesk_zip(
-        self, replaceable_zendesk_config, zendesk_dataset
+    def replaceable_hubspot_zip(
+        self, replaceable_hubspot_config, hubspot_dataset
     ) -> BytesIO:
         return create_zip_file(
             {
-                "config.yml": replace_version(replaceable_zendesk_config, "0.0.0"),
-                "dataset.yml": zendesk_dataset,
+                "config.yml": replace_version(replaceable_hubspot_config, "0.0.0"),
+                "dataset.yml": hubspot_dataset,
             }
         )
 
     @pytest.fixture
-    def non_replaceable_zendesk_zip(self, zendesk_config, zendesk_dataset) -> BytesIO:
+    def non_replaceable_hubspot_zip(self, hubspot_config, hubspot_dataset) -> BytesIO:
         return create_zip_file(
             {
-                "config.yml": replace_version(zendesk_config, "0.0.0"),
-                "dataset.yml": zendesk_dataset,
+                "config.yml": replace_version(hubspot_config, "0.0.0"),
+                "dataset.yml": hubspot_dataset,
             }
         )
 
@@ -122,11 +122,11 @@ class TestCustomConnectorTemplateLoader:
         )
 
     @pytest.fixture
-    def non_replaceable_zendesk_zip(self, zendesk_config, zendesk_dataset) -> BytesIO:
+    def non_replaceable_hubspot_zip(self, hubspot_config, hubspot_dataset) -> BytesIO:
         return create_zip_file(
             {
-                "config.yml": replace_version(zendesk_config, "0.0.0"),
-                "dataset.yml": zendesk_dataset,
+                "config.yml": replace_version(hubspot_config, "0.0.0"),
+                "dataset.yml": hubspot_dataset,
             }
         )
 
@@ -313,8 +313,8 @@ class TestCustomConnectorTemplateLoader:
         self,
         mock_all: MagicMock,
         mock_delete: MagicMock,
-        zendesk_config,
-        zendesk_dataset,
+        hubspot_config,
+        hubspot_dataset,
     ):
         """
         Verify that an existing connector template flagged as replaceable is
@@ -324,19 +324,19 @@ class TestCustomConnectorTemplateLoader:
 
         mock_all.return_value = [
             CustomConnectorTemplate(
-                key="zendesk",
-                name="Zendesk",
-                config=replace_version(zendesk_config, "0.0.0"),
-                dataset=zendesk_dataset,
+                key="hubspot",
+                name="HubSpot",
+                config=replace_version(hubspot_config, "0.0.0"),
+                dataset=hubspot_dataset,
                 replaceable=True,
             )
         ]
 
-        template = ConnectorRegistry.get_connector_template("zendesk")
+        template = ConnectorRegistry.get_connector_template("hubspot")
         assert template
         saas_config = load_config_from_string(template.config)
         assert (
-            saas_config["version"] == load_config_from_string(zendesk_config)["version"]
+            saas_config["version"] == load_config_from_string(hubspot_config)["version"]
         )
         assert CustomConnectorTemplateLoader.get_connector_templates() == {}
         mock_delete.assert_called_once()
@@ -397,37 +397,37 @@ class TestCustomConnectorTemplateLoader:
         self,
         mock_all: MagicMock,
         mock_delete: MagicMock,
-        zendesk_config,
-        zendesk_dataset,
+        hubspot_config,
+        hubspot_dataset,
     ):
         """
         Verify that an existing custom connector template flagged as not replaceable is
         not deleted even if a newer version of the connector template is found
         in the FileConnectorTemplateLoader.
         """
-        zendesk_config = replace_version(zendesk_config, "0.0.0")
+        hubspot_config = replace_version(hubspot_config, "0.0.0")
 
         mock_all.return_value = [
             CustomConnectorTemplate(
-                key="zendesk",
-                name="Zendesk",
-                config=zendesk_config,
-                dataset=zendesk_dataset,
+                key="hubspot",
+                name="HubSpot",
+                config=hubspot_config,
+                dataset=hubspot_dataset,
                 replaceable=False,
             )
         ]
 
-        template = ConnectorRegistry.get_connector_template("zendesk")
+        template = ConnectorRegistry.get_connector_template("hubspot")
         assert template
         saas_config = load_config_from_string(template.config)
         assert saas_config["version"] == "0.0.0"
         assert CustomConnectorTemplateLoader.get_connector_templates() == {
-            "zendesk": ConnectorTemplate(
-                config=zendesk_config,
-                dataset=zendesk_dataset,
-                human_readable="Zendesk",
+            "hubspot": ConnectorTemplate(
+                config=hubspot_config,
+                dataset=hubspot_dataset,
+                human_readable="HubSpot",
                 authorization_required=False,
-                user_guide="https://docs.ethyca.com/user-guides/integrations/saas-integrations/zendesk",
+                user_guide="https://docs.ethyca.com/user-guides/integrations/saas-integrations/hubspot",
                 supported_actions=[ActionType.access, ActionType.erasure],
             )
         }
@@ -437,20 +437,20 @@ class TestCustomConnectorTemplateLoader:
         "fides.api.models.custom_connector_template.CustomConnectorTemplate.create_or_update"
     )
     def test_replaceable_template_for_existing_template(
-        self, mock_create_or_update: MagicMock, zendesk_config, replaceable_zendesk_zip
+        self, mock_create_or_update: MagicMock, hubspot_config, replaceable_hubspot_zip
     ):
         """
         Verify that a replaceable custom connector template takes on the version of the existing connector template.
         """
         CustomConnectorTemplateLoader.save_template(
-            db=MagicMock(), zip_file=ZipFile(replaceable_zendesk_zip)
+            db=MagicMock(), zip_file=ZipFile(replaceable_hubspot_zip)
         )
 
         assert mock_create_or_update.call_args.kwargs["data"]["replaceable"]
 
         config_contents = mock_create_or_update.call_args.kwargs["data"]["config"]
         custom_config = load_config_from_string(config_contents)
-        existing_config = load_config_from_string(zendesk_config)
+        existing_config = load_config_from_string(hubspot_config)
         assert custom_config["version"] == existing_config["version"]
 
     @mock.patch(
@@ -478,13 +478,13 @@ class TestCustomConnectorTemplateLoader:
     def test_non_replaceable_template(
         self,
         mock_create_or_update: MagicMock,
-        non_replaceable_zendesk_zip,
+        non_replaceable_hubspot_zip,
     ):
         """
         Verify that a non replaceable connector template keeps its version even if there is an existing connector template.
         """
         CustomConnectorTemplateLoader.save_template(
-            db=MagicMock(), zip_file=ZipFile(non_replaceable_zendesk_zip)
+            db=MagicMock(), zip_file=ZipFile(non_replaceable_hubspot_zip)
         )
         assert not mock_create_or_update.call_args.kwargs["data"]["replaceable"]
         config_contents = mock_create_or_update.call_args.kwargs["data"]["config"]

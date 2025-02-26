@@ -1,5 +1,6 @@
 import pytest
 from fideslang.models import Dataset, FidesDatasetReference
+from pydantic import ValidationError as PydanticValidationError
 from sqlalchemy.orm import Session
 
 from fides.api.common_exceptions import ValidationError
@@ -65,10 +66,104 @@ def test_convert_dataset_to_graph_no_collections(example_datasets):
     assert len(graph.collections) == 0
 
 
+@pytest.mark.parametrize(
+    "where_clauses,validation_error",
+    [
+        (
+            [
+                "`created` > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1000 DAY) AND `created` <= CURRENT_TIMESTAMP()",
+                "`created` > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 2000 DAY) AND `created` <= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1000 DAY)",
+            ],
+            None,
+        ),
+        (
+            [
+                "`created` > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1000 DAY) AND `created` <= CURRENT_TIMESTAMP()",
+                "`created` <= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1000 DAY)",  # we support only a single comparison for 'terminal' partition windows
+            ],
+            None,
+        ),
+        (
+            [
+                "`_pt` > TIMESTAMP(''2020-01-01'') AND `_pt` <= CURRENT_TIMESTAMP()",
+                "`_pt` > TIMESTAMP(''2019-01-01'') AND `_pt` <= TIMESTAMP(''2019-01-01'')",
+            ],
+            None,
+        ),
+        (
+            [
+                "`created` > 4 OR 1 = 1",  # comparison operators after an OR are not permitted
+                "`created` > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 2000 DAY) AND `created` <= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1000 DAY)",
+            ],
+            "Unsupported partition clause format",
+        ),
+        (
+            [
+                "`created` > 4) OR 1 > 0",  # comparison operators after an OR are not permitted
+            ],
+            "Unsupported partition clause format",
+        ),
+        (
+            [
+                "`created` > 4; drop table user",  # semi-colons are not allowed, so stacked queries are prevented
+            ],
+            "Unsupported partition clause format",
+        ),
+        (
+            [
+                "`created` > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 2000 DAY) AND `foobar` <= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1000 DAY)",  # field names in comparison must match
+            ],
+            "Partition clause must have matching fields",
+        ),
+        (
+            [
+                "`created` > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1000 DAY) AND `created` <= CURRENT_TIMESTAMP()) OR 1 > 0",  # comparison operators after an OR are not permitted
+            ],
+            "Unsupported partition clause format",
+        ),
+        (
+            [
+                "`created` > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1000 DAY)) UNION\nSELECT password from user"  # union is a protected keyword not allowed in an operand
+            ],
+            "Prohibited keyword referenced in partition clause",
+        ),
+    ],
+)
+def test_convert_dataset_to_graph_partitioning(
+    example_datasets, where_clauses, validation_error
+):
+    """
+    Verify that a collection with partitioning specification
+    goes through proper validation during graph conversion.
+    """
+    dataset_json = example_datasets[0].copy()
+    existing_collection = dataset_json["collections"][0]
+    if existing_collection.get("fides_meta") is None:
+        existing_collection["fides_meta"] = {}
+    existing_collection["fides_meta"]["partitioning"] = {
+        "where_clauses": where_clauses,
+    }
+    dataset_json["collections"][0] = existing_collection
+    dataset = Dataset(**dataset_json)
+    if validation_error is None:
+        graph = convert_dataset_to_graph(dataset, "mock_connection_config_key")
+        assert graph is not None
+        assert graph.name == "postgres_example_test_dataset"
+        assert graph.collections[0].partitioning == {"where_clauses": where_clauses}
+    else:
+        with pytest.raises(PydanticValidationError) as e:
+            graph = convert_dataset_to_graph(dataset, "mock_connection_config_key")
+        assert validation_error in str(e)
+
+
 def test_convert_dataset_to_graph(example_datasets):
     """Test a more complex dataset->graph conversion using the helper method directly"""
 
     dataset = Dataset(**example_datasets[0])
+    customer_collection = list(
+        filter(lambda x: x.name == "customer", dataset.collections)
+    )[0]
+    customer_collection.data_categories = {"user"}
     graph = convert_dataset_to_graph(dataset, "mock_connection_config_key")
 
     assert graph is not None
@@ -80,6 +175,7 @@ def test_convert_dataset_to_graph(example_datasets):
         filter(lambda x: x.name == "customer", graph.collections)
     )[0]
     assert customer_collection
+    assert customer_collection.data_categories == {"user"}
     assert customer_collection.fields[0].name == "address_id"
     assert customer_collection.fields[0].data_categories == ["system.operations"]
     assert customer_collection.fields[0].identity is None
@@ -244,14 +340,14 @@ def test_validate_dataset_reference_invalid(db: Session, dataset_config: Dataset
     assert "must include at least two dot-separated components" in e.value.message
 
 
-class TestUpsertWithCtlDataset:
+class TestCreateOrUpdate:
     def test_no_existing_dataset_config_or_ctl_dataset(
         self, db, example_datasets, connection_config
     ):
         """Ctl Dataset is created"""
         postgres_dataset = example_datasets[0]
 
-        dataset_config = DatasetConfig.upsert_with_ctl_dataset(
+        dataset_config = DatasetConfig.create_or_update(
             db=db,
             data={
                 "connection_config_id": connection_config.id,
@@ -278,7 +374,9 @@ class TestUpsertWithCtlDataset:
         # we need to do the same instantiation here, i.e. on the test side of the fence
         # to make our assertions more straightforward
         postgres_dataset_result = Dataset(**postgres_dataset)
-        assert ctl_dataset.collections[0] == postgres_dataset_result.collections[0]
+        assert ctl_dataset.collections[0] == postgres_dataset_result.collections[
+            0
+        ].model_dump(mode="json")
 
         dataset_config.delete(db)
         ctl_dataset.delete(db)
@@ -320,7 +418,7 @@ class TestUpsertWithCtlDataset:
                 }
             ],
         }
-        dataset_config = DatasetConfig.upsert_with_ctl_dataset(
+        dataset_config = DatasetConfig.create_or_update(
             db=db,
             data={
                 "connection_config_id": connection_config.id,
@@ -353,7 +451,9 @@ class TestUpsertWithCtlDataset:
         # we need to do the same instantiation here, i.e. on the test side of the fence
         # to make our assertions more straightforward
         dataset_result = Dataset(**dataset_data)
-        assert ctl_dataset.collections[0] == dataset_result.collections[0]
+        assert ctl_dataset.collections[0] == dataset_result.collections[0].model_dump(
+            mode="json"
+        )
 
         dataset_config.delete(db)
         ctl_dataset.delete(db)
@@ -388,7 +488,7 @@ class TestUpsertWithCtlDataset:
                 },
             ],
         }
-        updated_dataset_config = DatasetConfig.upsert_with_ctl_dataset(
+        updated_dataset_config = DatasetConfig.create_or_update(
             db=db,
             data={
                 "connection_config_id": dataset_config.connection_config_id,
@@ -418,4 +518,6 @@ class TestUpsertWithCtlDataset:
         # we need to do the same instantiation here, i.e. on the test side of the fence
         # to make our assertions more straightforward
         dataset_result = Dataset(**dataset_data)
-        assert updated_ctl_dataset.collections[0] == dataset_result.collections[0]
+        assert updated_ctl_dataset.collections[0] == dataset_result.collections[
+            0
+        ].model_dump(mode="json")

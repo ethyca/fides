@@ -5,6 +5,7 @@ import dask
 from dask import delayed  # type: ignore[attr-defined]
 from dask.core import getcycle
 from dask.threaded import get
+from loguru import logger
 from sqlalchemy.orm import Session
 
 from fides.api.common_exceptions import TraversalError
@@ -14,11 +15,16 @@ from fides.api.graph.config import (
     CollectionAddress,
 )
 from fides.api.graph.graph import DatasetGraph
-from fides.api.graph.traversal import Traversal, TraversalNode
+from fides.api.graph.traversal import (
+    Traversal,
+    TraversalNode,
+    log_traversal_error_and_update_privacy_request,
+)
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.models.sql_models import System  # type: ignore[attr-defined]
+from fides.api.schemas.policy import ActionType
 from fides.api.task.graph_task import EMPTY_REQUEST_TASK, GraphTask
 from fides.api.task.task_resources import TaskResources
 from fides.api.util.collection_util import Row
@@ -108,7 +114,21 @@ def run_access_request_deprecated(
     session: Session,
 ) -> Dict[str, List[Row]]:
     """Deprecated: Run the access request sequentially in-memory using Dask"""
-    traversal: Traversal = Traversal(graph, identity)
+    try:
+        traversal: Traversal = Traversal(graph, identity, policy)
+        privacy_request.add_success_execution_log(
+            session,
+            connection_key=None,
+            dataset_name="Dataset traversal",
+            collection_name=None,
+            message=f"Traversal successful for privacy request: {privacy_request.id}",
+            action_type=ActionType.access,
+        )
+
+    except TraversalError as err:
+        log_traversal_error_and_update_privacy_request(privacy_request, session, err)
+        raise err
+
     with TaskResources(
         privacy_request, policy, connection_configs, EMPTY_REQUEST_TASK, session
     ) as resources:
@@ -185,7 +205,7 @@ def run_erasure_request_deprecated(  # pylint: disable = too-many-arguments
     session: Session,
 ) -> Dict[str, int]:
     """Deprecated: Run an erasure request sequentially in-memory using Dask"""
-    traversal: Traversal = Traversal(graph, identity)
+    traversal: Traversal = Traversal(graph, identity, policy)
     with TaskResources(
         privacy_request, policy, connection_configs, EMPTY_REQUEST_TASK, session
     ) as resources:
@@ -234,6 +254,20 @@ def run_erasure_request_deprecated(  # pylint: disable = too-many-arguments
         # using an existing function from dask.core to detect cycles in the generated graph
         collection_cycle = getcycle(dsk, None)
         if collection_cycle:
+            logger.error(
+                "TraversalError encountered for privacy request {}. Error: The values for the `erase_after` fields caused a cycle in the following collections {}",
+                privacy_request.id,
+                collection_cycle,
+            )
+            privacy_request.add_error_execution_log(
+                db=session,
+                connection_key=None,
+                collection_name=None,
+                dataset_name=None,
+                message=f"The values for the `erase_after` fields caused a cycle in the following collections {collection_cycle}",
+                action_type=ActionType.erasure,
+            )
+            privacy_request.error_processing(session)
             raise TraversalError(
                 f"The values for the `erase_after` fields caused a cycle in the following collections {collection_cycle}"
             )

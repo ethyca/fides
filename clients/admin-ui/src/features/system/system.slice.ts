@@ -5,10 +5,14 @@ import { baseApi } from "~/features/common/api.slice";
 import {
   BulkPutConnectionConfiguration,
   ConnectionConfigurationResponse,
+  CreateConnectionConfigurationWithSecrets,
+  Page_BasicSystemResponse_,
   System,
   SystemResponse,
   TestStatusMessage,
 } from "~/types/api";
+import { PaginationQueryParams } from "~/types/common/PaginationQueryParams";
+import { SearchQueryParams } from "~/types/common/SearchQueryParams";
 
 interface SystemDeleteResponse {
   message: string;
@@ -30,6 +34,17 @@ export type ConnectionConfigSecretsRequest = {
 
 const systemApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
+    getSystems: build.query<
+      Page_BasicSystemResponse_,
+      PaginationQueryParams & SearchQueryParams
+    >({
+      query: (params) => ({
+        method: "GET",
+        url: `system`,
+        params,
+      }),
+      providesTags: () => ["System"],
+    }),
     getAllSystems: build.query<SystemResponse[], void>({
       query: () => ({ url: `system` }),
       providesTags: () => ["System"],
@@ -114,7 +129,7 @@ const systemApi = baseApi.injectEndpoints({
       {
         systemFidesKey: string;
         connectionConfigs: Omit<
-          ConnectionConfigurationResponse,
+          CreateConnectionConfigurationWithSecrets,
           "created_at"
         >[];
       }
@@ -157,6 +172,8 @@ const systemApi = baseApi.injectEndpoints({
 });
 
 export const {
+  useGetSystemsQuery,
+  useLazyGetSystemsQuery,
   useGetAllSystemsQuery,
   useGetSystemByFidesKeyQuery,
   useCreateSystemMutation,
@@ -183,30 +200,14 @@ export const systemSlice = createSlice({
   reducers: {
     setActiveSystem: (
       draftState,
-      action: PayloadAction<System | undefined>
+      action: PayloadAction<System | undefined>,
     ) => {
       draftState.activeSystem = action.payload;
-    },
-    setActiveClassifySystemFidesKey: (
-      draftState,
-      action: PayloadAction<string | undefined>
-    ) => {
-      draftState.activeClassifySystemFidesKey = action.payload;
-    },
-    setSystemsToClassify: (
-      draftState,
-      action: PayloadAction<System[] | undefined>
-    ) => {
-      draftState.systemsToClassify = action.payload;
     },
   },
 });
 
-export const {
-  setActiveSystem,
-  setActiveClassifySystemFidesKey,
-  setSystemsToClassify,
-} = systemSlice.actions;
+export const { setActiveSystem } = systemSlice.actions;
 
 export const { reducer } = systemSlice;
 
@@ -214,32 +215,17 @@ const selectSystem = (state: RootState) => state.system;
 
 export const selectActiveSystem = createSelector(
   selectSystem,
-  (state) => state.activeSystem
+  (state) => state.activeSystem,
 );
 
-export const selectActiveClassifySystemFidesKey = createSelector(
-  selectSystem,
-  (state) => state.activeClassifySystemFidesKey
-);
-
-const emptySelectAllSystems: SystemResponse[] = [];
-export const selectAllSystems = createSelector(
-  [(RootState) => RootState, systemApi.endpoints.getAllSystems.select()],
-  (RootState, { data }) => data || emptySelectAllSystems
-);
-
-export const selectActiveClassifySystem = createSelector(
-  [selectAllSystems, selectActiveClassifySystemFidesKey],
-  (allSystems, fidesKey) => {
-    if (fidesKey === undefined) {
-      return undefined;
-    }
-    const system = allSystems?.find((s) => s.fides_key === fidesKey);
-    return system;
-  }
-);
-
-export const selectSystemsToClassify = createSelector(
-  selectSystem,
-  (state) => state.systemsToClassify
+/**
+ * Selects the number of systems
+ * By using the paginated getSystems endpoint, we can get the total number of systems
+ */
+export const selectSystemsCount = createSelector(
+  [
+    (RootState) => RootState,
+    systemApi.endpoints.getSystems.select({ page: 1, size: 1 }),
+  ],
+  (RootState, { data }) => data?.total || 0,
 );

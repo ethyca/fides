@@ -19,7 +19,7 @@ type TestConnectionProps = {
   response: any;
 };
 
-const TestConnection: React.FC<TestConnectionProps> = ({ response }) => {
+export const TestConnection = ({ response }: TestConnectionProps) => {
   const { connectionOption } = useAppSelector(selectConnectionTypeState);
   return (
     <>
@@ -118,5 +118,3 @@ const TestConnection: React.FC<TestConnectionProps> = ({ response }) => {
     </>
   );
 };
-
-export default TestConnection;

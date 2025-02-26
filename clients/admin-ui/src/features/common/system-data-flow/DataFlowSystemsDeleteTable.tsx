@@ -1,5 +1,14 @@
 import { TrashCanSolidIcon } from "common/Icon/TrashCanSolidIcon";
-import { IconButton, Table, Tbody, Td, Text, Th, Thead, Tr } from "fidesui";
+import {
+  AntButton as Button,
+  Table,
+  Tbody,
+  Td,
+  Text,
+  Th,
+  Thead,
+  Tr,
+} from "fidesui";
 import { useFormikContext } from "formik";
 import React from "react";
 
@@ -22,7 +31,7 @@ export const DataFlowSystemsDeleteTable = ({
 
   const onDelete = (dataFlow: System) => {
     const updatedDataFlows = dataFlows.filter(
-      (dataFlowSystem) => dataFlowSystem.fides_key !== dataFlow.fides_key
+      (dataFlowSystem) => dataFlowSystem.fides_key !== dataFlow.fides_key,
     );
     setFieldValue("dataFlowSystems", updatedDataFlows);
     onDataFlowSystemChange(updatedDataFlows);
@@ -51,12 +60,9 @@ export const DataFlowSystemsDeleteTable = ({
                 </Text>
               </Td>
               <Td textAlign="end">
-                <IconButton
-                  background="gray.50"
+                <Button
                   aria-label="Unassign data flow from system"
                   icon={<TrashCanSolidIcon />}
-                  variant="outline"
-                  size="sm"
                   onClick={() => onDelete(system)}
                   data-testid="unassign-btn"
                 />

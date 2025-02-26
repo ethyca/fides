@@ -3,17 +3,22 @@ import { TabList, Tabs, TabsProps } from "fidesui";
 import { FidesTab, TabData, TabListBorder } from "~/features/common/DataTabs";
 
 interface DataTabsHeaderProps {
-  data: TabData[];
+  data: Pick<TabData, "label" | "isDisabled">[];
   border?: TabListBorder;
+  borderWidth?: TabsProps["borderWidth"];
 }
 
 const DataTabsHeader = ({
   data,
   border = "partial",
+  borderWidth = 2,
   ...other
 }: DataTabsHeaderProps & Omit<TabsProps, "children">) => (
   <Tabs colorScheme="complimentary" {...other}>
-    <TabList width={border === "partial" ? "max-content" : undefined}>
+    <TabList
+      width={border === "partial" ? "max-content" : undefined}
+      borderBottomWidth={borderWidth}
+    >
       {data.map((tab) => (
         <FidesTab
           key={tab.label}

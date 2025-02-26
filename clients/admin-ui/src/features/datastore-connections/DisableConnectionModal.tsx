@@ -1,5 +1,6 @@
 import {
-  Button,
+  AntButton as Button,
+  AntSwitch as Switch,
   Flex,
   MenuItem,
   Modal,
@@ -10,7 +11,6 @@ import {
   ModalHeader,
   ModalOverlay,
   Stack,
-  Switch,
   Text,
   useDisclosure,
 } from "fidesui";
@@ -30,14 +30,14 @@ type DataConnectionProps = {
   isSwitch: boolean;
 };
 
-const DisableConnectionModal: React.FC<DataConnectionProps> = ({
+const DisableConnectionModal = ({
   connection_key,
   disabled,
   name,
   access_type,
   connection_type,
   isSwitch,
-}) => {
+}: DataConnectionProps) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [patchConnection, patchConnectionResult] =
     usePatchDatastoreConnectionsMutation();
@@ -66,10 +66,9 @@ const DisableConnectionModal: React.FC<DataConnectionProps> = ({
         <Flex justifyContent="space-between" alignItems="center">
           <Text fontSize="sm">Enable integration</Text>
           <Switch
-            marginLeft="8px"
-            colorScheme="complimentary"
-            isChecked={!disabled}
-            onChange={onOpen}
+            className="ml-2"
+            checked={!disabled}
+            onChange={() => onOpen()}
           />
         </Flex>
       ) : (
@@ -102,26 +101,14 @@ const DisableConnectionModal: React.FC<DataConnectionProps> = ({
             </Stack>
           </ModalBody>
 
-          <ModalFooter>
-            <Button
-              onClick={closeIfComplete}
-              marginRight="10px"
-              size="sm"
-              variant="solid"
-              bg="white"
-              width="50%"
-            >
+          <ModalFooter className="flex gap-4">
+            <Button onClick={closeIfComplete} className="w-1/2">
               Cancel
             </Button>
             <Button
               onClick={handleDisableConnection}
-              isLoading={patchConnectionResult.isLoading}
-              mr={3}
-              size="sm"
-              variant="solid"
-              bg="primary.800"
-              color="white"
-              width="50%"
+              loading={patchConnectionResult.isLoading}
+              className="w-1/2"
             >
               {disabled ? "Enable" : "Disable"} Connection
             </Button>

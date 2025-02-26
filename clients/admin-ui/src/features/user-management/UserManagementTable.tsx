@@ -1,10 +1,18 @@
-import { Button, Flex, Table, Tbody, Text, Th, Thead, Tr } from "fidesui";
+import {
+  AntButton as Button,
+  Flex,
+  Table,
+  Tbody,
+  Text,
+  Th,
+  Thead,
+  Tr,
+} from "fidesui";
 import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 import { useAppDispatch } from "~/app/hooks";
 
-import { User } from "./types";
 import {
   selectUserFilters,
   setActiveUserId,
@@ -12,10 +20,6 @@ import {
   useGetAllUsersQuery,
 } from "./user-management.slice";
 import UserManagementRow from "./UserManagementRow";
-
-interface UsersTableProps {
-  users?: User[];
-}
 
 const useUsersTable = () => {
   const dispatch = useDispatch();
@@ -30,7 +34,8 @@ const useUsersTable = () => {
   };
 
   const { data, isLoading } = useGetAllUsersQuery(filters);
-  const { items: users, total } = data || { users: [], total: 0 };
+  const users = data?.items ?? [];
+  const total = data?.total ?? 0;
 
   return {
     ...filters,
@@ -42,7 +47,7 @@ const useUsersTable = () => {
   };
 };
 
-const UserManagementTable: React.FC<UsersTableProps> = () => {
+const UserManagementTable = () => {
   const { users, total, page, size, handleNextPage, handlePreviousPage } =
     useUsersTable();
   const startingItem = (page - 1) * size + 1;
@@ -60,6 +65,7 @@ const UserManagementTable: React.FC<UsersTableProps> = () => {
         <Thead>
           <Tr>
             <Th pl={0}>Username</Th>
+            <Th pl={0}>Email</Th>
             <Th pl={0}>First Name</Th>
             <Th pl={0}>Last Name</Th>
             <Th pl={0}>Permissions</Th>
@@ -89,16 +95,11 @@ const UserManagementTable: React.FC<UsersTableProps> = () => {
           <Button
             disabled={page <= 1}
             onClick={handlePreviousPage}
-            mr={2}
-            size="sm"
+            className="mr-2"
           >
             Previous
           </Button>
-          <Button
-            disabled={page * size >= total}
-            onClick={handleNextPage}
-            size="sm"
-          >
+          <Button disabled={page * size >= total} onClick={handleNextPage}>
             Next
           </Button>
         </div>

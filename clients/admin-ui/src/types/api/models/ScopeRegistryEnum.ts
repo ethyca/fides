@@ -2,9 +2,6 @@
 /* tslint:disable */
 /* eslint-disable */
 
-/**
- * An enumeration.
- */
 export enum ScopeRegistryEnum {
   ALLOW_LIST_CREATE = "allow_list:create",
   ALLOW_LIST_DELETE = "allow_list:delete",
@@ -33,6 +30,8 @@ export enum ScopeRegistryEnum {
   CONSENT_READ = "consent:read",
   CONSENT_SETTINGS_READ = "consent_settings:read",
   CONSENT_SETTINGS_UPDATE = "consent_settings:update",
+  CONSENT_WEBHOOK_POST = "consent_webhook:post",
+  CONSENT_WEBHOOK_TOKEN_CREATE = "consent_webhook_token:create",
   CTL_DATASET_CREATE = "ctl_dataset:create",
   CTL_DATASET_DELETE = "ctl_dataset:delete",
   CTL_DATASET_READ = "ctl_dataset:read",
@@ -51,6 +50,9 @@ export enum ScopeRegistryEnum {
   CUSTOM_FIELD_DEFINITION_DELETE = "custom_field_definition:delete",
   CUSTOM_FIELD_DEFINITION_READ = "custom_field_definition:read",
   CUSTOM_FIELD_DEFINITION_UPDATE = "custom_field_definition:update",
+  CUSTOM_REPORT_CREATE = "custom_report:create",
+  CUSTOM_REPORT_DELETE = "custom_report:delete",
+  CUSTOM_REPORT_READ = "custom_report:read",
   DATA_CATEGORY_CREATE = "data_category:create",
   DATA_CATEGORY_DELETE = "data_category:delete",
   DATA_CATEGORY_READ = "data_category:read",
@@ -68,6 +70,7 @@ export enum ScopeRegistryEnum {
   DATASET_CREATE_OR_UPDATE = "dataset:create_or_update",
   DATASET_DELETE = "dataset:delete",
   DATASET_READ = "dataset:read",
+  DATASET_TEST = "dataset:test",
   DISCOVERY_MONITOR_READ = "discovery_monitor:read",
   DISCOVERY_MONITOR_UPDATE = "discovery_monitor:update",
   ENCRYPTION_EXEC = "encryption:exec",
@@ -90,6 +93,10 @@ export enum ScopeRegistryEnum {
   MESSAGING_CREATE_OR_UPDATE = "messaging:create_or_update",
   MESSAGING_DELETE = "messaging:delete",
   MESSAGING_READ = "messaging:read",
+  OPENID_PROVIDER_CREATE = "openid_provider:create",
+  OPENID_PROVIDER_DELETE = "openid_provider:delete",
+  OPENID_PROVIDER_READ = "openid_provider:read",
+  OPENID_PROVIDER_UPDATE = "openid_provider:update",
   ORGANIZATION_CREATE = "organization:create",
   ORGANIZATION_DELETE = "organization:delete",
   ORGANIZATION_READ = "organization:read",
@@ -104,6 +111,7 @@ export enum ScopeRegistryEnum {
   PRIVACY_NOTICE_READ = "privacy-notice:read",
   PRIVACY_NOTICE_UPDATE = "privacy-notice:update",
   PRIVACY_PREFERENCE_HISTORY_READ = "privacy-preference-history:read",
+  PRIVACY_REQUEST_ACCESS_RESULTS_READ = "privacy-request-access-results:read",
   PRIVACY_REQUEST_NOTIFICATIONS_CREATE_OR_UPDATE = "privacy-request-notifications:create_or_update",
   PRIVACY_REQUEST_NOTIFICATIONS_READ = "privacy-request-notifications:read",
   PRIVACY_REQUEST_CREATE = "privacy-request:create",
@@ -116,6 +124,7 @@ export enum ScopeRegistryEnum {
   PRIVACY_REQUEST_VIEW_DATA = "privacy-request:view_data",
   PRIVACY_CENTER_CONFIG_READ = "privacy_center_config:read",
   PRIVACY_CENTER_CONFIG_UPDATE = "privacy_center_config:update",
+  PRIVACY_PREFERENCES_CREATE = "privacy_preferences:create",
   PROPERTY_CREATE = "property:create",
   PROPERTY_DELETE = "property:delete",
   PROPERTY_READ = "property:read",

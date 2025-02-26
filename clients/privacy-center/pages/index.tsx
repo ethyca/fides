@@ -2,37 +2,41 @@ import {
   Flex,
   Heading,
   Link,
-  Text,
   Stack,
-  useToast,
+  Text,
   useDisclosure,
+  useToast,
 } from "fidesui";
-import React, { useEffect, useState } from "react";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
-import { ConfigErrorToastOptions } from "~/common/toast-options";
+import React, { useEffect, useState } from "react";
 
-import {
-  usePrivacyRequestModal,
-  PrivacyRequestModal,
-} from "~/components/modals/privacy-request-modal/PrivacyRequestModal";
-import {
-  useConsentRequestModal,
-  ConsentRequestModal,
-} from "~/components/modals/consent-request-modal/ConsentRequestModal";
-import { useGetIdVerificationConfigQuery } from "~/features/id-verification";
-import PrivacyCard from "~/components/PrivacyCard";
-import ConsentCard from "~/components/consent/ConsentCard";
-import { useConfig } from "~/features/common/config.slice";
-import { useSubscribeToPrivacyExperienceQuery } from "~/features/consent/hooks";
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
+import { ConfigErrorToastOptions } from "~/common/toast-options";
+import BrandLink from "~/components/BrandLink";
+import ConsentCard from "~/components/consent/ConsentCard";
+import {
+  ConsentRequestModal,
+  useConsentRequestModal,
+} from "~/components/modals/consent-request-modal/ConsentRequestModal";
+import NoticeEmptyStateModal from "~/components/modals/NoticeEmptyStateModal";
+import {
+  PrivacyRequestModal,
+  usePrivacyRequestModal,
+} from "~/components/modals/privacy-request-modal/PrivacyRequestModal";
+import PrivacyCard from "~/components/PrivacyCard";
+import { useConfig } from "~/features/common/config.slice";
+import {
+  selectIsNoticeDriven,
+  useSettings,
+} from "~/features/common/settings.slice";
 import {
   clearLocation,
   selectPrivacyExperience,
   setLocation,
 } from "~/features/consent/consent.slice";
-import NoticeEmptyStateModal from "~/components/modals/NoticeEmptyStateModal";
-import { selectIsNoticeDriven } from "~/features/common/settings.slice";
+import { useSubscribeToPrivacyExperienceQuery } from "~/features/consent/hooks";
+import { useGetIdVerificationConfigQuery } from "~/features/id-verification";
 
 const Home: NextPage = () => {
   const router = useRouter();
@@ -68,6 +72,10 @@ const Home: NextPage = () => {
   let isConsentModalOpen = isConsentModalOpenConst;
   const getIdVerificationConfigQuery = useGetIdVerificationConfigQuery();
 
+  const { SHOW_BRAND_LINK } = useSettings();
+  const showPrivacyPolicyLink =
+    !!config.privacy_policy_url && !!config.privacy_policy_url_text;
+
   // Subscribe to experiences just to see if there are any notices.
   // The subscription automatically handles skipping if overlay is not enabled
   useSubscribeToPrivacyExperienceQuery();
@@ -89,9 +97,7 @@ const Home: NextPage = () => {
 
   const experience = useAppSelector(selectPrivacyExperience);
   const isNoticeDriven = useAppSelector(selectIsNoticeDriven);
-  const emptyNotices =
-    experience?.privacy_notices == null ||
-    experience.privacy_notices.length === 0;
+  const emptyNotices = !experience?.privacy_notices?.length;
 
   const handleConsentCardOpen = () => {
     if (isNoticeDriven && emptyNotices) {
@@ -114,10 +120,10 @@ const Home: NextPage = () => {
 
     if (getIdVerificationConfigQuery.isSuccess) {
       setIsVerificationRequired(
-        getIdVerificationConfigQuery.data.identity_verification_required
+        getIdVerificationConfigQuery.data.identity_verification_required,
       );
       setIsConsentVerificationDisabled(
-        getIdVerificationConfigQuery.data.disable_consent_identity_verification
+        getIdVerificationConfigQuery.data.disable_consent_identity_verification,
       );
     }
   }, [
@@ -138,7 +144,7 @@ const Home: NextPage = () => {
         iconPath={action.icon_path}
         description={action.description}
         onOpen={onPrivacyModalOpen}
-      />
+      />,
     );
   });
 
@@ -150,7 +156,7 @@ const Home: NextPage = () => {
         iconPath={config.consent.button.icon_path}
         description={config.consent.button.description}
         onOpen={handleConsentCardOpen}
-      />
+      />,
     );
     if (router.query?.showConsentModal === "true") {
       // manually override whether to show the consent modal given
@@ -165,7 +171,7 @@ const Home: NextPage = () => {
         <Stack align="center" spacing={3}>
           <Heading
             fontSize={["3xl", "4xl"]}
-            color="gray.600"
+            color="gray.800"
             fontWeight="semibold"
             textAlign="center"
             data-testid="heading"
@@ -178,7 +184,7 @@ const Home: NextPage = () => {
             fontWeight="medium"
             maxWidth={624}
             textAlign="center"
-            color="gray.600"
+            color="gray.800"
             data-testid="description"
           >
             {config.description}
@@ -190,7 +196,7 @@ const Home: NextPage = () => {
               fontWeight="medium"
               maxWidth={624}
               textAlign="center"
-              color="gray.600"
+              color="gray.800"
               data-testid={`description-${index}`}
               // eslint-disable-next-line react/no-array-index-key
               key={`description-${index}`}
@@ -208,7 +214,7 @@ const Home: NextPage = () => {
             fontSize={["small", "medium"]}
             fontWeight="medium"
             maxWidth={624}
-            color="gray.600"
+            color="gray.800"
             data-testid={`addendum-${index}`}
             // eslint-disable-next-line react/no-array-index-key
             key={`addendum-${index}`}
@@ -216,19 +222,25 @@ const Home: NextPage = () => {
             {paragraph}
           </Text>
         ))}
-        {config.privacy_policy_url && config.privacy_policy_url_text ? (
-          <Link
-            fontSize={["small", "medium"]}
-            fontWeight="medium"
-            textAlign="center"
-            textDecoration="underline"
-            color="gray.600"
-            href={config.privacy_policy_url}
-            isExternal
-          >
-            {config.privacy_policy_url_text}
-          </Link>
-        ) : null}
+
+        {(SHOW_BRAND_LINK || showPrivacyPolicyLink) && (
+          <Stack flexDirection="row">
+            {showPrivacyPolicyLink && (
+              <Link
+                fontSize={["small", "medium"]}
+                fontWeight="medium"
+                textAlign="center"
+                textDecoration="underline"
+                color="gray.800"
+                href={config.privacy_policy_url!}
+                isExternal
+              >
+                {config.privacy_policy_url_text}
+              </Link>
+            )}
+            <BrandLink />
+          </Stack>
+        )}
       </Stack>
       <PrivacyRequestModal
         isOpen={isPrivacyModalOpen}

@@ -3,39 +3,33 @@
 /* eslint-disable */
 
 import type { ConsentMechanism } from "./ConsentMechanism";
-import type { Cookies } from "./Cookies";
 import type { EnforcementLevel } from "./EnforcementLevel";
-import type { GPPFieldMapping } from "./GPPFieldMapping";
 import type { NoticeTranslationResponse } from "./NoticeTranslationResponse";
-import type { PrivacyNoticeFramework } from "./PrivacyNoticeFramework";
 import type { PrivacyNoticeRegion } from "./PrivacyNoticeRegion";
 import type { UserConsentPreference } from "./UserConsentPreference";
 
 /**
- * Detailed Privacy Notice Response that also calculates which regions
- * are using the Notice
+ * Another limited Privacy Notice Schema for the Detail view in the Admin UI
+ * - limits number of fields returned for performance.
+ *
+ * "configured_regions" is a property calculated by observing which Experience Configs have linked this Notice
  */
 export type PrivacyNoticeResponseWithRegions = {
-  name: string;
-  notice_key: string;
-  internal_description?: string;
-  consent_mechanism: ConsentMechanism;
-  data_uses: Array<string>;
-  enforcement_level: EnforcementLevel;
-  disabled: boolean;
-  has_gpc_flag: boolean;
-  framework?: PrivacyNoticeFramework;
-  default_preference?: UserConsentPreference;
+  default_preference?: UserConsentPreference | null;
   id: string;
-  origin?: string;
+  name: string;
+  disabled: boolean;
   created_at: string;
   updated_at: string;
-  cookies: Array<Cookies>;
-  systems_applicable?: boolean;
-  translations?: Array<NoticeTranslationResponse>;
-  gpp_field_mapping?: Array<GPPFieldMapping>;
+  consent_mechanism: ConsentMechanism;
+  notice_key: string;
   /**
    * A property calculated by observing which Experiences have linked this Notice
    */
   configured_regions?: Array<PrivacyNoticeRegion>;
+  data_uses: Array<string>;
+  enforcement_level: EnforcementLevel;
+  has_gpc_flag: boolean;
+  translations?: Array<NoticeTranslationResponse>;
+  children?: Array<PrivacyNoticeResponseWithRegions>;
 };

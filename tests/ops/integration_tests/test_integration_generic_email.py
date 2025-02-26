@@ -80,7 +80,81 @@ async def test_erasure_email(
             body=erasure_email_template.render(
                 {
                     "controller": "Test Org",
-                    "third_party_vendor_name": "Attentive",
+                    "third_party_vendor_name": "Attentive Email",
+                    "identities": ["customer-1@example.com"],
+                }
+            ),
+        ),
+        "attentive@example.com",
+    )
+
+    # verify the privacy request was queued for further processing
+    mock_requeue_privacy_requests.assert_called()
+
+
+@pytest.mark.integration
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "dsr_version",
+    ["use_dsr_3_0", "use_dsr_2_0"],
+)
+@mock.patch(
+    "fides.api.service.privacy_request.email_batch_service.requeue_privacy_requests_after_email_send",
+)
+@mock.patch("fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher")
+async def test_erasure_email_property_specific_messaging(
+    mock_mailgun_dispatcher: Mock,
+    mock_requeue_privacy_requests: Mock,
+    db,
+    dsr_version,
+    request,
+    erasure_policy,
+    generic_erasure_email_connection_config,
+    set_property_specific_messaging_enabled,
+    run_privacy_request_task,
+    test_fides_org,
+    messaging_config,
+) -> None:
+    """
+    Run an erasure privacy request with only a generic erasure email connector.
+    Verify the privacy request is set to "awaiting email send" and that one email
+    is sent when the send_email_batch job is executed manually
+    """
+    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+
+    pr = get_privacy_request_results(
+        db,
+        erasure_policy,
+        run_privacy_request_task,
+        {
+            "requested_at": "2021-08-30T16:09:37.359Z",
+            "policy_key": erasure_policy.key,
+            "identity": {"email": "customer-1@example.com"},
+        },
+    )
+
+    db.refresh(pr)
+
+    # the privacy request will be in an "awaiting email send" state until the "send email batch" job executes
+    assert pr.status == PrivacyRequestStatus.awaiting_email_send
+    assert pr.awaiting_email_send_at is not None
+
+    # execute send email batch job without waiting for it to be scheduled
+    exit_state = send_email_batch.delay().get()
+    assert exit_state == EmailExitState.complete
+
+    # verify the email was sent
+    erasure_email_template = get_email_template(
+        MessagingActionType.MESSAGE_ERASURE_REQUEST_FULFILLMENT
+    )
+    mock_mailgun_dispatcher.assert_called_once_with(
+        ANY,
+        EmailForActionType(
+            subject="Notification of user erasure requests from Test Org",
+            body=erasure_email_template.render(
+                {
+                    "controller": "Test Org",
+                    "third_party_vendor_name": "Attentive Email",
                     "identities": ["customer-1@example.com"],
                 }
             ),

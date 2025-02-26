@@ -4,10 +4,10 @@ import {
   loadPrivacyCenterEnvironment,
   validateConfig,
 } from "~/app/server-environment";
-import minimalJson from "~/config/examples/minimal.json";
-import fullJson from "~/config/examples/full.json";
-import v2ConsentJson from "~/config/examples/v2Consent.json";
 import customFields from "~/config/examples/customFields.json";
+import fullJson from "~/config/examples/full.json";
+import minimalJson from "~/config/examples/minimal.json";
+import v2ConsentJson from "~/config/examples/v2Consent.json";
 
 describe("validateConfig", () => {
   const testCases = [
@@ -81,7 +81,7 @@ const mockAsServerSide = () => {
 };
 
 const mockAsClientSide = () => {
-  jest.spyOn(globalThis, "window", "get").mockImplementation(() => ({} as any));
+  jest.spyOn(globalThis, "window", "get").mockImplementation(() => ({}) as any);
 };
 
 const getPropertyFromUrlMock = jest.fn();
@@ -89,15 +89,18 @@ const loadEnvironmentVariablesMock = jest.fn();
 
 jest.mock(
   "~/app/server-utils/getPropertyFromUrl",
-  () => (arg: any) => getPropertyFromUrlMock(arg)
+  () => (arg: any) => getPropertyFromUrlMock(arg),
 );
 
 jest.mock(
   "~/app/server-utils/loadEnvironmentVariables",
-  () => (arg: any) => loadEnvironmentVariablesMock(arg)
+  () => (arg: any) => loadEnvironmentVariablesMock(arg),
 );
 
 describe("loadPrivacyCenterEnvironment", () => {
+  beforeAll(() => {
+    (globalThis as any).fidesDebugger = () => {};
+  });
   beforeEach(() => {
     mockAsServerSide();
     loadEnvironmentVariablesMock.mockReturnValue({

@@ -36,6 +36,7 @@ interface ExperienceConfigParams {
 type ExperienceConfigOptionalFields =
   | "banner_title"
   | "banner_description"
+  | "purpose_header"
   | "privacy_policy_link_label"
   | "privacy_policy_url"
   | "modal_link_label";
@@ -46,6 +47,7 @@ export type ExperienceConfigUpdateParams = Omit<
   id: string;
   banner_title?: string | null;
   banner_description?: string | null;
+  purpose_header?: string | null;
   privacy_policy_link_label?: string | null;
   privacy_policy_url?: string | null;
   modal_link_label?: string | null;
@@ -59,6 +61,7 @@ export type ExperienceConfigCreateParams = Omit<
 > & {
   banner_title?: string | null;
   banner_description?: string | null;
+  purpose_header?: string | null;
   privacy_policy_link_label?: string | null;
   privacy_policy_url?: string | null;
   modal_link_label?: string | null;
@@ -154,12 +157,12 @@ const selectPrivacyExperienceConfig = (state: RootState) =>
 
 export const selectPage = createSelector(
   selectPrivacyExperienceConfig,
-  (state) => state.page
+  (state) => state.page,
 );
 
 export const selectPageSize = createSelector(
   selectPrivacyExperienceConfig,
-  (state) => state.pageSize
+  (state) => state.pageSize,
 );
 
 const emptyExperienceConfigs: ExperienceConfigListViewResponse[] = [];
@@ -172,5 +175,5 @@ export const selectAllExperienceConfigs = createSelector(
         size: pageSize,
       })(RootState)?.data;
     return data ? data.items : emptyExperienceConfigs;
-  }
+  },
 );

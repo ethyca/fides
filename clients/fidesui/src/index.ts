@@ -1,49 +1,63 @@
 // Unmodified components exported directly from ChakraUI
-export * from "@chakra-ui/accordion";
-export * from "@chakra-ui/alert";
-export * from "@chakra-ui/avatar";
-export * from "@chakra-ui/breadcrumb";
-export * from "@chakra-ui/button";
-export * from "@chakra-ui/checkbox";
-export * from "@chakra-ui/close-button";
-export * from "@chakra-ui/control-box";
-export * from "@chakra-ui/counter";
-export * from "@chakra-ui/css-reset";
-export * from "@chakra-ui/editable";
-export * from "@chakra-ui/form-control";
-export * from "@chakra-ui/hooks";
-export * from "@chakra-ui/icon";
 export * from "@chakra-ui/icons";
-export * from "@chakra-ui/image";
-export * from "@chakra-ui/input";
-export type { GridProps, ListProps } from "@chakra-ui/layout";
-export * from "@chakra-ui/layout";
-export * from "@chakra-ui/media-query";
-export * from "@chakra-ui/menu";
-export * from "@chakra-ui/modal";
-export * from "@chakra-ui/number-input";
-export * from "@chakra-ui/pin-input";
-export * from "@chakra-ui/popover";
-export * from "@chakra-ui/popper";
-export * from "@chakra-ui/portal";
-export * from "@chakra-ui/progress";
-export * from "@chakra-ui/radio";
-export * from "@chakra-ui/select";
-export * from "@chakra-ui/skeleton";
-export * from "@chakra-ui/slider";
-export * from "@chakra-ui/spinner";
-export * from "@chakra-ui/stat";
-export * from "@chakra-ui/switch";
-export * from "@chakra-ui/system";
-export * from "@chakra-ui/table";
-export * from "@chakra-ui/tabs";
-export * from "@chakra-ui/tag";
-export * from "@chakra-ui/textarea";
-export * from "@chakra-ui/toast";
-export * from "@chakra-ui/tooltip";
-export * from "@chakra-ui/transition";
+export * from "@chakra-ui/react";
+export { getCSSVar } from "@chakra-ui/utils";
 export * from "@chakra-ui/utils";
-export * from "@chakra-ui/visually-hidden";
+
+// Unmodified component exported directly from Ant Design
+export type { ThemeConfig as AntThemeConfig } from "antd/es";
+export type {
+  ButtonProps as AntButtonProps,
+  FlexProps as AntFlexProps,
+  FormInstance as AntFormInstance,
+  InputProps as AntInputProps,
+  ListProps as AntListProps,
+  MenuProps as AntMenuProps,
+  RadioGroupProps as AntRadioGroupProps,
+  SelectProps as AntSelectProps,
+  SwitchProps as AntSwitchProps,
+  TagProps as AntTagProps,
+  GetProps,
+  InputRef,
+  RadioChangeEvent,
+} from "antd/lib";
+export {
+  Alert as AntAlert,
+  Avatar as AntAvatar,
+  Breadcrumb as AntBreadcrumb,
+  Button as AntButton,
+  Card as AntCard,
+  Checkbox as AntCheckbox,
+  Col as AntCol,
+  Divider as AntDivider,
+  Dropdown as AntDropdown,
+  Empty as AntEmpty,
+  Flex as AntFlex,
+  Form as AntForm,
+  Input as AntInput,
+  Layout as AntLayout,
+  List as AntList,
+  Menu as AntMenu,
+  Radio as AntRadio,
+  Row as AntRow,
+  Skeleton as AntSkeleton,
+  Space as AntSpace,
+  Switch as AntSwitch,
+  Tooltip as AntTooltip,
+  Typography as AntTypography,
+} from "antd/lib";
+export type {
+  BreadcrumbItemType as AntBreadcrumbItemType,
+  BreadcrumbProps as AntBreadcrumbProps,
+} from "antd/lib/breadcrumb/Breadcrumb";
+export type { ListItemProps as AntListItemProps } from "antd/lib/list";
+export type {
+  BaseOptionType as AntBaseOptionType,
+  DefaultOptionType as AntDefaultOptionType,
+} from "antd/lib/select";
+
+// Higher-order components
+export { CustomSelect as AntSelect } from "./hoc";
 
 /**
  * Custom Re-exports
@@ -52,23 +66,31 @@ export * from "@chakra-ui/visually-hidden";
  * typescript happy, but eslint doesn't understand.
  */
 /* eslint-disable import/export */
+export { AddIcon, LinkIcon, QuestionIcon, WarningIcon } from "./icons";
 export * from "./icons";
-export { AddIcon, QuestionIcon, WarningIcon, LinkIcon } from "./icons";
 /* eslint-enable import/export */
 
+/**
+ * prefixed icons from Carbon Icons
+ * @example <Icons.download size={14} />
+ */
+export * as Icons from "@carbon/icons-react";
+/* end prefixed icons */
+
 export * from "./FidesUIProvider";
-export * from "./FidesUITheme";
+export { extendTheme, theme } from "./FidesUITheme";
 
 /**
  * Custom Components
  * These components are custom to FidesUI and are not included in ChakraUI, although they may rely on ChakraUI components.
  */
 export { CheckboxTree } from "./components/checkbox-tree";
-export { ClassifiedDataCategoryDropdown } from "./components/classified-data-category-dropdown";
 export type { ColumnMetadata } from "./components/column-dropdown";
 export { ColumnDropdown } from "./components/column-dropdown";
 export { ConfirmationModal } from "./components/confirmation-modal";
 export { DataCategoryDropdown } from "./components/data-category-dropdown";
 export { ExampleComponent } from "./components/example-component";
+export { FloatingMenu } from "./components/floating-menu";
 export { PrimaryLink, SecondaryLink } from "./components/links";
 export { SystemsCheckboxTable } from "./components/systems-checkbox-table";
+export { CustomTag as AntTag } from "./hoc";

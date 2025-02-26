@@ -1,4 +1,4 @@
-from typing import List
+from typing import Annotated, List
 
 from fastapi import Body, Depends, Security
 from fastapi_pagination import Page, Params
@@ -6,7 +6,7 @@ from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
 from fideslang.validation import FidesKey
 from loguru import logger
-from pydantic import conlist
+from pydantic import Field
 from sqlalchemy.orm import Session
 from starlette.exceptions import HTTPException
 from starlette.status import HTTP_200_OK, HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND
@@ -50,7 +50,7 @@ def get_policy_pre_execution_webhooks(
     """
     policy = get_policy_or_error(db, policy_key)
 
-    logger.info(
+    logger.debug(
         "Finding all Pre-Execution Webhooks for Policy '{}' with pagination params '{}'",
         policy.key,
         params,
@@ -76,7 +76,7 @@ def get_policy_post_execution_webhooks(
     """
     policy = get_policy_or_error(db, policy_key)
 
-    logger.info(
+    logger.debug(
         "Finding all Post-Execution Webhooks for Policy '{}' with pagination params '{}'",
         policy.key,
         params,
@@ -100,7 +100,7 @@ def put_webhooks(
     policy = get_policy_or_error(db, policy_key)
 
     keys = [
-        get_key_from_data(webhook.dict(), type(webhook_cls).__name__)
+        get_key_from_data(webhook.model_dump(mode="json"), type(webhook_cls).__name__)
         for webhook in webhooks
     ]
     names = [webhook.name for webhook in webhooks]
@@ -174,7 +174,7 @@ def create_or_update_pre_execution_webhooks(
     *,
     policy_key: FidesKey,
     db: Session = Depends(deps.get_db),
-    webhooks: conlist(schemas.PolicyWebhookCreate, max_items=50) = Body(...),  # type: ignore
+    webhooks: Annotated[List[schemas.PolicyWebhookCreate], Field(max_length=50)],  # type: ignore
 ) -> List[PolicyPreWebhook]:
     """
     Create or update the list of Policy Pre-Execution Webhooks that run **before** query execution.
@@ -197,7 +197,7 @@ def create_or_update_post_execution_webhooks(
     *,
     policy_key: FidesKey,
     db: Session = Depends(deps.get_db),
-    webhooks: conlist(schemas.PolicyWebhookCreate, max_items=50) = Body(...),  # type: ignore
+    webhooks: Annotated[List[schemas.PolicyWebhookCreate], Field(max_length=50)],  # type: ignore
 ) -> List[PolicyPostWebhook]:
     """
     Create or update the list of Policy Post-Execution Webhooks that run **after** query execution.
@@ -218,7 +218,7 @@ def get_policy_webhook_or_error(
 
     Also verifies that the webhook belongs to the given Policy.
     """
-    logger.info(
+    logger.debug(
         "Finding {}-Execution Webhook with key '{}' for Policy '{}'",
         webhook_cls.prefix.capitalize(),
         webhook_key,
@@ -290,7 +290,7 @@ def _patch_webhook(
     """
     policy = get_policy_or_error(db, policy_key)
     loaded_webhook = get_policy_webhook_or_error(db, policy, webhook_key, webhook_cls)
-    data = webhook_body.dict(exclude_none=True)
+    data = webhook_body.model_dump(exclude_none=True)
 
     if data.get("connection_config_key"):
         connection_config = get_connection_config_or_error(

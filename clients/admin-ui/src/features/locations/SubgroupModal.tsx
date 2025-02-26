@@ -14,7 +14,7 @@ import {
 } from "fidesui";
 import { useMemo, useState } from "react";
 
-import { usePicker } from "~/features/common/PickerCard";
+import { usePicker } from "~/features/common/hooks/usePicker";
 import { Location, LocationGroup } from "~/types/api";
 
 import { Footer, Header, HeaderCheckboxRow } from "./modal";
@@ -58,7 +58,7 @@ const SubgroupModal = ({
   // If a parent is selected, "United States", do not count it towards "num selected" but do
   // count its children
   const numSelected = draftSelected.filter(
-    (s) => !Object.keys(locationsByGroup).includes(s)
+    (s) => !Object.keys(locationsByGroup).includes(s),
   ).length;
 
   const handleApply = () => {
@@ -143,7 +143,7 @@ const SubgroupModal = ({
                       </AccordionPanel>
                     </AccordionItem>
                   );
-                }
+                },
               )}
             </Accordion>
           ) : (

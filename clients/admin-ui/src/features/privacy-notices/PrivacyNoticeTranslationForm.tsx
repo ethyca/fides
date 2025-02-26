@@ -1,12 +1,11 @@
-import { Select } from "chakra-react-select";
 import {
+  AntButton as Button,
+  AntSelect as Select,
   Box,
-  Button,
   DeleteIcon,
   Flex,
   Heading,
   HStack,
-  IconButton,
   SmallAddIcon,
   Tab,
   TabList,
@@ -20,11 +19,7 @@ import { useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import FormSection from "~/features/common/form/FormSection";
-import {
-  CustomTextArea,
-  CustomTextInput,
-  SELECT_STYLES,
-} from "~/features/common/form/inputs";
+import { CustomTextArea, CustomTextInput } from "~/features/common/form/inputs";
 import {
   selectAllLanguages,
   selectPage,
@@ -84,25 +79,22 @@ const TranslationTabButton = ({
   <Flex gap={2} direction="row" w="100%">
     <Tab
       as={Button}
-      variant="outline"
-      size="sm"
       fontWeight="normal"
-      w="100%"
       key={translation.language}
+      className="grow overflow-x-hidden border-gray-300"
+      textOverflow="ellipsis"
       _selected={{ color: "white", bg: "gray.500" }}
     >
       {name}
     </Tab>
-    {onLanguageDeleted ? (
-      <IconButton
+    {onLanguageDeleted && (
+      <Button
         aria-label="Delete translation"
-        variant="outline"
-        size="sm"
         onClick={() => onLanguageDeleted(translation.language)}
-      >
-        <DeleteIcon boxSize={4} />
-      </IconButton>
-    ) : null}
+        icon={<DeleteIcon boxSize={3} />}
+        className="min-w-4"
+      />
+    )}
   </Flex>
 );
 
@@ -134,8 +126,8 @@ const PrivacyNoticeTranslationForm = ({
   const languageOptions = allLanguages
     .filter((lang) =>
       values.translations?.every(
-        (translation) => translation.language !== lang.id
-      )
+        (translation) => translation.language !== lang.id,
+      ),
     )
     .map((lang) => ({ label: lang.name, value: lang.id as SupportedLanguage }));
 
@@ -146,7 +138,7 @@ const PrivacyNoticeTranslationForm = ({
 
   const handleCreateLanguage = (language: SupportedLanguage) => {
     const availableTranslation = availableTranslations?.find(
-      (translation) => translation.language === language
+      (translation) => translation.language === language,
     );
     setTranslationIsOOB(!!availableTranslation);
     const newTranslation = availableTranslation ?? {
@@ -190,7 +182,6 @@ const PrivacyNoticeTranslationForm = ({
         as={HStack}
         spacing={8}
         align="start"
-        grow={1}
         w="100%"
         orientation="vertical"
         variant="unstyled"
@@ -217,31 +208,28 @@ const PrivacyNoticeTranslationForm = ({
               ))}
             </VStack>
           </TabList>
-          {isSelectingLanguage ? (
-            <Box w="full" data-testid="select-language">
-              <Select
-                chakraStyles={SELECT_STYLES}
-                size="sm"
-                options={languageOptions}
-                onChange={(e: any) => handleCreateLanguage(e.value)}
-                autoFocus
-                classNamePrefix="select-language"
-                menuPlacement="auto"
-              />
-            </Box>
-          ) : null}
-          {!isSelectingLanguage && languageOptions.length ? (
+          {isSelectingLanguage && (
+            <Select
+              autoFocus
+              defaultOpen
+              allowClear
+              placeholder="Select a language..."
+              options={languageOptions}
+              onChange={handleCreateLanguage}
+              data-testid="select-language"
+              className="w-full"
+            />
+          )}
+          {!isSelectingLanguage && !!languageOptions.length && (
             <Button
-              leftIcon={<SmallAddIcon boxSize={6} />}
-              w="full"
-              variant="outline"
-              size="sm"
+              icon={<SmallAddIcon boxSize={6} />}
               onClick={() => setIsSelectingLanguage(true)}
               data-testid="add-language-btn"
+              className="w-full"
             >
               Add a language
             </Button>
-          ) : null}
+          )}
         </VStack>
         <Box w="100%">
           <FieldArray

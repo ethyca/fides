@@ -1,77 +1,95 @@
 import { HeaderContext } from "@tanstack/react-table";
 import { formatDistance } from "date-fns";
 import {
-  Badge,
-  Box,
+  AntButton as Button,
+  AntInput as Input,
+  AntSwitch as Switch,
+  AntSwitchProps as SwitchProps,
+  AntTag as Tag,
+  AntTagProps as TagProps,
   Checkbox,
   CheckboxProps,
   Flex,
-  Switch,
-  SwitchProps,
+  FlexProps,
   Text,
   TextProps,
+  Tooltip,
   useDisclosure,
   useToast,
   WarningIcon,
 } from "fidesui";
-import { ChangeEvent, FC, ReactNode } from "react";
+import { useField, useFormikContext } from "formik";
+import { ReactNode, useEffect, useMemo, useState } from "react";
 
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import ConfirmationModal from "~/features/common/modals/ConfirmationModal";
 import { errorToastParams } from "~/features/common/toast";
+import { formatDate, sentenceCase } from "~/features/common/utils";
 import { RTKResult } from "~/types/errors";
 
-export const DefaultCell = ({
+import { FidesCellProps, FidesCellState } from "./FidesCell";
+
+export const DefaultCell = <T,>({
   value,
+  cellProps,
+  ...chakraStyleProps
 }: {
-  value: string | undefined | number | boolean;
-}) => (
-  <Flex alignItems="center" height="100%">
+  cellProps?: FidesCellProps<T>;
+  value: string | undefined | number | null | boolean;
+} & TextProps) => {
+  const expandable = !!cellProps?.cell.column.columnDef.meta?.showHeaderMenu;
+  const isExpanded = expandable && !!cellProps?.cellState?.isExpanded;
+  return (
     <Text
       fontSize="xs"
       lineHeight={4}
+      py={1.5}
       fontWeight="normal"
-      overflow="hidden"
       textOverflow="ellipsis"
+      overflow={isExpanded ? undefined : "hidden"}
+      whiteSpace={isExpanded ? "normal" : undefined}
+      title={isExpanded && !!value ? undefined : value?.toString()}
+      {...chakraStyleProps}
     >
       {value !== null && value !== undefined ? value.toString() : value}
     </Text>
-  </Flex>
-);
-
-const FidesBadge: FC = ({ children }) => (
-  <Badge
-    textTransform="none"
-    fontWeight="400"
-    fontSize="xs"
-    lineHeight={4}
-    color="gray.600"
-    px={2}
-    py={1}
-  >
-    {children}
-  </Badge>
-);
+  );
+};
 
 export const RelativeTimestampCell = ({
   time,
 }: {
-  time?: string | number | Date;
+  time?: string | number | Date | null;
 }) => {
   if (!time) {
     return <DefaultCell value="N/A" />;
   }
+
+  const timestamp = formatDistance(new Date(time), new Date(), {
+    addSuffix: true,
+  });
+
+  const formattedDate = formatDate(new Date(time));
+
   return (
-    <DefaultCell
-      value={formatDistance(new Date(time), new Date(), {
-        addSuffix: true,
-      })}
-    />
+    <Flex alignItems="center" height="100%">
+      <Tooltip label={formattedDate} hasArrow>
+        <Text
+          fontSize="xs"
+          lineHeight={4}
+          fontWeight="normal"
+          overflow="hidden"
+          textOverflow="ellipsis"
+        >
+          {sentenceCase(timestamp)}
+        </Text>
+      </Tooltip>
+    </Flex>
   );
 };
 
-export const BadgeCellContainer = ({ children }: { children: ReactNode }) => (
-  <Flex alignItems="center" height="100%" mr={2}>
+export const BadgeCellContainer = ({ children, ...props }: FlexProps) => (
+  <Flex alignItems="center" height="100%" mr={2} {...props}>
     {children}
   </Flex>
 );
@@ -79,60 +97,172 @@ export const BadgeCellContainer = ({ children }: { children: ReactNode }) => (
 export const BadgeCell = ({
   value,
   suffix,
+  ...tagProps
 }: {
   value: string | number;
   suffix?: string;
-}) => (
+} & TagProps) => (
   <BadgeCellContainer>
-    <FidesBadge>
+    <Tag {...tagProps}>
       {value}
-      {suffix ? ` ${suffix}` : null}
-    </FidesBadge>
+      {suffix}
+    </Tag>
   </BadgeCellContainer>
 );
+
+export const BadgeCellCount = ({
+  count,
+  singSuffix,
+  plSuffix,
+  ...tagProps
+}: {
+  count: number;
+  singSuffix?: string;
+  plSuffix?: string;
+} & TagProps) => {
+  let tag = null;
+  if (count === 1) {
+    tag = (
+      <Tag {...tagProps}>
+        {count}
+        {singSuffix ? ` ${singSuffix}` : null}
+      </Tag>
+    );
+  } else {
+    tag = (
+      <Tag {...tagProps}>
+        {count}
+        {plSuffix ? ` ${plSuffix}` : null}
+      </Tag>
+    );
+  }
+  return <BadgeCellContainer>{tag}</BadgeCellContainer>;
+};
+
+type BadgeCellExpandableValues = { label: string | ReactNode; key: string }[];
+export const BadgeCellExpandable = <T,>({
+  values,
+  cellProps,
+  ...tagProps
+}: {
+  values: BadgeCellExpandableValues | undefined;
+  cellProps?: Omit<FidesCellProps<T>, "onRowClick">;
+} & TagProps) => {
+  const { isExpanded, isWrapped, version } = cellProps?.cellState || {};
+  const displayThreshold = 2; // Number of badges to display when collapsed
+  const [isCollapsed, setIsCollapsed] = useState<boolean>(!isExpanded);
+  const [isWrappedState, setIsWrappedState] = useState<boolean>(!!isWrapped);
+  const [displayValues, setDisplayValues] = useState<
+    BadgeCellExpandableValues | undefined
+  >(!isExpanded ? values?.slice(0, displayThreshold) : values);
+
+  useEffect(() => {
+    // Also reset isCollapsed state when version changes.
+    // This is to handle the case where the user expands cells individually.
+    // "Expand/Collapse All" will not be reapplied otherwise.
+    setIsCollapsed(!isExpanded);
+  }, [isExpanded, version]);
+
+  useEffect(() => {
+    setIsWrappedState(!!isWrapped);
+  }, [isWrapped]);
+
+  useEffect(() => {
+    if (values?.length) {
+      setDisplayValues(
+        isCollapsed ? values.slice(0, displayThreshold) : values,
+      );
+    }
+  }, [isCollapsed, values]);
+
+  return useMemo(() => {
+    if (!displayValues?.length) {
+      return null;
+    }
+    return (
+      <Flex
+        alignItems={isCollapsed ? "center" : "flex-start"}
+        flexDirection={isCollapsed || isWrappedState ? "row" : "column"}
+        flexWrap={isWrappedState ? "wrap" : "nowrap"}
+        gap={1.5}
+        pt={2}
+        pb={2}
+        onClick={(e) => {
+          if (!isCollapsed) {
+            e.stopPropagation();
+            setIsCollapsed(true);
+          }
+        }}
+        cursor={isCollapsed ? undefined : "pointer"}
+      >
+        {displayValues.map((value) => (
+          <Tag
+            color="white"
+            key={value.key}
+            data-testid={value.key}
+            {...tagProps}
+          >
+            {value.label}
+          </Tag>
+        ))}
+        {isCollapsed && values && values.length > displayThreshold && (
+          <Button
+            type="link"
+            size="small"
+            onClick={() => setIsCollapsed(false)}
+            className="text-xs font-normal"
+          >
+            +{values.length - displayThreshold} more
+          </Button>
+        )}
+      </Flex>
+    );
+  }, [displayValues, isCollapsed, isWrappedState, values, tagProps]);
+};
 
 export const GroupCountBadgeCell = ({
   value,
   suffix,
-  isDisplayAll,
+  cellState,
+  ignoreZero,
+  tagProps,
 }: {
   value: string[] | string | ReactNode | ReactNode[] | undefined;
   suffix?: string;
-  isDisplayAll?: boolean;
+  cellState?: FidesCellState;
+  ignoreZero?: boolean;
+  tagProps?: TagProps;
 }) => {
-  let badges = null;
+  let tags = null;
   if (!value) {
-    return <FidesBadge>0{suffix ? ` ${suffix}` : ""}</FidesBadge>;
+    return ignoreZero ? null : (
+      <Tag {...tagProps}>0{suffix ? ` ${suffix}` : ""}</Tag>
+    );
   }
   if (Array.isArray(value)) {
-    // If there's only one value, always display it
     if (value.length === 1) {
-      badges = <FidesBadge>{value}</FidesBadge>;
-    }
-    // Expanded case, list every value as a badge
-    else if (isDisplayAll && value.length > 0) {
-      badges = value.map((d) => (
-        <Box key={d} mr={2}>
-          <FidesBadge>{d}</FidesBadge>
-        </Box>
+      tags = <Tag {...tagProps}>{value}</Tag>;
+    } else if (cellState?.isExpanded && value.length > 0) {
+      tags = value.map((d, i) => (
+        <Tag key={d?.toString() || i} {...tagProps}>
+          {d}
+        </Tag>
       ));
-    }
-    // Collapsed case, summarize the values in one badge
-    else {
-      badges = (
-        <FidesBadge>
+    } else {
+      tags = (
+        <Tag {...tagProps}>
           {value.length}
           {suffix ? ` ${suffix}` : null}
-        </FidesBadge>
+        </Tag>
       );
     }
   } else {
-    badges = <FidesBadge>{value}</FidesBadge>;
+    tags = <Tag {...tagProps}>{value}</Tag>;
   }
 
   return (
-    <Flex alignItems="center" height="100%" mr="2" overflowX="hidden">
-      {badges}
+    <Flex alignItems="center" height="100%" gap={0} overflowX="hidden">
+      {tags}
     </Flex>
   );
 };
@@ -146,32 +276,52 @@ export const IndeterminateCheckboxCell = ({
     justifyContent="center"
     onClick={(e) => e.stopPropagation()}
   >
-    <Checkbox
-      data-testid={dataTestId || undefined}
-      {...rest}
-      colorScheme="purple"
-    />
+    <Checkbox data-testid={dataTestId || undefined} {...rest} />
   </Flex>
 );
 
-type DefaultHeaderCellProps<T, V> = {
-  value: V;
-} & HeaderContext<T, V> &
+type DefaultHeaderCellProps<T> = {
+  value: string | number | string[] | undefined | boolean;
+} & HeaderContext<T, unknown> &
   TextProps;
 
 export const DefaultHeaderCell = <T,>({
   value,
   ...props
-}: DefaultHeaderCellProps<
-  T,
-  string | number | string[] | undefined | boolean
->) => (
+}: DefaultHeaderCellProps<T>) => (
   <Text fontSize="xs" lineHeight={9} fontWeight="medium" flex={1} {...props}>
     {value}
   </Text>
 );
 
-interface EnableCellProps extends Omit<SwitchProps, "value"> {
+export const EditableHeaderCell = <T,>({
+  value,
+  defaultValue,
+  isEditing,
+  ...props
+}: DefaultHeaderCellProps<T> & {
+  defaultValue: string;
+  isEditing: boolean;
+}) => {
+  const headerId = props.column.columnDef.id || "";
+  const [field] = useField(headerId);
+  const { submitForm } = useFormikContext();
+  return isEditing ? (
+    <Input
+      {...field}
+      maxLength={80}
+      placeholder={defaultValue}
+      aria-label="Edit column name"
+      size="small"
+      data-testid={`column-${headerId}-input`}
+      onPressEnter={submitForm}
+    />
+  ) : (
+    <DefaultHeaderCell value={value} {...props} />
+  );
+};
+
+interface EnableCellProps extends Omit<SwitchProps, "value" | "onToggle"> {
   enabled: boolean;
   onToggle: (data: boolean) => Promise<RTKResult>;
   title: string;
@@ -196,8 +346,7 @@ export const EnableCell = ({
     }
   };
 
-  const handleToggle = async (event: ChangeEvent<HTMLInputElement>) => {
-    const { checked } = event.target;
+  const handleToggle = async (checked: boolean) => {
     if (checked) {
       await handlePatch({ enable: true });
     } else {
@@ -208,11 +357,10 @@ export const EnableCell = ({
   return (
     <>
       <Switch
-        colorScheme="complimentary"
-        isChecked={enabled}
-        data-testid="toggle-switch"
-        disabled={isDisabled}
+        checked={enabled}
         onChange={handleToggle}
+        disabled={isDisabled}
+        data-testid="toggle-switch"
         {...switchProps}
       />
       <ConfirmationModal

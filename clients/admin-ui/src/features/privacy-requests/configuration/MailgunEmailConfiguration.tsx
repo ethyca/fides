@@ -1,4 +1,4 @@
-import { Box, Button, Divider, Heading, Stack } from "fidesui";
+import { AntButton as Button, Box, Divider, Heading, Stack } from "fidesui";
 import { Form, Formik } from "formik";
 import { useState } from "react";
 
@@ -42,7 +42,7 @@ const MailgunEmailConfiguration = () => {
       handleError(result.error);
     } else {
       successAlert(
-        `Mailgun email successfully updated. You can now enter your security key.`
+        `Mailgun email successfully updated. You can now enter your security key.`,
       );
       setConfigurationStep("apiKey");
     }
@@ -97,19 +97,13 @@ const MailgunEmailConfiguration = () => {
                 />
               </Stack>
               <Box mt={10}>
-                <Button
-                  onClick={handleReset}
-                  mr={2}
-                  size="sm"
-                  variant="outline"
-                >
+                <Button onClick={handleReset} className="mr-2">
                   Cancel
                 </Button>
                 <Button
-                  isDisabled={isSubmitting}
-                  type="submit"
-                  colorScheme="primary"
-                  size="sm"
+                  htmlType="submit"
+                  disabled={isSubmitting}
+                  type="primary"
                   data-testid="save-btn"
                 >
                   Save
@@ -140,19 +134,13 @@ const MailgunEmailConfiguration = () => {
                     isRequired
                   />
                   <Box mt={10}>
-                    <Button
-                      onClick={handleReset}
-                      mr={2}
-                      size="sm"
-                      variant="outline"
-                    >
+                    <Button onClick={handleReset} className="mr-2">
                       Cancel
                     </Button>
                     <Button
-                      isDisabled={isSubmitting}
-                      type="submit"
-                      colorScheme="primary"
-                      size="sm"
+                      disabled={isSubmitting}
+                      htmlType="submit"
+                      type="primary"
                       data-testid="save-btn"
                     >
                       Save

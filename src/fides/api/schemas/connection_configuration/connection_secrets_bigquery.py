@@ -1,7 +1,8 @@
 import json
-from typing import List, Optional, Union
+from typing import ClassVar, List, Optional, Union
 
-from pydantic import EmailStr, Field, parse_obj_as, validator
+from google.cloud.bigquery import Client as BigQueryClient
+from pydantic import EmailStr, Field, field_validator
 from pydantic.main import BaseModel
 
 from fides.api.schemas.base_class import NoValidationSchema
@@ -15,37 +16,49 @@ class KeyfileCreds(BaseModel):
 
     type: Optional[str] = None
     project_id: str = Field(title="Project ID")
-    private_key_id: Optional[str] = Field(None, title="Private Key ID")
-    private_key: Optional[str] = Field(None, sensitive=True)
-    client_email: Optional[EmailStr] = None
-    client_id: Optional[str] = Field(None, title="Client ID")
-    auth_uri: Optional[str] = Field(None, title="Auth URI")
-    token_uri: Optional[str] = Field(None, title="Token URI")
-    auth_provider_x509_cert_url: Optional[str] = Field(
-        None, title="Auth Provider X509 Cert URL"
+    private_key_id: Optional[str] = Field(default=None, title="Private key ID")
+    private_key: Optional[str] = Field(
+        default=None, title="Private key", json_schema_extra={"sensitive": True}
     )
-    client_x509_cert_url: Optional[str] = Field(None, title="Client X509 Cert URL")
+    client_email: Optional[EmailStr] = Field(None, title="Client email")
+    client_id: Optional[str] = Field(default=None, title="Client ID")
+    auth_uri: Optional[str] = Field(default=None, title="Auth URI")
+    token_uri: Optional[str] = Field(default=None, title="Token URI")
+    auth_provider_x509_cert_url: Optional[str] = Field(
+        default=None, title="Auth provider X509 cert URL"
+    )
+    client_x509_cert_url: Optional[str] = Field(
+        default=None, title="Client X509 cert URL"
+    )
 
 
 class BigQuerySchema(ConnectionConfigSecretsSchema):
     """Schema to validate the secrets needed to connect to BigQuery"""
 
     keyfile_creds: KeyfileCreds = Field(
-        sensitive=True,
+        title="Keyfile creds",
+        json_schema_extra={"sensitive": True},
         description="The contents of the key file that contains authentication credentials for a service account in GCP.",
     )
     dataset: Optional[str] = Field(
-        title="BigQuery Dataset",
-        description="The dataset within your BigQuery project that contains the tables you want to access.",
+        default=None,
+        title="Dataset",
+        description="Only provide a dataset to scope discovery monitors and privacy request automation to a specific BigQuery dataset. In most cases, this can be left blank.",
     )
 
-    _required_components: List[str] = ["keyfile_creds"]
+    _required_components: ClassVar[List[str]] = ["keyfile_creds"]
 
-    @validator("keyfile_creds", pre=True)
+    @field_validator("keyfile_creds", mode="before")
+    @classmethod
     def parse_keyfile_creds(cls, v: Union[str, dict]) -> KeyfileCreds:
         if isinstance(v, str):
             v = json.loads(v)
-        return parse_obj_as(KeyfileCreds, v)
+        return KeyfileCreds.model_validate(v)
+
+    def get_client(self) -> BigQueryClient:
+        return BigQueryClient.from_service_account_info(
+            self.keyfile_creds.model_dump()  # pylint: disable=no-member
+        )
 
 
 class BigQueryDocsSchema(BigQuerySchema, NoValidationSchema):

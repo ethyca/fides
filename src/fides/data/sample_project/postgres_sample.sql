@@ -109,6 +109,13 @@ CREATE TABLE public.loyalty (
     tier CHARACTER VARYING(100)
 );
 
+CREATE TABLE public.dynamic_email_address_config (
+    id CHARACTER VARYING(100) PRIMARY KEY,
+    email_address CHARACTER VARYING(100),
+    vendor_name CHARACTER VARYING(100),
+    site_id CHARACTER VARYING(100)
+);
+
 INSERT INTO public.composite_pk_test VALUES
     (1,10,'linked to customer 1',1),
     (1,11,'linked to customer 2',2),
@@ -200,6 +207,12 @@ INSERT INTO public.loyalty VALUES
 ('CH-1', 'Jane Customer', 100, 'Cookie Rookie'),
 ('CH-2', 'John Customer', 200, 'Cookie Connoisseur');
 
+INSERT INTO public.dynamic_email_address_config VALUES
+('config1', 'test@test.com', 'Vendor 1', 'site-id-1'),
+('config2', 'test2@test.com', 'Vendor 2', 'site-id-2'),
+('config3', 'test3@test.com', 'Vendor 3', 'site-id-multiple-emails'),
+('config4', 'test4@test.com', 'Vendor 4', 'site-id-multiple-emails'),
+('config5', 'test@test.com', 'Vendor 5', 'site-id-3');
 
 CREATE SCHEMA backup_schema;
 CREATE TABLE  backup_schema.product (LIKE public.product INCLUDING ALL);

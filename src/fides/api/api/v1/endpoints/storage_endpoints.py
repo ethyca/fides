@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional
+from typing import Annotated, Dict, List, Optional
 
 from fastapi import Body, Depends, Security
 from fastapi_pagination import Page, Params
@@ -6,7 +6,7 @@ from fastapi_pagination.bases import AbstractPage
 from fastapi_pagination.ext.sqlalchemy import paginate
 from fideslang.validation import FidesKey
 from loguru import logger
-from pydantic import conlist
+from pydantic import Field
 from requests import RequestException
 from sqlalchemy.orm import Session
 from starlette.exceptions import HTTPException
@@ -122,7 +122,7 @@ def upload_data(
 def patch_config(
     *,
     db: Session = Depends(deps.get_db),
-    storage_configs: conlist(StorageDestination, max_items=50),  # type: ignore
+    storage_configs: Annotated[List[StorageDestination], Field(max_length=50)],  # type: ignore
 ) -> BulkPutStorageConfigResponse:
     """
     Given a list of storage destination elements, create or update corresponding StorageConfig objects
@@ -135,7 +135,7 @@ def patch_config(
     for destination in storage_configs:
         try:
             storage_config = StorageConfig.create_or_update(
-                db=db, data=destination.dict()
+                db=db, data=destination.model_dump(mode="json")
             )
         except KeyOrNameAlreadyExists as exc:
             logger.warning(
@@ -145,7 +145,7 @@ def patch_config(
             )
             failure = {
                 "message": exc.args[0],
-                "data": destination.dict(),
+                "data": destination.model_dump(mode="json"),
             }
             failed.append(BulkUpdateFailed(**failure))
             continue
@@ -159,7 +159,7 @@ def patch_config(
                 BulkUpdateFailed(
                     **{
                         "message": "Error creating or updating storage config.",
-                        "data": destination.dict(),
+                        "data": destination.model_dump(mode="json"),
                     }
                 )
             )
@@ -210,7 +210,7 @@ def put_config_secrets(
 
     logger.info("Updating storage config secrets for config with key '{}'", config_key)
     try:
-        storage_config.set_secrets(db=db, storage_secrets=secrets_schema.dict())  # type: ignore
+        storage_config.set_secrets(db=db, storage_secrets=secrets_schema.model_dump(mode="json"))  # type: ignore
     except ValueError as exc:
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,
@@ -252,7 +252,7 @@ def get_configs(
     """
     Retrieves configs for storage.
     """
-    logger.info("Finding all storage configurations with pagination params {}", params)
+    logger.debug("Finding all storage configurations with pagination params {}", params)
     return paginate(
         StorageConfig.query(db).order_by(StorageConfig.created_at.desc()), params=params
     )
@@ -269,7 +269,7 @@ def get_config_by_key(
     """
     Retrieves configs for storage by key.
     """
-    logger.info("Finding storage config with key '{}'", config_key)
+    logger.debug("Finding storage config with key '{}'", config_key)
 
     storage_config = StorageConfig.get_by(db, field="key", value=config_key)
     if not storage_config:
@@ -324,7 +324,7 @@ def get_active_default_config(
     """
     Retrieves the active default storage config.
     """
-    logger.info("Finding active default storage config")
+    logger.debug("Finding active default storage config")
     storage_config = get_active_default_storage_config(db)
     if not storage_config:
         raise HTTPException(
@@ -442,7 +442,7 @@ def put_default_config(
         "Starting upsert for default storage of type '{}'", incoming_storage_config.type
     )
 
-    incoming_data = incoming_storage_config.dict()
+    incoming_data = incoming_storage_config.model_dump(mode="json")
     existing_default = get_default_storage_config_by_type(
         db, incoming_storage_config.type
     )
@@ -524,7 +524,7 @@ def put_default_config_secrets(
         storage_type.value,
     )
     try:
-        storage_config.set_secrets(db=db, storage_secrets=secrets_schema.dict())  # type: ignore
+        storage_config.set_secrets(db=db, storage_secrets=secrets_schema.model_dump(mode="json"))  # type: ignore
     except ValueError as exc:
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,
@@ -568,7 +568,7 @@ def get_default_configs(
     """
     Retrieves default configs for each storage types.
     """
-    logger.info(
+    logger.debug(
         "Finding default storage configurations with pagination params {}", params
     )
     return paginate(
@@ -590,7 +590,7 @@ def get_default_config_by_type(
     """
     Retrieves default config for given storage type.
     """
-    logger.info("Finding default config for storage type '{}'", storage_type.value)
+    logger.debug("Finding default config for storage type '{}'", storage_type.value)
     storage_config = get_default_storage_config_by_type(db, storage_type)
     if not storage_config:
         raise HTTPException(

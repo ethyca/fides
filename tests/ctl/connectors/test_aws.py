@@ -44,6 +44,7 @@ def redshift_systems() -> Generator:
             organization_fides_key="default_organization",
             name="redshift-cluster-1",
             description="Fides Generated Description for Redshift Cluster: redshift-cluster-1",
+            meta={},
             fidesctl_meta=SystemMetadata(
                 endpoint_address="redshift-cluster-1.c2angfh5kpo4.us-east-1.redshift.amazonaws.com",
                 endpoint_port="5439",
@@ -57,6 +58,7 @@ def redshift_systems() -> Generator:
             organization_fides_key="default_organization",
             name="redshift-cluster-2",
             description="Fides Generated Description for Redshift Cluster: redshift-cluster-2",
+            meta={},
             fidesctl_meta=SystemMetadata(
                 endpoint_address="redshift-cluster-2.c2angfh5kpo4.us-east-1.redshift.amazonaws.com",
                 endpoint_port="5439",
@@ -101,6 +103,7 @@ def rds_systems() -> Generator:
             organization_fides_key="default_organization",
             name="database-2",
             description="Fides Generated Description for RDS Cluster: database-2",
+            meta={},
             fidesctl_meta=SystemMetadata(
                 endpoint_address="database-2.cluster-ckrdpkkb4ukm.us-east-1.rds.amazonaws.com",
                 endpoint_port="3306",
@@ -114,6 +117,7 @@ def rds_systems() -> Generator:
             organization_fides_key="default_organization",
             name="database-1",
             description="Fides Generated Description for RDS Instance: database-1",
+            meta={},
             fidesctl_meta=SystemMetadata(
                 endpoint_address="database-1.ckrdpkkb4ukm.us-east-1.rds.amazonaws.com",
                 endpoint_port="3306",

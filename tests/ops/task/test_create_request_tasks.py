@@ -11,6 +11,7 @@ from fides.api.graph.graph import DatasetGraph
 from fides.api.graph.traversal import Traversal, TraversalNode
 from fides.api.models.datasetconfig import convert_dataset_to_graph
 from fides.api.models.privacy_request import (
+    ExecutionLog,
     ExecutionLogStatus,
     PrivacyRequestStatus,
     RequestTask,
@@ -38,6 +39,8 @@ from ..graph.graph_test_util import erasure_policy, field
 payment_card_serialized_collection = {
     "name": "payment_card",
     "after": [],
+    "masking_strategy_override": None,
+    "partitioning": None,
     "fields": [
         {
             "name": "billing_address_id",
@@ -50,6 +53,8 @@ payment_card_serialized_collection = {
             "data_categories": ["system.operations"],
             "data_type_converter": "None",
             "return_all_elements": None,
+            "custom_request_field": None,
+            "masking_strategy_override": None,
         },
         {
             "name": "ccn",
@@ -62,6 +67,8 @@ payment_card_serialized_collection = {
             "data_categories": ["user.financial.bank_account"],
             "data_type_converter": "None",
             "return_all_elements": None,
+            "custom_request_field": None,
+            "masking_strategy_override": None,
         },
         {
             "name": "code",
@@ -74,6 +81,8 @@ payment_card_serialized_collection = {
             "data_categories": ["user.financial"],
             "data_type_converter": "None",
             "return_all_elements": None,
+            "custom_request_field": None,
+            "masking_strategy_override": None,
         },
         {
             "name": "customer_id",
@@ -86,6 +95,8 @@ payment_card_serialized_collection = {
             "data_categories": ["user.unique_id"],
             "data_type_converter": "None",
             "return_all_elements": None,
+            "custom_request_field": None,
+            "masking_strategy_override": None,
         },
         {
             "name": "id",
@@ -98,6 +109,8 @@ payment_card_serialized_collection = {
             "data_categories": ["system.operations"],
             "data_type_converter": "None",
             "return_all_elements": None,
+            "custom_request_field": None,
+            "masking_strategy_override": None,
         },
         {
             "name": "name",
@@ -110,6 +123,8 @@ payment_card_serialized_collection = {
             "data_categories": ["user.financial"],
             "data_type_converter": "None",
             "return_all_elements": None,
+            "custom_request_field": None,
+            "masking_strategy_override": None,
         },
         {
             "name": "preferred",
@@ -122,11 +137,14 @@ payment_card_serialized_collection = {
             "data_categories": ["user"],
             "data_type_converter": "None",
             "return_all_elements": None,
+            "custom_request_field": None,
+            "masking_strategy_override": None,
         },
     ],
     "erase_after": [],
     "grouped_inputs": [],
     "skip_processing": False,
+    "data_categories": [],
 }
 
 payment_card_serialized_traversal_details = {
@@ -279,6 +297,8 @@ class TestPersistAccessRequestTasks:
         assert customer_profile.collection == {
             "name": "internal_customer_profile",
             "after": [],
+            "masking_strategy_override": None,
+            "partitioning": None,
             "fields": [
                 {
                     "name": "_id",
@@ -291,6 +311,8 @@ class TestPersistAccessRequestTasks:
                     "data_categories": ["system.operations"],
                     "data_type_converter": "object_id",
                     "return_all_elements": None,
+                    "custom_request_field": None,
+                    "masking_strategy_override": None,
                 },
                 {
                     "name": "customer_identifiers",
@@ -311,6 +333,8 @@ class TestPersistAccessRequestTasks:
                             "data_categories": None,
                             "data_type_converter": "string",
                             "return_all_elements": None,
+                            "custom_request_field": None,
+                            "masking_strategy_override": None,
                         },
                         "derived_phone": {
                             "name": "derived_phone",
@@ -323,6 +347,8 @@ class TestPersistAccessRequestTasks:
                             "data_categories": ["user"],
                             "data_type_converter": "string",
                             "return_all_elements": True,
+                            "custom_request_field": None,
+                            "masking_strategy_override": None,
                         },
                         "derived_emails": {
                             "name": "derived_emails",
@@ -335,6 +361,8 @@ class TestPersistAccessRequestTasks:
                             "data_categories": ["user"],
                             "data_type_converter": "string",
                             "return_all_elements": None,
+                            "custom_request_field": None,
+                            "masking_strategy_override": None,
                         },
                     },
                     "length": None,
@@ -346,6 +374,8 @@ class TestPersistAccessRequestTasks:
                     "data_categories": None,
                     "data_type_converter": "object",
                     "return_all_elements": None,
+                    "custom_request_field": None,
+                    "masking_strategy_override": None,
                 },
                 {
                     "name": "derived_interests",
@@ -358,11 +388,14 @@ class TestPersistAccessRequestTasks:
                     "data_categories": ["user"],
                     "data_type_converter": "string",
                     "return_all_elements": None,
+                    "custom_request_field": None,
+                    "masking_strategy_override": None,
                 },
             ],
             "erase_after": [],
             "grouped_inputs": [],
             "skip_processing": False,
+            "data_categories": [],
         }
 
     def test_no_collections(self, db, privacy_request):
@@ -446,6 +479,65 @@ class TestPersistAccessRequestTasks:
 
         assert run_access_node_mock.called
         run_access_node_mock.assert_called_with(request_task, False)
+
+    @mock.patch(
+        "fides.api.task.create_request_tasks.queue_request_task",
+    )
+    def test_run_access_request_with_unreachable_nodes(
+        self,
+        run_access_node_mock,
+        db,
+        privacy_request,
+        policy,
+        dataset_graph_with_unreachable_collections: DatasetGraph,
+    ):
+        """Request tasks created by run_access_request and the root task is queued"""
+        with pytest.raises(TraversalError) as err:
+            run_access_request(
+                privacy_request,
+                policy,
+                dataset_graph_with_unreachable_collections,
+                [],
+                {"email": "customer-4@example.com"},
+                db,
+                privacy_request_proceed=False,
+            )
+
+        assert "Some nodes were not reachable:" in str(err.value)
+        assert "dataset_with_unreachable_collections:login" in str(err.value)
+        assert "dataset_with_unreachable_collections:report" in str(err.value)
+
+        db.refresh(privacy_request)
+        assert privacy_request.status == PrivacyRequestStatus.error
+
+        # We expect two error logs, one per unreachable collection
+        error_logs = privacy_request.execution_logs.filter(
+            ExecutionLog.status == ExecutionLogStatus.error
+        )
+        assert error_logs.count() == 2
+        error_logs = sorted(
+            error_logs, key=lambda execution_log: execution_log.collection_name
+        )
+        assert error_logs[0].dataset_name == "Dataset traversal"
+        assert (
+            error_logs[0].collection_name
+            == "dataset_with_unreachable_collections.login"
+        )
+        assert (
+            error_logs[0].message
+            == "Node dataset_with_unreachable_collections:login is not reachable"
+        )
+        assert error_logs[1].dataset_name == "Dataset traversal"
+        assert (
+            error_logs[1].collection_name
+            == "dataset_with_unreachable_collections.report"
+        )
+        assert (
+            error_logs[1].message
+            == "Node dataset_with_unreachable_collections:report is not reachable"
+        )
+
+        run_access_node_mock.assert_not_called()
 
 
 class TestPersistErasureRequestTasks:
@@ -724,7 +816,66 @@ class TestPersistErasureRequestTasks:
             "FIDESOPS_DO_NOT_MASK",
         ]
 
-    def test_erase_after_upstream_and_downstream_tasks(
+    @pytest.mark.integration_external
+    @pytest.mark.integration_bigquery
+    def test_erase_after_database_collections_upstream_and_downstream_tasks(
+        self, db, privacy_request, example_datasets, bigquery_connection_config
+    ):
+        dataset = Dataset(**example_datasets[7])
+        initial_graph = convert_dataset_to_graph(
+            dataset, bigquery_connection_config.key
+        )
+        graph = DatasetGraph(*[initial_graph])
+
+        identity = {"email": "customer-1@example.com"}
+        traversal: Traversal = Traversal(graph, identity)
+
+        traversal_nodes = {}
+        _ = traversal.traverse(traversal_nodes, collect_tasks_fn)
+        erasure_end_nodes = list(graph.nodes.keys())
+
+        persist_initial_erasure_request_tasks(
+            db,
+            privacy_request,
+            traversal_nodes,
+            erasure_end_nodes,
+            graph,
+        )
+
+        # Assert "erase_after" caused customer task to run after "address" task
+        address_task = privacy_request.erasure_tasks.filter(
+            RequestTask.collection_address == "bigquery_example_test_dataset:address"
+        ).first()
+        assert address_task.downstream_tasks == [
+            "bigquery_example_test_dataset:customer"
+        ]
+        assert address_task.collection["masking_strategy_override"] is None
+
+        customer_task = privacy_request.erasure_tasks.filter(
+            RequestTask.collection_address == "bigquery_example_test_dataset:customer"
+        ).first()
+        assert set(customer_task.upstream_tasks) == {
+            "__ROOT__:__ROOT__",
+            "bigquery_example_test_dataset:address",
+        }
+
+        # Assert erase_after stored on collection on customer task
+        assert set(customer_task.collection["erase_after"]) == {
+            "__ROOT__:__ROOT__",
+            "bigquery_example_test_dataset:address",
+        }
+
+        employee_task = privacy_request.erasure_tasks.filter(
+            RequestTask.collection_address == "bigquery_example_test_dataset:employee"
+        ).first()
+        assert employee_task.collection["masking_strategy_override"] == {
+            "strategy": "delete"
+        }
+        # Assert erase_after stored on collection on customer task
+        assert employee_task.collection["erase_after"] == []
+        assert employee_task.upstream_tasks == ["__ROOT__:__ROOT__"]
+
+    def test_erase_after_saas_upstream_and_downstream_tasks(
         self,
         db,
         privacy_request,
@@ -780,6 +931,8 @@ class TestPersistErasureRequestTasks:
                 "data_categories": ["system.operations"],
                 "data_type_converter": "integer",
                 "return_all_elements": None,
+                "custom_request_field": None,
+                "masking_strategy_override": None,
             },
             {
                 "name": "email",
@@ -792,6 +945,8 @@ class TestPersistErasureRequestTasks:
                 "data_categories": None,
                 "data_type_converter": "None",
                 "return_all_elements": None,
+                "custom_request_field": None,
+                "masking_strategy_override": None,
             },
         ]
         assert not serialized_collection["skip_processing"]
@@ -976,11 +1131,9 @@ class TestPersistConsentRequestTasks:
         self,
         db,
         privacy_request,
-        google_analytics_dataset_config_no_secrets,
+        saas_example_dataset_config,
     ):
-        graph = build_consent_dataset_graph(
-            [google_analytics_dataset_config_no_secrets]
-        )
+        graph = build_consent_dataset_graph([saas_example_dataset_config])
 
         traversal_nodes = {}
         # Unlike erasure and access graphs, we don't call traversal.traverse, but build a simpler
@@ -999,11 +1152,11 @@ class TestPersistConsentRequestTasks:
         assert root_task.action_type == ActionType.consent
         assert root_task.upstream_tasks == []
         assert root_task.downstream_tasks == [
-            "google_analytics_instance:google_analytics_instance"
+            "saas_connector_example:saas_connector_example"
         ]
         assert root_task.all_descendant_tasks == [
             "__TERMINATE__:__TERMINATE__",
-            "google_analytics_instance:google_analytics_instance",
+            "saas_connector_example:saas_connector_example",
         ]
         assert root_task.status == ExecutionLogStatus.complete
         assert root_task.access_data == [{"ga_client_id": "test_id"}]
@@ -1015,7 +1168,7 @@ class TestPersistConsentRequestTasks:
         assert terminator_task.is_terminator_task
         assert terminator_task.action_type == ActionType.consent
         assert terminator_task.upstream_tasks == [
-            "google_analytics_instance:google_analytics_instance"
+            "saas_connector_example:saas_connector_example"
         ]
         assert terminator_task.downstream_tasks == []
         assert terminator_task.all_descendant_tasks == []
@@ -1023,7 +1176,7 @@ class TestPersistConsentRequestTasks:
 
         ga_task = privacy_request.consent_tasks.filter(
             RequestTask.collection_address
-            == "google_analytics_instance:google_analytics_instance",
+            == "saas_connector_example:saas_connector_example",
         ).first()
         assert not ga_task.is_root_task
         assert not ga_task.is_terminator_task
@@ -1037,18 +1190,21 @@ class TestPersistConsentRequestTasks:
 
         # The collection is a fake one for Consent, since requests happen at the dataset level
         assert ga_task.collection == {
-            "name": "google_analytics_instance",
+            "name": "saas_connector_example",
             "after": [],
             "fields": [],
             "erase_after": [],
+            "partitioning": None,
             "grouped_inputs": [],
+            "data_categories": [],
             "skip_processing": False,
+            "masking_strategy_override": None,
         }
         assert ga_task.traversal_details == {
             "input_keys": [],
             "incoming_edges": [],
             "outgoing_edges": [],
-            "dataset_connection_key": "google_analytics_instance",
+            "dataset_connection_key": "saas_connector_example",
         }
 
     @mock.patch(
@@ -1231,12 +1387,15 @@ class TestRunAccessRequestWithRequestTasks:
         mongo_inserts,
         postgres_inserts,
         postgres_integration_db,
-        integration_mongodb_config,
-        integration_postgres_config,
+        integration_mongodb_config_with_dataset,
+        integration_postgres_config_with_dataset,
     ):
-        mongo_dataset, postgres_dataset = combined_mongo_postgresql_graph(
-            integration_postgres_config, integration_mongodb_config
-        )
+        # uses a fixture that also creates the dataset config for more realistic testing
+        integration_postgres_config = integration_postgres_config_with_dataset
+        integration_mongodb_config = integration_mongodb_config_with_dataset
+
+        mongo_dataset = integration_mongodb_config.datasets[0].get_graph()
+        postgres_dataset = integration_postgres_config.datasets[0].get_graph()
 
         graph = DatasetGraph(mongo_dataset, postgres_dataset)
 
@@ -1246,7 +1405,10 @@ class TestRunAccessRequestWithRequestTasks:
             privacy_request,
             policy,
             graph,
-            [integration_postgres_config, integration_mongodb_config],
+            [
+                integration_mongodb_config_with_dataset,
+                integration_postgres_config_with_dataset,
+            ],
             identity,
             db,
             privacy_request_proceed=True,
@@ -1321,12 +1483,15 @@ class TestRunAccessRequestWithRequestTasks:
         policy,
         mongo_inserts,
         postgres_inserts,
-        integration_mongodb_config,
-        integration_postgres_config,
+        integration_mongodb_config_with_dataset,
+        integration_postgres_config_with_dataset,
     ):
-        mongo_dataset, postgres_dataset = combined_mongo_postgresql_graph(
-            integration_postgres_config, integration_mongodb_config
-        )
+        # uses a fixture that also creates the dataset config for more realistic testing
+        integration_postgres_config = integration_postgres_config_with_dataset
+        integration_mongodb_config = integration_mongodb_config_with_dataset
+
+        mongo_dataset = integration_mongodb_config.datasets[0].get_graph()
+        postgres_dataset = integration_postgres_config.datasets[0].get_graph()
 
         graph = DatasetGraph(mongo_dataset, postgres_dataset)
 
@@ -1342,7 +1507,7 @@ class TestRunAccessRequestWithRequestTasks:
             policy,
             graph,
             [integration_postgres_config, integration_mongodb_config],
-            {"email": mongo_inserts["customer"][0]["email"]},
+            identity,
             db,
             privacy_request_proceed=True,
         )

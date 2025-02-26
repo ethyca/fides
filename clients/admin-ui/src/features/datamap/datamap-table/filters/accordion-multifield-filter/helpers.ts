@@ -1,38 +1,30 @@
+import { Column, Row } from "@tanstack/react-table";
 import React, { useContext } from "react";
-import { ColumnInstance, Row } from "react-table";
 
 import { DatamapRow } from "~/features/datamap";
 import DatamapTableContext from "~/features/datamap/datamap-table/DatamapTableContext";
 import type { FieldValueToIsSelected } from "~/features/datamap/datamap-table/filters/accordion-multifield-filter/AccordionMultifieldFilter";
 
-export const accordionMultifieldFilter = <D extends Record<string, unknown>>(
-  rows: Row<D>[],
-  columnIds: string[],
-  filterValue: FieldValueToIsSelected
+export const accordionMultifieldFilter = <T extends Record<string, any>>(
+  row: Row<T>,
+  columnId: string,
+  filterValue: FieldValueToIsSelected,
 ) => {
-  // The useFilters hook passes a single column id.
-  const columnId = columnIds[0];
-  return rows.filter((row) => {
-    const fieldValue = row.values[columnId];
-    return filterValue[fieldValue];
-  });
+  const fieldValue = row.original[columnId];
+  return filterValue[fieldValue];
 };
-
-export const useAccordionMultifieldFilter = <D extends Record<string, unknown>>(
-  props: Omit<ColumnInstance<D>, "filterValue"> & {
-    filterValue?: FieldValueToIsSelected;
-    rows: DatamapRow[];
-  }
-) => {
+interface AccordionMultifieldFilterProps {
+  column: Column<DatamapRow>;
+}
+export const useAccordionMultifieldFilter = ({
+  column,
+}: AccordionMultifieldFilterProps) => {
   const { tableInstance } = useContext(DatamapTableContext);
 
   const options = React.useMemo(() => {
-    const columnValues = new Set<string>();
-    props.preFilteredRows.forEach((row) => {
-      columnValues.add(row.values[props.id]);
-    });
-    return Array.from(columnValues);
-  }, [props.id, props.preFilteredRows]);
+    const columnValues = Array.from(column.getFacetedUniqueValues().keys());
+    return columnValues;
+  }, [column]);
 
   const initialFilterValue = React.useMemo(() => {
     const optionToSelected: FieldValueToIsSelected = {};
@@ -47,15 +39,15 @@ export const useAccordionMultifieldFilter = <D extends Record<string, unknown>>(
     options.forEach((option) => {
       clearedFilters[option] = false;
     });
-    props.setFilter(clearedFilters);
+    column.setFilterValue(clearedFilters);
   };
 
   const toggleFilterOption = (
     option: keyof FieldValueToIsSelected,
-    isSelected: boolean
+    isSelected: boolean,
   ) => {
     const updatedFilter = {
-      ...(props.filterValue ?? initialFilterValue),
+      ...(column.getFilterValue() ?? initialFilterValue),
       [option]: isSelected,
     };
 
@@ -67,19 +59,23 @@ export const useAccordionMultifieldFilter = <D extends Record<string, unknown>>(
        * it filters out all the data. We only want to add the filter
        * object when at least one option is toggled to true.
        */
-      tableInstance?.setAllFilters(
-        tableInstance?.state.filters.filter((f) => f.id !== props.id)
+      tableInstance?.setColumnFilters(
+        tableInstance
+          ?.getState()
+          .columnFilters.filter((f) => f.id !== column.id),
       );
     } else {
-      props.setFilter(updatedFilter);
+      column.setFilterValue(updatedFilter);
     }
   };
 
   return {
-    filterValue: props.filterValue ?? initialFilterValue,
+    filterValue:
+      (column.getFilterValue() as FieldValueToIsSelected) ??
+      (initialFilterValue as FieldValueToIsSelected),
     clearFilterOptions,
     toggleFilterOption,
     options,
-    header: props.Header,
+    header: column.columnDef.header,
   };
 };

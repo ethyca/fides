@@ -2,7 +2,15 @@ from typing import Any, ContextManager, Dict, List, Optional
 
 from celery import Celery, Task
 from loguru import logger
+from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import Session
+from tenacity import (
+    RetryCallState,
+    retry,
+    retry_if_exception_type,
+    stop_after_attempt,
+    wait_exponential,
+)
 
 from fides.api.db.session import get_db_engine, get_db_session
 from fides.api.util.logger import setup as setup_logging
@@ -10,7 +18,9 @@ from fides.config import CONFIG, FidesConfig
 
 MESSAGING_QUEUE_NAME = "fidesops.messaging"
 PRIVACY_PREFERENCES_QUEUE_NAME = "fides.privacy_preferences"  # This queue is used in Fidesplus for saving privacy preferences and notices served
+DSR_QUEUE_NAME = "fides.dsr"  # This queue is used for running data subject requests
 
+NEW_SESSION_RETRIES = 5
 
 autodiscover_task_locations: List[str] = [
     "fides.api.tasks",
@@ -20,10 +30,29 @@ autodiscover_task_locations: List[str] = [
 ]
 
 
+def log_retry_attempt(retry_state: RetryCallState) -> None:
+    """Log database connection retry attempts."""
+
+    logger.warning(
+        "Database connection attempt {} failed. Retrying in {} seconds...",
+        retry_state.attempt_number,
+        retry_state.next_action.sleep,  # type: ignore[union-attr]
+    )
+
+
 class DatabaseTask(Task):  # pylint: disable=W0223
     _task_engine = None
     _sessionmaker = None
 
+    # This retry will attempt to connect 5 times with an exponential backoff (2, 4, 8, 16 seconds between each attempt).
+    # The original error will be re-raised if the retries are successful. All attempts are shown in the logs.
+    @retry(
+        stop=stop_after_attempt(NEW_SESSION_RETRIES),
+        wait=wait_exponential(multiplier=1, min=1),
+        retry=retry_if_exception_type(OperationalError),
+        reraise=True,
+        before_sleep=log_retry_attempt,
+    )
     def get_new_session(self) -> ContextManager[Session]:
         """
         Creates a new Session to be used for each task invocation.
@@ -34,15 +63,18 @@ class DatabaseTask(Task):  # pylint: disable=W0223
         # only one engine will be instantiated in a given task scope, i.e
         # once per celery process.
         if self._task_engine is None:
-            _task_engine = get_db_engine(
+            self._task_engine = get_db_engine(
                 config=CONFIG,
                 pool_size=CONFIG.database.task_engine_pool_size,
                 max_overflow=CONFIG.database.task_engine_max_overflow,
+                keepalives_idle=CONFIG.database.task_engine_keepalives_idle,
+                keepalives_interval=CONFIG.database.task_engine_keepalives_interval,
+                keepalives_count=CONFIG.database.task_engine_keepalives_count,
             )
 
         # same for the sessionmaker
         if self._sessionmaker is None:
-            self._sessionmaker = get_db_session(config=CONFIG, engine=_task_engine)
+            self._sessionmaker = get_db_session(config=CONFIG, engine=self._task_engine)
 
         # but a new session is instantiated each time the method is invoked
         # to prevent session overlap when requests are executing concurrently

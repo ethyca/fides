@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 
-from fides.api.cryptography.cryptographic_util import hash_with_salt
+from fides.api.cryptography.cryptographic_util import hash_credential_with_salt
 from fides.api.models.client import ClientDetail
 from fides.common.api.scope_registry import SCOPE_REGISTRY
 from fides.config import CONFIG
@@ -16,7 +16,7 @@ class TestClientModel:
 
         assert new_client.hashed_secret is not None
         assert (
-            hash_with_salt(
+            hash_credential_with_salt(
                 secret.encode(CONFIG.security.encoding),
                 new_client.salt.encode(CONFIG.security.encoding),
             )
@@ -31,7 +31,7 @@ class TestClientModel:
             scopes=SCOPE_REGISTRY,
         )
 
-        hashed_access_key = hash_with_salt(
+        hashed_access_key = hash_credential_with_salt(
             CONFIG.security.oauth_root_client_secret.encode(CONFIG.security.encoding),
             client.salt.encode(CONFIG.security.encoding),
         )

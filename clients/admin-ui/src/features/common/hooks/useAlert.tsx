@@ -25,7 +25,7 @@ export const useAlert = () => {
   const errorAlert = (
     description: string | JSX.Element,
     title?: string,
-    addedOptions?: UseToastOptions
+    addedOptions?: UseToastOptions,
   ) => {
     const options = {
       ...addedOptions,
@@ -35,7 +35,7 @@ export const useAlert = () => {
       }: {
         onClose: MouseEventHandler<HTMLButtonElement> | undefined;
       }) => (
-        <Alert alignItems="normal" status="error">
+        <Alert alignItems="normal" status="error" data-testid="error-alert">
           <AlertIcon />
           <Box>
             {title && <AlertTitle>{title}</AlertTitle>}
@@ -66,7 +66,7 @@ export const useAlert = () => {
   const successAlert = (
     description: string,
     title?: string,
-    addedOptions?: UseToastOptions
+    addedOptions?: UseToastOptions,
   ) => {
     const options = {
       ...addedOptions,
@@ -76,7 +76,12 @@ export const useAlert = () => {
       }: {
         onClose: MouseEventHandler<HTMLButtonElement> | undefined;
       }) => (
-        <Alert alignItems="normal" status="success" variant="subtle">
+        <Alert
+          alignItems="normal"
+          status="success"
+          variant="subtle"
+          data-testid="success-alert"
+        >
           <AlertIcon />
           <Box>
             {title && <AlertTitle>{title}</AlertTitle>}

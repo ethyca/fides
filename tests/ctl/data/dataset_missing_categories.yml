@@ -1,0 +1,13 @@
+dataset:
+- collections:
+  - description: Organization information
+    fields:
+    - name: city
+    - data_categories:
+      - account.contact.state
+      name: state
+    name: organization
+  description: Sample dataset to be annotated
+  fides_key: test_missing_data_categories
+  name: Sample Dataset
+  organization_fides_key: default_organization

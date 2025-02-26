@@ -10,11 +10,13 @@ from fides.api.schemas.connection_configuration.connection_secrets_email import 
     IdentityTypes,
 )
 from fides.api.schemas.messaging.messaging import MessagingActionType
-from fides.api.service.connectors.erasure_email_connector import (
-    GenericErasureEmailConnector,
+from fides.api.service.connectors.base_erasure_email_connector import (
     filter_user_identities_for_connector,
     get_identity_types_for_connector,
     send_single_erasure_email,
+)
+from fides.api.service.connectors.erasure_email_connector import (
+    GenericErasureEmailConnector,
 )
 from fides.api.service.privacy_request.request_runner_service import (
     get_erasure_email_connection_configs,
@@ -140,7 +142,9 @@ class TestErasureEmailConnectorMethods:
             == filtered_identities
         )
 
-    @mock.patch("fides.api.service.connectors.erasure_email_connector.dispatch_message")
+    @mock.patch(
+        "fides.api.service.connectors.base_erasure_email_connector.dispatch_message"
+    )
     def test_send_single_erasure_email_no_org_defined(self, mock_dispatch, db):
         with pytest.raises(MessageDispatchException) as exc:
             send_single_erasure_email(
@@ -157,7 +161,9 @@ class TestErasureEmailConnectorMethods:
             == "Cannot send an email to third-party vendor. No organization name found."
         )
 
-    @mock.patch("fides.api.service.connectors.erasure_email_connector.dispatch_message")
+    @mock.patch(
+        "fides.api.service.connectors.base_erasure_email_connector.dispatch_message"
+    )
     def test_send_single_erasure_email(
         self, mock_dispatch, test_fides_org, db, messaging_config
     ):
@@ -192,7 +198,9 @@ class TestErasureEmailConnectorMethods:
             == "Test notification of user erasure requests from Test Org"
         )
 
-    @mock.patch("fides.api.service.connectors.erasure_email_connector.dispatch_message")
+    @mock.patch(
+        "fides.api.service.connectors.base_erasure_email_connector.dispatch_message"
+    )
     @pytest.mark.usefixtures(
         "test_fides_org",
         "messaging_config",
@@ -304,6 +312,6 @@ class TestAttentiveConnector:
             ]
         )
         assert call_kwargs["subject_email"] == "processor_address@example.com"
-        assert call_kwargs["subject_name"] == "Attentive"
+        assert call_kwargs["subject_name"] == "Attentive Email"
         assert call_kwargs["batch_identities"] == ["test_email@example.com"]
         assert call_kwargs["test_mode"]

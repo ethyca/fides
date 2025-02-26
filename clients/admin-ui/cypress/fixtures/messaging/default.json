@@ -1,0 +1,8 @@
+{
+  "type": "privacy_request_complete_access",
+  "is_enabled": false,
+  "content": {
+    "subject": "Your data is ready to be downloaded",
+    "body": "Your access request has been completed and can be downloaded at {{download_link}}. For security purposes, this secret link will expire in {{days}} days."
+  }
+}

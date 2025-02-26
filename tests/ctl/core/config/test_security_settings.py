@@ -4,7 +4,7 @@ from fides.config.security_settings import SecuritySettings
 
 
 @pytest.mark.unit
-class TestSecuirtySettings:
+class TestSecuritySettings:
     def test_validate_encryption_key_length_default_value(self):
         settings = SecuritySettings()
         assert settings.app_encryption_key == ""
@@ -36,7 +36,7 @@ class TestSecuirtySettings:
 
     def test_validate_cors_origins_urls_with_paths(self):
         with pytest.raises(ValueError) as e:
-            SecuritySettings(cors_origins=["http://test.com/"])
+            SecuritySettings(cors_origins=["http://test.com/longerpath"])
 
         assert "URL origin values cannot contain a path." in str(e)
 
@@ -44,6 +44,10 @@ class TestSecuirtySettings:
             SecuritySettings(cors_origins=["http://test.com/123/456"])
 
         assert "URL origin values cannot contain a path." in str(e)
+
+        # If there is a trailing slash, it is now stripped off
+        settings = SecuritySettings(cors_origins=["http://test.com/"])
+        assert settings.cors_origins == ["http://test.com"]
 
     def test_assemble_root_access_token_none(self):
         settings = SecuritySettings(oauth_root_client_secret="")
@@ -53,3 +57,7 @@ class TestSecuirtySettings:
     def test_validate_request_rate_limit_invalid_format(self):
         with pytest.raises(ValueError):
             SecuritySettings(request_rate_limit="invalid")
+
+    def test_security_settings_env_default_to_prod(self):
+        settings = SecuritySettings()
+        assert settings.env == "prod"

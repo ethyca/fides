@@ -7,6 +7,7 @@ on:
       - "**.md"
       - "clients/**"
       - ".vscode/**"
+      - ".github/workflows/frontend_checks.yml"
   push:
     branches:
       - "main"
@@ -15,6 +16,9 @@ on:
 env:
   IMAGE: ethyca/fides:local
   DEFAULT_PYTHON_VERSION: "3.10.13"
+  # Docker auth with read-only permissions.
+  DOCKER_USER: ${{ secrets.DOCKER_USER }}
+  DOCKER_RO_TOKEN: ${{ secrets.DOCKER_RO_TOKEN }}
 
 jobs:
   ###############
@@ -43,7 +47,7 @@ jobs:
     strategy:
       matrix:
         # NOTE: These are the currently supported/tested Python Versions
-        python_version: ["3.8.18", "3.9.18", "3.10.13"]
+        python_version: ["3.9.18", "3.10.13"]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -70,43 +74,6 @@ jobs:
           name: python-${{ matrix.python_version }}
           path: /tmp/python-${{ matrix.python_version }}.tar
           retention-days: 1
-
-  ###################
-  ## Static Checks ##
-  ###################
-  Static-Checks:
-    strategy:
-      matrix:
-        session_name:
-          [
-            "isort",
-            "black",
-            "mypy",
-            "pylint",
-            "xenon",
-            "check_install",
-            '"pytest(nox)"',
-          ]
-    runs-on: ubuntu-latest
-    continue-on-error: true
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Set Up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
-          cache: "pip"
-
-      - name: Install Nox
-        run: pip install nox>=2022
-
-      - name: Install Dev Requirements
-        run: pip install -r dev-requirements.txt
-
-      - name: Run Static Check
-        run: nox -s ${{ matrix.session_name }}
 
   ##################
   ## Performance ##
@@ -143,6 +110,12 @@ jobs:
       - name: Install Nox
         run: pip install nox>=2022
 
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ env.DOCKER_USER }}
+          password: ${{ env.DOCKER_RO_TOKEN }}
+
       - name: Run Performance Tests
         run: nox -s performance_tests
 
@@ -174,6 +147,12 @@ jobs:
 
       - name: Install Nox
         run: pip install nox>=2022
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ env.DOCKER_USER }}
+          password: ${{ env.DOCKER_RO_TOKEN }}
 
       - name: Run test suite
         run: nox -s check_container_startup
@@ -213,6 +192,12 @@ jobs:
       - name: Install Nox
         run: pip install nox>=2022
 
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ env.DOCKER_USER }}
+          password: ${{ env.DOCKER_RO_TOKEN }}
+
       - name: Run test suite
         run: nox -s "${{ matrix.test_selection }}"
 
@@ -222,17 +207,18 @@ jobs:
   Safe-Tests:
     needs: Check-Container-Startup
     strategy:
+      fail-fast: false
       matrix:
-        python_version: ["3.8.18", "3.9.18", "3.10.13"]
+        python_version: ["3.9.18", "3.10.13"]
         test_selection:
           - "ctl-not-external"
-          - "ops-unit"
+          - "ops-unit-api"
+          - "ops-unit-non-api"
           - "ops-integration"
           - "lib"
 
     runs-on: ubuntu-latest
     timeout-minutes: 45
-    continue-on-error: true
     steps:
       - name: Download container
         uses: actions/download-artifact@v4
@@ -255,6 +241,12 @@ jobs:
       - name: Install Nox
         run: pip install nox>=2022
 
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ env.DOCKER_USER }}
+          password: ${{ env.DOCKER_RO_TOKEN }}
+
       - name: Run test suite
         run: nox -s "pytest(${{ matrix.test_selection }})"
 
@@ -274,7 +266,7 @@ jobs:
     strategy:
       max-parallel: 1 # This prevents collisions in shared external resources
       matrix:
-        python_version: ["3.8.18", "3.9.18", "3.10.13"]
+        python_version: ["3.9.18", "3.10.13"]
     runs-on: ubuntu-latest
     timeout-minutes: 20
     # In PRs run with the "unsafe" label, or run on a "push" event to main
@@ -292,31 +284,53 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Set Up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
+          cache: "pip"
+
       - name: Install Nox
         run: pip install nox>=2022
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ env.DOCKER_USER }}
+          password: ${{ env.DOCKER_RO_TOKEN }}
+
+      - name: Load secrets from 1Password
+        uses: 1password/load-secrets-action@v2
+        with:
+          # Export loaded secrets as environment variables
+          export-env: true
+        env:
+          OP_SERVICE_ACCOUNT_TOKEN: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
+
+          # Secrets to pull from 1Password
+          AWS_ACCESS_KEY_ID: op://github-actions/ctl/AWS_ACCESS_KEY_ID
+          AWS_DEFAULT_REGION: op://github-actions/ctl/AWS_DEFAULT_REGION
+          AWS_SECRET_ACCESS_KEY: op://github-actions/ctl/AWS_SECRET_ACCESS_KEY
+          DYNAMODB_ACCESS_KEY_ID: op://github-actions/dynamodb/DYNAMODB_ACCESS_KEY_ID
+          DYNAMODB_ACCESS_KEY: op://github-actions/dynamodb/DYNAMODB_ACCESS_KEY
+          DYNAMODB_REGION: op://github-actions/dynamodb/DYNAMODB_REGION
+          OKTA_CLIENT_TOKEN: op://github-actions/ctl/OKTA_CLIENT_TOKEN
+          REDSHIFT_FIDESCTL_PASSWORD: op://github-actions/ctl/REDSHIFT_FIDESCTL_PASSWORD
+          SNOWFLAKE_FIDESCTL_PASSWORD: op://github-actions/ctl/SNOWFLAKE_FIDESCTL_PASSWORD
 
       - name: Run external test suite
         run: nox -s "pytest(ctl-external)"
         env:
-          SNOWFLAKE_FIDESCTL_PASSWORD: ${{ secrets.SNOWFLAKE_FIDESCTL_PASSWORD }}
-          REDSHIFT_FIDESCTL_PASSWORD: ${{ secrets.REDSHIFT_FIDESCTL_PASSWORD }}
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_CTL_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_CTL_SECRET_ACCESS_KEY }}
-          OKTA_CLIENT_TOKEN: ${{ secrets.OKTA_FIDESCTL_CLIENT_TOKEN }}
-          AWS_DEFAULT_REGION: us-east-1
           BIGQUERY_CONFIG: ${{ secrets.BIGQUERY_CONFIG }}
-          DYNAMODB_REGION: ${{ secrets.DYNAMODB_REGION }}
-          DYNAMODB_ACCESS_KEY_ID: ${{ secrets.DYNAMODB_ACCESS_KEY_ID }}
-          DYNAMODB_ACCESS_KEY: ${{ secrets.DYNAMODB_ACCESS_KEY }}
 
   External-Datastores:
     needs: Check-Container-Startup
     strategy:
       max-parallel: 1 # This prevents collisions in shared external resources
       matrix:
-        python_version: ["3.8.18", "3.9.18", "3.10.13"]
+        python_version: ["3.9.18", "3.10.13"]
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     # In PRs run with the "unsafe" label, or run on a "push" event to main
     if: contains(github.event.pull_request.labels.*.name, 'run unsafe ci checks') || github.event_name == 'push'
     steps:
@@ -332,29 +346,73 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Set Up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
+          cache: "pip"
+
       - name: Install Nox
         run: pip install nox>=2022
 
-      - name: Integration Tests (External)
-        env:
-          BIGQUERY_KEYFILE_CREDS: ${{ secrets.BIGQUERY_KEYFILE_CREDS }}
-          BIGQUERY_DATASET: fidesopstest
-          DYNAMODB_REGION: ${{ secrets.DYNAMODB_REGION }}
-          DYNAMODB_ACCESS_KEY_ID: ${{ secrets.DYNAMODB_ACCESS_KEY_ID }}
-          DYNAMODB_ACCESS_KEY: ${{ secrets.DYNAMODB_ACCESS_KEY }}
-          REDSHIFT_TEST_HOST: ${{ secrets.REDSHIFT_TEST_HOST }}
-          REDSHIFT_TEST_PORT: ${{ secrets.REDSHIFT_TEST_PORT }}
-          REDSHIFT_TEST_USER: ${{ secrets.REDSHIFT_TEST_USER }}
-          REDSHIFT_TEST_PASSWORD: ${{ secrets.REDSHIFT_TEST_PASSWORD }}
-          REDSHIFT_TEST_DATABASE: ${{ secrets.REDSHIFT_TEST_DATABASE }}
-          REDSHIFT_TEST_DB_SCHEMA: ${{ secrets.REDSHIFT_TEST_DB_SCHEMA }}
-          SNOWFLAKE_TEST_ACCOUNT_IDENTIFIER: ${{ secrets.SNOWFLAKE_TEST_ACCOUNT_IDENTIFIER }}
-          SNOWFLAKE_TEST_USER_LOGIN_NAME: ${{ secrets.SNOWFLAKE_TEST_USER_LOGIN_NAME }}
-          SNOWFLAKE_TEST_PASSWORD: ${{ secrets.SNOWFLAKE_TEST_PASSWORD }}
-          SNOWFLAKE_TEST_WAREHOUSE_NAME: ${{ secrets.SNOWFLAKE_TEST_WAREHOUSE_NAME }}
-          SNOWFLAKE_TEST_DATABASE_NAME: ${{ secrets.SNOWFLAKE_TEST_DATABASE_NAME }}
-          SNOWFLAKE_TEST_SCHEMA_NAME: ${{ secrets.SNOWFLAKE_TEST_SCHEMA_NAME }}
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ env.DOCKER_USER }}
+          password: ${{ env.DOCKER_RO_TOKEN }}
 
+      - name: Load secrets from 1Password
+        uses: 1password/load-secrets-action@v2
+        with:
+          # Export loaded secrets as environment variables
+          export-env: true
+        env:
+          OP_SERVICE_ACCOUNT_TOKEN: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
+
+          # Secrets to pull from 1Password
+          BIGQUERY_DATASET: op://github-actions/bigquery/BIGQUERY_DATASET
+          BIGQUERY_KEYFILE_CREDS: op://github-actions/bigquery/BIGQUERY_KEYFILE_CREDS
+          BIGQUERY_ENTERPRISE_DATASET: op://github-actions/bigquery-enterprise/BIGQUERY_ENTERPRISE_DATASET
+          BIGQUERY_ENTERPRISE_KEYFILE_CREDS: op://github-actions/bigquery-enterprise/BIGQUERY_ENTERPRISE_KEYFILE_CREDS
+          DYNAMODB_ACCESS_KEY_ID: op://github-actions/dynamodb/DYNAMODB_ACCESS_KEY_ID
+          DYNAMODB_ACCESS_KEY: op://github-actions/dynamodb/DYNAMODB_ACCESS_KEY
+          DYNAMODB_ASSUME_ROLE_ARN: op://github-actions/dynamodb/DYNAMODB_ASSUME_ROLE_ARN
+          DYNAMODB_REGION: op://github-actions/dynamodb/DYNAMODB_REGION
+          GOOGLE_CLOUD_SQL_MYSQL_DATABASE_NAME: op://github-actions/gcp-mysql/GOOGLE_CLOUD_SQL_MYSQL_DATABASE_NAME
+          GOOGLE_CLOUD_SQL_MYSQL_DB_IAM_USER: op://github-actions/gcp-mysql/GOOGLE_CLOUD_SQL_MYSQL_DB_IAM_USER
+          GOOGLE_CLOUD_SQL_MYSQL_INSTANCE_CONNECTION_NAME: op://github-actions/gcp-mysql/GOOGLE_CLOUD_SQL_MYSQL_INSTANCE_CONNECTION_NAME
+          GOOGLE_CLOUD_SQL_MYSQL_KEYFILE_CREDS: op://github-actions/gcp-mysql/GOOGLE_CLOUD_SQL_MYSQL_KEYFILE_CREDS
+          GOOGLE_CLOUD_SQL_POSTGRES_DATABASE_NAME: op://github-actions/gcp-postgres/GOOGLE_CLOUD_SQL_POSTGRES_DATABASE_NAME
+          GOOGLE_CLOUD_SQL_POSTGRES_DATABASE_SCHEMA_NAME: op://github-actions/gcp-postgres/GOOGLE_CLOUD_SQL_POSTGRES_DATABASE_SCHEMA_NAME
+          GOOGLE_CLOUD_SQL_POSTGRES_DB_IAM_USER: op://github-actions/gcp-postgres/GOOGLE_CLOUD_SQL_POSTGRES_DB_IAM_USER
+          GOOGLE_CLOUD_SQL_POSTGRES_INSTANCE_CONNECTION_NAME: op://github-actions/gcp-postgres/GOOGLE_CLOUD_SQL_POSTGRES_INSTANCE_CONNECTION_NAME
+          GOOGLE_CLOUD_SQL_POSTGRES_KEYFILE_CREDS: op://github-actions/gcp-postgres/GOOGLE_CLOUD_SQL_POSTGRES_KEYFILE_CREDS
+          RDS_MYSQL_AWS_ACCESS_KEY_ID: op://github-actions/rds-mysql/RDS_MYSQL_AWS_ACCESS_KEY_ID
+          RDS_MYSQL_AWS_SECRET_ACCESS_KEY: op://github-actions/rds-mysql/RDS_MYSQL_AWS_SECRET_ACCESS_KEY
+          RDS_MYSQL_DB_INSTANCE: op://github-actions/rds-mysql/RDS_MYSQL_DB_INSTANCE
+          RDS_MYSQL_DB_NAME: op://github-actions/rds-mysql/RDS_MYSQL_DB_NAME
+          RDS_MYSQL_DB_USERNAME: op://github-actions/rds-mysql/RDS_MYSQL_DB_USERNAME
+          RDS_MYSQL_REGION: op://github-actions/rds-mysql/RDS_MYSQL_REGION
+          RDS_POSTGRES_AWS_ACCESS_KEY_ID: op://github-actions/rds-postgres/RDS_POSTGRES_AWS_ACCESS_KEY_ID
+          RDS_POSTGRES_AWS_SECRET_ACCESS_KEY: op://github-actions/rds-postgres/RDS_POSTGRES_AWS_SECRET_ACCESS_KEY
+          RDS_POSTGRES_DB_USERNAME: op://github-actions/rds-postgres/RDS_POSTGRES_DB_USERNAME
+          RDS_POSTGRES_REGION: op://github-actions/rds-postgres/RDS_POSTGRES_REGION
+          REDSHIFT_TEST_DATABASE: op://github-actions/redshift/REDSHIFT_TEST_DATABASE
+          REDSHIFT_TEST_DB_SCHEMA: op://github-actions/redshift/REDSHIFT_TEST_DB_SCHEMA
+          REDSHIFT_TEST_HOST: op://github-actions/redshift/REDSHIFT_TEST_HOST
+          REDSHIFT_TEST_PASSWORD: op://github-actions/redshift/REDSHIFT_TEST_PASSWORD
+          REDSHIFT_TEST_PORT: op://github-actions/redshift/REDSHIFT_TEST_PORT
+          REDSHIFT_TEST_USER: op://github-actions/redshift/REDSHIFT_TEST_USER
+          SNOWFLAKE_TEST_ACCOUNT_IDENTIFIER: op://github-actions/snowflake/SNOWFLAKE_TEST_ACCOUNT_IDENTIFIER
+          SNOWFLAKE_TEST_DATABASE_NAME: op://github-actions/snowflake/SNOWFLAKE_TEST_DATABASE_NAME
+          SNOWFLAKE_TEST_PASSWORD: op://github-actions/snowflake/SNOWFLAKE_TEST_PASSWORD
+          SNOWFLAKE_TEST_PRIVATE_KEY_PASSPHRASE: op://github-actions/snowflake/SNOWFLAKE_TEST_PRIVATE_KEY_PASSPHRASE
+          SNOWFLAKE_TEST_PRIVATE_KEY: op://github-actions/snowflake/SNOWFLAKE_TEST_PRIVATE_KEY
+          SNOWFLAKE_TEST_SCHEMA_NAME: op://github-actions/snowflake/SNOWFLAKE_TEST_SCHEMA_NAME
+          SNOWFLAKE_TEST_USER_LOGIN_NAME: op://github-actions/snowflake/SNOWFLAKE_TEST_USER_LOGIN_NAME
+          SNOWFLAKE_TEST_WAREHOUSE_NAME: op://github-actions/snowflake/SNOWFLAKE_TEST_WAREHOUSE_NAME
+
+      - name: Integration Tests (External)
         run: nox -s "pytest(ops-external-datastores)"
 
   External-SaaS-Connectors:
@@ -369,7 +427,7 @@ jobs:
     strategy:
       max-parallel: 1 # This prevents collisions in shared external resources
       matrix:
-        python_version: ["3.8.18", "3.9.18", "3.10.13"]
+        python_version: ["3.9.18", "3.10.13"]
     steps:
       - name: Download container
         uses: actions/download-artifact@v4
@@ -380,11 +438,17 @@ jobs:
       - name: Load image
         run: docker load --input /tmp/python-${{ matrix.python_version }}.tar
 
-      - name: Install Nox
-        run: pip install nox>=2022
-
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Set Up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
+          cache: "pip"
+
+      - name: Install Nox
+        run: pip install nox>=2022
 
       - name: Get Vault Token
         uses: hashicorp/vault-action@v2.5.0
@@ -394,6 +458,12 @@ jobs:
           method: jwt
           role: ${{ secrets.VAULT_ROLE }}
           exportToken: True
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ env.DOCKER_USER }}
+          password: ${{ env.DOCKER_RO_TOKEN }}
 
       - name: SaaS Connector Tests
         env:

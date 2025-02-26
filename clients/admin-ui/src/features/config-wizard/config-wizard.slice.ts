@@ -56,12 +56,12 @@ export const configWizardSlice = createSlice({
     chooseSystemsForReview: (draftState, action: PayloadAction<string[]>) => {
       const fidesKeySet = new Set(action.payload);
       draftState.systemsForReview = (draftState.systemsForReview ?? []).filter(
-        (system) => fidesKeySet.has(system.fides_key)
+        (system) => fidesKeySet.has(system.fides_key),
       );
     },
     setAddSystemsMethod: (
       draftState,
-      action: PayloadAction<AddSystemMethods>
+      action: PayloadAction<AddSystemMethods>,
     ) => {
       draftState.addSystemsMethod = action.payload;
     },
@@ -91,20 +91,20 @@ const selectConfigWizard = (state: RootState) => state.configWizard;
 
 export const selectStep = createSelector(
   selectConfigWizard,
-  (state) => state.step
+  (state) => state.step,
 );
 
 export const selectOrganizationFidesKey = createSelector(
   selectConfigWizard,
-  (state) => state.organization?.fides_key ?? DEFAULT_ORGANIZATION_FIDES_KEY
+  (state) => state.organization?.fides_key ?? DEFAULT_ORGANIZATION_FIDES_KEY,
 );
 
 export const selectSystemsForReview = createSelector(
   selectConfigWizard,
-  (state) => state.systemsForReview ?? []
+  (state) => state.systemsForReview ?? [],
 );
 
 export const selectAddSystemsMethod = createSelector(
   selectConfigWizard,
-  (state) => state.addSystemsMethod
+  (state) => state.addSystemsMethod,
 );

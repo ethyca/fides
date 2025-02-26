@@ -72,7 +72,8 @@ export const FIDES_SYSTEM_COOKIE_KEY_MAP: {
 // Just the experience keys where a user can make a choice (none of the notice-only ones)
 export const EXPERIENCE_KEYS_WITH_PREFERENCES = TCF_KEY_MAP.filter(
   ({ experienceKey }) =>
-    experienceKey !== "tcf_features" && experienceKey !== "tcf_special_purposes"
+    experienceKey !== "tcf_features" &&
+    experienceKey !== "tcf_special_purposes",
 ).map((key) => key.experienceKey);
 
 /**
@@ -92,3 +93,14 @@ export const LEGAL_BASIS_OPTIONS = [
     value: LegalBasisEnum.LEGITIMATE_INTERESTS.toString(),
   },
 ];
+
+export const EMPTY_ENABLED_IDS: EnabledIds = {
+  purposesConsent: [],
+  customPurposesConsent: [],
+  purposesLegint: [],
+  specialPurposes: [],
+  features: [],
+  specialFeatures: [],
+  vendorsConsent: [],
+  vendorsLegint: [],
+};

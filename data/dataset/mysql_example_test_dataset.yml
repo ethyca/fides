@@ -208,3 +208,14 @@ dataset:
               data_type: string
           - name: last_visit
             data_categories: [system.operations]
+
+      - name: Lead  # `Lead` is a reserved keyword in mysql
+        fields:
+          - name: email
+            data_categories: [user.contact.email]
+            fides_meta:
+              identity: email
+              data_type: string
+          - name: updated_at
+            data_categories: [system.operations]
+

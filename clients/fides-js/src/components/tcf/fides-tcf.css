@@ -1,0 +1,198 @@
+:root {
+  --fides-overlay-tcf-p-h: 40px;
+  --fides-overlay-tcf-banner-col-gap: 36px;
+  --fides-overlay-tcf-banner-row-gap: 16px;
+  --fides-overlay-tcf-banner-btn-w: 180px;
+  --fides-overlay-tcf-banner-btn-p-h: 10px;
+  --fides-overlay-tcf-banner-purpose-p: 12px;
+  --fides-overlay-tcf-banner-purpose-p-t: 8px;
+}
+
+.fides-tcf-banner-container
+  div#fides-banner
+  div#fides-banner-inner
+  div#fides-button-group {
+  gap: 12px;
+}
+
+.fides-tcf-banner-container #fides-banner {
+  width: 100%;
+  border-radius: 0;
+  border-width: 1px 0 0 0;
+  padding-inline: var(--fides-overlay-tcf-p-h);
+}
+
+div#fides-banner-inner-container {
+  display: flex;
+  flex-direction: row;
+  gap: var(--fides-overlay-tcf-banner-col-gap);
+}
+
+.fides-banner__col {
+  display: flex;
+  flex-direction: column;
+  gap: var(--fides-overlay-tcf-banner-row-gap);
+  flex: 1;
+}
+
+.fides-tcf-banner-container .fides-banner__content {
+  margin-bottom: 0;
+  max-height: 25vh;
+  overflow-y: auto;
+  scrollbar-gutter: stable;
+}
+
+.fides-banner-description {
+  /* visually align with the purposes list */
+  margin-top: var(--fides-overlay-tcf-banner-purpose-p-t);
+}
+
+.fides-banner__purpose-list {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.fides-banner__purpose-item {
+  border-bottom: 1px solid var(--fides-overlay-row-divider-color);
+  padding: var(--fides-overlay-tcf-banner-purpose-p);
+  padding-top: var(--fides-overlay-tcf-banner-purpose-p-t);
+}
+
+.fides-vendor-count {
+  font-weight: 600;
+}
+
+.fides-tcf-banner-container div#fides-banner-inner div#fides-button-group {
+  margin-top: var(--fides-overlay-tcf-banner-row-gap);
+}
+
+.fides-tcf-banner-container .fides-banner-secondary-actions {
+  gap: calc(
+    24px - var(--fides-overlay-link-h-padding) -
+      var(--fides-overlay-link-h-padding)
+  );
+}
+
+.fides-tcf-banner-container .fides-banner-button {
+  line-height: 20px;
+  padding-top: var(--fides-overlay-tcf-banner-btn-p-h);
+  padding-bottom: var(--fides-overlay-tcf-banner-btn-p-h);
+  margin-top: unset;
+}
+
+.fides-record-header {
+  font-weight: 600;
+  padding: 12px 12px;
+  border-bottom: 1px solid var(--fides-overlay-row-divider-color);
+}
+
+/* TCF toggles */
+.fides-tcf-toggle-content {
+  margin-right: 60px;
+  font-size: var(--fides-overlay-font-size-body-small);
+  font-weight: 400;
+}
+
+.fides-tcf-purpose-vendor-title {
+  font-weight: 600;
+  display: flex;
+  justify-content: space-between;
+}
+
+.fides-tcf-illustration {
+  font-size: var(--fides-overlay-font-size-body-small);
+  padding: 13px;
+  padding-right: 60px;
+  border-radius: var(--fides-overlay-component-border-radius);
+}
+
+.fides-tcf-purpose-vendor {
+  padding: 13px;
+  border-radius: var(--fides-overlay-component-border-radius);
+}
+
+.fides-tcf-purpose-vendor-list {
+  font-weight: 400;
+  padding-left: 0;
+  list-style: none;
+  margin-left: 0;
+  margin-bottom: 0;
+}
+
+.fides-tcf-vendor-toggles {
+  display: flex;
+}
+
+@media (min-width: 1080px) {
+  /* buttons get kind of cramped on tablet before the mobile breakpoint */
+  .fides-tcf-banner-container .fides-banner-button {
+    min-width: var(--fides-overlay-tcf-banner-btn-w);
+  }
+}
+
+@media (min-width: 768px) {
+  /* TCF banner should always be full width and not floating */
+  div#fides-banner-container.fides-banner-bottom.fides-tcf-banner-container {
+    bottom: 0;
+  }
+}
+
+@media (max-width: 768px) {
+  .fides-tcf-banner-container
+    div#fides-banner
+    div#fides-banner-inner
+    div#fides-button-group
+    .fides-banner-button-group {
+    padding-left: 0;
+  }
+
+  .fides-tcf-banner-container #fides-banner {
+    padding: var(--fides-overlay-padding);
+  }
+
+  div#fides-banner-inner-container {
+    flex-direction: column;
+    /* bump scrolling area to be full width */
+    margin-inline: calc(-1 * var(--fides-overlay-padding));
+    padding-inline: var(--fides-overlay-padding);
+  }
+
+  .fides-tcf-banner-container .fides-banner__content {
+    margin-top: unset;
+    max-height: unset;
+    overflow-y: unset;
+    scrollbar-gutter: unset;
+  }
+
+  .fides-tcf-banner-container
+    .fides-banner-button-group.fides-button-group-i18n {
+    min-height: unset;
+  }
+
+  .fides-tcf-banner-container .fides-i18n-menu {
+    position: unset;
+    left: unset;
+    bottom: unset;
+    order: unset;
+  }
+
+  .fides-tcf-banner-container .fides-banner-secondary-actions {
+    flex-direction: row;
+  }
+
+  .fides-tcf-banner-container
+    .fides-banner-secondary-actions
+    .fides-privacy-policy {
+    order: unset;
+    width: unset;
+  }
+}
+
+@media (min-width: 2240px) {
+  .fides-tcf-banner-container #fides-banner {
+    max-width: 2240px;
+    margin: 0 auto;
+    border-width: 1px 1px 0 1px;
+  }
+}

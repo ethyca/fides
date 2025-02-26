@@ -1,8 +1,8 @@
 import {
+  AntButton as Button,
   Box,
   BoxProps,
   EditIcon,
-  IconButton,
   Text,
   useDisclosure,
   WarningIcon,
@@ -16,7 +16,7 @@ interface CustomFieldActionsProps extends BoxProps {
   customField: CustomFieldDefinitionWithId;
   onEdit: (
     customField: CustomFieldDefinitionWithId,
-    e: React.MouseEvent<HTMLButtonElement, MouseEvent>
+    e: React.MouseEvent<HTMLButtonElement, MouseEvent>,
   ) => void;
   onDelete: (customField: CustomFieldDefinitionWithId) => void;
 }
@@ -30,24 +30,22 @@ export const CustomFieldActions = ({
   const modal = useDisclosure();
   return (
     <Box {...props}>
-      <IconButton
+      <Button
         aria-label="Edit property"
         data-testid="edit-property-button"
-        variant="outline"
-        size="xs"
-        marginRight="10px"
+        size="small"
+        className="mr-[10px]"
         icon={<EditIcon />}
         onClick={(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
           e.stopPropagation();
           onEdit(customField, e);
         }}
       />
-      <IconButton
+      <Button
         aria-label="Delete property"
         data-testid="delete-property-button"
-        variant="outline"
-        size="xs"
-        marginRight="10px"
+        size="small"
+        className="mr-[10px]"
         icon={<TrashCanOutlineIcon />}
         onClick={(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
           e.stopPropagation();

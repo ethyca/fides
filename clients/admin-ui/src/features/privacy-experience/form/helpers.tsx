@@ -10,13 +10,15 @@ import {
   SupportedLanguage,
 } from "~/types/api";
 
+import { Layer1ButtonOption } from "./constants";
+
 interface LocationOrLocationGroup {
   selected?: boolean;
   id: string;
 }
 
 export const getSelectedRegionIds = (
-  allLocations?: LocationOrLocationGroup[]
+  allLocations?: LocationOrLocationGroup[],
 ) =>
   allLocations
     ?.filter((loc) => loc.selected)
@@ -39,9 +41,14 @@ export const defaultTranslations: ExperienceTranslationCreate[] = [
 export const defaultInitialValues: Omit<ExperienceConfigCreate, "component"> = {
   name: "",
   disabled: false,
+  dismissable: true,
   allow_language_selection: false,
+  show_layer1_notices: false,
+  layer1_button_options: Layer1ButtonOption.OPT_IN_OPT_OUT,
   regions: [],
   translations: defaultTranslations,
+  auto_detect_language: true,
+  auto_subdomain_cookie_deletion: true,
 };
 // utility type to pass as a prop to the translation form
 export type TranslationWithLanguageName = ExperienceTranslation &
@@ -49,14 +56,14 @@ export type TranslationWithLanguageName = ExperienceTranslation &
 
 export const findLanguageDisplayName = (
   translation: ExperienceTranslation,
-  langs: Language[]
+  langs: Language[],
 ) => {
   const language = langs.find((lang) => lang.id === translation.language);
   return language ? language.name : translation.language;
 };
 
 export const transformTranslationResponseToCreate = (
-  response: ExperienceTranslationResponse
+  response: ExperienceTranslationResponse,
 ): ExperienceTranslationCreate => {
   // eslint-disable-next-line @typescript-eslint/naming-convention
   const { language, is_default, accept_button_label, reject_button_label } =
@@ -72,6 +79,7 @@ export const transformTranslationResponseToCreate = (
     acknowledge_button_label: response.acknowledge_button_label ?? undefined,
     banner_title: response.banner_title ?? undefined,
     banner_description: response.banner_description ?? undefined,
+    purpose_header: response.purpose_header ?? undefined,
     privacy_policy_link_label: response.privacy_policy_link_label ?? undefined,
     privacy_policy_url: response.privacy_policy_url ?? undefined,
     privacy_preferences_link_label:
@@ -82,7 +90,7 @@ export const transformTranslationResponseToCreate = (
 };
 
 export const transformConfigResponseToCreate = (
-  config: ExperienceConfigResponse
+  config: ExperienceConfigResponse,
 ): ExperienceConfigCreate => {
   const {
     created_at: createdAt,
@@ -111,7 +119,7 @@ type TranslationFormConfig = {
 };
 
 export const getTranslationFormFields = (
-  component: ComponentType
+  component: ComponentType,
 ): TranslationFormConfig => {
   if (component === ComponentType.PRIVACY_CENTER) {
     return {
@@ -156,7 +164,25 @@ export const getTranslationFormFields = (
       modal_link_label: { included: true },
     };
   }
-  // For TCF overlay / default
+
+  if (component === ComponentType.TCF_OVERLAY) {
+    return {
+      title: { included: true, required: true },
+      banner_title: { included: true },
+      description: { included: true, required: true },
+      banner_description: { included: true },
+      purpose_header: { included: true },
+      accept_button_label: { included: true, required: true },
+      reject_button_label: { included: true, required: true },
+      save_button_label: { included: true, required: true },
+      acknowledge_button_label: { included: true, required: true },
+      privacy_policy_link_label: { included: true },
+      privacy_policy_url: { included: true },
+      privacy_preferences_link_label: { included: true, required: true },
+      modal_link_label: { included: true },
+    };
+  }
+  // For default
   return {
     title: { included: true, required: true },
     description: { included: true, required: true },

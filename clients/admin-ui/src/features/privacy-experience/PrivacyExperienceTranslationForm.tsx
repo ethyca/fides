@@ -1,4 +1,4 @@
-import { Button, ButtonGroup, Heading, Text, useDisclosure } from "fidesui";
+import { AntButton as Button, Heading, Text, useDisclosure } from "fidesui";
 import { useFormikContext } from "formik";
 import { isEqual } from "lodash";
 import { useMemo } from "react";
@@ -10,7 +10,7 @@ import {
 } from "~/features/common/form/inputs";
 import InfoBox from "~/features/common/InfoBox";
 import WarningModal from "~/features/common/modals/WarningModal";
-import { BackButtonNonLink } from "~/features/common/nav/v2/BackButton";
+import { BackButtonNonLink } from "~/features/common/nav/BackButton";
 import {
   getTranslationFormFields,
   TranslationWithLanguageName,
@@ -57,12 +57,12 @@ const PrivacyExperienceTranslationForm = ({
   const formConfig = getTranslationFormFields(values.component);
 
   const translationIndex = values.translations!.findIndex(
-    (t) => t.language === translation.language
+    (t) => t.language === translation.language,
   );
 
   const translationIsTouched = !isEqual(
     values.translations![translationIndex],
-    initialTranslation
+    initialTranslation,
   );
 
   const {
@@ -130,23 +130,19 @@ const PrivacyExperienceTranslationForm = ({
   };
 
   const buttonPanel = (
-    <ButtonGroup size="sm" borderTop="1px solid #DEE5EE" p={4}>
-      <Button
-        variant="outline"
-        onClick={handleLeaveForm}
-        data-testid="cancel-btn"
-      >
+    <div className="flex justify-between border-t border-[#DEE5EE] p-4">
+      <Button onClick={handleLeaveForm} data-testid="cancel-btn">
         Cancel
       </Button>
       <Button
-        colorScheme="primary"
-        isDisabled={(!translationIsTouched && !isOOB) || !!errors.translations}
-        data-testid="save-btn"
         onClick={handleSaveTranslation}
+        type="primary"
+        data-testid="save-btn"
+        disabled={(!translationIsTouched && !isOOB) || !!errors.translations}
       >
         {isEditing ? "Save" : "Add translation"}
       </Button>
-    </ButtonGroup>
+    </div>
   );
 
   let unsavedChangesMessage;
@@ -182,7 +178,7 @@ const PrivacyExperienceTranslationForm = ({
             name={`translations.${translationIndex}.is_default`}
             id={`translations.${translationIndex}.is_default`}
             label="Default language"
-            isDisabled={initialTranslation.is_default}
+            isDisabled={Boolean(initialTranslation.is_default)}
             variant="stacked"
           />
           <WarningModal
@@ -232,6 +228,15 @@ const PrivacyExperienceTranslationForm = ({
             variant="stacked"
           />
         </>
+      )}
+      {values.component === ComponentType.TCF_OVERLAY && (
+        <CustomTextInput
+          name={`translations.${translationIndex}.purpose_header`}
+          id={`translations.${translationIndex}.purpose_header`}
+          label="Purpose header (optional)"
+          tooltip="Appears above the Purpose list section of the TCF banner"
+          variant="stacked"
+        />
       )}
       <CustomTextInput
         name={`translations.${translationIndex}.accept_button_label`}

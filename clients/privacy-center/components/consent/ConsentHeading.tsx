@@ -1,5 +1,6 @@
 import { Heading } from "fidesui";
 import { useMemo } from "react";
+
 import { useAppSelector } from "~/app/hooks";
 import useI18n from "~/common/hooks/useI18n";
 import { useConfig } from "~/features/common/config.slice";
@@ -21,10 +22,11 @@ const ConsentHeading = () => {
   return (
     <Heading
       fontSize={["3xl", "4xl"]}
-      color="gray.600"
-      fontWeight="semibold"
+      color="gray.800"
+      fontWeight="medium"
       textAlign="center"
       data-testid="consent-heading"
+      mb={3}
     >
       {headingText}
     </Heading>

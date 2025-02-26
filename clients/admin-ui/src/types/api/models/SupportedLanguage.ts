@@ -2,9 +2,6 @@
 /* tslint:disable */
 /* eslint-disable */
 
-/**
- * An enumeration.
- */
 export enum SupportedLanguage {
   AR = "ar",
   BG = "bg",

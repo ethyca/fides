@@ -8,9 +8,16 @@ import {
   getGroupedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { Button, Spacer, Spinner, Text, useDisclosure, VStack } from "fidesui";
+import {
+  AntButton as Button,
+  Spacer,
+  Text,
+  useDisclosure,
+  VStack,
+} from "fidesui";
 import { useEffect, useMemo, useState } from "react";
 
+import FidesSpinner from "~/features/common/FidesSpinner";
 import { MonitorIcon } from "~/features/common/Icon/MonitorIcon";
 import {
   DefaultCell,
@@ -21,10 +28,16 @@ import {
   TableActionBar,
   useServerSidePagination,
 } from "~/features/common/table/v2";
+import { RelativeTimestampCell } from "~/features/common/table/v2/cells";
 import { useGetMonitorsByIntegrationQuery } from "~/features/data-discovery-and-detection/discovery-detection.slice";
 import ConfigureMonitorModal from "~/features/integrations/configure-monitor/ConfigureMonitorModal";
 import MonitorConfigActionsCell from "~/features/integrations/configure-monitor/MonitorConfigActionsCell";
-import { ConnectionConfigurationResponse, MonitorConfig } from "~/types/api";
+import { MonitorConfigEnableCell } from "~/features/integrations/configure-monitor/MonitorConfigEnableCell";
+import {
+  ConnectionConfigurationResponse,
+  ConnectionSystemTypeMap,
+  MonitorConfig,
+} from "~/types/api";
 
 const EMPTY_RESPONSE = {
   items: [] as MonitorConfig[],
@@ -55,7 +68,7 @@ const EmptyTableNotice = ({ onAddClick }: { onAddClick: () => void }) => (
         You have not configured any data discovery monitors. Click &quot;Add
         monitor&quot; to configure data discovery now.
       </Text>
-      <Button onClick={onAddClick} colorScheme="primary">
+      <Button onClick={onAddClick} type="primary">
         Add monitor
       </Button>
     </VStack>
@@ -64,8 +77,10 @@ const EmptyTableNotice = ({ onAddClick }: { onAddClick: () => void }) => (
 
 const MonitorConfigTab = ({
   integration,
+  integrationOption,
 }: {
   integration: ConnectionConfigurationResponse;
+  integrationOption?: ConnectionSystemTypeMap;
 }) => {
   const {
     PAGE_SIZES,
@@ -92,24 +107,27 @@ const MonitorConfigTab = ({
   });
 
   const modal = useDisclosure();
-  const [monitorToEdit, setMonitorToEdit] = useState<MonitorConfig | undefined>(
-    undefined
-  );
+  const [workingMonitor, setWorkingMonitor] = useState<
+    MonitorConfig | undefined
+  >(undefined);
+  const [isEditing, setIsEditing] = useState<boolean>(false);
   const [formStep, setFormStep] = useState(0);
 
   const handleEditMonitor = (monitor: MonitorConfig) => {
-    setMonitorToEdit(monitor);
+    setWorkingMonitor(monitor);
+    setIsEditing(true);
     modal.onOpen();
   };
 
   const handleCloseModal = () => {
-    setMonitorToEdit(undefined);
+    setWorkingMonitor(undefined);
+    setIsEditing(false);
     setFormStep(0);
     modal.onClose();
   };
 
   const handleAdvanceForm = (monitor: MonitorConfig) => {
-    setMonitorToEdit(monitor);
+    setWorkingMonitor(monitor);
     setFormStep(1);
   };
 
@@ -142,25 +160,46 @@ const MonitorConfigTab = ({
               suffix="Projects"
               value={props.getValue()}
               {...props}
-              isDisplayAll
+              cellState={{ isExpanded: true }}
             />
           ),
-        header: (props) => <DefaultHeaderCell value="Location" {...props} />,
+        header: (props) => <DefaultHeaderCell value="Scope" {...props} />,
+      }),
+      columnHelper.accessor((row) => row.execution_frequency, {
+        id: "frequency",
+        cell: (props) => (
+          <DefaultCell value={props.getValue() ?? "Not scheduled"} />
+        ),
+        header: (props) => (
+          <DefaultHeaderCell value="Scan frequency" {...props} />
+        ),
+      }),
+      columnHelper.accessor((row) => row.last_monitored, {
+        id: "last_monitored",
+        cell: (props) => <RelativeTimestampCell time={props.getValue()} />,
+        header: (props) => <DefaultHeaderCell value="Last scan" {...props} />,
+      }),
+      columnHelper.accessor((row) => row.enabled, {
+        id: "status",
+        cell: MonitorConfigEnableCell,
+        header: (props) => <DefaultHeaderCell value="Status" {...props} />,
+        size: 0,
+        meta: { disableRowClick: true },
       }),
       columnHelper.display({
         id: "action",
         cell: (props) => (
           <MonitorConfigActionsCell
             onEditClick={() => handleEditMonitor(props.row.original)}
+            monitorId={props.row.original.key!}
           />
         ),
         header: "Actions",
         meta: { disableRowClick: true },
-        maxSize: 50,
       }),
     ],
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    []
+    [],
   );
 
   const tableInstance = useReactTable<MonitorConfig>({
@@ -171,27 +210,27 @@ const MonitorConfigTab = ({
     manualPagination: true,
     data: monitors,
     columns,
+    columnResizeMode: "onChange",
   });
 
   if (isLoading) {
-    return <Spinner />;
+    return <FidesSpinner />;
   }
 
   return (
     <>
       <Text maxW="720px" mb={6} fontSize="sm">
-        Data discovery monitors observe configured systems for data model
-        changes to proactively discover and classify data risks. You can create
-        multiple monitors to observe part or all of a project, dataset, table or
-        API for changes and assign these to different data stewards.
+        A data discovery monitor observes configured systems for data model
+        changes to proactively discover and classify data risks. Monitors can
+        observe part or all of a project, dataset, table, or API for changes and
+        each can be assigned to a different data steward.
       </Text>
       <TableActionBar>
         <Spacer />
         <Button
           onClick={modal.onOpen}
-          size="xs"
-          variant="outline"
-          rightIcon={<MonitorIcon />}
+          icon={<MonitorIcon />}
+          iconPosition="end"
           data-testid="add-monitor-btn"
         >
           Add monitor
@@ -201,7 +240,10 @@ const MonitorConfigTab = ({
           onClose={handleCloseModal}
           formStep={formStep}
           onAdvance={handleAdvanceForm}
-          monitor={monitorToEdit}
+          monitor={workingMonitor}
+          isEditing={isEditing}
+          integration={integration}
+          integrationOption={integrationOption!}
         />
       </TableActionBar>
       <FidesTableV2
@@ -210,7 +252,7 @@ const MonitorConfigTab = ({
         emptyTableNotice={<EmptyTableNotice onAddClick={modal.onOpen} />}
       />
       <PaginationBar
-        totalRows={totalRows}
+        totalRows={totalRows || 0}
         pageSizes={PAGE_SIZES}
         setPageSize={setPageSize}
         onPreviousPageClick={onPreviousPageClick}

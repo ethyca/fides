@@ -3,11 +3,11 @@ import { stubLocations, stubPlus } from "cypress/support/stubs";
 import {
   LOCATIONS_ROUTE,
   REGULATIONS_ROUTE,
-} from "~/features/common/nav/v2/routes";
+} from "~/features/common/nav/routes";
 
 const assertIsChecked = (
   name: string,
-  state: "checked" | "unchecked" | "indeterminate"
+  state: "checked" | "unchecked" | "indeterminate",
 ) => {
   cy.getByTestId(name).within(() => {
     if (state === "indeterminate") {
@@ -36,7 +36,7 @@ describe("Locations and regulations", () => {
         assertIsChecked("select-all", "indeterminate");
         assertIsChecked(
           "European Economic Area (EEA)-checkbox",
-          "indeterminate"
+          "indeterminate",
         );
       });
       cy.getByTestId("picker-card-North America").within(() => {

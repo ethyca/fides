@@ -2,7 +2,14 @@
  * Exports various parts of the privacy declaration form for flexibility
  */
 
-import { Box, Button, Collapse, Flex, Spacer, Stack } from "fidesui";
+import {
+  AntButton as Button,
+  Box,
+  Collapse,
+  Flex,
+  Spacer,
+  Stack,
+} from "fidesui";
 import { Form, Formik, FormikHelpers } from "formik";
 import { useMemo } from "react";
 import * as Yup from "yup";
@@ -13,24 +20,20 @@ import {
   CustomFieldValues,
   useCustomFields,
 } from "~/features/common/custom-fields";
-import {
-  CustomCreatableSelect,
-  CustomSelect,
-  CustomSwitch,
-  CustomTextInput,
-} from "~/features/common/form/inputs";
+import { ControlledSelect } from "~/features/common/form/ControlledSelect";
+import { CustomSwitch, CustomTextInput } from "~/features/common/form/inputs";
 import { FormGuard } from "~/features/common/hooks/useIsAnyFormDirty";
 import { selectLockedForGVL } from "~/features/system/dictionary-form/dict-suggestion.slice";
+import useLegalBasisOptions from "~/features/system/system-form-declaration-tab/useLegalBasisOptions";
+import useSpecialCategoryLegalBasisOptions from "~/features/system/system-form-declaration-tab/useSpecialCategoryLegalBasisOptions";
 import SystemFormInputGroup from "~/features/system/SystemFormInputGroup";
 import {
   DataCategory,
   Dataset,
   DataSubject,
   DataUse,
-  LegalBasisForProcessingEnum,
   PrivacyDeclarationResponse,
   ResourceTypes,
-  SpecialCategoryLegalBasisEnum,
 } from "~/types/api";
 import { Cookies } from "~/types/api/models/Cookies";
 
@@ -98,7 +101,7 @@ export interface DataProps {
   allDataSubjects: DataSubject[];
   allDatasets?: Dataset[];
   includeCustomFields?: boolean;
-  cookies?: Cookies[];
+  cookies?: Cookies[] | null;
 }
 
 export const PrivacyDeclarationFormComponents = ({
@@ -118,32 +121,10 @@ export const PrivacyDeclarationFormComponents = ({
 }) => {
   const isEditing = !!privacyDeclarationId;
 
-  const legalBasisForProcessingOptions = useMemo(
-    () =>
-      (
-        Object.keys(LegalBasisForProcessingEnum) as Array<
-          keyof typeof LegalBasisForProcessingEnum
-        >
-      ).map((key) => ({
-        value: LegalBasisForProcessingEnum[key],
-        label: LegalBasisForProcessingEnum[key],
-      })),
-    []
-  );
+  const { legalBasisOptions } = useLegalBasisOptions();
 
-  const legalBasisForSpecialCategoryOptions = useMemo(
-    () =>
-      (
-        Object.keys(SpecialCategoryLegalBasisEnum) as Array<
-          keyof typeof SpecialCategoryLegalBasisEnum
-        >
-      ).map((key) => ({
-        value: SpecialCategoryLegalBasisEnum[key],
-        label: SpecialCategoryLegalBasisEnum[key],
-      })),
-    []
-  );
-
+  const { specialCategoryLegalBasisOptions } =
+    useSpecialCategoryLegalBasisOptions();
   const datasetSelectOptions = useMemo(
     () =>
       allDatasets
@@ -152,7 +133,7 @@ export const PrivacyDeclarationFormComponents = ({
             label: ds.name ? ds.name : ds.fides_key,
           }))
         : [],
-    [allDatasets]
+    [allDatasets],
   );
 
   return (
@@ -166,7 +147,7 @@ export const PrivacyDeclarationFormComponents = ({
           disabled={isEditing || lockedForGVL}
           variant="stacked"
         />
-        <CustomSelect
+        <ControlledSelect
           id="data_use"
           label="Data use"
           name="data_use"
@@ -175,11 +156,11 @@ export const PrivacyDeclarationFormComponents = ({
             label: data.fides_key,
           }))}
           tooltip="For which business purposes is this data processed?"
-          variant="stacked"
+          layout="stacked"
           isRequired
-          isDisabled={isEditing || lockedForGVL}
+          disabled={isEditing || lockedForGVL}
         />
-        <CustomSelect
+        <ControlledSelect
           name="data_categories"
           label="Data categories"
           options={allDataCategories.map((data) => ({
@@ -187,12 +168,12 @@ export const PrivacyDeclarationFormComponents = ({
             label: data.fides_key,
           }))}
           tooltip="Which categories of personal data are collected for this purpose?"
-          isMulti
+          mode="multiple"
           isRequired
-          isDisabled={lockedForGVL}
-          variant="stacked"
+          disabled={lockedForGVL}
+          layout="stacked"
         />
-        <CustomSelect
+        <ControlledSelect
           name="data_subjects"
           label="Data subjects"
           options={allDataSubjects.map((data) => ({
@@ -200,26 +181,26 @@ export const PrivacyDeclarationFormComponents = ({
             label: data.fides_key,
           }))}
           tooltip="Who are the subjects for this personal data?"
-          isMulti
-          isDisabled={lockedForGVL}
-          variant="stacked"
+          mode="multiple"
+          disabled={lockedForGVL}
+          layout="stacked"
         />
-        {/* <CustomSelect
+        {/* <ControlledSelect
           name="data_sources"
           label="Data sources"
           options={[]}
           tooltip="Where do these categories of data come from?"
-          isMulti
-          variant="stacked"
+          mode="multiple"
+          layout="stacked"
         /> */}
         <Stack spacing={0}>
-          <CustomSelect
+          <ControlledSelect
             name="legal_basis_for_processing"
             label="Legal basis for processing"
-            options={legalBasisForProcessingOptions}
+            options={legalBasisOptions}
             tooltip="What is the legal basis under which personal data is processed for this purpose?"
-            variant="stacked"
-            isDisabled={lockedForGVL}
+            layout="stacked"
+            disabled={lockedForGVL}
           />
           <Collapse
             in={values.legal_basis_for_processing === "Legitimate interests"}
@@ -255,27 +236,25 @@ export const PrivacyDeclarationFormComponents = ({
         />
       </SystemFormInputGroup>
       <SystemFormInputGroup heading="Features">
-        <CustomCreatableSelect
+        <ControlledSelect
           name="features"
           label="Features"
           placeholder="Describe features..."
           tooltip="What are some features of how data is processed?"
-          variant="stacked"
-          options={[]}
-          disableMenu
-          isDisabled={lockedForGVL}
-          isMulti
+          layout="stacked"
+          disabled={lockedForGVL}
+          mode="tags"
         />
       </SystemFormInputGroup>
       <SystemFormInputGroup heading="Dataset reference">
-        <CustomSelect
+        <ControlledSelect
           name="dataset_references"
           label="Dataset references"
           options={datasetSelectOptions}
           tooltip="Is there a dataset configured for this system?"
-          isMulti
-          variant="stacked"
-          isDisabled={lockedForGVL}
+          mode="multiple"
+          layout="stacked"
+          disabled={lockedForGVL}
         />
       </SystemFormInputGroup>
       <SystemFormInputGroup heading="Special category data">
@@ -293,14 +272,14 @@ export const PrivacyDeclarationFormComponents = ({
             style={{ overflow: "visible" }}
           >
             <Box mt={4}>
-              <CustomSelect
+              <ControlledSelect
                 name="special_category_legal_basis"
                 label="Legal basis for processing"
-                options={legalBasisForSpecialCategoryOptions}
+                options={specialCategoryLegalBasisOptions}
                 isRequired={values.processes_special_category_data}
                 tooltip="What is the legal basis under which the special category data is processed?"
-                variant="stacked"
-                isDisabled={lockedForGVL}
+                layout="stacked"
+                disabled={lockedForGVL}
               />
             </Box>
           </Collapse>
@@ -328,7 +307,7 @@ export const PrivacyDeclarationFormComponents = ({
                 variant="stacked"
                 disabled={lockedForGVL}
               />
-              <CustomSelect
+              <ControlledSelect
                 name="shared_categories"
                 label="Shared categories"
                 options={allDataCategories.map((c) => ({
@@ -336,8 +315,8 @@ export const PrivacyDeclarationFormComponents = ({
                   label: c.fides_key,
                 }))}
                 tooltip="Which categories of personal data does this system share with third parties?"
-                variant="stacked"
-                isMulti
+                layout="stacked"
+                mode="multiple"
                 disabled={lockedForGVL}
               />
             </Stack>
@@ -345,7 +324,7 @@ export const PrivacyDeclarationFormComponents = ({
         </Stack>
       </SystemFormInputGroup>
       <SystemFormInputGroup heading="Cookies">
-        <CustomCreatableSelect
+        <ControlledSelect
           name="cookies"
           label="Cookies"
           options={
@@ -353,10 +332,10 @@ export const PrivacyDeclarationFormComponents = ({
               ? cookies.map((c) => ({ label: c.name, value: c.name }))
               : []
           }
-          isMulti
+          mode="tags"
           tooltip="Which cookies are placed on consumer domains for this purpose?"
-          variant="stacked"
-          isDisabled={lockedForGVL}
+          layout="stacked"
+          disabled={lockedForGVL}
         />
       </SystemFormInputGroup>
       {includeCustomFields ? (
@@ -371,7 +350,7 @@ export const PrivacyDeclarationFormComponents = ({
 
 export const transformPrivacyDeclarationToFormValues = (
   privacyDeclaration?: PrivacyDeclarationResponse,
-  customFieldValues?: CustomFieldValues
+  customFieldValues?: CustomFieldValues,
 ): FormValues => {
   if (privacyDeclaration) {
     const formCookies =
@@ -405,14 +384,14 @@ export const usePrivacyDeclarationForm = ({
     () =>
       transformPrivacyDeclarationToFormValues(
         passedInInitialValues,
-        customFieldValues
+        customFieldValues,
       ),
-    [passedInInitialValues, customFieldValues]
+    [passedInInitialValues, customFieldValues],
   );
 
   const handleSubmit = async (
     values: FormValues,
-    formikHelpers: FormikHelpers<FormValues>
+    formikHelpers: FormikHelpers<FormValues>,
   ) => {
     const { customFieldValues: formCustomFieldValues } = values;
     const declarationToSubmit = transformFormValueToDeclaration(values);
@@ -425,7 +404,7 @@ export const usePrivacyDeclarationForm = ({
           pd.data_use === values.data_use &&
           // name can be undefined, so avoid comparing undefined == ""
           // (which we want to be true) - they both mean the PD has no name
-          (pd.name ? pd.name === values.name : true)
+          (pd.name ? pd.name === values.name : true),
       );
       if (customFieldResource.length > 0) {
         await upsertCustomFields({
@@ -442,7 +421,7 @@ export const usePrivacyDeclarationForm = ({
 interface Props {
   onSubmit: (
     values: PrivacyDeclarationResponse,
-    formikHelpers: FormikHelpers<FormValues>
+    formikHelpers: FormikHelpers<FormValues>,
   ) => Promise<PrivacyDeclarationResponse[] | undefined>;
   onCancel: () => void;
   initialValues?: PrivacyDeclarationResponse;
@@ -485,21 +464,15 @@ export const PrivacyDeclarationForm = ({
               {...dataProps}
             />
             <Flex w="100%">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={onCancel}
-                data-testid="cancel-btn"
-              >
+              <Button onClick={onCancel} data-testid="cancel-btn">
                 Cancel
               </Button>
               {!lockedForGVL ? (
                 <>
                   <Spacer />
                   <Button
-                    colorScheme="primary"
-                    size="sm"
-                    type="submit"
+                    type="primary"
+                    htmlType="submit"
                     disabled={!dirty}
                     data-testid="save-btn"
                   >

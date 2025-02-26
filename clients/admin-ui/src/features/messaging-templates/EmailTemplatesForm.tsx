@@ -1,6 +1,6 @@
 import { SerializedError } from "@reduxjs/toolkit";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query";
-import { Box, Button, Flex, useToast } from "fidesui";
+import { AntButton as Button, Box, Flex, useToast } from "fidesui";
 import { Form, Formik, FormikHelpers } from "formik";
 
 import FormSection from "~/features/common/form/FormSection";
@@ -35,15 +35,17 @@ const EmailTemplatesForm = ({ emailTemplates }: EmailTemplatesFormProps) => {
 
   const handleSubmit = async (
     values: EmailTemplatesFormValues,
-    formikHelpers: FormikHelpers<EmailTemplatesFormValues>
+    formikHelpers: FormikHelpers<EmailTemplatesFormValues>,
   ) => {
     const handleResult = (
-      result: { data: {} } | { error: FetchBaseQueryError | SerializedError }
+      result:
+        | { data: object }
+        | { error: FetchBaseQueryError | SerializedError },
     ) => {
       if (isErrorResult(result)) {
         const errorMsg = getErrorMessage(
           result.error,
-          "An unexpected error occurred while editing the email templates. Please try again."
+          "An unexpected error occurred while editing the email templates. Please try again.",
         );
         toast(errorToastParams(errorMsg));
       } else {
@@ -57,7 +59,7 @@ const EmailTemplatesForm = ({ emailTemplates }: EmailTemplatesFormProps) => {
       ([type, { content }]) => ({
         type,
         content,
-      })
+      }),
     ) as MessagingTemplate[];
 
     const result = await updateMessagingTemplates(messagingTemplates);
@@ -69,7 +71,7 @@ const EmailTemplatesForm = ({ emailTemplates }: EmailTemplatesFormProps) => {
       ...acc,
       [template.type]: { label: template.label, content: template.content },
     }),
-    {} as EmailTemplatesFormValues
+    {} as EmailTemplatesFormValues,
   );
 
   return (
@@ -103,12 +105,7 @@ const EmailTemplatesForm = ({ emailTemplates }: EmailTemplatesFormProps) => {
             </Box>
           ))}
           <Flex justifyContent="right" width="100%" paddingTop={2}>
-            <Button
-              size="sm"
-              type="submit"
-              colorScheme="primary"
-              isLoading={isLoading}
-            >
+            <Button htmlType="submit" type="primary" loading={isLoading}>
               Save
             </Button>
           </Flex>

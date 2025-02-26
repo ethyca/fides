@@ -28,7 +28,7 @@ from fides.common.api.v1.urn_registry import (
     V1_URL_PREFIX,
 )
 from fides.config import CONFIG
-from tests.ops.api.v1.endpoints.test_dataset_endpoints import _reject_key
+from tests.ops.api.v1.endpoints.test_dataset_config_endpoints import _reject_key
 from tests.ops.test_helpers.saas_test_utils import create_zip_file
 
 
@@ -124,7 +124,7 @@ class TestValidateSaaSConfig:
         details = json.loads(response.text)["detail"]
         assert (
             details[0]["msg"]
-            == "Must have exactly one of 'identity', 'references', or 'connector_param'"
+            == "Value error, Must have exactly one of 'identity', 'references', or 'connector_param'"
         )
 
     def test_put_validate_saas_config_wrong_reference_direction(
@@ -153,7 +153,7 @@ class TestValidateSaaSConfig:
         details = json.loads(response.text)["detail"]
         assert (
             details[0]["msg"]
-            == "References can only have a direction of 'from', found 'to'"
+            == "Value error, References can only have a direction of 'from', found 'to'"
         )
 
 
@@ -248,7 +248,7 @@ class TestPutSaaSConfig:
         )
         saas_config = connection_config.saas_config
         assert saas_config is not None
-        assert len(saas_config["endpoints"]) == 13
+        assert len(saas_config["endpoints"]) == 17
 
 
 def get_saas_config_url(connection_config: Optional[ConnectionConfig] = None) -> str:
@@ -322,7 +322,7 @@ class TestGetSaaSConfig:
             response_body["fides_key"]
             == saas_example_connection_config.get_saas_config().fides_key
         )
-        assert len(response_body["endpoints"]) == 14
+        assert len(response_body["endpoints"]) == 18
         assert response_body["type"] == "custom"
         assert response_body["endpoints"][11]["skip_processing"] is False
         assert response_body["endpoints"][12]["skip_processing"] is False
@@ -671,7 +671,7 @@ class TestRegisterConnectorTemplate:
                 "connector_template_invalid_config",
                 400,
                 {
-                    "detail": "1 validation error for SaaSConfig\ntest_request\n  field required (type=value_error.missing)"
+                    "detail": "1 validation error for SaaSConfig\ntest_request\n  Field required [type=missing, input_value={'fides_key': '<instance_...dentity': 'email'}]}}}]}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.7/v/missing"
                 },
             ),
             (
@@ -690,7 +690,7 @@ class TestRegisterConnectorTemplate:
                 "connector_template_invalid_dataset",
                 400,
                 {
-                    "detail": "1 validation error for Dataset\ncollections -> 0 -> name\n  field required (type=value_error.missing)"
+                    "detail": "1 validation error for Dataset\ncollections.0.name\n  Field required [type=missing, input_value={'fides_meta': None, 'nam...': ['user.unique_id']}]}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.7/v/missing"
                 },
             ),
             (

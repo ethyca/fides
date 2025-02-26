@@ -1,6 +1,6 @@
 from typing import List, Optional
 
-from pydantic import validator
+from pydantic import ConfigDict, field_validator
 
 from fides.api.oauth.roles import RoleRegistryEnum
 from fides.api.schemas.base_class import FidesSchema
@@ -15,19 +15,15 @@ class UserPermissionsCreate(FidesSchema):
     """
 
     roles: List[RoleRegistryEnum]
-
-    class Config:
-        """So roles are strings when we add to the db"""
-
-        use_enum_values = True
+    model_config = ConfigDict(use_enum_values=True)
 
 
 class UserPermissionsEdit(UserPermissionsCreate):
     """Data required to edit a FidesUserPermissions record."""
 
-    id: Optional[
-        str
-    ]  # I don't think this should be in the request body, so making it optional.
+    id: Optional[str] = (
+        None  # I don't think this should be in the request body, so making it optional.
+    )
 
 
 class UserPermissionsResponse(UserPermissionsCreate):
@@ -38,11 +34,10 @@ class UserPermissionsResponse(UserPermissionsCreate):
     total_scopes: List[
         ScopeRegistryEnum
     ]  # Returns a list of scopes inherited via roles
+    model_config = ConfigDict(use_enum_values=True)
 
-    class Config:
-        use_enum_values = True
-
-    @validator("total_scopes", pre=True)
+    @field_validator("total_scopes", mode="before")
+    @classmethod
     def validate_obsolete_total_scopes(
         cls, total_scopes: List[ScopeRegistryEnum]
     ) -> List[ScopeRegistryEnum]:

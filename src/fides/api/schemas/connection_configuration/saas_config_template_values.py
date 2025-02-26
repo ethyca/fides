@@ -1,7 +1,7 @@
 from typing import Any, Dict, Optional
 
 from fideslang.validation import FidesKey
-from pydantic import BaseModel, Extra
+from pydantic import BaseModel, ConfigDict
 
 from fides.api.models.connectionconfig import AccessLevel, ConnectionType
 from fides.api.schemas.connection_configuration import connection_secrets_schemas
@@ -10,14 +10,12 @@ from fides.api.schemas.connection_configuration import connection_secrets_schema
 class SaasConnectionTemplateValues(BaseModel):
     """Schema with values to create both a Saas ConnectionConfig and DatasetConfig from a template"""
 
-    name: Optional[str]  # For ConnectionConfig
-    key: Optional[FidesKey]  # For ConnectionConfig
-    description: Optional[str]  # For ConnectionConfig
+    name: Optional[str] = None  # For ConnectionConfig
+    key: Optional[FidesKey] = None  # For ConnectionConfig
+    description: Optional[str] = None  # For ConnectionConfig
     secrets: connection_secrets_schemas  # For ConnectionConfig
     instance_key: FidesKey  # For DatasetConfig.fides_key
-
-    class Config:
-        extra = Extra.ignore
+    model_config = ConfigDict(extra="ignore")
 
     def generate_config_data_from_template(
         self, config_from_template: Dict

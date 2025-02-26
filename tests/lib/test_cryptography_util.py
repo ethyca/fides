@@ -9,7 +9,8 @@ from fides.api.cryptography.cryptographic_util import (
     decode_password,
     generate_salt,
     generate_secure_random_string,
-    hash_with_salt,
+    hash_credential_with_salt,
+    hash_value_with_salt,
     str_to_b64_str,
 )
 
@@ -66,12 +67,25 @@ def test_generate_secure_random_string():
     assert len(generated) == 10
 
 
-def test_hash_with_salt(encoding: str = "UTF-8") -> None:
+def test_hash_credential_with_salt(encoding: str = "UTF-8") -> None:
     plain_text = "This is Plaintext. Not hashed. or salted. or chopped. or grilled."
     salt = "$2b$12$JpqVneuGhHBN62Gh/b0EP."
 
     expected_hash = "243262243132244a7071566e6575476848424e363247682f623045502e626476724a63656c637274514e7450584d2e392e4d49647871507636337469"  # pylint: disable=C0301
-    hashed = hash_with_salt(
+    hashed = hash_credential_with_salt(
+        plain_text.encode(encoding),
+        salt.encode(encoding),
+    )
+
+    assert hashed == expected_hash
+
+
+def test_hash_value_with_salt(encoding: str = "UTF-8") -> None:
+    plain_text = "This is Plaintext. Not hashed. or salted. or chopped. or grilled."
+    salt = "$2b$12$JpqVneuGhHBN62Gh/b0EP."
+
+    expected_hash = "1be641a0a1693ea040f2a48b12c43b1b6bd13025b0ce7fd7e244abe7c849625a"  # pylint: disable=C0301
+    hashed = hash_value_with_salt(
         plain_text.encode(encoding),
         salt.encode(encoding),
     )
@@ -90,7 +104,12 @@ def test_str_to_b64_str() -> None:
     "password, expected",
     [
         ("Testpassword1!", "Testpassword1!"),
+        (
+            "Test_1234",
+            "Test_1234",
+        ),  # this is actually valid base64 (but should be treated as plaintext), so this represents an edge case
         (str_to_b64_str("Testpassword1!"), "Testpassword1!"),
+        (str_to_b64_str("Test_1234"), "Test_1234"),
     ],
 )
 def test_decode_password(password, expected):

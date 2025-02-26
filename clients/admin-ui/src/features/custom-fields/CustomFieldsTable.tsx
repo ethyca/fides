@@ -8,9 +8,9 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import {
+  AntButton as Button,
   Box,
   BoxProps,
-  Button,
   HStack,
   Text,
   useDisclosure,
@@ -23,6 +23,7 @@ import { useAppSelector } from "~/app/hooks";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import Restrict, { useHasPermission } from "~/features/common/Restrict";
 import {
+  DefaultCell,
   DefaultHeaderCell,
   FidesTableV2,
   GlobalFilterV2,
@@ -34,7 +35,6 @@ import {
   EnableCustomFieldCell,
   FieldTypeCell,
   ResourceTypeCell,
-  ValueTextCell,
 } from "~/features/custom-fields/cells";
 import { CustomFieldActions } from "~/features/custom-fields/CustomFieldActions";
 import { CustomFieldModal } from "~/features/custom-fields/CustomFieldModal";
@@ -119,15 +119,22 @@ export const CustomFieldsTable = ({ ...rest }: BoxProps): JSX.Element => {
       [
         columnHelper.accessor((row) => row.name, {
           id: "name",
-          cell: ValueTextCell,
+          cell: (props) => (
+            <DefaultCell value={props.getValue()} cellProps={props} />
+          ),
           header: (props) => <DefaultHeaderCell value="Label" {...props} />,
         }),
         columnHelper.accessor((row) => row.description, {
           id: "description",
-          cell: ValueTextCell,
+          cell: (props) => (
+            <DefaultCell value={props.getValue()} cellProps={props} />
+          ),
           header: (props) => (
             <DefaultHeaderCell value="Description" {...props} />
           ),
+          meta: {
+            showHeaderMenu: true,
+          },
         }),
         columnHelper.accessor((row) => row.field_type, {
           id: "field_type",
@@ -163,7 +170,7 @@ export const CustomFieldsTable = ({ ...rest }: BoxProps): JSX.Element => {
           }),
       ].filter(Boolean) as ColumnDef<CustomFieldDefinitionWithId, any>[],
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [userCanDelete, userCanUpdate]
+    [userCanDelete, userCanUpdate],
   );
 
   const tableInstance = useReactTable<CustomFieldDefinitionWithId>({
@@ -177,6 +184,7 @@ export const CustomFieldsTable = ({ ...rest }: BoxProps): JSX.Element => {
     state: {
       globalFilter,
     },
+    columnResizeMode: "onChange",
   });
 
   const handleCloseModal = () => {
@@ -187,8 +195,7 @@ export const CustomFieldsTable = ({ ...rest }: BoxProps): JSX.Element => {
   const AddCustomFieldButton = () => (
     <Restrict scopes={[ScopeRegistryEnum.CUSTOM_FIELD_DEFINITION_CREATE]}>
       <Button
-        size="xs"
-        colorScheme="primary"
+        type="primary"
         data-testid="add-custom-field-btn"
         onClick={onOpen}
       >

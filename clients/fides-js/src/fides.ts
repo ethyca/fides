@@ -5,14 +5,11 @@
  *
  * See the overall package docs in ./docs/README.md for more!
  */
+import { blueconic } from "./integrations/blueconic";
 import { gtm } from "./integrations/gtm";
 import { meta } from "./integrations/meta";
 import { shopify } from "./integrations/shopify";
-
-import {
-  updateExperienceFromCookieConsentNotices,
-  consentCookieObjHasSomeConsentSet,
-} from "./lib/cookie";
+import { isConsentOverride, raise } from "./lib/common-utils";
 import {
   FidesConfig,
   FidesExperienceTranslationOverrides,
@@ -24,30 +21,34 @@ import {
   OverrideType,
   PrivacyExperience,
 } from "./lib/consent-types";
-
-import { dispatchFidesEvent } from "./lib/events";
-
-import {
-  initialize,
-  getInitialCookie,
-  getInitialFides,
-  getOverridesByType,
-  UpdateExperienceFn,
-} from "./lib/initialize";
-import { renderOverlay } from "./lib/renderOverlay";
-import { customGetConsentPreferences } from "./services/external/preferences";
 import {
   defaultShowModal,
   isPrivacyExperience,
   shouldResurfaceConsent,
 } from "./lib/consent-utils";
+import {
+  consentCookieObjHasSomeConsentSet,
+  updateExperienceFromCookieConsentNotices,
+} from "./lib/cookie";
+import { initializeDebugger } from "./lib/debugger";
+import { dispatchFidesEvent, onFidesEvent } from "./lib/events";
 import { DEFAULT_MODAL_LINK_LABEL } from "./lib/i18n";
-import { raise } from "./lib/common-utils";
+import {
+  getInitialCookie,
+  getInitialFides,
+  getOverridesByType,
+  initialize,
+  UpdateExperienceFn,
+} from "./lib/initialize";
+import { initOverlay } from "./lib/initOverlay";
+import { renderOverlay } from "./lib/renderOverlay";
+import { customGetConsentPreferences } from "./services/external/preferences";
 
 declare global {
   interface Window {
     Fides: FidesGlobal;
     fides_overrides: FidesOptions;
+    fidesDebugger: (...args: unknown[]) => void;
   }
 }
 
@@ -60,12 +61,11 @@ const updateWindowFides = (fidesGlobal: FidesGlobal) => {
 const updateExperience: UpdateExperienceFn = ({
   cookie,
   experience,
-  debug,
   isExperienceClientSideFetched,
 }): Partial<PrivacyExperience> => {
   let updatedExperience: PrivacyExperience = experience;
   const preferencesExistOnCookie = consentCookieObjHasSomeConsentSet(
-    cookie.consent
+    cookie.consent,
   );
   if (isExperienceClientSideFetched && preferencesExistOnCookie) {
     // If we have some preferences on the cookie, we update client-side experience with those preferences
@@ -73,7 +73,6 @@ const updateExperience: UpdateExperienceFn = ({
     updatedExperience = updateExperienceFromCookieConsentNotices({
       experience,
       cookie,
-      debug,
     });
   }
   return updatedExperience;
@@ -91,17 +90,31 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
     (this.config as FidesConfig) ??
     raise("Fides must be initialized with a configuration object");
 
+  initializeDebugger(!!config.options?.debug);
+
   this.config = config; // no matter how the config is set, we want to store it on the global object
+
+  dispatchFidesEvent(
+    "FidesInitializing",
+    undefined,
+    this.config.options.debug,
+    {
+      gppEnabled:
+        this.config.options.gppEnabled ||
+        this.config.experience?.gpp_settings?.enabled,
+      tcfEnabled: this.config.options.tcfEnabled,
+    },
+  );
 
   const optionsOverrides: Partial<FidesInitOptionsOverrides> =
     getOverridesByType<Partial<FidesInitOptionsOverrides>>(
       OverrideType.OPTIONS,
-      config
+      config,
     );
   const experienceTranslationOverrides: Partial<FidesExperienceTranslationOverrides> =
     getOverridesByType<Partial<FidesExperienceTranslationOverrides>>(
       OverrideType.EXPERIENCE_TRANSLATION,
-      config
+      config,
     );
   const consentPrefsOverrides: GetPreferencesFnResp | null =
     await customGetConsentPreferences(config);
@@ -143,9 +156,11 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
   const updatedFides = await initialize({
     ...config,
     fides: this,
+    initOverlay,
     renderOverlay,
     updateExperience,
     overrides,
+    propertyId: config.propertyId,
   });
   Object.assign(this, updatedFides);
   updateWindowFides(this);
@@ -171,8 +186,8 @@ const _Fides: FidesGlobal = {
     modalLinkId: null,
     privacyCenterUrl: "",
     fidesApiUrl: "",
-    serverSideFidesApiUrl: "",
     tcfEnabled: false,
+    gppEnabled: false,
     fidesEmbed: false,
     fidesDisableSaveApi: false,
     fidesDisableNoticesServedApi: false,
@@ -187,11 +202,14 @@ const _Fides: FidesGlobal = {
     base64Cookie: false,
     fidesPrimaryColor: null,
     fidesClearCookie: false,
+    showFidesBrandLink: true,
+    fidesConsentOverride: null,
   },
   fides_meta: {},
   identity: {},
   tcf_consent: {},
   saved_consent: {},
+  blueconic,
   gtm,
   init,
   config: undefined,
@@ -202,9 +220,14 @@ const _Fides: FidesGlobal = {
     return this.init();
   },
   initialized: false,
+  onFidesEvent,
   shouldShowExperience() {
     if (!isPrivacyExperience(this.experience)) {
       // Nothing to show if there's no experience
+      return false;
+    }
+    if (isConsentOverride(this.options)) {
+      // If consent preference override exists, we should not show the experience
       return false;
     }
     if (!this.cookie) {
@@ -213,7 +236,7 @@ const _Fides: FidesGlobal = {
     return shouldResurfaceConsent(
       this.experience,
       this.cookie,
-      this.saved_consent
+      this.saved_consent,
     );
   },
   meta,
@@ -225,14 +248,14 @@ const _Fides: FidesGlobal = {
 updateWindowFides(_Fides);
 
 // Export everything from ./lib/* to use when importing fides.mjs as a module
-export * from "./services/api";
-export * from "./services/external/geolocation";
-export * from "./lib/initOverlay";
 export * from "./lib/consent-context";
 export * from "./lib/consent-types";
 export * from "./lib/consent-utils";
-export * from "./lib/shared-consent-utils";
 export * from "./lib/consent-value";
 export * from "./lib/cookie";
 export * from "./lib/events";
 export * from "./lib/i18n";
+export * from "./lib/initOverlay";
+export * from "./lib/shared-consent-utils";
+export * from "./services/api";
+export * from "./services/external/geolocation";

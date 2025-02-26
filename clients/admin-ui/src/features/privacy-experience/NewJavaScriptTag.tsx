@@ -1,6 +1,6 @@
 import {
+  AntButton as Button,
   Code,
-  IconButton,
   Link,
   Modal,
   ModalBody,
@@ -37,18 +37,18 @@ const NewJavaScriptTag = ({ property }: Props) => {
     undefined,
     {
       skip: !isFidesCloud,
-    }
+    },
   );
 
   const fidesJsScriptTag = useMemo(() => {
     const script = FIDES_JS_SCRIPT_TEMPLATE.replace(
       PROPERTY_UNIQUE_ID_TEMPLATE,
-      property.id!.toString()
+      property.id!.toString(),
     );
     if (isFidesCloud && isSuccess && fidesCloudConfig?.privacy_center_url) {
       script.replace(
         PRIVACY_CENTER_HOSTNAME_TEMPLATE,
-        fidesCloudConfig.privacy_center_url
+        fidesCloudConfig.privacy_center_url,
       );
     }
     return script;
@@ -56,11 +56,10 @@ const NewJavaScriptTag = ({ property }: Props) => {
 
   return (
     <>
-      <IconButton
+      <Button
         aria-label="Install property"
-        variant="outline"
-        size="xs"
-        marginRight="10px"
+        size="small"
+        className="mr-[10px]"
         icon={<GearLightIcon />}
         onClick={(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
           e.stopPropagation();

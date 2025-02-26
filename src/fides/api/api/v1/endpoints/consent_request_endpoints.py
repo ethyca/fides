@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Dict, List, Optional, Set, Tuple, Union
+from typing import List, Optional, Set, Tuple, Union
 
 from fastapi import Depends, HTTPException, Security
 from fastapi_pagination import Page, Params
@@ -19,17 +19,12 @@ from starlette.status import (
     HTTP_403_FORBIDDEN,
     HTTP_404_NOT_FOUND,
     HTTP_422_UNPROCESSABLE_ENTITY,
-    HTTP_500_INTERNAL_SERVER_ERROR,
 )
 
-from fides.api.api.deps import get_config_proxy, get_db
-from fides.api.api.v1.endpoints.privacy_request_endpoints import (
-    create_privacy_request_func,
-)
+from fides.api.api.deps import get_config_proxy, get_db, get_messaging_service
 from fides.api.common_exceptions import (
-    FunctionalityNotConfigured,
     IdentityVerificationException,
-    MessageDispatchException,
+    RedisNotConfigured,
 )
 from fides.api.db.seed import DEFAULT_CONSENT_POLICY
 from fides.api.models.messaging import get_messaging_method
@@ -41,7 +36,7 @@ from fides.api.models.privacy_request import (
 )
 from fides.api.models.property import Property
 from fides.api.oauth.utils import verify_oauth_client
-from fides.api.schemas.messaging.messaging import MessagingActionType, MessagingMethod
+from fides.api.schemas.messaging.messaging import MessagingMethod
 from fides.api.schemas.privacy_request import BulkPostPrivacyRequests
 from fides.api.schemas.privacy_request import Consent as ConsentSchema
 from fides.api.schemas.privacy_request import (
@@ -55,8 +50,6 @@ from fides.api.schemas.privacy_request import (
     VerificationCode,
 )
 from fides.api.schemas.redis_cache import Identity
-from fides.api.service._verification import send_verification_code_to_user
-from fides.api.service.messaging.message_dispatch_service import message_send_enabled
 from fides.api.util.api_router import APIRouter
 from fides.api.util.consent_util import (
     get_or_create_fides_user_device_id_provided_identity,
@@ -73,6 +66,8 @@ from fides.common.api.v1.urn_registry import (
 )
 from fides.config import CONFIG
 from fides.config.config_proxy import ConfigProxy
+from fides.service.messaging.messaging_service import MessagingService
+from fides.service.privacy_request.privacy_request_service import PrivacyRequestService
 
 router = APIRouter(tags=["Consent"], prefix=V1_URL_PREFIX)
 
@@ -101,12 +96,12 @@ def _filter_consent(
     )
 
     if identity:
-        hashed_identity = ProvidedIdentity.hash_value(value=identity)
+        identity_hashes = ProvidedIdentity.hash_value_for_search(identity)
         identities: Set[str] = {
             identity[0]
             for identity in ProvidedIdentity.filter(
                 db=db,
-                conditions=(ProvidedIdentity.hashed_value == hashed_identity),
+                conditions=(ProvidedIdentity.hashed_value.in_(identity_hashes)),
             ).values(column("id"))
         }
         query = query.filter(Consent.provided_identity_id.in_(identities))
@@ -183,12 +178,13 @@ def create_consent_request(
     *,
     db: Session = Depends(get_db),
     config_proxy: ConfigProxy = Depends(get_config_proxy),
+    messaging_service: MessagingService = Depends(get_messaging_service),
     data: ConsentRequestCreate,
 ) -> ConsentRequestResponse:
     """Creates a verification code for the user to verify access to manage consent preferences."""
     if not CONFIG.redis.enabled:
-        raise FunctionalityNotConfigured(
-            "Application redis cache required, but it is currently disabled! Please update your application configuration to enable integration with a redis cache."
+        raise RedisNotConfigured(
+            "Application Redis cache required, but it is currently disabled! Please update your application configuration to enable integration with a Redis cache."
         )
     # TODO: (PROD-2142)- pass in property id here
     if data.property_id:
@@ -221,31 +217,19 @@ def create_consent_request(
     consent_request_data = {
         "provided_identity_id": provided_identity.id,
         "property_id": getattr(data, "property_id", None),
+        "source": getattr(data, "source", None),
     }
     consent_request = ConsentRequest.create(db, data=consent_request_data)
 
     consent_request.persist_custom_privacy_request_fields(
         db=db, custom_privacy_request_fields=data.custom_privacy_request_fields
     )
-    if message_send_enabled(
-        db,
-        data.property_id,
-        MessagingActionType.SUBJECT_IDENTITY_VERIFICATION,
-        not config_proxy.execution.disable_consent_identity_verification,
-    ):
-        try:
-            send_verification_code_to_user(
-                db, consent_request, data.identity, data.property_id
-            )
-        except MessageDispatchException as exc:
-            logger.error("Error sending the verification code message: {}", str(exc))
-            raise HTTPException(
-                status_code=HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"Error sending the verification code message: {str(exc)}",
-            )
+
+    messaging_service.send_verification_code(
+        consent_request, data.identity, data.property_id
+    )
 
     return ConsentRequestResponse(
-        identity=identity,
         consent_request_id=consent_request.id,
     )
 
@@ -361,7 +345,11 @@ def get_consent_preferences(
     identity = ProvidedIdentity.filter(
         db,
         conditions=(
-            (ProvidedIdentity.hashed_value == ProvidedIdentity.hash_value(str(lookup)))
+            (
+                ProvidedIdentity.hashed_value.in_(
+                    ProvidedIdentity.hash_value_for_search(str(lookup))
+                )
+            )
             & (ProvidedIdentity.privacy_request_id.is_(None))
         ),
     ).first()
@@ -402,8 +390,8 @@ def queue_privacy_request_to_propagate_consent_old_workflow(
     ]
 
     # Restrict consent preferences to just those that are executable
-    executable_consent_preferences: List[Dict] = [
-        pref.dict()
+    executable_consent_preferences: List[ConsentSchema] = [
+        pref
         for pref in consent_preferences.consent or []
         if pref.data_use in executable_data_uses
     ]
@@ -417,19 +405,27 @@ def queue_privacy_request_to_propagate_consent_old_workflow(
         return None
 
     logger.info("Executable consent options: {}", executable_data_uses)
-    privacy_request_results: BulkPostPrivacyRequests = create_privacy_request_func(
-        db=db,
-        config_proxy=ConfigProxy(db),
-        data=[
-            PrivacyRequestCreate(
-                identity=identity,
-                policy_key=policy,
-                consent_preferences=executable_consent_preferences,
-                consent_request_id=consent_request.id,
-                custom_privacy_request_fields=consent_request.get_persisted_custom_privacy_request_fields(),
-            )
-        ],
-        authenticated=True,
+
+    # It's a bit weird to initialize the privacy request service here,
+    # but this logic is slated for deprecation so it's not worth doing a larger refactor
+    privacy_request_service = PrivacyRequestService(
+        db, ConfigProxy(db), MessagingService(db, CONFIG, ConfigProxy(db))
+    )
+
+    privacy_request_results: BulkPostPrivacyRequests = (
+        privacy_request_service.create_bulk_privacy_requests(
+            [
+                PrivacyRequestCreate(
+                    identity=identity,
+                    policy_key=policy,
+                    consent_preferences=executable_consent_preferences,
+                    consent_request_id=consent_request.id,
+                    custom_privacy_request_fields=consent_request.get_persisted_custom_privacy_request_fields(),
+                    source=consent_request.source,
+                )
+            ],
+            authenticated=True,
+        )
     )
 
     if privacy_request_results.failed or not privacy_request_results.succeeded:
@@ -463,7 +459,9 @@ def set_consent_preferences(
         consent_request_id=consent_request_id,
         verification_code=data.code,
     )
-    consent_request.preferences = [schema.dict() for schema in data.consent]
+    consent_request.preferences = [
+        schema.model_dump(mode="json") for schema in data.consent
+    ]
     consent_request.save(db=db)
 
     if not provided_identity.hashed_value:
@@ -528,8 +526,9 @@ def _get_or_create_provided_identity(
             conditions=(
                 (ProvidedIdentity.field_name == ProvidedIdentityType.email.value)
                 & (
-                    ProvidedIdentity.hashed_value
-                    == ProvidedIdentity.hash_value(identity_data.email)
+                    ProvidedIdentity.hashed_value.in_(
+                        ProvidedIdentity.hash_value_for_search(identity_data.email)
+                    )
                 )
                 & (ProvidedIdentity.privacy_request_id.is_(None))
             ),
@@ -553,8 +552,11 @@ def _get_or_create_provided_identity(
             conditions=(
                 (ProvidedIdentity.field_name == ProvidedIdentityType.phone_number.value)
                 & (
-                    ProvidedIdentity.hashed_value
-                    == ProvidedIdentity.hash_value(identity_data.phone_number)
+                    ProvidedIdentity.hashed_value.in_(
+                        ProvidedIdentity.hash_value_for_search(
+                            identity_data.phone_number
+                        )
+                    )
                 )
                 & (ProvidedIdentity.privacy_request_id.is_(None))
             ),
@@ -584,8 +586,11 @@ def _get_or_create_provided_identity(
             conditions=(
                 (ProvidedIdentity.field_name == ProvidedIdentityType.external_id.value)
                 & (
-                    ProvidedIdentity.hashed_value
-                    == ProvidedIdentity.hash_value(identity_data.external_id)
+                    ProvidedIdentity.hashed_value.in_(
+                        ProvidedIdentity.hash_value_for_search(
+                            identity_data.external_id
+                        )
+                    )
                 )
                 & (ProvidedIdentity.privacy_request_id.is_(None))
             ),
@@ -623,6 +628,8 @@ def infer_target_identity_type(
     CONFIG.notifications.notification_service_type. Otherwise, the fallback order is
     email, phone_number, external_id, and finally fides_user_device_id.
     """
+    target_identity_type = ""
+
     if identity_data.email and identity_data.phone_number:
         messaging_method = get_messaging_method(
             ConfigProxy(db).notifications.notification_service_type
@@ -703,7 +710,7 @@ def _prepare_consent_report(
         value=consent.provided_identity_id,
     )
     consent.identity = provided_identity.as_identity_schema()  # type: ignore[union-attr]
-    report = ConsentReport.from_orm(consent)
+    report = ConsentReport.model_validate(consent)
     return report
 
 

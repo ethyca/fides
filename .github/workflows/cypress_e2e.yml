@@ -1,9 +1,6 @@
 name: Cypress E2E Tests
 
 on:
-  pull_request:
-    paths-ignore:
-      - "**.md"
   push:
     branches:
       - "main"
@@ -11,6 +8,11 @@ on:
 
 env:
   CI: true
+  env:
+  # Docker auth with read-only permissions.
+  DOCKER_USER: ${{ secrets.DOCKER_USER }}
+  DOCKER_RO_TOKEN: ${{ secrets.DOCKER_RO_TOKEN }}
+  DEFAULT_PYTHON_VERSION: "3.10.13"
 
 jobs:
   Cypress-E2E:
@@ -22,6 +24,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Set Up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
+          cache: "pip"
+
       - name: Install Nox
         run: pip install nox>=2022
 
@@ -29,6 +37,12 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ env.DOCKER_USER }}
+          password: ${{ env.DOCKER_RO_TOKEN }}
 
       - name: Start test environment in the background
         run: nox -s "fides_env(test)" -- keep_alive
@@ -53,3 +67,9 @@ jobs:
 
       - name: Teardown
         run: nox -s teardown
+
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: cypress-videos-cypress-e2e
+          path: /home/runner/work/fides/fides/clients/cypress-e2e/cypress/videos/*.mp4

@@ -1,6 +1,7 @@
+import { Header } from "@tanstack/react-table";
 import {
+  AntButton as Button,
   Box,
-  Button,
   Divider,
   Heading,
   Modal,
@@ -12,7 +13,6 @@ import {
   ModalOverlay,
 } from "fidesui";
 import React, { ReactNode, useContext, useMemo } from "react";
-import { HeaderGroup } from "react-table";
 
 import { DatamapRow } from "~/features/datamap";
 import {
@@ -21,6 +21,7 @@ import {
   SYSTEM_PRIVACY_DECLARATION_DATA_USE_NAME,
 } from "~/features/datamap/constants";
 import DatamapTableContext from "~/features/datamap/datamap-table/DatamapTableContext";
+import AccordionMultifieldFilter from "~/features/datamap/datamap-table/filters/accordion-multifield-filter/AccordionMultifieldFilter";
 
 type FilterSectionProps = {
   heading: string;
@@ -41,41 +42,33 @@ interface FilterModalProps {
   onClose: () => void;
 }
 
-const FilterModal: React.FC<FilterModalProps> = ({ isOpen, onClose }) => {
+const FilterModal = ({ isOpen, onClose }: FilterModalProps) => {
   const { tableInstance } = useContext(DatamapTableContext);
 
-  const { headerGroups } = useMemo(
-    () => tableInstance || { headerGroups: [] },
-    [tableInstance]
-  );
+  const headerGroups = tableInstance?.getHeaderGroups();
 
-  const getHeaderFilter = (
-    headers: HeaderGroup<DatamapRow>[],
-    columnId: string
+  const renderHeaderFilter = (
+    headers: Header<DatamapRow, unknown>[],
+    columnId: string,
   ): ReactNode =>
     headers
-      .filter((column) => column.id === columnId)
-      .map((column) =>
-        column.render("Filter", {
-          key: column.id,
-        })
-      );
+      .filter((header) => header.id === columnId)
+      .map((header) => (
+        <AccordionMultifieldFilter column={header.column} key={columnId} />
+      ));
 
   const anyFiltersActive = (
-    headers: HeaderGroup<DatamapRow>[],
-    columnIds: string[]
+    headers: Header<DatamapRow, unknown>[],
+    columnIds: string[],
   ): boolean => headers.some((column) => columnIds.indexOf(column.id) > -1);
 
   const headers = useMemo(
-    () =>
-      headerGroups.length > 0
-        ? headerGroups[0].headers.map((group) => group)
-        : [],
-    [headerGroups]
+    () => headerGroups?.[0].headers || [],
+    [headerGroups],
   );
 
   const resetFilters = () => {
-    tableInstance?.setAllFilters([]);
+    tableInstance?.resetColumnFilters();
   };
 
   return (
@@ -92,35 +85,24 @@ const FilterModal: React.FC<FilterModalProps> = ({ isOpen, onClose }) => {
             SYSTEM_PRIVACY_DECLARATION_DATA_SUBJECTS_NAME,
           ]) ? (
             <FilterSection heading="Privacy attributes">
-              {getHeaderFilter(
+              {renderHeaderFilter(
                 headers,
-                SYSTEM_PRIVACY_DECLARATION_DATA_USE_NAME
+                SYSTEM_PRIVACY_DECLARATION_DATA_USE_NAME,
               )}
-              {getHeaderFilter(headers, DATA_CATEGORY_COLUMN_ID)}
-              {getHeaderFilter(
+              {renderHeaderFilter(headers, DATA_CATEGORY_COLUMN_ID)}
+              {renderHeaderFilter(
                 headers,
-                SYSTEM_PRIVACY_DECLARATION_DATA_SUBJECTS_NAME
+                SYSTEM_PRIVACY_DECLARATION_DATA_SUBJECTS_NAME,
               )}
             </FilterSection>
           ) : null}
         </ModalBody>
         <ModalFooter>
           <Box display="flex" justifyContent="space-between" width="100%">
-            <Button
-              variant="outline"
-              size="sm"
-              mr={3}
-              onClick={resetFilters}
-              flexGrow={1}
-            >
+            <Button onClick={resetFilters} className="mr-3 grow">
               Reset Filters
             </Button>
-            <Button
-              colorScheme="primary"
-              size="sm"
-              onClick={onClose}
-              flexGrow={1}
-            >
+            <Button onClick={onClose} type="primary" className="grow">
               Done
             </Button>
           </Box>

@@ -9,7 +9,8 @@ import {
   PingData,
   SignalStatus,
 } from "@iabgpp/cmpapi";
-import { GPP_FRAME_NAME, addFrame, locateFrame } from "../cmp-stubs";
+
+import { addFrame, GPP_FRAME_NAME, locateFrame } from "../cmp-stubs";
 import { GppCallback, GppFunction } from "./types";
 
 /* eslint-disable no-underscore-dangle */
@@ -79,7 +80,7 @@ export const makeStub = () => {
           data: true, // positive signal
           pingData,
         },
-        true
+        true,
       );
     } else if (cmd === "removeEventListener") {
       let success = false;
@@ -98,7 +99,7 @@ export const makeStub = () => {
           data: success, // status info
           pingData,
         },
-        true
+        true,
       );
     } else if (cmd === "hasSection") {
       callback(false, true);
@@ -149,12 +150,12 @@ export const makeStub = () => {
             event.source.postMessage(
               msgIsString ? JSON.stringify(returnMsg) : returnMsg,
               //   @ts-ignore
-              "*"
+              "*",
             );
           }
         },
         "parameter" in i ? i.parameter : undefined,
-        "version" in i ? i.version : "1.1"
+        "version" in i ? i.version : "1.1",
       );
     }
     return null;

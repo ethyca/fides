@@ -20,6 +20,36 @@ password="mysql_pw"
 db="mysql_example"
 port=3306
 
+[google_cloud_sql_mysql_example]
+db_iam_user=""
+instance_connection_name=""
+dbname=""
+
+[google_cloud_sql_mysql_example.keyfile_creds]
+
+[google_cloud_sql_postgres_example]
+db_iam_user=""
+instance_connection_name=""
+dbname=""
+
+[google_cloud_sql_postgres_example.keyfile_creds]
+
+[rds_mysql_example]
+aws_access_key_id=""
+aws_secret_access_key=""
+db_username=""
+db_instance=""
+db_name=""
+region=""
+
+[rds_postgres_example]
+aws_access_key_id=""
+aws_secret_access_key=""
+db_username=""
+db_instance=""
+db_name=""
+region=""
+
 [redshift]
 host=""
 port=""
@@ -32,6 +62,8 @@ db_schema=""
 account_identifier=""
 user_login_name=""
 password=""
+private_key=""
+private_key_passphrase=""
 warehouse_name=""
 database_name=""
 schema_name=""
@@ -40,6 +72,8 @@ schema_name=""
 dataset=""
 
 [bigquery.keyfile_creds]
+
+[bigquery_enterprise]
 
 [mssql_example]
 server="mssql_example"

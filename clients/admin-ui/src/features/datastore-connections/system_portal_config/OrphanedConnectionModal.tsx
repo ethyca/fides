@@ -2,8 +2,8 @@ import { useAlert, useAPIHelper } from "common/hooks";
 import ConnectionTypeLogo from "datastore-connections/ConnectionTypeLogo";
 import { ConnectionConfigFormValues } from "datastore-connections/system_portal_config/types";
 import {
+  AntButton as Button,
   Box,
-  Button,
   Flex,
   Modal,
   ModalBody,
@@ -37,10 +37,10 @@ type DataConnectionProps = {
   systemFidesKey: string;
 };
 
-const OrphanedConnectionModal: React.FC<DataConnectionProps> = ({
+const OrphanedConnectionModal = ({
   connectionConfigs,
   systemFidesKey,
-}) => {
+}: DataConnectionProps) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [selectedConnectionConfig, setSelectedConnectionConfig] =
     useState<ConnectionConfigurationResponse | null>(null);
@@ -83,7 +83,7 @@ const OrphanedConnectionModal: React.FC<DataConnectionProps> = ({
           (ct) =>
             (selectedConnectionConfig?.saas_config &&
               ct.identifier === selectedConnectionConfig?.saas_config.type) ||
-            ct.identifier === selectedConnectionConfig?.connection_type
+            ct.identifier === selectedConnectionConfig?.connection_type,
         ) as ConnectionSystemTypeMap;
 
         const response = await patchConnectionConfig(
@@ -91,7 +91,7 @@ const OrphanedConnectionModal: React.FC<DataConnectionProps> = ({
           connectionOption,
           systemFidesKey,
           selectedConnectionConfig,
-          patchDatastoreConnection
+          patchDatastoreConnection,
         );
 
         if (response.succeeded[0]) {
@@ -108,14 +108,7 @@ const OrphanedConnectionModal: React.FC<DataConnectionProps> = ({
 
   return (
     <>
-      <Button
-        loadingText="Deleting"
-        onClick={onOpen}
-        size="sm"
-        variant="outline"
-      >
-        Link integration
-      </Button>
+      <Button onClick={onOpen}>Link integration</Button>
 
       <Modal isCentered isOpen={isOpen} size="lg" onClose={closeIfComplete}>
         <ModalOverlay />
@@ -166,35 +159,15 @@ const OrphanedConnectionModal: React.FC<DataConnectionProps> = ({
             </Stack>
           </ModalBody>
 
-          <ModalFooter>
-            <Button
-              onClick={closeIfComplete}
-              marginRight="10px"
-              size="sm"
-              variant="outline"
-              bg="white"
-              width="50%"
-            >
+          <ModalFooter className="flex gap-4">
+            <Button onClick={closeIfComplete} className="w-1/2">
               Cancel
             </Button>
             <Button
               onClick={handleLinkingConnection}
-              isLoading={isLoading}
-              isDisabled={!selectedConnectionConfig || isLoading}
-              mr={3}
-              size="sm"
-              variant="solid"
-              bg="primary.800"
-              color="white"
-              width="50%"
-              _loading={{
-                opacity: 1,
-                div: { opacity: 0.4 },
-              }}
-              _hover={{
-                bg: "gray.100",
-                color: "gray.600",
-              }}
+              loading={isLoading}
+              disabled={!selectedConnectionConfig || isLoading}
+              className="w-1/2"
             >
               Link integration
             </Button>
