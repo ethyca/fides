@@ -25,7 +25,6 @@ export const antTheme: AntThemeConfig = {
     borderRadius: 4,
     wireframe: true,
     colorTextBase: palette.FIDESUI_MINOS,
-    colorTextDisabled: palette.FIDESUI_NEUTRAL_600,
     colorErrorBg: "#ffdcd6", // custom override
     colorErrorBorder: "#f2aca5", // custom override
     colorWarningBg: "#ffecc9", // custom override
