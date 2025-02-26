@@ -1,7 +1,8 @@
 import { CheckIcon, HStack } from "fidesui";
 
 import { useAlert } from "~/features/common/hooks";
-import { DiffStatus, StagedResource } from "~/types/api";
+import { DiscoveryMonitorItem } from "~/features/data-discovery-and-detection/types/DiscoveryMonitorItem";
+import { DiffStatus, StagedResourceTypeValue } from "~/types/api";
 
 import { MonitorOffIcon } from "../../../common/Icon/MonitorOffIcon";
 import { MonitorOnIcon } from "../../../common/Icon/MonitorOnIcon";
@@ -11,11 +12,10 @@ import {
   useMuteResourceMutation,
   useUnmuteResourceMutation,
 } from "../../discovery-detection.slice";
-import { StagedResourceType } from "../../types/StagedResourceType";
 import { findResourceType } from "../../utils/findResourceType";
 
 interface DetectionItemActionProps {
-  resource: StagedResource;
+  resource: DiscoveryMonitorItem;
   ignoreChildActions?: boolean;
 }
 
@@ -41,8 +41,8 @@ const DetectionItemActionsCell = ({
   // We enable monitor / stop monitoring at the schema level only
   // Table levels can mute/monitor
   // Field levels can mute/un-mute
-  const isSchemaType = resourceType === StagedResourceType.SCHEMA;
-  const isFieldType = resourceType === StagedResourceType.FIELD;
+  const isSchemaType = resourceType === StagedResourceTypeValue.SCHEMA;
+  const isFieldType = resourceType === StagedResourceTypeValue.FIELD;
 
   const showStartMonitoringAction =
     (isSchemaType && diffStatus === undefined) ||

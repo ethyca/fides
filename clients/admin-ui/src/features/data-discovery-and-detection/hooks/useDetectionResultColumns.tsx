@@ -8,7 +8,7 @@ import ResultStatusCell from "~/features/data-discovery-and-detection/tables/cel
 import ResultStatusBadgeCell from "~/features/data-discovery-and-detection/tables/cells/StagedResourceStatusBadgeCell";
 import { DiscoveryMonitorItem } from "~/features/data-discovery-and-detection/types/DiscoveryMonitorItem";
 import { ResourceChangeType } from "~/features/data-discovery-and-detection/types/ResourceChangeType";
-import { StagedResourceType } from "~/features/data-discovery-and-detection/types/StagedResourceType";
+import { StagedResourceTypeValue } from "~/types/api";
 
 import findProjectFromUrn from "../utils/findProjectFromUrn";
 
@@ -19,7 +19,7 @@ const useDetectionResultColumns = ({
   resourceType,
   changeTypeOverride,
 }: {
-  resourceType?: StagedResourceType;
+  resourceType?: StagedResourceTypeValue | undefined;
   changeTypeOverride?: ResourceChangeType;
 }) => {
   const columnHelper = createColumnHelper<DiscoveryMonitorItem>();
@@ -30,7 +30,7 @@ const useDetectionResultColumns = ({
     return { columns: defaultColumns };
   }
 
-  if (resourceType === StagedResourceType.SCHEMA) {
+  if (resourceType === StagedResourceTypeValue.SCHEMA) {
     const columns = [
       columnHelper.accessor((row) => row.name, {
         id: "name",
@@ -98,7 +98,7 @@ const useDetectionResultColumns = ({
     return { columns };
   }
 
-  if (resourceType === StagedResourceType.TABLE) {
+  if (resourceType === StagedResourceTypeValue.TABLE) {
     const columns = [
       columnHelper.accessor((row) => row.name, {
         id: "name",
@@ -156,7 +156,7 @@ const useDetectionResultColumns = ({
     return { columns };
   }
 
-  if (resourceType === StagedResourceType.FIELD) {
+  if (resourceType === StagedResourceTypeValue.FIELD) {
     const columns = [
       columnHelper.accessor((row) => row.name, {
         id: "name",

@@ -17,5 +17,4 @@ export enum RequestOrigin {
   BANNER_AND_MODAL = "banner_and_modal",
   API = "api",
   TCF_OVERLAY = "tcf_overlay",
-  HEADLESS = "headless",
 }
