@@ -18,7 +18,7 @@ import EditCategoryCell from "../tables/cells/EditCategoryCell";
 import ResultStatusCell from "../tables/cells/ResultStatusCell";
 
 const NAME_COLUMN_SIZE = 300;
-const ACTION_COLUMN_SIZE = 220;
+const ACTION_COLUMN_SIZE = 235;
 
 const useDiscoveryResultColumns = ({
   resourceType,
