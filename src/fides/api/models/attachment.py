@@ -74,6 +74,7 @@ class Attachment(Base):
     )
     file_name = Column(String, nullable=False)
     attachment_type = Column(EnumColumn(AttachmentType), nullable=False)
+    storage_key = Column(String, nullable=False)
 
     user = relationship(
         "FidesUser",

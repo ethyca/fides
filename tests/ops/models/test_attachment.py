@@ -12,22 +12,24 @@ from fides.api.models.fides_user import FidesUser
 
 
 @pytest.fixture
-def attachment_data(user):
+def attachment_data(user, storage_config):
     return {
         "id": "1",
         "user_id": user.id,
         "file_name": "file.txt",
         "attachment_type": AttachmentType.internal_use_only,
+        "storage_key": storage_config.key,
     }
 
 
 @pytest.fixture
-def attachment(user, attachment_data):
+def attachment(user, attachment_data, storage_config):
     return Attachment(
         id=attachment_data["id"],
         user_id=user.id,
         file_name=attachment_data["file_name"],
         attachment_type=attachment_data["attachment_type"],
+        storage_key=storage_config.key,
     )
 
 
@@ -49,8 +51,9 @@ def attachment_setup(
     db.commit()
 
 
-def test_create_attachment(db, attachment_data, user):
+def test_create_attachment(db, attachment_data, user, storage_config):
     """Test creating an attachment."""
+    attachment_data["storage_key"] = storage_config.key
     attachment = Attachment.create(db=db, data=attachment_data)
     retrieved_attachment = db.query(Attachment).filter_by(id=attachment.id).first()
 

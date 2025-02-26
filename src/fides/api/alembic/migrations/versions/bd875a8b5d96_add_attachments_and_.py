@@ -26,6 +26,7 @@ def upgrade():
         sa.Column("user_id", sa.String(), nullable=True),
         sa.Column("file_name", sa.String(), nullable=False),
         sa.Column("attachment_type", sa.String(), nullable=False),
+        sa.Column("storage_key", sa.String(), nullable=False),
         sa.Column(
             "created_at",
             sa.DateTime(timezone=True),
@@ -41,6 +42,7 @@ def upgrade():
         sa.ForeignKeyConstraint(
             ["user_id"],
             ["fidesuser.id"],
+            ondelete="SET NULL",
         ),
         sa.PrimaryKeyConstraint("id"),
     )
