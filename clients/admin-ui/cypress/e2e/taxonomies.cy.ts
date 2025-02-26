@@ -330,11 +330,11 @@ describe("Taxonomy management page", () => {
       });
     });
 
-    it("Edit tray shows disabled save button and delete button", () => {
+    it("Edit tray doesn't show save button and delete button", () => {
       cy.getByTestId(`taxonomy-node-user.content`).click();
       cy.getByTestId("edit-drawer-content").within(() => {
-        cy.getByTestId("save-btn").should("be.disabled");
-        cy.getByTestId("delete-btn").should("be.disabled");
+        cy.getByTestId("save-btn").should("not.exist");
+        cy.getByTestId("delete-btn").should("not.exist");
       });
     });
 

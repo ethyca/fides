@@ -120,15 +120,18 @@ const TaxonomyEditDrawer = ({
         footer={
           <DrawerFooter justifyContent="space-between">
             {taxonomyItem?.active ? (
-              <Tooltip title="Delete label">
-                <Button
-                  aria-label="delete"
-                  icon={<TrashCanOutlineIcon fontSize="small" />}
-                  onClick={onDeleteOpen}
-                  data-testid="delete-btn"
-                  disabled={!canUserDeleteTaxonomy}
-                />
-              </Tooltip>
+              <>
+                {canUserDeleteTaxonomy && (
+                  <Tooltip title="Delete label">
+                    <Button
+                      aria-label="delete"
+                      icon={<TrashCanOutlineIcon fontSize="small" />}
+                      onClick={onDeleteOpen}
+                      data-testid="delete-btn"
+                    />
+                  </Tooltip>
+                )}
+              </>
             ) : (
               <Tooltip title="Enable label">
                 <Button
@@ -142,15 +145,16 @@ const TaxonomyEditDrawer = ({
             )}
 
             <div className="flex gap-2">
-              <Button
-                htmlType="submit"
-                type="primary"
-                data-testid="save-btn"
-                form={TAXONOMY_FORM_ID}
-                disabled={!canUserEditTaxonomy}
-              >
-                Save
-              </Button>
+              {canUserEditTaxonomy && (
+                <Button
+                  htmlType="submit"
+                  type="primary"
+                  data-testid="save-btn"
+                  form={TAXONOMY_FORM_ID}
+                >
+                  Save
+                </Button>
+              )}
             </div>
           </DrawerFooter>
         }
