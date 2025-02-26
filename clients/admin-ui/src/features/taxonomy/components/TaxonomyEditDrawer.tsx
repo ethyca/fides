@@ -19,12 +19,16 @@ import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { isErrorResult } from "~/types/errors";
 
 import EditDrawer, { EditDrawerHeader } from "../../common/EditDrawer";
-import { CoreTaxonomiesEnum } from "../constants";
+import {
+  CoreTaxonomiesEnum,
+  taxonomyTypeToScopeRegistryEnum,
+} from "../constants";
 import { taxonomyTypeToResourceType } from "../helpers";
 import useTaxonomySlices from "../hooks/useTaxonomySlices";
 import { TaxonomyEntity } from "../types";
 import TaxonomyCustomFieldsForm from "./TaxonomyCustomFieldsForm";
 import TaxonomyEditForm from "./TaxonomyEditForm";
+import { useHasPermission } from "~/features/common/Restrict";
 
 interface TaxonomyEditDrawerProps {
   taxonomyItem?: TaxonomyEntity | null;
@@ -60,6 +64,13 @@ const TaxonomyEditDrawer = ({
     resourceFidesKey: taxonomyItem?.fides_key,
     resourceType: taxonomyTypeToResourceType(taxonomyType)!,
   });
+
+  const canUserEditTaxonomy = useHasPermission([
+    taxonomyTypeToScopeRegistryEnum(taxonomyType).UPDATE,
+  ]);
+  const canUserDeleteTaxonomy = useHasPermission([
+    taxonomyTypeToScopeRegistryEnum(taxonomyType).DELETE,
+  ]);
 
   const handleEdit = async (formValues: TaxonomyEntity) => {
     const result = await updateTrigger(formValues);
@@ -115,6 +126,7 @@ const TaxonomyEditDrawer = ({
                   icon={<TrashCanOutlineIcon fontSize="small" />}
                   onClick={onDeleteOpen}
                   data-testid="delete-btn"
+                  disabled={!canUserDeleteTaxonomy}
                 />
               </Tooltip>
             ) : (
@@ -124,6 +136,7 @@ const TaxonomyEditDrawer = ({
                   onClick={handleEnable}
                   data-testid="enable-btn"
                   icon={<EyeIcon fontSize="small" />}
+                  disabled={!canUserEditTaxonomy}
                 />
               </Tooltip>
             )}
@@ -134,6 +147,7 @@ const TaxonomyEditDrawer = ({
                 type="primary"
                 data-testid="save-btn"
                 form={TAXONOMY_FORM_ID}
+                disabled={!canUserEditTaxonomy}
               >
                 Save
               </Button>
@@ -164,6 +178,7 @@ const TaxonomyEditDrawer = ({
             form={taxonomyForm}
             formId={TAXONOMY_FORM_ID}
             taxonomyType={taxonomyType}
+            readOnly={!canUserEditTaxonomy}
           />
         )}
         {customFields.isEnabled && !customFields.isLoading && (
