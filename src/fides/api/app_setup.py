@@ -24,8 +24,13 @@ from fides.api.api.v1.endpoints.generic_overrides import GENERIC_OVERRIDES_ROUTE
 from fides.api.api.v1.endpoints.health import HEALTH_ROUTER
 from fides.api.api.v1.exception_handlers import ExceptionHandlers
 from fides.api.common_exceptions import RedisConnectionError, RedisNotConfigured
+from fides.api.db.ctl_session import async_session
 from fides.api.db.database import configure_db
-from fides.api.db.seed import create_or_update_parent_user
+from fides.api.db.seed import (
+    create_or_update_parent_user,
+    load_default_resources,
+    load_samples,
+)
 from fides.api.models.application_config import ApplicationConfig
 from fides.api.oauth.system_manager_oauth_util import (
     get_system_fides_key,
@@ -154,7 +159,7 @@ def log_startup() -> None:
         CONFIG.log_all_config_values()
 
 
-async def run_database_startup(app: FastAPI) -> None:
+def run_database_startup(app: FastAPI) -> None:
     """
     Perform all relevant database startup activities/configuration for the
     application webserver.
@@ -165,9 +170,11 @@ async def run_database_startup(app: FastAPI) -> None:
 
     if CONFIG.database.automigrate:
         try:
-            await configure_db(
-                CONFIG.database.sync_database_uri, samples=CONFIG.database.load_samples
-            )
+            configure_db(CONFIG.database.sync_database_uri)
+            # async with async_session() as session:
+            #     await load_default_resources(session)
+            #     if CONFIG.database.load_samples:
+            #         await load_samples(session)
         except Exception as e:
             logger.error("Error occurred during database configuration: {}", str(e))
     else:
