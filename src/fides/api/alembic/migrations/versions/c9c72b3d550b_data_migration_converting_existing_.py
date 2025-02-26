@@ -41,6 +41,19 @@ def upgrade():
     logger.debug("Converting existing cookies to assets")
     assets_to_create: Dict[str, Asset] = {}
     for row in result:
+        if row.privacy_declaration_id is None:
+            # If the privacy declaration ID is None, we skip matching for this row
+            assets_to_create[row.name] = Asset(
+                id=str(uuid.uuid4()),
+                created_at=row.created_at,
+                updated_at=row.updated_at,
+                name=row.name,
+                domain=row.domain,
+                system_id=row.system_id,
+                data_uses=[],
+                asset_type="Cookie",
+            )
+            continue
         pud_system_id_data_use = connection.execute(
             sa.text(
                 "SELECT system_id, data_use FROM privacydeclaration WHERE id = :privacy_declaration_id"
@@ -148,7 +161,7 @@ def downgrade():
         op.f("ix_cookies_system_id"), "cookies", ["system_id"], unique=False
     )
     # ### end Alembic commands ###
-    logger.debug("Migrating existing assets to cookies")
+
     connection = op.get_bind()
     result = connection.execute(
         sa.text(
@@ -156,6 +169,7 @@ def downgrade():
         )
     )
 
+    logger.debug("Migrating existing assets to cookies")
     for row in result:
         # Find the privacy declaration ID matching the system ID and data use
         privacy_declaration_ids = []
@@ -171,18 +185,29 @@ def downgrade():
                 privacy_declaration_ids.append(pud.id)
 
         if len(privacy_declaration_ids) == 0:
-            privacy_declaration_ids = [None]
-        for privacy_declaration_id in privacy_declaration_ids:
-            # generate a new ID
-            cookie_id = str(uuid.uuid4())
+            # If no privacy declaration match we attach to system_id
             connection.execute(
                 sa.text(
-                    "INSERT INTO cookies (id, created_at, updated_at, name, domain, system_id, privacy_declaration_id) "
-                    "VALUES (:id, NOW(), NOW(), :name, :domain, :system_id, :privacy_declaration_id)"
+                    "INSERT INTO cookies (id, created_at, updated_at, name, domain, system_id) "
+                    "VALUES (:id, NOW(), NOW(), :name, :domain, :privacy_declaration_id, :system_id)"
                 ),
                 id=cookie_id,
                 name=row.name,
                 domain=row.domain,
                 system_id=row.system_id,
+            )
+        for privacy_declaration_id in privacy_declaration_ids:
+            # Create a cookie for each privacy declaration ID
+            # generate a new ID
+            cookie_id = str(uuid.uuid4())
+            connection.execute(
+                sa.text(
+                    "INSERT INTO cookies (id, created_at, updated_at, name, domain, privacy_declaration_id) "
+                    "VALUES (:id, NOW(), NOW(), :name, :domain, :privacy_declaration_id)"
+                    "ON CONFLICT DO NOTHING"
+                ),
+                id=cookie_id,
+                name=row.name,
+                domain=row.domain,
                 privacy_declaration_id=privacy_declaration_id,
             )
