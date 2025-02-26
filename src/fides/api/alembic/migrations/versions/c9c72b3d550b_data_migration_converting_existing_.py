@@ -9,9 +9,10 @@ Create Date: 2025-02-18 18:33:56.039924
 import uuid
 from typing import Dict
 
+import psycopg2
 import sqlalchemy as sa
+from loguru import logger
 from alembic import op
-from sqlalchemy.dialects import postgresql
 
 from fides.api.models.asset import Asset
 
@@ -23,7 +24,12 @@ depends_on = None
 
 
 def upgrade():
-    op.add_column("asset", sa.Column("description", sa.String(), nullable=True))
+    try:
+        op.add_column("asset", sa.Column("description", sa.String(), nullable=True))
+    except psycopg2.errors.DuplicateColumn:
+        logger.warning(
+            "Column 'description' already exists in 'asset' table. Skipping column addition."
+        )
 
     connection = op.get_bind()
     result = connection.execute(
@@ -32,6 +38,7 @@ def upgrade():
         )
     )
 
+    logger.debug("Converting existing cookies to assets")
     assets_to_create: Dict[str, Asset] = {}
     for row in result:
         pud_system_id_data_use = connection.execute(
@@ -55,13 +62,8 @@ def upgrade():
         # Asset unique identifier is a composite of name, asset_type, domain, base_url, system_id. All assets here are cookies.
         identifier = f"{row.name}_{'Cookie'}_{row.domain}_{row.path}_{system_id}"
         if identifier in assets_to_create.keys():
-            print(
-                f"Asset with identifier {identifier} already exists. Appending data_use."
-            )
             # If the asset already exists, append the data_use to the existing asset
-            print(f"Before: {assets_to_create[identifier].data_uses}")
             assets_to_create[identifier].data_uses.extend(data_uses)
-            print(f"After: {assets_to_create[identifier].data_uses}")
         else:
             # If the asset does not exist, create a new asset with the data_use
             assets_to_create[identifier] = Asset(
@@ -75,11 +77,15 @@ def upgrade():
                 asset_type="Cookie",
             )
 
+    # Insert the assets into the asset table
+    logger.debug("Inserting assets into asset table ")
     for asset in assets_to_create.values():
+
         connection.execute(
             sa.text(
                 "INSERT INTO asset (id, created_at, updated_at, name, domain, system_id, data_uses, asset_type, with_consent) "
-                "VALUES (:id, :created_at, :updated_at, :name, :domain, :system_id, :data_uses, :asset_type, false)"
+                "VALUES (:id, :created_at, :updated_at, :name, :domain, :system_id, :data_uses, :asset_type, false) "
+                "ON CONFLICT DO NOTHING"
             ),
             id=str(uuid.uuid4()),
             created_at=asset.created_at,
@@ -92,6 +98,7 @@ def upgrade():
         )
 
     # Delete the cookies table
+    logger.debug("Deleting cookies table")
     connection.execute(sa.text("DROP TABLE cookies"))
 
 
@@ -99,6 +106,7 @@ def downgrade():
     op.drop_column("asset", "description")
 
     # Recreate the cookies table
+    logger.debug("Recreating cookies table")
     op.create_table(
         "cookies",
         sa.Column("id", sa.String(length=255), nullable=False),
@@ -140,22 +148,41 @@ def downgrade():
         op.f("ix_cookies_system_id"), "cookies", ["system_id"], unique=False
     )
     # ### end Alembic commands ###
-
+    logger.debug("Migrating existing assets to cookies")
     connection = op.get_bind()
     result = connection.execute(
         sa.text(
-            "SELECT id, name, domain, system_id FROM asset WHERE asset_type = 'Cookie'"
+            "SELECT id, name, domain, system_id, data_uses FROM asset WHERE asset_type = 'Cookie'"
         )
     )
 
     for row in result:
-        connection.execute(
-            sa.text(
-                "INSERT INTO cookies (id, created_at, updated_at, name, domain, system_id) "
-                "VALUES (:id, NOW(), NOW(), :name, :domain, :system_id)"
-            ),
-            id=row.id,
-            name=row.name,
-            domain=row.domain,
-            system_id=row.system_id,
-        )
+        # Find the privacy declaration ID matching the system ID and data use
+        privacy_declaration_ids = []
+        for data_use in row.data_uses:
+            pud = connection.execute(
+                sa.text(
+                    "SELECT id FROM privacydeclaration WHERE system_id = :system_id AND data_use = :data_use"
+                ),
+                system_id=row.system_id,
+                data_use=data_use,
+            ).fetchone()
+            if pud:
+                privacy_declaration_ids.append(pud.id)
+
+        if len(privacy_declaration_ids) == 0:
+            privacy_declaration_ids = [None]
+        for privacy_declaration_id in privacy_declaration_ids:
+            # generate a new ID
+            cookie_id = str(uuid.uuid4())
+            connection.execute(
+                sa.text(
+                    "INSERT INTO cookies (id, created_at, updated_at, name, domain, system_id, privacy_declaration_id) "
+                    "VALUES (:id, NOW(), NOW(), :name, :domain, :system_id, :privacy_declaration_id)"
+                ),
+                id=cookie_id,
+                name=row.name,
+                domain=row.domain,
+                system_id=row.system_id,
+                privacy_declaration_id=privacy_declaration_id,
+            )
