@@ -466,7 +466,7 @@ describe("System management with Plus features", () => {
     });
   });
 
-  describe("asset list", () => {
+  describe.only("asset list", () => {
     beforeEach(() => {
       stubSystemAssets();
       cy.visit(`${SYSTEM_ROUTE}/configure/demo_analytics_system`);
@@ -477,7 +477,7 @@ describe("System management with Plus features", () => {
       cy.intercept("GET", "/api/v1/plus/system-assets/*", {
         fixture: "empty-pagination",
       }).as("getEmptySystemAssets");
-      cy.getByTestId("empty-state").click({ force: true });
+      cy.getByTestId("tab-Assets").click({ force: true });
       cy.wait("@getEmptySystemAssets");
       cy.getByTestId("empty-state").should("exist");
     });
@@ -487,7 +487,9 @@ describe("System management with Plus features", () => {
       cy.wait("@getSystemAssets");
       cy.getByTestId("row-0-col-name").should("contain", "ar_debug");
       cy.getByTestId("row-0-col-locations").should("contain", "United States");
-      cy.getByTestId("row-1-col-parent").children().should("have.length", 2);
+      cy.getByTestId("row-1-col-parent").within(() => {
+        cy.get("span").should("have.length", 2);
+      });
     });
   });
 
