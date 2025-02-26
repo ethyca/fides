@@ -1,10 +1,4 @@
-import {
-  AntButton as Button,
-  Badge,
-  Box,
-  CloseIcon,
-  SmallAddIcon,
-} from "fidesui";
+import { AntTag as Tag, Box } from "fidesui";
 import { useState } from "react";
 
 import DataCategorySelect from "~/features/common/dropdown/DataCategorySelect";
@@ -28,35 +22,22 @@ const TaxonomySelectCell = ({
   return (
     <TaxonomyCellContainer>
       {selectedTaxonomies.map((category) => (
-        <Badge
-          fontWeight="normal"
-          textTransform="none"
-          data-testid={`classification-${category}`}
-          px={1.5}
+        <Tag
           key={category}
-          variant="taxonomy"
+          data-testid={`classification-${category}`}
+          color="white"
+          closable
+          onClose={() => onRemoveTaxonomy(category)}
+          closeButtonLabel="Remove category"
         >
           {getDataCategoryDisplayName(category)}
-          <Button
-            onClick={() => onRemoveTaxonomy(category)}
-            icon={<CloseIcon boxSize={2} />}
-            size="small"
-            type="text"
-            className="ml-1 max-h-4 max-w-4"
-            aria-label="Remove category"
-          />
-        </Badge>
+        </Tag>
       ))}
-      <Button
-        size="small"
-        icon={<SmallAddIcon mb="1px" />}
+      <Tag
         onClick={() => setIsAdding(true)}
         data-testid="add-category-btn"
+        addable
         aria-label="Add category"
-        style={{
-          height: "22px",
-          width: "22px",
-        }}
       />
 
       {isAdding && (
