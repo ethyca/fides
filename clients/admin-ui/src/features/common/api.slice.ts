@@ -59,6 +59,7 @@ export const baseApi = createApi({
     "Property-Specific Messaging Templates",
     "Purpose",
     "System",
+    "System Assets",
     "System History",
     "Request",
     "Roles",
