@@ -257,7 +257,7 @@ def quickstart(session: Session) -> None:
 )
 def delete_old_test_pypi_packages(session: Session, action: str) -> None:
     """
-    Delete old packages from the test pypi repository.
+    Delete old (specifically, >1 year old) packages from the test pypi repository.
     """
     session.install("pypi-cleanup")
 
