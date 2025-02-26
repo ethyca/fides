@@ -4,7 +4,8 @@ from typing import Any, Dict, List, Optional, TypeVar
 from sqlalchemy.sql import Executable  # type: ignore
 
 from fides.api.models.policy import Policy
-from fides.api.models.privacy_request import ManualAction, PrivacyRequest
+from fides.api.models.privacy_request import PrivacyRequest
+from fides.api.schemas.privacy_request import ManualAction
 from fides.api.service.connectors.query_configs.query_config import QueryConfig
 from fides.api.util.collection_util import Row, filter_nonempty_values
 

@@ -18,19 +18,19 @@ from fides.api.graph.graph import DatasetGraph
 from fides.api.graph.traversal import (
     ARTIFICIAL_NODES,
     Traversal,
+    TraversalNode,
     log_traversal_error_and_update_privacy_request,
 )
-from fides.api.graph.traversal_node import TraversalNode
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import (
     COMPLETED_EXECUTION_LOG_STATUSES,
-    ExecutionLogStatus,
     PrivacyRequest,
     RequestTask,
     TraversalDetails,
 )
 from fides.api.schemas.policy import ActionType
+from fides.api.schemas.privacy_request import ExecutionLogStatus
 from fides.api.task.deprecated_graph_task import format_data_use_map_for_caching
 from fides.api.task.execute_request_tasks import log_task_queued, queue_request_task
 from fides.api.util.logger_context_utils import log_context
@@ -451,7 +451,6 @@ def run_access_request(
         )
     else:
         try:
-            logger.info("Building access graph")
             traversal: Traversal = Traversal(graph, identity, policy)
 
             # Traversal.traverse populates traversal_nodes in place, adding parents and children to each traversal_node.

@@ -33,6 +33,7 @@ from fides.api.db.system import create_system
 from fides.api.main import app
 from fides.api.models.privacy_request import (
     EXITED_EXECUTION_LOG_STATUSES,
+    RequestTask,
     generate_request_callback_pre_approval_jwe,
     generate_request_callback_resume_jwe,
 )
@@ -61,6 +62,7 @@ from tests.fixtures.integration_fixtures import *
 from tests.fixtures.manual_fixtures import *
 from tests.fixtures.manual_webhook_fixtures import *
 from tests.fixtures.mariadb_fixtures import *
+from tests.fixtures.messaging_fixtures import *
 from tests.fixtures.mongodb_fixtures import *
 from tests.fixtures.mssql_fixtures import *
 from tests.fixtures.mysql_fixtures import *

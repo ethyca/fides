@@ -58,7 +58,7 @@ jobs:
         uses: docker/setup-buildx-action@v3
 
       - name: Build container
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           builder: ${{ steps.buildx.outputs.name }}
           context: .
@@ -251,7 +251,7 @@ jobs:
         run: nox -s "pytest(${{ matrix.test_selection }})"
 
       - name: Upload coverage
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: true
