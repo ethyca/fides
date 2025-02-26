@@ -42,7 +42,7 @@ class MySQLSchema(ConnectionConfigSecretsSchema):
         description="Indicates whether an SSH tunnel is required for the connection. Enable this option if your MySQL server is behind a firewall and requires SSH tunneling for remote connections.",
     )
 
-    _required_components: ClassVar[List[str]] = ["host", "dbname"]
+    _required_components: ClassVar[List[str]] = ["host"]
 
 
 class MySQLDocsSchema(MySQLSchema, NoValidationSchema):
