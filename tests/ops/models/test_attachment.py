@@ -94,6 +94,19 @@ def test_attachment_foreign_key_constraint(db):
         db.commit()
 
 
+def test_attachment_fidesuser_foreign_key_constraint(db, attachment):
+    """Test that user can be deleted without deleting the attachment."""
+    db.add(attachment)
+    db.commit()
+
+    user = db.query(FidesUser).filter_by(id=attachment.user_id).first()
+    db.delete(user)
+    db.commit()
+
+    retrieved_attachment = db.query(Attachment).filter_by(id=attachment.id).first()
+    assert retrieved_attachment is not None
+
+
 def test_attachment_reference_relationship(db, attachment, attachment_reference):
     """Test the relationship between attachment and attachment reference."""
     attachment_setup(db, attachment, attachment_reference)
