@@ -171,23 +171,32 @@ const initializeGppCmpApi = () => {
   const cmpApi = new CmpApi(ETHYCA_CMP_ID, CMP_VERSION);
   cmpApi.setCmpStatus(CmpStatus.LOADED);
   window.addEventListener("FidesInitialized", (event) => {
-    // TODO (PROD-1439): re-evaluate if GPP is "cheating" accessing window.Fides instead of using the event details only
     const { experience, saved_consent: savedConsent, options } = window.Fides;
-    const isTcfEnabled = options.tcfEnabled;
+
+    // Set up supported APIs before validating experience since getSupportedApis() needs it
     cmpApi.setSupportedAPIs(getSupportedApis());
-    // Set status to ready immediately upon initialization, if either:
-    // A. Consent should not be resurfaced
-    // B. User has no prefs and has all opt-in notices and TCF is disabled
+
+    if (!isPrivacyExperience(experience)) {
+      return;
+    }
+
+    // Determine if we should immediately set up the GPP state and mark it as ready.
+    // We proceed if EITHER:
+    // 1. Consent should not be resurfaced (i.e., user has valid consent that hasn't expired)
+    //    OR
+    // 2. ALL of these conditions are met:
+    //    - TCF is disabled (not using TCF EU consent)
+    //    - All notices in the experience default to opt-in
+    //    - User has no existing preferences (either in cookie, fides_string, or mapped to notices)
     if (
-      isPrivacyExperience(experience) &&
-      (!shouldResurfaceConsent(experience, event.detail, savedConsent) ||
-        (!isTcfEnabled &&
-          allNoticesAreDefaultOptIn(experience.privacy_notices) &&
-          !userHasExistingPrefs(
-            savedConsent,
-            event.detail.fides_string,
-            experience.privacy_notices,
-          )))
+      !shouldResurfaceConsent(experience, event.detail, savedConsent) ||
+      (!options.tcfEnabled &&
+        allNoticesAreDefaultOptIn(experience.privacy_notices) &&
+        !userHasExistingPrefs(
+          savedConsent,
+          event.detail.fides_string,
+          experience.privacy_notices,
+        ))
     ) {
       const tcSet = setTcString(event, cmpApi);
       if (tcSet) {
@@ -225,11 +234,10 @@ const initializeGppCmpApi = () => {
   window.addEventListener("FidesUIShown", (event) => {
     // Set US GPP notice fields
     const { experience, saved_consent: savedConsent, options } = window.Fides;
-    const isTcfEnabled = options.tcfEnabled;
     if (isPrivacyExperience(experience)) {
       // set signal status to ready only for users with no existing prefs and if notices are all opt-in by default and TCF is disabled
       if (
-        !isTcfEnabled &&
+        !options.tcfEnabled &&
         allNoticesAreDefaultOptIn(experience.privacy_notices) &&
         !userHasExistingPrefs(
           savedConsent,
