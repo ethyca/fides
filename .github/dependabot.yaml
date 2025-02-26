@@ -1,6 +1,5 @@
 version: 2
 updates:
-  # Python dependencies
   - package-ecosystem: "pip"
     directory: "/"
     schedule:
@@ -13,8 +12,6 @@ updates:
 
   # Frontend monorepo dependencies
   # Dependabot config must target /clients because package-lock.json is at the monorepo root
-
-  # Security updates for all monorepo dependencies
   - package-ecosystem: "npm"
     directory: "/clients"
     schedule:
@@ -23,24 +20,8 @@ updates:
       - dependencies
       - javascript
       - dependabot
-    open-pull-requests-limit: 0  # Security updates only
+    open-pull-requests-limit: 0
 
-  # Version updates for IAB dependencies of fides-js
-  - package-ecosystem: "npm"
-    directory: "/clients"
-    schedule:
-      interval: "daily"
-    labels:
-      - dependencies
-      - javascript
-      - dependabot
-    allow:
-      - dependency-name: "@iabtechlabtcf*"
-        dependency-type: "direct"
-      - dependency-name: "@iabgpp*"
-        dependency-type: "direct"
-
-  # Frontend development/test dependencies
   - package-ecosystem: "npm"
     directory: "/clients/sample-app"
     schedule:
@@ -49,7 +30,7 @@ updates:
       - dependencies
       - javascript
       - dependabot
-    open-pull-requests-limit: 0  # Security updates only
+    open-pull-requests-limit: 0
 
   - package-ecosystem: "npm"
     directory: "/clients/cypress-e2e"
@@ -59,15 +40,13 @@ updates:
       - dependencies
       - javascript
       - dependabot
-    open-pull-requests-limit: 0  # Security updates only
+    open-pull-requests-limit: 0
 
-  # GitHub Actions
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
     labels:
       - dependencies
       - github_actions
       - dependabot
-    open-pull-requests-limit: 0  # Security updates only
