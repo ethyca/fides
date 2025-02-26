@@ -31,7 +31,7 @@ class MySQLSchema(ConnectionConfigSecretsSchema):
         description="The password used to authenticate and access the database.",
         json_schema_extra={"sensitive": True},
     )
-    dbname: str = Field(
+    dbname: Optional[str] = Field(
         title="Database",
         description="The name of the specific database within the database server that you want to connect to.",
     )
