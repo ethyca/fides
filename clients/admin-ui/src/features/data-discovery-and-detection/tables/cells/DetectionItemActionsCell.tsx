@@ -62,7 +62,7 @@ const DetectionItemActionsCell = ({
     childDiffHasChanges;
 
   return (
-    <HStack onClick={(e) => e.stopPropagation()}>
+    <HStack>
       {showStartMonitoringAction && (
         <ActionButton
           title="Monitor"

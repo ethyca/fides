@@ -35,6 +35,9 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ### Docs
 - Removed version pins in LDFLAGS & CFLAGS for local MSSQL builds [#5760](https://github.com/ethyca/fides/pull/5760)
 
+### Fixed
+- Fixed bug with D&D table column widths [#5813](https://github.com/ethyca/fides/pull/5813)
+
 ## [2.55.4](https://github.com/ethyca/fides/compare/2.55.3...2.55.4)
 
 ### Added
