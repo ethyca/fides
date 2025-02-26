@@ -1,5 +1,3 @@
-import "react-phone-number-input/style.css";
-
 import { Input, InputProps } from "fidesui";
 import dynamic from "next/dynamic";
 // Importing the flag icons causes them to be bundled into the app instead of loaded from an outside

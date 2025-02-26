@@ -187,7 +187,7 @@ export const CustomFieldModal = ({
       }
 
       const result = await upsertAllowList(allowListPayload);
-      if (!("error" in result) && !values.allow_list_id) {
+      if (!result.error && !values.allow_list_id) {
         // Handles the creation case. Only assigns ID if new
         // eslint-disable-next-line no-param-reassign
         values.allow_list_id = result.data?.id;
@@ -221,7 +221,7 @@ export const CustomFieldModal = ({
       ? await updateCustomFieldDefinition(payload)
       : await addCustomFieldDefinition(payload);
 
-    if ("error" in result) {
+    if (result.error) {
       errorAlert(
         getErrorMessage(result.error),
         `Custom field has failed to save due to the following:`,

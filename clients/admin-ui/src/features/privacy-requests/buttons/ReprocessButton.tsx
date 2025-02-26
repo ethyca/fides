@@ -37,7 +37,7 @@ const ReprocessButton = forwardRef(
     const handleBulkReprocessClick = async () => {
       setIsReprocessing(true);
       const payload = await bulkRetry(errorRequests);
-      if ("error" in payload) {
+      if (payload.error) {
         dispatch(setRetryRequests({ checkAll: false, errorRequests: [] }));
         errorAlert(
           getErrorMessage(payload.error),
@@ -72,7 +72,7 @@ const ReprocessButton = forwardRef(
       }
       setIsReprocessing(true);
       const payload = await retry(subjectRequest);
-      if ("error" in payload) {
+      if (payload.error) {
         errorAlert(
           getErrorMessage(payload.error),
           `DSR automation has failed for this privacy request due to the following:`,

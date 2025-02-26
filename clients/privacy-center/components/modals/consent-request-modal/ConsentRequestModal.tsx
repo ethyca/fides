@@ -1,4 +1,4 @@
-import { useRouter } from "next/router";
+import { useParams, useRouter } from "next/navigation";
 import React, { useCallback, useState } from "react";
 
 import { useLocalStorage } from "~/common/hooks";
@@ -19,13 +19,16 @@ export const useConsentRequestModal = () => {
     "",
   );
 
+  const params = useParams();
+  const propertyPath = params?.propertyPath;
+
   const successHandler = useCallback(() => {
     let consentRoute = "/consent";
-    if (router.query.customPropertyPath) {
-      consentRoute = `/${router.query.customPropertyPath}/consent`;
+    if (propertyPath) {
+      consentRoute = `/${propertyPath}/consent`;
     }
     router.push(consentRoute);
-  }, [router]);
+  }, [propertyPath, router]);
 
   const onOpen = () => {
     setCurrentView(ModalViews.ConsentRequest);
@@ -36,7 +39,7 @@ export const useConsentRequestModal = () => {
     setIsOpen(false);
     setCurrentView(ModalViews.ConsentRequest);
     setConsentRequestId("");
-    router.push("/", undefined, { shallow: true });
+    router.push("/");
   };
 
   return {
