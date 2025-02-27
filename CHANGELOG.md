@@ -21,7 +21,8 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.56.0...main)
 
-
+### Added
+- DB model support for Attachments [#5784](https://github.com/ethyca/fides/pull/5784) https://github.com/ethyca/fides/labels/db-migration
 
 ## [2.56.0](https://github.com/ethyca/fides/compare/2.55.4...2.56.0)
 
@@ -32,7 +33,6 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Nested identity query support for BigQuery [#5814](https://github.com/ethyca/fides/pull/5814)
 - Added job that automatically requeues interrupted tasks for in progress privacy requests [#5800](https://github.com/ethyca/fides/pull/5800)
 - Added "Assets" tab on system view for web monitor assets [#5811](https://github.com/ethyca/fides/pull/5811)
-- DB model support for Attachments [#5784](https://github.com/ethyca/fides/pull/5784) https://github.com/ethyca/fides/labels/db-migration
 
 ### Changed
 - Improved dataset validation for namespace metadata and dataset reachability [#5744](https://github.com/ethyca/fides/pull/5744)
