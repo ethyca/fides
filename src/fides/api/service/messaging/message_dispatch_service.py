@@ -1,13 +1,9 @@
 from __future__ import annotations
 
-import json
 from typing import Any, Callable, Dict, List, Optional, Union
 
-import requests
 from loguru import logger
 from sqlalchemy.orm import Session
-from twilio.base.exceptions import TwilioRestException
-from twilio.rest import Client
 
 from fides.api.common_exceptions import MessageDispatchException
 from fides.api.email_templates.get_email_template import get_email_template
@@ -27,8 +23,6 @@ from fides.api.schemas.messaging.messaging import (
     FidesopsMessage,
     MessagingActionType,
     MessagingMethod,
-    MessagingServiceDetails,
-    MessagingServiceSecrets,
     MessagingServiceType,
     RequestReceiptBodyParams,
     RequestReviewDenyBodyParams,
@@ -41,12 +35,23 @@ from fides.api.service.messaging.messaging_crud_service import (
     get_enabled_messaging_template_by_type_and_property,
 )
 from fides.api.tasks import DatabaseTask, celery_app
-from fides.api.util.logger import Pii
 from fides.config import CONFIG
 from fides.config.config_proxy import ConfigProxy
-from fides.service.messaging.aws_ses_service import AWS_SES_Service
-from fides.service.messaging.mailgun_service import MailgunService
-from fides.service.messaging.twilio_email_service import TwilioEmailService
+from fides.service.messaging.messaging_providers.aws_ses_service import AWS_SES_Service
+from fides.service.messaging.messaging_providers.mailgun_service import MailgunService
+from fides.service.messaging.messaging_providers.twilio_email_service import (
+    TwilioEmailService,
+)
+from fides.service.messaging.messaging_providers.twilio_sms_service import (
+    TwilioSMSService,
+)
+from fides.service.messaging.messaging_providers.mailchimp_transactional_service import (
+    MailchimpTransactionalService,
+)
+from fides.service.messaging.messaging_providers.base_messaging_provider_service import (
+    BaseEmailProviderService,
+    BaseSMSProviderService,
+)
 
 EMAIL_JOIN_STRING = ", "
 EMAIL_TEMPLATE_NAME = "fides"
@@ -483,6 +488,20 @@ def _get_dispatcher_from_config_type(
     return handler.get(message_service_type)  # type: ignore
 
 
+def get_messaging_provider_from_service_type(
+    service_type: MessagingServiceType,
+) -> Optional[Union[BaseEmailProviderService, BaseSMSProviderService]]:
+
+    service_type_to_provider = {
+        MessagingServiceType.mailgun: MailgunService,
+        MessagingServiceType.mailchimp_transactional: MailchimpTransactionalService,
+        MessagingServiceType.twilio_email: TwilioEmailService,
+        MessagingServiceType.twilio_text: TwilioSMSService,
+        MessagingServiceType.aws_ses: AWS_SES_Service,
+    }
+    return service_type_to_provider.get(service_type)
+
+
 def validate_config(
     messaging_config: MessagingConfig,
     config_name: str,
@@ -509,50 +528,9 @@ def _mailchimp_transactional_dispatcher(
     to: str,
 ) -> None:
     """Dispatches email using Mailchimp Transactional"""
-    validate_config(messaging_config, "Mailchimp Transactional")
 
-    from_email = messaging_config.details[MessagingServiceDetails.EMAIL_FROM.value]
-    data = json.dumps(
-        {
-            "key": messaging_config.secrets[
-                MessagingServiceSecrets.MAILCHIMP_TRANSACTIONAL_API_KEY.value
-            ],
-            "message": {
-                "from_email": from_email,
-                "subject": message.subject,
-                "html": message.body,
-                # On Mailchimp Transactional's free plan `to` must be an email of the same
-                # domain as `from_email`
-                "to": [{"email": to.strip(), "type": "to"}],
-            },
-        }
-    )
-
-    response = requests.post(
-        "https://mandrillapp.com/api/1.0/messages/send",
-        headers={"Content-Type": "application/json"},
-        data=data,
-    )
-    if not response.ok:
-        logger.error("Email failed to send with status code: %s", response.status_code)
-        raise MessageDispatchException(
-            f"Email failed to send with status code {response.status_code}"
-        )
-
-    send_data = response.json()[0]
-    email_rejected = send_data.get("status", "rejected") == "rejected"
-    if email_rejected:
-        reason = send_data.get("reject_reason", "Fides Error")
-        explanations = {
-            "soft-bounce": "A temporary error occured with the target inbox. For example, this inbox could be full. See https://mailchimp.com/developer/transactional/docs/reputation-rejections/#bounces for more info.",
-            "hard-bounce": "A permanent error occured with the target inbox. See https://mailchimp.com/developer/transactional/docs/reputation-rejections/#bounces for more info.",
-            "recipient-domain-mismatch": f"You are not authorised to send email to this domain from {from_email}.",
-            "unsigned": f"The sending domain for {from_email} has not been fully configured for Mailchimp Transactional. See https://mailchimp.com/developer/transactional/docs/authentication-delivery/#authentication/ for more info.",
-        }
-        explanation = explanations.get(reason, "")
-        raise MessageDispatchException(
-            f"Verification email unable to send due to reason: {reason}. {explanation}"
-        )
+    mailchimp_transactional_service = MailchimpTransactionalService(messaging_config)
+    mailchimp_transactional_service.send_email(to, message)
 
 
 def _mailgun_dispatcher(
@@ -561,10 +539,9 @@ def _mailgun_dispatcher(
     to: str,
 ) -> None:
     """Dispatches email using Mailgun"""
-    validate_config(messaging_config, "Mailgun")
 
     mailgun_service = MailgunService(messaging_config)
-    mailgun_service.send_message(message, to)
+    mailgun_service.send_email(message, to)
 
 
 def _twilio_email_dispatcher(
@@ -573,10 +550,9 @@ def _twilio_email_dispatcher(
     to: str,
 ) -> None:
     """Dispatches email using twilio sendgrid"""
-    validate_config(messaging_config, "Twilio email")
 
     twilio_email_service = TwilioEmailService(messaging_config)
-    twilio_email_service.send_message(message, to)
+    twilio_email_service.send_email(message, to)
 
 
 def _twilio_sms_dispatcher(
@@ -585,39 +561,9 @@ def _twilio_sms_dispatcher(
     to: str,
 ) -> None:
     """Dispatches SMS using Twilio"""
-    validate_config(messaging_config, "Twilio SMS", validate_details=False)
 
-    account_sid = messaging_config.secrets[
-        MessagingServiceSecrets.TWILIO_ACCOUNT_SID.value
-    ]
-    auth_token = messaging_config.secrets[
-        MessagingServiceSecrets.TWILIO_AUTH_TOKEN.value
-    ]
-    messaging_service_id = messaging_config.secrets.get(
-        MessagingServiceSecrets.TWILIO_MESSAGING_SERVICE_SID.value
-    )
-    sender_phone_number = messaging_config.secrets.get(
-        MessagingServiceSecrets.TWILIO_SENDER_PHONE_NUMBER.value
-    )
-
-    client = Client(account_sid, auth_token)
-    try:
-        if messaging_service_id:
-            client.messages.create(
-                to=to, messaging_service_sid=messaging_service_id, body=message
-            )
-        elif sender_phone_number:
-            client.messages.create(to=to, from_=sender_phone_number, body=message)
-        else:
-            logger.error(
-                "Message failed to send. Either sender phone number or messaging service sid must be provided."
-            )
-            raise MessageDispatchException(
-                "Message failed to send. Either sender phone number or messaging service sid must be provided."
-            )
-    except TwilioRestException as e:
-        logger.error("Twilio SMS failed to send: {}", Pii(str(e)))
-        raise MessageDispatchException(f"Twilio SMS failed to send due to: {Pii(e)}")
+    twilio_sms_service = TwilioSMSService(messaging_config)
+    twilio_sms_service.send_message(to, message)
 
 
 def _aws_ses_dispatcher(
@@ -625,10 +571,9 @@ def _aws_ses_dispatcher(
     message: EmailForActionType,
     to: str,
 ) -> None:
-    validate_config(messaging_config, "AWS SES")
 
     aws_ses_serivce = AWS_SES_Service(messaging_config)
-    aws_ses_serivce.send_message(message, to)
+    aws_ses_serivce.send_email(message, to)
 
 
 def get_email_messaging_config_service_type(db: Session) -> Optional[str]:

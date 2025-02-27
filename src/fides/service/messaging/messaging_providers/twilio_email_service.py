@@ -6,8 +6,8 @@ from loguru import logger
 
 from sendgrid.helpers.mail import Content, Email, Mail, Personalization, TemplateId, To
 
-from fides.service.messaging.base_messaging_provider_service import (
-    BaseMessageProviderService,
+from fides.service.messaging.messaging_providers.base_messaging_provider_service import (
+    BaseEmailProviderService,
     EMAIL_TEMPLATE_NAME,
 )
 from fides.api.models.messaging import MessagingConfig
@@ -21,7 +21,7 @@ from fides.api.util.logger import Pii
 from fides.api.common_exceptions import MessageDispatchException
 
 
-class TwilioEmailService(BaseMessageProviderService):
+class TwilioEmailService(BaseEmailProviderService):
     provider_name: Literal["Twilio Email"] = "Twilio Email"
 
     def __init__(self, messaging_config: MessagingConfig):
@@ -84,7 +84,7 @@ class TwilioEmailService(BaseMessageProviderService):
             mail = Mail(from_email, to_email, subject, content)
         return mail
 
-    def send_message(self, message: EmailForActionType, to: str):
+    def send_email(self, to: str, message: EmailForActionType):
         try:
             template_test = self._get_template_id_if_exists()
 

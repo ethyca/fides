@@ -12,9 +12,9 @@ from fides.api.schemas.messaging.messaging import (
     EmailForActionType,
 )
 
-from fides.service.messaging.base_messaging_provider_service import (
+from fides.service.messaging.messaging_providers.base_messaging_provider_service import (
     EMAIL_TEMPLATE_NAME,
-    BaseMessageProviderService,
+    BaseEmailProviderService,
 )
 from fides.api.util.logger import Pii
 
@@ -23,7 +23,7 @@ class MailgunException(Exception):
     pass
 
 
-class MailgunService(BaseMessageProviderService):
+class MailgunService(BaseEmailProviderService):
     provider_name: Literal["Mailgun"] = "Mailgun"
 
     def __init__(self, messaging_config: MessagingConfig):
@@ -73,10 +73,10 @@ class MailgunService(BaseMessageProviderService):
 
         return template_test.status_code == 200
 
-    def send_message(
+    def send_email(
         self,
-        message: EmailForActionType,
         to: str,
+        message: EmailForActionType,
     ) -> None:
         """
         Sends an email using the Mailgun API.

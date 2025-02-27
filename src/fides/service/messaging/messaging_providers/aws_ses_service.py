@@ -11,8 +11,8 @@ from fides.api.schemas.messaging.messaging import (
 from fides.api.schemas.storage.storage import StorageSecrets
 from fides.api.util.aws_util import get_aws_session
 
-from fides.service.messaging.base_messaging_provider_service import (
-    BaseMessageProviderService,
+from fides.service.messaging.messaging_providers.base_messaging_provider_service import (
+    BaseEmailProviderService,
 )
 from fides.api.common_exceptions import MessageDispatchException
 from fides.api.util.logger import Pii
@@ -59,7 +59,7 @@ class AWS_SESException(Exception):
     pass
 
 
-class AWS_SES_Service:
+class AWS_SES_Service(BaseEmailProviderService):
     """
     Service class to wrap interactions with AWS SES.
     """
@@ -127,10 +127,10 @@ class AWS_SES_Service:
         if domain_status != "Success":
             raise AWS_SESException(f"Domain {domain} is not verified in SES.")
 
-    def send_message(
+    def send_email(
         self,
-        message: EmailForActionType,
         to: str,
+        message: EmailForActionType,
     ) -> None:
         """
         Send an email using AWS SES.

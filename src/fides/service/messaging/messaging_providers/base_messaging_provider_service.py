@@ -11,12 +11,22 @@ EMAIL_TEMPLATE_NAME = "fides"
 
 
 class BaseMessageProviderService(ABC):
+    """
+    Base class for Messaging provider services.
+    Services shouldn't inherit directly from this class, but from one of its
+    more specific subclasses (BaseEmailProviderService, BaseSMSProviderService)
+    """
+
     provider_name: str
     # Some message providers will only have secrets
     validate_details: Optional[bool] = True
 
     def __init__(self, messaging_config: MessagingConfig):
         self.messaging_config = messaging_config
+
+        assert (
+            self.provider_name
+        ), "Provider name must be set in child classes of BaseMessageProviderService."
 
         self.validate_config()
 
@@ -35,6 +45,22 @@ class BaseMessageProviderService(ABC):
             logger.error(f"Message failed to send. {error_message}")
             raise MessageDispatchException(error_message)
 
+
+class BaseEmailProviderService(BaseMessageProviderService):
     @abstractmethod
-    def send_message(self, message: EmailForActionType, to: str) -> None:
+    def send_email(
+        self,
+        to: str,
+        message: EmailForActionType,
+    ) -> None:
+        pass
+
+
+class BaseSMSProviderService(BaseMessageProviderService):
+    @abstractmethod
+    def send_message(
+        self,
+        to: str,
+        message: str,
+    ) -> None:
         pass
