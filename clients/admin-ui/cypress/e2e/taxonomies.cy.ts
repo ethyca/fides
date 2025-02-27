@@ -1,5 +1,7 @@
 import { stubTaxonomyEntities } from "cypress/support/stubs";
 
+import { RoleRegistryEnum } from "~/types/api";
+
 const dataCategoriesFixture = require("../fixtures/taxonomy/data_categories.json");
 
 describe("Taxonomy management page", () => {
@@ -301,6 +303,36 @@ describe("Taxonomy management page", () => {
         const { body } = interception.request;
         expect(body.fides_key).to.equal("user.content");
         expect(body.active).to.equal(false);
+      });
+    });
+  });
+
+  describe("Read-only view for users with only read permissions", () => {
+    beforeEach(() => {
+      cy.login();
+      cy.assumeRole(RoleRegistryEnum.VIEWER);
+      cy.visit("/taxonomy");
+    });
+
+    it("Edit tray inputs are disabled", () => {
+      cy.getByTestId(`taxonomy-node-user.content`).click();
+      cy.getByTestId("edit-drawer-content").within(() => {
+        cy.getByTestId("edit-taxonomy-form_name").should("be.disabled");
+        cy.getByTestId("edit-taxonomy-form_description").should("be.disabled");
+      });
+    });
+
+    it("Edit tray doesn't show save button and delete button", () => {
+      cy.getByTestId(`taxonomy-node-user.content`).click();
+      cy.getByTestId("edit-drawer-content").within(() => {
+        cy.getByTestId("save-btn").should("not.exist");
+        cy.getByTestId("delete-btn").should("not.exist");
+      });
+    });
+
+    it("Doesn't show add label button", () => {
+      cy.getByTestId(`taxonomy-node-user.content`).within(() => {
+        cy.getByTestId("taxonomy-add-child-label-button").should("not.exist");
       });
     });
   });

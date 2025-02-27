@@ -19,20 +19,32 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - https://github.com/ethyca/fides/labels/high-risk: to indicate that a change is a "high-risk" change that could potentially lead to unanticipated regressions or degradations
 - https://github.com/ethyca/fides/labels/db-migration: to indicate that a given change includes a DB migration
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.55.4...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.56.0...main)
+
+
+
+## [2.56.0](https://github.com/ethyca/fides/compare/2.55.4...2.56.0)
 
 ### Added
 - DB model support for Web Monitoring [#5616](https://github.com/ethyca/fides/pull/5616) https://github.com/ethyca/fides/labels/db-migration
 - Added support for queue-specific Celery workers [#5761](https://github.com/ethyca/fides/pull/5761)
+- Added support for AWS SES as an email provider [#5804](https://github.com/ethyca/fides/pull/5804)
+- Nested identity query support for BigQuery [#5814](https://github.com/ethyca/fides/pull/5814)
+- Added job that automatically requeues interrupted tasks for in progress privacy requests [#5800](https://github.com/ethyca/fides/pull/5800)
+- Added "Assets" tab on system view for web monitor assets [#5811](https://github.com/ethyca/fides/pull/5811)
 
 ### Changed
 - Improved dataset validation for namespace metadata and dataset reachability [#5744](https://github.com/ethyca/fides/pull/5744)
+- Taxonomy page can now be accessed by users with only read permissions [#5815](https://github.com/ethyca/fides/pull/5815)
 
 ### Developer Experience
 - Modified Dependabot configuration to support monorepo security updates [#5810](https://github.com/ethyca/fides/pull/5810)
 
 ### Docs
 - Removed version pins in LDFLAGS & CFLAGS for local MSSQL builds [#5760](https://github.com/ethyca/fides/pull/5760)
+
+### Fixed
+- Fixed bug with D&D table column widths [#5813](https://github.com/ethyca/fides/pull/5813)
 
 ## [2.55.4](https://github.com/ethyca/fides/compare/2.55.3...2.55.4)
 

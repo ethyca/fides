@@ -2,6 +2,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
+import type { GPPMobileData } from "./GPPMobileData";
 import type { TCMobileData } from "./TCMobileData";
 
 /**
@@ -16,10 +17,10 @@ export type ExperienceMeta = {
    * The fides string (TC String + AC String) corresponding to a user opting in to all available options
    */
   accept_all_fides_string?: string | null;
-  accept_all_fides_mobile_data?: TCMobileData | null;
+  accept_all_fides_mobile_data?: TCMobileData | GPPMobileData | null;
   /**
    * The fides string (TC String + AC String) corresponding to a user opting out of all available options
    */
   reject_all_fides_string?: string | null;
-  reject_all_fides_mobile_data?: TCMobileData | null;
+  reject_all_fides_mobile_data?: TCMobileData | GPPMobileData | null;
 };

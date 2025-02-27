@@ -25,6 +25,7 @@ import type { ScyllaDocsSchema } from "./ScyllaDocsSchema";
 import type { SnowflakeDocsSchema } from "./SnowflakeDocsSchema";
 import type { SovrnDocsSchema } from "./SovrnDocsSchema";
 import type { TimescaleDocsSchema } from "./TimescaleDocsSchema";
+import type { WebsiteSchema } from "./WebsiteSchema";
 
 /**
  * Schema with values to create both a Saas ConnectionConfig and DatasetConfig from a template
@@ -56,6 +57,7 @@ export type SaasConnectionTemplateValues = {
     | ScyllaDocsSchema
     | SnowflakeDocsSchema
     | SovrnDocsSchema
-    | TimescaleDocsSchema;
+    | TimescaleDocsSchema
+    | WebsiteSchema;
   instance_key: string;
 };
