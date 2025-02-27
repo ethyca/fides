@@ -243,12 +243,9 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         title: "Taxonomy",
         path: routes.TAXONOMY_ROUTE,
         scopes: [
-          ScopeRegistryEnum.DATA_CATEGORY_CREATE,
-          ScopeRegistryEnum.DATA_CATEGORY_UPDATE,
-          ScopeRegistryEnum.DATA_USE_CREATE,
-          ScopeRegistryEnum.DATA_USE_UPDATE,
-          ScopeRegistryEnum.DATA_SUBJECT_CREATE,
-          ScopeRegistryEnum.DATA_SUBJECT_UPDATE,
+          ScopeRegistryEnum.DATA_USE_READ,
+          ScopeRegistryEnum.DATA_CATEGORY_READ,
+          ScopeRegistryEnum.DATA_SUBJECT_READ,
         ],
       },
       {

@@ -36,6 +36,7 @@ interface TaxonomyInteractiveTreeProps {
   onAddButtonClick: (taxonomyItem: TaxonomyEntity | undefined) => void;
   onCancelDraftItem: () => void;
   onSubmitDraftItem: (label: string) => void;
+  userCanAddLabels: boolean;
 }
 
 const TaxonomyInteractiveTree = ({
@@ -48,6 +49,7 @@ const TaxonomyInteractiveTree = ({
   onAddButtonClick,
   onCancelDraftItem,
   onSubmitDraftItem,
+  userCanAddLabels,
 }: TaxonomyInteractiveTreeProps) => {
   const { fitView } = useReactFlow();
 
@@ -72,10 +74,11 @@ const TaxonomyInteractiveTree = ({
         onTaxonomyItemClick: null,
         onAddButtonClick,
         hasChildren: taxonomyItems.length !== 0,
+        userCanAddLabels,
       },
       type: "taxonomyTreeNode",
     }),
-    [taxonomyType, taxonomyItems.length, onAddButtonClick],
+    [taxonomyType, taxonomyItems.length, onAddButtonClick, userCanAddLabels],
   );
 
   const nodes: Node[] = [rootNode];
@@ -98,6 +101,7 @@ const TaxonomyInteractiveTree = ({
         hasChildren: false,
         isLastCreatedItem: lastCreatedItemKey === taxonomyItem.fides_key,
         resetLastCreatedItemKey,
+        userCanAddLabels,
       },
       type: "taxonomyTreeNode",
     };

@@ -15,11 +15,15 @@ import {
 import { useCustomFields } from "~/features/common/custom-fields";
 import { getErrorMessage } from "~/features/common/helpers";
 import { TrashCanOutlineIcon } from "~/features/common/Icon/TrashCanOutlineIcon";
+import { useHasPermission } from "~/features/common/Restrict";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { isErrorResult } from "~/types/errors";
 
 import EditDrawer, { EditDrawerHeader } from "../../common/EditDrawer";
-import { CoreTaxonomiesEnum } from "../constants";
+import {
+  CoreTaxonomiesEnum,
+  taxonomyTypeToScopeRegistryEnum,
+} from "../constants";
 import { taxonomyTypeToResourceType } from "../helpers";
 import useTaxonomySlices from "../hooks/useTaxonomySlices";
 import { TaxonomyEntity } from "../types";
@@ -60,6 +64,13 @@ const TaxonomyEditDrawer = ({
     resourceFidesKey: taxonomyItem?.fides_key,
     resourceType: taxonomyTypeToResourceType(taxonomyType)!,
   });
+
+  const canUserEditTaxonomy = useHasPermission([
+    taxonomyTypeToScopeRegistryEnum(taxonomyType).UPDATE,
+  ]);
+  const canUserDeleteTaxonomy = useHasPermission([
+    taxonomyTypeToScopeRegistryEnum(taxonomyType).DELETE,
+  ]);
 
   const handleEdit = async (formValues: TaxonomyEntity) => {
     const result = await updateTrigger(formValues);
@@ -108,7 +119,7 @@ const TaxonomyEditDrawer = ({
         header={<EditDrawerHeader title={taxonomyItem?.name || ""} />}
         footer={
           <DrawerFooter justifyContent="space-between">
-            {taxonomyItem?.active ? (
+            {taxonomyItem?.active && canUserDeleteTaxonomy && (
               <Tooltip title="Delete label">
                 <Button
                   aria-label="delete"
@@ -117,7 +128,8 @@ const TaxonomyEditDrawer = ({
                   data-testid="delete-btn"
                 />
               </Tooltip>
-            ) : (
+            )}
+            {!taxonomyItem?.active && canUserEditTaxonomy && (
               <Tooltip title="Enable label">
                 <Button
                   aria-label="enable"
@@ -129,14 +141,16 @@ const TaxonomyEditDrawer = ({
             )}
 
             <div className="flex gap-2">
-              <Button
-                htmlType="submit"
-                type="primary"
-                data-testid="save-btn"
-                form={TAXONOMY_FORM_ID}
-              >
-                Save
-              </Button>
+              {canUserEditTaxonomy && (
+                <Button
+                  htmlType="submit"
+                  type="primary"
+                  data-testid="save-btn"
+                  form={TAXONOMY_FORM_ID}
+                >
+                  Save
+                </Button>
+              )}
             </div>
           </DrawerFooter>
         }
@@ -164,6 +178,7 @@ const TaxonomyEditDrawer = ({
             form={taxonomyForm}
             formId={TAXONOMY_FORM_ID}
             taxonomyType={taxonomyType}
+            isDisabled={!canUserEditTaxonomy}
           />
         )}
         {customFields.isEnabled && !customFields.isLoading && (

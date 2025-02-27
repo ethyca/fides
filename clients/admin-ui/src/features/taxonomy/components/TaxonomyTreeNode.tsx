@@ -26,6 +26,7 @@ export type TaxonomyTreeNodeType = Node<
     hasChildren: boolean;
     isLastCreatedItem: boolean;
     resetLastCreatedItemKey: () => void;
+    userCanAddLabels: boolean;
   },
   "taxonomyTreeNode"
 >;
@@ -47,6 +48,7 @@ const TaxonomyTreeNode = ({
     hasChildren,
     isLastCreatedItem,
     resetLastCreatedItemKey,
+    userCanAddLabels,
   } = data;
 
   const { centerScreenOnNode } = useCenterScreenOnNode({
@@ -94,7 +96,8 @@ const TaxonomyTreeNode = ({
   const isDataSubjectNode = taxonomyType === CoreTaxonomiesEnum.DATA_SUBJECTS;
 
   // Data subjects don't support child nodes, so we only show the add button for root node
-  const shouldDisplayAddChildButton = !isDataSubjectNode || isRootNode;
+  const shouldDisplayAddChildButton =
+    userCanAddLabels && (!isDataSubjectNode || isRootNode);
 
   return (
     <div
