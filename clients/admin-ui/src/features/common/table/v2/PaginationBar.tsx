@@ -54,8 +54,7 @@ export const useServerSidePagination = () => {
   }, [setPageIndex]);
   const isNextPageDisabled = useMemo(() => {
     const noPages = totalPages === 0;
-    const onLastPage =
-      !!totalPages && (pageIndex === totalPages || totalPages < 2);
+    const onLastPage = pageIndex === totalPages;
     return noPages || onLastPage;
   }, [pageIndex, totalPages]);
 
