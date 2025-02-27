@@ -17,6 +17,7 @@ from fideslang.models import System as SystemSchema
 from httpx import AsyncClient
 from loguru import logger
 from sqlalchemy.engine.base import Engine
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 
@@ -312,6 +313,7 @@ def application_user(db, oauth_client):
         db=db,
         data={
             "username": unique_username,
+            "password": "test_password",
             "email_address": f"{unique_username}@ethyca.com",
             "first_name": "Test",
             "last_name": "User",
@@ -324,35 +326,37 @@ def application_user(db, oauth_client):
 
 @pytest.fixture
 def user(db):
-    created, user = FidesUser.get_or_create(
-        db=db,
-        data={
-            "username": "test_fidesops_user",
-            "email_address": "fides.user@ethyca.com",
-        },
-    )
-    if created:
-        client = ClientDetail(
-            hashed_secret="thisisatest",
-            salt="thisisstillatest",
-            roles=[APPROVER],
-            scopes=[],
-            user_id=user.id,
+    try:
+        user = FidesUser.create(
+            db=db,
+            data={
+                "username": "test_fidesops_user",
+                "password": "TESTdcnG@wzJeu0&%3Qe2fGo7",
+                "email_address": "fides.user@ethyca.com",
+            },
         )
-
-        FidesUserPermissions.create(
+        permission = FidesUserPermissions.create(
             db=db, data={"user_id": user.id, "roles": [APPROVER]}
         )
+    except IntegrityError:
+        user = db.query(FidesUser).filter_by(username="test_fidesops_user").first()
+        permission = db.query(FidesUserPermissions).filter_by(user_id=user.id).first()
+    client = ClientDetail(
+        hashed_secret="thisisatest",
+        salt="thisisstillatest",
+        roles=[APPROVER],
+        scopes=[],
+        user_id=user.id,
+    )
 
-        db.add(client)
-        db.commit()
-        db.refresh(client)
+    db.add(client)
+    db.commit()
+    db.refresh(client)
     yield user
-    if created:
-        try:
-            client.delete(db)
-        except ObjectDeletedError:
-            pass
+    try:
+        client.delete(db)
+    except ObjectDeletedError:
+        pass
 
 
 @pytest.fixture
