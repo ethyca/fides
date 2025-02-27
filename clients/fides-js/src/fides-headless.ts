@@ -59,13 +59,12 @@ const updateWindowFides = (fidesGlobal: FidesGlobal) => {
 const updateExperience: UpdateExperienceFn = ({
   cookie,
   experience,
-  isExperienceClientSideFetched,
 }): Partial<PrivacyExperience> => {
   let updatedExperience: PrivacyExperience = experience;
   const preferencesExistOnCookie = consentCookieObjHasSomeConsentSet(
     cookie.consent,
   );
-  if (isExperienceClientSideFetched && preferencesExistOnCookie) {
+  if (preferencesExistOnCookie) {
     // If we have some preferences on the cookie, we update client-side experience with those preferences
     // if the name matches. This is used for client-side UI.
     updatedExperience = updateExperienceFromCookieConsentNotices({

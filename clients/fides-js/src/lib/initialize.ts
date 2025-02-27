@@ -58,8 +58,6 @@ import { searchForElement } from "./ui-utils";
 export type UpdateExperienceFn = (args: {
   cookie: FidesCookie;
   experience: PrivacyExperience;
-  debug?: boolean;
-  isExperienceClientSideFetched: boolean;
 }) => Partial<PrivacyExperience>;
 
 const retrieveEffectiveRegionString = async (
@@ -394,17 +392,20 @@ export const initialize = async ({
        * with some additional client-side state so that it is initialized with
        * the user's current consent preferences, etc. and ready to display!
        */
-      const updatedExperience = updateExperience({
-        cookie: fides.cookie!,
-        experience: fides.experience,
-        isExperienceClientSideFetched: fetchedClientSideExperience,
-      });
-      fidesDebugger(
-        "Updated experience from saved preferences",
-        updatedExperience,
-      );
-      // eslint-disable-next-line no-param-reassign
-      fides.experience = { ...fides.experience, ...updatedExperience };
+      if (fetchedClientSideExperience) {
+        // If it's not client side fetched, we don't update anything since the cookie has already
+        // been updated earlier.
+        const updatedExperience = updateExperience({
+          cookie: fides.cookie!,
+          experience: fides.experience,
+        });
+        // eslint-disable-next-line no-param-reassign
+        fides.experience = { ...fides.experience, ...updatedExperience };
+        fidesDebugger(
+          "Updated experience from saved preferences",
+          updatedExperience,
+        );
+      }
 
       /**
        * Finally, update the "cookie" state to track the user's *current*

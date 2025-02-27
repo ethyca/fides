@@ -79,14 +79,7 @@ const updateWindowFides = (fidesGlobal: FidesGlobal) => {
 const updateExperience: UpdateExperienceFn = ({
   cookie,
   experience,
-  isExperienceClientSideFetched,
 }): Partial<PrivacyExperience> => {
-  if (!isExperienceClientSideFetched) {
-    // If it's not client side fetched, we don't update anything since the cookie has already
-    // been updated earlier.
-    return experience;
-  }
-
   // We need the cookie.fides_string to attach user preference to an experience.
   // If this does not exist, we should assume no user preference has been given and leave the experience as is.
   if (cookie.fides_string) {
