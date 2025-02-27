@@ -28,7 +28,7 @@ export const statusPropMap: {
     label: "Awaiting Email Send",
   },
   denied: {
-    color: "error",
+    color: "warning",
     label: "Denied",
   },
   canceled: {
@@ -36,7 +36,7 @@ export const statusPropMap: {
     label: "Canceled",
   },
   error: {
-    color: "warning",
+    color: "error",
     label: "Error",
   },
   in_processing: {
