@@ -2,7 +2,9 @@ import os
 from enum import Enum as EnumType
 from typing import Any, Optional
 
-from fideslang.validation import FidesKey
+from boto3.Session import client
+from fideslang.validation import AnyHttpUrlString, FidesKey
+from loguru import logger as log
 from sqlalchemy import Column
 from sqlalchemy import Enum as EnumColumn
 from sqlalchemy import ForeignKey, String, UniqueConstraint
@@ -11,26 +13,30 @@ from sqlalchemy.orm import Session, relationship
 
 from fides.api.db.base_class import Base
 from fides.api.models.fides_user import FidesUser  # pylint: disable=unused-import
-from fides.api.models.audit_log import AuditLog, AuditLogAction
-from fides.api.models.fides_user import FidesUser
 from fides.api.models.storage import StorageConfig
-from fides.api.schemas.storage.storage import AWSAuthMethod, StorageDetails, StorageSecrets, StorageType
-from fides.api.tasks.storage import create_presigned_url_for_s3, LOCAL_FIDES_UPLOAD_DIRECTORY
+from fides.api.schemas.storage.storage import StorageDetails, StorageType
+from fides.api.tasks.storage import (
+    LOCAL_FIDES_UPLOAD_DIRECTORY,
+    create_presigned_url_for_s3,
+)
 from fides.api.util.aws_util import get_aws_session
-from loguru import logger as log
 
 
-def get_s3_client(config):
+def get_s3_client(config: StorageConfig) -> client:
     session = get_aws_session(
-        auth_method=config.auth_method.value,
-        storage_secrets=config.secrets
+        auth_method=config.details[StorageDetails.AUTH_METHOD.value],
+        storage_secrets=config.secrets,
     )
-    bucket_name = f"{config.details[StorageDetails.BUCKET.value]}"
-    return bucket_name, session.client("s3")
+    return session.client("s3")
 
 
-def get_storage_config(db, storage_key) -> str:
-        return StorageConfig.get_by(db=db, field="key", value=storage_key)
+def get_storage_config(db: Session, storage_key: FidesKey) -> Optional[StorageConfig]:
+    return StorageConfig.get_by(db=db, field="key", value=storage_key)
+
+
+def config_error_handler(storage_key: FidesKey) -> None:
+    log.error(f"Storage config not found for key: {storage_key}")
+    raise ValueError(f"Storage config not found for key: {storage_key}")
 
 
 class AttachmentType(str, EnumType):
@@ -112,15 +118,18 @@ class Attachment(Base):
         uselist=True,
     )
 
-    def upload(self, db: Session, attachment: bytes, storage_key) -> None:
+    def upload(self, db: Session, attachment: bytes) -> None:
         """Uploads an attachment to S3 or local storage."""
-        config = get_storage_config(db, storage_key)
+        config = get_storage_config(db, self.storage_key)
+        if config is None:
+            config_error_handler(self.storage_key)
 
-        if config.type.value == StorageType.s3.value:
-            bucket_name, s3_client = get_s3_client(config)
+        if config.type == StorageType.s3.value:
+            bucket_name = f"{config.details[StorageDetails.BUCKET.value]}"
+            s3_client = get_s3_client(config)
             s3_client.put_object(Bucket=bucket_name, Key=self.id, Body=attachment)
             log.info(f"Uploaded {self.file_name} to S3 bucket {bucket_name}/{self.id}")
-        elif config.type.value == StorageType.local.value:
+        elif config.type == StorageType.local.value:
             if not os.path.exists(LOCAL_FIDES_UPLOAD_DIRECTORY):
                 os.makedirs(LOCAL_FIDES_UPLOAD_DIRECTORY)
 
@@ -130,39 +139,54 @@ class Attachment(Base):
         else:
             raise ValueError(f"Unsupported storage type: {config.type}")
 
-    def download_attachment_from_s3(self, db, storage_key) -> str:
+    def download_attachment_from_s3(self, db: Session) -> Optional[AnyHttpUrlString]:
         """Returns the presigned URL for an attachment in S3."""
-        config = get_storage_config(db, storage_key)
-        if config.type.value != StorageType.s3.value:
+        config = get_storage_config(db, self.storage_key)
+        if config is None:
+            config_error_handler(self.storage_key)
+            return None
+
+        if config.type != StorageType.s3.value:
             raise ValueError(f"Unsupported storage: {config.type}")
 
-        bucket_name, s3_client = get_s3_client(config)
+        bucket_name = f"{config.details[StorageDetails.BUCKET.value]}"
+        s3_client = get_s3_client(config)
         return create_presigned_url_for_s3(s3_client, bucket_name, self.id)
 
-    def retrieve_attachment(self, db: Session, storage_key: str) -> bytes:
+    def retrieve_attachment(self, db: Session) -> Optional[bytes]:
         """Returns the attachment from S3 in bytes form."""
-        config = get_storage_config(db, storage_key)
+        config = get_storage_config(db, self.storage_key)
 
-        if config.type.value == StorageType.s3.value:
-            bucket_name, s3_client = get_s3_client(config)
+        if config is None:
+            config_error_handler(self.storage_key)
+            return None
+
+        if config.type == StorageType.s3.value:
+            bucket_name = f"{config.details[StorageDetails.BUCKET.value]}"
+            s3_client = get_s3_client(config)
             response = s3_client.get_object(Bucket=bucket_name, Key=self.id)
             return response["Body"].read()
-        elif config.type.value == StorageType.local.value:
+
+        if config.type == StorageType.local.value:
             filename = f"{LOCAL_FIDES_UPLOAD_DIRECTORY}/{self.id}"
             with open(filename, "rb") as file:
                 return file.read()
-        else:
-            raise ValueError(f"Unsupported storage type: {config.type}")
 
-    def delete_attachment_from_storage(self, db: Session, storage_key: str) -> None:
+        raise ValueError(f"Unsupported storage type: {config.type}")
+
+    def delete_attachment_from_storage(self, db: Session) -> None:
         """Deletes an attachment from S3 or local storage."""
-        config = get_storage_config(db, storage_key)
+        config = get_storage_config(db, self.storage_key)
 
-        if config.type.value == StorageType.s3.value:
-            bucket_name, s3_client = get_s3_client(config)
+        if config is None:
+            config_error_handler(self.storage_key)
+
+        if config.type == StorageType.s3.value:
+            bucket_name = f"{config.details[StorageDetails.BUCKET.value]}"
+            s3_client = get_s3_client(config)
             s3_client.delete_object(Bucket=bucket_name, Key=self.id)
             log.info(f"Deleted {self.file_name} from S3 bucket {bucket_name}/{self.id}")
-        elif config.type.value == StorageType.local.value:
+        elif config.type == StorageType.local.value:
             filename = f"{LOCAL_FIDES_UPLOAD_DIRECTORY}/{self.id}"
             os.remove(filename)
         else:
@@ -182,10 +206,10 @@ class Attachment(Base):
         """Creates a new attachment record in the database and uploads the attachment to S3."""
         attachment_model = super().create(db=db, data=data, check_name=check_name)
         if attachment is not None:
-            attachment_model.upload(db, attachment, storage_key)
+            attachment_model.upload(db, attachment)
         return attachment_model
 
-    def delete(self, db: Session, storage_key) -> None:
+    def delete(self, db: Session) -> None:
         """Deletes an attachment record from the database and deletes the attachment from S3."""
-        self.delete_attachment_from_storage(db, storage_key)
+        self.delete_attachment_from_storage(db)
         super().delete(db=db)

@@ -1,4 +1,8 @@
+from unittest.mock import Mock, patch
+
+import boto3
 import pytest
+from moto import mock_aws
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -9,6 +13,32 @@ from fides.api.models.attachment import (
     AttachmentType,
 )
 from fides.api.models.fides_user import FidesUser
+from fides.api.schemas.storage.storage import StorageDetails
+
+
+@pytest.fixture
+def s3_client(storage_config):
+    with mock_aws():
+        session = boto3.Session(
+            aws_access_key_id="fake_access_key",
+            aws_secret_access_key="fake_secret_key",
+            region_name="us-east-1",
+        )
+        s3 = session.client("s3")
+        s3.create_bucket(Bucket=storage_config.details[StorageDetails.BUCKET.value])
+        yield s3
+
+
+@pytest.fixture(
+    params=[
+        ("testfile.pdf", b"%PDF-1.4 Test PDF content"),
+        ("testfile.txt", b"Test text content"),
+        ("testfile.jpeg", b"\xff\xd8\xff\xe0\x00\x10JFIF Test JPEG content"),
+    ]
+)
+def attachment_file(request):
+    file_name, file_content = request.param
+    return file_name, file_content
 
 
 @pytest.fixture
@@ -22,8 +52,12 @@ def attachment_data(user, storage_config):
 
 
 @pytest.fixture
-def attachment(db, attachment_data):
-    attachment = Attachment.create(db, data=attachment_data)
+def attachment(db, attachment_data, monkeypatch, s3_client):
+    def mock_get_s3_client(config):
+        return s3_client
+
+    monkeypatch.setattr("fides.api.models.attachment.get_s3_client", mock_get_s3_client)
+    attachment = Attachment.create(db, data=attachment_data, attachment=b"Test content")
     yield attachment
     attachment.delete(db)
 
@@ -42,10 +76,18 @@ def attachment_reference(db, attachment):
     attachment_reference.delete(db)
 
 
-def test_create_attachment(db, attachment_data, user, storage_config):
+def test_create_attachment_with_S3_storage(
+    s3_client, db, user, attachment_data, attachment_file, storage_config, monkeypatch
+):
     """Test creating an attachment."""
-    attachment_data["storage_key"] = storage_config.key
-    attachment = Attachment.create(db=db, data=attachment_data)
+
+    def mock_get_s3_client(config):
+        return s3_client
+
+    monkeypatch.setattr("fides.api.models.attachment.get_s3_client", mock_get_s3_client)
+    attachment = Attachment.create(
+        db, data=attachment_data, attachment=attachment_file[1]
+    )
     retrieved_attachment = db.query(Attachment).filter_by(id=attachment.id).first()
 
     assert retrieved_attachment is not None
@@ -55,6 +97,37 @@ def test_create_attachment(db, attachment_data, user, storage_config):
 
     assert attachment.user.id == user.id
     assert attachment.user.first_name == user.first_name
+    assert (
+        s3_client.get_object(
+            Bucket=storage_config.details[StorageDetails.BUCKET.value],
+            Key=attachment.id,
+        )
+        is not None
+    )
+    assert retrieved_attachment.retrieve_attachment(db) == attachment_file[1]
+    assert (
+        "https://s3.amazonaws.com/test_bucket/att"
+        in retrieved_attachment.download_attachment_from_s3(db)
+    )
+
+
+def test_create_attachment_with_local_storage(
+    db, attachment_data, attachment_file, storage_config_local
+):
+    """Test creating an attachment."""
+
+    attachment_data["storage_key"] = storage_config_local.key
+    attachment = Attachment.create(
+        db=db, data=attachment_data, attachment=attachment_file[1]
+    )
+    retrieved_attachment = db.query(Attachment).filter_by(id=attachment.id).first()
+
+    assert retrieved_attachment is not None
+    assert retrieved_attachment.user_id == attachment.user_id
+    assert retrieved_attachment.file_name == attachment.file_name
+    assert retrieved_attachment.attachment_type == attachment.attachment_type
+
+    assert retrieved_attachment.retrieve_attachment(db) == attachment_file[1]
 
 
 def test_create_attachment_reference(db, attachment_reference):
@@ -69,6 +142,96 @@ def test_create_attachment_reference(db, attachment_reference):
     assert retrieved_reference is not None
     assert retrieved_reference.attachment_id == attachment_reference.attachment_id
     assert retrieved_reference.reference_type == attachment_reference.reference_type
+
+
+def test_download_attachment_from_s3(
+    s3_client, db, attachment_data, attachment_file, monkeypatch
+):
+    """Test retrieving an attachment from S3."""
+
+    def mock_get_s3_client(config):
+        return s3_client
+
+    monkeypatch.setattr("fides.api.models.attachment.get_s3_client", mock_get_s3_client)
+
+    attachment = Attachment.create(
+        db, data=attachment_data, attachment=attachment_file[1]
+    )
+    retrieved_file = attachment.download_attachment_from_s3(db)
+    assert "https://s3.amazonaws.com/test_bucket/att" in retrieved_file
+
+
+def test_retrieve_attachment_from_s3(
+    s3_client, db, attachment_data, attachment_file, monkeypatch
+):
+    """Test retrieving an attachment (bytes) from S3."""
+
+    def mock_get_s3_client(config):
+        return s3_client
+
+    monkeypatch.setattr("fides.api.models.attachment.get_s3_client", mock_get_s3_client)
+
+    attachment = Attachment.create(
+        db, data=attachment_data, attachment=attachment_file[1]
+    )
+    retrieved_file = attachment.retrieve_attachment(db)
+    assert retrieved_file == attachment_file[1]
+
+
+def test_retrieve_attachment_from_local(
+    db, attachment_data, attachment_file, storage_config_local
+):
+    """Test retrieving an attachment locally."""
+
+    attachment_data["storage_key"] = storage_config_local.key
+    attachment = Attachment.create(
+        db=db, data=attachment_data, attachment=attachment_file[1]
+    )
+
+    assert attachment.retrieve_attachment(db) == attachment_file[1]
+
+
+def test_delete_attachment_from_s3(
+    s3_client, db, attachment_data, attachment_file, storage_config, monkeypatch
+):
+    """Test deleting an attachment from S3."""
+    attachment = Attachment.create(
+        db, data=attachment_data, attachment=attachment_file[1]
+    )
+
+    def mock_get_s3_client(config):
+        return s3_client
+
+    monkeypatch.setattr("fides.api.models.attachment.get_s3_client", mock_get_s3_client)
+
+    assert attachment.retrieve_attachment(db) == attachment_file[1]
+
+    # Delete the file using the method
+    attachment.delete_attachment_from_storage(db)
+
+    with pytest.raises(s3_client.exceptions.NoSuchKey):
+        s3_client.get_object(
+            Bucket=storage_config.details[StorageDetails.BUCKET.value],
+            Key=attachment.id,
+        ) is None
+
+
+def test_delete_attachment_from_local(
+    db, attachment_data, attachment_file, storage_config_local
+):
+    """Test deleting an attachment locally."""
+    attachment_data["storage_key"] = storage_config_local.key
+    attachment = Attachment.create(
+        db=db, data=attachment_data, attachment=attachment_file[1]
+    )
+
+    assert attachment.retrieve_attachment(db) == attachment_file[1]
+
+    # Delete the file using the method
+    attachment.delete_attachment_from_storage(db)
+
+    with pytest.raises(FileNotFoundError):
+        attachment.retrieve_attachment(db)
 
 
 def test_attachment_foreign_key_constraint(db):
