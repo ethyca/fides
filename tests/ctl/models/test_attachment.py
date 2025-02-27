@@ -14,7 +14,6 @@ from fides.api.models.fides_user import FidesUser
 @pytest.fixture
 def attachment_data(user, storage_config):
     return {
-        "id": "1",
         "user_id": user.id,
         "file_name": "file.txt",
         "attachment_type": AttachmentType.internal_use_only,
@@ -23,32 +22,24 @@ def attachment_data(user, storage_config):
 
 
 @pytest.fixture
-def attachment(user, attachment_data, storage_config):
-    return Attachment(
-        id=attachment_data["id"],
-        user_id=user.id,
-        file_name=attachment_data["file_name"],
-        attachment_type=attachment_data["attachment_type"],
-        storage_key=storage_config.key,
-    )
+def attachment(db, attachment_data):
+    attachment = Attachment.create(db, data=attachment_data)
+    yield attachment
+    attachment.delete(db)
 
 
 @pytest.fixture
-def attachment_reference(attachment):
-    return AttachmentReference(
-        attachment_id=attachment.id,
-        reference_id="ref_1",
-        reference_type=AttachmentReferenceType.privacy_request,
+def attachment_reference(db, attachment):
+    attachment_reference = AttachmentReference.create(
+        db=db,
+        data={
+            "attachment_id": attachment.id,
+            "reference_id": "ref_1",
+            "reference_type": AttachmentReferenceType.privacy_request,
+        },
     )
-
-
-def attachment_setup(
-    db: Session, attachment: Attachment, attachment_reference: AttachmentReference
-):
-    db.add(attachment)
-    db.commit()
-    db.add(attachment_reference)
-    db.commit()
+    yield attachment_reference
+    attachment_reference.delete(db)
 
 
 def test_create_attachment(db, attachment_data, user, storage_config):
@@ -66,9 +57,8 @@ def test_create_attachment(db, attachment_data, user, storage_config):
     assert attachment.user.first_name == user.first_name
 
 
-def test_create_attachment_reference(db, attachment, attachment_reference):
+def test_create_attachment_reference(db, attachment_reference):
     """Test creating an attachment reference."""
-    attachment_setup(db, attachment, attachment_reference)
 
     retrieved_reference = (
         db.query(AttachmentReference)
@@ -84,7 +74,6 @@ def test_create_attachment_reference(db, attachment, attachment_reference):
 def test_attachment_foreign_key_constraint(db):
     """Test that the foreign key constraint is enforced."""
     attachment = Attachment(
-        id="2",
         user_id="non_existent_id",
         file_name="file.txt",
         attachment_type="attach_to_dsr",
@@ -109,12 +98,14 @@ def test_attachment_fidesuser_foreign_key_constraint(db, attachment):
 
 def test_attachment_reference_relationship(db, attachment, attachment_reference):
     """Test the relationship between attachment and attachment reference."""
-    attachment_setup(db, attachment, attachment_reference)
 
-    retrieved_attachment = db.query(Attachment).filter_by(id="1").first()
+    retrieved_attachment = db.query(Attachment).filter_by(id=attachment.id).first()
 
     assert len(retrieved_attachment.references) == 1
-    assert retrieved_attachment.references[0].reference_id == "ref_1"
+    assert (
+        retrieved_attachment.references[0].reference_id
+        == attachment_reference.reference_id
+    )
 
 
 def test_attachment_reference_foreign_key_constraint(db):
@@ -129,12 +120,19 @@ def test_attachment_reference_foreign_key_constraint(db):
 
 def test_delete_attachment_cascades(db, attachment, attachment_reference):
     """Test that deleting an attachment cascades to its references."""
-    attachment_setup(db, attachment, attachment_reference)
+    retrieved_reference = (
+        db.query(AttachmentReference)
+        .filter_by(reference_id=attachment_reference.reference_id)
+        .first()
+    )
+    assert retrieved_reference is not None
 
     attachment.delete(db=db)
 
     retrieved_reference = (
-        db.query(AttachmentReference).filter_by(reference_id="ref_1").first()
+        db.query(AttachmentReference)
+        .filter_by(reference_id=attachment_reference.reference_id)
+        .first()
     )
     assert retrieved_reference is None
 
@@ -189,7 +187,6 @@ def test_non_nullable_fields_attachment_references(db, attachment_reference_with
 
 def test_attachment_reference_unique_ids(db, attachment, attachment_reference):
     """Test that the unique constraint on the attachment/reference id is enforced."""
-    attachment_setup(db, attachment, attachment_reference)
 
     attachment_reference = AttachmentReference(
         attachment_id="attachment_1",
