@@ -17,7 +17,7 @@ from starlette.status import (
     HTTP_422_UNPROCESSABLE_ENTITY,
 )
 
-from fides.api.api.deps import get_dataset_service, get_db
+from fides.api.api.deps import get_db
 from fides.api.common_exceptions import KeyOrNameAlreadyExists, ValidationError
 from fides.api.db.base_class import get_key_from_data
 from fides.api.db.crud import list_resource_query
@@ -34,6 +34,7 @@ from fides.api.schemas.taxonomy_extensions import (
     DataUse,
     DataUseCreateOrUpdate,
 )
+from fides.api.service.deps import get_dataset_service
 from fides.api.util.api_router import APIRouter
 from fides.api.util.errors import FidesError, ForbiddenIsDefaultTaxonomyError
 from fides.api.util.filter_utils import apply_filters_to_query

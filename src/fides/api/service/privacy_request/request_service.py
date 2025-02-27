@@ -8,7 +8,6 @@ from typing import Any, Dict, List, Optional, Set
 from httpx import AsyncClient
 from loguru import logger
 from sqlalchemy import text
-from sqlalchemy.orm import Query
 from sqlalchemy.sql.elements import TextClause
 
 from fides.api.common_exceptions import PrivacyRequestNotFound
@@ -224,7 +223,7 @@ def poll_for_exited_privacy_request_tasks(self: DatabaseTask) -> Set[str]:
                 RequestTask.action_type == task_type,
             )
 
-            statuses = set([status for status, in tasks_statuses_query.all()])
+            statuses = set(status for status, in tasks_statuses_query.all())
             all_exited = all(
                 status in EXITED_EXECUTION_LOG_STATUSES for status in statuses
             )
