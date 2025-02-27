@@ -85,7 +85,7 @@ def upgrade():
     # Insert the assets into the asset table
     assets_list = [
         {
-            "id": asset.id,
+            "id": asset.id if asset.id else str(uuid.uuid4()),
             "created_at": asset.created_at,
             "updated_at": asset.updated_at,
             "name": asset.name,
