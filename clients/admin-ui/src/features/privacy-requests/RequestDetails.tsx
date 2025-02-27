@@ -1,6 +1,7 @@
 import {
   AntForm as Form,
   AntInput as Input,
+  AntTag as Tag,
   AntTypography as Typography,
   Flex,
 } from "fidesui";
@@ -26,7 +27,13 @@ type RequestDetailsProps = {
 
 const RequestDetails = ({ subjectRequest }: RequestDetailsProps) => {
   const { plus: hasPlus } = useFeatures();
-  const { id, status, policy } = subjectRequest;
+  const {
+    id,
+    status,
+    policy,
+    identity,
+    identity_verified_at: identityVerifiedAt,
+  } = subjectRequest;
 
   const {
     flags: { downloadAccessRequestResults },
@@ -77,6 +84,20 @@ const RequestDetails = ({ subjectRequest }: RequestDetailsProps) => {
             <Typography.Text>{subjectRequest.source || "-"}</Typography.Text>
           )}
         </RequestDetailsRow>
+
+        {Object.entries(identity)
+          .filter(([, { value }]) => value !== null)
+          .map(([key, { value, label }]) => (
+            <RequestDetailsRow
+              label={`Subject ${label.toLocaleLowerCase()}`}
+              key={key}
+            >
+              <Typography.Text>{value || ""}</Typography.Text>
+              <Tag className="ml-1">
+                {identityVerifiedAt ? "Verified" : "Unverified"}
+              </Tag>
+            </RequestDetailsRow>
+          ))}
       </div>
       <Form layout="vertical">
         <Form.Item label="Request ID:" className="mb-4">

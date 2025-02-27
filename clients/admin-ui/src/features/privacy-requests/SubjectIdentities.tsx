@@ -7,38 +7,10 @@ type SubjectIdentitiesProps = {
 };
 
 const SubjectIdentities = ({ subjectRequest }: SubjectIdentitiesProps) => {
-  const {
-    identity,
-    identity_verified_at: identityVerifiedAt,
-    custom_privacy_request_fields: customPrivacyRequestFields,
-  } = subjectRequest;
+  const { custom_privacy_request_fields: customPrivacyRequestFields } =
+    subjectRequest;
   return (
-    <>
-      <Flex direction="row" justifyContent="space-between">
-        <Heading
-          color="gray.900"
-          fontSize="lg"
-          fontWeight="semibold"
-          mb={4}
-          mt={4}
-        >
-          Subject identities
-        </Heading>
-      </Flex>
-      <Divider mb={4} />
-      {Object.entries(identity)
-        .filter(([, { value }]) => value !== null)
-        .map(([key, { value, label }]) => (
-          <Flex key={key} alignItems="center" mb={4}>
-            <Text mr={2} fontSize="sm" color="gray.900" fontWeight="500">
-              {label}:
-            </Text>
-            <Text color="gray.600" fontWeight="500" fontSize="sm" mr={2}>
-              {value || ""}
-            </Text>
-            <Tag>{identityVerifiedAt ? "Verified" : "Unverified"}</Tag>
-          </Flex>
-        ))}
+    <div>
       {customPrivacyRequestFields &&
         Object.keys(customPrivacyRequestFields).length > 0 && (
           <>
@@ -75,7 +47,7 @@ const SubjectIdentities = ({ subjectRequest }: SubjectIdentitiesProps) => {
               ))}
           </>
         )}
-    </>
+    </div>
   );
 };
 
