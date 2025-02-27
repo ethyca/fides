@@ -98,6 +98,7 @@ def upgrade():
     ]
 
     logger.debug("Inserting assets into asset table ")
+    print("About to insert these assets into the asset table: ", assets_list)
     connection.execute(
         sa.text(
             "INSERT INTO asset (id, created_at, updated_at, name, domain, system_id, data_uses, asset_type, with_consent) "
