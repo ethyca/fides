@@ -10,6 +10,7 @@ from loguru import logger
 from ordered_set import OrderedSet
 from sqlalchemy.orm import Session
 
+from fides.api.api.deps import get_db_contextmanager as get_db_session
 from fides.api.common_exceptions import (
     ActionDisabled,
     AwaitingAsyncTaskCallback,
@@ -365,25 +366,29 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         """Update status activities - create an execution log (which stores historical logs)
         and update the Request Task's current status.
         """
-        ExecutionLog.create(
-            db=self.resources.session,
-            data={
-                "connection_key": self.execution_node.connection_key,
-                "dataset_name": self.execution_node.address.dataset,
-                "collection_name": self.execution_node.address.collection,
-                "fields_affected": fields_affected,
-                "action_type": action_type,
-                "status": status,
-                "privacy_request_id": self.resources.request.id,
-                "message": msg,
-            },
-        )
+        # Because a GraphTask can take a long time to run, it's possible that the session
+        # stored in self.resources has been closed by the time we get to this point. We need
+        # to get a new session to write the ExecutionLog to the DB and update task status.
+        with get_db_session() as db:
+            ExecutionLog.create(
+                db=db,
+                data={
+                    "connection_key": self.execution_node.connection_key,
+                    "dataset_name": self.execution_node.address.dataset,
+                    "collection_name": self.execution_node.address.collection,
+                    "fields_affected": fields_affected,
+                    "action_type": action_type,
+                    "status": status,
+                    "privacy_request_id": self.resources.request.id,
+                    "message": msg,
+                },
+            )
 
-        if self.request_task.id:
-            # For DSR 3.0, updating the Request Task status when the ExecutionLog is
-            # created to keep these in sync.
-            # TODO remove conditional above alongside deprecating DSR 2.0
-            self.request_task.update_status(self.resources.session, status)
+            if self.request_task.id:
+                # For DSR 3.0, updating the Request Task status when the ExecutionLog is
+                # created to keep these in sync.
+                # TODO remove conditional above alongside deprecating DSR 2.0
+                self.request_task.update_status(db, status)
 
     def log_start(self, action_type: ActionType) -> None:
         """Task start activities"""
