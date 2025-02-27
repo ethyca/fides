@@ -97,16 +97,18 @@ def upgrade():
         for asset in assets_to_create.values()
     ]
 
-    logger.debug("Inserting assets into asset table ")
-    print("About to insert these assets into the asset table: ", assets_list)
-    connection.execute(
-        sa.text(
-            "INSERT INTO asset (id, created_at, updated_at, name, domain, system_id, data_uses, asset_type, with_consent) "
-            "VALUES (:id, :created_at, :updated_at, :name, :domain, :system_id, :data_uses, :asset_type, false) "
-            "ON CONFLICT DO NOTHING"
-        ),
-        assets_list,
-    )
+    if assets_list:
+        logger.debug("Inserting assets into asset table ")
+        connection.execute(
+            sa.text(
+                "INSERT INTO asset (id, created_at, updated_at, name, domain, system_id, data_uses, asset_type, with_consent) "
+                "VALUES (:id, :created_at, :updated_at, :name, :domain, :system_id, :data_uses, :asset_type, false) "
+                "ON CONFLICT DO NOTHING"
+            ),
+            assets_list,
+        )
+    else:
+        logger.debug("No assets to insert into asset table. Skipping.")
 
     # Delete the cookies table
     logger.debug("Deleting cookies table")
