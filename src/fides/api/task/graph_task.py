@@ -218,6 +218,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
     ):  # cache config, log config, db store config
         super().__init__()
         self.request_task = resources.privacy_request_task
+        self.request_task_id = resources.privacy_request_task.id
         self.execution_node = ExecutionNode(resources.privacy_request_task)
         self.resources = resources
         self.connector: BaseConnector = resources.get_connector(
@@ -384,11 +385,13 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
                 },
             )
 
-            if self.request_task.id:
+            if self.request_task_id:
                 # For DSR 3.0, updating the Request Task status when the ExecutionLog is
                 # created to keep these in sync.
                 # TODO remove conditional above alongside deprecating DSR 2.0
-                self.request_task.update_status(db, status)
+                request_task = RequestTask.get(db, object_id=self.request_task_id)
+                if request_task:
+                    request_task.update_status(db, status)
 
     def log_start(self, action_type: ActionType) -> None:
         """Task start activities"""
