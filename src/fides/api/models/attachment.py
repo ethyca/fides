@@ -123,6 +123,7 @@ class Attachment(Base):
         config = get_storage_config(db, self.storage_key)
         if config is None:
             config_error_handler(self.storage_key)
+            return
 
         if config.type == StorageType.s3.value:
             bucket_name = f"{config.details[StorageDetails.BUCKET.value]}"
@@ -136,6 +137,7 @@ class Attachment(Base):
             filename = f"{LOCAL_FIDES_UPLOAD_DIRECTORY}/{self.id}"
             with open(filename, "wb") as file:
                 file.write(attachment)
+            return
         else:
             raise ValueError(f"Unsupported storage type: {config.type}")
 
@@ -180,17 +182,20 @@ class Attachment(Base):
 
         if config is None:
             config_error_handler(self.storage_key)
+            return
 
         if config.type == StorageType.s3.value:
             bucket_name = f"{config.details[StorageDetails.BUCKET.value]}"
             s3_client = get_s3_client(config)
             s3_client.delete_object(Bucket=bucket_name, Key=self.id)
             log.info(f"Deleted {self.file_name} from S3 bucket {bucket_name}/{self.id}")
-        elif config.type == StorageType.local.value:
+            return
+        if config.type == StorageType.local.value:
             filename = f"{LOCAL_FIDES_UPLOAD_DIRECTORY}/{self.id}"
             os.remove(filename)
-        else:
-            raise ValueError(f"Unsupported storage type: {config.type}")
+            return
+
+        raise ValueError(f"Unsupported storage type: {config.type}")
 
     @classmethod
     def create(
