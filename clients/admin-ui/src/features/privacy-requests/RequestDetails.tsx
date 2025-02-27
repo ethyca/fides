@@ -1,11 +1,8 @@
 import {
-  AntTag as Tag,
-  Box,
-  Divider,
+  AntForm as Form,
+  AntInput as Input,
+  AntTypography as Typography,
   Flex,
-  Heading,
-  HStack,
-  Text,
 } from "fidesui";
 
 import ClipboardButton from "~/features/common/ClipboardButton";
@@ -21,6 +18,7 @@ import { PrivacyRequestStatus as ApiPrivacyRequestStatus } from "~/types/api/mod
 import ApproveButton from "./buttons/ApproveButton";
 import DenyButton from "./buttons/DenyButton";
 import ReprocessButton from "./buttons/ReprocessButton";
+import RequestDetailsRow from "./RequestDetailsRow";
 
 type RequestDetailsProps = {
   subjectRequest: PrivacyRequestEntity;
@@ -40,51 +38,12 @@ const RequestDetails = ({ subjectRequest }: RequestDetailsProps) => {
     status === ApiPrivacyRequestStatus.COMPLETE;
 
   return (
-    <Flex direction="column" gap={4}>
-      <Heading color="gray.900" fontSize="lg" fontWeight="semibold">
-        Request details
-      </Heading>
-      <Divider />
-      <Flex alignItems="center">
-        <Text mr={2} fontSize="sm" color="gray.900" fontWeight="500">
-          Request ID:
-        </Text>
-        <Text color="gray.600" fontWeight="500" fontSize="sm" mr={1}>
-          {id}
-        </Text>
-        <ClipboardButton copyText={id} size="small" />
-      </Flex>
-      {hasPlus && subjectRequest.source && (
-        <Flex alignItems="center">
-          <Text mr={2} fontSize="sm" color="gray.900" fontWeight="500">
-            Source:
-          </Text>
-          <Box>
-            <Tag>{subjectRequest.source}</Tag>
-          </Box>
-        </Flex>
-      )}
-      <Flex alignItems="center">
-        <Text mr={2} fontSize="sm" color="gray.900" fontWeight="500">
-          Request type:
-        </Text>
-        <Box mr={1}>
-          <RequestType rules={policy.rules} />
-        </Box>
-      </Flex>
-      <Flex alignItems="center">
-        <Text mr={2} fontSize="sm" color="gray.900" fontWeight="500">
-          Policy key:
-        </Text>
-        <Box>
-          <Tag>{subjectRequest.policy.key}</Tag>
-        </Box>
-      </Flex>
-      <Flex alignItems="center">
-        <Text mb={0} mr={2} fontSize="sm" color="gray.900" fontWeight="500">
-          Status:
-        </Text>
-        <HStack spacing="8px">
+    <div>
+      <div className="mb-6">
+        <Typography.Title level={2}>Request details</Typography.Title>
+      </div>
+      <div className="mb-6 flex flex-col gap-3">
+        <RequestDetailsRow label="Status">
           <Flex>
             <RequestStatusBadge status={status} />
           </Flex>
@@ -102,16 +61,36 @@ const RequestDetails = ({ subjectRequest }: RequestDetailsProps) => {
               </>
             )}
           </div>
-
+        </RequestDetailsRow>
+        <RequestDetailsRow label="Time remaining">
           <DaysLeftTag
             daysLeft={subjectRequest.days_left}
             includeText
             status={subjectRequest.status as ApiPrivacyRequestStatus}
           />
-        </HStack>
-      </Flex>
+        </RequestDetailsRow>
+        <RequestDetailsRow label="Request type">
+          <RequestType rules={policy.rules} />
+        </RequestDetailsRow>
+        <RequestDetailsRow label="Source">
+          {hasPlus && (
+            <Typography.Text>{subjectRequest.source || "-"}</Typography.Text>
+          )}
+        </RequestDetailsRow>
+      </div>
+      <Form layout="vertical">
+        <Form.Item label="Request ID:" className="mb-4">
+          <div className="flex gap-1">
+            <Input readOnly value={id} />
+            <ClipboardButton copyText={id} size="small" />
+          </div>
+        </Form.Item>
+        <Form.Item label="Policy key:" className="mb-4">
+          <Input readOnly value={subjectRequest.policy.key} />
+        </Form.Item>
+      </Form>
       {showDownloadResults && <DownloadAccessResults requestId={id} />}
-    </Flex>
+    </div>
   );
 };
 
