@@ -260,3 +260,25 @@ dataset:
               data_type: string
           - name: last_visit
             data_categories: [system.operations]
+
+      - name: customer_profile
+        fields:
+          - name: id
+            data_categories: [system.operations]
+          - name: contact_info
+            fides_meta:
+              type: object
+            fields:
+              - name: primary_email
+                data_categories: [user.contact.email]
+                fides_meta:
+                  identity: email
+                  data_type: string
+              - name: phone_number
+                data_categories: [user.contact.phone_number]
+                fides_meta:
+                  data_type: string
+          - name: address
+            data_categories: [user.contact.address]
+            fides_meta:
+              data_type: string

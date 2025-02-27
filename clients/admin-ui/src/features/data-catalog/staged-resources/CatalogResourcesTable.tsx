@@ -20,7 +20,6 @@ import CatalogResourceDetailDrawer from "~/features/data-catalog/staged-resource
 import useCatalogResourceColumns from "~/features/data-catalog/useCatalogResourceColumns";
 import { useGetMonitorResultsQuery } from "~/features/data-discovery-and-detection/discovery-detection.slice";
 import { SearchInput } from "~/features/data-discovery-and-detection/SearchInput";
-import { StagedResourceType } from "~/features/data-discovery-and-detection/types/StagedResourceType";
 import { findResourceType } from "~/features/data-discovery-and-detection/utils/findResourceType";
 import resourceHasChildren from "~/features/data-discovery-and-detection/utils/resourceHasChildren";
 import { DiffStatus, StagedResourceAPIResponse } from "~/types/api";
@@ -100,7 +99,7 @@ const CatalogResourcesTable = ({
     StagedResourceAPIResponse | undefined
   >(undefined);
 
-  const type = findResourceType(data[0] ?? StagedResourceType.NONE);
+  const type = findResourceType(data[0]);
 
   const columns = useCatalogResourceColumns(type, setDetailResource);
 

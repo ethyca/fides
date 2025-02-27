@@ -32,6 +32,7 @@ def get_s3_client(config):
 def get_storage_config(db, storage_key) -> str:
         return StorageConfig.get_by(db=db, field="key", value=storage_key)
 
+
 class AttachmentType(str, EnumType):
     """
     Enum for attachment types. Indicates attachment usage.
@@ -90,13 +91,16 @@ class Attachment(Base):
     Stores information about an Attachment.
     """
 
-    user_id = Column(String, ForeignKey("fidesuser.id"), nullable=False)
+    user_id = Column(
+        String, ForeignKey("fidesuser.id", ondelete="SET NULL"), nullable=True
+    )
     file_name = Column(String, nullable=False)
     attachment_type = Column(EnumColumn(AttachmentType), nullable=False)
+    storage_key = Column(String, nullable=False)
 
     user = relationship(
         "FidesUser",
-        backref="attachment",
+        backref="attachments",
         lazy="selectin",
         uselist=False,
     )
@@ -168,7 +172,6 @@ class Attachment(Base):
     def create(
         cls,
         db: Session,
-        storage_key: FidesKey,
         *,
         data: dict[str, Any],
         check_name: bool = False,

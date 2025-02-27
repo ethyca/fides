@@ -26,6 +26,9 @@ const ALL_SCOPES = [
   ScopeRegistryEnum.CONFIG_READ,
   ScopeRegistryEnum.CONFIG_UPDATE,
   ScopeRegistryEnum.CUSTOM_ASSET_UPDATE,
+  ScopeRegistryEnum.DATA_USE_READ,
+  ScopeRegistryEnum.DATA_CATEGORY_READ,
+  ScopeRegistryEnum.DATA_SUBJECT_READ,
 ];
 
 describe("configureNavGroups", () => {
