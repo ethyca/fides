@@ -27,9 +27,14 @@ from fides.api.schemas.privacy_request import (
 )
 from fides.api.schemas.redis_cache import Identity
 from fides.api.service.masking.strategy.masking_strategy import MaskingStrategy
-from fides.api.tasks import DatabaseTask, celery_app
+from fides.api.tasks import DSR_QUEUE_NAME, DatabaseTask, celery_app
 from fides.api.tasks.scheduled.scheduler import scheduler
-from fides.api.util.cache import FidesopsRedis, celery_tasks_in_flight, get_cache
+from fides.api.util.cache import (
+    FidesopsRedis,
+    celery_tasks_in_flight,
+    get_async_task_tracking_cache_key,
+    get_cache,
+)
 from fides.common.api.v1.urn_registry import PRIVACY_REQUESTS, V1_URL_PREFIX
 from fides.config import CONFIG
 
@@ -364,6 +369,50 @@ def initiate_interrupted_task_requeue_poll() -> None:
     )
 
 
+def get_cached_task_id(entity_id: str) -> Optional[str]:
+    """Gets the cached task ID for a privacy request or request task by ID."""
+    cache: FidesopsRedis = get_cache()
+    task_id = cache.get(get_async_task_tracking_cache_key(entity_id))
+    return task_id
+
+
+REQUEUE_INTERRUPTED_TASKS_LOCK = "requeue_interrupted_tasks_lock"
+
+
+def _get_task_ids_from_dsr_queue(
+    redis_client: FidesopsRedis, chunk_size: int = 100
+) -> Set[str]:
+    """
+    Get all task IDs from a Redis queue in a memory-efficient way.
+
+    Args:
+        redis_client: Redis client
+        chunk_size: Size of chunks to process
+
+    Returns:
+        Set of task IDs
+    """
+    queued_tasks_ids = set()
+    queue_length = redis_client.llen(DSR_QUEUE_NAME)
+
+    # Process the queue in chunks to avoid memory issues with large queues
+    for offset in range(0, queue_length, chunk_size):
+        # Get a chunk of tasks (at most chunk_size elements)
+        tasks_chunk = redis_client.lrange(
+            DSR_QUEUE_NAME, offset, offset + chunk_size - 1
+        )
+
+        # Extract task IDs from the chunk
+        for task in tasks_chunk:
+            try:
+                queued_tasks_ids.add(json.loads(task)["headers"]["id"])
+            except (json.JSONDecodeError, KeyError) as e:
+                logger.warning(f"Failed to parse task from queue: {e}")
+                continue
+
+    return queued_tasks_ids
+
+
 # pylint: disable=too-many-branches
 @celery_app.task(base=DatabaseTask, bind=True)
 def requeue_interrupted_tasks(self: DatabaseTask) -> None:
@@ -381,12 +430,11 @@ def requeue_interrupted_tasks(self: DatabaseTask) -> None:
     3. Checks each privacy request to determine if its tasks are still active.
     4. Requeues the privacy request if any of its tasks are found to be interrupted.
     """
-
     redis_conn: FidesopsRedis = get_cache()
 
     # Create a lock with a timeout of 10 minutes (600 seconds)
     # This ensures the lock is eventually released even if the process crashes
-    lock = redis_conn.lock("requeue_interrupted_tasks_lock", timeout=600)
+    lock = redis_conn.lock(REQUEUE_INTERRUPTED_TASKS_LOCK, timeout=600)
 
     # Try to acquire the lock without blocking
     if not lock.acquire(blocking=False):
@@ -423,30 +471,14 @@ def requeue_interrupted_tasks(self: DatabaseTask) -> None:
             )
 
             # Get task IDs from the queue in a memory-efficient way
-            queued_tasks_ids = set()
-            chunk_size = 100
-            queue_length = redis_conn.llen("fides.dsr")
-
-            # Process the queue in chunks to avoid memory issues with large queues
-            for offset in range(0, queue_length, chunk_size):
-                # Get a chunk of tasks (at most chunk_size elements)
-                tasks_chunk = redis_conn.lrange(
-                    "fides.dsr", offset, offset + chunk_size - 1
-                )
-
-                # Extract task IDs from the chunk
-                for task in tasks_chunk:
-                    try:
-                        queued_tasks_ids.add(json.loads(task)["headers"]["id"])
-                    except (json.JSONDecodeError, KeyError) as e:
-                        logger.warning(f"Failed to parse task from queue: {e}")
-                        continue
+            queued_tasks_ids = _get_task_ids_from_dsr_queue(redis_conn)
 
             # Check each privacy request
             for privacy_request in in_progress_requests:
                 should_requeue = False
                 logger.debug(f"Checking tasks for privacy request {privacy_request.id}")
-                task_id = privacy_request.get_cached_task_id()
+
+                task_id = get_cached_task_id(privacy_request.id)
 
                 # If the task ID is not cached, we can't check if it's running
                 if not task_id:
@@ -456,33 +488,51 @@ def requeue_interrupted_tasks(self: DatabaseTask) -> None:
                 if task_id not in queued_tasks_ids and not celery_tasks_in_flight(
                     [task_id]
                 ):
-                    if privacy_request.request_tasks.count() == 0:
+                    request_tasks_count = (
+                        db.query(RequestTask)
+                        .filter(RequestTask.privacy_request_id == privacy_request.id)
+                        .count()
+                    )
+                    if request_tasks_count == 0:
                         logger.warning(
                             f"The task for privacy request {privacy_request.id} was terminated before it could schedule any request tasks, requeueing privacy request"
                         )
                         should_requeue = True
 
+                    request_tasks_in_progress = (
+                        db.query(RequestTask.id)
+                        .filter(RequestTask.privacy_request_id == privacy_request.id)
+                        .filter(
+                            RequestTask.status.in_(
+                                [
+                                    ExecutionLogStatus.in_processing,
+                                    ExecutionLogStatus.pending,
+                                ]
+                            )
+                        )
+                        .all()
+                    )
+                    request_task_ids_in_progress = [
+                        task[0] for task in request_tasks_in_progress
+                    ]
+
                     # Check each individual request task
-                    for request_task in privacy_request.request_tasks:
-                        if request_task.status in [
-                            ExecutionLogStatus.in_processing,
-                            ExecutionLogStatus.pending,
-                        ]:
-                            subtask_id = request_task.get_cached_task_id()
+                    for request_task_id in request_task_ids_in_progress:
+                        subtask_id = get_cached_task_id(request_task_id)
 
-                            # If the task ID is not cached, we can't check if it's running
-                            if not subtask_id:
-                                continue
+                        # If the task ID is not cached, we can't check if it's running
+                        if not subtask_id:
+                            continue
 
-                            if (
-                                subtask_id not in queued_tasks_ids
-                                and not celery_tasks_in_flight([subtask_id])
-                            ):
-                                logger.warning(
-                                    f"Request task {request_task.id} is not in the queue or running, requeueing privacy request"
-                                )
-                                should_requeue = True
-                                break
+                        if (
+                            subtask_id not in queued_tasks_ids
+                            and not celery_tasks_in_flight([subtask_id])
+                        ):
+                            logger.warning(
+                                f"Request task {request_task_id} is not in the queue or running, requeueing privacy request"
+                            )
+                            should_requeue = True
+                            break
 
                 # Requeue the privacy request if needed
                 if should_requeue:
