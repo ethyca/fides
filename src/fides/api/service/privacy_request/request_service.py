@@ -16,6 +16,7 @@ from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import (
     EXITED_EXECUTION_LOG_STATUSES,
     PrivacyRequest,
+    RequestTask,
 )
 from fides.api.schemas.drp_privacy_request import DrpPrivacyRequestCreate
 from fides.api.schemas.masking.masking_secrets import MaskingSecretCache
@@ -29,7 +30,12 @@ from fides.api.schemas.redis_cache import Identity
 from fides.api.service.masking.strategy.masking_strategy import MaskingStrategy
 from fides.api.tasks import DatabaseTask, celery_app
 from fides.api.tasks.scheduled.scheduler import scheduler
-from fides.api.util.cache import FidesopsRedis, celery_tasks_in_flight, get_cache
+from fides.api.util.cache import (
+    FidesopsRedis,
+    celery_tasks_in_flight,
+    get_async_task_tracking_cache_key,
+    get_cache,
+)
 from fides.common.api.v1.urn_registry import PRIVACY_REQUESTS, V1_URL_PREFIX
 from fides.config import CONFIG
 
@@ -347,6 +353,13 @@ def initiate_interrupted_task_requeue_poll() -> None:
     )
 
 
+def get_cached_task_id(entity_id: str) -> Optional[str]:
+    """Gets the cached task ID for a privacy request or request task by ID."""
+    cache: FidesopsRedis = get_cache()
+    task_id = cache.get(get_async_task_tracking_cache_key(entity_id))
+    return task_id
+
+
 # pylint: disable=too-many-branches
 @celery_app.task(base=DatabaseTask, bind=True)
 def requeue_interrupted_tasks(self: DatabaseTask) -> None:
@@ -429,7 +442,7 @@ def requeue_interrupted_tasks(self: DatabaseTask) -> None:
             for privacy_request in in_progress_requests:
                 should_requeue = False
                 logger.debug(f"Checking tasks for privacy request {privacy_request.id}")
-                task_id = privacy_request.get_cached_task_id()
+                task_id = get_cached_task_id(privacy_request.id)
 
                 # If the task ID is not cached, we can't check if it's running
                 if not task_id:
@@ -439,33 +452,48 @@ def requeue_interrupted_tasks(self: DatabaseTask) -> None:
                 if task_id not in queued_tasks_ids and not celery_tasks_in_flight(
                     [task_id]
                 ):
-                    if privacy_request.request_tasks.count() == 0:
+                    request_tasks_count = (
+                        db.query(RequestTask)
+                        .filter(RequestTask.privacy_request_id == privacy_request.id)
+                        .count()
+                    )
+                    if request_tasks_count == 0:
                         logger.warning(
                             f"The task for privacy request {privacy_request.id} was terminated before it could schedule any request tasks, requeueing privacy request"
                         )
                         should_requeue = True
 
+                    request_task_ids_in_progress = (
+                        db.query(RequestTask.id)
+                        .filter(RequestTask.privacy_request_id == privacy_request.id)
+                        .filter(
+                            RequestTask.status.in_(
+                                [
+                                    ExecutionLogStatus.in_processing,
+                                    ExecutionLogStatus.pending,
+                                ]
+                            )
+                        )
+                        .all()
+                    )
+
                     # Check each individual request task
-                    for request_task in privacy_request.request_tasks:
-                        if request_task.status in [
-                            ExecutionLogStatus.in_processing,
-                            ExecutionLogStatus.pending,
-                        ]:
-                            subtask_id = request_task.get_cached_task_id()
+                    for request_task_id in request_task_ids_in_progress:
+                        subtask_id = get_cached_task_id(request_task_id)
 
-                            # If the task ID is not cached, we can't check if it's running
-                            if not subtask_id:
-                                continue
+                        # If the task ID is not cached, we can't check if it's running
+                        if not subtask_id:
+                            continue
 
-                            if (
-                                subtask_id not in queued_tasks_ids
-                                and not celery_tasks_in_flight([subtask_id])
-                            ):
-                                logger.warning(
-                                    f"Request task {request_task.id} is not in the queue or running, requeueing privacy request"
-                                )
-                                should_requeue = True
-                                break
+                        if (
+                            subtask_id not in queued_tasks_ids
+                            and not celery_tasks_in_flight([subtask_id])
+                        ):
+                            logger.warning(
+                                f"Request task {request_task_id} is not in the queue or running, requeueing privacy request"
+                            )
+                            should_requeue = True
+                            break
 
                 # Requeue the privacy request if needed
                 if should_requeue:
