@@ -64,6 +64,7 @@ export const dispatchFidesEvent = (
     };
     const event = new CustomEvent(type, {
       detail: { ...cookie, debug, extraDetails: constructedExtraDetails },
+      bubbles: true,
     });
     const perfMark = performance?.mark(type);
     fidesDebugger(
