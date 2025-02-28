@@ -12,6 +12,7 @@ import yaml
 from expandvars import expandvars  # type: ignore
 from fideslang.models import Taxonomy
 from fideslang.validation import FidesKey
+from loguru import logger as log
 
 from fides.api.schemas.connection_configuration.connection_config import (
     CreateConnectionConfigurationWithSecrets,
@@ -96,6 +97,7 @@ def load_sample_connections_from_project() -> List[SampleConnection]:
         "sample_connections/"
     )
     sample_connections = []
+    log.debug(f"Collecting sample connections from '{sample_connections_path}'/*...")
     for yaml_path in sample_connections_path.iterdir():
         with yaml_path.open("r") as file:
             # Expand ENV vars when reading the YAML, to handle secrets
@@ -106,17 +108,27 @@ def load_sample_connections_from_project() -> List[SampleConnection]:
             )
 
     # Exclude any connections whose "secrets" dict has empty values
+    log.debug(f"Found {len(sample_connections)} sample connections. Skipping any sample connections without configured secrets...")
     valid_connections = []
     for connection in sample_connections:
-        # If there are no secrets at all, skip this connection
+        # If there are no secrets at all, skip this connection. This shouldn't happen unless sample_connections.yml is misconfigured
         if not connection.secrets:
+            log.debug(f"Skipping sample connection {connection.key}! No secrets exist, cannot create")
             continue
 
-        # Check if all secret values are present and non-empty
-        if all(value and value != "" for value in connection.secrets.values()):  # type: ignore
-            valid_connections.append(connection)
+        # Check if all secret values exist and are non-empty
+        expected_keys = connection.secrets.keys()
+        missing_keys = [key for key, value in connection.secrets.items() if value is None or value == ""]
+        if len(missing_keys) > 0:
+            log.debug(f"Skipping sample connection {connection.key}. To include this sample, configure ENV secrets for these missing keys: {missing_keys} (see {sample_connections_path}/* for expected ENV vars)")
+            continue
+
+        # If all secrets are configured, include this connection
+        log.debug(f"Including sample connection {connection.key} because all {len(connection.secrets.keys())} required secrets are configured")
+        valid_connections.append(connection)
 
     # Exclude any invalid connections from the final results
+    log.info(f"Collected {len(valid_connections)} sample connections with configured ENV secrets: {[connection.key for connection in valid_connections]}")
     return valid_connections
 
 
