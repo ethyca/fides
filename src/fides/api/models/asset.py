@@ -96,9 +96,11 @@ class Asset(Base):
         - asset_type
         - domain
         - base_url (if applicable)
-        - system_id.
+        - system_id
+
+        If you provide the ID of an existing asset it will be updated with any provided data
         """
-        if (
+        if "id" not in data and (
             "name" not in data
             or "asset_type" not in data
             or "domain" not in data
@@ -108,29 +110,39 @@ class Asset(Base):
                 "name, asset_type, domain, and system_id are required fields on assets"
             )
 
-        result = await async_session.execute(
-            select(cls).where(  # type: ignore[arg-type, call-arg]
-                cls.name == data["name"],
-                cls.asset_type == data["asset_type"],
-                cls.domain == data["domain"],
-                cls.base_url == data.get("base_url"),
+        if "id" in data:
+            result = await async_session.execute(
+                select(cls).where(cls.id == data["id"])  # type: ignore[arg-type]
             )
-        )
-        existing_record = result.scalars().first()
-        record_id: str
-        if existing_record:
-            await async_session.execute(
-                update(cls).where(cls.id == existing_record.id).values(data)  # type: ignore[arg-type]
-            )
-            record_id = existing_record.id
-        else:
-            if "id" in data:
-                logger.info(
-                    f"An Asset ID was provided to `upser_async`: {data} but upsert determined an insert is necessary, so a new ID will be generated."
+            existing_record = result.scalars().first()
+            if existing_record:
+                await async_session.execute(
+                    update(cls).where(cls.id == existing_record.id).values(data)  # type: ignore[arg-type]
                 )
-                data["id"] = str(uuid.uuid4())
-            result = await async_session.execute(insert(cls).values(data))  # type: ignore[arg-type]
-            record_id = result.inserted_primary_key.id
+                record_id = existing_record.id
+            else:
+                raise ValueError(f"Asset with id {data['id']} does not exist")
+        else:
+            result = await async_session.execute(
+                select(cls).where(  # type: ignore[arg-type, call-arg]
+                    cls.name == data["name"],
+                    cls.asset_type == data["asset_type"],
+                    cls.domain == data["domain"],
+                    cls.base_url == data.get("base_url"),
+                    cls.system_id == data["system_id"],
+                )
+            )
+
+            existing_record = result.scalars().first()
+            record_id: str
+            if existing_record:
+                await async_session.execute(
+                    update(cls).where(cls.id == existing_record.id).values(data)  # type: ignore[arg-type]
+                )
+                record_id = existing_record.id
+            else:
+                result = await async_session.execute(insert(cls).values(data))  # type: ignore[arg-type]
+                record_id = result.inserted_primary_key.id
 
         result = await async_session.execute(select(cls).where(cls.id == record_id))  # type: ignore[arg-type]
         return result.scalars().first()
