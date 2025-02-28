@@ -331,7 +331,7 @@ class PrivacyRequestService:
             create_data, authenticated=True, submitted_by=submitted_by
         )
 
-        if self.config_proxy.execution.require_manual_request_approval:
+        if _manual_approval_required(self.config_proxy, privacy_request):
             self.approve_privacy_requests(
                 [privacy_request_id],
                 reviewed_by=reviewed_by,
@@ -591,19 +591,7 @@ def _handle_notifications_and_processing(
             privacy_request.property_id,
         )
 
-    if config_proxy.execution.require_manual_request_approval:
-        _trigger_pre_approval_webhooks(db, privacy_request)
-    else:
-        AuditLog.create(
-            db=db,
-            data={
-                "user_id": "system",
-                "privacy_request_id": privacy_request.id,
-                "action": AuditLogAction.approved,
-                "message": "",
-            },
-        )
-        queue_privacy_request(privacy_request.id)
+    handle_approval(db, config_proxy, privacy_request)
 
 
 def _trigger_pre_approval_webhooks(
@@ -700,3 +688,33 @@ def _process_privacy_request_restart(
     )
 
     return privacy_request  # type: ignore[return-value]
+
+
+def _manual_approval_required(
+    config_proxy: ConfigProxy,
+    privacy_request: PrivacyRequest,
+) -> bool:
+    """Determines if a privacy request requires manual approval."""
+    return (
+        config_proxy.execution.require_manual_request_approval
+        and privacy_request.policy.get_action_type() != ActionType.consent.value
+    )
+
+
+def handle_approval(
+    db: Session, config_proxy: ConfigProxy, privacy_request: PrivacyRequest
+) -> None:
+    """Evaluate manual approval and handle processing or pre-approval webhooks."""
+    if _manual_approval_required(config_proxy, privacy_request):
+        _trigger_pre_approval_webhooks(db, privacy_request)
+    else:
+        AuditLog.create(
+            db=db,
+            data={
+                "user_id": "system",
+                "privacy_request_id": privacy_request.id,
+                "action": AuditLogAction.approved,
+                "message": "",
+            },
+        )
+        queue_privacy_request(privacy_request.id)
