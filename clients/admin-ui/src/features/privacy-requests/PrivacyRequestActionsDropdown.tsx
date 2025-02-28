@@ -6,12 +6,11 @@ import {
 } from "fidesui";
 import { useMemo } from "react";
 
-import { PrivacyRequestStatus } from "~/types/api";
-
 import ApprovePrivacyRequestModal from "./ApprovePrivacyRequestModal";
 import DenyPrivacyRequestModal from "./DenyPrivacyRequestModal";
 import useApproveDenyPrivacyRequest from "./hooks/useApproveDenyPrivacyRequest";
 import useDownloadPrivacyRequestResults from "./hooks/useDownloadPrivacyRequestResults";
+import useReprocessPrivacyRequest from "./hooks/useReprocessPrivacyRequest";
 import { PrivacyRequestEntity } from "./types";
 
 interface PrivacyRequestActionsDropdownProps {
@@ -21,8 +20,6 @@ interface PrivacyRequestActionsDropdownProps {
 const PrivacyRequestActionsDropdown = ({
   privacyRequest,
 }: PrivacyRequestActionsDropdownProps) => {
-  const isErrorStatus = privacyRequest.status === PrivacyRequestStatus.ERROR;
-
   const {
     showDownloadResults,
     downloadResults,
@@ -48,6 +45,10 @@ const PrivacyRequestActionsDropdown = ({
     privacyRequest,
     action: "deny",
   });
+
+  const { reprocessPrivacyRequest, showReprocess } = useReprocessPrivacyRequest(
+    { privacyRequest },
+  );
 
   const menuItems = useMemo(() => {
     const menu = [];
@@ -85,19 +86,19 @@ const PrivacyRequestActionsDropdown = ({
       });
     }
 
-    if (isErrorStatus) {
+    if (showReprocess) {
       menu.push({
         key: "reprocess",
         label: (
           <span data-testid="privacy-request-action-reprocess">Reprocess</span>
         ),
+        onClick: reprocessPrivacyRequest,
       });
     }
 
     return menu;
   }, [
     showDownloadResults,
-    isErrorStatus,
     downloadResults,
     infoTooltip,
     isDownloadDisabled,
@@ -105,6 +106,8 @@ const PrivacyRequestActionsDropdown = ({
     showDenyRequest,
     openApproveConfirmationModal,
     openDenyConfirmationModal,
+    showReprocess,
+    reprocessPrivacyRequest,
   ]);
 
   return (
