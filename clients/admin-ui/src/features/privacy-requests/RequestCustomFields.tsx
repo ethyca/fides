@@ -12,7 +12,7 @@ const RequestCustomFields = ({ subjectRequest }: RequestCustomFieldsProps) => {
     subjectRequest;
 
   return (
-    <div>
+    <div className="flex flex-col gap-2">
       {customPrivacyRequestFields &&
         Object.keys(customPrivacyRequestFields).length > 0 && (
           <>
