@@ -108,27 +108,41 @@ def load_sample_connections_from_project() -> List[SampleConnection]:
             )
 
     # Exclude any connections whose "secrets" dict has empty values
-    log.debug(f"Found {len(sample_connections)} sample connections. Skipping any sample connections without configured secrets...")
+    log.debug(
+        f"Found {len(sample_connections)} sample connections. Skipping any sample connections without configured secrets..."
+    )
     valid_connections = []
     for connection in sample_connections:
         # If there are no secrets at all, skip this connection. This shouldn't happen unless sample_connections.yml is misconfigured
         if not connection.secrets:
-            log.debug(f"Skipping sample connection {connection.key}! No secrets exist, cannot create")
+            log.debug(
+                f"Skipping sample connection {connection.key}! No secrets exist, cannot create"
+            )
             continue
 
         # Check if all secret values exist and are non-empty
         expected_keys = connection.secrets.keys()
-        missing_keys = [key for key, value in connection.secrets.items() if value is None or value == ""]
+        missing_keys = [
+            key
+            for key, value in connection.secrets.items()
+            if value is None or value == ""
+        ]
         if len(missing_keys) > 0:
-            log.debug(f"Skipping sample connection {connection.key}. To include this sample, configure ENV secrets for these missing keys: {missing_keys} (see {sample_connections_path}/* for expected ENV vars)")
+            log.debug(
+                f"Skipping sample connection {connection.key}. To include this sample, configure ENV secrets for these missing keys: {missing_keys} (see {sample_connections_path}/* for expected ENV vars)"
+            )
             continue
 
         # If all secrets are configured, include this connection
-        log.debug(f"Including sample connection {connection.key} because all {len(connection.secrets.keys())} required secrets are configured")
+        log.debug(
+            f"Including sample connection {connection.key} because all {len(connection.secrets.keys())} required secrets are configured"
+        )
         valid_connections.append(connection)
 
     # Exclude any invalid connections from the final results
-    log.info(f"Collected {len(valid_connections)} sample connections with configured ENV secrets: {[connection.key for connection in valid_connections]}")
+    log.info(
+        f"Collected {len(valid_connections)} sample connections with configured ENV secrets: {[connection.key for connection in valid_connections]}"
+    )
     return valid_connections
 
 
