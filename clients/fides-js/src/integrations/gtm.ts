@@ -48,6 +48,15 @@ export const gtm = () => {
   window.addEventListener("FidesUpdated", (event) =>
     pushFidesVariableToGTM(event),
   );
+  window.addEventListener("FidesUIChanged", (event) =>
+    pushFidesVariableToGTM(event),
+  );
+  window.addEventListener("FidesUIShown", (event) =>
+    pushFidesVariableToGTM(event),
+  );
+  window.addEventListener("FidesModalClosed", (event) =>
+    pushFidesVariableToGTM(event),
+  );
 
   // If Fides was already initialized, publish a synthetic event immediately
   if (window.Fides?.initialized) {

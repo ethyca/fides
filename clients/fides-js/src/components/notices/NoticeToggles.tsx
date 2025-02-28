@@ -23,17 +23,20 @@ export const NoticeToggles = ({
 }: {
   noticeToggles: NoticeToggleProps[];
   enabledNoticeKeys: Array<string>;
-  onChange: (keys: Array<string>) => void;
+  onChange: (keys: Array<string>, event: Event) => void;
 }) => {
   const { i18n } = useI18n();
-  const handleToggle = (noticeKey: string) => {
+  const handleToggle = (noticeKey: string, event: Event) => {
     // Add the notice to list of enabled notices
     if (enabledNoticeKeys.indexOf(noticeKey) === -1) {
-      onChange([...enabledNoticeKeys, noticeKey]);
+      onChange([...enabledNoticeKeys, noticeKey], event);
     }
     // Remove the notice from the list of enabled notices
     else {
-      onChange(enabledNoticeKeys.filter((n) => n !== noticeKey));
+      onChange(
+        enabledNoticeKeys.filter((n) => n !== noticeKey),
+        event,
+      );
     }
   };
 

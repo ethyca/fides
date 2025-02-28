@@ -360,9 +360,15 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
             <NoticeToggles
               noticeToggles={noticeToggles}
               enabledNoticeKeys={draftEnabledNoticeKeys}
-              onChange={(updatedKeys) => {
+              onChange={(updatedKeys, event) => {
                 setDraftEnabledNoticeKeys(updatedKeys);
-                dispatchFidesEvent("FidesUIChanged", cookie, options.debug);
+                dispatchFidesEvent(
+                  "FidesUIChanged",
+                  cookie,
+                  options.debug,
+                  undefined,
+                  event,
+                );
               }}
             />
           </div>

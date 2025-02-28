@@ -14,7 +14,7 @@ const Toggle = ({
   name: string;
   id: string;
   checked: boolean;
-  onChange: (noticeKey: string) => void;
+  onChange: (noticeKey: string, event: Event) => void;
   disabled?: boolean;
   onLabel?: string;
   offLabel?: string;
@@ -27,8 +27,8 @@ const Toggle = ({
         name={name}
         aria-label={label}
         className="fides-toggle-input"
-        onChange={() => {
-          onChange(id);
+        onChange={(event) => {
+          onChange(id, event);
         }}
         checked={checked}
         role="switch"
