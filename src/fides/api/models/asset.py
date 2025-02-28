@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Any, Dict, Optional, Type
 import uuid
 
+from loguru import logger
 from sqlalchemy import (
     ARRAY,
     BOOLEAN,
@@ -112,7 +113,6 @@ class Asset(Base):
                 cls.name == data["name"],
                 cls.asset_type == data["asset_type"],
                 cls.domain == data["domain"],
-                cls.system_id == data["system_id"],
                 cls.base_url == data.get("base_url"),
             )
         )
@@ -125,6 +125,9 @@ class Asset(Base):
             record_id = existing_record.id
         else:
             if "id" in data:
+                logger.info(
+                    f"An Asset ID was provided to `upser_async`: {data} but upsert determined an insert is necessary, so a new ID will be generated."
+                )
                 data["id"] = str(uuid.uuid4())
             result = await async_session.execute(insert(cls).values(data))  # type: ignore[arg-type]
             record_id = result.inserted_primary_key.id
