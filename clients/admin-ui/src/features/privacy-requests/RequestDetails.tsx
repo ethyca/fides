@@ -10,10 +10,8 @@ import ClipboardButton from "~/features/common/ClipboardButton";
 import DaysLeftTag from "~/features/common/DaysLeftTag";
 import { useFeatures } from "~/features/common/features";
 import RequestStatusBadge from "~/features/common/RequestStatusBadge";
-import RequestType, { getActionTypes } from "~/features/common/RequestType";
-import DownloadAccessResults from "~/features/privacy-requests/DownloadAccessResults";
+import RequestType from "~/features/common/RequestType";
 import { PrivacyRequestEntity } from "~/features/privacy-requests/types";
-import { ActionType } from "~/types/api";
 import { PrivacyRequestStatus as ApiPrivacyRequestStatus } from "~/types/api/models/PrivacyRequestStatus";
 
 import ApproveButton from "./buttons/ApproveButton";
@@ -34,15 +32,6 @@ const RequestDetails = ({ subjectRequest }: RequestDetailsProps) => {
     identity,
     identity_verified_at: identityVerifiedAt,
   } = subjectRequest;
-
-  const {
-    flags: { downloadAccessRequestResults },
-  } = useFeatures();
-
-  const showDownloadResults =
-    downloadAccessRequestResults &&
-    getActionTypes(policy.rules).includes(ActionType.ACCESS) &&
-    status === ApiPrivacyRequestStatus.COMPLETE;
 
   return (
     <div>
@@ -110,7 +99,6 @@ const RequestDetails = ({ subjectRequest }: RequestDetailsProps) => {
           <Input readOnly value={subjectRequest.policy.key} />
         </Form.Item>
       </Form>
-      {showDownloadResults && <DownloadAccessResults requestId={id} />}
     </div>
   );
 };

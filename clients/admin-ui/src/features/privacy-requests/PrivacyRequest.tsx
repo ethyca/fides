@@ -11,7 +11,7 @@ import SubjectIdentities from "./SubjectIdentities";
 import { PrivacyRequestEntity } from "./types";
 
 type PrivacyRequestProps = {
-  data: PrivacyRequestEntity;
+  privacyRequest: PrivacyRequestEntity;
 };
 
 const PrivacyRequest = ({ data: initialData }: PrivacyRequestProps) => {
