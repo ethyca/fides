@@ -14,8 +14,6 @@ import RequestType from "~/features/common/RequestType";
 import { PrivacyRequestEntity } from "~/features/privacy-requests/types";
 import { PrivacyRequestStatus as ApiPrivacyRequestStatus } from "~/types/api/models/PrivacyRequestStatus";
 
-import ApproveButton from "./buttons/ApproveButton";
-import DenyButton from "./buttons/DenyButton";
 import ReprocessButton from "./buttons/ReprocessButton";
 import RequestDetailsRow from "./RequestDetailsRow";
 
@@ -46,15 +44,6 @@ const RequestDetails = ({ subjectRequest }: RequestDetailsProps) => {
           <div className="flex gap-3">
             {status === "error" && (
               <ReprocessButton subjectRequest={subjectRequest} />
-            )}
-
-            {status === "pending" && (
-              <>
-                <ApproveButton subjectRequest={subjectRequest}>
-                  Approve
-                </ApproveButton>
-                <DenyButton subjectRequest={subjectRequest}>Deny</DenyButton>
-              </>
             )}
           </div>
         </RequestDetailsRow>
