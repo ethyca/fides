@@ -5,7 +5,7 @@
 import { CmpApi, UsNatField } from "@iabgpp/cmpapi";
 
 import { FidesCookie, PrivacyExperience } from "../consent-types";
-import { FIDES_REGION_TO_GPP_SECTION } from "./constants";
+import { FIDES_US_REGION_TO_GPP_SECTION } from "./constants";
 import { GPPSection, GPPSettings, GPPUSApproach } from "./types";
 
 const US_NATIONAL_REGION = "us";
@@ -89,12 +89,12 @@ export const setGppNoticesProvidedFromExperience = ({
     experienceRegion,
     usApproach,
   });
-  let gppSection = FIDES_REGION_TO_GPP_SECTION[gppRegion];
+  let gppSection = FIDES_US_REGION_TO_GPP_SECTION[gppRegion];
 
   if (!gppSection && usApproach === GPPUSApproach.ALL) {
     // if we're using the "all" approach, and the user's state isn't supported yet, we should default to national.
     gppRegion = US_NATIONAL_REGION;
-    gppSection = FIDES_REGION_TO_GPP_SECTION[gppRegion];
+    gppSection = FIDES_US_REGION_TO_GPP_SECTION[gppRegion];
   }
 
   if (
@@ -152,12 +152,12 @@ export const setGppOptOutsFromCookieAndExperience = ({
     experienceRegion,
     usApproach,
   });
-  let gppSection = FIDES_REGION_TO_GPP_SECTION[gppRegion];
+  let gppSection = FIDES_US_REGION_TO_GPP_SECTION[gppRegion];
 
   if (!gppSection && usApproach === GPPUSApproach.ALL) {
     // if we're using the all approach, and the current state isn't supported, we should default to national
     gppRegion = US_NATIONAL_REGION;
-    gppSection = FIDES_REGION_TO_GPP_SECTION[gppRegion];
+    gppSection = FIDES_US_REGION_TO_GPP_SECTION[gppRegion];
   }
 
   if (
