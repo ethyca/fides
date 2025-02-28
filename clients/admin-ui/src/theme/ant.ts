@@ -25,6 +25,7 @@ export const antTheme: AntThemeConfig = {
     borderRadius: 4,
     wireframe: true,
     colorTextBase: palette.FIDESUI_MINOS,
+    colorTextHeading: palette.FIDESUI_MINOS,
     colorErrorBg: "#ffdcd6", // custom override
     colorErrorBorder: "#f2aca5", // custom override
     colorWarningBg: "#ffecc9", // custom override
@@ -72,6 +73,9 @@ export const antTheme: AntThemeConfig = {
     },
     Transfer: {
       controlItemBgActiveHover: palette.FIDESUI_SANDSTONE,
+    },
+    Typography: {
+      fontSizeHeading2: 20,
     },
   },
 };
