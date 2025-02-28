@@ -56,8 +56,12 @@ const SYSTEM_TABS = {
     index: 3,
     hash: "#integrations",
   },
-  HISTORY: {
+  ASSETS: {
     index: 4,
+    hash: "#assets",
+  },
+  HISTORY: {
+    index: 5,
     hash: "#history",
   },
 } as const;
@@ -350,6 +354,16 @@ const useSystemFormTabs = ({
     },
   ];
 
+  if (isPlusEnabled && webMonitor) {
+    tabData.push({
+      label: "Assets",
+      content: activeSystem ? (
+        <SystemAssetsTable system={activeSystem} />
+      ) : null,
+      isDisabled: !activeSystem,
+    });
+  }
+
   if (isPlusEnabled) {
     tabData.push({
       label: "History",
@@ -364,16 +378,6 @@ const useSystemFormTabs = ({
           </Box>
           <SystemHistoryTable system={activeSystem} />
         </Box>
-      ) : null,
-      isDisabled: !activeSystem,
-    });
-  }
-
-  if (isPlusEnabled && webMonitor) {
-    tabData.push({
-      label: "Assets",
-      content: activeSystem ? (
-        <SystemAssetsTable system={activeSystem} />
       ) : null,
       isDisabled: !activeSystem,
     });
