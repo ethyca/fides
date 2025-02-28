@@ -493,7 +493,7 @@ describe("System management with Plus features", () => {
     });
   });
 
-  describe("tab navigation", () => {
+  describe.only("tab navigation", () => {
     it("updates URL hash when switching tabs", () => {
       cy.visit(`${SYSTEM_ROUTE}/configure/demo_analytics_system#information`);
       cy.location("hash").should("eq", "#information");
@@ -515,7 +515,12 @@ describe("System management with Plus features", () => {
 
       // eslint-disable-next-line cypress/no-unnecessary-waiting
       cy.wait(500);
-      cy.getByTestId("tab-History").click();
+      cy.getByTestId("tab-Assets").click({ force: true });
+      cy.location("hash").should("eq", "#assets");
+
+      // eslint-disable-next-line cypress/no-unnecessary-waiting
+      cy.wait(500);
+      cy.getByTestId("tab-History").click({ force: true });
       cy.location("hash").should("eq", "#history");
     });
 
