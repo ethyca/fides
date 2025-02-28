@@ -47,6 +47,7 @@ export {
   Tabs as AntTabs,
   Tooltip as AntTooltip,
   Typography as AntTypography,
+  message,
 } from "antd/lib";
 export type {
   BreadcrumbItemType as AntBreadcrumbItemType,
