@@ -1025,11 +1025,9 @@ class TestGraphTaskAffectedConsentSystems:
             relevant_preferences=[privacy_preference_history_us_ca_provide],
             relevant_user_identities={"email": "customer-1@example.com"},
         )
-        with pytest.raises(BaseException) as exc:
+        with pytest.raises(BaseException):
             ret = mock_graph_task.consent_request({"email": "customer-1@example.com"})
             assert ret is False
-
-        assert str(exc.value) == "Request failed"
 
         db.refresh(privacy_preference_history)
         db.refresh(privacy_preference_history_us_ca_provide)

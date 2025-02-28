@@ -11,7 +11,7 @@ from fides.api.models.connectionconfig import (
     ConnectionType,
 )
 from fides.api.models.privacy_experience import PrivacyExperienceConfig
-from fides.api.service.connectors.mariadb_connector import MariaDBConnector
+from fides.api.service.connectors.sql_connector import MariaDBConnector
 from fides.config import CONFIG
 
 integration_config = load_toml("tests/ops/integration_test_config.toml")
