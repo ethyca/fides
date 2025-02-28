@@ -121,10 +121,10 @@ def load_sample_connections_from_project() -> List[SampleConnection]:
             continue
 
         # Check if all secret values exist and are non-empty
-        expected_keys = connection.secrets.keys()
+        expected_keys = connection.secrets.keys()  # type: ignore
         missing_keys = [
             key
-            for key, value in connection.secrets.items()
+            for key, value in connection.secrets.items()  # type: ignore
             if value is None or value == ""
         ]
         if len(missing_keys) > 0:
@@ -135,7 +135,7 @@ def load_sample_connections_from_project() -> List[SampleConnection]:
 
         # If all secrets are configured, include this connection
         log.debug(
-            f"Including sample connection {connection.key} because all {len(connection.secrets.keys())} required secrets are configured"
+            f"Including sample connection {connection.key} because all {len(expected_keys)} required secrets are configured"
         )
         valid_connections.append(connection)
 
