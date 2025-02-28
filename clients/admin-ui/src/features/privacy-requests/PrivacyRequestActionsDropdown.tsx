@@ -124,6 +124,7 @@ const PrivacyRequestActionsDropdown = ({
           iconPosition="end"
           type="primary"
           disabled={!menuItems.length}
+          size="large"
         >
           Actions
         </Button>
