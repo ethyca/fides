@@ -218,7 +218,6 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
     ):  # cache config, log config, db store config
         super().__init__()
         self.request_task = resources.privacy_request_task
-        self.request_task_id = resources.privacy_request_task.id
         self.execution_node = ExecutionNode(resources.privacy_request_task)
         self.resources = resources
         self.connector: BaseConnector = resources.get_connector(
