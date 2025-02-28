@@ -367,34 +367,25 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         """Update status activities - create an execution log (which stores historical logs)
         and update the Request Task's current status.
         """
-        # Because a GraphTask can take a long time to run, it's possible that the session
-        # stored in self.resources has been closed by the time we get to this point. We need
-        # to get a new session to write the ExecutionLog to the DB and update task status.
-        with get_db_session() as db:
-            ExecutionLog.create(
-                db=db,
-                data={
-                    "connection_key": self.execution_node.connection_key,
-                    "dataset_name": self.execution_node.address.dataset,
-                    "collection_name": self.execution_node.address.collection,
-                    "fields_affected": fields_affected,
-                    "action_type": action_type,
-                    "status": status,
-                    "privacy_request_id": self.resources.request.id,
-                    "message": msg,
-                },
-            )
+        ExecutionLog.create(
+            db=self.resources.session,
+            data={
+                "connection_key": self.execution_node.connection_key,
+                "dataset_name": self.execution_node.address.dataset,
+                "collection_name": self.execution_node.address.collection,
+                "fields_affected": fields_affected,
+                "action_type": action_type,
+                "status": status,
+                "privacy_request_id": self.resources.request.id,
+                "message": msg,
+            },
+        )
 
+        if self.request_task.id:
             # For DSR 3.0, updating the Request Task status when the ExecutionLog is
             # created to keep these in sync.
-            # TODO remove conditional below alongside deprecating DSR 2.0
-            if self.request_task_id:
-                # self.request_task was originally attached to another session
-                # we merge it into our local session instead of just querying it from the DB
-                # to keep any changes made to self.request_task that haven't been saved yet
-                local_request_task = db.merge(self.request_task)
-                local_request_task.update_status(db, status)
-                self.request_task = local_request_task
+            # TODO remove conditional above alongside deprecating DSR 2.0
+            self.request_task.update_status(self.resources.session, status)
 
     def log_start(self, action_type: ActionType) -> None:
         """Task start activities"""
@@ -434,30 +425,41 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         success_override_msg: Optional[BaseException] = None,
     ) -> None:
         """On completion activities"""
-        if ex:
-            logger.warning(
-                "Ending {}, {} with failure {}",
-                self.resources.request.id,
-                self.key,
-                Pii(ex),
-            )
-            self.update_status(str(ex), [], action_type, ExecutionLogStatus.error)
-            # For DSR 3.0, Hooking into the GraphTask.log_end method to also mark the current
-            # Request Task and every Request Task that can be reached from the current
-            # task as errored.
-            mark_current_and_downstream_nodes_as_failed(
-                self.request_task, self.resources.session
-            )
-        else:
-            logger.info("Ending {}, {}", self.resources.request.id, self.key)
-            self.update_status(
-                str(success_override_msg) if success_override_msg else "success",
-                build_affected_field_logs(
-                    self.execution_node, self.resources.policy, action_type
-                ),
-                action_type,
-                ExecutionLogStatus.complete,
-            )
+
+        # Because a GraphTask can take a long time to run, it's possible that the session
+        # stored in self.resources has been closed by the time we get to this point. We need
+        # to get a new session to appropriately mark the task as errored.
+        with get_db_session() as db:
+            request_task_new_session = db.merge(self.request_task)
+            # Update the session in the resources object to the new session
+            # and update the request_task reference to the new instance
+            self.resources.session = db
+            self.request_task = request_task_new_session
+
+            if ex:
+                logger.warning(
+                    "Ending {}, {} with failure {}",
+                    self.resources.request.id,
+                    self.key,
+                    Pii(ex),
+                )
+                self.update_status(str(ex), [], action_type, ExecutionLogStatus.error)
+                # For DSR 3.0, Hooking into the GraphTask.log_end method to also mark the current
+                # Request Task and every Request Task that can be reached from the current
+                # task as errored.
+                mark_current_and_downstream_nodes_as_failed(
+                    self.request_task, self.resources.session
+                )
+            else:
+                logger.info("Ending {}, {}", self.resources.request.id, self.key)
+                self.update_status(
+                    str(success_override_msg) if success_override_msg else "success",
+                    build_affected_field_logs(
+                        self.execution_node, self.resources.policy, action_type
+                    ),
+                    action_type,
+                    ExecutionLogStatus.complete,
+                )
 
     def post_process_input_data(
         self, pre_processed_inputs: NodeInput
