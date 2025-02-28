@@ -2,7 +2,7 @@ import { userEvent } from "@testing-library/user-event";
 
 import { dispatchFidesEvent } from "../../src/lib/events";
 
-describe("event", () => {
+describe("events", () => {
   beforeEach(() => {
     const noop = () => {};
     window.fidesDebugger = noop;
@@ -45,28 +45,41 @@ describe("event", () => {
       expect(event.target).toEqual(window);
     });
 
-    test("that an event can be fired by a different target", async () => {
-      const btn = document.createElement("button");
-      btn.setAttribute("id", "test-id");
-      btn.addEventListener("click", (event) => {
-        dispatchFidesEvent(
-          "FidesUIChanged",
-          {
-            consent: {},
-            fides_meta: {},
-            identity: {},
-            tcf_consent: {},
-          },
-          false,
-          undefined,
-          event.target,
-        );
-      });
-      document.body.append(btn);
-      await userEvent.click(btn);
+    describe("event bubbling", () => {
+      let button: HTMLButtonElement;
+      let buttonListener: (event: MouseEvent) => void;
+      beforeEach(() => {
+        button = document.createElement("button");
+        button.setAttribute("id", "test-id");
 
-      const event = await listenerPromise;
-      expect((event.target as HTMLButtonElement).id).toEqual("test-id");
+        buttonListener = (event: MouseEvent): void => {
+          dispatchFidesEvent(
+            "FidesUIChanged",
+            {
+              consent: {},
+              fides_meta: {},
+              identity: {},
+              tcf_consent: {},
+            },
+            false,
+            undefined,
+            event.target,
+          );
+        };
+        button.addEventListener("click", buttonListener);
+      });
+
+      afterEach(() => {
+        button.removeEventListener("click", buttonListener);
+      });
+
+      test("that an event can be fired by a different target", async () => {
+        document.body.append(button);
+        await userEvent.click(button);
+
+        const event = await listenerPromise;
+        expect((event.target as HTMLButtonElement).id).toEqual("test-id");
+      });
     });
   });
 });
