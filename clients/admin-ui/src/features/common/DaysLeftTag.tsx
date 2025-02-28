@@ -17,7 +17,7 @@ const DaysLeftTag = ({ daysLeft, includeText, status }: DaysLeftTagProps) => {
     status === PrivacyRequestStatus.DENIED ||
     status === PrivacyRequestStatus.IDENTITY_UNVERIFIED
   ) {
-    return "-";
+    return <span>-</span>;
   }
 
   let color = "";
