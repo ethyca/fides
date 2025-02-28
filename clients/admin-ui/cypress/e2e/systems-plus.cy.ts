@@ -493,7 +493,7 @@ describe("System management with Plus features", () => {
     });
   });
 
-  describe.only("tab navigation", () => {
+  describe("tab navigation", () => {
     it("updates URL hash when switching tabs", () => {
       cy.visit(`${SYSTEM_ROUTE}/configure/demo_analytics_system#information`);
       cy.location("hash").should("eq", "#information");
