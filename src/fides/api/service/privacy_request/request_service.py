@@ -8,7 +8,6 @@ from typing import Any, Dict, List, Optional, Set
 from httpx import AsyncClient
 from loguru import logger
 from sqlalchemy import text
-from sqlalchemy.orm import Query
 from sqlalchemy.sql.elements import TextClause
 
 from fides.api.common_exceptions import PrivacyRequestNotFound
@@ -16,6 +15,7 @@ from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import (
     EXITED_EXECUTION_LOG_STATUSES,
     PrivacyRequest,
+    RequestTask,
 )
 from fides.api.schemas.drp_privacy_request import DrpPrivacyRequestCreate
 from fides.api.schemas.masking.masking_secrets import MaskingSecretCache
@@ -210,34 +210,51 @@ def poll_for_exited_privacy_request_tasks(self: DatabaseTask) -> Set[str]:
             .order_by(PrivacyRequest.created_at)
         )
 
-        def some_errored(tasks: Query) -> bool:
-            """All statuses have exited and at least one is errored"""
-            statuses: List[ExecutionLogStatus] = [tsk.status for tsk in tasks]
+        # TODO: With this approach, we're making 3*n queries , where n is the number of in-progress privacy requests.
+        # We could optimize this to just get all the RequestTasks for all in-progress privacy requests in one single
+        # query and then process them in-memory. This could be more efficient.
+        def privacy_request_has_errored_tasks(
+            privacy_request: PrivacyRequest, task_type: ActionType
+        ) -> bool:
+            """Check if a privacy request has exited all its tasks of the given type,
+            and at least one of the tasks has errored.
+            We specifically only query for the RequestTask.status column to avoid
+            querying for the entire RequestTask row.
+            """
+            tasks_statuses_query = db.query(RequestTask.status).filter(
+                RequestTask.privacy_request_id == privacy_request.id,
+                RequestTask.action_type == task_type,
+            )
+
+            statuses = set(status for status, in tasks_statuses_query.all())
             all_exited = all(
                 status in EXITED_EXECUTION_LOG_STATUSES for status in statuses
             )
-            return all_exited and ExecutionLogStatus.error in statuses
+            if all_exited and ExecutionLogStatus.error in statuses:
+                logger.info(
+                    f"Marking {task_type.value} step of {privacy_request.id} as error"
+                )
+                return True
+
+            return False
 
         marked_as_errored: Set[str] = set()
         for pr in in_progress_privacy_requests.all():
             if pr.consent_tasks.count():
                 # Consent propagation tasks - these are not created until access and erasure steps are complete.
-                if some_errored(pr.consent_tasks):
-                    logger.info(f"Marking consent step of {pr.id} as error")
+                if privacy_request_has_errored_tasks(pr, ActionType.consent):
                     pr.error_processing(db)
                     marked_as_errored.add(pr.id)
 
             if pr.erasure_tasks.count():
                 # Erasure tasks are created at the same time as access tasks but if any are errored, this means
                 # we made it to the erasure section
-                if some_errored(pr.erasure_tasks):
-                    logger.info(f"Marking erasure step of {pr.id} as error")
+                if privacy_request_has_errored_tasks(pr, ActionType.erasure):
                     pr.error_processing(db)
                     marked_as_errored.add(pr.id)
 
             if pr.access_tasks.count():
-                if some_errored(pr.access_tasks):
-                    logger.info(f"Marking access step of {pr.id} as error")
+                if privacy_request_has_errored_tasks(pr, ActionType.access):
                     pr.error_processing(db)
                     marked_as_errored.add(pr.id)
 
