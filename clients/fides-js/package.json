@@ -46,6 +46,7 @@
     "@rollup/plugin-json": "^6.0.0",
     "@rollup/plugin-node-resolve": "^15.0.2",
     "@rollup/plugin-strip": "^3.0.4",
+    "@testing-library/user-event": "^14.6.1",
     "@types/base-64": "^1.0.2",
     "@types/jest": "^29.5.12",
     "@types/js-cookie": "^3.0.6",
