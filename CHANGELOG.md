@@ -23,7 +23,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ### Added
 - DB model support for Attachments [#5784](https://github.com/ethyca/fides/pull/5784) https://github.com/ethyca/fides/labels/db-migration
-- Support for MySQL Data Detection & Discovery Monitors [#5798]
+- Support for MySQL Data Detection & Discovery Monitors [#5798](https://github.com/ethyca/fides/pull/5798)
 
 ## [2.56.0](https://github.com/ethyca/fides/compare/2.55.4...2.56.0)
 
