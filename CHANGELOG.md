@@ -23,6 +23,9 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 
 
+### Fixed
+- Fixed `GraphTask` and `poll_for_exited_privacy_request_tasks` for DSR-processing improvements [#5820](https://github.com/ethyca/fides/pull/5820)
+
 ## [2.56.0](https://github.com/ethyca/fides/compare/2.55.4...2.56.0)
 
 ### Added
