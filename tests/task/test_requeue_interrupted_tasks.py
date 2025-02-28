@@ -7,7 +7,10 @@ import pytest
 from fides.api.models.privacy_request import PrivacyRequest, RequestTask
 from fides.api.schemas.policy import ActionType
 from fides.api.schemas.privacy_request import ExecutionLogStatus, PrivacyRequestStatus
-from fides.api.service.privacy_request.request_service import REQUEUE_INTERRUPTED_TASKS_LOCK, requeue_interrupted_tasks
+from fides.api.service.privacy_request.request_service import (
+    REQUEUE_INTERRUPTED_TASKS_LOCK,
+    requeue_interrupted_tasks,
+)
 from fides.api.util.cache import cache_task_tracking_key, get_cache
 
 
@@ -263,7 +266,10 @@ class TestRequeueInterruptedTasks:
         lock.acquire(blocking=False)
 
         requeue_interrupted_tasks.apply().get()
-        assert "Another instance of requeue_interrupted_tasks is already running. Skipping this execution." in loguru_caplog.text
+        assert (
+            "Another instance of requeue_interrupted_tasks is already running. Skipping this execution."
+            in loguru_caplog.text
+        )
         lock.release()
 
     def test_lock_is_released_after_execution(self):

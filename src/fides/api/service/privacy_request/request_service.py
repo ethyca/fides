@@ -359,7 +359,9 @@ def get_cached_task_id(entity_id: str) -> Optional[str]:
     task_id = cache.get(get_async_task_tracking_cache_key(entity_id))
     return task_id
 
+
 REQUEUE_INTERRUPTED_TASKS_LOCK = "requeue_interrupted_tasks_lock"
+
 
 def _get_task_ids_from_dsr_queue(
     redis_client: FidesopsRedis, chunk_size: int = 100
