@@ -45,7 +45,7 @@ env = "prod"
 
 [execution]
 masking_strict = true
-require_manual_request_approval = false
+require_manual_request_approval = true
 task_retry_backoff = 1
 subject_identity_verification_required = false
 task_retry_count = 0
