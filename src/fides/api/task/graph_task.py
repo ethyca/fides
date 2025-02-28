@@ -429,11 +429,13 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         # stored in self.resources has been closed by the time we get to this point. We need
         # to get a new session to appropriately mark the task as errored.
         with get_db_session() as db:
-            request_task_new_session = db.merge(self.request_task)
             # Update the session in the resources object to the new session
             # and update the request_task reference to the new instance
-            self.resources.session = db
-            self.request_task = request_task_new_session
+            # We only need this for DSR 3.0, i.e if request_task has an id
+            if self.request_task.id:
+                self.resources.session = db
+                request_task_new_session = db.merge(self.request_task)
+                self.request_task = request_task_new_session
 
             if ex:
                 logger.warning(
