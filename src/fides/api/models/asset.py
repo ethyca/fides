@@ -38,6 +38,7 @@ class Asset(Base):
     locations = Column(ARRAY(String), server_default="{}", nullable=False)
     with_consent = Column(BOOLEAN, default=False, nullable=False)
     data_uses = Column(ARRAY(String), server_default="{}", nullable=False)
+    description = Column(String, nullable=True)
 
     # generic object to store additional attributes, specific to asset type
     meta = Column(
