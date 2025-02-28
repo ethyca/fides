@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from typing import Any, Dict, Optional, Type
+import uuid
 
 from sqlalchemy import (
     ARRAY,
@@ -123,6 +124,8 @@ class Asset(Base):
             )
             record_id = existing_record.id
         else:
+            if "id" in data:
+                data["id"] = str(uuid.uuid4())
             result = await async_session.execute(insert(cls).values(data))  # type: ignore[arg-type]
             record_id = result.inserted_primary_key.id
 
