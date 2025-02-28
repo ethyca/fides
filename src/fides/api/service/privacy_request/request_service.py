@@ -210,11 +210,14 @@ def poll_for_exited_privacy_request_tasks(self: DatabaseTask) -> Set[str]:
             .order_by(PrivacyRequest.created_at)
         )
 
+        # TODO: With this approach, we're making 3*n queries , where n is the number of in-progress privacy requests.
+        # We could optimize this to just get all the RequestTasks for all in-progress privacy requests in one single
+        # query and then process them in-memory. This could be more efficient.
         def privacy_request_has_errored_tasks(
             privacy_request: PrivacyRequest, task_type: ActionType
         ) -> bool:
-            """Check if a privacy request has all exited all its tasks of the given type,
-            and at least on the tasks has errored.
+            """Check if a privacy request has exited all its tasks of the given type,
+            and at least one of the tasks has errored.
             We specifically only query for the RequestTask.status column to avoid
             querying for the entire RequestTask row.
             """
