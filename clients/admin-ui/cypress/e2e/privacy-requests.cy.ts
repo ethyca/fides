@@ -102,12 +102,15 @@ describe("Privacy Requests", () => {
 
     it("shows the request details", () => {
       cy.getByTestId("privacy-request-details").within(() => {
-        cy.contains("Request ID").parent().contains(/pri_/);
+        cy.getByTestId("request-detail-value-id")
+          .should("have.prop", "value")
+          .should("match", /pri_/);
         cy.getByTestId("request-status-badge").contains("New");
       });
     });
 
     it("allows approving a new request", () => {
+      cy.getByTestId("privacy-request-actions-dropdown-btn").click();
       cy.getByTestId("privacy-request-approve-btn").click();
       cy.getByTestId("continue-btn").click();
 
@@ -117,6 +120,7 @@ describe("Privacy Requests", () => {
     });
 
     it("allows denying a new request", () => {
+      cy.getByTestId("privacy-request-actions-dropdown-btn").click();
       cy.getByTestId("privacy-request-deny-btn").click();
 
       cy.getByTestId("deny-privacy-request-modal").within(() => {
@@ -130,6 +134,7 @@ describe("Privacy Requests", () => {
     });
 
     it("shouldn't show the download button for pending requests", () => {
+      cy.getByTestId("privacy-request-actions-dropdown-btn").click();
       cy.getByTestId("download-results-btn").should("not.exist");
     });
   });
@@ -148,7 +153,11 @@ describe("Privacy Requests", () => {
       }).as("getAccessResultURL");
       stubPrivacyRequests(PrivacyRequestStatus.COMPLETE);
       cy.wait("@getAccessResultURL");
-      cy.getByTestId("download-results-btn").should("not.be.disabled");
+      cy.getByTestId("privacy-request-actions-dropdown-btn").click();
+      cy.getByTestId("download-results-btn")
+        .parents(".ant-dropdown-menu-item")
+        .should("not.have.class", "ant-dropdown-menu-item-disabled")
+        .should("have.attr", "aria-disabled", "false");
     });
 
     it("can't download when request info is stored locally", () => {
@@ -157,7 +166,11 @@ describe("Privacy Requests", () => {
       }).as("getAccessResultURL");
       stubPrivacyRequests(PrivacyRequestStatus.COMPLETE);
       cy.wait("@getAccessResultURL");
-      cy.getByTestId("download-results-btn").should("be.disabled");
+      cy.getByTestId("privacy-request-actions-dropdown-btn").click();
+      cy.getByTestId("download-results-btn")
+        .parents(".ant-dropdown-menu-item")
+        .should("have.class", "ant-dropdown-menu-item-disabled")
+        .should("have.attr", "aria-disabled", "true");
     });
 
     it("doesn't show the button for non-access requests", () => {
@@ -167,7 +180,9 @@ describe("Privacy Requests", () => {
         key: "test",
       });
       cy.wait("@getPrivacyRequest");
-      cy.getByTestId("download-results-btn").should("not.exist");
+      cy.getByTestId("privacy-request-actions-dropdown-btn").should(
+        "be.disabled",
+      );
     });
   });
 

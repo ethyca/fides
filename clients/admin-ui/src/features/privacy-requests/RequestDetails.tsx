@@ -75,12 +75,16 @@ const RequestDetails = ({ subjectRequest }: RequestDetailsProps) => {
       <Form layout="vertical">
         <Form.Item label="Request ID:" className="mb-4">
           <div className="flex gap-1">
-            <Input readOnly value={id} />
+            <Input readOnly value={id} data-testid="request-detail-value-id" />
             <ClipboardButton copyText={id} size="small" />
           </div>
         </Form.Item>
         <Form.Item label="Policy key:" className="mb-4">
-          <Input readOnly value={subjectRequest.policy.key} />
+          <Input
+            readOnly
+            value={subjectRequest.policy.key}
+            data-testid="request-detail-value-policy"
+          />
         </Form.Item>
       </Form>
       <RequestCustomFields subjectRequest={subjectRequest} />

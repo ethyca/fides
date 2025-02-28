@@ -12,7 +12,12 @@ const RequestDetailsRow = ({ label, children }: RequestDetailsRowProps) => (
     <div className={`flex-1 pr-2 ${styles.label}`}>
       <Typography.Text>{label}:</Typography.Text>
     </div>
-    <div className={`flex-1 ${styles.value}`}>{children}</div>
+    <div
+      className={`flex-1 ${styles.value}`}
+      data-testid={`request-detail-value-${label}`}
+    >
+      {children}
+    </div>
   </div>
 );
 
