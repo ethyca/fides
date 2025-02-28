@@ -314,11 +314,19 @@ describe("Taxonomy management page", () => {
       cy.visit("/taxonomy");
     });
 
-    it("Edit tray inputs are disabled", () => {
+    it("Edit tray inputs are readOnly", () => {
       cy.getByTestId(`taxonomy-node-user.content`).click();
       cy.getByTestId("edit-drawer-content").within(() => {
-        cy.getByTestId("edit-taxonomy-form_name").should("be.disabled");
-        cy.getByTestId("edit-taxonomy-form_description").should("be.disabled");
+        cy.getByTestId("edit-taxonomy-form_name").should(
+          "have.attr",
+          "readonly",
+          "readonly",
+        );
+        cy.getByTestId("edit-taxonomy-form_description").should(
+          "have.attr",
+          "readonly",
+          "readonly",
+        );
       });
     });
 
