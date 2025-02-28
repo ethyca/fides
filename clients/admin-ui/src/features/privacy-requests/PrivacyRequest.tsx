@@ -7,7 +7,6 @@ import { PrivacyRequestStatus } from "~/types/api";
 import ActivityTimeline from "./events-and-logs/ActivityTimeline";
 import ManualProcessingList from "./manual-processing/ManualProcessingList";
 import RequestDetails from "./RequestDetails";
-import SubjectIdentities from "./SubjectIdentities";
 import { PrivacyRequestEntity } from "./types";
 
 type PrivacyRequestProps = {
@@ -63,7 +62,6 @@ const PrivacyRequest = ({ data: initialData }: PrivacyRequestProps) => {
       </div>
       <div className="w-[432px]" data-testid="privacy-request-details">
         <RequestDetails subjectRequest={subjectRequest} />
-        <SubjectIdentities subjectRequest={subjectRequest} />
       </div>
     </div>
   );

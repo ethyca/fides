@@ -14,6 +14,7 @@ import RequestType from "~/features/common/RequestType";
 import { PrivacyRequestEntity } from "~/features/privacy-requests/types";
 import { PrivacyRequestStatus as ApiPrivacyRequestStatus } from "~/types/api/models/PrivacyRequestStatus";
 
+import RequestCustomFields from "./RequestCustomFields";
 import RequestDetailsRow from "./RequestDetailsRow";
 
 type RequestDetailsProps = {
@@ -82,6 +83,7 @@ const RequestDetails = ({ subjectRequest }: RequestDetailsProps) => {
           <Input readOnly value={subjectRequest.policy.key} />
         </Form.Item>
       </Form>
+      <RequestCustomFields subjectRequest={subjectRequest} />
     </div>
   );
 };
