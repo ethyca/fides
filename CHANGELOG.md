@@ -21,6 +21,8 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.56.0...main)
 
+### Changed
+- Update the privacy request detail page to a new layout and improved styling [#5824](https://github.com/ethyca/fides/pull/5824)
 
 
 ## [2.56.0](https://github.com/ethyca/fides/compare/2.55.4...2.56.0)
