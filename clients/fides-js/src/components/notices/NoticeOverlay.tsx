@@ -367,7 +367,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
                   cookie,
                   options.debug,
                   undefined,
-                  event,
+                  event.target,
                 );
               }}
             />

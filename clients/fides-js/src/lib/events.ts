@@ -54,7 +54,7 @@ export const dispatchFidesEvent = (
   cookie: FidesCookie | undefined,
   debug: boolean,
   extraDetails?: FidesEventExtraDetails,
-  originatingEvent?: Event,
+  eventTarget?: Event["target"],
 ) => {
   if (typeof window !== "undefined" && typeof CustomEvent !== "undefined") {
     // Extracts consentMethod directly from the cookie instead of having to pass in duplicate data to this method
@@ -66,7 +66,7 @@ export const dispatchFidesEvent = (
       detail: { ...cookie, debug, extraDetails: constructedExtraDetails },
       bubbles: true,
     });
-    const perfMark = performance?.mark(type);
+    const perfMark = performance?.mark?.(type);
     fidesDebugger(
       `Dispatching event type ${type} ${
         constructedExtraDetails?.servingComponent
@@ -78,7 +78,7 @@ export const dispatchFidesEvent = (
           : ""
       } (${perfMark?.startTime?.toFixed(2)}ms)`,
     );
-    (originatingEvent?.target ?? window).dispatchEvent(event);
+    (eventTarget ?? window).dispatchEvent(event);
   }
 };
 
