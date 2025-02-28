@@ -385,13 +385,16 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
                 },
             )
 
+            # For DSR 3.0, updating the Request Task status when the ExecutionLog is
+            # created to keep these in sync.
+            # TODO remove conditional below alongside deprecating DSR 2.0
             if self.request_task_id:
-                # For DSR 3.0, updating the Request Task status when the ExecutionLog is
-                # created to keep these in sync.
-                # TODO remove conditional above alongside deprecating DSR 2.0
-                request_task = RequestTask.get(db, object_id=self.request_task_id)
-                if request_task:
-                    request_task.update_status(db, status)
+                # self.request_task was originally attached to another session
+                # we merge it into our local session instead of just querying it from the DB
+                # to keep any changes made to self.request_task that haven't been saved yet
+                local_request_task = db.merge(self.request_task)
+                local_request_task.update_status(db, status)
+                self.request_task = local_request_task
 
     def log_start(self, action_type: ActionType) -> None:
         """Task start activities"""
