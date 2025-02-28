@@ -16,7 +16,9 @@ const RequestCustomFields = ({ subjectRequest }: RequestCustomFieldsProps) => {
       {customPrivacyRequestFields &&
         Object.keys(customPrivacyRequestFields).length > 0 && (
           <>
-            <Typography.Title level={5}>Custom request fields</Typography.Title>
+            <Typography.Title level={5} className=" mt-2">
+              Custom request fields
+            </Typography.Title>
 
             {Object.entries(customPrivacyRequestFields)
               .filter(([, item]) => item.value)
