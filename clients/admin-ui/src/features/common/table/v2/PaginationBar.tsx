@@ -53,13 +53,13 @@ export const useServerSidePagination = () => {
     setPageIndex((prev) => prev + 1);
   }, [setPageIndex]);
   const isNextPageDisabled = useMemo(
-    () => !!totalPages && (pageIndex === totalPages || totalPages < 2),
+    () => totalPages === 0 || pageIndex === totalPages,
     [pageIndex, totalPages],
   );
 
-  const startRange =
-    (pageIndex - 1) * pageSize === 0 ? 1 : (pageIndex - 1) * pageSize;
-  const endRange = (pageIndex - 1) * pageSize + pageSize;
+  const pageStartIndex = (pageIndex - 1) * pageSize;
+  const startRange = totalPages !== 0 ? pageStartIndex + 1 : 0;
+  const endRange = pageStartIndex + pageSize;
 
   const resetPageIndexToDefault = useCallback(() => {
     setPageIndex(defaultPageIndex);

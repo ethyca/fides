@@ -249,7 +249,7 @@ export const DiscoveredSystemAggregateTable = ({
         }
       />
       <PaginationBar
-        totalRows={data?.items.length || 0}
+        totalRows={data?.total || 0}
         pageSizes={PAGE_SIZES}
         setPageSize={setPageSize}
         onPreviousPageClick={onPreviousPageClick}
