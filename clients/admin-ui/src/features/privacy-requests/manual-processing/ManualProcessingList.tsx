@@ -4,8 +4,6 @@ import {
   AntButton as Button,
   Box,
   Center,
-  Divider,
-  Heading,
   Spinner,
   Table,
   TableContainer,
