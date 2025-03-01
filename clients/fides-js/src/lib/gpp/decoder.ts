@@ -1,16 +1,7 @@
-import { GppModel } from "@iabgpp/cmpapi";
+import { CmpApi, GppModel } from "@iabgpp/cmpapi";
 
-import { fidesSupportedGPPApis } from "./constants";
-
-/**
- * Represents a decoded section from a GPP string.
- * Each section corresponds to a specific privacy framework or region's requirements.
- */
-export interface DecodedGppSection {
-  id: number;
-  name: string;
-  data: Record<string, unknown>;
-}
+import { ETHYCA_CMP_ID } from "../tcf/constants";
+import { CMP_VERSION } from "./constants";
 
 /**
  * Represents a fully decoded GPP (Global Privacy Platform) string.
@@ -59,45 +50,32 @@ export function hasGppSection(gppString: string, sectionName: string): boolean {
  * @returns DecodedGpp object containing header and decoded sections
  * @throws Error if the GPP string is invalid or empty
  */
-export function decodeGppString(gppString: string): DecodedGppSection[] {
+export function decodeGppString(
+  gppString: string,
+): Array<{ id: number; name: string; data: unknown }> {
   if (!gppString) {
     throw new Error("GPP string cannot be empty");
   }
-
-  try {
-    // Create a new GPP model instance to decode the string
-    const gppModel = new GppModel(gppString);
-
-    // Get section IDs from the header
-    const sectionIds = gppModel.getSectionIds();
-
-    // Decode each section
-    const sections = sectionIds.map((sectionId) => {
-      // Find the section name from our mapping or use section ID
-      const sectionName = fidesSupportedGPPApis.find(
-        (api) => api.ID === sectionId,
-      )?.NAME;
-      if (!sectionName || !hasGppSection(gppString, sectionName)) {
-        return undefined;
-      }
-      const sectionData = gppModel.getSection(sectionName) ?? {};
-
-      const decodedSection: DecodedGppSection = {
-        id: sectionId,
-        name: sectionName,
-        data: sectionData,
-      };
-      return decodedSection;
-    });
-
-    return sections.filter(
-      (section): section is DecodedGppSection => section !== undefined,
-    );
-  } catch (error) {
-    throw new Error(
-      `Failed to decode GPP string: ${error instanceof Error ? error.message : String(error)}`,
-    );
+  const cmpApi = new CmpApi(ETHYCA_CMP_ID, CMP_VERSION);
+  cmpApi.setGppString(gppString);
+  const sections = cmpApi.getObject();
+  if (!sections) {
+    throw new Error("Failed to decode GPP string");
   }
+
+  // Map section IDs to their names
+  const sectionIdMap: Record<string, number> = {
+    tcfeuv2: 2,
+    usnat: 7,
+    usca: 8,
+  };
+
+  // Transform the object into an array of sections
+  return Object.entries(sections).map(([name, data]) => ({
+    id: sectionIdMap[name] || 0,
+    name,
+    data,
+  }));
 }
 
 /**

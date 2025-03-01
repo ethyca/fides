@@ -40,6 +40,7 @@ import {
   updateCookieFromNoticePreferences,
 } from "./cookie";
 import {
+  DEFAULT_LOCALE,
   DEFAULT_MODAL_LINK_LABEL,
   I18n,
   initializeI18n,
@@ -443,6 +444,8 @@ export const initialize = async ({
         options,
         overrides?.experienceTranslationOverrides,
       );
+      // eslint-disable-next-line no-param-reassign
+      fides.locale = i18n.locale || DEFAULT_LOCALE;
 
       // Provide the modal link label function to the client based on the current locale unless specified via props.
       getModalLinkLabel = (props) =>

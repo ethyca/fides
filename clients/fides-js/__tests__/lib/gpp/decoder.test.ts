@@ -1,5 +1,4 @@
 import {
-  DecodedGppSection,
   decodeGppString,
   getGppField,
   hasGppSection,
@@ -86,7 +85,7 @@ describe("GPP Decoder", () => {
       expect(decoded).toHaveLength(2);
 
       // Check first section (US National)
-      const usnatSection = decoded[0] as DecodedGppSection;
+      const usnatSection = decoded[0] as any;
       expect(usnatSection.id).toBe(7);
       expect(usnatSection.name).toBe("usnat");
       expect(usnatSection.data.Version).toBe(1);
@@ -95,7 +94,7 @@ describe("GPP Decoder", () => {
       expect(usnatSection.data.SharingOptOut).toBe(1);
 
       // Check second section (US California)
-      const uscaSection = decoded[1] as DecodedGppSection;
+      const uscaSection = decoded[1] as any;
       expect(uscaSection.id).toBe(8);
       expect(uscaSection.name).toBe("usca");
       expect(uscaSection.data.Version).toBe(1);

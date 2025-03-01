@@ -8,7 +8,7 @@ import { FidesCookie, PrivacyExperience } from "../consent-types";
 import { FIDES_US_REGION_TO_GPP_SECTION } from "./constants";
 import { GPPSection, GPPSettings, GPPUSApproach } from "./types";
 
-const US_NATIONAL_REGION = "us";
+export const US_NATIONAL_REGION = "us";
 
 const setMspaSections = ({
   cmpApi,
@@ -53,7 +53,7 @@ const isUsRegion = (region: string) => region?.toLowerCase().startsWith("us");
  * However, the GPP field mapping will only contain "us", so make sure we use "us" (US_NATIONAL_REGION) when we are configured for the national case.
  * Otherwise, we can use the experience region directly.
  */
-const deriveGppFieldRegion = ({
+export const deriveGppFieldRegion = ({
   experienceRegion,
   usApproach,
 }: {
