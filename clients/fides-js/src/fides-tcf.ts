@@ -36,7 +36,7 @@ import { initializeDebugger } from "./lib/debugger";
 import { dispatchFidesEvent, onFidesEvent } from "./lib/events";
 import { decodeFidesString } from "./lib/fidesString";
 import type { GppFunction } from "./lib/gpp/types";
-import { DEFAULT_MODAL_LINK_LABEL } from "./lib/i18n";
+import { DEFAULT_LOCALE, DEFAULT_MODAL_LINK_LABEL } from "./lib/i18n";
 import {
   getInitialCookie,
   getInitialFides,
@@ -226,6 +226,7 @@ const _Fides: FidesGlobal = {
   consent: {},
   experience: undefined,
   geolocation: {},
+  locale: DEFAULT_LOCALE,
   options: {
     debug: true,
     isOverlayEnabled: false,

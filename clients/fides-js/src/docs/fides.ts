@@ -314,6 +314,11 @@ export interface Fides {
   geolocation?: any;
 
   /**
+   * @internal
+   */
+  locale: string;
+
+  /**
    * DEFER (PROD-1815): This probably *should* be part of the documented SDK.
    *
    * @internal
