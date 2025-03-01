@@ -232,7 +232,6 @@ def poll_for_exited_privacy_request_tasks(self: DatabaseTask) -> Set[str]:
             )
 
             statuses = set(status for status, in tasks_statuses_query.all())
-
             all_exited = all(
                 status in EXITED_EXECUTION_LOG_STATUSES for status in statuses
             )
