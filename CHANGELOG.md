@@ -23,7 +23,6 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 
 
-
 ## [2.56.0](https://github.com/ethyca/fides/compare/2.55.4...2.56.0)
 
 ### Added
@@ -44,7 +43,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ### Fixed
 - Fixed bug with D&D table column widths [#5813](https://github.com/ethyca/fides/pull/5813)
-- Fixed `GraphTask` and `poll_for_exited_privacy_request_tasks` for DSR-processing improvements [#5820](https://github.com/ethyca/fides/pull/5820)
+- Fixed `poll_for_exited_privacy_request_tasks` for DSR-processing improvements [#5820](https://github.com/ethyca/fides/pull/5820)
 
 ## [2.55.4](https://github.com/ethyca/fides/compare/2.55.3...2.55.4)
 
