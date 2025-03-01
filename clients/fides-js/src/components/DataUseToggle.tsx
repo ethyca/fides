@@ -20,7 +20,7 @@ const DataUseToggle = ({
   noticeKey: string;
   title: string;
   checked: boolean;
-  onToggle: (noticeKey: string) => void;
+  onToggle: (noticeKey: string, event: Event) => void;
   children?: ComponentChildren;
   badge?: string;
   gpcBadge?: VNode;
