@@ -38,7 +38,6 @@ from fides.api.schemas.dataset import (
 )
 from fides.api.schemas.privacy_request import TestPrivacyRequest
 from fides.api.schemas.redis_cache import DatasetTestRequest
-from fides.api.service.deps import get_dataset_config_service
 from fides.api.util.api_router import APIRouter
 from fides.common.api.scope_registry import (
     DATASET_CREATE_OR_UPDATE,
@@ -94,7 +93,9 @@ def _get_connection_config(
 )
 def validate_dataset(
     dataset: FideslangDataset,
-    dataset_config_service: DatasetConfigService = Depends(get_dataset_config_service),
+    dataset_config_service: DatasetConfigService = Depends(
+        deps.get_dataset_config_service
+    ),
     connection_config: ConnectionConfig = Depends(_get_connection_config),
 ) -> ValidateDatasetResponse:
     """
@@ -133,7 +134,9 @@ def validate_dataset(
 def put_dataset_configs(
     dataset_pairs: Annotated[List[DatasetConfigCtlDataset], Field(max_length=50)],  # type: ignore
     db: Session = Depends(deps.get_db),
-    dataset_config_service: DatasetConfigService = Depends(get_dataset_config_service),
+    dataset_config_service: DatasetConfigService = Depends(
+        deps.get_dataset_config_service
+    ),
     connection_config: ConnectionConfig = Depends(_get_connection_config),
 ) -> BulkPutDataset:
     """
@@ -182,7 +185,9 @@ def put_dataset_configs(
 )
 def patch_dataset_configs(
     dataset_pairs: Annotated[List[DatasetConfigCtlDataset], Field(max_length=50)],  # type: ignore
-    dataset_config_service: DatasetConfigService = Depends(get_dataset_config_service),
+    dataset_config_service: DatasetConfigService = Depends(
+        deps.get_dataset_config_service
+    ),
     connection_config: ConnectionConfig = Depends(_get_connection_config),
 ) -> BulkPutDataset:
     """
@@ -218,7 +223,9 @@ def patch_dataset_configs(
 )
 def patch_datasets(
     datasets: Annotated[List[FideslangDataset], Field(max_length=50)],  # type: ignore
-    dataset_config_service: DatasetConfigService = Depends(get_dataset_config_service),
+    dataset_config_service: DatasetConfigService = Depends(
+        deps.get_dataset_config_service
+    ),
     connection_config: ConnectionConfig = Depends(_get_connection_config),
 ) -> BulkPutDataset:
     """
@@ -250,7 +257,9 @@ def patch_datasets(
 )
 async def patch_yaml_datasets(
     request: Request,
-    dataset_config_service: DatasetConfigService = Depends(get_dataset_config_service),
+    dataset_config_service: DatasetConfigService = Depends(
+        deps.get_dataset_config_service
+    ),
     connection_config: ConnectionConfig = Depends(_get_connection_config),
 ) -> BulkPutDataset:
     """
@@ -538,7 +547,9 @@ def dataset_reachability(
     *,
     db: Session = Depends(deps.get_db),
     connection_config: ConnectionConfig = Depends(_get_connection_config),
-    dataset_config_service: DatasetConfigService = Depends(get_dataset_config_service),
+    dataset_config_service: DatasetConfigService = Depends(
+        deps.get_dataset_config_service
+    ),
     dataset_key: FidesKey,
     policy_key: Optional[FidesKey] = None,
 ) -> Dict[str, Any]:
@@ -584,7 +595,9 @@ def dataset_reachability(
 def test_connection_datasets(
     *,
     db: Session = Depends(deps.get_db),
-    dataset_config_service: DatasetConfigService = Depends(get_dataset_config_service),
+    dataset_config_service: DatasetConfigService = Depends(
+        deps.get_dataset_config_service
+    ),
     connection_config: ConnectionConfig = Depends(_get_connection_config),
     dataset_key: FidesKey,
     test_request: DatasetTestRequest,
