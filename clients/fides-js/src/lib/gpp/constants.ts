@@ -19,6 +19,8 @@ import {
 
 import { GPPSection } from "./types";
 
+export const CMP_VERSION = 1;
+
 export const fidesSupportedGPPApis = [
   TcfEuV2,
   UsNat,

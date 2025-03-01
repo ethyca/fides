@@ -23,7 +23,9 @@ async function savePreferencesApi(
   experience: PrivacyExperience | PrivacyExperienceMinimal,
   consentMethod: ConsentMethod,
   privacyExperienceConfigHistoryId?: string,
-  consentPreferencesToSave?: Array<SaveConsentPreference>,
+  consentPreferencesToSave?: Array<
+    Pick<SaveConsentPreference, "noticeHistoryId" | "consentPreference">
+  >,
   tcf?: TcfSavePreferences,
   userLocationString?: string,
   servedNoticeHistoryId?: string,
@@ -87,7 +89,6 @@ export const updateConsentPreferences = async ({
   options: FidesInitOptions;
   userLocationString?: string;
   cookie: FidesCookie;
-  debug?: boolean;
   servedNoticeHistoryId?: string;
   tcf?: TcfSavePreferences;
   updateCookie: (oldCookie: FidesCookie) => Promise<FidesCookie>;

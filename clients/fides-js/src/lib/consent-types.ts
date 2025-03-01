@@ -163,6 +163,7 @@ export interface FidesGlobal extends Fides {
   fides_meta: FidesJSMeta;
   fides_string?: string | undefined;
   geolocation?: UserGeolocation;
+  locale: string;
   identity: FidesJSIdentity;
   initialized: boolean;
   options: FidesInitOptions;
@@ -615,6 +616,16 @@ export type PrivacyNoticeTranslation = {
 export type PrivacyNoticeWithPreference = PrivacyNotice & {
   // Tracks preference to be shown via the UI / served via CMP
   current_preference?: UserConsentPreference;
+};
+
+/**
+ * Special PrivacyNoticeItem, where we've narrowed the list of
+ * available translations to the singular "best" translation that should be
+ * displayed, and paired that with the source notice itself.
+ */
+export type PrivacyNoticeItem = {
+  notice: PrivacyNoticeWithPreference;
+  bestTranslation: PrivacyNoticeTranslation | null;
 };
 
 export enum EnforcementLevel {
