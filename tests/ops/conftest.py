@@ -12,7 +12,11 @@ from fides.api.db.base import Base
 from fides.api.db.session import get_db_engine, get_db_session
 from fides.api.models.sql_models import DataCategory as DataCategoryDbModel
 from fides.api.tasks.scheduled.scheduler import async_scheduler, scheduler
-from tests.fixtures.db_fixtures import db, fideslang_data_categories, reset_db_after_test
+from tests.fixtures.db_fixtures import (
+    db,
+    fideslang_data_categories,
+    reset_db_after_test,
+)
 
 # Note: We're importing the standardized fixtures directly from db_fixtures.py
 # Both the db and reset_db_after_test fixtures will handle database setup and cleaning
