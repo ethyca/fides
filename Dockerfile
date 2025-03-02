@@ -165,6 +165,7 @@ COPY --from=built_frontend /fides/clients/admin-ui/out/ /fides/src/fides/ui-buil
 
 # Build and install the package
 WORKDIR /fides
+
 RUN python -m pip install --upgrade pip setuptools wheel && \
     python setup.py sdist && \
     pip install dist/ethyca_fides-*.tar.gz && \

@@ -54,8 +54,9 @@ data/
 docs/
 examples/
 tests/
-*.md
-*.rst
+# Removing markdown exclusion - allowing README.md and other .md files
+# *.md
+# *.rst
 
 # Docker
 Dockerfile*

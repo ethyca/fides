@@ -46,18 +46,26 @@ monitor_process() {
 # Ensure cache directories exist for BuildKit
 mkdir -p ~/.cache/buildkit
 
-# Start the backend build
+# Remove README.md check since markdown files are no longer excluded in .dockerignore
+# if [ ! -f README.md ]; then
+#   echo -e "${YELLOW}WARNING: README.md not found - creating a minimal one for the build process${NC}"
+#   echo -e "# Fides\n\nFides Privacy Engineering Platform" > README.md
+# fi
+
+# Start the backend build - using --progress=plain for better logging
 echo -e "${BLUE}Starting backend build...${NC}"
 DOCKER_BUILDKIT=1 docker build \
+  --progress=plain \
   --target backend \
   --build-arg PYTHON_VERSION=3.10.13 \
   -t ethyca/fides:backend-dev \
   . > .build_logs/backend.log 2>&1 &
 backend_pid=$!
 
-# Start the frontend build
+# Start the frontend build - using --progress=plain for better logging
 echo -e "${BLUE}Starting frontend build...${NC}"
 DOCKER_BUILDKIT=1 docker build \
+  --progress=plain \
   --target built_frontend \
   -t ethyca/fides:frontend-dev \
   . > .build_logs/frontend.log 2>&1 &
@@ -82,6 +90,7 @@ if [[ $REPLY =~ ^[Yy]$ ]]
 then
   echo -e "${BLUE}Building production image...${NC}"
   DOCKER_BUILDKIT=1 docker build \
+    --progress=plain \
     --target prod \
     --build-arg PYTHON_VERSION=3.10.13 \
     -t ethyca/fides:prod \
