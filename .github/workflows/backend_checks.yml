@@ -57,16 +57,39 @@ jobs:
         id: buildx
         uses: docker/setup-buildx-action@v3
 
+      # Add Docker layer caching
+      - name: Cache Docker layers
+        uses: actions/cache@v3
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ matrix.python_version }}-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-${{ matrix.python_version }}-
+            ${{ runner.os }}-buildx-
+
+      # Add pip cache mount to speed up pip installs
       - name: Build container
         uses: docker/build-push-action@v6
         with:
           builder: ${{ steps.buildx.outputs.name }}
           context: .
-          build-args: PYTHON_VERSION=${{ matrix.python_version }}
+          build-args: |
+            PYTHON_VERSION=${{ matrix.python_version }}
           target: prod
           outputs: type=docker,dest=/tmp/python-${{ matrix.python_version }}.tar
           push: false
           tags: ${{ env.IMAGE }}
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
+          # Enable BuildKit
+          provenance: false
+          sbom: false
+
+      # Move cache to prevent cache growth
+      - name: Move cache
+        run: |
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
 
       - name: Upload container
         uses: actions/upload-artifact@v4

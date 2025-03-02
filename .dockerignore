@@ -1,9 +1,71 @@
-# Ignore existing build artifacts
+# Git
+.git
+.github
+.gitignore
+
+# Development environments
+.pytest_cache
+.mypy_cache
+.coverage
+.venv
+.vscode
+.python-version
+.idea
+
+# Python
+**/__pycache__
+**/*.pyc
+**/*.pyo
+**/*.pyd
+.Python
+env/
 build/
+develop-eggs/
 dist/
-src/fides.egg-info/
-src/fides/ui-build/
-src/ui-build/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Node.js
+**/node_modules
+**/npm-debug.log
+**/.next/cache
+**/out
+**/coverage
+
+# Local data
+data/
+**/snapshots
+**/.ipynb_checkpoints
+**/.DS_Store
+**/.env.local
+**/.env.development.local
+**/.env.test.local
+**/.env.production.local
+
+# Documentation and tests
+docs/
+examples/
+tests/
+*.md
+*.rst
+
+# Docker
+Dockerfile*
+docker-compose*
+.dockerignore
+
+# Temporary files
+**/temp
+**/tmp
+**/*.log
 
 # Frontend
 **/node_modules
@@ -46,7 +108,6 @@ src/ui-build/
 
 # Ignore dev files
 .gitignore
-.github/
 .devcontainer/
 
 # Ignore cypress artifacts
