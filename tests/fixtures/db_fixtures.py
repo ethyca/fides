@@ -116,6 +116,15 @@ def _load_default_taxonomy(db):
 
 
 @pytest.fixture(scope="session")
+def fideslang_data_categories():
+    """
+    Fixture that provides access to the default taxonomy data categories.
+    This is kept for backward compatibility with existing tests.
+    """
+    return DEFAULT_TAXONOMY.data_category
+
+
+@pytest.fixture(scope="session")
 def db(api_client, config):
     """
     Standard session-scoped database fixture.

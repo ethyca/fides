@@ -51,7 +51,8 @@ data/
 **/.env.production.local
 
 # Documentation and tests
-docs/
+# docs/  # Commented out to allow docs to be included in the build
+!docs/   # Explicitly include the docs directory
 examples/
 tests/
 # Removing markdown exclusion - allowing README.md and other .md files
