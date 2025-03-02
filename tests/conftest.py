@@ -53,6 +53,13 @@ from fides.config.config_proxy import ConfigProxy
 from tests.fixtures.application_fixtures import *
 from tests.fixtures.bigquery_fixtures import *
 from tests.fixtures.datahub_fixtures import *
+from tests.fixtures.db_fixtures import (
+    async_session,
+    async_session_temp,
+    create_citext_extension,
+    db,
+    reset_db_after_test,
+)
 from tests.fixtures.detection_discovery_fixtures import *
 from tests.fixtures.dynamodb_fixtures import *
 from tests.fixtures.email_fixtures import *
@@ -77,13 +84,6 @@ from tests.fixtures.saas_example_fixtures import *
 from tests.fixtures.scylladb_fixtures import *
 from tests.fixtures.snowflake_fixtures import *
 from tests.fixtures.timescale_fixtures import *
-from tests.fixtures.db_fixtures import (
-    db,
-    async_session,
-    async_session_temp,
-    reset_db_after_test,
-    create_citext_extension,
-)
 
 ROOT_PATH = Path().absolute()
 CONFIG = get_config()

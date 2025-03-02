@@ -158,13 +158,17 @@ CMD ["npm", "run", "start"]
 ############################
 FROM backend AS prod
 
-# Copy frontend build over
-COPY --from=built_frontend /fides/clients/admin-ui/out/ /fides/src/fides/ui-build/static/admin
-
+# Copy frontend build over - make sure directory exists first
 USER root
+RUN mkdir -p /fides/src/fides/ui-build/static/admin
+COPY --from=built_frontend /fides/clients/admin-ui/out/ /fides/src/fides/ui-build/static/admin/
+
 # Build and install the package
-RUN python setup.py sdist && \
+WORKDIR /fides
+RUN python -m pip install --upgrade pip setuptools wheel && \
+    python setup.py sdist && \
     pip install dist/ethyca_fides-*.tar.gz && \
-    rm -r /fides/src/fides/ui-build  # Remove this directory to prevent issues with catch all
+    # Only remove ui-build directory if it exists
+    if [ -d "/fides/src/fides/ui-build" ]; then rm -rf /fides/src/fides/ui-build; fi
 
 USER fidesuser

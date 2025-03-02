@@ -7,6 +7,7 @@ set -e
 GREEN='\033[0;32m'
 BLUE='\033[0;34m'
 YELLOW='\033[1;33m'
+RED='\033[0;31m'
 NC='\033[0m' # No Color
 
 echo -e "${BLUE}Starting parallel build of Fides frontend and backend...${NC}"
@@ -33,11 +34,17 @@ monitor_process() {
   if [ $exit_status -eq 0 ]; then
     echo -e "${GREEN}$name build completed successfully!${NC}"
   else
-    echo -e "\033[0;31m$name build failed with status $exit_status\033[0m"
+    echo -e "${RED}$name build failed with status $exit_status${NC}"
     echo "See full log at $log_file"
+    # Output the last 20 lines to help diagnose the issue
+    echo -e "${RED}Last 20 lines of the build log:${NC}"
+    tail -n 20 $log_file
     exit $exit_status
   fi
 }
+
+# Ensure cache directories exist for BuildKit
+mkdir -p ~/.cache/buildkit
 
 # Start the backend build
 echo -e "${BLUE}Starting backend build...${NC}"
@@ -83,8 +90,11 @@ then
   if [ $? -eq 0 ]; then
     echo -e "${GREEN}Production build completed successfully!${NC}"
   else
-    echo -e "\033[0;31mProduction build failed\033[0m"
+    echo -e "${RED}Production build failed${NC}"
     echo "See full log at .build_logs/prod.log"
+    # Output the last 20 lines to help diagnose the issue
+    echo -e "${RED}Last 20 lines of the build log:${NC}"
+    tail -n 20 .build_logs/prod.log
     exit 1
   fi
 fi

@@ -9,20 +9,21 @@ ensuring consistent behavior across all tests.
 
 import pytest
 import requests
-from sqlalchemy.orm import Session, sessionmaker
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+from fideslang import DEFAULT_TAXONOMY
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.orm.exc import ObjectDeletedError
 
-from fides.api.db.session import get_db_engine, get_db_session
-from fides.api.db.ctl_session import sync_engine, sync_session
 from fides.api.db.base_class import Base
+from fides.api.db.ctl_session import sync_engine, sync_session
+from fides.api.db.session import get_db_engine, get_db_session
+from fides.api.models.sql_models import DataCategory, DataUse
 from fides.api.tasks.scheduled.scheduler import async_scheduler, scheduler
 from fides.config import CONFIG
-from fideslang import DEFAULT_TAXONOMY
-from fides.api.models.sql_models import DataCategory, DataUse
 
 # Core database management functions
+
 
 def create_citext_extension(engine):
     """Create the CITEXT extension if it doesn't exist."""
@@ -112,6 +113,7 @@ def _load_default_taxonomy(db):
 
 
 # Standard database fixtures
+
 
 @pytest.fixture(scope="session")
 def db(api_client, config):

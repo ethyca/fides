@@ -67,6 +67,11 @@ jobs:
             ${{ runner.os }}-buildx-${{ matrix.python_version }}-
             ${{ runner.os }}-buildx-
 
+      # Ensure cache directory exists
+      - name: Prepare cache directory
+        run: |
+          mkdir -p /tmp/.buildx-cache
+
       # Add pip cache mount to speed up pip installs
       - name: Build container
         uses: docker/build-push-action@v6
@@ -89,7 +94,7 @@ jobs:
       - name: Move cache
         run: |
           rm -rf /tmp/.buildx-cache
-          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache || true
 
       - name: Upload container
         uses: actions/upload-artifact@v4

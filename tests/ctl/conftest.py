@@ -12,7 +12,8 @@ from fides.api.db.base_class import Base
 from fides.api.db.ctl_session import sync_engine, sync_session
 from fides.api.models.sql_models import DataUse
 from fides.core import api
-from tests.fixtures.db_fixtures import ctl_db as db, reset_db_after_test
+from tests.fixtures.db_fixtures import ctl_db as db
+from tests.fixtures.db_fixtures import reset_db_after_test
 
 orig_requests_get = requests.get
 orig_requests_post = requests.post
@@ -56,6 +57,7 @@ def setup_ctl_db(test_config, test_client, config):
     )  # Sanity check to make sure monkeypatch_requests fixture has run
     # No need to call API reset - handled by our standardized fixtures
     yield
+
 
 # db fixture is now imported from db_fixtures.py as ctl_db
 
