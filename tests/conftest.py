@@ -77,39 +77,19 @@ from tests.fixtures.saas_example_fixtures import *
 from tests.fixtures.scylladb_fixtures import *
 from tests.fixtures.snowflake_fixtures import *
 from tests.fixtures.timescale_fixtures import *
+from tests.fixtures.db_fixtures import (
+    db,
+    async_session,
+    async_session_temp,
+    reset_db_after_test,
+    create_citext_extension,
+)
 
 ROOT_PATH = Path().absolute()
 CONFIG = get_config()
 TEST_CONFIG_PATH = "tests/ctl/test_config.toml"
 TEST_INVALID_CONFIG_PATH = "tests/ctl/test_invalid_config.toml"
 TEST_DEPRECATED_CONFIG_PATH = "tests/ctl/test_deprecated_config.toml"
-
-
-@pytest.fixture(scope="session")
-def db(api_client, config):
-    """Return a connection to the test DB"""
-    # Create the test DB engine
-    assert config.test_mode
-    assert requests.post != api_client.post
-    engine = get_db_engine(
-        database_uri=config.database.sqlalchemy_test_database_uri,
-    )
-
-    create_citext_extension(engine)
-
-    if not scheduler.running:
-        scheduler.start()
-    if not async_scheduler.running:
-        async_scheduler.start()
-
-    SessionLocal = get_db_session(config, engine=engine)
-    the_session = SessionLocal()
-    # Setup above...
-
-    yield the_session
-    # Teardown below...
-    the_session.close()
-    engine.dispose()
 
 
 @pytest.fixture(scope="session")
@@ -120,66 +100,8 @@ def test_client():
 
 
 @pytest.fixture(scope="session")
-@pytest.mark.asyncio
-async def async_session(test_client):
-    assert CONFIG.test_mode
-    assert requests.post == test_client.post
-
-    create_citext_extension(sync_engine)
-
-    async_engine = create_async_engine(
-        CONFIG.database.async_database_uri,
-        echo=False,
-    )
-
-    session_maker = sessionmaker(
-        async_engine, class_=AsyncSession, expire_on_commit=False
-    )
-
-    async with session_maker() as session:
-        yield session
-        session.close()
-        async_engine.dispose()
-
-
-# TODO: THIS IS A HACKY WORKAROUND.
-# This is specific for this test: test_get_resource_with_custom_field
-# this was added to account for weird error that only happens during a
-# long testing session. Something causes a config/schema change with
-# the DB. Giving the test a dedicated session fixes the issue and
-# matches how runtime works.
-# It does look like there MAY be a small bug that is unlikely to ever
-# occur during runtime. What surfaced the "benign" failure is the
-# `connection_configs` relationship on the `System` model. We are
-# unsure of which upstream test causes the error.
-# https://github.com/MagicStack/asyncpg/blob/2f20bae772d71122e64f424cc4124e2ebdd46a58/asyncpg/exceptions/_base.py#L120-L124
-# <class 'asyncpg.exceptions.InvalidCachedStatementError'>: cached statement plan is invalid due to a database schema or configuration change (SQLAlchemy asyncpg dialect will now invalidate all prepared caches in response to this exception)
-@pytest.fixture(scope="function")
-@pytest.mark.asyncio
-async def async_session_temp(test_client):
-    assert CONFIG.test_mode
-
-    create_citext_extension(sync_engine)
-
-    async_engine = create_async_engine(
-        CONFIG.database.async_database_uri,
-        echo=False,
-    )
-
-    session_maker = sessionmaker(
-        async_engine, class_=AsyncSession, expire_on_commit=False
-    )
-
-    async with session_maker() as session:
-        yield session
-        session.close()
-        async_engine.dispose()
-
-
-@pytest.fixture(scope="session")
 def api_client():
     """Return a client used to make API requests"""
-
     with TestClient(app) as c:
         yield c
 
@@ -269,11 +191,6 @@ def loguru_caplog(caplog):
     handler_id = logger.add(caplog.handler, format="{message} | {extra}")
     yield caplog
     logger.remove(handler_id)
-
-
-def create_citext_extension(engine: Engine) -> None:
-    with engine.connect() as con:
-        con.execute("CREATE EXTENSION IF NOT EXISTS citext;")
 
 
 @pytest.fixture

@@ -12,7 +12,7 @@ from fides.api.db.base_class import Base
 from fides.api.db.ctl_session import sync_engine, sync_session
 from fides.api.models.sql_models import DataUse
 from fides.core import api
-from tests.conftest import create_citext_extension
+from tests.fixtures.db_fixtures import ctl_db as db, reset_db_after_test
 
 orig_requests_get = requests.get
 orig_requests_post = requests.post
@@ -54,28 +54,9 @@ def setup_ctl_db(test_config, test_client, config):
     assert (
         requests.post == test_client.post
     )  # Sanity check to make sure monkeypatch_requests fixture has run
-    yield api.db_action(
-        server_url=test_config.cli.server_url,
-        headers=config.user.auth_header,
-        action="reset",
-    )
+    # No need to call API reset - handled by our standardized fixtures
+    yield
 
+# db fixture is now imported from db_fixtures.py as ctl_db
 
-@pytest.fixture(scope="session")
-def db():
-    create_citext_extension(sync_engine)
-
-    session = sync_session()
-
-    yield session
-    session.close()
-
-
-@pytest.fixture(scope="function", autouse=True)
-def load_default_data_uses(db):
-    for data_use in DEFAULT_TAXONOMY.data_use:
-        # Default data uses are cleared and not automatically reloaded by `clear_db_tables` fixture.
-        # Here we make sure our default data uses are always available for our tests,
-        # if they're not present already.
-        if DataUse.get_by(db, field="name", value=data_use.name) is None:
-            DataUse.create(db=db, data=data_use.model_dump(mode="json"))
+# load_default_data_uses is no longer needed - handled by standardized fixtures
