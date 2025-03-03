@@ -515,7 +515,12 @@ describe("System management with Plus features", () => {
 
       // eslint-disable-next-line cypress/no-unnecessary-waiting
       cy.wait(500);
-      cy.getByTestId("tab-History").click();
+      cy.getByTestId("tab-Assets").click({ force: true });
+      cy.location("hash").should("eq", "#assets");
+
+      // eslint-disable-next-line cypress/no-unnecessary-waiting
+      cy.wait(500);
+      cy.getByTestId("tab-History").click({ force: true });
       cy.location("hash").should("eq", "#history");
     });
 

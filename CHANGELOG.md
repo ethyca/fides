@@ -33,6 +33,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Nested identity query support for BigQuery [#5814](https://github.com/ethyca/fides/pull/5814)
 - Added job that automatically requeues interrupted tasks for in progress privacy requests [#5800](https://github.com/ethyca/fides/pull/5800)
 - Added "Assets" tab on system view for web monitor assets [#5811](https://github.com/ethyca/fides/pull/5811)
+- Support for MySQL Data Detection & Discovery Monitors [#5798](https://github.com/ethyca/fides/pull/5798)
 
 ### Changed
 - Improved dataset validation for namespace metadata and dataset reachability [#5744](https://github.com/ethyca/fides/pull/5744)
@@ -40,12 +41,14 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ### Developer Experience
 - Modified Dependabot configuration to support monorepo security updates [#5810](https://github.com/ethyca/fides/pull/5810)
+- Fix load_samples to correctly collect & load sample connections with "False" secret values [#5828](https://github.com/ethyca/fides/pull/5828)
 
 ### Docs
 - Removed version pins in LDFLAGS & CFLAGS for local MSSQL builds [#5760](https://github.com/ethyca/fides/pull/5760)
 
 ### Fixed
 - Fixed bug with D&D table column widths [#5813](https://github.com/ethyca/fides/pull/5813)
+- Fixed `poll_for_exited_privacy_request_tasks` for DSR-processing improvements [#5820](https://github.com/ethyca/fides/pull/5820)
 
 ## [2.55.4](https://github.com/ethyca/fides/compare/2.55.3...2.55.4)
 
