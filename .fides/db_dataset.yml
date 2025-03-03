@@ -164,6 +164,7 @@ dataset:
       data_categories:
       - system.operations
   - name: comment_reference
+    fields:
     - name: comment_id
       data_categories:
       - system.operations
