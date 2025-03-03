@@ -83,7 +83,6 @@ def parent_server_config_password_only():
 
 @pytest.mark.unit
 class TestFilterDataCategories:
-    @pytest.mark.skip("this times out on CI")
     def test_filter_data_categories_excluded(self) -> None:
         """Test that the filter method works as intended"""
         excluded_data_categories = [
@@ -436,15 +435,19 @@ async def test_load_default_dsr_policies(
 
 
 async def test_load_organizations(loguru_caplog, async_session, monkeypatch):
+    # load the default organization
+    await seed.load_default_organization(async_session)
+
+    # append a new organization to the default taxonomy
     updated_default_taxonomy = DEFAULT_TAXONOMY.model_copy()
     current_orgs = len(updated_default_taxonomy.organization)
     updated_default_taxonomy.organization.append(
         Organization(fides_key="new_organization")
     )
-
     monkeypatch.setattr(seed, "DEFAULT_TAXONOMY", updated_default_taxonomy)
-    await seed.load_default_organization(async_session)
 
+    # verify the new origanization is loaded and the original organization is skipped
+    await seed.load_default_organization(async_session)
     assert "INSERTED 1" in loguru_caplog.text
     assert f"SKIPPED {current_orgs}" in loguru_caplog.text
 
@@ -481,6 +484,9 @@ class TestLoadSamples:
         assertions - this one just ensures the e2e result is what we expect: a
         database full of sample data!
         """
+
+        # load the default taxonomy
+        await seed.load_default_taxonomy(async_session)
 
         # Load the sample resources & connections
         await seed.load_samples(async_session)
