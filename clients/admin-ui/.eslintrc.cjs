@@ -10,7 +10,14 @@ module.exports = {
     "@next/next/no-img-element": "off",
     "import/no-extraneous-dependencies": [
       "error",
-      { devDependencies: ["src/mocks/**"] },
+      {
+        devDependencies: [
+          "src/mocks/**",
+          "**/*.test.ts",
+          "**/*.spec.ts",
+          "cypress/**",
+        ],
+      },
     ],
   },
 };
