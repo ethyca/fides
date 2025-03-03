@@ -237,6 +237,57 @@ class TestUpsertAsset:
             assert new_asset.system_id == cookie_asset_data["system_id"]
             assert new_asset.locations == ["US", "Canada"]
 
+    async def test_upsert_asset_update_with_id(
+        self, async_session, javascript_asset_data, system_2_async
+    ):
+        """Ensures the upsert function works as expected when an ID is provided, allowing you to update any field on an existing record."""
+        async with async_session.begin():
+            created_asset = await Asset.upsert_async(
+                async_session=async_session,
+                data=javascript_asset_data,
+            )
+
+            # ensure our asset was stored in the DB properly
+            created_asset: Asset = (
+                (
+                    await async_session.execute(
+                        select(Asset).where(Asset.id == created_asset.id)
+                    )
+                )
+                .scalars()
+                .first()
+            )
+            assert created_asset
+
+            expected_system_id = system_2_async.id
+            expected_domain = "www.updateddomain.com"
+            expected_base_url = "https://www.updateddomain.com/gtm.js"
+
+            # update the asset's system_id, domain, and base_url
+            javascript_asset_data["id"] = created_asset.id
+            javascript_asset_data["system_id"] = system_2_async.id
+            javascript_asset_data["domain"] = expected_domain
+            javascript_asset_data["base_url"] = expected_base_url
+            updated_asset = await Asset.upsert_async(
+                async_session=async_session,
+                data=javascript_asset_data,
+            )
+            # retrieve updated asset
+            updated_asset: Asset = (
+                (
+                    await async_session.execute(
+                        select(Asset).where(Asset.id == updated_asset.id)
+                    )
+                )
+                .scalars()
+                .first()
+            )
+            # ensure the asset was updated as expected
+            assert updated_asset.id == created_asset.id
+            assert updated_asset.system_id == expected_system_id
+            assert updated_asset.domain == expected_domain
+            assert updated_asset.base_url == expected_base_url
+
     async def test_upsert_asset_requires_uniqueness_attributes(
         self, async_session, javascript_asset_data
     ):

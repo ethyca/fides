@@ -2454,3 +2454,5 @@ dataset:
         data_categories: [system.operations]
       - name: updated_at
         data_categories: [system.operations]
+      - name: description
+        data_categories: [system.operations]
