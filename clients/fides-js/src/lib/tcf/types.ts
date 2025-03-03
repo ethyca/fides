@@ -1,6 +1,7 @@
 import type { GVL } from "@iabtechlabtcf/core";
 
 import {
+  ConsentMechanism,
   PrivacyExperience,
   PrivacyNoticeTranslation,
   PrivacyNoticeWithPreference,
@@ -45,6 +46,7 @@ export type TCFPurposeConsentRecord = {
   id: number;
   name: string;
   description: string;
+  consent_mechanism?: ConsentMechanism;
   illustrations: Array<string>;
   data_uses: Array<string>;
   default_preference?: UserConsentPreference;
