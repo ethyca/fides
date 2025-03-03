@@ -288,6 +288,20 @@ class TestUpsertAsset:
             assert updated_asset.domain == expected_domain
             assert updated_asset.base_url == expected_base_url
 
+    async def test_upsert_asset_nonexistent_id(
+        self, async_session, javascript_asset_data
+    ):
+        """
+        Ensures the upsert function raises a ValueError if an ID is provided that does not exist in the DB.
+        """
+        # set a non-existent ID
+        javascript_asset_data["id"] = str(uuid4())
+        with pytest.raises(ValueError) as e:
+            await Asset.upsert_async(
+                async_session=async_session,
+                data=javascript_asset_data,
+            )
+
     async def test_upsert_asset_requires_uniqueness_attributes(
         self, async_session, javascript_asset_data
     ):
