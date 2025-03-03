@@ -9,7 +9,9 @@ import yaml
 from click.testing import CliRunner
 from git.repo import Repo
 from py._path.local import LocalPath
+from sqlalchemy.ext.asyncio import AsyncSession
 
+from fides.api.db import seed
 from fides.api.oauth.roles import OWNER, VIEWER
 from fides.cli import cli
 from fides.common.api.scope_registry import SCOPE_REGISTRY
@@ -32,6 +34,31 @@ def test_cli_runner() -> Generator:
     runner = CliRunner()
     yield runner
 
+
+@pytest.fixture(scope="function")
+async def loaded_default_taxonomy(async_session: AsyncSession):
+    """
+    Fixture that loads the default taxonomy for tests.
+
+    This is useful for tests that need to interact with resources
+    that depend on the taxonomy being present in the database.
+    """
+    # Load the default organization first
+    await seed.load_default_organization(async_session)
+    # Then load the rest of the taxonomy
+    await seed.load_default_taxonomy(async_session)
+
+
+@pytest.fixture(scope="function")
+async def loaded_default_resources(async_session: AsyncSession, loaded_default_taxonomy):
+    """
+    Fixture that loads demo resources for tests that need to interact with or delete resources.
+
+    This loads the default taxonomy plus all sample resources and connections.
+    """
+
+    # Then load all the sample resources and connections
+    await seed.load_samples(async_session)
 
 @pytest.mark.integration
 def test_init(test_cli_runner: CliRunner) -> None:
@@ -172,7 +199,9 @@ class TestDB:
 
 class TestPush:
     @pytest.mark.integration
-    def test_push(self, test_config_path: str, test_cli_runner: CliRunner) -> None:
+    def test_push(
+        self, test_config_path: str, test_cli_runner: CliRunner, loaded_default_taxonomy
+    ) -> None:
         result = test_cli_runner.invoke(
             cli, ["-f", test_config_path, "push", "demo_resources/"]
         )
@@ -180,7 +209,9 @@ class TestPush:
         assert result.exit_code == 0
 
     @pytest.mark.integration
-    def test_dry_push(self, test_config_path: str, test_cli_runner: CliRunner) -> None:
+    def test_dry_push(
+        self, test_config_path: str, test_cli_runner: CliRunner, loaded_default_taxonomy
+    ) -> None:
         result = test_cli_runner.invoke(
             cli, ["-f", test_config_path, "push", "--dry", "demo_resources/"]
         )
@@ -188,7 +219,9 @@ class TestPush:
         assert result.exit_code == 0
 
     @pytest.mark.integration
-    def test_diff_push(self, test_config_path: str, test_cli_runner: CliRunner) -> None:
+    def test_diff_push(
+        self, test_config_path: str, test_cli_runner: CliRunner, loaded_default_taxonomy
+    ) -> None:
         result = test_cli_runner.invoke(
             cli, ["-f", test_config_path, "push", "--diff", "demo_resources/"]
         )
@@ -197,7 +230,7 @@ class TestPush:
 
     @pytest.mark.integration
     def test_dry_diff_push(
-        self, test_config_path: str, test_cli_runner: CliRunner
+        self, test_config_path: str, test_cli_runner: CliRunner, loaded_default_taxonomy
     ) -> None:
         result = test_cli_runner.invoke(
             cli, ["-f", test_config_path, "push", "--dry", "--diff", "demo_resources/"]
@@ -212,6 +245,8 @@ class TestPull:
         self,
         test_config_path: str,
         test_cli_runner: CliRunner,
+        monkeypatch: pytest.MonkeyPatch,
+        loaded_default_taxonomy,
     ) -> None:
         """
         Due to the fact that this command checks the real git status, a pytest
@@ -228,6 +263,8 @@ class TestPull:
         self,
         test_config_path: str,
         test_cli_runner: CliRunner,
+        monkeypatch: pytest.MonkeyPatch,
+        loaded_default_taxonomy,
     ) -> None:
         """
         Due to the fact that this command checks the real git status, a pytest
@@ -256,6 +293,8 @@ class TestPull:
         self,
         test_config_path: str,
         test_cli_runner: CliRunner,
+        monkeypatch: pytest.MonkeyPatch,
+        loaded_default_taxonomy,
     ) -> None:
         """
         Pull only one dataset into an empty dir and check if the file is created.
@@ -348,7 +387,9 @@ class TestAnnotate:
 
 
 @pytest.mark.integration
-def test_audit(test_config_path: str, test_cli_runner: CliRunner) -> None:
+def test_audit(
+    test_config_path: str, test_cli_runner: CliRunner, loaded_default_taxonomy
+) -> None:
     result = test_cli_runner.invoke(cli, ["-f", test_config_path, "evaluate", "-a"])
     print(result.output)
     assert result.exit_code == 0
@@ -356,7 +397,9 @@ def test_audit(test_config_path: str, test_cli_runner: CliRunner) -> None:
 
 @pytest.mark.integration
 class TestCRUD:
-    def test_get(self, test_config_path: str, test_cli_runner: CliRunner) -> None:
+    def test_get(
+        self, test_config_path: str, test_cli_runner: CliRunner, loaded_default_taxonomy
+    ) -> None:
         result = test_cli_runner.invoke(
             cli,
             ["-f", test_config_path, "get", "data_category", "user"],
@@ -364,21 +407,34 @@ class TestCRUD:
         print(result.output)
         assert result.exit_code == 0
 
-    def test_delete(self, test_config_path: str, test_cli_runner: CliRunner) -> None:
+    def test_delete(
+        self,
+        test_config_path: str,
+        test_cli_runner: CliRunner,
+        loaded_default_resources,
+    ) -> None:
         result = test_cli_runner.invoke(
             cli,
-            ["-f", test_config_path, "delete", "system", "demo_marketing_system"],
+            [
+                "-f",
+                test_config_path,
+                "delete",
+                "system",
+                "cookie_house_postgresql_database",
+            ],
         )
         print(result.output)
         assert result.exit_code == 0
 
-    def test_ls(self, test_config_path: str, test_cli_runner: CliRunner) -> None:
+    def test_ls(
+        self, test_config_path: str, test_cli_runner: CliRunner, loaded_default_taxonomy
+    ) -> None:
         result = test_cli_runner.invoke(cli, ["-f", test_config_path, "ls", "system"])
         print(result.output)
         assert result.exit_code == 0
 
     def test_ls_verbose(
-        self, test_config_path: str, test_cli_runner: CliRunner
+        self, test_config_path: str, test_cli_runner: CliRunner, loaded_default_taxonomy
     ) -> None:
         result = test_cli_runner.invoke(
             cli, ["-f", test_config_path, "ls", "system", "--verbose"]
@@ -387,7 +443,7 @@ class TestCRUD:
         assert result.exit_code == 0
 
     def test_ls_no_resources_found(
-        self, test_config_path: str, test_cli_runner: CliRunner
+        self, test_config_path: str, test_cli_runner: CliRunner, loaded_default_taxonomy
     ) -> None:
         """This test only works because we don't have any system resources by default."""
         result = test_cli_runner.invoke(cli, ["-f", test_config_path, "ls", "system"])
@@ -398,7 +454,7 @@ class TestCRUD:
 class TestEvaluate:
     @pytest.mark.integration
     def test_evaluate_with_declaration_pass(
-        self, test_config_path: str, test_cli_runner: CliRunner
+        self, test_config_path: str, test_cli_runner: CliRunner, loaded_default_taxonomy
     ) -> None:
         result = test_cli_runner.invoke(
             cli,
@@ -414,7 +470,7 @@ class TestEvaluate:
 
     @pytest.mark.integration
     def test_evaluate_demo_resources_pass(
-        self, test_config_path: str, test_cli_runner: CliRunner
+        self, test_config_path: str, test_cli_runner: CliRunner, loaded_default_taxonomy
     ) -> None:
         result = test_cli_runner.invoke(
             cli,
@@ -459,7 +515,7 @@ class TestEvaluate:
 
     @pytest.mark.integration
     def test_evaluate_with_key_pass(
-        self, test_config_path: str, test_cli_runner: CliRunner
+        self, test_config_path: str, test_cli_runner: CliRunner, loaded_default_taxonomy
     ) -> None:
         result = test_cli_runner.invoke(
             cli,
@@ -628,7 +684,10 @@ class TestScan:
 
     @pytest.mark.external
     def test_scan_system_aws_environment_credentials(
-        self, test_config_path: str, test_cli_runner: CliRunner
+        self,
+        test_config_path: str,
+        test_cli_runner: CliRunner,
+        loaded_default_resources,
     ) -> None:
         result = test_cli_runner.invoke(
             cli,
@@ -931,6 +990,7 @@ class TestGenerate:
         test_config_path: str,
         test_cli_runner: CliRunner,
         tmpdir: LocalPath,
+        loaded_default_taxonomy,
     ) -> None:
         tmp_file = tmpdir.join("system.yml")
         os.environ["OKTA_CLIENT_ORGURL"] = OKTA_URL
