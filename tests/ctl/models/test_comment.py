@@ -19,7 +19,7 @@ from fides.api.models.fides_user import FidesUser
 def comment_data(user):
     return {
         "user_id": user.id,
-        "note_text": "This is a note",
+        "comment_text": "This is a note",
         "comment_type": CommentType.note,
     }
 
@@ -52,7 +52,7 @@ def test_create_comment(db, comment_data, user):
 
     assert retrieved_comment is not None
     assert retrieved_comment.user_id == comment.user_id
-    assert retrieved_comment.note_text == comment.note_text
+    assert retrieved_comment.comment_text == comment.comment_text
     assert retrieved_comment.comment_type == comment.comment_type
 
     assert comment.user.id == user.id
@@ -77,7 +77,7 @@ def test_comment_foreign_key_constraint(db):
     """Test that the foreign key constraint is enforced."""
     comment = Comment(
         user_id="non_existent_id",
-        note_text="This is a note",
+        comment_text="This is a note",
         comment_type="note",
     )
     db.add(comment)

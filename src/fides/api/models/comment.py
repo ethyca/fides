@@ -73,7 +73,7 @@ class Comment(Base):
     user_id = Column(
         String, ForeignKey("fidesuser.id", ondelete="SET NULL"), nullable=True
     )
-    note_text = Column(String, nullable=False)
+    comment_text = Column(String, nullable=False)
     comment_type = Column(EnumColumn(CommentType), nullable=False)
 
     user = relationship(

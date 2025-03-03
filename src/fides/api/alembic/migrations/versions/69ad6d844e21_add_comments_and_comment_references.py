@@ -22,7 +22,7 @@ def upgrade():
         "comment",
         sa.Column("id", sa.String(), nullable=False),
         sa.Column("user_id", sa.String(), nullable=True),
-        sa.Column("note_text", sa.String(), nullable=False),
+        sa.Column("comment_text", sa.String(), nullable=False),
         sa.Column(
             "comment_type", sa.Enum("note", "reply", name="commenttype"), nullable=False
         ),
