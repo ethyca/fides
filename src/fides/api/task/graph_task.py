@@ -10,6 +10,7 @@ from loguru import logger
 from ordered_set import OrderedSet
 from sqlalchemy.orm import Session
 
+from fides.api.api.deps import get_db_contextmanager as get_db
 from fides.api.common_exceptions import (
     ActionDisabled,
     AwaitingAsyncTaskCallback,
@@ -365,25 +366,30 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         """Update status activities - create an execution log (which stores historical logs)
         and update the Request Task's current status.
         """
-        ExecutionLog.create(
-            db=self.resources.session,
-            data={
-                "connection_key": self.execution_node.connection_key,
-                "dataset_name": self.execution_node.address.dataset,
-                "collection_name": self.execution_node.address.collection,
-                "fields_affected": fields_affected,
-                "action_type": action_type,
-                "status": status,
-                "privacy_request_id": self.resources.request.id,
-                "message": msg,
-            },
-        )
+        with get_db() as db:
+            ExecutionLog.create(
+                db=db,
+                data={
+                    "connection_key": self.execution_node.connection_key,
+                    "dataset_name": self.execution_node.address.dataset,
+                    "collection_name": self.execution_node.address.collection,
+                    "fields_affected": fields_affected,
+                    "action_type": action_type,
+                    "status": status,
+                    "privacy_request_id": self.resources.request.id,
+                    "message": msg,
+                },
+            )
 
-        if self.request_task.id:
             # For DSR 3.0, updating the Request Task status when the ExecutionLog is
             # created to keep these in sync.
             # TODO remove conditional above alongside deprecating DSR 2.0
-            self.request_task.update_status(self.resources.session, status)
+            if self.request_task.id:
+                # Merge the request task to ensure we keep the changes made
+                # to self.request_task that haven't yet been committed to the database
+                request_task = db.merge(self.request_task)
+                request_task.update_status(db, status)
+                self.request_task = request_task
 
     def log_start(self, action_type: ActionType) -> None:
         """Task start activities"""
@@ -434,9 +440,10 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
             # For DSR 3.0, Hooking into the GraphTask.log_end method to also mark the current
             # Request Task and every Request Task that can be reached from the current
             # task as errored.
-            mark_current_and_downstream_nodes_as_failed(
-                self.request_task, self.resources.session
-            )
+
+            with get_db() as db:
+                request_task = db.merge(self.request_task)
+                mark_current_and_downstream_nodes_as_failed(request_task, db)
         else:
             logger.info("Ending {}, {}", self.resources.request.id, self.key)
             self.update_status(
