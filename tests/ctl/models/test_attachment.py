@@ -57,8 +57,9 @@ def attachment(db, attachment_data, monkeypatch, s3_client):
         return s3_client
 
     monkeypatch.setattr("fides.api.models.attachment.get_s3_client", mock_get_s3_client)
-    attachment_data["attachment_file"] = b"Test text content"
-    attachment = Attachment.create(db, data=attachment_data)
+    attachment = Attachment.create_and_upload(
+        db, data=attachment_data, attachment_file=b"test file content"
+    )
     yield attachment
     attachment.delete(db)
 
@@ -77,6 +78,12 @@ def attachment_reference(db, attachment):
     attachment_reference.delete(db)
 
 
+def test_create_attachment_without_attachement_file_raises_error(db, attachment_data):
+    """Test creating an attachment without an attachment file raises an error."""
+    with pytest.raises(ValueError):
+        Attachment.create_and_upload(db, data=attachment_data, attachment_file=None)
+
+
 def test_create_attachment_with_S3_storage(
     s3_client, db, user, attachment_data, attachment_file, storage_config, monkeypatch
 ):
@@ -86,8 +93,10 @@ def test_create_attachment_with_S3_storage(
         return s3_client
 
     monkeypatch.setattr("fides.api.models.attachment.get_s3_client", mock_get_s3_client)
-    attachment_data["attachment_file"] = attachment_file[1]
-    attachment = Attachment.create(db, data=attachment_data)
+
+    attachment = Attachment.create_and_upload(
+        db, data=attachment_data, attachment_file=attachment_file[1]
+    )
     retrieved_attachment = db.query(Attachment).filter_by(id=attachment.id).first()
 
     assert retrieved_attachment is not None
@@ -117,8 +126,9 @@ def test_create_attachment_with_local_storage(
     """Test creating an attachment."""
 
     attachment_data["storage_key"] = storage_config_local.key
-    attachment_data["attachment_file"] = attachment_file[1]
-    attachment = Attachment.create(db=db, data=attachment_data)
+    attachment = Attachment.create_and_upload(
+        db=db, data=attachment_data, attachment_file=attachment_file[1]
+    )
     retrieved_attachment = db.query(Attachment).filter_by(id=attachment.id).first()
 
     assert retrieved_attachment is not None
@@ -152,8 +162,10 @@ def test_download_attachment_from_s3(
         return s3_client
 
     monkeypatch.setattr("fides.api.models.attachment.get_s3_client", mock_get_s3_client)
-    attachment_data["attachment_file"] = attachment_file[1]
-    attachment = Attachment.create(db, data=attachment_data)
+
+    attachment = Attachment.create_and_upload(
+        db, data=attachment_data, attachment_file=attachment_file[1]
+    )
     retrieved_file = attachment.download_attachment_from_s3(db)
     assert "https://s3.amazonaws.com/test_bucket/att" in retrieved_file
 
@@ -167,8 +179,10 @@ def test_retrieve_attachment_from_s3(
         return s3_client
 
     monkeypatch.setattr("fides.api.models.attachment.get_s3_client", mock_get_s3_client)
-    attachment_data["attachment_file"] = attachment_file[1]
-    attachment = Attachment.create(db, data=attachment_data)
+
+    attachment = Attachment.create_and_upload(
+        db, data=attachment_data, attachment_file=attachment_file[1]
+    )
     retrieved_file = attachment.retrieve_attachment(db)
     assert retrieved_file == attachment_file[1]
 
@@ -179,8 +193,8 @@ def test_retrieve_attachment_from_local(
     """Test retrieving an attachment locally."""
 
     attachment_data["storage_key"] = storage_config_local.key
-    attachment = Attachment.create(
-        db=db, data=attachment_data, attachment=attachment_file[1]
+    attachment = Attachment.create_and_upload(
+        db=db, data=attachment_data, attachment_file=attachment_file[1]
     )
 
     assert attachment.retrieve_attachment(db) == attachment_file[1]
@@ -190,18 +204,20 @@ def test_delete_attachment_from_s3(
     s3_client, db, attachment_data, attachment_file, storage_config, monkeypatch
 ):
     """Test deleting an attachment from S3."""
+
     def mock_get_s3_client(config):
         return s3_client
 
     monkeypatch.setattr("fides.api.models.attachment.get_s3_client", mock_get_s3_client)
 
-    attachment_data["attachment_file"] = attachment_file[1]
-    attachment = Attachment.create(db, data=attachment_data)
+    attachment = Attachment.create_and_upload(
+        db, data=attachment_data, attachment_file=attachment_file[1]
+    )
 
     assert attachment.retrieve_attachment(db) == attachment_file[1]
 
     # Delete the file using the method
-    attachment.delete_attachment_from_storage(db)
+    attachment.delete_attachment_from_storage(db, storage_config)
 
     with pytest.raises(s3_client.exceptions.NoSuchKey):
         s3_client.get_object(
@@ -215,13 +231,14 @@ def test_delete_attachment_from_local(
 ):
     """Test deleting an attachment locally."""
     attachment_data["storage_key"] = storage_config_local.key
-    attachment_data["attachment_file"] = attachment_file[1]
-    attachment = Attachment.create(db=db, data=attachment_data)
+    attachment = Attachment.create_and_upload(
+        db=db, data=attachment_data, attachment_file=attachment_file[1]
+    )
 
     assert attachment.retrieve_attachment(db) == attachment_file[1]
 
     # Delete the file using the method
-    attachment.delete_attachment_from_storage(db)
+    attachment.delete_attachment_from_storage(db, storage_config_local)
 
     with pytest.raises(FileNotFoundError):
         attachment.retrieve_attachment(db)
