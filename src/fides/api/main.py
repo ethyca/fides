@@ -92,6 +92,7 @@ async def lifespan(wrapped_app: FastAPI) -> AsyncGenerator[None, None]:
     # generate and/or cache the identity salt
     get_identity_salt()
 
+    # null change to allow building new image
     initiate_scheduled_batch_email_send()
     initiate_poll_for_exited_privacy_request_tasks()
     initiate_scheduled_dsr_data_removal()
