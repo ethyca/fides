@@ -3,7 +3,7 @@ import { useMemo, useState } from "preact/hooks";
 
 import { UpdateEnabledIds } from "~/components/tcf/TcfTabs";
 
-import { PrivacyExperience } from "../../lib/consent-types";
+import { ConsentMechanism, PrivacyExperience } from "../../lib/consent-types";
 import { useI18n } from "../../lib/i18n/i18n-context";
 import { LEGAL_BASIS_OPTIONS } from "../../lib/tcf/constants";
 import { getUniquePurposeRecords, hasLegalBasis } from "../../lib/tcf/purposes";
@@ -118,7 +118,10 @@ const TcfPurposes = ({
     if (activeLegalBasisOption.value === LegalBasisEnum.CONSENT.toString()) {
       return {
         purposes: uniquePurposes.filter((p) => p.isConsent),
-        customPurposes: allCustomPurposesConsent, // all custom purposes are "consent" purposes
+        customPurposes: allCustomPurposesConsent.map((purpose) => ({
+          ...purpose,
+          disabled: purpose.consent_mechanism === ConsentMechanism.NOTICE_ONLY,
+        })), // all custom purposes are "consent" purposes
         purposeModelType: "purposesConsent",
         enabledPurposeIds: enabledPurposeConsentIds,
         enabledCustomPurposeIds: enabledCustomPurposeConsentIds,
