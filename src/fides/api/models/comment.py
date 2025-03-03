@@ -1,5 +1,5 @@
 from enum import Enum as EnumType
-from typing import Any, Optional
+from typing import Any
 
 from sqlalchemy import Column
 from sqlalchemy import Enum as EnumColumn
@@ -8,6 +8,7 @@ from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import Session, relationship
 
 from fides.api.db.base_class import Base
+from fides.api.models.attachment import Attachment, AttachmentReference
 from fides.api.models.fides_user import FidesUser  # pylint: disable=unused-import
 
 
@@ -47,12 +48,10 @@ class CommentReference(Base):
     reference_type = Column(EnumColumn(CommentReferenceType), nullable=False)
 
     __table_args__ = (
-        UniqueConstraint(
-            "comment_id", "reference_id", name="_attachment_reference_uc"
-        ),
+        UniqueConstraint("comment_id", "reference_id", name="_attachment_reference_uc"),
     )
 
-    attachment = relationship(
+    comment = relationship(
         "Comment",
         back_populates="references",
         uselist=False,
@@ -90,3 +89,22 @@ class Comment(Base):
         cascade="all, delete",
         uselist=True,
     )
+
+    def get_attachments(self, db: Session) -> list[Attachment]:
+        """Retrieve all attachments associated with this comment."""
+        stmt = (
+            db.query(Attachment)
+            .join(
+                AttachmentReference, Attachment.id == AttachmentReference.attachment_id
+            )
+            .where(AttachmentReference.reference_id == self.id)
+        )
+        return db.execute(stmt).scalars().all()
+
+    def delete(self, db: Session) -> None:
+        """Delete the comment and all associated references."""
+        attachments = self.get_attachments(db)
+        for attachment in attachments:
+            attachment.delete(db)
+        db.delete(self)
+        db.commit()
