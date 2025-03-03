@@ -84,6 +84,27 @@ jobs:
           username: ${{ env.DOCKER_USER }}
           password: ${{ env.DOCKER_TOKEN }}
 
+      - name: Set Up QEMU (for multi-platform builds)
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set Up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          name: fides_builder
+          use: true
+
+      # Setup docker layer caching to speed up builds
+      - name: Setup Docker Layer Caching
+        uses: docker/build-push-action@v5
+        with:
+          push: false
+          load: false
+          tags: ${{ matrix.application }}:cache
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          platforms: "linux/amd64,linux/arm64"
+          target: prod
+
       - name: Install Dev Requirements
         run: pip install -r dev-requirements.txt
 

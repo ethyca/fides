@@ -48,6 +48,7 @@ def generate_buildx_command(
     image_tags: List[str],
     docker_build_target: str,
     dockerfile_path: str = ".",
+    use_cache: bool = True,
 ) -> Tuple[str, ...]:
     """
     Generate the command for building and publishing an image.
@@ -64,6 +65,13 @@ def generate_buildx_command(
         DOCKER_PLATFORMS,
         dockerfile_path,
     )
+
+    # Add caching options if requested
+    if use_cache:
+        buildx_command += (
+            "--cache-from=type=gha",
+            "--cache-to=type=gha,mode=max",
+        )
 
     for tag in image_tags:
         buildx_command += ("--tag", tag)
@@ -262,7 +270,6 @@ def push(session: nox.Session, tag: str, app: str) -> None:
     ]
 
     # Parallel build the various images
-
     buildx_command: Tuple[str, ...] = generate_buildx_command(
         image_tags=full_tags,
         docker_build_target=app_info["target"],
