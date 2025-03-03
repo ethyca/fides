@@ -4,7 +4,7 @@ services:
     depends_on:
       - postgres-test
       - mysql-test
-      - sqlserver-test
+      # - sqlserver-test
 
   postgres-test:
     image: postgres:12
@@ -37,12 +37,12 @@ services:
     ports:
       - "3306:3306"
 
-  sqlserver-test:
-    image: mcr.microsoft.com/azure-sql-edge:latest # Equivalent to SQL Server 2016
-    environment:
-      - ACCEPT_EULA=Y
-      - SA_PASSWORD=SQLserver1
-    expose:
-      - 1433
-    ports:
-      - "0.0.0.0:1433:1433"
+  # sqlserver-test:
+  #   image: mcr.microsoft.com/azure-sql-edge:latest # Equivalent to SQL Server 2016
+  #   environment:
+  #     - ACCEPT_EULA=Y
+  #     - SA_PASSWORD=SQLserver1
+  #   expose:
+  #     - 1433
+  #   ports:
+  #     - "0.0.0.0:1433:1433"
