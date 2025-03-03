@@ -1,9 +1,7 @@
 from __future__ import annotations
 
 from typing import Any, Dict, Optional, Type
-import uuid
 
-from loguru import logger
 from sqlalchemy import (
     ARRAY,
     BOOLEAN,
@@ -110,6 +108,8 @@ class Asset(Base):
                 "name, asset_type, domain, and system_id are required fields on assets"
             )
 
+        record_id: str
+
         if "id" in data:
             result = await async_session.execute(
                 select(cls).where(cls.id == data["id"])  # type: ignore[arg-type]
@@ -134,7 +134,6 @@ class Asset(Base):
             )
 
             existing_record = result.scalars().first()
-            record_id: str
             if existing_record:
                 await async_session.execute(
                     update(cls).where(cls.id == existing_record.id).values(data)  # type: ignore[arg-type]
