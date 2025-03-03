@@ -198,7 +198,7 @@ class DatasetConfigService:
             Traversal(
                 dataset_graph,
                 identity_seed,
-                policy,
+                policy=policy,
                 node_filters=[DatasetFilter(dataset_config.fides_key)],
             )
         except UnreachableNodesError as exc:
