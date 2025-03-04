@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING, Any, Dict, List, Optional, Set
 from fides.api.common_exceptions import TraversalError, UnreachableNodesError
 from fides.api.graph.graph import DatasetGraph
 from fides.api.models.policy import Policy
+from fides.api.util.logger import suppress_logging
 
 if TYPE_CHECKING:
     from fides.api.graph.traversal import TraversalNode
@@ -109,7 +110,11 @@ class OptionalIdentityFilter(NodeFilter):
 
         try:
             # Create a traversal object with just this identity
-            BaseTraversal(self.graph, {identity_key: "dummy_value"})
+            with suppress_logging():
+                # Suppress the logs since we don't want to flood the logs
+                # with traversal info for each identity we want to evaluate
+                BaseTraversal(self.graph, {identity_key: "dummy_value"})
+
             # If successful, all nodes are reachable
             self.reachable_by_identity[identity_key] = all_addresses
         except UnreachableNodesError as exc:

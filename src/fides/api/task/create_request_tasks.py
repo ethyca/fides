@@ -488,7 +488,11 @@ def run_access_request(
 
             # Add execution logs for skipped nodes
             if traversal.skipped_nodes:
+                logger.warning(
+                    "Some nodes were skipped, the identities provided were not sufficient to reach them"
+                )
                 for node_address, skip_message in traversal.skipped_nodes.items():
+                    logger.debug(skip_message)
                     privacy_request.add_skipped_execution_log(
                         session,
                         connection_key=None,
