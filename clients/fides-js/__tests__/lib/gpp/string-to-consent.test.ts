@@ -1,10 +1,6 @@
 import { CmpApi } from "@iabgpp/cmpapi";
 
 import { fidesStringToConsent } from "~/lib/gpp/string-to-consent";
-import {
-  UpdateConsentPreferences,
-  updateConsentPreferences,
-} from "~/lib/preferences";
 
 import {
   ComponentType,
@@ -24,6 +20,10 @@ import {
   GPPMechanismMapping,
   GPPUSApproach,
 } from "../../../src/lib/gpp/types";
+import {
+  UpdateConsentPreferences,
+  updateConsentPreferences,
+} from "../../../src/lib/preferences";
 
 // Mock fidesDebugger
 (globalThis as any).fidesDebugger = jest.fn();
@@ -130,6 +130,7 @@ const mockUSStatePrivacyNotices = (override?: Partial<PrivacyNotice>[]) => {
   }
   return [...base, ...override];
 };
+
 const mockExperienceConfig = (override?: Partial<ExperienceConfig>) => {
   const base: Partial<ExperienceConfig> = {
     component: ComponentType.MODAL,
@@ -156,7 +157,7 @@ const mockPrivacyExperience = (override?: Partial<PrivacyExperience>) => {
       mspa_covered_transactions: true,
       mspa_opt_out_option_mode: true,
       mspa_service_provider_mode: false,
-      enable_tcfeu_string: true,
+      enable_tcfeu_string: false,
     },
     experience_config: mockExperienceConfig() as ExperienceConfig,
   };
