@@ -52,21 +52,27 @@ const PrivacyRequestActionsDropdown = ({
 
   const menuItems = useMemo(() => {
     const menu = [];
-    if (showApproveRequest) {
-      menu.push({
-        key: "approve",
-        label: <span data-testid="privacy-request-approve-btn">Approve</span>,
-        onClick: openApproveConfirmationModal,
-      });
-    }
+    menu.push({
+      key: "approve",
+      label: <span data-testid="privacy-request-approve-btn">Approve</span>,
+      onClick: openApproveConfirmationModal,
+      disabled: !showApproveRequest,
+    });
+    menu.push({
+      key: "deny",
+      label: <span data-testid="privacy-request-deny-btn">Deny</span>,
+      onClick: openDenyConfirmationModal,
+      disabled: !showDenyRequest,
+    });
 
-    if (showDenyRequest) {
-      menu.push({
-        key: "deny",
-        label: <span data-testid="privacy-request-deny-btn">Deny</span>,
-        onClick: openDenyConfirmationModal,
-      });
-    }
+    menu.push({
+      key: "reprocess",
+      label: (
+        <span data-testid="privacy-request-action-reprocess">Reprocess</span>
+      ),
+      onClick: reprocessPrivacyRequest,
+      disabled: !showReprocess,
+    });
 
     if (showDownloadResults) {
       menu.push({
@@ -83,16 +89,6 @@ const PrivacyRequestActionsDropdown = ({
         ),
         onClick: downloadResults,
         disabled: isDownloadDisabled,
-      });
-    }
-
-    if (showReprocess) {
-      menu.push({
-        key: "reprocess",
-        label: (
-          <span data-testid="privacy-request-action-reprocess">Reprocess</span>
-        ),
-        onClick: reprocessPrivacyRequest,
       });
     }
 
