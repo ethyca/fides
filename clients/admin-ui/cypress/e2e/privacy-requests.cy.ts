@@ -180,9 +180,8 @@ describe("Privacy Requests", () => {
         key: "test",
       });
       cy.wait("@getPrivacyRequest");
-      cy.getByTestId("privacy-request-actions-dropdown-btn").should(
-        "be.disabled",
-      );
+      cy.getByTestId("privacy-request-actions-dropdown-btn").click();
+      cy.getByTestId("download-results-btn").should("not.exist");
     });
   });
 
