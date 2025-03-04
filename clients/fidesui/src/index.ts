@@ -39,6 +39,7 @@ export {
   Layout as AntLayout,
   List as AntList,
   Menu as AntMenu,
+  message as antMessage,
   Radio as AntRadio,
   Row as AntRow,
   Skeleton as AntSkeleton,
@@ -47,7 +48,6 @@ export {
   Tabs as AntTabs,
   Tooltip as AntTooltip,
   Typography as AntTypography,
-  message,
 } from "antd/lib";
 export type {
   BreadcrumbItemType as AntBreadcrumbItemType,
