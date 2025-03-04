@@ -1,4 +1,5 @@
 import { baseApi } from "~/features/common/api.slice";
+import { Page_ConsentReportingSchema_ } from "~/types/api";
 
 type DateRange = {
   startDate?: string;
@@ -41,9 +42,25 @@ export const consentReportingApi = baseApi.injectEndpoints({
           responseHandler: "content-type",
         };
       },
+      providesTags: ["Consent Reporting Export"],
+    }),
+    getAllHistoricalPrivacyPreferences: build.query<
+      Page_ConsentReportingSchema_,
+      {
+        page: number;
+        size: number;
+      }
+    >({
+      query: (params) => ({
+        url: "historical-privacy-preferences",
+        params,
+      }),
       providesTags: ["Consent Reporting"],
     }),
   }),
 });
 
-export const { useLazyDownloadReportQuery } = consentReportingApi;
+export const {
+  useLazyDownloadReportQuery,
+  useGetAllHistoricalPrivacyPreferencesQuery,
+} = consentReportingApi;
