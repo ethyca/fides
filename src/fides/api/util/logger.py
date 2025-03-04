@@ -216,6 +216,7 @@ def format_and_obfuscate(record) -> str:  # type: ignore[no-untyped-def]
     return "[{level}] {extra[obfuscated_message]}\n{exception}"
 
 
+# pylint: disable=protected-access
 @contextmanager
 def suppress_logging() -> Generator:
     """
