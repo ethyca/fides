@@ -1,5 +1,5 @@
 import { AntTabs as Tabs, AntTabsProps as TabsProps } from "fidesui";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 
 import { useGetAllPrivacyRequestsQuery } from "~/features/privacy-requests";
 import { PrivacyRequestStatus } from "~/types/api";
@@ -38,6 +38,9 @@ const PrivacyRequest = ({ data: initialData }: PrivacyRequestProps) => {
   const isManualStepsRequired =
     subjectRequest.status === PrivacyRequestStatus.REQUIRES_INPUT;
 
+  const [activeTabKey, setActiveTabKey] = useState(
+    isManualStepsRequired ? "manual-steps" : "activity",
+  );
   const items: TabsProps["items"] = useMemo(
     () => [
       {
@@ -48,7 +51,12 @@ const PrivacyRequest = ({ data: initialData }: PrivacyRequestProps) => {
       {
         key: "manual-steps",
         label: "Manual steps",
-        children: <ManualProcessingList subjectRequest={subjectRequest} />,
+        children: (
+          <ManualProcessingList
+            subjectRequest={subjectRequest}
+            onComplete={() => setActiveTabKey("activity")}
+          />
+        ),
         disabled: !isManualStepsRequired,
       },
     ],
@@ -58,7 +66,11 @@ const PrivacyRequest = ({ data: initialData }: PrivacyRequestProps) => {
   return (
     <div className="flex gap-8">
       <div className="flex-1">
-        <Tabs items={items} defaultActiveKey="activity" />
+        <Tabs
+          items={items}
+          activeKey={activeTabKey}
+          onChange={setActiveTabKey}
+        />
       </div>
       <div className="w-[432px]" data-testid="privacy-request-details">
         <RequestDetails subjectRequest={subjectRequest} />
