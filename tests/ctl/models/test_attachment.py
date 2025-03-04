@@ -11,37 +11,6 @@ from fides.api.models.attachment import (
 from fides.api.models.fides_user import FidesUser
 
 
-@pytest.fixture
-def attachment_data(user, storage_config):
-    return {
-        "user_id": user.id,
-        "file_name": "file.txt",
-        "attachment_type": AttachmentType.internal_use_only,
-        "storage_key": storage_config.key,
-    }
-
-
-@pytest.fixture
-def attachment(db, attachment_data):
-    attachment = Attachment.create(db, data=attachment_data)
-    yield attachment
-    attachment.delete(db)
-
-
-@pytest.fixture
-def attachment_reference(db, attachment):
-    attachment_reference = AttachmentReference.create(
-        db=db,
-        data={
-            "attachment_id": attachment.id,
-            "reference_id": "ref_1",
-            "reference_type": AttachmentReferenceType.privacy_request,
-        },
-    )
-    yield attachment_reference
-    attachment_reference.delete(db)
-
-
 def test_create_attachment(db, attachment_data, user, storage_config):
     """Test creating an attachment."""
     attachment_data["storage_key"] = storage_config.key
