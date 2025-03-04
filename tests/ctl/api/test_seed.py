@@ -460,7 +460,7 @@ class TestLoadSamples:
         "FIDES_DEPLOY__CONNECTORS__POSTGRES__DBNAME": "test-var-db",
         "FIDES_DEPLOY__CONNECTORS__POSTGRES__USERNAME": "test-var-user",
         "FIDES_DEPLOY__CONNECTORS__POSTGRES__PASSWORD": "test-var-password",
-        "FIDES_DEPLOY__CONNECTORS__POSTGRES__SSH_REQUIRED": "True",
+        "FIDES_DEPLOY__CONNECTORS__POSTGRES__SSH_REQUIRED": "false",
         "FIDES_DEPLOY__CONNECTORS__STRIPE__DOMAIN": "test-stripe-domain",
         "FIDES_DEPLOY__CONNECTORS__STRIPE__API_KEY": "test-stripe-api-key",
         "FIDES_DEPLOY__CONNECTORS__MONGO_HOST": "test-var-expansion",
