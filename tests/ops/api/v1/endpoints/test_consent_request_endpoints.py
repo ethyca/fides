@@ -1190,7 +1190,7 @@ class TestSaveConsent:
     @mock.patch(
         "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
     )
-    def test_set_consent_preferences_privacy_request_completed_when_id_verification_required(
+    def test_set_consent_preferences_privacy_request_approved_when_id_verification_required(
         self,
         mock_run_privacy_request: MagicMock,
         mock_verify_identity: MagicMock,
