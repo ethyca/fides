@@ -698,11 +698,30 @@ describe("Fides-js TCF", () => {
       it.only("can fire FidesUIChanged events", () => {
         cy.getByTestId(`toggle-${PURPOSE_4.name}`).click();
         cy.get("@FidesUIChanged").its("callCount").should("equal", 1);
+        // TODO: remove this log
+        cy.get("@FidesUIChanged")
+          .its("firstCall.args.0")
+          .then((event) => cy.log("FidesUIChanged event:", event));
         cy.get("@FidesUIChanged")
           .its("firstCall.args.0")
           .then((event: CustomEvent) => {
-            // Check that the consent object hasn't change (yet!)
+            expect(event.type).to.equal("FidesUIChanged");
+            // Check that the consent object hasn't changed (yet!)
             expect(event.detail.consent).to.deep.equal({});
+
+            // Check the event target is not the window
+            // TODO: update this assertion to be better
+            expect(event.target.constructor.name).to.equal("HTMLElement");
+            // NOTE, this might be a better assertion, but I like the error message from the above
+            // expect(event.target instanceof HTMLElement).to.be.true;
+            expect(
+              (event.target as HTMLElement).classList.contains("fides-toggle"),
+            ).to.be.true;
+
+            // TODO: Or, check that the event detail includes the original target?
+            expect(event.detail.originalTarget).to.deep.include({
+              id: `toggle-${PURPOSE_4.name}`,
+            });
 
             // Check that the extraDetails includes context about what changed
             // TODO: finalize this expected detail
