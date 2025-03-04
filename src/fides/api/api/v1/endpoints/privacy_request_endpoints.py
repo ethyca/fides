@@ -1308,6 +1308,8 @@ def verify_identification_code(
         logger.info("Invalid verification code provided for {}.", privacy_request.id)
         raise HTTPException(status_code=HTTP_403_FORBIDDEN, detail=exc.args[0])
 
+    logger.info("Identity verified for {}.", privacy_request.id)
+
     handle_approval(db, config_proxy, privacy_request)
 
     return privacy_request  # type: ignore[return-value]
