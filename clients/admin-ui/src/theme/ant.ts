@@ -62,10 +62,6 @@ export const antTheme: AntThemeConfig = {
       darkSubMenuItemBg: palette.FIDESUI_MINOS,
       darkItemSelectedBg: palette.FIDESUI_SANDSTONE,
     },
-    Dropdown: {
-      fontSize: 16,
-      paddingBlock: 8,
-    },
     Tooltip: {
       colorBgSpotlight: palette.FIDESUI_MINOS,
       colorText: palette.FIDESUI_NEUTRAL_50,
