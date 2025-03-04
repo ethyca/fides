@@ -22,7 +22,10 @@ class TestOptionalIdentityFilter:
 
         # Test address collection with email identity
         identities = {"user_id": "123"}
-        Traversal(dataset_graph, identities)
+        traversal = Traversal(dataset_graph, identities)
+        assert traversal.skipped_nodes == {
+            "optional_identities:address": 'Skipping the "optional_identities:address" collection, it is reachable by the "email" identity but only the "user_id" identity was provided'
+        }
 
     def test_unreachable_nodes_raise_exception(
         self, unreachable_collection_dataset_config: DatasetConfig

@@ -4,17 +4,28 @@ import {
   Flex,
   GreenCheckCircleIcon,
   Text,
+  YellowWarningIcon,
 } from "fidesui";
 import { ExecutionLog } from "privacy-requests/types";
 import React from "react";
 
-import { hasUnresolvedError } from "./helpers";
+import { hasSkippedEntry, hasUnresolvedError } from "./helpers";
 
 type TimelineEntryProps = {
   entryKey: string;
   logs: ExecutionLog[];
   isLast: boolean;
   onViewLog: () => void;
+};
+
+const getStatusIcon = (logs: ExecutionLog[]) => {
+  if (hasUnresolvedError(logs)) {
+    return <ErrorWarningIcon />; // Default is red
+  }
+  if (hasSkippedEntry(logs)) {
+    return <YellowWarningIcon />;
+  }
+  return <GreenCheckCircleIcon />;
 };
 
 const TimelineEntry = ({
@@ -26,13 +37,7 @@ const TimelineEntry = ({
   return (
     <Box>
       <Flex alignItems="center" height={23} position="relative">
-        <Box zIndex={1}>
-          {hasUnresolvedError(logs) ? (
-            <ErrorWarningIcon />
-          ) : (
-            <GreenCheckCircleIcon />
-          )}
-        </Box>
+        <Box zIndex={1}>{getStatusIcon(logs)}</Box>
         {!isLast && (
           <Box
             width="2px"

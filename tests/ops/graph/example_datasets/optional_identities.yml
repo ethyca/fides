@@ -17,11 +17,6 @@ dataset:
               length: 40
           - name: address_id
             data_categories: [system.operations]
-            fides_meta:
-              references:
-                - dataset: optional_identities
-                  field: address.id
-                  direction: to
       - name: address
         fields:
           - name: id

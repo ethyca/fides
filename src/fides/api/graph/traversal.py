@@ -288,6 +288,16 @@ class BaseTraversal:
             logger.debug("Found {} end nodes: {}", len(end_nodes), end_nodes)
         return end_nodes
 
+    @property
+    def skipped_nodes(self) -> Dict[str, str]:
+        """
+        Returns a dictionary of node addresses to skip reasons from all node filters.
+        """
+        result = {}
+        for node_filter in self.node_filters:
+            result.update(node_filter.skipped_nodes)
+        return result
+
 
 class Traversal(BaseTraversal):
     """Handling for a single reified traversal of a graph based on input (seed) data."""
