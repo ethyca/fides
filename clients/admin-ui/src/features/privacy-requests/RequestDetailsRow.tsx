@@ -9,11 +9,11 @@ interface RequestDetailsRowProps {
 
 const RequestDetailsRow = ({ label, children }: RequestDetailsRowProps) => (
   <div className="flex items-center">
-    <div className={`flex-1 pr-2 ${styles.label}`}>
+    <div className={`shrink-0 grow-0 basis-1/2 pr-2 ${styles.label}`}>
       <Typography.Text>{label}:</Typography.Text>
     </div>
     <div
-      className={`flex-1 ${styles.value}`}
+      className={`min-w-0 shrink grow ${styles.value}`}
       data-testid={`request-detail-value-${label}`}
     >
       {children}

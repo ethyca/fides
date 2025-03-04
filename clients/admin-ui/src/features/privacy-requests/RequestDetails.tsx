@@ -1,7 +1,7 @@
 import {
   AntForm as Form,
   AntInput as Input,
-  AntTag as Tag,
+  AntTooltip,
   AntTypography as Typography,
   Flex,
 } from "fidesui";
@@ -60,17 +60,22 @@ const RequestDetails = ({ subjectRequest }: RequestDetailsProps) => {
 
         {Object.entries(identity)
           .filter(([, { value }]) => value !== null)
-          .map(([key, { value, label }]) => (
-            <RequestDetailsRow
-              label={`Subject ${label.toLocaleLowerCase()}`}
-              key={key}
-            >
-              <Typography.Text>{value || ""}</Typography.Text>
-              <Tag className="ml-1">
-                {identityVerifiedAt ? "Verified" : "Unverified"}
-              </Tag>
-            </RequestDetailsRow>
-          ))}
+          .map(([key, { value = "", label }]) => {
+            const text = `${value} ${!identityVerifiedAt ? "(Unverified)" : ""}`;
+
+            return (
+              <RequestDetailsRow
+                label={`Subject ${label.toLocaleLowerCase()}`}
+                key={key}
+              >
+                <AntTooltip title={text} trigger="click">
+                  <Typography.Text ellipsis>{text}</Typography.Text>
+                </AntTooltip>
+              </RequestDetailsRow>
+            );
+          })}
+
+        <RequestCustomFields subjectRequest={subjectRequest} />
       </div>
       <Form layout="vertical">
         <Form.Item label="Request ID:" className="mb-4">
@@ -87,7 +92,6 @@ const RequestDetails = ({ subjectRequest }: RequestDetailsProps) => {
           />
         </Form.Item>
       </Form>
-      <RequestCustomFields subjectRequest={subjectRequest} />
     </div>
   );
 };

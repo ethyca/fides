@@ -14,26 +14,17 @@ const RequestCustomFields = ({ subjectRequest }: RequestCustomFieldsProps) => {
   return (
     <div className="flex flex-col gap-2">
       {customPrivacyRequestFields &&
-        Object.keys(customPrivacyRequestFields).length > 0 && (
-          <>
-            <Typography.Title level={5} className=" mt-2">
-              Custom request fields
-            </Typography.Title>
-
-            {Object.entries(customPrivacyRequestFields)
-              .filter(([, item]) => item.value)
-              .map(([key, item]) => (
-                <RequestDetailsRow label={item.label} key={key}>
-                  <Typography.Text>
-                    {Array.isArray(item.value)
-                      ? item.value.join(", ")
-                      : item.value}
-                  </Typography.Text>
-                  <Tag className="ml-1">Unverified</Tag>
-                </RequestDetailsRow>
-              ))}
-          </>
-        )}
+        Object.keys(customPrivacyRequestFields).length > 0 &&
+        Object.entries(customPrivacyRequestFields)
+          .filter(([, item]) => item.value)
+          .map(([key, item]) => (
+            <RequestDetailsRow label={item.label} key={key}>
+              <Typography.Text>
+                {Array.isArray(item.value) ? item.value.join(", ") : item.value}
+              </Typography.Text>
+              <Tag className="ml-1">Unverified</Tag>
+            </RequestDetailsRow>
+          ))}
     </div>
   );
 };
