@@ -27,6 +27,9 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ### Developer Experience
 - Moved non-prod Admin UI dependencies to devDependencies [#5832](https://github.com/ethyca/fides/pull/5832)
 
+### Fixed
+- Fixed usage of stale DB sessions when running privacy requests [#5834](https://github.com/ethyca/fides/pull/5834)
+
 ## [2.56.0](https://github.com/ethyca/fides/compare/2.55.4...2.56.0)
 
 ### Added
