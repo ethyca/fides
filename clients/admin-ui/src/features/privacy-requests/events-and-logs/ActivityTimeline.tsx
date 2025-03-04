@@ -59,8 +59,22 @@ const ActivityTimeline = ({ subjectRequest }: ActivityTimelineProps) => {
     onOpen();
   };
 
+  const items = map(results, (values, key) => ({ key, values }));
+
   return (
     <Box width="100%">
+      {/* <List
+        dataSource={items}
+        renderItem={(item) => (
+          <ActivityTimelineEntry
+            author="Fides"
+            timestamp=""
+            title={item.key}
+            type=""
+            content=""
+          />
+        )}
+      /> */}
       {results &&
         resultKeys.map((key, index) => (
           <TimelineEntry
