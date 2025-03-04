@@ -28,7 +28,7 @@ class TestPolicyAwareTraversal:
         dataset_graph, identity_seed = self._create_graph_and_seed(
             directly_reachable_dataset_config
         )
-        Traversal(dataset_graph, identity_seed, policy)
+        Traversal(dataset_graph, identity_seed, policy=policy)
 
     def test_ignores_unreachable_without_data_category(
         self, policy, unreachable_without_data_categories_dataset_config: DatasetConfig
@@ -36,7 +36,7 @@ class TestPolicyAwareTraversal:
         dataset_graph, identity_seed = self._create_graph_and_seed(
             unreachable_without_data_categories_dataset_config
         )
-        Traversal(dataset_graph, identity_seed, policy)
+        Traversal(dataset_graph, identity_seed, policy=policy)
 
     def test_unreachable_with_data_category_errors(
         self, policy, unreachable_with_data_categories_dataset_config: DatasetConfig
@@ -45,7 +45,7 @@ class TestPolicyAwareTraversal:
             unreachable_with_data_categories_dataset_config
         )
         with pytest.raises(UnreachableNodesError) as exc:
-            Traversal(dataset_graph, identity_seed, policy)
+            Traversal(dataset_graph, identity_seed, policy=policy)
         assert (
             "Some nodes were not reachable: unreachable_with_data_categories:address"
             in str(exc)

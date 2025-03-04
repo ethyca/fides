@@ -7,7 +7,14 @@ from loguru._handler import Message
 
 from fides.api.schemas.privacy_request import PrivacyRequestSource
 from fides.api.util.cache import get_cache
-from fides.api.util.logger import MASKED, Pii, RedisSink, _log_exception, _log_warning
+from fides.api.util.logger import (
+    MASKED,
+    Pii,
+    RedisSink,
+    _log_exception,
+    _log_warning,
+    suppress_logging,
+)
 from fides.config import CONFIG
 
 
@@ -110,3 +117,51 @@ class TestRedisSink:
             cache = get_cache()
             key = f"log_{test_id}"
             assert len(cache.get_decoded_list(key)) == 0
+
+
+@pytest.mark.unit
+class TestSuppressLogging:
+    def test_suppress_logging_context_manager(self, loguru_caplog):
+        """Test that the suppress_logging context manager correctly suppresses logs."""
+
+        # Log a message outside the context manager
+        logger.info("This message should appear in logs")
+
+        # Log messages inside the context manager
+        with suppress_logging():
+            logger.info("This INFO message should be suppressed")
+            logger.warning("This WARNING message should be suppressed")
+            logger.error("This ERROR message should be suppressed")
+
+        # Log another message after the context manager
+        logger.info("This message should also appear in logs")
+
+        # Check that only the messages outside the context manager appear in the logs
+        log_messages = loguru_caplog.text
+        assert "This message should appear in logs" in log_messages
+        assert "This message should also appear in logs" in log_messages
+        assert "This INFO message should be suppressed" not in log_messages
+        assert "This WARNING message should be suppressed" not in log_messages
+        assert "This ERROR message should be suppressed" not in log_messages
+
+    def test_suppress_logging_exception_safety(self, loguru_caplog):
+        """Test that the suppress_logging context manager restores log levels even if an exception occurs."""
+
+        # Get the original minimum log level
+        original_min_level = logger._core.min_level
+
+        try:
+            # Try logging in a context that will raise an exception
+            with suppress_logging():
+                logger.info("This message should be suppressed")
+                raise ValueError("Test exception")
+        except ValueError:
+            pass  # We expect this exception
+
+        # Log a message after the exception
+        logger.info("This message should appear in logs")
+
+        # Check that the log level was restored despite the exception
+        assert logger._core.min_level == original_min_level
+        assert "This message should be suppressed" not in loguru_caplog.text
+        assert "This message should appear in logs" in loguru_caplog.text

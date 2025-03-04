@@ -1278,6 +1278,28 @@ class PrivacyRequest(
             },
         )
 
+    def add_skipped_execution_log(
+        self,
+        db: Session,
+        connection_key: Optional[str],
+        dataset_name: Optional[str],
+        collection_name: Optional[str],
+        message: str,
+        action_type: ActionType,
+    ) -> ExecutionLog:
+        return ExecutionLog.create(
+            db=db,
+            data={
+                "privacy_request_id": self.id,
+                "connection_key": connection_key,
+                "dataset_name": dataset_name,
+                "collection_name": collection_name,
+                "status": ExecutionLogStatus.skipped,
+                "message": message,
+                "action_type": action_type,
+            },
+        )
+
     def add_error_execution_log(
         self,
         db: Session,
@@ -1861,6 +1883,7 @@ class TraversalDetails(FidesSchema):
     incoming_edges: List[Tuple[str, str]]
     outgoing_edges: List[Tuple[str, str]]
     input_keys: List[str]
+    skipped_nodes: Optional[List[Tuple[str, str]]] = None
 
     # TODO: remove this method once we support custom request fields in DSR graph.
     @classmethod
@@ -1868,15 +1891,15 @@ class TraversalDetails(FidesSchema):
         """
         Creates an "empty" TraversalDetails object that only has the dataset connection key set.
         This is a bit of a hacky workaround needed to implement the Dynamic Erasure Emails feature,
-        and should be needed only until we support custom request fields as entry points to the DSR graph.
-        This is needed because custom request field nodes aren't currently reachable, so they don't have
-        a real TraversalNode associated to them.
+        but we should no longer need it once the custom_request_fields are included in our graph
+        traversal
         """
         return cls(
             dataset_connection_key=connection_key,
             incoming_edges=[],
             outgoing_edges=[],
             input_keys=[],
+            skipped_nodes=[],
         )
 
 

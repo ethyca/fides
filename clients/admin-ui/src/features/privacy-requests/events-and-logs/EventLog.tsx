@@ -17,7 +17,7 @@ import { ActionType } from "~/types/api";
 
 type EventDetailsProps = {
   eventLogs: ExecutionLog[];
-  openErrorPanel: (message: string) => void;
+  openErrorPanel: (message: string, status?: ExecutionLogStatus) => void;
 };
 
 const actionTypeToLabel = (actionType: string) => {
@@ -41,18 +41,25 @@ const EventLog = ({ eventLogs, openErrorPanel }: EventDetailsProps) => {
       key={detail.updated_at}
       _hover={{
         backgroundColor:
-          detail.status === ExecutionLogStatus.ERROR
+          detail.status === ExecutionLogStatus.ERROR ||
+          (detail.status === ExecutionLogStatus.SKIPPED && detail.message)
             ? palette.FIDESUI_NEUTRAL_50
             : "unset",
       }}
       onClick={() => {
-        if (detail.status === ExecutionLogStatus.ERROR) {
-          openErrorPanel(detail.message);
+        if (
+          detail.status === ExecutionLogStatus.ERROR ||
+          (detail.status === ExecutionLogStatus.SKIPPED && detail.message)
+        ) {
+          openErrorPanel(detail.message, detail.status);
         }
       }}
       style={{
         cursor:
-          detail.status === ExecutionLogStatus.ERROR ? "pointer" : "unset",
+          detail.status === ExecutionLogStatus.ERROR ||
+          (detail.status === ExecutionLogStatus.SKIPPED && detail.message)
+            ? "pointer"
+            : "unset",
       }}
     >
       <Td>
