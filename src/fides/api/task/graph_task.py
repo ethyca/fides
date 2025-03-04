@@ -10,7 +10,6 @@ from loguru import logger
 from ordered_set import OrderedSet
 from sqlalchemy.orm import Session
 
-from fides.api.api.deps import get_db_contextmanager as get_db_session
 from fides.api.common_exceptions import (
     ActionDisabled,
     AwaitingAsyncTaskCallback,
@@ -424,43 +423,30 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         success_override_msg: Optional[BaseException] = None,
     ) -> None:
         """On completion activities"""
-
-        # Because a GraphTask can take a long time to run, it's possible that the session
-        # stored in self.resources has been closed by the time we get to this point. We need
-        # to get a new session to appropriately mark the task as errored.
-        with get_db_session() as db:
-            # Update the session in the resources object to the new session
-            # and update the request_task reference to the new instance
-            # We only need this for DSR 3.0, i.e if request_task has an id
-            if self.request_task.id:
-                self.resources.session = db
-                request_task_new_session = db.merge(self.request_task)
-                self.request_task = request_task_new_session
-
-            if ex:
-                logger.warning(
-                    "Ending {}, {} with failure {}",
-                    self.resources.request.id,
-                    self.key,
-                    Pii(ex),
-                )
-                self.update_status(str(ex), [], action_type, ExecutionLogStatus.error)
-                # For DSR 3.0, Hooking into the GraphTask.log_end method to also mark the current
-                # Request Task and every Request Task that can be reached from the current
-                # task as errored.
-                mark_current_and_downstream_nodes_as_failed(
-                    self.request_task, self.resources.session
-                )
-            else:
-                logger.info("Ending {}, {}", self.resources.request.id, self.key)
-                self.update_status(
-                    str(success_override_msg) if success_override_msg else "success",
-                    build_affected_field_logs(
-                        self.execution_node, self.resources.policy, action_type
-                    ),
-                    action_type,
-                    ExecutionLogStatus.complete,
-                )
+        if ex:
+            logger.warning(
+                "Ending {}, {} with failure {}",
+                self.resources.request.id,
+                self.key,
+                Pii(ex),
+            )
+            self.update_status(str(ex), [], action_type, ExecutionLogStatus.error)
+            # For DSR 3.0, Hooking into the GraphTask.log_end method to also mark the current
+            # Request Task and every Request Task that can be reached from the current
+            # task as errored.
+            mark_current_and_downstream_nodes_as_failed(
+                self.request_task, self.resources.session
+            )
+        else:
+            logger.info("Ending {}, {}", self.resources.request.id, self.key)
+            self.update_status(
+                str(success_override_msg) if success_override_msg else "success",
+                build_affected_field_logs(
+                    self.execution_node, self.resources.policy, action_type
+                ),
+                action_type,
+                ExecutionLogStatus.complete,
+            )
 
     def post_process_input_data(
         self, pre_processed_inputs: NodeInput

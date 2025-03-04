@@ -41,6 +41,7 @@ from starlette.status import (
 )
 
 from fides.api.api import deps
+from fides.api.api.deps import get_privacy_request_service
 from fides.api.api.v1.endpoints.dataset_config_endpoints import _get_connection_config
 from fides.api.api.v1.endpoints.manual_webhook_endpoints import (
     get_access_manual_webhook_or_404,
@@ -108,7 +109,6 @@ from fides.api.schemas.privacy_request import (
     ReviewPrivacyRequestIds,
     VerificationCode,
 )
-from fides.api.service.deps import get_messaging_service, get_privacy_request_service
 from fides.api.service.messaging.message_dispatch_service import EMAIL_JOIN_STRING
 from fides.api.task.execute_request_tasks import log_task_queued, queue_request_task
 from fides.api.task.filter_results import filter_data_categories
@@ -214,7 +214,7 @@ def get_privacy_request_or_error(
 def create_privacy_request(
     *,
     privacy_request_service: PrivacyRequestService = Depends(
-        get_privacy_request_service
+        deps.get_privacy_request_service
     ),
     data: Annotated[List[PrivacyRequestCreate], Field(max_length=50)],  # type: ignore
 ) -> BulkPostPrivacyRequests:
@@ -1232,7 +1232,7 @@ def restart_privacy_request_from_failure(
     *,
     db: Session = Depends(deps.get_db),
     privacy_request_service: PrivacyRequestService = Depends(
-        get_privacy_request_service
+        deps.get_privacy_request_service
     ),
 ) -> PrivacyRequestResponse:
     """Restart a privacy request from failure"""
@@ -1279,7 +1279,7 @@ def verify_identification_code(
     *,
     db: Session = Depends(deps.get_db),
     config_proxy: ConfigProxy = Depends(deps.get_config_proxy),
-    messaging_service: MessagingService = Depends(get_messaging_service),
+    messaging_service: MessagingService = Depends(deps.get_messaging_service),
     provided_code: VerificationCode,
 ) -> PrivacyRequestResponse:
     """Verify the supplied identity verification code.
@@ -1339,7 +1339,7 @@ def approve_privacy_request(
         scopes=[PRIVACY_REQUEST_REVIEW],
     ),
     privacy_request_service: PrivacyRequestService = Depends(
-        get_privacy_request_service
+        deps.get_privacy_request_service
     ),
     privacy_requests: ReviewPrivacyRequestIds,
 ) -> BulkReviewResponse:
@@ -1362,7 +1362,7 @@ def deny_privacy_request(
         scopes=[PRIVACY_REQUEST_REVIEW],
     ),
     privacy_request_service: PrivacyRequestService = Depends(
-        get_privacy_request_service
+        deps.get_privacy_request_service
     ),
     privacy_requests: DenyPrivacyRequests,
 ) -> BulkReviewResponse:
@@ -1399,7 +1399,7 @@ def mark_privacy_request_pre_approve_eligible(
     *,
     db: Session = Depends(deps.get_db),
     privacy_request_service: PrivacyRequestService = Depends(
-        get_privacy_request_service
+        deps.get_privacy_request_service
     ),
     webhook: PreApprovalWebhook = Security(
         verify_callback_oauth_pre_approval_webhook, scopes=[PRIVACY_REQUEST_REVIEW]

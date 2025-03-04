@@ -25,6 +25,8 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - DB model support for Attachments [#5784](https://github.com/ethyca/fides/pull/5784) https://github.com/ethyca/fides/labels/db-migration
 - DB migration to add `description` column to `asset` [#5822](https://github.com/ethyca/fides/pull/5822) https://github.com/ethyca/fides/labels/db-migration
 
+### Developer Experience
+- Moved non-prod Admin UI dependencies to devDependencies [#5832](https://github.com/ethyca/fides/pull/5832)
 
 ## [2.56.0](https://github.com/ethyca/fides/compare/2.55.4...2.56.0)
 
@@ -43,13 +45,14 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ### Developer Experience
 - Modified Dependabot configuration to support monorepo security updates [#5810](https://github.com/ethyca/fides/pull/5810)
+- Fix load_samples to correctly collect & load sample connections with "False" secret values [#5828](https://github.com/ethyca/fides/pull/5828)
 
 ### Docs
 - Removed version pins in LDFLAGS & CFLAGS for local MSSQL builds [#5760](https://github.com/ethyca/fides/pull/5760)
 
 ### Fixed
 - Fixed bug with D&D table column widths [#5813](https://github.com/ethyca/fides/pull/5813)
-- Fixed `GraphTask` and `poll_for_exited_privacy_request_tasks` for DSR-processing improvements [#5820](https://github.com/ethyca/fides/pull/5820)
+- Fixed `poll_for_exited_privacy_request_tasks` for DSR-processing improvements [#5820](https://github.com/ethyca/fides/pull/5820)
 
 ## [2.55.4](https://github.com/ethyca/fides/compare/2.55.3...2.55.4)
 

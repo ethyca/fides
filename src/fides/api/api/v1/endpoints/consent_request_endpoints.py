@@ -21,7 +21,7 @@ from starlette.status import (
     HTTP_422_UNPROCESSABLE_ENTITY,
 )
 
-from fides.api.api.deps import get_config_proxy, get_db
+from fides.api.api.deps import get_config_proxy, get_db, get_messaging_service
 from fides.api.common_exceptions import (
     IdentityVerificationException,
     RedisNotConfigured,
@@ -50,7 +50,6 @@ from fides.api.schemas.privacy_request import (
     VerificationCode,
 )
 from fides.api.schemas.redis_cache import Identity
-from fides.api.service.deps import get_messaging_service
 from fides.api.util.api_router import APIRouter
 from fides.api.util.consent_util import (
     get_or_create_fides_user_device_id_provided_identity,
