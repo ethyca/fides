@@ -551,7 +551,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         return output
 
     def get_connection_config(self) -> ConnectionConfig:
-        """ "
+        """
         Retrieves the connection configuration for the current connector.
         This method attempts to fetch the connection configuration from the database
         using the connector's configuration ID. If the configuration is found in the
@@ -576,8 +576,6 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
 
     def skip_if_disabled(self) -> None:
         """Skip execution for the given collection if it is attached to a disabled ConnectionConfig."""
-        # connection_config: ConnectionConfig = self.connector.configuration
-
         connection_config: ConnectionConfig = self.get_connection_config()
 
         if connection_config.disabled:
