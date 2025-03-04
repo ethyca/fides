@@ -30,7 +30,6 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ### Developer Experience
 - Moved non-prod Admin UI dependencies to devDependencies [#5832](https://github.com/ethyca/fides/pull/5832)
 
-
 ## [2.56.1](https://github.com/ethyca/fides/compare/2.56.0...2.56.1)
 
 ### Changed
