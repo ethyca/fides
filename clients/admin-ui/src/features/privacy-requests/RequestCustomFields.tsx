@@ -1,4 +1,4 @@
-import { AntTag as Tag, AntTypography as Typography } from "fidesui";
+import { AntTypography as Typography } from "fidesui";
 
 import RequestDetailsRow from "./RequestDetailsRow";
 import { PrivacyRequestEntity } from "./types";
@@ -22,7 +22,6 @@ const RequestCustomFields = ({ subjectRequest }: RequestCustomFieldsProps) => {
               <Typography.Text>
                 {Array.isArray(item.value) ? item.value.join(", ") : item.value}
               </Typography.Text>
-              <Tag className="ml-1">Unverified</Tag>
             </RequestDetailsRow>
           ))}
     </div>
