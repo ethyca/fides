@@ -550,9 +550,36 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         # Return filtered rows with non-matched array data removed.
         return output
 
+    def get_connection_config(self) -> ConnectionConfig:
+        """ "
+        Retrieves the connection configuration for the current connector.
+        This method attempts to fetch the connection configuration from the database
+        using the connector's configuration ID. If the configuration is found in the
+        database, it is returned. Otherwise, the method returns the connector's
+        current configuration.
+        Returns:
+            ConnectionConfig: The connection configuration object from the database
+            if found, otherwise the connector's current configuration.
+        """
+        connection_config_id = self.connector.configuration.id
+
+        with get_db() as db:
+            connection_config = (
+                db.query(ConnectionConfig)
+                .filter(ConnectionConfig.id == connection_config_id)
+                .first()
+            )
+            if connection_config:
+                return connection_config
+
+        return self.connector.configuration
+
     def skip_if_disabled(self) -> None:
         """Skip execution for the given collection if it is attached to a disabled ConnectionConfig."""
-        connection_config: ConnectionConfig = self.connector.configuration
+        # connection_config: ConnectionConfig = self.connector.configuration
+
+        connection_config: ConnectionConfig = self.get_connection_config()
+
         if connection_config.disabled:
             raise CollectionDisabled(
                 f"Skipping collection {self.execution_node.address}. "
@@ -566,7 +593,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         if action_type == ActionType.access:
             return
 
-        connection_config: ConnectionConfig = self.connector.configuration
+        connection_config: ConnectionConfig = self.get_connection_config()
         if (
             connection_config.enabled_actions is not None
             and action_type not in connection_config.enabled_actions
