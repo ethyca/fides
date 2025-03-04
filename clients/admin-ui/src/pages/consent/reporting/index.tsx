@@ -1,29 +1,21 @@
 /* eslint-disable react/no-unstable-nested-components */
-import {
-  createColumnHelper,
-  getCoreRowModel,
-  useReactTable,
-} from "@tanstack/react-table";
+import { getCoreRowModel, useReactTable } from "@tanstack/react-table";
 import { Box, Text } from "fidesui";
 import React, { useMemo } from "react";
 
 import Layout from "~/features/common/Layout";
 import PageHeader from "~/features/common/PageHeader";
 import {
-  DefaultCell,
-  DefaultHeaderCell,
   FidesTableV2,
   PAGE_SIZES,
   PaginationBar,
   TableSkeletonLoader,
   useServerSidePagination,
 } from "~/features/common/table/v2";
-import { formatDate } from "~/features/common/utils";
 import { useGetAllHistoricalPrivacyPreferencesQuery } from "~/features/consent-reporting/consent-reporting.slice";
 import ConsentReporting from "~/features/consent-reporting/ConsentReporting";
+import useConsentReportingTableColumns from "~/features/consent-reporting/hooks/useConsentReportingTableColumns";
 import { ConsentReportingSchema } from "~/types/api";
-
-const columnHelper = createColumnHelper<ConsentReportingSchema>();
 
 const ConsentReportingPage = () => {
   const pagination = useServerSidePagination();
@@ -41,27 +33,7 @@ const ConsentReportingPage = () => {
     return results;
   }, [data, setTotalPages]);
 
-  const columns = useMemo(
-    () => [
-      columnHelper.accessor((row) => row.id, {
-        id: "id",
-        cell: ({ getValue }) => <DefaultCell value={getValue()} />,
-        header: (props) => (
-          <DefaultHeaderCell value="Preference ID" {...props} />
-        ),
-        enableSorting: false,
-      }),
-      columnHelper.accessor((row) => row.request_timestamp, {
-        id: "request_timestamp",
-        cell: ({ getValue }) => <DefaultCell value={formatDate(getValue())} />,
-        header: (props) => (
-          <DefaultHeaderCell value="Time received" {...props} />
-        ),
-      }),
-    ],
-    [],
-  );
-
+  const columns = useConsentReportingTableColumns();
   const tableInstance = useReactTable<ConsentReportingSchema>({
     getCoreRowModel: getCoreRowModel(),
     data: privacyPreferences,
