@@ -1,9 +1,9 @@
 import {
+  AntFlex as Flex,
   AntForm as Form,
   AntInput as Input,
   AntTooltip,
   AntTypography as Typography,
-  Flex,
 } from "fidesui";
 
 import ClipboardButton from "~/features/common/ClipboardButton";
@@ -36,11 +36,9 @@ const RequestDetails = ({ subjectRequest }: RequestDetailsProps) => {
       <div className="mb-6">
         <Typography.Title level={2}>Request details</Typography.Title>
       </div>
-      <div className="mb-6 flex flex-col gap-3">
+      <Flex vertical gap={12} className="mb-6">
         <RequestDetailsRow label="Status">
-          <Flex>
-            <RequestStatusBadge status={status} />
-          </Flex>
+          <RequestStatusBadge status={status} />
         </RequestDetailsRow>
         <RequestDetailsRow label="Time remaining">
           <DaysLeftTag
@@ -76,13 +74,13 @@ const RequestDetails = ({ subjectRequest }: RequestDetailsProps) => {
           })}
 
         <RequestCustomFields subjectRequest={subjectRequest} />
-      </div>
+      </Flex>
       <Form layout="vertical">
         <Form.Item label="Request ID:" className="mb-4">
-          <div className="flex gap-1">
+          <Flex gap={1}>
             <Input readOnly value={id} data-testid="request-detail-value-id" />
             <ClipboardButton copyText={id} size="small" />
-          </div>
+          </Flex>
         </Form.Item>
         <Form.Item label="Policy key:" className="mb-4">
           <Input

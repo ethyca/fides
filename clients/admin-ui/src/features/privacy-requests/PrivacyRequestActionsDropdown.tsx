@@ -114,7 +114,6 @@ const PrivacyRequestActionsDropdown = ({
         overlayStyle={{ minWidth: "160px" }}
       >
         <Button
-          tabIndex={0}
           icon={<Icons.CaretDown />}
           data-testid="privacy-request-actions-dropdown-btn"
           iconPosition="end"

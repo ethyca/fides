@@ -68,7 +68,7 @@ interface RequestBadgeProps {
 const RequestStatusBadge = ({ status }: RequestBadgeProps) => (
   <Tag
     color={statusPropMap[status].color}
-    className="w-[120px] justify-center"
+    className="justify-center"
     data-testid="request-status-badge"
   >
     {statusPropMap[status].label}
