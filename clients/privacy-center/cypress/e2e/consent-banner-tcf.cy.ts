@@ -694,12 +694,40 @@ describe("Fides-js TCF", () => {
         });
       });
 
-      it("can fire FidesUIChanged events", () => {
+      // TODO: remove the `it.only`!
+      it.only("can fire FidesUIChanged events", () => {
         cy.getByTestId(`toggle-${PURPOSE_4.name}`).click();
         cy.get("@FidesUIChanged").its("callCount").should("equal", 1);
+        cy.get("@FidesUIChanged")
+          .its("firstCall.args.0")
+          .then((event: CustomEvent) => {
+            // Check that the consent object hasn't change (yet!)
+            expect(event.detail.consent).to.deep.equal({});
+
+            // Check that the extraDetails includes context about what changed
+            // TODO: finalize this expected detail
+            expect(event.detail.extraDetails).to.deep.include({
+              noticeKey: null, // TCF notices do not have keys
+              noticeLabel: PURPOSE_4.name,
+              noticeValue: true,
+            });
+          });
 
         cy.getByTestId(`toggle-${PURPOSE_6.name}`).click();
         cy.get("@FidesUIChanged").its("callCount").should("equal", 2);
+        cy.get("@FidesUIChanged")
+          .its("secondCall.args.0")
+          .then((event: CustomEvent) => {
+            // Check that the consent object hasn't change (yet!)
+            expect(event.detail.consent).to.deep.equal({});
+
+            // Check that the extraDetails includes context about what changed
+            expect(event.detail.extraDetails).to.deep.include({
+              noticeKey: null, // TCF notices do not have keys
+              noticeLabel: PURPOSE_6.name,
+              noticeValue: true,
+            });
+          });
       });
 
       it("can handle group toggle empty states", () => {
