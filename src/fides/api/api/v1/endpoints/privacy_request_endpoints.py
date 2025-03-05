@@ -174,7 +174,7 @@ from fides.service.privacy_request.privacy_request_service import (
     PrivacyRequestService,
     _process_privacy_request_restart,
     _requeue_privacy_request,
-    _trigger_pre_approval_webhooks,
+    handle_approval,
     queue_privacy_request,
 )
 
@@ -1310,19 +1310,7 @@ def verify_identification_code(
 
     logger.info("Identity verified for {}.", privacy_request.id)
 
-    if config_proxy.execution.require_manual_request_approval:
-        _trigger_pre_approval_webhooks(db, privacy_request)
-    else:
-        AuditLog.create(
-            db=db,
-            data={
-                "user_id": "system",
-                "privacy_request_id": privacy_request.id,
-                "action": AuditLogAction.approved,
-                "message": "",
-            },
-        )
-        queue_privacy_request(privacy_request.id)
+    handle_approval(db, config_proxy, privacy_request)
 
     return privacy_request  # type: ignore[return-value]
 
