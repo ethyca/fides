@@ -1,4 +1,4 @@
-import type { FidesEventType } from "../docs";
+import type { FidesEvent as DocsFidesEvent, FidesEventType } from "../docs";
 import { FidesCookie } from "./consent-types";
 
 // Bonus points: update the WindowEventMap interface with our custom event types
@@ -8,12 +8,11 @@ declare global {
 
 /**
  * Defines the type of "extra" details that can be optionally added to certain
- * events. This is intentionally vague, but constrained to be basic (primitive)
- * values for simplicity.
+ * events. This is intentionally vague. See the /docs/fides-event.ts
  */
 export type FidesEventExtraDetails = Record<
   string,
-  string | number | boolean | undefined
+  string | number | boolean | object | undefined
 >;
 
 /**
@@ -25,6 +24,13 @@ export type FidesEventDetail = FidesCookie & {
   debug?: boolean;
   extraDetails?: FidesEventExtraDetails;
 };
+
+/**
+ * Defines the properties available on event.detail.extraDetails.servingToggle
+ */
+export type FidesServingToggleDetails = NonNullable<
+  DocsFidesEvent["detail"]["extraDetails"]
+>["servingToggle"];
 
 /**
  * TODO (PROD-1815): Replace this type with this: import { FidesEvent } from "../types"
@@ -53,7 +59,7 @@ export const dispatchFidesEvent = (
   type: FidesEventType,
   cookie: FidesCookie | undefined,
   debug: boolean,
-  extraDetails?: FidesEventExtraDetails,
+  extraDetails?: any,
   eventTarget?: Event["target"],
 ) => {
   if (typeof window !== "undefined" && typeof CustomEvent !== "undefined") {

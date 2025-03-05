@@ -25,7 +25,11 @@ interface Props<T extends RecordListItem> {
   title: string;
   enabledIds: string[];
   renderToggleChild?: (item: T, isCustomPurpose?: boolean) => VNode;
-  onToggle: (payload: string[], item: T) => void;
+  onToggle: (
+    payload: string[],
+    item: T,
+    extraDetails: Record<string, any>,
+  ) => void;
   renderBadgeLabel?: (item: T) => string | undefined;
   hideToggles?: boolean;
 }
@@ -45,15 +49,16 @@ const RecordsList = <T extends RecordListItem>({
     return null;
   }
 
-  const handleToggle = (item: T) => {
+  const handleToggle = (item: T, extraDetails: Record<string, any>) => {
     const purposeId = `${item.id}`;
     if (enabledIds.indexOf(purposeId) !== -1) {
       onToggle(
         enabledIds.filter((e) => e !== purposeId),
         item,
+        extraDetails,
       );
     } else {
-      onToggle([...enabledIds, purposeId], item);
+      onToggle([...enabledIds, purposeId], item, extraDetails);
     }
   };
 
@@ -82,8 +87,8 @@ const RecordsList = <T extends RecordListItem>({
           key={item.id}
           title={item.bestTranslation?.title || getNameForItem(item)}
           noticeKey={`${item.id}`}
-          onToggle={() => {
-            handleToggle(item);
+          onToggle={(_, extraDetails) => {
+            handleToggle(item, extraDetails);
           }}
           checked={enabledIds.indexOf(`${item.id}`) !== -1}
           badge={renderBadgeLabel ? renderBadgeLabel(item) : undefined}

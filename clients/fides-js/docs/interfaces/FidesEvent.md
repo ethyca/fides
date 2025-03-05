@@ -118,6 +118,20 @@ Whether the user should be shown the consent experience. Only available on Fides
 
 What consent method (if any) caused this event.
 
+#### extraDetails.servingToggle?
+
+> `optional` **servingToggle**: `object`
+
+What toggle (if any) caused this event.
+
+#### extraDetails.servingToggle.label?
+
+> `optional` **label**: `string`
+
+#### extraDetails.servingToggle.id?
+
+> `optional` **id**: `string`
+
 #### Overrides
 
 `CustomEvent.detail`

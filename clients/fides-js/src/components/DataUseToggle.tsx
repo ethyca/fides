@@ -1,5 +1,6 @@
 import { ComponentChildren, h, VNode } from "preact";
 
+import { FidesServingToggleDetails } from "../lib/events";
 import { useDisclosure } from "../lib/hooks";
 import Toggle from "./Toggle";
 
@@ -20,7 +21,11 @@ const DataUseToggle = ({
   noticeKey: string;
   title: string;
   checked: boolean;
-  onToggle: (noticeKey: string, event: Event) => void;
+  onToggle: (
+    noticeKey: string,
+    toggleDetails: FidesServingToggleDetails,
+    event: Event,
+  ) => void;
   children?: ComponentChildren;
   badge?: string;
   gpcBadge?: VNode;

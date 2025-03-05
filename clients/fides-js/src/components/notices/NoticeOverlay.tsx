@@ -3,6 +3,7 @@ import "../fides.css";
 import { FunctionComponent, h } from "preact";
 import { useCallback, useEffect, useMemo, useState } from "preact/hooks";
 
+import { FidesEvent } from "../../docs/fides-event";
 import { isConsentOverride } from "../../lib/common-utils";
 import { getConsentContext } from "../../lib/consent-context";
 import {
@@ -23,7 +24,10 @@ import {
   getFidesConsentCookie,
   updateCookieFromNoticePreferences,
 } from "../../lib/cookie";
-import { dispatchFidesEvent } from "../../lib/events";
+import {
+  dispatchFidesEvent,
+  FidesServingToggleDetails,
+} from "../../lib/events";
 import { useNoticesServed } from "../../lib/hooks";
 import {
   selectBestExperienceConfigTranslation,
@@ -360,13 +364,18 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
             <NoticeToggles
               noticeToggles={noticeToggles}
               enabledNoticeKeys={draftEnabledNoticeKeys}
-              onChange={(updatedKeys, event) => {
+              onChange={(updatedKeys, toggleDetails, event) => {
+                const eventExtraDetails: FidesEvent["detail"]["extraDetails"] =
+                  {
+                    servingComponent: "modal",
+                    servingToggle: toggleDetails,
+                  };
                 setDraftEnabledNoticeKeys(updatedKeys);
                 dispatchFidesEvent(
                   "FidesUIChanged",
                   cookie,
                   options.debug,
-                  undefined,
+                  eventExtraDetails,
                   event.target,
                 );
               }}
