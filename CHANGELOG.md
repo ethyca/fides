@@ -63,6 +63,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Removed version pins in LDFLAGS & CFLAGS for local MSSQL builds [#5760](https://github.com/ethyca/fides/pull/5760)
 
 ### Fixed
+- Fixed background color of the message indicating the rows selected [#5847](https://github.com/ethyca/fides/pull/5847)
 - Fixed bug with D&D table column widths [#5813](https://github.com/ethyca/fides/pull/5813)
 - Fixed `poll_for_exited_privacy_request_tasks` for DSR-processing improvements [#5820](https://github.com/ethyca/fides/pull/5820)
 
