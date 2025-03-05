@@ -33,7 +33,7 @@ const ConsentReportingPage = () => {
   const [startDate, setStartDate] = React.useState<Dayjs | null>(null);
   const [endDate, setEndDate] = React.useState<Dayjs | null>(null);
 
-  const { data, isLoading, isFetching } =
+  const { data, isLoading, isFetching, refetch } =
     useGetAllHistoricalPrivacyPreferencesQuery({
       page: pagination.pageIndex,
       size: pagination.pageSize,
@@ -66,7 +66,14 @@ const ConsentReportingPage = () => {
 
   return (
     <Layout title="Consent reporting">
-      <PageHeader heading="Consent reporting" />
+      <PageHeader
+        heading="Consent reporting"
+        rightContent={
+          <Button type="primary" onClick={refetch} loading={isFetching}>
+            Refresh
+          </Button>
+        }
+      />
       <Box data-testid="consent-reporting">
         <Text fontSize="sm" mb={6} width={{ base: "100%", lg: "50%" }}>
           Download a CSV containing a report of consent preferences made by
