@@ -1,5 +1,5 @@
 import { baseApi } from "~/features/common/api.slice";
-import { Page_ConsentReportingSchema_ } from "~/types/api";
+import { Page_ConsentReportingSchema_, PreferencesSaved } from "~/types/api";
 
 type DateRange = {
   startDate?: string;
@@ -30,7 +30,20 @@ export function convertDateRangeToSearchParams({
 
 export const consentReportingApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
-    downloadReport: build.query<any, DateRange>({
+    getCurrentPrivacyPreferences: build.query<any, { search: string }>({
+      query: ({ search }) => ({
+        url: "current-privacy-preferences",
+        params: {
+          email: search,
+          phone_number: search,
+          fides_user_device_id: search,
+          external_id: search,
+        },
+      }),
+      providesTags: ["Current Privacy Preferences"],
+    }),
+
+    downloadReport: build.query<PreferencesSaved, DateRange>({
       query: ({ startDate, endDate }) => {
         const params = {
           ...convertDateRangeToSearchParams({ startDate, endDate }),
@@ -63,4 +76,5 @@ export const consentReportingApi = baseApi.injectEndpoints({
 export const {
   useLazyDownloadReportQuery,
   useGetAllHistoricalPrivacyPreferencesQuery,
+  useLazyGetCurrentPrivacyPreferencesQuery,
 } = consentReportingApi;

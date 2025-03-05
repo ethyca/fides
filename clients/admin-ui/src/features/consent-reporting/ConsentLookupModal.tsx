@@ -1,17 +1,24 @@
+import { getCoreRowModel, useReactTable } from "@tanstack/react-table";
 import {
-  AntFlex as Flex,
   AntForm as Form,
   AntInput as Input,
   AntTypography as Typography,
-  Button,
   Modal,
   ModalBody,
   ModalCloseButton,
   ModalContent,
   ModalHeader,
   ModalOverlay,
+  useToast,
 } from "fidesui";
 import { useState } from "react";
+
+import { PreferenceWithNoticeInformation } from "~/types/api";
+
+import { getErrorMessage } from "../common/helpers";
+import { FidesTableV2 } from "../common/table/v2";
+import { useLazyGetCurrentPrivacyPreferencesQuery } from "./consent-reporting.slice";
+import useConsentLookupTableColumns from "./hooks/useConsentLookupTableColumns";
 
 interface ConsentLookupModalProps {
   isOpen: boolean;
@@ -19,11 +26,41 @@ interface ConsentLookupModalProps {
 }
 
 const ConsentLookupModal = ({ isOpen, onClose }: ConsentLookupModalProps) => {
-  const [showModal, setShowModal] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
+  const [searchResults, setSearchResults] = useState<
+    PreferenceWithNoticeInformation[]
+  >([]);
+  const [getCurrentPrivacyPreferencesTrigger] =
+    useLazyGetCurrentPrivacyPreferencesQuery();
 
-  const handleSearch = (value: string) => {
-    console.log("value", value);
+  const toast = useToast();
+
+  const handleSearch = async (search: string) => {
+    setIsSearching(true);
+    const { data, isError, error } = await getCurrentPrivacyPreferencesTrigger({
+      search,
+    });
+    if (isError) {
+      const errorMsg = getErrorMessage(
+        error,
+        `A problem occurred while looking up the preferences.`,
+      );
+
+      toast({ status: "error", description: errorMsg });
+    } else {
+      setSearchResults(data?.preferences || []);
+    }
+    setIsSearching(false);
   };
+
+  const columns = useConsentLookupTableColumns();
+  const tableInstance = useReactTable<PreferenceWithNoticeInformation>({
+    getCoreRowModel: getCoreRowModel(),
+    data: searchResults,
+    columns,
+    getRowId: (row) => `${row.privacy_notice_history_id}`,
+    manualPagination: true,
+  });
 
   return (
     <Modal
@@ -58,9 +95,15 @@ const ConsentLookupModal = ({ isOpen, onClose }: ConsentLookupModalProps) => {
                 placeholder="Enter email, phone number, or device ID"
                 enterButton="Search"
                 onSearch={handleSearch}
+                loading={isSearching}
               />
             </Form.Item>
           </Form>
+          <div className="mb-4">
+            <FidesTableV2<PreferenceWithNoticeInformation>
+              tableInstance={tableInstance}
+            />
+          </div>
         </ModalBody>
       </ModalContent>
     </Modal>
