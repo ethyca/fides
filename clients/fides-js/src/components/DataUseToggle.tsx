@@ -24,7 +24,6 @@ const DataUseToggle = ({
   onToggle: (
     noticeKey: string,
     toggleDetails: FidesServingToggleDetails,
-    event: Event,
   ) => void;
   children?: ComponentChildren;
   badge?: string;
