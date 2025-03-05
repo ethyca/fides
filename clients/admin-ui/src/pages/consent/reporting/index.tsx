@@ -1,6 +1,11 @@
 /* eslint-disable react/no-unstable-nested-components */
 import { getCoreRowModel, useReactTable } from "@tanstack/react-table";
-import { Box, Text } from "fidesui";
+import {
+  AntDatePicker as DatePicker,
+  AntFlex as Flex,
+  Box,
+  Text,
+} from "fidesui";
 import React, { useMemo } from "react";
 
 import Layout from "~/features/common/Layout";
@@ -9,6 +14,7 @@ import {
   FidesTableV2,
   PAGE_SIZES,
   PaginationBar,
+  TableActionBar,
   TableSkeletonLoader,
   useServerSidePagination,
 } from "~/features/common/table/v2";
@@ -61,6 +67,10 @@ const ConsentReportingPage = () => {
           </Box>
         ) : (
           <>
+            <TableActionBar>
+              <DatePicker.RangePicker placeholder={["From", "To"]} maxDate />
+              <div />
+            </TableActionBar>
             <FidesTableV2<ConsentReportingSchema>
               tableInstance={tableInstance}
             />

@@ -29,6 +29,7 @@ export {
   Card as AntCard,
   Checkbox as AntCheckbox,
   Col as AntCol,
+  DatePicker as AntDatePicker,
   Divider as AntDivider,
   Dropdown as AntDropdown,
   Empty as AntEmpty,
