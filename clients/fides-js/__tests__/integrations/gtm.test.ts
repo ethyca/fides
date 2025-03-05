@@ -31,7 +31,8 @@ describe("gtm", () => {
       );
 
       expect(
-        window.dataLayer?.filter((event) => event.event === eventName).length,
+        (window.dataLayer ?? []).filter((event) => event.event === eventName)
+          .length,
       ).toBeGreaterThanOrEqual(1);
     },
   );
