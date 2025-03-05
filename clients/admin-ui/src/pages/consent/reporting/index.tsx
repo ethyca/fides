@@ -6,9 +6,8 @@ import {
   AntDatePicker as DatePicker,
   AntDropdown as Dropdown,
   AntFlex as Flex,
-  Box,
+  AntTypography as Typography,
   Icons,
-  Text,
 } from "fidesui";
 import React, { useMemo } from "react";
 
@@ -74,19 +73,19 @@ const ConsentReportingPage = () => {
           </Button>
         }
       />
-      <Box data-testid="consent-reporting">
-        <Text fontSize="sm" mb={6} width={{ base: "100%", lg: "50%" }}>
+      <div data-testid="consent-reporting">
+        <Typography.Text className="mb-4 block">
           Download a CSV containing a report of consent preferences made by
           users on your sites. Select a date range below and click
           &quot;Download report&quot;. Depending on the number of records in the
           date range you select, it may take several minutes to prepare the file
           after you click &quot;Download report&quot;.
-        </Text>
+        </Typography.Text>
 
         {isLoading ? (
-          <Box p={2} borderWidth={1}>
+          <div className="border p-2">
             <TableSkeletonLoader rowHeight={26} numRows={10} />
-          </Box>
+          </div>
         ) : (
           <>
             <TableActionBar>
@@ -144,7 +143,7 @@ const ConsentReportingPage = () => {
             />
           </>
         )}
-      </Box>
+      </div>
     </Layout>
   );
 };
