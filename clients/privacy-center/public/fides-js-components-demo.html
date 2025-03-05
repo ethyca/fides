@@ -312,7 +312,9 @@
         console.log("Fides has been initialized!");
         // Pretty-print the fides consent object and add it to the page.
         document.getElementById("consent-json").textContent = JSON.stringify(
-          Fides.consent,
+          Fides.experience.experience_config?.component === "tcf_overlay"
+            ? Fides.tcf_consent
+            : Fides.consent,
           null,
           2,
         );
@@ -352,6 +354,16 @@
       } else {
         window.addEventListener("FidesInitialized", onInitialized);
       }
+      window.addEventListener("FidesUpdated", () => {
+        console.log("Fides has been updated");
+        document.getElementById("consent-json").textContent = JSON.stringify(
+          Fides.experience.experience_config?.component === "tcf_overlay"
+            ? Fides.tcf_consent
+            : Fides.consent,
+          null,
+          2,
+        );
+      });
     })();
   </script>
 </html>
