@@ -124,13 +124,17 @@ What consent method (if any) caused this event.
 
 What toggle (if any) caused this event.
 
-#### extraDetails.servingToggle.label?
+#### extraDetails.servingToggle.label
 
-> `optional` **label**: `string`
+> **label**: `string`
 
-#### extraDetails.servingToggle.id?
+#### extraDetails.servingToggle.id
 
-> `optional` **id**: `string`
+> **id**: `string`
+
+#### extraDetails.servingToggle.checked
+
+> **checked**: `boolean`
 
 #### Overrides
 
