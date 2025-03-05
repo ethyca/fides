@@ -694,57 +694,52 @@ describe("Fides-js TCF", () => {
         });
       });
 
-      // TODO: remove the `it.only`!
-      it.only("can fire FidesUIChanged events", () => {
+      it("can fire FidesUIChanged events", () => {
+        // Enable the first purpose toggle
         cy.getByTestId(`toggle-${PURPOSE_4.name}`).click();
         cy.get("@FidesUIChanged").its("callCount").should("equal", 1);
-        // TODO: remove this log
-        cy.get("@FidesUIChanged")
-          .its("firstCall.args.0")
-          .then((event) => cy.log("FidesUIChanged event:", event));
         cy.get("@FidesUIChanged")
           .its("firstCall.args.0")
           .then((event: CustomEvent) => {
-            expect(event.type).to.equal("FidesUIChanged");
-            // Check that the consent object hasn't changed (yet!)
-            expect(event.detail.consent).to.deep.equal({});
-
-            // Check the event target is not the window
-            // TODO: update this assertion to be better
-            expect(event.target.constructor.name).to.equal("HTMLElement");
-            // NOTE, this might be a better assertion, but I like the error message from the above
-            // expect(event.target instanceof HTMLElement).to.be.true;
-            expect(
-              (event.target as HTMLElement).classList.contains("fides-toggle"),
-            ).to.be.true;
-
-            // TODO: Or, check that the event detail includes the original target?
-            expect(event.detail.originalTarget).to.deep.include({
-              id: `toggle-${PURPOSE_4.name}`,
-            });
-
             // Check that the extraDetails includes context about what changed
-            // TODO: finalize this expected detail
-            expect(event.detail.extraDetails).to.deep.include({
-              noticeKey: null, // TCF notices do not have keys
-              noticeLabel: PURPOSE_4.name,
-              noticeValue: true,
+            expect(event.type).to.equal("FidesUIChanged");
+            expect(event.detail.extraDetails).to.have.property("servingToggle");
+            expect(event.detail.extraDetails.servingToggle).to.deep.include({
+              label: PURPOSE_4.name,
+              id: "", // TODO: What are TCF notice ids?
+              checked: true,
             });
           });
 
+        // Enable the second purpose toggle
         cy.getByTestId(`toggle-${PURPOSE_6.name}`).click();
         cy.get("@FidesUIChanged").its("callCount").should("equal", 2);
         cy.get("@FidesUIChanged")
           .its("secondCall.args.0")
           .then((event: CustomEvent) => {
-            // Check that the consent object hasn't change (yet!)
-            expect(event.detail.consent).to.deep.equal({});
-
             // Check that the extraDetails includes context about what changed
-            expect(event.detail.extraDetails).to.deep.include({
-              noticeKey: null, // TCF notices do not have keys
-              noticeLabel: PURPOSE_6.name,
-              noticeValue: true,
+            expect(event.type).to.equal("FidesUIChanged");
+            expect(event.detail.extraDetails).to.have.property("servingToggle");
+            expect(event.detail.extraDetails.servingToggle).to.deep.include({
+              label: PURPOSE_6.name,
+              id: "", // TODO: What are TCF notice ids?
+              checked: true,
+            });
+          });
+
+        // Switch the first purpose toggle back off
+        cy.getByTestId(`toggle-${PURPOSE_4.name}`).click();
+        cy.get("@FidesUIChanged").its("callCount").should("equal", 3);
+        cy.get("@FidesUIChanged")
+          .its("thirdCall.args.0")
+          .then((event: CustomEvent) => {
+            // Check that the extraDetails includes context about what changed
+            expect(event.type).to.equal("FidesUIChanged");
+            expect(event.detail.extraDetails).to.have.property("servingToggle");
+            expect(event.detail.extraDetails.servingToggle).to.deep.include({
+              label: PURPOSE_4.name,
+              id: "", // TODO: What are TCF notice ids?
+              checked: false,
             });
           });
       });

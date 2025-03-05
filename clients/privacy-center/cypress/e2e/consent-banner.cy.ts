@@ -2122,7 +2122,19 @@ describe("Consent overlay", () => {
 
         // Toggle the notice, but don't save yet
         cy.getByTestId("toggle-Advertising").click();
-        cy.get("@FidesUIChanged").should("have.been.calledOnce");
+        cy.get("@FidesUIChanged").its("callCount").should("equal", 1);
+        cy.get("@FidesUIChanged")
+          .its("firstCall.args.0")
+          .then((event: CustomEvent) => {
+            // Check that the extraDetails includes context about what changed
+            expect(event.type).to.equal("FidesUIChanged");
+            expect(event.detail.extraDetails).to.have.property("servingToggle");
+            expect(event.detail.extraDetails.servingToggle).to.deep.include({
+              label: "Advertising",
+              id: PRIVACY_NOTICE_KEY_1,
+              checked: true,
+            });
+          });
         cy.get("@FidesUpdating").should("not.have.been.called");
         cy.get("@FidesUpdated").should("not.have.been.called");
 
