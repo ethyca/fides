@@ -420,7 +420,6 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         to provided policy. The `all_object_fields` key maps to a JSON structure
         that holds all values, including those that have not been masked.
         """
-
         collection_name: str = self.node.address.collection
         collection_values: Dict[str, Row] = {collection_name: row}
         identity_data: Dict[str, Any] = privacy_request.get_cached_identity_data()
@@ -481,14 +480,25 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
 
         # map of all values including those not being masked/updated
         all_value_map: Dict[str, Any] = self.all_value_map(row)
+
+        logger.info("Param Values -   post all value: {}", param_values)
         # both maps use field paths for the keys so we can merge them before unflattening
         # values in update_value_map will override values in all_value_map
+
+        merged_dicts = merge_dicts(all_value_map, update_value_map)
+
+        logger.info("Param Values -   merged dicts: {}", param_values)
+
         complete_object: Dict[str, Any] = unflatten_dict(
-            merge_dicts(all_value_map, update_value_map)
+            merged_dicts
         )
+
+        logger.info("Param Values -  Post Mask pre  assignment: {}", param_values)
 
         param_values[MASKED_OBJECT_FIELDS] = masked_object
         param_values[ALL_OBJECT_FIELDS] = complete_object
+
+        logger.info("Param Values -  Post Mask assignment: {}", param_values)
 
         return param_values
 
