@@ -2,7 +2,7 @@ import {
   AntFlex as Flex,
   AntForm as Form,
   AntInput as Input,
-  AntTooltip,
+  AntTooltip as Tooltip,
   AntTypography as Typography,
 } from "fidesui";
 
@@ -66,9 +66,9 @@ const RequestDetails = ({ subjectRequest }: RequestDetailsProps) => {
                 label={`Subject ${label.toLocaleLowerCase()}`}
                 key={key}
               >
-                <AntTooltip title={text} trigger="click">
+                <Tooltip title={text} trigger="click">
                   <Typography.Text ellipsis>{text}</Typography.Text>
-                </AntTooltip>
+                </Tooltip>
               </RequestDetailsRow>
             );
           })}
