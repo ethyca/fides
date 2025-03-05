@@ -38,7 +38,7 @@ describe("gtm", () => {
   );
 
   test.each(eventsThatDoNotFire)(
-    "that fides forwards %s event to gtm if appropriate",
+    "that fides doesn't forward %s event to gtm",
     (eventName) => {
       gtm();
       window.dispatchEvent(
