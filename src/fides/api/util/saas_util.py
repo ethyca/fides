@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 import re
 import socket
-from collections import defaultdict, deque
+from collections import defaultdict
 from ipaddress import IPv4Address, IPv6Address, ip_address
 from typing import Any, Dict, List, Optional, Set, Tuple, Union
 
@@ -254,60 +254,6 @@ def merge_datasets(dataset: GraphDataset, config_dataset: GraphDataset) -> Graph
         collections=collections,
         connection_key=dataset.connection_key,
     )
-
-
-def unflatten_dict(flat_dict: Dict[str, Any], separator: str = ".") -> Dict[str, Any]:
-    """
-    Converts a dictionary of paths/values into a nested dictionary
-
-    example:
-
-    {"A.B": "1", "A.C": "2"}
-
-    becomes
-
-    {
-        "A": {
-            "B": "1",
-            "C": "2"
-        }
-    }
-    """
-    output: Dict[Any, Any] = {}
-    queue = deque(flat_dict.items())
-
-    while queue:
-        path, value = queue.popleft()
-        keys = path.split(separator)
-        target = output
-        for i, current_key in enumerate(keys[:-1]):
-            next_key = keys[i + 1]
-            if next_key.isdigit():
-                target = target.setdefault(current_key, [])
-            else:
-                if isinstance(target, dict):
-                    target = target.setdefault(current_key, {})
-                elif isinstance(target, list):
-                    while len(target) <= int(current_key):
-                        target.append({})
-                    target = target[int(current_key)]
-        try:
-            if isinstance(target, list):
-                target.append(value)
-            else:
-                # If the value is a dictionary, add its components to the queue for processing
-                if isinstance(value, dict):
-                    target = target.setdefault(keys[-1], {})
-                    for inner_key, inner_value in value.items():
-                        new_key = f"{path}{separator}{inner_key}"
-                        queue.append((new_key, inner_value))
-                else:
-                    target[keys[-1]] = value
-        except TypeError as exc:
-            raise FidesopsException(
-                f"Error unflattening dictionary, conflicting levels detected: {exc}"
-            )
-    return output
 
 
 def format_body(
