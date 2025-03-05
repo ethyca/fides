@@ -12,7 +12,7 @@ declare global {
  */
 export type FidesEventExtraDetails = Record<
   string,
-  string | number | boolean | object | undefined
+  string | number | boolean | Record<string, unknown> | undefined
 >;
 
 /**
