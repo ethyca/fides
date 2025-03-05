@@ -75,17 +75,34 @@ A `Fides.consent` value showing the user has opted-in to analytics, but not mark
 
 > `optional` **fides\_string**: `string`
 
-User's current consent string(s) combined into a single value. Currently,
-this is used by FidesJS to store IAB consent strings from various
-frameworks such as TCF, GPP, and Google's "Additional Consent" string.
+User's current consent string(s) combined into a single value. The string
+consists of three parts separated by commas in the format:
+`TC_STRING,AC_STRING,GPP_STRING` where:
+
+- TC_STRING: IAB TCF (Transparency & Consent Framework) string
+- AC_STRING: Google's Additional Consent string, derived from TC_STRING
+- GPP_STRING: IAB GPP (Global Privacy Platform) string
+
+Note: The AC_STRING can only exist if TC_STRING exists, as it's derived from it.
+When GPP is enabled, the GPP_STRING portion is automatically initialized during
+FidesJS initialization, either preserving any existing GPP string or using a
+default value. The GPP_STRING is independent and can exist with or without the
+other strings.
 
 #### Example
 
-Example `fides_string` showing a combination of:
-- IAB TC string: `CPzHq4APzHq4AAMABBENAUEAALAAAEOAAAAAAEAEACACAAAA`
-- Google AC string: `1~61.70`
 ```ts
-console.log(Fides.fides_string); // CPzHq4APzHq4AAMABBENAUEAALAAAEOAAAAAAEAEACACAAAA,1~61.70
+// Complete string with all parts:
+console.log(Fides.fides_string);
+// "CPzHq4APzHq4AAMABBENAUEAALAAAEOAAAAAAEAEACACAAAA,1~61.70,DBABLA~BVAUAAAAAWA.QA"
+
+// TC and AC strings only (no GPP):
+console.log(Fides.fides_string);
+// "CPzHq4APzHq4AAMABBENAUEAALAAAEOAAAAAAEAEACACAAAA,1~61.70"
+
+// GPP string only:
+console.log(Fides.fides_string);
+// ",,DBABLA~BVAUAAAAAWA.QA"
 ```
 
 ***

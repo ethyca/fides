@@ -17,8 +17,11 @@
         window.render_delay = 0; // increment the delay to test/mimic a slow loading or dynamic page
         const params = new URLSearchParams(window.location.search);
         const geolocation = params.get("geolocation");
+        const gpp = params.get("gpp");
         const src = `/fides.js${!!params.size ? `?${params.toString()}` : ""}`;
-
+        if (gpp === "debug") {
+          document.write('<script src="/fides-ext-gpp.js"><\/script>');
+        }
         document.write('<script src="' + src + '"><\/script>');
         document.write("<script>Fides.gtm();<\/script>");
       })();
@@ -137,7 +140,11 @@
         console.log("Fides has been initialized!");
         // Pretty-print the fides consent object and add it to the page.
         document.getElementById("consent-json").textContent = JSON.stringify(
-          Fides.consent,
+          Fides.experience &&
+            Fides.experience.experience_config &&
+            Fides.experience.experience_config.component === "tcf_overlay"
+            ? Fides.tcf_consent
+            : Fides.consent,
           null,
           2,
         );
@@ -186,7 +193,11 @@
       window.addEventListener("FidesUpdated", () => {
         console.log("Fides has been updated");
         document.getElementById("consent-json").textContent = JSON.stringify(
-          Fides.consent,
+          Fides.experience &&
+            Fides.experience.experience_config &&
+            Fides.experience.experience_config.component === "tcf_overlay"
+            ? Fides.tcf_consent
+            : Fides.consent,
           null,
           2,
         );
