@@ -22,9 +22,12 @@ from fides.api.models.privacy_request import (
 from fides.api.models.property import Property
 from fides.api.schemas.api import BulkUpdateFailed
 from fides.api.schemas.messaging.messaging import MessagingActionType
+from fides.api.schemas.policy import ActionType, CurrentStep
 from fides.api.schemas.privacy_request import (
     BulkPostPrivacyRequests,
     BulkReviewResponse,
+    CheckpointActionRequired,
+    ExecutionLogStatus,
     PrivacyRequestCreate,
     PrivacyRequestResponse,
     PrivacyRequestResubmit,
@@ -51,7 +54,7 @@ from fides.service.messaging.messaging_service import (
 class PrivacyRequestError(Exception):
     """Base exception for privacy request operations."""
 
-    def __init__(self, message: str, data: dict):
+    def __init__(self, message: str, data: Optional[Dict] = None):
         self.message = message
         self.data = data
         super().__init__(message)
@@ -328,7 +331,7 @@ class PrivacyRequestService:
             create_data, authenticated=True, submitted_by=submitted_by
         )
 
-        if self.config_proxy.execution.require_manual_request_approval:
+        if _manual_approval_required(self.config_proxy, privacy_request):
             self.approve_privacy_requests(
                 [privacy_request_id],
                 reviewed_by=reviewed_by,
@@ -588,19 +591,7 @@ def _handle_notifications_and_processing(
             privacy_request.property_id,
         )
 
-    if config_proxy.execution.require_manual_request_approval:
-        _trigger_pre_approval_webhooks(db, privacy_request)
-    else:
-        AuditLog.create(
-            db=db,
-            data={
-                "user_id": "system",
-                "privacy_request_id": privacy_request.id,
-                "action": AuditLogAction.approved,
-                "message": "",
-            },
-        )
-        queue_privacy_request(privacy_request.id)
+    handle_approval(db, config_proxy, privacy_request)
 
 
 def _trigger_pre_approval_webhooks(
@@ -615,3 +606,115 @@ def _trigger_pre_approval_webhooks(
             webhook=webhook,
             policy_action=privacy_request.policy.get_action_type(),
         )
+
+
+def _requeue_privacy_request(
+    db: Session,
+    privacy_request: PrivacyRequest,
+) -> PrivacyRequestResponse:
+    """If failed_step is provided, restart the DSR within that step. Otherwise,
+    restart the privacy request from the beginning."""
+
+    if privacy_request.status not in [
+        PrivacyRequestStatus.approved,
+        PrivacyRequestStatus.in_processing,
+    ]:
+        raise PrivacyRequestError(
+            f"Cannot re-queue privacy request {privacy_request.id} with status {privacy_request.status.value}"
+        )
+
+    # Both DSR 2.0 and 3.0 cache checkpoint details
+    checkpoint_details: Optional[CheckpointActionRequired] = (
+        privacy_request.get_failed_checkpoint_details()
+    )
+    resume_step = checkpoint_details.step if checkpoint_details else None
+
+    # DSR 3.0 additionally stores Request Tasks in the application db that can be used to infer
+    # a resume checkpoint in the event the cache has expired.
+    if not resume_step and privacy_request.request_tasks.count():
+        if privacy_request.consent_tasks.count():
+            resume_step = CurrentStep.consent
+        elif privacy_request.erasure_tasks.count():
+            # Checking if access terminator task was completed, because erasure tasks are created
+            # at the same time as the access tasks
+            terminator_access_task = privacy_request.get_terminate_task_by_action(
+                ActionType.access
+            )
+            resume_step = (
+                CurrentStep.erasure
+                if terminator_access_task.status == ExecutionLogStatus.complete
+                else CurrentStep.access
+            )
+        elif privacy_request.access_tasks.count():
+            resume_step = CurrentStep.access
+
+    logger.debug(
+        "Re-queuing privacy request {} from step {}",
+        privacy_request.id,
+        resume_step.value if resume_step else None,
+    )
+
+    return _process_privacy_request_restart(
+        privacy_request,
+        resume_step,
+        db,
+    )
+
+
+def _process_privacy_request_restart(
+    privacy_request: PrivacyRequest,
+    failed_step: Optional[CurrentStep],
+    db: Session,
+) -> PrivacyRequestResponse:
+    """If failed_step is provided, restart the DSR within that step. Otherwise,
+    restart the privacy request from the beginning."""
+    if failed_step:
+        logger.info(
+            "Restarting failed privacy request '{}' from '{}'",
+            privacy_request.id,
+            failed_step,
+        )
+    else:
+        logger.info(
+            "Restarting failed privacy request '{}' from the beginning",
+            privacy_request.id,
+        )
+
+    privacy_request.status = PrivacyRequestStatus.in_processing
+    privacy_request.save(db=db)
+    queue_privacy_request(
+        privacy_request_id=privacy_request.id,
+        from_step=failed_step.value if failed_step else None,
+    )
+
+    return privacy_request  # type: ignore[return-value]
+
+
+def _manual_approval_required(
+    config_proxy: ConfigProxy,
+    privacy_request: PrivacyRequest,
+) -> bool:
+    """Determines if a privacy request requires manual approval."""
+    return (
+        config_proxy.execution.require_manual_request_approval
+        and privacy_request.policy.get_action_type() != ActionType.consent.value
+    )
+
+
+def handle_approval(
+    db: Session, config_proxy: ConfigProxy, privacy_request: PrivacyRequest
+) -> None:
+    """Evaluate manual approval and handle processing or pre-approval webhooks."""
+    if _manual_approval_required(config_proxy, privacy_request):
+        _trigger_pre_approval_webhooks(db, privacy_request)
+    else:
+        AuditLog.create(
+            db=db,
+            data={
+                "user_id": "system",
+                "privacy_request_id": privacy_request.id,
+                "action": AuditLogAction.approved,
+                "message": "",
+            },
+        )
+        queue_privacy_request(privacy_request.id)

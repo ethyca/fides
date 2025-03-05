@@ -16,6 +16,7 @@ export interface RecordListItem {
   id: string | number;
   name?: string;
   bestTranslation?: PrivacyNoticeTranslation | null; // only used for custom purposes
+  disabled?: boolean; // only used for custom purposes
 }
 
 interface Props<T extends RecordListItem> {
@@ -89,6 +90,7 @@ const RecordsList = <T extends RecordListItem>({
           includeToggle={!hideToggles}
           onLabel={toggleOnLabel}
           offLabel={toggleOffLabel}
+          disabled={item.disabled}
         >
           {renderToggleChild
             ? renderToggleChild(item, Boolean(item.bestTranslation))

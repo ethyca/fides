@@ -15,7 +15,7 @@ on:
 
 env:
   IMAGE: ethyca/fides:local
-  DEFAULT_PYTHON_VERSION: "3.10.13"
+  DEFAULT_PYTHON_VERSION: "3.10.16"
   # Docker auth with read-only permissions.
   DOCKER_USER: ${{ secrets.DOCKER_USER }}
   DOCKER_RO_TOKEN: ${{ secrets.DOCKER_RO_TOKEN }}
@@ -47,7 +47,7 @@ jobs:
     strategy:
       matrix:
         # NOTE: These are the currently supported/tested Python Versions
-        python_version: ["3.9.18", "3.10.13"]
+        python_version: ["3.9.21", "3.10.16"]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -58,7 +58,7 @@ jobs:
         uses: docker/setup-buildx-action@v3
 
       - name: Build container
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           builder: ${{ steps.buildx.outputs.name }}
           context: .
@@ -209,7 +209,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python_version: ["3.9.18", "3.10.13"]
+        python_version: ["3.9.21", "3.10.16"]
         test_selection:
           - "ctl-not-external"
           - "ops-unit-api"
@@ -251,7 +251,7 @@ jobs:
         run: nox -s "pytest(${{ matrix.test_selection }})"
 
       - name: Upload coverage
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: true
@@ -266,7 +266,7 @@ jobs:
     strategy:
       max-parallel: 1 # This prevents collisions in shared external resources
       matrix:
-        python_version: ["3.9.18", "3.10.13"]
+        python_version: ["3.9.21", "3.10.16"]
     runs-on: ubuntu-latest
     timeout-minutes: 20
     # In PRs run with the "unsafe" label, or run on a "push" event to main
@@ -328,7 +328,7 @@ jobs:
     strategy:
       max-parallel: 1 # This prevents collisions in shared external resources
       matrix:
-        python_version: ["3.9.18", "3.10.13"]
+        python_version: ["3.9.21", "3.10.16"]
     runs-on: ubuntu-latest
     timeout-minutes: 30
     # In PRs run with the "unsafe" label, or run on a "push" event to main
@@ -427,7 +427,7 @@ jobs:
     strategy:
       max-parallel: 1 # This prevents collisions in shared external resources
       matrix:
-        python_version: ["3.9.18", "3.10.13"]
+        python_version: ["3.9.21", "3.10.16"]
     steps:
       - name: Download container
         uses: actions/download-artifact@v4

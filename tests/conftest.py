@@ -17,6 +17,7 @@ from fideslang.models import System as SystemSchema
 from httpx import AsyncClient
 from loguru import logger
 from sqlalchemy.engine.base import Engine
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 
@@ -62,6 +63,7 @@ from tests.fixtures.integration_fixtures import *
 from tests.fixtures.manual_fixtures import *
 from tests.fixtures.manual_webhook_fixtures import *
 from tests.fixtures.mariadb_fixtures import *
+from tests.fixtures.messaging_fixtures import *
 from tests.fixtures.mongodb_fixtures import *
 from tests.fixtures.mssql_fixtures import *
 from tests.fixtures.mysql_fixtures import *
@@ -324,14 +326,21 @@ def application_user(db, oauth_client):
 
 @pytest.fixture
 def user(db):
-    user = FidesUser.create(
-        db=db,
-        data={
-            "username": "test_fidesops_user",
-            "password": "TESTdcnG@wzJeu0&%3Qe2fGo7",
-            "email_address": "fides.user@ethyca.com",
-        },
-    )
+    try:
+        user = FidesUser.create(
+            db=db,
+            data={
+                "username": "test_fidesops_user",
+                "password": "TESTdcnG@wzJeu0&%3Qe2fGo7",
+                "email_address": "fides.user@ethyca.com",
+            },
+        )
+        permission = FidesUserPermissions.create(
+            db=db, data={"user_id": user.id, "roles": [APPROVER]}
+        )
+    except IntegrityError:
+        user = db.query(FidesUser).filter_by(username="test_fidesops_user").first()
+        permission = db.query(FidesUserPermissions).filter_by(user_id=user.id).first()
     client = ClientDetail(
         hashed_secret="thisisatest",
         salt="thisisstillatest",
@@ -339,8 +348,6 @@ def user(db):
         scopes=[],
         user_id=user.id,
     )
-
-    FidesUserPermissions.create(db=db, data={"user_id": user.id, "roles": [APPROVER]})
 
     db.add(client)
     db.commit()

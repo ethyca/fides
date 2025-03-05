@@ -9,7 +9,7 @@ celery[pytest]==5.2.7
 click_default_group==1.2.2
 cloud-sql-python-connector==1.9.2
 colorama>=0.4.3
-cryptography==43.0.1
+cryptography==44.0.1
 dask==2022.9.2
 deepdiff==6.3.0
 defusedxml==0.7.1
@@ -19,13 +19,14 @@ fastapi[all]==0.111.0
 fastapi-pagination[sqlalchemy]==0.12.25
 fideslog==1.2.10
 firebase-admin==5.3.0
+flower==2.0.1
 GitPython==3.1.41
 httpx==0.23.1
 hvac==0.11.2
 iab-tcf==0.2.2
 immutables==0.20
 importlib_resources==5.12.0
-Jinja2==3.1.4
+Jinja2==3.1.5
 joblib==1.3.2
 loguru==0.6.0
 multidimensional_urlencode==0.0.4

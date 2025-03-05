@@ -70,7 +70,7 @@ class RedisSink:
         )
 
         # Encode and append log entry to the list in Redis
-        self.cache.push_encoded_object(key, log_entry)
+        self.cache.push_encoded_object(key, log_entry, expire_time=43200)  # 12 hours
 
 
 class Pii(str):

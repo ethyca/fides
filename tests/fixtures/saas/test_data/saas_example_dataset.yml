@@ -72,6 +72,7 @@ dataset:
                 fidesops_meta:
                   data_type: string
               - name: ADDRESS
+                data_type: object[]
                 fields:
                   - name: addr1
                     data_categories: [user.contact.address.street]
@@ -97,10 +98,12 @@ dataset:
                     data_categories: [user.contact.address.country]
                     fidesops_meta:
                       data_type: string
+                      read_only: true
               - name: PHONE
                 data_categories: [user.contact.phone_number]
                 fidesops_meta:
                   data_type: string
+                  read_only: true
               - name: BIRTHDAY
                 data_categories: [user.demographic.date_of_birth]
                 fidesops_meta:

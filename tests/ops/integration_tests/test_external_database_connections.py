@@ -171,6 +171,7 @@ def test_bigquery_example_data(bigquery_test_engine):
         [
             "address",
             "customer",
+            "customer_profile",
             "employee",
             "login",
             "order_item",

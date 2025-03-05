@@ -21,7 +21,7 @@ class ExecutionSettings(FidesSettings):
     )
     require_manual_request_approval: bool = Field(
         default=False,
-        description="Whether privacy requests require explicit approval to execute.",
+        description="Whether access and erasure privacy requests require explicit approval to execute. Consent privacy requests are always auto-approved.",
     )
     subject_identity_verification_required: bool = Field(
         default=False,
@@ -56,6 +56,10 @@ class ExecutionSettings(FidesSettings):
     state_polling_interval: int = Field(
         default=30,
         description="Seconds between polling for Privacy Requests that should change state",
+    )
+    interrupted_task_requeue_interval: int = Field(
+        default=300,
+        description="Seconds between polling for interrupted tasks to requeue",
     )
     use_dsr_3_0: bool = Field(
         default=False,
