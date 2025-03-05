@@ -22,6 +22,7 @@ import {
   useServerSidePagination,
 } from "~/features/common/table/v2";
 import { useGetAllHistoricalPrivacyPreferencesQuery } from "~/features/consent-reporting/consent-reporting.slice";
+import ConsentLookupModal from "~/features/consent-reporting/ConsentLookupModal";
 import useConsentReportingDownload from "~/features/consent-reporting/hooks/useConsentReportingDownload";
 import useConsentReportingTableColumns from "~/features/consent-reporting/hooks/useConsentReportingTableColumns";
 import { ConsentReportingSchema } from "~/types/api";
@@ -31,6 +32,8 @@ const ConsentReportingPage = () => {
   const today = useMemo(() => dayjs(), []);
   const [startDate, setStartDate] = React.useState<Dayjs | null>(null);
   const [endDate, setEndDate] = React.useState<Dayjs | null>(null);
+  const [isConsentLookupModalOpen, setIsConsentLookupModalOpen] =
+    React.useState(false);
 
   const { data, isLoading, isFetching, refetch } =
     useGetAllHistoricalPrivacyPreferencesQuery({
@@ -115,6 +118,7 @@ const ConsentReportingPage = () => {
                             Consent preference lookup
                           </span>
                         ),
+                        onClick: () => setIsConsentLookupModalOpen(true),
                       },
                     ],
                   }}
@@ -144,6 +148,10 @@ const ConsentReportingPage = () => {
           </>
         )}
       </div>
+      <ConsentLookupModal
+        isOpen={isConsentLookupModalOpen}
+        onClose={() => setIsConsentLookupModalOpen(false)}
+      />
     </Layout>
   );
 };
