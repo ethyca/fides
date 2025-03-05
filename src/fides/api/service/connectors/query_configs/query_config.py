@@ -166,6 +166,14 @@ class QueryConfig(Generic[T], ABC):
             if not strategy_config:
                 continue
             for rule_field_path in field_paths:
+                # Check if field is read-only before processing
+                field = self.field_map().get(rule_field_path)
+                if field and field.read_only:
+                    logger.debug(
+                        f"Skipping read-only field: {rule_field_path.string_path}"
+                    )
+                    continue
+
                 strategy: MaskingStrategy = MaskingStrategy.get_strategy(
                     strategy_config["strategy"], strategy_config["configuration"]
                 )
@@ -174,7 +182,7 @@ class QueryConfig(Generic[T], ABC):
                     for field_path, field in self.field_map().items()
                     if field_path == rule_field_path
                 ][0]
-                field = self.field_map().get(rule_field_path)
+
                 if field and field.masking_strategy_override:
                     masking_strategy_override = field.masking_strategy_override
                     strategy = MaskingStrategy.get_strategy(
