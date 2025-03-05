@@ -52,14 +52,23 @@ export const useServerSidePagination = () => {
   const onNextPageClick = useCallback(() => {
     setPageIndex((prev) => prev + 1);
   }, [setPageIndex]);
-  const isNextPageDisabled = useMemo(
-    () => totalPages === 0 || pageIndex === totalPages,
-    [pageIndex, totalPages],
-  );
 
-  const pageStartIndex = (pageIndex - 1) * pageSize;
-  const startRange = totalPages !== 0 ? pageStartIndex + 1 : 0;
-  const endRange = pageStartIndex + pageSize;
+  const isNextPageDisabled = useMemo(() => {
+    const noPages = !totalPages;
+    const lastPage = !!totalPages && pageIndex === totalPages;
+    return noPages || lastPage;
+  }, [pageIndex, totalPages]);
+
+  let startRange;
+  let endRange;
+  if (totalPages) {
+    const pageStartIndex = (pageIndex - 1) * pageSize;
+    startRange = pageStartIndex + 1;
+    endRange = pageStartIndex + pageSize;
+  } else {
+    startRange = 0;
+    endRange = 0;
+  }
 
   const resetPageIndexToDefault = useCallback(() => {
     setPageIndex(defaultPageIndex);
