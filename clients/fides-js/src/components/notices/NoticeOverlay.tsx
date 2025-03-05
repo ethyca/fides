@@ -361,7 +361,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
             <NoticeToggles
               noticeToggles={noticeToggles}
               enabledNoticeKeys={draftEnabledNoticeKeys}
-              onChange={(updatedKeys, toggleDetails, event) => {
+              onChange={(updatedKeys, toggleDetails) => {
                 const eventExtraDetails: FidesEvent["detail"]["extraDetails"] =
                   {
                     servingComponent: "modal",
@@ -373,7 +373,6 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
                   cookie,
                   options.debug,
                   eventExtraDetails,
-                  event.target,
                 );
               }}
             />
