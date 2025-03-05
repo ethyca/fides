@@ -706,7 +706,7 @@ describe("Fides-js TCF", () => {
             expect(event.detail.extraDetails).to.have.property("servingToggle");
             expect(event.detail.extraDetails.servingToggle).to.deep.include({
               label: PURPOSE_4.name,
-              id: "", // TODO: What are TCF notice ids?
+              id: PURPOSE_4.id.toString(),
               checked: true,
             });
           });
@@ -722,7 +722,7 @@ describe("Fides-js TCF", () => {
             expect(event.detail.extraDetails).to.have.property("servingToggle");
             expect(event.detail.extraDetails.servingToggle).to.deep.include({
               label: PURPOSE_6.name,
-              id: "", // TODO: What are TCF notice ids?
+              id: PURPOSE_6.id.toString(),
               checked: true,
             });
           });
@@ -738,7 +738,7 @@ describe("Fides-js TCF", () => {
             expect(event.detail.extraDetails).to.have.property("servingToggle");
             expect(event.detail.extraDetails.servingToggle).to.deep.include({
               label: PURPOSE_4.name,
-              id: "", // TODO: What are TCF notice ids?
+              id: PURPOSE_4.id.toString(),
               checked: false,
             });
           });

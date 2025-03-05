@@ -1,6 +1,7 @@
 import { h, VNode } from "preact";
 
 import { PrivacyNoticeTranslation } from "../../lib/consent-types";
+import { FidesServingToggleDetails } from "../../lib/events";
 import { DEFAULT_LOCALE, getCurrentLocale } from "../../lib/i18n";
 import { useI18n } from "../../lib/i18n/i18n-context";
 import DataUseToggle from "../DataUseToggle";
@@ -28,7 +29,7 @@ interface Props<T extends RecordListItem> {
   onToggle: (
     payload: string[],
     item: T,
-    extraDetails: Record<string, any>,
+    toggleDetails: FidesServingToggleDetails,
   ) => void;
   renderBadgeLabel?: (item: T) => string | undefined;
   hideToggles?: boolean;
@@ -49,16 +50,16 @@ const RecordsList = <T extends RecordListItem>({
     return null;
   }
 
-  const handleToggle = (item: T, extraDetails: Record<string, any>) => {
+  const handleToggle = (item: T, toggleDetails: FidesServingToggleDetails) => {
     const purposeId = `${item.id}`;
     if (enabledIds.indexOf(purposeId) !== -1) {
       onToggle(
         enabledIds.filter((e) => e !== purposeId),
         item,
-        extraDetails,
+        toggleDetails,
       );
     } else {
-      onToggle([...enabledIds, purposeId], item, extraDetails);
+      onToggle([...enabledIds, purposeId], item, toggleDetails);
     }
   };
 

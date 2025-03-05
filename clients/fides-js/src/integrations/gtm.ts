@@ -40,17 +40,19 @@ const pushFidesVariableToGTM = (fidesEvent: {
 export const gtm = () => {
   // List every FidesEventType as a record so that new additional events are
   // guaranteed to be pushed to GTM.
-  const fidesEvents: Record<FidesEventType, true> = {
-    FidesInitializing: true,
+  const fidesEvents: Record<FidesEventType, boolean> = {
+    FidesInitializing: false,
     FidesInitialized: true,
     FidesUpdating: true,
     FidesUpdated: true,
     FidesUIChanged: true,
-    FidesUIShown: true,
-    FidesModalClosed: true,
+    FidesUIShown: false,
+    FidesModalClosed: false,
   };
 
-  const events = Object.keys(fidesEvents) as FidesEventType[];
+  const events = Object.entries(fidesEvents)
+    .filter(([, dispatchToGtm]) => dispatchToGtm)
+    .map(([key]) => key) as FidesEventType[];
 
   // Listen for Fides events and cross-publish them to GTM
   events.forEach((eventName) => {

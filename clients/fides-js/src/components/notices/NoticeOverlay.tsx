@@ -24,10 +24,7 @@ import {
   getFidesConsentCookie,
   updateCookieFromNoticePreferences,
 } from "../../lib/cookie";
-import {
-  dispatchFidesEvent,
-  FidesServingToggleDetails,
-} from "../../lib/events";
+import { dispatchFidesEvent } from "../../lib/events";
 import { useNoticesServed } from "../../lib/hooks";
 import {
   selectBestExperienceConfigTranslation,
