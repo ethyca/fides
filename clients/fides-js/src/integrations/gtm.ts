@@ -39,7 +39,7 @@ const pushFidesVariableToGTM = (fidesEvent: {
  */
 export const gtm = () => {
   // List every FidesEventType as a record so that new additional events are
-  // guaranteed to be pushed to GTM.
+  // considered by future developers as to whether they should be pushed to GTM.
   const fidesEvents: Record<FidesEventType, boolean> = {
     FidesInitializing: false,
     FidesInitialized: true,
