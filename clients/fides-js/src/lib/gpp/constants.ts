@@ -24,8 +24,8 @@ export const CMP_VERSION = 1;
 export const FIDES_US_REGION_TO_GPP_SECTION: Record<string, GPPSection> = {
   us: { name: UsNat.NAME, id: UsNat.ID },
   us_ca: { name: UsCa.NAME, id: UsCa.ID },
-  us_ct: { name: UsCt.NAME, id: UsCt.ID },
   us_co: { name: UsCo.NAME, id: UsCo.ID },
+  us_ct: { name: UsCt.NAME, id: UsCt.ID },
   us_ut: { name: UsUt.NAME, id: UsUt.ID },
   us_va: { name: UsVa.NAME, id: UsVa.ID },
   us_de: { name: UsDe.NAME, id: UsDe.ID },
