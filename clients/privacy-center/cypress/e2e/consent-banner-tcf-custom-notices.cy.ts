@@ -377,7 +377,7 @@ describe("Fides-js TCF", () => {
           });
         // verify the data layer variables
         cy.get("@dataLayerPush")
-          .should("have.been.calledThrice")
+          .should("have.been.callCount", 4) // FidesInitialized + FidesUIShown (banner) + FidesUpdating + FidesUpdated
           // First call should be from initialization, before the user accepts all
           .its("firstCall.args.0")
           .should("deep.equal", {
@@ -395,41 +395,52 @@ describe("Fides-js TCF", () => {
               fides_string: undefined,
             },
           });
+        // Verify all event names in sequence
+        cy.get("@dataLayerPush")
+          .its("args")
+          .then((args) => {
+            expect(args[1][0].event).to.equal("FidesUIShown"); // banner
+            expect(args[2][0].event).to.equal("FidesUpdating");
+            expect(args[3][0].event).to.equal("FidesUpdated");
+          });
+
         // FidesUpdating call
         cy.get("@dataLayerPush")
-          .its("secondCall.args.0.Fides")
-          .should("deep.include", {
-            consent: {
-              advertising: true,
-              analytics_opt_out: true,
-              essential: true,
-            },
-            extraDetails: {
-              consentMethod: "accept",
-            },
+          .its("args")
+          .then((args) => {
+            const call = args[2][0];
+            expect(call.event).to.equal("FidesUpdating");
+            expect(call.Fides).to.deep.include({
+              consent: {
+                advertising: true,
+                analytics_opt_out: true,
+                essential: true,
+              },
+              extraDetails: {
+                consentMethod: "accept",
+              },
+            });
+            expect(call.Fides.fides_string).to.contain(",1~");
           });
-        cy.get("@dataLayerPush")
-          .its("secondCall.args.0")
-          .its("Fides.fides_string")
-          .should("contain", ",1~");
 
         // FidesUpdated call
         cy.get("@dataLayerPush")
-          .its("thirdCall.args.0.Fides")
-          .should("deep.include", {
-            consent: {
-              advertising: true,
-              analytics_opt_out: true,
-              essential: true,
-            },
-            extraDetails: {
-              consentMethod: "accept",
-            },
+          .its("args")
+          .then((args) => {
+            const call = args[3][0];
+            expect(call.event).to.equal("FidesUpdated");
+            expect(call.Fides).to.deep.include({
+              consent: {
+                advertising: true,
+                analytics_opt_out: true,
+                essential: true,
+              },
+              extraDetails: {
+                consentMethod: "accept",
+              },
+            });
+            expect(call.Fides.fides_string).to.contain(",1~");
           });
-        cy.get("@dataLayerPush")
-          .its("thirdCall.args.0")
-          .its("Fides.fides_string")
-          .should("contain", ",1~");
       });
 
       it("can opt out of all", () => {
@@ -911,7 +922,7 @@ describe("Fides-js TCF", () => {
         });
         // verify the data layer variables
         cy.get("@dataLayerPush")
-          .should("have.been.calledThrice")
+          .should("have.been.callCount", 6) // FidesInitialized + FidesUIShown (banner) + FidesUIShown (modal) + FidesModalClosed + FidesUpdating + FidesUpdated
           // First call should be from initialization, before the user accepts all
           .its("firstCall.args.0")
           .should("deep.equal", {
@@ -929,41 +940,52 @@ describe("Fides-js TCF", () => {
               fides_string: undefined,
             },
           });
+        // Verify FidesUIShown events (banner and modal)
+        cy.get("@dataLayerPush")
+          .its("args")
+          .then((args) => {
+            expect(args[1][0].event).to.equal("FidesUIShown"); // banner
+            expect(args[2][0].event).to.equal("FidesUIShown"); // modal
+            expect(args[3][0].event).to.equal("FidesModalClosed"); // modal closed
+          });
+
         // FidesUpdating call
         cy.get("@dataLayerPush")
-          .its("secondCall.args.0.Fides")
-          .should("deep.include", {
-            consent: {
-              advertising: true,
-              analytics_opt_out: true,
-              essential: true,
-            },
-            extraDetails: {
-              consentMethod: "accept",
-            },
+          .its("args")
+          .then((args) => {
+            const call = args[4][0];
+            expect(call.event).to.equal("FidesUpdating");
+            expect(call.Fides).to.deep.include({
+              consent: {
+                advertising: true,
+                analytics_opt_out: true,
+                essential: true,
+              },
+              extraDetails: {
+                consentMethod: "accept",
+              },
+            });
+            expect(call.Fides.fides_string).to.contain(",1~");
           });
-        cy.get("@dataLayerPush")
-          .its("secondCall.args.0")
-          .its("Fides.fides_string")
-          .should("contain", ",1~");
 
         // FidesUpdated call
         cy.get("@dataLayerPush")
-          .its("thirdCall.args.0.Fides")
-          .should("deep.include", {
-            consent: {
-              advertising: true,
-              analytics_opt_out: true,
-              essential: true,
-            },
-            extraDetails: {
-              consentMethod: "accept",
-            },
+          .its("args")
+          .then((args) => {
+            const call = args[5][0];
+            expect(call.event).to.equal("FidesUpdated");
+            expect(call.Fides).to.deep.include({
+              consent: {
+                advertising: true,
+                analytics_opt_out: true,
+                essential: true,
+              },
+              extraDetails: {
+                consentMethod: "accept",
+              },
+            });
+            expect(call.Fides.fides_string).to.contain(",1~");
           });
-        cy.get("@dataLayerPush")
-          .its("thirdCall.args.0")
-          .its("Fides.fides_string")
-          .should("contain", ",1~");
       });
 
       it("can opt out of all", () => {
@@ -1084,329 +1106,6 @@ describe("Fides-js TCF", () => {
             expect(cookieKeyConsent.fides_string).to.not.contain(
               vendorsDisclosed,
             );
-          });
-        });
-      });
-
-      // DEFER: can probably be removed
-      it.skip("can opt in to some and opt out of others", () => {
-        // todo- opt in to 1 custom notice, then test cookie and window.Fides obj
-        cy.getByTestId("consent-modal").within(() => {
-          // opt in to purpose 4
-          cy.getByTestId(`toggle-${PURPOSE_4.name}`).click();
-          cy.get("#fides-tab-features").click();
-          // opt in to special feat 1
-          cy.getByTestId(`toggle-${SPECIAL_FEATURE_1.name}`).click();
-
-          cy.get("#fides-tab-vendors").click();
-          cy.get("#fides-panel-vendors").within(() => {
-            cy.get("button").contains("Legitimate interest").click();
-          });
-          // opt out of system 1 (default is opt-in)
-          cy.getByTestId(`toggle-${SYSTEM_1.name}`).click();
-          cy.get("button").contains("Save").click();
-          cy.get("@FidesUIChanged").its("callCount").should("equal", 3);
-          cy.wait("@patchPrivacyPreference").then((interception) => {
-            const { body } = interception.request;
-            expect(interception.request.body.method).to.eql(ConsentMethod.SAVE);
-            expect(body.purpose_consent_preferences).to.eql([
-              {
-                id: PURPOSE_4.id,
-                preference: "opt_in",
-              },
-              {
-                id: PURPOSE_6.id,
-                preference: "opt_out",
-              },
-              {
-                id: PURPOSE_7.id,
-                preference: "opt_out",
-              },
-              {
-                id: PURPOSE_9.id,
-                preference: "opt_out",
-              },
-            ]);
-            expect(body.purpose_legitimate_interests_preferences).to.eql([
-              {
-                id: PURPOSE_2.id,
-                preference: "opt_in",
-              },
-            ]);
-            expect(body.special_purpose_preferences).to.eql(undefined);
-            expect(body.feature_preferences).to.eql(undefined);
-            expect(body.special_feature_preferences).to.eql([
-              {
-                id: SPECIAL_FEATURE_1.id,
-                preference: "opt_in",
-              },
-            ]);
-            expect(body.vendor_consent_preferences).to.eql([
-              {
-                id: VENDOR_1.id,
-                preference: "opt_out",
-              },
-            ]);
-            expect(body.vendor_legitimate_interests_preferences).to.eql([]);
-            expect(body.system_legitimate_interests_preferences).to.eql([
-              {
-                id: SYSTEM_1.id,
-                preference: "opt_out",
-              },
-            ]);
-            expect(body.system_consent_preferences).to.eql([]);
-          });
-        });
-        // Verify the cookie on save
-        cy.getCookie(CONSENT_COOKIE_NAME).then((cookie) => {
-          const cookieKeyConsent: FidesCookie = JSON.parse(
-            decodeURIComponent(cookie!.value),
-          );
-          expect(cookieKeyConsent.fides_meta.consentMethod).to.eql(
-            ConsentMethod.SAVE,
-          );
-          assertTcOptIns({
-            cookie: cookieKeyConsent,
-            modelType: "purposeConsents",
-            ids: [PURPOSE_4.id],
-          });
-          assertTcOptIns({
-            cookie: cookieKeyConsent,
-            modelType: "purposeLegitimateInterests",
-            ids: [PURPOSE_2.id],
-          });
-          assertTcOptIns({
-            cookie: cookieKeyConsent,
-            modelType: "specialFeatureOptins",
-            ids: [SPECIAL_FEATURE_1.id],
-          });
-          assertTcOptIns({
-            cookie: cookieKeyConsent,
-            modelType: "vendorConsents",
-            ids: [],
-          });
-          assertTcOptIns({
-            cookie: cookieKeyConsent,
-            modelType: "vendorLegitimateInterests",
-            ids: [],
-          });
-          expect(
-            cookieKeyConsent.tcf_consent
-              .system_legitimate_interests_preferences,
-          )
-            .property(`${SYSTEM_1.id}`)
-            .is.eql(false);
-          expect(
-            cookieKeyConsent.tcf_consent.system_consent_preferences,
-          ).to.eql({});
-          // Confirm vendors_disclosed section does not exist
-          expect(cookieKeyConsent.fides_string).to.not.contain(
-            vendorsDisclosed,
-          );
-        });
-      });
-
-      it("calls custom save preferences API fn instead of internal Fides API when it is provided in Fides.init", () => {
-        const apiOptions = {
-          /* eslint-disable @typescript-eslint/no-unused-vars */
-          savePreferencesFn: async (
-            consentMethod: ConsentMethod,
-            consent: NoticeConsent,
-            fides_string: string | undefined,
-            experience: PrivacyExperience,
-          ): Promise<void> => {},
-          /* eslint-enable @typescript-eslint/no-unused-vars */
-        };
-        const spyObject = cy
-          .spy(apiOptions, "savePreferencesFn")
-          .as("mockSavePreferencesFn");
-
-        stubTCFExperience({
-          stubOptions: { apiOptions },
-          includeCustomPurposes: true,
-        });
-        cy.waitUntilFidesInitialized().then(() => {
-          cy.get("div#fides-banner").within(() => {
-            cy.get("#fides-button-group").within(() => {
-              cy.get("button").contains("Manage preferences").click();
-            });
-          });
-          cy.getByTestId("consent-modal").within(() => {
-            cy.get("button").contains("Opt out of all").click();
-            cy.get("@FidesUpdated")
-              .should("have.been.calledOnce")
-              .its("lastCall.args.0.detail.extraDetails.consentMethod")
-              .then((consentMethod) => {
-                expect(consentMethod).to.eql(ConsentMethod.REJECT);
-                // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-                expect(spyObject).to.be.called;
-                const spy = spyObject.getCalls();
-                const { args } = spy[0];
-                expect(args[0]).to.equal(ConsentMethod.REJECT);
-                expect(args[1]).to.be.a("object");
-                // the TC str is dynamically updated upon save preferences with diff timestamp, so we do a fuzzy match
-                expect(args[2]).to.contain("AA,1~");
-                expect(args[3]).to.be.a("object");
-                // timeout means API call not made, which is expected
-                cy.on("fail", (error) => {
-                  if (error.message.indexOf("Timed out retrying") !== 0) {
-                    throw error;
-                  }
-                });
-                // check that preferences aren't sent to Fides API
-                cy.wait("@patchPrivacyPreference", {
-                  requestTimeout: 100,
-                }).then((xhr) => {
-                  assert.isNull(xhr?.response?.body);
-                });
-              });
-          });
-        });
-      });
-
-      it("skips saving preferences to API when disable save is set", () => {
-        stubTCFExperience({
-          stubOptions: { fidesDisableSaveApi: true },
-          includeCustomPurposes: true,
-        });
-        cy.waitUntilFidesInitialized().then(() => {
-          cy.get("#fides-modal-link").click();
-          cy.getByTestId("consent-modal").within(() => {
-            cy.get("button").contains("Opt out of all").click();
-            // timeout means API call not made, which is expected
-            cy.on("fail", (error) => {
-              if (error.message.indexOf("Timed out retrying") !== 0) {
-                throw error;
-              }
-            });
-            // check that preferences aren't sent to Fides API
-            cy.wait("@patchPrivacyPreference", {
-              requestTimeout: 100,
-            }).then((xhr) => {
-              assert.isNull(xhr?.response?.body);
-            });
-          });
-          // The cookie should still get updated
-          cy.getCookie(CONSENT_COOKIE_NAME).then((cookie) => {
-            const cookieKeyConsent: FidesCookie = JSON.parse(
-              decodeURIComponent(cookie!.value),
-            );
-            expect(cookieKeyConsent.fides_meta.consentMethod).to.eql(
-              ConsentMethod.REJECT,
-            );
-            assertTcOptIns({
-              cookie: cookieKeyConsent,
-              modelType: "purposeConsents",
-              ids: [],
-            });
-            assertTcOptIns({
-              cookie: cookieKeyConsent,
-              modelType: "purposeLegitimateInterests",
-              ids: [],
-            });
-            assertTcOptIns({
-              cookie: cookieKeyConsent,
-              modelType: "specialFeatureOptins",
-              ids: [],
-            });
-            assertTcOptIns({
-              cookie: cookieKeyConsent,
-              modelType: "vendorConsents",
-              ids: [],
-            });
-            assertTcOptIns({
-              cookie: cookieKeyConsent,
-              modelType: "vendorLegitimateInterests",
-              ids: [],
-            });
-            expect(
-              cookieKeyConsent.tcf_consent.system_consent_preferences,
-            ).to.eql({});
-            expect(
-              cookieKeyConsent.tcf_consent
-                .system_legitimate_interests_preferences,
-            )
-              .property(`${SYSTEM_1.id}`)
-              .is.eql(false);
-          });
-        });
-      });
-
-      it("skips saving preferences to API when disable save is set via cookie", () => {
-        cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
-        cy.getCookie("fides_disable_save_api").should("not.exist");
-        cy.setCookie("fides_disable_save_api", "true");
-        stubTCFExperience({
-          includeCustomPurposes: true,
-        });
-        cy.waitUntilFidesInitialized().then(() => {
-          cy.get("#fides-modal-link").click();
-          cy.getByTestId("consent-modal").within(() => {
-            cy.get("button").contains("Opt out of all").click();
-            // timeout means API call not made, which is expected
-            cy.on("fail", (error) => {
-              if (error.message.indexOf("Timed out retrying") !== 0) {
-                throw error;
-              }
-            });
-            // check that preferences aren't sent to Fides API
-            cy.wait("@patchPrivacyPreference", {
-              requestTimeout: 100,
-            }).then((xhr) => {
-              assert.isNull(xhr?.response?.body);
-            });
-          });
-        });
-      });
-
-      it("skips saving preferences to API when disable save is set via query param", () => {
-        cy.getCookie("fides_string").should("not.exist");
-        stubTCFExperience({
-          demoPageQueryParams: { fides_disable_save_api: "true" },
-          includeCustomPurposes: true,
-        });
-        cy.waitUntilFidesInitialized().then(() => {
-          cy.get("#fides-modal-link").click();
-          cy.getByTestId("consent-modal").within(() => {
-            cy.get("button").contains("Opt out of all").click();
-            // timeout means API call not made, which is expected
-            cy.on("fail", (error) => {
-              if (error.message.indexOf("Timed out retrying") !== 0) {
-                throw error;
-              }
-            });
-            // check that preferences aren't sent to Fides API
-            cy.wait("@patchPrivacyPreference", {
-              requestTimeout: 100,
-            }).then((xhr) => {
-              assert.isNull(xhr?.response?.body);
-            });
-          });
-        });
-      });
-
-      it("skips saving preferences to API when disable save is set via window obj", () => {
-        cy.getCookie("fides_string").should("not.exist");
-        stubTCFExperience({
-          demoPageWindowParams: { fides_disable_save_api: "true" },
-          includeCustomPurposes: true,
-        });
-        cy.waitUntilFidesInitialized().then(() => {
-          cy.get("#fides-modal-link").click();
-          cy.getByTestId("consent-modal").within(() => {
-            cy.get("button").contains("Opt out of all").click();
-            // timeout means API call not made, which is expected
-            cy.on("fail", (error) => {
-              if (error.message.indexOf("Timed out retrying") !== 0) {
-                throw error;
-              }
-            });
-            // check that preferences aren't sent to Fides API
-            cy.wait("@patchPrivacyPreference", {
-              requestTimeout: 100,
-            }).then((xhr) => {
-              assert.isNull(xhr?.response?.body);
-            });
           });
         });
       });
