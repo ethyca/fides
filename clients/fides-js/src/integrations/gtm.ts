@@ -46,8 +46,8 @@ export const gtm = () => {
     FidesUpdating: true,
     FidesUpdated: true,
     FidesUIChanged: true,
-    FidesUIShown: false,
-    FidesModalClosed: false,
+    FidesUIShown: true,
+    FidesModalClosed: true,
   };
 
   const events = Object.entries(fidesEvents)

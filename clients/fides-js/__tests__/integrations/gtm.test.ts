@@ -7,8 +7,8 @@ const fidesEvents: Record<FidesEventType, boolean> = {
   FidesUpdating: true,
   FidesUpdated: true,
   FidesUIChanged: true,
-  FidesUIShown: false,
-  FidesModalClosed: false,
+  FidesUIShown: true,
+  FidesModalClosed: true,
 };
 const eventsThatFire = Object.entries(fidesEvents).filter(
   ([, dispatchToGtm]) => dispatchToGtm,
