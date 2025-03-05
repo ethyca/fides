@@ -1,5 +1,6 @@
 import { Table as TableInstance } from "@tanstack/react-table";
 import { AntButton as Button, HStack, Td, Text, Tr } from "fidesui";
+import palette from "fidesui/src/palette/palette.module.scss";
 
 type RowSelectionBarProps<T> = {
   tableInstance: TableInstance<T>;
@@ -34,7 +35,7 @@ export const RowSelectionBar = <T,>({
         pr={2}
         py={0}
         colSpan={tableInstance.getAllColumns().length}
-        bgColor="white"
+        bgColor={palette.FIDESUI_FULL_WHITE}
       >
         <HStack>
           <Text data-testid="selected-row-count" fontSize="xs">
