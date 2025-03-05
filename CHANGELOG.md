@@ -40,6 +40,14 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ### Fixed
 - Fixed usage of stale DB sessions when running privacy requests [#5834](https://github.com/ethyca/fides/pull/5834)
 
+## [2.56.1](https://github.com/ethyca/fides/compare/2.56.0...2.56.1)
+
+### Changed
+- Custom TCF purposes respect NOTICE_ONLY [#5830](https://github.com/ethyca/fides/pull/5830)
+
+### Fixed
+- Fixed usage of stale DB sessions when running privacy requests [#5834](https://github.com/ethyca/fides/pull/5834)
+
 ## [2.56.0](https://github.com/ethyca/fides/compare/2.55.4...2.56.0)
 
 ### Added
