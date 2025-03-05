@@ -32,6 +32,9 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Moved non-prod Admin UI dependencies to devDependencies [#5832](https://github.com/ethyca/fides/pull/5832)
 - Prevent Admin UI and Privacy Center from starting when running `nox -s dev` with datastore params [#5843](https://github.com/ethyca/fides/pull/5843)
 
+### Fixed
+- Corrected the Tag color for some columns of the Privacy requests table. [#5848](https://github.com/ethyca/fides/pull/5848)
+
 ## [2.56.1](https://github.com/ethyca/fides/compare/2.56.0...2.56.1)
 
 ### Changed
