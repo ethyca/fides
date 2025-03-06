@@ -30,7 +30,6 @@ const useConsentReportingTableColumns = () => {
           <DefaultHeaderCell value="User Device ID" {...props} />
         ),
         enableSorting: false,
-        size: 100,
       }),
       columnHelper.accessor((row) => row.user_geography, {
         id: "user_geography",
@@ -130,7 +129,6 @@ const useConsentReportingTableColumns = () => {
           <DefaultHeaderCell value="Preference ID" {...props} />
         ),
         enableSorting: false,
-        size: 100,
       }),
     ],
     [],
