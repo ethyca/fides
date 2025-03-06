@@ -1,4 +1,4 @@
-import { Box, Text, useDisclosure } from "fidesui";
+import { Box, useDisclosure } from "fidesui";
 import {
   ExecutionLog,
   ExecutionLogStatus,
@@ -61,9 +61,6 @@ const ActivityTimeline = ({ subjectRequest }: ActivityTimelineProps) => {
 
   return (
     <Box width="100%">
-      <Text color="gray.900" fontSize="md" fontWeight="500" mb={1}>
-        Activity timeline
-      </Text>
       {results &&
         resultKeys.map((key, index) => (
           <TimelineEntry

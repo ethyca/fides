@@ -55,7 +55,7 @@ const TimelineEntry = ({
       </Flex>
       <Text
         cursor="pointer"
-        color="complimentary.500"
+        color="link.900"
         fontWeight="500"
         fontSize="sm"
         ml={6}

@@ -4,8 +4,6 @@ import {
   AntButton as Button,
   Box,
   Center,
-  Divider,
-  Heading,
   Spinner,
   Table,
   TableContainer,
@@ -72,10 +70,12 @@ const getActionConfig = (
 
 type ManualProcessingListProps = {
   subjectRequest: PrivacyRequestEntity;
+  onComplete: () => void;
 };
 
 const ManualProcessingList = ({
   subjectRequest,
+  onComplete,
 }: ManualProcessingListProps) => {
   const dispatch = useAppDispatch();
   const { errorAlert, successAlert } = useAlert();
@@ -111,6 +111,7 @@ const ManualProcessingList = ({
       setIsCompleteDSRLoading(true);
       await resumePrivacyRequestFromRequiresInput(subjectRequest.id).unwrap();
       successAlert(`Manual request has been received. Request now processing.`);
+      onComplete();
     } catch (error) {
       handleError(error);
     } finally {
@@ -219,12 +220,6 @@ const ManualProcessingList = ({
   return (
     <VStack align="stretch" spacing={8}>
       <Box>
-        <Heading color="gray.900" fontSize="lg" fontWeight="semibold" mb={4}>
-          Manual Processing
-        </Heading>
-        <Divider />
-      </Box>
-      <Box>
         <Text color="gray.700" fontSize="sm">
           The following table details the integrations that require manual input
           from you.
@@ -293,10 +288,10 @@ const ManualProcessingList = ({
                   <Tr>
                     <Th pl="0px">
                       <Button
-                        size="small"
                         type="primary"
                         loading={isCompleteDSRLoading}
                         onClick={handleCompleteDSRClick}
+                        className="mt-2"
                       >
                         Complete DSR
                       </Button>

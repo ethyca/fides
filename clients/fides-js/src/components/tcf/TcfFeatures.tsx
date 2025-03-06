@@ -1,6 +1,7 @@
 import { h } from "preact";
 
 import { PrivacyExperience } from "../../lib/consent-types";
+import { FidesServingToggleDetails } from "../../lib/events";
 import { useI18n } from "../../lib/i18n/i18n-context";
 import { TCFFeatureRecord, TCFSpecialFeatureRecord } from "../../lib/tcf/types";
 import EmbeddedVendorList from "./EmbeddedVendorList";
@@ -37,7 +38,10 @@ const TcfFeatures = ({
   allSpecialFeatures: PrivacyExperience["tcf_special_features"];
   enabledFeatureIds: string[];
   enabledSpecialFeatureIds: string[];
-  onChange: (payload: UpdateEnabledIds) => void;
+  onChange: (
+    payload: UpdateEnabledIds,
+    toggleDetails: FidesServingToggleDetails,
+  ) => void;
 }) => {
   const { i18n } = useI18n();
   return (
@@ -47,8 +51,8 @@ const TcfFeatures = ({
         title={i18n.t("static.tcf.features")}
         items={allFeatures ?? []}
         enabledIds={enabledFeatureIds}
-        onToggle={(newEnabledIds) =>
-          onChange({ newEnabledIds, modelType: "features" })
+        onToggle={(newEnabledIds, _, toggleDetails) =>
+          onChange({ newEnabledIds, modelType: "features" }, toggleDetails)
         }
         renderToggleChild={(f) => (
           <FeatureChildren type="features" feature={f} />
@@ -60,8 +64,11 @@ const TcfFeatures = ({
         title={i18n.t("static.tcf.special_features")}
         items={allSpecialFeatures ?? []}
         enabledIds={enabledSpecialFeatureIds}
-        onToggle={(newEnabledIds) =>
-          onChange({ newEnabledIds, modelType: "specialFeatures" })
+        onToggle={(newEnabledIds, _, toggleDetails) =>
+          onChange(
+            { newEnabledIds, modelType: "specialFeatures" },
+            toggleDetails,
+          )
         }
         renderToggleChild={(f) => (
           <FeatureChildren type="specialFeatures" feature={f} />
