@@ -6,7 +6,6 @@ import {
   AntDatePicker as DatePicker,
   AntDropdown as Dropdown,
   AntFlex as Flex,
-  AntTypography as Typography,
   Icons,
 } from "fidesui";
 import React, { useMemo, useState } from "react";
@@ -24,7 +23,6 @@ import {
 import { useGetAllHistoricalPrivacyPreferencesQuery } from "~/features/consent-reporting/consent-reporting.slice";
 import ConsentLookupModal from "~/features/consent-reporting/ConsentLookupModal";
 import ConsentReportDownloadModal from "~/features/consent-reporting/ConsentReportDownloadModal";
-import useConsentReportingDownload from "~/features/consent-reporting/hooks/useConsentReportingDownload";
 import useConsentReportingTableColumns from "~/features/consent-reporting/hooks/useConsentReportingTableColumns";
 import { ConsentReportingSchema } from "~/types/api";
 
@@ -71,14 +69,6 @@ const ConsentReportingPage = () => {
         }
       />
       <div data-testid="consent-reporting">
-        <Typography.Text className="mb-4 block">
-          Download a CSV containing a report of consent preferences made by
-          users on your sites. Select a date range below and click
-          &quot;Download report&quot;. Depending on the number of records in the
-          date range you select, it may take several minutes to prepare the file
-          after you click &quot;Download report&quot;.
-        </Typography.Text>
-
         {isLoading ? (
           <div className="border p-2">
             <TableSkeletonLoader rowHeight={26} numRows={10} />
