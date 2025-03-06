@@ -4,6 +4,7 @@ import "./fides-tcf.css";
 import { h } from "preact";
 import { useCallback, useEffect, useMemo, useState } from "preact/hooks";
 
+import { FidesEvent } from "../../docs/fides-event";
 import {
   ButtonType,
   ConsentMethod,
@@ -551,9 +552,16 @@ export const TcfOverlay = ({
                 experience={experience}
                 customNotices={privacyNoticesWithBestTranslation}
                 enabledIds={draftIds}
-                onChange={(updatedIds) => {
+                onChange={(updatedIds, toggleDetails) => {
+                  const eventExtraDetails: FidesEvent["detail"]["extraDetails"] =
+                    { servingComponent: "modal", servingToggle: toggleDetails };
                   setDraftIds(updatedIds);
-                  dispatchFidesEvent("FidesUIChanged", cookie, options.debug);
+                  dispatchFidesEvent(
+                    "FidesUIChanged",
+                    cookie,
+                    options.debug,
+                    eventExtraDetails,
+                  );
                 }}
                 activeTabIndex={activeTabIndex}
                 onTabChange={setActiveTabIndex}
