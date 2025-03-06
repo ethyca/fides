@@ -2,9 +2,10 @@ import { createColumnHelper } from "@tanstack/react-table";
 import palette from "fidesui/src/palette/palette.module.scss";
 import { useMemo } from "react";
 
+import { PRIVACY_NOTICE_REGION_RECORD } from "~/features/common/privacy-notice-regions";
 import { DefaultCell, DefaultHeaderCell } from "~/features/common/table/v2";
 import { formatDate } from "~/features/common/utils";
-import { ConsentReportingSchema } from "~/types/api";
+import { ConsentReportingSchema, PrivacyNoticeRegion } from "~/types/api";
 
 const columnHelper = createColumnHelper<ConsentReportingSchema>();
 
@@ -30,7 +31,19 @@ const useConsentReportingTableColumns = () => {
       }),
       columnHelper.accessor((row) => row.user_geography, {
         id: "user_geography",
-        cell: ({ getValue }) => <DefaultCell value={getValue()} />,
+        cell: ({ getValue }) => {
+          const region = getValue();
+          return (
+            <DefaultCell
+              value={
+                region &&
+                PRIVACY_NOTICE_REGION_RECORD[region as PrivacyNoticeRegion]
+                  ? PRIVACY_NOTICE_REGION_RECORD[region as PrivacyNoticeRegion]
+                  : region
+              }
+            />
+          );
+        },
         header: (props) => (
           <DefaultHeaderCell value="User geography" {...props} />
         ),
