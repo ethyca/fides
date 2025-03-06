@@ -3,45 +3,50 @@ updates:
   - package-ecosystem: "pip"
     directory: "/"
     schedule:
-      interval: "weekly"
+      interval: "daily"
     labels:
       - dependencies
       - python
       - dependabot
-  - package-ecosystem: npm
-    directory: "/clients/admin-ui"
-    schedule:
-      interval: weekly
-    labels:
-      - dependencies
-      - javascript
-      - dependabot
-  - package-ecosystem: npm
-    directory: "/clients/privacy-center"
-    schedule:
-      interval: weekly
-    labels:
-      - dependencies
-      - javascript
-      - dependabot
-  - package-ecosystem: npm
-    directory: "/clients/fides-js"
-    schedule:
-      interval: weekly
-    labels:
-      - dependencies
-      - javascript
-      - dependabot
-    allow:
-      - dependency-name: "@iabtechlabtcf*"
-        dependency-type: "direct"
-      - dependency-name: "@iabgpp*"
-        dependency-type: "direct"
+    open-pull-requests-limit: 0  # Security updates only
 
-  - package-ecosystem: github-actions
+  # Frontend monorepo dependencies
+  # Dependabot config must target /clients because package-lock.json is at the monorepo root
+  - package-ecosystem: "npm"
+    directory: "/clients"
+    schedule:
+      interval: "daily"
+    labels:
+      - dependencies
+      - javascript
+      - dependabot
+    open-pull-requests-limit: 0
+    versioning-strategy: "increase"
+
+  - package-ecosystem: "npm"
+    directory: "/clients/sample-app"
+    schedule:
+      interval: "weekly"
+    labels:
+      - dependencies
+      - javascript
+      - dependabot
+    open-pull-requests-limit: 0
+
+  - package-ecosystem: "npm"
+    directory: "/clients/cypress-e2e"
+    schedule:
+      interval: "weekly"
+    labels:
+      - dependencies
+      - javascript
+      - dependabot
+    open-pull-requests-limit: 0
+
+  - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: weekly
+      interval: "monthly"
     labels:
       - dependencies
       - github_actions

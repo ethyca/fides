@@ -1091,12 +1091,16 @@ class TestRetryIntegration:
             )
             assert 44 == execution_logs.count()
 
-            visit_logs = execution_logs.filter_by(collection_name="visit")
+            visit_logs = execution_logs.filter_by(collection_name="visit").order_by(
+                "created_at"
+            )
             assert ["in_processing", "retrying", "retrying", "error"] == [
                 el.status.value for el in visit_logs
             ]
 
-            order_item_logs = execution_logs.filter_by(collection_name="order_item")
+            order_item_logs = execution_logs.filter_by(
+                collection_name="order_item"
+            ).order_by("created_at")
             assert ["in_processing", "retrying", "retrying", "error"] == [
                 el.status.value for el in order_item_logs
             ]
