@@ -7,9 +7,11 @@ import { useCallback, useEffect, useMemo, useState } from "preact/hooks";
 import { FidesEvent } from "../../docs/fides-event";
 import {
   ButtonType,
+  ConsentMechanism,
   ConsentMethod,
   PrivacyExperience,
   PrivacyExperienceMinimal,
+  PrivacyNotice,
   PrivacyNoticeWithPreference,
   SaveConsentPreference,
   ServingComponent,
@@ -39,6 +41,7 @@ import {
   EnabledIds,
   PrivacyNoticeWithBestTranslation,
   TcfModels,
+  TcfModelsRecord,
   TcfSavePreferences,
 } from "../../lib/tcf/types";
 import {
@@ -61,13 +64,27 @@ import { TCFBannerSupplemental } from "./TCFBannerSupplemental";
 import { TcfConsentButtons } from "./TcfConsentButtons";
 import TcfTabs from "./TcfTabs";
 
+function isPrivacyNotice(
+  notice: TcfModelsRecord | PrivacyNoticeWithPreference,
+): notice is PrivacyNotice {
+  return (notice as PrivacyNotice).consent_mechanism !== undefined;
+}
+
 const getAllIds = (
   modelList: TcfModels | Array<PrivacyNoticeWithPreference>,
 ) => {
   if (!modelList) {
     return [];
   }
-  return modelList.map((m) => `${m.id}`);
+  return modelList
+    .filter((m) => {
+      if (isPrivacyNotice(m)) {
+        return m.consent_mechanism !== ConsentMechanism.NOTICE_ONLY;
+      }
+
+      return true;
+    })
+    .map((m) => `${m.id}`);
 };
 
 interface TcfOverlayProps extends Omit<OverlayProps, "experience"> {
