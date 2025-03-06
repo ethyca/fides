@@ -1,3 +1,13 @@
+export interface OtFidesMapping {
+  /**
+  * The OneTrust notice group ID.
+  */
+
+  /**
+   * Array of Fides notice keys
+    */
+}
+
 /**
  * FidesJS supports a variety of custom options to modify it's behavior or
  * enable more advanced usage. For example, the `fides_locale` option can be
@@ -154,4 +164,14 @@ export interface FidesOptions {
    * Defaults to `undefined`.
    */
   fides_consent_override: "accept" | "reject";
+
+  /**
+   * Given a OneTrust → Fides notice mapping exists and the OneTrust cookie exists, Fides will “migrate” those consents to Fides privacy notices, and write to the Fides cookie.
+   *
+   * This way, Fides customers that are migrating away from OneTrust don’t need to show their users new consent dialogues when switching to Fides.
+   * that those preferences are respected.
+   *
+   * Defaults to `undefined`.
+   */
+  ot_fides_mapping: Map<string, string[]>;
 }
