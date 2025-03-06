@@ -27,14 +27,23 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ### Changed
 - Add properties for user assigned systems/data_uses on staged resources [5841](https://github.com/ethyca/fides/pull/5841) https://github.com/ethyca/fides/labels/db-migration
 - Bumped supported Python versions to `3.10.16` and `3.9.21` [#5840](https://github.com/ethyca/fides/pull/5840)
+- Update the privacy request detail page to a new layout and improved styling [#5824](https://github.com/ethyca/fides/pull/5824)
 
 ### Developer Experience
 - Moved non-prod Admin UI dependencies to devDependencies [#5832](https://github.com/ethyca/fides/pull/5832)
+- Prevent Admin UI and Privacy Center from starting when running `nox -s dev` with datastore params [#5843](https://github.com/ethyca/fides/pull/5843)
+- Remove plotly (unused package) to reduce fides image size [#5852](https://github.com/ethyca/fides/pull/5852)
+
+### Fixed
+- Corrected the Tag color for some columns of the Privacy requests table. [#5848](https://github.com/ethyca/fides/pull/5848)
 
 ## [2.56.1](https://github.com/ethyca/fides/compare/2.56.0...2.56.1)
 
 ### Changed
 - Custom TCF purposes respect NOTICE_ONLY [#5830](https://github.com/ethyca/fides/pull/5830)
+
+### Fixed
+- Fixed usage of stale DB sessions when running privacy requests [#5834](https://github.com/ethyca/fides/pull/5834)
 
 ## [2.56.0](https://github.com/ethyca/fides/compare/2.55.4...2.56.0)
 
@@ -59,6 +68,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Removed version pins in LDFLAGS & CFLAGS for local MSSQL builds [#5760](https://github.com/ethyca/fides/pull/5760)
 
 ### Fixed
+- Fixed background color of the message indicating the rows selected [#5847](https://github.com/ethyca/fides/pull/5847)
 - Fixed bug with D&D table column widths [#5813](https://github.com/ethyca/fides/pull/5813)
 - Fixed `poll_for_exited_privacy_request_tasks` for DSR-processing improvements [#5820](https://github.com/ethyca/fides/pull/5820)
 
