@@ -12,6 +12,7 @@ import { formatDate } from "~/features/common/utils";
 import { ConsentReportingSchema, PrivacyNoticeRegion } from "~/types/api";
 
 import {
+  CONSENT_METHOD_LABELS,
   USER_CONSENT_PREFERENCE_COLOR,
   USER_CONSENT_PREFERENCE_LABELS,
 } from "../constants";
@@ -78,7 +79,11 @@ const useConsentReportingTableColumns = () => {
       }),
       columnHelper.accessor((row) => row.method, {
         id: "method",
-        cell: ({ getValue }) => <DefaultCell value={getValue()} />,
+        cell: ({ getValue }) => {
+          const method = getValue();
+          const methodLabel = (method && CONSENT_METHOD_LABELS[method]) || "";
+          return <DefaultCell value={methodLabel} />;
+        },
         header: (props) => <DefaultHeaderCell value="Method" {...props} />,
         enableSorting: false,
       }),
