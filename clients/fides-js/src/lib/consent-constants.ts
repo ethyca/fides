@@ -89,7 +89,7 @@ export const FIDES_OVERRIDE_OPTIONS_VALIDATOR_MAP: {
     overrideName: "fidesConsentOverride",
     overrideType: "string",
     overrideKey: "fides_consent_override",
-    validationRegex: /^(accept|reject)$/,
+    validationRegex: /^(accept|reject|{.*})$/,
   },
 ];
 

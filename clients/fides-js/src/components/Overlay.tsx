@@ -11,7 +11,7 @@ import {
 } from "preact/hooks";
 
 import { useA11yDialog } from "../lib/a11y-dialog";
-import { isConsentOverride } from "../lib/common-utils";
+import { hasConsentOverride } from "../lib/common-utils";
 import { FIDES_OVERLAY_WRAPPER } from "../lib/consent-constants";
 import {
   ComponentType,
@@ -71,7 +71,7 @@ const Overlay: FunctionComponent<Props> = ({
   const { i18n } = useI18n();
   const delayBannerMilliseconds = 100;
   const hasMounted = useHasMounted();
-  const isAutomatedConsent = isConsentOverride(options);
+  const isAutomatedConsent = hasConsentOverride(options);
   const modalLinkId = options.modalLinkId || "fides-modal-link";
   const modalLinkIsDisabled =
     !experience || !!options.fidesEmbed || options.modalLinkId === "";

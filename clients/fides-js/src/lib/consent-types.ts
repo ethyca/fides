@@ -140,8 +140,12 @@ export interface FidesInitOptions {
   // Whether to render the brand link in the footer of the modal
   showFidesBrandLink: boolean;
 
-  // Whether to reject all consent preferences by default
-  fidesConsentOverride: ConsentMethod.ACCEPT | ConsentMethod.REJECT | null;
+  // Whether to reject all consent preferences by default, or provide granular overrides
+  fidesConsentOverride:
+    | ConsentMethod.ACCEPT
+    | ConsentMethod.REJECT
+    | NoticeOverrides
+    | null;
 }
 
 /**
@@ -877,3 +881,12 @@ export type ConsentOption = {
 export type LegacyConsentConfig = {
   options: ConsentOption[];
 };
+
+export enum NoticeOverrideValue {
+  ACCEPT = 1,
+  REJECT = 2,
+  ACCEPT_DISABLED = 3,
+  REJECT_DISABLED = 4,
+}
+
+export type NoticeOverrides = Record<string, NoticeOverrideValue>;

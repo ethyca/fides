@@ -218,9 +218,11 @@ export const getOverridesByType = <T>(
     overrideValidatorMap?.forEach(
       ({ overrideName, overrideType, overrideKey, validationRegex }) => {
         const queryParamOverride: string | null = queryParams.get(overrideKey);
-        const windowObjOverride: string | boolean | undefined = windowObj
-          ? windowObj[overrideKey]
-          : undefined;
+        const windowObjOverride:
+          | string
+          | boolean
+          | Record<string, 1 | 2 | 3 | 4>
+          | undefined = windowObj ? windowObj[overrideKey] : undefined;
         const cookieOverride: string | undefined = getCookieByName(overrideKey);
 
         // Load the override value, respecting the order of precedence (query params > window object > cookie)

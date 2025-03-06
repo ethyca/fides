@@ -86,10 +86,29 @@ const loadEnvironmentVariables = () => {
     FIDES_CLEAR_COOKIE: process.env.FIDES_PRIVACY_CENTER__FIDES_CLEAR_COOKIE
       ? process.env.FIDES_PRIVACY_CENTER__FIDES_CLEAR_COOKIE === "true"
       : false,
-    FIDES_CONSENT_OVERRIDE:
-      (process.env.FIDES_PRIVACY_CENTER__FIDES_KNOWN_PREFERENCE as
-        | ConsentMethod.ACCEPT
-        | ConsentMethod.REJECT) || null,
+    FIDES_CONSENT_OVERRIDE: (() => {
+      const override = process.env.FIDES_PRIVACY_CENTER__FIDES_KNOWN_PREFERENCE;
+      if (!override) {
+        return null;
+      }
+      if (override === "accept" || override === "reject") {
+        return override as ConsentMethod.ACCEPT | ConsentMethod.REJECT;
+      }
+      try {
+        const parsed = JSON.parse(override);
+        if (
+          typeof parsed === "object" &&
+          Object.values(parsed).every(
+            (val) => typeof val === "number" && val >= 1 && val <= 4,
+          )
+        ) {
+          return parsed as Record<string, 1 | 2 | 3 | 4>;
+        }
+        return null;
+      } catch {
+        return null;
+      }
+    })(),
   };
   return settings;
 };

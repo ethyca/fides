@@ -145,13 +145,25 @@ export interface FidesOptions {
   fides_tcf_gdpr_applies: boolean;
 
   /**
-   * FidesJS will automatically opt in or out of all notices with this option and
-   * only show the consent modal upon user request. This is useful for any
-   * scenario where the user has previously provided consent in a different
-   * context (e.g. a native app, another website, etc.) and you want to ensure
-   * that those preferences are respected.
+   * FidesJS supports two complementary formats for consent overrides:
+   *
+   * 1. Global Override (string):
+   * - "accept": Apply global opt-in to all notices
+   * - "reject": Apply global opt-out to all notices
+   * Use this when you want to apply the same consent preference across all notices.
+   *
+   * 2. Per-Notice Override (object):
+   * Granular control using numeric values for each notice:
+   * - 1: Opt-in
+   * - 2: Opt-out
+   * - 3: Opt-in and disable future changes
+   * - 4: Opt-out and disable future changes
+   *
+   * Example: { data_sales: 3, analytics: 4 }
+   * This provides granular control over specific notices while leaving others
+   * to follow default behavior.
    *
    * Defaults to `undefined`.
    */
-  fides_consent_override: "accept" | "reject";
+  fides_consent_override: "accept" | "reject" | Record<string, 1 | 2 | 3 | 4>;
 }

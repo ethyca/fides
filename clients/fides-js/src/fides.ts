@@ -9,8 +9,13 @@ import { blueconic } from "./integrations/blueconic";
 import { gtm } from "./integrations/gtm";
 import { meta } from "./integrations/meta";
 import { shopify } from "./integrations/shopify";
-import { isConsentOverride, raise } from "./lib/common-utils";
 import {
+  hasConsentOverride,
+  parseNoticeOverrideString,
+  raise,
+} from "./lib/common-utils";
+import {
+  ConsentMethod,
   FidesConfig,
   FidesExperienceTranslationOverrides,
   FidesGlobal,
@@ -111,6 +116,23 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
       OverrideType.OPTIONS,
       config,
     );
+
+  // Parse consent overrides if present
+  if (typeof optionsOverrides?.fidesConsentOverride === "string") {
+    const override = optionsOverrides.fidesConsentOverride;
+    if (
+      override !== ConsentMethod.ACCEPT &&
+      override !== ConsentMethod.REJECT
+    ) {
+      const parsed = parseNoticeOverrideString(override);
+      if (parsed) {
+        optionsOverrides.fidesConsentOverride = parsed;
+      } else {
+        delete optionsOverrides.fidesConsentOverride;
+      }
+    }
+  }
+
   const experienceTranslationOverrides: Partial<FidesExperienceTranslationOverrides> =
     getOverridesByType<Partial<FidesExperienceTranslationOverrides>>(
       OverrideType.EXPERIENCE_TRANSLATION,
@@ -226,7 +248,7 @@ const _Fides: FidesGlobal = {
       // Nothing to show if there's no experience
       return false;
     }
-    if (isConsentOverride(this.options)) {
+    if (hasConsentOverride(this.options)) {
       // If consent preference override exists, we should not show the experience
       return false;
     }
