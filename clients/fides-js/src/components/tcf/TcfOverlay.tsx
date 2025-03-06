@@ -11,7 +11,6 @@ import {
   PrivacyExperience,
   PrivacyExperienceMinimal,
   PrivacyNoticeWithPreference,
-  SaveConsentPreference,
   ServingComponent,
 } from "../../lib/consent-types";
 import {
@@ -32,7 +31,6 @@ import {
 } from "../../lib/i18n";
 import { useI18n } from "../../lib/i18n/i18n-context";
 import { updateConsentPreferences } from "../../lib/preferences";
-import { transformConsentToFidesUserPreference } from "../../lib/shared-consent-utils";
 import { EMPTY_ENABLED_IDS } from "../../lib/tcf/constants";
 import { useGvl } from "../../lib/tcf/gvl-context";
 import {
@@ -44,12 +42,13 @@ import {
 import {
   buildTcfEntitiesFromCookieAndFidesString as buildUserPrefs,
   constructTCFNoticesServedProps,
+  createTCFConsentPreferencesToSave,
   createTcfSavePayload,
   createTcfSavePayloadFromMinExp,
   getEnabledIds,
   getEnabledIdsNotice,
   getGVLPurposeList,
-  updateCookie,
+  updateTCFCookie,
 } from "../../lib/tcf/utils";
 import { useVendorButton } from "../../lib/tcf/vendor-button-context";
 import { fetchExperience, fetchGvlTranslations } from "../../services/api";
@@ -306,26 +305,6 @@ export const TcfOverlay = ({
     tcfNoticesServed,
   });
 
-  const createConsentPreferencesToSave = (
-    privacyNoticeList: PrivacyNoticeWithBestTranslation[],
-    enabledPrivacyNoticeIds: string[],
-  ): SaveConsentPreference[] => {
-    if (!privacyNoticeList || !enabledPrivacyNoticeIds) {
-      return [];
-    }
-    return privacyNoticeList.map((item) => {
-      const userPreference = transformConsentToFidesUserPreference(
-        enabledPrivacyNoticeIds.includes(item.id),
-        item.consent_mechanism,
-      );
-      return new SaveConsentPreference(
-        item,
-        userPreference,
-        item.bestTranslation?.privacy_notice_history_id,
-      );
-    });
-  };
-
   const handleUpdateAllPreferences = useCallback(
     (consentMethod: ConsentMethod, enabledIds: EnabledIds) => {
       if (!experience && !experienceMinimal) {
@@ -343,7 +322,7 @@ export const TcfOverlay = ({
           enabledIds,
         });
       }
-      const consentPreferencesToSave = createConsentPreferencesToSave(
+      const consentPreferencesToSave = createTCFConsentPreferencesToSave(
         privacyNoticesWithBestTranslation,
         enabledIds.customPurposesConsent,
       );
@@ -355,11 +334,10 @@ export const TcfOverlay = ({
         options,
         userLocationString: fidesRegionString,
         cookie,
-        debug: options.debug,
         tcf,
         servedNoticeHistoryId,
         updateCookie: (oldCookie) =>
-          updateCookie(
+          updateTCFCookie(
             oldCookie,
             tcf,
             enabledIds,

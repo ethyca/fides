@@ -141,9 +141,7 @@ describe("setGppNoticesProvidedFromExperience", () => {
       cmpApi,
       experience,
     });
-    expect(sectionsChanged).toEqual([
-      { name: "usnat", id: 7, prefix: "usnat" },
-    ]);
+    expect(sectionsChanged).toEqual([{ name: "usnat", id: 7 }]);
     const section = cmpApi.getSection("usnat");
     // We decided to use 0 to mean notice was not provided (https://ethyca.atlassian.net/wiki/spaces/PM/pages/2895937552/GPP+Notice+Requirements)
     // All other consent fields should be 0 (N/A)
@@ -192,9 +190,7 @@ describe("setGppNoticesProvidedFromExperience", () => {
       cmpApi,
       experience,
     });
-    expect(sectionsChanged).toEqual([
-      { name: "usnat", id: 7, prefix: "usnat" },
-    ]);
+    expect(sectionsChanged).toEqual([{ name: "usnat", id: 7 }]);
     const section = cmpApi.getSection("usnat");
     expect(section).toEqual({
       Version: 1,
@@ -262,9 +258,7 @@ describe("setGppNoticesProvidedFromExperience", () => {
       cmpApi,
       experience,
     });
-    expect(sectionsChanged).toEqual([
-      { name: "usnat", id: 7, prefix: "usnat" },
-    ]);
+    expect(sectionsChanged).toEqual([{ name: "usnat", id: 7 }]);
     const section = cmpApi.getSection("usnat");
     expect(section).toEqual({
       Version: 1,
@@ -338,9 +332,9 @@ describe("setGppOptOutsFromCookieAndExperience", () => {
         mechanism: [
           mockGppMechanism({
             field: "KnownChildSensitiveDataConsents",
-            not_available: "00",
-            opt_out: "111111111111",
-            not_opt_out: "222222222222",
+            not_available: "000",
+            opt_out: "111",
+            not_opt_out: "222",
           }),
         ],
       }),
@@ -387,9 +381,7 @@ describe("setGppOptOutsFromCookieAndExperience", () => {
       cookie,
       experience,
     });
-    expect(sectionsChanged).toEqual([
-      { name: "usnat", id: 7, prefix: "usnat" },
-    ]);
+    expect(sectionsChanged).toEqual([{ name: "usnat", id: 7 }]);
     const section = cmpApi.getSection("usnat");
     expect(section).toEqual({
       Version: 1,
