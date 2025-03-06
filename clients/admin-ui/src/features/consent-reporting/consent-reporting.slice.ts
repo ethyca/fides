@@ -1,5 +1,5 @@
 import { baseApi } from "~/features/common/api.slice";
-import { Page_ConsentReportingSchema_, PreferencesSaved } from "~/types/api";
+import { Page_ConsentReportingSchema_ } from "~/types/api";
 
 type DateRange = {
   startDate?: string;
