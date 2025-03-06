@@ -31,12 +31,12 @@ describe("formatFidesStringWithGpp", () => {
     expect(result).toBe(",,DBAA");
   });
 
-  // it("uses default GPP string when CmpApi returns no string", () => {
-  //   const cmpApi = new CmpApi(1, 1);
-  //   jest.spyOn(cmpApi, "getGppString").mockReturnValue("");
-  //   const result = formatFidesStringWithGpp(cmpApi);
-  //   expect(result).toBe(",,DBAA");
-  // });
+  it("uses default GPP string when CmpApi returns no string", () => {
+    const cmpApi = new CmpApi(1, 1);
+    jest.spyOn(cmpApi, "getGppString").mockReturnValue("");
+    const result = formatFidesStringWithGpp(cmpApi);
+    expect(result).toBe(",,DBAA");
+  });
 
   describe("in a non-TCF experience", () => {
     beforeEach(() => {
