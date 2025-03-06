@@ -32,6 +32,9 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Opt out of all in TCF no longer affects "notice only" notices [#5850](https://github.com/ethyca/fides/pull/5850)
 
 
+### Fixed
+- Corrected the Tag color for some columns of the Privacy requests table. [#5848](https://github.com/ethyca/fides/pull/5848)
+
 ## [2.56.1](https://github.com/ethyca/fides/compare/2.56.0...2.56.1)
 
 ### Changed
