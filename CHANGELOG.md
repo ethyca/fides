@@ -22,6 +22,10 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.56.1...main)
 
 
+### Fixed
+- Addressed TCModel console error when opting into some purposes [#5850](https://github.com/ethyca/fides/pull/5850)
+- Opt out of all in TCF no longer affects "notice only" notices [#5850](https://github.com/ethyca/fides/pull/5850)
+
 
 ## [2.56.1](https://github.com/ethyca/fides/compare/2.56.0...2.56.1)
 
