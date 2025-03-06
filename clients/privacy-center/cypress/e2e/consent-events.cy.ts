@@ -29,21 +29,88 @@ describe("Consent events", () => {
       cy.get("@FidesUpdating").should("have.been.called");
       cy.get("@FidesUpdated").should("have.been.called");
 
-      // Verify the complete sequence of events
+      cy.log("Verify the complete sequence of FidesEvents");
       cy.get("@AllFidesEvents")
         .should("have.been.called")
         .then((stub: any) => {
-          const events = stub.getCalls().map((call) => call.args[0].type);
-          expect(events).to.deep.equal([
-            "FidesInitializing",
-            "FidesInitialized",
-            "FidesUIShown", // banner
-            "FidesUIShown", // modal
-            "FidesUIChanged", // toggle click
-            "FidesModalClosed", // save
-            "FidesUpdating", // updating
-            "FidesUpdated", // updated
-          ]);
+          const events = stub.getCalls().map((call) => ({
+            type: call.args[0].type,
+            detail: call.args[0].detail,
+          }));
+
+          const expectedEvents = [
+            {
+              type: "FidesInitializing",
+              detail: {},
+            },
+            {
+              type: "FidesInitialized",
+              detail: {},
+            },
+            {
+              type: "FidesUIShown",
+              detail: {
+                extraDetails: {
+                  servingComponent: "banner",
+                },
+              },
+            },
+            {
+              type: "FidesUIShown",
+              detail: {
+                extraDetails: {
+                  servingComponent: "modal",
+                },
+              },
+            },
+            {
+              type: "FidesUIChanged",
+              detail: {
+                extraDetails: {
+                  servingComponent: "modal",
+                },
+              },
+            },
+            {
+              type: "FidesModalClosed",
+              detail: {},
+            },
+            {
+              type: "FidesUpdating",
+              detail: {
+                extraDetails: {
+                  consentMethod: "save",
+                },
+              },
+            },
+            {
+              type: "FidesUpdated",
+              detail: {
+                extraDetails: {
+                  consentMethod: "save",
+                },
+              },
+            },
+          ];
+
+          // For each event, verify only the properties we care about
+          events.forEach((actual, index) => {
+            const expected = expectedEvents[index];
+            expect(actual.type, `Event ${index} type`).to.equal(expected.type);
+            expect(actual.detail, `Event ${index} detail`).to.be.an("object");
+
+            // Only verify the properties we specified in expectedEvents
+            Object.entries(expected.detail).forEach(([key, value]) => {
+              // First verify the key exists if we expect a value
+              if (Object.keys(value).length > 0) {
+                expect(actual.detail).to.have.property(key);
+              }
+              expect(
+                actual.detail[key],
+                `Event ${index} detail.${key}`,
+              ).to.deep.include(value);
+            });
+          });
         });
     });
   });
