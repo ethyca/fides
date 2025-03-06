@@ -97,7 +97,7 @@ export const RequestDaysLeftCell = ({
   } else if (percentage >= 75) {
     colorScheme = "success";
   } else if (percentage >= 25) {
-    colorScheme = "warn";
+    colorScheme = "warning";
   }
 
   return (
