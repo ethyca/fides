@@ -19,7 +19,8 @@ import {
   WarningIcon,
 } from "fidesui";
 import { useField, useFormikContext } from "formik";
-import { ReactNode, useEffect, useMemo, useState } from "react";
+import { isBoolean } from "lodash";
+import { ReactElement, ReactNode, useEffect, useMemo, useState } from "react";
 
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import ConfirmationModal from "~/features/common/modals/ConfirmationModal";
@@ -35,7 +36,7 @@ export const DefaultCell = <T,>({
   ...chakraStyleProps
 }: {
   cellProps?: FidesCellProps<T>;
-  value: string | undefined | number | null | boolean;
+  value: string | ReactElement | undefined | number | null | boolean;
 } & TextProps) => {
   const expandable = !!cellProps?.cell.column.columnDef.meta?.showHeaderMenu;
   const isExpanded = expandable && !!cellProps?.cellState?.isExpanded;
@@ -51,7 +52,7 @@ export const DefaultCell = <T,>({
       title={isExpanded && !!value ? undefined : value?.toString()}
       {...chakraStyleProps}
     >
-      {value !== null && value !== undefined ? value.toString() : value}
+      {isBoolean(value) ? value.toString() : value}
     </Text>
   );
 };

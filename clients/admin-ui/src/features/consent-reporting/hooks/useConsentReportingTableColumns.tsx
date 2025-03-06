@@ -1,4 +1,5 @@
 import { createColumnHelper } from "@tanstack/react-table";
+import palette from "fidesui/src/palette/palette.module.scss";
 import { useMemo } from "react";
 
 import { DefaultCell, DefaultHeaderCell } from "~/features/common/table/v2";
@@ -12,7 +13,18 @@ const useConsentReportingTableColumns = () => {
     () => [
       columnHelper.accessor((row) => row.email, {
         id: "email",
-        cell: ({ getValue }) => <DefaultCell value={getValue()} />,
+        cell: ({ getValue }) => (
+          <DefaultCell
+            value={
+              <a
+                href={`mailto:${getValue()}`}
+                style={{ color: palette.FIDESUI_LINK }}
+              >
+                {getValue()}
+              </a>
+            }
+          />
+        ),
         header: (props) => <DefaultHeaderCell value="Email" {...props} />,
         enableSorting: false,
       }),
