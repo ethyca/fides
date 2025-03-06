@@ -27,7 +27,7 @@ const useConsentReportingTableColumns = () => {
         id: "fides_user_device_id",
         cell: ({ getValue }) => <DefaultCell value={getValue()} />,
         header: (props) => (
-          <DefaultHeaderCell value="User Device ID" {...props} />
+          <DefaultHeaderCell value="User device ID" {...props} />
         ),
         enableSorting: false,
       }),

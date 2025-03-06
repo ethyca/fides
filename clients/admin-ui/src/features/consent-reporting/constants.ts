@@ -20,8 +20,8 @@ export const USER_CONSENT_PREFERENCE_COLOR: Record<
 > = {
   [UserConsentPreference.OPT_IN]: "success",
   [UserConsentPreference.OPT_OUT]: "error",
-  [UserConsentPreference.ACKNOWLEDGE]: "caution",
-  [UserConsentPreference.TCF]: "caution",
+  [UserConsentPreference.ACKNOWLEDGE]: "default",
+  [UserConsentPreference.TCF]: "sandstone",
 };
 
 export const CONSENT_METHOD_LABELS: Record<ConsentMethod, string> = {
