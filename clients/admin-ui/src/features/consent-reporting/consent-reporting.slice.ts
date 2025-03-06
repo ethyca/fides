@@ -19,7 +19,7 @@ export function convertDateRangeToSearchParams({
   let endDateISO;
   if (endDate) {
     endDateISO = new Date(endDate);
-    endDateISO.setUTCHours(0, 0, 0);
+    endDateISO.setUTCHours(23, 59, 59, 9999);
   }
 
   return {
@@ -64,14 +64,22 @@ export const consentReportingApi = baseApi.injectEndpoints({
         size: number;
       } & DateRange
     >({
-      query: ({ page, size, startDate, endDate }) => ({
-        url: "historical-privacy-preferences",
-        params: {
-          page,
-          size,
-          ...convertDateRangeToSearchParams({ startDate, endDate }),
-        },
-      }),
+      query: ({ page, size, startDate, endDate }) => {
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        const { created_gt, created_lt } = convertDateRangeToSearchParams({
+          startDate,
+          endDate,
+        });
+        return {
+          url: "historical-privacy-preferences",
+          params: {
+            page,
+            size,
+            request_timestamp_gt: created_gt,
+            request_timestamp_lt: created_lt,
+          },
+        };
+      },
       providesTags: ["Consent Reporting"],
     }),
   }),
