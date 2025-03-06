@@ -1,5 +1,6 @@
 import { getCoreRowModel, useReactTable } from "@tanstack/react-table";
 import {
+  AntEmpty as Empty,
   AntForm as Form,
   AntInput as Input,
   AntTypography as Typography,
@@ -102,6 +103,13 @@ const ConsentLookupModal = ({ isOpen, onClose }: ConsentLookupModalProps) => {
           <div className="mb-4">
             <FidesTableV2<PreferenceWithNoticeInformation>
               tableInstance={tableInstance}
+              emptyTableNotice={
+                <Empty
+                  description="Search for an email, phone number, or device ID."
+                  image={Empty.PRESENTED_IMAGE_SIMPLE}
+                  imageStyle={{ marginBottom: 15 }}
+                />
+              }
             />
           </div>
         </ModalBody>

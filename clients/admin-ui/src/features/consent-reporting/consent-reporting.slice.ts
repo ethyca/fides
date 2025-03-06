@@ -62,11 +62,15 @@ export const consentReportingApi = baseApi.injectEndpoints({
       {
         page: number;
         size: number;
-      }
+      } & DateRange
     >({
-      query: (params) => ({
+      query: ({ page, size, startDate, endDate }) => ({
         url: "historical-privacy-preferences",
-        params,
+        params: {
+          page,
+          size,
+          ...convertDateRangeToSearchParams({ startDate, endDate }),
+        },
       }),
       providesTags: ["Consent Reporting"],
     }),

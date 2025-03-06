@@ -5,6 +5,7 @@ import {
   AntButton as Button,
   AntDatePicker as DatePicker,
   AntDropdown as Dropdown,
+  AntEmpty as Empty,
   AntFlex as Flex,
   Icons,
 } from "fidesui";
@@ -36,10 +37,13 @@ const ConsentReportingPage = () => {
   const [isDownloadReportModalOpen, setIsDownloadReportModalOpen] =
     useState(false);
 
+  const dateFormat = "YYYY-MM-DD";
   const { data, isLoading, isFetching, refetch } =
     useGetAllHistoricalPrivacyPreferencesQuery({
       page: pagination.pageIndex,
       size: pagination.pageSize,
+      startDate: startDate?.format(dateFormat),
+      endDate: endDate?.format(dateFormat),
     });
 
   const { setTotalPages } = pagination;
@@ -114,6 +118,13 @@ const ConsentReportingPage = () => {
             </TableActionBar>
             <FidesTableV2<ConsentReportingSchema>
               tableInstance={tableInstance}
+              emptyTableNotice={
+                <Empty
+                  description="No results."
+                  image={Empty.PRESENTED_IMAGE_SIMPLE}
+                  imageStyle={{ marginBottom: 15 }}
+                />
+              }
             />
             <PaginationBar
               totalRows={totalRows || 0}

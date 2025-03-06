@@ -62,8 +62,8 @@ const useConsentReportingTableColumns = () => {
         enableSorting: false,
         size: 100,
       }),
-      columnHelper.accessor((row) => row.privacy_notice_history_id, {
-        id: "privacy_notice_history_id",
+      columnHelper.accessor((row) => row.notice_name, {
+        id: "notice_name",
         cell: ({ getValue }) => <DefaultCell value={getValue()} />,
         header: (props) => (
           <DefaultHeaderCell value="Privacy notice" {...props} />

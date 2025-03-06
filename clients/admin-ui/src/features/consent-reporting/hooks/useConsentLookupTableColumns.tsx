@@ -1,8 +1,17 @@
 import { createColumnHelper } from "@tanstack/react-table";
 import { useMemo } from "react";
 
-import { DefaultCell, DefaultHeaderCell } from "~/features/common/table/v2";
+import {
+  BadgeCell,
+  DefaultCell,
+  DefaultHeaderCell,
+} from "~/features/common/table/v2";
 import { PreferenceWithNoticeInformation } from "~/types/api";
+
+import {
+  USER_CONSENT_PREFERENCE_COLOR,
+  USER_CONSENT_PREFERENCE_LABELS,
+} from "../constants";
 
 const columnHelper = createColumnHelper<PreferenceWithNoticeInformation>();
 
@@ -23,9 +32,20 @@ const useConsentLookupTableColumns = () => {
       }),
       columnHelper.accessor((row) => row.preference, {
         id: "preference",
-        cell: ({ getValue }) => <DefaultCell value={getValue()} />,
+        cell: ({ getValue }) => {
+          const preference = getValue();
+          const preferenceLabel =
+            (preference && USER_CONSENT_PREFERENCE_LABELS[preference]) ||
+            preference;
+
+          const badgeColor =
+            (preference && USER_CONSENT_PREFERENCE_COLOR[preference]) || "";
+
+          return <BadgeCell color={badgeColor} value={preferenceLabel} />;
+        },
         header: (props) => <DefaultHeaderCell value="Preference" {...props} />,
         enableSorting: false,
+        size: 100,
       }),
       columnHelper.accessor((row) => row.privacy_notice_history_id, {
         id: "privacy_notice_history_id",
