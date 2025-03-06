@@ -57,7 +57,6 @@ module = [
   "okta.*",
   "pandas.*",
   "pg8000.*",
-  "plotly.*",
   "pydash.*",
   "pygtrie.*",
   "pymongo.*",
