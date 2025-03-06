@@ -63,7 +63,7 @@ const useConsentReportingTableColumns = () => {
       }),
       columnHelper.accessor((row) => row.notice_name, {
         id: "notice_name",
-        cell: ({ getValue }) => <DefaultCell value={getValue()} />,
+        cell: ({ getValue }) => <BadgeCell value={getValue()} />,
         header: (props) => (
           <DefaultHeaderCell value="Privacy notice" {...props} />
         ),
