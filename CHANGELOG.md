@@ -27,6 +27,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ### Changed
 - Bumped supported Python versions to `3.10.16` and `3.9.21` [#5840](https://github.com/ethyca/fides/pull/5840)
 - Update the privacy request detail page to a new layout and improved styling [#5824](https://github.com/ethyca/fides/pull/5824)
+- Updated privacy request handling to still succeed if not all identities are provided [#5836](https://github.com/ethyca/fides/pull/5836)
 
 ### Developer Experience
 - Moved non-prod Admin UI dependencies to devDependencies [#5832](https://github.com/ethyca/fides/pull/5832)
