@@ -43,7 +43,7 @@ export const consentReportingApi = baseApi.injectEndpoints({
       providesTags: ["Current Privacy Preferences"],
     }),
 
-    downloadReport: build.query<PreferencesSaved, DateRange>({
+    downloadReport: build.query<any, DateRange>({
       query: ({ startDate, endDate }) => {
         const params = {
           ...convertDateRangeToSearchParams({ startDate, endDate }),
