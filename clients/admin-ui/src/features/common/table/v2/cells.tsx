@@ -100,7 +100,7 @@ export const BadgeCell = ({
   suffix,
   ...tagProps
 }: {
-  value: string | number;
+  value: string | number | null | undefined;
   suffix?: string;
 } & TagProps) => (
   <BadgeCellContainer>

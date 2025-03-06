@@ -1,4 +1,8 @@
-import { ConsentMethod, UserConsentPreference } from "~/types/api";
+import {
+  ConsentMethod,
+  RequestOrigin,
+  UserConsentPreference,
+} from "~/types/api";
 
 export const USER_CONSENT_PREFERENCE_LABELS: Record<
   UserConsentPreference,
@@ -30,4 +34,13 @@ export const CONSENT_METHOD_LABELS: Record<ConsentMethod, string> = {
   [ConsentMethod.SCRIPT]: "Script",
   [ConsentMethod.INDIVIDUAL_NOTICE]: "Individual Notice",
   [ConsentMethod.ACKNOWLEDGE]: "Acknowledge",
+};
+
+export const REQUEST_ORIGIN_LABELS: Record<RequestOrigin, string> = {
+  [RequestOrigin.API]: "API",
+  [RequestOrigin.BANNER_AND_MODAL]: "Banner and Modal",
+  [RequestOrigin.MODAL]: "Modal",
+  [RequestOrigin.OVERLAY]: "Overlay",
+  [RequestOrigin.PRIVACY_CENTER]: "Privacy Center",
+  [RequestOrigin.TCF_OVERLAY]: "TCF Overlay",
 };

@@ -13,6 +13,7 @@ import { ConsentReportingSchema, PrivacyNoticeRegion } from "~/types/api";
 
 import {
   CONSENT_METHOD_LABELS,
+  REQUEST_ORIGIN_LABELS,
   USER_CONSENT_PREFERENCE_COLOR,
   USER_CONSENT_PREFERENCE_LABELS,
 } from "../constants";
@@ -44,9 +45,7 @@ const useConsentReportingTableColumns = () => {
         cell: ({ getValue }) => {
           const region = getValue() as PrivacyNoticeRegion | null | undefined;
           const regionLabel =
-            region && PRIVACY_NOTICE_REGION_RECORD[region]
-              ? PRIVACY_NOTICE_REGION_RECORD[region]
-              : region || "";
+            (region && PRIVACY_NOTICE_REGION_RECORD[region]) || region;
           return <DefaultCell value={regionLabel} />;
         },
         header: (props) => (
@@ -59,7 +58,8 @@ const useConsentReportingTableColumns = () => {
         cell: ({ getValue }) => {
           const preference = getValue();
           const preferenceLabel =
-            (preference && USER_CONSENT_PREFERENCE_LABELS[preference]) || "";
+            (preference && USER_CONSENT_PREFERENCE_LABELS[preference]) ||
+            preference;
 
           const badgeColor =
             (preference && USER_CONSENT_PREFERENCE_COLOR[preference]) || "";
@@ -81,7 +81,8 @@ const useConsentReportingTableColumns = () => {
         id: "method",
         cell: ({ getValue }) => {
           const method = getValue();
-          const methodLabel = (method && CONSENT_METHOD_LABELS[method]) || "";
+          const methodLabel =
+            (method && CONSENT_METHOD_LABELS[method]) || method;
           return <DefaultCell value={methodLabel} />;
         },
         header: (props) => <DefaultHeaderCell value="Method" {...props} />,
@@ -89,7 +90,14 @@ const useConsentReportingTableColumns = () => {
       }),
       columnHelper.accessor((row) => row.request_origin, {
         id: "request_origin",
-        cell: ({ getValue }) => <DefaultCell value={getValue()} />,
+        cell: ({ getValue }) => {
+          const requestOrigin = getValue();
+          const requestOriginLabel =
+            (requestOrigin && REQUEST_ORIGIN_LABELS[requestOrigin]) ||
+            requestOrigin;
+
+          return <DefaultCell value={requestOriginLabel} />;
+        },
         header: (props) => (
           <DefaultHeaderCell value="Request origin" {...props} />
         ),
