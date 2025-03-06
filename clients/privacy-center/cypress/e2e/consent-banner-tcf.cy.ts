@@ -422,13 +422,30 @@ describe("Fides-js TCF", () => {
             },
           });
 
-        // Verify all event names in sequence
+        // Verify FidesUIShown events (banner and modal)
         cy.get("@dataLayerPush")
           .its("args")
           .then((args) => {
-            expect(args[1][0].event).to.equal("FidesUIShown"); // banner
-            expect(args[2][0].event).to.equal("FidesUpdating");
-            expect(args[3][0].event).to.equal("FidesUpdated");
+            // Banner shown event
+            const bannerEvent = args[1][0];
+            expect(bannerEvent.event).to.equal("FidesUIShown");
+            expect(bannerEvent.Fides.extraDetails.servingComponent).to.equal(
+              "tcf_banner",
+            );
+
+            // FidesUpdating event
+            const updatingEvent = args[2][0];
+            expect(updatingEvent.event).to.equal("FidesUpdating");
+            expect(updatingEvent.Fides.extraDetails.servingComponent).to.equal(
+              undefined,
+            );
+
+            // FidesUpdated event
+            const updatedEvent = args[3][0];
+            expect(updatedEvent.event).to.equal("FidesUpdated");
+            expect(updatedEvent.Fides.extraDetails.servingComponent).to.equal(
+              undefined,
+            );
           });
 
         // FidesUpdating call
@@ -982,9 +999,26 @@ describe("Fides-js TCF", () => {
         cy.get("@dataLayerPush")
           .its("args")
           .then((args) => {
-            expect(args[1][0].event).to.equal("FidesUIShown"); // banner
-            expect(args[2][0].event).to.equal("FidesUIShown"); // modal
-            expect(args[3][0].event).to.equal("FidesModalClosed"); // modal closed
+            // Banner shown event
+            const bannerEvent = args[1][0];
+            expect(bannerEvent.event).to.equal("FidesUIShown");
+            expect(bannerEvent.Fides.extraDetails.servingComponent).to.equal(
+              "tcf_banner",
+            );
+
+            // Modal shown event
+            const modalEvent = args[2][0];
+            expect(modalEvent.event).to.equal("FidesUIShown");
+            expect(modalEvent.Fides.extraDetails.servingComponent).to.equal(
+              "tcf_overlay",
+            );
+
+            // Modal closed event
+            const modalClosedEvent = args[3][0];
+            expect(modalClosedEvent.event).to.equal("FidesModalClosed");
+            expect(
+              modalClosedEvent.Fides.extraDetails.servingComponent,
+            ).to.equal(undefined);
           });
 
         // FidesUpdating call
