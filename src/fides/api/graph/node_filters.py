@@ -11,7 +11,7 @@ if TYPE_CHECKING:
 
 
 class NodeFilter(ABC):
-    """Protocol for node filters that determine if nodes should be excluded from traversal"""
+    """Abstract base class for node filters that determine if nodes should be excluded from traversal"""
 
     def __init__(self) -> None:
         self.skipped_nodes: Dict[str, str] = {}
