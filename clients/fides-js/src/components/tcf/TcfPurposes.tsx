@@ -188,8 +188,7 @@ const TcfPurposes = ({
           } else if (activeData.enabledCustomPurposeIds) {
             /// filter out custom purpose consent since we are just dealing with TCF purposes
             filteredEnabledIds = newEnabledIds.filter(
-              // @ts-ignore
-              (id) => !activeData.enabledCustomPurposeIds.includes(id),
+              (id) => !activeData.enabledCustomPurposeIds?.includes(id),
             );
           }
 
