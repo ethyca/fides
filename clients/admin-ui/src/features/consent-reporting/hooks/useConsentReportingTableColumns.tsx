@@ -8,7 +8,7 @@ import {
   DefaultCell,
   DefaultHeaderCell,
 } from "~/features/common/table/v2";
-import { formatDate } from "~/features/common/utils";
+import { RelativeTimestampCell } from "~/features/common/table/v2/cells";
 import { ConsentReportingSchema, PrivacyNoticeRegion } from "~/types/api";
 
 import {
@@ -100,10 +100,11 @@ const useConsentReportingTableColumns = () => {
       }),
       columnHelper.accessor((row) => row.request_timestamp, {
         id: "request_timestamp",
-        cell: ({ getValue }) => <DefaultCell value={formatDate(getValue())} />,
+        cell: ({ getValue }) => <RelativeTimestampCell time={getValue()} />,
         header: (props) => (
           <DefaultHeaderCell value="Request timestamp" {...props} />
         ),
+        size: 120,
       }),
       columnHelper.accessor((row) => row.email, {
         id: "email",
