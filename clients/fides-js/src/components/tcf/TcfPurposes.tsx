@@ -178,18 +178,32 @@ const TcfPurposes = ({
               ]
             : activeData.enabledPurposeIds
         }
-        onToggle={(newEnabledIds, item, toggleDetails) =>
+        onToggle={(newEnabledIds, item: RecordListItem, toggleDetails) => {
+          let filteredEnabledIds = newEnabledIds;
+          if (item.bestTranslation) {
+            // filter out tcf purpose consent since we are just dealing with custom purposes
+            filteredEnabledIds = newEnabledIds.filter(
+              (id) => !activeData.enabledPurposeIds.includes(id),
+            );
+          } else if (activeData.enabledCustomPurposeIds) {
+            /// filter out custom purpose consent since we are just dealing with TCF purposes
+            filteredEnabledIds = newEnabledIds.filter(
+              // @ts-ignore
+              (id) => !activeData.enabledCustomPurposeIds.includes(id),
+            );
+          }
+
           onChange(
             {
-              newEnabledIds,
+              newEnabledIds: filteredEnabledIds,
               // @ts-ignore
               modelType: item.bestTranslation
                 ? "customPurposesConsent"
                 : activeData.purposeModelType,
             },
             toggleDetails,
-          )
-        }
+          );
+        }}
         renderToggleChild={(p, isCustomPurpose) => (
           <PurposeDetails
             type="purposes"

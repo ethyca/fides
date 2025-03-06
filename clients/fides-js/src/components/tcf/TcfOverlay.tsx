@@ -11,7 +11,6 @@ import {
   ConsentMethod,
   PrivacyExperience,
   PrivacyExperienceMinimal,
-  PrivacyNotice,
   PrivacyNoticeWithPreference,
   SaveConsentPreference,
   ServingComponent,
@@ -41,7 +40,6 @@ import {
   EnabledIds,
   PrivacyNoticeWithBestTranslation,
   TcfModels,
-  TcfModelsRecord,
   TcfSavePreferences,
 } from "../../lib/tcf/types";
 import {
@@ -64,27 +62,13 @@ import { TCFBannerSupplemental } from "./TCFBannerSupplemental";
 import { TcfConsentButtons } from "./TcfConsentButtons";
 import TcfTabs from "./TcfTabs";
 
-function isPrivacyNotice(
-  notice: TcfModelsRecord | PrivacyNoticeWithPreference,
-): notice is PrivacyNotice {
-  return (notice as PrivacyNotice).consent_mechanism !== undefined;
-}
-
 const getAllIds = (
   modelList: TcfModels | Array<PrivacyNoticeWithPreference>,
 ) => {
   if (!modelList) {
     return [];
   }
-  return modelList
-    .filter((m) => {
-      if (isPrivacyNotice(m)) {
-        return m.consent_mechanism !== ConsentMechanism.NOTICE_ONLY;
-      }
-
-      return true;
-    })
-    .map((m) => `${m.id}`);
+  return modelList.map((m) => `${m.id}`);
 };
 
 interface TcfOverlayProps extends Omit<OverlayProps, "experience"> {
@@ -360,6 +344,7 @@ export const TcfOverlay = ({
           enabledIds,
         });
       }
+      // Creates consent prefs to save for custom purposes consent
       const consentPreferencesToSave = createConsentPreferencesToSave(
         privacyNoticesWithBestTranslation,
         enabledIds.customPurposesConsent,
@@ -454,12 +439,18 @@ export const TcfOverlay = ({
 
   const handleRejectAll = useCallback(
     (wasAutomated?: boolean) => {
+      // Notice-only custom purposes should not be rejected
+      const enabledIds: EnabledIds = EMPTY_ENABLED_IDS;
+      enabledIds.customPurposesConsent =
+        privacyNoticesWithBestTranslation
+          .filter((n) => n.consent_mechanism === ConsentMechanism.NOTICE_ONLY)
+          .map((n) => n.id) ?? EMPTY_ENABLED_IDS;
       handleUpdateAllPreferences(
         wasAutomated ? ConsentMethod.SCRIPT : ConsentMethod.REJECT,
-        EMPTY_ENABLED_IDS,
+        enabledIds,
       );
     },
-    [handleUpdateAllPreferences],
+    [handleUpdateAllPreferences, privacyNoticesWithBestTranslation],
   );
 
   useEffect(() => {
