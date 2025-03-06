@@ -64,7 +64,7 @@ const ConsentLookupModal = ({ isOpen, onClose }: ConsentLookupModalProps) => {
 
   return (
     <Modal
-      id="custom-field-modal-hello-world"
+      id="consent-lookup-modal"
       isOpen={isOpen}
       onClose={onClose}
       size="6xl"

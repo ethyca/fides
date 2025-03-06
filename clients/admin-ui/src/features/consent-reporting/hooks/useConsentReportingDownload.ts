@@ -7,7 +7,7 @@ import { useLazyDownloadReportQuery } from "../consent-reporting.slice";
 const useConsentReportingDownload = () => {
   const toast = useToast();
 
-  const [downloadReportTrigger, { isLoading }] = useLazyDownloadReportQuery();
+  const [downloadReportTrigger, { isFetching }] = useLazyDownloadReportQuery();
 
   const downloadReport = async ({
     startDate,
@@ -32,6 +32,6 @@ const useConsentReportingDownload = () => {
     }
   };
 
-  return { downloadReport, isDownloadingReport: isLoading };
+  return { downloadReport, isDownloadingReport: isFetching };
 };
 export default useConsentReportingDownload;

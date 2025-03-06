@@ -9,7 +9,7 @@ import {
   AntTypography as Typography,
   Icons,
 } from "fidesui";
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 
 import Layout from "~/features/common/Layout";
 import PageHeader from "~/features/common/PageHeader";
@@ -23,6 +23,7 @@ import {
 } from "~/features/common/table/v2";
 import { useGetAllHistoricalPrivacyPreferencesQuery } from "~/features/consent-reporting/consent-reporting.slice";
 import ConsentLookupModal from "~/features/consent-reporting/ConsentLookupModal";
+import ConsentReportDownloadModal from "~/features/consent-reporting/ConsentReportDownloadModal";
 import useConsentReportingDownload from "~/features/consent-reporting/hooks/useConsentReportingDownload";
 import useConsentReportingTableColumns from "~/features/consent-reporting/hooks/useConsentReportingTableColumns";
 import { ConsentReportingSchema } from "~/types/api";
@@ -30,10 +31,12 @@ import { ConsentReportingSchema } from "~/types/api";
 const ConsentReportingPage = () => {
   const pagination = useServerSidePagination();
   const today = useMemo(() => dayjs(), []);
-  const [startDate, setStartDate] = React.useState<Dayjs | null>(null);
-  const [endDate, setEndDate] = React.useState<Dayjs | null>(null);
+  const [startDate, setStartDate] = useState<Dayjs | null>(null);
+  const [endDate, setEndDate] = useState<Dayjs | null>(null);
   const [isConsentLookupModalOpen, setIsConsentLookupModalOpen] =
-    React.useState(false);
+    useState(false);
+  const [isDownloadReportModalOpen, setIsDownloadReportModalOpen] =
+    useState(false);
 
   const { data, isLoading, isFetching, refetch } =
     useGetAllHistoricalPrivacyPreferencesQuery({
@@ -56,15 +59,6 @@ const ConsentReportingPage = () => {
     getRowId: (row) => `${row.id}`,
     manualPagination: true,
   });
-
-  const { downloadReport, isDownloadingReport } = useConsentReportingDownload();
-  const handleDownloadClicked = () => {
-    const dateFormat = "YYYY-MM-DD";
-    downloadReport({
-      startDate: startDate?.format(dateFormat),
-      endDate: endDate?.format(dateFormat),
-    });
-  };
 
   return (
     <Layout title="Consent reporting">
@@ -105,8 +99,7 @@ const ConsentReportingPage = () => {
                 <Button
                   icon={<Icons.Download />}
                   data-testid="download-btn"
-                  loading={isDownloadingReport}
-                  onClick={handleDownloadClicked}
+                  onClick={() => setIsDownloadReportModalOpen(true)}
                 />
                 <Dropdown
                   menu={{
@@ -151,6 +144,12 @@ const ConsentReportingPage = () => {
       <ConsentLookupModal
         isOpen={isConsentLookupModalOpen}
         onClose={() => setIsConsentLookupModalOpen(false)}
+      />
+      <ConsentReportDownloadModal
+        isOpen={isDownloadReportModalOpen}
+        onClose={() => setIsDownloadReportModalOpen(false)}
+        startDate={startDate}
+        endDate={endDate}
       />
     </Layout>
   );
