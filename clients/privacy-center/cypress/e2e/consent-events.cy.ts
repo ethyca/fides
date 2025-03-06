@@ -47,6 +47,9 @@ describe("Consent FidesEvents", () => {
         const expected = expectedEvents[index];
         expect(actual.detail, `Event ${index} detail`).to.be.an("object");
 
+        // Verify timestamp exists and is a valid performance.now() value
+        expect(actual.detail.timestamp).to.be.a("number").and.to.be.at.least(0);
+
         // Only verify the properties we specified in expectedEvents
         Object.entries(expected.detail).forEach(([key, value]) => {
           // First verify the key exists if we expect a value

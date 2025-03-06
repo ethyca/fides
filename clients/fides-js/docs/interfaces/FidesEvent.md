@@ -94,6 +94,15 @@ User's current consent preferences; see [Fides.consent](Fides.md#consent) for de
 
 User's current consent string; see [Fides.fides_string](Fides.md#fides_string) for detail.
 
+#### timestamp?
+
+> `optional` **timestamp**: `number`
+
+High-precision timestamp from [performance.mark()](https://developer.mozilla.org/en-US/docs/Web/API/Performance/mark)
+representing when this event was created. The timestamp is measured in milliseconds since page load.
+
+May be undefined if the Performance API is not available.
+
 #### extraDetails?
 
 > `optional` **extraDetails**: `object`

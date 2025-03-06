@@ -16,13 +16,16 @@ export type FidesEventExtraDetails = Record<
 >;
 
 /**
- * Defines the properties available on event.detail. Currently the FidesCookie
- * and an extra field `meta` for any other details that the event wants to pass
- * around.
+ * Defines the properties available on event.detail. Currently includes:
+ * - FidesCookie properties
+ * - debug flag
+ * - extraDetails for additional event context
+ * - timestamp from performance.mark() if available
  */
 export type FidesEventDetail = FidesCookie & {
   debug?: boolean;
   extraDetails?: FidesEventExtraDetails;
+  timestamp?: number;
 };
 
 /**
@@ -72,11 +75,16 @@ export const dispatchFidesEvent = (
       consentMethod: cookie?.fides_meta.consentMethod,
       ...extraDetails,
     };
+    const perfMark = performance?.mark?.(type);
     const event = new CustomEvent(type, {
-      detail: { ...cookie, debug, extraDetails: constructedExtraDetails },
+      detail: {
+        ...cookie,
+        debug,
+        extraDetails: constructedExtraDetails,
+        timestamp: perfMark?.startTime,
+      },
       bubbles: true,
     });
-    const perfMark = performance?.mark?.(type);
     fidesDebugger(
       `Dispatching event type ${type} ${
         constructedExtraDetails?.servingComponent

@@ -103,6 +103,14 @@ export interface FidesEvent extends CustomEvent {
     fides_string?: string;
 
     /**
+     * High-precision timestamp from {@link https://developer.mozilla.org/en-US/docs/Web/API/Performance/mark performance.mark()}
+     * representing when this event was created. The timestamp is measured in milliseconds since page load.
+     *
+     * May be undefined if the Performance API is not available.
+     */
+    timestamp?: number;
+
+    /**
      * Extra event properties, for additional context.
      */
     extraDetails?: {
