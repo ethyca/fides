@@ -1,9 +1,13 @@
+from typing import Optional
+
 import pytest
+from pydantic import BaseModel
 
 from fides.api.custom_types import (
     GPPMechanismConsentValue,
     PhoneNumber,
     SafeStr,
+    URLOriginString,
     validate_gpp_mechanism_consent_value,
     validate_phone_number,
     validate_safe_str,
@@ -191,3 +195,34 @@ class TestGppMechanismConsentValue:
         """Test that valid GPP consent mechanism values do not throw any errors."""
         validated_value = validate_gpp_mechanism_consent_value(consent_value)
         assert validated_value == validated_value
+
+
+@pytest.mark.unit
+class TestURLOriginString:
+
+    class TestModel(BaseModel):
+        origin: URLOriginString
+
+    @pytest.mark.parametrize(
+        "input_value, expected_validated_value",
+        (
+            ("https://example.com", "https://example.com"),
+            ("https://example.com/", "https://example.com"),
+            ("https://example.com/path", None),
+            ("https://example.com/path/", None),
+            ("foobar", None),
+            ("*", "*"),
+        ),
+    )
+    def test_valid_url_origin_strings(
+        self, input_value: str, expected_validated_value: Optional[str]
+    ) -> None:
+        """Test that valid URL origin strings do not throw any errors."""
+
+        if expected_validated_value is None:
+            with pytest.raises(ValueError):
+                TestURLOriginString.TestModel(origin=input_value)
+        else:
+            instance = TestURLOriginString.TestModel(origin=input_value)
+            # validated value is a URL object, needs to be converted to a string
+            assert str(instance.origin) == expected_validated_value
