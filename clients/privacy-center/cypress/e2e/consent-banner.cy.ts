@@ -2122,7 +2122,19 @@ describe("Consent overlay", () => {
 
         // Toggle the notice, but don't save yet
         cy.getByTestId("toggle-Advertising").click();
-        cy.get("@FidesUIChanged").should("have.been.calledOnce");
+        cy.get("@FidesUIChanged").its("callCount").should("equal", 1);
+        cy.get("@FidesUIChanged")
+          .its("firstCall.args.0")
+          .then((event: CustomEvent) => {
+            // Check that the extraDetails includes context about what changed
+            expect(event.type).to.equal("FidesUIChanged");
+            expect(event.detail.extraDetails).to.have.property("servingToggle");
+            expect(event.detail.extraDetails.servingToggle).to.deep.include({
+              label: "Advertising",
+              id: PRIVACY_NOTICE_KEY_1,
+              checked: true,
+            });
+          });
         cy.get("@FidesUpdating").should("not.have.been.called");
         cy.get("@FidesUpdated").should("not.have.been.called");
 
@@ -2158,7 +2170,7 @@ describe("Consent overlay", () => {
     it("pushes events to the GTM integration", () => {
       cy.contains("button", "Opt in to all").should("be.visible").click();
       cy.get("@dataLayerPush")
-        .should("have.been.calledThrice")
+        .should("have.been.callCount", 4) // FidesInitialized + FidesUIShown + FidesUpdating + FidesUpdated
         // First call should be from initialization, before the user accepts all
         .its("firstCall.args.0")
         .should("deep.equal", {
@@ -2177,8 +2189,26 @@ describe("Consent overlay", () => {
           },
         });
       cy.get("@dataLayerPush")
-        // Second call is when the user accepts all
+        // Second call is FidesUIShown when banner appears
         .its("secondCall.args.0")
+        .should("deep.equal", {
+          event: "FidesUIShown",
+          Fides: {
+            consent: {
+              [PRIVACY_NOTICE_KEY_1]: false,
+              [PRIVACY_NOTICE_KEY_2]: true,
+              [PRIVACY_NOTICE_KEY_3]: true,
+            },
+            extraDetails: {
+              servingComponent: "banner",
+              consentMethod: undefined,
+            },
+            fides_string: undefined,
+          },
+        });
+      cy.get("@dataLayerPush")
+        // Third call is when the user accepts all
+        .its("thirdCall.args.0")
         .should("deep.equal", {
           event: "FidesUpdating",
           Fides: {
@@ -2194,8 +2224,8 @@ describe("Consent overlay", () => {
           },
         });
       cy.get("@dataLayerPush")
-        // Third call is when the preferences finish updating
-        .its("thirdCall.args.0")
+        // Fourth call is when the preferences finish updating
+        .its("lastCall.args.0")
         .should("deep.equal", {
           event: "FidesUpdated",
           Fides: {

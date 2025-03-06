@@ -3,6 +3,7 @@ import "../fides.css";
 import { FunctionComponent, h } from "preact";
 import { useCallback, useEffect, useMemo, useState } from "preact/hooks";
 
+import { FidesEvent } from "../../docs/fides-event";
 import { isConsentOverride } from "../../lib/common-utils";
 import { getConsentContext } from "../../lib/consent-context";
 import {
@@ -360,9 +361,19 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
             <NoticeToggles
               noticeToggles={noticeToggles}
               enabledNoticeKeys={draftEnabledNoticeKeys}
-              onChange={(updatedKeys) => {
+              onChange={(updatedKeys, toggleDetails) => {
+                const eventExtraDetails: FidesEvent["detail"]["extraDetails"] =
+                  {
+                    servingComponent: "modal",
+                    servingToggle: toggleDetails,
+                  };
                 setDraftEnabledNoticeKeys(updatedKeys);
-                dispatchFidesEvent("FidesUIChanged", cookie, options.debug);
+                dispatchFidesEvent(
+                  "FidesUIChanged",
+                  cookie,
+                  options.debug,
+                  eventExtraDetails,
+                );
               }}
             />
           </div>

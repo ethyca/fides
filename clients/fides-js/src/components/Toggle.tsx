@@ -1,5 +1,7 @@
 import { h } from "preact";
 
+import { FidesServingToggleDetails } from "../lib/events";
+
 const Toggle = ({
   label,
   name,
@@ -14,7 +16,10 @@ const Toggle = ({
   name: string;
   id: string;
   checked: boolean;
-  onChange: (noticeKey: string) => void;
+  onChange: (
+    noticeKey: string,
+    toggleDetails: FidesServingToggleDetails,
+  ) => void;
   disabled?: boolean;
   onLabel?: string;
   offLabel?: string;
@@ -28,7 +33,8 @@ const Toggle = ({
         aria-label={label}
         className="fides-toggle-input"
         onChange={() => {
-          onChange(id);
+          const nextCheckedState = !checked;
+          onChange(id, { id, label, checked: nextCheckedState });
         }}
         checked={checked}
         role="switch"

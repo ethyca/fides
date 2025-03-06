@@ -1,4 +1,4 @@
-import { FidesEvent } from "../docs";
+import { FidesEvent, FidesEventType } from "../docs";
 import { FidesEventDetail } from "../lib/events";
 
 declare global {
@@ -38,16 +38,28 @@ const pushFidesVariableToGTM = (fidesEvent: {
  * `dataLayer` under `Fides.consent` variable.
  */
 export const gtm = () => {
+  // List every FidesEventType as a record so that new additional events are
+  // considered by future developers as to whether they should be pushed to GTM.
+  const fidesEvents: Record<FidesEventType, boolean> = {
+    FidesInitializing: false,
+    FidesInitialized: true,
+    FidesUpdating: true,
+    FidesUpdated: true,
+    FidesUIChanged: true,
+    FidesUIShown: true,
+    FidesModalClosed: true,
+  };
+
+  const events = Object.entries(fidesEvents)
+    .filter(([, dispatchToGtm]) => dispatchToGtm)
+    .map(([key]) => key) as FidesEventType[];
+
   // Listen for Fides events and cross-publish them to GTM
-  window.addEventListener("FidesInitialized", (event) =>
-    pushFidesVariableToGTM(event),
-  );
-  window.addEventListener("FidesUpdating", (event) =>
-    pushFidesVariableToGTM(event),
-  );
-  window.addEventListener("FidesUpdated", (event) =>
-    pushFidesVariableToGTM(event),
-  );
+  events.forEach((eventName) => {
+    window.addEventListener(eventName, (event) =>
+      pushFidesVariableToGTM(event),
+    );
+  });
 
   // If Fides was already initialized, publish a synthetic event immediately
   if (window.Fides?.initialized) {
