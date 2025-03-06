@@ -30,7 +30,6 @@ export {
   Card as AntCard,
   Checkbox as AntCheckbox,
   Col as AntCol,
-  DatePicker as AntDatePicker,
   Divider as AntDivider,
   Dropdown as AntDropdown,
   Empty as AntEmpty,
@@ -62,6 +61,7 @@ export type {
 
 // Higher-order components
 export { CustomSelect as AntSelect } from "./hoc";
+export { CustomDateRangePicker as AntDateRangePicker } from "./hoc";
 
 /**
  * Custom Re-exports

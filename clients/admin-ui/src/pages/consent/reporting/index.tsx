@@ -3,7 +3,7 @@ import { getCoreRowModel, useReactTable } from "@tanstack/react-table";
 import dayjs, { Dayjs } from "dayjs";
 import {
   AntButton as Button,
-  AntDatePicker as DatePicker,
+  AntDateRangePicker as DateRangePicker,
   AntDropdown as Dropdown,
   AntEmpty as Empty,
   AntFlex as Flex,
@@ -80,7 +80,7 @@ const ConsentReportingPage = () => {
         ) : (
           <>
             <TableActionBar>
-              <DatePicker.RangePicker
+              <DateRangePicker
                 placeholder={["From", "To"]}
                 maxDate={today}
                 data-testid="input-date-range"
