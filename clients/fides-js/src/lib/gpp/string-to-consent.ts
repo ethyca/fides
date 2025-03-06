@@ -16,6 +16,7 @@ import {
 import { decodeFidesString } from "../fidesString";
 import { areLocalesEqual } from "../i18n/i18n-utils";
 import { updateConsentPreferences } from "../preferences";
+import { EMPTY_ENABLED_IDS } from "../tcf/constants";
 import { EnabledIds, TcfSavePreferences } from "../tcf/types";
 import {
   createTCFConsentPreferencesToSave,
@@ -118,16 +119,7 @@ const getTcfPreferencesFromCmpApi = ({
   cmpApi: CmpApi;
   experience: PrivacyExperience | PrivacyExperienceMinimal;
 }): EnabledIds => {
-  const preferences: EnabledIds = {
-    vendorsConsent: [],
-    vendorsLegint: [],
-    purposesConsent: [],
-    purposesLegint: [],
-    specialFeatures: [],
-    customPurposesConsent: [],
-    specialPurposes: [],
-    features: [],
-  };
+  const preferences: EnabledIds = EMPTY_ENABLED_IDS;
 
   const tcfeuv2 = cmpApi.getSection(TcfEuV2.NAME) as Record<
     TcfEuV2Field,
