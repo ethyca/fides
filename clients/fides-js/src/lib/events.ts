@@ -40,6 +40,11 @@ export type FidesServingToggleDetails = NonNullable<
 export type FidesEvent = CustomEvent<FidesEventDetail>;
 
 /**
+ * Export the FidesEventType type from the docs module, for usage in tests.
+ */
+export type { FidesEventType };
+
+/**
  * Dispatch a custom event on the window object, providing the current Fides
  * state on the "detail" property of the event.
  *
