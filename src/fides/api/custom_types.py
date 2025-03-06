@@ -2,10 +2,18 @@
 """Logic related to sanitizing and validating user application input."""
 from html import escape
 from re import compile as regex
-from typing import Annotated
+from typing import Annotated, Any
 
 from nh3 import clean
-from pydantic import AfterValidator, AnyHttpUrl, AnyUrl, BeforeValidator
+from pydantic import (
+    AfterValidator,
+    AnyHttpUrl,
+    AnyUrl,
+    BeforeValidator,
+    ValidationInfo,
+    ValidatorFunctionWrapHandler,
+    WrapValidator,
+)
 
 from fides.api.util.unsafe_file_util import verify_css
 
@@ -125,7 +133,30 @@ def validate_path_of_url(value: AnyUrl) -> str:
     return str(value).rstrip("/")
 
 
-URLOriginString = Annotated[AnyUrl, AfterValidator(validate_path_of_url)]
+# values that are not valid URLs, but are specifically allowed as 'origin' values
+ALLOWED_ORIGIN_VALUES = {"*"}
+
+
+def allow_special_origin_values(
+    val: Any, handler: ValidatorFunctionWrapHandler, info: ValidationInfo
+) -> AnyUrl:
+    """
+    Bypasses further validation to allow special origin values like `*`.
+
+    Otherwise, the input value is passed down to the next validator in the chain.
+    """
+    if val in ALLOWED_ORIGIN_VALUES:
+        # we bypass the normal validation and return the value as is if it's in the list of allowed values
+        return val
+
+    parsed = handler(val)
+    return validate_path_of_url(parsed)
+
+
+URLOriginString = Annotated[
+    AnyUrl,
+    WrapValidator(allow_special_origin_values),
+]
 
 
 def validate_css_str(value: str) -> str:
