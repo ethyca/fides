@@ -33,6 +33,9 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Prevent Admin UI and Privacy Center from starting when running `nox -s dev` with datastore params [#5843](https://github.com/ethyca/fides/pull/5843)
 - Remove plotly (unused package) to reduce fides image size [#5852](https://github.com/ethyca/fides/pull/5852)
 
+### Fixed
+- Corrected the Tag color for some columns of the Privacy requests table. [#5848](https://github.com/ethyca/fides/pull/5848)
+
 ## [2.56.1](https://github.com/ethyca/fides/compare/2.56.0...2.56.1)
 
 ### Changed
