@@ -566,7 +566,7 @@ describe("Fides-js TCF", () => {
               .is.eql(false);
             expect(cookieKeyConsent.consent)
               .property(PRIVACY_NOTICE_KEY_2)
-              .is.eql(false);
+              .is.eql(true);
             expect(cookieKeyConsent.consent)
               .property(PRIVACY_NOTICE_KEY_3)
               .is.eql(false);
@@ -1129,7 +1129,7 @@ describe("Fides-js TCF", () => {
               .is.eql(false);
             expect(cookieKeyConsent.consent)
               .property(PRIVACY_NOTICE_KEY_2)
-              .is.eql(false);
+              .is.eql(true);
             expect(cookieKeyConsent.consent)
               .property(PRIVACY_NOTICE_KEY_3)
               .is.eql(false);
@@ -1144,10 +1144,22 @@ describe("Fides-js TCF", () => {
         });
       });
 
-      // DEFER: can probably be removed
-      it.skip("can opt in to some and opt out of others", () => {
-        // todo- opt in to 1 custom notice, then test cookie and window.Fides obj
+      it("can opt in to some custom consent and some tcf consent", () => {
         cy.getByTestId("consent-modal").within(() => {
+          // Custom notice should start off toggled off
+          cy.getByTestId("toggle-Advertising English").within(() => {
+            cy.get("input").should("not.be.checked");
+          });
+          // Opt-out notice should start toggled on
+          cy.getByTestId("toggle-Analytics").within(() => {
+            cy.get("input").should("be.checked");
+          });
+          // Notice-only should start off toggled on
+          cy.getByTestId("toggle-Essential").within(() => {
+            cy.get("input").should("be.checked");
+          });
+          // opt in to opt-in custom notice
+          cy.getByTestId(`toggle-Advertising English`).click();
           // opt in to purpose 4
           cy.getByTestId(`toggle-${PURPOSE_4.name}`).click();
           cy.get("#fides-tab-features").click();
@@ -1161,10 +1173,27 @@ describe("Fides-js TCF", () => {
           // opt out of system 1 (default is opt-in)
           cy.getByTestId(`toggle-${SYSTEM_1.name}`).click();
           cy.get("button").contains("Save").click();
-          cy.get("@FidesUIChanged").its("callCount").should("equal", 3);
+          cy.get("@FidesUIChanged").its("callCount").should("equal", 4);
           cy.wait("@patchPrivacyPreference").then((interception) => {
             const { body } = interception.request;
             expect(interception.request.body.method).to.eql(ConsentMethod.SAVE);
+            expect(body.preferences).to.eql([
+              {
+                preference: "opt_in",
+                privacy_notice_history_id:
+                  "pri_notice-history-advertising-en-000",
+              },
+              {
+                preference: "opt_in",
+                privacy_notice_history_id:
+                  "pri_notice-history-analytics-en-000",
+              },
+              {
+                preference: "acknowledge",
+                privacy_notice_history_id:
+                  "pri_notice-history-essential-en-000",
+              },
+            ]);
             expect(body.purpose_consent_preferences).to.eql([
               {
                 id: PURPOSE_4.id,
@@ -1221,6 +1250,172 @@ describe("Fides-js TCF", () => {
           expect(cookieKeyConsent.fides_meta.consentMethod).to.eql(
             ConsentMethod.SAVE,
           );
+          expect(cookieKeyConsent.consent)
+            .property(PRIVACY_NOTICE_KEY_1)
+            .is.eql(true);
+          expect(cookieKeyConsent.consent)
+            .property(PRIVACY_NOTICE_KEY_2)
+            .is.eql(true);
+          expect(cookieKeyConsent.consent)
+            .property(PRIVACY_NOTICE_KEY_3)
+            .is.eql(true);
+          assertTcOptIns({
+            cookie: cookieKeyConsent,
+            modelType: "purposeConsents",
+            ids: [PURPOSE_4.id],
+          });
+          assertTcOptIns({
+            cookie: cookieKeyConsent,
+            modelType: "purposeLegitimateInterests",
+            ids: [PURPOSE_2.id],
+          });
+          assertTcOptIns({
+            cookie: cookieKeyConsent,
+            modelType: "specialFeatureOptins",
+            ids: [SPECIAL_FEATURE_1.id],
+          });
+          assertTcOptIns({
+            cookie: cookieKeyConsent,
+            modelType: "vendorConsents",
+            ids: [],
+          });
+          assertTcOptIns({
+            cookie: cookieKeyConsent,
+            modelType: "vendorLegitimateInterests",
+            ids: [],
+          });
+          expect(
+            cookieKeyConsent.tcf_consent
+              .system_legitimate_interests_preferences,
+          )
+            .property(`${SYSTEM_1.id}`)
+            .is.eql(false);
+          expect(
+            cookieKeyConsent.tcf_consent.system_consent_preferences,
+          ).to.eql({});
+          // Confirm vendors_disclosed section does not exist
+          expect(cookieKeyConsent.fides_string).to.not.contain(
+            vendorsDisclosed,
+          );
+        });
+      });
+
+      it("can opt out of some custom consent and some tcf consent", () => {
+        cy.getByTestId("consent-modal").within(() => {
+          // Custom notice should start off toggled off
+          cy.getByTestId("toggle-Advertising English").within(() => {
+            cy.get("input").should("not.be.checked");
+          });
+          // Opt-out notice should start toggled on
+          cy.getByTestId("toggle-Analytics").within(() => {
+            cy.get("input").should("be.checked");
+          });
+          cy.getByTestId("toggle-Advertising English").click();
+          // Notice-only should start off toggled on
+          cy.getByTestId("toggle-Essential").within(() => {
+            cy.get("input").should("be.checked");
+          });
+          // opt out to opt-out custom notice
+          cy.getByTestId(`toggle-Analytics`).click();
+          // opt in to purpose 4
+          cy.getByTestId(`toggle-${PURPOSE_4.name}`).click();
+          cy.get("#fides-tab-features").click();
+          // opt in to special feat 1
+          cy.getByTestId(`toggle-${SPECIAL_FEATURE_1.name}`).click();
+
+          cy.get("#fides-tab-vendors").click();
+          cy.get("#fides-panel-vendors").within(() => {
+            cy.get("button").contains("Legitimate interest").click();
+          });
+          // opt out of system 1 (default is opt-in)
+          cy.getByTestId(`toggle-${SYSTEM_1.name}`).click();
+          cy.get("button").contains("Save").click();
+          cy.get("@FidesUIChanged").its("callCount").should("equal", 5);
+          cy.wait("@patchPrivacyPreference").then((interception) => {
+            const { body } = interception.request;
+            expect(interception.request.body.method).to.eql(ConsentMethod.SAVE);
+            expect(body.preferences).to.eql([
+              {
+                preference: "opt_in",
+                privacy_notice_history_id:
+                  "pri_notice-history-advertising-en-000",
+              },
+              {
+                preference: "opt_out",
+                privacy_notice_history_id:
+                  "pri_notice-history-analytics-en-000",
+              },
+              {
+                preference: "acknowledge",
+                privacy_notice_history_id:
+                  "pri_notice-history-essential-en-000",
+              },
+            ]);
+            expect(body.purpose_consent_preferences).to.eql([
+              {
+                id: PURPOSE_4.id,
+                preference: "opt_in",
+              },
+              {
+                id: PURPOSE_6.id,
+                preference: "opt_out",
+              },
+              {
+                id: PURPOSE_7.id,
+                preference: "opt_out",
+              },
+              {
+                id: PURPOSE_9.id,
+                preference: "opt_out",
+              },
+            ]);
+            expect(body.purpose_legitimate_interests_preferences).to.eql([
+              {
+                id: PURPOSE_2.id,
+                preference: "opt_in",
+              },
+            ]);
+            expect(body.special_purpose_preferences).to.eql(undefined);
+            expect(body.feature_preferences).to.eql(undefined);
+            expect(body.special_feature_preferences).to.eql([
+              {
+                id: SPECIAL_FEATURE_1.id,
+                preference: "opt_in",
+              },
+            ]);
+            expect(body.vendor_consent_preferences).to.eql([
+              {
+                id: VENDOR_1.id,
+                preference: "opt_out",
+              },
+            ]);
+            expect(body.vendor_legitimate_interests_preferences).to.eql([]);
+            expect(body.system_legitimate_interests_preferences).to.eql([
+              {
+                id: SYSTEM_1.id,
+                preference: "opt_out",
+              },
+            ]);
+            expect(body.system_consent_preferences).to.eql([]);
+          });
+        });
+        // Verify the cookie on save
+        cy.getCookie(CONSENT_COOKIE_NAME).then((cookie) => {
+          const cookieKeyConsent: FidesCookie = JSON.parse(
+            decodeURIComponent(cookie!.value),
+          );
+          expect(cookieKeyConsent.fides_meta.consentMethod).to.eql(
+            ConsentMethod.SAVE,
+          );
+          expect(cookieKeyConsent.consent)
+            .property(PRIVACY_NOTICE_KEY_1)
+            .is.eql(true);
+          expect(cookieKeyConsent.consent)
+            .property(PRIVACY_NOTICE_KEY_2)
+            .is.eql(true);
+          expect(cookieKeyConsent.consent)
+            .property(PRIVACY_NOTICE_KEY_3)
+            .is.eql(false);
           assertTcOptIns({
             cookie: cookieKeyConsent,
             modelType: "purposeConsents",
@@ -2653,7 +2848,7 @@ describe("Fides-js TCF", () => {
         const { body } = interception.request;
         expect(body.preferences[0].preference).to.eql("opt_out");
         expect(body.preferences[1].preference).to.eql("opt_out");
-        expect(body.preferences[2].preference).to.eql("opt_out");
+        expect(body.preferences[2].preference).to.eql("acknowledge"); // notice-only
         // check a few to see they are empty arrays
         expect(body.purpose_consent_preferences).to.eql([]);
         expect(body.purpose_legitimate_interests_preferences).to.eql([]);
