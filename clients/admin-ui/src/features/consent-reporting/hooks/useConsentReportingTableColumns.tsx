@@ -3,9 +3,18 @@ import palette from "fidesui/src/palette/palette.module.scss";
 import { useMemo } from "react";
 
 import { PRIVACY_NOTICE_REGION_RECORD } from "~/features/common/privacy-notice-regions";
-import { DefaultCell, DefaultHeaderCell } from "~/features/common/table/v2";
+import {
+  BadgeCell,
+  DefaultCell,
+  DefaultHeaderCell,
+} from "~/features/common/table/v2";
 import { formatDate } from "~/features/common/utils";
 import { ConsentReportingSchema, PrivacyNoticeRegion } from "~/types/api";
+
+import {
+  USER_CONSENT_PREFERENCE_COLOR,
+  USER_CONSENT_PREFERENCE_LABELS,
+} from "../constants";
 
 const columnHelper = createColumnHelper<ConsentReportingSchema>();
 
@@ -32,17 +41,12 @@ const useConsentReportingTableColumns = () => {
       columnHelper.accessor((row) => row.user_geography, {
         id: "user_geography",
         cell: ({ getValue }) => {
-          const region = getValue();
-          return (
-            <DefaultCell
-              value={
-                region &&
-                PRIVACY_NOTICE_REGION_RECORD[region as PrivacyNoticeRegion]
-                  ? PRIVACY_NOTICE_REGION_RECORD[region as PrivacyNoticeRegion]
-                  : region
-              }
-            />
-          );
+          const region = getValue() as PrivacyNoticeRegion | null | undefined;
+          const regionLabel =
+            region && PRIVACY_NOTICE_REGION_RECORD[region]
+              ? PRIVACY_NOTICE_REGION_RECORD[region]
+              : region || "";
+          return <DefaultCell value={regionLabel} />;
         },
         header: (props) => (
           <DefaultHeaderCell value="User geography" {...props} />
@@ -51,16 +55,17 @@ const useConsentReportingTableColumns = () => {
       }),
       columnHelper.accessor((row) => row.preference, {
         id: "preference",
-        cell: ({ getValue }) => <DefaultCell value={getValue()} />,
+        cell: ({ getValue }) => {
+          const preference = getValue();
+          const preferenceLabel =
+            (preference && USER_CONSENT_PREFERENCE_LABELS[preference]) || "";
+
+          const badgeColor =
+            (preference && USER_CONSENT_PREFERENCE_COLOR[preference]) || "";
+
+          return <BadgeCell color={badgeColor} value={preferenceLabel} />;
+        },
         header: (props) => <DefaultHeaderCell value="Preference" {...props} />,
-        enableSorting: false,
-      }),
-      columnHelper.accessor((row) => row.tcf_preferences, {
-        id: "tcf_preferences",
-        cell: ({ getValue }) => <DefaultCell value={getValue()} />,
-        header: (props) => (
-          <DefaultHeaderCell value="TCF Preference" {...props} />
-        ),
         enableSorting: false,
       }),
       columnHelper.accessor((row) => row.privacy_notice_history_id, {
@@ -74,9 +79,7 @@ const useConsentReportingTableColumns = () => {
       columnHelper.accessor((row) => row.method, {
         id: "method",
         cell: ({ getValue }) => <DefaultCell value={getValue()} />,
-        header: (props) => (
-          <DefaultHeaderCell value="Privacy notice" {...props} />
-        ),
+        header: (props) => <DefaultHeaderCell value="Method" {...props} />,
         enableSorting: false,
       }),
       columnHelper.accessor((row) => row.request_origin, {
