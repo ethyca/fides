@@ -23,22 +23,14 @@ const columnHelper = createColumnHelper<ConsentReportingSchema>();
 const useConsentReportingTableColumns = () => {
   const columns = useMemo(
     () => [
-      columnHelper.accessor((row) => row.email, {
-        id: "email",
-        cell: ({ getValue }) => (
-          <DefaultCell
-            value={
-              <a
-                href={`mailto:${getValue()}`}
-                style={{ color: palette.FIDESUI_LINK }}
-              >
-                {getValue()}
-              </a>
-            }
-          />
+      columnHelper.accessor((row) => row.fides_user_device_id, {
+        id: "fides_user_device_id",
+        cell: ({ getValue }) => <DefaultCell value={getValue()} />,
+        header: (props) => (
+          <DefaultHeaderCell value="User Device ID" {...props} />
         ),
-        header: (props) => <DefaultHeaderCell value="Email" {...props} />,
         enableSorting: false,
+        size: 100,
       }),
       columnHelper.accessor((row) => row.user_geography, {
         id: "user_geography",
@@ -68,6 +60,7 @@ const useConsentReportingTableColumns = () => {
         },
         header: (props) => <DefaultHeaderCell value="Preference" {...props} />,
         enableSorting: false,
+        size: 100,
       }),
       columnHelper.accessor((row) => row.privacy_notice_history_id, {
         id: "privacy_notice_history_id",
@@ -87,6 +80,7 @@ const useConsentReportingTableColumns = () => {
         },
         header: (props) => <DefaultHeaderCell value="Method" {...props} />,
         enableSorting: false,
+        size: 100,
       }),
       columnHelper.accessor((row) => row.request_origin, {
         id: "request_origin",
@@ -102,6 +96,7 @@ const useConsentReportingTableColumns = () => {
           <DefaultHeaderCell value="Request origin" {...props} />
         ),
         enableSorting: false,
+        size: 120,
       }),
       columnHelper.accessor((row) => row.request_timestamp, {
         id: "request_timestamp",
@@ -110,6 +105,23 @@ const useConsentReportingTableColumns = () => {
           <DefaultHeaderCell value="Request timestamp" {...props} />
         ),
       }),
+      columnHelper.accessor((row) => row.email, {
+        id: "email",
+        cell: ({ getValue }) => (
+          <DefaultCell
+            value={
+              <a
+                href={`mailto:${getValue()}`}
+                style={{ color: palette.FIDESUI_LINK }}
+              >
+                {getValue()}
+              </a>
+            }
+          />
+        ),
+        header: (props) => <DefaultHeaderCell value="Email" {...props} />,
+        enableSorting: false,
+      }),
       columnHelper.accessor((row) => row.id, {
         id: "id",
         cell: ({ getValue }) => <DefaultCell value={getValue()} />,
@@ -117,6 +129,7 @@ const useConsentReportingTableColumns = () => {
           <DefaultHeaderCell value="Preference ID" {...props} />
         ),
         enableSorting: false,
+        size: 100,
       }),
     ],
     [],
