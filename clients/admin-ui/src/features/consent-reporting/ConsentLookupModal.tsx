@@ -29,8 +29,8 @@ interface ConsentLookupModalProps {
 const ConsentLookupModal = ({ isOpen, onClose }: ConsentLookupModalProps) => {
   const [isSearching, setIsSearching] = useState(false);
   const [searchResults, setSearchResults] = useState<
-    PreferenceWithNoticeInformation[]
-  >([]);
+    PreferenceWithNoticeInformation[] | undefined
+  >();
   const [getCurrentPrivacyPreferencesTrigger] =
     useLazyGetCurrentPrivacyPreferencesQuery();
 
@@ -41,7 +41,8 @@ const ConsentLookupModal = ({ isOpen, onClose }: ConsentLookupModalProps) => {
     const { data, isError, error } = await getCurrentPrivacyPreferencesTrigger({
       search,
     });
-    if (isError) {
+    const errorStatus = error && "status" in error && error?.status;
+    if (isError && errorStatus !== 404) {
       const errorMsg = getErrorMessage(
         error,
         `A problem occurred while looking up the preferences.`,
@@ -57,7 +58,7 @@ const ConsentLookupModal = ({ isOpen, onClose }: ConsentLookupModalProps) => {
   const columns = useConsentLookupTableColumns();
   const tableInstance = useReactTable<PreferenceWithNoticeInformation>({
     getCoreRowModel: getCoreRowModel(),
-    data: searchResults,
+    data: searchResults || [],
     columns,
     getRowId: (row) => `${row.privacy_notice_history_id}`,
     manualPagination: true,
@@ -105,7 +106,11 @@ const ConsentLookupModal = ({ isOpen, onClose }: ConsentLookupModalProps) => {
               tableInstance={tableInstance}
               emptyTableNotice={
                 <Empty
-                  description="Search for an email, phone number, or device ID."
+                  description={
+                    searchResults === undefined
+                      ? "Search for an email, phone number, or device ID."
+                      : "No results found."
+                  }
                   image={Empty.PRESENTED_IMAGE_SIMPLE}
                   imageStyle={{ marginBottom: 15 }}
                 />
