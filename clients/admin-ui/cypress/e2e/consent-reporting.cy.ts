@@ -76,5 +76,23 @@ describe("Consent reporting", () => {
       cy.getByTestId("download-report-btn").click();
       cy.wait("@getConsentReport");
     });
+    it("can lookup specific consent preferences", () => {
+      cy.intercept({
+        url: "/api/v1/current-privacy-preferences*",
+        method: "GET",
+      }).as("lookupConsentPreferences");
+      cy.getByTestId("consent-reporting-dropdown-btn").click();
+      cy.getByTestId("consent-preference-lookup-btn").click();
+      cy.getByTestId("subject-search-input").type("test@example.com{enter}");
+      cy.wait("@lookupConsentPreferences").then((interception) => {
+        const { url: requestUrl } = interception.request;
+        let url = new URL(requestUrl);
+        let params = new URLSearchParams(url.search);
+        expect(params.get("email")).to.equal("test@example.com");
+        expect(params.get("phone_number")).to.equal("test@example.com");
+        expect(params.get("fides_user_device_id")).to.equal("test@example.com");
+        expect(params.get("external_id")).to.equal("test@example.com");
+      });
+    });
   });
 });
