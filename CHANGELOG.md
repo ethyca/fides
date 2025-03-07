@@ -36,7 +36,6 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Remove plotly (unused package) to reduce fides image size [#5852](https://github.com/ethyca/fides/pull/5852)
 
 ### Fixed
-- Corrected the Tag color for some columns of the Privacy requests table. [#5848](https://github.com/ethyca/fides/pull/5848)
 - Fixed pagination bugs on some tables [#5819](https://github.com/ethyca/fides/pull/5819)
 
 ## [2.56.2](https://github.com/ethyca/fides/compare/2.56.1...2.56.2)
@@ -47,6 +46,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ### Fixed
 - Addressed TCModel console error when opting into some purposes [#5850](https://github.com/ethyca/fides/pull/5850)
 - Opt out of all in TCF no longer affects "notice only" notices [#5850](https://github.com/ethyca/fides/pull/5850)
+- Corrected the Tag color for some columns of the Privacy requests table. [#5848](https://github.com/ethyca/fides/pull/5848)
 
 ## [2.56.1](https://github.com/ethyca/fides/compare/2.56.0...2.56.1)
 
