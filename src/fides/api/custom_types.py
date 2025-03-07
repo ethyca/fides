@@ -2,18 +2,10 @@
 """Logic related to sanitizing and validating user application input."""
 from html import escape
 from re import compile as regex
-from typing import Annotated, Any
+from typing import Annotated
 
 from nh3 import clean
-from pydantic import (
-    AfterValidator,
-    AnyHttpUrl,
-    AnyUrl,
-    BeforeValidator,
-    ValidationInfo,
-    ValidatorFunctionWrapHandler,
-    WrapValidator,
-)
+from pydantic import AfterValidator, AnyHttpUrl, AnyUrl, BeforeValidator
 
 from fides.api.util.unsafe_file_util import verify_css
 
