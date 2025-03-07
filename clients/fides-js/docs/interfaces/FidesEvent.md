@@ -131,19 +131,33 @@ What consent method (if any) caused this event.
 
 > `optional` **trigger**: `object`
 
-What toggle (if any) triggered this event.
+What UI element (if any) triggered this event.
 
-#### extraDetails.trigger.label
+#### extraDetails.trigger.type
 
-> **label**: `string`
+> **type**: `string`
+
+The type of element that triggered the event. Additional types may be
+added over time, so expect this type to grow.
+
+#### extraDetails.trigger.label?
+
+> `optional` **label**: `string`
+
+The UI label of the element that triggered the event.
 
 #### extraDetails.trigger.id
 
 > **id**: `string`
 
-#### extraDetails.trigger.checked
+The id of the element that triggered the event.
 
-> **checked**: `boolean`
+#### extraDetails.trigger.checked?
+
+> `optional` **checked**: `boolean`
+
+The checked state of the element that triggered the event, when type
+is `toggle`.
 
 #### Overrides
 

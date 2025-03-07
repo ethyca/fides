@@ -130,12 +130,30 @@ export interface FidesEvent extends CustomEvent {
       consentMethod?: "accept" | "reject" | "save" | "dismiss" | "gpc";
 
       /**
-       * What toggle (if any) triggered this event.
+       * What UI element (if any) triggered this event.
        */
       trigger?: {
-        label: string;
+        /**
+         * The type of element that triggered the event. Additional types may be
+         * added over time, so expect this type to grow.
+         */
+        type: "toggle" | "button" | string;
+
+        /**
+         * The UI label of the element that triggered the event.
+         */
+        label?: string;
+
+        /**
+         * The id of the element that triggered the event.
+         */
         id: string;
-        checked: boolean;
+
+        /**
+         * The checked state of the element that triggered the event, when type
+         * is `toggle`.
+         */
+        checked?: boolean;
       };
     };
   };

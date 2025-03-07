@@ -31,7 +31,12 @@ const Toggle = ({
         className="fides-toggle-input"
         onChange={() => {
           const nextCheckedState = !checked;
-          onChange(id, { id, label, checked: nextCheckedState });
+          onChange(id, {
+            type: "toggle",
+            id,
+            label,
+            checked: nextCheckedState,
+          });
         }}
         checked={checked}
         role="switch"
