@@ -250,7 +250,7 @@ export const fidesStringToConsent = ({
       .filter(([_, value]) => value)
       .map(([key]) => key);
 
-    consentPreferencesToSave: SaveConsentPreference[] = createConsentPreferencesToSave(
+    consentPreferencesToSave = createConsentPreferencesToSave(
       privacyNoticeItems,
       enabledPrivacyNoticeKeys,
     );
