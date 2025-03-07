@@ -6,6 +6,12 @@ import { VendorSources } from "./tcf/vendors";
 /** Default GPP string to use when no CmpApi is provided or when it returns no string */
 export const DEFAULT_GPP_STRING = "DBAA";
 
+export interface DecodedFidesString {
+  tc: string;
+  ac: string;
+  gpp: string;
+}
+
 /**
  * Decodes a Fides string into its component parts.
  *
@@ -36,7 +42,7 @@ export const DEFAULT_GPP_STRING = "DBAA";
  * @param fidesString - The combined Fides string to decode
  * @returns An object containing the decoded TC, AC, and GPP strings
  */
-export const decodeFidesString = (fidesString: string) => {
+export const decodeFidesString = (fidesString: string): DecodedFidesString => {
   if (!fidesString) {
     return { tc: "", ac: "", gpp: "" };
   }

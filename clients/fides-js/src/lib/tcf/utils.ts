@@ -17,7 +17,11 @@ import {
   getFidesConsentCookie,
   transformTcfPreferencesToCookieKeys,
 } from "../cookie";
-import { decodeFidesString, idsFromAcString } from "../fidesString";
+import {
+  DecodedFidesString,
+  decodeFidesString,
+  idsFromAcString,
+} from "../fidesString";
 import {
   transformConsentToFidesUserPreference,
   transformUserPreferenceToBoolean,
@@ -89,9 +93,8 @@ export const buildTcfEntitiesFromCookieAndFidesString = (
 
   // Now update tcfEntities based on the fides string
   if (cookie.fides_string) {
-    const { tc: tcString, ac: acString } = decodeFidesString(
-      cookie.fides_string,
-    );
+    const { tc: tcString, ac: acString }: DecodedFidesString =
+      decodeFidesString(cookie.fides_string);
     if (!tcString) {
       return tcfEntities;
     }

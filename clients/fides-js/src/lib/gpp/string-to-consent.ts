@@ -13,7 +13,7 @@ import {
   constructFidesRegionString,
   createConsentPreferencesToSave,
 } from "../consent-utils";
-import { decodeFidesString } from "../fidesString";
+import { DecodedFidesString, decodeFidesString } from "../fidesString";
 import { areLocalesEqual } from "../i18n/i18n-utils";
 import { updateConsentPreferences } from "../preferences";
 import { EMPTY_ENABLED_IDS } from "../tcf/constants";
@@ -56,7 +56,9 @@ const getConsentFromGppCmpApi = ({
   let gppSection = FIDES_US_REGION_TO_GPP_SECTION[gppRegion];
 
   if (!gppSection && usApproach === GPPUSApproach.ALL) {
-    // if we're using the all approach, and the current state isn't supported, we should default to national
+    fidesDebugger(
+      'GPP: current state isn\'t supported, defaulting to USNat since "Both/All" approach is selected',
+    );
     gppRegion = US_NATIONAL_REGION;
     gppSection = FIDES_US_REGION_TO_GPP_SECTION[gppRegion];
   }
@@ -65,8 +67,9 @@ const getConsentFromGppCmpApi = ({
     !gppSection ||
     (gppRegion === US_NATIONAL_REGION && usApproach === GPPUSApproach.STATE)
   ) {
-    // If we don't have a section, we can't get anything.
-    // If we're using the state approach, we shouldn't use the national section, even if region is set to national.
+    fidesDebugger(
+      'GPP: current state isn\'t supported, returning empty consent since "US State" approach is selected',
+    );
     return consent;
   }
 
@@ -97,7 +100,7 @@ const getConsentFromGppCmpApi = ({
           return false; // User has not opted out
         }
         // If value matches not_available or is undefined, we'll skip this mechanism
-        return undefined;
+        return false;
       });
 
       if (hasOptOut !== undefined) {
@@ -208,7 +211,7 @@ export const fidesStringToConsent = ({
   const isTCF =
     experience.experience_config.component === ComponentType.TCF_OVERLAY;
 
-  const { gpp: gppString } = decodeFidesString(fidesString);
+  const { gpp: gppString }: DecodedFidesString = decodeFidesString(fidesString);
   const fidesRegionString = constructFidesRegionString(geolocation);
   const matchTranslation = experience.experience_config.translations.find((t) =>
     areLocalesEqual(t.language, locale),
@@ -237,17 +240,17 @@ export const fidesStringToConsent = ({
 
   if (!isTCF) {
     // Handle non-TCF case
-    const consent = getConsentFromGppCmpApi({
+    const consent: NoticeConsent = getConsentFromGppCmpApi({
       cmpApi,
       experience: experience as PrivacyExperience,
     });
 
-    const enabledPrivacyNoticeKeys = Object.entries(consent)
+    const enabledPrivacyNoticeKeys: string[] = Object.entries(consent)
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       .filter(([_, value]) => value)
       .map(([key]) => key);
 
-    consentPreferencesToSave = createConsentPreferencesToSave(
+    consentPreferencesToSave: SaveConsentPreference[] = createConsentPreferencesToSave(
       privacyNoticeItems,
       enabledPrivacyNoticeKeys,
     );

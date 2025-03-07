@@ -34,7 +34,7 @@ import {
 } from "./lib/consent-types";
 import { initializeDebugger } from "./lib/debugger";
 import { dispatchFidesEvent, onFidesEvent } from "./lib/events";
-import { decodeFidesString } from "./lib/fidesString";
+import { DecodedFidesString, decodeFidesString } from "./lib/fidesString";
 import type { GppFunction } from "./lib/gpp/types";
 import { DEFAULT_LOCALE, DEFAULT_MODAL_LINK_LABEL } from "./lib/i18n";
 import {
@@ -171,7 +171,8 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
   if (fidesString) {
     try {
       // Make sure TC string is valid before we assign it
-      const { tc: tcString } = decodeFidesString(fidesString);
+      const { tc: tcString }: DecodedFidesString =
+        decodeFidesString(fidesString);
       TCString.decode(tcString);
       const updatedCookie: Partial<FidesCookie> = {
         fides_string: fidesString,
