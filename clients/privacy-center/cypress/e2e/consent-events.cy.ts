@@ -77,49 +77,30 @@ describe("Consent FidesEvents", () => {
 
     it("should fire FidesEvents for all key interactions", () => {
       // 1. Initialize and show banner
-      cy.get("@FidesInitializing").should("have.callCount", 1);
-      cy.get("@FidesInitialized").should("have.callCount", 1);
-      cy.get("@FidesUIShown").should("have.callCount", 1);
 
       // 2. Open modal from banner
       cy.get("#fides-banner .fides-manage-preferences-button").click();
-      cy.get("@FidesUIShown").should("have.callCount", 2);
 
       // 3. Toggle first notice on & off
-      cy.get("#fides-modal .fides-toggle-input").first().click();
-      cy.get("@FidesUIChanged").should("have.callCount", 1);
-      cy.get("#fides-modal .fides-toggle-input").first().click();
-      cy.get("@FidesUIChanged").should("have.callCount", 2);
+      cy.get("#fides-modal .fides-toggle-input").first().click().click();
 
       // 4. Toggle second notice on
       cy.get("#fides-modal .fides-toggle-input").eq(1).click();
-      cy.get("@FidesUIChanged").should("have.callCount", 3);
 
       // 5. Save preferences
       cy.get("#fides-modal .fides-save-button").click();
-      cy.get("@FidesModalClosed").should("have.callCount", 1);
-      cy.get("@FidesUpdating").should("have.callCount", 1);
-      cy.get("@FidesUpdated").should("have.callCount", 1);
 
       // 6. Re-open modal
       cy.get("#fides-modal-link").click();
-      cy.get("@FidesUIShown").should("have.callCount", 3);
 
       // 7. Opt-out of all
       cy.get(".fides-modal-button-group").contains("Opt out of all").click();
-      cy.get("@FidesModalClosed").should("have.callCount", 2);
-      cy.get("@FidesUpdating").should("have.callCount", 2);
-      cy.get("@FidesUpdated").should("have.callCount", 2);
 
       // 8. Re-open modal
       cy.get("#fides-modal-link").click();
-      cy.get("@FidesUIShown").should("have.callCount", 4);
 
       // 9. Opt-in to all
       cy.get(".fides-modal-button-group").contains("Opt in to all").click();
-      cy.get("@FidesModalClosed").should("have.callCount", 3);
-      cy.get("@FidesUpdating").should("have.callCount", 3);
-      cy.get("@FidesUpdated").should("have.callCount", 3);
 
       const expectedEvents: FidesEventTuple[] = [
         ["FidesInitializing", {}],
@@ -168,32 +149,22 @@ describe("Consent FidesEvents", () => {
 
     it("should fire FidesEvents for all key interactions", () => {
       // 1. Banner auto-shown
-      cy.get("@FidesInitializing").should("have.callCount", 1);
-      cy.get("@FidesInitialized").should("have.callCount", 1);
-      cy.get("@FidesUIShown").should("have.callCount", 1);
 
       // 2. Open preferences modal
       cy.get(".fides-manage-preferences-button").click();
-      cy.get("@FidesUIShown").should("have.callCount", 2);
 
       // 3. Toggle first purpose on & off
       cy.getByTestId("records-list-purposes")
         .find(".fides-toggle-input")
         .first()
+        .click()
         .click();
-      cy.get("@FidesUIChanged").should("have.callCount", 1);
-      cy.getByTestId("records-list-purposes")
-        .find(".fides-toggle-input")
-        .first()
-        .click();
-      cy.get("@FidesUIChanged").should("have.callCount", 2);
 
       // 4. Toggle second purpose on
       cy.getByTestId("records-list-purposes")
         .find(".fides-toggle-input")
         .eq(1)
         .click();
-      cy.get("@FidesUIChanged").should("have.callCount", 3);
 
       // 5. Switch to legitimate interest tab
       cy.get(".fides-radio-button-group button")
@@ -205,7 +176,6 @@ describe("Consent FidesEvents", () => {
         .find(".fides-toggle-input")
         .first()
         .click();
-      cy.get("@FidesUIChanged").should("have.callCount", 4);
 
       // 7. Switch to features tab
       cy.get("#fides-tab-features").click();
@@ -217,42 +187,28 @@ describe("Consent FidesEvents", () => {
       cy.get("#fides-tab-vendors").click();
 
       // 10. Toggle GVL vendor on & off
-      cy.getByTestId("toggle-Captify").find(".fides-toggle-input").click();
-      cy.get("@FidesUIChanged").should("have.callCount", 5);
-      cy.getByTestId("toggle-Captify").find(".fides-toggle-input").click();
-      cy.get("@FidesUIChanged").should("have.callCount", 6);
+      cy.getByTestId("toggle-Captify")
+        .find(".fides-toggle-input")
+        .click()
+        .click();
 
       // 11. Toggle AC vendor on & off
-      cy.getByTestId("toggle-Meta").find(".fides-toggle-input").click();
-      cy.get("@FidesUIChanged").should("have.callCount", 7);
-      cy.getByTestId("toggle-Meta").find(".fides-toggle-input").click();
-      cy.get("@FidesUIChanged").should("have.callCount", 8);
+      cy.getByTestId("toggle-Meta").find(".fides-toggle-input").click().click();
 
       // 12. Save changes
       cy.getByTestId("Save-btn").click();
-      cy.get("@FidesModalClosed").should("have.callCount", 1);
-      cy.get("@FidesUpdating").should("have.callCount", 1);
-      cy.get("@FidesUpdated").should("have.callCount", 1);
 
       // 13. Re-open modal
       cy.get("#fides-modal-link").click();
-      cy.get("@FidesUIShown").should("have.callCount", 3);
 
       // 14. Opt-out of all
       cy.get(".fides-modal-button-group").contains("Opt out of all").click();
-      cy.get("@FidesModalClosed").should("have.callCount", 2);
-      cy.get("@FidesUpdating").should("have.callCount", 2);
-      cy.get("@FidesUpdated").should("have.callCount", 2);
 
       // 15. Re-open modal
       cy.get("#fides-modal-link").click();
-      cy.get("@FidesUIShown").should("have.callCount", 4);
 
       // 16. Opt-in to all
       cy.get(".fides-modal-button-group").contains("Opt in to all").click();
-      cy.get("@FidesModalClosed").should("have.callCount", 3);
-      cy.get("@FidesUpdating").should("have.callCount", 3);
-      cy.get("@FidesUpdated").should("have.callCount", 3);
 
       const expectedEvents: FidesEventTuple[] = [
         ["FidesInitializing", {}],
