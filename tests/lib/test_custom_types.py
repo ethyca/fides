@@ -207,11 +207,16 @@ class TestURLOriginString:
         "input_value, expected_validated_value",
         (
             ("https://example.com", "https://example.com"),
+            ("https://example.com:8000", "https://example.com:8000"),
             ("https://example.com/", "https://example.com"),
             ("https://example.com/path", None),
             ("https://example.com/path/", None),
             ("foobar", None),
-            ("*", "*"),
+            ("*", "*"),  # `*` is allowed as a special origin value
+            (
+                "http://0.0.0.0:8000",
+                "http://0.0.0.0:8000",
+            ),  # `0.0.0.0` had been rejected in the past
         ),
     )
     def test_valid_url_origin_strings(

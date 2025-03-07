@@ -177,21 +177,10 @@ class SecuritySettings(FidesSettings):
     @classmethod
     def assemble_cors_origins(cls, v: Union[str, List[str]]) -> Union[List[str], str]:
         """Return a list of valid origins for CORS requests"""
-
-        def validate(values: List[str]) -> None:
-            for value in values:
-                if value != "*":
-                    if not validators.url(value):
-                        raise ValueError(f"{value} is not a valid url")
-
         if isinstance(v, str) and not v.startswith("["):
             values = [i.strip() for i in v.split(",")]
-            validate(values)
-
             return values
-        if isinstance(v, (list, str)):
-            validate(v)  # type: ignore
-
+        if isinstance(v, list):
             return v
         raise ValueError(v)
 
