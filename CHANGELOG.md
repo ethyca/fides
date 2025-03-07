@@ -19,7 +19,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - https://github.com/ethyca/fides/labels/high-risk: to indicate that a change is a "high-risk" change that could potentially lead to unanticipated regressions or degradations
 - https://github.com/ethyca/fides/labels/db-migration: to indicate that a given change includes a DB migration
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.56.1...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.56.2...main)
 
 ### Added
 - DB model support for Attachments [#5784](https://github.com/ethyca/fides/pull/5784) https://github.com/ethyca/fides/labels/db-migration
@@ -36,6 +36,14 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ### Fixed
 - Corrected the Tag color for some columns of the Privacy requests table. [#5848](https://github.com/ethyca/fides/pull/5848)
+
+
+## [2.56.2](https://github.com/ethyca/fides/compare/2.56.1...2.56.2)
+
+### Added
+- Fides GTM & event origination [#5821](https://github.com/ethyca/fides/pull/5821)
+
+### Fixed
 - Addressed TCModel console error when opting into some purposes [#5850](https://github.com/ethyca/fides/pull/5850)
 - Opt out of all in TCF no longer affects "notice only" notices [#5850](https://github.com/ethyca/fides/pull/5850)
 
