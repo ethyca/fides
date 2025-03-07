@@ -76,7 +76,7 @@ const ConsentLookupModal = ({ isOpen, onClose }: ConsentLookupModalProps) => {
       <ModalOverlay />
       <ModalContent>
         <ModalCloseButton />
-        <ModalHeader pb={0}>Consent preference lookup</ModalHeader>
+        <ModalHeader pb={2}>Consent preference lookup</ModalHeader>
         <ModalBody>
           <Typography.Paragraph>
             Use this search to look up an individual&apos;s latest consent
@@ -91,7 +91,7 @@ const ConsentLookupModal = ({ isOpen, onClose }: ConsentLookupModalProps) => {
           </Typography.Paragraph>
 
           <Form layout="vertical" className="w-1/2">
-            <Form.Item label="Subject search" className="mb-4">
+            <Form.Item label="Subject search" className="mb-4 mt-6">
               <Input.Search
                 data-testid="subject-search-input"
                 placeholder="Enter email, phone number, or device ID"
