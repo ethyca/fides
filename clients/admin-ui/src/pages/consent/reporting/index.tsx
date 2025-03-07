@@ -12,7 +12,7 @@ import {
 } from "fidesui";
 import React, { useMemo, useState } from "react";
 
-import Layout from "~/features/common/Layout";
+import FixedLayout from "~/features/common/FixedLayout";
 import PageHeader from "~/features/common/PageHeader";
 import {
   FidesTableV2,
@@ -75,7 +75,7 @@ const ConsentReportingPage = () => {
   };
 
   return (
-    <Layout title="Consent reporting">
+    <FixedLayout title="Consent reporting">
       <PageHeader
         heading="Consent reporting"
         rightContent={
@@ -88,7 +88,7 @@ const ConsentReportingPage = () => {
           </Button>
         }
       />
-      <div data-testid="consent-reporting">
+      <div data-testid="consent-reporting" className="overflow-auto">
         {isLoading ? (
           <div className="border p-2">
             <TableSkeletonLoader rowHeight={26} numRows={10} />
@@ -171,7 +171,7 @@ const ConsentReportingPage = () => {
         startDate={startDate}
         endDate={endDate}
       />
-    </Layout>
+    </FixedLayout>
   );
 };
 
