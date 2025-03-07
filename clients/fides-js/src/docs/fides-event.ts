@@ -120,6 +120,15 @@ export interface FidesEvent extends CustomEvent {
        * What consent method (if any) caused this event.
        */
       consentMethod?: "accept" | "reject" | "save" | "dismiss" | "gpc";
+
+      /**
+       * What toggle (if any) caused this event.
+       */
+      servingToggle?: {
+        label: string;
+        id: string;
+        checked: boolean;
+      };
     };
   };
 }

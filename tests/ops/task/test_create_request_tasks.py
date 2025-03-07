@@ -162,6 +162,7 @@ payment_card_serialized_traversal_details = {
         ]
     ],
     "dataset_connection_key": "my_postgres_db_1",
+    "skipped_nodes": None,
 }
 
 
@@ -1205,6 +1206,7 @@ class TestPersistConsentRequestTasks:
             "incoming_edges": [],
             "outgoing_edges": [],
             "dataset_connection_key": "saas_connector_example",
+            "skipped_nodes": None,
         }
 
     @mock.patch(
