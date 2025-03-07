@@ -1,5 +1,4 @@
 import { createColumnHelper } from "@tanstack/react-table";
-import { UserConsentPreference } from "fides-js";
 import { AntFlex as Flex } from "fidesui";
 import palette from "fidesui/src/palette/palette.module.scss";
 import { useMemo } from "react";
@@ -11,7 +10,11 @@ import {
   DefaultHeaderCell,
 } from "~/features/common/table/v2";
 import { RelativeTimestampCell } from "~/features/common/table/v2/cells";
-import { ConsentReportingSchema, PrivacyNoticeRegion } from "~/types/api";
+import {
+  ConsentReportingSchema,
+  PrivacyNoticeRegion,
+  UserConsentPreference,
+} from "~/types/api";
 
 import {
   CONSENT_METHOD_LABELS,
