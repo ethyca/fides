@@ -146,6 +146,53 @@ dataset:
                 data_categories: [system.operations]
               - name: name
                 data_categories: [system.operations]
+          - name: addresses
+            data_categories: [user.contact.address]
+            fidesops_meta:
+              data_type: object[]
+            fields:
+              - name: addr1
+                data_categories: [user.contact.address.street]
+                fidesops_meta:
+                  data_type: string
+              - name: city
+                data_categories: [user.contact.address.city]
+                fidesops_meta:
+                  data_type: string
+              - name: state
+                data_categories: [user.contact.address.state]
+                fidesops_meta:
+                  data_type: string
+              - name: zip
+                data_categories: [user.contact.address.postal_code]
+                fidesops_meta:
+                  data_type: string
+          - name: contacts
+            data_categories: [user.contact]
+            fidesops_meta:
+              data_type: object[]
+            fields:
+              - name: type
+                data_categories: [system.operations]
+                fidesops_meta:
+                  data_type: string
+              - name: numbers
+                data_categories: [user.contact.phone_number]
+                fidesops_meta:
+                  data_type: object[]
+                fields:
+                  - name: label
+                    data_categories: [system.operations]
+                    fidesops_meta:
+                      data_type: string
+                  - name: value
+                    data_categories: [user.contact.phone_number]
+                    fidesops_meta:
+                      data_type: string
+          - name: interests
+            data_categories: [user.provided.identifiable]
+            fidesops_meta:
+              data_type: string[]
       - name: payment_methods
         fields:
           - name: type

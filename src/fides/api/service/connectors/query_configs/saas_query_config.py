@@ -12,7 +12,6 @@ from loguru import logger
 from sqlalchemy.orm import Session
 
 from fides.api.common_exceptions import FidesopsException
-from fides.api.graph.config import ScalarField
 from fides.api.graph.execution import ExecutionNode
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import (
@@ -515,17 +514,48 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
         just the fields being updated.
         """
 
-        all_value_map: Dict[str, Any] = {}
-        for field_path, field in self.field_map().items():
-            # only map scalar fields
-            if (
-                isinstance(field, ScalarField)
-                and pydash.get(row, field_path.string_path) is not None
-            ):
-                all_value_map[field_path.string_path] = pydash.get(
-                    row, field_path.string_path
-                )
-        return all_value_map
+        def flatten_dict_with_arrays(data: Any, prefix: str = "") -> Dict[str, Any]:
+            """Recursively flatten a dictionary, handling arrays with proper indices."""
+            items = {}
+
+            if isinstance(data, dict):
+                for k, v in data.items():
+                    new_key = f"{prefix}.{k}" if prefix else k
+                    if isinstance(v, (dict, list)):
+                        items.update(flatten_dict_with_arrays(v, new_key))
+                    else:
+                        items[new_key] = v
+            elif isinstance(data, list):
+                for i, v in enumerate(data):
+                    new_key = f"{prefix}.{i}"
+                    if isinstance(v, (dict, list)):
+                        items.update(flatten_dict_with_arrays(v, new_key))
+                    else:
+                        items[new_key] = v
+            else:
+                items[prefix] = data
+
+            return items
+
+        # Get all flattened values
+        all_flattened = flatten_dict_with_arrays(row)
+
+        # Get field paths defined in the dataset
+        dataset_fields = set()
+        for field_path, _ in self.field_map().items():
+            # Get the root field name (e.g., "addresses" from "addresses.street")
+            root_field = field_path.string_path.split(".")[0]
+            dataset_fields.add(root_field)
+
+        # Filter to only include fields defined in the dataset
+        filtered_values = {}
+        for path, value in all_flattened.items():
+            # Get the root field name (e.g., "addresses" from "addresses.0.city")
+            root_field = path.split(".")[0]
+            if root_field in dataset_fields:
+                filtered_values[path] = value
+
+        return filtered_values
 
     def query_to_str(self, t: T, input_data: Dict[str, List[Any]]) -> str:
         """Convert query to string"""
