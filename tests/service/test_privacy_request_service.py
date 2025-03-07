@@ -1,4 +1,5 @@
 from datetime import datetime, timezone
+from unittest import mock
 from unittest.mock import create_autospec
 
 import pytest
@@ -79,7 +80,7 @@ class TestPrivacyRequestService:
         "automatically_approved",
         "postgres_example_test_dataset_config",
     )
-    def test_resubmit_complete_privacy_request(
+    def test_resubmit_errored_privacy_request(
         self,
         db: Session,
         privacy_request_service: PrivacyRequestService,
@@ -102,7 +103,7 @@ class TestPrivacyRequestService:
             "first_name": {"label": "First name", "value": "John"}
         }
         policy_key = policy.key
-        encryption_key = "thisisnotarealkey"
+        encryption_key = "thisisntarealkey"
         property_id = property_a.id
         source = PrivacyRequestSource.request_manager
         submitted_by = reviewing_user.id
@@ -209,3 +210,83 @@ class TestPrivacyRequestService:
         privacy_request_service: PrivacyRequestService,
     ):
         assert privacy_request_service.resubmit_privacy_request("123") is None
+
+    @mock.patch(
+        "fides.service.privacy_request.privacy_request_service.queue_privacy_request"
+    )
+    def test_resubmit_privacy_request_queues_exactly_once(
+        self,
+        mock_queue_privacy_request,
+        db: Session,
+        privacy_request_service: PrivacyRequestService,
+        policy: Policy,
+    ):
+        """
+        Test that verifies queue_privacy_request is called exactly once during resubmission.
+        """
+
+        # Create a privacy request that will be in error state
+        privacy_request = privacy_request_service.create_privacy_request(
+            PrivacyRequestCreate(
+                identity=Identity(email="user@example.com"),
+                policy_key=policy.key,
+            ),
+            authenticated=True,
+        )
+        # Set it to error state to allow resubmission
+        privacy_request.status = PrivacyRequestStatus.error
+        privacy_request.save(db)
+
+        # Reset the mock to clear any calls from the initial request creation
+        mock_queue_privacy_request.reset_mock()
+
+        # Resubmit the request
+        resubmitted_request = privacy_request_service.resubmit_privacy_request(
+            privacy_request.id
+        )
+
+        # Verify queue_privacy_request was called exactly once
+        mock_queue_privacy_request.assert_called_once()
+
+        # Clean up
+        resubmitted_request.delete(db)
+
+    @pytest.mark.usefixtures("require_manual_request_approval")
+    @mock.patch(
+        "fides.service.privacy_request.privacy_request_service.queue_privacy_request"
+    )
+    def test_resubmit_privacy_request_with_manual_approval(
+        self,
+        mock_queue_privacy_request,
+        db: Session,
+        privacy_request_service: PrivacyRequestService,
+        policy: Policy,
+    ):
+        """
+        Test that verifies queue_privacy_request is called exactly once even when manual approval is required.
+        """
+
+        # Create a privacy request that will be in error state
+        privacy_request = privacy_request_service.create_privacy_request(
+            PrivacyRequestCreate(
+                identity=Identity(email="user@example.com"),
+                policy_key=policy.key,
+            ),
+            authenticated=True,
+        )
+        # Set it to error state to allow resubmission
+        privacy_request.status = PrivacyRequestStatus.error
+        privacy_request.save(db)
+
+        # Reset the mock to clear any calls from the initial request creation
+        mock_queue_privacy_request.reset_mock()
+
+        # Resubmit the request
+        resubmitted_request = privacy_request_service.resubmit_privacy_request(
+            privacy_request.id
+        )
+
+        # Verify queue_privacy_request was called exactly once (from approve_privacy_requests)
+        mock_queue_privacy_request.assert_called_once()
+
+        resubmitted_request.delete(db)
