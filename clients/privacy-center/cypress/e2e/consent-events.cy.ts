@@ -76,22 +76,50 @@ describe("Consent FidesEvents", () => {
     });
 
     it("should fire FidesEvents for all key interactions", () => {
-      cy.get("@FidesInitializing").should("have.been.calledOnce");
-      cy.get("@FidesInitialized").should("have.been.calledOnce");
+      // 1. Initialize and show banner
+      cy.get("@FidesInitializing").should("have.callCount", 1);
+      cy.get("@FidesInitialized").should("have.callCount", 1);
+      cy.get("@FidesUIShown").should("have.callCount", 1);
 
-      // Opening preferences modal should fire UIShown
+      // 2. Open modal from banner
       cy.get("#fides-banner .fides-manage-preferences-button").click();
-      cy.get("@FidesUIShown").should("have.been.called");
+      cy.get("@FidesUIShown").should("have.callCount", 2);
 
-      // Toggling a notice should fire UIChanged
+      // 3. Toggle first notice on & off
       cy.get("#fides-modal .fides-toggle-input").first().click();
-      cy.get("@FidesUIChanged").should("have.been.called");
+      cy.get("@FidesUIChanged").should("have.callCount", 1);
+      cy.get("#fides-modal .fides-toggle-input").first().click();
+      cy.get("@FidesUIChanged").should("have.callCount", 2);
 
-      // Saving preferences should fire Updating and Updated
+      // 4. Toggle second notice on
+      cy.get("#fides-modal .fides-toggle-input").eq(1).click();
+      cy.get("@FidesUIChanged").should("have.callCount", 3);
+
+      // 5. Save preferences
       cy.get("#fides-modal .fides-save-button").click();
-      cy.get("@FidesModalClosed").should("have.been.called");
-      cy.get("@FidesUpdating").should("have.been.called");
-      cy.get("@FidesUpdated").should("have.been.called");
+      cy.get("@FidesModalClosed").should("have.callCount", 1);
+      cy.get("@FidesUpdating").should("have.callCount", 1);
+      cy.get("@FidesUpdated").should("have.callCount", 1);
+
+      // 6. Re-open modal
+      cy.get("#fides-modal-link").click();
+      cy.get("@FidesUIShown").should("have.callCount", 3);
+
+      // 7. Opt-out of all
+      cy.get(".fides-modal-button-group").contains("Opt out of all").click();
+      cy.get("@FidesModalClosed").should("have.callCount", 2);
+      cy.get("@FidesUpdating").should("have.callCount", 2);
+      cy.get("@FidesUpdated").should("have.callCount", 2);
+
+      // 8. Re-open modal
+      cy.get("#fides-modal-link").click();
+      cy.get("@FidesUIShown").should("have.callCount", 4);
+
+      // 9. Opt-in to all
+      cy.get(".fides-modal-button-group").contains("Opt in to all").click();
+      cy.get("@FidesModalClosed").should("have.callCount", 3);
+      cy.get("@FidesUpdating").should("have.callCount", 3);
+      cy.get("@FidesUpdated").should("have.callCount", 3);
 
       const expectedEvents = [
         {
@@ -118,14 +146,16 @@ describe("Consent FidesEvents", () => {
             },
           },
         },
-        {
+        // UI Changed events from toggling notices
+        ...[...Array(3)].map(() => ({
           type: "FidesUIChanged",
           detail: {
             extraDetails: {
               servingComponent: "modal",
             },
           },
-        },
+        })),
+        // First save
         {
           type: "FidesModalClosed",
           detail: {},
@@ -146,6 +176,66 @@ describe("Consent FidesEvents", () => {
             },
           },
         },
+        // Re-open modal
+        {
+          type: "FidesUIShown",
+          detail: {
+            extraDetails: {
+              servingComponent: "modal",
+            },
+          },
+        },
+        // Reject all
+        {
+          type: "FidesModalClosed",
+          detail: {},
+        },
+        {
+          type: "FidesUpdating",
+          detail: {
+            extraDetails: {
+              consentMethod: "reject",
+            },
+          },
+        },
+        {
+          type: "FidesUpdated",
+          detail: {
+            extraDetails: {
+              consentMethod: "reject",
+            },
+          },
+        },
+        // Re-open modal
+        {
+          type: "FidesUIShown",
+          detail: {
+            extraDetails: {
+              servingComponent: "modal",
+            },
+          },
+        },
+        // Accept all
+        {
+          type: "FidesModalClosed",
+          detail: {},
+        },
+        {
+          type: "FidesUpdating",
+          detail: {
+            extraDetails: {
+              consentMethod: "accept",
+            },
+          },
+        },
+        {
+          type: "FidesUpdated",
+          detail: {
+            extraDetails: {
+              consentMethod: "accept",
+            },
+          },
+        },
       ];
 
       verifyFidesEventSequence(expectedEvents);
@@ -163,7 +253,92 @@ describe("Consent FidesEvents", () => {
     });
 
     it("should fire FidesEvents for all key interactions", () => {
-      // TODO: Add interaction steps
+      // 1. Banner auto-shown
+      cy.get("@FidesInitializing").should("have.callCount", 1);
+      cy.get("@FidesInitialized").should("have.callCount", 1);
+      cy.get("@FidesUIShown").should("have.callCount", 1);
+
+      // 2. Open preferences modal
+      cy.get(".fides-manage-preferences-button").click();
+      cy.get("@FidesUIShown").should("have.callCount", 2);
+
+      // 3. Toggle first purpose on & off
+      cy.getByTestId("records-list-purposes")
+        .find(".fides-toggle-input")
+        .first()
+        .click();
+      cy.get("@FidesUIChanged").should("have.callCount", 1);
+      cy.getByTestId("records-list-purposes")
+        .find(".fides-toggle-input")
+        .first()
+        .click();
+      cy.get("@FidesUIChanged").should("have.callCount", 2);
+
+      // 4. Toggle second purpose on
+      cy.getByTestId("records-list-purposes")
+        .find(".fides-toggle-input")
+        .eq(1)
+        .click();
+      cy.get("@FidesUIChanged").should("have.callCount", 3);
+
+      // 5. Switch to legitimate interest tab
+      cy.get(".fides-radio-button-group button")
+        .contains("Legitimate interest")
+        .click();
+
+      // 6. Toggle third purpose on
+      cy.getByTestId("records-list-purposes")
+        .find(".fides-toggle-input")
+        .first()
+        .click();
+      cy.get("@FidesUIChanged").should("have.callCount", 4);
+
+      // 7. Switch to features tab
+      cy.get("#fides-tab-features").click();
+
+      // 8. Expand features description
+      cy.getByTestId("records-list-features").first().click();
+
+      // 9. Switch to vendors tab
+      cy.get("#fides-tab-vendors").click();
+
+      // 10. Toggle GVL vendor on & off
+      cy.getByTestId("toggle-Captify").find(".fides-toggle-input").click();
+      cy.get("@FidesUIChanged").should("have.callCount", 5);
+      cy.getByTestId("toggle-Captify").find(".fides-toggle-input").click();
+      cy.get("@FidesUIChanged").should("have.callCount", 6);
+
+      // 11. Toggle AC vendor on & off
+      cy.getByTestId("toggle-Meta").find(".fides-toggle-input").click();
+      cy.get("@FidesUIChanged").should("have.callCount", 7);
+      cy.getByTestId("toggle-Meta").find(".fides-toggle-input").click();
+      cy.get("@FidesUIChanged").should("have.callCount", 8);
+
+      // 12. Save changes
+      cy.getByTestId("Save-btn").click();
+      cy.get("@FidesModalClosed").should("have.callCount", 1);
+      cy.get("@FidesUpdating").should("have.callCount", 1);
+      cy.get("@FidesUpdated").should("have.callCount", 1);
+
+      // 13. Re-open modal
+      cy.get("#fides-modal-link").click();
+      cy.get("@FidesUIShown").should("have.callCount", 3);
+
+      // 14. Opt-out of all
+      cy.get(".fides-modal-button-group").contains("Opt out of all").click();
+      cy.get("@FidesModalClosed").should("have.callCount", 2);
+      cy.get("@FidesUpdating").should("have.callCount", 2);
+      cy.get("@FidesUpdated").should("have.callCount", 2);
+
+      // 15. Re-open modal
+      cy.get("#fides-modal-link").click();
+      cy.get("@FidesUIShown").should("have.callCount", 4);
+
+      // 16. Opt-in to all
+      cy.get(".fides-modal-button-group").contains("Opt in to all").click();
+      cy.get("@FidesModalClosed").should("have.callCount", 3);
+      cy.get("@FidesUpdating").should("have.callCount", 3);
+      cy.get("@FidesUpdated").should("have.callCount", 3);
 
       const expectedEvents = [
         {
@@ -174,7 +349,112 @@ describe("Consent FidesEvents", () => {
           type: "FidesInitialized",
           detail: {},
         },
-        // TODO: Add more expected events for TCF overlay experience
+        {
+          type: "FidesUIShown",
+          detail: {
+            extraDetails: {
+              servingComponent: "tcf_banner",
+            },
+          },
+        },
+        {
+          type: "FidesUIShown",
+          detail: {
+            extraDetails: {
+              servingComponent: "tcf_overlay",
+            },
+          },
+        },
+        // UI Changed events from toggling purposes and vendors
+        ...[...Array(8)].map(() => ({
+          type: "FidesUIChanged",
+          detail: {
+            extraDetails: {
+              servingComponent: "modal", // TODO: This is a surprising result, but it's what we get
+            },
+          },
+        })),
+        // First save
+        {
+          type: "FidesModalClosed",
+          detail: {},
+        },
+        {
+          type: "FidesUpdating",
+          detail: {
+            extraDetails: {
+              consentMethod: "save",
+            },
+          },
+        },
+        {
+          type: "FidesUpdated",
+          detail: {
+            extraDetails: {
+              consentMethod: "save",
+            },
+          },
+        },
+        // Re-open modal
+        {
+          type: "FidesUIShown",
+          detail: {
+            extraDetails: {
+              servingComponent: "tcf_overlay",
+            },
+          },
+        },
+        // Reject all
+        {
+          type: "FidesModalClosed",
+          detail: {},
+        },
+        {
+          type: "FidesUpdating",
+          detail: {
+            extraDetails: {
+              consentMethod: "reject",
+            },
+          },
+        },
+        {
+          type: "FidesUpdated",
+          detail: {
+            extraDetails: {
+              consentMethod: "reject",
+            },
+          },
+        },
+        // Re-open modal
+        {
+          type: "FidesUIShown",
+          detail: {
+            extraDetails: {
+              servingComponent: "tcf_overlay",
+            },
+          },
+        },
+        // Accept all
+        {
+          type: "FidesModalClosed",
+          detail: {},
+        },
+        {
+          type: "FidesUpdating",
+          detail: {
+            extraDetails: {
+              consentMethod: "accept",
+            },
+          },
+        },
+        {
+          type: "FidesUpdated",
+          detail: {
+            extraDetails: {
+              consentMethod: "accept",
+            },
+          },
+        },
       ];
 
       verifyFidesEventSequence(expectedEvents);
