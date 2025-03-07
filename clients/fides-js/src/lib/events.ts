@@ -29,11 +29,11 @@ export type FidesEventDetail = FidesCookie & {
 };
 
 /**
- * Defines the properties available on event.detail.extraDetails.servingToggle
+ * Defines the properties available on event.detail.extraDetails.trigger
  */
-export type FidesServingToggleDetails = NonNullable<
+export type FidesEventDetailsTrigger = NonNullable<
   DocsFidesEvent["detail"]["extraDetails"]
->["servingToggle"];
+>["trigger"];
 
 /**
  * TODO (PROD-1815): Replace this type with this: import { FidesEvent } from "../types"
@@ -76,12 +76,13 @@ export const dispatchFidesEvent = (
       ...extraDetails,
     };
     const perfMark = performance?.mark?.(type);
+    const timestamp = perfMark?.startTime;
     const event = new CustomEvent(type, {
       detail: {
         ...cookie,
         debug,
         extraDetails: constructedExtraDetails,
-        timestamp: perfMark?.startTime,
+        timestamp,
       },
       bubbles: true,
     });
@@ -94,7 +95,7 @@ export const dispatchFidesEvent = (
         constructedExtraDetails
           ? `with extra details ${JSON.stringify(constructedExtraDetails)} `
           : ""
-      } (${perfMark?.startTime?.toFixed(2)}ms)`,
+      } (${timestamp?.toFixed(2)}ms)`,
     );
     window.dispatchEvent(event);
   }

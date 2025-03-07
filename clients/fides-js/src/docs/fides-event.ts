@@ -130,9 +130,9 @@ export interface FidesEvent extends CustomEvent {
       consentMethod?: "accept" | "reject" | "save" | "dismiss" | "gpc";
 
       /**
-       * What toggle (if any) caused this event.
+       * What toggle (if any) triggered this event.
        */
-      servingToggle?: {
+      trigger?: {
         label: string;
         id: string;
         checked: boolean;

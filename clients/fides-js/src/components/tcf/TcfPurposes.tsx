@@ -4,7 +4,7 @@ import { useMemo, useState } from "preact/hooks";
 import { UpdateEnabledIds } from "~/components/tcf/TcfTabs";
 
 import { ConsentMechanism, PrivacyExperience } from "../../lib/consent-types";
-import { FidesServingToggleDetails } from "../../lib/events";
+import { FidesEventDetailsTrigger } from "../../lib/events";
 import { useI18n } from "../../lib/i18n/i18n-context";
 import { LEGAL_BASIS_OPTIONS } from "../../lib/tcf/constants";
 import { getUniquePurposeRecords, hasLegalBasis } from "../../lib/tcf/purposes";
@@ -93,7 +93,7 @@ const TcfPurposes = ({
   enabledSpecialPurposeIds: string[];
   onChange: (
     payload: UpdateEnabledIds,
-    toggleDetails: FidesServingToggleDetails,
+    eventTrigger: FidesEventDetailsTrigger,
   ) => void;
 }) => {
   const { i18n } = useI18n();
@@ -178,7 +178,7 @@ const TcfPurposes = ({
               ]
             : activeData.enabledPurposeIds
         }
-        onToggle={(newEnabledIds, item, toggleDetails) =>
+        onToggle={(newEnabledIds, item, eventTrigger) =>
           onChange(
             {
               newEnabledIds,
@@ -187,7 +187,7 @@ const TcfPurposes = ({
                 ? "customPurposesConsent"
                 : activeData.purposeModelType,
             },
-            toggleDetails,
+            eventTrigger,
           )
         }
         renderToggleChild={(p, isCustomPurpose) => (
@@ -212,10 +212,10 @@ const TcfPurposes = ({
         title={i18n.t("static.tcf.special_purposes")}
         items={activeData.specialPurposes}
         enabledIds={activeData.enabledSpecialPurposeIds}
-        onToggle={(newEnabledIds, _, toggleDetails) =>
+        onToggle={(newEnabledIds, _, eventTrigger) =>
           onChange(
             { newEnabledIds, modelType: "specialPurposes" },
-            toggleDetails,
+            eventTrigger,
           )
         }
         renderToggleChild={(p) => (

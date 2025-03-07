@@ -1,6 +1,6 @@
 import { h } from "preact";
 
-import { FidesServingToggleDetails } from "../lib/events";
+import { FidesEventDetailsTrigger } from "../lib/events";
 
 const Toggle = ({
   label,
@@ -16,10 +16,7 @@ const Toggle = ({
   name: string;
   id: string;
   checked: boolean;
-  onChange: (
-    noticeKey: string,
-    toggleDetails: FidesServingToggleDetails,
-  ) => void;
+  onChange: (noticeKey: string, eventTrigger: FidesEventDetailsTrigger) => void;
   disabled?: boolean;
   onLabel?: string;
   offLabel?: string;

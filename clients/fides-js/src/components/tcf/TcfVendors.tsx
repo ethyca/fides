@@ -3,7 +3,7 @@ import { Fragment, h } from "preact";
 import { useMemo, useState } from "preact/hooks";
 
 import { PrivacyExperience } from "../../lib/consent-types";
-import { FidesServingToggleDetails } from "../../lib/events";
+import { FidesEventDetailsTrigger } from "../../lib/events";
 import { useI18n } from "../../lib/i18n/i18n-context";
 import { LEGAL_BASIS_OPTIONS } from "../../lib/tcf/constants";
 import {
@@ -251,10 +251,7 @@ const PagedVendorData = ({
   experience: PrivacyExperience;
   vendors: VendorRecord[];
   enabledIds: string[];
-  onChange: (
-    newIds: string[],
-    toggleDetails: FidesServingToggleDetails,
-  ) => void;
+  onChange: (newIds: string[], eventTrigger: FidesEventDetailsTrigger) => void;
 }) => {
   const { i18n } = useI18n();
   const { activeChunk, ...paging } = usePaging(vendors);
@@ -284,9 +281,7 @@ const PagedVendorData = ({
         title={i18n.t("static.tcf.vendors.iab")}
         items={gvlVendors}
         enabledIds={enabledIds}
-        onToggle={(payload, _, toggleDetails) =>
-          onChange(payload, toggleDetails)
-        }
+        onToggle={(payload, _, eventTrigger) => onChange(payload, eventTrigger)}
         renderBadgeLabel={(vendor) =>
           vendorGvlEntry(vendor.id, experience.gvl)
             ? "IAB TCF" // NOTE: As this is the proper name of the standard, it should not be localized!
@@ -301,9 +296,7 @@ const PagedVendorData = ({
         title={i18n.t("static.tcf.vendors.other")}
         items={otherVendors}
         enabledIds={enabledIds}
-        onToggle={(payload, _, toggleDetails) =>
-          onChange(payload, toggleDetails)
-        }
+        onToggle={(payload, _, eventTrigger) => onChange(payload, eventTrigger)}
         renderToggleChild={(vendor) => (
           <ToggleChild vendor={vendor} experience={experience} />
         )}
@@ -324,7 +317,7 @@ const TcfVendors = ({
   enabledVendorLegintIds: string[];
   onChange: (
     payload: UpdateEnabledIds,
-    toggleDetails: FidesServingToggleDetails,
+    eventTrigger: FidesEventDetailsTrigger,
   ) => void;
 }) => {
   // Combine the various vendor objects into one object for convenience
@@ -364,7 +357,7 @@ const TcfVendors = ({
             ? enabledVendorConsentIds
             : enabledVendorLegintIds
         }
-        onChange={(newEnabledIds, toggleDetails) =>
+        onChange={(newEnabledIds, eventTrigger) =>
           onChange(
             {
               newEnabledIds,
@@ -374,7 +367,7 @@ const TcfVendors = ({
                   ? "vendorsConsent"
                   : "vendorsLegint",
             },
-            toggleDetails,
+            eventTrigger,
           )
         }
         // This key forces a rerender when legal basis changes, which allows paging to reset properly

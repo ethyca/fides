@@ -730,8 +730,8 @@ describe("Fides-js TCF", () => {
           .then((event: CustomEvent) => {
             // Check that the extraDetails includes context about what changed
             expect(event.type).to.equal("FidesUIChanged");
-            expect(event.detail.extraDetails).to.have.property("servingToggle");
-            expect(event.detail.extraDetails.servingToggle).to.deep.include({
+            expect(event.detail.extraDetails).to.have.property("trigger");
+            expect(event.detail.extraDetails.trigger).to.deep.include({
               label: PURPOSE_4.name,
               id: PURPOSE_4.id.toString(),
               checked: true,
@@ -746,8 +746,8 @@ describe("Fides-js TCF", () => {
           .then((event: CustomEvent) => {
             // Check that the extraDetails includes context about what changed
             expect(event.type).to.equal("FidesUIChanged");
-            expect(event.detail.extraDetails).to.have.property("servingToggle");
-            expect(event.detail.extraDetails.servingToggle).to.deep.include({
+            expect(event.detail.extraDetails).to.have.property("trigger");
+            expect(event.detail.extraDetails.trigger).to.deep.include({
               label: PURPOSE_6.name,
               id: PURPOSE_6.id.toString(),
               checked: true,
@@ -762,8 +762,8 @@ describe("Fides-js TCF", () => {
           .then((event: CustomEvent) => {
             // Check that the extraDetails includes context about what changed
             expect(event.type).to.equal("FidesUIChanged");
-            expect(event.detail.extraDetails).to.have.property("servingToggle");
-            expect(event.detail.extraDetails.servingToggle).to.deep.include({
+            expect(event.detail.extraDetails).to.have.property("trigger");
+            expect(event.detail.extraDetails.trigger).to.deep.include({
               label: PURPOSE_4.name,
               id: PURPOSE_4.id.toString(),
               checked: false,

@@ -103,7 +103,7 @@ describe("Consent FidesEvents", () => {
           detail: {
             extraDetails: {
               servingComponent: "modal",
-              servingToggle: {
+              trigger: {
                 label: "Advertising",
                 id: "advertising",
                 checked: true,
@@ -116,7 +116,7 @@ describe("Consent FidesEvents", () => {
           detail: {
             extraDetails: {
               servingComponent: "modal",
-              servingToggle: {
+              trigger: {
                 label: "Advertising",
                 id: "advertising",
                 checked: false,
@@ -133,7 +133,7 @@ describe("Consent FidesEvents", () => {
         detail: {
           extraDetails: {
             servingComponent: "modal",
-            servingToggle: {
+            trigger: {
               label: "Analytics",
               id: "analytics_opt_out",
               checked: false,
@@ -254,7 +254,7 @@ describe("Consent FidesEvents", () => {
           detail: {
             extraDetails: {
               servingComponent: "modal",
-              servingToggle: {
+              trigger: {
                 label: "Use profiles to select personalised advertising",
                 id: "4",
                 checked: true,
@@ -267,7 +267,7 @@ describe("Consent FidesEvents", () => {
           detail: {
             extraDetails: {
               servingComponent: "modal",
-              servingToggle: {
+              trigger: {
                 label: "Use profiles to select personalised advertising",
                 id: "4",
                 checked: false,
@@ -287,7 +287,7 @@ describe("Consent FidesEvents", () => {
         detail: {
           extraDetails: {
             servingComponent: "modal",
-            servingToggle: {
+            trigger: {
               label: "Use profiles to select personalised content",
               id: "6",
               checked: true,
@@ -312,7 +312,7 @@ describe("Consent FidesEvents", () => {
         detail: {
           extraDetails: {
             servingComponent: "modal",
-            servingToggle: {
+            trigger: {
               label: "Use limited data to select advertising",
               id: "2",
               checked: false,
@@ -344,7 +344,7 @@ describe("Consent FidesEvents", () => {
           detail: {
             extraDetails: {
               servingComponent: "modal",
-              servingToggle: {
+              trigger: {
                 label: "Captify",
                 id: "gvl.2",
                 checked: true,
@@ -357,7 +357,7 @@ describe("Consent FidesEvents", () => {
           detail: {
             extraDetails: {
               servingComponent: "modal",
-              servingToggle: {
+              trigger: {
                 label: "Captify",
                 id: "gvl.2",
                 checked: false,
@@ -375,7 +375,7 @@ describe("Consent FidesEvents", () => {
           detail: {
             extraDetails: {
               servingComponent: "modal",
-              servingToggle: {
+              trigger: {
                 label: "Meta",
                 id: "gacp.89",
                 checked: true,
@@ -388,7 +388,7 @@ describe("Consent FidesEvents", () => {
           detail: {
             extraDetails: {
               servingComponent: "modal",
-              servingToggle: {
+              trigger: {
                 label: "Meta",
                 id: "gacp.89",
                 checked: false,
