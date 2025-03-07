@@ -115,7 +115,7 @@ describe("Consent reporting", () => {
 
       cy.getByTestId("fidesTable-body").children().should("have.length", 22);
     });
-    it.only("loads the consent report table with date filters", () => {
+    it("loads the consent report table with date filters", () => {
       cy.intercept(
         {
           url: "/api/v1/historical-privacy-preferences*",
