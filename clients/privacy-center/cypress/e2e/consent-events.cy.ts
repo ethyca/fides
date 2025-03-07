@@ -244,11 +244,21 @@ describe("Consent FidesEvents", () => {
 
   describe("when tcf_overlay experience", () => {
     beforeEach(() => {
-      // Load the tcf_overlay experience
-      stubTCFExperience({
-        stubOptions: {
-          tcfEnabled: true,
-        },
+      // Load the tcf_overlay experience, adding an example AC vendor
+      cy.fixture("consent/experience_tcf.json").then((payload) => {
+        const experience = payload.items[0];
+        const acVendor = {
+          id: "gacp.89",
+          has_vendor_id: true,
+          name: "Meta",
+          description: null,
+          vendor_deleted_date: null,
+          default_preference: "opt_out",
+          purpose_consents: [],
+        };
+        experience.tcf_vendor_consents.push(acVendor);
+        experience.tcf_vendor_relationships.push(acVendor);
+        stubTCFExperience({ experienceFullOverride: experience });
       });
     });
 
