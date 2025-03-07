@@ -156,7 +156,7 @@ const useConsentReportingTableColumns = ({
         enableSorting: false,
       }),
     ],
-    [],
+    [onTcfDetailViewClick],
   );
 
   return columns;
