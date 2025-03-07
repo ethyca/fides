@@ -1,6 +1,8 @@
-import type { FidesEvent, FidesEventDetail } from "fides-js/src/lib/events";
+import type { FidesEventDetail, FidesEventType } from "fides-js/src/lib/events";
 
 import { stubConfig, stubTCFExperience } from "../support/stubs";
+
+type FidesEventTuple = [FidesEventType, Partial<FidesEventDetail>];
 
 describe("Consent FidesEvents", () => {
   /**
@@ -26,9 +28,7 @@ describe("Consent FidesEvents", () => {
    * ];
    * verifyFidesEventSequence(expectedEvents);
    */
-  function verifyFidesEventSequence(
-    expectedEvents: Array<{ type: string; detail: Partial<FidesEventDetail> }>,
-  ) {
+  function verifyFidesEventSequence(expectedEvents: FidesEventTuple[]) {
     cy.log("Verify the complete sequence of FidesEvents");
     cy.get("@AllFidesEvents").then((stub: any) => {
       const events = stub.getCalls().map((call) => ({
@@ -40,18 +40,18 @@ describe("Consent FidesEvents", () => {
       expect(
         events.map((e) => e.type),
         "Expected event types to match exactly in order",
-      ).to.deep.equal(expectedEvents.map((e) => e.type));
+      ).to.deep.equal(expectedEvents.map((e) => e[0]));
 
       // For each event, verify only the properties we care about
       events.forEach((actual, index) => {
-        const expected = expectedEvents[index];
+        const [, expectedDetail] = expectedEvents[index];
         expect(actual.detail, `Event ${index} detail`).to.be.an("object");
 
         // Verify timestamp exists and is a valid performance.now() value
         expect(actual.detail.timestamp).to.be.a("number").and.to.be.at.least(0);
 
         // Only verify the properties we specified in expectedEvents
-        Object.entries(expected.detail).forEach(([key, value]) => {
+        Object.entries(expectedDetail).forEach(([key, value]) => {
           // First verify the key exists if we expect a value
           if (Object.keys(value).length > 0) {
             expect(actual.detail).to.have.property(key);
@@ -121,121 +121,25 @@ describe("Consent FidesEvents", () => {
       cy.get("@FidesUpdating").should("have.callCount", 3);
       cy.get("@FidesUpdated").should("have.callCount", 3);
 
-      const expectedEvents = [
-        {
-          type: "FidesInitializing",
-          detail: {},
-        },
-        {
-          type: "FidesInitialized",
-          detail: {},
-        },
-        {
-          type: "FidesUIShown",
-          detail: {
-            extraDetails: {
-              servingComponent: "banner",
-            },
-          },
-        },
-        {
-          type: "FidesUIShown",
-          detail: {
-            extraDetails: {
-              servingComponent: "modal",
-            },
-          },
-        },
-        // UI Changed events from toggling notices
-        ...[...Array(3)].map(() => ({
-          type: "FidesUIChanged",
-          detail: {
-            extraDetails: {
-              servingComponent: "modal",
-            },
-          },
-        })),
-        // First save
-        {
-          type: "FidesModalClosed",
-          detail: {},
-        },
-        {
-          type: "FidesUpdating",
-          detail: {
-            extraDetails: {
-              consentMethod: "save",
-            },
-          },
-        },
-        {
-          type: "FidesUpdated",
-          detail: {
-            extraDetails: {
-              consentMethod: "save",
-            },
-          },
-        },
-        // Re-open modal
-        {
-          type: "FidesUIShown",
-          detail: {
-            extraDetails: {
-              servingComponent: "modal",
-            },
-          },
-        },
-        // Reject all
-        {
-          type: "FidesModalClosed",
-          detail: {},
-        },
-        {
-          type: "FidesUpdating",
-          detail: {
-            extraDetails: {
-              consentMethod: "reject",
-            },
-          },
-        },
-        {
-          type: "FidesUpdated",
-          detail: {
-            extraDetails: {
-              consentMethod: "reject",
-            },
-          },
-        },
-        // Re-open modal
-        {
-          type: "FidesUIShown",
-          detail: {
-            extraDetails: {
-              servingComponent: "modal",
-            },
-          },
-        },
-        // Accept all
-        {
-          type: "FidesModalClosed",
-          detail: {},
-        },
-        {
-          type: "FidesUpdating",
-          detail: {
-            extraDetails: {
-              consentMethod: "accept",
-            },
-          },
-        },
-        {
-          type: "FidesUpdated",
-          detail: {
-            extraDetails: {
-              consentMethod: "accept",
-            },
-          },
-        },
+      const expectedEvents: FidesEventTuple[] = [
+        ["FidesInitializing", {}],
+        ["FidesInitialized", {}],
+        ["FidesUIShown", { extraDetails: { servingComponent: "banner" } }],
+        ["FidesUIShown", { extraDetails: { servingComponent: "modal" } }],
+        ["FidesUIChanged", { extraDetails: { servingComponent: "modal" } }],
+        ["FidesUIChanged", { extraDetails: { servingComponent: "modal" } }],
+        ["FidesUIChanged", { extraDetails: { servingComponent: "modal" } }],
+        ["FidesModalClosed", {}],
+        ["FidesUpdating", { extraDetails: { consentMethod: "save" } }],
+        ["FidesUpdated", { extraDetails: { consentMethod: "save" } }],
+        ["FidesUIShown", { extraDetails: { servingComponent: "modal" } }],
+        ["FidesModalClosed", {}],
+        ["FidesUpdating", { extraDetails: { consentMethod: "reject" } }],
+        ["FidesUpdated", { extraDetails: { consentMethod: "reject" } }],
+        ["FidesUIShown", { extraDetails: { servingComponent: "modal" } }],
+        ["FidesModalClosed", {}],
+        ["FidesUpdating", { extraDetails: { consentMethod: "accept" } }],
+        ["FidesUpdated", { extraDetails: { consentMethod: "accept" } }],
       ];
 
       verifyFidesEventSequence(expectedEvents);
@@ -350,121 +254,30 @@ describe("Consent FidesEvents", () => {
       cy.get("@FidesUpdating").should("have.callCount", 3);
       cy.get("@FidesUpdated").should("have.callCount", 3);
 
-      const expectedEvents = [
-        {
-          type: "FidesInitializing",
-          detail: {},
-        },
-        {
-          type: "FidesInitialized",
-          detail: {},
-        },
-        {
-          type: "FidesUIShown",
-          detail: {
-            extraDetails: {
-              servingComponent: "tcf_banner",
-            },
-          },
-        },
-        {
-          type: "FidesUIShown",
-          detail: {
-            extraDetails: {
-              servingComponent: "tcf_overlay",
-            },
-          },
-        },
-        // UI Changed events from toggling purposes and vendors
-        ...[...Array(8)].map(() => ({
-          type: "FidesUIChanged",
-          detail: {
-            extraDetails: {
-              servingComponent: "modal", // TODO: This is a surprising result, but it's what we get
-            },
-          },
-        })),
-        // First save
-        {
-          type: "FidesModalClosed",
-          detail: {},
-        },
-        {
-          type: "FidesUpdating",
-          detail: {
-            extraDetails: {
-              consentMethod: "save",
-            },
-          },
-        },
-        {
-          type: "FidesUpdated",
-          detail: {
-            extraDetails: {
-              consentMethod: "save",
-            },
-          },
-        },
-        // Re-open modal
-        {
-          type: "FidesUIShown",
-          detail: {
-            extraDetails: {
-              servingComponent: "tcf_overlay",
-            },
-          },
-        },
-        // Reject all
-        {
-          type: "FidesModalClosed",
-          detail: {},
-        },
-        {
-          type: "FidesUpdating",
-          detail: {
-            extraDetails: {
-              consentMethod: "reject",
-            },
-          },
-        },
-        {
-          type: "FidesUpdated",
-          detail: {
-            extraDetails: {
-              consentMethod: "reject",
-            },
-          },
-        },
-        // Re-open modal
-        {
-          type: "FidesUIShown",
-          detail: {
-            extraDetails: {
-              servingComponent: "tcf_overlay",
-            },
-          },
-        },
-        // Accept all
-        {
-          type: "FidesModalClosed",
-          detail: {},
-        },
-        {
-          type: "FidesUpdating",
-          detail: {
-            extraDetails: {
-              consentMethod: "accept",
-            },
-          },
-        },
-        {
-          type: "FidesUpdated",
-          detail: {
-            extraDetails: {
-              consentMethod: "accept",
-            },
-          },
-        },
+      const expectedEvents: FidesEventTuple[] = [
+        ["FidesInitializing", {}],
+        ["FidesInitialized", {}],
+        ["FidesUIShown", { extraDetails: { servingComponent: "tcf_banner" } }],
+        ["FidesUIShown", { extraDetails: { servingComponent: "tcf_overlay" } }],
+        ["FidesUIChanged", { extraDetails: { servingComponent: "modal" } }],
+        ["FidesUIChanged", { extraDetails: { servingComponent: "modal" } }],
+        ["FidesUIChanged", { extraDetails: { servingComponent: "modal" } }],
+        ["FidesUIChanged", { extraDetails: { servingComponent: "modal" } }],
+        ["FidesUIChanged", { extraDetails: { servingComponent: "modal" } }],
+        ["FidesUIChanged", { extraDetails: { servingComponent: "modal" } }],
+        ["FidesUIChanged", { extraDetails: { servingComponent: "modal" } }],
+        ["FidesUIChanged", { extraDetails: { servingComponent: "modal" } }],
+        ["FidesModalClosed", {}],
+        ["FidesUpdating", { extraDetails: { consentMethod: "save" } }],
+        ["FidesUpdated", { extraDetails: { consentMethod: "save" } }],
+        ["FidesUIShown", { extraDetails: { servingComponent: "tcf_overlay" } }],
+        ["FidesModalClosed", {}],
+        ["FidesUpdating", { extraDetails: { consentMethod: "reject" } }],
+        ["FidesUpdated", { extraDetails: { consentMethod: "reject" } }],
+        ["FidesUIShown", { extraDetails: { servingComponent: "tcf_overlay" } }],
+        ["FidesModalClosed", {}],
+        ["FidesUpdating", { extraDetails: { consentMethod: "accept" } }],
+        ["FidesUpdated", { extraDetails: { consentMethod: "accept" } }],
       ];
 
       verifyFidesEventSequence(expectedEvents);
