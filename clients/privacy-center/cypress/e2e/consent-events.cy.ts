@@ -77,28 +77,23 @@ describe("Consent FidesEvents", () => {
 
     it("should fire FidesEvents for all key interactions", () => {
       // 1. Initialize and show banner
-
       // 2. Open modal from banner
       cy.get("#fides-banner .fides-manage-preferences-button").click();
 
       // 3. Toggle first notice on & off
       cy.get("#fides-modal .fides-toggle-input").first().click().click();
-
       // 4. Toggle second notice on
       cy.get("#fides-modal .fides-toggle-input").eq(1).click();
-
       // 5. Save preferences
       cy.get("#fides-modal .fides-save-button").click();
 
       // 6. Re-open modal
       cy.get("#fides-modal-link").click();
-
       // 7. Opt-out of all
       cy.get(".fides-modal-button-group").contains("Opt out of all").click();
 
       // 8. Re-open modal
       cy.get("#fides-modal-link").click();
-
       // 9. Opt-in to all
       cy.get(".fides-modal-button-group").contains("Opt in to all").click();
 
@@ -149,7 +144,6 @@ describe("Consent FidesEvents", () => {
 
     it("should fire FidesEvents for all key interactions", () => {
       // 1. Banner auto-shown
-
       // 2. Open preferences modal
       cy.get(".fides-manage-preferences-button").click();
 
@@ -159,7 +153,6 @@ describe("Consent FidesEvents", () => {
         .first()
         .click()
         .click();
-
       // 4. Toggle second purpose on
       cy.getByTestId("records-list-purposes")
         .find(".fides-toggle-input")
@@ -170,7 +163,6 @@ describe("Consent FidesEvents", () => {
       cy.get(".fides-radio-button-group button")
         .contains("Legitimate interest")
         .click();
-
       // 6. Toggle third purpose on
       cy.getByTestId("records-list-purposes")
         .find(".fides-toggle-input")
@@ -179,34 +171,28 @@ describe("Consent FidesEvents", () => {
 
       // 7. Switch to features tab
       cy.get("#fides-tab-features").click();
-
       // 8. Expand features description
       cy.getByTestId("records-list-features").first().click();
 
       // 9. Switch to vendors tab
       cy.get("#fides-tab-vendors").click();
-
       // 10. Toggle GVL vendor on & off
       cy.getByTestId("toggle-Captify")
         .find(".fides-toggle-input")
         .click()
         .click();
-
       // 11. Toggle AC vendor on & off
       cy.getByTestId("toggle-Meta").find(".fides-toggle-input").click().click();
-
       // 12. Save changes
       cy.getByTestId("Save-btn").click();
 
       // 13. Re-open modal
       cy.get("#fides-modal-link").click();
-
       // 14. Opt-out of all
       cy.get(".fides-modal-button-group").contains("Opt out of all").click();
 
       // 15. Re-open modal
       cy.get("#fides-modal-link").click();
-
       // 16. Opt-in to all
       cy.get(".fides-modal-button-group").contains("Opt in to all").click();
 
