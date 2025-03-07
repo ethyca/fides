@@ -75,6 +75,7 @@ const ConsentReportingPage = () => {
   });
 
   const handleClickRefresh = async () => {
+    pagination.resetPageIndexToDefault();
     await refetch();
     toast(
       successToastParams(
