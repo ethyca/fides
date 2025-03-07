@@ -188,6 +188,23 @@ interface FidesStringToConsentArgs {
   fidesString: string;
   cmpApi: CmpApi;
 }
+
+/**
+ * Converts a Fides string to consent preferences and updates the CMP API
+ *
+ * This function handles both TCF and non-TCF consent scenarios:
+ * 1. Decodes the provided Fides string and extracts GPP data
+ * 2. Updates the CMP API with the GPP string and sets signal status
+ * 3. Maps privacy notices with their translation ID
+ * 4. Decodes consent preferences from appropriate CMP API
+ * 5. Formats consent preferences to save
+ * 6. Calls updateConsentPreferences with the formatted consent preferences
+ *
+ * @param {FidesStringToConsentArgs} args - The arguments object
+ * @param {string} args.fidesString - The encoded Fides consent string containing GPP data
+ * @param {CmpApi} args.cmpApi - The GPP CMP API instance to update with consent data
+ * @returns {void}
+ */
 export const fidesStringToConsent = ({
   fidesString,
   cmpApi,
