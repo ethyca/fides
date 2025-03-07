@@ -46,6 +46,10 @@ export function hasGppSection(gppString: string, sectionName: string): boolean {
  * Decodes a GPP string into its component sections and values.
  * Uses the IAB GPP CMP API for decoding to ensure compliance with the specification.
  *
+ * NOTE: This function is not currently used in the CMP, but is kept for the benefit of
+ * unit testing to help ensure the GPP CMP API is working as expected and catch any
+ * breaking changes in the GPP CMP API.
+ *
  * @param gppString - The GPP string to decode
  * @returns DecodedGpp object containing header and decoded sections
  * @throws Error if the GPP string is invalid or empty
@@ -98,6 +102,11 @@ export function getGppField(
     }
     return gppModel.getFieldValue(sectionName, fieldName);
   } catch {
+    fidesDebugger("Error decoding GPP string", {
+      gppString,
+      sectionName,
+      fieldName,
+    });
     return null;
   }
 }
