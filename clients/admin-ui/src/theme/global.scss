@@ -37,6 +37,11 @@ h6 {
   --ant-button-default-bg: var(--fidesui-neutral-50);
 }
 
+// Input labels should have a font weight of 600
+.ant-form-item-label {
+  font-weight: 600;
+}
+
 // Custom styles for dark submenus
 .ant-menu-dark .ant-menu-sub {
   // The unselected submenu item should be light gray
