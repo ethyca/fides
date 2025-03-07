@@ -26,6 +26,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ### Added
 - Fides GTM & event origination [#5821](https://github.com/ethyca/fides/pull/5821)
+- Added a consent reporting table and consent lookup feature [#5839](https://github.com/ethyca/fides/pull/5839)
 
 ### Fixed
 - Addressed TCModel console error when opting into some purposes [#5850](https://github.com/ethyca/fides/pull/5850)

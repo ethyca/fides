@@ -58,6 +58,7 @@ export type {
 
 // Higher-order components
 export { CustomSelect as AntSelect } from "./hoc";
+export { CustomDateRangePicker as AntDateRangePicker } from "./hoc";
 
 /**
  * Custom Re-exports
