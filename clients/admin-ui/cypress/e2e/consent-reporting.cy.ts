@@ -70,9 +70,10 @@ describe("Consent reporting", () => {
         url: "/api/v1/plus/consent_reporting*",
         method: "GET",
       }).as("getConsentReport");
-      cy.getByTestId("input-from-date").type("2023-11-01");
-      cy.getByTestId("input-to-date").type("2023-11-07");
+      cy.getByTestId("input-date-range").first().type("2023-11-01");
+      cy.getByTestId("input-date-range").last().type("2023-11-07");
       cy.getByTestId("download-btn").click();
+      cy.getByTestId("download-report-btn").click();
       cy.wait("@getConsentReport");
     });
   });

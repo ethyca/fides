@@ -118,7 +118,7 @@ const ConsentReportingPage = () => {
                       {
                         key: "1",
                         label: (
-                          <span data-testid="consent-preference-lookup-button">
+                          <span data-testid="consent-preference-lookup-btn">
                             Consent preference lookup
                           </span>
                         ),
@@ -129,7 +129,10 @@ const ConsentReportingPage = () => {
                   overlayStyle={{ width: "220px" }}
                   trigger={["click"]}
                 >
-                  <Button icon={<Icons.OverflowMenuVertical />} />
+                  <Button
+                    icon={<Icons.OverflowMenuVertical />}
+                    data-testid="consent-reporting-dropdown-btn"
+                  />
                 </Dropdown>
               </Flex>
             </TableActionBar>
