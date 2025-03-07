@@ -23,6 +23,7 @@ export { default as TrashCanSolidIcon } from "./TrashCanSolid";
 export { default as UserIcon } from "./User";
 export { default as VerticalLineIcon } from "./VerticalLine";
 export { default as WarningIcon } from "./Warning";
+export { default as YellowWarningIcon } from "./YellowWarning";
 
 // Icons from Fidesplus:
 export { default as FilterIcon } from "./Filter";
