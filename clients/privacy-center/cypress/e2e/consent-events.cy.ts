@@ -148,11 +148,31 @@ describe("Consent FidesEvents", () => {
         { type: "FidesModalClosed", detail: {} },
         {
           type: "FidesUpdating",
-          detail: { extraDetails: { consentMethod: "save" } },
+          detail: {
+            extraDetails: {
+              servingComponent: "modal",
+              consentMethod: "save",
+              trigger: {
+                type: "button",
+                label: "Save",
+                id: "save-preferences",
+              },
+            },
+          },
         },
         {
           type: "FidesUpdated",
-          detail: { extraDetails: { consentMethod: "save" } },
+          detail: {
+            extraDetails: {
+              servingComponent: "modal",
+              consentMethod: "save",
+              trigger: {
+                type: "button",
+                label: "Save",
+                id: "save-preferences",
+              },
+            },
+          },
         },
       );
 
@@ -169,11 +189,31 @@ describe("Consent FidesEvents", () => {
         { type: "FidesModalClosed", detail: {} },
         {
           type: "FidesUpdating",
-          detail: { extraDetails: { consentMethod: "reject" } },
+          detail: {
+            extraDetails: {
+              servingComponent: "modal",
+              consentMethod: "reject",
+              trigger: {
+                type: "button",
+                label: "Opt out of all",
+                id: "reject-all",
+              },
+            },
+          },
         },
         {
           type: "FidesUpdated",
-          detail: { extraDetails: { consentMethod: "reject" } },
+          detail: {
+            extraDetails: {
+              servingComponent: "modal",
+              consentMethod: "reject",
+              trigger: {
+                type: "button",
+                label: "Opt out of all",
+                id: "reject-all",
+              },
+            },
+          },
         },
       );
 
@@ -190,11 +230,31 @@ describe("Consent FidesEvents", () => {
         { type: "FidesModalClosed", detail: {} },
         {
           type: "FidesUpdating",
-          detail: { extraDetails: { consentMethod: "accept" } },
+          detail: {
+            extraDetails: {
+              servingComponent: "modal",
+              consentMethod: "accept",
+              trigger: {
+                type: "button",
+                label: "Opt in to all",
+                id: "accept-all",
+              },
+            },
+          },
         },
         {
           type: "FidesUpdated",
-          detail: { extraDetails: { consentMethod: "accept" } },
+          detail: {
+            extraDetails: {
+              servingComponent: "modal",
+              consentMethod: "accept",
+              trigger: {
+                type: "button",
+                label: "Opt in to all",
+                id: "accept-all",
+              },
+            },
+          },
         },
       );
 
@@ -425,11 +485,31 @@ describe("Consent FidesEvents", () => {
         { type: "FidesModalClosed", detail: {} },
         {
           type: "FidesUpdating",
-          detail: { extraDetails: { consentMethod: "reject" } },
+          detail: {
+            extraDetails: {
+              servingComponent: "modal",
+              consentMethod: "reject",
+              trigger: {
+                type: "button",
+                label: "Opt out of all",
+                id: "reject-all",
+              },
+            },
+          },
         },
         {
           type: "FidesUpdated",
-          detail: { extraDetails: { consentMethod: "reject" } },
+          detail: {
+            extraDetails: {
+              servingComponent: "modal",
+              consentMethod: "reject",
+              trigger: {
+                type: "button",
+                label: "Opt out of all",
+                id: "reject-all",
+              },
+            },
+          },
         },
       );
 
@@ -446,11 +526,31 @@ describe("Consent FidesEvents", () => {
         { type: "FidesModalClosed", detail: {} },
         {
           type: "FidesUpdating",
-          detail: { extraDetails: { consentMethod: "accept" } },
+          detail: {
+            extraDetails: {
+              servingComponent: "modal",
+              consentMethod: "accept",
+              trigger: {
+                type: "button",
+                label: "Opt in to all",
+                id: "accept-all",
+              },
+            },
+          },
         },
         {
           type: "FidesUpdated",
-          detail: { extraDetails: { consentMethod: "accept" } },
+          detail: {
+            extraDetails: {
+              servingComponent: "modal",
+              consentMethod: "accept",
+              trigger: {
+                type: "button",
+                label: "Opt in to all",
+                id: "accept-all",
+              },
+            },
+          },
         },
       );
 
