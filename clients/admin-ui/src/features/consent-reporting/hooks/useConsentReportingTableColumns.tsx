@@ -1,4 +1,6 @@
 import { createColumnHelper } from "@tanstack/react-table";
+import { UserConsentPreference } from "fides-js";
+import { AntFlex as Flex } from "fidesui";
 import palette from "fidesui/src/palette/palette.module.scss";
 import { useMemo } from "react";
 
@@ -20,7 +22,11 @@ import {
 
 const columnHelper = createColumnHelper<ConsentReportingSchema>();
 
-const useConsentReportingTableColumns = () => {
+const useConsentReportingTableColumns = ({
+  onTcfDetailViewClick,
+}: {
+  onTcfDetailViewClick: (preferences: UserConsentPreference) => void;
+}) => {
   const columns = useMemo(
     () => [
       columnHelper.accessor((row) => row.fides_user_device_id, {
@@ -46,7 +52,7 @@ const useConsentReportingTableColumns = () => {
       }),
       columnHelper.accessor((row) => row.preference, {
         id: "preference",
-        cell: ({ getValue }) => {
+        cell: ({ getValue, row }) => {
           const preference = getValue();
           const preferenceLabel =
             (preference && USER_CONSENT_PREFERENCE_LABELS[preference]) ||
@@ -55,7 +61,22 @@ const useConsentReportingTableColumns = () => {
           const badgeColor =
             (preference && USER_CONSENT_PREFERENCE_COLOR[preference]) || "";
 
-          return <BadgeCell color={badgeColor} value={preferenceLabel} />;
+          const hasTcfDetails =
+            preference === "tcf" && row.original.tcf_preferences;
+
+          return (
+            <Flex align="center">
+              <BadgeCell
+                color={badgeColor}
+                value={preferenceLabel}
+                onClick={
+                  hasTcfDetails
+                    ? () => onTcfDetailViewClick(row.original.tcf_preferences!)
+                    : undefined
+                }
+              />
+            </Flex>
+          );
         },
         header: (props) => <DefaultHeaderCell value="Preference" {...props} />,
         enableSorting: false,

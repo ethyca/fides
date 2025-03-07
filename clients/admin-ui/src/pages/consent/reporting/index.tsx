@@ -26,6 +26,7 @@ import { successToastParams } from "~/features/common/toast";
 import { useGetAllHistoricalPrivacyPreferencesQuery } from "~/features/consent-reporting/consent-reporting.slice";
 import ConsentLookupModal from "~/features/consent-reporting/ConsentLookupModal";
 import ConsentReportDownloadModal from "~/features/consent-reporting/ConsentReportDownloadModal";
+import ConsentTcfDetailModal from "~/features/consent-reporting/ConsentTcfDetailModal";
 import useConsentReportingTableColumns from "~/features/consent-reporting/hooks/useConsentReportingTableColumns";
 import { ConsentReportingSchema } from "~/types/api";
 
@@ -38,6 +39,10 @@ const ConsentReportingPage = () => {
     useState(false);
   const [isDownloadReportModalOpen, setIsDownloadReportModalOpen] =
     useState(false);
+  const [isConsentTcfDetailModalOpen, setIsConsentTcfDetailModalOpen] =
+    useState(false);
+  const [currentTcfPreferences, setCurrentTcfPreferences] = useState();
+
   const toast = useToast();
 
   const { data, isLoading, isFetching, refetch } =
@@ -55,7 +60,12 @@ const ConsentReportingPage = () => {
     return results;
   }, [data, setTotalPages]);
 
-  const columns = useConsentReportingTableColumns();
+  const onTcfDetailViewClick = (tcfPreferences: any) => {
+    setIsConsentTcfDetailModalOpen(true);
+    setCurrentTcfPreferences(tcfPreferences);
+  };
+
+  const columns = useConsentReportingTableColumns({ onTcfDetailViewClick });
   const tableInstance = useReactTable<ConsentReportingSchema>({
     getCoreRowModel: getCoreRowModel(),
     data: privacyPreferences,
@@ -170,6 +180,14 @@ const ConsentReportingPage = () => {
         onClose={() => setIsDownloadReportModalOpen(false)}
         startDate={startDate}
         endDate={endDate}
+      />
+      <ConsentTcfDetailModal
+        isOpen={isConsentTcfDetailModalOpen}
+        onClose={() => {
+          setIsConsentTcfDetailModalOpen(false);
+          setCurrentTcfPreferences(undefined);
+        }}
+        tcfPreferences={currentTcfPreferences}
       />
     </FixedLayout>
   );

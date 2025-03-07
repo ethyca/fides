@@ -12,14 +12,21 @@ import {
   ModalOverlay,
   useToast,
 } from "fidesui";
-import { useState } from "react";
+import { isEmpty } from "lodash";
+import { useEffect, useState } from "react";
 
-import { PreferenceWithNoticeInformation } from "~/types/api";
+import {
+  PreferencesSavedExtended,
+  PreferenceWithNoticeInformation,
+} from "~/types/api";
 
 import { getErrorMessage } from "../common/helpers";
 import { FidesTableV2 } from "../common/table/v2";
 import { useLazyGetCurrentPrivacyPreferencesQuery } from "./consent-reporting.slice";
 import useConsentLookupTableColumns from "./hooks/useConsentLookupTableColumns";
+import useTcfConsentColumns, {
+  TcfDetailRow,
+} from "./hooks/useTcfConsentColumns";
 
 interface ConsentLookupModalProps {
   isOpen: boolean;
@@ -29,12 +36,20 @@ interface ConsentLookupModalProps {
 const ConsentLookupModal = ({ isOpen, onClose }: ConsentLookupModalProps) => {
   const [isSearching, setIsSearching] = useState(false);
   const [searchResults, setSearchResults] = useState<
-    PreferenceWithNoticeInformation[] | undefined
+    PreferencesSavedExtended | undefined | null
   >();
   const [getCurrentPrivacyPreferencesTrigger] =
     useLazyGetCurrentPrivacyPreferencesQuery();
 
   const toast = useToast();
+
+  useEffect(() => {
+    // reset state when modal is closed
+    if (!isOpen) {
+      setSearchResults(undefined);
+      setIsSearching(false);
+    }
+  }, [isOpen]);
 
   const handleSearch = async (search: string) => {
     setIsSearching(true);
@@ -50,17 +65,30 @@ const ConsentLookupModal = ({ isOpen, onClose }: ConsentLookupModalProps) => {
 
       toast({ status: "error", description: errorMsg });
     } else {
-      setSearchResults(data?.preferences || []);
+      setSearchResults(data || null);
     }
     setIsSearching(false);
   };
 
   const columns = useConsentLookupTableColumns();
+  const preferences = searchResults?.preferences || [];
+  const hasPreferences = !isEmpty(preferences);
   const tableInstance = useReactTable<PreferenceWithNoticeInformation>({
     getCoreRowModel: getCoreRowModel(),
-    data: searchResults || [],
+    data: preferences,
     columns,
     getRowId: (row) => `${row.privacy_notice_history_id}`,
+    manualPagination: true,
+  });
+
+  const { tcfColumns, mapTcfPreferencesToRowColumns } = useTcfConsentColumns();
+  const tcfData = mapTcfPreferencesToRowColumns(searchResults);
+  const hasTcfData = !isEmpty(tcfData);
+  const tcfTableInstance = useReactTable<TcfDetailRow>({
+    getCoreRowModel: getCoreRowModel(),
+    data: tcfData,
+    columns: tcfColumns,
+    getRowId: (row) => `${row.key}-${row.id}`,
     manualPagination: true,
   });
 
@@ -102,20 +130,27 @@ const ConsentLookupModal = ({ isOpen, onClose }: ConsentLookupModalProps) => {
             </Form.Item>
           </Form>
           <div className="mb-4">
-            <FidesTableV2<PreferenceWithNoticeInformation>
-              tableInstance={tableInstance}
-              emptyTableNotice={
-                <Empty
-                  description={
-                    searchResults === undefined
-                      ? "Search for an email, phone number, or device ID."
-                      : "No results found."
-                  }
-                  image={Empty.PRESENTED_IMAGE_SIMPLE}
-                  imageStyle={{ marginBottom: 15 }}
-                />
-              }
-            />
+            {(!hasTcfData || hasPreferences) && (
+              <FidesTableV2<PreferenceWithNoticeInformation>
+                tableInstance={tableInstance}
+                emptyTableNotice={
+                  <Empty
+                    description={
+                      searchResults === undefined
+                        ? "Search for an email, phone number, or device ID."
+                        : "No results found."
+                    }
+                    image={Empty.PRESENTED_IMAGE_SIMPLE}
+                    imageStyle={{ marginBottom: 15 }}
+                  />
+                }
+              />
+            )}
+            {hasTcfData && (
+              <div className="mt-4">
+                <FidesTableV2<TcfDetailRow> tableInstance={tcfTableInstance} />
+              </div>
+            )}
           </div>
         </ModalBody>
       </ModalContent>
