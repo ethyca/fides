@@ -22,7 +22,7 @@ class TestSecuritySettings:
         with pytest.raises(ValueError) as err:
             SecuritySettings(cors_origins="123")
 
-        assert "not a valid url" in str(err.value)
+        assert "Input should be a valid URL" in str(err.value)
 
     def test_validate_assemble_cors_origins_invalid_type(self):
         with pytest.raises(ValueError):
@@ -30,6 +30,21 @@ class TestSecuritySettings:
 
     def test_validate_assemble_cors_origins_string_of_urls(self):
         urls = ["http://localhost.com", "http://test.com"]
+        settings = SecuritySettings(cors_origins=", ".join(urls))
+
+        assert settings.cors_origins == urls
+
+    def test_validate_cors_origins_0_0_0_0_is_allowed(self):
+        urls = ["http://localhost.com", "http://0.0.0.0:8000"]
+        settings = SecuritySettings(cors_origins=", ".join(urls))
+
+        assert settings.cors_origins == urls
+
+    def test_validate_cors_origins_asterisk_wildcard_is_allowed(self):
+        """
+        Test that `*` is allowed as a special origin value.
+        """
+        urls = ["*"]
         settings = SecuritySettings(cors_origins=", ".join(urls))
 
         assert settings.cors_origins == urls
