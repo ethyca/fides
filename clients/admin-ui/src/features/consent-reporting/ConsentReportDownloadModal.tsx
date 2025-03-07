@@ -27,11 +27,12 @@ const ConsentReportDownloadModal = ({
   endDate,
 }: ConsentReportDownloadModalProps) => {
   const { downloadReport, isDownloadingReport } = useConsentReportingDownload();
-  const handleDownloadClicked = () => {
-    downloadReport({
+  const handleDownloadClicked = async () => {
+    await downloadReport({
       startDate,
       endDate,
     });
+    onClose();
   };
 
   return (
