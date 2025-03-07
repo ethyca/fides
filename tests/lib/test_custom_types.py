@@ -211,12 +211,18 @@ class TestURLOriginString:
             ("https://example.com/", "https://example.com"),
             ("https://example.com/path", None),
             ("https://example.com/path/", None),
-            ("foobar", None),
-            ("*", "*"),  # `*` is allowed as a special origin value
             (
                 "http://0.0.0.0:8000",
                 "http://0.0.0.0:8000",
             ),  # `0.0.0.0` had been rejected in the past
+            ("foobar", None),
+            (
+                "*",
+                None,
+            ),  # `*` is NOT allowed as an origin because it presents a security risk,
+            # even though it's a valid origin. we allow non-owners to edit their own origins
+            # but we don't want them to be able to set a wildcard origin.
+            # `*` can be set via the cors_origin_regex setting.
         ),
     )
     def test_valid_url_origin_strings(
