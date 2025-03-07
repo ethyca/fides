@@ -20,5 +20,12 @@ const withCustomProps = (WrappedComponent: typeof DatePicker.RangePicker) => {
   };
   return WrappedSelect;
 };
-
+/**
+ * Higher-order component that adds consistent styling and enhanced functionality to Ant Design's RangePicker component.
+ *
+ * Default customizations:
+ * - Uses Carbon icons for suffix (calendar icon) and separator (right arrow)
+ * - Uses the same gray color for the right arrow icon
+ *
+ */
 export const CustomDateRangePicker = withCustomProps(DatePicker.RangePicker);
