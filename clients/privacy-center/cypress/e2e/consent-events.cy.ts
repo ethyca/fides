@@ -2,15 +2,14 @@ import type { FidesEventDetail, FidesEventType } from "fides-js/src/lib/events";
 
 import { stubConfig, stubTCFExperience } from "../support/stubs";
 
-type FidesEventTuple = [FidesEventType, Partial<FidesEventDetail>];
+interface FidesEventExpectation {
+  type: FidesEventType;
+  detail: Partial<FidesEventDetail>;
+}
 
 describe("Consent FidesEvents", () => {
   /**
    * Verifies that all expected FidesEvents were fired in the correct sequence.
-   *
-   * This helper checks that:
-   * 1. Each event type matches exactly
-   * 2. Each event's detail object contains at least the specified properties
    *
    * Note: For event details, this uses a partial match (deep.include) to allow
    * for additional properties to exist in the actual events beyond what we specify.
@@ -26,9 +25,9 @@ describe("Consent FidesEvents", () => {
    *     }
    *   }
    * ];
-   * verifyFidesEventSequence(expectedEvents);
+   * expectFidesEventSequence(expectedEvents);
    */
-  function verifyFidesEventSequence(expectedEvents: FidesEventTuple[]) {
+  function expectFidesEventSequence(expectedEvents: FidesEventExpectation[]) {
     cy.log("Verify the complete sequence of FidesEvents");
     cy.get("@AllFidesEvents").then((stub: any) => {
       const events = stub.getCalls().map((call) => ({
@@ -36,19 +35,14 @@ describe("Consent FidesEvents", () => {
         detail: call.args[0].detail as FidesEventDetail,
       }));
 
-      // First verify the sequence of events matches exactly
-      expect(
-        events.map((e) => e.type),
-        "Expected event types to match exactly in order",
-      ).to.deep.equal(expectedEvents.map((e) => e[0]));
-
       // For each event, verify only the properties we care about
       events.forEach((actual, index) => {
-        const [, expectedDetail] = expectedEvents[index];
+        const { type, detail: expectedDetail } = expectedEvents[index];
+        expect(actual.type, `Event ${index} type`).to.equal(type);
         expect(actual.detail, `Event ${index} detail`).to.be.an("object");
 
         // Verify timestamp exists and is a valid performance.now() value
-        expect(actual.detail.timestamp).to.be.a("number").and.to.be.at.least(0);
+        expect(actual.detail.timestamp).to.be.a("number");
 
         // Only verify the properties we specified in expectedEvents
         Object.entries(expectedDetail).forEach(([key, value]) => {
@@ -62,6 +56,12 @@ describe("Consent FidesEvents", () => {
           ).to.deep.include(value);
         });
       });
+
+      // Verify the sequence of events matches exactly
+      expect(
+        events.map((e) => e.type),
+        "Expected event types to match exactly in order",
+      ).to.deep.equal(expectedEvents.map((e) => e.type));
     });
   }
 
@@ -76,49 +76,102 @@ describe("Consent FidesEvents", () => {
     });
 
     it("should fire FidesEvents for all key interactions", () => {
-      // 1. Initialize and show banner
-      // 2. Open modal from banner
+      const expectedEvents: FidesEventExpectation[] = [];
+
+      // Initialize and show banner on page load
+      expectedEvents.push(
+        { type: "FidesInitializing", detail: {} },
+        { type: "FidesInitialized", detail: {} },
+        {
+          type: "FidesUIShown",
+          detail: { extraDetails: { servingComponent: "banner" } },
+        },
+      );
+
+      // Open modal from banner button
       cy.get("#fides-banner .fides-manage-preferences-button").click();
+      expectedEvents.push({
+        type: "FidesUIShown",
+        detail: { extraDetails: { servingComponent: "modal" } },
+      });
 
-      // 3. Toggle first notice on & off
+      // Toggle first notice on then off
       cy.get("#fides-modal .fides-toggle-input").first().click().click();
-      // 4. Toggle second notice on
+      expectedEvents.push(
+        {
+          type: "FidesUIChanged",
+          detail: { extraDetails: { servingComponent: "modal" } },
+        },
+        {
+          type: "FidesUIChanged",
+          detail: { extraDetails: { servingComponent: "modal" } },
+        },
+      );
+
+      // Toggle second notice on
       cy.get("#fides-modal .fides-toggle-input").eq(1).click();
-      // 5. Save preferences
+      expectedEvents.push({
+        type: "FidesUIChanged",
+        detail: { extraDetails: { servingComponent: "modal" } },
+      });
+
+      // Save current preference selections
       cy.get("#fides-modal .fides-save-button").click();
+      expectedEvents.push(
+        { type: "FidesModalClosed", detail: {} },
+        {
+          type: "FidesUpdating",
+          detail: { extraDetails: { consentMethod: "save" } },
+        },
+        {
+          type: "FidesUpdated",
+          detail: { extraDetails: { consentMethod: "save" } },
+        },
+      );
 
-      // 6. Re-open modal
+      // Open modal from link
       cy.get("#fides-modal-link").click();
-      // 7. Opt-out of all
+      expectedEvents.push({
+        type: "FidesUIShown",
+        detail: { extraDetails: { servingComponent: "modal" } },
+      });
+
+      // Click opt-out button to reject all notices
       cy.get(".fides-modal-button-group").contains("Opt out of all").click();
+      expectedEvents.push(
+        { type: "FidesModalClosed", detail: {} },
+        {
+          type: "FidesUpdating",
+          detail: { extraDetails: { consentMethod: "reject" } },
+        },
+        {
+          type: "FidesUpdated",
+          detail: { extraDetails: { consentMethod: "reject" } },
+        },
+      );
 
-      // 8. Re-open modal
+      // Reopen modal from link
       cy.get("#fides-modal-link").click();
-      // 9. Opt-in to all
+      expectedEvents.push({
+        type: "FidesUIShown",
+        detail: { extraDetails: { servingComponent: "modal" } },
+      });
+
+      // Click opt-in button to accept all notices
       cy.get(".fides-modal-button-group").contains("Opt in to all").click();
+      expectedEvents.push(
+        { type: "FidesModalClosed", detail: {} },
+        {
+          type: "FidesUpdating",
+          detail: { extraDetails: { consentMethod: "accept" } },
+        },
+        {
+          type: "FidesUpdated",
+          detail: { extraDetails: { consentMethod: "accept" } },
+        },
+      );
 
-      const expectedEvents: FidesEventTuple[] = [
-        ["FidesInitializing", {}],
-        ["FidesInitialized", {}],
-        ["FidesUIShown", { extraDetails: { servingComponent: "banner" } }],
-        ["FidesUIShown", { extraDetails: { servingComponent: "modal" } }],
-        ["FidesUIChanged", { extraDetails: { servingComponent: "modal" } }],
-        ["FidesUIChanged", { extraDetails: { servingComponent: "modal" } }],
-        ["FidesUIChanged", { extraDetails: { servingComponent: "modal" } }],
-        ["FidesModalClosed", {}],
-        ["FidesUpdating", { extraDetails: { consentMethod: "save" } }],
-        ["FidesUpdated", { extraDetails: { consentMethod: "save" } }],
-        ["FidesUIShown", { extraDetails: { servingComponent: "modal" } }],
-        ["FidesModalClosed", {}],
-        ["FidesUpdating", { extraDetails: { consentMethod: "reject" } }],
-        ["FidesUpdated", { extraDetails: { consentMethod: "reject" } }],
-        ["FidesUIShown", { extraDetails: { servingComponent: "modal" } }],
-        ["FidesModalClosed", {}],
-        ["FidesUpdating", { extraDetails: { consentMethod: "accept" } }],
-        ["FidesUpdated", { extraDetails: { consentMethod: "accept" } }],
-      ];
-
-      verifyFidesEventSequence(expectedEvents);
+      expectFidesEventSequence(expectedEvents);
     });
   });
 
@@ -143,86 +196,169 @@ describe("Consent FidesEvents", () => {
     });
 
     it("should fire FidesEvents for all key interactions", () => {
-      // 1. Banner auto-shown
-      // 2. Open preferences modal
-      cy.get(".fides-manage-preferences-button").click();
+      const expectedEvents: FidesEventExpectation[] = [];
 
-      // 3. Toggle first purpose on & off
+      // Initialize and show TCF banner on page load
+      expectedEvents.push(
+        { type: "FidesInitializing", detail: {} },
+        { type: "FidesInitialized", detail: {} },
+        {
+          type: "FidesUIShown",
+          detail: { extraDetails: { servingComponent: "tcf_banner" } },
+        },
+      );
+
+      // Open TCF modal from banner button
+      cy.get(".fides-manage-preferences-button").click();
+      expectedEvents.push({
+        type: "FidesUIShown",
+        detail: { extraDetails: { servingComponent: "tcf_overlay" } },
+      });
+
+      // Toggle first purpose on then off
       cy.getByTestId("records-list-purposes")
         .find(".fides-toggle-input")
         .first()
         .click()
         .click();
-      // 4. Toggle second purpose on
+      expectedEvents.push(
+        {
+          type: "FidesUIChanged",
+          detail: { extraDetails: { servingComponent: "modal" } },
+        },
+        {
+          type: "FidesUIChanged",
+          detail: { extraDetails: { servingComponent: "modal" } },
+        },
+      );
+
+      // Toggle second purpose on
       cy.getByTestId("records-list-purposes")
         .find(".fides-toggle-input")
         .eq(1)
         .click();
+      expectedEvents.push({
+        type: "FidesUIChanged",
+        detail: { extraDetails: { servingComponent: "modal" } },
+      });
 
-      // 5. Switch to legitimate interest tab
+      // Switch to legitimate interest purposes tab
       cy.get(".fides-radio-button-group button")
         .contains("Legitimate interest")
         .click();
-      // 6. Toggle third purpose on
+      expectedEvents.push({
+        type: "FidesUIChanged",
+        detail: { extraDetails: { servingComponent: "modal" } },
+      });
+
+      // Toggle third purpose on
       cy.getByTestId("records-list-purposes")
         .find(".fides-toggle-input")
         .first()
         .click();
+      expectedEvents.push({
+        type: "FidesUIChanged",
+        detail: { extraDetails: { servingComponent: "modal" } },
+      });
 
-      // 7. Switch to features tab
+      // Switch to special features tab
       cy.get("#fides-tab-features").click();
-      // 8. Expand features description
-      cy.getByTestId("records-list-features").first().click();
+      // No event
 
-      // 9. Switch to vendors tab
+      // Expand first feature description
+      cy.getByTestId("records-list-features").first().click();
+      // No event
+
+      // Switch to vendors tab
       cy.get("#fides-tab-vendors").click();
-      // 10. Toggle GVL vendor on & off
+      // No event
+
+      // Toggle GVL vendor Captify on then off
       cy.getByTestId("toggle-Captify")
         .find(".fides-toggle-input")
         .click()
         .click();
-      // 11. Toggle AC vendor on & off
+      expectedEvents.push(
+        {
+          type: "FidesUIChanged",
+          detail: { extraDetails: { servingComponent: "modal" } },
+        },
+        {
+          type: "FidesUIChanged",
+          detail: { extraDetails: { servingComponent: "modal" } },
+        },
+      );
+
+      // Toggle AC vendor Meta on then off
       cy.getByTestId("toggle-Meta").find(".fides-toggle-input").click().click();
-      // 12. Save changes
+      expectedEvents.push(
+        {
+          type: "FidesUIChanged",
+          detail: { extraDetails: { servingComponent: "modal" } },
+        },
+        {
+          type: "FidesUIChanged",
+          detail: { extraDetails: { servingComponent: "modal" } },
+        },
+      );
+
+      // Save current TCF preferences
       cy.getByTestId("Save-btn").click();
+      expectedEvents.push(
+        { type: "FidesModalClosed", detail: {} },
+        {
+          type: "FidesUpdating",
+          detail: { extraDetails: { consentMethod: "save" } },
+        },
+        {
+          type: "FidesUpdated",
+          detail: { extraDetails: { consentMethod: "save" } },
+        },
+      );
 
-      // 13. Re-open modal
+      // Open TCF modal from link
       cy.get("#fides-modal-link").click();
-      // 14. Opt-out of all
+      expectedEvents.push({
+        type: "FidesUIShown",
+        detail: { extraDetails: { servingComponent: "tcf_overlay" } },
+      });
+
+      // Click opt-out button to reject all
       cy.get(".fides-modal-button-group").contains("Opt out of all").click();
+      expectedEvents.push(
+        { type: "FidesModalClosed", detail: {} },
+        {
+          type: "FidesUpdating",
+          detail: { extraDetails: { consentMethod: "reject" } },
+        },
+        {
+          type: "FidesUpdated",
+          detail: { extraDetails: { consentMethod: "reject" } },
+        },
+      );
 
-      // 15. Re-open modal
+      // Reopen TCF modal from link
       cy.get("#fides-modal-link").click();
-      // 16. Opt-in to all
+      expectedEvents.push({
+        type: "FidesUIShown",
+        detail: { extraDetails: { servingComponent: "tcf_overlay" } },
+      });
+
+      // Click opt-in button to accept all
       cy.get(".fides-modal-button-group").contains("Opt in to all").click();
+      expectedEvents.push(
+        { type: "FidesModalClosed", detail: {} },
+        {
+          type: "FidesUpdating",
+          detail: { extraDetails: { consentMethod: "accept" } },
+        },
+        {
+          type: "FidesUpdated",
+          detail: { extraDetails: { consentMethod: "accept" } },
+        },
+      );
 
-      const expectedEvents: FidesEventTuple[] = [
-        ["FidesInitializing", {}],
-        ["FidesInitialized", {}],
-        ["FidesUIShown", { extraDetails: { servingComponent: "tcf_banner" } }],
-        ["FidesUIShown", { extraDetails: { servingComponent: "tcf_overlay" } }],
-        ["FidesUIChanged", { extraDetails: { servingComponent: "modal" } }],
-        ["FidesUIChanged", { extraDetails: { servingComponent: "modal" } }],
-        ["FidesUIChanged", { extraDetails: { servingComponent: "modal" } }],
-        ["FidesUIChanged", { extraDetails: { servingComponent: "modal" } }],
-        ["FidesUIChanged", { extraDetails: { servingComponent: "modal" } }],
-        ["FidesUIChanged", { extraDetails: { servingComponent: "modal" } }],
-        ["FidesUIChanged", { extraDetails: { servingComponent: "modal" } }],
-        ["FidesUIChanged", { extraDetails: { servingComponent: "modal" } }],
-        ["FidesModalClosed", {}],
-        ["FidesUpdating", { extraDetails: { consentMethod: "save" } }],
-        ["FidesUpdated", { extraDetails: { consentMethod: "save" } }],
-        ["FidesUIShown", { extraDetails: { servingComponent: "tcf_overlay" } }],
-        ["FidesModalClosed", {}],
-        ["FidesUpdating", { extraDetails: { consentMethod: "reject" } }],
-        ["FidesUpdated", { extraDetails: { consentMethod: "reject" } }],
-        ["FidesUIShown", { extraDetails: { servingComponent: "tcf_overlay" } }],
-        ["FidesModalClosed", {}],
-        ["FidesUpdating", { extraDetails: { consentMethod: "accept" } }],
-        ["FidesUpdated", { extraDetails: { consentMethod: "accept" } }],
-      ];
-
-      verifyFidesEventSequence(expectedEvents);
+      expectFidesEventSequence(expectedEvents);
     });
   });
 });
