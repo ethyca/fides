@@ -29,6 +29,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Update the privacy request detail page to a new layout and improved styling [#5824](https://github.com/ethyca/fides/pull/5824)
 - Updated privacy request handling to still succeed if not all identities are provided [#5836](https://github.com/ethyca/fides/pull/5836)
 
+
 ### Developer Experience
 - Moved non-prod Admin UI dependencies to devDependencies [#5832](https://github.com/ethyca/fides/pull/5832)
 - Prevent Admin UI and Privacy Center from starting when running `nox -s dev` with datastore params [#5843](https://github.com/ethyca/fides/pull/5843)
@@ -36,7 +37,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ### Fixed
 - Corrected the Tag color for some columns of the Privacy requests table. [#5848](https://github.com/ethyca/fides/pull/5848)
-
+- Fixed pagination bugs on some tables [#5819](https://github.com/ethyca/fides/pull/5819)
 
 ## [2.56.2](https://github.com/ethyca/fides/compare/2.56.1...2.56.2)
 
@@ -46,7 +47,6 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ### Fixed
 - Addressed TCModel console error when opting into some purposes [#5850](https://github.com/ethyca/fides/pull/5850)
 - Opt out of all in TCF no longer affects "notice only" notices [#5850](https://github.com/ethyca/fides/pull/5850)
-
 
 ## [2.56.1](https://github.com/ethyca/fides/compare/2.56.0...2.56.1)
 
