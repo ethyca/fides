@@ -7,13 +7,13 @@ import {
   AntSwitchProps as SwitchProps,
   AntTag as Tag,
   AntTagProps as TagProps,
+  AntTooltip as Tooltip,
   Checkbox,
   CheckboxProps,
   Flex,
   FlexProps,
   Text,
   TextProps,
-  Tooltip,
   useDisclosure,
   useToast,
   WarningIcon,
@@ -74,7 +74,7 @@ export const RelativeTimestampCell = ({
 
   return (
     <Flex alignItems="center" height="100%">
-      <Tooltip label={formattedDate} hasArrow>
+      <Tooltip title={formattedDate}>
         <Text
           fontSize="xs"
           lineHeight={4}
