@@ -1,6 +1,5 @@
 import { createColumnHelper } from "@tanstack/react-table";
-import { AntFlex as Flex } from "fidesui";
-import palette from "fidesui/src/palette/palette.module.scss";
+import { AntFlex as Flex, AntTypography as Typography } from "fidesui";
 import { useMemo } from "react";
 
 import { PRIVACY_NOTICE_REGION_RECORD } from "~/features/common/privacy-notice-regions";
@@ -138,12 +137,9 @@ const useConsentReportingTableColumns = ({
         cell: ({ getValue }) => (
           <DefaultCell
             value={
-              <a
-                href={`mailto:${getValue()}`}
-                style={{ color: palette.FIDESUI_LINK }}
-              >
+              <Typography.Link href={`mailto:${getValue()}`}>
                 {getValue()}
-              </a>
+              </Typography.Link>
             }
           />
         ),
