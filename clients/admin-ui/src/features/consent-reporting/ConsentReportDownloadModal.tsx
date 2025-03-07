@@ -1,6 +1,7 @@
 import { Dayjs } from "dayjs";
 import {
   AntButton as Button,
+  AntFlex as Flex,
   AntTypography as Typography,
   Modal,
   ModalBody,
@@ -45,24 +46,28 @@ const ConsentReportDownloadModal = ({
       <ModalOverlay />
       <ModalContent>
         <ModalCloseButton />
-        <ModalHeader pb={0}>Consent report download</ModalHeader>
+        <ModalHeader pb={2}>Download consent report</ModalHeader>
         <ModalBody>
           <Typography.Paragraph>
-            Download a CSV containing a report of consent preferences made by
-            users on your sites. Depending on the number of records in the date
-            range you select, it may take several minutes to prepare the file
-            after you click &quot;Download report&quot;.
+            The downloaded CSV may differ from the UI in Fides, including column
+            order and naming.
+          </Typography.Paragraph>
+          <Typography.Paragraph>
+            For large datasets, file generation may take a few minutes after
+            selecting &quot;Download&quot;.
           </Typography.Paragraph>
 
-          <Button
-            loading={isDownloadingReport}
-            onClick={handleDownloadClicked}
-            data-testid="download-report-btn"
-            type="primary"
-            className="mb-2"
-          >
-            Download report
-          </Button>
+          <Flex justify="flex-end">
+            <Button
+              loading={isDownloadingReport}
+              onClick={handleDownloadClicked}
+              data-testid="download-report-btn"
+              type="primary"
+              className="mb-2"
+            >
+              Download
+            </Button>
+          </Flex>
         </ModalBody>
       </ModalContent>
     </Modal>
