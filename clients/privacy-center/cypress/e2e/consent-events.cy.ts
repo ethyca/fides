@@ -246,10 +246,7 @@ describe("Consent FidesEvents", () => {
       cy.get(".fides-radio-button-group button")
         .contains("Legitimate interest")
         .click();
-      expectedEvents.push({
-        type: "FidesUIChanged",
-        detail: { extraDetails: { servingComponent: "modal" } },
-      });
+      // No event
 
       // Toggle third purpose on
       cy.getByTestId("records-list-purposes")
