@@ -8,6 +8,7 @@ import {
   AntEmpty as Empty,
   AntFlex as Flex,
   Icons,
+  useToast,
 } from "fidesui";
 import React, { useMemo, useState } from "react";
 
@@ -21,6 +22,7 @@ import {
   TableSkeletonLoader,
   useServerSidePagination,
 } from "~/features/common/table/v2";
+import { successToastParams } from "~/features/common/toast";
 import { useGetAllHistoricalPrivacyPreferencesQuery } from "~/features/consent-reporting/consent-reporting.slice";
 import ConsentLookupModal from "~/features/consent-reporting/ConsentLookupModal";
 import ConsentReportDownloadModal from "~/features/consent-reporting/ConsentReportDownloadModal";
@@ -36,6 +38,7 @@ const ConsentReportingPage = () => {
     useState(false);
   const [isDownloadReportModalOpen, setIsDownloadReportModalOpen] =
     useState(false);
+  const toast = useToast();
 
   const dateFormat = "YYYY-MM-DD";
   const { data, isLoading, isFetching, refetch } =
@@ -62,12 +65,26 @@ const ConsentReportingPage = () => {
     manualPagination: true,
   });
 
+  const handleClickRefresh = async () => {
+    await refetch();
+    toast(
+      successToastParams(
+        "Consent report refreshed successfully.",
+        "Report Refreshed",
+      ),
+    );
+  };
+
   return (
     <Layout title="Consent reporting">
       <PageHeader
         heading="Consent reporting"
         rightContent={
-          <Button type="primary" onClick={refetch} loading={isFetching}>
+          <Button
+            type="primary"
+            onClick={handleClickRefresh}
+            loading={isFetching}
+          >
             Refresh
           </Button>
         }
