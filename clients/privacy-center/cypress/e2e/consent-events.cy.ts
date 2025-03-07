@@ -100,19 +100,46 @@ describe("Consent FidesEvents", () => {
       expectedEvents.push(
         {
           type: "FidesUIChanged",
-          detail: { extraDetails: { servingComponent: "modal" } },
+          detail: {
+            extraDetails: {
+              servingComponent: "modal",
+              servingToggle: {
+                label: "Advertising",
+                id: "advertising",
+                checked: true,
+              },
+            },
+          },
         },
         {
           type: "FidesUIChanged",
-          detail: { extraDetails: { servingComponent: "modal" } },
+          detail: {
+            extraDetails: {
+              servingComponent: "modal",
+              servingToggle: {
+                label: "Advertising",
+                id: "advertising",
+                checked: false,
+              },
+            },
+          },
         },
       );
 
-      // Toggle second notice on
+      // Toggle second notice off (Analytics opt out)
       cy.get("#fides-modal .fides-toggle-input").eq(1).click();
       expectedEvents.push({
         type: "FidesUIChanged",
-        detail: { extraDetails: { servingComponent: "modal" } },
+        detail: {
+          extraDetails: {
+            servingComponent: "modal",
+            servingToggle: {
+              label: "Analytics",
+              id: "analytics_opt_out",
+              checked: false,
+            },
+          },
+        },
       });
 
       // Save current preference selections
@@ -224,11 +251,29 @@ describe("Consent FidesEvents", () => {
       expectedEvents.push(
         {
           type: "FidesUIChanged",
-          detail: { extraDetails: { servingComponent: "modal" } },
+          detail: {
+            extraDetails: {
+              servingComponent: "modal",
+              servingToggle: {
+                label: "Use profiles to select personalised advertising",
+                id: "4",
+                checked: true,
+              },
+            },
+          },
         },
         {
           type: "FidesUIChanged",
-          detail: { extraDetails: { servingComponent: "modal" } },
+          detail: {
+            extraDetails: {
+              servingComponent: "modal",
+              servingToggle: {
+                label: "Use profiles to select personalised advertising",
+                id: "4",
+                checked: false,
+              },
+            },
+          },
         },
       );
 
@@ -239,7 +284,16 @@ describe("Consent FidesEvents", () => {
         .click();
       expectedEvents.push({
         type: "FidesUIChanged",
-        detail: { extraDetails: { servingComponent: "modal" } },
+        detail: {
+          extraDetails: {
+            servingComponent: "modal",
+            servingToggle: {
+              label: "Use profiles to select personalised content",
+              id: "6",
+              checked: true,
+            },
+          },
+        },
       });
 
       // Switch to legitimate interest purposes tab
@@ -248,14 +302,23 @@ describe("Consent FidesEvents", () => {
         .click();
       // No event
 
-      // Toggle third purpose on
+      // Toggle third purpose off (legitimate interest)
       cy.getByTestId("records-list-purposes")
         .find(".fides-toggle-input")
         .first()
         .click();
       expectedEvents.push({
         type: "FidesUIChanged",
-        detail: { extraDetails: { servingComponent: "modal" } },
+        detail: {
+          extraDetails: {
+            servingComponent: "modal",
+            servingToggle: {
+              label: "Use limited data to select advertising",
+              id: "2",
+              checked: false,
+            },
+          },
+        },
       });
 
       // Switch to special features tab
@@ -278,11 +341,29 @@ describe("Consent FidesEvents", () => {
       expectedEvents.push(
         {
           type: "FidesUIChanged",
-          detail: { extraDetails: { servingComponent: "modal" } },
+          detail: {
+            extraDetails: {
+              servingComponent: "modal",
+              servingToggle: {
+                label: "Captify",
+                id: "gvl.2",
+                checked: true,
+              },
+            },
+          },
         },
         {
           type: "FidesUIChanged",
-          detail: { extraDetails: { servingComponent: "modal" } },
+          detail: {
+            extraDetails: {
+              servingComponent: "modal",
+              servingToggle: {
+                label: "Captify",
+                id: "gvl.2",
+                checked: false,
+              },
+            },
+          },
         },
       );
 
@@ -291,11 +372,29 @@ describe("Consent FidesEvents", () => {
       expectedEvents.push(
         {
           type: "FidesUIChanged",
-          detail: { extraDetails: { servingComponent: "modal" } },
+          detail: {
+            extraDetails: {
+              servingComponent: "modal",
+              servingToggle: {
+                label: "Meta",
+                id: "gacp.89",
+                checked: true,
+              },
+            },
+          },
         },
         {
           type: "FidesUIChanged",
-          detail: { extraDetails: { servingComponent: "modal" } },
+          detail: {
+            extraDetails: {
+              servingComponent: "modal",
+              servingToggle: {
+                label: "Meta",
+                id: "gacp.89",
+                checked: false,
+              },
+            },
+          },
         },
       );
 
