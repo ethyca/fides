@@ -124,6 +124,20 @@ def validate_path_of_url(value: AnyUrl) -> str:
 
     We perform the basic URL validation, but also prevent URLs with paths,
     as paths are not part of an origin.
+
+    As this is meant to be used as a validator _after_ the AnyUrl validator,
+    we implicitly disallow `*` to be specified as an origin value, since it is
+    rejected by the AnyUrl validator.
+
+    Note that `*` _is_ considered a valid origin value
+    (https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Access-Control-Allow-Origin),
+    but we specifically disallow it to be set on the `cors_origins` security setting
+    in our application. This is because non-owner users (contributors)
+    are able to edit the `cors_origins` security setting (via API), and we do not
+    want to allow them to set a wildcard origin.
+
+    Instead, `*` can be set via the `cors_origin_regex` security setting.
+
     """
     if value.path and value.path != "/":
         raise ValueError("URL origin values cannot contain a path.")
@@ -133,29 +147,12 @@ def validate_path_of_url(value: AnyUrl) -> str:
     return str(value).rstrip("/")
 
 
-# values that are not valid URLs, but are specifically allowed as 'origin' values
-ALLOWED_ORIGIN_VALUES = {"*"}
-
-
-def allow_special_origin_values(
-    val: Any, handler: ValidatorFunctionWrapHandler, info: ValidationInfo
-) -> AnyUrl:
-    """
-    Bypasses further validation to allow special origin values like `*`.
-
-    Otherwise, the input value is passed down to the next validator in the chain.
-    """
-    if val in ALLOWED_ORIGIN_VALUES:
-        # we bypass the normal validation and return the value as is if it's in the list of allowed values
-        return val
-
-    parsed = handler(val)
-    return validate_path_of_url(parsed)
-
-
+# This custom type is used to validate HTTP origins, e.g. CORS origins
+# used in SecuritySettings.  See docstring for `validate_path_of_url`
+# for more details.
 URLOriginString = Annotated[
     AnyUrl,
-    WrapValidator(allow_special_origin_values),
+    AfterValidator(validate_path_of_url),
 ]
 
 

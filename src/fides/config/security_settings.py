@@ -175,7 +175,13 @@ class SecuritySettings(FidesSettings):
     @field_validator("cors_origins", mode="before")
     @classmethod
     def assemble_cors_origins(cls, v: Union[str, List[str]]) -> Union[List[str], str]:
-        """Return a list of valid origins for CORS requests"""
+        """
+        Return a list of origins for CORS requests.
+
+        This validator allows us to parse a comma-separated string of origins
+        into a list of origins, since the `cors_origins` field can be set
+        as a comma-separated string or a list of strings.
+        """
         if isinstance(v, str) and not v.startswith("["):
             values = [i.strip() for i in v.split(",")]
             return values
