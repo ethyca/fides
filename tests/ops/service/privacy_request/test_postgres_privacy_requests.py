@@ -451,7 +451,7 @@ def test_create_and_process_access_request_postgres_with_disabled_integration(
         task_timeout=PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL,
     )
 
-    first, *rest = pr.execution_logs
+    first, *rest = pr.execution_logs.order_by("created_at")
 
     assert first.dataset_name == "Dataset reference validation"
     assert first.status == ExecutionLogStatus.complete

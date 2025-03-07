@@ -2,6 +2,7 @@ import { h } from "preact";
 import { useCallback, useRef } from "preact/hooks";
 
 import { PrivacyExperience } from "../../lib/consent-types";
+import { FidesServingToggleDetails } from "../../lib/events";
 import { useI18n } from "../../lib/i18n/i18n-context";
 import {
   EnabledIds,
@@ -31,15 +32,21 @@ const TcfTabs = ({
   experience: PrivacyExperience;
   customNotices: PrivacyNoticeWithBestTranslation[] | undefined;
   enabledIds: EnabledIds;
-  onChange: (payload: EnabledIds) => void;
+  onChange: (
+    payload: EnabledIds,
+    toggleDetails: FidesServingToggleDetails,
+  ) => void;
   activeTabIndex: number;
   onTabChange: (tabIndex: number) => void;
 }) => {
   const { i18n } = useI18n();
   const handleUpdateDraftState = useCallback(
-    ({ newEnabledIds, modelType }: UpdateEnabledIds) => {
+    (
+      { newEnabledIds, modelType }: UpdateEnabledIds,
+      toggleDetails: FidesServingToggleDetails,
+    ) => {
       const updated = { ...enabledIds, [modelType]: newEnabledIds };
-      onChange(updated);
+      onChange(updated, toggleDetails);
     },
     [enabledIds, onChange],
   );

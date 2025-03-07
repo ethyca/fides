@@ -19,14 +19,43 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - https://github.com/ethyca/fides/labels/high-risk: to indicate that a change is a "high-risk" change that could potentially lead to unanticipated regressions or degradations
 - https://github.com/ethyca/fides/labels/db-migration: to indicate that a given change includes a DB migration
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.56.0...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.56.2...main)
 
 ### Added
 - DB model support for Attachments [#5784](https://github.com/ethyca/fides/pull/5784) https://github.com/ethyca/fides/labels/db-migration
 - DB migration to add `description` column to `asset` [#5822](https://github.com/ethyca/fides/pull/5822) https://github.com/ethyca/fides/labels/db-migration
 
+### Changed
+- Bumped supported Python versions to `3.10.16` and `3.9.21` [#5840](https://github.com/ethyca/fides/pull/5840)
+- Update the privacy request detail page to a new layout and improved styling [#5824](https://github.com/ethyca/fides/pull/5824)
+- Updated privacy request handling to still succeed if not all identities are provided [#5836](https://github.com/ethyca/fides/pull/5836)
+
 ### Developer Experience
 - Moved non-prod Admin UI dependencies to devDependencies [#5832](https://github.com/ethyca/fides/pull/5832)
+- Prevent Admin UI and Privacy Center from starting when running `nox -s dev` with datastore params [#5843](https://github.com/ethyca/fides/pull/5843)
+- Remove plotly (unused package) to reduce fides image size [#5852](https://github.com/ethyca/fides/pull/5852)
+
+### Fixed
+- Corrected the Tag color for some columns of the Privacy requests table. [#5848](https://github.com/ethyca/fides/pull/5848)
+
+
+## [2.56.2](https://github.com/ethyca/fides/compare/2.56.1...2.56.2)
+
+### Added
+- Fides GTM & event origination [#5821](https://github.com/ethyca/fides/pull/5821)
+
+### Fixed
+- Addressed TCModel console error when opting into some purposes [#5850](https://github.com/ethyca/fides/pull/5850)
+- Opt out of all in TCF no longer affects "notice only" notices [#5850](https://github.com/ethyca/fides/pull/5850)
+
+
+## [2.56.1](https://github.com/ethyca/fides/compare/2.56.0...2.56.1)
+
+### Changed
+- Custom TCF purposes respect NOTICE_ONLY [#5830](https://github.com/ethyca/fides/pull/5830)
+
+### Fixed
+- Fixed usage of stale DB sessions when running privacy requests [#5834](https://github.com/ethyca/fides/pull/5834)
 
 ## [2.56.0](https://github.com/ethyca/fides/compare/2.55.4...2.56.0)
 
@@ -51,6 +80,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Removed version pins in LDFLAGS & CFLAGS for local MSSQL builds [#5760](https://github.com/ethyca/fides/pull/5760)
 
 ### Fixed
+- Fixed background color of the message indicating the rows selected [#5847](https://github.com/ethyca/fides/pull/5847)
 - Fixed bug with D&D table column widths [#5813](https://github.com/ethyca/fides/pull/5813)
 - Fixed `poll_for_exited_privacy_request_tasks` for DSR-processing improvements [#5820](https://github.com/ethyca/fides/pull/5820)
 
