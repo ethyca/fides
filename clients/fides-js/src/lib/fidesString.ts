@@ -3,9 +3,6 @@ import { CmpApi } from "@iabgpp/cmpapi";
 import { FIDES_SEPARATOR } from "./tcf/constants";
 import { VendorSources } from "./tcf/vendors";
 
-/** Default GPP string to use when no CmpApi is provided or when it returns no string */
-export const DEFAULT_GPP_STRING = "DBAA";
-
 export interface DecodedFidesString {
   tc: string;
   ac: string;
@@ -74,15 +71,15 @@ export const idsFromAcString = (acString: string) => {
  * Formats the fides_string with the GPP string from the CMP API.
  * In a TCF experience, appends the GPP string as the third part.
  * In a non-TCF experience, uses empty strings for TCF and AC parts.
- * @param cmpApi Optional GPP CMP API instance. If not provided, uses DEFAULT_GPP_STRING
+ * @param cmpApi Optional GPP CMP API instance.
  * @returns The formatted fides_string
  */
-export const formatFidesStringWithGpp = (cmpApi?: CmpApi): string => {
-  const gppString = cmpApi?.getGppString() || DEFAULT_GPP_STRING;
+export const formatFidesStringWithGpp = (cmpApi: CmpApi): string => {
+  const gppString = cmpApi.getGppString();
   return window.Fides.options.tcfEnabled
     ? [...(window.Fides.fides_string?.split(FIDES_SEPARATOR) || []), "", ""]
         .slice(0, 2)
-        .concat(gppString)
+        .concat(gppString || "")
         .join(FIDES_SEPARATOR)
-    : `,,${gppString}`;
+    : `,${gppString ? `,${gppString}` : ""}`;
 };
