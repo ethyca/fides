@@ -1,32 +1,18 @@
+import { Dayjs } from "dayjs";
+
 import { baseApi } from "~/features/common/api.slice";
 import { Page_ConsentReportingSchema_ } from "~/types/api";
 
 type DateRange = {
-  startDate?: string;
-  endDate?: string;
+  startDate?: Dayjs | null;
+  endDate?: Dayjs | null;
 };
 
-export function convertDateRangeToSearchParams({
-  startDate,
-  endDate,
-}: DateRange) {
-  let startDateISO;
-  if (startDate) {
-    startDateISO = new Date(startDate);
-    startDateISO.setUTCHours(0, 0, 0);
-  }
+const startOfDayIso = (date?: Dayjs | null) =>
+  date?.utc()?.startOf("day").toISOString();
 
-  let endDateISO;
-  if (endDate) {
-    endDateISO = new Date(endDate);
-    endDateISO.setUTCHours(23, 59, 59, 9999);
-  }
-
-  return {
-    ...(startDateISO ? { created_gt: startDateISO.toISOString() } : {}),
-    ...(endDateISO ? { created_lt: endDateISO.toISOString() } : {}),
-  };
-}
+const endOfDayIso = (date?: Dayjs | null) =>
+  date?.utc()?.endOf("day").toISOString();
 
 export const consentReportingApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
@@ -46,7 +32,8 @@ export const consentReportingApi = baseApi.injectEndpoints({
     downloadReport: build.query<any, DateRange>({
       query: ({ startDate, endDate }) => {
         const params = {
-          ...convertDateRangeToSearchParams({ startDate, endDate }),
+          created_gt: startOfDayIso(startDate),
+          created_lt: endOfDayIso(endDate),
           download_csv: "true",
         };
         return {
@@ -65,18 +52,13 @@ export const consentReportingApi = baseApi.injectEndpoints({
       } & DateRange
     >({
       query: ({ page, size, startDate, endDate }) => {
-        // eslint-disable-next-line @typescript-eslint/naming-convention
-        const { created_gt, created_lt } = convertDateRangeToSearchParams({
-          startDate,
-          endDate,
-        });
         return {
           url: "historical-privacy-preferences",
           params: {
             page,
             size,
-            request_timestamp_gt: created_gt,
-            request_timestamp_lt: created_lt,
+            request_timestamp_gt: startOfDayIso(startDate),
+            request_timestamp_lt: endOfDayIso(endDate),
           },
         };
       },

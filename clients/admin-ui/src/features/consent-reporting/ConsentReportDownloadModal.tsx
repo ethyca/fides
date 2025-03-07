@@ -27,10 +27,9 @@ const ConsentReportDownloadModal = ({
 }: ConsentReportDownloadModalProps) => {
   const { downloadReport, isDownloadingReport } = useConsentReportingDownload();
   const handleDownloadClicked = () => {
-    const dateFormat = "YYYY-MM-DD";
     downloadReport({
-      startDate: startDate?.format(dateFormat),
-      endDate: endDate?.format(dateFormat),
+      startDate,
+      endDate,
     });
   };
 

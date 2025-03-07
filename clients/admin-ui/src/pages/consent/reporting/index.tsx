@@ -40,13 +40,12 @@ const ConsentReportingPage = () => {
     useState(false);
   const toast = useToast();
 
-  const dateFormat = "YYYY-MM-DD";
   const { data, isLoading, isFetching, refetch } =
     useGetAllHistoricalPrivacyPreferencesQuery({
       page: pagination.pageIndex,
       size: pagination.pageSize,
-      startDate: startDate?.format(dateFormat),
-      endDate: endDate?.format(dateFormat),
+      startDate,
+      endDate,
     });
 
   const { setTotalPages } = pagination;

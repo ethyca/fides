@@ -40,7 +40,7 @@ describe("Consent reporting", () => {
     });
   });
 
-  describe("downloading reports", () => {
+  describe("results view and download report", () => {
     beforeEach(() => {
       stubPlus(true, {
         core_fides_version: "1.9.6",
@@ -93,6 +93,57 @@ describe("Consent reporting", () => {
         expect(params.get("fides_user_device_id")).to.equal("test@example.com");
         expect(params.get("external_id")).to.equal("test@example.com");
       });
+    });
+    it("loads the consent report table without date filters", () => {
+      cy.intercept(
+        {
+          url: "/api/v1/historical-privacy-preferences*",
+          method: "GET",
+        },
+        {
+          fixture: "consent-reporting/historical-privacy-preferences.json",
+        },
+      ).as("getConsentReport");
+
+      cy.wait("@getConsentReport").then((interception) => {
+        const { url: requestUrl } = interception.request;
+        let url = new URL(requestUrl);
+        let params = new URLSearchParams(url.search);
+        expect(params.get("request_timestamp_gt")).to.be.null;
+        expect(params.get("request_timestamp_lt")).to.be.null;
+      });
+
+      cy.getByTestId("fidesTable-body").children().should("have.length", 22);
+    });
+    it.only("loads the consent report table with date filters", () => {
+      cy.intercept(
+        {
+          url: "/api/v1/historical-privacy-preferences*",
+          method: "GET",
+        },
+        {
+          fixture: "consent-reporting/historical-privacy-preferences.json",
+        },
+      ).as("getConsentReport");
+
+      cy.wait("@getConsentReport");
+
+      cy.getByTestId("input-date-range").first().type("2023-11-01");
+      cy.getByTestId("input-date-range").last().type("2023-11-07{enter}");
+
+      cy.wait("@getConsentReport").then((interception) => {
+        const { url: requestUrl } = interception.request;
+        let url = new URL(requestUrl);
+        let params = new URLSearchParams(url.search);
+        expect(params.get("request_timestamp_gt")).to.equal(
+          "2023-11-01T00:00:00.000Z",
+        );
+        expect(params.get("request_timestamp_lt")).to.equal(
+          "2023-11-07T23:59:59.999Z",
+        );
+      });
+
+      cy.getByTestId("fidesTable-body").children().should("have.length", 22);
     });
   });
 });

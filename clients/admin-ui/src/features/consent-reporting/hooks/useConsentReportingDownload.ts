@@ -1,3 +1,4 @@
+import { Dayjs } from "dayjs";
 import { useToast } from "fidesui";
 
 import { getErrorMessage } from "~/features/common/helpers";
@@ -13,8 +14,8 @@ const useConsentReportingDownload = () => {
     startDate,
     endDate,
   }: {
-    startDate?: string;
-    endDate?: string;
+    startDate?: Dayjs | null;
+    endDate?: Dayjs | null;
   }) => {
     const result = await downloadReportTrigger({ startDate, endDate });
     if (result.isError) {
