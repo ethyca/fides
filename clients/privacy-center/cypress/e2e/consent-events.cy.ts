@@ -104,6 +104,7 @@ describe("Consent FidesEvents", () => {
             extraDetails: {
               servingComponent: "modal",
               trigger: {
+                type: "toggle",
                 label: "Advertising",
                 id: "advertising",
                 checked: true,
@@ -117,6 +118,7 @@ describe("Consent FidesEvents", () => {
             extraDetails: {
               servingComponent: "modal",
               trigger: {
+                type: "toggle",
                 label: "Advertising",
                 id: "advertising",
                 checked: false,
@@ -134,6 +136,7 @@ describe("Consent FidesEvents", () => {
           extraDetails: {
             servingComponent: "modal",
             trigger: {
+              type: "toggle",
               label: "Analytics",
               id: "analytics_opt_out",
               checked: false,
@@ -150,13 +153,13 @@ describe("Consent FidesEvents", () => {
           type: "FidesUpdating",
           detail: {
             extraDetails: {
-              servingComponent: "modal",
+              // servingComponent: "modal",
               consentMethod: "save",
-              trigger: {
-                type: "button",
-                label: "Save",
-                id: "save-preferences",
-              },
+              // trigger: {
+              //   type: "button",
+              //   label: "Save",
+              //   id: "save-preferences",
+              // },
             },
           },
         },
@@ -164,13 +167,13 @@ describe("Consent FidesEvents", () => {
           type: "FidesUpdated",
           detail: {
             extraDetails: {
-              servingComponent: "modal",
+              // servingComponent: "modal",
               consentMethod: "save",
-              trigger: {
-                type: "button",
-                label: "Save",
-                id: "save-preferences",
-              },
+              // trigger: {
+              //   type: "button",
+              //   label: "Save",
+              //   id: "save-preferences",
+              // },
             },
           },
         },
@@ -191,13 +194,13 @@ describe("Consent FidesEvents", () => {
           type: "FidesUpdating",
           detail: {
             extraDetails: {
-              servingComponent: "modal",
+              // servingComponent: "modal",
               consentMethod: "reject",
-              trigger: {
-                type: "button",
-                label: "Opt out of all",
-                id: "reject-all",
-              },
+              // trigger: {
+              //   type: "button",
+              //   label: "Opt out of all",
+              //   id: "reject-all",
+              // },
             },
           },
         },
@@ -205,13 +208,13 @@ describe("Consent FidesEvents", () => {
           type: "FidesUpdated",
           detail: {
             extraDetails: {
-              servingComponent: "modal",
+              // servingComponent: "modal",
               consentMethod: "reject",
-              trigger: {
-                type: "button",
-                label: "Opt out of all",
-                id: "reject-all",
-              },
+              // trigger: {
+              //   type: "button",
+              //   label: "Opt out of all",
+              //   id: "reject-all",
+              // },
             },
           },
         },
@@ -232,13 +235,13 @@ describe("Consent FidesEvents", () => {
           type: "FidesUpdating",
           detail: {
             extraDetails: {
-              servingComponent: "modal",
+              // servingComponent: "modal",
               consentMethod: "accept",
-              trigger: {
-                type: "button",
-                label: "Opt in to all",
-                id: "accept-all",
-              },
+              // trigger: {
+              //   type: "button",
+              //   label: "Opt in to all",
+              //   id: "accept-all",
+              // },
             },
           },
         },
@@ -246,13 +249,13 @@ describe("Consent FidesEvents", () => {
           type: "FidesUpdated",
           detail: {
             extraDetails: {
-              servingComponent: "modal",
+              // servingComponent: "modal",
               consentMethod: "accept",
-              trigger: {
-                type: "button",
-                label: "Opt in to all",
-                id: "accept-all",
-              },
+              // trigger: {
+              //   type: "button",
+              //   label: "Opt in to all",
+              //   id: "accept-all",
+              // },
             },
           },
         },
@@ -315,6 +318,7 @@ describe("Consent FidesEvents", () => {
             extraDetails: {
               servingComponent: "modal",
               trigger: {
+                type: "toggle",
                 label: "Use profiles to select personalised advertising",
                 id: "4",
                 checked: true,
@@ -328,6 +332,7 @@ describe("Consent FidesEvents", () => {
             extraDetails: {
               servingComponent: "modal",
               trigger: {
+                type: "toggle",
                 label: "Use profiles to select personalised advertising",
                 id: "4",
                 checked: false,
@@ -348,6 +353,7 @@ describe("Consent FidesEvents", () => {
           extraDetails: {
             servingComponent: "modal",
             trigger: {
+              type: "toggle",
               label: "Use profiles to select personalised content",
               id: "6",
               checked: true,
@@ -373,6 +379,7 @@ describe("Consent FidesEvents", () => {
           extraDetails: {
             servingComponent: "modal",
             trigger: {
+              type: "toggle",
               label: "Use limited data to select advertising",
               id: "2",
               checked: false,
@@ -405,6 +412,7 @@ describe("Consent FidesEvents", () => {
             extraDetails: {
               servingComponent: "modal",
               trigger: {
+                type: "toggle",
                 label: "Captify",
                 id: "gvl.2",
                 checked: true,
@@ -418,6 +426,7 @@ describe("Consent FidesEvents", () => {
             extraDetails: {
               servingComponent: "modal",
               trigger: {
+                type: "toggle",
                 label: "Captify",
                 id: "gvl.2",
                 checked: false,
@@ -436,6 +445,7 @@ describe("Consent FidesEvents", () => {
             extraDetails: {
               servingComponent: "modal",
               trigger: {
+                type: "toggle",
                 label: "Meta",
                 id: "gacp.89",
                 checked: true,
@@ -449,6 +459,7 @@ describe("Consent FidesEvents", () => {
             extraDetails: {
               servingComponent: "modal",
               trigger: {
+                type: "toggle",
                 label: "Meta",
                 id: "gacp.89",
                 checked: false,
@@ -487,13 +498,13 @@ describe("Consent FidesEvents", () => {
           type: "FidesUpdating",
           detail: {
             extraDetails: {
-              servingComponent: "modal",
+              // servingComponent: "modal",
               consentMethod: "reject",
-              trigger: {
-                type: "button",
-                label: "Opt out of all",
-                id: "reject-all",
-              },
+              // trigger: {
+              //   type: "button",
+              //   label: "Opt out of all",
+              //   id: "reject-all",
+              // },
             },
           },
         },
@@ -501,13 +512,13 @@ describe("Consent FidesEvents", () => {
           type: "FidesUpdated",
           detail: {
             extraDetails: {
-              servingComponent: "modal",
+              // servingComponent: "modal",
               consentMethod: "reject",
-              trigger: {
-                type: "button",
-                label: "Opt out of all",
-                id: "reject-all",
-              },
+              // trigger: {
+              //   type: "button",
+              //   label: "Opt out of all",
+              //   id: "reject-all",
+              // },
             },
           },
         },
@@ -528,13 +539,13 @@ describe("Consent FidesEvents", () => {
           type: "FidesUpdating",
           detail: {
             extraDetails: {
-              servingComponent: "modal",
+              // servingComponent: "modal",
               consentMethod: "accept",
-              trigger: {
-                type: "button",
-                label: "Opt in to all",
-                id: "accept-all",
-              },
+              // trigger: {
+              //   type: "button",
+              //   label: "Opt in to all",
+              //   id: "accept-all",
+              // },
             },
           },
         },
@@ -542,13 +553,13 @@ describe("Consent FidesEvents", () => {
           type: "FidesUpdated",
           detail: {
             extraDetails: {
-              servingComponent: "modal",
+              // servingComponent: "modal",
               consentMethod: "accept",
-              trigger: {
-                type: "button",
-                label: "Opt in to all",
-                id: "accept-all",
-              },
+              // trigger: {
+              //   type: "button",
+              //   label: "Opt in to all",
+              //   id: "accept-all",
+              // },
             },
           },
         },
