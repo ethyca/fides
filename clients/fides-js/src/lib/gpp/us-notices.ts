@@ -29,16 +29,31 @@ const setMspaSections = ({
       cmpApiField: UsNatField.MSPA_COVERED_TRANSACTION,
     },
     {
-      gppSettingField: gppSettings.mspa_opt_out_option_mode,
+      gppSettingField:
+        gppSettings.mspa_covered_transactions &&
+        gppSettings.mspa_opt_out_option_mode,
       cmpApiField: UsNatField.MSPA_OPT_OUT_OPTION_MODE,
     },
     {
-      gppSettingField: gppSettings.mspa_service_provider_mode,
+      gppSettingField:
+        gppSettings.mspa_covered_transactions &&
+        gppSettings.mspa_service_provider_mode,
       cmpApiField: UsNatField.MSPA_SERVICE_PROVIDER_MODE,
     },
   ];
+
   mspaFields.forEach(({ gppSettingField, cmpApiField }) => {
-    cmpApi.setFieldValue(sectionName, cmpApiField, gppSettingField ? 1 : 2);
+    const isCoveredTransactions =
+      cmpApiField === UsNatField.MSPA_COVERED_TRANSACTION;
+    let value = 2; // Default to No
+
+    if (!gppSettings.mspa_covered_transactions && !isCoveredTransactions) {
+      value = 0; // When covered transactions is false, other fields should be disabled
+    } else if (gppSettingField) {
+      value = 1; // Yes
+    }
+
+    cmpApi.setFieldValue(sectionName, cmpApiField, value);
   });
 };
 
