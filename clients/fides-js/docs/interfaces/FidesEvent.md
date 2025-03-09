@@ -159,6 +159,84 @@ The id of the element that triggered the event.
 The checked state of the element that triggered the event, when type
 is `toggle`.
 
+#### extraDetails.preference?
+
+> `optional` **preference**: `object`
+
+Information about the specific preference being changed, if this event
+was triggered by a preference change.
+
+##### Example
+
+```ts
+// For a notice toggle:
+preference: {
+  key: "advertising",
+  value: true,
+  type: "notice"
+}
+
+// For a TCF purpose toggle:
+preference: {
+  key: "tcf_purpose_consent_4",
+  value: true,
+  type: "tcf_purpose_consent"
+}
+
+// For a TCF vendor toggle:
+preference: {
+  key: "gvl.2",
+  value: true,
+  type: "tcf_vendor_consent",
+  vendor_id: "gvl.2",
+  vendor_list: "gvl",
+  vendor_list_id: "2",
+  vendor_name: "Captify"
+}
+```
+
+#### extraDetails.preference.key
+
+> **key**: `string`
+
+The unique key identifying this preference
+
+#### extraDetails.preference.value
+
+> **value**: `boolean`
+
+The new value of the preference
+
+#### extraDetails.preference.type
+
+> **type**: `"notice"` \| `"tcf_purpose_consent"` \| `"tcf_purpose_legitimate_interest"` \| `"tcf_vendor_consent"` \| `"tcf_vendor_legitimate_interest"`
+
+The type of preference being changed
+
+#### extraDetails.preference.vendor\_id?
+
+> `optional` **vendor\_id**: `string`
+
+The vendor ID if this is a vendor-related preference
+
+#### extraDetails.preference.vendor\_list?
+
+> `optional` **vendor\_list**: `"gvl"` \| `"gacp"` \| `"fds"`
+
+The vendor list type if this is a vendor-related preference
+
+#### extraDetails.preference.vendor\_list\_id?
+
+> `optional` **vendor\_list\_id**: `string`
+
+The vendor list ID if this is a vendor-related preference
+
+#### extraDetails.preference.vendor\_name?
+
+> `optional` **vendor\_name**: `string`
+
+The vendor name if this is a vendor-related preference
+
 #### Overrides
 
 `CustomEvent.detail`

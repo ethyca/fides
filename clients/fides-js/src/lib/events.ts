@@ -36,6 +36,13 @@ export type FidesEventDetailsTrigger = NonNullable<
 >["trigger"];
 
 /**
+ * Defines the properties available on event.detail.extraDetails.preference
+ */
+export type FidesEventDetailsPreference = NonNullable<
+  DocsFidesEvent["detail"]["extraDetails"]
+>["preference"];
+
+/**
  * TODO (PROD-1815): Replace this type with this: import { FidesEvent } from "../types"
  *
  * However, this will require locking down some types and refactoring usage.
@@ -67,12 +74,13 @@ export const dispatchFidesEvent = (
   type: FidesEventType,
   cookie: FidesCookie | undefined,
   debug: boolean,
-  extraDetails?: FidesEvent["detail"]["extraDetails"],
+  extraDetails?: FidesEventExtraDetails,
 ) => {
   if (typeof window !== "undefined" && typeof CustomEvent !== "undefined") {
     // Extracts consentMethod directly from the cookie instead of having to pass in duplicate data to this method
     const constructedExtraDetails: FidesEventExtraDetails = {
-      consentMethod: cookie?.fides_meta.consentMethod,
+      consentMethod: cookie?.fides_meta
+        .consentMethod as FidesEventExtraDetails["consentMethod"],
       ...extraDetails,
     };
     const perfMark = performance?.mark?.(type);
