@@ -18,7 +18,13 @@ from fides.api.schemas.namespace_meta.bigquery_namespace_meta import (
 from fides.api.service.connectors.query_configs.query_config import (
     QueryStringWithoutTuplesOverrideQueryConfig,
 )
-from fides.api.util.collection_util import Row, filter_nonempty_values, unflatten_dict
+from fides.api.util.collection_util import (
+    Row,
+    filter_nonempty_values,
+    flatten_dict,
+    merge_dicts,
+    unflatten_dict,
+)
 
 
 class BigQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
@@ -124,44 +130,28 @@ class BigQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
         This implementation handles nested fields by grouping them as JSON objects rather than
         individual field updates.
         """
-        # Get initial update value map
+        # Get initial update value map (already flattened)
         update_value_map: Dict[str, Any] = self.update_value_map(row, policy, request)
 
-        # Convert flattened paths to nested structure using unflatten_dict
-        unflattened_update_map = unflatten_dict(update_value_map)
+        # 1. Take update_value_map as-is (already flattened)
 
-        # Prepare final update map, preserving original nested structures
-        final_update_map = {}
-        for field, value in unflattened_update_map.items():
-            if isinstance(value, dict):
-                # For nested fields, preserve original structure and update only changed values
-                original_struct = row.get(field, {})
-                if isinstance(original_struct, dict):
-                    updated_struct = {**original_struct, **value}
-                    final_update_map[field] = updated_struct
-            elif isinstance(value, list):
-                # Handle array fields, preserving unmodified values
-                original_array = row.get(field, [])
-                if isinstance(original_array, list):
-                    updated_array = []
+        # 2. Flatten the row
+        flattened_row = flatten_dict(row)
 
-                    # For each item in the original array
-                    for i, original_item in enumerate(original_array):
-                        if i < len(value):
-                            updated_item = value[i]
-                            # If both are dictionaries, merge them to preserve unmodified fields
-                            if isinstance(original_item, dict) and isinstance(
-                                updated_item, dict
-                            ):
-                                updated_item = {**original_item, **updated_item}
-                            updated_array.append(updated_item)
-                        else:
-                            updated_array.append(original_item)
+        # 3. Merge flattened_row with update_value_map (update_value_map takes precedence)
+        merged_dict = merge_dicts(flattened_row, update_value_map)
 
-                    final_update_map[field] = updated_array
-            else:
-                # Keep regular fields
-                final_update_map[field] = value
+        # 4. Unflatten the merged dictionary
+        nested_result = unflatten_dict(merged_dict)
+
+        # 5. Only keep top-level keys that are in the update_value_map
+        # Get unique top-level keys from update_value_map
+        top_level_keys = {key.split(".")[0] for key in update_value_map.keys()}
+
+        # Filter the nested result to only include those top-level keys
+        final_update_map = {
+            k: v for k, v in nested_result.items() if k in top_level_keys
+        }
 
         # Use existing non-empty reference fields mechanism for WHERE clause
         non_empty_reference_field_keys: Dict[str, Field] = filter_nonempty_values(

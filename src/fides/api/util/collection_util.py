@@ -176,3 +176,60 @@ def unflatten_dict(flat_dict: Dict[str, Any], separator: str = ".") -> Dict[str,
                 f"Error unflattening dictionary, conflicting levels detected: {exc}"
             )
     return output
+
+
+def flatten_dict(data: Any, prefix: str = "", separator: str = ".") -> Dict[str, Any]:
+    """
+    Recursively flatten a dictionary or list into a flat dictionary with dot-notation keys.
+    Handles nested dictionaries and arrays with proper indices.
+
+    example:
+
+    {
+        "A": {
+            "B": "1",
+            "C": "2"
+        },
+        "D": [
+            {"E": "3"},
+            {"E": "4"}
+        ]
+    }
+
+    becomes
+
+    {
+        "A.B": "1",
+        "A.C": "2",
+        "D.0.E": "3",
+        "D.1.E": "4"
+    }
+
+    Args:
+        data: The data to flatten (dict, list, or scalar value)
+        prefix: The current key prefix (used in recursion)
+        separator: The separator to use between key segments (default: ".")
+
+    Returns:
+        A flattened dictionary with dot-notation keys
+    """
+    items = {}
+
+    if isinstance(data, dict):
+        for k, v in data.items():
+            new_key = f"{prefix}{separator}{k}" if prefix else k
+            if isinstance(v, (dict, list)):
+                items.update(flatten_dict(v, new_key, separator))
+            else:
+                items[new_key] = v
+    elif isinstance(data, list):
+        for i, v in enumerate(data):
+            new_key = f"{prefix}{separator}{i}"
+            if isinstance(v, (dict, list)):
+                items.update(flatten_dict(v, new_key, separator))
+            else:
+                items[new_key] = v
+    else:
+        items[prefix] = data
+
+    return items
