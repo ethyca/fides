@@ -139,6 +139,26 @@ class BigQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
                 if isinstance(original_struct, dict):
                     updated_struct = {**original_struct, **value}
                     final_update_map[field] = updated_struct
+            elif isinstance(value, list):
+                # Handle array fields, preserving unmodified values
+                original_array = row.get(field, [])
+                if isinstance(original_array, list):
+                    updated_array = []
+
+                    # For each item in the original array
+                    for i, original_item in enumerate(original_array):
+                        if i < len(value):
+                            updated_item = value[i]
+                            # If both are dictionaries, merge them to preserve unmodified fields
+                            if isinstance(original_item, dict) and isinstance(
+                                updated_item, dict
+                            ):
+                                updated_item = {**original_item, **updated_item}
+                            updated_array.append(updated_item)
+                        else:
+                            updated_array.append(original_item)
+
+                    final_update_map[field] = updated_array
             else:
                 # Keep regular fields
                 final_update_map[field] = value
