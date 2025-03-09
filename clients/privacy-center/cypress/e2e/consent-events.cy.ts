@@ -162,12 +162,12 @@ describe("Consent FidesEvents", () => {
           type: "FidesUpdating",
           detail: {
             extraDetails: {
-              // servingComponent: "modal",
               consentMethod: "save",
+              // DEFER(LJ-478): Restore these checks after updating events to be more consistent
+              // servingComponent: "modal",
               // trigger: {
               //   type: "button",
               //   label: "Save",
-              //   id: "save-preferences",
               // },
             },
           },
@@ -176,12 +176,12 @@ describe("Consent FidesEvents", () => {
           type: "FidesUpdated",
           detail: {
             extraDetails: {
-              // servingComponent: "modal",
               consentMethod: "save",
+              // DEFER(LJ-478): Restore these checks after updating events to be more consistent
+              // servingComponent: "modal",
               // trigger: {
               //   type: "button",
               //   label: "Save",
-              //   id: "save-preferences",
               // },
             },
           },
@@ -203,12 +203,12 @@ describe("Consent FidesEvents", () => {
           type: "FidesUpdating",
           detail: {
             extraDetails: {
-              // servingComponent: "modal",
               consentMethod: "reject",
+              // DEFER(LJ-478): Restore these checks after updating events to be more consistent
+              // servingComponent: "modal",
               // trigger: {
               //   type: "button",
               //   label: "Opt out of all",
-              //   id: "reject-all",
               // },
             },
           },
@@ -217,12 +217,12 @@ describe("Consent FidesEvents", () => {
           type: "FidesUpdated",
           detail: {
             extraDetails: {
-              // servingComponent: "modal",
               consentMethod: "reject",
+              // DEFER(LJ-478): Restore these checks after updating events to be more consistent
+              // servingComponent: "modal",
               // trigger: {
               //   type: "button",
               //   label: "Opt out of all",
-              //   id: "reject-all",
               // },
             },
           },
@@ -244,12 +244,12 @@ describe("Consent FidesEvents", () => {
           type: "FidesUpdating",
           detail: {
             extraDetails: {
-              // servingComponent: "modal",
               consentMethod: "accept",
+              // DEFER(LJ-478): Restore these checks after updating events to be more consistent
+              // servingComponent: "modal",
               // trigger: {
               //   type: "button",
               //   label: "Opt in to all",
-              //   id: "accept-all",
               // },
             },
           },
@@ -258,12 +258,12 @@ describe("Consent FidesEvents", () => {
           type: "FidesUpdated",
           detail: {
             extraDetails: {
-              // servingComponent: "modal",
               consentMethod: "accept",
+              // DEFER(LJ-478): Restore these checks after updating events to be more consistent
+              // servingComponent: "modal",
               // trigger: {
               //   type: "button",
               //   label: "Opt in to all",
-              //   id: "accept-all",
               // },
             },
           },
@@ -524,11 +524,31 @@ describe("Consent FidesEvents", () => {
         { type: "FidesModalClosed", detail: {} },
         {
           type: "FidesUpdating",
-          detail: { extraDetails: { consentMethod: "save" } },
+          detail: {
+            extraDetails: {
+              consentMethod: "save",
+              // DEFER(LJ-478): Restore these checks after updating events to be more consistent
+              // servingComponent: "modal",
+              // trigger: {
+              //   type: "button",
+              //   label: "Save",
+              // },
+            },
+          },
         },
         {
           type: "FidesUpdated",
-          detail: { extraDetails: { consentMethod: "save" } },
+          detail: {
+            extraDetails: {
+              consentMethod: "save",
+              // DEFER(LJ-478): Restore these checks after updating events to be more consistent
+              // servingComponent: "modal",
+              // trigger: {
+              //   type: "button",
+              //   label: "Save",
+              // },
+            },
+          },
         },
       );
 
@@ -547,12 +567,12 @@ describe("Consent FidesEvents", () => {
           type: "FidesUpdating",
           detail: {
             extraDetails: {
-              // servingComponent: "modal",
               consentMethod: "reject",
+              // DEFER(LJ-478): Restore these checks after updating events to be more consistent
+              // servingComponent: "modal",
               // trigger: {
               //   type: "button",
               //   label: "Opt out of all",
-              //   id: "reject-all",
               // },
             },
           },
@@ -561,12 +581,12 @@ describe("Consent FidesEvents", () => {
           type: "FidesUpdated",
           detail: {
             extraDetails: {
-              // servingComponent: "modal",
               consentMethod: "reject",
+              // DEFER(LJ-478): Restore these checks after updating events to be more consistent
+              // servingComponent: "modal",
               // trigger: {
               //   type: "button",
               //   label: "Opt out of all",
-              //   id: "reject-all",
               // },
             },
           },
@@ -588,12 +608,12 @@ describe("Consent FidesEvents", () => {
           type: "FidesUpdating",
           detail: {
             extraDetails: {
-              // servingComponent: "modal",
               consentMethod: "accept",
+              // DEFER(LJ-478): Restore these checks after updating events to be more consistent
+              // servingComponent: "modal",
               // trigger: {
               //   type: "button",
               //   label: "Opt in to all",
-              //   id: "accept-all",
               // },
             },
           },
@@ -602,12 +622,12 @@ describe("Consent FidesEvents", () => {
           type: "FidesUpdated",
           detail: {
             extraDetails: {
-              // servingComponent: "modal",
               consentMethod: "accept",
+              // DEFER(LJ-478): Restore these checks after updating events to be more consistent
+              // servingComponent: "modal",
               // trigger: {
               //   type: "button",
               //   label: "Opt in to all",
-              //   id: "accept-all",
               // },
             },
           },
