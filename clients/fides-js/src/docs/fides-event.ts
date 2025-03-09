@@ -143,17 +143,6 @@ export interface FidesEvent extends CustomEvent {
          * The UI label of the element that triggered the event.
          */
         label?: string;
-
-        /**
-         * The id of the element that triggered the event.
-         */
-        id: string;
-
-        /**
-         * The checked state of the element that triggered the event, when type
-         * is `toggle`.
-         */
-        checked?: boolean;
       };
 
       /**

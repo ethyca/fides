@@ -16,7 +16,11 @@ const Toggle = ({
   name: string;
   id: string;
   checked: boolean;
-  onChange: (noticeKey: string, eventTrigger: FidesEventDetailsTrigger) => void;
+  onChange: (
+    noticeKey: string,
+    nextCheckedState: boolean,
+    eventTrigger: FidesEventDetailsTrigger,
+  ) => void;
   disabled?: boolean;
   onLabel?: string;
   offLabel?: string;
@@ -31,11 +35,9 @@ const Toggle = ({
         className="fides-toggle-input"
         onChange={() => {
           const nextCheckedState = !checked;
-          onChange(id, {
+          onChange(id, nextCheckedState, {
             type: "toggle",
-            id,
             label,
-            checked: nextCheckedState,
           });
         }}
         checked={checked}
