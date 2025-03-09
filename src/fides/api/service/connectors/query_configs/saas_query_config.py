@@ -1,6 +1,7 @@
 # pylint: disable=too-many-instance-attributes
 from __future__ import annotations
 
+from copy import deepcopy
 from datetime import datetime
 from itertools import product
 from typing import Any, Dict, List, Literal, Optional, Tuple, TypeVar
@@ -32,7 +33,12 @@ from fides.api.task.refine_target_path import (
     join_detailed_path,
 )
 from fides.api.util import saas_util
-from fides.api.util.collection_util import Row, merge_dicts
+from fides.api.util.collection_util import (
+    Row,
+    flatten_dict,
+    merge_dicts,
+    unflatten_dict,
+)
 from fides.api.util.saas_util import (
     ALL_OBJECT_FIELDS,
     CUSTOM_PRIVACY_REQUEST_FIELDS,
@@ -44,7 +50,6 @@ from fides.api.util.saas_util import (
     REPLY_TO_TOKEN,
     UUID,
     get_identities,
-    unflatten_dict,
 )
 from fides.common.api.v1.urn_registry import REQUEST_TASK_CALLBACK, V1_URL_PREFIX
 from fides.config.config_proxy import ConfigProxy
@@ -509,53 +514,24 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
 
     def all_value_map(self, row: Row) -> Dict[str, Any]:
         """
-        Takes a row and preserves only the fields that are defined in the Dataset.
+        Takes a row and preserves only the fields that are defined in the collection.
         Used for scenarios when an update endpoint has required fields other than
         just the fields being updated.
         """
+        flattened_row = flatten_dict(deepcopy(row))
 
-        def flatten_dict_with_arrays(data: Any, prefix: str = "") -> Dict[str, Any]:
-            """Recursively flatten a dictionary, handling arrays with proper indices."""
-            items = {}
+        # Get root field names defined in the collection
+        collection_fields = {
+            field_path.string_path.split(".")[0]
+            for field_path, _ in self.field_map().items()
+        }
 
-            if isinstance(data, dict):
-                for k, v in data.items():
-                    new_key = f"{prefix}.{k}" if prefix else k
-                    if isinstance(v, (dict, list)):
-                        items.update(flatten_dict_with_arrays(v, new_key))
-                    else:
-                        items[new_key] = v
-            elif isinstance(data, list):
-                for i, v in enumerate(data):
-                    new_key = f"{prefix}.{i}"
-                    if isinstance(v, (dict, list)):
-                        items.update(flatten_dict_with_arrays(v, new_key))
-                    else:
-                        items[new_key] = v
-            else:
-                items[prefix] = data
-
-            return items
-
-        # Get all flattened values
-        all_flattened = flatten_dict_with_arrays(row)
-
-        # Get field paths defined in the dataset
-        dataset_fields = set()
-        for field_path, _ in self.field_map().items():
-            # Get the root field name (e.g., "addresses" from "addresses.street")
-            root_field = field_path.string_path.split(".")[0]
-            dataset_fields.add(root_field)
-
-        # Filter to only include fields defined in the dataset
-        filtered_values = {}
-        for path, value in all_flattened.items():
-            # Get the root field name (e.g., "addresses" from "addresses.0.city")
-            root_field = path.split(".")[0]
-            if root_field in dataset_fields:
-                filtered_values[path] = value
-
-        return filtered_values
+        # Only keep the field values defined in the collection
+        return {
+            path: value
+            for path, value in flattened_row.items()
+            if path.split(".")[0] in collection_fields
+        }
 
     def query_to_str(self, t: T, input_data: Dict[str, List[Any]]) -> str:
         """Convert query to string"""
