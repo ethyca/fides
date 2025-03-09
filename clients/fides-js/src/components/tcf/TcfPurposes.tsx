@@ -4,7 +4,10 @@ import { useMemo, useState } from "preact/hooks";
 import { UpdateEnabledIds } from "~/components/tcf/TcfTabs";
 
 import { ConsentMechanism, PrivacyExperience } from "../../lib/consent-types";
-import { FidesEventDetailsTrigger } from "../../lib/events";
+import {
+  FidesEventDetailsPreference,
+  FidesEventDetailsTrigger,
+} from "../../lib/events";
 import { useI18n } from "../../lib/i18n/i18n-context";
 import { LEGAL_BASIS_OPTIONS } from "../../lib/tcf/constants";
 import { getUniquePurposeRecords, hasLegalBasis } from "../../lib/tcf/purposes";
@@ -94,6 +97,7 @@ const TcfPurposes = ({
   onChange: (
     payload: UpdateEnabledIds,
     eventTrigger: FidesEventDetailsTrigger,
+    preference: FidesEventDetailsPreference,
   ) => void;
 }) => {
   const { i18n } = useI18n();
@@ -109,6 +113,7 @@ const TcfPurposes = ({
   const [activeLegalBasisOption, setActiveLegalBasisOption] = useState(
     LEGAL_BASIS_OPTIONS[0],
   );
+
   const activeData: {
     purposes: PurposeRecord[];
     customPurposes?: PrivacyNoticeWithBestTranslation[];
@@ -155,6 +160,49 @@ const TcfPurposes = ({
     enabledCustomPurposeConsentIds,
   ]);
 
+  /**
+   * Handles toggling of purposes and special purposes in the TCF interface.
+   *
+   * Takes a modelType (e.g., purposesConsent, specialPurposes) that determines how
+   * the change will be persisted, a list of newly enabled IDs, the purpose/notice
+   * being toggled (which can be a standard TCF purpose, custom privacy notice, or
+   * special purpose), and details about what triggered the toggle.
+   */
+  const handleToggle = (
+    modelType: keyof EnabledIds,
+    newEnabledIds: string[],
+    item:
+      | PurposeRecord
+      | PrivacyNoticeWithBestTranslation
+      | TCFSpecialPurposeRecord,
+    eventTrigger: FidesEventDetailsTrigger,
+  ) => {
+    // Determine the type of preference being changed based on the model type:
+    // - customPurposesConsent -> notice
+    // - purposesConsent -> tcf_purpose_consent
+    // - purposesLegint/specialPurposes -> tcf_purpose_legitimate_interest
+    let type;
+    if (modelType === "customPurposesConsent") {
+      type = "notice" as const;
+    } else if (modelType === "purposesConsent") {
+      type = "tcf_purpose_consent" as const;
+    } else {
+      type = "tcf_purpose_legitimate_interest" as const;
+    }
+
+    const payload: UpdateEnabledIds = {
+      newEnabledIds,
+      modelType,
+    };
+
+    const preference: FidesEventDetailsPreference = {
+      key: `${item.id}`,
+      type,
+    };
+
+    onChange(payload, eventTrigger, preference);
+  };
+
   return (
     <div>
       <RadioGroup
@@ -178,18 +226,13 @@ const TcfPurposes = ({
               ]
             : activeData.enabledPurposeIds
         }
-        onToggle={(newEnabledIds, item, eventTrigger) =>
-          onChange(
-            {
-              newEnabledIds,
-              // @ts-ignore
-              modelType: item.bestTranslation
-                ? "customPurposesConsent"
-                : activeData.purposeModelType,
-            },
-            eventTrigger,
-          )
-        }
+        onToggle={(newEnabledIds, item, eventTrigger) => {
+          const modelType =
+            "bestTranslation" in item
+              ? "customPurposesConsent"
+              : activeData.purposeModelType;
+          handleToggle(modelType, newEnabledIds, item, eventTrigger);
+        }}
         renderToggleChild={(p, isCustomPurpose) => (
           <PurposeDetails
             type="purposes"
@@ -212,11 +255,8 @@ const TcfPurposes = ({
         title={i18n.t("static.tcf.special_purposes")}
         items={activeData.specialPurposes}
         enabledIds={activeData.enabledSpecialPurposeIds}
-        onToggle={(newEnabledIds, _, eventTrigger) =>
-          onChange(
-            { newEnabledIds, modelType: "specialPurposes" },
-            eventTrigger,
-          )
+        onToggle={(newEnabledIds, item, eventTrigger) =>
+          handleToggle("specialPurposes", newEnabledIds, item, eventTrigger)
         }
         renderToggleChild={(p) => (
           <PurposeDetails type="specialPurposes" purpose={p} />

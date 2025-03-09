@@ -143,6 +143,12 @@ export interface FidesEvent extends CustomEvent {
          * The UI label of the element that triggered the event.
          */
         label?: string;
+
+        /**
+         * The checked state of the element that triggered the event.
+         * Only present when type is "toggle".
+         */
+        checked?: boolean;
       };
 
       /**
@@ -154,21 +160,18 @@ export interface FidesEvent extends CustomEvent {
        * // For a notice toggle:
        * preference: {
        *   key: "advertising",
-       *   value: true,
        *   type: "notice"
        * }
        *
        * // For a TCF purpose toggle:
        * preference: {
        *   key: "tcf_purpose_consent_4",
-       *   value: true,
        *   type: "tcf_purpose_consent"
        * }
        *
        * // For a TCF vendor toggle:
        * preference: {
        *   key: "gvl.2",
-       *   value: true,
        *   type: "tcf_vendor_consent",
        *   vendor_id: "gvl.2",
        *   vendor_list: "gvl",
@@ -182,11 +185,6 @@ export interface FidesEvent extends CustomEvent {
          * The unique key identifying this preference
          */
         key: string;
-
-        /**
-         * The new value of the preference
-         */
-        value: boolean;
 
         /**
          * The type of preference being changed

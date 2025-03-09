@@ -88,8 +88,8 @@ const RecordsList = <T extends RecordListItem>({
           key={item.id}
           title={item.bestTranslation?.title || getNameForItem(item)}
           noticeKey={`${item.id}`}
-          onToggle={(_, extraDetails) => {
-            handleToggle(item, extraDetails);
+          onToggle={(_, eventTrigger) => {
+            handleToggle(item, eventTrigger);
           }}
           checked={enabledIds.indexOf(`${item.id}`) !== -1}
           badge={renderBadgeLabel ? renderBadgeLabel(item) : undefined}

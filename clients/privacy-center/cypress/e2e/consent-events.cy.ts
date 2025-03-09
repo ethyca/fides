@@ -106,10 +106,10 @@ describe("Consent FidesEvents", () => {
               trigger: {
                 type: "toggle",
                 label: "Advertising",
+                checked: true,
               },
               preference: {
                 key: "advertising",
-                value: true,
                 type: "notice",
               },
             },
@@ -123,10 +123,10 @@ describe("Consent FidesEvents", () => {
               trigger: {
                 type: "toggle",
                 label: "Advertising",
+                checked: false,
               },
               preference: {
                 key: "advertising",
-                value: false,
                 type: "notice",
               },
             },
@@ -144,10 +144,10 @@ describe("Consent FidesEvents", () => {
             trigger: {
               type: "toggle",
               label: "Analytics",
+              checked: false,
             },
             preference: {
               key: "analytics_opt_out",
-              value: false,
               type: "notice",
             },
           },
@@ -329,10 +329,10 @@ describe("Consent FidesEvents", () => {
               trigger: {
                 type: "toggle",
                 label: "Use profiles to select personalised advertising",
+                checked: true,
               },
               preference: {
                 key: "tcf_purpose_consent_4",
-                value: true,
                 type: "tcf_purpose_consent",
               },
             },
@@ -346,10 +346,10 @@ describe("Consent FidesEvents", () => {
               trigger: {
                 type: "toggle",
                 label: "Use profiles to select personalised advertising",
+                checked: false,
               },
               preference: {
                 key: "tcf_purpose_consent_4",
-                value: false,
                 type: "tcf_purpose_consent",
               },
             },
@@ -370,10 +370,10 @@ describe("Consent FidesEvents", () => {
             trigger: {
               type: "toggle",
               label: "Use profiles to select personalised content",
+              checked: true,
             },
             preference: {
               key: "tcf_purpose_consent_6",
-              value: true,
               type: "tcf_purpose_consent",
             },
           },
@@ -399,10 +399,10 @@ describe("Consent FidesEvents", () => {
             trigger: {
               type: "toggle",
               label: "Use limited data to select advertising",
+              checked: false,
             },
             preference: {
               key: "tcf_purpose_legitimate_interest_2",
-              value: false,
               type: "tcf_purpose_legitimate_interest",
             },
           },
@@ -435,10 +435,10 @@ describe("Consent FidesEvents", () => {
               trigger: {
                 type: "toggle",
                 label: "Captify",
+                checked: true,
               },
               preference: {
                 key: "gvl.2",
-                value: true,
                 type: "tcf_vendor_consent",
                 vendor_id: "gvl.2",
                 vendor_list: "gvl",
@@ -456,10 +456,10 @@ describe("Consent FidesEvents", () => {
               trigger: {
                 type: "toggle",
                 label: "Captify",
+                checked: false,
               },
               preference: {
                 key: "gvl.2",
-                value: false,
                 type: "tcf_vendor_consent",
                 vendor_id: "gvl.2",
                 vendor_list: "gvl",
@@ -482,10 +482,10 @@ describe("Consent FidesEvents", () => {
               trigger: {
                 type: "toggle",
                 label: "Meta",
+                checked: true,
               },
               preference: {
                 key: "gacp.89",
-                value: true,
                 type: "tcf_vendor_consent",
                 vendor_id: "gacp.89",
                 vendor_list: "gacp",
@@ -503,10 +503,10 @@ describe("Consent FidesEvents", () => {
               trigger: {
                 type: "toggle",
                 label: "Meta",
+                checked: false,
               },
               preference: {
                 key: "gacp.89",
-                value: false,
                 type: "tcf_vendor_consent",
                 vendor_id: "gacp.89",
                 vendor_list: "gacp",

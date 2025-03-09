@@ -146,18 +146,12 @@ added over time, so expect this type to grow.
 
 The UI label of the element that triggered the event.
 
-#### extraDetails.trigger.id
-
-> **id**: `string`
-
-The id of the element that triggered the event.
-
 #### extraDetails.trigger.checked?
 
 > `optional` **checked**: `boolean`
 
-The checked state of the element that triggered the event, when type
-is `toggle`.
+The checked state of the element that triggered the event.
+Only present when type is "toggle".
 
 #### extraDetails.preference?
 
@@ -172,21 +166,18 @@ was triggered by a preference change.
 // For a notice toggle:
 preference: {
   key: "advertising",
-  value: true,
   type: "notice"
 }
 
 // For a TCF purpose toggle:
 preference: {
   key: "tcf_purpose_consent_4",
-  value: true,
   type: "tcf_purpose_consent"
 }
 
 // For a TCF vendor toggle:
 preference: {
   key: "gvl.2",
-  value: true,
   type: "tcf_vendor_consent",
   vendor_id: "gvl.2",
   vendor_list: "gvl",
@@ -200,12 +191,6 @@ preference: {
 > **key**: `string`
 
 The unique key identifying this preference
-
-#### extraDetails.preference.value
-
-> **value**: `boolean`
-
-The new value of the preference
 
 #### extraDetails.preference.type
 
