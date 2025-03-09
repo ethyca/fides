@@ -116,6 +116,29 @@ describe("Consent settings", () => {
       cy.intercept("/api/v1/config?api_set=true", { body: {} });
       cy.visit(GLOBAL_CONSENT_CONFIG_ROUTE);
       cy.getByTestId("setting-Global Privacy Platform").within(() => {
+        // Test covered transactions checkbox behavior
+        cy.getByTestId("input-gpp.mspa_covered_transactions").click(); // Check
+        cy.getByTestId("input-gpp.mspa_service_provider_mode").click();
+        cy.getByTestId("input-gpp.mspa_covered_transactions").click({
+          force: true,
+        }); // Uncheck
+        cy.getByTestId("input-gpp.mspa_service_provider_mode").should(
+          "not.be.checked",
+        );
+        cy.getByTestId("input-gpp.mspa_opt_out_option_mode").should(
+          "not.be.checked",
+        );
+        cy.getByTestId("input-gpp.mspa_service_provider_mode").should(
+          "have.attr",
+          "disabled",
+        );
+        cy.getByTestId("input-gpp.mspa_opt_out_option_mode").should(
+          "have.attr",
+          "disabled",
+        );
+
+        // Re-enable covered transactions and test mode toggles
+        cy.getByTestId("input-gpp.mspa_covered_transactions").click();
         cy.getByTestId("input-gpp.mspa_service_provider_mode").click();
         cy.getByTestId("input-gpp.mspa_opt_out_option_mode").should(
           "have.attr",

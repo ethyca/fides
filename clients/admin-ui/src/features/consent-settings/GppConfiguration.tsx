@@ -31,7 +31,9 @@ const GppConfiguration = () => {
   const { tcf: isTcfEnabled } = useFeatures();
   const gppSettings = useAppSelector(selectGppSettings);
   const isEnabled = !!gppSettings.enabled;
-  const { values } = useFormikContext<{ gpp: GPPApplicationConfigResponse }>();
+  const { values, setFieldValue } = useFormikContext<{
+    gpp: GPPApplicationConfigResponse;
+  }>();
   const showMspa = !!values.gpp.us_approach;
 
   return (
@@ -73,20 +75,32 @@ const GppConfiguration = () => {
                   name="gpp.mspa_covered_transactions"
                   label="All transactions covered by MSPA"
                   tooltip="When selected, the Fides CMP will communicate to downstream vendors that all preferences are covered under the MSPA."
+                  onChange={(checked) => {
+                    if (!checked) {
+                      setFieldValue("gpp.mspa_service_provider_mode", false);
+                      setFieldValue("gpp.mspa_opt_out_option_mode", false);
+                    }
+                  }}
                 />
                 <CustomSwitch
                   label="Enable MSPA service provider mode"
                   name="gpp.mspa_service_provider_mode"
                   variant="switchFirst"
                   tooltip="Enable service provider mode if you do not engage in any sales or sharing of personal information."
-                  isDisabled={Boolean(values.gpp.mspa_opt_out_option_mode)}
+                  isDisabled={
+                    !!values.gpp.mspa_opt_out_option_mode ||
+                    !values.gpp.mspa_covered_transactions
+                  }
                 />
                 <CustomSwitch
                   label="Enable MSPA opt-out option mode"
                   name="gpp.mspa_opt_out_option_mode"
                   variant="switchFirst"
                   tooltip="Enable opt-out option mode if you engage or may engage in the sales or sharing of personal information, or process any information for the purpose of targeted advertising."
-                  isDisabled={Boolean(values.gpp.mspa_service_provider_mode)}
+                  isDisabled={
+                    !!values.gpp.mspa_service_provider_mode ||
+                    !values.gpp.mspa_covered_transactions
+                  }
                 />
               </Section>
             ) : null}
