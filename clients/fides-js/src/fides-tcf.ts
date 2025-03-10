@@ -34,7 +34,7 @@ import {
 } from "./lib/consent-types";
 import { initializeDebugger } from "./lib/debugger";
 import { dispatchFidesEvent, onFidesEvent } from "./lib/events";
-import { DecodedFidesString, decodeFidesString } from "./lib/fidesString";
+import { DecodedFidesString, decodeFidesString } from "./lib/fides-string";
 import type { GppFunction } from "./lib/gpp/types";
 import { DEFAULT_LOCALE, DEFAULT_MODAL_LINK_LABEL } from "./lib/i18n";
 import {
