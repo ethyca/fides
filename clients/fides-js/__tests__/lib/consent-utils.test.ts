@@ -1,4 +1,9 @@
-import { getWindowObjFromPath, isPrivacyExperience } from "~/lib/consent-utils";
+import {
+  decodeJanusString,
+  encodeJanusString,
+  getWindowObjFromPath,
+  isPrivacyExperience,
+} from "~/lib/consent-utils";
 
 import mockExperienceJSON from "../__fixtures__/mock_experience.json";
 
@@ -78,4 +83,83 @@ describe("getWindowObjFromPath", () => {
       expect(getWindowObjFromPath(path as any)).toStrictEqual(expected);
     },
   );
+});
+
+describe("encodeJanusString", () => {
+  it.each<{
+    label: string;
+    input: { [noticeKey: string]: boolean };
+    expected: string;
+  }>([
+    {
+      label: "empty object",
+      input: {} as { [noticeKey: string]: boolean },
+      expected: "e30=", // base64 encoded '{}'
+    },
+    {
+      label: "single notice key",
+      input: { notice1: true },
+      expected: "eyJub3RpY2UxIjp0cnVlfQ==",
+    },
+    {
+      label: "multiple notice keys",
+      input: { notice1: true, notice2: false },
+      expected: "eyJub3RpY2UxIjp0cnVlLCJub3RpY2UyIjpmYWxzZX0=",
+    },
+  ])("correctly encodes $label", ({ input, expected }) => {
+    expect(encodeJanusString(input)).toBe(expected);
+  });
+
+  it("throws error when input cannot be encoded", () => {
+    const circularRef: any = {};
+    circularRef.self = circularRef;
+
+    expect(() => encodeJanusString(circularRef)).toThrow(
+      "Failed to encode Janus string:",
+    );
+  });
+});
+
+describe("decodeJanusString", () => {
+  it.each<{
+    label: string;
+    input: string;
+    expected: { [noticeKey: string]: boolean };
+  }>([
+    {
+      label: "empty string",
+      input: "",
+      expected: {},
+    },
+    {
+      label: "encoded empty object",
+      input: "e30=",
+      expected: {},
+    },
+    {
+      label: "single notice key",
+      input: "eyJub3RpY2UxIjp0cnVlfQ==",
+      expected: { notice1: true },
+    },
+    {
+      label: "multiple notice keys",
+      input: "eyJub3RpY2UxIjp0cnVlLCJub3RpY2UyIjpmYWxzZX0=",
+      expected: { notice1: true, notice2: false },
+    },
+  ])("correctly decodes $label", ({ input, expected }) => {
+    expect(decodeJanusString(input)).toEqual(expected);
+  });
+
+  it("throws error when input is invalid base64", () => {
+    expect(() => decodeJanusString("invalid-base64!")).toThrow(
+      "Failed to decode Janus string:",
+    );
+  });
+
+  it("throws error when decoded content is invalid JSON", () => {
+    const invalidBase64 = btoa("invalid json");
+    expect(() => decodeJanusString(invalidBase64)).toThrow(
+      "Failed to decode Janus string:",
+    );
+  });
 });

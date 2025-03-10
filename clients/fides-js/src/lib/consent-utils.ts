@@ -335,3 +335,41 @@ export const createConsentPreferencesToSave = (
       item.bestTranslation?.privacy_notice_history_id,
     );
   });
+
+/**
+ * Encodes consent data into a base64 string for the Janus string slot
+ * @param consentData Object mapping notice keys to boolean consent values
+ * @returns Base64 encoded string representation of the consent data
+ */
+export const encodeJanusString = (consentData: {
+  [noticeKey: string]: boolean;
+}): string => {
+  try {
+    const jsonString = JSON.stringify(consentData);
+    return btoa(jsonString);
+  } catch (error) {
+    throw new Error("Failed to encode Janus string:", { cause: error });
+  }
+};
+
+/**
+ * Decodes a base64 Janus string back into consent data
+ * @param base64String The base64 encoded Janus string
+ * @returns Decoded consent data object or null if decoding fails
+ */
+export const decodeJanusString = (
+  base64String: string,
+): {
+  [noticeKey: string]: boolean;
+} => {
+  if (!base64String) {
+    return {};
+  }
+
+  try {
+    const jsonString = atob(base64String);
+    return JSON.parse(jsonString);
+  } catch (error) {
+    throw new Error("Failed to decode Janus string:", { cause: error });
+  }
+};
