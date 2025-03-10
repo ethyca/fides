@@ -239,7 +239,21 @@ const TcfPurposes = ({
             "bestTranslation" in item
               ? "customPurposesConsent"
               : activeData.purposeModelType;
-          handleToggle(modelType, newEnabledIds, item, eventTrigger);
+
+          let filteredEnabledIds = newEnabledIds;
+          if (modelType === "customPurposesConsent") {
+            // filter out tcf purpose consent since we are just dealing with custom purposes
+            filteredEnabledIds = newEnabledIds.filter(
+              (id) => !activeData.enabledPurposeIds.includes(id),
+            );
+          } else if (activeData.enabledCustomPurposeIds) {
+            /// filter out custom purpose consent since we are just dealing with TCF purposes
+            filteredEnabledIds = newEnabledIds.filter(
+              (id) => !activeData.enabledCustomPurposeIds?.includes(id),
+            );
+          }
+
+          handleToggle(modelType, filteredEnabledIds, item, eventTrigger);
         }}
         renderToggleChild={(p, isCustomPurpose) => (
           <PurposeDetails
