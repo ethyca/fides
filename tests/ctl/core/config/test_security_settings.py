@@ -22,7 +22,7 @@ class TestSecuritySettings:
         with pytest.raises(ValueError) as err:
             SecuritySettings(cors_origins="123")
 
-        assert "not a valid url" in str(err.value)
+        assert "Input should be a valid URL" in str(err.value)
 
     def test_validate_assemble_cors_origins_invalid_type(self):
         with pytest.raises(ValueError):
@@ -33,6 +33,31 @@ class TestSecuritySettings:
         settings = SecuritySettings(cors_origins=", ".join(urls))
 
         assert settings.cors_origins == urls
+
+    def test_validate_cors_origins_0_0_0_0_is_allowed(self):
+        """
+        Test that `0.0.0.0` is allowed as an origin value.
+
+        `0.0.0.0` had been rejected in the past, but there's no reason for
+        us to disallow it, even if it's a non-standard (but valid!) origin value.
+        """
+        urls = ["http://localhost.com", "http://0.0.0.0:8000"]
+        settings = SecuritySettings(cors_origins=", ".join(urls))
+
+        assert settings.cors_origins == urls
+
+    def test_validate_cors_origins_asterisk_wildcard_is_disallowed(self):
+        """
+        Test that `*` is NOT allowed as a special origin value.
+
+        `*` is NOT allowed as an origin because it presents a security risk,
+        even though it's a valid origin. we allow non-owners to edit their own origins
+        but we don't want them to be able to set a wildcard origin.
+        `.*` _can_ be set via the cors_origin_regex setting.
+        """
+        urls = ["*"]
+        with pytest.raises(ValueError):
+            SecuritySettings(cors_origins=", ".join(urls))
 
     def test_validate_cors_origins_urls_with_paths(self):
         with pytest.raises(ValueError) as e:
