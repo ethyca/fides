@@ -25,8 +25,11 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ## [2.56.2](https://github.com/ethyca/fides/compare/2.56.1...2.56.2)
 
 ### Added
-- Fides GTM & event origination [#5821](https://github.com/ethyca/fides/pull/5821)
+- Update FidesJS to push all `FidesEvent` types to GTM (except `FidesInitializing`) [#5821](https://github.com/ethyca/fides/pull/5821)
 - Added a consent reporting table and consent lookup feature [#5839](https://github.com/ethyca/fides/pull/5839)
+- Added a high-precision `timestamp` to all `FidesEvents` from FidesJS SDK [#5859](https://github.com/ethyca/fides/pull/5859)
+- Added a `extraDetails.trigger` to `FidesUIChanged` events from FidesJS SDK with info about the UI element that triggered the event [#5859](https://github.com/ethyca/fides/pull/5859)
+- Added a `extraDetails.preference` to `FidesUIChanged` events from FidesJS SDK with info about the preference that was changed (notice, TCF purpose, TCF vendor, etc.) [#5859](https://github.com/ethyca/fides/pull/5859)
 
 ### Fixed
 - Addressed TCModel console error when opting into some purposes [#5850](https://github.com/ethyca/fides/pull/5850)
