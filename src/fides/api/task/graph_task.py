@@ -36,7 +36,8 @@ from fides.api.models.connectionconfig import (
     ConnectionType,
 )
 from fides.api.models.datasetconfig import DatasetConfig
-from fides.api.models.policy import Policy
+from fides.api.models.policy import Policy, Rule
+from fides.api.models.privacy_preference import PrivacyPreferenceHistory
 from fides.api.models.privacy_request import ExecutionLog, PrivacyRequest, RequestTask
 from fides.api.schemas.policy import ActionType, CurrentStep
 from fides.api.schemas.privacy_request import ExecutionLogStatus
@@ -54,7 +55,9 @@ from fides.api.util.collection_util import (
     make_immutable,
     make_mutable,
 )
-from fides.api.util.consent_util import add_errored_system_status_for_consent_reporting
+from fides.api.util.consent_util import (
+    add_errored_system_status_for_consent_reporting_on_preferences,
+)
 from fides.api.util.logger import Pii
 from fides.api.util.logger_context_utils import LoggerContextKeys
 from fides.api.util.saas_util import FIDESOPS_GROUPED_INPUTS
@@ -138,13 +141,7 @@ def retry(
                         self.resources.request.id,
                     )
                     self.log_skipped(action_type, exc)
-                    for pref in self.resources.request.privacy_preferences:
-                        # For consent reporting, also caching the given system as skipped for all historical privacy preferences.
-                        pref.cache_system_status(
-                            self.resources.session,
-                            self.connector.configuration.system_key,
-                            ExecutionLogStatus.skipped,
-                        )
+                    self.cache_system_status_for_preferences()
                     return default_return
                 except BaseException as ex:  # pylint: disable=W0703
                     traceback.print_exc()
@@ -164,11 +161,7 @@ def retry(
                     action_type.value
                 ]  # Convert ActionType into a CurrentStep, no longer coerced with Pydantic V2
             )
-            add_errored_system_status_for_consent_reporting(
-                self.resources.session,
-                self.resources.request,
-                self.connector.configuration,
-            )
+            self.add_error_status_for_consent_reporting()
             if not self.request_task.id:
                 # TODO Remove when we stop support for DSR 2.0
                 # Re-raise to stop privacy request execution on failure for
@@ -730,6 +723,48 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         self.log_end(ActionType.consent)
         return output
 
+    def cache_system_status_for_preferences(self) -> None:
+        """
+        Calls cache_system_status for all historical privacy preferences for the given request.
+
+        Purposely uses a new session.
+        """
+
+        privacy_request_id = self.resources.request.id
+
+        with get_db() as db:
+
+            privacy_preferences = db.query(PrivacyPreferenceHistory).filter(
+                PrivacyPreferenceHistory.privacy_request_id == privacy_request_id
+            )
+            for pref in privacy_preferences:
+                # For consent reporting, also caching the given system as skipped for all historical privacy preferences.
+                pref.cache_system_status(
+                    db,
+                    self.connector.configuration.system_key,  # type: ignore[arg-type]
+                    ExecutionLogStatus.skipped,
+                )
+
+    def add_error_status_for_consent_reporting(self) -> None:
+        """
+        Adds the errored system status for all historical privacy preferences for the given request that
+        are deemed relevant for the connector failure (i.e if they had a "pending" log added to them).
+
+        Purposely uses a new session.
+        """
+        privacy_request_id = self.resources.request.id
+        with get_db() as db:
+            privacy_preferences = (
+                db.query(PrivacyPreferenceHistory)
+                .filter(
+                    PrivacyPreferenceHistory.privacy_request_id == privacy_request_id
+                )
+                .all()
+            )
+            add_errored_system_status_for_consent_reporting_on_preferences(
+                db, privacy_preferences, self.connector.configuration
+            )
+
 
 def collect_queries(
     traversal: Traversal, resources: TaskResources
@@ -816,39 +851,45 @@ def build_affected_field_logs(
     }]
     """
 
-    targeted_field_paths: Dict[FieldAddress, str] = {}
+    policy_id = policy.id
 
-    for rule in policy.rules:  # type: ignore[attr-defined]
-        if rule.action_type != action_type:
-            continue
-        rule_categories: List[str] = rule.get_target_data_categories()
-        if not rule_categories:
-            continue
+    with get_db() as db:
 
-        collection_categories: Dict[
-            str, List[FieldPath]
-        ] = node.collection.field_paths_by_category  # type: ignore
-        for rule_cat in rule_categories:
-            for collection_cat, field_paths in collection_categories.items():
-                if collection_cat.startswith(rule_cat):
-                    targeted_field_paths.update(
-                        {
-                            node.address.field_address(field_path): collection_cat
-                            for field_path in field_paths
-                        }
-                    )
+        rules = db.query(Rule).filter(Rule.policy_id == policy_id)
 
-    ret: List[Dict[str, Any]] = []
-    for field_address, data_categories in targeted_field_paths.items():
-        ret.append(
-            {
-                "path": field_address.value,
-                "field_name": field_address.field_path.string_path,
-                "data_categories": [data_categories],
-            }
-        )
+        targeted_field_paths: Dict[FieldAddress, str] = {}
 
-    return ret
+        for rule in rules:  # type: ignore[attr-defined]
+            if rule.action_type != action_type:
+                continue
+            rule_categories: List[str] = rule.get_target_data_categories()
+            if not rule_categories:
+                continue
+
+            collection_categories: Dict[
+                str, List[FieldPath]
+            ] = node.collection.field_paths_by_category  # type: ignore
+            for rule_cat in rule_categories:
+                for collection_cat, field_paths in collection_categories.items():
+                    if collection_cat.startswith(rule_cat):
+                        targeted_field_paths.update(
+                            {
+                                node.address.field_address(field_path): collection_cat
+                                for field_path in field_paths
+                            }
+                        )
+
+        ret: List[Dict[str, Any]] = []
+        for field_address, data_categories in targeted_field_paths.items():
+            ret.append(
+                {
+                    "path": field_address.value,
+                    "field_name": field_address.field_path.string_path,
+                    "data_categories": [data_categories],
+                }
+            )
+
+        return ret
 
 
 def build_consent_dataset_graph(datasets: List[DatasetConfig]) -> DatasetGraph:
