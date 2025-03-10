@@ -388,7 +388,9 @@ class MonitorExecution(Base):
     )
     status = Column(String, nullable=True)
     started = Column(
-        DateTime(timezone=True), nullable=True, default=datetime.now(timezone.utc)
+        DateTime(timezone=True),
+        nullable=True,
+        server_default=func.now(),
     )
     completed = Column(DateTime(timezone=True), nullable=True)
     classification_instances = Column(
