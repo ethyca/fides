@@ -1,7 +1,10 @@
 import { h } from "preact";
 
 import { GpcStatus } from "../../lib/consent-types";
-import { FidesServingToggleDetails } from "../../lib/events";
+import {
+  FidesEventDetailsPreference,
+  FidesEventDetailsTrigger,
+} from "../../lib/events";
 import { DEFAULT_LOCALE, getCurrentLocale } from "../../lib/i18n";
 import { useI18n } from "../../lib/i18n/i18n-context";
 import DataUseToggle from "../DataUseToggle";
@@ -26,23 +29,34 @@ export const NoticeToggles = ({
   enabledNoticeKeys: Array<string>;
   onChange: (
     keys: Array<string>,
-    toggleDetails: FidesServingToggleDetails,
+    triggerDetails: FidesEventDetailsTrigger,
+    preferenceDetails: FidesEventDetailsPreference,
   ) => void;
 }) => {
   const { i18n } = useI18n();
   const handleToggle = (
     noticeKey: string,
-    toggleDetails: FidesServingToggleDetails,
+    triggerDetails: FidesEventDetailsTrigger,
   ) => {
+    const preferenceDetails: FidesEventDetailsPreference = {
+      key: noticeKey,
+      type: "notice",
+    };
+
     // Add the notice to list of enabled notices
     if (enabledNoticeKeys.indexOf(noticeKey) === -1) {
-      onChange([...enabledNoticeKeys, noticeKey], toggleDetails);
+      onChange(
+        [...enabledNoticeKeys, noticeKey],
+        triggerDetails,
+        preferenceDetails,
+      );
     }
     // Remove the notice from the list of enabled notices
     else {
       onChange(
         enabledNoticeKeys.filter((n) => n !== noticeKey),
-        toggleDetails,
+        triggerDetails,
+        preferenceDetails,
       );
     }
   };
