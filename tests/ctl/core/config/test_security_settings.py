@@ -53,7 +53,7 @@ class TestSecuritySettings:
         `*` is NOT allowed as an origin because it presents a security risk,
         even though it's a valid origin. we allow non-owners to edit their own origins
         but we don't want them to be able to set a wildcard origin.
-        `*` _can_ be set via the cors_origin_regex setting.
+        `.*` _can_ be set via the cors_origin_regex setting.
         """
         urls = ["*"]
         with pytest.raises(ValueError):

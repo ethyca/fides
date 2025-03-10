@@ -222,7 +222,7 @@ class TestURLOriginString:
             ),  # `*` is NOT allowed as an origin because it presents a security risk,
             # even though it's a valid origin. we allow non-owners to edit their own origins
             # but we don't want them to be able to set a wildcard origin.
-            # `*` can be set via the cors_origin_regex setting.
+            # `.*` can be set via the cors_origin_regex setting.
         ),
     )
     def test_valid_url_origin_strings(
