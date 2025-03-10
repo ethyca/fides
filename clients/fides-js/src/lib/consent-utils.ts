@@ -354,3 +354,53 @@ export const createConsentPreferencesToSave = (
       item.bestTranslation?.privacy_notice_history_id,
     );
   });
+
+/**
+ * Encodes consent data into a base64 string for the Notice Consent slot
+ * @param consentData Object mapping notice keys to boolean consent values
+ * @returns Base64 encoded string representation of the consent data
+ */
+export const encodeNoticeConsentString = (consentData: {
+  [noticeKey: string]: boolean | 0 | 1;
+}): string => {
+  try {
+    const jsonString = JSON.stringify(consentData);
+    return btoa(jsonString.replace(/\s/g, ""));
+  } catch (error) {
+    throw new Error("Failed to encode Notice Consent string:", {
+      cause: error,
+    });
+  }
+};
+
+/**
+ * Decodes a base64 Notice Consent string back into consent data
+ * @param base64String The base64 encoded Notice Consent string
+ * @returns Decoded consent data object or null if decoding fails
+ */
+export const decodeNoticeConsentString = (
+  base64String: string,
+): {
+  [noticeKey: string]: boolean;
+} => {
+  if (!base64String) {
+    return {};
+  }
+
+  try {
+    const jsonString = atob(base64String);
+    const parsedData = JSON.parse(jsonString);
+
+    // Convert any numeric values (1 or 0) to boolean
+    return Object.fromEntries(
+      Object.entries(parsedData).map(([key, value]) => [
+        key,
+        value === 0 || value === 1 ? !!value : Boolean(value),
+      ]),
+    );
+  } catch (error) {
+    throw new Error("Failed to decode Notice Consent string:", {
+      cause: error,
+    });
+  }
+};

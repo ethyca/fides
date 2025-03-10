@@ -1,8 +1,11 @@
 import {
+  decodeNoticeConsentString,
+  encodeNoticeConsentString,
   getWindowObjFromPath,
   isPrivacyExperience,
   parseFidesDisabledNotices,
-} from "../../src/lib/consent-utils";
+} from "~/lib/consent-utils";
+
 import mockExperienceJSON from "../__fixtures__/mock_experience.json";
 
 describe("isPrivacyExperience", () => {
@@ -126,5 +129,106 @@ describe("parseFidesDisabledNotices", () => {
     },
   ])("returns $expected when input is $label", ({ value, expected }) => {
     expect(parseFidesDisabledNotices(value)).toStrictEqual(expected);
+  });
+});
+
+describe("encodeNoticeConsentString", () => {
+  it.each<{
+    label: string;
+    input: { [noticeKey: string]: boolean };
+    expected: string;
+  }>([
+    {
+      label: "empty object",
+      input: {} as { [noticeKey: string]: boolean },
+      expected: "e30=", // base64 encoded '{}'
+    },
+    {
+      label: "single notice key",
+      input: { notice1: true },
+      expected: "eyJub3RpY2UxIjp0cnVlfQ==",
+    },
+    {
+      label: "multiple notice keys",
+      input: { notice1: true, notice2: false },
+      expected: "eyJub3RpY2UxIjp0cnVlLCJub3RpY2UyIjpmYWxzZX0=",
+    },
+  ])("correctly encodes $label", ({ input, expected }) => {
+    expect(encodeNoticeConsentString(input)).toBe(expected);
+  });
+
+  it("throws error when input cannot be encoded", () => {
+    const circularRef: any = {};
+    circularRef.self = circularRef;
+
+    expect(() => encodeNoticeConsentString(circularRef)).toThrow(
+      "Failed to encode Notice Consent string:",
+    );
+  });
+});
+
+describe("decodeNoticeConsentString", () => {
+  it.each<{
+    label: string;
+    input: string;
+    expected: { [noticeKey: string]: boolean };
+  }>([
+    {
+      label: "empty string",
+      input: "",
+      expected: {},
+    },
+    {
+      label: "encoded empty object",
+      input: "e30=",
+      expected: {},
+    },
+    {
+      label: "single notice key",
+      input: "eyJub3RpY2UxIjp0cnVlfQ==",
+      expected: { notice1: true },
+    },
+    {
+      label: "multiple notice keys",
+      input: "eyJub3RpY2UxIjp0cnVlLCJub3RpY2UyIjpmYWxzZX0=",
+      expected: { notice1: true, notice2: false },
+    },
+    {
+      label: "numeric values 1 and 0",
+      input: btoa(JSON.stringify({ notice1: 1, notice2: 0 })),
+      expected: { notice1: true, notice2: false },
+    },
+    {
+      label: "mixed boolean and numeric values",
+      input: btoa(
+        JSON.stringify({
+          notice1: true,
+          notice2: 0,
+          notice3: 1,
+          notice4: false,
+        }),
+      ),
+      expected: {
+        notice1: true,
+        notice2: false,
+        notice3: true,
+        notice4: false,
+      },
+    },
+  ])("correctly decodes $label", ({ input, expected }) => {
+    expect(decodeNoticeConsentString(input)).toEqual(expected);
+  });
+
+  it("throws error when input is invalid base64", () => {
+    expect(() => decodeNoticeConsentString("invalid-base64!")).toThrow(
+      "Failed to decode Notice Consent string:",
+    );
+  });
+
+  it("throws error when decoded content is invalid JSON", () => {
+    const invalidBase64 = btoa("invalid json");
+    expect(() => decodeNoticeConsentString(invalidBase64)).toThrow(
+      "Failed to decode Notice Consent string:",
+    );
   });
 });
