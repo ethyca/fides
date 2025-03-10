@@ -2131,8 +2131,11 @@ describe("Consent overlay", () => {
             expect(event.detail.extraDetails).to.have.property("trigger");
             expect(event.detail.extraDetails.trigger).to.deep.include({
               label: "Advertising",
-              id: PRIVACY_NOTICE_KEY_1,
               checked: true,
+            });
+            expect(event.detail.extraDetails.preference).to.deep.include({
+              key: "advertising",
+              type: "notice",
             });
           });
         cy.get("@FidesUpdating").should("not.have.been.called");

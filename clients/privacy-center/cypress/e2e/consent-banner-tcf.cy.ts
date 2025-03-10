@@ -733,8 +733,11 @@ describe("Fides-js TCF", () => {
             expect(event.detail.extraDetails).to.have.property("trigger");
             expect(event.detail.extraDetails.trigger).to.deep.include({
               label: PURPOSE_4.name,
-              id: PURPOSE_4.id.toString(),
               checked: true,
+            });
+            expect(event.detail.extraDetails.preference).to.deep.include({
+              type: "tcf_purpose_consent",
+              key: "tcf_purpose_consent_4",
             });
           });
 
@@ -749,8 +752,11 @@ describe("Fides-js TCF", () => {
             expect(event.detail.extraDetails).to.have.property("trigger");
             expect(event.detail.extraDetails.trigger).to.deep.include({
               label: PURPOSE_6.name,
-              id: PURPOSE_6.id.toString(),
               checked: true,
+            });
+            expect(event.detail.extraDetails.preference).to.deep.include({
+              type: "tcf_purpose_consent",
+              key: "tcf_purpose_consent_6",
             });
           });
 
@@ -765,8 +771,11 @@ describe("Fides-js TCF", () => {
             expect(event.detail.extraDetails).to.have.property("trigger");
             expect(event.detail.extraDetails.trigger).to.deep.include({
               label: PURPOSE_4.name,
-              id: PURPOSE_4.id.toString(),
               checked: false,
+            });
+            expect(event.detail.extraDetails.preference).to.deep.include({
+              type: "tcf_purpose_consent",
+              key: "tcf_purpose_consent_4",
             });
           });
       });
