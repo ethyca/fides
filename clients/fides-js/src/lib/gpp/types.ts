@@ -62,5 +62,4 @@ export type GPPFieldMapping = {
 export type GPPSection = {
   name: string;
   id: number;
-  prefix?: string;
 };

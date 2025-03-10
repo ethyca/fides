@@ -1,7 +1,7 @@
 import {
   decodeFidesString,
   idsFromAcString,
-} from "../../../src/lib/tcf/fidesString";
+} from "../../../src/lib/fidesString";
 
 describe("fidesString", () => {
   beforeAll(() => {
@@ -12,7 +12,7 @@ describe("fidesString", () => {
       // Empty string
       {
         fidesString: "",
-        expected: { tc: "", ac: "" },
+        expected: { tc: "", ac: "", gpp: "" },
       },
       // TC string only
       {
@@ -20,6 +20,7 @@ describe("fidesString", () => {
         expected: {
           tc: "CPzvOIAPzvOIAGXABBENAUEAAACAAAAAAAAAAAAAAAAA.IAAA",
           ac: "",
+          gpp: "",
         },
       },
       // Without vendors disclosed
@@ -28,12 +29,13 @@ describe("fidesString", () => {
         expected: {
           tc: "CPzvOIAPzvOIAGXABBENAUEAAACAAAAAAAAAAAAAAAAA",
           ac: "",
+          gpp: "",
         },
       },
       // Invalid case of only AC string- need core TC string
       {
         fidesString: ",1~2.3.4",
-        expected: { tc: "", ac: "" },
+        expected: { tc: "", ac: "", gpp: "" },
       },
       // Both TC and AC string
       {
@@ -42,15 +44,52 @@ describe("fidesString", () => {
         expected: {
           tc: "CPzvOIAPzvOIAGXABBENAUEAAACAAAAAAAAAAAAAAAAA.IAAA",
           ac: "1~2.3.4",
+          gpp: "",
+        },
+      },
+      // GPP string only
+      {
+        fidesString: ",,DBABLA~BVAUAAAAAWA.QA",
+        expected: { tc: "", ac: "", gpp: "DBABLA~BVAUAAAAAWA.QA" },
+      },
+      // TC + GPP string
+      {
+        fidesString:
+          "CPzvOIAPzvOIAGXABBENAUEAAACAAAAAAAAAAAAAAAAA.IAAA,,DBABLA~BVAUAAAAAWA.QA",
+        expected: {
+          tc: "CPzvOIAPzvOIAGXABBENAUEAAACAAAAAAAAAAAAAAAAA.IAAA",
+          ac: "",
+          gpp: "DBABLA~BVAUAAAAAWA.QA",
+        },
+      },
+      // Complete string (TC + AC + GPP)
+      {
+        fidesString:
+          "CPzvOIAPzvOIAGXABBENAUEAAACAAAAAAAAAAAAAAAAA.IAAA,1~2.3.4,DBABLA~BVAUAAAAAWA.QA",
+        expected: {
+          tc: "CPzvOIAPzvOIAGXABBENAUEAAACAAAAAAAAAAAAAAAAA.IAAA",
+          ac: "1~2.3.4",
+          gpp: "DBABLA~BVAUAAAAAWA.QA",
+        },
+      },
+      // No trailing comma when no GPP
+      {
+        fidesString:
+          "CPzvOIAPzvOIAGXABBENAUEAAACAAAAAAAAAAAAAAAAA.IAAA,1~2.3.4",
+        expected: {
+          tc: "CPzvOIAPzvOIAGXABBENAUEAAACAAAAAAAAAAAAAAAAA.IAAA",
+          ac: "1~2.3.4",
+          gpp: "",
         },
       },
       // With extra unexpected stuff
       {
         fidesString:
-          "CPzvOIAPzvOIAGXABBENAUEAAACAAAAAAAAAAAAAAAAA.IAAA,1~2.3.4,extrastuff",
+          "CPzvOIAPzvOIAGXABBENAUEAAACAAAAAAAAAAAAAAAAA.IAAA,1~2.3.4,DBABLA~BVAUAAAAAWA.QA,extrastuff",
         expected: {
           tc: "CPzvOIAPzvOIAGXABBENAUEAAACAAAAAAAAAAAAAAAAA.IAAA",
           ac: "1~2.3.4",
+          gpp: "DBABLA~BVAUAAAAAWA.QA",
         },
       },
     ])(
