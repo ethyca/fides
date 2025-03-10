@@ -257,7 +257,7 @@ const PagedVendorData = ({
   onChange: (
     newIds: string[],
     vendor: VendorRecord,
-    eventTrigger: FidesEventDetailsTrigger,
+    triggerDetails: FidesEventDetailsTrigger,
   ) => void;
 }) => {
   const { i18n } = useI18n();
@@ -324,8 +324,8 @@ const TcfVendors = ({
   enabledVendorLegintIds: string[];
   onChange: (
     payload: UpdateEnabledIds,
-    eventTrigger: FidesEventDetailsTrigger,
-    preference: FidesEventDetailsPreference,
+    triggerDetails: FidesEventDetailsTrigger,
+    preferenceDetails: FidesEventDetailsPreference,
   ) => void;
 }) => {
   // Combine the various vendor objects into one object for convenience
@@ -365,7 +365,7 @@ const TcfVendors = ({
             ? enabledVendorConsentIds
             : enabledVendorLegintIds
         }
-        onChange={(newEnabledIds, vendor, eventTrigger) => {
+        onChange={(newEnabledIds, vendor, triggerDetails) => {
           const modelType =
             activeLegalBasisOption.value === LegalBasisEnum.CONSENT.toString()
               ? "vendorsConsent"
@@ -389,7 +389,7 @@ const TcfVendors = ({
           // For convenience, split the vendor ID into parts for the FidesEvent,
           // so that consumers don't need to implement this
           const [vendorList, vendorListId] = vendor.id.split(".");
-          const preference: FidesEventDetailsPreference = {
+          const preferenceDetails: FidesEventDetailsPreference = {
             key: vendor.id,
             type,
             vendor_id: vendor.id,
@@ -398,7 +398,7 @@ const TcfVendors = ({
             vendor_name: vendor.name,
           };
 
-          onChange(payload, eventTrigger, preference);
+          onChange(payload, triggerDetails, preferenceDetails);
         }}
         // This key forces a rerender when legal basis changes, which allows paging to reset properly
         key={`vendor-data-${activeLegalBasisOption.value}`}

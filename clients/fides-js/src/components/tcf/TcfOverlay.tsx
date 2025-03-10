@@ -560,11 +560,11 @@ export const TcfOverlay = ({
                 experience={experience}
                 customNotices={privacyNoticesWithBestTranslation}
                 enabledIds={draftIds}
-                onChange={(updatedIds, eventTrigger, preference) => {
+                onChange={(updatedIds, triggerDetails, preference) => {
                   const eventExtraDetails: FidesEvent["detail"]["extraDetails"] =
                     {
                       servingComponent: "modal",
-                      trigger: eventTrigger,
+                      trigger: triggerDetails,
                       preference,
                     };
                   setDraftIds(updatedIds);

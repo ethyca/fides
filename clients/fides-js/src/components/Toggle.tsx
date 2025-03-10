@@ -16,7 +16,10 @@ const Toggle = ({
   name: string;
   id: string;
   checked: boolean;
-  onChange: (noticeKey: string, eventTrigger: FidesEventDetailsTrigger) => void;
+  onChange: (
+    noticeKey: string,
+    triggerDetails: FidesEventDetailsTrigger,
+  ) => void;
   disabled?: boolean;
   onLabel?: string;
   offLabel?: string;

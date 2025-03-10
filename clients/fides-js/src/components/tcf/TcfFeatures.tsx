@@ -43,8 +43,8 @@ const TcfFeatures = ({
   enabledSpecialFeatureIds: string[];
   onChange: (
     payload: UpdateEnabledIds,
-    eventTrigger: FidesEventDetailsTrigger,
-    preference: FidesEventDetailsPreference,
+    triggerDetails: FidesEventDetailsTrigger,
+    preferenceDetails: FidesEventDetailsPreference,
   ) => void;
 }) => {
   const { i18n } = useI18n();
@@ -70,10 +70,10 @@ const TcfFeatures = ({
         title={i18n.t("static.tcf.special_features")}
         items={allSpecialFeatures ?? []}
         enabledIds={enabledSpecialFeatureIds}
-        onToggle={(newEnabledIds, item, eventTrigger) =>
+        onToggle={(newEnabledIds, item, triggerDetails) =>
           onChange(
             { newEnabledIds, modelType: "specialFeatures" },
-            eventTrigger,
+            triggerDetails,
             {
               key: `tcf_special_feature_${item.id}`,
               type: "tcf_special_feature",

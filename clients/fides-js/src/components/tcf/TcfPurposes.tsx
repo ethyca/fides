@@ -96,8 +96,8 @@ const TcfPurposes = ({
   enabledSpecialPurposeIds: string[];
   onChange: (
     payload: UpdateEnabledIds,
-    eventTrigger: FidesEventDetailsTrigger,
-    preference: FidesEventDetailsPreference,
+    triggerDetails: FidesEventDetailsTrigger,
+    preferenceDetails: FidesEventDetailsPreference,
   ) => void;
 }) => {
   const { i18n } = useI18n();
@@ -175,7 +175,7 @@ const TcfPurposes = ({
       | PurposeRecord
       | PrivacyNoticeWithBestTranslation
       | TCFSpecialPurposeRecord,
-    eventTrigger: FidesEventDetailsTrigger,
+    triggerDetails: FidesEventDetailsTrigger,
   ) => {
     // Determine the preference being changed based on the model type:
     // - customPurposesConsent -> notice
@@ -198,7 +198,7 @@ const TcfPurposes = ({
       key = `${type}_${item.id}`;
     }
 
-    const preference: FidesEventDetailsPreference = {
+    const preferenceDetails: FidesEventDetailsPreference = {
       key,
       type,
     };
@@ -208,7 +208,7 @@ const TcfPurposes = ({
       modelType,
     };
 
-    onChange(payload, eventTrigger, preference);
+    onChange(payload, triggerDetails, preferenceDetails);
   };
 
   return (
@@ -234,7 +234,7 @@ const TcfPurposes = ({
               ]
             : activeData.enabledPurposeIds
         }
-        onToggle={(newEnabledIds, item, eventTrigger) => {
+        onToggle={(newEnabledIds, item, triggerDetails) => {
           const modelType =
             "bestTranslation" in item
               ? "customPurposesConsent"
@@ -253,7 +253,7 @@ const TcfPurposes = ({
             );
           }
 
-          handleToggle(modelType, filteredEnabledIds, item, eventTrigger);
+          handleToggle(modelType, filteredEnabledIds, item, triggerDetails);
         }}
         renderToggleChild={(p, isCustomPurpose) => (
           <PurposeDetails
@@ -277,8 +277,8 @@ const TcfPurposes = ({
         title={i18n.t("static.tcf.special_purposes")}
         items={activeData.specialPurposes}
         enabledIds={activeData.enabledSpecialPurposeIds}
-        onToggle={(newEnabledIds, item, eventTrigger) =>
-          handleToggle("specialPurposes", newEnabledIds, item, eventTrigger)
+        onToggle={(newEnabledIds, item, triggerDetails) =>
+          handleToggle("specialPurposes", newEnabledIds, item, triggerDetails)
         }
         renderToggleChild={(p) => (
           <PurposeDetails type="specialPurposes" purpose={p} />

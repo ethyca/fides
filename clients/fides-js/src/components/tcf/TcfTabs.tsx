@@ -37,8 +37,8 @@ const TcfTabs = ({
   enabledIds: EnabledIds;
   onChange: (
     payload: EnabledIds,
-    eventTrigger: FidesEventDetailsTrigger,
-    preference: FidesEventDetailsPreference,
+    triggerDetails: FidesEventDetailsTrigger,
+    preferenceDetails: FidesEventDetailsPreference,
   ) => void;
   activeTabIndex: number;
   onTabChange: (tabIndex: number) => void;
@@ -47,11 +47,11 @@ const TcfTabs = ({
   const handleUpdateDraftState = useCallback(
     (
       { newEnabledIds, modelType }: UpdateEnabledIds,
-      eventTrigger: FidesEventDetailsTrigger,
-      preference: FidesEventDetailsPreference,
+      triggerDetails: FidesEventDetailsTrigger,
+      preferenceDetails: FidesEventDetailsPreference,
     ) => {
       const updated = { ...enabledIds, [modelType]: newEnabledIds };
-      onChange(updated, eventTrigger, preference);
+      onChange(updated, triggerDetails, preferenceDetails);
     },
     [enabledIds, onChange],
   );

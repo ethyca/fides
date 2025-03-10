@@ -21,7 +21,10 @@ const DataUseToggle = ({
   noticeKey: string;
   title: string;
   checked: boolean;
-  onToggle: (noticeKey: string, eventTrigger: FidesEventDetailsTrigger) => void;
+  onToggle: (
+    noticeKey: string,
+    triggerDetails: FidesEventDetailsTrigger,
+  ) => void;
   children?: ComponentChildren;
   badge?: string;
   gpcBadge?: VNode;

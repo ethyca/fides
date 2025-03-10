@@ -29,7 +29,7 @@ interface Props<T extends RecordListItem> {
   onToggle: (
     payload: string[],
     item: T,
-    eventTrigger: FidesEventDetailsTrigger,
+    triggerDetails: FidesEventDetailsTrigger,
   ) => void;
   renderBadgeLabel?: (item: T) => string | undefined;
   hideToggles?: boolean;
@@ -50,16 +50,16 @@ const RecordsList = <T extends RecordListItem>({
     return null;
   }
 
-  const handleToggle = (item: T, eventTrigger: FidesEventDetailsTrigger) => {
+  const handleToggle = (item: T, triggerDetails: FidesEventDetailsTrigger) => {
     const purposeId = `${item.id}`;
     if (enabledIds.indexOf(purposeId) !== -1) {
       onToggle(
         enabledIds.filter((e) => e !== purposeId),
         item,
-        eventTrigger,
+        triggerDetails,
       );
     } else {
-      onToggle([...enabledIds, purposeId], item, eventTrigger);
+      onToggle([...enabledIds, purposeId], item, triggerDetails);
     }
   };
 
@@ -88,8 +88,8 @@ const RecordsList = <T extends RecordListItem>({
           key={item.id}
           title={item.bestTranslation?.title || getNameForItem(item)}
           noticeKey={`${item.id}`}
-          onToggle={(_, eventTrigger) => {
-            handleToggle(item, eventTrigger);
+          onToggle={(_, triggerDetails) => {
+            handleToggle(item, triggerDetails);
           }}
           checked={enabledIds.indexOf(`${item.id}`) !== -1}
           badge={renderBadgeLabel ? renderBadgeLabel(item) : undefined}

@@ -29,30 +29,34 @@ export const NoticeToggles = ({
   enabledNoticeKeys: Array<string>;
   onChange: (
     keys: Array<string>,
-    eventTrigger: FidesEventDetailsTrigger,
-    preference: FidesEventDetailsPreference,
+    triggerDetails: FidesEventDetailsTrigger,
+    preferenceDetails: FidesEventDetailsPreference,
   ) => void;
 }) => {
   const { i18n } = useI18n();
   const handleToggle = (
     noticeKey: string,
-    eventTrigger: FidesEventDetailsTrigger,
+    triggerDetails: FidesEventDetailsTrigger,
   ) => {
-    const preference: FidesEventDetailsPreference = {
+    const preferenceDetails: FidesEventDetailsPreference = {
       key: noticeKey,
       type: "notice",
     };
 
     // Add the notice to list of enabled notices
     if (enabledNoticeKeys.indexOf(noticeKey) === -1) {
-      onChange([...enabledNoticeKeys, noticeKey], eventTrigger, preference);
+      onChange(
+        [...enabledNoticeKeys, noticeKey],
+        triggerDetails,
+        preferenceDetails,
+      );
     }
     // Remove the notice from the list of enabled notices
     else {
       onChange(
         enabledNoticeKeys.filter((n) => n !== noticeKey),
-        eventTrigger,
-        preference,
+        triggerDetails,
+        preferenceDetails,
       );
     }
   };
