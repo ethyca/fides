@@ -37,6 +37,11 @@ h6 {
   --ant-button-default-bg: var(--fidesui-neutral-50);
 }
 
+// Input labels should have a font weight of 600
+.ant-form-item-label {
+  font-weight: 600;
+}
+
 // Custom styles for dark submenus
 .ant-menu-dark .ant-menu-sub {
   // The unselected submenu item should be light gray
@@ -71,5 +76,20 @@ h6 {
     &::after {
       width: calc(calc(var(--ant-font-size) / 7 * 5) * 0.65);
     }
+  }
+}
+
+.ant-input {
+  // Read-only inputs should have a light background, neutral 700 text and no hover/active styles
+  &:read-only {
+    --ant-color-text: var(--fidesui-neutral-700);
+    --ant-color-bg-container: var(--fidesui-neutral-50);
+    --ant-input-hover-bg: var(--fidesui-neutral-50);
+    --ant-input-active-bg: var(--fidesui-neutral-50);
+
+    --ant-input-active-border-color: var(--ant-color-border);
+    --ant-input-hover-border-color: var(--ant-color-border);
+    --ant-input-active-shadow: none;
+    --ant-input-hove-shadow: none;
   }
 }

@@ -16,6 +16,7 @@ export type {
   RadioGroupProps as AntRadioGroupProps,
   SelectProps as AntSelectProps,
   SwitchProps as AntSwitchProps,
+  TabsProps as AntTabsProps,
   TagProps as AntTagProps,
   GetProps,
   InputRef,
@@ -38,11 +39,13 @@ export {
   Layout as AntLayout,
   List as AntList,
   Menu as AntMenu,
+  message as antMessage,
   Radio as AntRadio,
   Row as AntRow,
   Skeleton as AntSkeleton,
   Space as AntSpace,
   Switch as AntSwitch,
+  Tabs as AntTabs,
   Tooltip as AntTooltip,
   Typography as AntTypography,
 } from "antd/lib";
@@ -58,6 +61,7 @@ export type {
 
 // Higher-order components
 export { CustomSelect as AntSelect } from "./hoc";
+export { CustomDateRangePicker as AntDateRangePicker } from "./hoc";
 
 /**
  * Custom Re-exports

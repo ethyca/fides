@@ -8,5 +8,16 @@ module.exports = {
   rules: {
     // since we are using static site export
     "@next/next/no-img-element": "off",
+    "import/no-extraneous-dependencies": [
+      "error",
+      {
+        devDependencies: [
+          "src/mocks/**",
+          "**/*.test.ts",
+          "**/*.spec.ts",
+          "cypress/**",
+        ],
+      },
+    ],
   },
 };

@@ -28,6 +28,7 @@ from fides.api.graph.graph import DatasetGraph, Edge, Node
 from fides.api.graph.node_filters import (
     CustomRequestFieldFilter,
     NodeFilter,
+    OptionalIdentityFilter,
     PolicyDataCategoryFilter,
 )
 from fides.api.models.policy import Policy
@@ -64,7 +65,7 @@ def artificial_traversal_node(address: CollectionAddress) -> TraversalNode:
     return TraversalNode(node)
 
 
-class Traversal:
+class BaseTraversal:
     """Handling for a single reified traversal of a graph based on input (seed) data."""
 
     def extract_seed_field_addresses(
@@ -83,6 +84,7 @@ class Traversal:
         self,
         graph: DatasetGraph,
         data: Dict[str, Any],
+        *,
         policy: Optional[Policy] = None,
         node_filters: Optional[List[NodeFilter]] = None,
     ):
@@ -93,9 +95,6 @@ class Traversal:
         # Node filters are used to allow unreachable nodes to be ignored
         # if they don't apply to the given scenario
         self.node_filters = node_filters or []
-        self.node_filters.append(CustomRequestFieldFilter())
-        if policy:
-            self.node_filters.append(PolicyDataCategoryFilter(policy))
 
         self.traversal_node_dict = {k: TraversalNode(v) for k, v in graph.nodes.items()}
         self.edges: Set[Edge] = graph.edges.copy()
@@ -288,6 +287,37 @@ class Traversal:
         if environment:
             logger.debug("Found {} end nodes: {}", len(end_nodes), end_nodes)
         return end_nodes
+
+    @property
+    def skipped_nodes(self) -> Dict[str, str]:
+        """
+        Returns a dictionary of node addresses to skip reasons from all node filters.
+        """
+        result = {}
+        for node_filter in self.node_filters:
+            result.update(node_filter.skipped_nodes)
+        return result
+
+
+class Traversal(BaseTraversal):
+    """Handling for a single reified traversal of a graph based on input (seed) data."""
+
+    def __init__(
+        self,
+        graph: DatasetGraph,
+        data: Dict[str, Any],
+        *,
+        policy: Optional[Policy] = None,
+        node_filters: Optional[List[NodeFilter]] = None,
+    ):
+        filters = node_filters or []
+
+        filters.append(CustomRequestFieldFilter())
+        filters.append(OptionalIdentityFilter(graph, data))
+        if policy:
+            filters.append(PolicyDataCategoryFilter(policy))
+
+        super().__init__(graph, data, policy=policy, node_filters=filters)
 
 
 def log_traversal_error_and_update_privacy_request(

@@ -1,8 +1,3 @@
-"""
-Module to define service dependencies so service classes can be used
-via FastAPI dependency injection.
-"""
-
 from fastapi import Depends
 from sqlalchemy.orm import Session
 

@@ -10,7 +10,7 @@ from loguru import logger
 from ordered_set import OrderedSet
 from sqlalchemy.orm import Session
 
-from fides.api.api.deps import get_db_contextmanager as get_db_session
+from fides.api.api.deps import get_db_contextmanager as get_db
 from fides.api.common_exceptions import (
     ActionDisabled,
     AwaitingAsyncTaskCallback,
@@ -366,25 +366,30 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         """Update status activities - create an execution log (which stores historical logs)
         and update the Request Task's current status.
         """
-        ExecutionLog.create(
-            db=self.resources.session,
-            data={
-                "connection_key": self.execution_node.connection_key,
-                "dataset_name": self.execution_node.address.dataset,
-                "collection_name": self.execution_node.address.collection,
-                "fields_affected": fields_affected,
-                "action_type": action_type,
-                "status": status,
-                "privacy_request_id": self.resources.request.id,
-                "message": msg,
-            },
-        )
+        with get_db() as db:
+            ExecutionLog.create(
+                db=db,
+                data={
+                    "connection_key": self.execution_node.connection_key,
+                    "dataset_name": self.execution_node.address.dataset,
+                    "collection_name": self.execution_node.address.collection,
+                    "fields_affected": fields_affected,
+                    "action_type": action_type,
+                    "status": status,
+                    "privacy_request_id": self.resources.request.id,
+                    "message": msg,
+                },
+            )
 
-        if self.request_task.id:
             # For DSR 3.0, updating the Request Task status when the ExecutionLog is
             # created to keep these in sync.
             # TODO remove conditional above alongside deprecating DSR 2.0
-            self.request_task.update_status(self.resources.session, status)
+            if self.request_task.id:
+                # Merge the request task to ensure we keep the changes made
+                # to self.request_task that haven't yet been committed to the database
+                request_task = db.merge(self.request_task)
+                request_task.update_status(db, status)
+                self.request_task = request_task
 
     def log_start(self, action_type: ActionType) -> None:
         """Task start activities"""
@@ -424,43 +429,31 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         success_override_msg: Optional[BaseException] = None,
     ) -> None:
         """On completion activities"""
+        if ex:
+            logger.warning(
+                "Ending {}, {} with failure {}",
+                self.resources.request.id,
+                self.key,
+                Pii(ex),
+            )
+            self.update_status(str(ex), [], action_type, ExecutionLogStatus.error)
+            # For DSR 3.0, Hooking into the GraphTask.log_end method to also mark the current
+            # Request Task and every Request Task that can be reached from the current
+            # task as errored.
 
-        # Because a GraphTask can take a long time to run, it's possible that the session
-        # stored in self.resources has been closed by the time we get to this point. We need
-        # to get a new session to appropriately mark the task as errored.
-        with get_db_session() as db:
-            # Update the session in the resources object to the new session
-            # and update the request_task reference to the new instance
-            # We only need this for DSR 3.0, i.e if request_task has an id
-            if self.request_task.id:
-                self.resources.session = db
-                request_task_new_session = db.merge(self.request_task)
-                self.request_task = request_task_new_session
-
-            if ex:
-                logger.warning(
-                    "Ending {}, {} with failure {}",
-                    self.resources.request.id,
-                    self.key,
-                    Pii(ex),
-                )
-                self.update_status(str(ex), [], action_type, ExecutionLogStatus.error)
-                # For DSR 3.0, Hooking into the GraphTask.log_end method to also mark the current
-                # Request Task and every Request Task that can be reached from the current
-                # task as errored.
-                mark_current_and_downstream_nodes_as_failed(
-                    self.request_task, self.resources.session
-                )
-            else:
-                logger.info("Ending {}, {}", self.resources.request.id, self.key)
-                self.update_status(
-                    str(success_override_msg) if success_override_msg else "success",
-                    build_affected_field_logs(
-                        self.execution_node, self.resources.policy, action_type
-                    ),
-                    action_type,
-                    ExecutionLogStatus.complete,
-                )
+            with get_db() as db:
+                request_task = db.merge(self.request_task)
+                mark_current_and_downstream_nodes_as_failed(request_task, db)
+        else:
+            logger.info("Ending {}, {}", self.resources.request.id, self.key)
+            self.update_status(
+                str(success_override_msg) if success_override_msg else "success",
+                build_affected_field_logs(
+                    self.execution_node, self.resources.policy, action_type
+                ),
+                action_type,
+                ExecutionLogStatus.complete,
+            )
 
     def post_process_input_data(
         self, pre_processed_inputs: NodeInput
@@ -557,9 +550,34 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         # Return filtered rows with non-matched array data removed.
         return output
 
+    def get_connection_config(self) -> ConnectionConfig:
+        """
+        Retrieves the connection configuration for the current connector.
+        This method attempts to fetch the connection configuration from the database
+        using the connector's configuration ID. If the configuration is found in the
+        database, it is returned. Otherwise, the method returns the connector's
+        current configuration.
+        Returns:
+            ConnectionConfig: The connection configuration object from the database
+            if found, otherwise the connector's current configuration.
+        """
+        connection_config_id = self.connector.configuration.id
+
+        with get_db() as db:
+            connection_config = (
+                db.query(ConnectionConfig)
+                .filter(ConnectionConfig.id == connection_config_id)
+                .first()
+            )
+            if connection_config:
+                return connection_config
+
+        return self.connector.configuration
+
     def skip_if_disabled(self) -> None:
         """Skip execution for the given collection if it is attached to a disabled ConnectionConfig."""
-        connection_config: ConnectionConfig = self.connector.configuration
+        connection_config: ConnectionConfig = self.get_connection_config()
+
         if connection_config.disabled:
             raise CollectionDisabled(
                 f"Skipping collection {self.execution_node.address}. "
@@ -573,7 +591,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         if action_type == ActionType.access:
             return
 
-        connection_config: ConnectionConfig = self.connector.configuration
+        connection_config: ConnectionConfig = self.get_connection_config()
         if (
             connection_config.enabled_actions is not None
             and action_type not in connection_config.enabled_actions
