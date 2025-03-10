@@ -286,7 +286,7 @@ describe("Consent settings", () => {
       });
     });
 
-    it.only("reflects their choices using fides.js", () => {
+    it("reflects their choices using fides.js", () => {
       // Opt-out of items default to opt-in.
       cy.getByTestId(`consent-item-advertising`).within(() => {
         cy.getToggle().uncheck();
