@@ -22,15 +22,20 @@ def upgrade():
     op.create_table(
         "vendor_list",
         sa.Column(
-            "json_raw",
-            postgresql.JSONB(astext_type=sa.Text()),
-            autoincrement=False,
-            nullable=True,
+            "id", sa.String(length=255), primary_key=True, nullable=False
         ),
         sa.Column(
-            "updated_at", postgresql.TIMESTAMP(), autoincrement=False, nullable=True
+            "created_at", sa.TIMESTAMP(), nullable=False, server_default=sa.func.now()
         ),
-        sa.Column("version", sa.VARCHAR(), autoincrement=False, nullable=True),
+        sa.Column(
+            "updated_at", sa.TIMESTAMP(), nullable=False, server_default=sa.func.now(), onupdate=sa.func.now()
+        ),
+        sa.Column(
+            "json_raw",
+            postgresql.JSONB(astext_type=sa.Text()),
+            nullable=True,
+        ),
+        sa.Column("version", sa.String(length=255), nullable=True),
     )
     # ### end Alembic commands ###
 
