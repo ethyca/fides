@@ -4,7 +4,6 @@ import pytest
 from immutables import Map
 from ordered_set import OrderedSet
 
-from fides.api.common_exceptions import FidesopsException
 from fides.api.util.collection_util import (
     append,
     filter_nonempty_values,
@@ -158,7 +157,7 @@ class TestUnflattenDict:
         assert unflatten_dict({"A.B": 1, "A.B": 2}) == {"A": {"B": 2}}
 
     def test_conflicting_types(self):
-        with pytest.raises(FidesopsException):
+        with pytest.raises(ValueError):
             unflatten_dict({"A.B": 1, "A": 2, "A.C": 3})
 
     def test_mixed_types_in_array(self):

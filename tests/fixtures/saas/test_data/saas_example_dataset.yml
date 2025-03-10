@@ -190,7 +190,7 @@ dataset:
                     fidesops_meta:
                       data_type: string
           - name: interests
-            data_categories: [user.provided.identifiable]
+            data_categories: [user]
             fidesops_meta:
               data_type: string[]
       - name: payment_methods
