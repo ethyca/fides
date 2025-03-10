@@ -177,27 +177,35 @@ const TcfPurposes = ({
       | TCFSpecialPurposeRecord,
     eventTrigger: FidesEventDetailsTrigger,
   ) => {
-    // Determine the type of preference being changed based on the model type:
+    // Determine the preference being changed based on the model type:
     // - customPurposesConsent -> notice
     // - purposesConsent -> tcf_purpose_consent
     // - purposesLegint/specialPurposes -> tcf_purpose_legitimate_interest
+    //
+    // NOTE: TCF purposes don't have equivalent notice "keys" today, but we
+    // expect to add those in the future. When we do, we'll prefix like this:
+    // "tcf_purpose_consent_1", "tcf_purpose_legitimate_interest_2", etc.
     let type;
+    let key;
     if (modelType === "customPurposesConsent") {
       type = "notice" as const;
+      key = `${item.id}`;
     } else if (modelType === "purposesConsent") {
       type = "tcf_purpose_consent" as const;
+      key = `${type}_${item.id}`;
     } else {
       type = "tcf_purpose_legitimate_interest" as const;
+      key = `${type}_${item.id}`;
     }
+
+    const preference: FidesEventDetailsPreference = {
+      key,
+      type,
+    };
 
     const payload: UpdateEnabledIds = {
       newEnabledIds,
       modelType,
-    };
-
-    const preference: FidesEventDetailsPreference = {
-      key: `${item.id}`,
-      type,
     };
 
     onChange(payload, eventTrigger, preference);

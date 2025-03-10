@@ -103,16 +103,7 @@ const TcfTabs = ({
             experience={experience}
             enabledVendorConsentIds={enabledIds.vendorsConsent}
             enabledVendorLegintIds={enabledIds.vendorsLegint}
-            onChange={(payload, eventTrigger) =>
-              handleUpdateDraftState(payload, eventTrigger, {
-                key: "placeholder.1",
-                type: "tcf_vendor_consent",
-                vendor_id: "placeholder.1",
-                vendor_list: "gvl",
-                vendor_list_id: "1",
-                vendor_name: "Placeholder Vendor",
-              })
-            }
+            onChange={handleUpdateDraftState}
           />
         </div>
       ),

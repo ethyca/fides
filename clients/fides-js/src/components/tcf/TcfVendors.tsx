@@ -3,7 +3,10 @@ import { Fragment, h } from "preact";
 import { useMemo, useState } from "preact/hooks";
 
 import { PrivacyExperience } from "../../lib/consent-types";
-import { FidesEventDetailsTrigger } from "../../lib/events";
+import {
+  FidesEventDetailsPreference,
+  FidesEventDetailsTrigger,
+} from "../../lib/events";
 import { useI18n } from "../../lib/i18n/i18n-context";
 import { LEGAL_BASIS_OPTIONS } from "../../lib/tcf/constants";
 import {
@@ -251,7 +254,11 @@ const PagedVendorData = ({
   experience: PrivacyExperience;
   vendors: VendorRecord[];
   enabledIds: string[];
-  onChange: (newIds: string[], eventTrigger: FidesEventDetailsTrigger) => void;
+  onChange: (
+    newIds: string[],
+    vendor: VendorRecord,
+    eventTrigger: FidesEventDetailsTrigger,
+  ) => void;
 }) => {
   const { i18n } = useI18n();
   const { activeChunk, ...paging } = usePaging(vendors);
@@ -281,7 +288,7 @@ const PagedVendorData = ({
         title={i18n.t("static.tcf.vendors.iab")}
         items={gvlVendors}
         enabledIds={enabledIds}
-        onToggle={(payload, _, eventTrigger) => onChange(payload, eventTrigger)}
+        onToggle={onChange}
         renderBadgeLabel={(vendor) =>
           vendorGvlEntry(vendor.id, experience.gvl)
             ? "IAB TCF" // NOTE: As this is the proper name of the standard, it should not be localized!
@@ -296,7 +303,7 @@ const PagedVendorData = ({
         title={i18n.t("static.tcf.vendors.other")}
         items={otherVendors}
         enabledIds={enabledIds}
-        onToggle={(payload, _, eventTrigger) => onChange(payload, eventTrigger)}
+        onToggle={onChange}
         renderToggleChild={(vendor) => (
           <ToggleChild vendor={vendor} experience={experience} />
         )}
@@ -318,6 +325,7 @@ const TcfVendors = ({
   onChange: (
     payload: UpdateEnabledIds,
     eventTrigger: FidesEventDetailsTrigger,
+    preference: FidesEventDetailsPreference,
   ) => void;
 }) => {
   // Combine the various vendor objects into one object for convenience
@@ -357,19 +365,38 @@ const TcfVendors = ({
             ? enabledVendorConsentIds
             : enabledVendorLegintIds
         }
-        onChange={(newEnabledIds, eventTrigger) =>
-          onChange(
-            {
-              newEnabledIds,
-              modelType:
-                activeLegalBasisOption.value ===
-                LegalBasisEnum.CONSENT.toString()
-                  ? "vendorsConsent"
-                  : "vendorsLegint",
-            },
-            eventTrigger,
-          )
-        }
+        onChange={(newEnabledIds, vendor, eventTrigger) => {
+          const modelType =
+            activeLegalBasisOption.value === LegalBasisEnum.CONSENT.toString()
+              ? "vendorsConsent"
+              : "vendorsLegint";
+
+          // Determine the type of preference being changed based on the model type:
+          // - vendorsConsent -> tcf_vendor_consent
+          // - vendorsLegint -> tcf_vendor_legitimate_interests
+          let type;
+          if (modelType === "vendorsConsent") {
+            type = "tcf_vendor_consent" as const;
+          } else {
+            type = "tcf_vendor_legitimate_interest" as const;
+          }
+
+          const payload: UpdateEnabledIds = {
+            newEnabledIds,
+            modelType,
+          };
+
+          const preference: FidesEventDetailsPreference = {
+            key: `${vendor.id}`,
+            type,
+            vendor_id: vendor.id,
+            vendor_list: "gvl",
+            vendor_list_id: vendor.id, // TODO: this should be just the suffix of the vendor_id not the whole id
+            vendor_name: vendor.name,
+          };
+
+          onChange(payload, eventTrigger, preference);
+        }}
         // This key forces a rerender when legal basis changes, which allows paging to reset properly
         key={`vendor-data-${activeLegalBasisOption.value}`}
       />
