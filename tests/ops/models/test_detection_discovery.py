@@ -10,6 +10,7 @@ from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.detection_discovery import (
     DiffStatus,
     MonitorConfig,
+    MonitorExecution,
     MonitorFrequency,
     StagedResource,
     fetch_staged_resources_by_type_query,
