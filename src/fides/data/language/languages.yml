@@ -17,6 +17,8 @@ languages:
   name: Greek
 - id: en
   name: English
+- id: en-GB
+  name: English (UK)
 - id: es
   name: Spanish
 - id: es-MX
