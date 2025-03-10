@@ -131,10 +131,9 @@ class BigQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
         This implementation handles nested fields by grouping them as JSON objects rather than
         individual field updates.
         """
-        # Get initial update value map (already flattened)
-        update_value_map: Dict[str, Any] = self.update_value_map(row, policy, request)
 
         # 1. Take update_value_map as-is (already flattened)
+        update_value_map: Dict[str, Any] = self.update_value_map(row, policy, request)
 
         # 2. Flatten the row
         flattened_row = flatten_dict(row)
@@ -149,7 +148,6 @@ class BigQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
         nested_result = replace_none_arrays(nested_result)  # type: ignore
 
         # 6. Only keep top-level keys that are in the update_value_map
-        # Get unique top-level keys from update_value_map
         top_level_keys = {key.split(".")[0] for key in update_value_map}
 
         # Filter the nested result to only include those top-level keys
