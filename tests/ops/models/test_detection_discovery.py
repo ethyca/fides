@@ -10,7 +10,6 @@ from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.detection_discovery import (
     DiffStatus,
     MonitorConfig,
-    MonitorExecution,
     MonitorFrequency,
     StagedResource,
     fetch_staged_resources_by_type_query,
@@ -675,7 +674,6 @@ class TestMonitorExecutionModel:
         assert first_execution.started != second_execution.started
 
         # Verify timestamps are recent
-        breakpoint()
         now = datetime.now(timezone.utc)
         assert (now - first_execution.started).total_seconds() < 5
         assert (now - second_execution.started).total_seconds() < 5
