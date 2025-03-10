@@ -166,6 +166,14 @@ class QueryConfig(Generic[T], ABC):
             if not strategy_config:
                 continue
             for rule_field_path in field_paths:
+                # Check if field is read-only before processing
+                field = self.field_map().get(rule_field_path)
+                if field and field.read_only:
+                    logger.debug(
+                        f"Skipping read-only field: {rule_field_path.string_path}"
+                    )
+                    continue
+
                 strategy: MaskingStrategy = MaskingStrategy.get_strategy(
                     strategy_config["strategy"], strategy_config["configuration"]
                 )
@@ -174,7 +182,7 @@ class QueryConfig(Generic[T], ABC):
                     for field_path, field in self.field_map().items()
                     if field_path == rule_field_path
                 ][0]
-                field = self.field_map().get(rule_field_path)
+
                 if field and field.masking_strategy_override:
                     masking_strategy_override = field.masking_strategy_override
                     strategy = MaskingStrategy.get_strategy(
@@ -201,10 +209,44 @@ class QueryConfig(Generic[T], ABC):
                     )
                 ]
                 for detailed_path in paths_to_mask:
+                    original_value = pydash.objects.get(row, detailed_path)
+
+                    # Skip object fields - we don't want to mask these directly
+                    if isinstance(original_value, dict) and original_value:
+                        logger.debug(f"Skipping object field: {detailed_path}")
+                        continue
+
+                    # Skip arrays of objects, but keep arrays of primitives
+                    if isinstance(original_value, list) and original_value:
+                        if all(isinstance(item, dict) for item in original_value):
+                            logger.debug(
+                                f"Skipping array of objects field: {detailed_path}"
+                            )
+                            continue
+
+                        # For arrays of primitives, mask each element individually
+                        masked_array = []
+                        for item in original_value:
+                            masked_item = self._generate_masked_value(
+                                request_id=request.id,
+                                strategy=strategy,
+                                val=item,
+                                masking_truncation=truncation,
+                                null_masking=null_masking,
+                                str_field_path=f"{detailed_path}.<item>",
+                            )
+                            masked_array.append(masked_item)
+
+                        value_map[detailed_path] = masked_array
+
+                        # Skip the default masking below since we've handled it here
+                        continue
+
+                    # Default masking for primitive values
                     value_map[detailed_path] = self._generate_masked_value(
                         request_id=request.id,
                         strategy=strategy,
-                        val=pydash.objects.get(row, detailed_path),
+                        val=original_value,
                         masking_truncation=truncation,
                         null_masking=null_masking,
                         str_field_path=detailed_path,

@@ -33,7 +33,7 @@ from fides.api.task.refine_target_path import (
     join_detailed_path,
 )
 from fides.api.util import saas_util
-from fides.api.util.collection_util import Row, merge_dicts
+from fides.api.util.collection_util import Row, merge_dicts, unflatten_dict
 from fides.api.util.saas_util import (
     ALL_OBJECT_FIELDS,
     CUSTOM_PRIVACY_REQUEST_FIELDS,
@@ -45,7 +45,6 @@ from fides.api.util.saas_util import (
     REPLY_TO_TOKEN,
     UUID,
     get_identities,
-    unflatten_dict,
 )
 from fides.common.api.v1.urn_registry import REQUEST_TASK_CALLBACK, V1_URL_PREFIX
 from fides.config.config_proxy import ConfigProxy
