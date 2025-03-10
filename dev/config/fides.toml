@@ -36,7 +36,7 @@ task_always_eager = true # boolean
 
 # A fully anonymized unique identifier that is automatically generated
 # by the application. Used for anonymous analytics when opted-in.
-analytics_id = "cfa06f47b98be05803283290e7dd1215" # string
+analytics_id = "0ab692ad540d0a7f507b271bd5ba443e" # string
 
 # When set to True, disables functionality that requires making calls
 # to a Fides webserver.
@@ -164,7 +164,8 @@ masking_strict = true # boolean
 # (e.g., pre- and post-processing webhooks).
 privacy_request_delay_timeout = 3600 # integer
 
-# Whether privacy requests require explicit approval to execute.
+# Whether access and erasure privacy requests require explicit approval
+# to execute. Consent privacy requests are always auto-approved.
 require_manual_request_approval = false # boolean
 
 # Whether privacy requests require user identity verification.
