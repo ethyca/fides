@@ -9,6 +9,7 @@ from typing import Any, Dict, Optional, Set, Union
 
 import pandas as pd
 from botocore.exceptions import ClientError, ParamValidationError
+from fideslang.validation import AnyHttpUrlString
 from loguru import logger
 
 from fides.api.cryptography.cryptographic_util import bytes_to_b64_str
@@ -18,7 +19,7 @@ from fides.api.schemas.storage.storage import ResponseFormat, StorageSecrets
 from fides.api.service.privacy_request.dsr_package.dsr_report_builder import (
     DsrReportBuilder,
 )
-from fides.api.util.aws_util import get_aws_session
+from fides.api.util.aws_util import get_s3_client
 from fides.api.util.cache import get_cache, get_encryption_cache_key
 from fides.api.util.encryption.aes_gcm_encryption_scheme import (
     encrypt_to_bytes_verify_secrets_length,
@@ -101,7 +102,9 @@ def write_to_in_memory_buffer(
     raise NotImplementedError(f"No handling for response format {resp_format}.")
 
 
-def create_presigned_url_for_s3(s3_client: Any, bucket_name: str, file_key: str) -> str:
+def create_presigned_url_for_s3(
+    s3_client: Any, bucket_name: str, file_key: str
+) -> AnyHttpUrlString:
     """ "Generate a presigned URL to share an S3 object
 
     :param s3_client: s3 base client
@@ -129,13 +132,12 @@ def upload_to_s3(  # pylint: disable=R0913
     auth_method: str,
     data_category_field_mapping: Optional[DataCategoryFieldMapping] = None,
     data_use_map: Optional[Dict[str, Set[str]]] = None,
-) -> str:
+) -> Optional[AnyHttpUrlString]:
     """Uploads arbitrary data to s3 returned from an access request"""
     logger.info("Starting S3 Upload of {}", file_key)
 
     try:
-        my_session = get_aws_session(auth_method, storage_secrets)
-        s3_client = my_session.client("s3")
+        s3_client = get_s3_client(auth_method, storage_secrets)
 
         # handles file chunking
         try:
@@ -148,7 +150,7 @@ def upload_to_s3(  # pylint: disable=R0913
             logger.error("Encountered error while uploading s3 object: {}", e)
             raise e
 
-        presigned_url: str = create_presigned_url_for_s3(
+        presigned_url: AnyHttpUrlString = create_presigned_url_for_s3(
             s3_client, bucket_name, file_key
         )
 

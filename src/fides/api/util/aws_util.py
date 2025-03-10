@@ -70,3 +70,22 @@ def get_aws_session(
             raise
     else:
         return session
+
+
+def get_s3_client(
+    auth_method: str,
+    storage_secrets: Optional[Dict[StorageSecrets, Any]],
+    assume_role_arn: Optional[str] = None,
+) -> Session:
+    """
+    Abstraction to retrieve an AWS S3 client using secrets.
+
+    If an `assume_role_arn` is provided, the secrets will be used to
+    assume that role and return a Session instantiated with that role.
+    """
+    session = get_aws_session(
+        auth_method=auth_method,
+        storage_secrets=storage_secrets,
+        assume_role_arn=assume_role_arn,
+    )
+    return session.client("s3")

@@ -270,20 +270,24 @@ def custom_data_category(db: Session) -> Generator:
 @pytest.fixture(scope="function")
 def storage_config(db: Session) -> Generator:
     name = str(uuid4())
-    storage_config = StorageConfig.create(
-        db=db,
-        data={
-            "name": name,
-            "type": StorageType.s3,
-            "details": {
-                StorageDetails.AUTH_METHOD.value: AWSAuthMethod.SECRET_KEYS.value,
-                StorageDetails.NAMING.value: FileNaming.request_id.value,
-                StorageDetails.BUCKET.value: "test_bucket",
-            },
-            "key": "my_test_config",
-            "format": ResponseFormat.json,
+    data = {
+        "name": name,
+        "type": StorageType.s3,
+        "details": {
+            StorageDetails.AUTH_METHOD.value: AWSAuthMethod.SECRET_KEYS.value,
+            StorageDetails.NAMING.value: FileNaming.request_id.value,
+            StorageDetails.BUCKET.value: "test_bucket",
         },
-    )
+        "key": "my_test_config",
+        "format": ResponseFormat.json,
+    }
+
+    storage_config = StorageConfig.get_by_key_or_id(db, data=data)
+    if storage_config is None:
+        storage_config = StorageConfig.create(
+            db=db,
+            data=data,
+        )
     storage_config.set_secrets(
         db=db,
         storage_secrets={
@@ -298,18 +302,21 @@ def storage_config(db: Session) -> Generator:
 @pytest.fixture(scope="function")
 def storage_config_local(db: Session) -> Generator:
     name = str(uuid4())
-    storage_config = StorageConfig.create(
-        db=db,
-        data={
-            "name": name,
-            "type": StorageType.local,
-            "details": {
-                StorageDetails.NAMING.value: FileNaming.request_id.value,
-            },
-            "key": "my_test_config_local",
-            "format": ResponseFormat.json,
+    data = {
+        "name": name,
+        "type": StorageType.local,
+        "details": {
+            StorageDetails.NAMING.value: FileNaming.request_id.value,
         },
-    )
+        "key": "my_test_config_local",
+        "format": ResponseFormat.json,
+    }
+    storage_config = StorageConfig.get_by_key_or_id(db, data=data)
+    if storage_config is None:
+        storage_config = StorageConfig.create(
+            db=db,
+            data=data,
+        )
     yield storage_config
     storage_config.delete(db)
 
