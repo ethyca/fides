@@ -75,7 +75,7 @@ const TcfFeatures = ({
             { newEnabledIds, modelType: "specialFeatures" },
             eventTrigger,
             {
-              key: `${item.id}`,
+              key: `tcf_special_feature_${item.id}`,
               type: "tcf_special_feature",
             },
           )
