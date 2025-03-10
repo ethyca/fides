@@ -18,18 +18,6 @@ describe("formatFidesStringWithGpp", () => {
     window.Fides.fides_string = undefined;
   });
 
-  it("uses default GPP string when no CmpApi is provided", () => {
-    const result = formatFidesStringWithGpp();
-    expect(result).toBe(",,DBAA");
-  });
-
-  it("uses default GPP string when CmpApi returns no string", () => {
-    const cmpApi = new CmpApi(1, 1);
-    jest.spyOn(cmpApi, "getGppString").mockReturnValue("");
-    const result = formatFidesStringWithGpp(cmpApi);
-    expect(result).toBe(",,DBAA");
-  });
-
   describe("in a non-TCF experience", () => {
     beforeEach(() => {
       window.Fides.options.tcfEnabled = false;

@@ -5,6 +5,9 @@ import {
 } from "../../../src/lib/gpp/decoder";
 import mockDecodedTCFJSON from "../../__fixtures__/mock_decoded_tcf.json";
 
+// Mock fidesDebugger
+(globalThis as any).fidesDebugger = jest.fn();
+
 describe("GPP Decoder", () => {
   describe("decodeGppString", () => {
     it("should decode a US National GPP string", () => {
