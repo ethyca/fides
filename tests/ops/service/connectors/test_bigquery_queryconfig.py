@@ -525,7 +525,7 @@ class TestBigQueryQueryConfig:
         assert update_params == {
             "id": None,
             "name": None,
-            "tags": [None, None, None],
+            "tags": [],
             "email_1": "customer-1@example.com",
         }
 
@@ -591,12 +591,12 @@ class TestBigQueryQueryConfig:
                 {
                     "item_id": 123,
                     "purchase_date": "2021-01-01",
-                    "item_tags": [None, None],
+                    "item_tags": [],
                 },
                 {
                     "item_id": 456,
                     "purchase_date": "2021-02-01",
-                    "item_tags": [None, None],
+                    "item_tags": [],
                 },
             ],
             "email_1": "customer-1@example.com",
@@ -654,7 +654,7 @@ class TestBigQueryQueryConfig:
         assert update_params == {
             "id": None,
             "name": None,
-            "tags": [None, None, None],
+            "tags": [],
             "email_1": "customer-1@example.com",
         }
 

@@ -23,6 +23,7 @@ from fides.api.util.collection_util import (
     filter_nonempty_values,
     flatten_dict,
     merge_dicts,
+    replace_none_arrays,
     unflatten_dict,
 )
 
@@ -144,9 +145,12 @@ class BigQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
         # 4. Unflatten the merged dictionary
         nested_result = unflatten_dict(merged_dict)
 
-        # 5. Only keep top-level keys that are in the update_value_map
+        # 5. Replace any arrays containing only None values with empty arrays
+        nested_result = replace_none_arrays(nested_result)  # type: ignore
+
+        # 6. Only keep top-level keys that are in the update_value_map
         # Get unique top-level keys from update_value_map
-        top_level_keys = {key.split(".")[0] for key in update_value_map.keys()}
+        top_level_keys = {key.split(".")[0] for key in update_value_map}
 
         # Filter the nested result to only include those top-level keys
         final_update_map = {

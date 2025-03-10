@@ -78,7 +78,7 @@ dataset:
               data_type: string
               length: 40
           - name: tags
-            data_categories: [user.preferences]
+            data_categories: [user]
             fides_meta:
               data_type: string[]
           - name: purchase_history
@@ -92,7 +92,7 @@ dataset:
               - name: purchase_date
                 data_categories: [system.operations]
               - name: item_tags
-                data_categories: [user.preferences]
+                data_categories: [user]
                 fides_meta:
                   data_type: string[]
 
