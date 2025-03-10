@@ -28,7 +28,7 @@ export const statusPropMap: {
     label: "Awaiting Email Send",
   },
   denied: {
-    color: "error",
+    color: "warning",
     label: "Denied",
   },
   canceled: {
@@ -36,7 +36,7 @@ export const statusPropMap: {
     label: "Canceled",
   },
   error: {
-    color: "warning",
+    color: "error",
     label: "Error",
   },
   in_processing: {
@@ -68,7 +68,7 @@ interface RequestBadgeProps {
 const RequestStatusBadge = ({ status }: RequestBadgeProps) => (
   <Tag
     color={statusPropMap[status].color}
-    className="w-[120px] justify-center"
+    className="justify-center"
     data-testid="request-status-badge"
   >
     {statusPropMap[status].label}

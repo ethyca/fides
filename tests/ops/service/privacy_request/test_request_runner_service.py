@@ -1475,3 +1475,39 @@ class TestDatasetReferenceValidation:
             in log.message
         )
         assert log.action_type == privacy_request.policy.get_action_type()
+
+
+class TestSkipCollectionsWithOptionalIdentities:
+    @pytest.mark.parametrize(
+        "dsr_version",
+        ["use_dsr_3_0", "use_dsr_2_0"],
+    )
+    def test_skip_collections_with_optional_identities(
+        self,
+        privacy_request: PrivacyRequest,
+        run_privacy_request_task,
+        optional_identities_dataset_config,
+        dsr_version,
+        request,
+    ):
+        """Test that collections with optional identities are skipped"""
+
+        request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+
+        # Run privacy request
+        run_privacy_request_task.delay(privacy_request.id).get(timeout=300)
+
+        skipped_logs = privacy_request.execution_logs.filter_by(
+            status=ExecutionLogStatus.skipped
+        ).all()
+        assert len(skipped_logs) == 1, "No skipped execution logs were created"
+
+        # Verify the skipped log for dataset traversal
+        skipped_log = skipped_logs[0]
+        assert skipped_log.privacy_request_id == privacy_request.id
+        assert skipped_log.status == ExecutionLogStatus.skipped
+        assert skipped_log.dataset_name == "Dataset traversal"
+        assert skipped_log.collection_name == "optional_identities.customer"
+        assert skipped_log.message == (
+            'Skipping the "optional_identities:customer" collection, it is reachable by the "user_id" identity but only the "email" identity was provided'
+        )

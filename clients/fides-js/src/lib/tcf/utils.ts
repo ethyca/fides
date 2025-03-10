@@ -445,7 +445,7 @@ export const createTcfSavePayloadFromMinExp = ({
  *
  * @param oldCookie - The old Fides cookie.
  * @param tcf - The TCF save preferences representing the data sent to the backend.
- * @param enabledIds - The user's enabled IDs.
+ * @param enabledIds - The user's enabled IDs. This could include both TCF and custom enabled IDs
  * @param experience - The full privacy experience.
  * @param consentPreferencesToSave - Any Custom Notice preferences to save.
  * @returns A promise that resolves to the updated Fides cookie.

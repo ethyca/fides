@@ -1,4 +1,4 @@
-import { FidesEvent } from "../docs";
+import { FidesEvent, FidesEventType } from "../docs";
 import { FidesEventDetail } from "../lib/events";
 
 declare global {
@@ -26,6 +26,7 @@ const pushFidesVariableToGTM = (fidesEvent: {
     consent: fidesEvent.detail.consent,
     extraDetails: fidesEvent.detail.extraDetails,
     fides_string: fidesEvent.detail.fides_string,
+    timestamp: fidesEvent.detail.timestamp,
   };
 
   // Push to the GTM dataLayer
@@ -38,19 +39,34 @@ const pushFidesVariableToGTM = (fidesEvent: {
  * `dataLayer` under `Fides.consent` variable.
  */
 export const gtm = () => {
+  // List every FidesEventType as a record so that new additional events are
+  // considered by future developers as to whether they should be pushed to GTM.
+  const fidesEvents: Record<FidesEventType, boolean> = {
+    FidesInitializing: false,
+    FidesInitialized: true,
+    FidesUpdating: true,
+    FidesUpdated: true,
+    FidesUIChanged: true,
+    FidesUIShown: true,
+    FidesModalClosed: true,
+  };
+
+  const events = Object.entries(fidesEvents)
+    .filter(([, dispatchToGtm]) => dispatchToGtm)
+    .map(([key]) => key) as FidesEventType[];
+
   // Listen for Fides events and cross-publish them to GTM
-  window.addEventListener("FidesInitialized", (event) =>
-    pushFidesVariableToGTM(event),
-  );
-  window.addEventListener("FidesUpdating", (event) =>
-    pushFidesVariableToGTM(event),
-  );
-  window.addEventListener("FidesUpdated", (event) =>
-    pushFidesVariableToGTM(event),
-  );
+  events.forEach((eventName) => {
+    window.addEventListener(eventName, (event) =>
+      pushFidesVariableToGTM(event),
+    );
+  });
 
   // If Fides was already initialized, publish a synthetic event immediately
   if (window.Fides?.initialized) {
+    // Lookup the timestamp of the original FidesInitialized performance mark
+    const timestamp =
+      performance?.getEntriesByName("FidesInitialized")[0]?.startTime;
     pushFidesVariableToGTM({
       type: "FidesInitialized",
       detail: {
@@ -58,6 +74,7 @@ export const gtm = () => {
         fides_meta: window.Fides.fides_meta,
         identity: window.Fides.identity,
         tcf_consent: window.Fides.tcf_consent,
+        timestamp,
         extraDetails: {
           consentMethod: window.Fides.fides_meta?.consentMethod,
         },
