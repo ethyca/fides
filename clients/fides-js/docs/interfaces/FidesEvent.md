@@ -194,7 +194,7 @@ The unique key identifying this preference
 
 #### extraDetails.preference.type
 
-> **type**: `"notice"` \| `"tcf_purpose_consent"` \| `"tcf_purpose_legitimate_interest"` \| `"tcf_vendor_consent"` \| `"tcf_vendor_legitimate_interest"`
+> **type**: `"notice"` \| `"tcf_purpose_consent"` \| `"tcf_purpose_legitimate_interest"` \| `"tcf_special_feature"` \| `"tcf_vendor_consent"` \| `"tcf_vendor_legitimate_interest"`
 
 The type of preference being changed
 

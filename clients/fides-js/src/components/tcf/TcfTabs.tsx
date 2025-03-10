@@ -2,7 +2,10 @@ import { h } from "preact";
 import { useCallback, useRef } from "preact/hooks";
 
 import { PrivacyExperience } from "../../lib/consent-types";
-import { FidesEventDetailsTrigger } from "../../lib/events";
+import {
+  FidesEventDetailsPreference,
+  FidesEventDetailsTrigger,
+} from "../../lib/events";
 import { useI18n } from "../../lib/i18n/i18n-context";
 import {
   EnabledIds,
@@ -35,6 +38,7 @@ const TcfTabs = ({
   onChange: (
     payload: EnabledIds,
     eventTrigger: FidesEventDetailsTrigger,
+    preference: FidesEventDetailsPreference,
   ) => void;
   activeTabIndex: number;
   onTabChange: (tabIndex: number) => void;
@@ -44,9 +48,10 @@ const TcfTabs = ({
     (
       { newEnabledIds, modelType }: UpdateEnabledIds,
       eventTrigger: FidesEventDetailsTrigger,
+      preference: FidesEventDetailsPreference,
     ) => {
       const updated = { ...enabledIds, [modelType]: newEnabledIds };
-      onChange(updated, eventTrigger);
+      onChange(updated, eventTrigger, preference);
     },
     [enabledIds, onChange],
   );
@@ -98,7 +103,16 @@ const TcfTabs = ({
             experience={experience}
             enabledVendorConsentIds={enabledIds.vendorsConsent}
             enabledVendorLegintIds={enabledIds.vendorsLegint}
-            onChange={handleUpdateDraftState}
+            onChange={(payload, eventTrigger) =>
+              handleUpdateDraftState(payload, eventTrigger, {
+                key: "placeholder.1",
+                type: "tcf_vendor_consent",
+                vendor_id: "placeholder.1",
+                vendor_list: "gvl",
+                vendor_list_id: "1",
+                vendor_name: "Placeholder Vendor",
+              })
+            }
           />
         </div>
       ),

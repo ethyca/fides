@@ -193,6 +193,7 @@ export interface FidesEvent extends CustomEvent {
           | "notice"
           | "tcf_purpose_consent"
           | "tcf_purpose_legitimate_interest"
+          | "tcf_special_feature"
           | "tcf_vendor_consent"
           | "tcf_vendor_legitimate_interest";
 
