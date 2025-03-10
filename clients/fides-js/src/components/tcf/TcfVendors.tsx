@@ -386,12 +386,15 @@ const TcfVendors = ({
             modelType,
           };
 
+          // For convenience, split the vendor ID into parts for the FidesEvent,
+          // so that consumers don't need to implement this
+          const [vendorList, vendorListId] = vendor.id.split(".");
           const preference: FidesEventDetailsPreference = {
-            key: `${vendor.id}`,
+            key: vendor.id,
             type,
             vendor_id: vendor.id,
-            vendor_list: "gvl",
-            vendor_list_id: vendor.id, // TODO: this should be just the suffix of the vendor_id not the whole id
+            vendor_list: vendorList as "gvl" | "gacp" | "fds",
+            vendor_list_id: vendorListId,
             vendor_name: vendor.name,
           };
 
