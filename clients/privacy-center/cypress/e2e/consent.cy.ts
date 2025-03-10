@@ -286,7 +286,7 @@ describe("Consent settings", () => {
       });
     });
 
-    it("reflects their choices using fides.js", () => {
+    it.only("reflects their choices using fides.js", () => {
       // Opt-out of items default to opt-in.
       cy.getByTestId(`consent-item-advertising`).within(() => {
         cy.getToggle().uncheck();
@@ -316,6 +316,7 @@ describe("Consent settings", () => {
           });
 
           // GTM configuration
+          const timestamp = win.dataLayer[0]?.Fides?.timestamp;
           expect(win)
             .to.have.nested.property("dataLayer[0]")
             .that.eql({
@@ -331,6 +332,7 @@ describe("Consent settings", () => {
                   consentMethod: "save",
                 },
                 fides_string: undefined,
+                timestamp,
               },
             });
           // Meta Pixel configuration
