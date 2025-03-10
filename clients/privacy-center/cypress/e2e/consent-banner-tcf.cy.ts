@@ -410,6 +410,7 @@ describe("Fides-js TCF", () => {
           .should("have.been.callCount", 4) // FidesInitialized + FidesUIShown (banner) + FidesUpdating + FidesUpdated
           // First call should be from initialization, before the user accepts all
           .its("firstCall.args.0")
+          .then((actual) => Cypress._.omit(actual, "Fides.timestamp"))
           .should("deep.equal", {
             event: "FidesInitialized",
             Fides: {
@@ -730,11 +731,14 @@ describe("Fides-js TCF", () => {
           .then((event: CustomEvent) => {
             // Check that the extraDetails includes context about what changed
             expect(event.type).to.equal("FidesUIChanged");
-            expect(event.detail.extraDetails).to.have.property("servingToggle");
-            expect(event.detail.extraDetails.servingToggle).to.deep.include({
+            expect(event.detail.extraDetails).to.have.property("trigger");
+            expect(event.detail.extraDetails.trigger).to.deep.include({
               label: PURPOSE_4.name,
-              id: PURPOSE_4.id.toString(),
               checked: true,
+            });
+            expect(event.detail.extraDetails.preference).to.deep.include({
+              type: "tcf_purpose_consent",
+              key: "tcf_purpose_consent_4",
             });
           });
 
@@ -746,11 +750,14 @@ describe("Fides-js TCF", () => {
           .then((event: CustomEvent) => {
             // Check that the extraDetails includes context about what changed
             expect(event.type).to.equal("FidesUIChanged");
-            expect(event.detail.extraDetails).to.have.property("servingToggle");
-            expect(event.detail.extraDetails.servingToggle).to.deep.include({
+            expect(event.detail.extraDetails).to.have.property("trigger");
+            expect(event.detail.extraDetails.trigger).to.deep.include({
               label: PURPOSE_6.name,
-              id: PURPOSE_6.id.toString(),
               checked: true,
+            });
+            expect(event.detail.extraDetails.preference).to.deep.include({
+              type: "tcf_purpose_consent",
+              key: "tcf_purpose_consent_6",
             });
           });
 
@@ -762,11 +769,14 @@ describe("Fides-js TCF", () => {
           .then((event: CustomEvent) => {
             // Check that the extraDetails includes context about what changed
             expect(event.type).to.equal("FidesUIChanged");
-            expect(event.detail.extraDetails).to.have.property("servingToggle");
-            expect(event.detail.extraDetails.servingToggle).to.deep.include({
+            expect(event.detail.extraDetails).to.have.property("trigger");
+            expect(event.detail.extraDetails.trigger).to.deep.include({
               label: PURPOSE_4.name,
-              id: PURPOSE_4.id.toString(),
               checked: false,
+            });
+            expect(event.detail.extraDetails.preference).to.deep.include({
+              type: "tcf_purpose_consent",
+              key: "tcf_purpose_consent_4",
             });
           });
       });
@@ -983,6 +993,7 @@ describe("Fides-js TCF", () => {
           .should("have.been.callCount", 6) // FidesInitialized + FidesUIShown (banner) + FidesUIShown (modal) + FidesModalClosed + FidesUpdating + FidesUpdated
           // First call should be from initialization, before the user accepts all
           .its("firstCall.args.0")
+          .then((actual) => Cypress._.omit(actual, "Fides.timestamp"))
           .should("deep.equal", {
             event: "FidesInitialized",
             Fides: {
