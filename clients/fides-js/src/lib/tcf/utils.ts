@@ -21,7 +21,7 @@ import {
   DecodedFidesString,
   decodeFidesString,
   idsFromAcString,
-} from "../fidesString";
+} from "../fides-string";
 import {
   transformConsentToFidesUserPreference,
   transformUserPreferenceToBoolean,

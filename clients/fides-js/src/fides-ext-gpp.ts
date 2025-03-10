@@ -28,7 +28,7 @@ import {
   shouldResurfaceConsent,
 } from "./lib/consent-utils";
 import { saveFidesCookie } from "./lib/cookie";
-import { formatFidesStringWithGpp } from "./lib/fidesString";
+import { formatFidesStringWithGpp } from "./lib/fides-string";
 import {
   CMP_VERSION,
   FIDES_US_REGION_TO_GPP_SECTION,
