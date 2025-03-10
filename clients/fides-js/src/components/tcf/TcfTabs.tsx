@@ -1,7 +1,7 @@
 import { h } from "preact";
 import { useCallback, useRef } from "preact/hooks";
 
-import { PrivacyExperience } from "../../lib/consent-types";
+import { FidesInitOptions, PrivacyExperience } from "../../lib/consent-types";
 import { useI18n } from "../../lib/i18n/i18n-context";
 import {
   EnabledIds,
@@ -27,6 +27,7 @@ const TcfTabs = ({
   onChange,
   activeTabIndex,
   onTabChange,
+  options,
 }: {
   experience: PrivacyExperience;
   customNotices: PrivacyNoticeWithBestTranslation[] | undefined;
@@ -34,6 +35,7 @@ const TcfTabs = ({
   onChange: (payload: EnabledIds) => void;
   activeTabIndex: number;
   onTabChange: (tabIndex: number) => void;
+  options: FidesInitOptions;
 }) => {
   const { i18n } = useI18n();
   const handleUpdateDraftState = useCallback(
@@ -61,6 +63,7 @@ const TcfTabs = ({
             enabledPurposeLegintIds={enabledIds.purposesLegint}
             enabledSpecialPurposeIds={enabledIds.specialPurposes}
             onChange={handleUpdateDraftState}
+            options={options}
           />
         </div>
       ),

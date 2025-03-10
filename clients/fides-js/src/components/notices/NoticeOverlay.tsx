@@ -3,7 +3,13 @@ import "../fides.css";
 import { FunctionComponent, h } from "preact";
 import { useCallback, useEffect, useMemo, useState } from "preact/hooks";
 
-import { isConsentOverride } from "../../lib/common-utils";
+import {
+  getConsentValueFromOverride,
+  hasConsentOverride,
+  isGlobalConsentOverride,
+  isNoticeOverrides,
+  isOverrideDisabled,
+} from "../../lib/common-utils";
 import { getConsentContext } from "../../lib/consent-context";
 import {
   ConsentMechanism,
@@ -136,26 +142,36 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
   );
 
   // Calculate the "notice toggles" props for display based on the current state
-  const noticeToggles: NoticeToggleProps[] = privacyNoticeItems.map((item) => {
-    const checked =
-      draftEnabledNoticeKeys.indexOf(item.notice.notice_key) !== -1;
-    const consentContext = getConsentContext();
-    const gpcStatus = getGpcStatusFromNotice({
-      value: checked,
-      notice: item.notice,
-      consentContext,
-    });
+  const noticeToggles: NoticeToggleProps[] = useMemo(
+    () =>
+      privacyNoticeItems.map((item) => {
+        const checked =
+          draftEnabledNoticeKeys.indexOf(item.notice.notice_key) !== -1;
+        const consentContext = getConsentContext();
+        const gpcStatus = getGpcStatusFromNotice({
+          value: checked,
+          notice: item.notice,
+          consentContext,
+        });
+        const noticeKey = item.notice.notice_key;
 
-    return {
-      noticeKey: item.notice.notice_key,
-      title: item.bestTranslation?.title || item.notice.name || "",
-      description: item.bestTranslation?.description,
-      checked,
-      consentMechanism: item.notice.consent_mechanism,
-      disabled: item.notice.consent_mechanism === ConsentMechanism.NOTICE_ONLY,
-      gpcStatus,
-    };
-  });
+        const disabled =
+          item.notice.consent_mechanism === ConsentMechanism.NOTICE_ONLY ||
+          (isNoticeOverrides(options.fidesConsentOverride) &&
+            isOverrideDisabled(options.fidesConsentOverride[noticeKey]));
+
+        return {
+          noticeKey,
+          title: item.bestTranslation?.title || item.notice.name || "",
+          description: item.bestTranslation?.description,
+          checked,
+          consentMechanism: item.notice.consent_mechanism,
+          disabled,
+          gpcStatus,
+        };
+      }),
+    [draftEnabledNoticeKeys, options.fidesConsentOverride, privacyNoticeItems],
+  );
 
   const { servedNoticeHistoryId } = useNoticesServed({
     privacyExperienceConfigHistoryId,
@@ -255,17 +271,44 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
   );
 
   useEffect(() => {
-    if (isConsentOverride(options) && experience.privacy_notices) {
-      if (options.fidesConsentOverride === ConsentMethod.ACCEPT) {
-        fidesDebugger(
-          "Consent automatically accepted by fides_consent_override!",
-        );
-        handleAcceptAll(true);
-      } else if (options.fidesConsentOverride === ConsentMethod.REJECT) {
-        fidesDebugger(
-          "Consent automatically rejected by fides_consent_override!",
-        );
-        handleRejectAll(true);
+    if (hasConsentOverride(options) && experience.privacy_notices) {
+      if (isGlobalConsentOverride(options.fidesConsentOverride)) {
+        // Apply global overrides
+        if (options.fidesConsentOverride === ConsentMethod.ACCEPT) {
+          fidesDebugger(
+            "Consent automatically accepted by fides_consent_override!",
+          );
+          handleAcceptAll(true);
+        } else if (options.fidesConsentOverride === ConsentMethod.REJECT) {
+          fidesDebugger(
+            "Consent automatically rejected by fides_consent_override!",
+          );
+          handleRejectAll(true);
+        }
+      } else if (isNoticeOverrides(options.fidesConsentOverride)) {
+        // Apply per-notice overrides
+        const overrides = options.fidesConsentOverride;
+        const enabledNoticeKeys: string[] = [];
+
+        Object.entries(overrides).forEach(([noticeKey, value]) => {
+          const notice = experience.privacy_notices?.find(
+            (n) => n.notice_key === noticeKey,
+          );
+          if (
+            notice &&
+            notice.consent_mechanism !== ConsentMechanism.NOTICE_ONLY &&
+            getConsentValueFromOverride(value)
+          ) {
+            enabledNoticeKeys.push(noticeKey);
+          }
+        });
+
+        if (enabledNoticeKeys.length > 0) {
+          fidesDebugger(
+            `Consent automatically accepted by fides_consent_override for notice ${enabledNoticeKeys}!`,
+          );
+          handleUpdatePreferences(ConsentMethod.SCRIPT, enabledNoticeKeys);
+        }
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

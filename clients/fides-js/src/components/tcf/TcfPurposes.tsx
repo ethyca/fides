@@ -3,7 +3,12 @@ import { useMemo, useState } from "preact/hooks";
 
 import { UpdateEnabledIds } from "~/components/tcf/TcfTabs";
 
-import { ConsentMechanism, PrivacyExperience } from "../../lib/consent-types";
+import { isNoticeOverrides, isOverrideDisabled } from "../../lib/common-utils";
+import {
+  ConsentMechanism,
+  FidesInitOptions,
+  PrivacyExperience,
+} from "../../lib/consent-types";
 import { useI18n } from "../../lib/i18n/i18n-context";
 import { LEGAL_BASIS_OPTIONS } from "../../lib/tcf/constants";
 import { getUniquePurposeRecords, hasLegalBasis } from "../../lib/tcf/purposes";
@@ -81,6 +86,7 @@ const TcfPurposes = ({
   enabledPurposeLegintIds,
   enabledSpecialPurposeIds,
   onChange,
+  options,
 }: {
   allPurposesConsent: TCFPurposeConsentRecord[] | undefined;
   allCustomPurposesConsent: Array<PrivacyNoticeWithBestTranslation> | undefined;
@@ -91,6 +97,7 @@ const TcfPurposes = ({
   enabledCustomPurposeConsentIds: string[];
   enabledSpecialPurposeIds: string[];
   onChange: (payload: UpdateEnabledIds) => void;
+  options: FidesInitOptions;
 }) => {
   const { i18n } = useI18n();
   const { uniquePurposes } = useMemo(
@@ -118,10 +125,22 @@ const TcfPurposes = ({
     if (activeLegalBasisOption.value === LegalBasisEnum.CONSENT.toString()) {
       return {
         purposes: uniquePurposes.filter((p) => p.isConsent),
-        customPurposes: allCustomPurposesConsent.map((purpose) => ({
-          ...purpose,
-          disabled: purpose.consent_mechanism === ConsentMechanism.NOTICE_ONLY,
-        })), // all custom purposes are "consent" purposes
+        customPurposes: allCustomPurposesConsent.map((purpose) => {
+          console.log(
+            "==>customPurpose",
+            purpose,
+            options.fidesConsentOverride,
+          );
+          return {
+            ...purpose,
+            disabled:
+              purpose.consent_mechanism === ConsentMechanism.NOTICE_ONLY ||
+              (isNoticeOverrides(options.fidesConsentOverride) &&
+                isOverrideDisabled(
+                  options.fidesConsentOverride[purpose.notice_key],
+                )),
+          };
+        }),
         purposeModelType: "purposesConsent",
         enabledPurposeIds: enabledPurposeConsentIds,
         enabledCustomPurposeIds: enabledCustomPurposeConsentIds,
@@ -132,7 +151,14 @@ const TcfPurposes = ({
       };
     }
     return {
-      purposes: uniquePurposes.filter((p) => p.isLegint),
+      purposes: uniquePurposes
+        .filter((p) => p.isLegint)
+        .map((purpose) => ({
+          ...purpose,
+          disabled:
+            isNoticeOverrides(options.fidesConsentOverride) &&
+            isOverrideDisabled(options.fidesConsentOverride[purpose.id]),
+        })),
       purposeModelType: "purposesLegint",
       enabledPurposeIds: enabledPurposeLegintIds,
       specialPurposes: specialPurposes.filter((sp) =>
@@ -149,6 +175,7 @@ const TcfPurposes = ({
     allCustomPurposesConsent,
     enabledPurposeConsentIds,
     enabledCustomPurposeConsentIds,
+    options.fidesConsentOverride,
   ]);
 
   return (

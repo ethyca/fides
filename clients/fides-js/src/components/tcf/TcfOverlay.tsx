@@ -5,6 +5,12 @@ import { h } from "preact";
 import { useCallback, useEffect, useMemo, useState } from "preact/hooks";
 
 import {
+  getConsentValueFromOverride,
+  hasConsentOverride,
+  isGlobalConsentOverride,
+  isNoticeOverrides,
+} from "../../lib/common-utils";
+import {
   ButtonType,
   ConsentMethod,
   PrivacyExperience,
@@ -445,16 +451,47 @@ export const TcfOverlay = ({
   );
 
   useEffect(() => {
-    if (options.fidesConsentOverride === ConsentMethod.ACCEPT) {
-      fidesDebugger(
-        "Consent automatically accepted by fides_consent_override!",
-      );
-      handleAcceptAll(true);
-    } else if (options.fidesConsentOverride === ConsentMethod.REJECT) {
-      fidesDebugger(
-        "Consent automatically rejected by fides_consent_override!",
-      );
-      handleRejectAll(true);
+    if (hasConsentOverride(options)) {
+      if (isGlobalConsentOverride(options.fidesConsentOverride)) {
+        // Apply global overrides
+        if (options.fidesConsentOverride === ConsentMethod.ACCEPT) {
+          fidesDebugger(
+            "Consent automatically accepted by fides_consent_override!",
+          );
+          handleAcceptAll(true);
+        } else if (options.fidesConsentOverride === ConsentMethod.REJECT) {
+          fidesDebugger(
+            "Consent automatically rejected by fides_consent_override!",
+          );
+          handleRejectAll(true);
+        }
+      } else if (isNoticeOverrides(options.fidesConsentOverride)) {
+        // Apply per-notice overrides
+        const overrides = options.fidesConsentOverride;
+        const enabledIds: EnabledIds = {
+          ...EMPTY_ENABLED_IDS,
+          customPurposesConsent: [],
+        };
+
+        // Only handle custom purposes for TCF
+        Object.entries(overrides).forEach(([noticeKey, value]) => {
+          const notice = privacyNoticesWithBestTranslation.find(
+            (n) => n.notice_key === noticeKey,
+          );
+          if (notice && getConsentValueFromOverride(value)) {
+            enabledIds.customPurposesConsent.push(notice.id);
+          }
+        });
+
+        console.log("==>enabledIds", enabledIds);
+
+        if (enabledIds.customPurposesConsent.length > 0) {
+          fidesDebugger(
+            `Consent automatically accepted by fides_consent_override for notices ${enabledIds.customPurposesConsent}!`,
+          );
+          handleUpdateAllPreferences(ConsentMethod.SCRIPT, enabledIds);
+        }
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [options.fidesConsentOverride]);
@@ -549,6 +586,7 @@ export const TcfOverlay = ({
           : () => (
               <TcfTabs
                 experience={experience}
+                options={options}
                 customNotices={privacyNoticesWithBestTranslation}
                 enabledIds={draftIds}
                 onChange={(updatedIds) => {
