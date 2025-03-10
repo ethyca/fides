@@ -2,7 +2,6 @@ import os
 from enum import Enum as EnumType
 from typing import Any, Optional
 
-from fideslang.validation import AnyHttpUrlString
 from loguru import logger as log
 from sqlalchemy import Column
 from sqlalchemy import Enum as EnumColumn
@@ -16,9 +15,11 @@ from fides.api.models.storage import StorageConfig  # pylint: disable=unused-imp
 from fides.api.schemas.storage.storage import StorageDetails, StorageType
 from fides.api.tasks.storage import (
     LOCAL_FIDES_UPLOAD_DIRECTORY,
-    create_presigned_url_for_s3,
+    generic_delete_from_s3,
+    generic_retrieve_from_s3,
+    generic_upload_to_s3,
+    get_local_filename,
 )
-from fides.api.util.aws_util import get_s3_client
 
 
 class AttachmentType(str, EnumType):
@@ -104,7 +105,6 @@ class Attachment(Base):
 
     config = relationship(
         "StorageConfig",
-        backref="attachments",
         lazy="selectin",
         uselist=False,
     )
@@ -113,47 +113,36 @@ class Attachment(Base):
         """Uploads an attachment to S3 or local storage."""
         if self.config.type == StorageType.s3:
             bucket_name = f"{self.config.details[StorageDetails.BUCKET.value]}"
-            s3_client = get_s3_client(
-                auth_method=self.config.details[StorageDetails.AUTH_METHOD.value],
+            auth_method = self.config.details[StorageDetails.AUTH_METHOD.value]
+            generic_upload_to_s3(
                 storage_secrets=self.config.secrets,
+                bucket_name=bucket_name,
+                file_key=self.id,
+                auth_method=auth_method,
+                document=attachment,
             )
-            s3_client.put_object(Bucket=bucket_name, Key=self.id, Body=attachment)
             log.info(f"Uploaded {self.file_name} to S3 bucket {bucket_name}/{self.id}")
             return
 
         if self.config.type == StorageType.local:
-            if not os.path.exists(LOCAL_FIDES_UPLOAD_DIRECTORY):
-                os.makedirs(LOCAL_FIDES_UPLOAD_DIRECTORY)
-
-            filename = f"{LOCAL_FIDES_UPLOAD_DIRECTORY}/{self.id}"
+            filename = get_local_filename(self.id)
             with open(filename, "wb") as file:
                 file.write(attachment)
             return
 
         raise ValueError(f"Unsupported storage type: {self.config.type}")
 
-    def download_attachment_from_s3(self) -> Optional[AnyHttpUrlString]:
-        """Returns the presigned URL for an attachment in S3."""
-        if self.config.type != StorageType.s3:
-            raise ValueError(f"Unsupported storage: {self.config.type}")
-
-        bucket_name = f"{self.config.details[StorageDetails.BUCKET.value]}"
-        s3_client = get_s3_client(
-            auth_method=self.config.details[StorageDetails.AUTH_METHOD.value],
-            storage_secrets=self.config.secrets,
-        )
-        return create_presigned_url_for_s3(s3_client, bucket_name, self.id)
-
     def retrieve_attachment(self) -> Optional[bytes]:
         """Returns the attachment from S3 in bytes form."""
         if self.config.type == StorageType.s3:
             bucket_name = f"{self.config.details[StorageDetails.BUCKET.value]}"
-            s3_client = get_s3_client(
-                auth_method=self.config.details[StorageDetails.AUTH_METHOD.value],
+            auth_method = self.config.details[StorageDetails.AUTH_METHOD.value]
+            return generic_retrieve_from_s3(
                 storage_secrets=self.config.secrets,
+                bucket_name=bucket_name,
+                file_key=self.id,
+                auth_method=auth_method,
             )
-            response = s3_client.get_object(Bucket=bucket_name, Key=self.id)
-            return response["Body"].read()
 
         if self.config.type == StorageType.local:
             filename = f"{LOCAL_FIDES_UPLOAD_DIRECTORY}/{self.id}"
@@ -166,12 +155,13 @@ class Attachment(Base):
         """Deletes an attachment from S3 or local storage."""
         if self.config.type == StorageType.s3:
             bucket_name = f"{self.config.details[StorageDetails.BUCKET.value]}"
-            s3_client = get_s3_client(
-                auth_method=self.config.details[StorageDetails.AUTH_METHOD.value],
+            auth_method = self.config.details[StorageDetails.AUTH_METHOD.value]
+            generic_delete_from_s3(
                 storage_secrets=self.config.secrets,
+                bucket_name=bucket_name,
+                file_key=self.id,
+                auth_method=auth_method,
             )
-            s3_client.delete_object(Bucket=bucket_name, Key=self.id)
-            log.info(f"Deleted {self.file_name} from S3 bucket {bucket_name}/{self.id}")
             return
 
         if self.config.type == StorageType.local:

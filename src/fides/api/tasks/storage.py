@@ -122,19 +122,107 @@ def create_presigned_url_for_s3(
     return response
 
 
+def generic_upload_to_s3(  # pylint: disable=R0913
+    storage_secrets: Dict[StorageSecrets, Any],
+    bucket_name: str,
+    file_key: str,
+    auth_method: str,
+    document: bytes,
+) -> Optional[AnyHttpUrlString]:
+    """Uploads arbitrary data to s3 returned from an access request"""
+    logger.info("Starting S3 Upload of {}", file_key)
+
+    try:
+        s3_client = get_s3_client(auth_method, storage_secrets)
+        try:
+            s3_client.put_object(Bucket=bucket_name, Key=file_key, Body=document)
+        except Exception as e:
+            logger.error("Encountered error while uploading s3 object: {}", e)
+            raise e
+
+        presigned_url: AnyHttpUrlString = create_presigned_url_for_s3(
+            s3_client, bucket_name, file_key
+        )
+
+        return presigned_url
+    except ClientError as e:
+        logger.error(
+            "Encountered error while uploading and generating link for s3 object: {}", e
+        )
+        raise e
+    except ParamValidationError as e:
+        raise ValueError(f"The parameters you provided are incorrect: {e}")
+
+
+def generic_retrieve_from_s3(
+    storage_secrets: Dict[StorageSecrets, Any],
+    bucket_name: str,
+    file_key: str,
+    auth_method: str,
+) -> Optional[bytes]:
+    """Retrieves arbitrary data from s3"""
+    logger.info("Starting S3 Retrieve of {}", file_key)
+
+    try:
+        s3_client = get_s3_client(auth_method, storage_secrets)
+        try:
+            response = s3_client.get_object(Bucket=bucket_name, Key=file_key)
+            return response["Body"].read()
+        except Exception as e:
+            logger.error("Encountered error while retrieving s3 object: {}", e)
+            raise e
+    except ClientError as e:
+        logger.error("Encountered error while retrieving s3 object: {}", e)
+        raise e
+    except ParamValidationError as e:
+        raise ValueError(f"The parameters you provided are incorrect: {e}")
+
+
+def generic_delete_from_s3(
+    storage_secrets: Dict[StorageSecrets, Any],
+    bucket_name: str,
+    file_key: str,
+    auth_method: str,
+) -> None:
+    """Deletes arbitrary data from s3"""
+    logger.info("Starting S3 Delete of {}", file_key)
+
+    try:
+        s3_client = get_s3_client(auth_method, storage_secrets)
+        try:
+            s3_client.delete_object(Bucket=bucket_name, Key=file_key)
+        except Exception as e:
+            logger.error("Encountered error while deleting s3 object: {}", e)
+            raise e
+    except ClientError as e:
+        logger.error("Encountered error while deleting s3 object: {}", e)
+        raise e
+    except ParamValidationError as e:
+        raise ValueError(f"The parameters you provided are incorrect: {e}")
+
+
 def upload_to_s3(  # pylint: disable=R0913
     storage_secrets: Dict[StorageSecrets, Any],
     data: Dict,
     bucket_name: str,
     file_key: str,
     resp_format: str,
-    privacy_request: PrivacyRequest,
+    privacy_request: Optional[PrivacyRequest],
+    document: Optional[bytes],
     auth_method: str,
-    data_category_field_mapping: Optional[DataCategoryFieldMapping] = None,
-    data_use_map: Optional[Dict[str, Set[str]]] = None,
+    data_category_field_mapping: Optional[DataCategoryFieldMapping] = None,  # mypy: ignore arg-type
+    data_use_map: Optional[Dict[str, Set[str]]] = None,  # mypy: ignore arg-type
 ) -> Optional[AnyHttpUrlString]:
     """Uploads arbitrary data to s3 returned from an access request"""
     logger.info("Starting S3 Upload of {}", file_key)
+
+    if privacy_request is None and document is not None:
+        return generic_upload_to_s3(
+            storage_secrets, bucket_name, file_key, auth_method, document
+        )
+
+    if privacy_request is None:
+        raise ValueError("Privacy request must be provided")
 
     try:
         s3_client = get_s3_client(auth_method, storage_secrets)
@@ -164,6 +252,13 @@ def upload_to_s3(  # pylint: disable=R0913
         raise ValueError(f"The parameters you provided are incorrect: {e}")
 
 
+def get_local_filename(file_key: str) -> str:
+    """Verifies that the local storage directory exists"""
+    if not os.path.exists(LOCAL_FIDES_UPLOAD_DIRECTORY):
+        os.makedirs(LOCAL_FIDES_UPLOAD_DIRECTORY)
+    return f"{LOCAL_FIDES_UPLOAD_DIRECTORY}/{file_key}"
+
+
 def upload_to_local(
     data: Dict,
     file_key: str,
@@ -173,8 +268,7 @@ def upload_to_local(
     data_use_map: Optional[Dict[str, Set[str]]] = None,
 ) -> str:
     """Uploads access request data to a local folder - for testing/demo purposes only"""
-    if not os.path.exists(LOCAL_FIDES_UPLOAD_DIRECTORY):
-        os.makedirs(LOCAL_FIDES_UPLOAD_DIRECTORY)
+    get_local_filename(file_key)
 
     filename = f"{LOCAL_FIDES_UPLOAD_DIRECTORY}/{file_key}"
     in_memory_file = write_to_in_memory_buffer(resp_format, data, privacy_request)
