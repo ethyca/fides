@@ -428,6 +428,7 @@ describe("Consent settings", () => {
           });
 
           // GTM configuration
+          const timestamp = win.dataLayer[0]?.Fides?.timestamp;
           expect(win)
             .to.have.nested.property("dataLayer[0]")
             .that.eql({
@@ -443,6 +444,7 @@ describe("Consent settings", () => {
                   shouldShowExperience: false,
                 },
                 fides_string: undefined,
+                timestamp,
               },
             });
 
