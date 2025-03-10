@@ -2176,6 +2176,7 @@ describe("Consent overlay", () => {
         .should("have.been.callCount", 4) // FidesInitialized + FidesUIShown + FidesUpdating + FidesUpdated
         // First call should be from initialization, before the user accepts all
         .its("firstCall.args.0")
+        .then((actual) => Cypress._.omit(actual, "Fides.timestamp"))
         .should("deep.equal", {
           event: "FidesInitialized",
           Fides: {
@@ -2194,6 +2195,7 @@ describe("Consent overlay", () => {
       cy.get("@dataLayerPush")
         // Second call is FidesUIShown when banner appears
         .its("secondCall.args.0")
+        .then((actual) => Cypress._.omit(actual, "Fides.timestamp"))
         .should("deep.equal", {
           event: "FidesUIShown",
           Fides: {
@@ -2212,6 +2214,7 @@ describe("Consent overlay", () => {
       cy.get("@dataLayerPush")
         // Third call is when the user accepts all
         .its("thirdCall.args.0")
+        .then((actual) => Cypress._.omit(actual, "Fides.timestamp"))
         .should("deep.equal", {
           event: "FidesUpdating",
           Fides: {
@@ -2229,6 +2232,7 @@ describe("Consent overlay", () => {
       cy.get("@dataLayerPush")
         // Fourth call is when the preferences finish updating
         .its("lastCall.args.0")
+        .then((actual) => Cypress._.omit(actual, "Fides.timestamp"))
         .should("deep.equal", {
           event: "FidesUpdated",
           Fides: {

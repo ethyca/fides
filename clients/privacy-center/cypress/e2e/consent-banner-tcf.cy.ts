@@ -410,6 +410,7 @@ describe("Fides-js TCF", () => {
           .should("have.been.callCount", 4) // FidesInitialized + FidesUIShown (banner) + FidesUpdating + FidesUpdated
           // First call should be from initialization, before the user accepts all
           .its("firstCall.args.0")
+          .then((actual) => Cypress._.omit(actual, "Fides.timestamp"))
           .should("deep.equal", {
             event: "FidesInitialized",
             Fides: {
@@ -992,6 +993,7 @@ describe("Fides-js TCF", () => {
           .should("have.been.callCount", 6) // FidesInitialized + FidesUIShown (banner) + FidesUIShown (modal) + FidesModalClosed + FidesUpdating + FidesUpdated
           // First call should be from initialization, before the user accepts all
           .its("firstCall.args.0")
+          .then((actual) => Cypress._.omit(actual, "Fides.timestamp"))
           .should("deep.equal", {
             event: "FidesInitialized",
             Fides: {
