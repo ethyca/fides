@@ -10,6 +10,7 @@ from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.detection_discovery import (
     DiffStatus,
     MonitorConfig,
+    MonitorExecution,
     MonitorFrequency,
     StagedResource,
     fetch_staged_resources_by_type_query,
@@ -633,3 +634,50 @@ class TestMonitorConfigModel:
         )
         assert mc.execution_start_date == expected_date
         db.delete(mc)
+
+
+class TestMonitorExecutionModel:
+    """Tests for the MonitorExecution model"""
+
+    @pytest.fixture
+    def monitor_config_key(self, db: Session, monitor_config) -> str:
+        """Returns a monitor config key for testing"""
+        return monitor_config.key
+
+    def test_started_timestamp_is_set_on_creation(
+        self, db: Session, monitor_config_key
+    ) -> None:
+        """Test that the started timestamp is set correctly when creating a new record"""
+        # Create first record
+        first_execution = MonitorExecution.create(
+            db=db,
+            data={
+                "monitor_config_key": monitor_config_key,
+                "status": "running",
+            },
+        )
+
+        # Small delay to ensure timestamps would be different
+        import time
+
+        time.sleep(0.1)
+
+        # Create second record
+        second_execution = MonitorExecution.create(
+            db=db,
+            data={
+                "monitor_config_key": monitor_config_key,
+                "status": "running",
+            },
+        )
+
+        # Verify timestamps are different (not a constant default)
+        assert first_execution.started != second_execution.started
+
+        # Verify timestamps are recent
+        now = datetime.now(timezone.utc)
+        assert (now - first_execution.started).total_seconds() < 5
+        assert (now - second_execution.started).total_seconds() < 5
+
+        # Verify second timestamp is later than first
+        assert second_execution.started > first_execution.started
