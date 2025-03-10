@@ -135,10 +135,10 @@ What UI element (if any) triggered this event.
 
 #### extraDetails.trigger.type
 
-> **type**: `string`
+> **type**: `"toggle"`
 
 The type of element that triggered the event. Additional types may be
-added over time, so expect this type to grow.
+added over time (e.g. "button", "link"), so expect this type to grow.
 
 #### extraDetails.trigger.label?
 
