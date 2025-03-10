@@ -1,7 +1,7 @@
 import {
   decodeFidesString,
   idsFromAcString,
-} from "../../../src/lib/fidesString";
+} from "../../../src/lib/fides-string";
 
 describe("fidesString", () => {
   beforeAll(() => {

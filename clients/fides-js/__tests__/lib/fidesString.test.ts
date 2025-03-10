@@ -1,6 +1,6 @@
 import { CmpApi } from "@iabgpp/cmpapi";
 
-import { formatFidesStringWithGpp } from "../../src/lib/fidesString";
+import { formatFidesStringWithGpp } from "../../src/lib/fides-string";
 
 describe("formatFidesStringWithGpp", () => {
   beforeAll(() => {
