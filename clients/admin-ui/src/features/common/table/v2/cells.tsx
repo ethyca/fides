@@ -5,22 +5,22 @@ import {
   AntInput as Input,
   AntSwitch as Switch,
   AntSwitchProps as SwitchProps,
-  Badge,
-  BadgeProps,
-  Box,
+  AntTag as Tag,
+  AntTagProps as TagProps,
+  AntTooltip as Tooltip,
   Checkbox,
   CheckboxProps,
   Flex,
   FlexProps,
   Text,
   TextProps,
-  Tooltip,
   useDisclosure,
   useToast,
   WarningIcon,
 } from "fidesui";
 import { useField, useFormikContext } from "formik";
-import { ReactNode, useEffect, useMemo, useState } from "react";
+import { isBoolean } from "lodash";
+import { ReactElement, ReactNode, useEffect, useMemo, useState } from "react";
 
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import ConfirmationModal from "~/features/common/modals/ConfirmationModal";
@@ -36,7 +36,7 @@ export const DefaultCell = <T,>({
   ...chakraStyleProps
 }: {
   cellProps?: FidesCellProps<T>;
-  value: string | undefined | number | null | boolean;
+  value: string | ReactElement | undefined | number | null | boolean;
 } & TextProps) => {
   const expandable = !!cellProps?.cell.column.columnDef.meta?.showHeaderMenu;
   const isExpanded = expandable && !!cellProps?.cellState?.isExpanded;
@@ -52,14 +52,10 @@ export const DefaultCell = <T,>({
       title={isExpanded && !!value ? undefined : value?.toString()}
       {...chakraStyleProps}
     >
-      {value !== null && value !== undefined ? value.toString() : value}
+      {isBoolean(value) ? value.toString() : value}
     </Text>
   );
 };
-
-const FidesBadge = ({ children, ...props }: BadgeProps) => (
-  <Badge {...props}>{children}</Badge>
-);
 
 export const RelativeTimestampCell = ({
   time,
@@ -78,7 +74,7 @@ export const RelativeTimestampCell = ({
 
   return (
     <Flex alignItems="center" height="100%">
-      <Tooltip label={formattedDate} hasArrow>
+      <Tooltip title={formattedDate}>
         <Text
           fontSize="xs"
           lineHeight={4}
@@ -102,16 +98,16 @@ export const BadgeCellContainer = ({ children, ...props }: FlexProps) => (
 export const BadgeCell = ({
   value,
   suffix,
-  ...badgeProps
+  ...tagProps
 }: {
-  value: string | number;
+  value: string | number | null | undefined;
   suffix?: string;
-} & BadgeProps) => (
+} & TagProps) => (
   <BadgeCellContainer>
-    <FidesBadge {...badgeProps}>
+    <Tag {...tagProps}>
       {value}
       {suffix}
-    </FidesBadge>
+    </Tag>
   </BadgeCellContainer>
 );
 
@@ -119,43 +115,40 @@ export const BadgeCellCount = ({
   count,
   singSuffix,
   plSuffix,
-  ...badgeProps
+  ...tagProps
 }: {
   count: number;
   singSuffix?: string;
   plSuffix?: string;
-} & BadgeProps) => {
-  // If count is 1, display count with singular suffix
-  let badge = null;
+} & TagProps) => {
+  let tag = null;
   if (count === 1) {
-    badge = (
-      <FidesBadge {...badgeProps}>
+    tag = (
+      <Tag {...tagProps}>
         {count}
         {singSuffix ? ` ${singSuffix}` : null}
-      </FidesBadge>
+      </Tag>
     );
-  }
-  // If count is 0 or > 1, display count with plural suffix
-  else {
-    badge = (
-      <FidesBadge {...badgeProps}>
+  } else {
+    tag = (
+      <Tag {...tagProps}>
         {count}
         {plSuffix ? ` ${plSuffix}` : null}
-      </FidesBadge>
+      </Tag>
     );
   }
-  return <BadgeCellContainer>{badge}</BadgeCellContainer>;
+  return <BadgeCellContainer>{tag}</BadgeCellContainer>;
 };
 
 type BadgeCellExpandableValues = { label: string | ReactNode; key: string }[];
 export const BadgeCellExpandable = <T,>({
   values,
   cellProps,
-  ...badgeProps
+  ...tagProps
 }: {
   values: BadgeCellExpandableValues | undefined;
   cellProps?: Omit<FidesCellProps<T>, "onRowClick">;
-} & BadgeProps) => {
+} & TagProps) => {
   const { isExpanded, isWrapped, version } = cellProps?.cellState || {};
   const displayThreshold = 2; // Number of badges to display when collapsed
   const [isCollapsed, setIsCollapsed] = useState<boolean>(!isExpanded);
@@ -204,9 +197,14 @@ export const BadgeCellExpandable = <T,>({
         cursor={isCollapsed ? undefined : "pointer"}
       >
         {displayValues.map((value) => (
-          <FidesBadge key={value.key} data-testid={value.key} {...badgeProps}>
+          <Tag
+            color="white"
+            key={value.key}
+            data-testid={value.key}
+            {...tagProps}
+          >
             {value.label}
-          </FidesBadge>
+          </Tag>
         ))}
         {isCollapsed && values && values.length > displayThreshold && (
           <Button
@@ -220,7 +218,7 @@ export const BadgeCellExpandable = <T,>({
         )}
       </Flex>
     );
-  }, [displayValues, isCollapsed, isWrappedState, values, badgeProps]);
+  }, [displayValues, isCollapsed, isWrappedState, values, tagProps]);
 };
 
 export const GroupCountBadgeCell = ({
@@ -228,49 +226,44 @@ export const GroupCountBadgeCell = ({
   suffix,
   cellState,
   ignoreZero,
-  badgeProps,
+  tagProps,
 }: {
   value: string[] | string | ReactNode | ReactNode[] | undefined;
   suffix?: string;
   cellState?: FidesCellState;
   ignoreZero?: boolean;
-  badgeProps?: BadgeProps;
+  tagProps?: TagProps;
 }) => {
-  let badges = null;
+  let tags = null;
   if (!value) {
     return ignoreZero ? null : (
-      <FidesBadge {...badgeProps}>0{suffix ? ` ${suffix}` : ""}</FidesBadge>
+      <Tag {...tagProps}>0{suffix ? ` ${suffix}` : ""}</Tag>
     );
   }
   if (Array.isArray(value)) {
-    // If there's only one value, always display it
     if (value.length === 1) {
-      badges = <FidesBadge {...badgeProps}>{value}</FidesBadge>;
-    }
-    // Expanded case, list every value as a badge
-    else if (cellState?.isExpanded && value.length > 0) {
-      badges = value.map((d, i) => (
-        <Box key={d?.toString() || i} mr={2}>
-          <FidesBadge {...badgeProps}>{d}</FidesBadge>
-        </Box>
+      tags = <Tag {...tagProps}>{value}</Tag>;
+    } else if (cellState?.isExpanded && value.length > 0) {
+      tags = value.map((d, i) => (
+        <Tag key={d?.toString() || i} {...tagProps}>
+          {d}
+        </Tag>
       ));
-    }
-    // Collapsed case, summarize the values in one badge
-    else {
-      badges = (
-        <FidesBadge {...badgeProps}>
+    } else {
+      tags = (
+        <Tag {...tagProps}>
           {value.length}
           {suffix ? ` ${suffix}` : null}
-        </FidesBadge>
+        </Tag>
       );
     }
   } else {
-    badges = <FidesBadge {...badgeProps}>{value}</FidesBadge>;
+    tags = <Tag {...tagProps}>{value}</Tag>;
   }
 
   return (
-    <Flex alignItems="center" height="100%" mr="2" overflowX="hidden">
-      {badges}
+    <Flex alignItems="center" height="100%" gap={0} overflowX="hidden">
+      {tags}
     </Flex>
   );
 };

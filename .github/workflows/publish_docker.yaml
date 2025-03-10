@@ -11,7 +11,7 @@ env:
   # Docker auth with read-write (publish) permissions. Set as env in workflow root as auth is required in multiple jobs.
   DOCKER_USER: ${{ secrets.DOCKER_USER }}
   DOCKER_TOKEN: ${{ secrets.DOCKER_TOKEN }}
-  DEFAULT_PYTHON_VERSION: "3.10.13"
+  DEFAULT_PYTHON_VERSION: "3.10.16"
 
 jobs:
   ParseTags:
@@ -118,7 +118,7 @@ jobs:
       # if an RC git tag, also notify Fidesinfra to trigger a redeploy of rc env, to pick up our newly published images
       - name: Send Repository Dispatch Event (RC redeploy)
         if: needs.ParseTags.outputs.rc_tag == 'true'
-        uses: peter-evans/repository-dispatch@v2
+        uses: peter-evans/repository-dispatch@v3
         with:
           event-type: trigger-fidesinfra-deploy-fides-rc
           repository: ethyca/fidesinfra

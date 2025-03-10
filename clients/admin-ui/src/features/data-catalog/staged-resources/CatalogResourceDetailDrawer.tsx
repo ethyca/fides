@@ -13,9 +13,11 @@ import {
   getCatalogResourceStatus,
 } from "~/features/data-catalog/utils";
 import EditCategoryCell from "~/features/data-discovery-and-detection/tables/cells/EditCategoryCell";
-import { StagedResourceType } from "~/features/data-discovery-and-detection/types/StagedResourceType";
 import { findResourceType } from "~/features/data-discovery-and-detection/utils/findResourceType";
-import { StagedResourceAPIResponse } from "~/types/api";
+import {
+  StagedResourceAPIResponse,
+  StagedResourceTypeValue,
+} from "~/types/api";
 
 const CatalogResourceDetailDrawer = ({
   resource,
@@ -28,8 +30,8 @@ const CatalogResourceDetailDrawer = ({
   const status = getCatalogResourceStatus(resource);
 
   const showDataCategories =
-    (resourceType === StagedResourceType.FIELD ||
-      resourceType === StagedResourceType.TABLE) &&
+    (resourceType === StagedResourceTypeValue.FIELD ||
+      resourceType === StagedResourceTypeValue.TABLE) &&
     status === CatalogResourceStatus.IN_REVIEW;
 
   return (

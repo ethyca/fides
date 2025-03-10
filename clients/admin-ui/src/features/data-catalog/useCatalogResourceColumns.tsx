@@ -8,13 +8,15 @@ import CatalogStatusBadgeCell from "~/features/data-catalog/CatalogStatusBadgeCe
 import { getCatalogResourceStatus } from "~/features/data-catalog/utils";
 import EditCategoryCell from "~/features/data-discovery-and-detection/tables/cells/EditCategoryCell";
 import FieldDataTypeCell from "~/features/data-discovery-and-detection/tables/cells/FieldDataTypeCell";
-import { StagedResourceType } from "~/features/data-discovery-and-detection/types/StagedResourceType";
-import { StagedResourceAPIResponse } from "~/types/api";
+import {
+  StagedResourceAPIResponse,
+  StagedResourceTypeValue,
+} from "~/types/api";
 
 const columnHelper = createColumnHelper<StagedResourceAPIResponse>();
 
 const useCatalogResourceColumns = (
-  type: StagedResourceType,
+  type: StagedResourceTypeValue | undefined,
   onDetailClick: (resource: StagedResourceAPIResponse) => void,
 ) => {
   const defaultColumns: ColumnDef<StagedResourceAPIResponse, any>[] = [];
@@ -23,7 +25,7 @@ const useCatalogResourceColumns = (
     return defaultColumns;
   }
 
-  if (type === StagedResourceType.TABLE) {
+  if (type === StagedResourceTypeValue.TABLE) {
     const columnDefs = [
       columnHelper.display({
         id: "name",
@@ -75,7 +77,7 @@ const useCatalogResourceColumns = (
     return columnDefs;
   }
 
-  if (type === StagedResourceType.FIELD) {
+  if (type === StagedResourceTypeValue.FIELD) {
     const columns = [
       columnHelper.display({
         id: "name",

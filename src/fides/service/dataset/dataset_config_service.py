@@ -1,6 +1,7 @@
 from copy import deepcopy
 from typing import Any, Dict, List, Optional, Tuple, Union
 
+from fastapi.encoders import jsonable_encoder
 from fideslang.models import Dataset as FideslangDataset
 from loguru import logger
 from pydantic import ValidationError as PydanticValidationError
@@ -13,22 +14,19 @@ from fides.api.common_exceptions import (
 )
 from fides.api.graph.config import GraphDataset
 from fides.api.graph.graph import DatasetGraph
-from fides.api.graph.traversal import Traversal
-from fides.api.graph.traversal_node import TraversalNode
+from fides.api.graph.node_filters import NodeFilter
+from fides.api.graph.traversal import Traversal, TraversalNode
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.policy import Policy
-from fides.api.models.privacy_request import (
-    PrivacyRequest,
-    PrivacyRequestSource,
-    PrivacyRequestStatus,
-)
+from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.api import BulkUpdateFailed
 from fides.api.schemas.dataset import (
     BulkPutDataset,
     DatasetConfigCtlDataset,
     ValidateDatasetResponse,
 )
+from fides.api.schemas.privacy_request import PrivacyRequestSource, PrivacyRequestStatus
 from fides.api.schemas.redis_cache import Identity, LabeledIdentity
 from fides.service.dataset.dataset_service import (
     DatasetNotFoundException,
@@ -38,13 +36,14 @@ from fides.service.dataset.dataset_validator import DatasetValidator
 from fides.service.dataset.validation_steps.traversal import TraversalValidationStep
 
 
-class DatasetFilter:
+class DatasetFilter(NodeFilter):
     """
     Filter that excludes nodes that are not part of the specified dataset.
     This ensures that unreachable nodes from other datasets are not treated as errors.
     """
 
     def __init__(self, dataset_name: str):
+        super().__init__()
         self.dataset_name = dataset_name
 
     def exclude_node(self, node: TraversalNode) -> bool:
@@ -149,28 +148,40 @@ class DatasetConfigService:
 
     def get_dataset_reachability(
         self, dataset_config: DatasetConfig, policy: Optional[Policy] = None
-    ) -> Tuple[bool, Optional[str]]:
+    ) -> Tuple[bool, Optional[Union[str, List[Dict[str, Any]]]]]:
         """
         Determines if the given dataset is reachable along with an error message
         """
-
-        # Get all the dataset configs that are not associated with a disabled connection
-        datasets = DatasetConfig.all(db=self.db)
-        dataset_graphs = [
+        # First check if the target dataset is valid
+        try:
             dataset_config.get_graph()
-            for dataset_config in datasets
-            if not dataset_config.connection_config.disabled
-        ]
+        except PydanticValidationError as exc:
+            return False, jsonable_encoder(
+                exc.errors(
+                    include_url=False, include_input=False, include_context=False
+                )
+            )
+
+        # Get graphs for all enabled datasets
+        dataset_graphs = []
+        datasets = DatasetConfig.all(db=self.db)
+        for dataset in datasets:
+            if not dataset.connection_config.disabled:
+                try:
+                    dataset_graphs.append(dataset.get_graph())
+                except PydanticValidationError:
+                    continue
 
         # We still want to check reachability even if our dataset config's connection is disabled.
         # We also consider the siblings, because if the connection is enabled, then all the
         # datasets will be enabled with it.
         sibling_dataset_graphs = []
         if dataset_config.connection_config.disabled:
-            sibling_datasets = dataset_config.connection_config.datasets
-            sibling_dataset_graphs = [
-                dataset_config.get_graph() for dataset_config in sibling_datasets
-            ]
+            for sibling in dataset_config.connection_config.datasets:
+                try:
+                    sibling_dataset_graphs.append(sibling.get_graph())
+                except PydanticValidationError:
+                    continue
 
         try:
             dataset_graph = DatasetGraph(*dataset_graphs, *sibling_dataset_graphs)
@@ -189,7 +200,7 @@ class DatasetConfigService:
             Traversal(
                 dataset_graph,
                 identity_seed,
-                policy,
+                policy=policy,
                 node_filters=[DatasetFilter(dataset_config.fides_key)],
             )
         except UnreachableNodesError as exc:
@@ -223,45 +234,52 @@ class DatasetConfigService:
             },
         )
 
-        # Remove periods and colons to avoid them being parsed as path delimiters downstream.
-        escaped_input_data = {
-            key.replace(".", "_").replace(":", "_"): value
-            for key, value in input_data.items()
-        }
+        with logger.contextualize(
+            privacy_request_id=privacy_request.id,
+            privacy_request_source=PrivacyRequestSource.dataset_test.value,
+        ):
+            try:
+                # Remove periods and colons to avoid them being parsed as path delimiters downstream.
+                escaped_input_data = {
+                    key.replace(".", "_").replace(":", "_"): value
+                    for key, value in input_data.items()
+                }
 
-        # Manually cache the input data as identity data.
-        # We're doing a bit of trickery here to avoid asking for labels for custom identities.
-        predefined_fields = Identity.model_fields.keys()
-        input_identity = {
-            key: (
-                value
-                if key in predefined_fields
-                else LabeledIdentity(label=key, value=value)
-            )
-            for key, value in escaped_input_data.items()
-        }
-        privacy_request.cache_identity(input_identity)
+                # Manually cache the input data as identity data.
+                # We're doing a bit of trickery here to avoid asking for labels for custom identities.
+                predefined_fields = Identity.model_fields.keys()
+                input_identity = {
+                    key: (
+                        value
+                        if key in predefined_fields
+                        else LabeledIdentity(label=key, value=value)
+                    )
+                    for key, value in escaped_input_data.items()
+                }
+                privacy_request.cache_identity(input_identity)
 
-        graph_dataset = dataset_config.get_graph()
-        modified_graph_dataset = replace_references_with_identities(
-            dataset_config.fides_key, graph_dataset
-        )
+                graph_dataset = dataset_config.get_graph()
+                modified_graph_dataset = replace_references_with_identities(
+                    dataset_config.fides_key, graph_dataset
+                )
 
-        dataset_graph = DatasetGraph(modified_graph_dataset)
-        connection_config = dataset_config.connection_config
+                dataset_graph = DatasetGraph(modified_graph_dataset)
+                connection_config = dataset_config.connection_config
 
-        from fides.api.task.create_request_tasks import run_access_request
+                from fides.api.task.create_request_tasks import run_access_request
 
-        # Finally invoke the existing DSR 3.0 access request task
-        run_access_request(
-            privacy_request,
-            policy,
-            dataset_graph,
-            [connection_config],
-            escaped_input_data,
-            self.db,
-            privacy_request_proceed=False,
-        )
+                run_access_request(
+                    privacy_request,
+                    policy,
+                    dataset_graph,
+                    [connection_config],
+                    escaped_input_data,
+                    self.db,
+                    privacy_request_proceed=False,
+                )
+            except Exception as exc:
+                logger.error(f"Error running test access request: {exc}")
+
         return privacy_request
 
 

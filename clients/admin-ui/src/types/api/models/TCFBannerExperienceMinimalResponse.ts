@@ -5,6 +5,7 @@
 import type { ExperienceMinimalMeta } from "./ExperienceMinimalMeta";
 import type { GPPApplicationConfigResponse } from "./GPPApplicationConfigResponse";
 import type { MinimalTCFExperienceConfig } from "./MinimalTCFExperienceConfig";
+import type { PrivacyNoticeResponse } from "./PrivacyNoticeResponse";
 
 /**
  * Minimal TCF Banner Privacy Experience response that has the details to show the most minimal
@@ -19,6 +20,10 @@ export type TCFBannerExperienceMinimalResponse = {
    * A minimal version of the experience config with the default translation only
    */
   experience_config?: MinimalTCFExperienceConfig | null;
+  /**
+   * The Privacy Notices associated with this experience, if applicable
+   */
+  privacy_notices?: Array<PrivacyNoticeResponse> | null;
   gpp_settings?: GPPApplicationConfigResponse | null;
   /**
    * Privacy Experience ID

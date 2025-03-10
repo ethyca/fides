@@ -48,6 +48,49 @@ dataset:
     - name: single_row
       data_categories:
       - system.operations
+  - name: attachment_reference
+    fields:
+    - name: attachment_id
+      data_categories:
+      - system.operations
+    - name: created_at
+      data_categories:
+      - system.operations
+    - name: id
+      data_categories:
+      - system.operations
+    - name: reference_id
+      data_categories:
+      - system.operations
+    - name: reference_type
+      data_categories:
+      - system.operations
+    - name: updated_at
+      data_categories:
+      - system.operations
+  - name: attachment
+    fields:
+    - name: attachment_type
+      data_categories:
+      - system.operations
+    - name: created_at
+      data_categories:
+      - system.operations
+    - name: file_name
+      data_categories:
+      - system.operations
+    - name: id
+      data_categories:
+      - system.operations
+    - name: storage_key
+      data_categories:
+      - system.operations
+    - name: updated_at
+      data_categories:
+      - system.operations
+    - name: user_id
+      data_categories:
+      - system.operations
   - name: auditlog
     fields:
     - name: created_at
@@ -930,6 +973,8 @@ dataset:
     - name: completed
       data_categories: [system.operations]
     - name: classification_instances
+      data_categories: [system.operations]
+    - name: messages
       data_categories: [system.operations]
     - name: created_at
       data_categories: [system.operations]

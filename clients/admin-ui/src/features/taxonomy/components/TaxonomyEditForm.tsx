@@ -15,6 +15,7 @@ interface TaxonomyEditFormProps {
   formId: string;
   form: FormInstance;
   taxonomyType: CoreTaxonomiesEnum;
+  isDisabled?: boolean;
 }
 
 const TaxonomyEditForm = ({
@@ -23,6 +24,7 @@ const TaxonomyEditForm = ({
   form,
   formId,
   taxonomyType,
+  isDisabled,
 }: TaxonomyEditFormProps) => {
   const handleFinish = (formValues: FormValues) => {
     const updatedTaxonomy: TaxonomyEntity = {
@@ -49,12 +51,13 @@ const TaxonomyEditForm = ({
       form={form}
     >
       <Form.Item<string> label="Name" name="name">
-        <AntInput data-testid="edit-taxonomy-form_name" />
+        <AntInput data-testid="edit-taxonomy-form_name" disabled={isDisabled} />
       </Form.Item>
       <Form.Item<string> label="Description" name="description">
         <AntInput.TextArea
           rows={4}
           data-testid="edit-taxonomy-form_description"
+          disabled={isDisabled}
         />
       </Form.Item>
 

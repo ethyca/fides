@@ -25,9 +25,6 @@ const optionDescriptionRender = (
   );
 };
 
-/**
- * Higher-order component that adds a custom arrow icon to the Select component.
- */
 const withCustomProps = (WrappedComponent: typeof Select) => {
   const WrappedSelect = <
     ValueType = any,
@@ -55,5 +52,36 @@ const withCustomProps = (WrappedComponent: typeof Select) => {
   };
   return WrappedSelect;
 };
+
+/**
+ * Higher-order component that adds consistent styling and enhanced functionality to Ant Design's Select component.
+ * Provides default props for common use cases and improves accessibility with consistent test IDs.
+ *
+ * Default customizations:
+ * - Renders option descriptions in a structured layout when present
+ * - Full width styling
+ * - Search enabled by default
+ * - Custom icons for dropdown and loading
+ * - Consistent placeholder text
+ * - Consistent test IDs
+ *
+ * @example
+ * ```tsx
+ * // Basic usage
+ * <CustomSelect options={[
+ *   { value: '1', label: 'Option 1', description: 'Description text' }
+ * ]} />
+ *
+ * // With custom ID for testing
+ * <CustomSelect id="my-select" options={options} />
+ *
+ * // Override defaults
+ * <CustomSelect
+ *   showSearch={false}
+ *   className="w-48"
+ *   placeholder="Choose an option..."
+ * />
+ * ```
+ */
 
 export const CustomSelect = withCustomProps(Select);

@@ -29,8 +29,6 @@ from fides.api.models.datasetconfig import DatasetConfig, convert_dataset_to_gra
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.fides_user_permissions import FidesUserPermissions
 from fides.api.models.location_regulation_selections import PrivacyNoticeRegion
-from fides.api.models.messaging import MessagingConfig
-from fides.api.models.messaging_template import MessagingTemplate
 from fides.api.models.policy import (
     ActionType,
     Policy,
@@ -61,8 +59,6 @@ from fides.api.models.privacy_request import (
     Consent,
     ConsentRequest,
     PrivacyRequest,
-    PrivacyRequestSource,
-    PrivacyRequestStatus,
     ProvidedIdentity,
     RequestTask,
 )
@@ -79,13 +75,7 @@ from fides.api.models.storage import (
 )
 from fides.api.models.tcf_purpose_overrides import TCFPurposeOverride
 from fides.api.oauth.roles import VIEWER
-from fides.api.schemas.messaging.messaging import (
-    MessagingActionType,
-    MessagingServiceDetails,
-    MessagingServiceSecrets,
-    MessagingServiceType,
-    MessagingTemplateWithPropertiesDetail,
-)
+from fides.api.schemas.privacy_request import PrivacyRequestSource, PrivacyRequestStatus
 from fides.api.schemas.property import Property as PropertySchema
 from fides.api.schemas.property import PropertyType
 from fides.api.schemas.redis_cache import (
@@ -425,207 +415,6 @@ def property_b(db: Session) -> Generator:
     )
     yield prop_b
     prop_b.delete(db=db)
-
-
-@pytest.fixture(scope="function")
-def messaging_template_with_property_disabled(db: Session, property_a) -> Generator:
-    template_type = MessagingActionType.SUBJECT_IDENTITY_VERIFICATION.value
-    content = {
-        "subject": "Here is your code __CODE__",
-        "body": "Use code __CODE__ to verify your identity, you have __MINUTES__ minutes!",
-    }
-    data = {
-        "content": content,
-        "properties": [{"id": property_a.id, "name": property_a.name}],
-        "is_enabled": False,
-        "type": template_type,
-    }
-    messaging_template = MessagingTemplate.create(
-        db=db,
-        data=data,
-    )
-    yield messaging_template
-    messaging_template.delete(db)
-
-
-@pytest.fixture(scope="function")
-def messaging_template_no_property_disabled(db: Session) -> Generator:
-    template_type = MessagingActionType.SUBJECT_IDENTITY_VERIFICATION.value
-    content = {
-        "subject": "Here is your code __CODE__",
-        "body": "Use code __CODE__ to verify your identity, you have __MINUTES__ minutes!",
-    }
-    data = {
-        "content": content,
-        "properties": [],
-        "is_enabled": False,
-        "type": template_type,
-    }
-    messaging_template = MessagingTemplate.create(
-        db=db,
-        data=data,
-    )
-    yield messaging_template
-    messaging_template.delete(db)
-
-
-@pytest.fixture(scope="function")
-def messaging_template_no_property(db: Session) -> Generator:
-    template_type = MessagingActionType.SUBJECT_IDENTITY_VERIFICATION.value
-    content = {
-        "subject": "Here is your code __CODE__",
-        "body": "Use code __CODE__ to verify your identity, you have __MINUTES__ minutes!",
-    }
-    data = {
-        "content": content,
-        "properties": [],
-        "is_enabled": True,
-        "type": template_type,
-    }
-    messaging_template = MessagingTemplate.create(
-        db=db,
-        data=data,
-    )
-    yield messaging_template
-    messaging_template.delete(db)
-
-
-@pytest.fixture(scope="function")
-def messaging_template_subject_identity_verification(
-    db: Session, property_a
-) -> Generator:
-    template_type = MessagingActionType.SUBJECT_IDENTITY_VERIFICATION.value
-    content = {
-        "subject": "Here is your code __CODE__",
-        "body": "Use code __CODE__ to verify your identity, you have __MINUTES__ minutes!",
-    }
-    data = {
-        "content": content,
-        "properties": [{"id": property_a.id, "name": property_a.name}],
-        "is_enabled": True,
-        "type": template_type,
-    }
-    messaging_template = MessagingTemplate.create(
-        db=db,
-        data=data,
-    )
-    yield messaging_template
-    messaging_template.delete(db)
-
-
-@pytest.fixture(scope="function")
-def messaging_template_privacy_request_receipt(db: Session, property_a) -> Generator:
-    template_type = MessagingActionType.PRIVACY_REQUEST_RECEIPT
-    content = {
-        "subject": "Your request has been received.",
-        "body": "Stay tuned!",
-    }
-    data = {
-        "content": content,
-        "properties": [{"id": property_a.id, "name": property_a.name}],
-        "is_enabled": True,
-        "type": template_type,
-    }
-    messaging_template = MessagingTemplate.create(
-        db=db,
-        data=data,
-    )
-    yield messaging_template
-    messaging_template.delete(db)
-
-
-@pytest.fixture(scope="function")
-def messaging_config(db: Session) -> Generator:
-    name = str(uuid4())
-    messaging_config = MessagingConfig.create(
-        db=db,
-        data={
-            "name": name,
-            "key": "my_mailgun_messaging_config",
-            "service_type": MessagingServiceType.mailgun.value,
-            "details": {
-                MessagingServiceDetails.API_VERSION.value: "v3",
-                MessagingServiceDetails.DOMAIN.value: "some.domain",
-                MessagingServiceDetails.IS_EU_DOMAIN.value: False,
-            },
-        },
-    )
-    messaging_config.set_secrets(
-        db=db,
-        messaging_secrets={
-            MessagingServiceSecrets.MAILGUN_API_KEY.value: "12984r70298r"
-        },
-    )
-    yield messaging_config
-    messaging_config.delete(db)
-
-
-@pytest.fixture(scope="function")
-def messaging_config_twilio_email(db: Session) -> Generator:
-    name = str(uuid4())
-    messaging_config = MessagingConfig.create(
-        db=db,
-        data={
-            "name": name,
-            "key": "my_twilio_email_config",
-            "service_type": MessagingServiceType.twilio_email.value,
-        },
-    )
-    messaging_config.set_secrets(
-        db=db,
-        messaging_secrets={
-            MessagingServiceSecrets.TWILIO_API_KEY.value: "123489ctynpiqurwfh"
-        },
-    )
-    yield messaging_config
-    messaging_config.delete(db)
-
-
-@pytest.fixture(scope="function")
-def messaging_config_twilio_sms(db: Session) -> Generator:
-    name = str(uuid4())
-    messaging_config = MessagingConfig.create(
-        db=db,
-        data={
-            "name": name,
-            "key": "my_twilio_sms_config",
-            "service_type": MessagingServiceType.twilio_text.value,
-        },
-    )
-    messaging_config.set_secrets(
-        db=db,
-        messaging_secrets={
-            MessagingServiceSecrets.TWILIO_ACCOUNT_SID.value: "23rwrfwxwef",
-            MessagingServiceSecrets.TWILIO_AUTH_TOKEN.value: "23984y29384y598432",
-            MessagingServiceSecrets.TWILIO_MESSAGING_SERVICE_SID.value: "2ieurnoqw",
-        },
-    )
-    yield messaging_config
-    messaging_config.delete(db)
-
-
-@pytest.fixture(scope="function")
-def messaging_config_mailchimp_transactional(db: Session) -> Generator:
-    messaging_config = MessagingConfig.create(
-        db=db,
-        data={
-            "name": str(uuid4()),
-            "key": "my_mailchimp_transactional_messaging_config",
-            "service_type": MessagingServiceType.mailchimp_transactional,
-            "details": {
-                MessagingServiceDetails.DOMAIN.value: "some.domain",
-                MessagingServiceDetails.EMAIL_FROM.value: "test@example.com",
-            },
-        },
-    )
-    messaging_config.set_secrets(
-        db=db,
-        messaging_secrets={
-            MessagingServiceSecrets.MAILCHIMP_TRANSACTIONAL_API_KEY.value: "12984r70298r"
-        },
-    )
-    yield messaging_config
-    messaging_config.delete(db)
 
 
 @pytest.fixture(scope="function")
@@ -1323,32 +1112,6 @@ def policy(
 
 
 @pytest.fixture(scope="function")
-def consent_automation() -> Generator:
-    consentable_items = [
-        {
-            "type": "Channel",
-            "external_id": 1,
-            "name": "Marketing channel (email)",
-            "children": [
-                {
-                    "type": "Message type",
-                    "external_id": 1,
-                    "name": "Weekly Ads",
-                }
-            ],
-        }
-    ]
-
-    ConsentAutomation.create_or_update(
-        db,
-        data={
-            "connection_config_id": connection_config.id,
-            "consentable_items": consentable_items,
-        },
-    )
-
-
-@pytest.fixture(scope="function")
 def consent_policy(
     db: Session,
     oauth_client: ClientDetail,
@@ -1579,6 +1342,82 @@ def erasure_policy_string_rewrite(
     yield erasure_policy
     try:
         erasure_rule_target.delete(db)
+    except ObjectDeletedError:
+        pass
+    try:
+        erasure_rule.delete(db)
+    except ObjectDeletedError:
+        pass
+    try:
+        erasure_policy.delete(db)
+    except ObjectDeletedError:
+        pass
+
+
+@pytest.fixture(scope="function")
+def erasure_policy_string_rewrite_address(
+    db: Session,
+    oauth_client: ClientDetail,
+    storage_config: StorageConfig,
+) -> Generator:
+    erasure_policy = Policy.create(
+        db=db,
+        data={
+            "name": "string rewrite policy",
+            "key": "string_rewrite_policy",
+            "client_id": oauth_client.id,
+        },
+    )
+
+    erasure_rule = Rule.create(
+        db=db,
+        data={
+            "action_type": ActionType.erasure.value,
+            "client_id": oauth_client.id,
+            "name": "string rewrite erasure rule",
+            "policy_id": erasure_policy.id,
+            "masking_strategy": {
+                "strategy": StringRewriteMaskingStrategy.name,
+                "configuration": {"rewrite_value": "MASKED"},
+            },
+        },
+    )
+
+    erasure_rule_targets = []
+    erasure_rule_targets.append(
+        RuleTarget.create(
+            db=db,
+            data={
+                "client_id": oauth_client.id,
+                "data_category": DataCategory("user.name").value,
+                "rule_id": erasure_rule.id,
+            },
+        )
+    )
+    erasure_rule_targets.append(
+        RuleTarget.create(
+            db=db,
+            data={
+                "client_id": oauth_client.id,
+                "data_category": DataCategory("user.contact.address").value,
+                "rule_id": erasure_rule.id,
+            },
+        )
+    )
+    erasure_rule_targets.append(
+        RuleTarget.create(
+            db=db,
+            data={
+                "client_id": oauth_client.id,
+                "data_category": DataCategory("user.contact.phone_number").value,
+                "rule_id": erasure_rule.id,
+            },
+        )
+    )
+    yield erasure_policy
+    try:
+        for erasure_rule_target in erasure_rule_targets:
+            erasure_rule_target.delete(db)
     except ObjectDeletedError:
         pass
     try:

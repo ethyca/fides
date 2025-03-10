@@ -32,7 +32,7 @@ from fides.api.models.audit_log import AuditLog, AuditLogAction
 from fides.api.models.client import ClientDetail
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.datasetconfig import DatasetConfig
-from fides.api.models.policy import CurrentStep, Policy
+from fides.api.models.policy import Policy
 from fides.api.models.pre_approval_webhook import PreApprovalWebhookReply
 from fides.api.models.privacy_request import (
     ExecutionLog,
@@ -55,7 +55,7 @@ from fides.api.schemas.messaging.messaging import (
     RequestReviewDenyBodyParams,
     SubjectIdentityVerificationBodyParams,
 )
-from fides.api.schemas.policy import ActionType, PolicyResponse
+from fides.api.schemas.policy import ActionType, CurrentStep, PolicyResponse
 from fides.api.schemas.redis_cache import Identity, LabeledIdentity
 from fides.api.task.graph_runners import access_runner
 from fides.api.tasks import DSR_QUEUE_NAME, MESSAGING_QUEUE_NAME
@@ -7596,7 +7596,7 @@ class TestRequeuePrivacyRequest:
         assert 400 == response.status_code
         assert (
             response.json()["detail"]
-            == f"Request failed. Cannot re-queue privacy request {privacy_request.id} with status {privacy_request.status.value}"
+            == f"Cannot re-queue privacy request {privacy_request.id} with status {privacy_request.status.value}"
         )
 
     def test_requeue_deleted_privacy_request(
@@ -7619,7 +7619,7 @@ class TestRequeuePrivacyRequest:
         )
 
     @mock.patch(
-        "fides.api.api.v1.endpoints.privacy_request_endpoints.queue_privacy_request"
+        "fides.service.privacy_request.privacy_request_service.queue_privacy_request"
     )
     def test_requeue_privacy_request_from_cached_failure_point(
         self,
@@ -7644,7 +7644,7 @@ class TestRequeuePrivacyRequest:
 
     @pytest.mark.usefixtures("consent_request_task")
     @mock.patch(
-        "fides.api.api.v1.endpoints.privacy_request_endpoints.queue_privacy_request"
+        "fides.service.privacy_request.privacy_request_service.queue_privacy_request"
     )
     def test_requeue_privacy_request_with_consent_tasks(
         self,
@@ -7665,7 +7665,7 @@ class TestRequeuePrivacyRequest:
 
     @pytest.mark.usefixtures("erasure_request_task", "request_task")
     @mock.patch(
-        "fides.api.api.v1.endpoints.privacy_request_endpoints.queue_privacy_request"
+        "fides.service.privacy_request.privacy_request_service.queue_privacy_request"
     )
     def test_requeue_privacy_request_with_erasure_tasks(
         self,
@@ -7693,7 +7693,7 @@ class TestRequeuePrivacyRequest:
 
     @pytest.mark.usefixtures("erasure_request_task", "request_task")
     @mock.patch(
-        "fides.api.api.v1.endpoints.privacy_request_endpoints.queue_privacy_request"
+        "fides.service.privacy_request.privacy_request_service.queue_privacy_request"
     )
     def test_requeue_privacy_request_erasure_tasks_but_access_step_not_complete(
         self,
@@ -7714,7 +7714,7 @@ class TestRequeuePrivacyRequest:
 
     @pytest.mark.usefixtures("request_task")
     @mock.patch(
-        "fides.api.api.v1.endpoints.privacy_request_endpoints.queue_privacy_request"
+        "fides.service.privacy_request.privacy_request_service.queue_privacy_request"
     )
     def test_requeue_privacy_request_with_access_tasks(
         self,

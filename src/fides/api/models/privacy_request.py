@@ -55,7 +55,6 @@ from fides.api.models.client import ClientDetail
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.manual_webhook import AccessManualWebhook
 from fides.api.models.policy import (
-    CurrentStep,
     Policy,
     PolicyPreWebhook,
     WebhookDirection,
@@ -74,7 +73,14 @@ from fides.api.schemas.external_https import (
     WebhookJWE,
 )
 from fides.api.schemas.masking.masking_secrets import MaskingSecretCache
-from fides.api.schemas.policy import ActionType
+from fides.api.schemas.policy import ActionType, CurrentStep
+from fides.api.schemas.privacy_request import (
+    CheckpointActionRequired,
+    ExecutionLogStatus,
+    ManualAction,
+    PrivacyRequestSource,
+    PrivacyRequestStatus,
+)
 from fides.api.schemas.redis_cache import (
     CustomPrivacyRequestField as CustomPrivacyRequestFieldSchema,
 )
@@ -124,73 +130,9 @@ EXECUTION_CHECKPOINTS = [
 ]
 
 
-class ManualAction(FidesSchema):
-    """
-    Surface how to retrieve or mask data in a database-agnostic way
-
-    - 'locators' are similar to the SQL "WHERE" information.
-    - 'get' contains a list of fields that should be retrieved from the source
-    - 'update' is a dictionary of fields and the replacement value/masking strategy
-    """
-
-    locators: Dict[str, Any]
-    get: Optional[List[str]]
-    update: Optional[Dict[str, Any]]
-
-
-class CheckpointActionRequired(FidesSchema):
-    """Describes actions needed on a particular checkpoint.
-
-    Examples are a paused collection that needs manual input, a failed collection that
-    needs to be restarted, or a collection where instructions need to be emailed to a third
-    party to complete the request.
-    """
-
-    step: CurrentStep
-    collection: Optional[CollectionAddress] = None
-    action_needed: Optional[List[ManualAction]] = None
-    model_config = ConfigDict(arbitrary_types_allowed=True)
-
-
 EmailRequestFulfillmentBodyParams = Dict[
     CollectionAddress, Optional[CheckpointActionRequired]
 ]
-
-
-class PrivacyRequestStatus(str, EnumType):
-    """Enum for privacy request statuses, reflecting where they are in the Privacy Request Lifecycle"""
-
-    identity_unverified = "identity_unverified"
-    requires_input = "requires_input"
-    pending = (
-        "pending"  # Privacy Request likely awaiting approval, if hanging in this state.
-    )
-    approved = "approved"
-    denied = "denied"
-    in_processing = "in_processing"
-    complete = "complete"
-    paused = "paused"
-    awaiting_email_send = "awaiting_email_send"
-    canceled = "canceled"
-    error = "error"
-
-
-class PrivacyRequestSource(str, EnumType):
-    """
-    The source where the privacy request originated from
-
-    - Privacy Center: Request created from the Privacy Center
-    - Request Manager: Request submitted from the Admin UI's Request manager page
-    - Consent Webhook: Request created as a side-effect of a consent webhook request (bidirectional consent)
-    - Fides.js: Request created as a side-effect of a privacy preference update from Fides.js
-    - Dataset Test: Standalone dataset test
-    """
-
-    privacy_center = "Privacy Center"
-    request_manager = "Request Manager"
-    consent_webhook = "Consent Webhook"
-    fides_js = "Fides.js"
-    dataset_test = "Dataset Test"
 
 
 class CallbackType(EnumType):
@@ -560,11 +502,12 @@ class PrivacyRequest(
                 )
 
         # Simultaneously add identities to automaton for fuzzy search
-        try:
-            self.add_identities_to_automaton()
-        except Exception as exc:
-            # This should never affect the ability to create privacy requests
-            logger.error(f"Could not add identities to Automaton: {Pii(str(exc))}")
+        if CONFIG.execution.fuzzy_search_enabled:
+            try:
+                self.add_identities_to_automaton()
+            except Exception as exc:
+                # This should never affect the ability to create privacy requests
+                logger.error(f"Could not add identities to Automaton: {Pii(str(exc))}")
 
     def persist_custom_privacy_request_fields(
         self,
@@ -1144,7 +1087,10 @@ class PrivacyRequest(
         )
 
     def get_log_context(self) -> Dict[LoggerContextKeys, Any]:
-        return {LoggerContextKeys.privacy_request_id: self.id}
+        context = {LoggerContextKeys.privacy_request_id: self.id}
+        if self.source:
+            context[LoggerContextKeys.privacy_request_source] = self.source.value
+        return context
 
     @property
     def access_tasks(self) -> Query:
@@ -1327,6 +1273,28 @@ class PrivacyRequest(
                 "dataset_name": dataset_name,
                 "collection_name": collection_name,
                 "status": ExecutionLogStatus.complete,
+                "message": message,
+                "action_type": action_type,
+            },
+        )
+
+    def add_skipped_execution_log(
+        self,
+        db: Session,
+        connection_key: Optional[str],
+        dataset_name: Optional[str],
+        collection_name: Optional[str],
+        message: str,
+        action_type: ActionType,
+    ) -> ExecutionLog:
+        return ExecutionLog.create(
+            db=db,
+            data={
+                "privacy_request_id": self.id,
+                "connection_key": connection_key,
+                "dataset_name": dataset_name,
+                "collection_name": collection_name,
+                "status": ExecutionLogStatus.skipped,
                 "message": message,
                 "action_type": action_type,
             },
@@ -1805,18 +1773,6 @@ def get_action_required_details(
     return None
 
 
-class ExecutionLogStatus(EnumType):
-    """Enum for execution log statuses, reflecting where they are in their workflow"""
-
-    in_processing = "in_processing"
-    pending = "pending"
-    complete = "complete"
-    error = "error"
-    awaiting_processing = "paused"  # "paused" in the database to avoid a migration, but use "awaiting_processing" in the app
-    retrying = "retrying"
-    skipped = "skipped"
-
-
 COMPLETED_EXECUTION_LOG_STATUSES = [
     ExecutionLogStatus.complete,
     ExecutionLogStatus.skipped,
@@ -1927,6 +1883,7 @@ class TraversalDetails(FidesSchema):
     incoming_edges: List[Tuple[str, str]]
     outgoing_edges: List[Tuple[str, str]]
     input_keys: List[str]
+    skipped_nodes: Optional[List[Tuple[str, str]]] = None
 
     # TODO: remove this method once we support custom request fields in DSR graph.
     @classmethod
@@ -1934,15 +1891,15 @@ class TraversalDetails(FidesSchema):
         """
         Creates an "empty" TraversalDetails object that only has the dataset connection key set.
         This is a bit of a hacky workaround needed to implement the Dynamic Erasure Emails feature,
-        and should be needed only until we support custom request fields as entry points to the DSR graph.
-        This is needed because custom request field nodes aren't currently reachable, so they don't have
-        a real TraversalNode associated to them.
+        but we should no longer need it once the custom_request_fields are included in our graph
+        traversal
         """
         return cls(
             dataset_connection_key=connection_key,
             incoming_edges=[],
             outgoing_edges=[],
             input_keys=[],
+            skipped_nodes=[],
         )
 
 

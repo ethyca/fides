@@ -398,6 +398,13 @@ class MonitorExecution(Base):
         nullable=False,
         default=list,
     )
+    # stores additional information from monitor execution failures as an array of strings,
+    # e.g. error messages, stack traces, etc.
+    messages = Column(
+        ARRAY(String),
+        nullable=False,
+        default=list,
+    )
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(
         DateTime(timezone=True),

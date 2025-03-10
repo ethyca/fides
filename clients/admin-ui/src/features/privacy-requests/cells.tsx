@@ -23,7 +23,7 @@ export const statusPropMap: {
   },
   denied: {
     label: "Denied",
-    colorScheme: "warn",
+    colorScheme: "warning",
   },
   canceled: {
     label: "Canceled",
@@ -61,7 +61,7 @@ export const RequestStatusBadgeCell = ({
   value: keyof typeof statusPropMap;
 }) => (
   <BadgeCell
-    colorScheme={statusPropMap[value].colorScheme}
+    color={statusPropMap[value].colorScheme}
     value={statusPropMap[value].label}
     data-testid="request-status-badge"
   />
@@ -97,13 +97,13 @@ export const RequestDaysLeftCell = ({
   } else if (percentage >= 75) {
     colorScheme = "success";
   } else if (percentage >= 25) {
-    colorScheme = "warn";
+    colorScheme = "warning";
   }
 
   return (
     <BadgeCell
       value={includeText ? `${daysLeft} days left` : daysLeft.toString()}
-      colorScheme={colorScheme}
+      color={colorScheme}
     />
   );
 };
