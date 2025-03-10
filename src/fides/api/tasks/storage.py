@@ -19,7 +19,7 @@ from fides.api.schemas.storage.storage import ResponseFormat, StorageSecrets
 from fides.api.service.privacy_request.dsr_package.dsr_report_builder import (
     DsrReportBuilder,
 )
-from fides.api.util.aws_util import get_aws_session
+from fides.api.util.aws_util import get_s3_client
 from fides.api.util.cache import get_cache, get_encryption_cache_key
 from fides.api.util.encryption.aes_gcm_encryption_scheme import (
     encrypt_to_bytes_verify_secrets_length,
@@ -137,8 +137,7 @@ def upload_to_s3(  # pylint: disable=R0913
     logger.info("Starting S3 Upload of {}", file_key)
 
     try:
-        my_session = get_aws_session(auth_method, storage_secrets)
-        s3_client = my_session.client("s3")
+        s3_client = get_s3_client(auth_method, storage_secrets)
 
         # handles file chunking
         try:
