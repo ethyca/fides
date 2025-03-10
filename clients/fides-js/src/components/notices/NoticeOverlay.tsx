@@ -361,11 +361,12 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
             <NoticeToggles
               noticeToggles={noticeToggles}
               enabledNoticeKeys={draftEnabledNoticeKeys}
-              onChange={(updatedKeys, eventTrigger) => {
+              onChange={(updatedKeys, eventTrigger, preference) => {
                 const eventExtraDetails: FidesEvent["detail"]["extraDetails"] =
                   {
                     servingComponent: "modal",
                     trigger: eventTrigger,
+                    preference,
                   };
                 setDraftEnabledNoticeKeys(updatedKeys);
                 dispatchFidesEvent(
