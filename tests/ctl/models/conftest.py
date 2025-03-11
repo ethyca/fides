@@ -1,4 +1,6 @@
+import boto3
 import pytest
+from moto import mock_aws
 
 from fides.api.models.attachment import (
     Attachment,
@@ -6,6 +8,20 @@ from fides.api.models.attachment import (
     AttachmentReferenceType,
     AttachmentType,
 )
+from fides.api.schemas.storage.storage import StorageDetails
+
+
+@pytest.fixture
+def s3_client(storage_config):
+    with mock_aws():
+        session = boto3.Session(
+            aws_access_key_id="fake_access_key",
+            aws_secret_access_key="fake_secret_key",
+            region_name="us-east-1",
+        )
+        s3 = session.client("s3")
+        s3.create_bucket(Bucket=storage_config.details[StorageDetails.BUCKET.value])
+        yield s3
 
 
 @pytest.fixture
@@ -20,25 +36,44 @@ def attachment_data(user, storage_config):
 
 
 @pytest.fixture
-def attachment(db, attachment_data):
+def attachment(s3_client, db, attachment_data, monkeypatch):
     """Creates an attachment."""
-    attachment = Attachment.create(db, data=attachment_data)
+
+    def mock_get_s3_client(auth_method, storage_secrets):
+        return s3_client
+
+    monkeypatch.setattr("fides.api.tasks.storage.get_s3_client", mock_get_s3_client)
+    attachment = Attachment.create_and_upload(
+        db, data=attachment_data, attachment_file=b"file content"
+    )
     yield attachment
     attachment.delete(db)
 
 
 @pytest.fixture
-def multiple_attachments(db, attachment_data, user):
+def multiple_attachments(s3_client, db, attachment_data, user, monkeypatch):
     """Creates multiple attachments."""
+
+    def mock_get_s3_client(auth_method, storage_secrets):
+        return s3_client
+
+    monkeypatch.setattr("fides.api.tasks.storage.get_s3_client", mock_get_s3_client)
+
     attachment_data["user_id"] = user.id
     attachment_data["file_name"] = "file_1.txt"
-    attachment_1 = Attachment.create(db, data=attachment_data)
+    attachment_1 = Attachment.create_and_upload(
+        db, data=attachment_data, attachment_file=b"file content 1"
+    )
 
     attachment_data["file_name"] = "file_2.txt"
-    attachment_2 = Attachment.create(db, data=attachment_data)
+    attachment_2 = Attachment.create_and_upload(
+        db, data=attachment_data, attachment_file=b"file content 2"
+    )
 
     attachment_data["file_name"] = "file_3.txt"
-    attachment_3 = Attachment.create(db, data=attachment_data)
+    attachment_3 = Attachment.create_and_upload(
+        db, data=attachment_data, attachment_file=b"file content 3"
+    )
 
     yield attachment_1, attachment_2, attachment_3
 

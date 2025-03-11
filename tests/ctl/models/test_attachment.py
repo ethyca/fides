@@ -1,8 +1,4 @@
-from unittest.mock import Mock, patch
-
-import boto3
 import pytest
-from moto import mock_aws
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -15,19 +11,6 @@ from fides.api.models.attachment import (
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.storage import StorageConfig
 from fides.api.schemas.storage.storage import StorageDetails
-
-
-@pytest.fixture
-def s3_client(storage_config):
-    with mock_aws():
-        session = boto3.Session(
-            aws_access_key_id="fake_access_key",
-            aws_secret_access_key="fake_secret_key",
-            region_name="us-east-1",
-        )
-        s3 = session.client("s3")
-        s3.create_bucket(Bucket=storage_config.details[StorageDetails.BUCKET.value])
-        yield s3
 
 
 @pytest.fixture(

@@ -105,6 +105,9 @@ class TestBuildUserConsentAndFilteredPreferencesForService:
         )
         pref_1.privacy_request_id = privacy_request_with_consent_policy.id
         pref_1.save(db)
+        print(pref_1.created_at)
+        print(pref_1.updated_at)
+        print(pref_1.affected_system_status)
 
         # save pref against 2nd notice
         pref_2 = PrivacyPreferenceHistory.create(
