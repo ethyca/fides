@@ -130,6 +130,8 @@ class BigQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
 
         This implementation handles nested fields by grouping them as JSON objects rather than
         individual field updates.
+
+        See the README.md in this directory for a detailed example of how nested data is handled.
         """
 
         # 1. Take update_value_map as-is (already flattened)
