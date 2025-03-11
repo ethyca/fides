@@ -3,6 +3,7 @@ import {
   getGppField,
   hasGppSection,
 } from "../../../src/lib/gpp/decoder";
+import { makeStub } from "../../../src/lib/gpp/stub";
 import mockDecodedTCFJSON from "../../__fixtures__/mock_decoded_tcf.json";
 
 // Mock fidesDebugger
@@ -11,6 +12,7 @@ import mockDecodedTCFJSON from "../../__fixtures__/mock_decoded_tcf.json";
 describe("GPP Decoder", () => {
   describe("decodeGppString", () => {
     it("should decode a US National GPP string", () => {
+      makeStub();
       const gppString = "DBABLA~BVAoAAAAAABk.QA";
       const decoded = decodeGppString(gppString);
       expect(decoded).toHaveLength(1);
