@@ -5,6 +5,7 @@ from typing import Generator
 from unittest.mock import patch
 
 import pytest
+import yaml
 from fideslang.default_taxonomy import DEFAULT_TAXONOMY
 from fideslang.models import DataCategory, Organization
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -459,15 +460,15 @@ class TestLoadSamples:
         "FIDES_DEPLOY__CONNECTORS__POSTGRES__PORT": "9090",
         "FIDES_DEPLOY__CONNECTORS__POSTGRES__DBNAME": "test-var-db",
         "FIDES_DEPLOY__CONNECTORS__POSTGRES__USERNAME": "test-var-user",
-        "FIDES_DEPLOY__CONNECTORS__POSTGRES__PASSWORD": "test-var-password",
-        "FIDES_DEPLOY__CONNECTORS__POSTGRES__SSH_REQUIRED": "True",
+        "FIDES_DEPLOY__CONNECTORS__POSTGRES__PASSWORD": "&anchor!-test-password",
+        "FIDES_DEPLOY__CONNECTORS__POSTGRES__SSH_REQUIRED": "false",
         "FIDES_DEPLOY__CONNECTORS__STRIPE__DOMAIN": "test-stripe-domain",
         "FIDES_DEPLOY__CONNECTORS__STRIPE__API_KEY": "test-stripe-api-key",
         "FIDES_DEPLOY__CONNECTORS__MONGO_HOST": "test-var-expansion",
         "FIDES_DEPLOY__CONNECTORS__MONGO_PORT": "9090",
         "FIDES_DEPLOY__CONNECTORS__MONGO_DEFAULTAUTHDB": "test-var-db",
         "FIDES_DEPLOY__CONNECTORS__MONGO_USERNAME": "test-var-user",
-        "FIDES_DEPLOY__CONNECTORS__MONGO_PASSWORD": "test-var-password",
+        "FIDES_DEPLOY__CONNECTORS__MONGO_PASSWORD": "&anchor!-test-password",
     }
 
     @patch.dict(os.environ, SAMPLE_ENV_VARS, clear=True)
@@ -613,7 +614,8 @@ class TestLoadSamples:
             0
         ].model_dump(mode="json")
         assert postgres["secrets"]["host"] == "test-var-expansion"
-        assert postgres["secrets"]["port"] == 9090
+        assert postgres["secrets"]["port"] == "9090"
+        assert postgres["secrets"]["password"] == "&anchor!-test-password"
 
     @patch.dict(
         os.environ,
@@ -657,3 +659,47 @@ class TestLoadSamples:
         assert sample_connection["secrets"]["dbname"] == "var-2"
         assert sample_connection["secrets"]["username"] == "user-var-2"
         assert sample_connection["secrets"]["password"] == "var-1-var-2"
+
+    @patch.dict(
+        os.environ,
+        {
+            "TEST_PASSWORD": "&anchor!'quote'!@#$%^&*",
+        },
+        clear=True,
+    )
+    async def test_load_sample_yaml_with_special_chars(self):
+        """Test that YAML parsing requires proper quoting for environment variables with special characters"""
+        # Test safe usage with quotes
+        safe_yaml = dedent(
+            """\
+            connection:
+              - key: test_connection
+                name: Test Connection
+                connection_type: postgres
+                access: write
+                secrets:
+                  password: "$TEST_PASSWORD"
+            """
+        )
+        sample_file = io.StringIO(safe_yaml)
+        sample_dict = samples.load_sample_yaml_file(sample_file)
+        assert (
+            sample_dict["connection"][0]["secrets"]["password"]
+            == "&anchor!'quote'!@#$%^&*"
+        )
+
+        # Test unsafe usage without quotes - should raise YAML parsing error
+        unsafe_yaml = dedent(
+            """\
+            connection:
+              - key: test_connection
+                name: Test Connection
+                connection_type: postgres
+                access: write
+                secrets:
+                  password: $TEST_PASSWORD
+            """
+        )
+        sample_file = io.StringIO(unsafe_yaml)
+        with pytest.raises(yaml.scanner.ScannerError):
+            samples.load_sample_yaml_file(sample_file)

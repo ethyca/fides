@@ -3,6 +3,7 @@ import "../fides.css";
 import { FunctionComponent, h } from "preact";
 import { useCallback, useEffect, useMemo, useState } from "preact/hooks";
 
+import { FidesEvent } from "../../docs/fides-event";
 import { isConsentOverride } from "../../lib/common-utils";
 import { getConsentContext } from "../../lib/consent-context";
 import {
@@ -12,12 +13,13 @@ import {
   Layer1ButtonOption,
   NoticeConsent,
   PrivacyNotice,
-  PrivacyNoticeTranslation,
-  PrivacyNoticeWithPreference,
-  SaveConsentPreference,
+  PrivacyNoticeItem,
   ServingComponent,
 } from "../../lib/consent-types";
-import { getGpcStatusFromNotice } from "../../lib/consent-utils";
+import {
+  createConsentPreferencesToSave,
+  getGpcStatusFromNotice,
+} from "../../lib/consent-utils";
 import { resolveConsentValue } from "../../lib/consent-value";
 import {
   getFidesConsentCookie,
@@ -31,22 +33,11 @@ import {
 } from "../../lib/i18n";
 import { useI18n } from "../../lib/i18n/i18n-context";
 import { updateConsentPreferences } from "../../lib/preferences";
-import { transformConsentToFidesUserPreference } from "../../lib/shared-consent-utils";
 import ConsentBanner from "../ConsentBanner";
 import { NoticeConsentButtons } from "../ConsentButtons";
 import Overlay from "../Overlay";
 import { OverlayProps } from "../types";
 import { NoticeToggleProps, NoticeToggles } from "./NoticeToggles";
-
-/**
- * Define a special PrivacyNoticeItem, where we've narrowed the list of
- * available translations to the singular "best" translation that should be
- * displayed, and paired that with the source notice itself.
- */
-type PrivacyNoticeItem = {
-  notice: PrivacyNoticeWithPreference;
-  bestTranslation: PrivacyNoticeTranslation | null;
-};
 
 const NoticeOverlay: FunctionComponent<OverlayProps> = ({
   options,
@@ -172,22 +163,6 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
     privacyExperience: experience,
     propertyId,
   });
-
-  const createConsentPreferencesToSave = (
-    privacyNoticeList: PrivacyNoticeItem[],
-    enabledPrivacyNoticeKeys: string[],
-  ): SaveConsentPreference[] =>
-    privacyNoticeList.map((item) => {
-      const userPreference = transformConsentToFidesUserPreference(
-        enabledPrivacyNoticeKeys.includes(item.notice.notice_key),
-        item.notice.consent_mechanism,
-      );
-      return new SaveConsentPreference(
-        item.notice,
-        userPreference,
-        item.bestTranslation?.privacy_notice_history_id,
-      );
-    });
 
   const handleUpdatePreferences = useCallback(
     (
@@ -360,9 +335,20 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
             <NoticeToggles
               noticeToggles={noticeToggles}
               enabledNoticeKeys={draftEnabledNoticeKeys}
-              onChange={(updatedKeys) => {
+              onChange={(updatedKeys, triggerDetails, preference) => {
+                const eventExtraDetails: FidesEvent["detail"]["extraDetails"] =
+                  {
+                    servingComponent: "modal",
+                    trigger: triggerDetails,
+                    preference,
+                  };
                 setDraftEnabledNoticeKeys(updatedKeys);
-                dispatchFidesEvent("FidesUIChanged", cookie, options.debug);
+                dispatchFidesEvent(
+                  "FidesUIChanged",
+                  cookie,
+                  options.debug,
+                  eventExtraDetails,
+                );
               }}
             />
           </div>
