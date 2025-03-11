@@ -20,6 +20,7 @@
  * 3. Cookie Values (last priority)
  *
  * @example
+ * Configure `window.fides_overrides` before loading Fides.js tag
  * ```html
  * <head>
  *   <script>
@@ -33,6 +34,20 @@
  *   <script src="path/to/fides.js"></script>
  * </head>
  * ```
+ * Configure `window.fides_overrides` after loading Fides.js tag
+ * ```html
+ * <head>
+ *  <script>
+ *    // Configure FidesJS options using the window.fides_overrides object
+ *   window.fides_overrides = {
+ *     fides_disable_banner: true,
+ *     fides_embed: true,
+ *     fides_locale: "es",
+ *   };
+ * </script>
+ * <script src="path/to/fides.js"></script>
+ *</head>
+ *```
  */
 export interface FidesOptions {
   /**
