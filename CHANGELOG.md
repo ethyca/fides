@@ -41,6 +41,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Fixed pagination bugs on some tables [#5819](https://github.com/ethyca/fides/pull/5819)
 - Fixed load_samples to wrap variables in quotes to prevent YAML parsing errors [#5857](https://github.com/ethyca/fides/pull/5857)
 - Fixed incorrect value being set for `MonitorExecution.started` column [#5864](https://github.com/ethyca/fides/pull/5864)
+- Improved the behavior and state management of MSPA-related settings [#5861](https://github.com/ethyca/fides/pull/5861)
 
 ## [2.56.2](https://github.com/ethyca/fides/compare/2.56.1...2.56.2)
 
