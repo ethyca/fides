@@ -54,7 +54,7 @@ h6 {
     }
 
     &:hover,
-    &:focus {
+    &:focus-within {
       --ant-menu-dark-item-hover-bg: var(--fidesui-neutral-800);
     }
   }
