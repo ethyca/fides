@@ -38,6 +38,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Moved non-prod Admin UI dependencies to devDependencies [#5832](https://github.com/ethyca/fides/pull/5832)
 - Prevent Admin UI and Privacy Center from starting when running `nox -s dev` with datastore params [#5843](https://github.com/ethyca/fides/pull/5843)
 - Remove plotly (unused package) to reduce fides image size [#5852](https://github.com/ethyca/fides/pull/5852)
+- Fixed issue where the log_context decorator didn't support positional arguments [#5866](https://github.com/ethyca/fides/pull/5866)
 
 ### Fixed
 - Fixed pagination bugs on some tables [#5819](https://github.com/ethyca/fides/pull/5819)
