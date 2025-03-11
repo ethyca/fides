@@ -187,7 +187,11 @@ const ConfigureWebsiteMonitorForm = ({
                 >
                   Cancel
                 </AntButton>
-                <AntButton type="primary" htmlType="submit">
+                <AntButton
+                  type="primary"
+                  htmlType="submit"
+                  data-testid="save-btn"
+                >
                   Save
                 </AntButton>
               </AntFlex>
