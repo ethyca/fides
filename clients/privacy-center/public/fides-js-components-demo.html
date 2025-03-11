@@ -352,6 +352,13 @@
       } else {
         window.addEventListener("FidesInitialized", onInitialized);
       }
+      window.addEventListener("FidesUpdated", () => {
+        document.getElementById("consent-json").textContent = JSON.stringify(
+          Fides.consent,
+          null,
+          2,
+        );
+      });
     })();
   </script>
 </html>

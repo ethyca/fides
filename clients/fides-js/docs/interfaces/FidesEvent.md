@@ -94,6 +94,15 @@ User's current consent preferences; see [Fides.consent](Fides.md#consent) for de
 
 User's current consent string; see [Fides.fides_string](Fides.md#fides_string) for detail.
 
+#### timestamp?
+
+> `optional` **timestamp**: `number`
+
+High-precision timestamp from [performance.mark()](https://developer.mozilla.org/en-US/docs/Web/API/Performance/mark)
+representing when this event was created. The timestamp is measured in milliseconds since page load.
+
+May be undefined if the Performance API is not available.
+
 #### extraDetails?
 
 > `optional` **extraDetails**: `object`
@@ -118,23 +127,100 @@ Whether the user should be shown the consent experience. Only available on Fides
 
 What consent method (if any) caused this event.
 
-#### extraDetails.servingToggle?
+#### extraDetails.trigger?
 
-> `optional` **servingToggle**: `object`
+> `optional` **trigger**: `object`
 
-What toggle (if any) caused this event.
+What UI element (if any) triggered this event.
 
-#### extraDetails.servingToggle.label
+#### extraDetails.trigger.type
 
-> **label**: `string`
+> **type**: `"toggle"`
 
-#### extraDetails.servingToggle.id
+The type of element that triggered the event. Additional types may be
+added over time (e.g. "button", "link"), so expect this type to grow.
 
-> **id**: `string`
+#### extraDetails.trigger.label?
 
-#### extraDetails.servingToggle.checked
+> `optional` **label**: `string`
 
-> **checked**: `boolean`
+The UI label of the element that triggered the event.
+
+#### extraDetails.trigger.checked?
+
+> `optional` **checked**: `boolean`
+
+The checked state of the element that triggered the event.
+Only present when type is "toggle".
+
+#### extraDetails.preference?
+
+> `optional` **preference**: `object`
+
+Information about the specific preference being changed, if this event
+was triggered by a preference change.
+
+##### Example
+
+```ts
+// For a notice toggle:
+preference: {
+  key: "advertising",
+  type: "notice"
+}
+
+// For a TCF purpose toggle:
+preference: {
+  key: "tcf_purpose_consent_4",
+  type: "tcf_purpose_consent"
+}
+
+// For a TCF vendor toggle:
+preference: {
+  key: "gvl.2",
+  type: "tcf_vendor_consent",
+  vendor_id: "gvl.2",
+  vendor_list: "gvl",
+  vendor_list_id: "2",
+  vendor_name: "Captify"
+}
+```
+
+#### extraDetails.preference.key
+
+> **key**: `string`
+
+The unique key identifying this preference
+
+#### extraDetails.preference.type
+
+> **type**: `"notice"` \| `"tcf_purpose_consent"` \| `"tcf_purpose_legitimate_interest"` \| `"tcf_special_feature"` \| `"tcf_vendor_consent"` \| `"tcf_vendor_legitimate_interest"`
+
+The type of preference being changed
+
+#### extraDetails.preference.vendor\_id?
+
+> `optional` **vendor\_id**: `string`
+
+The vendor ID if this is a vendor-related preference
+
+#### extraDetails.preference.vendor\_list?
+
+> `optional` **vendor\_list**: `"gvl"` \| `"gacp"` \| `"fds"`
+
+The vendor list type if this is a vendor-related preference
+
+#### extraDetails.preference.vendor\_list\_id?
+
+> `optional` **vendor\_list\_id**: `string`
+
+The vendor list ID if this is a vendor-related preference
+
+#### extraDetails.preference.vendor\_name?
+
+> `optional` **vendor\_name**: `string`
+
+The vendor name if this is a vendor-related preference
 
 #### Overrides
 

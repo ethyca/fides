@@ -23,6 +23,8 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ### Added
 - DB model support for Attachments [#5784](https://github.com/ethyca/fides/pull/5784) https://github.com/ethyca/fides/labels/db-migration
+- DB model support for messages on `MonitorExecution` records [#5846](https://github.com/ethyca/fides/pull/5846) https://github.com/ethyca/fides/labels/db-migration
+- Added support for GPP String integration in Fides String [#5845](https://github.com/ethyca/fides/pull/5845)
 
 ### Changed
 - Bumped supported Python versions to `3.10.16` and `3.9.21` [#5840](https://github.com/ethyca/fides/pull/5840)
@@ -37,12 +39,18 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ### Fixed
 - Fixed pagination bugs on some tables [#5819](https://github.com/ethyca/fides/pull/5819)
+- Fixed load_samples to wrap variables in quotes to prevent YAML parsing errors [#5857](https://github.com/ethyca/fides/pull/5857)
+- Fixed incorrect value being set for `MonitorExecution.started` column [#5864](https://github.com/ethyca/fides/pull/5864)
+- Improved the behavior and state management of MSPA-related settings [#5861](https://github.com/ethyca/fides/pull/5861)
 
 ## [2.56.2](https://github.com/ethyca/fides/compare/2.56.1...2.56.2)
 
 ### Added
-- Fides GTM & event origination [#5821](https://github.com/ethyca/fides/pull/5821)
+- Update FidesJS to push all `FidesEvent` types to GTM (except `FidesInitializing`) [#5821](https://github.com/ethyca/fides/pull/5821)
 - Added a consent reporting table and consent lookup feature [#5839](https://github.com/ethyca/fides/pull/5839)
+- Added a high-precision `timestamp` to all `FidesEvents` from FidesJS SDK [#5859](https://github.com/ethyca/fides/pull/5859)
+- Added a `extraDetails.trigger` to `FidesUIChanged` events from FidesJS SDK with info about the UI element that triggered the event [#5859](https://github.com/ethyca/fides/pull/5859)
+- Added a `extraDetails.preference` to `FidesUIChanged` events from FidesJS SDK with info about the preference that was changed (notice, TCF purpose, TCF vendor, etc.) [#5859](https://github.com/ethyca/fides/pull/5859)
 
 ### Fixed
 - Addressed TCModel console error when opting into some purposes [#5850](https://github.com/ethyca/fides/pull/5850)
