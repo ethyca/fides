@@ -90,8 +90,8 @@ export interface FidesInitOptions {
   // Whether to include the GPP extension
   gppEnabled: boolean;
 
-  // Whether we should "embed" the fides.js overlay UI (ie. “Layer 2”) into a web page instead of as a pop-up
-  // overlay, and never render the banner (ie. “Layer 1”).
+  // Whether we should "embed" the fides.js overlay UI (ie. "Layer 2") into a web page instead of as a pop-up
+  // overlay, and never render the banner (ie. "Layer 1").
   fidesEmbed: boolean;
 
   // Whether we should disable saving consent preferences to the Fides API.
@@ -145,6 +145,9 @@ export interface FidesInitOptions {
 
   // If defined, maps OT cookie consent to Fides cookie consent
   otFidesMapping?: string | null;
+
+  // List of notice_keys to disable their respective Toggle elements in the CMP Overlay
+  fidesDisabledNotices: string[] | null;
 }
 
 /**
@@ -239,9 +242,9 @@ export interface FidesCookie {
 }
 
 export type GetPreferencesFnResp = {
-  // Overrides the value for Fides.consent for the user’s notice-based preferences (e.g. { data_sales: false })
+  // Overrides the value for Fides.consent for the user's notice-based preferences (e.g. { data_sales: false })
   consent?: NoticeConsent;
-  // Overrides the value for Fides.fides_string for the user’s TCF+AC preferences (e.g. 1a2a3a.AAABA,1~123.121)
+  // Overrides the value for Fides.fides_string for the user's TCF+AC preferences (e.g. 1a2a3a.AAABA,1~123.121)
   fides_string?: string;
   // An explicit version hash for provided fides_string when calculating whether consent should be re-triggered
   version_hash?: string;
@@ -719,6 +722,7 @@ export type FidesInitOptionsOverrides = Pick<
   | "fidesClearCookie"
   | "fidesConsentOverride"
   | "otFidesMapping"
+  | "fidesDisabledNotices"
 >;
 
 export type FidesExperienceTranslationOverrides = {
