@@ -2,27 +2,27 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { Classification } from "./Classification";
 import type { DiffStatus } from "./DiffStatus";
+import type { StagedResourceTypeValue } from "./StagedResourceTypeValue";
 
 /**
  * Base API model that represents a staged resource, fields common to all types of staged resources
  */
 export type StagedResource = {
   urn: string;
+  /**
+   * The data uses associated with the resource
+   */
+  data_uses?: Array<string> | null;
   user_assigned_data_categories?: Array<string>;
+  system_key?: string | null;
   name?: string | null;
   description?: string | null;
   monitor_config_id?: string | null;
   updated_at?: string | null;
-  source_modified?: string | null;
-  classifications?: Array<Classification>;
   /**
    * The diff status of the staged resource
    */
   diff_status?: DiffStatus | null;
-  /**
-   * Represents the presence of various diff statuses of the staged resource's children. This is computed 'on-demand', i.e. a specific instance method must be invoked to populate the field.
-   */
-  child_diff_statuses?: Record<string, boolean>;
+  resource_type?: StagedResourceTypeValue | null;
 };

@@ -3,6 +3,10 @@ import { Fragment, h } from "preact";
 import { useMemo, useState } from "preact/hooks";
 
 import { PrivacyExperience } from "../../lib/consent-types";
+import {
+  FidesEventDetailsPreference,
+  FidesEventDetailsTrigger,
+} from "../../lib/events";
 import { useI18n } from "../../lib/i18n/i18n-context";
 import { LEGAL_BASIS_OPTIONS } from "../../lib/tcf/constants";
 import {
@@ -250,7 +254,11 @@ const PagedVendorData = ({
   experience: PrivacyExperience;
   vendors: VendorRecord[];
   enabledIds: string[];
-  onChange: (newIds: string[]) => void;
+  onChange: (
+    newIds: string[],
+    vendor: VendorRecord,
+    triggerDetails: FidesEventDetailsTrigger,
+  ) => void;
 }) => {
   const { i18n } = useI18n();
   const { activeChunk, ...paging } = usePaging(vendors);
@@ -314,7 +322,11 @@ const TcfVendors = ({
   experience: PrivacyExperience;
   enabledVendorConsentIds: string[];
   enabledVendorLegintIds: string[];
-  onChange: (payload: UpdateEnabledIds) => void;
+  onChange: (
+    payload: UpdateEnabledIds,
+    triggerDetails: FidesEventDetailsTrigger,
+    preferenceDetails: FidesEventDetailsPreference,
+  ) => void;
 }) => {
   // Combine the various vendor objects into one object for convenience
   const vendors = useMemo(
@@ -353,15 +365,41 @@ const TcfVendors = ({
             ? enabledVendorConsentIds
             : enabledVendorLegintIds
         }
-        onChange={(newEnabledIds) =>
-          onChange({
+        onChange={(newEnabledIds, vendor, triggerDetails) => {
+          const modelType =
+            activeLegalBasisOption.value === LegalBasisEnum.CONSENT.toString()
+              ? "vendorsConsent"
+              : "vendorsLegint";
+
+          // Determine the type of preference being changed based on the model type:
+          // - vendorsConsent -> tcf_vendor_consent
+          // - vendorsLegint -> tcf_vendor_legitimate_interests
+          let type;
+          if (modelType === "vendorsConsent") {
+            type = "tcf_vendor_consent" as const;
+          } else {
+            type = "tcf_vendor_legitimate_interest" as const;
+          }
+
+          const payload: UpdateEnabledIds = {
             newEnabledIds,
-            modelType:
-              activeLegalBasisOption.value === LegalBasisEnum.CONSENT.toString()
-                ? "vendorsConsent"
-                : "vendorsLegint",
-          })
-        }
+            modelType,
+          };
+
+          // For convenience, split the vendor ID into parts for the FidesEvent,
+          // so that consumers don't need to implement this
+          const [vendorList, vendorListId] = vendor.id.split(".");
+          const preferenceDetails: FidesEventDetailsPreference = {
+            key: vendor.id,
+            type,
+            vendor_id: vendor.id,
+            vendor_list: vendorList as "gvl" | "gacp" | "fds",
+            vendor_list_id: vendorListId,
+            vendor_name: vendor.name,
+          };
+
+          onChange(payload, triggerDetails, preferenceDetails);
+        }}
         // This key forces a rerender when legal basis changes, which allows paging to reset properly
         key={`vendor-data-${activeLegalBasisOption.value}`}
       />

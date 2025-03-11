@@ -9,24 +9,26 @@ import FieldDataTypeCell from "~/features/data-discovery-and-detection/tables/ce
 import ResultStatusBadgeCell from "~/features/data-discovery-and-detection/tables/cells/StagedResourceStatusBadgeCell";
 import { DiscoveryMonitorItem } from "~/features/data-discovery-and-detection/types/DiscoveryMonitorItem";
 import { ResourceChangeType } from "~/features/data-discovery-and-detection/types/ResourceChangeType";
-import { StagedResourceType } from "~/features/data-discovery-and-detection/types/StagedResourceType";
 import findProjectFromUrn from "~/features/data-discovery-and-detection/utils/findProjectFromUrn";
-import { DiffStatus } from "~/types/api";
+import { DiffStatus, StagedResourceTypeValue } from "~/types/api";
 
 import DiscoveryItemActionsCell from "../tables/cells/DiscoveryItemActionsCell";
 import EditCategoryCell from "../tables/cells/EditCategoryCell";
 import ResultStatusCell from "../tables/cells/ResultStatusCell";
 
+const NAME_COLUMN_SIZE = 300;
+const ACTION_COLUMN_SIZE = 235;
+
 const useDiscoveryResultColumns = ({
   resourceType,
 }: {
-  resourceType: StagedResourceType | undefined;
+  resourceType: StagedResourceTypeValue | undefined;
 }) => {
   const columnHelper = createColumnHelper<DiscoveryMonitorItem>();
 
   const defaultColumns: ColumnDef<DiscoveryMonitorItem, any>[] = [];
 
-  if (resourceType === StagedResourceType.SCHEMA) {
+  if (resourceType === StagedResourceTypeValue.SCHEMA) {
     const columns = [
       columnHelper.accessor((row) => row.name, {
         id: "name",
@@ -37,6 +39,7 @@ const useDiscoveryResultColumns = ({
           />
         ),
         header: (props) => <DefaultHeaderCell value="Name" {...props} />,
+        size: NAME_COLUMN_SIZE,
       }),
       columnHelper.accessor((row) => row.urn, {
         id: "project",
@@ -74,15 +77,16 @@ const useDiscoveryResultColumns = ({
             <DefaultCell value="--" />
           ),
         header: "Actions",
+        size: ACTION_COLUMN_SIZE,
         meta: {
-          width: "auto",
+          disableRowClick: true,
         },
       }),
     ];
     return { columns };
   }
 
-  if (resourceType === StagedResourceType.TABLE) {
+  if (resourceType === StagedResourceTypeValue.TABLE) {
     const columns = [
       columnHelper.display({
         id: "select",
@@ -107,6 +111,7 @@ const useDiscoveryResultColumns = ({
         id: "tables",
         cell: (props) => <ResultStatusCell result={props.row.original} />,
         header: (props) => <DefaultHeaderCell value="Table name" {...props} />,
+        size: NAME_COLUMN_SIZE,
       }),
       columnHelper.accessor((row) => row.description, {
         id: "description",
@@ -139,20 +144,22 @@ const useDiscoveryResultColumns = ({
           <DiscoveryItemActionsCell resource={props.row.original} />
         ),
         header: "Actions",
+        size: ACTION_COLUMN_SIZE,
         meta: {
-          width: "auto",
+          disableRowClick: true,
         },
       }),
     ];
     return { columns };
   }
 
-  if (resourceType === StagedResourceType.FIELD) {
+  if (resourceType === StagedResourceTypeValue.FIELD) {
     const columns = [
       columnHelper.accessor((row) => row.name, {
         id: "name",
         cell: (props) => <ResultStatusCell result={props.row.original} />,
         header: (props) => <DefaultHeaderCell value="Field name" {...props} />,
+        size: NAME_COLUMN_SIZE,
       }),
       columnHelper.accessor((row) => row.source_data_type, {
         id: "data-type",
@@ -199,8 +206,9 @@ const useDiscoveryResultColumns = ({
           <DiscoveryItemActionsCell resource={props.row.original} />
         ),
         header: "Actions",
+        size: ACTION_COLUMN_SIZE,
         meta: {
-          width: "auto",
+          disableRowClick: true,
         },
       }),
     ];

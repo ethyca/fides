@@ -19,19 +19,80 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - https://github.com/ethyca/fides/labels/high-risk: to indicate that a change is a "high-risk" change that could potentially lead to unanticipated regressions or degradations
 - https://github.com/ethyca/fides/labels/db-migration: to indicate that a given change includes a DB migration
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.55.4...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.56.2...main)
+
+### Added
+- DB model support for Attachments [#5784](https://github.com/ethyca/fides/pull/5784) https://github.com/ethyca/fides/labels/db-migration
+- DB model support for messages on `MonitorExecution` records [#5846](https://github.com/ethyca/fides/pull/5846) https://github.com/ethyca/fides/labels/db-migration
+- Added support for GPP String integration in Fides String [#5845](https://github.com/ethyca/fides/pull/5845)
+- Support for location based privacy center actions [#5803](https://github.com/ethyca/fides/pull/5803)
+
+### Changed
+- Bumped supported Python versions to `3.10.16` and `3.9.21` [#5840](https://github.com/ethyca/fides/pull/5840)
+- Update the privacy request detail page to a new layout and improved styling [#5824](https://github.com/ethyca/fides/pull/5824)
+- Updated privacy request handling to still succeed if not all identities are provided [#5836](https://github.com/ethyca/fides/pull/5836)
+- Refactored privacy request processing to never re-use sessions [#5862](https://github.com/ethyca/fides/pull/5862)
+- Privacy Center was updated to use React 19 and leverage Server Components [#5803](https://github.com/ethyca/fides/pull/5803)
+
+### Developer Experience
+- Moved non-prod Admin UI dependencies to devDependencies [#5832](https://github.com/ethyca/fides/pull/5832)
+- Prevent Admin UI and Privacy Center from starting when running `nox -s dev` with datastore params [#5843](https://github.com/ethyca/fides/pull/5843)
+- Remove plotly (unused package) to reduce fides image size [#5852](https://github.com/ethyca/fides/pull/5852)
+
+### Fixed
+- Fixed pagination bugs on some tables [#5819](https://github.com/ethyca/fides/pull/5819)
+- Fixed load_samples to wrap variables in quotes to prevent YAML parsing errors [#5857](https://github.com/ethyca/fides/pull/5857)
+- Fixed incorrect value being set for `MonitorExecution.started` column [#5864](https://github.com/ethyca/fides/pull/5864)
+- Improved the behavior and state management of MSPA-related settings [#5861](https://github.com/ethyca/fides/pull/5861)
+
+## [2.56.2](https://github.com/ethyca/fides/compare/2.56.1...2.56.2)
+
+### Added
+- Update FidesJS to push all `FidesEvent` types to GTM (except `FidesInitializing`) [#5821](https://github.com/ethyca/fides/pull/5821)
+- Added a consent reporting table and consent lookup feature [#5839](https://github.com/ethyca/fides/pull/5839)
+- Added a high-precision `timestamp` to all `FidesEvents` from FidesJS SDK [#5859](https://github.com/ethyca/fides/pull/5859)
+- Added a `extraDetails.trigger` to `FidesUIChanged` events from FidesJS SDK with info about the UI element that triggered the event [#5859](https://github.com/ethyca/fides/pull/5859)
+- Added a `extraDetails.preference` to `FidesUIChanged` events from FidesJS SDK with info about the preference that was changed (notice, TCF purpose, TCF vendor, etc.) [#5859](https://github.com/ethyca/fides/pull/5859)
+
+### Fixed
+- Addressed TCModel console error when opting into some purposes [#5850](https://github.com/ethyca/fides/pull/5850)
+- Opt out of all in TCF no longer affects "notice only" notices [#5850](https://github.com/ethyca/fides/pull/5850)
+- Corrected the Tag color for some columns of the Privacy requests table. [#5848](https://github.com/ethyca/fides/pull/5848)
+
+## [2.56.1](https://github.com/ethyca/fides/compare/2.56.0...2.56.1)
+
+### Changed
+- Custom TCF purposes respect NOTICE_ONLY [#5830](https://github.com/ethyca/fides/pull/5830)
+
+### Fixed
+- Fixed usage of stale DB sessions when running privacy requests [#5834](https://github.com/ethyca/fides/pull/5834)
+
+## [2.56.0](https://github.com/ethyca/fides/compare/2.55.4...2.56.0)
 
 ### Added
 - DB model support for Web Monitoring [#5616](https://github.com/ethyca/fides/pull/5616) https://github.com/ethyca/fides/labels/db-migration
 - Added support for queue-specific Celery workers [#5761](https://github.com/ethyca/fides/pull/5761)
-- Support for location based privacy center actions [#5803](https://github.com/ethyca/fides/pull/5803)
+- Added support for AWS SES as an email provider [#5804](https://github.com/ethyca/fides/pull/5804)
+- Nested identity query support for BigQuery [#5814](https://github.com/ethyca/fides/pull/5814)
+- Added job that automatically requeues interrupted tasks for in progress privacy requests [#5800](https://github.com/ethyca/fides/pull/5800)
+- Added "Assets" tab on system view for web monitor assets [#5811](https://github.com/ethyca/fides/pull/5811)
+- Support for MySQL Data Detection & Discovery Monitors [#5798](https://github.com/ethyca/fides/pull/5798)
 
 ### Changed
 - Improved dataset validation for namespace metadata and dataset reachability [#5744](https://github.com/ethyca/fides/pull/5744)
-- Privacy Center was updated to use React 19 and leverage Server Components [#5803](https://github.com/ethyca/fides/pull/5803)
+- Taxonomy page can now be accessed by users with only read permissions [#5815](https://github.com/ethyca/fides/pull/5815)
+
+### Developer Experience
+- Modified Dependabot configuration to support monorepo security updates [#5810](https://github.com/ethyca/fides/pull/5810)
+- Fix load_samples to correctly collect & load sample connections with "False" secret values [#5828](https://github.com/ethyca/fides/pull/5828)
 
 ### Docs
 - Removed version pins in LDFLAGS & CFLAGS for local MSSQL builds [#5760](https://github.com/ethyca/fides/pull/5760)
+
+### Fixed
+- Fixed background color of the message indicating the rows selected [#5847](https://github.com/ethyca/fides/pull/5847)
+- Fixed bug with D&D table column widths [#5813](https://github.com/ethyca/fides/pull/5813)
+- Fixed `poll_for_exited_privacy_request_tasks` for DSR-processing improvements [#5820](https://github.com/ethyca/fides/pull/5820)
 
 ## [2.55.4](https://github.com/ethyca/fides/compare/2.55.3...2.55.4)
 

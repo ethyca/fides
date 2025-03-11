@@ -379,10 +379,17 @@ def bigquery_resources(
         connection.execute(stmt)
 
         stmt = f"""
-            insert into customer (id, email, name, address_id)
-            values ({customer_id}, '{customer_email}', '{customer_name}', {address_id});
+            insert into customer (id, email, name, address_id, custom_id, extra_address_data)
+            values ({customer_id}, '{customer_email}', '{customer_name}', {address_id}, 'custom_{customer_id}', STRUCT('{city}' as city, '111' as house, {customer_id} as id, '{state}' as state, 'Test Street' as street, {address_id} as address_id));
         """
 
+        connection.execute(stmt)
+
+        # Insert into customer_profile table
+        stmt = f"""
+            insert into customer_profile (id, contact_info, address)
+            values ({customer_id}, STRUCT('{customer_email}', '555-{customer_id}-1234'), '{111} Test Street, {city}, {state} 55555');
+        """
         connection.execute(stmt)
 
         last_visit_date = "2024-10-03 01:00:00"
@@ -419,6 +426,9 @@ def bigquery_resources(
         }
         # Remove test data and close BigQuery connection in teardown
         stmt = f"delete from customer where email = '{customer_email}';"
+        connection.execute(stmt)
+
+        stmt = f"delete from customer_profile where contact_info.primary_email = '{customer_email}';"
         connection.execute(stmt)
 
         stmt = f"delete from visit_partitioned where email = '{customer_email}' and last_visit = '{last_visit_date}';"
@@ -464,10 +474,17 @@ def bigquery_resources_with_namespace_meta(
         connection.execute(stmt)
 
         stmt = f"""
-            insert into fidesopstest.customer (id, email, name, address_id)
-            values ({customer_id}, '{customer_email}', '{customer_name}', {address_id});
+            insert into fidesopstest.customer (id, email, name, address_id, custom_id, extra_address_data)
+            values ({customer_id}, '{customer_email}', '{customer_name}', {address_id}, 'custom_{customer_id}', STRUCT('{city}' as city, '111' as house, {customer_id} as id, '{state}' as state, 'Test Street' as street, {address_id} as address_id));
         """
 
+        connection.execute(stmt)
+
+        # Insert into customer_profile table
+        stmt = f"""
+            insert into fidesopstest.customer_profile (id, contact_info, address)
+            values ({customer_id}, STRUCT('{customer_email}', '555-{customer_id}-1234'), '{111} Test Street, {city}, {state} 55555');
+        """
         connection.execute(stmt)
 
         last_visit_date = "2024-10-03 01:00:00"
@@ -504,6 +521,9 @@ def bigquery_resources_with_namespace_meta(
         }
         # Remove test data and close BigQuery connection in teardown
         stmt = f"delete from fidesopstest.customer where email = '{customer_email}';"
+        connection.execute(stmt)
+
+        stmt = f"delete from fidesopstest.customer_profile where contact_info.primary_email = '{customer_email}';"
         connection.execute(stmt)
 
         stmt = f"delete from fidesopstest.visit_partitioned where email = '{customer_email}' and last_visit = '{last_visit_date}';"
@@ -794,10 +814,23 @@ def seed_bigquery_integration_db(bigquery_integration_engine) -> None:
 
         """,
         """
+        DROP TABLE IF EXISTS fidesopstest.customer_profile;
+        """,
+        """
         CREATE TABLE fidesopstest.product (
             id INT,
             name STRING,
             price DECIMAL(10,2)
+        );
+        """,
+        """
+        CREATE TABLE fidesopstest.customer_profile (
+            id INT,
+            contact_info STRUCT<
+                primary_email STRING,
+                phone_number STRING
+            >,
+            address STRING
         );
         """,
         """
@@ -814,9 +847,18 @@ def seed_bigquery_integration_db(bigquery_integration_engine) -> None:
         CREATE TABLE fidesopstest.customer (
             id INT,
             email STRING,
-            name  STRING,
+            name STRING,
             created TIMESTAMP,
-            address_id BIGINT
+            address_id BIGINT,
+            custom_id STRING,
+            extra_address_data STRUCT<
+                city STRING,
+                house STRING,
+                id INT,
+                state STRING,
+                street STRING,
+                address_id BIGINT
+            >
         );
         """,
         """
@@ -866,7 +908,7 @@ def seed_bigquery_integration_db(bigquery_integration_engine) -> None:
             last_visit TIMESTAMP
         )
         PARTITION BY
-            last_visit
+            DATE(last_visit)
             OPTIONS(
                 require_partition_filter = TRUE
             )
@@ -913,8 +955,8 @@ def seed_bigquery_integration_db(bigquery_integration_engine) -> None:
         """,
         """
         INSERT INTO fidesopstest.customer VALUES
-        (1, 'customer-1@example.com', 'John Customer', '2020-04-01 11:47:42', 1),
-        (2, 'customer-2@example.com', 'Jill Customer', '2020-04-01 11:47:42', 2);
+        (1, 'customer-1@example.com', 'John Customer', '2020-04-01 11:47:42', 1, 'custom_id_1', STRUCT('Exampletown' as city, '123' as house, 1 as id, 'NY' as state, 'Example Street' as street, 1 as address_id)),
+        (2, 'customer-2@example.com', 'Jill Customer', '2020-04-01 11:47:42', 2, 'custom_id_2', STRUCT('Exampletown' as city, '4' as house, 2 as id, 'NY' as state, 'Example Lane' as street, 2 as address_id));
         """,
         """
         INSERT INTO fidesopstest.employee VALUES
@@ -949,7 +991,7 @@ def seed_bigquery_integration_db(bigquery_integration_engine) -> None:
         """
         INSERT INTO fidesopstest.visit_partitioned VALUES
         ('customer-1@example.com', '2021-01-06 01:00:00'),
-        ('customer-2@example.com', '2021-01-06 01:00:00');
+        ('customer-2@example.com', '2021-01-06 01:00:00'),
         ('customer-2@example.com', '2024-10-03 01:00:00');
         """,
         """
@@ -973,6 +1015,11 @@ def seed_bigquery_integration_db(bigquery_integration_engine) -> None:
         (2, 'admin-account@example.com', 'Monthly Report', 2021, 9, 100),
         (3, 'admin-account@example.com', 'Monthly Report', 2021, 10, 100),
         (4, 'admin-account@example.com', 'Monthly Report', 2021, 11, 100);
+        """,
+        """
+        INSERT INTO fidesopstest.customer_profile VALUES
+        (1, STRUCT('customer-1@example.com', '555-123-4567'), '123 Example Street, Exampletown, NY 12345'),
+        (2, STRUCT('customer-2@example.com', '555-987-6543'), '4 Example Lane, Exampletown, NY 12321');
         """,
     ]
     with bigquery_integration_engine.connect() as connection:

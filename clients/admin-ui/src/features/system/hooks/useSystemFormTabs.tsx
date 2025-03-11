@@ -36,6 +36,7 @@ import {
   useGetSystemByFidesKeyQuery,
 } from "~/features/system/system.slice";
 import SystemInformationForm from "~/features/system/SystemInformationForm";
+import SystemAssetsTable from "~/features/system/tabs/system-assets/SystemAssetsTable";
 import { SystemResponse } from "~/types/api";
 
 const SYSTEM_TABS = {
@@ -55,8 +56,12 @@ const SYSTEM_TABS = {
     index: 3,
     hash: "#integrations",
   },
-  HISTORY: {
+  ASSETS: {
     index: 4,
+    hash: "#assets",
+  },
+  HISTORY: {
+    index: 5,
     hash: "#history",
   },
 } as const;
@@ -121,7 +126,7 @@ const useSystemFormTabs = ({
     useState<boolean | undefined>(undefined);
   const { plus: isPlusEnabled } = useFeatures();
   const {
-    flags: { dataDiscoveryAndDetection },
+    flags: { dataDiscoveryAndDetection, webMonitor },
   } = useFlags();
   const { plus: hasPlus } = useFeatures();
 
@@ -348,6 +353,16 @@ const useSystemFormTabs = ({
       isDisabled: !activeSystem,
     },
   ];
+
+  if (isPlusEnabled && webMonitor) {
+    tabData.push({
+      label: "Assets",
+      content: activeSystem ? (
+        <SystemAssetsTable system={activeSystem} />
+      ) : null,
+      isDisabled: !activeSystem,
+    });
+  }
 
   if (isPlusEnabled) {
     tabData.push({

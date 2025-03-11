@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, Iterable, List, Optional, Type
 
@@ -388,13 +388,22 @@ class MonitorExecution(Base):
     )
     status = Column(String, nullable=True)
     started = Column(
-        DateTime(timezone=True), nullable=True, default=datetime.now(timezone.utc)
+        DateTime(timezone=True),
+        nullable=True,
+        server_default=func.now(),
     )
     completed = Column(DateTime(timezone=True), nullable=True)
     classification_instances = Column(
         ARRAY(String),
         index=False,
         unique=False,
+        nullable=False,
+        default=list,
+    )
+    # stores additional information from monitor execution failures as an array of strings,
+    # e.g. error messages, stack traces, etc.
+    messages = Column(
+        ARRAY(String),
         nullable=False,
         default=list,
     )

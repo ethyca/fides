@@ -2,7 +2,7 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 import "cypress-wait-until";
 
-import type { FidesConfig } from "fides-js";
+import type { FidesConfig, FidesEventType } from "fides-js";
 
 import type { PrivacyCenterClientSettings } from "~/app/server-environment";
 import type { AppDispatch } from "~/app/store";
@@ -98,19 +98,28 @@ Cypress.Commands.add(
           }
         }
 
-        // Add event listeners for Fides.js events
-        win.addEventListener(
-          "FidesInitializing",
-          cy.stub().as("FidesInitializing"),
-        );
-        win.addEventListener(
-          "FidesInitialized",
-          cy.stub().as("FidesInitialized"),
-        );
-        win.addEventListener("FidesUpdating", cy.stub().as("FidesUpdating"));
-        win.addEventListener("FidesUpdated", cy.stub().as("FidesUpdated"));
-        win.addEventListener("FidesUIShown", cy.stub().as("FidesUIShown"));
-        win.addEventListener("FidesUIChanged", cy.stub().as("FidesUIChanged"));
+        // List all Fides events and stub them all in tests.
+        // NOTE: If you add a new FidesEventType but don't include it here, this
+        // will fail to compile. That's the point!
+        const fidesEvents: Record<FidesEventType, true> = {
+          FidesInitializing: true,
+          FidesInitialized: true,
+          FidesUpdating: true,
+          FidesUpdated: true,
+          FidesUIChanged: true,
+          FidesUIShown: true,
+          FidesModalClosed: true,
+        };
+
+        // Add event listeners for all Fides.js events
+        const allEventsStub = cy.stub().as("AllFidesEvents");
+        Object.keys(fidesEvents).forEach((eventName) => {
+          const eventStub = cy.stub().as(eventName);
+          win.addEventListener(eventName, (event) => {
+            eventStub(event);
+            allEventsStub(event);
+          });
+        });
 
         // Add GTM stub
         // eslint-disable-next-line no-param-reassign

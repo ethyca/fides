@@ -41,7 +41,6 @@ from starlette.status import (
 )
 
 from fides.api.api import deps
-from fides.api.api.deps import get_privacy_request_service
 from fides.api.api.v1.endpoints.dataset_config_endpoints import _get_connection_config
 from fides.api.api.v1.endpoints.manual_webhook_endpoints import (
     get_access_manual_webhook_or_404,
@@ -84,7 +83,7 @@ from fides.api.oauth.utils import (
 )
 from fides.api.schemas.dataset import CollectionAddressResponse, DryRunDatasetResponse
 from fides.api.schemas.external_https import PrivacyRequestResumeFormat
-from fides.api.schemas.policy import ActionType, CurrentStep
+from fides.api.schemas.policy import ActionType
 from fides.api.schemas.privacy_request import (
     BulkPostPrivacyRequests,
     BulkReviewResponse,
@@ -109,6 +108,7 @@ from fides.api.schemas.privacy_request import (
     ReviewPrivacyRequestIds,
     VerificationCode,
 )
+from fides.api.service.deps import get_messaging_service, get_privacy_request_service
 from fides.api.service.messaging.message_dispatch_service import EMAIL_JOIN_STRING
 from fides.api.task.execute_request_tasks import log_task_queued, queue_request_task
 from fides.api.task.filter_results import filter_data_categories
@@ -170,8 +170,11 @@ from fides.service.dataset.dataset_config_service import (
 )
 from fides.service.messaging.messaging_service import MessagingService
 from fides.service.privacy_request.privacy_request_service import (
+    PrivacyRequestError,
     PrivacyRequestService,
-    _trigger_pre_approval_webhooks,
+    _process_privacy_request_restart,
+    _requeue_privacy_request,
+    handle_approval,
     queue_privacy_request,
 )
 
@@ -211,7 +214,7 @@ def get_privacy_request_or_error(
 def create_privacy_request(
     *,
     privacy_request_service: PrivacyRequestService = Depends(
-        deps.get_privacy_request_service
+        get_privacy_request_service
     ),
     data: Annotated[List[PrivacyRequestCreate], Field(max_length=50)],  # type: ignore
 ) -> BulkPostPrivacyRequests:
@@ -1229,7 +1232,7 @@ def restart_privacy_request_from_failure(
     *,
     db: Session = Depends(deps.get_db),
     privacy_request_service: PrivacyRequestService = Depends(
-        deps.get_privacy_request_service
+        get_privacy_request_service
     ),
 ) -> PrivacyRequestResponse:
     """Restart a privacy request from failure"""
@@ -1276,7 +1279,7 @@ def verify_identification_code(
     *,
     db: Session = Depends(deps.get_db),
     config_proxy: ConfigProxy = Depends(deps.get_config_proxy),
-    messaging_service: MessagingService = Depends(deps.get_messaging_service),
+    messaging_service: MessagingService = Depends(get_messaging_service),
     provided_code: VerificationCode,
 ) -> PrivacyRequestResponse:
     """Verify the supplied identity verification code.
@@ -1307,19 +1310,7 @@ def verify_identification_code(
 
     logger.info("Identity verified for {}.", privacy_request.id)
 
-    if config_proxy.execution.require_manual_request_approval:
-        _trigger_pre_approval_webhooks(db, privacy_request)
-    else:
-        AuditLog.create(
-            db=db,
-            data={
-                "user_id": "system",
-                "privacy_request_id": privacy_request.id,
-                "action": AuditLogAction.approved,
-                "message": "",
-            },
-        )
-        queue_privacy_request(privacy_request.id)
+    handle_approval(db, config_proxy, privacy_request)
 
     return privacy_request  # type: ignore[return-value]
 
@@ -1336,7 +1327,7 @@ def approve_privacy_request(
         scopes=[PRIVACY_REQUEST_REVIEW],
     ),
     privacy_request_service: PrivacyRequestService = Depends(
-        deps.get_privacy_request_service
+        get_privacy_request_service
     ),
     privacy_requests: ReviewPrivacyRequestIds,
 ) -> BulkReviewResponse:
@@ -1359,7 +1350,7 @@ def deny_privacy_request(
         scopes=[PRIVACY_REQUEST_REVIEW],
     ),
     privacy_request_service: PrivacyRequestService = Depends(
-        deps.get_privacy_request_service
+        get_privacy_request_service
     ),
     privacy_requests: DenyPrivacyRequests,
 ) -> BulkReviewResponse:
@@ -1396,7 +1387,7 @@ def mark_privacy_request_pre_approve_eligible(
     *,
     db: Session = Depends(deps.get_db),
     privacy_request_service: PrivacyRequestService = Depends(
-        deps.get_privacy_request_service
+        get_privacy_request_service
     ),
     webhook: PreApprovalWebhook = Security(
         verify_callback_oauth_pre_approval_webhook, scopes=[PRIVACY_REQUEST_REVIEW]
@@ -1867,35 +1858,6 @@ def resume_privacy_request_from_requires_input(
     return privacy_request  # type: ignore[return-value]
 
 
-def _process_privacy_request_restart(
-    privacy_request: PrivacyRequest,
-    failed_step: Optional[CurrentStep],
-    db: Session,
-) -> PrivacyRequestResponse:
-    """If failed_step is provided, restart the DSR within that step. Otherwise,
-    restart the privacy request from the beginning."""
-    if failed_step:
-        logger.info(
-            "Restarting failed privacy request '{}' from '{}'",
-            privacy_request.id,
-            failed_step,
-        )
-    else:
-        logger.info(
-            "Restarting failed privacy request '{}' from the beginning",
-            privacy_request.id,
-        )
-
-    privacy_request.status = PrivacyRequestStatus.in_processing
-    privacy_request.save(db=db)
-    queue_privacy_request(
-        privacy_request_id=privacy_request.id,
-        from_step=failed_step.value if failed_step else None,
-    )
-
-    return privacy_request  # type: ignore[return-value]
-
-
 @router.get(
     REQUEST_TASKS,
     dependencies=[Security(verify_oauth_client, scopes=[PRIVACY_REQUEST_READ])],
@@ -1936,51 +1898,17 @@ def requeue_privacy_request(
 
     Don't use this unless the Privacy Request is stuck.
     """
-    pr: PrivacyRequest = get_privacy_request_or_error(db, privacy_request_id)
+    privacy_request: PrivacyRequest = get_privacy_request_or_error(
+        db, privacy_request_id
+    )
 
-    if pr.status not in [
-        PrivacyRequestStatus.approved,
-        PrivacyRequestStatus.in_processing,
-    ]:
+    try:
+        return _requeue_privacy_request(db, privacy_request)
+    except PrivacyRequestError as exc:
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,
-            detail=f"Request failed. Cannot re-queue privacy request {pr.id} with status {pr.status.value}",
+            detail=exc.message,
         )
-
-    # Both DSR 2.0 and 3.0 cache checkpoint details
-    checkpoint_details: Optional[CheckpointActionRequired] = (
-        pr.get_failed_checkpoint_details()
-    )
-    resume_step = checkpoint_details.step if checkpoint_details else None
-
-    # DSR 3.0 additionally stores Request Tasks in the application db that can be used to infer
-    # a resume checkpoint in the event the cache has expired.
-    if not resume_step and pr.request_tasks.count():
-        if pr.consent_tasks.count():
-            resume_step = CurrentStep.consent
-        elif pr.erasure_tasks.count():
-            # Checking if access terminator task was completed, because erasure tasks are created
-            # at the same time as the access tasks
-            terminator_access_task = pr.get_terminate_task_by_action(ActionType.access)
-            resume_step = (
-                CurrentStep.erasure
-                if terminator_access_task.status == ExecutionLogStatus.complete
-                else CurrentStep.access
-            )
-        elif pr.access_tasks.count():
-            resume_step = CurrentStep.access
-
-    logger.info(
-        "Manually re-queuing Privacy Request {} from step {}",
-        pr,
-        resume_step.value if resume_step else None,
-    )
-
-    return _process_privacy_request_restart(
-        pr,
-        resume_step,
-        db,
-    )
 
 
 @router.post(
