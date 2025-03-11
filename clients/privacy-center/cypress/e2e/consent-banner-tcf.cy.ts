@@ -407,9 +407,10 @@ describe("Fides-js TCF", () => {
         });
         // verify the data layer variables
         cy.get("@dataLayerPush")
-          .should("have.been.calledThrice")
+          .should("have.been.callCount", 4) // FidesInitialized + FidesUIShown (banner) + FidesUpdating + FidesUpdated
           // First call should be from initialization, before the user accepts all
           .its("firstCall.args.0")
+          .then((actual) => Cypress._.omit(actual, "Fides.timestamp"))
           .should("deep.equal", {
             event: "FidesInitialized",
             Fides: {
@@ -421,33 +422,60 @@ describe("Fides-js TCF", () => {
               fides_string: undefined,
             },
           });
+
+        // Verify FidesUIShown events (banner and modal)
+        cy.get("@dataLayerPush")
+          .its("args")
+          .then((args) => {
+            // Banner shown event
+            const bannerEvent = args[1][0];
+            expect(bannerEvent.event).to.equal("FidesUIShown");
+            expect(bannerEvent.Fides.extraDetails.servingComponent).to.equal(
+              "tcf_banner",
+            );
+
+            // FidesUpdating event
+            const updatingEvent = args[2][0];
+            expect(updatingEvent.event).to.equal("FidesUpdating");
+            expect(updatingEvent.Fides.extraDetails.servingComponent).to.equal(
+              undefined,
+            );
+
+            // FidesUpdated event
+            const updatedEvent = args[3][0];
+            expect(updatedEvent.event).to.equal("FidesUpdated");
+            expect(updatedEvent.Fides.extraDetails.servingComponent).to.equal(
+              undefined,
+            );
+          });
+
         // FidesUpdating call
         cy.get("@dataLayerPush")
-          .its("secondCall.args.0.Fides")
-          .should("deep.include", {
-            consent: {},
-            extraDetails: {
-              consentMethod: "accept",
-            },
+          .its("args")
+          .then((args) => {
+            const call = args[2][0];
+            expect(call.Fides).to.deep.include({
+              consent: {},
+              extraDetails: {
+                consentMethod: "accept",
+              },
+            });
+            expect(call.Fides.fides_string).to.contain(",1~");
           });
-        cy.get("@dataLayerPush")
-          .its("secondCall.args.0")
-          .its("Fides.fides_string")
-          .should("contain", ",1~");
 
         // FidesUpdated call
         cy.get("@dataLayerPush")
-          .its("thirdCall.args.0.Fides")
-          .should("deep.include", {
-            consent: {},
-            extraDetails: {
-              consentMethod: "accept",
-            },
+          .its("args")
+          .then((args) => {
+            const call = args[3][0];
+            expect(call.Fides).to.deep.include({
+              consent: {},
+              extraDetails: {
+                consentMethod: "accept",
+              },
+            });
+            expect(call.Fides.fides_string).to.contain(",1~");
           });
-        cy.get("@dataLayerPush")
-          .its("thirdCall.args.0")
-          .its("Fides.fides_string")
-          .should("contain", ",1~");
       });
 
       it("can opt out of all", () => {
@@ -695,11 +723,62 @@ describe("Fides-js TCF", () => {
       });
 
       it("can fire FidesUIChanged events", () => {
+        // Enable the first purpose toggle
         cy.getByTestId(`toggle-${PURPOSE_4.name}`).click();
         cy.get("@FidesUIChanged").its("callCount").should("equal", 1);
+        cy.get("@FidesUIChanged")
+          .its("firstCall.args.0")
+          .then((event: CustomEvent) => {
+            // Check that the extraDetails includes context about what changed
+            expect(event.type).to.equal("FidesUIChanged");
+            expect(event.detail.extraDetails).to.have.property("trigger");
+            expect(event.detail.extraDetails.trigger).to.deep.include({
+              label: PURPOSE_4.name,
+              checked: true,
+            });
+            expect(event.detail.extraDetails.preference).to.deep.include({
+              type: "tcf_purpose_consent",
+              key: "tcf_purpose_consent_4",
+            });
+          });
 
+        // Enable the second purpose toggle
         cy.getByTestId(`toggle-${PURPOSE_6.name}`).click();
         cy.get("@FidesUIChanged").its("callCount").should("equal", 2);
+        cy.get("@FidesUIChanged")
+          .its("secondCall.args.0")
+          .then((event: CustomEvent) => {
+            // Check that the extraDetails includes context about what changed
+            expect(event.type).to.equal("FidesUIChanged");
+            expect(event.detail.extraDetails).to.have.property("trigger");
+            expect(event.detail.extraDetails.trigger).to.deep.include({
+              label: PURPOSE_6.name,
+              checked: true,
+            });
+            expect(event.detail.extraDetails.preference).to.deep.include({
+              type: "tcf_purpose_consent",
+              key: "tcf_purpose_consent_6",
+            });
+          });
+
+        // Switch the first purpose toggle back off
+        cy.getByTestId(`toggle-${PURPOSE_4.name}`).click();
+        cy.get("@FidesUIChanged").its("callCount").should("equal", 3);
+        cy.get("@FidesUIChanged")
+          .its("thirdCall.args.0")
+          .then((event: CustomEvent) => {
+            // Check that the extraDetails includes context about what changed
+            expect(event.type).to.equal("FidesUIChanged");
+            expect(event.detail.extraDetails).to.have.property("trigger");
+            expect(event.detail.extraDetails.trigger).to.deep.include({
+              label: PURPOSE_4.name,
+              checked: false,
+            });
+            expect(event.detail.extraDetails.preference).to.deep.include({
+              type: "tcf_purpose_consent",
+              key: "tcf_purpose_consent_4",
+            });
+          });
       });
 
       it("can handle group toggle empty states", () => {
@@ -911,9 +990,10 @@ describe("Fides-js TCF", () => {
         });
         // verify the data layer variables
         cy.get("@dataLayerPush")
-          .should("have.been.calledThrice")
+          .should("have.been.callCount", 6) // FidesInitialized + FidesUIShown (banner) + FidesUIShown (modal) + FidesModalClosed + FidesUpdating + FidesUpdated
           // First call should be from initialization, before the user accepts all
           .its("firstCall.args.0")
+          .then((actual) => Cypress._.omit(actual, "Fides.timestamp"))
           .should("deep.equal", {
             event: "FidesInitialized",
             Fides: {
@@ -925,33 +1005,62 @@ describe("Fides-js TCF", () => {
               fides_string: undefined,
             },
           });
+
+        // Verify FidesUIShown events (banner and modal)
+        cy.get("@dataLayerPush")
+          .its("args")
+          .then((args) => {
+            // Banner shown event
+            const bannerEvent = args[1][0];
+            expect(bannerEvent.event).to.equal("FidesUIShown");
+            expect(bannerEvent.Fides.extraDetails.servingComponent).to.equal(
+              "tcf_banner",
+            );
+
+            // Modal shown event
+            const modalEvent = args[2][0];
+            expect(modalEvent.event).to.equal("FidesUIShown");
+            expect(modalEvent.Fides.extraDetails.servingComponent).to.equal(
+              "tcf_overlay",
+            );
+
+            // Modal closed event
+            const modalClosedEvent = args[3][0];
+            expect(modalClosedEvent.event).to.equal("FidesModalClosed");
+            expect(
+              modalClosedEvent.Fides.extraDetails.servingComponent,
+            ).to.equal(undefined);
+          });
+
         // FidesUpdating call
         cy.get("@dataLayerPush")
-          .its("secondCall.args.0.Fides")
-          .should("deep.include", {
-            consent: {},
-            extraDetails: {
-              consentMethod: "accept",
-            },
+          .its("args")
+          .then((args) => {
+            const call = args[4][0];
+            expect(call.event).to.equal("FidesUpdating");
+            expect(call.Fides).to.deep.include({
+              consent: {},
+              extraDetails: {
+                consentMethod: "accept",
+              },
+            });
+            expect(call.Fides.fides_string).to.contain(",1~");
           });
-        cy.get("@dataLayerPush")
-          .its("secondCall.args.0")
-          .its("Fides.fides_string")
-          .should("contain", ",1~");
 
         // FidesUpdated call
         cy.get("@dataLayerPush")
-          .its("thirdCall.args.0.Fides")
-          .should("deep.include", {
-            consent: {},
-            extraDetails: {
-              consentMethod: "accept",
-            },
+          .its("args")
+          .then((args) => {
+            const call = args[5][0];
+            expect(call.event).to.equal("FidesUpdated");
+            expect(call.Fides).to.deep.include({
+              consent: {},
+              extraDetails: {
+                consentMethod: "accept",
+              },
+            });
+            expect(call.Fides.fides_string).to.contain(",1~");
           });
-        cy.get("@dataLayerPush")
-          .its("thirdCall.args.0")
-          .its("Fides.fides_string")
-          .should("contain", ",1~");
       });
 
       it("can opt out of all", () => {

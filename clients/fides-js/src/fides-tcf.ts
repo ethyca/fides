@@ -34,8 +34,9 @@ import {
 } from "./lib/consent-types";
 import { initializeDebugger } from "./lib/debugger";
 import { dispatchFidesEvent, onFidesEvent } from "./lib/events";
+import { DecodedFidesString, decodeFidesString } from "./lib/fides-string";
 import type { GppFunction } from "./lib/gpp/types";
-import { DEFAULT_MODAL_LINK_LABEL } from "./lib/i18n";
+import { DEFAULT_LOCALE, DEFAULT_MODAL_LINK_LABEL } from "./lib/i18n";
 import {
   getInitialCookie,
   getInitialFides,
@@ -45,7 +46,6 @@ import {
 } from "./lib/initialize";
 import { initOverlay } from "./lib/initOverlay";
 import { initializeTcfCmpApi } from "./lib/tcf";
-import { decodeFidesString } from "./lib/tcf/fidesString";
 import { renderOverlay } from "./lib/tcf/renderOverlay";
 import { makeStub } from "./lib/tcf/stub";
 import {
@@ -79,14 +79,7 @@ const updateWindowFides = (fidesGlobal: FidesGlobal) => {
 const updateExperience: UpdateExperienceFn = ({
   cookie,
   experience,
-  isExperienceClientSideFetched,
 }): Partial<PrivacyExperience> => {
-  if (!isExperienceClientSideFetched) {
-    // If it's not client side fetched, we don't update anything since the cookie has already
-    // been updated earlier.
-    return experience;
-  }
-
   // We need the cookie.fides_string to attach user preference to an experience.
   // If this does not exist, we should assume no user preference has been given and leave the experience as is.
   if (cookie.fides_string) {
@@ -178,7 +171,8 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
   if (fidesString) {
     try {
       // Make sure TC string is valid before we assign it
-      const { tc: tcString } = decodeFidesString(fidesString);
+      const { tc: tcString }: DecodedFidesString =
+        decodeFidesString(fidesString);
       TCString.decode(tcString);
       const updatedCookie: Partial<FidesCookie> = {
         fides_string: fidesString,
@@ -233,6 +227,7 @@ const _Fides: FidesGlobal = {
   consent: {},
   experience: undefined,
   geolocation: {},
+  locale: DEFAULT_LOCALE,
   options: {
     debug: true,
     isOverlayEnabled: false,

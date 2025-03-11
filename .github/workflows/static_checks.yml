@@ -9,7 +9,7 @@ on:
 
 env:
   IMAGE: ethyca/fides:local
-  DEFAULT_PYTHON_VERSION: "3.10.13"
+  DEFAULT_PYTHON_VERSION: "3.10.16"
   # Docker auth with read-only permissions.
   DOCKER_USER: ${{ secrets.DOCKER_USER }}
   DOCKER_RO_TOKEN: ${{ secrets.DOCKER_RO_TOKEN }}
