@@ -8,6 +8,7 @@ from fides.api.common_exceptions import FidesopsException
 from fides.api.util.collection_util import (
     append,
     filter_nonempty_values,
+    flatten_dict,
     make_immutable,
     make_mutable,
     merge_dicts,
@@ -103,7 +104,7 @@ class TestMutabilityConversion:
         assert make_mutable(str_obj) == "hello"
 
 
-@pytest.mark.unit_saas
+@pytest.mark.unit
 class TestUnflattenDict:
     def test_empty_dict(self):
         assert unflatten_dict({}) == {}
@@ -157,7 +158,7 @@ class TestUnflattenDict:
         assert unflatten_dict({"A.B": 1, "A.B": 2}) == {"A": {"B": 2}}
 
     def test_conflicting_types(self):
-        with pytest.raises(FidesopsException):
+        with pytest.raises(ValueError):
             unflatten_dict({"A.B": 1, "A": 2, "A.C": 3})
 
     def test_mixed_types_in_array(self):
@@ -198,3 +199,82 @@ class TestUnflattenDict:
     def test_none_separator(self):
         with pytest.raises(IndexError):
             unflatten_dict({"": "1"}, separator=None)
+
+
+@pytest.mark.unit
+class TestFlattenDict:
+    def test_empty_dict(self):
+        assert flatten_dict({}) == {}
+
+    def test_scalar_value(self):
+        with pytest.raises(ValueError) as exc:
+            flatten_dict(42)
+        assert "Input to flatten_dict must be a dict or list" in str(exc)
+
+    def test_unnested_dict(self):
+        assert flatten_dict({"A": "1", "B": "2"}) == {"A": "1", "B": "2"}
+
+    def test_nested_dict(self):
+        assert flatten_dict({"A": {"B": "1", "C": "2"}}) == {"A.B": "1", "A.C": "2"}
+
+    def test_deep_nesting(self):
+        assert flatten_dict({"A": {"B": {"C": {"D": {"E": {"F": {"G": "1"}}}}}}}) == {
+            "A.B.C.D.E.F.G": "1"
+        }
+
+    def test_list_values(self):
+        assert flatten_dict({"A": ["B", "C"]}) == {"A.0": "B", "A.1": "C"}
+
+    def test_list_nested_dict(self):
+        assert flatten_dict({"A": [{"B": "C"}, {"D": "E"}]}) == {
+            "A.0.B": "C",
+            "A.1.D": "E",
+        }
+
+    def test_mixed_nested_structures(self):
+        data = {"A": {"B": "1", "C": "2"}, "D": [{"E": "3"}, {"E": "4"}]}
+        expected = {"A.B": "1", "A.C": "2", "D.0.E": "3", "D.1.E": "4"}
+        assert flatten_dict(data) == expected
+
+    def test_empty_nested_structures(self):
+        # Empty dictionaries and arrays don't contribute any keys to the flattened result
+        assert flatten_dict({"A": {}, "B": []}) == {}
+
+        # Mixed with non-empty values
+        assert flatten_dict({"A": {}, "B": [], "C": "value"}) == {"C": "value"}
+
+    def test_none_values(self):
+        assert flatten_dict({"A": None, "B": {"C": None}}) == {"A": None, "B.C": None}
+
+    def test_custom_separator(self):
+        assert flatten_dict({"A": {"B": "1"}}, separator="_") == {"A_B": "1"}
+
+    def test_with_prefix(self):
+        assert flatten_dict({"A": "1"}, prefix="prefix") == {"prefix.A": "1"}
+
+    def test_with_prefix_and_custom_separator(self):
+        assert flatten_dict({"A": "1"}, prefix="prefix", separator="_") == {
+            "prefix_A": "1"
+        }
+
+    def test_complex_example(self):
+        data = {
+            "address": {
+                "email": "test@example.com",
+                "name": "Test User",
+            },
+            "metadata": {"age": "24", "place": "Anywhere"},
+            "empty_field": "",
+            "tags": ["greeting", "test", "example"],
+        }
+        expected = {
+            "address.email": "test@example.com",
+            "address.name": "Test User",
+            "metadata.age": "24",
+            "metadata.place": "Anywhere",
+            "empty_field": "",
+            "tags.0": "greeting",
+            "tags.1": "test",
+            "tags.2": "example",
+        }
+        assert flatten_dict(data) == expected

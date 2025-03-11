@@ -1,6 +1,7 @@
 # pylint: disable=too-many-instance-attributes
 from __future__ import annotations
 
+from copy import deepcopy
 from datetime import datetime
 from itertools import product
 from typing import Any, Dict, List, Literal, Optional, Tuple, TypeVar
@@ -12,7 +13,6 @@ from loguru import logger
 from sqlalchemy.orm import Session
 
 from fides.api.common_exceptions import FidesopsException
-from fides.api.graph.config import ScalarField
 from fides.api.graph.execution import ExecutionNode
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import (
@@ -33,7 +33,12 @@ from fides.api.task.refine_target_path import (
     join_detailed_path,
 )
 from fides.api.util import saas_util
-from fides.api.util.collection_util import Row, merge_dicts, unflatten_dict
+from fides.api.util.collection_util import (
+    Row,
+    flatten_dict,
+    merge_dicts,
+    unflatten_dict,
+)
 from fides.api.util.saas_util import (
     ALL_OBJECT_FIELDS,
     CUSTOM_PRIVACY_REQUEST_FIELDS,
@@ -509,22 +514,24 @@ class SaaSQueryConfig(QueryConfig[SaaSRequestParams]):
 
     def all_value_map(self, row: Row) -> Dict[str, Any]:
         """
-        Takes a row and preserves only the fields that are defined in the Dataset.
+        Takes a row and preserves only the fields that are defined in the collection.
         Used for scenarios when an update endpoint has required fields other than
         just the fields being updated.
         """
+        flattened_row = flatten_dict(deepcopy(row))
 
-        all_value_map: Dict[str, Any] = {}
-        for field_path, field in self.field_map().items():
-            # only map scalar fields
-            if (
-                isinstance(field, ScalarField)
-                and pydash.get(row, field_path.string_path) is not None
-            ):
-                all_value_map[field_path.string_path] = pydash.get(
-                    row, field_path.string_path
-                )
-        return all_value_map
+        # Get root field names defined in the collection
+        collection_fields = {
+            field_path.string_path.split(".")[0]
+            for field_path, _ in self.field_map().items()
+        }
+
+        # Only keep the field values defined in the collection
+        return {
+            path: value
+            for path, value in flattened_row.items()
+            if path.split(".")[0] in collection_fields
+        }
 
     def query_to_str(self, t: T, input_data: Dict[str, List[Any]]) -> str:
         """Convert query to string"""
