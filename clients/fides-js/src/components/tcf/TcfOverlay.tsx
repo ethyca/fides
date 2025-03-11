@@ -307,26 +307,48 @@ export const TcfOverlay = ({
   });
 
   const handleUpdateAllPreferences = useCallback(
-    (consentMethod: ConsentMethod, enabledIds: EnabledIds) => {
+    (consentMethod: ConsentMethod, activatedIds: EnabledIds) => {
       if (!experience && !experienceMinimal) {
         return;
       }
+
+      // Preserve the state of disabled notices
+      const preservedCustomPurposes = draftIds.customPurposesConsent.filter(
+        (key) => options.fidesDisabledNotices?.includes(key),
+      );
+
+      // Only update non-disabled notices
+      const updatedCustomPurposes = activatedIds.customPurposesConsent.filter(
+        (key) => !options.fidesDisabledNotices?.includes(key),
+      );
+
+      // Combine preserved and updated states
+      const finalActivatedIds = {
+        ...activatedIds,
+        customPurposesConsent: [
+          ...preservedCustomPurposes,
+          ...updatedCustomPurposes,
+        ],
+      };
+
       let tcf: TcfSavePreferences;
       if (!experience && experienceMinimal?.minimal_tcf) {
         tcf = createTcfSavePayloadFromMinExp({
           experience: experienceMinimal,
-          enabledIds,
+          enabledIds: finalActivatedIds,
         });
       } else {
         tcf = createTcfSavePayload({
           experience: experience as PrivacyExperience,
-          enabledIds,
+          enabledIds: finalActivatedIds,
         });
       }
+
       const consentPreferencesToSave = createTCFConsentPreferencesToSave(
         privacyNoticesWithBestTranslation,
-        enabledIds.customPurposesConsent,
+        finalActivatedIds.customPurposesConsent,
       );
+
       updateConsentPreferences({
         consentPreferencesToSave,
         privacyExperienceConfigHistoryId,
@@ -341,12 +363,12 @@ export const TcfOverlay = ({
           updateTCFCookie(
             oldCookie,
             tcf,
-            enabledIds,
+            finalActivatedIds,
             experience || experienceMinimal,
             consentPreferencesToSave,
           ),
       });
-      setDraftIds(enabledIds);
+      setDraftIds(finalActivatedIds);
     },
     [
       cookie,
@@ -357,6 +379,7 @@ export const TcfOverlay = ({
       privacyExperienceConfigHistoryId,
       privacyNoticesWithBestTranslation,
       servedNoticeHistoryId,
+      draftIds,
     ],
   );
 
@@ -364,11 +387,28 @@ export const TcfOverlay = ({
     (wasAutomated?: boolean) => {
       let allIds: EnabledIds;
       let exp = experience || experienceMinimal;
+
+      // Get current state of disabled notices
+      const preservedCustomPurposes = draftIds.customPurposesConsent.filter(
+        (key) => options.fidesDisabledNotices?.includes(key),
+      );
+
       if (!exp.minimal_tcf) {
         exp = experience as PrivacyExperience;
+        // Only accept non-disabled notices
+        const nonDisabledNotices =
+          exp.privacy_notices?.filter(
+            (notice) =>
+              !options.fidesDisabledNotices?.includes(notice.notice_key),
+          ) || [];
+
         allIds = {
           purposesConsent: getAllIds(exp.tcf_purpose_consents),
-          customPurposesConsent: getAllIds(exp.privacy_notices),
+          // Combine preserved disabled states with new accepted states
+          customPurposesConsent: [
+            ...preservedCustomPurposes,
+            ...getAllIds(nonDisabledNotices),
+          ],
           purposesLegint: getAllIds(exp.tcf_purpose_legitimate_interests),
           specialPurposes: getAllIds(exp.tcf_special_purposes),
           features: getAllIds(exp.tcf_features),
@@ -385,10 +425,21 @@ export const TcfOverlay = ({
       } else {
         // eslint-disable-next-line no-param-reassign
         exp = experienceMinimal as PrivacyExperienceMinimal;
+        // Only accept non-disabled notices
+        const nonDisabledNotices =
+          exp.privacy_notices?.filter(
+            (notice) =>
+              !options.fidesDisabledNotices?.includes(notice.notice_key),
+          ) || [];
+
         allIds = {
           purposesConsent:
             exp.tcf_purpose_consent_ids?.map((id) => `${id}`) || [],
-          customPurposesConsent: getAllIds(exp.privacy_notices) || [],
+          // Combine preserved disabled states with new accepted states
+          customPurposesConsent: [
+            ...preservedCustomPurposes,
+            ...getAllIds(nonDisabledNotices),
+          ],
           purposesLegint:
             exp.tcf_purpose_legitimate_interest_ids?.map((id) => `${id}`) || [],
           specialPurposes:
@@ -411,23 +462,47 @@ export const TcfOverlay = ({
         allIds,
       );
     },
-    [experience, experienceMinimal, handleUpdateAllPreferences],
+    [
+      experience,
+      experienceMinimal,
+      handleUpdateAllPreferences,
+      options.fidesDisabledNotices,
+      draftIds,
+    ],
   );
 
   const handleRejectAll = useCallback(
     (wasAutomated?: boolean) => {
-      // Notice-only custom purposes should not be rejected
+      // Get current state of disabled notices to preserve
+      const preservedCustomPurposes = draftIds.customPurposesConsent.filter(
+        (key) => options.fidesDisabledNotices?.includes(key),
+      );
+
+      // Start with empty state
       const enabledIds: EnabledIds = EMPTY_ENABLED_IDS;
-      enabledIds.customPurposesConsent =
-        privacyNoticesWithBestTranslation
-          .filter((n) => n.consent_mechanism === ConsentMechanism.NOTICE_ONLY)
-          .map((n) => n.id) ?? EMPTY_ENABLED_IDS;
+
+      // Add NOTICE_ONLY notices
+      const noticeOnlyIds = privacyNoticesWithBestTranslation
+        .filter((n) => n.consent_mechanism === ConsentMechanism.NOTICE_ONLY)
+        .map((n) => n.id);
+
+      // Combine preserved disabled states with NOTICE_ONLY states
+      enabledIds.customPurposesConsent = [
+        ...preservedCustomPurposes,
+        ...noticeOnlyIds,
+      ];
+
       handleUpdateAllPreferences(
         wasAutomated ? ConsentMethod.SCRIPT : ConsentMethod.REJECT,
         enabledIds,
       );
     },
-    [handleUpdateAllPreferences, privacyNoticesWithBestTranslation],
+    [
+      handleUpdateAllPreferences,
+      privacyNoticesWithBestTranslation,
+      options.fidesDisabledNotices,
+      draftIds,
+    ],
   );
 
   useEffect(() => {
@@ -535,7 +610,15 @@ export const TcfOverlay = ({
           : () => (
               <TcfTabs
                 experience={experience}
-                customNotices={privacyNoticesWithBestTranslation}
+                customNotices={privacyNoticesWithBestTranslation.map(
+                  (notice) => ({
+                    ...notice,
+                    disabled:
+                      notice.consent_mechanism ===
+                        ConsentMechanism.NOTICE_ONLY ||
+                      options.fidesDisabledNotices?.includes(notice.notice_key),
+                  }),
+                )}
                 enabledIds={draftIds}
                 onChange={(updatedIds, triggerDetails, preference) => {
                   const eventExtraDetails: FidesEvent["detail"]["extraDetails"] =
