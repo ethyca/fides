@@ -26,7 +26,7 @@ class CommentType(str, EnumType):
 
 class CommentReferenceType(str, EnumType):
     """
-    Enum for attachment reference types. Indicates where attachment is referenced.
+    Enum for comment reference types. Indicates where the comment is referenced.
     """
 
     manual_step = "manual_step"
