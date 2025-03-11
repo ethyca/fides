@@ -908,3 +908,27 @@ export type ConsentOption = {
 export type LegacyConsentConfig = {
   options: ConsentOption[];
 };
+
+interface FidesValidatorMap<T, K> {
+  overrideName: keyof T;
+  overrideType: "string" | "boolean" | "array";
+  overrideKey: K;
+  validationRegex: RegExp;
+  transform?: (value: string) => any;
+}
+
+export type FidesOverrideValidatorMap = FidesValidatorMap<
+  FidesInitOptionsOverrides,
+  keyof FidesOptions
+>;
+
+export type FidesExperienceLanguageValidatorMap = FidesValidatorMap<
+  FidesExperienceTranslationOverrides,
+  string
+>;
+
+export type FidesWindowOverrides = Partial<
+  FidesOptions & OverrideExperienceTranslations
+> & {
+  [key: string]: string | boolean | undefined;
+};

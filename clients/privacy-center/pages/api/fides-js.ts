@@ -8,6 +8,7 @@ import {
   experienceIsValid,
   fetchExperience,
   FidesConfig,
+  parseFidesDisabledNotices,
   PrivacyExperience,
   PrivacyExperienceMinimal,
   UserGeolocation,
@@ -266,7 +267,9 @@ export default async function handler(
       fidesPrimaryColor: environment.settings.FIDES_PRIMARY_COLOR,
       fidesClearCookie: environment.settings.FIDES_CLEAR_COOKIE,
       fidesConsentOverride: environment.settings.FIDES_CONSENT_OVERRIDE,
-      fidesDisabledNotices: environment.settings.FIDES_DISABLED_NOTICES,
+      fidesDisabledNotices: parseFidesDisabledNotices(
+        environment.settings.FIDES_DISABLED_NOTICES || undefined,
+      ),
     },
     experience: experience || undefined,
     geolocation: geolocation || undefined,

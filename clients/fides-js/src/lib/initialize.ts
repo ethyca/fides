@@ -13,10 +13,9 @@ import {
   FidesCookie,
   FidesGlobal,
   FidesInitOptions,
-  FidesOptions,
   FidesOverrides,
+  FidesWindowOverrides,
   NoticeConsent,
-  OverrideExperienceTranslations,
   OverrideType,
   PrivacyExperience,
   SaveConsentPreference,
@@ -206,17 +205,21 @@ export const getOverridesByType = <T>(
     const customPathArr: "" | null | string[] =
       config.options.customOptionsPath &&
       config.options.customOptionsPath.split(".");
-    const windowObj:
-      | Partial<FidesOptions & OverrideExperienceTranslations>
-      | undefined =
+    const windowObj: FidesWindowOverrides | undefined =
       customPathArr && customPathArr.length >= 0
         ? getWindowObjFromPath(customPathArr)
-        : window.fides_overrides;
+        : (window.fides_overrides as FidesWindowOverrides);
 
     // Look for each of the override options in all three locations: query params, window object, cookie
     const overrideValidatorMap = getOverrideValidatorMapByType(type);
     overrideValidatorMap?.forEach(
-      ({ overrideName, overrideType, overrideKey, validationRegex }) => {
+      ({
+        overrideName,
+        overrideType,
+        overrideKey,
+        validationRegex,
+        transform,
+      }) => {
         const queryParamOverride: string | null = queryParams.get(overrideKey);
         const windowObjOverride: string | boolean | undefined = windowObj
           ? windowObj[overrideKey]
@@ -227,8 +230,12 @@ export const getOverridesByType = <T>(
         const value = queryParamOverride || windowObjOverride || cookieOverride;
         if (value && validationRegex.test(value.toString())) {
           // coerce to expected type
-          overrides[overrideName as keyof T] =
-            overrideType === "string" ? value : JSON.parse(value.toString());
+          if (transform) {
+            overrides[overrideName as keyof T] = transform(value.toString());
+          } else {
+            overrides[overrideName as keyof T] =
+              overrideType === "string" ? value : JSON.parse(value.toString());
+          }
         }
       },
     );
