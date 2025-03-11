@@ -57,7 +57,7 @@ import { customGetConsentPreferences } from "./services/external/preferences";
 declare global {
   interface Window {
     Fides: FidesGlobal;
-    fides_overrides: FidesOptions;
+    fides_overrides: Partial<FidesOptions>;
     __tcfapiLocator?: Window;
     __tcfapi?: (
       command: string,
