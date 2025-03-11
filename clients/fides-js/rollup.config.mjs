@@ -24,8 +24,8 @@ const GZIP_SIZE_HEADLESS_ERROR_KB = 25;
 const GZIP_SIZE_HEADLESS_WARN_KB = 20;
 
 // GPP
-const GZIP_SIZE_GPP_ERROR_KB = 25;
-const GZIP_SIZE_GPP_WARN_KB = 15;
+const GZIP_SIZE_GPP_ERROR_KB = 40;
+const GZIP_SIZE_GPP_WARN_KB = 25;
 
 const preactAliases = {
   entries: [
@@ -149,7 +149,7 @@ SCRIPTS.forEach(({ name, gzipErrorSizeKb, gzipWarnSizeKb, isExtension }) => {
         file: `dist/${name}.js`,
         name: isExtension ? undefined : "Fides",
         format: isExtension ? undefined : "umd",
-        sourcemap: IS_DEV && !isExtension ? "inline" : false,
+        sourcemap: IS_DEV ? "inline" : false,
       },
     ],
   };

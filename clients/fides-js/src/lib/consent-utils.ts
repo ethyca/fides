@@ -17,11 +17,16 @@ import {
   PrivacyExperience,
   PrivacyExperienceMinimal,
   PrivacyNotice,
+  PrivacyNoticeItem,
   PrivacyNoticeWithPreference,
+  SaveConsentPreference,
   UserConsentPreference,
   UserGeolocation,
 } from "./consent-types";
-import { noticeHasConsentInCookie } from "./shared-consent-utils";
+import {
+  noticeHasConsentInCookie,
+  transformConsentToFidesUserPreference,
+} from "./shared-consent-utils";
 import { TcfModelsRecord } from "./tcf/types";
 
 /**
@@ -314,3 +319,19 @@ export const getGpcStatusFromNotice = ({
 export const defaultShowModal = () => {
   fidesDebugger("The current experience does not support displaying a modal.");
 };
+
+export const createConsentPreferencesToSave = (
+  privacyNoticeList: PrivacyNoticeItem[],
+  enabledPrivacyNoticeKeys: string[],
+): SaveConsentPreference[] =>
+  privacyNoticeList.map((item) => {
+    const userPreference = transformConsentToFidesUserPreference(
+      enabledPrivacyNoticeKeys.includes(item.notice.notice_key),
+      item.notice.consent_mechanism,
+    );
+    return new SaveConsentPreference(
+      item.notice,
+      userPreference,
+      item.bestTranslation?.privacy_notice_history_id,
+    );
+  });

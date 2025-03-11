@@ -446,6 +446,7 @@ interface CustomSwitchProps {
   tooltip?: string;
   variant?: "inline" | "condensed" | "stacked" | "switchFirst";
   isDisabled?: boolean;
+  onChange?: (checked: boolean) => void;
 }
 export const CustomSwitch = ({
   label,
@@ -454,8 +455,12 @@ export const CustomSwitch = ({
   onChange,
   isDisabled,
   ...props
-}: CustomSwitchProps & FieldHookConfig<boolean>) => {
-  const [field, meta] = useField({ ...props, type: "checkbox" });
+}: CustomSwitchProps & Omit<FieldHookConfig<boolean>, "onChange">) => {
+  const [field, meta] = useField({
+    name: props.name,
+    value: props.value,
+    type: "checkbox",
+  });
   const isInvalid = !!(meta.touched && meta.error);
   const innerSwitch = (
     <Field name={field.name}>
@@ -464,6 +469,7 @@ export const CustomSwitch = ({
           checked={field.checked}
           onChange={(v) => {
             setFieldValue(field.name, v);
+            onChange?.(v);
           }}
           disabled={isDisabled}
           className="mr-2"
@@ -542,11 +548,15 @@ export const CustomSwitch = ({
 export const CustomCheckbox = ({
   label,
   tooltip,
-  onChange,
   isDisabled,
   ...props
-}: Omit<CustomSwitchProps, "variant"> & FieldHookConfig<boolean>) => {
-  const [field, meta] = useField({ ...props, type: "checkbox" });
+}: Omit<CustomSwitchProps, "variant"> &
+  Omit<FieldHookConfig<boolean>, "onChange">) => {
+  const [field, meta] = useField({
+    name: props.name,
+    value: props.value,
+    type: "checkbox",
+  });
   const isInvalid = !!(meta.touched && meta.error);
 
   return (
@@ -555,7 +565,10 @@ export const CustomCheckbox = ({
         <Checkbox
           name={field.name}
           isChecked={field.checked}
-          onChange={field.onChange}
+          onChange={(e) => {
+            field.onChange(e);
+            props.onChange?.(e.target.checked);
+          }}
           onBlur={field.onBlur}
           data-testid={`input-${field.name}`}
           disabled={isDisabled}
