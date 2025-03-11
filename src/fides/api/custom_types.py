@@ -128,8 +128,11 @@ def validate_path_of_url(value: AnyUrl) -> str:
     are able to edit the `cors_origins` security setting (via API), and we do not
     want to allow them to set a wildcard origin.
 
-    Instead, `*` can be set via the `cors_origin_regex` security setting.
-
+    Instead, `.*` can be set via the `cors_origin_regex` security setting
+    to effectively allow all origins. This is roughly equivalent to setting
+    `"*"` as a `cors_origin`, but there is a slight behavioral difference:
+    the `Access-Control-Allow-Origin` in the response will be set to the
+    `Access-Control-Allow-Origin` specified in the request rather than `"*"`.
     """
     if value.path and value.path != "/":
         raise ValueError("URL origin values cannot contain a path.")
