@@ -116,6 +116,23 @@ def validate_path_of_url(value: AnyUrl) -> str:
 
     We perform the basic URL validation, but also prevent URLs with paths,
     as paths are not part of an origin.
+
+    As this is meant to be used as a validator _after_ the AnyUrl validator,
+    we implicitly disallow `*` to be specified as an origin value, since it is
+    rejected by the AnyUrl validator.
+
+    Note that `*` _is_ considered a valid origin value
+    (https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Access-Control-Allow-Origin),
+    but we specifically disallow it to be set on the `cors_origins` security setting
+    in our application. This is because non-owner users (contributors)
+    are able to edit the `cors_origins` security setting (via API), and we do not
+    want to allow them to set a wildcard origin.
+
+    Instead, `.*` can be set via the `cors_origin_regex` security setting
+    to effectively allow all origins. This is roughly equivalent to setting
+    `"*"` as a `cors_origin`, but there is a slight behavioral difference:
+    the `Access-Control-Allow-Origin` in the response will be set to the
+    `Access-Control-Allow-Origin` specified in the request rather than `"*"`.
     """
     if value.path and value.path != "/":
         raise ValueError("URL origin values cannot contain a path.")
@@ -125,7 +142,13 @@ def validate_path_of_url(value: AnyUrl) -> str:
     return str(value).rstrip("/")
 
 
-URLOriginString = Annotated[AnyUrl, AfterValidator(validate_path_of_url)]
+# This custom type is used to validate HTTP origins, e.g. CORS origins
+# used in SecuritySettings.  See docstring for `validate_path_of_url`
+# for more details.
+URLOriginString = Annotated[
+    AnyUrl,
+    AfterValidator(validate_path_of_url),
+]
 
 
 def validate_css_str(value: str) -> str:

@@ -5,20 +5,20 @@ import os
 import secrets
 import zipfile
 from io import BytesIO
-from typing import Any, Dict, Optional, Set, Union
+from typing import Any, Dict, Optional, Union
 
 import pandas as pd
 from botocore.exceptions import ClientError, ParamValidationError
+from fideslang.validation import AnyHttpUrlString
 from loguru import logger
 
 from fides.api.cryptography.cryptographic_util import bytes_to_b64_str
-from fides.api.graph.graph import DataCategoryFieldMapping
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.storage.storage import ResponseFormat, StorageSecrets
 from fides.api.service.privacy_request.dsr_package.dsr_report_builder import (
     DsrReportBuilder,
 )
-from fides.api.util.aws_util import get_aws_session
+from fides.api.util.aws_util import get_s3_client
 from fides.api.util.cache import get_cache, get_encryption_cache_key
 from fides.api.util.encryption.aes_gcm_encryption_scheme import (
     encrypt_to_bytes_verify_secrets_length,
@@ -101,7 +101,9 @@ def write_to_in_memory_buffer(
     raise NotImplementedError(f"No handling for response format {resp_format}.")
 
 
-def create_presigned_url_for_s3(s3_client: Any, bucket_name: str, file_key: str) -> str:
+def create_presigned_url_for_s3(
+    s3_client: Any, bucket_name: str, file_key: str
+) -> AnyHttpUrlString:
     """ "Generate a presigned URL to share an S3 object
 
     :param s3_client: s3 base client
@@ -119,36 +121,25 @@ def create_presigned_url_for_s3(s3_client: Any, bucket_name: str, file_key: str)
     return response
 
 
-def upload_to_s3(  # pylint: disable=R0913
+def generic_upload_to_s3(  # pylint: disable=R0913
     storage_secrets: Dict[StorageSecrets, Any],
-    data: Dict,
     bucket_name: str,
     file_key: str,
-    resp_format: str,
-    privacy_request: PrivacyRequest,
     auth_method: str,
-    data_category_field_mapping: Optional[DataCategoryFieldMapping] = None,
-    data_use_map: Optional[Dict[str, Set[str]]] = None,
-) -> str:
+    document: bytes,
+) -> Optional[AnyHttpUrlString]:
     """Uploads arbitrary data to s3 returned from an access request"""
     logger.info("Starting S3 Upload of {}", file_key)
 
     try:
-        my_session = get_aws_session(auth_method, storage_secrets)
-        s3_client = my_session.client("s3")
-
-        # handles file chunking
+        s3_client = get_s3_client(auth_method, storage_secrets)
         try:
-            s3_client.upload_fileobj(
-                Fileobj=write_to_in_memory_buffer(resp_format, data, privacy_request),
-                Bucket=bucket_name,
-                Key=file_key,
-            )
+            s3_client.put_object(Bucket=bucket_name, Key=file_key, Body=document)
         except Exception as e:
             logger.error("Encountered error while uploading s3 object: {}", e)
             raise e
 
-        presigned_url: str = create_presigned_url_for_s3(
+        presigned_url: AnyHttpUrlString = create_presigned_url_for_s3(
             s3_client, bucket_name, file_key
         )
 
@@ -162,17 +153,117 @@ def upload_to_s3(  # pylint: disable=R0913
         raise ValueError(f"The parameters you provided are incorrect: {e}")
 
 
+def generic_retrieve_from_s3(
+    storage_secrets: Dict[StorageSecrets, Any],
+    bucket_name: str,
+    file_key: str,
+    auth_method: str,
+) -> Optional[bytes]:
+    """Retrieves arbitrary data from s3"""
+    logger.info("Starting S3 Retrieve of {}", file_key)
+
+    try:
+        s3_client = get_s3_client(auth_method, storage_secrets)
+        try:
+            response = s3_client.get_object(Bucket=bucket_name, Key=file_key)
+            return response["Body"].read()
+        except Exception as e:
+            logger.error("Encountered error while retrieving s3 object: {}", e)
+            raise e
+    except ClientError as e:
+        logger.error("Encountered error while retrieving s3 object: {}", e)
+        raise e
+    except ParamValidationError as e:
+        raise ValueError(f"The parameters you provided are incorrect: {e}")
+
+
+def generic_delete_from_s3(
+    storage_secrets: Dict[StorageSecrets, Any],
+    bucket_name: str,
+    file_key: str,
+    auth_method: str,
+) -> None:
+    """Deletes arbitrary data from s3"""
+    logger.info("Starting S3 Delete of {}", file_key)
+
+    try:
+        s3_client = get_s3_client(auth_method, storage_secrets)
+        try:
+            s3_client.delete_object(Bucket=bucket_name, Key=file_key)
+        except Exception as e:
+            logger.error("Encountered error while deleting s3 object: {}", e)
+            raise e
+    except ClientError as e:
+        logger.error("Encountered error while deleting s3 object: {}", e)
+        raise e
+    except ParamValidationError as e:
+        raise ValueError(f"The parameters you provided are incorrect: {e}")
+
+
+def upload_to_s3(  # pylint: disable=R0913
+    storage_secrets: Dict[StorageSecrets, Any],
+    data: Dict,
+    bucket_name: str,
+    file_key: str,
+    resp_format: str,
+    privacy_request: Optional[PrivacyRequest],
+    document: Optional[bytes],
+    auth_method: str,
+) -> Optional[AnyHttpUrlString]:
+    """Uploads arbitrary data to s3 returned from an access request"""
+    logger.info("Starting S3 Upload of {}", file_key)
+
+    if privacy_request is None and document is not None:
+        return generic_upload_to_s3(
+            storage_secrets, bucket_name, file_key, auth_method, document
+        )
+
+    if privacy_request is None:
+        raise ValueError("Privacy request must be provided")
+
+    try:
+        s3_client = get_s3_client(auth_method, storage_secrets)
+
+        # handles file chunking
+        try:
+            s3_client.upload_fileobj(
+                Fileobj=write_to_in_memory_buffer(resp_format, data, privacy_request),
+                Bucket=bucket_name,
+                Key=file_key,
+            )
+        except Exception as e:
+            logger.error("Encountered error while uploading s3 object: {}", e)
+            raise e
+
+        presigned_url: AnyHttpUrlString = create_presigned_url_for_s3(
+            s3_client, bucket_name, file_key
+        )
+
+        return presigned_url
+    except ClientError as e:
+        logger.error(
+            "Encountered error while uploading and generating link for s3 object: {}", e
+        )
+        raise e
+    except ParamValidationError as e:
+        raise ValueError(f"The parameters you provided are incorrect: {e}")
+
+
+def get_local_filename(file_key: str) -> str:
+    """Verifies that the local storage directory exists"""
+    if not os.path.exists(LOCAL_FIDES_UPLOAD_DIRECTORY):
+        os.makedirs(LOCAL_FIDES_UPLOAD_DIRECTORY)
+    return f"{LOCAL_FIDES_UPLOAD_DIRECTORY}/{file_key}"
+
+
 def upload_to_local(
     data: Dict,
     file_key: str,
     privacy_request: PrivacyRequest,
     resp_format: str = ResponseFormat.json.value,
-    data_category_field_mapping: Optional[DataCategoryFieldMapping] = None,
-    data_use_map: Optional[Dict[str, Set[str]]] = None,
 ) -> str:
     """Uploads access request data to a local folder - for testing/demo purposes only"""
-    if not os.path.exists(LOCAL_FIDES_UPLOAD_DIRECTORY):
-        os.makedirs(LOCAL_FIDES_UPLOAD_DIRECTORY)
+    get_local_filename(file_key)
 
     filename = f"{LOCAL_FIDES_UPLOAD_DIRECTORY}/{file_key}"
     in_memory_file = write_to_in_memory_buffer(resp_format, data, privacy_request)
