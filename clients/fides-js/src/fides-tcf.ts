@@ -256,6 +256,7 @@ const _Fides: FidesGlobal = {
     fidesClearCookie: false,
     showFidesBrandLink: false,
     fidesConsentOverride: null,
+    fidesDisabledNotices: null,
   },
   fides_meta: {},
   identity: {},

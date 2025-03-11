@@ -97,6 +97,12 @@ export const FIDES_OVERRIDE_OPTIONS_VALIDATOR_MAP: {
     overrideKey: "ot_fides_mapping",
     validationRegex: /(.*)/,
   },
+  {
+    overrideName: "fidesDisabledNotices",
+    overrideType: "string",
+    overrideKey: "fides_disabled_notices",
+    validationRegex: /(.*)/,
+  },
 ];
 
 /**

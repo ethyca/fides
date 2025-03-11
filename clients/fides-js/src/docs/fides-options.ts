@@ -178,4 +178,13 @@ export interface FidesOptions {
    *
    */
   ot_fides_mapping: string;
+
+  /**
+   * A comma-separated list of notice_keys to disable their respective Toggle elements in the CMP Overlay.
+   *
+   * For example: "data_sales,data_sharing,analytics"
+   *
+   * Defaults to `undefined`.
+   */
+  fides_disabled_notices: string;
 }
