@@ -107,4 +107,3 @@ class Comment(Base):
         for attachment in attachments:
             attachment.delete(db)
         db.delete(self)
-        db.commit()
