@@ -41,9 +41,7 @@ def upload(
         logger.warning("Storage type not found: {}", storage_key)
         raise StorageUploadError(f"Storage type not found: {storage_key}")
     uploader: Any = _get_uploader_from_config_type(config.type)  # type: ignore
-    return uploader(
-        db, config, data, privacy_request, data_category_field_mapping, data_use_map
-    )
+    return uploader(db, config, data, privacy_request)
 
 
 def get_extension(resp_format: ResponseFormat) -> str:
@@ -88,14 +86,13 @@ def _s3_uploader(
     config: StorageConfig,
     data: Dict,
     privacy_request: PrivacyRequest,
-    data_category_field_mapping: Optional[DataCategoryFieldMapping] = None,
-    data_use_map: Optional[Dict[str, Set[str]]] = None,
 ) -> str:
     """Constructs necessary info needed for s3 before calling upload"""
     file_key: str = _construct_file_key(privacy_request.id, config)
 
     bucket_name = config.details[StorageDetails.BUCKET.value]
     auth_method = config.details[StorageDetails.AUTH_METHOD.value]
+    document = None
 
     return upload_to_s3(
         config.secrets,  # type: ignore
@@ -104,9 +101,8 @@ def _s3_uploader(
         file_key,
         config.format.value,  # type: ignore
         privacy_request,
+        document,
         auth_method,
-        data_category_field_mapping,
-        data_use_map,
     )
 
 
@@ -115,9 +111,7 @@ def _local_uploader(
     config: StorageConfig,
     data: Dict,
     privacy_request: PrivacyRequest,
-    data_category_field_mapping: Optional[DataCategoryFieldMapping] = None,
-    data_use_map: Optional[Dict[str, Set[str]]] = None,
 ) -> str:
     """Uploads data to local storage, used for quick-start/demo purposes"""
     file_key: str = _construct_file_key(privacy_request.id, config)
-    return upload_to_local(data, file_key, privacy_request, config.format.value, data_category_field_mapping, data_use_map)  # type: ignore
+    return upload_to_local(data, file_key, privacy_request, config.format.value)  # type: ignore
