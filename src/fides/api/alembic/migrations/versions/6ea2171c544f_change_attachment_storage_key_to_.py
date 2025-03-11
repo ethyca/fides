@@ -35,10 +35,34 @@ def upgrade():
         ["key"],
         ondelete="CASCADE",
     )
+
+    # Add index on attachment_reference.reference_id
+    op.create_index(
+        "ix_attachment_reference_reference_id",
+        "attachment_reference",
+        ["reference_id"],
+    )
+
+    # Add index on attachment_reference.reference_type
+    op.create_index(
+        "ix_attachment_reference_reference_type",
+        "attachment_reference",
+        ["reference_type"],
+    )
     # ### end Alembic commands ###
 
 
 def downgrade():
+    # Drop the index on attachment_reference.reference_id
+    op.drop_index(
+        "ix_attachment_reference_reference_id", table_name="attachment_reference"
+    )
+
+    # Drop the index on attachment_reference.reference_type
+    op.drop_index(
+        "ix_attachment_reference_reference_type", table_name="attachment_reference"
+    )
+
     # Drop the new foreign key constraint
     op.drop_constraint("fk_attachment_storage_key", "attachment", type_="foreignkey")
 
