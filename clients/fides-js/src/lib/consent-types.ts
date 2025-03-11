@@ -142,6 +142,9 @@ export interface FidesInitOptions {
 
   // Whether to reject all consent preferences by default
   fidesConsentOverride: ConsentMethod.ACCEPT | ConsentMethod.REJECT | null;
+
+  // If defined, maps OT cookie consent to Fides cookie consent
+  otFidesMapping: string | null;
 }
 
 /**
@@ -692,6 +695,7 @@ export type FidesInitOptionsOverrides = Pick<
   | "fidesPrimaryColor"
   | "fidesClearCookie"
   | "fidesConsentOverride"
+  | "otFidesMapping"
 >;
 
 export type FidesExperienceTranslationOverrides = {

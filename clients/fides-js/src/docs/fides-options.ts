@@ -171,7 +171,21 @@ export interface FidesOptions {
    * This way, Fides customers that are migrating away from OneTrust don’t need to show their users new consent dialogues when switching to Fides.
    * that those preferences are respected.
    *
-   * Defaults to `undefined`.
+   * Example original otFidesMapping data:
+   * {
+   *    'C0001': ['essential_cookies'],
+   *    'C0002': ['analytics_tracking'],
+   *    'C0004': ['advertising', 'targeted_ads']
+   * }
+   *
+   * To encode original data to the format expected by this field, use:
+   * encodeURIComponent(JSON.stringify(otFidesMapping))
+   *
+   * To decode this field, use:
+   * JSON.parse(decodeURIComponent(ot_fides_mapping))
+   *
+   * Field defaults to `undefined`.
+   *
    */
-  ot_fides_mapping: Map<string, string[]>;
+  ot_fides_mapping: string;
 }
