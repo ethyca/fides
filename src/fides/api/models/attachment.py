@@ -17,8 +17,8 @@ from fides.api.tasks.storage import (
     LOCAL_FIDES_UPLOAD_DIRECTORY,
     generic_delete_from_s3,
     generic_retrieve_from_s3,
-    generic_upload_to_s3,
     get_local_filename,
+    upload_to_s3,
 )
 
 
@@ -114,12 +114,15 @@ class Attachment(Base):
         if self.config.type == StorageType.s3:
             bucket_name = f"{self.config.details[StorageDetails.BUCKET.value]}"
             auth_method = self.config.details[StorageDetails.AUTH_METHOD.value]
-            generic_upload_to_s3(
+            upload_to_s3(
                 storage_secrets=self.config.secrets,
+                data={},
                 bucket_name=bucket_name,
                 file_key=self.id,
-                auth_method=auth_method,
+                resp_format=self.config.format,
+                privacy_request=None,
                 document=attachment,
+                auth_method=auth_method,
             )
             log.info(f"Uploaded {self.file_name} to S3 bucket {bucket_name}/{self.id}")
             return

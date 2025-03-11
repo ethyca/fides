@@ -1,7 +1,7 @@
 """Change Attachment.storage_key to foreign key
 
 Revision ID: 6ea2171c544f
-Revises: 3c58001ad310
+Revises: 1152c1717849
 Create Date: 2025-03-10 17:36:31.504831
 
 """
@@ -12,7 +12,7 @@ from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = "6ea2171c544f"
-down_revision = "3c58001ad310"
+down_revision = "1152c1717849"
 branch_labels = None
 depends_on = None
 
