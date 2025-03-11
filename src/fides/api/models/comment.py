@@ -48,7 +48,7 @@ class CommentReference(Base):
     reference_type = Column(EnumColumn(CommentReferenceType), nullable=False)
 
     __table_args__ = (
-        UniqueConstraint("comment_id", "reference_id", name="_attachment_reference_uc"),
+        UniqueConstraint("comment_id", "reference_id", name="comment_reference_uc"),
     )
 
     comment = relationship(
