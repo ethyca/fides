@@ -22,9 +22,7 @@ def upgrade():
         sa.Column("id", sa.String(), nullable=False),
         sa.Column("user_id", sa.String(), nullable=True),
         sa.Column("comment_text", sa.String(), nullable=False),
-        sa.Column(
-            "comment_type", sa.Enum("note", "reply", name="commenttype"), nullable=False
-        ),
+        sa.Column("comment_type", sa.String(), nullable=False),
         sa.Column(
             "created_at",
             sa.DateTime(timezone=True),
@@ -45,11 +43,7 @@ def upgrade():
         sa.Column("id", sa.String(), nullable=False),
         sa.Column("comment_id", sa.String(), nullable=False),
         sa.Column("reference_id", sa.String(), nullable=False),
-        sa.Column(
-            "reference_type",
-            sa.Enum("manual_step", "privacy_request", name="commentreferencetype"),
-            nullable=False,
-        ),
+        sa.Column("reference_type", sa.String(), nullable=False),
         sa.Column(
             "created_at",
             sa.DateTime(timezone=True),
