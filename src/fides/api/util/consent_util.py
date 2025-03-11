@@ -214,15 +214,30 @@ def add_errored_system_status_for_consent_reporting(
 
     Deeming them relevant if they already had a "pending" log added to them.
     """
-    for pref in privacy_request.privacy_preferences:  # type: ignore[attr-defined]
+    add_errored_system_status_for_consent_reporting_on_preferences(db, privacy_request.privacy_preferences, connection_config)  # type: ignore[attr-defined]
+
+
+def add_errored_system_status_for_consent_reporting_on_preferences(
+    db: Session,
+    privacy_preferences: List[PrivacyPreferenceHistory],
+    connection_config: ConnectionConfig,
+) -> None:
+    """
+    Cache an errored system status for consent reporting on just the subset
+    of preferences that were deemed relevant for the connector on failure,
+    from the provided list of preferences.
+
+    Deeming them relevant if they already had a "pending" log added to them.
+    """
+    for preference in privacy_preferences:
         if (
-            pref.affected_system_status
-            and pref.affected_system_status.get(connection_config.system_key)
+            preference.affected_system_status
+            and preference.affected_system_status.get(connection_config.system_key)
             == ExecutionLogStatus.pending.value
         ):
-            pref.cache_system_status(
+            preference.cache_system_status(
                 db,
-                connection_config.system_key,
+                connection_config.system_key,  # type: ignore[arg-type]
                 ExecutionLogStatus.error,
             )
 
