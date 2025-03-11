@@ -210,7 +210,9 @@ def upload_to_s3(  # pylint: disable=R0913
     privacy_request: Optional[PrivacyRequest],
     document: Optional[bytes],
     auth_method: str,
-    data_category_field_mapping: Optional[DataCategoryFieldMapping] = None,  # mypy: ignore arg-type
+    data_category_field_mapping: Optional[
+        DataCategoryFieldMapping
+    ] = None,  # mypy: ignore arg-type
     data_use_map: Optional[Dict[str, Set[str]]] = None,  # mypy: ignore arg-type
 ) -> Optional[AnyHttpUrlString]:
     """Uploads arbitrary data to s3 returned from an access request"""
