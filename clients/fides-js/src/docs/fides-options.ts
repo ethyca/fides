@@ -37,17 +37,24 @@
  * Configure `window.fides_overrides` after loading Fides.js tag
  * ```html
  * <head>
- *  <script>
- *    // Configure FidesJS options using the window.fides_overrides object
- *   window.fides_overrides = {
- *     fides_disable_banner: true,
- *     fides_embed: true,
- *     fides_locale: "es",
- *   };
- * </script>
- * <script src="path/to/fides.js"></script>
- *</head>
- *```
+ *   <script src="path/to/fides.js">
+ *     // Loading Fides.js before setting window.fides_overrides requires re-initialization
+ *   </script>
+ *
+ *   <script>
+ *     function onChange(newData) {
+ *       // Update Fides options
+ *       window.fides_overrides = window.fides_overrides || {};
+ *       window.fides_overrides = {
+ *         fides_locale: newData,
+ *       };
+ *
+ *       // Reinitialize FidesJS
+ *       window.Fides.init();
+ *     };
+ *   </script>
+ * </head>
+ * ```
  */
 export interface FidesOptions {
   /**
