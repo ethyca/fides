@@ -13,7 +13,7 @@ import {
   constructFidesRegionString,
   createConsentPreferencesToSave,
 } from "../consent-utils";
-import { DecodedFidesString, decodeFidesString } from "../fidesString";
+import { DecodedFidesString, decodeFidesString } from "../fides-string";
 import { areLocalesEqual } from "../i18n/i18n-utils";
 import { updateConsentPreferences } from "../preferences";
 import { EMPTY_ENABLED_IDS } from "../tcf/constants";

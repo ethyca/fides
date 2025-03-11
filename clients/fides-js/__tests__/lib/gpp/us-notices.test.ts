@@ -547,6 +547,33 @@ describe("setGppOptOutsFromCookieAndExperience", () => {
     expect(cmpApi.getGppString()).toEqual("DBABLA~BAAVVVVVVVVY.QA");
   });
 
+  it("sets MSPA fields to disabled when mspa_covered_transactions is false", () => {
+    const cmpApi = new CmpApi(1, 1);
+    const cookie = mockFidesCookie();
+    const experience = mockPrivacyExperience({
+      region: "us",
+      gpp_settings: {
+        enabled: true,
+        us_approach: GPPUSApproach.NATIONAL,
+        mspa_covered_transactions: false,
+        mspa_opt_out_option_mode: true,
+        mspa_service_provider_mode: true,
+        enable_tcfeu_string: true,
+      },
+    });
+    setGppOptOutsFromCookieAndExperience({
+      cmpApi,
+      cookie,
+      experience,
+    });
+    const section = cmpApi.getSection("usnat");
+    expect(section).toMatchObject({
+      MspaCoveredTransaction: 2,
+      MspaOptOutOptionMode: 0,
+      MspaServiceProviderMode: 0,
+    });
+  });
+
   it("can use US gpp fields when gpp is set to national", () => {
     const cmpApi = new CmpApi(1, 1);
     const cookie = mockFidesCookie({
