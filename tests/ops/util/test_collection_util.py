@@ -4,6 +4,7 @@ import pytest
 from immutables import Map
 from ordered_set import OrderedSet
 
+from fides.api.common_exceptions import FidesopsException
 from fides.api.util.collection_util import (
     append,
     filter_nonempty_values,

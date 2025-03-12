@@ -61,6 +61,14 @@ class TestBigQueryQueryConfig:
             CollectionAddress("bigquery_example_test_dataset", "customer_profile")
         ].to_mock_execution_node()
 
+    @pytest.fixture(scope="function")
+    def customer_node(self, dataset_graph):
+        identity = {"email": "customer-1@example.com"}
+        bigquery_traversal = Traversal(dataset_graph, identity)
+        return bigquery_traversal.traversal_node_dict[
+            CollectionAddress("bigquery_example_test_dataset", "customer")
+        ].to_mock_execution_node()
+
     @pytest.fixture
     def execution_node(
         self, bigquery_example_test_dataset_config_with_namespace_meta: DatasetConfig
@@ -84,12 +92,12 @@ class TestBigQueryQueryConfig:
                 BigQueryNamespaceMeta(
                     project_id="cool_project", dataset_id="first_dataset"
                 ),
-                "SELECT address_id, created, custom_id, email, extra_address_data, id, name FROM `cool_project.first_dataset.customer` WHERE (email = :email)",
+                "SELECT address_id, created, custom_id, email, extra_address_data, id, name, purchase_history, tags FROM `cool_project.first_dataset.customer` WHERE (email = :email)",
             ),
             # Namespace meta will be a dict / JSON when retrieved from the DB
             (
                 {"project_id": "cool_project", "dataset_id": "first_dataset"},
-                "SELECT address_id, created, custom_id, email, extra_address_data, id, name FROM `cool_project.first_dataset.customer` WHERE (email = :email)",
+                "SELECT address_id, created, custom_id, email, extra_address_data, id, name, purchase_history, tags FROM `cool_project.first_dataset.customer` WHERE (email = :email)",
             ),
             (
                 {
@@ -97,11 +105,11 @@ class TestBigQueryQueryConfig:
                     "dataset_id": "first_dataset",
                     "connection_type": "bigquery",
                 },
-                "SELECT address_id, created, custom_id, email, extra_address_data, id, name FROM `cool_project.first_dataset.customer` WHERE (email = :email)",
+                "SELECT address_id, created, custom_id, email, extra_address_data, id, name, purchase_history, tags FROM `cool_project.first_dataset.customer` WHERE (email = :email)",
             ),
             (
                 None,
-                "SELECT address_id, created, custom_id, email, extra_address_data, id, name FROM `customer` WHERE (email = :email)",
+                "SELECT address_id, created, custom_id, email, extra_address_data, id, name, purchase_history, tags FROM `customer` WHERE (email = :email)",
             ),
         ],
     )
@@ -126,7 +134,7 @@ class TestBigQueryQueryConfig:
                     "email": ["customer-1@example.com", "customer-2@example.com"]
                 }
             ).text
-            == "SELECT address_id, created, custom_id, email, extra_address_data, id, name FROM `customer` WHERE (email IN (:email_in_stmt_generated_0, :email_in_stmt_generated_1))"
+            == "SELECT address_id, created, custom_id, email, extra_address_data, id, name, purchase_history, tags FROM `customer` WHERE (email IN (:email_in_stmt_generated_0, :email_in_stmt_generated_1))"
         )
 
     def test_generate_query_with_nested_identity(
@@ -327,5 +335,331 @@ class TestBigQueryQueryConfig:
         stmts = set(str(stmt) for stmt in delete_stmts)
         expected_stmts = {
             "DELETE FROM `silken-precinct-284918.fidesopstest.employee` WHERE `silken-precinct-284918.fidesopstest.employee`.`address_id` = %(address_id_1:STRING)s AND `silken-precinct-284918.fidesopstest.employee`.`email` = %(email_1:STRING)s"
+        }
+        assert stmts == expected_stmts
+
+    def test_generate_update_stmt_with_nested_fields(
+        self,
+        db,
+        customer_node,
+        erasure_policy,
+        privacy_request,
+        bigquery_client,
+        dataset_graph,
+    ):
+        """
+        Test update statements correctly handle nested struct fields in BigQuery
+        """
+        erasure_policy.rules[0].targets[0].data_category = "user"
+        erasure_policy.rules[0].targets[0].save(db)
+
+        # Create a row with nested data in extra_address_data struct
+        customer_data = {
+            "email": "customer-1@example.com",
+            "id": "123",
+            "name": "John Doe",
+            "custom_id": "cust-123",
+            "created": "2023-01-01",
+            "address_id": "addr-123",
+            "extra_address_data": {
+                "city": "Austin",
+                "house": "456",
+                "id": "nested-id-123",
+                "state": "TX",
+                "street": "Main St",
+                "address_id": "addr-nested-123",
+            },
+        }
+
+        update_stmts = BigQueryQueryConfig(customer_node).generate_masking_stmt(
+            customer_node,
+            customer_data,
+            erasure_policy,
+            privacy_request,
+            bigquery_client,
+        )
+
+        stmts = set(str(stmt) for stmt in update_stmts)
+
+        # BigQuery struct updates require setting the entire struct with new values
+        expected_stmts = {
+            "UPDATE `customer` SET `id`=%(id:INT64)s, `name`=%(name:STRING)s, `custom_id`=%(custom_id:STRING)s, `extra_address_data`=%(extra_address_data:STRUCT<city STRING, house STRING, id INT64, state STRING, street STRING, address_id INT64>)s WHERE `customer`.`email` = %(email_1:STRING)s"
+        }
+
+        assert stmts == expected_stmts
+
+    def test_generate_update_stmt_with_nested_identity_fields(
+        self,
+        db,
+        customer_profile_node,
+        erasure_policy,
+        privacy_request,
+        bigquery_client,
+        dataset_graph,
+    ):
+        """
+        Test update statements correctly handle nested struct fields with nested identity in BigQuery
+        """
+        erasure_policy.rules[0].targets[0].data_category = "user"
+        erasure_policy.rules[0].targets[0].save(db)
+
+        # Create a row with nested data in contact_info struct, which contains the identity field
+        customer_profile_data = {
+            "id": "profile-123",
+            "contact_info": {
+                "primary_email": "customer-1@example.com",
+                "phone_number": "555-123-4567",
+            },
+            "address": "123 Main St, Austin, TX 78701",
+        }
+
+        update_stmts = BigQueryQueryConfig(customer_profile_node).generate_masking_stmt(
+            customer_profile_node,
+            customer_profile_data,
+            erasure_policy,
+            privacy_request,
+            bigquery_client,
+        )
+
+        stmts = set(str(stmt) for stmt in update_stmts)
+
+        # BigQuery nested field updates include both the identity field and other fields
+        expected_stmts = {
+            "UPDATE `customer_profile` SET `contact_info`=%(contact_info:STRUCT<primary_email STRING, phone_number STRING>)s, `address`=%(address:STRING)s WHERE `customer_profile`.`contact_info`.`primary_email` = %(contact_info.primary_email_1:STRING)s"
+        }
+
+        assert stmts == expected_stmts
+
+    def test_generate_namespaced_update_stmt_with_nested_fields(
+        self,
+        db,
+        customer_node,
+        erasure_policy,
+        privacy_request,
+        bigquery_client,
+        dataset_graph,
+    ):
+        """
+        Test namespaced update statements correctly handle nested struct fields in BigQuery
+        """
+        erasure_policy.rules[0].targets[0].data_category = "user"
+        erasure_policy.rules[0].targets[0].save(db)
+
+        # Create a row with nested data in extra_address_data struct
+        customer_data = {
+            "email": "customer-1@example.com",
+            "id": "123",
+            "name": "John Doe",
+            "custom_id": "cust-123",
+            "created": "2023-01-01",
+            "address_id": "addr-123",
+            "extra_address_data": {
+                "city": "Austin",
+                "house": "456",
+                "id": "nested-id-123",
+                "state": "TX",
+                "street": "Main St",
+                "address_id": "addr-nested-123",
+            },
+        }
+
+        update_stmts = BigQueryQueryConfig(
+            customer_node,
+            BigQueryNamespaceMeta(
+                project_id="silken-precinct-284918", dataset_id="fidesopstest"
+            ),
+        ).generate_masking_stmt(
+            customer_node,
+            customer_data,
+            erasure_policy,
+            privacy_request,
+            bigquery_client,
+        )
+
+        stmts = set(str(stmt) for stmt in update_stmts)
+
+        # BigQuery namespaced struct updates include the fully qualified project.dataset.table path
+        expected_stmts = {
+            "UPDATE `silken-precinct-284918.fidesopstest.customer` SET `id`=%(id:INT64)s, `name`=%(name:STRING)s, `custom_id`=%(custom_id:STRING)s, `extra_address_data`=%(extra_address_data:STRUCT<city STRING, house STRING, id INT64, state STRING, street STRING, address_id INT64>)s WHERE `silken-precinct-284918.fidesopstest.customer`.`email` = %(email_1:STRING)s"
+        }
+
+        assert stmts == expected_stmts
+
+    def test_generate_array_update_stmt(
+        self,
+        db,
+        customer_node,
+        erasure_policy,
+        privacy_request,
+        bigquery_client,
+        dataset_graph,
+    ):
+        """
+        Test update statements correctly handle simple array fields in BigQuery
+        """
+
+        erasure_policy.rules[0].targets[0].data_category = "user"
+        erasure_policy.rules[0].targets[0].save(db)
+
+        # Row with string array data
+        row = {
+            "id": 1,
+            "email": "customer-1@example.com",
+            "name": "John Doe",
+            "tags": ["VIP", "Rewards", "Premium"],
+        }
+
+        update_stmts = BigQueryQueryConfig(customer_node).generate_masking_stmt(
+            customer_node,
+            row,
+            erasure_policy,
+            privacy_request,
+            bigquery_client,
+        )
+
+        # Test that standard fields and array fields are included in the update parameters
+        update_stmt = update_stmts[0]
+        compiled_stmt = update_stmt.compile(dialect=bigquery_client.dialect)
+        update_params = compiled_stmt.params
+
+        assert update_params == {
+            "id": None,
+            "name": None,
+            "tags": [],
+            "email_1": "customer-1@example.com",
+        }
+
+        # Add expected SQL statement for clarity
+        stmts = set(str(stmt) for stmt in update_stmts)
+        expected_stmts = {
+            "UPDATE `customer` SET `id`=%(id:INT64)s, `name`=%(name:STRING)s, `tags`=%(tags:ARRAY<STRING>)s WHERE `customer`.`email` = %(email_1:STRING)s"
+        }
+        assert stmts == expected_stmts
+
+    def test_generate_nested_array_update_stmt(
+        self,
+        db,
+        customer_node,
+        erasure_policy,
+        privacy_request,
+        bigquery_client,
+        dataset_graph,
+    ):
+        """
+        Test update statements correctly handle nested array fields in BigQuery
+        """
+
+        erasure_policy.rules[0].targets[0].data_category = "user"
+        erasure_policy.rules[0].targets[0].save(db)
+
+        # Row with nested array data
+        row = {
+            "id": 1,
+            "email": "customer-1@example.com",
+            "name": "John Doe",
+            "purchase_history": [
+                {
+                    "item_id": 123,
+                    "purchase_date": "2021-01-01",
+                    "item_tags": ["Electronics", "Gadgets"],
+                },
+                {
+                    "item_id": 456,
+                    "purchase_date": "2021-02-01",
+                    "item_tags": ["Books", "Fiction"],
+                },
+            ],
+        }
+
+        update_stmts = BigQueryQueryConfig(customer_node).generate_masking_stmt(
+            customer_node,
+            row,
+            erasure_policy,
+            privacy_request,
+            bigquery_client,
+        )
+
+        # Test that array fields are processed correctly
+        update_stmt = update_stmts[0]
+        compiled_stmt = update_stmt.compile(dialect=bigquery_client.dialect)
+        update_params = compiled_stmt.params
+
+        assert update_params == {
+            "id": None,
+            "name": None,
+            "purchase_history": [
+                {
+                    "item_id": 123,
+                    "purchase_date": "2021-01-01",
+                    "item_tags": [],
+                },
+                {
+                    "item_id": 456,
+                    "purchase_date": "2021-02-01",
+                    "item_tags": [],
+                },
+            ],
+            "email_1": "customer-1@example.com",
+        }
+
+        # Add expected SQL statement for clarity
+        stmts = set(str(stmt) for stmt in update_stmts)
+        expected_stmts = {
+            "UPDATE `customer` SET `id`=%(id:INT64)s, `name`=%(name:STRING)s, `purchase_history`=%(purchase_history:ARRAY<STRUCT<item_id STRING, price FLOAT64, purchase_date STRING, item_tags ARRAY<STRING>>>)s WHERE `customer`.`email` = %(email_1:STRING)s"
+        }
+        assert stmts == expected_stmts
+
+    def test_generate_namespaced_array_update_stmt(
+        self,
+        db,
+        customer_node,
+        erasure_policy,
+        privacy_request,
+        bigquery_client,
+        dataset_graph,
+    ):
+        """
+        Test update statements correctly handle array fields in namespaced BigQuery configurations
+        """
+
+        erasure_policy.rules[0].targets[0].data_category = "user"
+        erasure_policy.rules[0].targets[0].save(db)
+
+        # Row with string array data
+        row = {
+            "id": 1,
+            "email": "customer-1@example.com",
+            "name": "John Doe",
+            "tags": ["VIP", "Rewards", "Premium"],
+        }
+
+        update_stmts = BigQueryQueryConfig(
+            customer_node,
+            BigQueryNamespaceMeta(
+                project_id="silken-precinct-284918", dataset_id="fidesopstest"
+            ),
+        ).generate_masking_stmt(
+            customer_node,
+            row,
+            erasure_policy,
+            privacy_request,
+            bigquery_client,
+        )
+
+        # Test that namespaced paths work correctly
+        update_stmt = update_stmts[0]
+        compiled_stmt = update_stmt.compile(dialect=bigquery_client.dialect)
+        update_params = compiled_stmt.params
+
+        assert update_params == {
+            "id": None,
+            "name": None,
+            "tags": [],
+            "email_1": "customer-1@example.com",
+        }
+
+        stmts = set(str(stmt) for stmt in update_stmts)
+        expected_stmts = {
+            "UPDATE `silken-precinct-284918.fidesopstest.customer` SET `id`=%(id:INT64)s, `name`=%(name:STRING)s, `tags`=%(tags:ARRAY<STRING>)s WHERE `silken-precinct-284918.fidesopstest.customer`.`email` = %(email_1:STRING)s"
         }
         assert stmts == expected_stmts

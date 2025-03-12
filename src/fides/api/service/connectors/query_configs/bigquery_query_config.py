@@ -1,5 +1,6 @@
 from typing import Any, Dict, List, Optional, Union, cast
 
+import pydash
 from fideslang.models import MaskingStrategies
 from loguru import logger
 from sqlalchemy import MetaData, Table, text
@@ -17,7 +18,14 @@ from fides.api.schemas.namespace_meta.bigquery_namespace_meta import (
 from fides.api.service.connectors.query_configs.query_config import (
     QueryStringWithoutTuplesOverrideQueryConfig,
 )
-from fides.api.util.collection_util import Row, filter_nonempty_values
+from fides.api.util.collection_util import (
+    Row,
+    filter_nonempty_values,
+    flatten_dict,
+    merge_dicts,
+    replace_none_arrays,
+    unflatten_dict,
+)
 
 
 class BigQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
@@ -120,18 +128,45 @@ class BigQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
         A List of multiple Update objects are returned for partitioned tables; for a non-partitioned table,
         a single Update object is returned in a List for consistent typing.
 
-        TODO: DRY up this method and `generate_delete` a bit
+        This implementation handles nested fields by grouping them as JSON objects rather than
+        individual field updates.
+
+        See the README.md in this directory for a detailed example of how nested data is handled.
         """
+
+        # 1. Take update_value_map as-is (already flattened)
         update_value_map: Dict[str, Any] = self.update_value_map(row, policy, request)
+
+        # 2. Flatten the row
+        flattened_row = flatten_dict(row)
+
+        # 3. Merge flattened_row with update_value_map (update_value_map takes precedence)
+        merged_dict = merge_dicts(flattened_row, update_value_map)
+
+        # 4. Unflatten the merged dictionary
+        nested_result = unflatten_dict(merged_dict)
+
+        # 5. Replace any arrays containing only None values with empty arrays
+        nested_result = replace_none_arrays(nested_result)  # type: ignore
+
+        # 6. Only keep top-level keys that are in the update_value_map
+        top_level_keys = {key.split(".")[0] for key in update_value_map}
+
+        # Filter the nested result to only include those top-level keys
+        final_update_map = {
+            k: v for k, v in nested_result.items() if k in top_level_keys
+        }
+
+        # Use existing non-empty reference fields mechanism for WHERE clause
         non_empty_reference_field_keys: Dict[str, Field] = filter_nonempty_values(
             {
-                fpath.string_path: fld.cast(row[fpath.string_path])
+                fpath.string_path: fld.cast(pydash.get(row, fpath.string_path))
                 for fpath, fld in self.reference_field_paths.items()
-                if fpath.string_path in row
+                if pydash.get(row, fpath.string_path) is not None
             }
         )
 
-        valid = len(non_empty_reference_field_keys) > 0 and update_value_map
+        valid = len(non_empty_reference_field_keys) > 0 and final_update_map
         if not valid:
             logger.warning(
                 "There is not enough data to generate a valid update statement for {}",
@@ -154,12 +189,12 @@ class BigQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
                 partitioned_queries.append(
                     table.update()
                     .where(*(where_clauses + [text(partition_clause)]))
-                    .values(**update_value_map)
+                    .values(**final_update_map)
                 )
 
             return partitioned_queries
 
-        return [table.update().where(*where_clauses).values(**update_value_map)]
+        return [table.update().where(*where_clauses).values(**final_update_map)]
 
     def generate_delete(self, row: Row, client: Engine) -> List[Delete]:
         """Returns a List of SQLAlchemy DELETE statements for BigQuery. Does not actually execute the delete statement.
@@ -213,18 +248,14 @@ class BigQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
         self,
         field_paths: List[FieldPath],
     ) -> List[str]:
-        """Returns field paths in a format they can be added into SQL queries.
-
-        Only returns non-nested fields (fields with exactly one level).
-        Nested fields are skipped with a warning log.
         """
+        Returns field paths in a format they can be added into SQL queries.
+        Only returns non-nested fields (fields with exactly one level).
+        """
+
         formatted_fields = []
         for field_path in field_paths:
-            if len(field_path.levels) > 1:
-                logger.warning(
-                    f"Skipping nested field '{'.'.join(field_path.levels)}' as nested fields are not supported"
-                )
-            else:
+            if len(field_path.levels) == 1:
                 formatted_fields.append(field_path.levels[0])
         return formatted_fields
 

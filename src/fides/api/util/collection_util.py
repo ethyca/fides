@@ -204,15 +204,12 @@ def flatten_dict(data: Any, prefix: str = "", separator: str = ".") -> Dict[str,
     }
 
     Args:
-        data: The data to flatten (must be a dict or list)
+        data: The data to flatten (dict, list, or scalar value)
         prefix: The current key prefix (used in recursion)
         separator: The separator to use between key segments (default: ".")
 
     Returns:
         A flattened dictionary with dot-notation keys
-
-    Raises:
-        FidesopsException: If input is not a dict or list
     """
     items = {}
 
@@ -236,3 +233,31 @@ def flatten_dict(data: Any, prefix: str = "", separator: str = ".") -> Dict[str,
         )
 
     return items
+
+
+def replace_none_arrays(
+    data: Any,
+) -> Any:
+    """
+    Recursively replace any arrays containing only None values with empty arrays.
+
+    Args:
+        data: Any Python object (dict, list, etc.)
+
+    Returns:
+        The transformed data structure with None-only arrays replaced by empty arrays
+    """
+    if isinstance(data, dict):
+        # Process each key-value pair in dictionaries
+        return {k: replace_none_arrays(v) for k, v in data.items()}
+
+    if isinstance(data, list):
+        # Check if list contains only None values
+        if all(item is None for item in data):
+            return []
+
+        # Otherwise process each item in the list
+        return [replace_none_arrays(item) for item in data]
+
+    # Return other data types unchanged
+    return data
