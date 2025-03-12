@@ -1,7 +1,7 @@
 """add user assigned data_uses and system_id columns to stagedresource
 
 Revision ID: 7c3fbee90c78
-Revises: bd875a8b5d96
+Revises: 3c58001ad310
 Create Date: 2025-03-04 15:00:23.874270
 
 """
@@ -12,7 +12,7 @@ from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = "7c3fbee90c78"
-down_revision = "bd875a8b5d96"
+down_revision = "3c58001ad310"
 branch_labels = None
 depends_on = None
 
