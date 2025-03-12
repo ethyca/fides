@@ -152,9 +152,7 @@ class TestQueryConfig:
         assert updated_value_map["id"] is None
 
         assert "name" in updated_value_map
-        assert updated_value_map["name"].endswith(
-            "@example.com"
-        )
+        assert updated_value_map["name"].endswith("@example.com")
 
         # Verify no children of address are individually masked
         assert not any(key.startswith("address.") for key in updated_value_map.keys())
