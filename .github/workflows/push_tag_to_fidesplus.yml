@@ -28,7 +28,7 @@ jobs:
           else
             git fetch --tags
             LATEST_TAG=$(git describe --tags `git rev-list --tags --max-count=1`)
-            echo "TAG_NAME=${TAG_NAME}" >> $GITHUB_ENV
+            echo "TAG_NAME=${LATEST_TAG}" >> $GITHUB_ENV
           fi
 
       - name: Checkout fidesplus repo
