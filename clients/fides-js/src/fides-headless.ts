@@ -114,6 +114,7 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
       OverrideType.EXPERIENCE_TRANSLATION,
       config,
     );
+  // DEFER: not implemented - ability to override Fides consent with OneTrust overrides
   const consentPrefsOverrides: GetPreferencesFnResp | null =
     await customGetConsentPreferences(config);
   // DEFER: not implemented - ability to override notice-based consent with the consentPrefsOverrides.consent obj

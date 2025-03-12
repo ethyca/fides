@@ -144,7 +144,7 @@ export interface FidesInitOptions {
   fidesConsentOverride: ConsentMethod.ACCEPT | ConsentMethod.REJECT | null;
 
   // If defined, maps OT cookie consent to Fides cookie consent
-  otFidesMapping: string | null;
+  otFidesMapping?: string | null;
 }
 
 /**

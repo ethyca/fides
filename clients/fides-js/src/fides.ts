@@ -93,16 +93,9 @@ const readConsentFromOneTrust = (config: FidesConfig, optionsOverrides: Partial<
     return;
   }
   try {
-    console.log("otfidesMapping")
-    console.log(optionsOverrides.otFidesMapping)
-    console.log(decodeURIComponent(optionsOverrides.otFidesMapping))
-    console.log(typeof decodeURIComponent(optionsOverrides.otFidesMapping))
-    console.log(typeof '{"C0001":["essential"],"C0002":["analytics"],"C0004":["advertising","marketing"]}')
     const decodedString = decodeURIComponent(optionsOverrides.otFidesMapping)
     const strippedString = decodedString.replace(/^'|'$/g, '');
     const otFidesMappingParsed: Map<string, string[]> = JSON.parse(strippedString);
-    console.log("otfidesMappingParsed")
-    console.log(otFidesMappingParsed)
     const otToFidesConsent: NoticeConsent = otCookieToFidesConsent(
       otConsentCookie,
       otFidesMappingParsed,
