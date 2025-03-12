@@ -1,8 +1,4 @@
-from unittest.mock import Mock, patch
-
-import boto3
 import pytest
-from moto import mock_aws
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -17,19 +13,6 @@ from fides.api.models.storage import StorageConfig
 from fides.api.schemas.storage.storage import StorageDetails
 
 
-@pytest.fixture
-def s3_client(storage_config):
-    with mock_aws():
-        session = boto3.Session(
-            aws_access_key_id="fake_access_key",
-            aws_secret_access_key="fake_secret_key",
-            region_name="us-east-1",
-        )
-        s3 = session.client("s3")
-        s3.create_bucket(Bucket=storage_config.details[StorageDetails.BUCKET.value])
-        yield s3
-
-
 @pytest.fixture(
     params=[
         ("testfile.pdf", b"%PDF-1.4 Test PDF content"),
@@ -40,43 +23,6 @@ def s3_client(storage_config):
 def attachment_file(request):
     file_name, file_content = request.param
     return file_name, file_content
-
-
-@pytest.fixture
-def attachment_data(user, storage_config):
-    return {
-        "user_id": user.id,
-        "file_name": "file.txt",
-        "attachment_type": AttachmentType.internal_use_only,
-        "storage_key": storage_config.key,
-    }
-
-
-@pytest.fixture(scope="function")
-def attachment(db, attachment_data, monkeypatch, s3_client):
-    def mock_get_s3_client(auth_method, storage_secrets):
-        return s3_client
-
-    monkeypatch.setattr("fides.api.tasks.storage.get_s3_client", mock_get_s3_client)
-    attachment = Attachment.create_and_upload(
-        db, data=attachment_data, attachment_file=b"test file content"
-    )
-    yield attachment
-    attachment.delete(db)
-
-
-@pytest.fixture
-def attachment_reference(db, attachment):
-    attachment_reference = AttachmentReference.create(
-        db=db,
-        data={
-            "attachment_id": attachment.id,
-            "reference_id": "ref_1",
-            "reference_type": AttachmentReferenceType.privacy_request,
-        },
-    )
-    yield attachment_reference
-    attachment_reference.delete(db)
 
 
 def test_create_attachment_without_attachement_file_raises_error(db, attachment_data):

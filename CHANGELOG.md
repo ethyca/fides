@@ -26,6 +26,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - DB model support for messages on `MonitorExecution` records [#5846](https://github.com/ethyca/fides/pull/5846) https://github.com/ethyca/fides/labels/db-migration
 - Added support for GPP String integration in Fides String [#5845](https://github.com/ethyca/fides/pull/5845)
 - Attachments storage capabilities (S3 or local) [#5812](https://github.com/ethyca/fides/pull/5812) https://github.com/ethyca/fides/labels/db-migration
+- DB model support for Comments [#5833](https://github.com/ethyca/fides/pull/5833/files) https://github.com/ethyca/fides/labels/db-migration
 
 ### Changed
 - Bumped supported Python versions to `3.10.16` and `3.9.21` [#5840](https://github.com/ethyca/fides/pull/5840)
@@ -39,6 +40,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Moved non-prod Admin UI dependencies to devDependencies [#5832](https://github.com/ethyca/fides/pull/5832)
 - Prevent Admin UI and Privacy Center from starting when running `nox -s dev` with datastore params [#5843](https://github.com/ethyca/fides/pull/5843)
 - Remove plotly (unused package) to reduce fides image size [#5852](https://github.com/ethyca/fides/pull/5852)
+- Fixed issue where the log_context decorator didn't support positional arguments [#5866](https://github.com/ethyca/fides/pull/5866)
 
 ### Fixed
 - Fixed pagination bugs on some tables [#5819](https://github.com/ethyca/fides/pull/5819)
