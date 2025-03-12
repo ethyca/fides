@@ -52,6 +52,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Fixed CORS origins handling to be more consistent across config (toml/env var) and API settings; allow `0.0.0.0` as an origin [#5853](https://github.com/ethyca/fides/pull/5853)
 - Fixed an issue with the update payloads for select SaaS integrations [#5860](https://github.com/ethyca/fides/pull/5860)
 - Fixed `/privacy-request/<id>/resubmit` endpoint so it doesn't queue the request twice [#5870](https://github.com/ethyca/fides/pull/5870)
+- Fixed the system assets table being the wrong width [#5879](https://github.com/ethyca/fides/pull/5879)
 
 ## [2.56.2](https://github.com/ethyca/fides/compare/2.56.1...2.56.2)
 
