@@ -142,6 +142,9 @@ export interface FidesInitOptions {
 
   // Whether to reject all consent preferences by default
   fidesConsentOverride: ConsentMethod.ACCEPT | ConsentMethod.REJECT | null;
+
+  // If defined, maps OT cookie consent to Fides cookie consent
+  otFidesMapping?: string | null;
 }
 
 /**
@@ -181,6 +184,18 @@ export interface FidesGlobal extends Fides {
   shopify: typeof shopify;
   shouldShowExperience: () => boolean;
   showModal: () => void;
+}
+
+/**
+ * Store the OneTrust to Fides consent mappings from ot_group_id -> array of fides notice keys, e.g.
+ * {
+ *     C0001: ["essential"],
+ *     C0002: ["analytics_opt_out"],
+ *     C0004: ["advertising", "marketing"],
+ *   }
+ */
+export interface OtToFidesConsentMapping {
+  [key: string]: string[];
 }
 
 /**
@@ -703,6 +718,7 @@ export type FidesInitOptionsOverrides = Pick<
   | "fidesPrimaryColor"
   | "fidesClearCookie"
   | "fidesConsentOverride"
+  | "otFidesMapping"
 >;
 
 export type FidesExperienceTranslationOverrides = {

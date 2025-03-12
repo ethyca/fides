@@ -78,7 +78,7 @@ const ConfigureSystem: NextPage = () => {
   }
 
   return (
-    <Layout title="System inventory">
+    <Layout title="System inventory" mainProps={{ w: "calc(100vw - 240px)" }}>
       <PageHeader
         heading="System inventory"
         breadcrumbItems={[
@@ -116,7 +116,7 @@ const ConfigureSystem: NextPage = () => {
           Could not find a system with id {systemId}
         </Text>
       ) : (
-        <VStack alignItems="stretch" flex="1" gap="18px" maxWidth="70vw">
+        <VStack alignItems="stretch">
           <DataTabsContent
             data={tabData}
             index={tabIndex}
