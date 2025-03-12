@@ -1,3 +1,4 @@
+/* eslint-disable no-underscore-dangle */
 /**
  * Extension for GPP
  *
@@ -11,25 +12,11 @@ import {
   CmpStatus,
   SignalStatus,
   TcfEuV2,
-  UsCa,
-  UsCo,
-  UsCt,
-  UsDe,
-  UsFl,
-  UsIa,
-  UsMt,
   UsNat,
-  UsNe,
-  UsNh,
-  UsNj,
-  UsTn,
-  UsTx,
-  UsUt,
-  UsVa,
 } from "@iabgpp/cmpapi";
 
 import { FidesEvent } from "./fides";
-import type {
+import {
   FidesGlobal,
   FidesOptions,
   NoticeConsent,
@@ -40,6 +27,13 @@ import {
   isPrivacyExperience,
   shouldResurfaceConsent,
 } from "./lib/consent-utils";
+import { saveFidesCookie } from "./lib/cookie";
+import { formatFidesStringWithGpp } from "./lib/fides-string";
+import {
+  CMP_VERSION,
+  FIDES_US_REGION_TO_GPP_SECTION,
+} from "./lib/gpp/constants";
+import { fidesStringToConsent } from "./lib/gpp/string-to-consent";
 import { makeStub } from "./lib/gpp/stub";
 import { GppFunction, GPPUSApproach } from "./lib/gpp/types";
 import {
@@ -48,8 +42,6 @@ import {
 } from "./lib/gpp/us-notices";
 import { ETHYCA_CMP_ID } from "./lib/tcf/constants";
 import { extractTCStringForCmpApi } from "./lib/tcf/events";
-
-const CMP_VERSION = 1;
 
 declare global {
   interface Window {
@@ -97,7 +89,7 @@ const userHasExistingPrefs = (
  * @param event: FidesEvent
  * @param cmpApi: the CMP API model
  */
-const setTcString = (event: FidesEvent, cmpApi: CmpApi) => {
+const setTcString = (event: FidesEvent, cmpApi: CmpApi): boolean => {
   if (!isPrivacyExperience(window.Fides.experience)) {
     return false;
   }
@@ -117,12 +109,12 @@ const setTcString = (event: FidesEvent, cmpApi: CmpApi) => {
 
 /** From our options, derive what APIs of GPP are applicable */
 const getSupportedApis = () => {
-  const supportedApis: string[] = [];
+  const experienceSupportedApis: string[] = [];
   if (isPrivacyExperience(window.Fides.experience)) {
     const { gpp_settings: gppSettings } = window.Fides.experience;
     if (gppSettings && gppSettings.enabled) {
       if (window.Fides.options.tcfEnabled && gppSettings.enable_tcfeu_string) {
-        supportedApis.push(`${TcfEuV2.ID}:${TcfEuV2.NAME}`);
+        experienceSupportedApis.push(`${TcfEuV2.ID}:${TcfEuV2.NAME}`);
       }
       fidesDebugger("GPP settings", gppSettings);
       if (
@@ -130,7 +122,7 @@ const getSupportedApis = () => {
         gppSettings.us_approach === GPPUSApproach.ALL
       ) {
         fidesDebugger("GPP: setting US National APIs");
-        supportedApis.push(`${UsNat.ID}:${UsNat.NAME}`);
+        experienceSupportedApis.push(`${UsNat.ID}:${UsNat.NAME}`);
       }
       if (
         gppSettings.us_approach === GPPUSApproach.STATE ||
@@ -138,29 +130,16 @@ const getSupportedApis = () => {
       ) {
         fidesDebugger("GPP: setting US State APIs");
         // TODO: include the states based off of locations/regulations.
-        // For now, hard code all of them. https://ethyca.atlassian.net/browse/PROD-1595
-        [
-          UsCa,
-          UsCo,
-          UsCt,
-          UsUt,
-          UsVa,
-          UsDe,
-          UsFl,
-          UsIa,
-          UsMt,
-          UsNe,
-          UsNh,
-          UsNj,
-          UsTn,
-          UsTx,
-        ].forEach((state) => {
-          supportedApis.push(`${state.ID}:${state.NAME}`);
+        // For now, use all of them. https://ethyca.atlassian.net/browse/PROD-1595
+        Object.values(FIDES_US_REGION_TO_GPP_SECTION).forEach((state) => {
+          if (state.id !== UsNat.ID) {
+            experienceSupportedApis.push(`${state.id}:${state.name}`);
+          }
         });
       }
     }
   }
-  return supportedApis;
+  return experienceSupportedApis;
 };
 
 const initializeGppCmpApi = () => {
@@ -168,22 +147,37 @@ const initializeGppCmpApi = () => {
   const cmpApi = new CmpApi(ETHYCA_CMP_ID, CMP_VERSION);
   cmpApi.setCmpStatus(CmpStatus.LOADED);
   window.addEventListener("FidesInitialized", (event) => {
-    // TODO (PROD-1439): re-evaluate if GPP is "cheating" accessing window.Fides instead of using the event details only
-    const {
-      experience,
-      saved_consent: savedConsent,
-      options,
-      geolocation,
-    } = window.Fides;
-    const isTcfEnabled = options.tcfEnabled;
-    cmpApi.setSupportedAPIs(getSupportedApis());
-    // Set status to ready immediately upon initialization, if either:
-    // A. Consent should not be resurfaced
-    // B. User has no prefs and has all opt-in notices and TCF is disabled
+    const { experience, saved_consent: savedConsent, options } = window.Fides;
+    const experienceSupportedApis = getSupportedApis();
+
+    // Set up supported APIs before validating experience since getSupportedApis() needs it
+    cmpApi.setSupportedAPIs(experienceSupportedApis);
+
+    if (!isPrivacyExperience(experience)) {
+      return;
+    }
+
+    // Check for fides_string override in options and set consent preferences if present.
+    const { fidesString } = options;
+    if (fidesString) {
+      fidesStringToConsent({
+        fidesString,
+        cmpApi,
+      });
+    }
+
+    // When there's no fides_string, determine if we should immediately set up the GPP state and mark it as ready.
+    // We proceed if EITHER:
+    // 1. Consent should not be resurfaced (i.e., user has valid consent that hasn't expired)
+    //    OR
+    // 2. ALL of these conditions are met:
+    //    - TCF is disabled (not using TCF EU consent)
+    //    - All notices in the experience default to opt-in
+    //    - User has no existing preferences (either in cookie, fides_string, or mapped to notices)
     if (
-      isPrivacyExperience(experience) &&
+      !fidesString &&
       (!shouldResurfaceConsent(experience, event.detail, savedConsent) ||
-        (!isTcfEnabled &&
+        (!options.tcfEnabled &&
           allNoticesAreDefaultOptIn(experience.privacy_notices) &&
           !userHasExistingPrefs(
             savedConsent,
@@ -211,31 +205,25 @@ const initializeGppCmpApi = () => {
         cmpApi.setApplicableSections([-1]);
       }
       cmpApi.setSignalStatus(SignalStatus.READY);
+      const newFidesString = formatFidesStringWithGpp(cmpApi);
+      window.Fides.fides_string = newFidesString;
+      fidesDebugger("GPP: updated fides_string", newFidesString);
+    }
 
-      // mimics __gpp('ping', console.log);
-      fidesDebugger(
-        `GPP: CMP status and configuration for ${geolocation?.location}`,
-        {
-          cmpStatus: cmpApi.getCmpStatus(),
-          cmpDisplayStatus: cmpApi.getCmpDisplayStatus(),
-          signalStatus: cmpApi.getSignalStatus(),
-          supportedAPIs: cmpApi.getSupportedAPIs(),
-          applicableSections: cmpApi.getApplicableSections(),
-          gppString: cmpApi.getGppString(),
-          parsedSections: cmpApi.getObject(),
-        },
-      );
+    if (window.Fides.options.debug && typeof window?.__gpp === "function") {
+      window?.__gpp?.("ping", (data) => {
+        fidesDebugger("GPP Ping Data:", data);
+      });
     }
   });
 
   window.addEventListener("FidesUIShown", (event) => {
     // Set US GPP notice fields
     const { experience, saved_consent: savedConsent, options } = window.Fides;
-    const isTcfEnabled = options.tcfEnabled;
     if (isPrivacyExperience(experience)) {
       // set signal status to ready only for users with no existing prefs and if notices are all opt-in by default and TCF is disabled
       if (
-        !isTcfEnabled &&
+        !options.tcfEnabled &&
         allNoticesAreDefaultOptIn(experience.privacy_notices) &&
         !userHasExistingPrefs(
           savedConsent,
@@ -294,6 +282,15 @@ const initializeGppCmpApi = () => {
         sectionsChanged.forEach((section) => {
           cmpApi.fireSectionChange(section.name);
         });
+      }
+
+      // Update fides_string with GPP string
+      const fidesString = formatFidesStringWithGpp(cmpApi);
+      if (window.Fides.cookie) {
+        window.Fides.fides_string = fidesString;
+        window.Fides.cookie.fides_string = fidesString;
+        saveFidesCookie(window.Fides.cookie, window.Fides.options.base64Cookie);
+        fidesDebugger("GPP: updated fides_string", fidesString);
       }
     }
     cmpApi.setSignalStatus(SignalStatus.READY);

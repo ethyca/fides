@@ -23,31 +23,46 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ### Added
 - DB model support for Attachments [#5784](https://github.com/ethyca/fides/pull/5784) https://github.com/ethyca/fides/labels/db-migration
+- DB model support for messages on `MonitorExecution` records [#5846](https://github.com/ethyca/fides/pull/5846) https://github.com/ethyca/fides/labels/db-migration
+- Added support for GPP String integration in Fides String [#5845](https://github.com/ethyca/fides/pull/5845)
+- Attachments storage capabilities (S3 or local) [#5812](https://github.com/ethyca/fides/pull/5812) https://github.com/ethyca/fides/labels/db-migration
+- DB model support for Comments [#5833](https://github.com/ethyca/fides/pull/5833/files) https://github.com/ethyca/fides/labels/db-migration
 
 ### Changed
 - Add properties for user assigned systems/data_uses on staged resources [5841](https://github.com/ethyca/fides/pull/5841) https://github.com/ethyca/fides/labels/db-migration
 - Bumped supported Python versions to `3.10.16` and `3.9.21` [#5840](https://github.com/ethyca/fides/pull/5840)
 - Update the privacy request detail page to a new layout and improved styling [#5824](https://github.com/ethyca/fides/pull/5824)
 - Updated privacy request handling to still succeed if not all identities are provided [#5836](https://github.com/ethyca/fides/pull/5836)
+- Refactored privacy request processing to never re-use sessions [#5862](https://github.com/ethyca/fides/pull/5862)
+
 
 ### Developer Experience
 - Moved non-prod Admin UI dependencies to devDependencies [#5832](https://github.com/ethyca/fides/pull/5832)
 - Prevent Admin UI and Privacy Center from starting when running `nox -s dev` with datastore params [#5843](https://github.com/ethyca/fides/pull/5843)
 - Remove plotly (unused package) to reduce fides image size [#5852](https://github.com/ethyca/fides/pull/5852)
+- Fixed issue where the log_context decorator didn't support positional arguments [#5866](https://github.com/ethyca/fides/pull/5866)
 
 ### Fixed
-- Corrected the Tag color for some columns of the Privacy requests table. [#5848](https://github.com/ethyca/fides/pull/5848)
-
+- Fixed pagination bugs on some tables [#5819](https://github.com/ethyca/fides/pull/5819)
+- Fixed load_samples to wrap variables in quotes to prevent YAML parsing errors [#5857](https://github.com/ethyca/fides/pull/5857)
+- Fixed incorrect value being set for `MonitorExecution.started` column [#5864](https://github.com/ethyca/fides/pull/5864)
+- Improved the behavior and state management of MSPA-related settings [#5861](https://github.com/ethyca/fides/pull/5861)
+- Fixed CORS origins handling to be more consistent across config (toml/env var) and API settings; allow `0.0.0.0` as an origin [#5853](https://github.com/ethyca/fides/pull/5853)
+- Fixed an issue with the update payloads for select SaaS integrations [#5860](https://github.com/ethyca/fides/pull/5860)
 
 ## [2.56.2](https://github.com/ethyca/fides/compare/2.56.1...2.56.2)
 
 ### Added
-- Fides GTM & event origination [#5821](https://github.com/ethyca/fides/pull/5821)
+- Update FidesJS to push all `FidesEvent` types to GTM (except `FidesInitializing`) [#5821](https://github.com/ethyca/fides/pull/5821)
+- Added a consent reporting table and consent lookup feature [#5839](https://github.com/ethyca/fides/pull/5839)
+- Added a high-precision `timestamp` to all `FidesEvents` from FidesJS SDK [#5859](https://github.com/ethyca/fides/pull/5859)
+- Added a `extraDetails.trigger` to `FidesUIChanged` events from FidesJS SDK with info about the UI element that triggered the event [#5859](https://github.com/ethyca/fides/pull/5859)
+- Added a `extraDetails.preference` to `FidesUIChanged` events from FidesJS SDK with info about the preference that was changed (notice, TCF purpose, TCF vendor, etc.) [#5859](https://github.com/ethyca/fides/pull/5859)
 
 ### Fixed
 - Addressed TCModel console error when opting into some purposes [#5850](https://github.com/ethyca/fides/pull/5850)
 - Opt out of all in TCF no longer affects "notice only" notices [#5850](https://github.com/ethyca/fides/pull/5850)
-
+- Corrected the Tag color for some columns of the Privacy requests table. [#5848](https://github.com/ethyca/fides/pull/5848)
 
 ## [2.56.1](https://github.com/ethyca/fides/compare/2.56.0...2.56.1)
 

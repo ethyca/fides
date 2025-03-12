@@ -1,6 +1,5 @@
 import { Box, Flex, Text } from "fidesui";
 import { FieldArray, useFormikContext } from "formik";
-import { ChangeEvent } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import { CustomSwitch } from "~/features/common/form/inputs";
@@ -131,8 +130,8 @@ const PurposeOverrides = () => {
                 <Box>
                   <CustomSwitch
                     name={`purposeOverrides[${index}].is_included`}
-                    onChange={(e: ChangeEvent<HTMLInputElement>) => {
-                      if (!e.target.checked) {
+                    onChange={(checked) => {
+                      if (!checked) {
                         setFieldValue(
                           `purposeOverrides[${index}].is_consent`,
                           false,

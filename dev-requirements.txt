@@ -3,6 +3,7 @@ debugpy==1.6.3
 Faker==14.1.0
 GitPython==3.1.41
 isort==5.12.0
+moto[s3]==5.1.0
 mypy==1.10.0
 nox==2022.8.7
 pre-commit==2.20.0
