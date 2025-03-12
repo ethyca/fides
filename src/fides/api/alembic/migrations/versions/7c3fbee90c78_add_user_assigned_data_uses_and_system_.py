@@ -36,6 +36,12 @@ def upgrade():
         ),
     )
     # ### end Alembic commands ###
+    op.create_index(
+        "ix_stagedresource_user_assigned_system_id",
+        "stagedresource",
+        ["user_assigned_system_id"],
+        unique=False,
+    )
 
 
 def downgrade():
@@ -43,3 +49,6 @@ def downgrade():
     op.drop_column("stagedresource", "user_assigned_data_uses")
     op.drop_column("stagedresource", "user_assigned_system_id")
     # ### end Alembic commands ###
+    op.drop_index(
+        "ix_stagedresource_user_assigned_system_id", table_name="stagedresource"
+    )
