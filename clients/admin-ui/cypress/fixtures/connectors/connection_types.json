@@ -105,6 +105,12 @@
       "authorization_required": false,
       "user_guide": "https://docs.ethyca.com/user-guides/integrations/saas-integrations/iterable",
       "supported_actions": ["erasure", "consent"]
+    },
+    {
+      "identifier": "website",
+      "type": "website",
+      "human_readable": "Website",
+      "encoded_icon": null
     }
   ],
   "total": 10,
