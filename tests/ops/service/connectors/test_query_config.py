@@ -96,6 +96,196 @@ class TestQueryConfig:
             else:
                 assert value is None
 
+    def test_update_value_map_object_and_array_masking(
+        self, erasure_policy_all_categories, connection_config
+    ):
+        """
+        Test that objects with data categories are masked as whole entities
+        and their children are skipped.
+        """
+
+        example_dataset = load_dataset(
+            "data/dataset/example_field_masking_override_test_dataset.yml"
+        )
+        dataset = Dataset(**example_dataset[0])
+        graph = convert_dataset_to_graph(dataset, connection_config.key)
+        dataset_graph = DatasetGraph(*[graph])
+        traversal = Traversal(dataset_graph, {"email": "customer-1@example.com"})
+
+        customer_node = traversal.traversal_node_dict[
+            CollectionAddress("field_masking_override_test_dataset", "customer")
+        ].to_mock_execution_node()
+
+        # Add data categories for address field
+        for field_path, field in customer_node.collection.field_dict.items():
+            if field_path.string_path == "address":
+                field.data_categories = ["user.contact.address"]
+
+        config = QueryConfig(customer_node)
+
+        # Test row with an object field
+        row = {
+            "email": "customer-1@example.com",
+            "name": "John Customer",
+            "id": 1,
+            "address": {
+                "city": "San Francisco",
+                "state": "CA",
+                "zip": "94105",
+                "house": "123",
+                "street": "Main St",
+            },
+        }
+
+        updated_value_map = config.update_value_map(
+            row, erasure_policy_all_categories, privacy_request
+        )
+
+        # Verify the structure and masking patterns
+        assert "address" in updated_value_map
+        assert updated_value_map["address"] is None  # Whole object masked
+
+        assert "email" in updated_value_map
+        assert updated_value_map["email"] is None
+
+        assert "id" in updated_value_map
+        assert updated_value_map["id"] is None
+
+        assert "name" in updated_value_map
+        assert updated_value_map["name"].endswith(
+            "@example.com"
+        )
+
+        # Verify no children of address are individually masked
+        assert not any(key.startswith("address.") for key in updated_value_map.keys())
+
+    def test_update_value_map_object_array_edge_cases(
+        self, erasure_policy_all_categories, connection_config
+    ):
+        """
+        Test edge cases for object masking with actual dataset fields
+        """
+
+        example_dataset = load_dataset(
+            "data/dataset/example_field_masking_override_test_dataset.yml"
+        )
+        dataset = Dataset(**example_dataset[0])
+        graph = convert_dataset_to_graph(dataset, connection_config.key)
+        dataset_graph = DatasetGraph(*[graph])
+        traversal = Traversal(dataset_graph, {"email": "customer-1@example.com"})
+
+        customer_node = traversal.traversal_node_dict[
+            CollectionAddress("field_masking_override_test_dataset", "customer")
+        ].to_mock_execution_node()
+
+        # Add data categories to the address field
+        for field_path, field in customer_node.collection.field_dict.items():
+            if field_path.string_path == "address":
+                field.data_categories = ["user.contact.address"]
+
+        config = QueryConfig(customer_node)
+
+        # Test edge cases using existing fields
+        row = {
+            "id": 1,
+            "email": "customer-1@example.com",
+            "address": {},  # Empty object
+            "name": "This is a string, not an object",
+        }
+
+        updated_value_map = config.update_value_map(
+            row, erasure_policy_all_categories, privacy_request
+        )
+
+        # Verify the structure and masking patterns
+        assert "address" in updated_value_map
+        assert (
+            updated_value_map["address"] is None
+        )  # Empty object still masked as a whole
+
+        assert "email" in updated_value_map
+        assert updated_value_map["email"] is None
+
+        assert "id" in updated_value_map
+        assert updated_value_map["id"] is None
+
+        assert "name" in updated_value_map
+        assert updated_value_map["name"].endswith(
+            "@example.com"
+        )  # String rewrite masking
+
+    def test_update_value_map_mixed_objects_with_and_without_categories(
+        self, erasure_policy_all_categories, connection_config
+    ):
+        """
+        Test a complex scenario with nested objects where:
+          - Objects with data categories are masked as whole objects
+          - Objects without data categories have their individual fields masked
+        """
+
+        example_dataset = load_dataset(
+            "data/dataset/example_field_masking_override_test_dataset.yml"
+        )
+        dataset = Dataset(**example_dataset[0])
+        graph = convert_dataset_to_graph(dataset, connection_config.key)
+        dataset_graph = DatasetGraph(*[graph])
+        traversal = Traversal(dataset_graph, {"email": "customer-1@example.com"})
+
+        customer_node = traversal.traversal_node_dict[
+            CollectionAddress("field_masking_override_test_dataset", "customer")
+        ].to_mock_execution_node()
+
+        # Configure fields with appropriate data categories
+        for field_path, field in customer_node.collection.field_dict.items():
+            if field_path.string_path == "address":
+                field.data_categories = ["user.contact.address"]
+            elif field_path.string_path == "address.house":
+                field.data_categories = ["user.contact.address.house_number"]
+            elif field_path.string_path == "email":
+                field.data_categories = ["user.contact.email"]
+            elif field_path.string_path == "name":
+                field.data_categories = ["user.name"]
+            elif field_path.string_path == "id":
+                field.data_categories = ["user.unique_id"]
+
+        config = QueryConfig(customer_node)
+
+        # Test row with nested structure
+        row = {
+            "id": 1,
+            "email": "customer-1@example.com",
+            "name": "John Customer",
+            "address": {
+                "city": "San Francisco",
+                "house": "123",
+                "street": "Main St",
+                "state": "CA",
+                "zip": "94105",
+            },
+            "address_id": 1,
+            "created": "2023-01-01",
+        }
+
+        updated_value_map = config.update_value_map(
+            row, erasure_policy_all_categories, privacy_request
+        )
+
+        # Verify the structure and masking patterns
+        assert "address" in updated_value_map
+        assert updated_value_map["address"] is None  # Masked as a whole object
+
+        assert "email" in updated_value_map
+        assert updated_value_map["email"] is None
+
+        assert "id" in updated_value_map
+        assert updated_value_map["id"] is None
+
+        assert "name" in updated_value_map
+        assert updated_value_map["name"].endswith("@example.com")  # Custom masking
+
+        # Verify no children of address are individually masked
+        assert not any(key.startswith("address.") for key in updated_value_map.keys())
+
 
 class TestSQLQueryConfig:
     def test_extract_query_components(self):

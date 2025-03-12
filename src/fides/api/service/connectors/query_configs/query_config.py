@@ -144,6 +144,45 @@ class QueryConfig(Generic[T], ABC):
 
         return data
 
+    def _is_child_of_masked_parent(
+        self, path: str, masked_parent_paths: List[str]
+    ) -> bool:
+        """
+        Check if the given path is a child of any already masked parent object.
+        """
+        for parent_path in masked_parent_paths:
+            if path == parent_path or path.startswith(parent_path + "."):
+                return True
+        return False
+
+    def _is_object_or_array_with_data_category(
+        self, field_val: Any, field: Optional[Field]
+    ) -> bool:
+        """
+        Check if field is an object or array of objects with data categories
+        """
+        # First check if the field has data categories
+        has_data_category = (
+            field and field.data_categories and len(field.data_categories) > 0
+        )
+
+        if not has_data_category:
+            return False
+
+        # Check if it's an object
+        is_object = isinstance(field_val, dict)
+
+        # Check if it's a non-empty array of objects
+        is_array_of_objects = False
+        if (
+            isinstance(field_val, list) and field_val
+        ):  # Check if it's a list and not empty
+            # Only check first element if the list is not empty
+            is_array_of_objects = isinstance(field_val[0], dict)
+
+        # Return true if it's either an object or an array of objects and has data categories
+        return is_object or is_array_of_objects
+
     def update_value_map(  # pylint: disable=R0914
         self, row: Row, policy: Policy, request: PrivacyRequest
     ) -> Dict[str, Any]:
@@ -154,17 +193,20 @@ class QueryConfig(Generic[T], ABC):
         In this example, a Null Masking Strategy was used to determine that the name/ccn/code fields, nested
         workplace_info.employer field, and the first element in 'children' for a given customer_id will be replaced
         with null values.
-
         """
         rule_to_collection_field_paths: Dict[Rule, List[FieldPath]] = (
             self.build_rule_target_field_paths(policy)
         )
 
         value_map: Dict[str, Any] = {}
+        # Track which parent paths have been masked as whole objects/arrays
+        masked_parent_paths: List[str] = []
+
         for rule, field_paths in rule_to_collection_field_paths.items():
             strategy_config = rule.masking_strategy
             if not strategy_config:
                 continue
+
             for rule_field_path in field_paths:
                 # Check if field is read-only before processing
                 field = self.field_map().get(rule_field_path)
@@ -174,15 +216,21 @@ class QueryConfig(Generic[T], ABC):
                     )
                     continue
 
+                # Skip if this field is a child of an already masked parent object
+                if self._is_child_of_masked_parent(
+                    rule_field_path.string_path, masked_parent_paths
+                ):
+                    logger.debug(
+                        f"Skipping field {rule_field_path.string_path} because its parent object has already been masked"
+                    )
+                    continue
+
+                # Determine masking strategy
                 strategy: MaskingStrategy = MaskingStrategy.get_strategy(
                     strategy_config["strategy"], strategy_config["configuration"]
                 )
-                truncation: MaskingTruncation = [
-                    MaskingTruncation(field.data_type_converter, field.length)
-                    for field_path, field in self.field_map().items()
-                    if field_path == rule_field_path
-                ][0]
 
+                # Apply field-level masking strategy override if present
                 if field and field.masking_strategy_override:
                     masking_strategy_override = field.masking_strategy_override
                     strategy = MaskingStrategy.get_strategy(
@@ -192,7 +240,14 @@ class QueryConfig(Generic[T], ABC):
                     logger.warning(
                         f"Using field-level masking override of type '{strategy.name}' for {rule_field_path.string_path}"
                     )
+
                 null_masking: bool = strategy.name == NullMaskingStrategy.name
+                truncation: MaskingTruncation = [
+                    MaskingTruncation(field.data_type_converter, field.length)
+                    for field_path, field in self.field_map().items()
+                    if field_path == rule_field_path
+                ][0]
+
                 if not self._supported_data_type(truncation, null_masking, strategy):
                     logger.warning(
                         "Unable to generate a query for field {}: data_type is either not present on the field or not supported for the {} masking strategy. Received data type: {}",
@@ -202,21 +257,55 @@ class QueryConfig(Generic[T], ABC):
                     )
                     continue
 
-                paths_to_mask: List[str] = [
-                    join_detailed_path(path)
-                    for path in build_refined_target_paths(
-                        row, query_paths={rule_field_path: None}
+                # Get the actual field value to determine its type
+                field_val = pydash.objects.get(row, rule_field_path.string_path)
+
+                # Handle objects and arrays with data categories - mask as whole entities
+                if self._is_object_or_array_with_data_category(field_val, field):
+                    logger.info(
+                        f"Field {rule_field_path.string_path} is an object or array of objects with data category. Masking entire field."
                     )
-                ]
-                for detailed_path in paths_to_mask:
-                    value_map[detailed_path] = self._generate_masked_value(
-                        request_id=request.id,
-                        strategy=strategy,
-                        val=pydash.objects.get(row, detailed_path),
-                        masking_truncation=truncation,
-                        null_masking=null_masking,
-                        str_field_path=detailed_path,
-                    )
+                    if field_val is not None:
+                        value_map[rule_field_path.string_path] = (
+                            self._generate_masked_value(
+                                request_id=request.id,
+                                strategy=strategy,
+                                val=field_val,
+                                masking_truncation=truncation,
+                                null_masking=null_masking,
+                                str_field_path=rule_field_path.string_path,
+                            )
+                        )
+                        # Add this path to masked parent paths to skip its children later
+                        masked_parent_paths.append(rule_field_path.string_path)
+                else:
+                    # Standard approach: build refined target paths for individual fields
+                    paths_to_mask = [
+                        join_detailed_path(path)
+                        for path in build_refined_target_paths(
+                            row, query_paths={rule_field_path: None}
+                        )
+                    ]
+
+                    # Process each detailed path, skipping those that are children of masked parents
+                    for detailed_path in paths_to_mask:
+                        if self._is_child_of_masked_parent(
+                            detailed_path, masked_parent_paths
+                        ):
+                            logger.debug(
+                                f"Skipping detailed path {detailed_path} because its parent object has already been masked"
+                            )
+                            continue
+
+                        value_map[detailed_path] = self._generate_masked_value(
+                            request_id=request.id,
+                            strategy=strategy,
+                            val=pydash.objects.get(row, detailed_path),
+                            masking_truncation=truncation,
+                            null_masking=null_masking,
+                            str_field_path=detailed_path,
+                        )
+
         return value_map
 
     @staticmethod

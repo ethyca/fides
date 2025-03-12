@@ -5,8 +5,6 @@ from typing import Any, Callable, Dict, Iterable, List, Optional, TypeVar, Union
 import immutables
 from ordered_set import OrderedSet
 
-from fides.api.common_exceptions import FidesopsException
-
 T = TypeVar("T")
 U = TypeVar("U")
 
