@@ -65,4 +65,4 @@ jobs:
             --title "Update fides version to ${{ env.TAG_NAME }}" \
             --body "Automatically updating fides version based on new tag ${{ env.TAG_NAME }}"
         env:
-          GH_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+          GH_TOKEN: ${{ secrets.DISPATCH_ACCESS_TOKEN }}
