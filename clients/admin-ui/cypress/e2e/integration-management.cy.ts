@@ -1,4 +1,4 @@
-import { stubPlus, stubSystemCrud } from "cypress/support/stubs";
+import { stubLocations, stubPlus, stubSystemCrud } from "cypress/support/stubs";
 
 import { INTEGRATION_MANAGEMENT_ROUTE } from "~/features/common/nav/routes";
 
@@ -433,6 +433,71 @@ describe("Integration management for data detection & discovery", () => {
         cy.getByTestId("input-execution_start_date").type("2034-06-03T10:00");
         cy.getByTestId("next-btn").click();
         cy.wait("@putMonitor");
+      });
+    });
+
+    describe("data discovery tab for website integration", () => {
+      beforeEach(() => {
+        stubLocations();
+        cy.intercept("GET", "/api/v1/connection/*", {
+          fixture: "connectors/website_integration.json",
+        }).as("getWebsiteIntegration");
+        cy.intercept("GET", "/api/v1/plus/discovery-monitor*", {
+          fixture: "detection-discovery/monitors/website_monitor_list.json",
+        }).as("getMonitors");
+        cy.intercept("GET", "/api/v1/connection_type", {
+          fixture: "connectors/connection_types.json",
+        }).as("getConnectionTypes");
+        cy.getByTestId("tab-Data discovery").click();
+        cy.wait("@getMonitors");
+      });
+
+      it("should render the website monitor list", () => {
+        cy.getByTestId("monitor-description").contains(
+          "Configure your website monitor",
+        );
+        cy.getByTestId("row-test website monitor-col-name").should(
+          "contain",
+          "test website monitor",
+        );
+      });
+
+      it("should allow creating a website monitor", () => {
+        cy.intercept("PUT", "/api/v1/plus/discovery-monitor*", {
+          response: 200,
+        }).as("putMonitor");
+        cy.getByTestId("add-monitor-btn").click();
+        cy.getByTestId("input-name").type("A new website monitor");
+        cy.getByTestId("input-url")
+          .should("be.disabled")
+          .and("have.value", "http://example.com");
+        cy.getByTestId(
+          "controlled-select-datasource_params.locations",
+        ).antSelect("France");
+        cy.getByTestId("controlled-select-execution_frequency").click({
+          force: true,
+        });
+        cy.getByTestId("controlled-select-execution_frequency").antSelect(
+          "Daily",
+        );
+        cy.getByTestId("input-execution_start_date").type("2034-06-03T10:00");
+        cy.getByTestId("save-btn").click();
+        cy.wait("@putMonitor");
+      });
+
+      it("should allow editing a website monitor", () => {
+        cy.intercept("PUT", "/api/v1/plus/discovery-monitor*", {
+          response: 200,
+        }).as("putMonitor");
+        cy.getByTestId("row-test website monitor").click();
+        cy.getByTestId("input-name")
+          .should("have.value", "test website monitor")
+          .clear()
+          .type("A different name");
+        cy.getByTestId("save-btn").click();
+        cy.wait("@putMonitor").then((interception) => {
+          expect(interception.request.body.name).to.equal("A different name");
+        });
       });
     });
   });
