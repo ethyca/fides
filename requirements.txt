@@ -40,7 +40,6 @@ packaging==23.0
 pandas==1.4.3
 paramiko==3.4.1
 passlib[bcrypt]==1.7.4
-plotly==5.13.1
 pyinstrument==4.5.1
 psycopg2-binary==2.9.6
 pydantic==2.7.1
@@ -70,6 +69,5 @@ tinycss2==1.2.1
 toml==0.10.2
 twilio==7.15.0
 typing-extensions==4.12.2
-validators==0.20.0
 versioneer==0.19
 fideslang==3.0.9

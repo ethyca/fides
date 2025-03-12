@@ -41,6 +41,7 @@ import {
   updateCookieFromNoticePreferences,
 } from "./cookie";
 import {
+  DEFAULT_LOCALE,
   DEFAULT_MODAL_LINK_LABEL,
   I18n,
   initializeI18n,
@@ -59,8 +60,6 @@ import { searchForElement } from "./ui-utils";
 export type UpdateExperienceFn = (args: {
   cookie: FidesCookie;
   experience: PrivacyExperience;
-  debug?: boolean;
-  isExperienceClientSideFetched: boolean;
 }) => Partial<PrivacyExperience>;
 
 const retrieveEffectiveRegionString = async (
@@ -397,17 +396,20 @@ export const initialize = async ({
        * with some additional client-side state so that it is initialized with
        * the user's current consent preferences, etc. and ready to display!
        */
-      const updatedExperience = updateExperience({
-        cookie: fides.cookie!,
-        experience: fides.experience,
-        isExperienceClientSideFetched: fetchedClientSideExperience,
-      });
-      fidesDebugger(
-        "Updated experience from saved preferences",
-        updatedExperience,
-      );
-      // eslint-disable-next-line no-param-reassign
-      fides.experience = { ...fides.experience, ...updatedExperience };
+      if (fetchedClientSideExperience) {
+        // If it's not client side fetched, we don't update anything since the cookie has already
+        // been updated earlier.
+        const updatedExperience = updateExperience({
+          cookie: fides.cookie!,
+          experience: fides.experience,
+        });
+        // eslint-disable-next-line no-param-reassign
+        fides.experience = { ...fides.experience, ...updatedExperience };
+        fidesDebugger(
+          "Updated experience from saved preferences",
+          updatedExperience,
+        );
+      }
 
       /**
        * Finally, update the "cookie" state to track the user's *current*
@@ -445,6 +447,8 @@ export const initialize = async ({
         options,
         overrides?.experienceTranslationOverrides,
       );
+      // eslint-disable-next-line no-param-reassign
+      fides.locale = i18n.locale || DEFAULT_LOCALE;
 
       // Provide the modal link label function to the client based on the current locale unless specified via props.
       getModalLinkLabel = (props) =>

@@ -38,7 +38,7 @@ import {
 } from "./lib/cookie";
 import { initializeDebugger } from "./lib/debugger";
 import { dispatchFidesEvent, onFidesEvent } from "./lib/events";
-import { DEFAULT_MODAL_LINK_LABEL } from "./lib/i18n";
+import { DEFAULT_LOCALE, DEFAULT_MODAL_LINK_LABEL } from "./lib/i18n";
 import {
   getInitialCookie,
   getInitialFides,
@@ -67,13 +67,12 @@ const updateWindowFides = (fidesGlobal: FidesGlobal) => {
 const updateExperience: UpdateExperienceFn = ({
   cookie,
   experience,
-  isExperienceClientSideFetched,
 }): Partial<PrivacyExperience> => {
   let updatedExperience: PrivacyExperience = experience;
   const preferencesExistOnCookie = consentCookieObjHasSomeConsentSet(
     cookie.consent,
   );
-  if (isExperienceClientSideFetched && preferencesExistOnCookie) {
+  if (preferencesExistOnCookie) {
     // If we have some preferences on the cookie, we update client-side experience with those preferences
     // if the name matches. This is used for client-side UI.
     updatedExperience = updateExperienceFromCookieConsentNotices({
@@ -229,6 +228,7 @@ const _Fides: FidesGlobal = {
   consent: {},
   experience: undefined,
   geolocation: {},
+  locale: DEFAULT_LOCALE,
   options: {
     debug: true,
     isOverlayEnabled: false,

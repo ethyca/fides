@@ -6,12 +6,12 @@ connection:
     dataset: postgres_example_test_dataset
     system_key: cookie_house_postgresql_database
     secrets:
-      host: $FIDES_DEPLOY__CONNECTORS__POSTGRES__HOST
-      port: $FIDES_DEPLOY__CONNECTORS__POSTGRES__PORT
-      dbname: $FIDES_DEPLOY__CONNECTORS__POSTGRES__DBNAME
-      username: $FIDES_DEPLOY__CONNECTORS__POSTGRES__USERNAME
-      password: $FIDES_DEPLOY__CONNECTORS__POSTGRES__PASSWORD
-      ssh_required: $FIDES_DEPLOY__CONNECTORS__POSTGRES__SSH_REQUIRED
+      host: "$FIDES_DEPLOY__CONNECTORS__POSTGRES__HOST"
+      port: "$FIDES_DEPLOY__CONNECTORS__POSTGRES__PORT"
+      dbname: "$FIDES_DEPLOY__CONNECTORS__POSTGRES__DBNAME"
+      username: "$FIDES_DEPLOY__CONNECTORS__POSTGRES__USERNAME"
+      password: "$FIDES_DEPLOY__CONNECTORS__POSTGRES__PASSWORD"
+      ssh_required: "$FIDES_DEPLOY__CONNECTORS__POSTGRES__SSH_REQUIRED"
   - key: cookie_house_loyalty_database
     name: Postgres Connector (Loyalty)
     connection_type: postgres
@@ -19,11 +19,11 @@ connection:
     dataset: postgres_example_test_extended_dataset
     system_key: cookie_house_loyalty_database
     secrets:
-      host: $FIDES_DEPLOY__CONNECTORS__POSTGRES_LOYALTY__HOST
-      port: $FIDES_DEPLOY__CONNECTORS__POSTGRES__PORT
-      dbname: $FIDES_DEPLOY__CONNECTORS__POSTGRES__DBNAME
-      username: $FIDES_DEPLOY__CONNECTORS__POSTGRES__USERNAME
-      password: $FIDES_DEPLOY__CONNECTORS__POSTGRES__PASSWORD
+      host: "$FIDES_DEPLOY__CONNECTORS__POSTGRES_LOYALTY__HOST"
+      port: "$FIDES_DEPLOY__CONNECTORS__POSTGRES__PORT"
+      dbname: "$FIDES_DEPLOY__CONNECTORS__POSTGRES__DBNAME"
+      username: "$FIDES_DEPLOY__CONNECTORS__POSTGRES__USERNAME"
+      password: "$FIDES_DEPLOY__CONNECTORS__POSTGRES__PASSWORD"
     disabled: True
   - key: cookie_house_customer_database_mongodb
     name: MongoDB Connector
@@ -32,43 +32,43 @@ connection:
     dataset: mongo_test
     system_key: cookie_house_customer_database
     secrets:
-      host: $FIDES_DEPLOY__CONNECTORS__MONGO_HOST
-      port: $FIDES_DEPLOY__CONNECTORS__MONGO_PORT
-      defaultauthdb: $FIDES_DEPLOY__CONNECTORS__MONGO_DEFAULTAUTHDB
-      username: $FIDES_DEPLOY__CONNECTORS__MONGO_USERNAME
-      password: $FIDES_DEPLOY__CONNECTORS__MONGO_PASSWORD
+      host: "$FIDES_DEPLOY__CONNECTORS__MONGO_HOST"
+      port: "$FIDES_DEPLOY__CONNECTORS__MONGO_PORT"
+      defaultauthdb: "$FIDES_DEPLOY__CONNECTORS__MONGO_DEFAULTAUTHDB"
+      username: "$FIDES_DEPLOY__CONNECTORS__MONGO_USERNAME"
+      password: "$FIDES_DEPLOY__CONNECTORS__MONGO_PASSWORD"
   - key: mailchimp_connector
     name: Mailchimp Connector
     connection_type: saas
     saas_connector_type: mailchimp
     access: write
     secrets:
-      domain: $FIDES_DEPLOY__CONNECTORS__MAILCHIMP__DOMAIN
-      username: $FIDES_DEPLOY__CONNECTORS__MAILCHIMP__USERNAME
-      api_key: $FIDES_DEPLOY__CONNECTORS__MAILCHIMP__API_KEY
+      domain: "$FIDES_DEPLOY__CONNECTORS__MAILCHIMP__DOMAIN"
+      username: "$FIDES_DEPLOY__CONNECTORS__MAILCHIMP__USERNAME"
+      api_key: "$FIDES_DEPLOY__CONNECTORS__MAILCHIMP__API_KEY"
   - key: stripe_connector
     name: Stripe Connector
     connection_type: saas
     saas_connector_type: stripe
     access: write
     secrets:
-      domain: $FIDES_DEPLOY__CONNECTORS__STRIPE__DOMAIN
-      api_key: $FIDES_DEPLOY__CONNECTORS__STRIPE__API_KEY
+      domain: "$FIDES_DEPLOY__CONNECTORS__STRIPE__DOMAIN"
+      api_key: "$FIDES_DEPLOY__CONNECTORS__STRIPE__API_KEY"
   - key: hubspot_connector
     name: Hubspot Connector
     connection_type: saas
     saas_connector_type: hubspot
     access: write
     secrets:
-      domain: $FIDES_DEPLOY__CONNECTORS__HUBSPOT__DOMAIN
-      private_app_token: $FIDES_DEPLOY__CONNECTORS__HUBSPOT__PRIVATE_APP_TOKEN
+      domain: "$FIDES_DEPLOY__CONNECTORS__HUBSPOT__DOMAIN"
+      private_app_token: "$FIDES_DEPLOY__CONNECTORS__HUBSPOT__PRIVATE_APP_TOKEN"
   - key: mailchimp_transactional_connector
     name: Mailchimp Transactional Connector
     connection_type: saas
     saas_connector_type: mailchimp_transactional
     access: write
     secrets:
-      api_key: $FIDES_DEPLOY__CONNECTORS__MAILCHIMP_TRANSACTIONAL_API_KEY
+      api_key: "$FIDES_DEPLOY__CONNECTORS__MAILCHIMP_TRANSACTIONAL_API_KEY"
   - key: cookie_house_custom_request_fields_database
     name: Postgres Connector (Custom Request Fields)
     connection_type: postgres
@@ -76,8 +76,8 @@ connection:
     dataset: postgres_example_custom_request_field_dataset
     system_key: cookie_house_custom_request_fields_database
     secrets:
-      host: $FIDES_DEPLOY__CONNECTORS__POSTGRES__HOST
-      port: $FIDES_DEPLOY__CONNECTORS__POSTGRES__PORT
-      dbname: $FIDES_DEPLOY__CONNECTORS__POSTGRES__DBNAME
-      username: $FIDES_DEPLOY__CONNECTORS__POSTGRES__USERNAME
-      password: $FIDES_DEPLOY__CONNECTORS__POSTGRES__PASSWORD
+      host: "$FIDES_DEPLOY__CONNECTORS__POSTGRES__HOST"
+      port: "$FIDES_DEPLOY__CONNECTORS__POSTGRES__PORT"
+      dbname: "$FIDES_DEPLOY__CONNECTORS__POSTGRES__DBNAME"
+      username: "$FIDES_DEPLOY__CONNECTORS__POSTGRES__USERNAME"
+      password: "$FIDES_DEPLOY__CONNECTORS__POSTGRES__PASSWORD"

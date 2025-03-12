@@ -10,6 +10,7 @@ from loguru import logger
 from ordered_set import OrderedSet
 from sqlalchemy.orm import Session
 
+from fides.api.api.deps import get_db_contextmanager as get_db
 from fides.api.common_exceptions import (
     ActionDisabled,
     AwaitingAsyncTaskCallback,
@@ -35,7 +36,8 @@ from fides.api.models.connectionconfig import (
     ConnectionType,
 )
 from fides.api.models.datasetconfig import DatasetConfig
-from fides.api.models.policy import Policy
+from fides.api.models.policy import Policy, Rule
+from fides.api.models.privacy_preference import PrivacyPreferenceHistory
 from fides.api.models.privacy_request import ExecutionLog, PrivacyRequest, RequestTask
 from fides.api.schemas.policy import ActionType, CurrentStep
 from fides.api.schemas.privacy_request import ExecutionLogStatus
@@ -53,7 +55,9 @@ from fides.api.util.collection_util import (
     make_immutable,
     make_mutable,
 )
-from fides.api.util.consent_util import add_errored_system_status_for_consent_reporting
+from fides.api.util.consent_util import (
+    add_errored_system_status_for_consent_reporting_on_preferences,
+)
 from fides.api.util.logger import Pii
 from fides.api.util.logger_context_utils import LoggerContextKeys
 from fides.api.util.saas_util import FIDESOPS_GROUPED_INPUTS
@@ -137,13 +141,7 @@ def retry(
                         self.resources.request.id,
                     )
                     self.log_skipped(action_type, exc)
-                    for pref in self.resources.request.privacy_preferences:
-                        # For consent reporting, also caching the given system as skipped for all historical privacy preferences.
-                        pref.cache_system_status(
-                            self.resources.session,
-                            self.connector.configuration.system_key,
-                            ExecutionLogStatus.skipped,
-                        )
+                    self.cache_system_status_for_preferences()
                     return default_return
                 except BaseException as ex:  # pylint: disable=W0703
                     traceback.print_exc()
@@ -163,11 +161,7 @@ def retry(
                     action_type.value
                 ]  # Convert ActionType into a CurrentStep, no longer coerced with Pydantic V2
             )
-            add_errored_system_status_for_consent_reporting(
-                self.resources.session,
-                self.resources.request,
-                self.connector.configuration,
-            )
+            self.add_error_status_for_consent_reporting()
             if not self.request_task.id:
                 # TODO Remove when we stop support for DSR 2.0
                 # Re-raise to stop privacy request execution on failure for
@@ -365,25 +359,30 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         """Update status activities - create an execution log (which stores historical logs)
         and update the Request Task's current status.
         """
-        ExecutionLog.create(
-            db=self.resources.session,
-            data={
-                "connection_key": self.execution_node.connection_key,
-                "dataset_name": self.execution_node.address.dataset,
-                "collection_name": self.execution_node.address.collection,
-                "fields_affected": fields_affected,
-                "action_type": action_type,
-                "status": status,
-                "privacy_request_id": self.resources.request.id,
-                "message": msg,
-            },
-        )
+        with get_db() as db:
+            ExecutionLog.create(
+                db=db,
+                data={
+                    "connection_key": self.execution_node.connection_key,
+                    "dataset_name": self.execution_node.address.dataset,
+                    "collection_name": self.execution_node.address.collection,
+                    "fields_affected": fields_affected,
+                    "action_type": action_type,
+                    "status": status,
+                    "privacy_request_id": self.resources.request.id,
+                    "message": msg,
+                },
+            )
 
-        if self.request_task.id:
             # For DSR 3.0, updating the Request Task status when the ExecutionLog is
             # created to keep these in sync.
             # TODO remove conditional above alongside deprecating DSR 2.0
-            self.request_task.update_status(self.resources.session, status)
+            if self.request_task.id:
+                # Merge the request task to ensure we keep the changes made
+                # to self.request_task that haven't yet been committed to the database
+                request_task = db.merge(self.request_task)
+                request_task.update_status(db, status)
+                self.request_task = request_task
 
     def log_start(self, action_type: ActionType) -> None:
         """Task start activities"""
@@ -434,9 +433,10 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
             # For DSR 3.0, Hooking into the GraphTask.log_end method to also mark the current
             # Request Task and every Request Task that can be reached from the current
             # task as errored.
-            mark_current_and_downstream_nodes_as_failed(
-                self.request_task, self.resources.session
-            )
+
+            with get_db() as db:
+                request_task = db.merge(self.request_task)
+                mark_current_and_downstream_nodes_as_failed(request_task, db)
         else:
             logger.info("Ending {}, {}", self.resources.request.id, self.key)
             self.update_status(
@@ -543,9 +543,34 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         # Return filtered rows with non-matched array data removed.
         return output
 
+    def get_connection_config(self) -> ConnectionConfig:
+        """
+        Retrieves the connection configuration for the current connector.
+        This method attempts to fetch the connection configuration from the database
+        using the connector's configuration ID. If the configuration is found in the
+        database, it is returned. Otherwise, the method returns the connector's
+        current configuration.
+        Returns:
+            ConnectionConfig: The connection configuration object from the database
+            if found, otherwise the connector's current configuration.
+        """
+        connection_config_id = self.connector.configuration.id
+
+        with get_db() as db:
+            connection_config = (
+                db.query(ConnectionConfig)
+                .filter(ConnectionConfig.id == connection_config_id)
+                .first()
+            )
+            if connection_config:
+                return connection_config
+
+        return self.connector.configuration
+
     def skip_if_disabled(self) -> None:
         """Skip execution for the given collection if it is attached to a disabled ConnectionConfig."""
-        connection_config: ConnectionConfig = self.connector.configuration
+        connection_config: ConnectionConfig = self.get_connection_config()
+
         if connection_config.disabled:
             raise CollectionDisabled(
                 f"Skipping collection {self.execution_node.address}. "
@@ -559,7 +584,7 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         if action_type == ActionType.access:
             return
 
-        connection_config: ConnectionConfig = self.connector.configuration
+        connection_config: ConnectionConfig = self.get_connection_config()
         if (
             connection_config.enabled_actions is not None
             and action_type not in connection_config.enabled_actions
@@ -698,6 +723,48 @@ class GraphTask(ABC):  # pylint: disable=too-many-instance-attributes
         self.log_end(ActionType.consent)
         return output
 
+    def cache_system_status_for_preferences(self) -> None:
+        """
+        Calls cache_system_status for all historical privacy preferences for the given request.
+
+        Purposely uses a new session.
+        """
+
+        privacy_request_id = self.resources.request.id
+
+        with get_db() as db:
+
+            privacy_preferences = db.query(PrivacyPreferenceHistory).filter(
+                PrivacyPreferenceHistory.privacy_request_id == privacy_request_id
+            )
+            for pref in privacy_preferences:
+                # For consent reporting, also caching the given system as skipped for all historical privacy preferences.
+                pref.cache_system_status(
+                    db,
+                    self.connector.configuration.system_key,  # type: ignore[arg-type]
+                    ExecutionLogStatus.skipped,
+                )
+
+    def add_error_status_for_consent_reporting(self) -> None:
+        """
+        Adds the errored system status for all historical privacy preferences for the given request that
+        are deemed relevant for the connector failure (i.e if they had a "pending" log added to them).
+
+        Purposely uses a new session.
+        """
+        privacy_request_id = self.resources.request.id
+        with get_db() as db:
+            privacy_preferences = (
+                db.query(PrivacyPreferenceHistory)
+                .filter(
+                    PrivacyPreferenceHistory.privacy_request_id == privacy_request_id
+                )
+                .all()
+            )
+            add_errored_system_status_for_consent_reporting_on_preferences(
+                db, privacy_preferences, self.connector.configuration
+            )
+
 
 def collect_queries(
     traversal: Traversal, resources: TaskResources
@@ -784,39 +851,45 @@ def build_affected_field_logs(
     }]
     """
 
-    targeted_field_paths: Dict[FieldAddress, str] = {}
+    policy_id = policy.id
 
-    for rule in policy.rules:  # type: ignore[attr-defined]
-        if rule.action_type != action_type:
-            continue
-        rule_categories: List[str] = rule.get_target_data_categories()
-        if not rule_categories:
-            continue
+    with get_db() as db:
 
-        collection_categories: Dict[
-            str, List[FieldPath]
-        ] = node.collection.field_paths_by_category  # type: ignore
-        for rule_cat in rule_categories:
-            for collection_cat, field_paths in collection_categories.items():
-                if collection_cat.startswith(rule_cat):
-                    targeted_field_paths.update(
-                        {
-                            node.address.field_address(field_path): collection_cat
-                            for field_path in field_paths
-                        }
-                    )
+        rules = db.query(Rule).filter(Rule.policy_id == policy_id)
 
-    ret: List[Dict[str, Any]] = []
-    for field_address, data_categories in targeted_field_paths.items():
-        ret.append(
-            {
-                "path": field_address.value,
-                "field_name": field_address.field_path.string_path,
-                "data_categories": [data_categories],
-            }
-        )
+        targeted_field_paths: Dict[FieldAddress, str] = {}
 
-    return ret
+        for rule in rules:  # type: ignore[attr-defined]
+            if rule.action_type != action_type:
+                continue
+            rule_categories: List[str] = rule.get_target_data_categories()
+            if not rule_categories:
+                continue
+
+            collection_categories: Dict[
+                str, List[FieldPath]
+            ] = node.collection.field_paths_by_category  # type: ignore
+            for rule_cat in rule_categories:
+                for collection_cat, field_paths in collection_categories.items():
+                    if collection_cat.startswith(rule_cat):
+                        targeted_field_paths.update(
+                            {
+                                node.address.field_address(field_path): collection_cat
+                                for field_path in field_paths
+                            }
+                        )
+
+        ret: List[Dict[str, Any]] = []
+        for field_address, data_categories in targeted_field_paths.items():
+            ret.append(
+                {
+                    "path": field_address.value,
+                    "field_name": field_address.field_path.string_path,
+                    "data_categories": [data_categories],
+                }
+            )
+
+        return ret
 
 
 def build_consent_dataset_graph(datasets: List[DatasetConfig]) -> DatasetGraph:

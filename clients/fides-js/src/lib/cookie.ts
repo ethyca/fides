@@ -207,7 +207,6 @@ export const getOrMakeFidesCookie = (
   if (!parsedCookie) {
     fidesDebugger(
       `No existing Fides consent cookie found, returning defaults.`,
-      parsedCookie,
     );
     return defaultCookie;
   }

@@ -4,6 +4,10 @@ import { useMemo, useState } from "preact/hooks";
 import { UpdateEnabledIds } from "~/components/tcf/TcfTabs";
 
 import { ConsentMechanism, PrivacyExperience } from "../../lib/consent-types";
+import {
+  FidesEventDetailsPreference,
+  FidesEventDetailsTrigger,
+} from "../../lib/events";
 import { useI18n } from "../../lib/i18n/i18n-context";
 import { LEGAL_BASIS_OPTIONS } from "../../lib/tcf/constants";
 import { getUniquePurposeRecords, hasLegalBasis } from "../../lib/tcf/purposes";
@@ -90,7 +94,11 @@ const TcfPurposes = ({
   enabledPurposeLegintIds: string[];
   enabledCustomPurposeConsentIds: string[];
   enabledSpecialPurposeIds: string[];
-  onChange: (payload: UpdateEnabledIds) => void;
+  onChange: (
+    payload: UpdateEnabledIds,
+    triggerDetails: FidesEventDetailsTrigger,
+    preferenceDetails: FidesEventDetailsPreference,
+  ) => void;
 }) => {
   const { i18n } = useI18n();
   const { uniquePurposes } = useMemo(
@@ -105,6 +113,7 @@ const TcfPurposes = ({
   const [activeLegalBasisOption, setActiveLegalBasisOption] = useState(
     LEGAL_BASIS_OPTIONS[0],
   );
+
   const activeData: {
     purposes: PurposeRecord[];
     customPurposes?: PrivacyNoticeWithBestTranslation[];
@@ -151,6 +160,57 @@ const TcfPurposes = ({
     enabledCustomPurposeConsentIds,
   ]);
 
+  /**
+   * Handles toggling of purposes and special purposes in the TCF interface.
+   *
+   * Takes a modelType (e.g., purposesConsent, specialPurposes) that determines how
+   * the change will be persisted, a list of newly enabled IDs, the purpose/notice
+   * being toggled (which can be a standard TCF purpose, custom privacy notice, or
+   * special purpose), and details about what triggered the toggle.
+   */
+  const handleToggle = (
+    modelType: keyof EnabledIds,
+    newEnabledIds: string[],
+    item:
+      | PurposeRecord
+      | PrivacyNoticeWithBestTranslation
+      | TCFSpecialPurposeRecord,
+    triggerDetails: FidesEventDetailsTrigger,
+  ) => {
+    // Determine the preference being changed based on the model type:
+    // - customPurposesConsent -> notice
+    // - purposesConsent -> tcf_purpose_consent
+    // - purposesLegint/specialPurposes -> tcf_purpose_legitimate_interest
+    //
+    // NOTE: TCF purposes don't have equivalent notice "keys" today, but we
+    // expect to add those in the future. When we do, we'll prefix like this:
+    // "tcf_purpose_consent_1", "tcf_purpose_legitimate_interest_2", etc.
+    let type;
+    let key;
+    if (modelType === "customPurposesConsent") {
+      type = "notice" as const;
+      key = `${item.id}`;
+    } else if (modelType === "purposesConsent") {
+      type = "tcf_purpose_consent" as const;
+      key = `${type}_${item.id}`;
+    } else {
+      type = "tcf_purpose_legitimate_interest" as const;
+      key = `${type}_${item.id}`;
+    }
+
+    const preferenceDetails: FidesEventDetailsPreference = {
+      key,
+      type,
+    };
+
+    const payload: UpdateEnabledIds = {
+      newEnabledIds,
+      modelType,
+    };
+
+    onChange(payload, triggerDetails, preferenceDetails);
+  };
+
   return (
     <div>
       <RadioGroup
@@ -174,15 +234,27 @@ const TcfPurposes = ({
               ]
             : activeData.enabledPurposeIds
         }
-        onToggle={(newEnabledIds, item) =>
-          onChange({
-            newEnabledIds,
-            // @ts-ignore
-            modelType: item.bestTranslation
+        onToggle={(newEnabledIds, item, triggerDetails) => {
+          const modelType =
+            "bestTranslation" in item
               ? "customPurposesConsent"
-              : activeData.purposeModelType,
-          })
-        }
+              : activeData.purposeModelType;
+
+          let filteredEnabledIds = newEnabledIds;
+          if (modelType === "customPurposesConsent") {
+            // filter out tcf purpose consent since we are just dealing with custom purposes
+            filteredEnabledIds = newEnabledIds.filter(
+              (id) => !activeData.enabledPurposeIds.includes(id),
+            );
+          } else if (activeData.enabledCustomPurposeIds) {
+            /// filter out custom purpose consent since we are just dealing with TCF purposes
+            filteredEnabledIds = newEnabledIds.filter(
+              (id) => !activeData.enabledCustomPurposeIds?.includes(id),
+            );
+          }
+
+          handleToggle(modelType, filteredEnabledIds, item, triggerDetails);
+        }}
         renderToggleChild={(p, isCustomPurpose) => (
           <PurposeDetails
             type="purposes"
@@ -205,8 +277,8 @@ const TcfPurposes = ({
         title={i18n.t("static.tcf.special_purposes")}
         items={activeData.specialPurposes}
         enabledIds={activeData.enabledSpecialPurposeIds}
-        onToggle={(newEnabledIds) =>
-          onChange({ newEnabledIds, modelType: "specialPurposes" })
+        onToggle={(newEnabledIds, item, triggerDetails) =>
+          handleToggle("specialPurposes", newEnabledIds, item, triggerDetails)
         }
         renderToggleChild={(p) => (
           <PurposeDetails type="specialPurposes" purpose={p} />
