@@ -8,6 +8,7 @@ import {
   FidesCookie,
   LegacyConsentConfig,
   NoticeConsent,
+  OtToFidesConsentMapping,
   PrivacyExperience,
   PrivacyNoticeWithPreference,
   SaveConsentPreference,
@@ -115,8 +116,10 @@ export const getOTConsentCookie = (): string | undefined => {
  * @param {Object} otToFidesMapping - Object mapping OT categories to arrays of Fides keys
  * @returns {NoticeConsent} - Fides consent object
  */
-export const otCookieToFidesConsent = (otCookieValue: string, otToFidesMapping: Map<string, string[]>): NoticeConsent => {
-
+export const otCookieToFidesConsent = (
+  otCookieValue: string,
+  otToFidesMapping: OtToFidesConsentMapping,
+): NoticeConsent => {
   // Initialize an empty Fides consent object
   const fidesConsent: NoticeConsent = {};
 
@@ -129,11 +132,11 @@ export const otCookieToFidesConsent = (otCookieValue: string, otToFidesMapping: 
 
   // Parse the groups string into an object
   const groupsStr = groupsMatch[1];
-  const groupPairs = groupsStr.split(',');
+  const groupPairs = groupsStr.split(",");
 
   // Process only the categories found in the cookie
-  groupPairs.forEach(pair => {
-    const [category, consentValue] = pair.split(':');
+  groupPairs.forEach((pair) => {
+    const [category, consentValue] = pair.split(":");
 
     // Skip if category is not in our mapping
     if (!otToFidesMapping[category]) {

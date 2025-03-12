@@ -186,6 +186,18 @@ export interface FidesGlobal extends Fides {
 }
 
 /**
+ * Store the OneTrust to Fides consent mappings from ot_group_id -> array of fides notice keys, e.g.
+ * {
+ *     C0001: ["essential"],
+ *     C0002: ["analytics_opt_out"],
+ *     C0004: ["advertising", "marketing"],
+ *   }
+ */
+export interface OtToFidesConsentMapping {
+  [key: string]: string[];
+}
+
+/**
  * Store the user's consent preferences as notice_key -> boolean pairs, e.g.
  * {
  *   "data_sales": false,

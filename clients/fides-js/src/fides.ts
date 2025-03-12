@@ -18,7 +18,9 @@ import {
   FidesInitOptionsOverrides,
   FidesOptions,
   FidesOverrides,
-  GetPreferencesFnResp, NoticeConsent,
+  GetPreferencesFnResp,
+  NoticeConsent,
+  OtToFidesConsentMapping,
   OverrideType,
   PrivacyExperience,
 } from "./lib/consent-types";
@@ -82,38 +84,43 @@ const updateExperience: UpdateExperienceFn = ({
   return updatedExperience;
 };
 
-
-const readConsentFromOneTrust = (config: FidesConfig, optionsOverrides: Partial<FidesInitOptionsOverrides>): NoticeConsent | undefined => {
+const readConsentFromOneTrust = (
+  config: FidesConfig,
+  optionsOverrides: Partial<FidesInitOptionsOverrides>,
+): NoticeConsent | undefined => {
   const otConsentCookie: string | undefined = getOTConsentCookie();
   if (!otConsentCookie || !optionsOverrides.otFidesMapping) {
     fidesDebugger(
       "OT cookie or OT-Fides mapping does not exist, skipping mapping consent to Fides cookie...",
       config.options,
     );
-    return;
+    return undefined;
   }
   try {
-    const decodedString = decodeURIComponent(optionsOverrides.otFidesMapping)
-    const strippedString = decodedString.replace(/^'|'$/g, '');
-    const otFidesMappingParsed: Map<string, string[]> = JSON.parse(strippedString);
+    const decodedString = decodeURIComponent(optionsOverrides.otFidesMapping);
+    const strippedString = decodedString.replace(/^'|'$/g, "");
+    const otFidesMappingParsed: OtToFidesConsentMapping =
+      JSON.parse(strippedString);
     const otToFidesConsent: NoticeConsent = otCookieToFidesConsent(
       otConsentCookie,
       otFidesMappingParsed,
     );
     if (otToFidesConsent) {
       fidesDebugger(
-          `Fides consent built based on OT consent: ${JSON.stringify(otToFidesConsent)}`,
-          config.options,
+        `Fides consent built based on OT consent: ${JSON.stringify(otToFidesConsent)}`,
+        config.options,
       );
       return otToFidesConsent;
     }
+    return undefined;
   } catch (e) {
     fidesDebugger(
-        `Failed to map OT consent to Fides consent due to: ${e}`,
+      `Failed to map OT consent to Fides consent due to: ${e}`,
       config.options,
     );
   }
-}
+  return undefined;
+};
 
 /**
  * Initialize the global Fides object with the given configuration values

@@ -313,11 +313,9 @@ describe("OneTrust migration persistence", () => {
 
       // Reload the page but now we shouldn't need to pass in any OT override info
       cy.fixture("consent/experience_banner_modal.json").then((experience) => {
-        stubConfig(
-            {
-              experience: experience.items[0],
-            },
-        );
+        stubConfig({
+          experience: experience.items[0],
+        });
       });
 
       cy.get("#fides-modal-link").click();
@@ -410,13 +408,13 @@ describe("Fides cookie precedence", () => {
       // analytics: true, advertising: false, essential: true
       cy.fixture("consent/experience_banner_modal.json").then((experience) => {
         stubConfig(
-            {
-              experience: experience.items[0],
-            },
-            null,
-            null,
-            undefined,
-            { ...overrides },
+          {
+            experience: experience.items[0],
+          },
+          null,
+          null,
+          undefined,
+          { ...overrides },
         );
       });
 
@@ -448,13 +446,13 @@ describe("Fides cookie precedence", () => {
       // analytics: true, advertising: false, essential: true
       cy.fixture("consent/experience_banner_modal.json").then((experience) => {
         stubConfig(
-            {
-              experience: experience.items[0],
-            },
-            null,
-            null,
-            undefined,
-            { ...overrides },
+          {
+            experience: experience.items[0],
+          },
+          null,
+          null,
+          undefined,
+          { ...overrides },
         );
       });
 
@@ -491,13 +489,13 @@ describe("Fides cookie precedence", () => {
       // analytics: true, advertising: false, essential: true
       cy.fixture("consent/experience_banner_modal.json").then((experience) => {
         stubConfig(
-            {
-              experience: experience.items[0],
-            },
-            null,
-            null,
-            undefined,
-            { ...overrides },
+          {
+            experience: experience.items[0],
+          },
+          null,
+          null,
+          undefined,
+          { ...overrides },
         );
       });
 
@@ -532,13 +530,13 @@ describe("Fides cookie precedence", () => {
       // analytics: true, advertising: false, essential: true
       cy.fixture("consent/experience_banner_modal.json").then((experience) => {
         stubConfig(
-            {
-              experience: experience.items[0],
-            },
-            null,
-            null,
-            undefined,
-            { ...overrides },
+          {
+            experience: experience.items[0],
+          },
+          null,
+          null,
+          undefined,
+          { ...overrides },
         );
       });
 
@@ -572,39 +570,41 @@ describe("Fides cookie precedence", () => {
         cy.waitUntilCookieExists(CONSENT_COOKIE_NAME).then(() => {
           cy.getCookie(CONSENT_COOKIE_NAME).then((cookie) => {
             const cookieKeyConsent: FidesCookie = JSON.parse(
-                decodeURIComponent(cookie!.value),
+              decodeURIComponent(cookie!.value),
             );
             expect(cookieKeyConsent.consent)
-                .property(ADVERTISING_KEY)
-                .is.eql(true);
-            expect(cookieKeyConsent.consent).property(ESSENTIAL_KEY).is.eql(true);
+              .property(ADVERTISING_KEY)
+              .is.eql(true);
             expect(cookieKeyConsent.consent)
-                .property(ANALYTICS_KEY)
-                .is.eql(false);
+              .property(ESSENTIAL_KEY)
+              .is.eql(true);
+            expect(cookieKeyConsent.consent)
+              .property(ANALYTICS_KEY)
+              .is.eql(false);
             expect(cookieKeyConsent.fides_meta)
-                .property("consentMethod")
-                .is.eql(ConsentMethod.SAVE);
+              .property("consentMethod")
+              .is.eql(ConsentMethod.SAVE);
           });
         });
 
         // check that window.Fides.consent updated
         cy.window()
-            .its("Fides")
-            .its("consent")
-            .should("eql", {
-              [ADVERTISING_KEY]: true,
-              [ESSENTIAL_KEY]: true,
-              [ANALYTICS_KEY]: false,
-            });
+          .its("Fides")
+          .its("consent")
+          .should("eql", {
+            [ADVERTISING_KEY]: true,
+            [ESSENTIAL_KEY]: true,
+            [ANALYTICS_KEY]: false,
+          });
 
         // Reload the page but now we shouldn't need to pass in any OT override info
-        cy.fixture("consent/experience_banner_modal.json").then((experience) => {
-          stubConfig(
-              {
-                experience: experience.items[0],
-              },
-          );
-        });
+        cy.fixture("consent/experience_banner_modal.json").then(
+          (experience) => {
+            stubConfig({
+              experience: experience.items[0],
+            });
+          },
+        );
 
         cy.get("#fides-modal-link").click();
 

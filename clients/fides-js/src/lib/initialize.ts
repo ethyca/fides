@@ -33,7 +33,8 @@ import {
 import { resolveConsentValue } from "./consent-value";
 import {
   getCookieByName,
-  getOrMakeFidesCookie, getOTConsentCookie,
+  getOrMakeFidesCookie,
+  getOTConsentCookie,
   isNewFidesCookie,
   makeConsentDefaultsLegacy,
   updateCookieFromExperience,
@@ -274,10 +275,8 @@ export const getInitialFides = ({
   const isOtMigrationMode = !!otConsentCookie && !!options.otFidesMapping;
   if (!hasExistingCookie && !options.fidesString && !isOtMigrationMode) {
     // A TC str can be injected and take effect even if the user has no previous Fides Cookie
-    console.log("not")
     return null;
   }
-  console.log("made it here")
   let updatedExperience = experience;
   if (isPrivacyExperience(experience)) {
     // at this point, pre-fetched experience contains no user consent, so we populate with the Fides cookie

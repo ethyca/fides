@@ -8,7 +8,6 @@ import { getConsentContext } from "../../lib/consent-context";
 import {
   ConsentMechanism,
   ConsentMethod,
-  FidesCookie,
   Layer1ButtonOption,
   NoticeConsent,
   PrivacyNotice,
@@ -19,10 +18,7 @@ import {
 } from "../../lib/consent-types";
 import { getGpcStatusFromNotice } from "../../lib/consent-utils";
 import { resolveConsentValue } from "../../lib/consent-value";
-import {
-  getFidesConsentCookie,
-  updateCookieFromNoticePreferences,
-} from "../../lib/cookie";
+import { updateCookieFromNoticePreferences } from "../../lib/cookie";
 import { dispatchFidesEvent } from "../../lib/events";
 import { useNoticesServed } from "../../lib/hooks";
 import {
