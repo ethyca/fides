@@ -270,7 +270,7 @@ export const getInitialFides = ({
     }) => PrivacyExperience;
   }): Partial<FidesGlobal> | null => {
   const hasExistingCookie = !isNewFidesCookie(cookie);
-  const otConsentCookie = getOTConsentCookie();
+  const otConsentCookie = !!options.otFidesMapping && getOTConsentCookie();
   const isOtMigrationMode = !!otConsentCookie && !!options.otFidesMapping;
   if (!hasExistingCookie && !options.fidesString && !isOtMigrationMode) {
     // A TC str can be injected and take effect even if the user has no previous Fides Cookie

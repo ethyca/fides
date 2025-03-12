@@ -8,7 +8,7 @@ import { isConsentOverride } from "../../lib/common-utils";
 import { getConsentContext } from "../../lib/consent-context";
 import {
   ConsentMechanism,
-  ConsentMethod,
+  ConsentMethod, FidesCookie,
   Layer1ButtonOption,
   NoticeConsent,
   PrivacyNotice,
@@ -20,7 +20,7 @@ import {
   getGpcStatusFromNotice,
 } from "../../lib/consent-utils";
 import { resolveConsentValue } from "../../lib/consent-value";
-import { updateCookieFromNoticePreferences } from "../../lib/cookie";
+import {getFidesConsentCookie, updateCookieFromNoticePreferences} from "../../lib/cookie";
 import { dispatchFidesEvent } from "../../lib/events";
 import { useNoticesServed } from "../../lib/hooks";
 import {
@@ -46,6 +46,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
   const { i18n, currentLocale, setCurrentLocale } = useI18n();
 
   // TODO (PROD-1792): restore useMemo here but ensure that saved changes are respected
+  const parsedCookie: FidesCookie | undefined = getFidesConsentCookie();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const initialEnabledNoticeKeys = (consent?: NoticeConsent) => {
     if (experience.privacy_notices) {
@@ -54,7 +55,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
         const val = resolveConsentValue(
           notice,
           getConsentContext(),
-          consent || savedConsent,
+          consent || savedConsent || parsedCookie.consent,
         );
         return val ? (notice.notice_key as PrivacyNotice["notice_key"]) : "";
       });

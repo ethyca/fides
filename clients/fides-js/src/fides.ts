@@ -87,8 +87,7 @@ const readConsentFromOneTrust = (
   config: FidesConfig,
   optionsOverrides: Partial<FidesInitOptionsOverrides>,
 ): NoticeConsent | undefined => {
-  const otConsentCookie: string | undefined = getOTConsentCookie();
-  if (!otConsentCookie || !optionsOverrides.otFidesMapping) {
+  if (!optionsOverrides.otFidesMapping || !getOTConsentCookie()) {
     fidesDebugger(
       "OT cookie or OT-Fides mapping does not exist, skipping mapping consent to Fides cookie...",
       config.options,
@@ -101,7 +100,7 @@ const readConsentFromOneTrust = (
     const otFidesMappingParsed: OtToFidesConsentMapping =
       JSON.parse(strippedString);
     const otToFidesConsent: NoticeConsent = otCookieToFidesConsent(
-      otConsentCookie,
+      getOTConsentCookie(),
       otFidesMappingParsed,
     );
     if (otToFidesConsent) {
@@ -169,9 +168,8 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
   };
 
   // Check for an existing cookie for this device
-  const existingFidesCookie: FidesCookie | undefined = getFidesConsentCookie();
   let consentFromOneTrust: NoticeConsent | undefined;
-  if (!existingFidesCookie && optionsOverrides.otFidesMapping) {
+  if (optionsOverrides.otFidesMapping && !getFidesConsentCookie()) {
     consentFromOneTrust = readConsentFromOneTrust(config, optionsOverrides);
   }
   config = {
