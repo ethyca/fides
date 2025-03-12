@@ -12,7 +12,6 @@ import { shopify } from "./integrations/shopify";
 import { isConsentOverride, raise } from "./lib/common-utils";
 import {
   FidesConfig,
-  FidesCookie,
   FidesExperienceTranslationOverrides,
   FidesGlobal,
   FidesInitOptionsOverrides,
@@ -100,7 +99,7 @@ const readConsentFromOneTrust = (
     const otFidesMappingParsed: OtToFidesConsentMapping =
       JSON.parse(strippedString);
     const otToFidesConsent: NoticeConsent = otCookieToFidesConsent(
-      getOTConsentCookie(),
+      getOTConsentCookie() as string,
       otFidesMappingParsed,
     );
     if (otToFidesConsent) {
