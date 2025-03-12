@@ -172,7 +172,7 @@ def unflatten_dict(flat_dict: Dict[str, Any], separator: str = ".") -> Dict[str,
                 else:
                     target[keys[-1]] = value
         except TypeError as exc:
-            raise FidesopsException(
+            raise ValueError(
                 f"Error unflattening dictionary, conflicting levels detected: {exc}"
             )
     return output
