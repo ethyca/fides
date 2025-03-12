@@ -1,0 +1,33 @@
+name: Create Tag on PR Merge
+
+on:
+  pull_request:
+    types: [closed]
+
+jobs:
+  create_tag:
+    if: github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install nox
+
+      - name: Set up Git with PR author info
+        run: |
+          git config --global user.email "${{ github.event.pull_request.user.email }}"
+          git config --global user.name "${{ github.event.pull_request.user.login }}"
+
+      - name: Run nox tag session
+        run: nox -s "tag(push)"
+        env:
+          GITHUB_TOKEN: ${{ secrets.DISPATCH_ACCESS_TOKEN }}

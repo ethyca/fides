@@ -3,7 +3,7 @@ name: Update Fides Version in FidesPlus Repo
 on:
   push:
     tags:
-      - '*b*'  # Runs on any new tag creation
+      - '*b*'  # Runs on only beta tag creation
 
 jobs:
   update_fides_version:
@@ -12,9 +12,11 @@ jobs:
       - name: Checkout Fides repo
         uses: actions/checkout@v4
 
-      - name: Extract Tag Name
-        id: get_tag
-        run: echo "TAG_NAME=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+      - name: Extract Tag Name and User
+        id: get_tag_user
+        run: |
+          echo "TAG_NAME=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+          echo "TAG_USER=$(git log -1 --format='%an')" >> $GITHUB_ENV
 
 
       - name: Checkout fidesplus repo
@@ -51,6 +53,6 @@ jobs:
             --head update-fides-${{ env.TAG_NAME }} \
             --base main \
             --title "Update fides version to ${{ env.TAG_NAME }}" \
-            --body "Automatically updating fides version based on new tag ${{ env.TAG_NAME }}"
+            --body "Automatically updating ethyca-fides[all] version based on new tag ${{ env.TAG_NAME }}\n\nTag created by @${{ env.TAG_USER }}"
         env:
           GH_TOKEN: ${{ secrets.DISPATCH_ACCESS_TOKEN }}
