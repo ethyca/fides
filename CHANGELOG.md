@@ -24,7 +24,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.56.2...2.57.0)
+## [2.57.0](https://github.com/ethyca/fides/compare/2.56.2...2.57.0)
 
 ### Added
 - DB model support for Attachments [#5784](https://github.com/ethyca/fides/pull/5784) https://github.com/ethyca/fides/labels/db-migration
