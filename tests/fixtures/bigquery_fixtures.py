@@ -379,8 +379,8 @@ def bigquery_resources(
         connection.execute(stmt)
 
         stmt = f"""
-            insert into customer (id, email, name, address_id, custom_id, extra_address_data)
-            values ({customer_id}, '{customer_email}', '{customer_name}', {address_id}, 'custom_{customer_id}', STRUCT('{city}' as city, '111' as house, {customer_id} as id, '{state}' as state, 'Test Street' as street, {address_id} as address_id));
+            insert into customer (id, email, name, address_id, custom_id, extra_address_data, tags, purchase_history)
+            values ({customer_id}, '{customer_email}', '{customer_name}', {address_id}, 'custom_{customer_id}', STRUCT('{city}' as city, '111' as house, {customer_id} as id, '{state}' as state, 'Test Street' as street, {address_id} as address_id), ['VIP', 'Rewards', 'Premium'], [STRUCT('ITEM-1' as item_id, 29.99 as price, '2023-01-15' as purchase_date, ['electronics', 'gadgets'] as item_tags), STRUCT('ITEM-2' as item_id, 49.99 as price, '2023-02-20' as purchase_date, ['clothing', 'accessories'] as item_tags)]);
         """
 
         connection.execute(stmt)
@@ -474,8 +474,8 @@ def bigquery_resources_with_namespace_meta(
         connection.execute(stmt)
 
         stmt = f"""
-            insert into fidesopstest.customer (id, email, name, address_id, custom_id, extra_address_data)
-            values ({customer_id}, '{customer_email}', '{customer_name}', {address_id}, 'custom_{customer_id}', STRUCT('{city}' as city, '111' as house, {customer_id} as id, '{state}' as state, 'Test Street' as street, {address_id} as address_id));
+            insert into fidesopstest.customer (id, email, name, address_id, custom_id, extra_address_data, tags, purchase_history)
+            values ({customer_id}, '{customer_email}', '{customer_name}', {address_id}, 'custom_{customer_id}', STRUCT('{city}' as city, '111' as house, {customer_id} as id, '{state}' as state, 'Test Street' as street, {address_id} as address_id), ['VIP', 'Rewards', 'Premium'], [STRUCT('ITEM-1' as item_id, 29.99 as price, '2023-01-15' as purchase_date, ['electronics', 'gadgets'] as item_tags), STRUCT('ITEM-2' as item_id, 49.99 as price, '2023-02-20' as purchase_date, ['clothing', 'accessories'] as item_tags)]);
         """
 
         connection.execute(stmt)
@@ -858,7 +858,14 @@ def seed_bigquery_integration_db(bigquery_integration_engine) -> None:
                 state STRING,
                 street STRING,
                 address_id BIGINT
-            >
+            >,
+            tags ARRAY<STRING>,
+            purchase_history ARRAY<STRUCT<
+                item_id STRING,
+                price FLOAT64,
+                purchase_date STRING,
+                item_tags ARRAY<STRING>
+            >>
         );
         """,
         """
@@ -955,8 +962,15 @@ def seed_bigquery_integration_db(bigquery_integration_engine) -> None:
         """,
         """
         INSERT INTO fidesopstest.customer VALUES
-        (1, 'customer-1@example.com', 'John Customer', '2020-04-01 11:47:42', 1, 'custom_id_1', STRUCT('Exampletown' as city, '123' as house, 1 as id, 'NY' as state, 'Example Street' as street, 1 as address_id)),
-        (2, 'customer-2@example.com', 'Jill Customer', '2020-04-01 11:47:42', 2, 'custom_id_2', STRUCT('Exampletown' as city, '4' as house, 2 as id, 'NY' as state, 'Example Lane' as street, 2 as address_id));
+        (1, 'customer-1@example.com', 'John Customer', '2020-04-01 11:47:42', 1, 'custom_id_1', STRUCT('Exampletown' as city, '123' as house, 1 as id, 'NY' as state, 'Example Street' as street, 1 as address_id),
+         ['VIP', 'Rewards', 'Premium'],
+         [STRUCT('ITEM-1' as item_id, 29.99 as price, '2023-01-15' as purchase_date, ['electronics', 'gadgets'] as item_tags),
+          STRUCT('ITEM-2' as item_id, 49.99 as price, '2023-02-20' as purchase_date, ['clothing', 'accessories'] as item_tags)]
+        ),
+        (2, 'customer-2@example.com', 'Jill Customer', '2020-04-01 11:47:42', 2, 'custom_id_2', STRUCT('Exampletown' as city, '4' as house, 2 as id, 'NY' as state, 'Example Lane' as street, 2 as address_id),
+         ['Standard', 'New'],
+         [STRUCT('ITEM-3' as item_id, 19.99 as price, '2023-03-10' as purchase_date, ['books', 'education'] as item_tags)]
+        );
         """,
         """
         INSERT INTO fidesopstest.employee VALUES
