@@ -1,5 +1,6 @@
 "use server";
 
+import LoadDataIntoProviders from "~/components/LoadDataIntoProviders";
 import NotFoundMessage from "~/components/NotFoundMessage";
 import PageLayout from "~/components/PageLayout";
 
@@ -9,9 +10,11 @@ const Custom404 = async () => {
   const serverEnvironment = await getPrivacyCenterEnvironmentCached();
 
   return (
-    <PageLayout serverEnvironment={serverEnvironment}>
-      <NotFoundMessage />
-    </PageLayout>
+    <LoadDataIntoProviders serverEnvironment={serverEnvironment}>
+      <PageLayout>
+        <NotFoundMessage />
+      </PageLayout>
+    </LoadDataIntoProviders>
   );
 };
 

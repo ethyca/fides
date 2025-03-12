@@ -1,36 +1,33 @@
-import Custom404 from "~/app/not-found";
-import {
-  getPageMetadata,
-  getPrivacyCenterEnvironmentCached,
-} from "~/app/server-utils";
+"use client";
 import ConsentPage from "~/components/ConsentPage";
 import PageLayout from "~/components/PageLayout";
-
-interface CustomPropertyPathConsentPageProps {
-  params: Promise<{
-    propertyPath: string;
-  }>;
-}
-
-export const generateMetadata = getPageMetadata;
+import { useHasConfig } from "~/features/common/config.slice";
+import { useParams, useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 /**
  * Renders the consent page for a custom property path.
- * If the property is not found, renders a 404 page.
+ * It relies on having the config loaded into the providers by the homepage component.
+ * If the config is not loaded, it will redirect to the property home path.
  */
-const CustomPropertyPathConsentPage = async ({
-  params,
-}: CustomPropertyPathConsentPageProps) => {
-  const { propertyPath } = await params;
-  const serverEnvironment = await getPrivacyCenterEnvironmentCached({
-    propertyPath: `/${propertyPath}`,
-  });
-  const isPropertyFoundForPath = !!serverEnvironment.property;
+const CustomPropertyPathConsentPage = () => {
+  const hasConfig = useHasConfig();
+  const router = useRouter();
+  const params = useParams();
+
+  useEffect(() => {
+    if (!hasConfig) {
+      router.push(`/${params?.propertyPath}`);
+    }
+  }, [hasConfig]);
+
+  if (!hasConfig) {
+    return null;
+  }
 
   return (
-    <PageLayout serverEnvironment={serverEnvironment}>
-      {/* @ts-expect-error Async Server Component. Remove when upgraded to TypeScript 5.1.3 or higher. */}
-      {isPropertyFoundForPath ? <ConsentPage /> : <Custom404 />}
+    <PageLayout>
+      <ConsentPage />
     </PageLayout>
   );
 };

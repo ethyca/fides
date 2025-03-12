@@ -1,18 +1,33 @@
-"use server";
+"use client";
 
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 import ConsentPage from "~/components/ConsentPage";
 import PageLayout from "~/components/PageLayout";
+import { useHasConfig } from "~/features/common/config.slice";
 
-import getPageMetadata from "../server-utils/getPageMetadata";
-import getPrivacyCenterEnvironmentCached from "../server-utils/getPrivacyCenterEnvironment";
+/**
+ * Renders the consent page for the privacy center.
+ * This is a client component that relies on having the config loaded into the providers by the homepage component.
+ * If the config is not loaded, it redirect to the homepage
+ */
 
-export const generateMetadata = getPageMetadata;
+const Consent = () => {
+  const hasConfig = useHasConfig();
+  const router = useRouter();
 
-const Consent = async () => {
-  const serverEnvironment = await getPrivacyCenterEnvironmentCached();
+  useEffect(() => {
+    if (!hasConfig) {
+      router.push(`/`);
+    }
+  }, [hasConfig]);
+
+  if (!hasConfig) {
+    return null;
+  }
 
   return (
-    <PageLayout serverEnvironment={serverEnvironment}>
+    <PageLayout>
       <ConsentPage />
     </PageLayout>
   );
