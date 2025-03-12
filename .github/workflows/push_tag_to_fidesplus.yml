@@ -48,12 +48,14 @@ jobs:
 
       - name: Create New Branch
         run: |
-          ls
           cd fidesplus
           git checkout -b update-fides-${{ env.TAG_NAME }}
           git add requirements.txt
-          git commit -m "Update fides version to ${{ env.TAG_NAME }}"
-          git push origin update-fides-${{ env.TAG_NAME }}
+          git commit -m "Update ethyca-fides[all] version to ${{ env.TAG_NAME }}"
+          git fetch origin
+          git rebase origin/update-fides-${{ env.TAG_NAME }} || true
+          git push origin update-fides-${{ env.TAG_NAME }} --force
+
 
 
       - name: Create Pull Request
