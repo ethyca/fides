@@ -11,6 +11,7 @@ from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.fides_user_permissions import FidesUserPermissions
 from fides.api.models.policy import Policy
+from fides.api.models.pre_approval_webhook import PreApprovalWebhook
 from fides.api.models.privacy_request import (
     ExecutionLog,
     ExecutionLogStatus,
@@ -28,7 +29,14 @@ from fides.service.privacy_request.privacy_request_service import PrivacyRequest
 from tests.conftest import wait_for_tasks_to_complete
 
 
+@pytest.mark.integration
+@pytest.mark.integration_postgres
 class TestPrivacyRequestService:
+    """
+    Since these tests actually run the privacy request using the posgres database, we need to
+    mark them all as integration tests.
+    """
+
     @pytest.fixture
     def mock_messaging_service(self) -> MessagingService:
         return create_autospec(MessagingService)
@@ -78,6 +86,7 @@ class TestPrivacyRequestService:
         "postgres_integration_db",
         "automatically_approved",
         "postgres_example_test_dataset_config",
+        "allow_custom_privacy_request_field_collection_enabled",
     )
     def test_resubmit_complete_privacy_request(
         self,
@@ -102,7 +111,9 @@ class TestPrivacyRequestService:
             "first_name": {"label": "First name", "value": "John"}
         }
         policy_key = policy.key
-        encryption_key = "thisisnotarealkey"
+        encryption_key = (
+            "fake-key-1234567"  # this is not a real key, but it has to be 16 bytes
+        )
         property_id = property_a.id
         source = PrivacyRequestSource.request_manager
         submitted_by = reviewing_user.id
@@ -166,6 +177,8 @@ class TestPrivacyRequestService:
         )
         assert error_logs.count() == 0
 
+    @pytest.mark.integration
+    @pytest.mark.integration_postgres
     @pytest.mark.usefixtures("automatically_approved")
     def test_cannot_resubmit_complete_privacy_request(
         self,
@@ -186,6 +199,8 @@ class TestPrivacyRequestService:
             privacy_request_service.resubmit_privacy_request(privacy_request.id)
         assert "Cannot resubmit a complete privacy request" in str(exc)
 
+    @pytest.mark.integration
+    @pytest.mark.integration_postgres
     @pytest.mark.usefixtures("require_manual_request_approval")
     def test_cannot_resubmit_pending_privacy_request(
         self,
@@ -209,3 +224,204 @@ class TestPrivacyRequestService:
         privacy_request_service: PrivacyRequestService,
     ):
         assert privacy_request_service.resubmit_privacy_request("123") is None
+
+    @pytest.mark.integration
+    @pytest.mark.integration_postgres
+    @pytest.mark.usefixtures(
+        "use_dsr_3_0",
+        "postgres_integration_db",
+        "require_manual_request_approval",
+        "postgres_example_test_dataset_config",
+    )
+    def test_resubmit_does_not_approve_request_if_webhooks(
+        self,
+        db: Session,
+        privacy_request_service: PrivacyRequestService,
+        mock_messaging_service: MessagingService,
+        policy: Policy,
+        connection_config: ConnectionConfig,
+        property_a: Property,
+        reviewing_user: FidesUser,
+        pre_approval_webhooks: list[PreApprovalWebhook],
+    ):
+        """
+        Test that resubmit does not automatically approve the request if require_manual_request_approval
+        is True and there's PreApproval webhooks created
+        """
+        # remove the host from the Postgres example connection
+        # to force the privacy request to error
+        secrets = connection_config.secrets
+        host = secrets.pop("host")
+
+        db.commit()
+
+        external_id = "ext-123"
+        requested_at = datetime.now(timezone.utc)
+        identity = Identity(email="jane@example.com")
+        custom_privacy_request_fields = {
+            "first_name": {"label": "First name", "value": "John"}
+        }
+        policy_key = policy.key
+        encryption_key = (
+            "fake-key-1234567"  # this is not a real key, but it has to be 16 bytes
+        )
+        property_id = property_a.id
+        source = PrivacyRequestSource.request_manager
+        submitted_by = reviewing_user.id
+
+        privacy_request = privacy_request_service.create_privacy_request(
+            PrivacyRequestCreate(
+                external_id=external_id,
+                requested_at=requested_at,
+                identity=identity,
+                custom_privacy_request_fields=custom_privacy_request_fields,
+                policy_key=policy_key,
+                encryption_key=encryption_key,
+                property_id=property_id,
+                source=source,
+            ),
+            authenticated=True,
+            submitted_by=submitted_by,
+        )
+        # Manually approve it
+        privacy_request_service.approve_privacy_requests(
+            request_ids=[privacy_request.id], suppress_notification=True
+        )
+        privacy_request_id = privacy_request.id
+
+        wait_for_tasks_to_complete(db, privacy_request, ActionType.access)
+        db.refresh(privacy_request)
+
+        error_logs = privacy_request.execution_logs.filter(
+            ExecutionLog.status == ExecutionLogStatus.error
+        )
+        assert error_logs.count() > 0
+
+        # re-add the host to fix the Postgres connection
+        connection_config.secrets["host"] = host
+        db.commit()
+
+        # resubmit the request and wait for it to complete
+        privacy_request = privacy_request_service.resubmit_privacy_request(
+            privacy_request.id
+        )
+        db.refresh(privacy_request)
+
+        # Check that privacy request is still pending
+        assert privacy_request.id == privacy_request_id
+        assert privacy_request.status == PrivacyRequestStatus.pending
+
+        # verify that the error logs from the original attempt
+        # were deleted as part of the re-submission
+        error_logs = privacy_request.execution_logs.filter(
+            ExecutionLog.status == ExecutionLogStatus.error
+        )
+        assert error_logs.count() == 0
+
+    @pytest.mark.integration
+    @pytest.mark.integration_postgres
+    @pytest.mark.usefixtures(
+        "use_dsr_3_0",
+        "postgres_integration_db",
+        "require_manual_request_approval",
+        "postgres_example_test_dataset_config",
+    )
+    def test_resubmit_automatically_approves_request_if_no_webhooks(
+        self,
+        db: Session,
+        privacy_request_service: PrivacyRequestService,
+        mock_messaging_service: MessagingService,
+        policy: Policy,
+        connection_config: ConnectionConfig,
+        property_a: Property,
+        reviewing_user: FidesUser,
+    ):
+        """
+        Test that resubmit does not automatically approve the request if require_manual_request_approval
+        is True and there's PreApproval webhooks created
+        """
+        # remove the host from the Postgres example connection
+        # to force the privacy request to error
+        secrets = connection_config.secrets
+        host = secrets.pop("host")
+
+        db.commit()
+
+        external_id = "ext-123"
+        requested_at = datetime.now(timezone.utc)
+        identity = Identity(email="jane@example.com")
+        custom_privacy_request_fields = {
+            "first_name": {"label": "First name", "value": "John"}
+        }
+        policy_key = policy.key
+        encryption_key = (
+            "fake-key-1234567"  # this is not a real key, but it has to be 16 bytes
+        )
+        property_id = property_a.id
+        source = PrivacyRequestSource.request_manager
+        submitted_by = reviewing_user.id
+
+        privacy_request = privacy_request_service.create_privacy_request(
+            PrivacyRequestCreate(
+                external_id=external_id,
+                requested_at=requested_at,
+                identity=identity,
+                custom_privacy_request_fields=custom_privacy_request_fields,
+                policy_key=policy_key,
+                encryption_key=encryption_key,
+                property_id=property_id,
+                source=source,
+            ),
+            authenticated=True,
+            submitted_by=submitted_by,
+        )
+        # Manually approve it
+        privacy_request_service.approve_privacy_requests(
+            request_ids=[privacy_request.id],
+            suppress_notification=True,
+        )
+        privacy_request_id = privacy_request.id
+
+        wait_for_tasks_to_complete(db, privacy_request, ActionType.access)
+        db.refresh(privacy_request)
+
+        error_logs = privacy_request.execution_logs.filter(
+            ExecutionLog.status == ExecutionLogStatus.error
+        )
+        assert error_logs.count() > 0
+
+        # re-add the host to fix the Postgres connection
+        connection_config.secrets["host"] = host
+        db.commit()
+
+        # resubmit the request and wait for it to complete
+        privacy_request = privacy_request_service.resubmit_privacy_request(
+            privacy_request.id
+        )
+        db.refresh(privacy_request)
+
+        # Check that privacy request is complete and fields were copied properly
+        assert privacy_request.id == privacy_request_id
+        assert privacy_request.status == PrivacyRequestStatus.complete
+        assert privacy_request.external_id == external_id
+        assert privacy_request.requested_at == requested_at
+        assert privacy_request.get_persisted_identity() == identity
+        assert (
+            privacy_request.get_persisted_custom_privacy_request_fields()
+            == custom_privacy_request_fields
+        )
+        assert privacy_request.policy.key == policy_key
+        assert privacy_request.get_cached_encryption_key() == encryption_key
+        assert privacy_request.property_id == property_id
+        assert privacy_request.source == source
+        assert privacy_request.submitted_by == submitted_by
+
+        # verify the approval email was not sent out
+        mock_messaging_service.send_request_approved.assert_not_called()
+
+        # verify that the error logs from the original attempt
+        # were deleted as part of the re-submission
+        error_logs = privacy_request.execution_logs.filter(
+            ExecutionLog.status == ExecutionLogStatus.error
+        )
+        assert error_logs.count() == 0

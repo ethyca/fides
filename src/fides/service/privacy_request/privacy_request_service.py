@@ -332,11 +332,20 @@ class PrivacyRequestService:
         )
 
         if _manual_approval_required(self.config_proxy, privacy_request):
-            self.approve_privacy_requests(
-                [privacy_request_id],
-                reviewed_by=reviewed_by,
-                suppress_notification=True,
-            )
+            has_webhooks = self.db.query(PreApprovalWebhook).count() > 0
+            # If there are pre-approval webhooks, then we do nothing since the
+            # create_privacy_request method will have already triggered them,
+            # and they will be responsible of approving the request.
+
+            # If there are no pre-approval webhooks, approve the request immediately
+            # since it was originally approved by a person and we don't want them to
+            # have to manually re-approve
+            if not has_webhooks:
+                self.approve_privacy_requests(
+                    [privacy_request_id],
+                    reviewed_by=reviewed_by,
+                    suppress_notification=True,
+                )
 
         return privacy_request
 
