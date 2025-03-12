@@ -11,9 +11,9 @@
     -->
     <script>
       (function () {
-        window.fides_overrides = {
-          fides_embed: true,
-        };
+        // window.fides_overrides = {
+        //   fides_embed: true,
+        // };
         window.render_delay = 0; // increment the delay to test/mimic a slow loading or dynamic page
         const params = new URLSearchParams(window.location.search);
         const geolocation = params.get("geolocation");
@@ -21,8 +21,6 @@
 
         document.write('<script src="' + src + '"><\/script>');
         document.write("<script>Fides.gtm();<\/script>");
-        document.cookie =
-          "OptanonConsent=isGpcEnabled=0&datestamp=Fri+Mar+07+2025+19%3A51%3A06+GMT%2B0100+(Central+European+Standard+Time)&version=202409.1.0&browserGpcFlag=0&isIABGlobal=false&hosts=&consentId=f9c105b8-48e3-401a-87e9-363ad1f77531&interactionCount=1&isAnonUser=1&landingPath=NotLandingPage&groups=C0003%3A1%2CC0002%3A1%2CC0004%3A1%2CC0005%3A0%2CC0001%3A1%2CC0009%3A0%2CV2STACK42%3A0&AwaitingReconsent=false";
       })();
       var deleteCookie = function () {
         document.cookie =

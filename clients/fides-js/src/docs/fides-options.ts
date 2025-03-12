@@ -1,13 +1,3 @@
-export interface OtFidesMapping {
-  /**
-  * The OneTrust notice group ID.
-  */
-
-  /**
-   * Array of Fides notice keys
-    */
-}
-
 /**
  * FidesJS supports a variety of custom options to modify it's behavior or
  * enable more advanced usage. For example, the `fides_locale` option can be
