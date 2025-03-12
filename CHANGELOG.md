@@ -28,6 +28,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Attachments storage capabilities (S3 or local) [#5812](https://github.com/ethyca/fides/pull/5812) https://github.com/ethyca/fides/labels/db-migration
 - DB model support for Comments [#5833](https://github.com/ethyca/fides/pull/5833/files) https://github.com/ethyca/fides/labels/db-migration
 - Added UI for configuring website integrations and monitors [#5867](https://github.com/ethyca/fides/pull/5867)
+- Adding support for BigQuery struct updates [#5849](https://github.com/ethyca/fides/pull/5849)
 
 ### Changed
 - Bumped supported Python versions to `3.10.16` and `3.9.21` [#5840](https://github.com/ethyca/fides/pull/5840)
