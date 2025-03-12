@@ -15,9 +15,21 @@ jobs:
       - name: Checkout Fides repo
         uses: actions/checkout@v4
 
-      - name: Extract Tag Name
+    #   - name: Extract Tag Name
+    #     id: get_tag
+    #     run: echo "TAG_NAME=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+
+      # For testing purposes only
+      - name: Determine Tag Name
         id: get_tag
-        run: echo "TAG_NAME=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+        run: |
+          if [ "${{ github.event_name }}" = "push" ] && [ "${{ github.ref_type }}" = "tag" ]; then
+            echo "TAG_NAME=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+          else
+            git fetch --tags
+            LATEST_TAG=$(git describe --tags `git rev-list --tags --max-count=1`)
+            echo "TAG_NAME=${LATEST_TAG}" >> $GITHUB_ENV
+          fi
 
       - name: Checkout fidesplus repo
         uses: actions/checkout@v4
