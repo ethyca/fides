@@ -228,7 +228,9 @@ def flatten_dict(data: Any, prefix: str = "", separator: str = ".") -> Dict[str,
             else:
                 items[new_key] = v
     else:
-        items[prefix] = data
+        raise ValueError(
+            f"Input to flatten_dict must be a dict or list, got {type(data).__name__}"
+        )
 
     return items
 
