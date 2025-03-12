@@ -28,8 +28,8 @@ jobs:
 
       - name: Update fides version in requirements.txt
         run: |
-          cd fidesplus
-          sed -i 's/^ethyca-fides[all]==.*/ethyca-fides[all]==${{ env.TAG_NAME }}/' requirements.txt
+          cd target-repo
+          sed -i "s/^fides==.*/fides==${{ env.TAG_NAME }}/" requirements.txt
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git config --global user.name "GitHub Actions"
 
