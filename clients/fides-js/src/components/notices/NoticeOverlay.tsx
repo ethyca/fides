@@ -59,7 +59,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
         const val = resolveConsentValue(
           notice,
           getConsentContext(),
-          consent || savedConsent || parsedCookie.consent,
+          consent || savedConsent || parsedCookie?.consent,
         );
         return val ? (notice.notice_key as PrivacyNotice["notice_key"]) : "";
       });
