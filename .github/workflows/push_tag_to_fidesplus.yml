@@ -35,7 +35,6 @@ jobs:
 
       - name: Create New Branch
         run: |
-          cd fidessplus
           git checkout -b update-fides-${{ env.TAG_NAME }}
           git add requirements.txt
           git commit -m "Update fides version to ${{ env.TAG_NAME }}"
