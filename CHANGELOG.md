@@ -36,7 +36,6 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Refactored privacy request processing to never re-use sessions [#5862](https://github.com/ethyca/fides/pull/5862)
 - Updated hover state of menu items to be more visible [#5868](https://github.com/ethyca/fides/pull/5868)
 
-
 ### Developer Experience
 - Moved non-prod Admin UI dependencies to devDependencies [#5832](https://github.com/ethyca/fides/pull/5832)
 - Prevent Admin UI and Privacy Center from starting when running `nox -s dev` with datastore params [#5843](https://github.com/ethyca/fides/pull/5843)
@@ -50,6 +49,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Improved the behavior and state management of MSPA-related settings [#5861](https://github.com/ethyca/fides/pull/5861)
 - Fixed CORS origins handling to be more consistent across config (toml/env var) and API settings; allow `0.0.0.0` as an origin [#5853](https://github.com/ethyca/fides/pull/5853)
 - Fixed an issue with the update payloads for select SaaS integrations [#5860](https://github.com/ethyca/fides/pull/5860)
+- Fixed `/privacy-request/<id>/resubmit` endpoint so it doesn't queue the request twice [#5870](https://github.com/ethyca/fides/pull/5870)
 
 ## [2.56.2](https://github.com/ethyca/fides/compare/2.56.1...2.56.2)
 
