@@ -3,7 +3,7 @@ name: Update Fides Version in FidesPlus Repo
 on:
   push:
     tags:
-      - '*'  # Runs on any new tag creation
+      - '*b*'  # Runs on any new tag creation
 
 jobs:
   update_fides_version:
