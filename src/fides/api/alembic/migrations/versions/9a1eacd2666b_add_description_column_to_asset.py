@@ -1,7 +1,7 @@
 """add description column to asset
 
 Revision ID: 9a1eacd2666b
-Revises: bd875a8b5d96
+Revises: 69ad6d844e21
 Create Date: 2025-02-28 13:59:26.022822
 
 """
@@ -12,7 +12,7 @@ from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = "9a1eacd2666b"
-down_revision = "bd875a8b5d96"
+down_revision = "69ad6d844e21"
 branch_labels = None
 depends_on = None
 

@@ -37,20 +37,28 @@ h6 {
   --ant-button-default-bg: var(--fidesui-neutral-50);
 }
 
+// Input labels should have a font weight of 600
+.ant-form-item-label {
+  font-weight: 600;
+}
+
 // Custom styles for dark submenus
 .ant-menu-dark .ant-menu-sub {
-  // The unselected submenu item should be light gray
-  > .ant-menu-item > .ant-menu-title-content a {
-    color: var(--fidesui-neutral-200);
+  > .ant-menu-item {
+    > .ant-menu-title-content a {
+      color: var(--fidesui-neutral-200);
+
+      &:focus-visible {
+        text-decoration: underline;
+      }
+    }
 
     &:hover,
-    &:focus {
-      color: var(--fidesui-full-white);
-    }
-    &:focus-visible {
-      text-decoration: underline;
+    &:focus-within {
+      background-color: var(--fidesui-neutral-800);
     }
   }
+
   // The selected submenu item should be dark, because the background is light
   // But using the token "darkItemSelectedColor" also affect the group title,
   // therefore we need this css rule
