@@ -28,14 +28,14 @@ jobs:
 
       - name: Update fides version in requirements.txt
         run: |
-          cd target-repo
+          cd fidesplus
           sed -i "s/^fides==.*/fides==${{ env.TAG_NAME }}/" requirements.txt
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git config --global user.name "GitHub Actions"
 
       - name: Create New Branch
         run: |
-          cd target-repo
+          cd fidessplus
           git checkout -b update-fides-${{ env.TAG_NAME }}
           git add requirements.txt
           git commit -m "Update fides version to ${{ env.TAG_NAME }}"
@@ -44,7 +44,7 @@ jobs:
       - name: Create Pull Request
         run: |
           gh pr create \
-            --repo your-org/your-target-repo \
+            --repo ethyca/fidesplus \
             --head update-fides-${{ env.TAG_NAME }} \
             --base main \
             --title "Update fides version to ${{ env.TAG_NAME }}" \
