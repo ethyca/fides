@@ -57,6 +57,15 @@ jobs:
         id: buildx
         uses: docker/setup-buildx-action@v3
 
+      # Add Docker layer caching
+      - name: Cache Docker layers
+        uses: actions/cache@v3
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+
       - name: Build container
         uses: docker/build-push-action@v6
         with:
@@ -67,6 +76,14 @@ jobs:
           outputs: type=docker,dest=/tmp/python-${{ matrix.python_version }}.tar
           push: false
           tags: ${{ env.IMAGE }}
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
+
+      # Move cache to prevent cache growth
+      - name: Move cache
+        run: |
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache || true
 
       - name: Upload container
         uses: actions/upload-artifact@v4
@@ -209,7 +226,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python_version: ["3.9.21", "3.10.16"]
+        python_version: ["3.9.18", "3.10.13"]
         test_selection:
           - "ctl-not-external"
           - "ops-unit-api"
@@ -266,7 +283,7 @@ jobs:
     strategy:
       max-parallel: 1 # This prevents collisions in shared external resources
       matrix:
-        python_version: ["3.9.21", "3.10.16"]
+        python_version: ["3.9.18", "3.10.13"]
     runs-on: ubuntu-latest
     timeout-minutes: 20
     # In PRs run with the "unsafe" label, or run on a "push" event to main
@@ -328,7 +345,7 @@ jobs:
     strategy:
       max-parallel: 1 # This prevents collisions in shared external resources
       matrix:
-        python_version: ["3.9.21", "3.10.16"]
+        python_version: ["3.9.18", "3.10.13"]
     runs-on: ubuntu-latest
     timeout-minutes: 30
     # In PRs run with the "unsafe" label, or run on a "push" event to main
@@ -427,7 +444,7 @@ jobs:
     strategy:
       max-parallel: 1 # This prevents collisions in shared external resources
       matrix:
-        python_version: ["3.9.21", "3.10.16"]
+        python_version: ["3.9.18", "3.10.13"]
     steps:
       - name: Download container
         uses: actions/download-artifact@v4
