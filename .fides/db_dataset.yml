@@ -143,6 +143,46 @@ dataset:
     - name: user_id
       data_categories:
       - user.unique_id
+  - name: comment
+    fields:
+    - name: comment_text
+      data_categories:
+      - system.operations
+    - name: comment_type
+      data_categories:
+      - system.operations
+    - name: created_at
+      data_categories:
+      - system.operations
+    - name: id
+      data_categories:
+      - system.operations
+    - name: updated_at
+      data_categories:
+      - system.operations
+    - name: user_id
+      data_categories:
+      - system.operations
+  - name: comment_reference
+    fields:
+    - name: comment_id
+      data_categories:
+      - system.operations
+    - name: created_at
+      data_categories:
+      - system.operations
+    - name: id
+      data_categories:
+      - system.operations
+    - name: reference_id
+      data_categories:
+      - system.operations
+    - name: reference_type
+      data_categories:
+      - system.operations
+    - name: updated_at
+      data_categories:
+      - system.operations
   - name: client
     fields:
     - name: created_at
