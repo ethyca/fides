@@ -1486,6 +1486,78 @@ describe("Fides-js TCF", () => {
         });
       });
     });
+
+    describe("Vendor overrides", () => {
+      it("adds Legitimate Interest vendors to Preferences list when overriden", () => {
+        cy.fixture("consent/experience_tcf.json").then((payload) => {
+          const experience = payload.items[0];
+          // mimics behavior of a vendor override, where DoubleVerify is added to the
+          // preferences list instead of Legitimate Interest vendor
+          experience.tcf_vendor_consents = [
+            {
+              id: "gvl.3",
+              name: "DoubleVerify",
+              default_preference: "opt_out",
+              purpose_consents: [
+                {
+                  id: 2,
+                  name: "Use limited data to select advertising",
+                  retention_period: "45",
+                },
+              ],
+            },
+          ];
+          experience.tcf_vendor_legitimate_interests = [];
+          experience.tcf_vendor_relationships = [
+            {
+              id: "gvl.3",
+              has_vendor_id: true,
+              name: "DoubleVerify",
+              special_purposes: [
+                {
+                  id: 1,
+                  name: "Ensure security, prevent and detect fraud, and fix errors",
+                  retention_period: "45",
+                },
+                {
+                  id: 2,
+                  name: "Deliver and present advertising and content",
+                  retention_period: "45",
+                },
+              ],
+            },
+          ];
+          stubTCFExperience({
+            experienceFullOverride: experience,
+          });
+          cy.waitUntilFidesInitialized().then(() => {
+            cy.get("#fides-modal-link").click();
+            cy.get("#fides-tab-vendors").click();
+            cy.get("#fides-panel-vendors").within(() => {
+              // should exist in the Consent list and not be checked yet
+              cy.getByTestId("toggle-DoubleVerify")
+                .find("input")
+                .should("exist");
+              cy.getByTestId("toggle-DoubleVerify")
+                .find("input")
+                .should("not.be.checked");
+            });
+            cy.getByTestId("fides-modal-content").within(() => {
+              cy.getByTestId("Opt in to all-btn").click();
+            });
+            // Verify the TCF String has the vendor override
+            cy.getCookie(CONSENT_COOKIE_NAME).then((cookie) => {
+              const cookieKeyConsent: FidesCookie = JSON.parse(
+                decodeURIComponent(cookie!.value),
+              );
+              expect(cookieKeyConsent.fides_string).to.contain(
+                "GXABBENArEoABaAAEAAAAAAABiAAAAMJABAAGOgAgADKQAQABgA", // excludes date information for testing
+              );
+            });
+          });
+        });
+      });
+    });
   });
 
   describe("when fides_embed is true", () => {
