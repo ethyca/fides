@@ -136,13 +136,17 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
       consentContext,
     });
 
+    const disabled =
+      item.notice.consent_mechanism === ConsentMechanism.NOTICE_ONLY ||
+      (options.fidesDisabledNotices?.includes(item.notice.notice_key) ?? false);
+
     return {
       noticeKey: item.notice.notice_key,
       title: item.bestTranslation?.title || item.notice.name || "",
       description: item.bestTranslation?.description,
       checked,
       consentMechanism: item.notice.consent_mechanism,
-      disabled: item.notice.consent_mechanism === ConsentMechanism.NOTICE_ONLY,
+      disabled,
       gpcStatus,
     };
   });
@@ -168,9 +172,24 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
       consentMethod: ConsentMethod,
       enabledPrivacyNoticeKeys: Array<PrivacyNotice["notice_key"]>,
     ) => {
+      // Get current state of disabled notices to preserve
+      const preservedDisabledKeys = draftEnabledNoticeKeys.filter((key) =>
+        options.fidesDisabledNotices?.includes(key),
+      );
+
+      // Only update non-disabled notices
+      const updatedEnabledKeys = enabledPrivacyNoticeKeys.filter(
+        (key) => !options.fidesDisabledNotices?.includes(key),
+      );
+
+      // Combine preserved and updated states, removing duplicates
+      const finalEnabledKeys = [
+        ...new Set([...preservedDisabledKeys, ...updatedEnabledKeys]),
+      ];
+
       const consentPreferencesToSave = createConsentPreferencesToSave(
         privacyNoticeItems,
-        enabledPrivacyNoticeKeys,
+        finalEnabledKeys,
       );
 
       updateConsentPreferences({
@@ -190,15 +209,16 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
           ),
       });
       // Make sure our draft state also updates
-      setDraftEnabledNoticeKeys(enabledPrivacyNoticeKeys);
+      setDraftEnabledNoticeKeys(finalEnabledKeys);
     },
     [
-      cookie,
-      fidesRegionString,
+      draftEnabledNoticeKeys,
+      privacyNoticeItems,
+      privacyExperienceConfigHistoryId,
       experience,
       options,
-      privacyExperienceConfigHistoryId,
-      privacyNoticeItems,
+      fidesRegionString,
+      cookie,
       servedNoticeHistoryId,
       propertyId,
     ],

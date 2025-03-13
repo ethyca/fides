@@ -200,3 +200,15 @@ To decode this field, use:
 JSON.parse(decodeURIComponent(ot_fides_mapping))
 
 Field defaults to `undefined`.
+
+***
+
+### fides\_disabled\_notices
+
+> **fides\_disabled\_notices**: `string`
+
+A comma-separated list of notice_keys to disable their respective Toggle elements in the CMP Overlay.
+
+For example: "data_sales,data_sharing,analytics"
+
+Defaults to `undefined`.

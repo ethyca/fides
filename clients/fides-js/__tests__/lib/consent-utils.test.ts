@@ -1,5 +1,8 @@
-import { getWindowObjFromPath, isPrivacyExperience } from "~/lib/consent-utils";
-
+import {
+  getWindowObjFromPath,
+  isPrivacyExperience,
+  parseFidesDisabledNotices,
+} from "../../src/lib/consent-utils";
 import mockExperienceJSON from "../__fixtures__/mock_experience.json";
 
 describe("isPrivacyExperience", () => {
@@ -78,4 +81,50 @@ describe("getWindowObjFromPath", () => {
       expect(getWindowObjFromPath(path as any)).toStrictEqual(expected);
     },
   );
+});
+
+describe("parseFidesDisabledNotices", () => {
+  it.each([
+    {
+      label: "undefined input",
+      value: undefined,
+      expected: [],
+    },
+    {
+      label: "empty string",
+      value: "",
+      expected: [],
+    },
+    {
+      label: "single notice",
+      value: "data_sales_and_sharing",
+      expected: ["data_sales_and_sharing"],
+    },
+    {
+      label: "multiple notices",
+      value: "data_sales_and_sharing,targeted_advertising,analytics_cookies",
+      expected: [
+        "data_sales_and_sharing",
+        "targeted_advertising",
+        "analytics_cookies",
+      ],
+    },
+    {
+      label: "notices with whitespace",
+      value:
+        " data_sales_and_sharing , targeted_advertising , analytics_cookies ",
+      expected: [
+        "data_sales_and_sharing",
+        "targeted_advertising",
+        "analytics_cookies",
+      ],
+    },
+    {
+      label: "notices with empty values",
+      value: "data_sales_and_sharing,,analytics_cookies,",
+      expected: ["data_sales_and_sharing", "analytics_cookies"],
+    },
+  ])("returns $expected when input is $label", ({ value, expected }) => {
+    expect(parseFidesDisabledNotices(value)).toStrictEqual(expected);
+  });
 });
