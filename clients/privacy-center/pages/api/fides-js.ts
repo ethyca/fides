@@ -229,7 +229,8 @@ export default async function handler(
   }
 
   const gppEnabled =
-    (!!experience?.gpp_settings?.cmp_api_required || forcedGppQuery === "true") &&
+    (!!experience?.gpp_settings?.cmp_api_required ||
+      forcedGppQuery === "true") &&
     forcedGppQuery !== "debug";
 
   // Create the FidesConfig JSON that will be used to initialize fides.js unless in E2E mode (see below)
