@@ -3,49 +3,60 @@ import { CmpApi } from "@iabgpp/cmpapi";
 import { FIDES_SEPARATOR } from "./tcf/constants";
 import { VendorSources } from "./tcf/vendors";
 
+export interface NoticeConsentData {
+  [noticeKey: string]: boolean;
+}
+
 export interface DecodedFidesString {
   tc: string;
   ac: string;
   gpp: string;
+  noticeConsent: string; // Base64 encoded Notice Consent String
 }
 
 /**
  * Decodes a Fides string into its component parts.
  *
- * The Fides string format is: `TC_STRING,AC_STRING,GPP_STRING` where:
+ * The Fides string format is: `TC_STRING,AC_STRING,GPP_STRING,NOTICE_CONSENT_STRING` where:
  * - TC_STRING: The TCF (Transparency & Consent Framework) string
  * - AC_STRING: The Additional Consent string, which is derived from TC_STRING
  * - GPP_STRING: The Global Privacy Platform string
+ * - NOTICE_CONSENT_STRING: A Base64 encoded stringified JSON object containing notice consent preferences
  *
  * Rules:
  * 1. If the string is empty or undefined, all parts are empty strings
  * 2. If only one part exists, it's treated as the TC string
  * 3. AC string can only exist if TC string exists (as it's derived from TC)
  * 4. GPP string is independent and can exist with or without TC/AC strings
+ * 5. Notice Consent String is an optional part that can be used to pass notice consent preferences programatically
  *
  * @example
  * // Complete string with all parts
- * decodeFidesString("CPzvOIA.IAAA,1~2.3.4,DBABLA~BVAUAAAAAWA.QA")
- * // Returns { tc: "CPzvOIA.IAAA", ac: "1~2.3.4", gpp: "DBABLA~BVAUAAAAAWA.QA" }
+ * decodeFidesString("CPzvOIA.IAAA,1~2.3.4,DBABLA~BVAUAAAAAWA.QA,eyJkYXRhX3NhbGVzX2FuZF9zaGFyaW5nIjoxLCJhbmFseXRpY3MiOjB9")
+ * // Returns { tc: "CPzvOIA.IAAA", ac: "1~2.3.4", gpp: "DBABLA~BVAUAAAAAWA.QA", noticeConsent: "eyJkYXRhX3NhbGVzX2FuZF9zaGFyaW5nIjoxLCJhbmFseXRpY3MiOjB9" }
  *
  * // TC string only
  * decodeFidesString("CPzvOIA.IAAA")
- * // Returns { tc: "CPzvOIA.IAAA", ac: "", gpp: "" }
+ * // Returns { tc: "CPzvOIA.IAAA", ac: "", gpp: "", noticeConsent: "" }
  *
  * // GPP string only (with empty TC and AC)
  * decodeFidesString(",,DBABLA~BVAUAAAAAWA.QA")
- * // Returns { tc: "", ac: "", gpp: "DBABLA~BVAUAAAAAWA.QA" }
+ * // Returns { tc: "", ac: "", gpp: "DBABLA~BVAUAAAAAWA.QA", noticeConsent: "" }
  *
  * @param fidesString - The combined Fides string to decode
- * @returns An object containing the decoded TC, AC, and GPP strings
+ * @returns An object containing the decoded TC, AC, GPP, and Notice Consent strings
  */
 export const decodeFidesString = (fidesString: string): DecodedFidesString => {
   if (!fidesString) {
-    return { tc: "", ac: "", gpp: "" };
+    return { tc: "", ac: "", gpp: "", noticeConsent: "" };
   }
 
-  const [tc = "", ac = "", gpp = ""] = fidesString.split(FIDES_SEPARATOR);
-  return tc ? { tc, ac, gpp } : { tc: "", ac: "", gpp };
+  const [tc = "", ac = "", gpp = "", noticeConsent = ""] =
+    fidesString.split(FIDES_SEPARATOR);
+  // If there's no TC, remove AC
+  return tc
+    ? { tc, ac, gpp, noticeConsent }
+    : { tc: "", ac: "", gpp, noticeConsent };
 };
 
 /**
