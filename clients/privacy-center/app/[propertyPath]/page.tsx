@@ -8,7 +8,7 @@
  */
 
 import HomePage from "~/components/HomePage";
-import LoadDataIntoProviders from "~/components/LoadDataIntoProviders";
+import LoadServerEnvironmentIntoStores from "~/components/LoadServerEnvironmentIntoStores";
 import PageLayout from "~/components/PageLayout";
 import { NextSearchParams } from "~/types/next";
 
@@ -39,12 +39,12 @@ const PropertyPathHomePage = async ({
   const isPropertyFoundForPath = !!serverEnvironment.property;
 
   return (
-    <LoadDataIntoProviders serverEnvironment={serverEnvironment}>
+    <LoadServerEnvironmentIntoStores serverEnvironment={serverEnvironment}>
       <PageLayout>
         {/* @ts-expect-error Async Server Component. Remove when upgraded to TypeScript 5.1.3 or higher. */}
         {isPropertyFoundForPath ? <HomePage /> : <Custom404 />}
       </PageLayout>
-    </LoadDataIntoProviders>
+    </LoadServerEnvironmentIntoStores>
   );
 };
 

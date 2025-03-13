@@ -42,6 +42,8 @@ import { useSubscribeToPrivacyExperienceQuery } from "~/features/consent/hooks";
 import { useGetIdVerificationConfigQuery } from "~/features/id-verification";
 import { ConsentPreferences } from "~/types/api";
 
+import ClientMetadata from "./ClientMetadata";
+
 const ConsentPage: NextPage = () => {
   const settings = useSettings();
   const { BASE_64_COOKIE } = settings;
@@ -265,6 +267,12 @@ const ConsentPage: NextPage = () => {
 
   return (
     <Stack as="main" align="center" data-testid="consent">
+      <ClientMetadata
+        title="Privacy Center"
+        description="Privacy Center"
+        icon={config.favicon_path}
+      />
+
       {/* Wait until i18n is initalized so we can diplay the correct language and
        also we can use the correct history ids */}
       {isI18nInitialized && (

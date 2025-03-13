@@ -1,5 +1,7 @@
 "use client";
+
 import { useEffect, useState } from "react";
+
 import { PrivacyCenterEnvironment } from "~/app/server-environment";
 import store from "~/app/store";
 import { loadConfig } from "~/features/common/config.slice";
@@ -8,7 +10,7 @@ import { loadSettings } from "~/features/common/settings.slice";
 import { loadStyles } from "~/features/common/styles.slice";
 import { setLocation } from "~/features/consent/consent.slice";
 
-interface LoadDataIntoProvidersProps {
+interface LoadServerEnvironmentIntoStoresProps {
   children: React.ReactNode;
   serverEnvironment: PrivacyCenterEnvironment;
 }
@@ -22,10 +24,10 @@ interface LoadDataIntoProvidersProps {
  * @returns {ReactElement} The rendered layout component.
  */
 
-const LoadDataIntoProviders = ({
+const LoadServerEnvironmentIntoStores = ({
   children,
   serverEnvironment,
-}: LoadDataIntoProvidersProps) => {
+}: LoadServerEnvironmentIntoStoresProps) => {
   const [hasInitializedStores, setHasInitializedStores] = useState(false);
 
   useEffect(() => {
@@ -42,4 +44,4 @@ const LoadDataIntoProviders = ({
 
   return <div>{hasInitializedStores && children}</div>;
 };
-export default LoadDataIntoProviders;
+export default LoadServerEnvironmentIntoStores;

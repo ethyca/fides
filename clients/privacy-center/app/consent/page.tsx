@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
+
 import ConsentPage from "~/components/ConsentPage";
 import PageLayout from "~/components/PageLayout";
 import { useHasConfig } from "~/features/common/config.slice";
@@ -20,7 +21,7 @@ const Consent = () => {
     if (!hasConfig) {
       router.push(`/`);
     }
-  }, [hasConfig]);
+  }, [hasConfig, router]);
 
   if (!hasConfig) {
     return null;
@@ -32,4 +33,5 @@ const Consent = () => {
     </PageLayout>
   );
 };
+
 export default Consent;

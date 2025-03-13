@@ -13,6 +13,7 @@
 import "./ui/global.scss";
 
 import { ReactElement } from "react";
+
 import Providers from "~/components/Providers";
 
 const Layout = async ({ children }: { children: ReactElement }) => {
