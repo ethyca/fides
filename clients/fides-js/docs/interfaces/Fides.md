@@ -362,3 +362,56 @@ preferences) or in the case when the previous consent is no longer valid.
 #### Returns
 
 `boolean`
+
+***
+
+### geolocation?
+
+> `optional` **geolocation**: `any`
+
+The detected geolocation that Fides uses to determine the user's experience.
+This field is read-only.
+
+#### Example
+
+```ts
+{
+  "country": "ca",
+  "location": "ca-on",
+  "region": "on"
+}
+```
+
+***
+
+### locale
+
+> **locale**: `string`
+
+The detected i18n locale that Fides uses to determine the language shown to the user.
+
+#### Example
+
+```ts
+"en"
+```
+
+This field is read-only.
+
+***
+
+### identity
+
+> **identity**: `Record`\<`string`, `string`\>
+
+The user's identity values, which only include a copy of the fides user device id that we store in the fides_consent cookie e.g.
+
+#### Example
+
+```ts
+{
+  "fides_user_device_id": "1234-"
+}
+```
+
+This field is read-only.
