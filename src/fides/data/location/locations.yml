@@ -778,7 +778,7 @@ locations:
   name: Croatia
   belongs_to: [eea]
   regulation: [gdpr]
-  default_selected: TrueF
+  default_selected: True
   is_country: True
 
   #####################
