@@ -4,16 +4,20 @@ import {
   DefaultCell,
   IndeterminateCheckboxCell,
 } from "~/features/common/table/v2";
+import {
+  DefaultHeaderCell,
+  ListCellExpandable,
+} from "~/features/common/table/v2/cells";
+import { DiscoveredAssetActionsCell } from "~/features/data-discovery-and-detection/action-center/tables/cells/DiscoveredAssetActionsCell";
 import DiscoveredAssetDataUseCell from "~/features/data-discovery-and-detection/action-center/tables/cells/DiscoveredAssetDataUseCell";
-import { DiscoveredAssetResponse } from "~/features/data-discovery-and-detection/action-center/types";
+import { StagedResourceAPIResponse } from "~/types/api";
 
-import { DiscoveredAssetActionsCell } from "../tables/cells/DiscoveredAssetActionsCell";
 import { SystemCell } from "../tables/cells/SystemCell";
 
 export const useDiscoveredAssetsColumns = () => {
-  const columnHelper = createColumnHelper<DiscoveredAssetResponse>();
+  const columnHelper = createColumnHelper<StagedResourceAPIResponse>();
 
-  const columns: ColumnDef<DiscoveredAssetResponse, any>[] = [
+  const columns: ColumnDef<StagedResourceAPIResponse, any>[] = [
     columnHelper.display({
       id: "select",
       cell: ({ row }) => (
@@ -100,6 +104,20 @@ export const useDiscoveredAssetsColumns = () => {
       ),
       header: "Discovery",
     }), */
+    columnHelper.accessor((row) => row.page, {
+      id: "page",
+      cell: (props) => (
+        <ListCellExpandable
+          values={props.getValue()}
+          valueSuffix="pages"
+          cellProps={props}
+        />
+      ),
+      header: (props) => <DefaultHeaderCell value="Detected on" {...props} />,
+      meta: {
+        showHeaderMenu: true,
+      },
+    }),
     columnHelper.display({
       id: "actions",
       cell: (props) => (

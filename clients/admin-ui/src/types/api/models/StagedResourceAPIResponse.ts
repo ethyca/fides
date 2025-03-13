@@ -55,6 +55,10 @@ export type StagedResourceAPIResponse = {
    * The parent(s) of the asset, i.e. from where the asset was identified
    */
   parent?: Array<string>;
+  /**
+   * The page(s) where the asset was discovered
+   */
+  page?: Array<string>;
   parent_domain?: string | null;
   /**
    * The location(s) from which the asset was discovered
