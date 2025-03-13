@@ -21,7 +21,8 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.57.0...main)
 
-
+### Developer experience
+- Adding Docker layer caching for the backend check's build step [#5882](https://github.com/ethyca/fides/pull/5882)
 
 
 ## [2.57.0](https://github.com/ethyca/fides/compare/2.56.2...2.57.0)
