@@ -81,11 +81,12 @@ WORKDIR /fides
 # Immediately flush to stdout, globally
 ENV PYTHONUNBUFFERED=TRUE
 
-# Reset the busted git cache and configure git
-RUN if [ -d ".git" ]; then \
-      git rm --cached -r . || true; \
-    fi && \
-    git config --global --add safe.directory /fides # This is a required workaround due to: https://github.com/ethyca/fides/issues/2440
+# Reset the busted git cache
+RUN git rm --cached -r .
+
+# This is a required workaround due to: https://github.com/ethyca/fides/issues/2440
+RUN git config --global --add safe.directory /fides
+
 # Enable detection of running within Docker
 ENV RUNNING_IN_DOCKER=true
 
@@ -159,8 +160,8 @@ CMD ["npm", "run", "start"]
 FROM backend AS prod
 
 # Copy frontend build over
-USER root
 COPY --from=built_frontend /fides/clients/admin-ui/out/ /fides/src/fides/ui-build/static/admin
+USER root
 # Install without a symlink
 RUN python setup.py sdist
 
