@@ -62,8 +62,9 @@ jobs:
         uses: actions/cache@v3
         with:
           path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          key: ${{ runner.os }}-buildx-${{ matrix.python_version }}-${{ hashFiles('requirements.txt', 'optional-requirements.txt', 'dev-requirements.txt') }}
           restore-keys: |
+            ${{ runner.os }}-buildx-${{ matrix.python_version }}-
             ${{ runner.os }}-buildx-
 
       - name: Build container
