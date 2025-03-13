@@ -19,9 +19,11 @@ These tests are in the `test/ctl` subdir to load async db fixtures correctly.
 @pytest.fixture(autouse=True)
 async def clear_table(async_session):
     """Ensure a clean table state before and after each test."""
-    await async_session.execute(delete(Asset))
+    async with async_session.begin():
+        await async_session.execute(delete(Asset))
     yield
-    await async_session.execute(delete(Asset))
+    async with async_session.begin():
+        await async_session.execute(delete(Asset))
 
 
 @pytest.fixture()
@@ -78,14 +80,12 @@ class TestUpsertAsset:
 
         Ensures that upsert function defines uniqueness criteria based on input data.
         """
-        created_asset = await Asset.upsert_async(
-            async_session=async_session,
-            data=javascript_asset_data,
-        )
+        async with async_session.begin():
+            created_asset = await Asset.upsert_async(
+                async_session=async_session,
+                data=javascript_asset_data,
+            )
 
-        # ensure our asset was stored in the DB properly
-        created_asset: Asset = (
-            (
             # ensure our asset was stored in the DB properly
             created_asset: Asset = (
                 (
