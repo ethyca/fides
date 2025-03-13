@@ -63,8 +63,6 @@ def generate_buildx_command(
         "--platform",
         DOCKER_PLATFORMS,
         dockerfile_path,
-        "--cache-from=type=gha",
-        "--cache-to=type=gha,mode=max",
     )
 
     for tag in image_tags:

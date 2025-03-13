@@ -117,9 +117,7 @@ COPY clients/fides-js/package.json ./fides-js/package.json
 COPY clients/admin-ui/package.json ./admin-ui/package.json
 COPY clients/privacy-center/package.json ./privacy-center/package.json
 
-# Use BuildKit cache for node_modules
-RUN --mount=type=cache,target=/root/.npm \
-    npm install
+RUN npm install
 
 COPY clients/ .
 
