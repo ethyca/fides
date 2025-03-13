@@ -44,6 +44,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Updated privacy request handling to still succeed if not all identities are provided [#5836](https://github.com/ethyca/fides/pull/5836)
 - Refactored privacy request processing to never re-use sessions [#5862](https://github.com/ethyca/fides/pull/5862)
 - Updated hover state of menu items to be more visible [#5868](https://github.com/ethyca/fides/pull/5868)
+- Use `gpp_settings.cmp_api_required` to determine if GPP CMP API should be included in bundle [#5883](https://github.com/ethyca/fides/pull/5883)
 
 ### Developer Experience
 - Moved non-prod Admin UI dependencies to devDependencies [#5832](https://github.com/ethyca/fides/pull/5832)
