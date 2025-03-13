@@ -40,6 +40,11 @@ const validationSchema = Yup.object().shape({
   name: Yup.string().required().label("Name"),
   execution_frequency: Yup.string().nullable().label("Execution frequency"),
   execution_start_date: Yup.date().nullable().label("Execution start date"),
+  datasource_params: Yup.object().shape({
+    locations: Yup.array().label("Locations"),
+    exclude_domains: Yup.array().label("Exclude domains"),
+    sitemap_url: Yup.string().nullable().url().label("Sitemap URL"),
+  }),
 });
 
 const ConfigureWebsiteMonitorForm = ({
@@ -106,10 +111,7 @@ const ConfigureWebsiteMonitorForm = ({
       ...executionInfo,
       key: monitor?.key || formatKey(values.name),
       classify_params: monitor?.classify_params || {},
-      datasource_params: {
-        locations: values.datasource_params?.locations ?? [],
-        exclude_domains: [],
-      },
+      datasource_params: values.datasource_params || {},
       connection_config_key: integrationId,
     };
     onSubmit(payload);
@@ -142,6 +144,22 @@ const ConfigureWebsiteMonitorForm = ({
                 label="Name"
                 isRequired
                 variant="stacked"
+              />
+              <CustomTextInput
+                name="datasource_params.sitemap_url"
+                id="sitemap_url"
+                label="Sitemap URL"
+                variant="stacked"
+              />
+              <ControlledSelect
+                mode="tags"
+                name="datasource_params.exclude_domains"
+                placeholder="Enter domains to exclude"
+                id="exclude_domains"
+                label="Exclude domains"
+                options={[]}
+                open={false}
+                layout="stacked"
               />
               <CustomTextInput
                 name="url"
