@@ -4,7 +4,6 @@ import { Form, Formik } from "formik";
 import { useRouter } from "next/router";
 import * as Yup from "yup";
 
-import { useAppSelector } from "~/app/hooks";
 import { ControlledSelect } from "~/features/common/form/ControlledSelect";
 import {
   CustomDateTimeInput,
@@ -13,10 +12,7 @@ import {
 import { enumToOptions } from "~/features/common/helpers";
 import { PRIVACY_NOTICE_REGION_RECORD } from "~/features/common/privacy-notice-regions";
 import { formatKey } from "~/features/datastore-connections/add-connection/helpers";
-import {
-  selectLocationsRegulations,
-  useGetLocationsRegulationsQuery,
-} from "~/features/locations/locations.slice";
+import { useGetOnlyCountryLocationsQuery } from "~/features/locations/locations.slice";
 import { getSelectedRegionIds } from "~/features/privacy-experience/form/helpers";
 import {
   MonitorConfig,
@@ -66,12 +62,12 @@ const ConfigureWebsiteMonitorForm = ({
     ? parseISO(monitor.execution_start_date)
     : Date.now();
 
-  useGetLocationsRegulationsQuery();
-  const locationsRegulations = useAppSelector(selectLocationsRegulations);
+  const { data: locationRegulationResponse, isLoading: locationsLoading } =
+    useGetOnlyCountryLocationsQuery();
 
   const allSelectedRegions = [
-    ...getSelectedRegionIds(locationsRegulations.locations),
-    ...getSelectedRegionIds(locationsRegulations.location_groups),
+    ...getSelectedRegionIds(locationRegulationResponse?.locations ?? []),
+    ...getSelectedRegionIds(locationRegulationResponse?.location_groups ?? []),
   ];
 
   const regionOptions = allSelectedRegions.map((region) => ({
@@ -175,6 +171,7 @@ const ConfigureWebsiteMonitorForm = ({
                 name="datasource_params.locations"
                 id="locations"
                 label="Locations"
+                loading={locationsLoading}
                 options={regionOptions}
                 optionFilterProp="label"
                 tooltip={REGIONS_TOOLTIP_COPY}
