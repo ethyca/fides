@@ -1,7 +1,8 @@
 "use client";
-import { useConfig } from "~/features/common/config.slice";
-import CustomStylesWrapper from "./CustomStylesWrapper";
 
+import { useConfig } from "~/features/common/config.slice";
+
+import CustomStylesWrapper from "./CustomStylesWrapper";
 import Header from "./Header";
 
 interface PageLayoutProps {

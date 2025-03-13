@@ -1,9 +1,11 @@
 "use client";
+
+import { useParams, useRouter } from "next/navigation";
+import { useEffect } from "react";
+
 import ConsentPage from "~/components/ConsentPage";
 import PageLayout from "~/components/PageLayout";
 import { useHasConfig } from "~/features/common/config.slice";
-import { useParams, useRouter } from "next/navigation";
-import { useEffect } from "react";
 
 /**
  * Renders the consent page for a custom property path.
