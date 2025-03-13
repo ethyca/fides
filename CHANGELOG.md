@@ -21,8 +21,8 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.57.0...main)
 
-
-
+### Added
+- Added option for disabling consent notice toggles [#5872](https://github.com/ethyca/fides/pull/5872)
 
 ## [2.57.0](https://github.com/ethyca/fides/compare/2.56.2...2.57.0)
 
