@@ -1521,9 +1521,11 @@ location_groups:
 - continent: North America
   id: ca
   name: Canada
+  is_country: True
 - continent: North America
   id: us
   name: United States
+  is_country: True
 - continent: North America
   id: mexico_central_america
   name: Mexico and Central America
