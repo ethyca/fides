@@ -2540,8 +2540,8 @@ describe("Consent overlay", () => {
               id: "pri_notice-applied",
               notice_key: "applied",
               has_gpc_flag: true,
-              consent_mechanism: ConsentMechanism.OPT_OUT,
-              default_preference: UserConsentPreference.OPT_IN,
+              consent_mechanism: ConsentMechanism.OPT_IN,
+              default_preference: UserConsentPreference.OPT_OUT,
             }),
             mockPrivacyNotice({
               title: "Notice only",
