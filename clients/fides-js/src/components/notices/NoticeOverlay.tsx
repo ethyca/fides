@@ -182,10 +182,9 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
         (key) => !options.fidesDisabledNotices?.includes(key),
       );
 
-      // Combine preserved and updated states
+      // Combine preserved and updated states, removing duplicates
       const finalEnabledKeys = [
-        ...preservedDisabledKeys,
-        ...updatedEnabledKeys,
+        ...new Set([...preservedDisabledKeys, ...updatedEnabledKeys]),
       ];
 
       const consentPreferencesToSave = createConsentPreferencesToSave(

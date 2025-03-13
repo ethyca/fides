@@ -200,6 +200,9 @@ To decode this field, use:
 JSON.parse(decodeURIComponent(ot_fides_mapping))
 
 Field defaults to `undefined`.
+
+***
+
 ### fides\_disabled\_notices
 
 > **fides\_disabled\_notices**: `string`
