@@ -19,11 +19,9 @@ These tests are in the `test/ctl` subdir to load async db fixtures correctly.
 @pytest.fixture(autouse=True)
 async def clear_table(async_session):
     """Ensure a clean table state before and after each test."""
-    async with async_session.begin():
-        await async_session.execute(delete(Asset))
+    await async_session.execute(delete(Asset))
     yield
-    async with async_session.begin():
-        await async_session.execute(delete(Asset))
+    await async_session.execute(delete(Asset))
 
 
 @pytest.fixture()
@@ -80,12 +78,14 @@ class TestUpsertAsset:
 
         Ensures that upsert function defines uniqueness criteria based on input data.
         """
-        async with async_session.begin():
-            created_asset = await Asset.upsert_async(
-                async_session=async_session,
-                data=javascript_asset_data,
-            )
+        created_asset = await Asset.upsert_async(
+            async_session=async_session,
+            data=javascript_asset_data,
+        )
 
+        # ensure our asset was stored in the DB properly
+        created_asset: Asset = (
+            (
             # ensure our asset was stored in the DB properly
             created_asset: Asset = (
                 (
@@ -295,12 +295,13 @@ class TestUpsertAsset:
         Ensures the upsert function raises a ValueError if an ID is provided that does not exist in the DB.
         """
         # set a non-existent ID
-        javascript_asset_data["id"] = str(uuid4())
-        with pytest.raises(ValueError) as e:
-            await Asset.upsert_async(
-                async_session=async_session,
-                data=javascript_asset_data,
-            )
+        async with async_session.begin():
+            javascript_asset_data["id"] = str(uuid4())
+            with pytest.raises(ValueError) as e:
+                await Asset.upsert_async(
+                    async_session=async_session,
+                    data=javascript_asset_data,
+                )
 
     async def test_upsert_asset_requires_uniqueness_attributes(
         self, async_session, javascript_asset_data
@@ -309,12 +310,13 @@ class TestUpsertAsset:
         Ensures the upsert function raises a ValueError if required uniqueness attributes are not provided.
         """
         # remove a required attribute
-        del javascript_asset_data["domain"]
-        with pytest.raises(ValueError) as e:
-            await Asset.upsert_async(
-                async_session=async_session,
-                data=javascript_asset_data,
-            )
+        async with async_session.begin():
+            del javascript_asset_data["domain"]
+            with pytest.raises(ValueError) as e:
+                await Asset.upsert_async(
+                    async_session=async_session,
+                    data=javascript_asset_data,
+                )
 
 
 class TestGetAssetBySystem:
