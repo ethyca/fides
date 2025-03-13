@@ -73,7 +73,7 @@ RUN apt-get update && \
 COPY --from=compile_image /opt/fides /opt/fides
 ENV PATH=/opt/fides/bin:$PATH
 
-# General Application Setup ##
+# General Application Setup
 USER fidesuser
 COPY --chown=fidesuser:fidesgroup . /fides
 WORKDIR /fides
@@ -81,12 +81,11 @@ WORKDIR /fides
 # Immediately flush to stdout, globally
 ENV PYTHONUNBUFFERED=TRUE
 
-# Reset the busted git cache
-RUN git rm --cached -r .
-
-# This is a required workaround due to: https://github.com/ethyca/fides/issues/2440
-RUN git config --global --add safe.directory /fides
-
+# Reset the busted git cache and configure git
+RUN if [ -d ".git" ]; then \
+      git rm --cached -r . || true; \
+    fi && \
+    git config --global --add safe.directory /fides # This is a required workaround due to: https://github.com/ethyca/fides/issues/2440
 # Enable detection of running within Docker
 ENV RUNNING_IN_DOCKER=true
 
