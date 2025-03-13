@@ -353,7 +353,7 @@ export const stubDatamap = () => {
 };
 
 export const stubLocations = () => {
-  cy.intercept("GET", "/api/v1/plus/locations", {
+  cy.intercept("GET", "/api/v1/plus/locations*", {
     fixture: "locations/list.json",
   }).as("getLocations");
   cy.intercept("PATCH", "/api/v1/plus/locations", {
