@@ -213,12 +213,13 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
       setDraftEnabledNoticeKeys(finalEnabledKeys);
     },
     [
-      cookie,
-      fidesRegionString,
+      draftEnabledNoticeKeys,
+      privacyNoticeItems,
+      privacyExperienceConfigHistoryId,
       experience,
       options,
-      privacyExperienceConfigHistoryId,
-      privacyNoticeItems,
+      fidesRegionString,
+      cookie,
       servedNoticeHistoryId,
       propertyId,
     ],
