@@ -15,180 +15,239 @@ locations:
 - continent: Africa
   id: er
   name: Eritrea
+  is_country: True
 - continent: Africa
   id: dj
   name: Djibouti
+  is_country: True
 - continent: Africa
   id: mr
   name: Mauritania
+  is_country: True
 - continent: Africa
   id: na
   name: Namibia
+  is_country: True
 - continent: Africa
   id: gh
   name: Ghana
+  is_country: True
 - continent: Africa
   id: ss
   name: South Sudan
+  is_country: True
 - continent: Africa
   id: sc
   name: Seychelles
+  is_country: True
 - continent: Africa
   id: io
   name: British Indian Ocean Territory
+  is_country: True
 - continent: Africa
   id: gq
   name: Equatorial Guinea
+  is_country: True
 - continent: Africa
   id: ao
   name: Angola
+  is_country: True
 - continent: Africa
   id: cg
   name: Republic of the Congo
+  is_country: True
 - continent: Africa
   id: bw
   name: Botswana
+  is_country: True
 - continent: Africa
   id: bi
   name: Burundi
+  is_country: True
 - continent: Africa
   id: dz
   name: Algeria
+  is_country: True
 - continent: Africa
   id: td
   name: Chad
+  is_country: True
 - continent: Africa
   id: ng
   name: Nigeria
+  is_country: True
 - continent: Africa
   id: tz
   name: Tanzania
+  is_country: True
 - continent: Africa
   id: eh
   name: Western Sahara
+  is_country: True
 - continent: Africa
   id: sn
   name: Senegal
+  is_country: True
 - continent: Africa
   id: lr
   name: Liberia
+  is_country: True
 - continent: Africa
   id: za
   name: South Africa
+  is_country: True
 - continent: Africa
   id: cv
   name: Cape Verde
+  is_country: True
 - continent: Africa
   id: gm
   name: Gambia
+  is_country: True
 - continent: Africa
   id: sd
   name: Sudan
+  is_country: True
 - continent: Africa
   id: km
   name: Comoros
+  is_country: True
 - continent: Africa
   id: sz
   name: Eswatini
+  is_country: True
 - continent: Africa
   id: ug
   name: Uganda
+  is_country: True
 - continent: Africa
   id: mg
   name: Madagascar
+  is_country: True
 - continent: Africa
   id: rw
   name: Rwanda
+  is_country: True
 - continent: Africa
   id: cd
   name: DR Congo
+  is_country: True
 - continent: Africa
   id: cm
   name: Cameroon
+  is_country: True
 - continent: Africa
   id: sh
   name: Saint Helena, Ascension and Tristan da Cunha
+  is_country: True
 - continent: Africa
   id: tg
   name: Togo
+  is_country: True
 - continent: Africa
   id: mu
   name: Mauritius
+  is_country: True
 - continent: Africa
   id: ne
   name: Niger
+  is_country: True
 - continent: Africa
   id: bj
   name: Benin
+  is_country: True
 - continent: Africa
   id: eg
   name: Egypt
+  is_country: True
 - continent: Africa
   id: ls
   name: Lesotho
+  is_country: True
 - continent: Africa
   id: et
   name: Ethiopia
+  is_country: True
 - continent: Africa
   id: ma
   name: Morocco
+  is_country: True
 - continent: Africa
   id: yt
   name: Mayotte
+  is_country: True
 - continent: Africa
   id: bf
   name: Burkina Faso
+  is_country: True
 - continent: Africa
   id: re
   name: Réunion
+  is_country: True
 - continent: Africa
   id: st
   name: São Tomé and Príncipe
+  is_country: True
 - continent: Africa
   id: cf
   name: Central African Republic
+  is_country: True
 - continent: Africa
   id: mz
   name: Mozambique
+  is_country: True
 - continent: Africa
   id: mw
   name: Malawi
+  is_country: True
 - continent: Africa
   id: ml
   name: Mali
+  is_country: True
 - continent: Africa
   id: zm
   name: Zambia
+  is_country: True
 - continent: Africa
   id: ly
   name: Libya
+  is_country: True
 - continent: Africa
   id: gw
   name: Guinea-Bissau
+  is_country: True
 - continent: Africa
   id: so
   name: Somalia
+  is_country: True
 - continent: Africa
   id: ke
   name: Kenya
+  is_country: True
 - continent: Africa
   id: gn
   name: Guinea
+  is_country: True
 - continent: Africa
   id: zw
   name: Zimbabwe
+  is_country: True
 - continent: Africa
   id: tn
   name: Tunisia
+  is_country: True
 - continent: Africa
   id: sl
   name: Sierra Leone
+  is_country: True
 - continent: Africa
   id: ga
   name: Gabon
+  is_country: True
 - continent: Africa
   id: ci
   name: Ivory Coast
+  is_country: True
 
   ############
   ### Asia ###
@@ -196,152 +255,201 @@ locations:
 - continent: Asia
   id: jo
   name: Jordan
+  is_country: True
 - continent: Asia
   id: pk
   name: Pakistan
+  is_country: True
 - continent: Asia
   id: kp
   name: North Korea
+  is_country: True
 - continent: Asia
   id: mo
   name: Macau
+  is_country: True
 - continent: Asia
   id: am
   name: Armenia
+  is_country: True
 - continent: Asia
   id: sy
   name: Syria
+  is_country: True
 - continent: Asia
   id: tj
   name: Tajikistan
+  is_country: True
 - continent: Asia
   id: sa
   name: Saudi Arabia
+  is_country: True
 - continent: Asia
   id: kr
   name: South Korea
+  is_country: True
 - continent: Asia
   id: np
   name: Nepal
+  is_country: True
 - continent: Asia
   id: ph
   name: Philippines
+  is_country: True
 - continent: Asia
   id: iq
   name: Iraq
+  is_country: True
 - continent: Asia
   id: lb
   name: Lebanon
+  is_country: True
 - continent: Asia
   id: mn
   name: Mongolia
+  is_country: True
 - continent: Asia
   id: ps
   name: Palestine
+  is_country: True
 - continent: Asia
   id: ye
   name: Yemen
+  is_country: True
 - continent: Asia
   id: jp
   name: Japan
+  is_country: True
 - continent: Asia
   id: kz
   name: Kazakhstan
+  is_country: True
 - continent: Asia
   id: lk
   name: Sri Lanka
+  is_country: True
 - continent: Asia
   id: mm
   name: Myanmar
+  is_country: True
 - continent: Asia
   id: kg
   name: Kyrgyzstan
+  is_country: True
 - continent: Asia
   id: cn
   name: China
   regulation: [pipl]
+  is_country: True
 - continent: Asia
   id: af
   name: Afghanistan
+  is_country: True
 - continent: Asia
   id: om
   name: Oman
+  is_country: True
 - continent: Asia
   id: in
   name: India
   regulation: [dpdpa_india]
+  is_country: True
 - continent: Asia
   id: la
   name: Laos
+  is_country: True
 - continent: Asia
   id: uz
   name: Uzbekistan
+  is_country: True
 - continent: Asia
   id: mv
   name: Maldives
+  is_country: True
 - continent: Asia
   id: id
   name: Indonesia
+  is_country: True
 - continent: Asia
   id: vn
   name: Vietnam
+  is_country: True
 - continent: Asia
   id: my
   name: Malaysia
+  is_country: True
 - continent: Asia
   id: tw
   name: Taiwan
+  is_country: True
 - continent: Asia
   id: kh
   name: Cambodia
+  is_country: True
 - continent: Asia
   id: ae
   name: United Arab Emirates
+  is_country: True
 - continent: Asia
   id: hk
   name: Hong Kong
+  is_country: True
 - continent: Asia
   id: ge
   name: Georgia
+  is_country: True
 - continent: Asia
   id: bd
   name: Bangladesh
+  is_country: True
 - continent: Asia
   id: kw
   name: Kuwait
+  is_country: True
 - continent: Asia
   id: tm
   name: Turkmenistan
+  is_country: True
 - continent: Asia
   id: qa
   name: Qatar
+  is_country: True
 - continent: Asia
   id: bh
   name: Bahrain
+  is_country: True
 - continent: Asia
   id: bn
   name: Brunei
+  is_country: True
 - continent: Asia
   id: th
   name: Thailand
+  is_country: True
 - continent: Asia
   id: bt
   name: Bhutan
+  is_country: True
 - continent: Asia
   id: sg
   name: Singapore
+  is_country: True
 - continent: Asia
   id: il
   name: Israel
+  is_country: True
 - continent: Asia
   id: az
   name: Azerbaijan
+  is_country: True
 - continent: Asia
   id: tl
   name: Timor-Leste
+  is_country: True
 - continent: Asia
   id: ir
   name: Iran
+  is_country: True
 
   ##############
   ### Europe ###
@@ -350,274 +458,328 @@ locations:
   id: tr
   name: Turkey
   belongs_to: [non_eea]
+  is_country: True
 - continent: Europe
   id: mk
   name: North Macedonia
   belongs_to: [non_eea]
+  is_country: True
 - continent: Europe
   id: ie
   name: Ireland
   belongs_to: [eea]
   regulation: [gdpr]
   default_selected: True
+  is_country: True
 - continent: Europe
   id: dk
   name: Denmark
   belongs_to: [eea]
   regulation: [gdpr]
   default_selected: True
+  is_country: True
 - continent: Europe
   id: sk
   name: Slovakia
   belongs_to: [eea]
   regulation: [gdpr]
   default_selected: True
+  is_country: True
 - continent: Europe
   id: md
   name: Moldova
   belongs_to: [non_eea]
+  is_country: True
 - continent: Europe
   id: ax
   name: Åland Islands
+  is_country: True
 - continent: Europe
   id: pl
   name: Poland
   belongs_to: [eea]
   regulation: [gdpr]
   default_selected: True
+  is_country: True
 - continent: Europe
   id: ba
   name: Bosnia and Herzegovina
   belongs_to: [non_eea]
+  is_country: True
 - continent: Europe
   id: sm
   name: San Marino
   belongs_to: [non_eea]
+  is_country: True
 - continent: Europe
   id: cz
   name: Czechia
   belongs_to: [eea]
   regulation: [gdpr]
   default_selected: True
+  is_country: True
 - continent: Europe
   id: ee
   name: Estonia
   belongs_to: [eea]
   regulation: [gdpr]
   default_selected: True
+  is_country: True
 - continent: Europe
   id: xk
   name: Kosovo
   belongs_to: [non_eea]
+  is_country: True
 - continent: Europe
   id: fo
   name: Faroe Islands
+  is_country: True
 - continent: Europe
   id: sj
   name: Svalbard and Jan Mayen
+  is_country: True
 - continent: Europe
   id: gg
   name: Guernsey
+  is_country: True
 - continent: Europe
   id: fr
   name: France
   belongs_to: [eea]
   regulation: [gdpr]
   default_selected: True
+  is_country: True
 - continent: Europe
   id: nl
   name: Netherlands
   belongs_to: [eea]
   regulation: [gdpr]
   default_selected: True
+  is_country: True
 - continent: Europe
   id: fi
   name: Finland
   belongs_to: [eea]
   regulation: [gdpr]
   default_selected: True
+  is_country: True
 - continent: Europe
   id: pt
   name: Portugal
   belongs_to: [eea]
   regulation: [gdpr]
   default_selected: True
+  is_country: True
 - continent: Europe
   id: de
   name: Germany
   belongs_to: [eea]
   regulation: [gdpr]
   default_selected: True
+  is_country: True
 - continent: Europe
   id: mt
   name: Malta
   belongs_to: [eea]
   regulation: [gdpr]
   default_selected: True
+  is_country: True
 - continent: Europe
   id: je
   name: Jersey
+  is_country: True
 - continent: Europe
   id: is
   name: Iceland
   belongs_to: [eea]
   regulation: [gdpr]
   default_selected: True
+  is_country: True
 - continent: Europe
   id: es
   name: Spain
   belongs_to: [eea]
   regulation: [gdpr]
   default_selected: True
+  is_country: True
 - continent: Europe
   id: gi
   name: Gibraltar
+  is_country: True
 - continent: Europe
   id: 'no'
   name: Norway
   belongs_to: [eea]
   regulation: [gdpr]
   default_selected: True
+  is_country: True
 - continent: Europe
   id: cy
   name: Cyprus
   belongs_to: [eea]
   regulation: [gdpr]
   default_selected: True
+  is_country: True
 - continent: Europe
   id: rs
   name: Serbia
   belongs_to: [non_eea]
+  is_country: True
 - continent: Europe
   id: lt
   name: Lithuania
   belongs_to: [eea]
   regulation: [gdpr]
   default_selected: True
+  is_country: True
 - continent: Europe
   id: mc
   name: Monaco
   belongs_to: [non_eea]
+  is_country: True
 - continent: Europe
   id: lu
   name: Luxembourg
   belongs_to: [eea]
   regulation: [gdpr]
   default_selected: True
+  is_country: True
 - continent: Europe
   id: ua
   name: Ukraine
   belongs_to: [non_eea]
+  is_country: True
 - continent: Europe
   id: im
   name: Isle of Man
+  is_country: True
 - continent: Europe
   id: ro
   name: Romania
   belongs_to: [eea]
   regulation: [gdpr]
   default_selected: True
+  is_country: True
 - continent: Europe
   id: be
   name: Belgium
   belongs_to: [eea]
   regulation: [gdpr]
   default_selected: True
+  is_country: True
 - continent: Europe
   id: se
   name: Sweden
   belongs_to: [eea]
   regulation: [gdpr]
   default_selected: True
+  is_country: True
 - continent: Europe
   id: me
   name: Montenegro
   belongs_to: [non_eea]
+  is_country: True
 - continent: Europe
   id: lv
   name: Latvia
   belongs_to: [eea]
   regulation: [gdpr]
   default_selected: True
+  is_country: True
 - continent: Europe
   id: va
   name: Vatican City
   belongs_to: [non_eea]
+  is_country: True
 - continent: Europe
   id: at
   name: Austria
   belongs_to: [eea]
   regulation: [gdpr]
   default_selected: True
+  is_country: True
 - continent: Europe
   id: al
   name: Albania
   belongs_to: [non_eea]
+  is_country: True
 - continent: Europe
   id: li
   name: Liechtenstein
   belongs_to: [eea]
   regulation: [gdpr]
   default_selected: True
+  is_country: True
 - continent: Europe
   id: gr
   name: Greece
   belongs_to: [eea]
   regulation: [gdpr]
   default_selected: True
+  is_country: True
 - continent: Europe
   id: it
   name: Italy
   belongs_to: [eea]
   regulation: [gdpr]
   default_selected: True
+  is_country: True
 - continent: Europe
   id: ad
   name: Andorra
   belongs_to: [non_eea]
+  is_country: True
 - continent: Europe
   id: gb
   name: United Kingdom
   belongs_to: [non_eea]
   regulation: [gdpr_uk]
   default_selected: True
+  is_country: True
 - continent: Europe
   id: ru
   name: Russia
   belongs_to: [non_eea]
+  is_country: True
 - continent: Europe
   id: si
   name: Slovenia
   belongs_to: [eea]
   regulation: [gdpr]
   default_selected: True
+  is_country: True
 - continent: Europe
   id: by
   name: Belarus
   belongs_to: [non_eea]
+  is_country: True
 - continent: Europe
   id: ch
   name: Switzerland
   belongs_to: [non_eea]
   regulation: [nfadp]
+  is_country: True
 - continent: Europe
   id: hu
   name: Hungary
   belongs_to: [eea]
   regulation: [gdpr]
   default_selected: True
+  is_country: True
 - continent: Europe
   id: bg
   name: Bulgaria
   belongs_to: [eea]
   regulation: [gdpr]
   default_selected: True
+  is_country: True
 - continent: Europe
   id: hr
   name: Croatia
   belongs_to: [eea]
   regulation: [gdpr]
-  default_selected: True
+  default_selected: TrueF
+  is_country: True
 
   #####################
   ### North America ###
@@ -626,154 +788,193 @@ locations:
   id: tc
   name: Turks and Caicos Islands
   belongs_to: [caribbean]
+  is_country: True
 - continent: North America
   id: cw
   name: Curaçao
   belongs_to: [caribbean]
+  is_country: True
 - continent: North America
   id: gp
   name: Guadeloupe
   belongs_to: [caribbean]
+  is_country: True
 - continent: North America
   id: um
   name: United States Minor Outlying Islands
+  is_country: True
 - continent: North America
   id: gt
   name: Guatemala
   belongs_to: [mexico_central_america]
+  is_country: True
 - continent: North America
   id: pm
   name: Saint Pierre and Miquelon
+  is_country: True
 - continent: North America
   id: bq
   name: Caribbean Netherlands
   belongs_to: [caribbean]
+  is_country: True
 - continent: North America
   id: gl
   name: Greenland
+  is_country: True
 - continent: North America
   id: sx
   name: Sint Maarten
   belongs_to: [caribbean]
+  is_country: True
 - continent: North America
   id: pa
   name: Panama
   belongs_to: [mexico_central_america]
+  is_country: True
 - continent: North America
   id: aw
   name: Aruba
   belongs_to: [caribbean]
+  is_country: True
 - continent: North America
   id: mq
   name: Martinique
   belongs_to: [caribbean]
+  is_country: True
 - continent: North America
   id: ag
   name: Antigua and Barbuda
   belongs_to: [caribbean]
+  is_country: True
 - continent: North America
   id: bm
   name: Bermuda
+  is_country: True
 - continent: North America
   id: cu
   name: Cuba
   belongs_to: [caribbean]
+  is_country: True
 - continent: North America
   id: gd
   name: Grenada
   belongs_to: [caribbean]
+  is_country: True
 - continent: North America
   id: ni
   name: Nicaragua
   belongs_to: [mexico_central_america]
+  is_country: True
 - continent: North America
   id: lc
   name: Saint Lucia
   belongs_to: [caribbean]
+  is_country: True
 - continent: North America
   id: kn
   name: Saint Kitts and Nevis
   belongs_to: [caribbean]
+  is_country: True
 - continent: North America
   id: do
   name: Dominican Republic
   belongs_to: [caribbean]
+  is_country: True
 - continent: North America
   id: vc
   name: Saint Vincent and the Grenadines
   belongs_to: [caribbean]
+  is_country: True
 - continent: North America
   id: bz
   name: Belize
   belongs_to: [mexico_central_america]
+  is_country: True
 - continent: North America
   id: ht
   name: Haiti
   belongs_to: [caribbean]
+  is_country: True
 - continent: North America
   id: jm
   name: Jamaica
   belongs_to: [caribbean]
+  is_country: True
 - continent: North America
   id: bs
   name: Bahamas
   belongs_to: [caribbean]
+  is_country: True
 - continent: North America
   id: mx
   name: Mexico
   belongs_to: [mexico_central_america]
+  is_country: True
 - continent: North America
   id: mf
   name: Saint Martin
   belongs_to: [caribbean]
+  is_country: True
 - continent: North America
   id: sv
   name: El Salvador
   belongs_to: [mexico_central_america]
+  is_country: True
 - continent: North America
   id: bl
   name: Saint Barthélemy
   belongs_to: [caribbean]
+  is_country: True
 - continent: North America
   id: ai
   name: Anguilla
   belongs_to: [caribbean]
+  is_country: True
 - continent: North America
   id: ms
   name: Montserrat
   belongs_to: [caribbean]
+  is_country: True
 - continent: North America
   id: vg
   name: British Virgin Islands
   belongs_to: [caribbean]
+  is_country: True
 - continent: North America
   id: bb
   name: Barbados
   belongs_to: [caribbean]
+  is_country: True
 - continent: North America
   id: hn
   name: Honduras
   belongs_to: [mexico_central_america]
+  is_country: True
 - continent: North America
   id: ky
   name: Cayman Islands
   belongs_to: [caribbean]
+  is_country: True
 - continent: North America
   id: dm
   name: Dominica
   belongs_to: [caribbean]
+  is_country: True
 - continent: North America
   id: tt
   name: Trinidad and Tobago
   belongs_to: [caribbean]
+  is_country: True
 - continent: North America
   id: cr
   name: Costa Rica
   belongs_to: [mexico_central_america]
+  is_country: True
 - continent: North America
   id: sr
   name: Suriname
   belongs_to: [caribbean]
+  is_country: True
 
   ###############
   ### Oceania ###
@@ -781,84 +982,111 @@ locations:
 - continent: Oceania
   id: cx
   name: Christmas Island
+  is_country: True
 - continent: Oceania
   id: ws
   name: Samoa
+  is_country: True
 - continent: Oceania
   id: pf
   name: French Polynesia
+  is_country: True
 - continent: Oceania
   id: as
   name: American Samoa
+  is_country: True
 - continent: Oceania
   id: nc
   name: New Caledonia
+  is_country: True
 - continent: Oceania
   id: tk
   name: Tokelau
+  is_country: True
 - continent: Oceania
   id: pw
   name: Palau
+  is_country: True
 - continent: Oceania
   id: ki
   name: Kiribati
+  is_country: True
 - continent: Oceania
   id: vu
   name: Vanuatu
+  is_country: True
 - continent: Oceania
   id: pn
   name: Pitcairn Islands
+  is_country: True
 - continent: Oceania
   id: ck
   name: Cook Islands
+  is_country: True
 - continent: Oceania
   id: fj
   name: Fiji
+  is_country: True
 - continent: Oceania
   id: pg
   name: Papua New Guinea
+  is_country: True
 - continent: Oceania
   id: mp
   name: Northern Mariana Islands
+  is_country: True
 - continent: Oceania
   id: nu
   name: Niue
+  is_country: True
 - continent: Oceania
   id: tv
   name: Tuvalu
+  is_country: True
 - continent: Oceania
   id: nf
   name: Norfolk Island
+  is_country: True
 - continent: Oceania
   id: to
   name: Tonga
+  is_country: True
 - continent: Oceania
   id: fm
   name: Micronesia
+  is_country: True
 - continent: Oceania
   id: sb
   name: Solomon Islands
+  is_country: True
 - continent: Oceania
   id: nr
   name: Nauru
+  is_country: True
 - continent: Oceania
   id: wf
   name: Wallis and Futuna
+  is_country: True
 - continent: Oceania
   id: gu
   name: Guam
+  is_country: True
 - continent: Oceania
   id: au
   name: Australia
+  is_country: True
 - continent: Oceania
   id: nz
   name: New Zealand
+  is_country: True
 - continent: Oceania
   id: mh
   name: Marshall Islands
+  is_country: True
 - continent: Oceania
   id: cc
   name: Cocos (Keeling) Islands
+  is_country: True
 
 #####################
 ### South America ###
@@ -866,43 +1094,56 @@ locations:
 - continent: South America
   id: ve
   name: Venezuela
+  is_country: True
 - continent: South America
   id: py
   name: Paraguay
+  is_country: True
 - continent: South America
   id: br
   name: Brazil
   regulation: [lgpd]
+  is_country: True
 - continent: South America
   id: co
   name: Colombia
+  is_country: True
 - continent: South America
   id: pe
   name: Peru
+  is_country: True
 - continent: South America
   id: cl
   name: Chile
+  is_country: True
 - continent: South America
   id: uy
   name: Uruguay
+  is_country: True
 - continent: South America
   id: ar
   name: Argentina
+  is_country: True
 - continent: South America
   id: gy
   name: Guyana
+  is_country: True
 - continent: South America
   id: bo
   name: Bolivia
+  is_country: True
 - continent: South America
   id: gf
   name: French Guiana
+  is_country: True
 - continent: South America
   id: ec
   name: Ecuador
+  is_country: True
 - continent: South America
   id: fk
   name: Falkland Islands
+  is_country: True
 
 #############################
 ### US states/territories ###
