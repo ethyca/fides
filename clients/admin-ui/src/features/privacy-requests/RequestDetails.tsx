@@ -59,7 +59,7 @@ const RequestDetails = ({ subjectRequest }: RequestDetailsProps) => {
         {Object.entries(identity)
           .filter(([, { value }]) => value !== null)
           .map(([key, { value = "", label }]) => {
-            const text = `${value} ${!identityVerifiedAt ? "(Unverified)" : ""}`;
+            const text = `${value}${!identityVerifiedAt ? " (Unverified)" : ""}`;
 
             return (
               <RequestDetailsRow
