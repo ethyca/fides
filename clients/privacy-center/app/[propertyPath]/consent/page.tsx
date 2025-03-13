@@ -21,7 +21,7 @@ const CustomPropertyPathConsentPage = () => {
     if (!hasConfig) {
       router.push(`/${params?.propertyPath}`);
     }
-  }, [hasConfig]);
+  }, [hasConfig, params?.propertyPath, router]);
 
   if (!hasConfig) {
     return null;
