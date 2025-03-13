@@ -36,16 +36,6 @@ jobs:
           python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
           cache: "pip"
 
-      - name: Cache Nox environment
-        uses: actions/cache@v3
-        with:
-          path: |
-            .nox
-            .pytest_cache
-          key: ${{ runner.os }}-nox-pytest-${{ hashFiles('requirements.txt', 'dev-requirements.txt', 'optional-requirements.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-nox-pytest-
-
       - name: Install Nox
         run: pip install nox>=2022
 
