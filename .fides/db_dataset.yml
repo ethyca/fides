@@ -2331,6 +2331,10 @@ dataset:
       data_categories: [system]
     - name: user_assigned_data_categories
       data_categories: [system]
+    - name: user_assigned_data_uses
+      data_categories: [system]
+    - name: user_assigned_system_id
+      data_categories: [system]
     - name: data_uses
       data_categories: [system]
     - name: system_id
