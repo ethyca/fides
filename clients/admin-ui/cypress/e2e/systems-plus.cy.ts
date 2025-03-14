@@ -365,7 +365,7 @@ describe("System management with Plus features", () => {
       cy.url().should("include", DATAMAP_ROUTE);
     });
 
-    it.only("select page checkbox only selects rows on the displayed page", () => {
+    it("select page checkbox only selects rows on the displayed page", () => {
       cy.visit(ADD_SYSTEMS_MULTIPLE_ROUTE);
       cy.wait("@getSystemVendors");
       // unreliable test because when dictionary loads it overrides the rows selected
