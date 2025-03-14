@@ -1,5 +1,6 @@
 import { ColumnDef, createColumnHelper } from "@tanstack/react-table";
 
+import { PRIVACY_NOTICE_REGION_RECORD } from "~/features/common/privacy-notice-regions";
 import {
   DefaultCell,
   IndeterminateCheckboxCell,
@@ -10,7 +11,7 @@ import {
 } from "~/features/common/table/v2/cells";
 import { DiscoveredAssetActionsCell } from "~/features/data-discovery-and-detection/action-center/tables/cells/DiscoveredAssetActionsCell";
 import DiscoveredAssetDataUseCell from "~/features/data-discovery-and-detection/action-center/tables/cells/DiscoveredAssetDataUseCell";
-import { StagedResourceAPIResponse } from "~/types/api";
+import { PrivacyNoticeRegion, StagedResourceAPIResponse } from "~/types/api";
 
 import { SystemCell } from "../tables/cells/SystemCell";
 
@@ -81,7 +82,9 @@ export const useDiscoveredAssetsColumns = () => {
           value={
             props.getValue().length > 1
               ? `${props.getValue().length} locations`
-              : props.getValue()[0]
+              : PRIVACY_NOTICE_REGION_RECORD[
+                  props.getValue()[0] as PrivacyNoticeRegion
+                ]
           }
         />
       ),

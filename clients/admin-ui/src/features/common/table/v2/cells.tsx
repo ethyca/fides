@@ -243,13 +243,19 @@ export const ListCellExpandable = <T,>({
   }, [isExpanded, version]);
 
   return useMemo(() => {
-    if (!values) {
+    if (!values?.length) {
       return null;
     }
 
     if (values.length === 1) {
       return (
-        <Text fontSize="xs" lineHeight={4} fontWeight="normal">
+        <Text
+          fontSize="xs"
+          lineHeight={4}
+          fontWeight="normal"
+          textOverflow="ellipsis"
+          overflow="hidden"
+        >
           {values[0]}
         </Text>
       );
@@ -286,13 +292,16 @@ export const ListCellExpandable = <T,>({
           </>
         )}
         {!isCollapsed && (
-          <List>
+          <List overflow="hidden">
             {values.map((value) => (
               <ListItem
                 key={value}
                 fontSize="xs"
                 lineHeight={4}
                 listStyleType="none"
+                textOverflow="ellipsis"
+                whiteSpace="nowrap"
+                overflow="hidden"
               >
                 {value}
               </ListItem>

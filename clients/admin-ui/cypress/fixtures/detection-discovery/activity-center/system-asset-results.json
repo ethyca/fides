@@ -105,7 +105,8 @@
       "system": "Google Tag Manager",
       "base_url": "https://www.google.com/ccm/collect",
       "size": 0,
-      "method": "POST"
+      "method": "POST",
+      "page": []
     },
     {
       "urn": "my_web_monitor_1.GET.www.googletagmanager.com.https://www.googletagmanager.com/gtag/destination",

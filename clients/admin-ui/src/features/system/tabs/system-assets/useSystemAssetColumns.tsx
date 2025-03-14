@@ -65,21 +65,6 @@ const useSystemAssetColumns = () => {
         disableRowClick: true,
       },
     }),
-    columnHelper.accessor((row) => row.parent, {
-      id: "parent",
-      cell: (props) => (
-        <BadgeCellExpandable
-          values={props.getValue().map((parent: string) => ({
-            label: parent,
-            key: parent,
-          }))}
-        />
-      ),
-      header: "Parent",
-      meta: {
-        width: "auto",
-      },
-    }),
   ];
 
   return columns;

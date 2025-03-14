@@ -342,6 +342,9 @@ describe("Action center", () => {
         cy.get("button").click({ force: true });
         cy.get("li").should("have.length", 3);
       });
+      // show nothing when page field is undefined or []
+      cy.getByTestId("row-2-col-page").should("be.empty");
+      cy.getByTestId("row-3-col-page").should("be.empty");
       cy.getByTestId("column-actions").should("exist");
       cy.getByTestId("row-0-col-actions").within(() => {
         cy.getByTestId("add-btn").should("exist");
