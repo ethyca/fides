@@ -34,6 +34,7 @@ import { resolveConsentValue } from "./consent-value";
 import {
   getCookieByName,
   getOrMakeFidesCookie,
+  getOTConsentCookie,
   isNewFidesCookie,
   makeConsentDefaultsLegacy,
   updateCookieFromExperience,
@@ -269,7 +270,9 @@ export const getInitialFides = ({
     }) => PrivacyExperience;
   }): Partial<FidesGlobal> | null => {
   const hasExistingCookie = !isNewFidesCookie(cookie);
-  if (!hasExistingCookie && !options.fidesString) {
+  const otConsentCookie = !!options.otFidesMapping && getOTConsentCookie();
+  const isOtMigrationMode = !!otConsentCookie && !!options.otFidesMapping;
+  if (!hasExistingCookie && !options.fidesString && !isOtMigrationMode) {
     // A TC str can be injected and take effect even if the user has no previous Fides Cookie
     return null;
   }

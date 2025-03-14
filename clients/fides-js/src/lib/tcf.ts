@@ -6,7 +6,14 @@
  */
 
 import { CmpApi, TCData } from "@iabtechlabtcf/cmpapi";
-import { GVL, Segment, TCModel, TCString } from "@iabtechlabtcf/core";
+import {
+  GVL,
+  PurposeRestriction,
+  RestrictionType,
+  Segment,
+  TCModel,
+  TCString,
+} from "@iabtechlabtcf/core";
 
 import { PrivacyExperience, PrivacyExperienceMinimal } from "./consent-types";
 import { ETHYCA_CMP_ID, FIDES_SEPARATOR } from "./tcf/constants";
@@ -96,6 +103,21 @@ export const generateFidesString = async ({
         if (vendorGvlEntry(vendorId, experience.gvl)) {
           const { id } = decodeVendorId(vendorId);
           tcModel.vendorConsents.set(+id);
+
+          // look up each vendor in the GVL vendors list to see if they have a purpose list.
+          // If they do not it means they have been set in Admin UI as Vendor Overrides to
+          // require consent. In that case we need to set a publisher restriction for the
+          // vendor's flexible purposes.
+          const vendor = experience.gvl?.vendors[id];
+          if (vendor && !vendor?.purposes?.length) {
+            vendor.flexiblePurposes.forEach((purpose) => {
+              const purposeRestriction = new PurposeRestriction();
+              purposeRestriction.purposeId = purpose;
+              purposeRestriction.restrictionType =
+                RestrictionType.REQUIRE_CONSENT;
+              tcModel.publisherRestrictions.add(+id, purposeRestriction);
+            });
+          }
         }
       });
       tcStringPreferences.vendorsLegint.forEach((vendorId) => {

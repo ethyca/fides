@@ -1,6 +1,5 @@
 import pytest
 
-from fides.api.common_exceptions import FidesopsException
 from fides.api.graph.config import (
     Collection,
     FieldAddress,
@@ -9,11 +8,12 @@ from fides.api.graph.config import (
     ObjectField,
     ScalarField,
 )
+from fides.api.util.collection_util import unflatten_dict
 from fides.api.util.saas_util import (
     assign_placeholders,
     merge_datasets,
+    nullsafe_urlencode,
     replace_version,
-    unflatten_dict,
 )
 
 
@@ -505,99 +505,6 @@ class TestAssignPlaceholders:
             == '{"subscriber_ids": []}'
         )
 
-
-@pytest.mark.unit_saas
-class TestUnflattenDict:
-    def test_empty_dict(self):
-        assert unflatten_dict({}) == {}
-
-    def test_empty_dict_value(self):
-        assert unflatten_dict({"A": {}}) == {"A": {}}
-
-    def test_unflattened_dict(self):
-        assert unflatten_dict({"A": "1"}) == {"A": "1"}
-
-    def test_same_level(self):
-        assert unflatten_dict({"A.B": "1", "A.C": "2"}) == {"A": {"B": "1", "C": "2"}}
-
-    def test_mixed_levels(self):
-        assert unflatten_dict(
-            {
-                "A": "1",
-                "B.C": "2",
-                "B.D": "3",
-            }
-        ) == {
-            "A": "1",
-            "B": {"C": "2", "D": "3"},
-        }
-
-    def test_long_path(self):
-        assert unflatten_dict({"A.B.C.D.E.F.G": "1"}) == {
-            "A": {"B": {"C": {"D": {"E": {"F": {"G": "1"}}}}}}
-        }
-
-    def test_single_item_array(self):
-        assert unflatten_dict({"A.0.B": "C"}) == {"A": [{"B": "C"}]}
-
-    def test_multi_item_array(self):
-        assert unflatten_dict({"A.0.B": "C", "A.1.D": "E"}) == {
-            "A": [{"B": "C"}, {"D": "E"}]
-        }
-
-    def test_multi_value_array(self):
-        assert unflatten_dict(
-            {"A.0.B": "C", "A.0.D": "E", "A.1.F": "G", "A.1.H": "I"}
-        ) == {"A": [{"B": "C", "D": "E"}, {"F": "G", "H": "I"}]}
-
-    def test_array_with_scalar_value(self):
-        assert unflatten_dict({"A.0": "B"}) == {"A": ["B"]}
-
-    def test_array_with_scalar_values(self):
-        assert unflatten_dict({"A.0": "B", "A.1": "C"}) == {"A": ["B", "C"]}
-
-    def test_overwrite_existing_values(self):
-        assert unflatten_dict({"A.B": 1, "A.B": 2}) == {"A": {"B": 2}}
-
-    def test_conflicting_types(self):
-        with pytest.raises(FidesopsException):
-            unflatten_dict({"A.B": 1, "A": 2, "A.C": 3})
-
-    def test_mixed_types_in_array(self):
-        assert unflatten_dict({"A.0": "B", "A.1.C": "D"}) == {"A": ["B", {"C": "D"}]}
-
-    def test_data_not_completely_flattened(self):
-        assert unflatten_dict({"A.B.C": 1, "A": {"B.D": 2}}) == {
-            "A": {"B": {"C": 1, "D": 2}}
-        }
-
-    def test_response_with_object_fields_specified(self):
-        assert unflatten_dict(
-            {
-                "address.email": "2a3aaa22b2ccce15ef7a1e94ee@email.com",
-                "address.name": "MASKED",
-                "metadata": {"age": "24", "place": "Bedrock"},
-                "return_path": "",
-                "substitution_data": {
-                    "favorite_color": "SparkPost Orange",
-                    "job": "Software Engineer",
-                },
-                "tags": ["greeting", "prehistoric", "fred", "flintstone"],
-            }
-        ) == {
-            "address": {
-                "email": "2a3aaa22b2ccce15ef7a1e94ee@email.com",
-                "name": "MASKED",
-            },
-            "metadata": {"age": "24", "place": "Bedrock"},
-            "return_path": "",
-            "substitution_data": {
-                "favorite_color": "SparkPost Orange",
-                "job": "Software Engineer",
-            },
-            "tags": ["greeting", "prehistoric", "fred", "flintstone"],
-        }
-
     def test_none_separator(self):
         with pytest.raises(IndexError):
             unflatten_dict({"": "1"}, separator=None)
@@ -632,3 +539,84 @@ class TestReplaceVersion:
             )
             == "saas_config:\n  version: 0.0.3\n  key: example\n  other_version: 0.0.2"
         )
+
+
+@pytest.mark.unit_saas
+class TestNullsafeUrlencode:
+    """Tests for the nullsafe_urlencode function that handles None values in URL encoding"""
+
+    def test_nullsafe_urlencode_simple_dict(self):
+        """Test encoding a simple dictionary with None values"""
+        data = {"name": "John", "email": None, "age": 30}
+        result = nullsafe_urlencode(data)
+
+        assert "name=John" in result
+        assert "email=" in result  # None becomes empty string
+        assert "age=30" in result
+
+    def test_nullsafe_urlencode_nested_dict(self):
+        """Test encoding a nested dictionary with None values"""
+        data = {
+            "user": {
+                "name": "John",
+                "contact": {"email": None, "phone": "123-456-7890"},
+            }
+        }
+        result = nullsafe_urlencode(data)
+
+        assert "user%5Bname%5D=John" in result
+        assert "user%5Bcontact%5D%5Bemail%5D=" in result  # None becomes empty string
+        assert "user%5Bcontact%5D%5Bphone%5D=123-456-7890" in result
+
+    def test_nullsafe_urlencode_with_list(self):
+        """Test encoding data containing lists with None values"""
+        data = {"names": ["John", None, "Jane"], "scores": [10, None, 30]}
+        result = nullsafe_urlencode(data)
+
+        assert "names%5B%5D=John" in result
+        assert "names%5B%5D=" in result  # None becomes empty string
+        assert "names%5B%5D=Jane" in result
+        assert "scores%5B%5D=10" in result
+        assert "scores%5B%5D=" in result  # None becomes empty string
+        assert "scores%5B%5D=30" in result
+
+    def test_nullsafe_urlencode_empty_input(self):
+        """Test encoding empty or None input"""
+        assert nullsafe_urlencode({}) == ""
+
+        # Handle None special case - multidimensional_urlencode requires a dict
+        try:
+            # This should raise a TypeError because multidimensional_urlencode only supports dicts
+            nullsafe_urlencode(None)
+            assert False, "Expected TypeError when passing None to nullsafe_urlencode"
+        except TypeError:
+            # We expect a TypeError, so this is correct behavior
+            pass
+
+    def test_nullsafe_urlencode_complex_structure(self):
+        """Test encoding a complex nested structure with various None values"""
+        data = {
+            "user": {
+                "name": "John",
+                "details": None,
+                "addresses": [
+                    {"street": "123 Main St", "city": None},
+                    None,
+                    {"street": None, "city": "Boston"},
+                ],
+            },
+            "settings": None,
+        }
+        result = nullsafe_urlencode(data)
+
+        # The exact format of the encoded result should contain these parts
+        expected_parts = {
+            "settings=",
+            "user%5Baddresses%5D%5B%5D=%7B%27street%27%3A+%27123+Main+St%27%2C+%27city%27%3A+%27%27%7D",
+            "user%5Baddresses%5D%5B%5D=",
+            "user%5Baddresses%5D%5B%5D=%7B%27street%27%3A+%27%27%2C+%27city%27%3A+%27Boston%27%7D",
+            "user%5Bdetails%5D=",
+            "user%5Bname%5D=John",
+        }
+        result_parts = set(result.split("&"))
+        assert result_parts == expected_parts
