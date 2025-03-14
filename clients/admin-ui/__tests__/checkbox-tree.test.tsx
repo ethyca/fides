@@ -1,13 +1,10 @@
-import { render } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
+import { fireEvent, render } from "@testing-library/react";
 
 import CheckboxTree, {
   ancestorIsSelected,
   getAncestorsAndCurrent,
   getDescendantsAndCurrent,
 } from "~/features/common/CheckboxTree";
-
-const user = userEvent.setup();
 
 const MOCK_NODES = [
   {
@@ -57,12 +54,12 @@ describe("Checkbox tree", () => {
     expect(queryByTestId("checkbox-sibling")).toBeNull();
   });
 
-  it("can expand children", async () => {
+  it("can expand children", () => {
     const { getByTestId, queryByTestId } = render(
       <CheckboxTree nodes={MOCK_NODES} selected={[]} onSelected={jest.fn()} />,
     );
     expect(queryByTestId("checkbox-parent")).toBeNull();
-    await user.click(getByTestId("expand-grandparent"));
+    fireEvent.click(getByTestId("expand-grandparent"));
     expect(getByTestId("checkbox-grandparent")).toBeInTheDocument();
     expect(getByTestId("checkbox-great uncle")).toBeInTheDocument();
     expect(getByTestId("checkbox-parent")).toBeInTheDocument();
@@ -71,7 +68,7 @@ describe("Checkbox tree", () => {
     expect(queryByTestId("checkbox-sibling")).toBeNull();
   });
 
-  it("can add checked values", async () => {
+  it("can add checked values", () => {
     const handleSelected = jest.fn();
     const { getByTestId } = render(
       <CheckboxTree
@@ -80,12 +77,12 @@ describe("Checkbox tree", () => {
         onSelected={handleSelected}
       />,
     );
-    await user.click(getByTestId("checkbox-great uncle"));
+    fireEvent.click(getByTestId("checkbox-great uncle"));
     expect(handleSelected).toBeCalledTimes(1);
     expect(handleSelected).toBeCalledWith(["great uncle"]);
   });
 
-  it("can remove checked values", async () => {
+  it("can remove checked values", () => {
     const handleSelected = jest.fn();
     const { getByTestId } = render(
       <CheckboxTree
@@ -97,12 +94,12 @@ describe("Checkbox tree", () => {
     expect(
       getByTestId("checkbox-great uncle").querySelector("span"),
     ).toHaveAttribute("data-checked");
-    await user.click(getByTestId("checkbox-great uncle"));
+    fireEvent.click(getByTestId("checkbox-great uncle"));
     expect(handleSelected).toBeCalledTimes(1);
     expect(handleSelected).toBeCalledWith([]);
   });
 
-  it("can remove nested checked values", async () => {
+  it("can remove nested checked values", () => {
     const handleSelected = jest.fn();
     const { getByTestId } = render(
       <CheckboxTree
@@ -116,12 +113,12 @@ describe("Checkbox tree", () => {
         onSelected={handleSelected}
       />,
     );
-    await user.click(getByTestId("checkbox-grandparent"));
+    fireEvent.click(getByTestId("checkbox-grandparent"));
     expect(handleSelected).toBeCalledTimes(1);
     expect(handleSelected).toBeCalledWith(["great uncle"]);
   });
 
-  it("can remove ancestors when no descendants are selected", async () => {
+  it("can remove ancestors when no descendants are selected", () => {
     const handleSelected = jest.fn();
     const { getByTestId } = render(
       <CheckboxTree
@@ -130,7 +127,7 @@ describe("Checkbox tree", () => {
         onSelected={handleSelected}
       />,
     );
-    await user.click(getByTestId("checkbox-child"));
+    fireEvent.click(getByTestId("checkbox-child"));
     expect(handleSelected).toBeCalledTimes(1);
     expect(handleSelected).toBeCalledWith(["great uncle"]);
   });
