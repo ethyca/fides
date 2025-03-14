@@ -223,14 +223,14 @@ export const BadgeCellExpandable = <T,>({
   }, [displayValues, isCollapsed, isWrappedState, values, tagProps]);
 };
 
-export const ListCellExpandable = ({
+export const ListCellExpandable = <T,>({
   values,
   valueSuffix,
   cellProps,
 }: {
   values: string[] | undefined;
-  valueSuffix?: string;
-  cellProps?: Omit<FidesCellProps<string[]>, "onRowClick">;
+  valueSuffix: string;
+  cellProps?: Omit<FidesCellProps<T>, "onRowClick">;
 }) => {
   const { isExpanded, version } = cellProps?.cellState || {};
   const [isCollapsed, setIsCollapsed] = useState<boolean>(!isExpanded);
@@ -301,7 +301,7 @@ export const ListCellExpandable = ({
         )}
       </Flex>
     );
-  }, [isCollapsed, values]);
+  }, [isCollapsed, values, valueSuffix]);
 };
 
 export const GroupCountBadgeCell = ({
