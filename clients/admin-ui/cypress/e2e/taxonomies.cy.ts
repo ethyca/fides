@@ -230,11 +230,7 @@ describe("Taxonomy management page", () => {
           .should("exist")
           .should("not.be.visible");
       });
-      cy.getByTestId(`taxonomy-node-user.content`)
-        .realMouseMove(-100, -100, { position: "topLeft" })
-        .realMouseMove(0, 0, {
-          position: "center",
-        });
+      cy.getByTestId(`taxonomy-node-user.content`).trigger("mouseover");
       cy.getByTestId(`taxonomy-node-user.content`).within(() => {
         cy.getByTestId("taxonomy-add-child-label-button")
           .should("exist")
