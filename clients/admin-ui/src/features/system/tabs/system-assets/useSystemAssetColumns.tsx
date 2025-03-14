@@ -2,20 +2,25 @@ import { ColumnDef, createColumnHelper } from "@tanstack/react-table";
 
 import { PRIVACY_NOTICE_REGION_RECORD } from "~/features/common/privacy-notice-regions";
 import { DefaultCell } from "~/features/common/table/v2";
-import { BadgeCellExpandable } from "~/features/common/table/v2/cells";
+import {
+  BadgeCellExpandable,
+  DefaultHeaderCell,
+  ListCellExpandable,
+} from "~/features/common/table/v2/cells";
 import SystemAssetsDataUseCell from "~/features/system/tabs/system-assets/SystemAssetsDataUseCell";
-import { Asset, PrivacyNoticeRegion } from "~/types/api";
+import { PrivacyNoticeRegion } from "~/types/api";
+import { StagedResourceAPIResponse } from "~/types/api/models/StagedResourceAPIResponse";
 
 const useSystemAssetColumns = () => {
-  const columnHelper = createColumnHelper<Asset>();
+  const columnHelper = createColumnHelper<StagedResourceAPIResponse>();
 
-  const columns: ColumnDef<Asset, any>[] = [
+  const columns: ColumnDef<StagedResourceAPIResponse, any>[] = [
     columnHelper.accessor((row) => row.name, {
       id: "name",
       cell: (props) => <DefaultCell value={props.getValue()} />,
       header: "Asset",
     }),
-    columnHelper.accessor((row) => row.asset_type, {
+    columnHelper.accessor((row) => row.resource_type, {
       id: "resource_type",
       cell: (props) => <DefaultCell value={props.getValue()} />,
       header: "Type",
@@ -45,19 +50,19 @@ const useSystemAssetColumns = () => {
       cell: (props) => <DefaultCell value={props.getValue()} />,
       header: "Domain",
     }),
-    columnHelper.accessor((row) => row.parent, {
-      id: "parent",
+    columnHelper.accessor((row) => row.page, {
+      id: "page",
       cell: (props) => (
-        <BadgeCellExpandable
-          values={props.getValue().map((parent: string) => ({
-            label: parent,
-            key: parent,
-          }))}
+        <ListCellExpandable
+          values={props.getValue()}
+          valueSuffix="pages"
+          cellProps={props}
         />
       ),
-      header: "Parent",
+      header: (props) => <DefaultHeaderCell value="Detected on" {...props} />,
       meta: {
-        width: "auto",
+        showHeaderMenu: true,
+        disableRowClick: true,
       },
     }),
   ];

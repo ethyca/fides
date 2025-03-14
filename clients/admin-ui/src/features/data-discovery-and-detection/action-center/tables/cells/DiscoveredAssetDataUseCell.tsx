@@ -6,15 +6,15 @@ import { useAlert } from "~/features/common/hooks";
 import useTaxonomies from "~/features/common/hooks/useTaxonomies";
 import { useUpdateAssetsDataUseMutation } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
 import ConsentCategorySelect from "~/features/data-discovery-and-detection/action-center/ConsentCategorySelect";
-import { DiscoveredAssetResponse } from "~/features/data-discovery-and-detection/action-center/types";
 import isConsentCategory from "~/features/data-discovery-and-detection/action-center/utils/isConsentCategory";
 import TaxonomyCellContainer from "~/features/data-discovery-and-detection/tables/cells/TaxonomyCellContainer";
+import { StagedResourceAPIResponse } from "~/types/api/models/StagedResourceAPIResponse";
 import { isErrorResult } from "~/types/errors";
 
 const DiscoveredAssetDataUseCell = ({
   asset,
 }: {
-  asset: DiscoveredAssetResponse;
+  asset: StagedResourceAPIResponse;
 }) => {
   const [isAdding, setIsAdding] = useState(false);
 

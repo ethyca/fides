@@ -6,8 +6,8 @@ import {
   BulkPutConnectionConfiguration,
   ConnectionConfigurationResponse,
   CreateConnectionConfigurationWithSecrets,
-  Page_Asset_,
   Page_BasicSystemResponse_,
+  Page_StagedResourceAPIResponse_,
   System,
   SystemResponse,
   TestStatusMessage,
@@ -170,7 +170,7 @@ const systemApi = baseApi.injectEndpoints({
       invalidatesTags: () => ["Datastore Connection", "System"],
     }),
     getSystemAssets: build.query<
-      Page_Asset_,
+      Page_StagedResourceAPIResponse_,
       PaginationQueryParams & { search: string; fides_key: string }
     >({
       query: ({ fides_key, ...params }) => ({

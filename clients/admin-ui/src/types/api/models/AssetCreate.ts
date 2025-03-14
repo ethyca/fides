@@ -3,9 +3,9 @@
 /* eslint-disable */
 
 /**
- * Schema for asset responses
+ * Schema for creating a new asset with immutable fields
  */
-export type Asset = {
+export type AssetCreate = {
   data_uses?: Array<string>;
   description?: string | null;
   name: string;
@@ -13,9 +13,4 @@ export type Asset = {
   domain: string;
   base_url?: string | null;
   locations?: Array<string>;
-  id: string;
-  system_id: string;
-  parent?: Array<string>;
-  parent_domain?: string | null;
-  with_consent?: boolean;
 };
