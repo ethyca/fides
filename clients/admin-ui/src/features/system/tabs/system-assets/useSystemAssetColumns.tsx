@@ -8,19 +8,18 @@ import {
   ListCellExpandable,
 } from "~/features/common/table/v2/cells";
 import SystemAssetsDataUseCell from "~/features/system/tabs/system-assets/SystemAssetsDataUseCell";
-import { PrivacyNoticeRegion } from "~/types/api";
-import { StagedResourceAPIResponse } from "~/types/api/models/StagedResourceAPIResponse";
+import { Asset, PrivacyNoticeRegion } from "~/types/api";
 
 const useSystemAssetColumns = () => {
-  const columnHelper = createColumnHelper<StagedResourceAPIResponse>();
+  const columnHelper = createColumnHelper<Asset>();
 
-  const columns: ColumnDef<StagedResourceAPIResponse, any>[] = [
+  const columns: ColumnDef<Asset, any>[] = [
     columnHelper.accessor((row) => row.name, {
       id: "name",
       cell: (props) => <DefaultCell value={props.getValue()} />,
       header: "Asset",
     }),
-    columnHelper.accessor((row) => row.resource_type, {
+    columnHelper.accessor((row) => row.asset_type, {
       id: "resource_type",
       cell: (props) => <DefaultCell value={props.getValue()} />,
       header: "Type",

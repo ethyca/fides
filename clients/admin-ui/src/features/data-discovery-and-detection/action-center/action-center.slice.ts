@@ -1,7 +1,9 @@
 import { baseApi } from "~/features/common/api.slice";
 import { getQueryParamsFromArray } from "~/features/common/utils";
-import { Page_StagedResourceAPIResponse_ } from "~/types/api";
-import { StagedResourceAPIResponse } from "~/types/api/models/StagedResourceAPIResponse";
+import {
+  Page_StagedResourceAPIResponse_,
+  StagedResourceAPIResponse,
+} from "~/types/api";
 import { PaginationQueryParams } from "~/types/common/PaginationQueryParams";
 
 import {
