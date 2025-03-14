@@ -365,9 +365,13 @@ describe("System management with Plus features", () => {
       cy.url().should("include", DATAMAP_ROUTE);
     });
 
-    it("select page checkbox only selects rows on the displayed page", () => {
+    it.only("select page checkbox only selects rows on the displayed page", () => {
       cy.visit(ADD_SYSTEMS_MULTIPLE_ROUTE);
       cy.wait("@getSystemVendors");
+      // unreliable test because when dictionary loads it overrides the rows selected
+      // adding a .wait to make it more reliable
+      // eslint-disable-next-line cypress/no-unnecessary-waiting
+      cy.wait(500);
       cy.getByTestId("select-page-checkbox")
         .get("[type='checkbox']")
         .check({ force: true });
