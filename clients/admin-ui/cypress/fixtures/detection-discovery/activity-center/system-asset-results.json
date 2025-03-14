@@ -33,7 +33,8 @@
       "system": "Google Tag Manager",
       "base_url": "https://td.doubleclick.net/td/rul/11020051272",
       "mime_type": "text/html",
-      "method": "GET"
+      "method": "GET",
+      "page": ["single_page"]
     },
     {
       "urn": "my_web_monitor_1.GET.td.doubleclick.net.https://td.doubleclick.net/td/rul/697301175",
@@ -68,7 +69,8 @@
       "system": "Google Tag Manager",
       "base_url": "https://td.doubleclick.net/td/rul/697301175",
       "mime_type": "text/html",
-      "method": "GET"
+      "method": "GET",
+      "page": ["one_page", "another_page", "yet_another_page"]
     },
     {
       "urn": "my_web_monitor_1.POST.www.google.com.https://www.google.com/ccm/collect",

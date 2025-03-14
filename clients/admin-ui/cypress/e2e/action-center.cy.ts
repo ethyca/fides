@@ -335,6 +335,13 @@ describe("Action center", () => {
         .contains("Without consent")
         .realHover();
       cy.get(".ant-tooltip-inner").should("contain", "January"); */
+      cy.getByTestId("column-page").should("exist");
+      cy.getByTestId("row-0-col-page").should("contain", "single_page");
+      cy.getByTestId("row-1-col-page").within(() => {
+        cy.get("p").should("contain", "3 pages");
+        cy.get("button").click({ force: true });
+        cy.get("li").should("have.length", 3);
+      });
       cy.getByTestId("column-actions").should("exist");
       cy.getByTestId("row-0-col-actions").within(() => {
         cy.getByTestId("add-btn").should("exist");
