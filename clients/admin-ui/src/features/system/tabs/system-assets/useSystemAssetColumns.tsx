@@ -62,6 +62,7 @@ const useSystemAssetColumns = () => {
       header: (props) => <DefaultHeaderCell value="Detected on" {...props} />,
       meta: {
         showHeaderMenu: true,
+        disableRowClick: true,
       },
     }),
     columnHelper.accessor((row) => row.parent, {

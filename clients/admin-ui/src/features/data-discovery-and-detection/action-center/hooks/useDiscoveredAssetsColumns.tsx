@@ -116,6 +116,7 @@ export const useDiscoveredAssetsColumns = () => {
       header: (props) => <DefaultHeaderCell value="Detected on" {...props} />,
       meta: {
         showHeaderMenu: true,
+        disableRowClick: true,
       },
     }),
     columnHelper.display({
