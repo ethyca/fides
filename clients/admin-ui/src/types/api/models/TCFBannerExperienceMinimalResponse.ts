@@ -3,8 +3,8 @@
 /* eslint-disable */
 
 import type { ExperienceMinimalMeta } from "./ExperienceMinimalMeta";
-import type { GPPApplicationConfigResponse } from "./GPPApplicationConfigResponse";
 import type { MinimalTCFExperienceConfig } from "./MinimalTCFExperienceConfig";
+import type { PrivacyExperienceGPPSettings } from "./PrivacyExperienceGPPSettings";
 import type { PrivacyNoticeResponse } from "./PrivacyNoticeResponse";
 
 /**
@@ -24,7 +24,7 @@ export type TCFBannerExperienceMinimalResponse = {
    * The Privacy Notices associated with this experience, if applicable
    */
   privacy_notices?: Array<PrivacyNoticeResponse> | null;
-  gpp_settings?: GPPApplicationConfigResponse | null;
+  gpp_settings?: PrivacyExperienceGPPSettings | null;
   /**
    * Privacy Experience ID
    */

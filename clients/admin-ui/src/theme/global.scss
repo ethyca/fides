@@ -53,9 +53,11 @@ h6 {
       }
     }
 
-    &:hover,
-    &:focus-within {
+    &:focus-within:not(.ant-menu-item-selected) {
       background-color: var(--fidesui-neutral-800);
+    }
+    &:hover {
+      --ant-menu-dark-item-hover-bg: var(--fidesui-neutral-800);
     }
   }
 
