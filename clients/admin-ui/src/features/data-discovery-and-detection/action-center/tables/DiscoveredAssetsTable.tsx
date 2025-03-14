@@ -55,37 +55,6 @@ interface DiscoveredAssetsTableProps {
   onSystemName?: (name: string) => void;
 }
 
-const data = {
-  items: [
-    {
-      urn: "urn:li:dataset:123",
-      name: "Dataset 123",
-      resource_type: "Dataset",
-      system: "System 1",
-      locations: ["fr"],
-      domain: "ethyca.com",
-      page: ["ethyca.com/1page"],
-    },
-    {
-      urn: "urn:li:dataset:124",
-      name: "Dataset 124",
-      resource_type: "Dataset",
-      system: "System 1",
-      locations: ["fr"],
-      domain: "ethyca.com",
-      page: [
-        "ethyca.com/firstpage",
-        "ethyca.com/secondpage",
-        "ethyca.com/thirdpage",
-      ],
-    },
-  ],
-  pages: 1,
-  total: 2,
-  page: 1,
-  size: 25,
-};
-
 export const DiscoveredAssetsTable = ({
   monitorId,
   systemId,
@@ -139,11 +108,7 @@ export const DiscoveredAssetsTable = ({
     resetPageIndexToDefault();
   }, [monitorId, searchQuery, resetPageIndexToDefault]);
 
-  const {
-    // data,
-    isLoading,
-    isFetching,
-  } = useGetDiscoveredAssetsQuery({
+  const { data, isLoading, isFetching } = useGetDiscoveredAssetsQuery({
     key: monitorId,
     system: systemId,
     page: pageIndex,
