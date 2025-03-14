@@ -19,15 +19,26 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - https://github.com/ethyca/fides/labels/high-risk: to indicate that a change is a "high-risk" change that could potentially lead to unanticipated regressions or degradations
 - https://github.com/ethyca/fides/labels/db-migration: to indicate that a given change includes a DB migration
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.56.2...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.57.0...main)
+
+### Added
+- Added `is_country` field on locations [#5885](https://github.com/ethyca/fides/pull/5885)
+
+### Fixed
+- Fixed UX issues with website monitor form [#5884](https://github.com/ethyca/fides/pull/5884)
+
+## [2.57.0](https://github.com/ethyca/fides/compare/2.56.2...2.57.0)
 
 ### Added
 - DB model support for Attachments [#5784](https://github.com/ethyca/fides/pull/5784) https://github.com/ethyca/fides/labels/db-migration
+- DB migration to add `description` column to `asset` [#5822](https://github.com/ethyca/fides/pull/5822) https://github.com/ethyca/fides/labels/db-migration
 - DB model support for messages on `MonitorExecution` records [#5846](https://github.com/ethyca/fides/pull/5846) https://github.com/ethyca/fides/labels/db-migration
 - Added support for GPP String integration in Fides String [#5845](https://github.com/ethyca/fides/pull/5845)
 - Attachments storage capabilities (S3 or local) [#5812](https://github.com/ethyca/fides/pull/5812) https://github.com/ethyca/fides/labels/db-migration
 - DB model support for Comments [#5833](https://github.com/ethyca/fides/pull/5833/files) https://github.com/ethyca/fides/labels/db-migration
 - Added UI for configuring website integrations and monitors [#5867](https://github.com/ethyca/fides/pull/5867)
+- Adding support for BigQuery struct updates [#5849](https://github.com/ethyca/fides/pull/5849)
+- Added support for OneTrust Consent Migration [#5873](https://github.com/ethyca/fides/pull/5873)
 
 ### Changed
 - Add properties for user assigned systems/data_uses on staged resources [5841](https://github.com/ethyca/fides/pull/5841) https://github.com/ethyca/fides/labels/db-migration
@@ -36,6 +47,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Updated privacy request handling to still succeed if not all identities are provided [#5836](https://github.com/ethyca/fides/pull/5836)
 - Refactored privacy request processing to never re-use sessions [#5862](https://github.com/ethyca/fides/pull/5862)
 - Updated hover state of menu items to be more visible [#5868](https://github.com/ethyca/fides/pull/5868)
+- Use `gpp_settings.cmp_api_required` to determine if GPP CMP API should be included in bundle [#5883](https://github.com/ethyca/fides/pull/5883)
 
 ### Developer Experience
 - Moved non-prod Admin UI dependencies to devDependencies [#5832](https://github.com/ethyca/fides/pull/5832)
@@ -51,6 +63,9 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Fixed CORS origins handling to be more consistent across config (toml/env var) and API settings; allow `0.0.0.0` as an origin [#5853](https://github.com/ethyca/fides/pull/5853)
 - Fixed an issue with the update payloads for select SaaS integrations [#5860](https://github.com/ethyca/fides/pull/5860)
 - Fixed `/privacy-request/<id>/resubmit` endpoint so it doesn't queue the request twice [#5870](https://github.com/ethyca/fides/pull/5870)
+- Fixed the system assets table being the wrong width [#5879](https://github.com/ethyca/fides/pull/5879)
+- Fixed vendor override handling in FidesJS CMP [#5886](https://github.com/ethyca/fides/pull/5886)
+- Fix `extraDetails.preference` on `FidesUIChanged` events from FidesJS SDK to include the correct `notice_key` when using custom purposes in TCF experience [#5892](https://github.com/ethyca/fides/pull/5892)
 
 ## [2.56.2](https://github.com/ethyca/fides/compare/2.56.1...2.56.2)
 

@@ -4,9 +4,9 @@ import { baseApi } from "~/features/common/api.slice";
 import {
   ActionType,
   BulkPostPrivacyRequests,
-  GPPApplicationConfigResponse,
   PlusApplicationConfig as ApplicationConfig,
   PrivacyCenterConfig,
+  PrivacyExperienceGPPSettings,
   PrivacyRequestAccessResults,
   PrivacyRequestCreate,
   PrivacyRequestNotificationInfo,
@@ -664,12 +664,14 @@ export const selectApplicationConfig = () =>
     (_, { data }) => data as ApplicationConfig,
   );
 
-const defaultGppSettings: GPPApplicationConfigResponse = {
+const defaultGppSettings: PrivacyExperienceGPPSettings = {
   enabled: false,
+  cmp_api_required: false,
 };
+
 export const selectGppSettings: (
   state: RootState,
-) => GPPApplicationConfigResponse = createSelector(
+) => PrivacyExperienceGPPSettings = createSelector(
   [
     (state) => state,
     privacyRequestApi.endpoints.getConfigurationSettings.select({

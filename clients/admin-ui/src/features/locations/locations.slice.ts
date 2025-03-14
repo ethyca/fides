@@ -15,6 +15,13 @@ const locationsApi = baseApi.injectEndpoints({
       }),
       providesTags: () => ["Locations"],
     }),
+    getOnlyCountryLocations: build.query<LocationRegulationResponse, void>({
+      query: () => ({
+        url: `/plus/locations`,
+        params: { only_country_locations: true },
+      }),
+      providesTags: () => ["Country Locations"],
+    }),
     patchLocationsRegulations: build.mutation<
       LocationRegulationResponse,
       LocationRegulationSelections
@@ -24,13 +31,14 @@ const locationsApi = baseApi.injectEndpoints({
         url: `plus/locations`,
         body,
       }),
-      invalidatesTags: () => ["Locations"],
+      invalidatesTags: () => ["Country Locations", "Locations"],
     }),
   }),
 });
 
 export const {
   useGetLocationsRegulationsQuery,
+  useGetOnlyCountryLocationsQuery,
   usePatchLocationsRegulationsMutation,
 } = locationsApi;
 
