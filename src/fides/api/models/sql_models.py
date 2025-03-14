@@ -296,14 +296,42 @@ class Dataset(Base, FidesBase):
     fides_meta = Column(JSON)
 
     @classmethod
+    def create(
+        cls: Type["Dataset"],
+        db: Session,
+        *,
+        data: dict[str, Any],
+        check_name: bool = True,
+    ) -> "Dataset":
+        """Override create to check for existing datasets with the same fides_key or name."""
+        # Check if dataset with same fides_key already exists
+        if "fides_key" in data:
+            existing_by_key = (
+                db.query(cls).filter(cls.fides_key == data["fides_key"]).first()
+            )
+            if existing_by_key:
+                raise KeyOrNameAlreadyExists(
+                    f'Dataset with fides_key "{data["fides_key"]}" already exists.'
+                )
+
+        # Check if dataset with same name already exists
+        if check_name and "name" in data:
+            existing_by_name = db.query(cls).filter(cls.name == data["name"]).first()
+            if existing_by_name:
+                raise KeyOrNameAlreadyExists(
+                    f'Dataset with name "{data["name"]}" already exists.'
+                )
+
+        # Create the dataset using the parent class's method
+        db_obj = cls(**data)
+        return cls.persist_obj(db, db_obj)
+
+    @classmethod
     def create_from_dataset_dict(cls, db: Session, dataset: dict) -> "Dataset":
         """Add a method to create directly using a synchronous session"""
         validated_dataset: FideslangDataset = FideslangDataset(**dataset)
-        ctl_dataset = cls(**validated_dataset.model_dump(mode="json"))
-        db.add(ctl_dataset)
-        db.commit()
-        db.refresh(ctl_dataset)
-        return ctl_dataset
+        data_dict = validated_dataset.model_dump(mode="json")
+        return cls.create(db=db, data=data_dict)
 
     @property
     def field_data_categories(self) -> Set[str]:
