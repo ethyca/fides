@@ -24,6 +24,8 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ### Added
 - Added `is_country` field on locations [#5885](https://github.com/ethyca/fides/pull/5885)
 
+### Fixed
+- Fixed UX issues with website monitor form [#5884](https://github.com/ethyca/fides/pull/5884)
 
 ## [2.57.0](https://github.com/ethyca/fides/compare/2.56.2...2.57.0)
 
@@ -61,6 +63,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Fixed an issue with the update payloads for select SaaS integrations [#5860](https://github.com/ethyca/fides/pull/5860)
 - Fixed `/privacy-request/<id>/resubmit` endpoint so it doesn't queue the request twice [#5870](https://github.com/ethyca/fides/pull/5870)
 - Fixed the system assets table being the wrong width [#5879](https://github.com/ethyca/fides/pull/5879)
+- Fixed vendor override handling in FidesJS CMP [#5886](https://github.com/ethyca/fides/pull/5886)
 
 ## [2.56.2](https://github.com/ethyca/fides/compare/2.56.1...2.56.2)
 
