@@ -4,7 +4,6 @@ import { Form, Formik } from "formik";
 import { useRouter } from "next/router";
 import * as Yup from "yup";
 
-import { useAppSelector } from "~/app/hooks";
 import { ControlledSelect } from "~/features/common/form/ControlledSelect";
 import {
   CustomDateTimeInput,
@@ -13,10 +12,7 @@ import {
 import { enumToOptions } from "~/features/common/helpers";
 import { PRIVACY_NOTICE_REGION_RECORD } from "~/features/common/privacy-notice-regions";
 import { formatKey } from "~/features/datastore-connections/add-connection/helpers";
-import {
-  selectLocationsRegulations,
-  useGetLocationsRegulationsQuery,
-} from "~/features/locations/locations.slice";
+import { useGetOnlyCountryLocationsQuery } from "~/features/locations/locations.slice";
 import { getSelectedRegionIds } from "~/features/privacy-experience/form/helpers";
 import {
   MonitorConfig,
@@ -40,6 +36,11 @@ const validationSchema = Yup.object().shape({
   name: Yup.string().required().label("Name"),
   execution_frequency: Yup.string().nullable().label("Execution frequency"),
   execution_start_date: Yup.date().nullable().label("Execution start date"),
+  datasource_params: Yup.object().shape({
+    locations: Yup.array().label("Locations"),
+    exclude_domains: Yup.array().label("Exclude domains"),
+    sitemap_url: Yup.string().nullable().url().label("Sitemap URL"),
+  }),
 });
 
 const ConfigureWebsiteMonitorForm = ({
@@ -61,12 +62,12 @@ const ConfigureWebsiteMonitorForm = ({
     ? parseISO(monitor.execution_start_date)
     : Date.now();
 
-  useGetLocationsRegulationsQuery();
-  const locationsRegulations = useAppSelector(selectLocationsRegulations);
+  const { data: locationRegulationResponse, isLoading: locationsLoading } =
+    useGetOnlyCountryLocationsQuery();
 
   const allSelectedRegions = [
-    ...getSelectedRegionIds(locationsRegulations.locations),
-    ...getSelectedRegionIds(locationsRegulations.location_groups),
+    ...getSelectedRegionIds(locationRegulationResponse?.locations ?? []),
+    ...getSelectedRegionIds(locationRegulationResponse?.location_groups ?? []),
   ];
 
   const regionOptions = allSelectedRegions.map((region) => ({
@@ -106,10 +107,7 @@ const ConfigureWebsiteMonitorForm = ({
       ...executionInfo,
       key: monitor?.key || formatKey(values.name),
       classify_params: monitor?.classify_params || {},
-      datasource_params: {
-        locations: values.datasource_params?.locations ?? [],
-        exclude_domains: [],
-      },
+      datasource_params: values.datasource_params || {},
       connection_config_key: integrationId,
     };
     onSubmit(payload);
@@ -144,6 +142,22 @@ const ConfigureWebsiteMonitorForm = ({
                 variant="stacked"
               />
               <CustomTextInput
+                name="datasource_params.sitemap_url"
+                id="sitemap_url"
+                label="Sitemap URL"
+                variant="stacked"
+              />
+              <ControlledSelect
+                mode="tags"
+                name="datasource_params.exclude_domains"
+                placeholder="Enter domains to exclude"
+                id="exclude_domains"
+                label="Exclude domains"
+                options={[]}
+                open={false}
+                layout="stacked"
+              />
+              <CustomTextInput
                 name="url"
                 id="url"
                 label="URL"
@@ -157,6 +171,7 @@ const ConfigureWebsiteMonitorForm = ({
                 name="datasource_params.locations"
                 id="locations"
                 label="Locations"
+                loading={locationsLoading}
                 options={regionOptions}
                 optionFilterProp="label"
                 tooltip={REGIONS_TOOLTIP_COPY}

@@ -11,4 +11,5 @@ export type MonitorExecution = {
   started?: string | null;
   completed?: string | null;
   classification_instances?: Array<string>;
+  messages?: Array<string>;
 };

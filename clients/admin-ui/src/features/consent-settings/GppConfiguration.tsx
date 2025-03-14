@@ -7,7 +7,7 @@ import { useFeatures } from "~/features/common/features";
 import ControlledRadioGroup from "~/features/common/form/ControlledRadioGroup";
 import { CustomCheckbox, CustomSwitch } from "~/features/common/form/inputs";
 import { selectGppSettings } from "~/features/privacy-requests";
-import { GPPApplicationConfigResponse, GPPUSApproach } from "~/types/api";
+import { GPPUSApproach, PrivacyExperienceGPPSettings } from "~/types/api";
 
 import FrameworkStatus from "./FrameworkStatus";
 import SettingsBox from "./SettingsBox";
@@ -32,7 +32,7 @@ const GppConfiguration = () => {
   const gppSettings = useAppSelector(selectGppSettings);
   const isEnabled = !!gppSettings.enabled;
   const { values, setFieldValue } = useFormikContext<{
-    gpp: GPPApplicationConfigResponse;
+    gpp: PrivacyExperienceGPPSettings;
   }>();
   const showMspa = !!values.gpp.us_approach;
 
