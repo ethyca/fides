@@ -1,7 +1,7 @@
 """add cookie table
 
 Revision ID: 2be84e68df32
-Revises: c1885270b3cc
+Revises: 7c3fbee90c78
 Create Date: 2023-06-13 23:08:35.011377
 
 """
@@ -11,7 +11,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "2be84e68df32"
-down_revision = "c1885270b3cc"
+down_revision = "7c3fbee90c78"
 branch_labels = None
 depends_on = None
 
