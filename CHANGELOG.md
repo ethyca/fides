@@ -64,6 +64,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Fixed `/privacy-request/<id>/resubmit` endpoint so it doesn't queue the request twice [#5870](https://github.com/ethyca/fides/pull/5870)
 - Fixed the system assets table being the wrong width [#5879](https://github.com/ethyca/fides/pull/5879)
 - Fixed vendor override handling in FidesJS CMP [#5886](https://github.com/ethyca/fides/pull/5886)
+- Fix `extraDetails.preference` on `FidesUIChanged` events from FidesJS SDK to include the correct `notice_key` when using custom purposes in TCF experience [#5892](https://github.com/ethyca/fides/pull/5892)
 
 ## [2.56.2](https://github.com/ethyca/fides/compare/2.56.1...2.56.2)
 
