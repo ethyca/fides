@@ -17,7 +17,7 @@ import {
   transformUserPreferenceToBoolean,
 } from "fides-js";
 import { Accordion, Box, Stack, StackDivider, useToast } from "fidesui";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 import React, { useEffect, useMemo, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";

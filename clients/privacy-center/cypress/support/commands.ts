@@ -52,6 +52,7 @@ Cypress.Commands.add("loadConfigFixture", (fixtureName: string, ...args) => {
 });
 
 Cypress.Commands.add("overrideSettings", (settings) => {
+  cy.getByTestId("logo");
   cy.dispatch({ type: "settings/overrideSettings", payload: settings }).then(
     () => settings,
   );
