@@ -58,7 +58,6 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
       return experience.privacy_notices.map((notice) => {
         const val = resolveConsentValue(
           notice,
-          getConsentContext(),
           consent || savedConsent || parsedCookie?.consent,
         );
         return val ? (notice.notice_key as PrivacyNotice["notice_key"]) : "";
