@@ -142,7 +142,39 @@ Defaults to `undefined`.
 Override the current user's `fides_string` consent preferences (see [Fides.fides_string](Fides.md#fides_string)). Can be used to synchronize consent preferences for a
 registered user from a custom backend, where the `fides_string` could be
 provided by the server across multiple devices, etc.
-selecting the best translations for the FidesJS UI.
+
+The string consists of four parts separated by commas in the format:
+`TC_STRING,AC_STRING,GPP_STRING,NC_STRING` where:
+
+- TC_STRING: IAB TCF (Transparency & Consent Framework) string
+- AC_STRING: Google's Additional Consent string
+- GPP_STRING: IAB GPP (Global Privacy Platform) string
+- NC_STRING: Base64 encoded string of the user's Notice Consent preferences.
+
+#### Example
+
+// Complete string with all parts:
+// "CPzHq4APzHq4AAMABBENAUEAALAAAEOAAAAAAEAEACACAAAA,1~61.70,DBABLA~BVAUAAAAAWA.QA,eyJkYXRhX3NhbGVzX2FuZF9zaGFyaW5nIjowLCJhbmFseXRpY3MiOjF9"
+
+// TC and AC strings only:
+// "CPzHq4APzHq4AAMABBENAUEAALAAAEOAAAAAAEAEACACAAAA,1~61.70"
+
+// GPP string only:
+// ",,DBABLA~BVAUAAAAAWA.QA"
+
+// Notice Consent string only:
+// ",,,eyJkYXRhX3NhbGVzX2FuZF9zaGFyaW5nIjowLCJhbmFseXRpY3MiOjF9"
+
+To properly encode the Notice Consent string, use the
+`window.Fides.encodeNoticeConsentString` function (see [Fides.encodeNoticeConsentString](Fides.md#encodenoticeconsentstring)) or write your own function that
+looks something like:
+```ts
+function encodeNoticeConsentString(consent: Record<string, boolean | 0 | 1>) {
+  return btoa(JSON.stringify(consent));
+}
+```
+
+Note: The Notice Consent string will take precedence over [GPC](/docs/regulations/gpc) as well as any prior user consent.
 
 Defaults to `undefined`.
 
