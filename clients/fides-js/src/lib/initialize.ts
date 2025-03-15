@@ -24,7 +24,6 @@ import {
 import {
   constructFidesRegionString,
   decodeNoticeConsentString,
-  encodeNoticeConsentString,
   experienceIsValid,
   getOverrideValidatorMapByType,
   getWindowObjFromPath,
@@ -496,10 +495,8 @@ export const initialize = async ({
         overrides?.experienceTranslationOverrides,
       );
 
-      /* eslint-disable no-param-reassign */
+      // eslint-disable-next-line no-param-reassign
       fides.locale = i18n.locale || DEFAULT_LOCALE;
-      fides.encodeNoticeConsentString = encodeNoticeConsentString;
-      /* eslint-enable no-param-reassign */
 
       // Provide the modal link label function to the client based on the current locale unless specified via props.
       getModalLinkLabel = (props) =>

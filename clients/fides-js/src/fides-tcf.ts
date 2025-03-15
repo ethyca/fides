@@ -12,6 +12,7 @@ import { TCString } from "@iabtechlabtcf/core";
 
 import {
   defaultShowModal,
+  encodeNoticeConsentString,
   FidesCookie,
   isPrivacyExperience,
   shouldResurfaceConsent,
@@ -296,6 +297,7 @@ const _Fides: FidesGlobal = {
   shopify,
   showModal: defaultShowModal,
   getModalLinkLabel: () => DEFAULT_MODAL_LINK_LABEL,
+  encodeNoticeConsentString,
 };
 
 if (typeof window !== "undefined") {

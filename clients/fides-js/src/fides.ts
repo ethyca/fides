@@ -25,6 +25,7 @@ import {
 } from "./lib/consent-types";
 import {
   defaultShowModal,
+  encodeNoticeConsentString,
   isPrivacyExperience,
   shouldResurfaceConsent,
 } from "./lib/consent-utils";
@@ -297,6 +298,7 @@ const _Fides: FidesGlobal = {
   shopify,
   showModal: defaultShowModal,
   getModalLinkLabel: () => DEFAULT_MODAL_LINK_LABEL,
+  encodeNoticeConsentString,
 };
 
 updateWindowFides(_Fides);
