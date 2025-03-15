@@ -3,8 +3,10 @@ import {
   CONSENT_COOKIE_NAME,
   ConsentMechanism,
   ConsentMethod,
+  encodeNoticeConsentString,
   FidesCookie,
   FidesInitOptions,
+  FidesOptions,
   PrivacyNotice,
   RecordConsentServedRequest,
   REQUEST_SOURCE,
@@ -1072,218 +1074,324 @@ describe("Consent overlay", () => {
       });
     });
 
-    describe("when GPC flag is found, and notices apply to GPC", () => {
-      beforeEach(() => {
-        cy.on("window:before:load", (win) => {
-          // eslint-disable-next-line no-param-reassign
-          win.navigator.globalPrivacyControl = true;
-        });
-        cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
-        stubConfig({
-          experience: {
-            privacy_notices: [
-              mockPrivacyNotice({
-                title: "Advertising with gpc enabled",
-                id: "pri_notice-advertising",
-                has_gpc_flag: true,
-              }),
-            ],
-          },
-        });
-      });
-
-      it("sends GPC consent override downstream to Fides API", () => {
-        // check that consent was sent to Fides API
-        let generatedUserDeviceId: string;
-        cy.wait("@patchPrivacyPreference").then((interception) => {
-          const { body } = interception.request;
-          const expected = {
-            // browser_identity.fides_user_device_id is intentionally left out here
-            // so we can later assert to be any string
-            preferences: [
-              {
-                privacy_notice_history_id:
-                  "pri_notice-history-mock-advertising-en-000",
-                preference: "opt_out",
-              },
-            ],
-            privacy_experience_config_history_id:
-              "pri_exp-history-banner-modal-en-000",
-            user_geography: "us_ca",
-
-            method: ConsentMethod.GPC,
-            served_notice_history_id: body.served_notice_history_id,
-          };
-          // uuid is generated automatically if the user has no saved consent cookie
-          generatedUserDeviceId = body.browser_identity.fides_user_device_id;
-          expect(generatedUserDeviceId).to.be.a("string");
-          expect(body.preferences).to.eql(expected.preferences);
-          expect(body.privacy_experience_config_history_id).to.eql(
-            expected.privacy_experience_config_history_id,
-          );
-          expect(body.user_geography).to.eql(expected.user_geography);
-          expect(body.method).to.eql(expected.method);
-        });
-      });
-
-      it("stores consent in cookie", () => {
-        cy.waitUntilCookieExists(CONSENT_COOKIE_NAME).then(() => {
-          cy.getCookie(CONSENT_COOKIE_NAME).then((cookie) => {
-            const cookieKeyConsent: FidesCookie = JSON.parse(
-              decodeURIComponent(cookie!.value),
-            );
-            expect(cookieKeyConsent.consent)
-              .property(PRIVACY_NOTICE_KEY_1)
-              .is.eql(false);
-            expect(cookieKeyConsent.fides_meta)
-              .property("consentMethod")
-              .is.eql(ConsentMethod.GPC);
+    describe("when preferences are automatically applied", () => {
+      describe("when GPC flag is found, and notices apply to GPC", () => {
+        beforeEach(() => {
+          cy.on("window:before:load", (win) => {
+            // eslint-disable-next-line no-param-reassign
+            win.navigator.globalPrivacyControl = true;
+          });
+          cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
+          stubConfig({
+            experience: {
+              privacy_notices: [
+                mockPrivacyNotice({
+                  title: "Advertising with gpc enabled",
+                  id: "pri_notice-advertising",
+                  has_gpc_flag: true,
+                }),
+              ],
+            },
           });
         });
-      });
 
-      it("updates Fides consent obj", () => {
-        cy.window()
-          .its("Fides")
-          .its("consent")
-          .should("eql", {
-            [PRIVACY_NOTICE_KEY_1]: false,
-          });
-      });
-
-      it("shows indicators that GPC has been applied", () => {
-        // In the banner
-        cy.get("div#fides-banner").within(() => {
-          cy.get("span").contains("Global Privacy Control");
-        });
-        // And in the modal
-        cy.get("button").contains("Manage preferences").click();
-        cy.get("div.fides-gpc-banner").contains(
-          "Global Privacy Control detected",
-        );
-        cy.get("span").contains("Advertising with gpc enabled");
-        cy.get("span").contains("Global Privacy Control Applied");
-      });
-
-      it("sends GPC consent override from a Headless experience", () => {
-        cy.on("window:before:load", (win) => {
-          // eslint-disable-next-line no-param-reassign
-          win.navigator.globalPrivacyControl = true;
-        });
-        cy.fixture("consent/fidesjs_options_banner_modal.json").then(
-          (config) => {
-            stubConfig({
-              experience: {
-                experience_config: {
-                  ...config.experience.experience_config,
-                  ...{ component: ComponentType.HEADLESS },
+        it("sends GPC consent override downstream to Fides API", () => {
+          // check that consent was sent to Fides API
+          let generatedUserDeviceId: string;
+          cy.wait("@patchPrivacyPreference").then((interception) => {
+            const { body } = interception.request;
+            const expected = {
+              // browser_identity.fides_user_device_id is intentionally left out here
+              // so we can later assert to be any string
+              preferences: [
+                {
+                  privacy_notice_history_id:
+                    "pri_notice-history-mock-advertising-en-000",
+                  preference: "opt_out",
                 },
-              },
+              ],
+              privacy_experience_config_history_id:
+                "pri_exp-history-banner-modal-en-000",
+              user_geography: "us_ca",
+
+              method: ConsentMethod.GPC,
+              served_notice_history_id: body.served_notice_history_id,
+            };
+            // uuid is generated automatically if the user has no saved consent cookie
+            generatedUserDeviceId = body.browser_identity.fides_user_device_id;
+            expect(generatedUserDeviceId).to.be.a("string");
+            expect(body.preferences).to.eql(expected.preferences);
+            expect(body.privacy_experience_config_history_id).to.eql(
+              expected.privacy_experience_config_history_id,
+            );
+            expect(body.user_geography).to.eql(expected.user_geography);
+            expect(body.method).to.eql(expected.method);
+          });
+        });
+
+        it("stores consent in cookie", () => {
+          cy.waitUntilCookieExists(CONSENT_COOKIE_NAME).then(() => {
+            cy.getCookie(CONSENT_COOKIE_NAME).then((cookie) => {
+              const cookieKeyConsent: FidesCookie = JSON.parse(
+                decodeURIComponent(cookie!.value),
+              );
+              expect(cookieKeyConsent.consent)
+                .property(PRIVACY_NOTICE_KEY_1)
+                .is.eql(false);
+              expect(cookieKeyConsent.fides_meta)
+                .property("consentMethod")
+                .is.eql(ConsentMethod.GPC);
             });
-          },
-        );
-        cy.wait("@patchPrivacyPreference");
-      });
-    });
+          });
+        });
 
-    describe("when GPC flag is found, and no notices apply to GPC", () => {
-      beforeEach(() => {
-        cy.on("window:before:load", (win) => {
-          // eslint-disable-next-line no-param-reassign
-          win.navigator.globalPrivacyControl = true;
+        it("updates Fides consent obj", () => {
+          cy.window()
+            .its("Fides")
+            .its("consent")
+            .should("eql", {
+              [PRIVACY_NOTICE_KEY_1]: false,
+            });
         });
-        stubConfig({
-          experience: {
-            privacy_notices: [
-              mockPrivacyNotice({
-                title: "Advertising with GPC disabled",
-                id: "pri_notice-advertising",
-                has_gpc_flag: false,
-              }),
-            ],
-          },
-        });
-      });
 
-      it("does not set user consent preference automatically", () => {
-        // timeout means API call not made, which is expected
-        cy.on("fail", (error) => {
-          if (error.message.indexOf("Timed out retrying") !== 0) {
-            throw error;
-          }
+        it("shows indicators that GPC has been applied", () => {
+          // In the banner
+          cy.get("div#fides-banner").within(() => {
+            cy.get("span").contains("Global Privacy Control");
+          });
+          // And in the modal
+          cy.get("button").contains("Manage preferences").click();
+          cy.get("div.fides-gpc-banner").contains(
+            "Global Privacy Control detected",
+          );
+          cy.get("span").contains("Advertising with gpc enabled");
+          cy.get("span").contains("Global Privacy Control Applied");
         });
-        // check that preferences aren't sent to Fides API
-        cy.wait("@patchPrivacyPreference", {
-          requestTimeout: 500,
-        }).then((xhr) => {
-          assert.isNull(xhr?.response?.body);
-        });
-        // check that Fides consent obj is empty
-        cy.window().its("Fides").its("consent").should("eql", {});
-        // check that preferences do not exist in cookie
-        cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
-      });
 
-      it("does not show gpc indicator but does show it was detected and the info banner", () => {
-        // In the banner
-        cy.get("div.fides-gpc-banner").contains(
-          "Global Privacy Control detected",
-        );
-        // And in the modal
-        cy.get("button").contains("Manage preferences").click();
-        cy.get("div.fides-gpc-banner").should("be.visible");
-        cy.get("div.fides-gpc-badge").should("not.exist");
-      });
-    });
-
-    describe("when no GPC flag is found, and notices apply to GPC", () => {
-      beforeEach(() => {
-        cy.on("window:before:load", (win) => {
-          // eslint-disable-next-line no-param-reassign
-          win.navigator.globalPrivacyControl = undefined;
-        });
-        cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
-        stubConfig({
-          experience: {
-            privacy_notices: [
-              mockPrivacyNotice({
-                title: "Advertising with gpc enabled",
-                id: "pri_notice-advertising",
-                has_gpc_flag: true,
-              }),
-            ],
-          },
+        it("sends GPC consent override from a Headless experience", () => {
+          cy.on("window:before:load", (win) => {
+            // eslint-disable-next-line no-param-reassign
+            win.navigator.globalPrivacyControl = true;
+          });
+          cy.fixture("consent/fidesjs_options_banner_modal.json").then(
+            (config) => {
+              stubConfig({
+                experience: {
+                  experience_config: {
+                    ...config.experience.experience_config,
+                    ...{ component: ComponentType.HEADLESS },
+                  },
+                },
+              });
+            },
+          );
+          cy.wait("@patchPrivacyPreference");
         });
       });
 
-      it("does not set user consent preference automatically", () => {
-        // timeout means API call not made, which is expected
-        cy.on("fail", (error) => {
-          if (error.message.indexOf("Timed out retrying") !== 0) {
-            throw error;
-          }
+      describe("when GPC flag is found, and no notices apply to GPC", () => {
+        beforeEach(() => {
+          cy.on("window:before:load", (win) => {
+            // eslint-disable-next-line no-param-reassign
+            win.navigator.globalPrivacyControl = true;
+          });
+          stubConfig({
+            experience: {
+              privacy_notices: [
+                mockPrivacyNotice({
+                  title: "Advertising with GPC disabled",
+                  id: "pri_notice-advertising",
+                  has_gpc_flag: false,
+                }),
+              ],
+            },
+          });
         });
-        // check that preferences aren't sent to Fides API
-        cy.wait("@patchPrivacyPreference", {
-          requestTimeout: 500,
-        }).then((xhr) => {
-          assert.isNull(xhr?.response?.body);
+
+        it("does not set user consent preference automatically", () => {
+          // timeout means API call not made, which is expected
+          cy.on("fail", (error) => {
+            if (error.message.indexOf("Timed out retrying") !== 0) {
+              throw error;
+            }
+          });
+          // check that preferences aren't sent to Fides API
+          cy.wait("@patchPrivacyPreference", {
+            requestTimeout: 500,
+          }).then((xhr) => {
+            assert.isNull(xhr?.response?.body);
+          });
+          // check that Fides consent obj is empty
+          cy.window().its("Fides").its("consent").should("eql", {});
+          // check that preferences do not exist in cookie
+          cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
         });
-        // check that Fides consent obj is empty
-        cy.window().its("Fides").its("consent").should("eql", {});
-        // check that preferences do not exist in cookie
-        cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
+
+        it("does not show gpc indicator but does show it was detected and the info banner", () => {
+          // In the banner
+          cy.get("div.fides-gpc-banner").contains(
+            "Global Privacy Control detected",
+          );
+          // And in the modal
+          cy.get("button").contains("Manage preferences").click();
+          cy.get("div.fides-gpc-banner").should("be.visible");
+          cy.get("div.fides-gpc-badge").should("not.exist");
+        });
       });
 
-      it("does not show any gpc indicators", () => {
-        // In the banner
-        cy.get("div#fides-banner").within(() => {
-          cy.get("span.fides-gpc-badge").should("not.exist");
+      describe("when no GPC flag is found, and notices apply to GPC", () => {
+        beforeEach(() => {
+          cy.on("window:before:load", (win) => {
+            // eslint-disable-next-line no-param-reassign
+            win.navigator.globalPrivacyControl = undefined;
+          });
+          cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
+          stubConfig({
+            experience: {
+              privacy_notices: [
+                mockPrivacyNotice({
+                  title: "Advertising with gpc enabled",
+                  id: "pri_notice-advertising",
+                  has_gpc_flag: true,
+                }),
+              ],
+            },
+          });
         });
-        // And in the modal
-        cy.get("button").contains("Manage preferences").click();
-        cy.get("div.fides-gpc-banner").should("not.exist");
-        cy.get("div.fides-gpc-badge").should("not.exist");
+
+        it("does not set user consent preference automatically", () => {
+          // timeout means API call not made, which is expected
+          cy.on("fail", (error) => {
+            if (error.message.indexOf("Timed out retrying") !== 0) {
+              throw error;
+            }
+          });
+          // check that preferences aren't sent to Fides API
+          cy.wait("@patchPrivacyPreference", {
+            requestTimeout: 500,
+          }).then((xhr) => {
+            assert.isNull(xhr?.response?.body);
+          });
+          // check that Fides consent obj is empty
+          cy.window().its("Fides").its("consent").should("eql", {});
+          // check that preferences do not exist in cookie
+          cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
+        });
+
+        it("does not show any gpc indicators", () => {
+          // In the banner
+          cy.get("div#fides-banner").within(() => {
+            cy.get("span.fides-gpc-badge").should("not.exist");
+          });
+          // And in the modal
+          cy.get("button").contains("Manage preferences").click();
+          cy.get("div.fides-gpc-banner").should("not.exist");
+          cy.get("div.fides-gpc-badge").should("not.exist");
+        });
+      });
+
+      describe("when Fides string with Notice Consent is found", () => {
+        const consent = {};
+        consent[PRIVACY_NOTICE_KEY_1] = true;
+        const noticeConsentString = encodeNoticeConsentString(consent);
+        beforeEach(() => {
+          cy.on("window:before:load", (win) => {
+            // eslint-disable-next-line no-param-reassign
+            win.navigator.globalPrivacyControl = false;
+          });
+          cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
+          cy.fixture("consent/experience_banner_modal.json").then(
+            (experience) => {
+              const mockPrivacyNotice = experience.items[0].privacy_notices[0];
+              stubConfig({
+                experience: {
+                  privacy_notices: [mockPrivacyNotice],
+                },
+                options: {
+                  fidesString: `,,,${noticeConsentString}`,
+                },
+              });
+            },
+          );
+        });
+
+        it("sends Fides String with Notice Consent downstream to Fides API", () => {
+          // check that consent was sent to Fides API
+          let generatedUserDeviceId: string;
+          cy.wait("@patchPrivacyPreference").then((interception) => {
+            const { body } = interception.request;
+            const expected = {
+              // browser_identity.fides_user_device_id is intentionally left out here
+              // so we can later assert to be any string
+              preferences: [
+                {
+                  privacy_notice_history_id:
+                    "pri_notice-history-advertising-en-000",
+                  preference: "opt_in",
+                },
+              ],
+              privacy_experience_config_history_id:
+                "pri_exp-history-banner-modal-en-000",
+              user_geography: "us_ca",
+
+              method: ConsentMethod.SCRIPT,
+              served_notice_history_id: body.served_notice_history_id,
+            };
+            // uuid is generated automatically if the user has no saved consent cookie
+            generatedUserDeviceId = body.browser_identity.fides_user_device_id;
+            expect(generatedUserDeviceId).to.be.a("string");
+            expect(body.preferences).to.eql(expected.preferences);
+            expect(body.privacy_experience_config_history_id).to.eql(
+              expected.privacy_experience_config_history_id,
+            );
+            expect(body.user_geography).to.eql(expected.user_geography);
+            expect(body.method).to.eql(expected.method);
+          });
+        });
+
+        it("stores consent in cookie", () => {
+          cy.waitUntilCookieExists(CONSENT_COOKIE_NAME).then(() => {
+            cy.getCookie(CONSENT_COOKIE_NAME).then((cookie) => {
+              const cookieKeyConsent: FidesCookie = JSON.parse(
+                decodeURIComponent(cookie!.value),
+              );
+              expect(cookieKeyConsent.consent)
+                .property(PRIVACY_NOTICE_KEY_1)
+                .is.eql(true);
+              expect(cookieKeyConsent.fides_meta)
+                .property("consentMethod")
+                .is.eql(ConsentMethod.SCRIPT);
+            });
+          });
+        });
+
+        it("updates Fides consent obj", () => {
+          cy.window()
+            .its("Fides")
+            .its("consent")
+            .should("eql", {
+              [PRIVACY_NOTICE_KEY_1]: true,
+            });
+        });
+
+        it("sends consent override from a Headless experience", () => {
+          cy.fixture("consent/fidesjs_options_banner_modal.json").then(
+            (config) => {
+              stubConfig({
+                experience: {
+                  experience_config: {
+                    ...config.experience.experience_config,
+                    ...{ component: ComponentType.HEADLESS },
+                  },
+                },
+                options: {
+                  fidesString: `,,,${noticeConsentString}`,
+                },
+              });
+            },
+          );
+          cy.wait("@patchPrivacyPreference");
+        });
       });
     });
 
