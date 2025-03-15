@@ -66,32 +66,44 @@ export interface Fides {
   consent: Record<string, boolean>;
 
   /**
-   * User's current consent string(s) combined into a single value. The string
-   * consists of three parts separated by commas in the format:
-   * `TC_STRING,AC_STRING,GPP_STRING` where:
+   * User's current consent string(s) combined into a single value. When fides_string
+   * is set, it is automatically processed during FidesJS initialization, and the
+   * consent preferences are updated accordingly.
+   *
+   * The string consists of four parts separated by commas in the format:
+   * `TC_STRING,AC_STRING,GPP_STRING,NC_STRING` where:
    *
    * - TC_STRING: IAB TCF (Transparency & Consent Framework) string
-   * - AC_STRING: Google's Additional Consent string, derived from TC_STRING
+   * - AC_STRING: Google's Additional Consent string
    * - GPP_STRING: IAB GPP (Global Privacy Platform) string
+   * - NC_STRING: Base64 encoded string of the user's Notice Consent preferences.
    *
-   * Note: The AC_STRING can only exist if TC_STRING exists, as it's derived from it.
-   * When GPP is enabled, the GPP_STRING portion is automatically initialized during
-   * FidesJS initialization, either preserving any existing GPP string or using a
-   * default value. The GPP_STRING is independent and can exist with or without the
-   * other strings.
+   * To properly encode the Notice Consent string, use the
+   * `window.Fides.encodeNoticeConsentString` function. Or write your own function that
+   * looks something like:
+   * ```ts
+   * function encodeNoticeConsentString(consent: Record<string, boolean | 0 | 1>) {
+   *   return btoa(JSON.stringify(consent));
+   * }
+   * ```
+   * Pass a consent object to the function, and it will return a base64 encoded string.
+   * (eg. `Fides.encodeNoticeConsentString({data_sales_and_sharing:0,analytics:1})` will return `"eyJkYXRhX3NhbGVzX2FuZF9zaGFyaW5nIjowLCJhbmFseXRpY3MiOjF9"`)
    *
    * @example
    * // Complete string with all parts:
-   * console.log(Fides.fides_string);
    * // "CPzHq4APzHq4AAMABBENAUEAALAAAEOAAAAAAEAEACACAAAA,1~61.70,DBABLA~BVAUAAAAAWA.QA"
    *
    * // TC and AC strings only (no GPP):
-   * console.log(Fides.fides_string);
    * // "CPzHq4APzHq4AAMABBENAUEAALAAAEOAAAAAAEAEACACAAAA,1~61.70"
    *
    * // GPP string only:
-   * console.log(Fides.fides_string);
    * // ",,DBABLA~BVAUAAAAAWA.QA"
+   *
+   * // Notice Consent string only:
+   * // ",,,eyJkYXRhX3NhbGVzX2FuZF9zaGFyaW5nIjowLCJhbmFseXRpY3MiOjF9"
+   *
+   * Note: The Notice Consent string will take precedence over GPC and prior user consent.
+   * as it is assumed that it's being used to pass consent preferences from an external source.
    */
   fides_string?: string;
 
