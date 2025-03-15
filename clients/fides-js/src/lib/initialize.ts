@@ -158,7 +158,7 @@ const automaticallyApplyGPCPreferences = async ({
       return new SaveConsentPreference(
         notice,
         transformConsentToFidesUserPreference(
-          resolveConsentValue(notice, context, savedConsent),
+          resolveConsentValue(notice, savedConsent),
           notice.consent_mechanism,
         ),
         bestNoticeTranslation?.privacy_notice_history_id,
