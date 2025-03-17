@@ -114,7 +114,7 @@ const automaticallyApplyPreferences = async ({
   }
 
   const context = getConsentContext();
-  const { noticeConsent: noticeConsentString } = decodeFidesString(
+  const { nc: noticeConsentString } = decodeFidesString(
     fidesOptions.fidesString || "",
   );
   if (context.globalPrivacyControl) {
