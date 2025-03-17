@@ -5,20 +5,12 @@ from __future__ import annotations
 import json
 from datetime import datetime, timedelta
 from enum import Enum as EnumType
-from typing import Any, Dict, List, Optional, Set, Tuple, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Set, Tuple, Union
 
 from celery.result import AsyncResult
 from loguru import logger
 from pydantic import BaseModel, ConfigDict
-from sqlalchemy import (
-    Boolean,
-    Column,
-    DateTime,
-    ForeignKey,
-    Integer,
-    String,
-    UniqueConstraint,
-)
+from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.mutable import MutableDict, MutableList
@@ -84,12 +76,7 @@ from fides.api.schemas.privacy_request import (
 from fides.api.schemas.redis_cache import (
     CustomPrivacyRequestField as CustomPrivacyRequestFieldSchema,
 )
-from fides.api.schemas.redis_cache import (
-    Identity,
-    IdentityBase,
-    LabeledIdentity,
-    MultiValue,
-)
+from fides.api.schemas.redis_cache import Identity, LabeledIdentity, MultiValue
 from fides.api.tasks import celery_app
 from fides.api.util.cache import (
     FidesopsRedis,
@@ -116,6 +103,12 @@ from fides.common.api.scope_registry import (
 )
 from fides.config import CONFIG
 
+if TYPE_CHECKING:
+    from fides.api.models.privacy_request.consent import (  # type: ignore[attr-defined]
+        Consent,
+        ConsentRequest,
+    )
+
 # Locations from which privacy request execution can be resumed, in order.
 EXECUTION_CHECKPOINTS = [
     CurrentStep.pre_webhooks,
@@ -127,11 +120,6 @@ EXECUTION_CHECKPOINTS = [
     CurrentStep.finalize_consent,
     CurrentStep.email_post_send,
     CurrentStep.post_webhooks,
-]
-
-
-EmailRequestFulfillmentBodyParams = Dict[
-    CollectionAddress, Optional[CheckpointActionRequired]
 ]
 
 
@@ -1599,135 +1587,6 @@ class CustomPrivacyRequestField(HashMigrationMixin, Base):
         if value := self.encrypted_value.get("value"):
             self.hashed_value = self.hash_value(value)  # type: ignore
         self.is_hash_migrated = True
-
-
-class Consent(Base):
-    """The DB ORM model for Consent."""
-
-    provided_identity_id = Column(
-        String,
-        ForeignKey(ProvidedIdentity.id),
-        nullable=False,
-    )
-    data_use = Column(String, nullable=False)
-    data_use_description = Column(String)
-    opt_in = Column(Boolean, nullable=False)
-    has_gpc_flag = Column(
-        Boolean,
-        server_default="f",
-        default=False,
-        nullable=False,
-    )
-    conflicts_with_gpc = Column(
-        Boolean,
-        server_default="f",
-        default=False,
-        nullable=False,
-    )
-
-    provided_identity = relationship(ProvidedIdentity, back_populates="consent")
-
-    UniqueConstraint(provided_identity_id, data_use, name="uix_identity_data_use")
-
-    identity: Optional[IdentityBase] = None
-
-
-class ConsentRequest(IdentityVerificationMixin, Base):
-    """Tracks consent requests."""
-
-    property_id = Column(
-        String,
-        nullable=True,
-    )
-    provided_identity_id = Column(
-        String, ForeignKey(ProvidedIdentity.id), nullable=False
-    )
-    provided_identity = relationship(
-        ProvidedIdentity,
-        back_populates="consent_request",
-    )
-
-    custom_fields = relationship(
-        CustomPrivacyRequestField, back_populates="consent_request"
-    )
-
-    preferences = Column(
-        MutableList.as_mutable(JSONB),
-        nullable=True,
-    )
-
-    identity_verified_at = Column(
-        DateTime(timezone=True),
-        nullable=True,
-    )
-
-    source = Column(EnumColumn(PrivacyRequestSource), nullable=True)
-
-    privacy_request_id = Column(String, ForeignKey(PrivacyRequest.id), nullable=True)
-    privacy_request = relationship(PrivacyRequest)
-
-    def get_cached_identity_data(self) -> Dict[str, Any]:
-        """Retrieves any identity data pertaining to this request from the cache."""
-        prefix = f"id-{self.id}-identity-*"
-        cache: FidesopsRedis = get_cache()
-        keys = cache.keys(prefix)
-        return {key.split("-")[-1]: cache.get(key) for key in keys}
-
-    def verify_identity(
-        self,
-        db: Session,
-        provided_code: Optional[str] = None,
-    ) -> None:
-        """
-        A method to call the internal identity verification method provided by the
-        `IdentityVerificationMixin`.
-        """
-        self._verify_identity(provided_code=provided_code)
-        self.identity_verified_at = datetime.utcnow()
-        self.save(db)
-
-    def persist_custom_privacy_request_fields(
-        self,
-        db: Session,
-        custom_privacy_request_fields: Optional[
-            Dict[str, CustomPrivacyRequestFieldSchema]
-        ],
-    ) -> None:
-        if not custom_privacy_request_fields:
-            return
-
-        if CONFIG.execution.allow_custom_privacy_request_field_collection:
-            for key, item in custom_privacy_request_fields.items():
-                if item.value:
-                    hashed_value = CustomPrivacyRequestField.hash_value(item.value)
-                    CustomPrivacyRequestField.create(
-                        db=db,
-                        data={
-                            "consent_request_id": self.id,
-                            "field_name": key,
-                            "field_label": item.label,
-                            "encrypted_value": {"value": item.value},
-                            "hashed_value": hashed_value,
-                        },
-                    )
-        else:
-            logger.info(
-                "Custom fields provided in consent request {}, but config setting 'CONFIG.execution.allow_custom_privacy_request_field_collection' prevents their storage.",
-                self.id,
-            )
-
-    def get_persisted_custom_privacy_request_fields(self) -> Dict[str, Any]:
-        return {
-            field.field_name: {
-                "label": field.field_label,
-                "value": field.encrypted_value["value"],
-            }
-            for field in self.custom_fields  # type: ignore[attr-defined]
-        }
-
-
-# Unique text to separate a step from a collection address, so we can store two values in one.
-PAUSED_SEPARATOR = "__fidesops_paused_sep__"
 
 
 def cache_action_required(
