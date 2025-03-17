@@ -189,7 +189,9 @@ const TcfPurposes = ({
     let key;
     if (modelType === "customPurposesConsent") {
       type = "notice" as const;
-      key = `${item.id}`;
+      // For custom purposes (privacy notices), we can use the notice_key
+      // to be consistent with regular notices in FidesUIChanged events
+      key = (item as PrivacyNoticeWithBestTranslation).notice_key;
     } else if (modelType === "purposesConsent") {
       type = "tcf_purpose_consent" as const;
       key = `${type}_${item.id}`;

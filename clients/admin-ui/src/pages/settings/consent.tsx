@@ -39,7 +39,7 @@ import {
   usePatchConfigurationSettingsMutation,
 } from "~/features/privacy-requests/privacy-requests.slice";
 import {
-  GPPApplicationConfigResponse,
+  PrivacyExperienceGPPSettings,
   TCFLegalBasisEnum,
   TCFPurposeOverrideSchema,
 } from "~/types/api";
@@ -53,7 +53,7 @@ type FormPurposeOverride = {
 
 type FormValues = {
   purposeOverrides: FormPurposeOverride[];
-  gpp: GPPApplicationConfigResponse;
+  gpp: PrivacyExperienceGPPSettings;
 };
 
 const ConsentConfigPage: NextPage = () => {

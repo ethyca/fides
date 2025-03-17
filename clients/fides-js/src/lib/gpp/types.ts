@@ -44,6 +44,10 @@ export type GPPSettings = {
    * Whether TC string should be included as a section in GPP
    */
   enable_tcfeu_string?: boolean;
+  /**
+   * Whether the GPP CMP API is required for the experience
+   */
+  cmp_api_required?: boolean;
 };
 
 export type GPPMechanismMapping = {
