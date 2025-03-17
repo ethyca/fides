@@ -189,7 +189,7 @@ describe("Consent settings", () => {
     });
   });
 
-  describe.only("when the user is already verified", () => {
+  describe("when the user is already verified", () => {
     beforeEach(() => {
       cy.window().then((win) => {
         win.localStorage.setItem(
