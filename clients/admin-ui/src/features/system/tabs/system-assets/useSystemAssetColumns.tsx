@@ -49,6 +49,7 @@ const useSystemAssetColumns = () => {
       cell: (props) => <DefaultCell value={props.getValue()} />,
       header: "Domain",
     }),
+    // @ts-ignore - un-ignore when API "Asset" type is updated with "page" field (HA-504)
     columnHelper.accessor((row) => row.page, {
       id: "page",
       cell: (props) => (
