@@ -1601,9 +1601,11 @@ describe("Consent i18n", () => {
     describe("displays localized texts", () => {
       beforeEach(() => {
         beforeAll();
-        cy.visitWithLanguage("/consent", SPANISH_LOCALE);
+        cy.visitConsent({
+          settingsOverride: SETTINGS,
+          language: SPANISH_LOCALE,
+        });
         cy.getByTestId("consent");
-        cy.overrideSettings(SETTINGS);
         cy.wait("@getExperience");
       });
 

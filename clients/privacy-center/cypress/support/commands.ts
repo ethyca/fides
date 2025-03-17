@@ -4,7 +4,10 @@ import "cypress-wait-until";
 
 import type { FidesConfig, FidesEventType } from "fides-js";
 
-import type { PrivacyCenterClientSettings } from "~/app/server-environment";
+import {
+  getClientSettings,
+  PrivacyCenterClientSettings,
+} from "~/app/server-environment";
 import type { AppDispatch } from "~/app/store";
 import VisitOptions = Cypress.VisitOptions;
 
@@ -52,7 +55,6 @@ Cypress.Commands.add("loadConfigFixture", (fixtureName: string, ...args) => {
 });
 
 Cypress.Commands.add("overrideSettings", (settings) => {
-  cy.getByTestId("logo");
   cy.dispatch({ type: "settings/overrideSettings", payload: settings }).then(
     () => settings,
   );
@@ -68,6 +70,42 @@ Cypress.Commands.add("visitWithLanguage", (url: string, language: string) => {
     },
   });
 });
+
+Cypress.Commands.add(
+  "visitConsent",
+  ({ settingsOverride, urlParams = {}, language }) => {
+    const urlSearchParams = new URLSearchParams({
+      ...urlParams,
+      redirect: "false",
+    });
+    const url = `/consent?${urlSearchParams.toString()}`;
+
+    if (language) {
+      cy.visitWithLanguage(url, language);
+    } else {
+      cy.visit(url);
+    }
+
+    const envVariables = getClientSettings();
+    cy.dispatch({
+      type: "settings/overrideSettings",
+      payload: {
+        ...envVariables,
+        ...settingsOverride,
+      },
+    });
+    cy.fixture("config/config.css").then((config) => {
+      cy.dispatch({ type: "styles/loadStyles", payload: config }).then(
+        () => config,
+      );
+    });
+    cy.fixture("config/config_consent.json").then((config) => {
+      cy.dispatch({ type: "config/loadConfig", payload: config }).then(
+        () => config,
+      );
+    });
+  },
+);
 
 Cypress.Commands.add(
   "visitConsentDemo",
@@ -226,6 +264,16 @@ declare global {
         queryParams?: Cypress.VisitOptions["qs"] | null,
         windowParams?: any,
       ): Chainable<any>;
+
+      visitConsent({
+        settingsOverride,
+        urlParams,
+        language,
+      }: {
+        settingsOverride: Partial<PrivacyCenterClientSettings>;
+        urlParams?: Record<string, string>;
+        language?: string;
+      }): Chainable<any>;
       /**
        * Custom command to load a Privacy Center settings object into the app
        *

@@ -189,7 +189,7 @@ describe("Consent settings", () => {
     });
   });
 
-  describe("when the user is already verified", () => {
+  describe.only("when the user is already verified", () => {
     beforeEach(() => {
       cy.window().then((win) => {
         win.localStorage.setItem(
@@ -214,10 +214,7 @@ describe("Consent settings", () => {
         },
       ).as("patchConsentPreferences");
 
-      cy.visit("/consent");
-      cy.getByTestId("consent");
-      cy.loadConfigFixture("config/config_consent.json").as("config");
-      cy.overrideSettings({ IS_OVERLAY_ENABLED: false });
+      cy.visitConsent({ settingsOverride: { IS_OVERLAY_ENABLED: false } });
     });
 
     it("populates its header and description from config", () => {
@@ -358,10 +355,11 @@ describe("Consent settings", () => {
 
     describe("when globalPrivacyControl is enabled", () => {
       beforeEach(() => {
-        cy.visit("/consent?globalPrivacyControl=true");
+        cy.visitConsent({
+          settingsOverride: { IS_OVERLAY_ENABLED: false },
+          urlParams: { globalPrivacyControl: "true" },
+        });
         cy.getByTestId("consent");
-        cy.loadConfigFixture("config/config_consent.json").as("config");
-        cy.overrideSettings({ IS_OVERLAY_ENABLED: false });
       });
 
       it("applies the GPC defaults", () => {

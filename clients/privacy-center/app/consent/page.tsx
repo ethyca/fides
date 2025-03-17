@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect } from "react";
 
 import ConsentPage from "~/components/ConsentPage";
@@ -16,12 +16,14 @@ import { useHasConfig } from "~/features/common/config.slice";
 const Consent = () => {
   const hasConfig = useHasConfig();
   const router = useRouter();
+  const params = useSearchParams();
+  const shouldRedirect = !hasConfig && params?.get("redirect") !== "false";
 
   useEffect(() => {
-    if (!hasConfig) {
+    if (shouldRedirect) {
       router.push(`/`);
     }
-  }, [hasConfig, router]);
+  }, [shouldRedirect, router]);
 
   if (!hasConfig) {
     return null;
