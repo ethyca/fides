@@ -8,6 +8,7 @@ import {
   HStack,
   Stack,
   Text,
+  Tooltip,
   useToast,
   VStack,
 } from "fidesui";
@@ -221,18 +222,30 @@ const EditorSection = ({ connectionKey }: EditorSectionProps) => {
           <ClipboardButton copyText={editorContent} />
         </HStack>
         <HStack spacing={2}>
-          <Button
-            htmlType="submit"
-            size="small"
-            data-testid="refresh-btn"
-            onClick={handleRefresh}
-            loading={isDatasetConfigsLoading}
+          <Tooltip
+            label="Refresh to load the latest data from the database. This will overwrite any unsaved local changes."
+            hasArrow
+            placement="top"
           >
-            Refresh
-          </Button>
-          <Button htmlType="submit" size="small" onClick={handleSave}>
-            Save
-          </Button>
+            <Button
+              htmlType="submit"
+              size="small"
+              data-testid="refresh-btn"
+              onClick={handleRefresh}
+              loading={isDatasetConfigsLoading}
+            >
+              Refresh
+            </Button>
+          </Tooltip>
+          <Tooltip
+            label="Save your changes to update the dataset in the database."
+            hasArrow
+            placement="top"
+          >
+            <Button htmlType="submit" size="small" onClick={handleSave}>
+              Save
+            </Button>
+          </Tooltip>
         </HStack>
       </Heading>
       <Stack
