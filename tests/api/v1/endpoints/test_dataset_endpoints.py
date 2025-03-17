@@ -125,14 +125,14 @@ class TestCreateDataset:
         )
 
     @pytest.mark.usefixtures("existing_dataset")
-    def test_create_dataset_name_already_exists(
+    def test_create_dataset_duplicate_name(
         self,
         api_client: TestClient,
         generate_auth_header,
         url: str,
         dataset_payload: dict,
     ) -> None:
-        """Test that creating a dataset with a name that already exists returns a 422 error"""
+        """Test that creating a dataset with duplicate names is allowed"""
         auth_header = generate_auth_header(scopes=[CTL_DATASET_CREATE])
 
         # Try to create a dataset with the same name but different key
@@ -141,11 +141,7 @@ class TestCreateDataset:
 
         response = api_client.post(url, headers=auth_header, json=payload)
 
-        assert response.status_code == HTTP_422_UNPROCESSABLE_ENTITY
-        assert (
-            response.json()["detail"]
-            == 'Dataset with name "Test Dataset" already exists.'
-        )
+        assert response.status_code == HTTP_201_CREATED
 
     def test_create_dataset(
         self, api_client: TestClient, generate_auth_header, url: str

@@ -301,9 +301,12 @@ class Dataset(Base, FidesBase):
         db: Session,
         *,
         data: dict[str, Any],
-        check_name: bool = True,
+        check_name: bool = False,
     ) -> "Dataset":
-        """Override create to check for existing datasets with the same fides_key or name."""
+        """
+        Override create to check for existing datasets with the same fides_key.
+        Duplicate names are allowed.
+        """
         # Check if dataset with same fides_key already exists
         if "fides_key" in data:
             existing_by_key = (
@@ -312,14 +315,6 @@ class Dataset(Base, FidesBase):
             if existing_by_key:
                 raise KeyOrNameAlreadyExists(
                     f'Dataset with fides_key "{data["fides_key"]}" already exists.'
-                )
-
-        # Check if dataset with same name already exists
-        if check_name and "name" in data:
-            existing_by_name = db.query(cls).filter(cls.name == data["name"]).first()
-            if existing_by_name:
-                raise KeyOrNameAlreadyExists(
-                    f'Dataset with name "{data["name"]}" already exists.'
                 )
 
         # Create the dataset using the parent class's method
