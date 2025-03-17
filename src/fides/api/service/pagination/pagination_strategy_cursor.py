@@ -29,11 +29,15 @@ class CursorPaginationStrategy(PaginationStrategy):
 
         # get the last object in the array and read the cursor value
         cursor = None
+        has_next = None
         object_list = (
             pydash.get(response.json(), data_path) if data_path else response.json()
         )
         if object_list and isinstance(object_list, list):
-            cursor = pydash.get(object_list.pop(), self.field)
+            last_object = object_list.pop()
+            cursor = pydash.get(last_object, self.field)
+            if self.has_next:
+                has_next = pydash.get(last_object, self.has_next)
 
         # If the cursor value isn't found, try to find the value in response.json() using the field value
         if cursor is None:
@@ -43,8 +47,10 @@ class CursorPaginationStrategy(PaginationStrategy):
         if cursor is None:
             return None
 
-        if self.has_next:
+        if self.has_next and has_next is None:
             has_next = pydash.get(response.json(), self.has_next)
+
+        if self.has_next:
             logger.info(f"The {self.has_next} field has a value of {has_next}")
             if str(has_next).lower() != "true":
                 return None
