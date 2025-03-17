@@ -6,7 +6,6 @@ import {
   encodeNoticeConsentString,
   FidesCookie,
   FidesInitOptions,
-  FidesOptions,
   PrivacyNotice,
   RecordConsentServedRequest,
   REQUEST_SOURCE,
@@ -1391,6 +1390,47 @@ describe("Consent overlay", () => {
             },
           );
           cy.wait("@patchPrivacyPreference");
+        });
+      });
+
+      describe("when Notice Consent string is found and takes precedence over GPC", () => {
+        beforeEach(() => {
+          cy.on("window:before:load", (win) => {
+            // eslint-disable-next-line no-param-reassign
+            win.navigator.globalPrivacyControl = true;
+          });
+          cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
+          const consent = {};
+          consent[PRIVACY_NOTICE_KEY_1] = true;
+          const noticeConsentString = encodeNoticeConsentString(consent);
+          stubConfig({
+            experience: {
+              privacy_notices: [
+                mockPrivacyNotice({
+                  title: "Advertising with gpc enabled",
+                  id: "pri_notice-advertising",
+                  has_gpc_flag: true,
+                  notice_key: PRIVACY_NOTICE_KEY_1,
+                }),
+              ],
+            },
+            options: {
+              fidesString: `,,,${noticeConsentString}`,
+            },
+          });
+        });
+
+        it("applies Notice Consent string preferences and overrides GPC", () => {
+          // Verify the GPC badge shows as overridden
+          cy.get("#fides-modal-link").click();
+          cy.get(".fides-notice-toggle")
+            .contains("Advertising with gpc enabled")
+            .parents(".fides-notice-toggle-title")
+            .within(() => {
+              cy.get(".fides-gpc-label .fides-gpc-badge").contains(
+                "Overridden",
+              );
+            });
         });
       });
     });
