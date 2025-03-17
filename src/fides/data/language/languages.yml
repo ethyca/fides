@@ -45,6 +45,8 @@ languages:
   name: Italian
 - id: ja
   name: Japanese
+- id: ko
+  name: Korean
 - id: lt
   name: Lithuanian
 - id: lv
