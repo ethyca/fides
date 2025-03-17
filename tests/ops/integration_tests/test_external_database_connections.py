@@ -169,7 +169,7 @@ def test_bigquery_example_data(bigquery_test_engine):
     inspector = inspect(bigquery_test_engine)
 
     # we may have added more tables to the test db, so we just check that
-    # at _least_ the expected tables below are present
+    # _at least_ the expected tables below are present
     assert {
         "address",
         "customer",
