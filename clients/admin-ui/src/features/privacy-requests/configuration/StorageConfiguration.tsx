@@ -16,12 +16,12 @@ import {
   PRIVACY_REQUESTS_ROUTE,
 } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
+import { usePatchConfigurationSettingsMutation } from "~/features/config-settings/config-settings.slice";
 import { storageTypes } from "~/features/privacy-requests/constants";
 import {
   useCreateStorageMutation,
   useGetActiveStorageQuery,
   useGetStorageDetailsQuery,
-  usePatchConfigurationSettingsMutation,
 } from "~/features/privacy-requests/privacy-requests.slice";
 
 import S3StorageConfiguration from "./S3StorageConfiguration";

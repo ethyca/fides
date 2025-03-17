@@ -10,6 +10,7 @@ import { DesktopIcon } from "~/features/common/Icon/DesktopIcon";
 import { MobileIcon } from "~/features/common/Icon/MobileIcon";
 import { PRIVACY_EXPERIENCE_ROUTE } from "~/features/common/nav/routes";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
+import { useGetConfigurationSettingsQuery } from "~/features/config-settings/config-settings.slice";
 import {
   defaultInitialValues,
   findLanguageDisplayName,
@@ -30,7 +31,6 @@ import {
 import { PrivacyExperienceForm } from "~/features/privacy-experience/PrivacyExperienceForm";
 import PrivacyExperienceTranslationForm from "~/features/privacy-experience/PrivacyExperienceTranslationForm";
 import { selectAllPrivacyNotices } from "~/features/privacy-notices/privacy-notices.slice";
-import { useGetConfigurationSettingsQuery } from "~/features/privacy-requests";
 import {
   ComponentType,
   ExperienceConfigCreate,

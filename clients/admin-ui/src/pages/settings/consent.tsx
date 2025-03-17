@@ -24,6 +24,11 @@ import PageHeader from "~/features/common/PageHeader";
 import { useGetPurposesQuery } from "~/features/common/purpose.slice";
 import QuestionTooltip from "~/features/common/QuestionTooltip";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
+import {
+  selectGppSettings,
+  useGetConfigurationSettingsQuery,
+  usePatchConfigurationSettingsMutation,
+} from "~/features/config-settings/config-settings.slice";
 import FrameworkStatus from "~/features/consent-settings/FrameworkStatus";
 import GppConfiguration from "~/features/consent-settings/GppConfiguration";
 import PurposeOverrides from "~/features/consent-settings/PurposeOverrides";
@@ -34,13 +39,9 @@ import {
   usePatchTcfPurposeOverridesMutation,
 } from "~/features/plus/plus.slice";
 import {
-  selectGppSettings,
-  useGetConfigurationSettingsQuery,
-  usePatchConfigurationSettingsMutation,
-} from "~/features/privacy-requests/privacy-requests.slice";
-import {
   PrivacyExperienceGPPSettings,
   TCFLegalBasisEnum,
+  TCFPublisherSettings,
   TCFPurposeOverrideSchema,
 } from "~/types/api";
 
@@ -54,6 +55,7 @@ type FormPurposeOverride = {
 type FormValues = {
   purposeOverrides: FormPurposeOverride[];
   gpp: PrivacyExperienceGPPSettings;
+  tcfPublisherSettings: TCFPublisherSettings;
 };
 
 const ConsentConfigPage: NextPage = () => {
@@ -201,6 +203,7 @@ const ConsentConfigPage: NextPage = () => {
           )
         : [],
       gpp: gppSettings,
+      tcfPublisherSettings: {},
     }),
     [tcfPurposeOverrides, gppSettings],
   );
