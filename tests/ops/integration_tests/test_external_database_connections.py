@@ -167,23 +167,24 @@ def test_snowflake_example_data(snowflake_test_engine):
 def test_bigquery_example_data(bigquery_test_engine):
     """Confirm that we can connect to the bigquery test db and get table names"""
     inspector = inspect(bigquery_test_engine)
-    assert sorted(inspector.get_table_names(schema="fidesopstest")) == sorted(
-        [
-            "address",
-            "customer",
-            "customer_profile",
-            "employee",
-            "login",
-            "order_item",
-            "orders",
-            "payment_card",
-            "product",
-            "report",
-            "service_request",
-            "visit",
-            "visit_partitioned",
-        ]
-    )
+
+    # we may have added more tables to the test db, so we just check that
+    # _at least_ the expected tables below are present
+    assert {
+        "address",
+        "customer",
+        "customer_profile",
+        "employee",
+        "login",
+        "order_item",
+        "orders",
+        "payment_card",
+        "product",
+        "report",
+        "service_request",
+        "visit",
+        "visit_partitioned",
+    }.issubset(set(inspector.get_table_names(schema="fidesopstest")))
 
 
 @pytest.mark.integration_external
