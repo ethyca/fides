@@ -23,6 +23,8 @@ export const SystemCell = ({
     name: assetName,
     urn,
     system: systemName,
+    user_assigned_system_key: userAssignedSystemKey,
+    system_key: systemKey,
   } = aggregateSystem;
   const [isEditing, setIsEditing] = useState(false);
   const [isNewSystemModalOpen, setIsNewSystemModalOpen] = useState(false);
@@ -47,7 +49,7 @@ export const SystemCell = ({
     const result = await updateResourceCategoryMutation({
       staged_resource_urn: urn,
       monitor_config_id: monitorConfigId,
-      system_key: fidesKey,
+      user_assigned_system_key: fidesKey,
     });
     if (isErrorResult(result)) {
       errorAlert(getErrorMessage(result.error));
@@ -61,6 +63,8 @@ export const SystemCell = ({
     }
     setIsEditing(false);
   };
+
+  const currentSystemKey = userAssignedSystemKey || systemKey;
 
   return (
     <>
@@ -86,6 +90,7 @@ export const SystemCell = ({
           className="w-full"
           autoFocus
           defaultOpen
+          defaultValue={currentSystemKey}
           onBlur={(e) => {
             // Close the dropdown unless the user is clicking the "Add new system" button, otherwise it won't open the modal
             if (e.relatedTarget?.getAttribute("id") !== "add-new-system") {

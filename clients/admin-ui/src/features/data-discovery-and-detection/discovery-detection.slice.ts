@@ -58,7 +58,7 @@ interface ChangeResourceCategoryQueryParam {
   monitor_config_id: string;
   staged_resource_urn: string;
   user_assigned_data_categories?: string[];
-  system_key?: string;
+  user_assigned_system_key?: string;
 }
 
 const discoveryDetectionApi = baseApi.injectEndpoints({
@@ -217,7 +217,7 @@ const discoveryDetectionApi = baseApi.injectEndpoints({
           {
             urn: params.staged_resource_urn,
             user_assigned_data_categories: params.user_assigned_data_categories,
-            system_key: params.system_key,
+            user_assigned_system_key: params.user_assigned_system_key,
           },
         ],
       }),
