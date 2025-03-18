@@ -25,6 +25,7 @@ class DiffStatus(Enum):
     CLASSIFICATION_UPDATE = "classification_update"
     MONITORED = "monitored"
     MUTED = "muted"
+    IN_REVIEW = "in_review"
 
 
 class MonitorFrequency(Enum):
