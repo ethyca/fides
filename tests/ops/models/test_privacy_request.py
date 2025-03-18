@@ -17,18 +17,20 @@ from fides.api.common_exceptions import (
 from fides.api.graph.config import CollectionAddress
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import (
-    CheckpointActionRequired,
     ConsentRequest,
-    ManualAction,
     PrivacyRequest,
     PrivacyRequestError,
     PrivacyRequestNotifications,
-    PrivacyRequestStatus,
     ProvidedIdentity,
     can_run_checkpoint,
 )
 from fides.api.schemas.policy import ActionType, CurrentStep
-from fides.api.schemas.privacy_request import CustomPrivacyRequestField
+from fides.api.schemas.privacy_request import (
+    CheckpointActionRequired,
+    CustomPrivacyRequestField,
+    ManualAction,
+    PrivacyRequestStatus,
+)
 from fides.api.schemas.redis_cache import Identity, LabeledIdentity
 from fides.api.util.cache import (
     FidesopsRedis,

@@ -8,18 +8,14 @@ from fides.api.api.v1.endpoints.consent_request_endpoints import (
 )
 from fides.api.db.seed import DEFAULT_CONSENT_POLICY
 from fides.api.graph.config import CollectionAddress
-from fides.api.models.privacy_request import (
-    Consent,
-    ConsentRequest,
-    PrivacyRequestStatus,
-    ProvidedIdentity,
-)
+from fides.api.models.privacy_request import Consent, ConsentRequest, ProvidedIdentity
 from fides.api.schemas.policy import PolicyResponse
 from fides.api.schemas.privacy_request import (
     BulkPostPrivacyRequests,
     ConsentPreferences,
     ConsentWithExecutableStatus,
     PrivacyRequestResponse,
+    PrivacyRequestStatus,
 )
 from fides.api.schemas.redis_cache import CustomPrivacyRequestField, Identity
 

@@ -2,11 +2,11 @@ import pytest
 from pydantic import ValidationError
 
 from fides.api.db.seed import DEFAULT_ACCESS_POLICY
-from fides.api.models.privacy_request import PrivacyRequestStatus
 from fides.api.schemas.privacy_request import (
     PrivacyRequestCreate,
     PrivacyRequestFilter,
     PrivacyRequestSource,
+    PrivacyRequestStatus,
 )
 
 

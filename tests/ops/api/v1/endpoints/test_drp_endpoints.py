@@ -13,9 +13,11 @@ from fides.api.models.privacy_request import (
     PrivacyRequest,
     PrivacyRequestError,
     PrivacyRequestNotifications,
+)
+from fides.api.schemas.privacy_request import (
+    PrivacyRequestDRPStatus,
     PrivacyRequestStatus,
 )
-from fides.api.schemas.privacy_request import PrivacyRequestDRPStatus
 from fides.api.util.cache import cache_task_tracking_key, get_drp_request_body_cache_key
 from fides.common.api.scope_registry import (
     POLICY_READ,

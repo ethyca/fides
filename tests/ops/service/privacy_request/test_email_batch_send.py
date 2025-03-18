@@ -11,7 +11,11 @@ from fides.api.models.privacy_request import ExecutionLog, PrivacyRequest
 from fides.api.schemas.messaging.messaging import ConsentPreferencesByUser
 from fides.api.schemas.privacy_notice import PrivacyNoticeHistorySchema
 from fides.api.schemas.privacy_preference import MinimalPrivacyPreferenceHistorySchema
-from fides.api.schemas.privacy_request import Consent, ExecutionLogStatus
+from fides.api.schemas.privacy_request import (
+    Consent,
+    ExecutionLogStatus,
+    PrivacyRequestStatus,
+)
 from fides.api.schemas.redis_cache import Identity
 from fides.api.service.privacy_request.email_batch_service import (
     EmailExitState,

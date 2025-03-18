@@ -4,7 +4,7 @@ from fideslang.models import Dataset
 from fides.api.graph.graph import DatasetGraph
 from fides.api.models.connectionconfig import ActionType
 from fides.api.models.datasetconfig import convert_dataset_to_graph
-from fides.api.models.privacy_request import PrivacyRequestStatus
+from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.task.graph_runners import access_runner, erasure_runner
 from fides.api.task.graph_task import (
     filter_by_enabled_actions,
