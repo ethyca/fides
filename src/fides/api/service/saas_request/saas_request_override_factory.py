@@ -29,6 +29,7 @@ class SaaSRequestType(Enum):
     GET_CONSENTABLE_ITEMS = "get_consentable_items"
     UPDATE_CONSENT = "update_consent"
     PROCESS_CONSENT_WEBHOOK = "process_consent_webhook"
+    AUTHORIZE_CONSENT_WEBHOOK = "authorize_consent_webhook"
 
 
 RequestOverrideFunction = Callable[
@@ -105,6 +106,8 @@ class SaaSRequestOverrideFactory:
                     validate_update_consent_function(override_function)
                 elif request_type == SaaSRequestType.PROCESS_CONSENT_WEBHOOK:
                     validate_process_consent_webhook_function(override_function)
+                elif request_type == SaaSRequestType.AUTHORIZE_CONSENT_WEBHOOK:
+                    validate_authorize_consent_webhook_function(override_function)
                 else:
                     raise ValueError(
                         f"Invalid SaaSRequestType '{request_type}' provided for SaaS request override function"
@@ -262,6 +265,9 @@ def validate_process_consent_webhook_function(f: Callable) -> None:
         raise InvalidSaaSRequestOverrideException(
             "Provided SaaS process consent webhook function must declare at least 5 parameters"
         )
+
+def validate_authorize_consent_webhook_function(f: Callable) -> None:
+    pass
 
 
 # TODO: Avoid running this on import?
