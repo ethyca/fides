@@ -25,7 +25,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Support for location based privacy center actions [#5803](https://github.com/ethyca/fides/pull/5803)
 
 ### Changed
-- Privacy Center was updated to use React 19 and leverage Server Components [#5803](https://github.com/ethyca/fides/pull/5803)
+- Privacy Center was updated to use React 19 and Nextjs 15 [#5803](https://github.com/ethyca/fides/pull/5803)
 - Added `is_country` field on locations [#5885](https://github.com/ethyca/fides/pull/5885)
 
 ### Fixed
