@@ -126,7 +126,7 @@ const persistConfig = {
   ],
 };
 
-const persistedReducer = persistReducer(persistConfig, rootReducer);
+export const persistedReducer = persistReducer(persistConfig, rootReducer);
 
 export const makeStore = (
   preloadedState?: Parameters<typeof persistedReducer>[0],

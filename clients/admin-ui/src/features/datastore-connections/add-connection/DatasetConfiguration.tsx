@@ -21,7 +21,7 @@ import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
-import { getErrorMessage } from "~/features/common/helpers";
+import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { DATASTORE_CONNECTION_ROUTE } from "~/features/common/nav/routes";
 import {
   useGetAllDatasetsQuery,
@@ -102,7 +102,7 @@ const DatasetConfiguration = () => {
       // First update the datasets
       const datasets = Array.isArray(value) ? value : [value];
       const upsertResult = await upsertDatasets(datasets);
-      if (upsertResult.error) {
+      if (isErrorResult(upsertResult)) {
         const errorMessage = getErrorMessage(upsertResult.error);
         errorAlert(errorMessage);
         return;

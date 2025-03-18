@@ -1,6 +1,7 @@
 // Unmodified components exported directly from ChakraUI
 export * from "@chakra-ui/icons";
 export * from "@chakra-ui/react";
+export { getCSSVar } from "@chakra-ui/react";
 export * from "@chakra-ui/utils";
 
 // Unmodified component exported directly from Ant Design

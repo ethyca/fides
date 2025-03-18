@@ -8,7 +8,7 @@ import {
 import { ForwardedRef, useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
-import { getErrorMessage } from "~/features/common/helpers";
+import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { useAlert } from "~/features/common/hooks";
 
 import {
@@ -37,7 +37,7 @@ const ReprocessButton = forwardRef(
     const handleBulkReprocessClick = async () => {
       setIsReprocessing(true);
       const payload = await bulkRetry(errorRequests);
-      if (payload.error) {
+      if (isErrorResult(payload)) {
         dispatch(setRetryRequests({ checkAll: false, errorRequests: [] }));
         errorAlert(
           getErrorMessage(payload.error),
@@ -72,7 +72,7 @@ const ReprocessButton = forwardRef(
       }
       setIsReprocessing(true);
       const payload = await retry(subjectRequest);
-      if (payload.error) {
+      if (isErrorResult(payload)) {
         errorAlert(
           getErrorMessage(payload.error),
           `DSR automation has failed for this privacy request due to the following:`,

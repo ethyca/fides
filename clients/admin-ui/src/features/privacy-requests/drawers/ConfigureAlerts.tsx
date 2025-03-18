@@ -36,7 +36,7 @@ import {
 import { useEffect, useRef, useState } from "react";
 import * as Yup from "yup";
 
-import { getErrorMessage } from "~/features/common/helpers";
+import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { useAlert } from "~/features/common/hooks";
 
 import EmailChipList from "../EmailChipList";
@@ -82,7 +82,7 @@ const ConfigureAlerts = () => {
       email_addresses: values.emails,
       notify_after_failures: values.notify ? values.minErrorCount : 0,
     });
-    if (payload.error) {
+    if (isErrorResult(payload)) {
       errorAlert(
         getErrorMessage(payload.error),
         `Configure alerts and notifications has failed to save due to the following:`,
