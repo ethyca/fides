@@ -1,3 +1,4 @@
+import { isConsentOverride } from "./common-utils";
 import {
   FIDES_OVERRIDE_EXPERIENCE_LANGUAGE_VALIDATOR_MAP,
   FIDES_OVERRIDE_OPTIONS_VALIDATOR_MAP,
@@ -7,6 +8,7 @@ import { ConsentContext } from "./consent-context";
 import {
   ComponentType,
   ConsentMechanism,
+  ConsentMethod,
   EmptyExperience,
   FidesCookie,
   FidesExperienceLanguageValidatorMap,
@@ -215,26 +217,42 @@ export const getTcfDefaultPreference = (tcfObject: TcfModelsRecord) =>
  * Returns true if there are notices in the experience that require a user preference
  * or if an experience's version hash does not match up.
  */
-export const shouldResurfaceConsent = (
-  experience: PrivacyExperience | PrivacyExperienceMinimal,
-  cookie: FidesCookie,
+export const shouldResurfaceBanner = (
+  experience:
+    | PrivacyExperience
+    | PrivacyExperienceMinimal
+    | EmptyExperience
+    | undefined,
+  cookie: FidesCookie | undefined,
   savedConsent: NoticeConsent,
+  options?: FidesInitOptions,
 ): boolean => {
-  // Always resurface consent for TCF unless the saved version_hash matches
-  if (experience.experience_config?.component === ComponentType.TCF_OVERLAY) {
+  // Never resurface banner if it is disabled
+  if (options?.fidesDisableBanner) {
+    return false;
+  }
+  // Never surface banner if there's no experience
+  if (!isPrivacyExperience(experience)) {
+    return false;
+  }
+  // Always resurface banner for TCF unless the saved version_hash matches
+  if (
+    experience.experience_config?.component === ComponentType.TCF_OVERLAY &&
+    !!cookie
+  ) {
     if (experience.meta?.version_hash) {
       return experience.meta.version_hash !== cookie.tcf_version_hash;
     }
     return true;
   }
-  // Never surface consent for modal-only or headless experiences
+  // Never surface banner for modal-only or headless experiences
   if (
     experience.experience_config?.component === ComponentType.MODAL ||
     experience.experience_config?.component === ComponentType.HEADLESS
   ) {
     return false;
   }
-  // Do not surface consent for null or empty notices
+  // Do not surface banner for null or empty notices
   if (!(experience as PrivacyExperience)?.privacy_notices?.length) {
     return false;
   }
@@ -242,15 +260,29 @@ export const shouldResurfaceConsent = (
   if (!savedConsent) {
     return true;
   }
+  // Never surface banner if consent was set by override
+  if (options && isConsentOverride(options)) {
+    return false;
+  }
+
+  // resurface in the special case where the saved consent
+  // is only recorded with a consentMethod of "dismiss" or "gpc"
+  if (
+    cookie &&
+    (cookie.fides_meta.consentMethod === ConsentMethod.GPC ||
+      cookie.fides_meta.consentMethod === ConsentMethod.DISMISS)
+  ) {
+    return true;
+  }
+
   // Lastly, if we do have a prior consent state, resurface if we find *any*
   // notices that don't have prior consent in that state
-  // TODO (PROD-1792): we should *also* resurface in the special case where the
-  // saved consent is only recorded with a consentMethod of "dismiss"
-  return Boolean(
-    !(experience as PrivacyExperience).privacy_notices?.every((notice) =>
-      noticeHasConsentInCookie(notice, savedConsent),
-    ),
+  const hasConsentInCookie = (
+    experience as PrivacyExperience
+  ).privacy_notices?.every((notice) =>
+    noticeHasConsentInCookie(notice, savedConsent),
   );
+  return !hasConsentInCookie;
 };
 
 /**

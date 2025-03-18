@@ -11,17 +11,15 @@ import {
 } from "preact/hooks";
 
 import { useA11yDialog } from "../lib/a11y-dialog";
-import { isConsentOverride } from "../lib/common-utils";
 import { FIDES_OVERLAY_WRAPPER } from "../lib/consent-constants";
 import {
-  ComponentType,
   FidesCookie,
   FidesInitOptions,
   NoticeConsent,
   PrivacyExperience,
   PrivacyExperienceMinimal,
 } from "../lib/consent-types";
-import { defaultShowModal, shouldResurfaceConsent } from "../lib/consent-utils";
+import { defaultShowModal, shouldResurfaceBanner } from "../lib/consent-utils";
 import { dispatchFidesEvent } from "../lib/events";
 import { useElementById, useHasMounted } from "../lib/hooks";
 import { useI18n } from "../lib/i18n/i18n-context";
@@ -71,21 +69,15 @@ const Overlay: FunctionComponent<Props> = ({
   const { i18n } = useI18n();
   const delayBannerMilliseconds = 100;
   const hasMounted = useHasMounted();
-  const isAutomatedConsent = isConsentOverride(options);
   const modalLinkId = options.modalLinkId || "fides-modal-link";
   const modalLinkIsDisabled =
     !experience || !!options.fidesEmbed || options.modalLinkId === "";
   const modalLink = useElementById(modalLinkId, modalLinkIsDisabled);
   const modalLinkRef = useRef<HTMLElement | null>(null);
 
-  const showBanner = useMemo(
-    () =>
-      !isAutomatedConsent &&
-      !options.fidesDisableBanner &&
-      experience.experience_config?.component !== ComponentType.MODAL &&
-      shouldResurfaceConsent(experience, cookie, savedConsent),
-    [cookie, savedConsent, experience, options, isAutomatedConsent],
-  );
+  const showBanner = useMemo(() => {
+    return shouldResurfaceBanner(experience, cookie, savedConsent, options);
+  }, [cookie, savedConsent, experience, options]);
 
   const [bannerIsOpen, setBannerIsOpen] = useState(
     options.fidesEmbed ? showBanner : false,
