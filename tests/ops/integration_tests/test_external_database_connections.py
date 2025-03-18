@@ -173,6 +173,8 @@ def test_bigquery_example_data(bigquery_test_engine):
     assert {
         "address",
         "customer",
+        "customer_account",
+        "customer_addresses",
         "customer_profile",
         "employee",
         "login",
@@ -180,8 +182,12 @@ def test_bigquery_example_data(bigquery_test_engine):
         "orders",
         "payment_card",
         "product",
+        "product_interactions",
         "report",
         "service_request",
+        "user_events",
+        "user_preferences",
+        "user_security_settings",
         "visit",
         "visit_partitioned",
     }.issubset(set(inspector.get_table_names(schema="fidesopstest")))

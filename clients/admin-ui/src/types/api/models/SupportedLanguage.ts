@@ -26,6 +26,7 @@ export enum SupportedLanguage {
   HU = "hu",
   IT = "it",
   JA = "ja",
+  KO = "ko",
   LT = "lt",
   LV = "lv",
   MT = "mt",
