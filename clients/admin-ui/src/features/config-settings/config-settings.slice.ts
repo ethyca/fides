@@ -144,9 +144,15 @@ const selectSetting = (
   if (hasApi && hasDefault) {
     return { ...config[settingField], ...apiSetConfig[settingField] };
   }
+
   if (hasDefault) {
     return config[settingField];
   }
+
+  if (hasApi) {
+    return { ...apiSetConfig[settingField] };
+  }
+
   return defaultSetting;
 };
 

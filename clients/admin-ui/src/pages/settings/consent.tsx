@@ -151,7 +151,6 @@ const ConsentConfigPage: NextPage = () => {
     // Then we update config values
     // For GPP, do not pass in `enabled`
     const { enabled, ...updatedGpp } = values.gpp;
-    console.log("AAAA ", values.tcfPublisherSettings.publisher_country_code);
     const configResult = await patchConfigSettingsTrigger({
       gpp: updatedGpp,
       plus_consent_settings: {

@@ -1,8 +1,4 @@
-import {
-  AntForm as Form,
-  AntSelect as Select,
-  AntTypography as Typography,
-} from "fidesui";
+import { AntSelect as Select, AntTypography as Typography } from "fidesui";
 import { useFormikContext } from "formik";
 
 import { useFeatures } from "~/features/common/features";
@@ -14,7 +10,7 @@ import SettingsBox from "./SettingsBox";
 
 const PublisherSettings = () => {
   const { tcf: isTcfEnabled } = useFeatures();
-  const { initialValues, values, setFieldValue } = useFormikContext<{
+  const { values, setFieldValue } = useFormikContext<{
     tcfPublisherSettings: TCFPublisherSettings;
   }>();
   const { data: locationRegulationResponse, isLoading: locationsLoading } =
@@ -25,11 +21,6 @@ const PublisherSettings = () => {
     ...getSelectedRegions(locationRegulationResponse?.location_groups ?? []),
   ].sort((a, b) => (a.name < b.name ? -1 : 1));
 
-  const allOptions = [
-    // { id: NO_COUNTRY_SELECTED, name: "AA" },
-    ...allSelectedCountries,
-  ];
-
   return isTcfEnabled ? (
     <SettingsBox title="Publisher Settings">
       <Typography.Paragraph className="mb-3">
@@ -37,32 +28,30 @@ const PublisherSettings = () => {
         compliance. This setting will determine the &apos;Publisher Country Code
         &apos; transmitted in the Transparency and Consent (TC) Data.
       </Typography.Paragraph>
-      <Form.Item
-        label="Publisher country"
-        name={["publisher", "country_code"]}
-        layout="vertical"
+      {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */}
+      <label htmlFor="publisher_country_code" className="mb-1 block">
+        <Typography.Text className="font-semibold">
+          Publisher country
+        </Typography.Text>
+      </label>
+      <Select
+        data-testid="input-publisher_settings.publisher_country_code"
+        id="publisher_country_code"
+        loading={locationsLoading}
+        allowClear
+        options={allSelectedCountries?.map((location) => ({
+          value: location.id,
+          label: location.name,
+        }))}
+        showSearch
+        optionFilterProp="label"
+        placeholder="Select a country"
+        value={values.tcfPublisherSettings.publisher_country_code}
+        onChange={(value) =>
+          setFieldValue("tcfPublisherSettings.publisher_country_code", value)
+        }
         className="w-80"
-      >
-        <Select
-          id="publisher_country_code"
-          loading={locationsLoading}
-          allowClear
-          options={allOptions?.map((location) => ({
-            value: location.id,
-            label: location.name,
-          }))}
-          defaultValue={
-            initialValues.tcfPublisherSettings.publisher_country_code
-          }
-          showSearch
-          optionFilterProp="label"
-          placeholder="Select a country"
-          value={values.tcfPublisherSettings.publisher_country_code}
-          onChange={(value) =>
-            setFieldValue("tcfPublisherSettings.publisher_country_code", value)
-          }
-        />
-      </Form.Item>
+      />
     </SettingsBox>
   ) : null;
 };
