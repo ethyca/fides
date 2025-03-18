@@ -18,6 +18,7 @@ import {
   experienceIsValid,
   isPrivacyExperience,
 } from "../../lib/consent-utils";
+import { consentCookieObjHasSomeConsentSet } from "../../lib/cookie";
 import { dispatchFidesEvent } from "../../lib/events";
 import { useNoticesServed } from "../../lib/hooks";
 import {
@@ -492,8 +493,10 @@ export const TcfOverlay = ({
   }, [cookie, options.debug]);
 
   const handleDismiss = useCallback(() => {
-    handleUpdateAllPreferences(ConsentMethod.DISMISS, draftIds);
-  }, [handleUpdateAllPreferences, draftIds]);
+    if (!consentCookieObjHasSomeConsentSet(cookie.consent)) {
+      handleUpdateAllPreferences(ConsentMethod.DISMISS, draftIds);
+    }
+  }, [handleUpdateAllPreferences, draftIds, cookie.consent]);
 
   const experienceConfig =
     experience?.experience_config || experienceMinimal.experience_config;

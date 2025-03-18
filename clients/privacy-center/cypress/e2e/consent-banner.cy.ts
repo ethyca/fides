@@ -1155,6 +1155,7 @@ describe("Consent overlay", () => {
 
         it("shows indicators that GPC has been applied", () => {
           // In the banner
+          cy.get("div#fides-banner").should("be.visible");
           cy.get("div#fides-banner").within(() => {
             cy.get("span").contains("Global Privacy Control");
           });

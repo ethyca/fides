@@ -1,9 +1,18 @@
 import {
+  ComponentType,
+  ConsentMechanism,
+  ConsentMethod,
+  FidesCookie,
+  NoticeConsent,
+  PrivacyExperience,
+} from "~/lib/consent-types";
+import {
   decodeNoticeConsentString,
   encodeNoticeConsentString,
   getWindowObjFromPath,
   isPrivacyExperience,
   parseFidesDisabledNotices,
+  shouldResurfaceBanner,
 } from "~/lib/consent-utils";
 
 import mockExperienceJSON from "../__fixtures__/mock_experience.json";
@@ -230,5 +239,173 @@ describe("decodeNoticeConsentString", () => {
     expect(() => decodeNoticeConsentString(invalidBase64)).toThrow(
       "Failed to decode Notice Consent string:",
     );
+  });
+});
+
+describe("shouldResurfaceBanner", () => {
+  const mockExperience: PrivacyExperience = {
+    id: "123",
+    privacy_notices: [
+      {
+        notice_key: "notice1",
+        name: "Test Notice",
+        consent_mechanism: ConsentMechanism.OPT_OUT,
+      },
+    ],
+    experience_config: {
+      component: ComponentType.BANNER_AND_MODAL,
+    },
+  } as PrivacyExperience;
+
+  const mockTCFExperience: PrivacyExperience = {
+    ...mockExperience,
+    experience_config: {
+      component: ComponentType.TCF_OVERLAY,
+    },
+    meta: {
+      version_hash: "v1",
+    },
+  } as PrivacyExperience;
+
+  const mockCookie: FidesCookie = {
+    consent: {},
+    fides_meta: {
+      consentMethod: ConsentMethod.ACCEPT,
+    },
+    tcf_version_hash: "v1",
+    identity: {},
+    tcf_consent: {},
+  } as FidesCookie;
+
+  const mockSavedConsent: NoticeConsent = {
+    notice1: true,
+  };
+
+  it.each([
+    {
+      label: "returns false when banner is disabled",
+      experience: mockExperience,
+      cookie: mockCookie,
+      savedConsent: mockSavedConsent,
+      options: { fidesDisableBanner: true },
+      expected: false,
+    },
+    {
+      label: "returns false when there's no experience",
+      experience: undefined,
+      cookie: mockCookie,
+      savedConsent: mockSavedConsent,
+      options: {},
+      expected: false,
+    },
+    {
+      label: "returns true for TCF when version hash doesn't match",
+      experience: { ...mockTCFExperience, meta: { version_hash: "v2" } },
+      cookie: mockCookie,
+      savedConsent: mockSavedConsent,
+      options: {},
+      expected: true,
+    },
+    {
+      label: "returns false for TCF when version hash matches",
+      experience: mockTCFExperience,
+      cookie: mockCookie,
+      savedConsent: mockSavedConsent,
+      options: {},
+      expected: false,
+    },
+    {
+      label: "returns false for modal component",
+      experience: {
+        ...mockExperience,
+        experience_config: { component: ComponentType.MODAL },
+      },
+      cookie: mockCookie,
+      savedConsent: mockSavedConsent,
+      options: {},
+      expected: false,
+    },
+    {
+      label: "returns false for headless component",
+      experience: {
+        ...mockExperience,
+        experience_config: { component: ComponentType.HEADLESS },
+      },
+      cookie: mockCookie,
+      savedConsent: mockSavedConsent,
+      options: {},
+      expected: false,
+    },
+    {
+      label: "returns false when there are no notices",
+      experience: { ...mockExperience, privacy_notices: [] },
+      cookie: mockCookie,
+      savedConsent: mockSavedConsent,
+      options: {},
+      expected: false,
+    },
+    {
+      label: "returns true when there's no prior consent",
+      experience: mockExperience,
+      cookie: mockCookie,
+      savedConsent: undefined,
+      options: {},
+      expected: true,
+    },
+    {
+      label: "returns false when consent is overridden",
+      experience: mockExperience,
+      cookie: mockCookie,
+      savedConsent: mockSavedConsent,
+      options: { fidesConsentOverride: ConsentMethod.ACCEPT },
+      expected: false,
+    },
+    {
+      label: "returns true when consent method is GPC",
+      experience: mockExperience,
+      cookie: {
+        ...mockCookie,
+        fides_meta: { consentMethod: ConsentMethod.GPC },
+      },
+      savedConsent: mockSavedConsent,
+      options: {},
+      expected: true,
+    },
+    {
+      label: "returns true when consent method is DISMISS",
+      experience: mockExperience,
+      cookie: {
+        ...mockCookie,
+        fides_meta: { consentMethod: ConsentMethod.DISMISS },
+      },
+      savedConsent: mockSavedConsent,
+      options: {},
+      expected: true,
+    },
+    {
+      label: "returns true when notice consent is missing",
+      experience: mockExperience,
+      cookie: mockCookie,
+      savedConsent: { notice2: true },
+      options: {},
+      expected: true,
+    },
+    {
+      label: "returns false when all notices have consent",
+      experience: mockExperience,
+      cookie: mockCookie,
+      savedConsent: { notice1: true },
+      options: {},
+      expected: false,
+    },
+  ])("$label", ({ experience, cookie, savedConsent, options, expected }) => {
+    expect(
+      shouldResurfaceBanner(
+        experience as any,
+        cookie as any,
+        savedConsent as any,
+        options as any,
+      ),
+    ).toBe(expected);
   });
 });

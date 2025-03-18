@@ -25,7 +25,7 @@ import {
 import {
   allNoticesAreDefaultOptIn,
   isPrivacyExperience,
-  shouldResurfaceConsent,
+  shouldResurfaceBanner,
 } from "./lib/consent-utils";
 import { saveFidesCookie } from "./lib/cookie";
 import { formatFidesStringWithGpp } from "./lib/fides-string";
@@ -176,7 +176,12 @@ const initializeGppCmpApi = () => {
     //    - User has no existing preferences (either in cookie, fides_string, or mapped to notices)
     if (
       !fidesString &&
-      (!shouldResurfaceConsent(experience, event.detail, savedConsent) ||
+      (!shouldResurfaceBanner(
+        experience,
+        event.detail,
+        savedConsent,
+        options,
+      ) ||
         (!options.tcfEnabled &&
           allNoticesAreDefaultOptIn(experience.privacy_notices) &&
           !userHasExistingPrefs(

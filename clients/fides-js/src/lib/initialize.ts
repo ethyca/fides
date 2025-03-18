@@ -152,6 +152,21 @@ const automaticallyApplyPreferences = async ({
       const noticeConsent = decodeNoticeConsentString(noticeConsentString);
 
       if (notice.consent_mechanism !== ConsentMechanism.NOTICE_ONLY) {
+        // Notice Consent string takes precedence over GPC and overrides any prior consent
+        if (noticeConsent) {
+          const preference = noticeConsent[notice.notice_key];
+          if (preference !== undefined) {
+            noticeConsentApplied = true;
+            return new SaveConsentPreference(
+              notice,
+              transformConsentToFidesUserPreference(
+                preference,
+                notice.consent_mechanism,
+              ),
+              bestNoticeTranslation?.privacy_notice_history_id,
+            );
+          }
+        }
         // only apply GPC for notices that do not have prior consent
         if (
           context.globalPrivacyControl &&
@@ -168,21 +183,6 @@ const automaticallyApplyPreferences = async ({
             ),
             bestNoticeTranslation?.privacy_notice_history_id,
           );
-        }
-        // Notice Consent string overrides GPC and any prior consent
-        if (noticeConsent) {
-          const preference = noticeConsent[notice.notice_key];
-          if (preference !== undefined) {
-            noticeConsentApplied = true;
-            return new SaveConsentPreference(
-              notice,
-              transformConsentToFidesUserPreference(
-                preference,
-                notice.consent_mechanism,
-              ),
-              bestNoticeTranslation?.privacy_notice_history_id,
-            );
-          }
         }
       }
       return new SaveConsentPreference(
