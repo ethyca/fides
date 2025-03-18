@@ -104,17 +104,18 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
    * translation on every render.
    */
   const privacyNoticeItems: PrivacyNoticeItem[] = useMemo(
-    () =>
-      (experience.privacy_notices || []).map((notice) => {
-        // eslint-disable-next-line no-param-reassign
-        notice.disabled =
+    () => {
+      const privacyNotices = experience.privacy_notices ?? [];
+      return privacyNotices.map((notice) => {
+        const disabled =
           notice.consent_mechanism === ConsentMechanism.NOTICE_ONLY ||
           (options.fidesDisabledNotices?.includes(notice.notice_key) ??
             false) ||
           notice.disabled;
         const bestTranslation = selectBestNoticeTranslation(i18n, notice);
-        return { notice, bestTranslation };
-      }),
+        return { notice: { ...notice, disabled }, bestTranslation };
+      });
+    },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [
       experience.privacy_notices,
