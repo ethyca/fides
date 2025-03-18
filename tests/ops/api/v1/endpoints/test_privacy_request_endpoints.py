@@ -55,8 +55,8 @@ from fides.api.schemas.messaging.messaging import (
 from fides.api.schemas.policy import ActionType, CurrentStep, PolicyResponse
 from fides.api.schemas.privacy_request import (
     ExecutionLogStatus,
-    PrivacyRequestStatus,
     PrivacyRequestSource,
+    PrivacyRequestStatus,
 )
 from fides.api.schemas.redis_cache import Identity, LabeledIdentity
 from fides.api.task.graph_runners import access_runner

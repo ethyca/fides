@@ -24,8 +24,8 @@ from fides.api.models.privacy_notice import UserConsentPreference
 from fides.api.models.privacy_request import PrivacyRequest, RequestTask
 from fides.api.oauth.utils import extract_payload
 from fides.api.schemas.consentable_item import ConsentableItem
-from fides.api.schemas.redis_cache import Identity
 from fides.api.schemas.privacy_request import ExecutionLogStatus, PrivacyRequestStatus
+from fides.api.schemas.redis_cache import Identity
 from fides.api.schemas.saas.saas_config import ParamValue, SaaSConfig, SaaSRequest
 from fides.api.schemas.saas.shared_schemas import ConsentPropagationStatus, HTTPMethod
 from fides.api.service.connectors import get_connector
