@@ -6,11 +6,8 @@ from sqlalchemy import column, select, table
 
 from fides.api.graph.config import CollectionAddress, FieldPath
 from fides.api.models.audit_log import AuditLog, AuditLogAction
-from fides.api.models.privacy_request import (
-    ExecutionLog,
-    ExecutionLogStatus,
-    PrivacyRequestStatus,
-)
+from fides.api.models.privacy_request import ExecutionLog
+from fides.api.schemas.privacy_request import ExecutionLogStatus, PrivacyRequestStatus
 from fides.api.util.data_category import DataCategory
 from tests.ops.integration_tests.test_execution import get_sorted_execution_logs
 from tests.ops.service.privacy_request.test_request_runner_service import (

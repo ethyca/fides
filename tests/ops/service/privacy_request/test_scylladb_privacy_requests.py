@@ -2,7 +2,7 @@ from unittest import mock
 
 import pytest
 
-from fides.api.models.privacy_request import ExecutionLogStatus
+from fides.api.schemas.privacy_request import ExecutionLogStatus
 from tests.ops.service.privacy_request.test_request_runner_service import (
     get_privacy_request_results,
 )

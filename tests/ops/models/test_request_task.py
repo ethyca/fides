@@ -8,8 +8,9 @@ from fides.api.graph.config import (
     TERMINATOR_ADDRESS,
     CollectionAddress,
 )
-from fides.api.models.privacy_request import ExecutionLogStatus, RequestTask
+from fides.api.models.privacy_request import RequestTask
 from fides.api.schemas.policy import ActionType
+from fides.api.schemas.privacy_request import ExecutionLogStatus
 from fides.api.util.cache import FidesopsRedis, cache_task_tracking_key, get_cache
 
 
