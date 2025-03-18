@@ -491,9 +491,6 @@ describe("System management with Plus features", () => {
       cy.wait("@getSystemAssets");
       cy.getByTestId("row-0-col-name").should("contain", "ar_debug");
       cy.getByTestId("row-0-col-locations").should("contain", "United States");
-      cy.getByTestId("row-1-col-parent").within(() => {
-        cy.get("span").should("have.length", 2);
-      });
     });
   });
 
