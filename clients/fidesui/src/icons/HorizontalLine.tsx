@@ -1,4 +1,4 @@
-import { Icon, IconProps } from "@chakra-ui/icon";
+import { Icon, IconProps } from "@chakra-ui/icons";
 import React from "react";
 
 type Props = IconProps & { color?: string };
