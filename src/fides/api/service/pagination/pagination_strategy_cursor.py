@@ -51,7 +51,7 @@ class CursorPaginationStrategy(PaginationStrategy):
             has_next = pydash.get(response.json(), self.has_next)
 
         if self.has_next:
-            logger.info(f"The {self.has_next} field has a value of {has_next}")
+            logger.debug(f"The {self.has_next} field has a value of {has_next}")
             if str(has_next).lower() != "true":
                 return None
 
