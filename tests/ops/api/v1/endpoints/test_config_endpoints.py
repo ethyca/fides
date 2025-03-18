@@ -455,6 +455,65 @@ class TestPatchApplicationConfig:
         )
         assert response.status_code == 422
 
+    def test_patch_application_config_with_none_value(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        url,
+        db: Session,
+        payload,
+    ):
+        """
+        Test that we can patch the enable_property_specific_messaging to None
+        and that other properties are not impacted
+        """
+        # First set a valid notification type
+        auth_header = generate_auth_header([scopes.CONFIG_UPDATE])
+        response = api_client.patch(
+            url,
+            headers=auth_header,
+            json=payload,
+        )
+        assert response.status_code == 200
+
+        # Now patch it to None
+        payload = {"notifications": {"enable_property_specific_messaging": None}}
+        response = api_client.patch(
+            url,
+            headers=auth_header,
+            json=payload,
+        )
+        assert response.status_code == 200
+        response_settings = response.json()
+        assert (
+            response_settings["notifications"]["enable_property_specific_messaging"]
+            is None
+        )
+
+        # Verify the database was updated
+        db_settings = db.query(ApplicationConfig).first()
+        assert (
+            db_settings.api_set["notifications"]["enable_property_specific_messaging"]
+            is None
+        )
+        # Other properties should not be impacted
+        assert (
+            db_settings.api_set["notifications"]["notification_service_type"]
+            == "twilio_text"
+        )
+        assert (
+            db_settings.api_set["notifications"]["send_request_completion_notification"]
+            is True
+        )
+        assert (
+            db_settings.api_set["notifications"]["send_request_receipt_notification"]
+            is True
+        )
+        assert (
+            db_settings.api_set["notifications"]["send_request_review_notification"]
+            is True
+        )
+
 
 class TestPutApplicationConfig:
     @pytest.fixture(scope="function")
