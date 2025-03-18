@@ -6,7 +6,7 @@ import {
 
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { useAlert } from "~/features/common/hooks";
-import { DiscoveredAssetResponse } from "~/features/data-discovery-and-detection/action-center/types";
+import { StagedResourceAPIResponse } from "~/types/api/models/StagedResourceAPIResponse";
 
 import {
   useAddMonitorResultAssetsMutation,
@@ -14,7 +14,7 @@ import {
 } from "../../action-center.slice";
 
 interface DiscoveredAssetActionsCellProps {
-  asset: DiscoveredAssetResponse;
+  asset: StagedResourceAPIResponse;
 }
 
 export const DiscoveredAssetActionsCell = ({
