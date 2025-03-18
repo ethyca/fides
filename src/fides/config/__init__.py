@@ -133,7 +133,7 @@ def censor_config(config: Union[FidesConfig, Dict[str, Any]]) -> Dict[str, Any]:
             data = as_dict[key]
             filtered[key] = {}
             for field in value:
-                if field in data:
+                if data and field in data:
                     filtered[key][field] = data[field]
 
     return filtered
