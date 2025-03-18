@@ -11,6 +11,7 @@ import {
   PrivacyExperienceGPPSettings,
   SecurityApplicationConfig,
 } from "~/types/api";
+import { PlusConsentSettings } from "~/types/api/models/PlusConsentSettings";
 
 import type { RootState } from "../../app/store";
 
@@ -126,6 +127,29 @@ const defaultGppSettings: PrivacyExperienceGPPSettings = {
   cmp_api_required: false,
 };
 
+/**
+ * Helper function to select a setting from the API or config set.
+ * The API set value takes precedence over the config set value.
+ * If neither the API set nor the config set has a value, then
+ * the default value is returned.
+ */
+const selectSetting = (
+  settingField: string,
+  defaultSetting: any,
+  apiSetConfig?: Record<string, any>,
+  config?: Record<string, any>,
+) => {
+  const hasApi = apiSetConfig && apiSetConfig[settingField];
+  const hasDefault = config && config[settingField];
+  if (hasApi && hasDefault) {
+    return { ...config[settingField], ...apiSetConfig[settingField] };
+  }
+  if (hasDefault) {
+    return config[settingField];
+  }
+  return defaultSetting;
+};
+
 export const selectGppSettings: (
   state: RootState,
 ) => PrivacyExperienceGPPSettings = createSelector(
@@ -139,14 +163,32 @@ export const selectGppSettings: (
     }),
   ],
   (state, { data: apiSetConfig }, { data: config }) => {
-    const hasApi = apiSetConfig && apiSetConfig.gpp;
-    const hasDefault = config && config.gpp;
-    if (hasApi && hasDefault) {
-      return { ...config.gpp, ...apiSetConfig.gpp };
-    }
-    if (hasDefault) {
-      return config.gpp;
-    }
-    return defaultGppSettings;
+    return selectSetting("gpp", defaultGppSettings, apiSetConfig, config);
+  },
+);
+
+const defaultPlusConsentSettings: PlusConsentSettings = {
+  tcf_publisher_country_code: null,
+};
+
+export const selectPlusConsentSettings: (
+  state: RootState,
+) => PlusConsentSettings = createSelector(
+  [
+    (state) => state,
+    configSettingsApi.endpoints.getConfigurationSettings.select({
+      api_set: true,
+    }),
+    configSettingsApi.endpoints.getConfigurationSettings.select({
+      api_set: false,
+    }),
+  ],
+  (state, { data: apiSetConfig }, { data: config }) => {
+    return selectSetting(
+      "plus_consent_settings",
+      defaultPlusConsentSettings,
+      apiSetConfig,
+      config,
+    );
   },
 );

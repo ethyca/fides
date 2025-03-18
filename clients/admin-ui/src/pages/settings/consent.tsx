@@ -26,11 +26,13 @@ import QuestionTooltip from "~/features/common/QuestionTooltip";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import {
   selectGppSettings,
+  selectPlusConsentSettings,
   useGetConfigurationSettingsQuery,
   usePatchConfigurationSettingsMutation,
 } from "~/features/config-settings/config-settings.slice";
 import FrameworkStatus from "~/features/consent-settings/FrameworkStatus";
 import GppConfiguration from "~/features/consent-settings/GppConfiguration";
+import PublisherSettings from "~/features/consent-settings/PublisherSettings";
 import PurposeOverrides from "~/features/consent-settings/PurposeOverrides";
 import SettingsBox from "~/features/consent-settings/SettingsBox";
 import {
@@ -76,6 +78,7 @@ const ConsentConfigPage: NextPage = () => {
     { isLoading: isPatchConfigSettingsLoading },
   ] = usePatchConfigurationSettingsMutation();
   const gppSettings = useAppSelector(selectGppSettings);
+  const plusConsentSettings = useAppSelector(selectPlusConsentSettings);
 
   const isOverrideEnabled = useMemo(() => {
     if (
@@ -145,10 +148,18 @@ const ConsentConfigPage: NextPage = () => {
         return;
       }
     }
-    // Then do GPP (do not pass in `enabled`)
+    // Then we update config values
+    // For GPP, do not pass in `enabled`
     const { enabled, ...updatedGpp } = values.gpp;
-    const gppResult = await patchConfigSettingsTrigger({ gpp: updatedGpp });
-    handleResult(gppResult);
+    console.log("AAAA ", values.tcfPublisherSettings.publisher_country_code);
+    const configResult = await patchConfigSettingsTrigger({
+      gpp: updatedGpp,
+      plus_consent_settings: {
+        tcf_publisher_country_code:
+          values.tcfPublisherSettings.publisher_country_code ?? null,
+      },
+    });
+    handleResult(configResult);
   };
 
   const handleOverrideOnChange = async (checked: boolean) => {
@@ -203,9 +214,11 @@ const ConsentConfigPage: NextPage = () => {
           )
         : [],
       gpp: gppSettings,
-      tcfPublisherSettings: {},
+      tcfPublisherSettings: {
+        publisher_country_code: plusConsentSettings.tcf_publisher_country_code,
+      },
     }),
-    [tcfPurposeOverrides, gppSettings],
+    [tcfPurposeOverrides, gppSettings, plusConsentSettings],
   );
 
   return (
@@ -295,6 +308,7 @@ const ConsentConfigPage: NextPage = () => {
               <Form>
                 <Stack spacing={6}>
                   {isOverrideEnabled ? <PurposeOverrides /> : null}
+                  <PublisherSettings />
                   <GppConfiguration />
                   <Button
                     htmlType="submit"

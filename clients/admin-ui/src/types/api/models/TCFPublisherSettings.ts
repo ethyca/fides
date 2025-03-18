@@ -1,3 +1,3 @@
 export type TCFPublisherSettings = {
-  publisher_country_code?: string;
+  publisher_country_code?: string | null;
 };
