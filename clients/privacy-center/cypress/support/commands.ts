@@ -265,6 +265,17 @@ declare global {
         windowParams?: any,
       ): Chainable<any>;
 
+      /**
+       * Custom command to visit the consent page with the specified settings.
+       *
+       * The consent page is client only, normally if you try accessing it directly
+       * you will get redirected to the home page.
+       *
+       * This command adds a redirect=false query parameter to the URL to prevent that.
+       * And then injects all the missing store state that the page needs to render.
+       *
+       * @example cy.visitConsent({ settingsOverride: SETTINGS });
+       */
       visitConsent({
         settingsOverride,
         urlParams,
