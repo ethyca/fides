@@ -282,13 +282,17 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
   }, [cookie, options.debug]);
 
   const handleDismiss = useCallback(() => {
-    if (!consentCookieObjHasSomeConsentSet(cookie.consent)) {
+    if (!consentCookieObjHasSomeConsentSet(parsedCookie?.consent)) {
       handleUpdatePreferences(
         ConsentMethod.DISMISS,
         initialEnabledNoticeKeys(),
       );
     }
-  }, [handleUpdatePreferences, initialEnabledNoticeKeys, cookie.consent]);
+  }, [
+    handleUpdatePreferences,
+    initialEnabledNoticeKeys,
+    parsedCookie?.consent,
+  ]);
 
   const experienceConfig = experience.experience_config;
   if (!experienceConfig) {
