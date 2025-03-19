@@ -3,6 +3,7 @@ from sqlalchemy.orm import Query
 
 from fides.api.models.privacy_request.request_task import RequestTask, TraversalDetails
 from fides.api.schemas.privacy_request import ActionType, ExecutionLogStatus
+from fides.api.util.cache import cache_task_tracking_key
 
 
 @pytest.fixture
@@ -65,6 +66,22 @@ def test_create_empty_traversal():
     assert traversal_details.outgoing_edges == []
     assert traversal_details.input_keys == []
     assert traversal_details.skipped_nodes == []
+
+
+class TestGetCeleryTaskRequestTaskIds:
+    def test_get_celery_task_request_task_ids(self, privacy_request, request_task):
+        """Not all request tasks have celery task ids in this test -"""
+
+        assert privacy_request.get_request_task_celery_task_ids() == []
+
+        cache_task_tracking_key(request_task.id, "test_celery_task_key")
+        root_task = privacy_request.get_root_task_by_action(ActionType.access)
+        cache_task_tracking_key(root_task.id, "test_root_task_celery_key")
+
+        assert set(privacy_request.get_request_task_celery_task_ids()) == {
+            "test_celery_task_key",
+            "test_root_task_celery_key",
+        }
 
 
 def test_create_request_task(db, privacy_request, request_task_data):
