@@ -132,6 +132,12 @@ const useConsentReportingTableColumns = ({
         ),
         size: 120,
       }),
+      columnHelper.accessor((row) => row.external_id, {
+        id: "external_id",
+        cell: ({ getValue }) => <DefaultCell value={getValue()} />,
+        header: (props) => <DefaultHeaderCell value="External ID" {...props} />,
+        enableSorting: false,
+      }),
       columnHelper.accessor((row) => row.email, {
         id: "email",
         cell: ({ getValue }) => (
