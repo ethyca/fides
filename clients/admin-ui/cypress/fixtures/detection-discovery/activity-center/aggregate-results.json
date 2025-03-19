@@ -5,7 +5,7 @@
       "key": "my_web_monitor_2",
       "last_monitored": "2024-12-17T17:31:20.791014Z",
       "updates": {
-        "Browser Request": 92,
+        "Browser request": 92,
         "Cookie": 5
       },
       "total_updates": 97
@@ -15,7 +15,7 @@
       "key": "my_web_monitor_1",
       "last_monitored": "2024-12-17T17:31:02.319068Z",
       "updates": {
-        "Browser Request": 201,
+        "Browser request": 201,
         "Cookie": 24
       },
       "total_updates": 225
