@@ -1,6 +1,13 @@
 import { PrivacyCenterSettings } from "~/app/server-utils/PrivacyCenterSettings";
 import { ConsentMethod } from "~/types/api";
 
+/**
+ * Default value for how long to cache the /fides.js bundle for, in seconds.
+ * This can be overriden via the FIDES_PRIVACY_CENTER__FIDES_JS_MAX_AGE_SECONDS
+ * environment variable.
+ */
+export const DEFAULT_FIDES_JS_MAX_AGE_SECONDS = 60 * 60;
+
 const loadEnvironmentVariables = () => {
   // Load environment variables
   const settings: PrivacyCenterSettings = {
@@ -20,6 +27,9 @@ const loadEnvironmentVariables = () => {
     CUSTOM_PROPERTIES: process.env.CUSTOM_PROPERTIES !== "false", // default: true
     FIDES_PRIVACY_CENTER__ROOT_PROPERTY_PATH:
       process.env.FIDES_PRIVACY_CENTER__ROOT_PROPERTY_PATH || null,
+    FIDES_JS_MAX_AGE_SECONDS:
+      Number(process.env.FIDES_PRIVACY_CENTER__FIDES_JS_MAX_AGE_SECONDS) ||
+      DEFAULT_FIDES_JS_MAX_AGE_SECONDS,
 
     // Overlay options
     DEBUG: process.env.FIDES_PRIVACY_CENTER__DEBUG
