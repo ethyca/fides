@@ -198,13 +198,13 @@ const automaticallyApplyPreferences = async ({
 
   if (gpcApplied || noticeConsentApplied) {
     let consentMethod: ConsentMethod = ConsentMethod.SCRIPT;
-    if (gpcApplied) {
-      fidesDebugger("Updating consent preferences with GPC");
-      consentMethod = ConsentMethod.GPC;
-    }
     if (noticeConsentApplied) {
       fidesDebugger("Updating consent preferences with Notice Consent string");
       consentMethod = ConsentMethod.SCRIPT;
+    }
+    if (gpcApplied) {
+      fidesDebugger("Updating consent preferences with GPC");
+      consentMethod = ConsentMethod.GPC;
     }
     await updateConsentPreferences({
       servedNoticeHistoryId: uuidv4(),

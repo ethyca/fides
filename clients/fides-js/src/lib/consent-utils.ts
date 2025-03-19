@@ -212,10 +212,26 @@ export const experienceIsValid = (
  */
 export const getTcfDefaultPreference = (tcfObject: TcfModelsRecord) =>
   tcfObject.default_preference ?? UserConsentPreference.OPT_OUT;
-
 /**
- * Returns true if there are notices in the experience that require a user preference
- * or if an experience's version hash does not match up.
+ * Determines whether the consent banner should be shown to the user based on various conditions.
+ *
+ * The banner will NOT be shown if:
+ * - Banner is explicitly disabled via fidesDisableBanner option
+ * - No valid privacy experience exists
+ * - Experience is modal-only or headless component type
+ * - No privacy notices exist in the experience
+ * - Consent was previously set via override
+ *
+ * The banner WILL be shown if:
+ * - No prior consent exists
+ * - For TCF experiences, when version_hash doesn't match saved hash
+ * - Prior consent was only recorded via "dismiss" or "gpc" methods
+ *
+ * @param experience - The privacy experience configuration
+ * @param cookie - The current Fides cookie state
+ * @param savedConsent - Previously saved notice consent preferences
+ * @param options - Optional FidesJS initialization options
+ * @returns boolean indicating whether banner should be shown
  */
 export const shouldResurfaceBanner = (
   experience:
