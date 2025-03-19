@@ -43,31 +43,6 @@ from fides.config import CONFIG
 paused_location = CollectionAddress("test_dataset", "test_collection")
 
 
-def test_provided_identity_to_identity(
-    provided_identity_and_consent_request: Tuple,
-) -> None:
-    provided_identity = provided_identity_and_consent_request[0]
-    identity = provided_identity.as_identity_schema()
-    assert identity.email == "test@email.com"
-
-
-def test_blank_provided_identity_to_identity(
-    empty_provided_identity: ProvidedIdentity,
-) -> None:
-    identity = empty_provided_identity.as_identity_schema()
-    assert identity.email is None
-
-
-def test_custom_provided_identity_to_identity(
-    custom_provided_identity: ProvidedIdentity,
-) -> None:
-    identity = custom_provided_identity.as_identity_schema()
-    assert identity.customer_id == LabeledIdentity(
-        label=custom_provided_identity.field_label,
-        value=custom_provided_identity.encrypted_value.get("value"),
-    )
-
-
 def test_privacy_request(
     db: Session,
     policy: Policy,
