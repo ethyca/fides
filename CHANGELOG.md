@@ -24,6 +24,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ### Added
 - Added `is_country` field on locations [#5885](https://github.com/ethyca/fides/pull/5885)
 - Added new `has_next` parameter for the `cursor` pagination strategy [#5888](https://github.com/ethyca/fides/pull/5888)
+- Support `FIDES_PRIVACY_CENTER__FIDES_JS_MAX_AGE_SECONDS` configuration option for `fides-privacy-center` to override default cache duration for /fides.js [#5909](https://github.com/ethyca/fides/pull/5909)
 
 ### Fixed
 - Fixed UX issues with website monitor form [#5884](https://github.com/ethyca/fides/pull/5884)
