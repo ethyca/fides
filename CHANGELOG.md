@@ -23,8 +23,11 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ### Added
 - Added `is_country` field on locations [#5885](https://github.com/ethyca/fides/pull/5885)
+- Added `page` column to `Asset` table/model [#5898](https://github.com/ethyca/fides/pull/5898) https://github.com/ethyca/fides/labels/db-migration
+- Change `Browser Request` values to `Browser request` in Asset and StagedResource models [#5898](https://github.com/ethyca/fides/pull/5898) https://github.com/ethyca/fides/labels/db-migration
 - Added new `has_next` parameter for the `cursor` pagination strategy [#5888](https://github.com/ethyca/fides/pull/5888)
 - Support `FIDES_PRIVACY_CENTER__FIDES_JS_MAX_AGE_SECONDS` configuration option for `fides-privacy-center` to override default cache duration for /fides.js [#5909](https://github.com/ethyca/fides/pull/5909)
+- Add properties for user assigned systems/data_uses on staged resources [5841](https://github.com/ethyca/fides/pull/5841) https://github.com/ethyca/fides/labels/db-migration
 - Added the ability to stop a test privacy request in the dataset test UI [#5901](https://github.com/ethyca/fides/pull/5901)
 
 ### Fixed
@@ -44,7 +47,6 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Added support for OneTrust Consent Migration [#5873](https://github.com/ethyca/fides/pull/5873)
 
 ### Changed
-- Add properties for user assigned systems/data_uses on staged resources [5841](https://github.com/ethyca/fides/pull/5841) https://github.com/ethyca/fides/labels/db-migration
 - Bumped supported Python versions to `3.10.16` and `3.9.21` [#5840](https://github.com/ethyca/fides/pull/5840)
 - Update the privacy request detail page to a new layout and improved styling [#5824](https://github.com/ethyca/fides/pull/5824)
 - Updated privacy request handling to still succeed if not all identities are provided [#5836](https://github.com/ethyca/fides/pull/5836)
