@@ -39,8 +39,10 @@ from fides.api.graph.config import (
     CollectionAddress,
 )
 from fides.api.migrations.hash_migration_mixin import HashMigrationMixin
+from fides.api.models.attachment import Attachment, AttachmentReference
 from fides.api.models.audit_log import AuditLog
 from fides.api.models.client import ClientDetail
+from fides.api.models.comment import Comment, CommentReference
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.manual_webhook import AccessManualWebhook
 from fides.api.models.policy import (
@@ -165,6 +167,22 @@ class PrivacyRequest(
     policy = relationship(
         Policy,
         backref="privacy_requests",
+    )
+    attachments = relationship(
+        "Attachment",
+        secondary="attachment_reference",
+        primaryjoin="PrivacyRequest.id == AttachmentReference.reference_id",
+        secondaryjoin="Attachment.id == AttachmentReference.attachment_id",
+        viewonly=True,
+        order_by="Attachment.created_at",
+    )
+    comments = relationship(
+        "comment",
+        secondary="comment_reference",
+        primaryjoin="PrivacyRequest.id == CommentReference.reference_id",
+        secondaryjoin="Comment.id == CommentReference.reference_id",
+        viewonly=True,
+        order_by="Comment.created_at",
     )
     property_id = Column(String, nullable=True)
 

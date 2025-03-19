@@ -14,6 +14,8 @@ from fides.api.common_exceptions import (
     NoCachedManualWebhookEntry,
     PrivacyRequestPaused,
 )
+from fides.api.models.attachment import Attachment, AttachmentReference
+from fides.api.models.comment import Comment, CommentReference
 from fides.api.graph.config import CollectionAddress
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import (
@@ -22,6 +24,7 @@ from fides.api.models.privacy_request import (
     PrivacyRequestNotifications,
     can_run_checkpoint,
 )
+from fides.api.schemas.policy import CurrentStep
 from fides.api.schemas.privacy_request import (
     CheckpointActionRequired,
     CustomPrivacyRequestField,
@@ -1131,3 +1134,67 @@ class TestPrivacyRequestCustomIdentities:
             customer_id=LabeledIdentity(label="Custom ID", value=123),
             account_id=LabeledIdentity(label="Account ID", value="456"),
         )
+
+
+def test_retrieve_attachments_from_privacy_request(db, privacy_request):
+    # Create Attachments
+    attachment1 = Attachment(
+        id="attachment1",
+        file_name="file1.txt",
+        file_path="/path/to/file1.txt",
+        created_on="2023-01-01",
+    )
+    attachment2 = Attachment(
+        id="attachment2",
+        file_name="file2.txt",
+        file_path="/path/to/file2.txt",
+        created_on="2023-01-02",
+    )
+    db.add_all([attachment1, attachment2])
+    db.commit()
+
+    # Associate Attachments with the PrivacyRequest
+    db.add_all([
+        AttachmentReference(reference_id=privacy_request.id, attachment_id=attachment1.id),
+        AttachmentReference(reference_id=privacy_request.id, attachment_id=attachment2.id),
+    ])
+    db.commit()
+
+    # Verify that attachments can be retrieved
+    retrieved_request = db.query(PrivacyRequest).filter_by(id=privacy_request.id).first()
+    attachments = retrieved_request.attachments
+
+    assert len(attachments) == 2
+    assert attachments[0].id == "attachment1"
+    assert attachments[1].id == "attachment2"
+
+
+def test_retrieve_comments_from_privacy_request(db, privacy_request):
+    # Create Comments
+    comment1 = Comment(
+        id="comment1",
+        text="This is the first comment.",
+        created_on="2023-01-01",
+    )
+    comment2 = Comment(
+        id="comment2",
+        text="This is the second comment.",
+        created_on="2023-01-02",
+    )
+    db.add_all([comment1, comment2])
+    db.commit()
+
+    # Associate Comments with the PrivacyRequest
+    db.add_all([
+        CommentReference(reference_id=privacy_request.id, comment_id=comment1.id),
+        CommentReference(reference_id=privacy_request.id, comment_id=comment2.id),
+    ])
+    db.commit()
+
+    # Verify that comments can be retrieved
+    retrieved_request = db.query(PrivacyRequest).filter_by(id=privacy_request.id).first()
+    comments = retrieved_request.comments
+
+    assert len(comments) == 2
+    assert comments[0].id == "comment1"
+    assert comments[1].id == "comment2"
