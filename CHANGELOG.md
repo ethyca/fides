@@ -28,6 +28,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Added new `has_next` parameter for the `cursor` pagination strategy [#5888](https://github.com/ethyca/fides/pull/5888)
 - Support `FIDES_PRIVACY_CENTER__FIDES_JS_MAX_AGE_SECONDS` configuration option for `fides-privacy-center` to override default cache duration for /fides.js [#5909](https://github.com/ethyca/fides/pull/5909)
 - Add properties for user assigned systems/data_uses on staged resources [5841](https://github.com/ethyca/fides/pull/5841) https://github.com/ethyca/fides/labels/db-migration
+- Added tooltips to the buttons in the dataset test UI [#5899](https://github.com/ethyca/fides/pull/5899)
 - Added the ability to stop a test privacy request in the dataset test UI [#5901](https://github.com/ethyca/fides/pull/5901)
 
 ### Fixed
