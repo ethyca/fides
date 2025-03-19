@@ -20,10 +20,8 @@ from fides.api.models.privacy_request import (
     PrivacyRequest,
     PrivacyRequestError,
     PrivacyRequestNotifications,
-    ProvidedIdentity,
     can_run_checkpoint,
 )
-from fides.api.schemas.policy import CurrentStep
 from fides.api.schemas.privacy_request import (
     CheckpointActionRequired,
     CustomPrivacyRequestField,
