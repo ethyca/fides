@@ -1,5 +1,6 @@
 import pytest
 
+from sqlalchemy.orm.exc import StaleDataError
 from fides.api.models.attachment import (
     Attachment,
     AttachmentReference,
@@ -32,7 +33,10 @@ def attachment(s3_client, db, attachment_data, monkeypatch):
         db, data=attachment_data, attachment_file=b"file content"
     )
     yield attachment
-    attachment.delete(db)
+    try:
+        attachment.delete(db)
+    except Exception:
+        pass
 
 
 @pytest.fixture
@@ -61,10 +65,12 @@ def multiple_attachments(s3_client, db, attachment_data, user, monkeypatch):
     )
 
     yield attachment_1, attachment_2, attachment_3
-
-    attachment_1.delete(db)
-    attachment_2.delete(db)
-    attachment_3.delete(db)
+    try:
+        attachment_1.delete(db)
+        attachment_2.delete(db)
+        attachment_3.delete(db)
+    except Exception:
+        pass
 
 
 @pytest.fixture

@@ -90,7 +90,6 @@ class Attachment(Base):
 
     user = relationship(
         "FidesUser",
-        backref="attachments",
         lazy="selectin",
         uselist=False,
     )
@@ -99,7 +98,6 @@ class Attachment(Base):
         "AttachmentReference",
         back_populates="attachment",
         cascade="all, delete",
-        uselist=True,
     )
 
     config = relationship(

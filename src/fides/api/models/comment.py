@@ -90,20 +90,26 @@ class Comment(Base):
         uselist=True,
     )
 
-    def get_attachments(self, db: Session) -> list[Attachment]:
-        """Retrieve all attachments associated with this comment."""
-        stmt = (
-            db.query(Attachment)
-            .join(
-                AttachmentReference, Attachment.id == AttachmentReference.attachment_id
-            )
-            .where(AttachmentReference.reference_id == self.id)
-        )
-        return db.execute(stmt).scalars().all()
+    attachments = relationship(
+        Attachment,
+        secondary="attachment_reference",
+        primaryjoin="Comment.id == AttachmentReference.reference_id",
+        secondaryjoin="Attachment.id == AttachmentReference.attachment_id",
+        cascade="all, delete",
+        order_by="Attachment.created_at",
+    )
+
+    # def get_attachments(self, db: Session) -> list[Attachment]:
+    #     """Retrieve all attachments associated with this comment."""
+    #     stmt = (
+    #         db.query(Attachment)
+    #         .join(
+    #             AttachmentReference, Attachment.id == AttachmentReference.attachment_id
+    #         )
+    #         .where(AttachmentReference.reference_id == self.id)
+    #     )
+    #     return db.execute(stmt).scalars().all()
 
     def delete(self, db: Session) -> None:
         """Delete the comment and all associated references."""
-        attachments = self.get_attachments(db)
-        for attachment in attachments:
-            attachment.delete(db)
         db.delete(self)

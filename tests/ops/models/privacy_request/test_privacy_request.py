@@ -20,7 +20,12 @@ from fides.api.models.attachment import (
     AttachmentReferenceType,
     AttachmentType
 )
-from fides.api.models.comment import Comment, CommentReference
+from fides.api.models.comment import (
+    Comment,
+    CommentReference,
+    CommentReferenceType,
+    CommentType,
+)
 from fides.api.graph.config import CollectionAddress
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import (
@@ -1200,32 +1205,42 @@ def test_retrieve_attachments_from_privacy_request(s3_client, db, user, storage_
 
 
 
-def test_retrieve_comments_from_privacy_request(db, privacy_request):
+def test_retrieve_comments_from_privacy_request(db, user, privacy_request):
     # Create Comments
-    comment1 = Comment(
-        id="comment1",
-        text="This is the first comment.",
-        created_on="2023-01-01",
-    )
-    comment2 = Comment(
-        id="comment2",
-        text="This is the second comment.",
-        created_on="2023-01-02",
-    )
-    db.add_all([comment1, comment2])
-    db.commit()
+    data = {
+        "user_id": user.id,
+        "comment_text": "This is a note",
+        "comment_type": CommentType.note,
+    }
+    comment1 = Comment.create(db=db, data=data)
+    comment2 = Comment.create(db=db, data=data)
 
     # Associate Comments with the PrivacyRequest
-    db.add_all([
-        CommentReference(reference_id=privacy_request.id, comment_id=comment1.id),
-        CommentReference(reference_id=privacy_request.id, comment_id=comment2.id),
-    ])
-    db.commit()
+    CommentReference.create(
+        db,
+        data={
+            "reference_id": privacy_request.id,
+            "comment_id": comment1.id,
+            "reference_type": CommentReferenceType.privacy_request
+        }
+    )
+    CommentReference.create(
+        db,
+        data={
+            "reference_id": privacy_request.id,
+            "comment_id": comment2.id,
+            "reference_type": CommentReferenceType.privacy_request
+        }
+    )
 
     # Verify that comments can be retrieved
     retrieved_request = db.query(PrivacyRequest).filter_by(id=privacy_request.id).first()
     comments = retrieved_request.comments
 
     assert len(comments) == 2
-    assert comments[0].id == "comment1"
-    assert comments[1].id == "comment2"
+    #Verify that the comments are in the correct order
+    assert comments[0].id == comment1.id
+    assert comments[1].id == comment2.id
+
+    comment1.delete(db)
+    comment2.delete(db)

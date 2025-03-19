@@ -28,7 +28,10 @@ def comment_data(user):
 def comment(db, comment_data):
     comment = Comment.create(db, data=comment_data)
     yield comment
-    comment.delete(db)
+    try:
+        comment.delete(db)
+    except Exception:
+        pass
 
 
 @pytest.fixture
@@ -111,7 +114,6 @@ def test_comment_reference_relationship(db, comment, comment_reference):
 
 def test_comment_single_attachment_relationship(db, comment, attachment):
     """Test the relationship between comment and attachment."""
-
     attachment_reference = AttachmentReference.create(
         db,
         data={
@@ -120,10 +122,10 @@ def test_comment_single_attachment_relationship(db, comment, attachment):
             "reference_type": AttachmentReferenceType.comment,
         },
     )
-
+    db.refresh(attachment_reference)
     retrieved_comment = db.query(Comment).filter_by(id=comment.id).first()
 
-    attachments = retrieved_comment.get_attachments(db)
+    attachments = retrieved_comment.attachments
 
     assert len(attachments) == 1
     assert attachments[0].id == attachment.id
@@ -138,7 +140,6 @@ def test_comment_single_attachment_relationship(db, comment, attachment):
 
 def test_comment_multiple_attachments_relationship(db, comment, multiple_attachments):
     """Test the relationship between comment and multiple attachments."""
-
     attachment_reference_1 = AttachmentReference.create(
         db,
         data={
@@ -166,7 +167,7 @@ def test_comment_multiple_attachments_relationship(db, comment, multiple_attachm
 
     retrieved_comment = db.query(Comment).filter_by(id=comment.id).first()
 
-    attachments = retrieved_comment.get_attachments(db)
+    attachments = retrieved_comment.attachments
     assert len(attachments) == 3
     assert attachments[0].id == multiple_attachments[0].id
     assert (
@@ -213,8 +214,13 @@ def test_delete_comment_cascades(db, comment, comment_reference):
     assert retrieved_reference is None
 
 
-def test_delete_comment_cascades_to_attachments(db, comment, attachment):
+def test_delete_comment_cascades_to_attachments(s3_client, db, comment, attachment, monkeypatch):
     """Test that deleting a comment cascades to its attachments."""
+
+    def mock_get_s3_client(auth_method, storage_secrets):
+        return s3_client
+
+    monkeypatch.setattr("fides.api.service.storage.s3.get_s3_client", mock_get_s3_client)
     attachment_reference = AttachmentReference.create(
         db,
         data={
@@ -225,7 +231,7 @@ def test_delete_comment_cascades_to_attachments(db, comment, attachment):
     )
 
     retrieved_comment = db.query(Comment).filter_by(id=comment.id).first()
-    attachments = retrieved_comment.get_attachments(db)
+    attachments = retrieved_comment.attachments
     assert len(attachments) == 1
 
     comment.delete(db=db)

@@ -169,20 +169,20 @@ class PrivacyRequest(
         backref="privacy_requests",
     )
     attachments = relationship(
-        AttachmentReference,
+        Attachment,
         secondary="attachment_reference",
         primaryjoin="PrivacyRequest.id == AttachmentReference.reference_id",
         secondaryjoin="Attachment.id == AttachmentReference.attachment_id",
-        viewonly=True,
         order_by="Attachment.created_at",
+        cascade="all, delete",
     )
     comments = relationship(
         Comment,
         secondary="comment_reference",
         primaryjoin="PrivacyRequest.id == CommentReference.reference_id",
-        secondaryjoin="Comment.id == CommentReference.reference_id",
-        viewonly=True,
+        secondaryjoin="Comment.id == CommentReference.comment_id",
         order_by="Comment.created_at",
+        cascade="all, delete",
     )
     property_id = Column(String, nullable=True)
 
