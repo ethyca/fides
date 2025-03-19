@@ -39,6 +39,7 @@ export const DATA_CATALOG_ROUTE = "/data-catalog";
 export const DATASTORE_CONNECTION_ROUTE = "/datastore-connection";
 export const PRIVACY_REQUESTS_ROUTE = "/privacy-requests";
 export const PRIVACY_REQUESTS_CONFIGURATION_ROUTE = `${PRIVACY_REQUESTS_ROUTE}/configure`;
+export const PRIVACY_POLICY_ROUTE = "/policies";
 
 // Consent group
 export const PRIVACY_EXPERIENCE_ROUTE = "/consent/privacy-experience";
