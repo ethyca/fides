@@ -4,7 +4,7 @@
 - change `Browser Request` values to `Browser request` Asset.asset_type column
 
 Revision ID: 1d2f04ac19f2
-Revises: 9a1eacd2666b
+Revises: 7c3fbee90c78
 Create Date: 2025-03-17 19:36:43.016383
 
 """
@@ -15,7 +15,7 @@ from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = "1d2f04ac19f2"
-down_revision = "9a1eacd2666b"
+down_revision = "7c3fbee90c78"
 branch_labels = None
 depends_on = None
 
