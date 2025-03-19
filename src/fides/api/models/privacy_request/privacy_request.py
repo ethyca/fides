@@ -169,7 +169,7 @@ class PrivacyRequest(
         backref="privacy_requests",
     )
     attachments = relationship(
-        "Attachment",
+        AttachmentReference,
         secondary="attachment_reference",
         primaryjoin="PrivacyRequest.id == AttachmentReference.reference_id",
         secondaryjoin="Attachment.id == AttachmentReference.attachment_id",
@@ -177,7 +177,7 @@ class PrivacyRequest(
         order_by="Attachment.created_at",
     )
     comments = relationship(
-        "comment",
+        Comment,
         secondary="comment_reference",
         primaryjoin="PrivacyRequest.id == CommentReference.reference_id",
         secondaryjoin="Comment.id == CommentReference.reference_id",

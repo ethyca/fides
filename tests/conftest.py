@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Callable
 from uuid import uuid4
 
+import boto3
 import pytest
 import requests
 import yaml
@@ -16,6 +17,7 @@ from fideslang import DEFAULT_TAXONOMY, models
 from fideslang.models import System as SystemSchema
 from httpx import AsyncClient
 from loguru import logger
+from moto import mock_aws
 from sqlalchemy.engine.base import Engine
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
@@ -84,6 +86,17 @@ TEST_CONFIG_PATH = "tests/ctl/test_config.toml"
 TEST_INVALID_CONFIG_PATH = "tests/ctl/test_invalid_config.toml"
 TEST_DEPRECATED_CONFIG_PATH = "tests/ctl/test_deprecated_config.toml"
 
+@pytest.fixture
+def s3_client(storage_config):
+    with mock_aws():
+        session = boto3.Session(
+            aws_access_key_id="fake_access_key",
+            aws_secret_access_key="fake_secret_key",
+            region_name="us-east-1",
+        )
+        s3 = session.client("s3")
+        s3.create_bucket(Bucket=storage_config.details[StorageDetails.BUCKET.value])
+        yield s3
 
 @pytest.fixture(scope="session")
 def db(api_client, config):

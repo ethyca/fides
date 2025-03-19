@@ -14,7 +14,12 @@ from fides.api.common_exceptions import (
     NoCachedManualWebhookEntry,
     PrivacyRequestPaused,
 )
-from fides.api.models.attachment import Attachment, AttachmentReference
+from fides.api.models.attachment import (
+    Attachment,
+    AttachmentReference,
+    AttachmentReferenceType,
+    AttachmentType
+)
 from fides.api.models.comment import Comment, CommentReference
 from fides.api.graph.config import CollectionAddress
 from fides.api.models.policy import Policy
@@ -1136,37 +1141,63 @@ class TestPrivacyRequestCustomIdentities:
         )
 
 
-def test_retrieve_attachments_from_privacy_request(db, privacy_request):
+def test_retrieve_attachments_from_privacy_request(s3_client, db, user, storage_config, privacy_request, monkeypatch):
     # Create Attachments
-    attachment1 = Attachment(
-        id="attachment1",
-        file_name="file1.txt",
-        file_path="/path/to/file1.txt",
-        created_on="2023-01-01",
+
+    def mock_get_s3_client(auth_method, storage_secrets):
+        return s3_client
+
+    monkeypatch.setattr("fides.api.service.storage.s3.get_s3_client", mock_get_s3_client)
+
+    data = {
+        "user_id": user.id,
+        "file_name": "file.txt",
+        "attachment_type": AttachmentType.internal_use_only,
+        "storage_key": storage_config.key,
+    }
+
+    attachment1 = Attachment.create_and_upload(
+        db=db,
+        data=data,
+        attachment_file=b"contents of test file 1",
     )
-    attachment2 = Attachment(
-        id="attachment2",
-        file_name="file2.txt",
-        file_path="/path/to/file2.txt",
-        created_on="2023-01-02",
+    attachment2 = Attachment.create_and_upload(
+        db=db,
+        data=data,
+        attachment_file=b"contents of test file 2",
     )
-    db.add_all([attachment1, attachment2])
-    db.commit()
+
 
     # Associate Attachments with the PrivacyRequest
-    db.add_all([
-        AttachmentReference(reference_id=privacy_request.id, attachment_id=attachment1.id),
-        AttachmentReference(reference_id=privacy_request.id, attachment_id=attachment2.id),
-    ])
-    db.commit()
+    AttachmentReference.create(
+        db,
+        data={
+            "reference_id": privacy_request.id,
+            "attachment_id": attachment1.id,
+            "reference_type": AttachmentReferenceType.privacy_request
+        }
+    )
+    AttachmentReference.create(
+        db,
+        data={
+            "reference_id": privacy_request.id,
+            "attachment_id": attachment2.id,
+            "reference_type": AttachmentReferenceType.privacy_request
+        }
+    )
 
     # Verify that attachments can be retrieved
     retrieved_request = db.query(PrivacyRequest).filter_by(id=privacy_request.id).first()
     attachments = retrieved_request.attachments
 
     assert len(attachments) == 2
-    assert attachments[0].id == "attachment1"
-    assert attachments[1].id == "attachment2"
+    #Verify that the attachments are in the correct order
+    assert attachments[0].id == attachment1.id
+    assert attachments[1].id == attachment2.id
+
+    attachment1.delete(db)
+    attachment2.delete(db)
+
 
 
 def test_retrieve_comments_from_privacy_request(db, privacy_request):
