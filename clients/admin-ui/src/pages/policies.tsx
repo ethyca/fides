@@ -35,99 +35,71 @@ const formatActionType = (actionType: string | null): string => {
     return "Consent";
   }
 
-  // Map action types to more readable values with proper capitalization
-  switch (actionType.toLowerCase()) {
-    case "access":
-      return "Access";
-    case "erasure":
-    case "deletion":
-      return "Erasure";
-    case "consent":
-      return "Consent";
-    case "sale:opt_out":
-      return "Sale Opt-Out";
-    case "sale:opt_in":
-      return "Sale Opt-In";
-    case "access:categories":
-      return "Access Categories";
-    case "access:specific":
-      return "Access Specific";
-    default:
-      // Convert snake_case to Title Case
-      return actionType
-        .split("_")
-        .map(
-          (word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase(),
-        )
-        .join(" ");
-  }
+  // Map common action types with proper capitalization
+  const actionTypeMap: Record<string, string> = {
+    access: "Access",
+    erasure: "Erasure",
+    deletion: "Erasure",
+  };
+
+  const key = actionType.toLowerCase();
+  return (
+    actionTypeMap[key] ||
+    actionType
+      .split("_")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(" ")
+  );
 };
 
+// Simple components for table cells
 const EmptyTableNotice = () => (
   <Center py={10}>
     <Text>No policies found</Text>
   </Center>
 );
 
-// Define badge cell for policy keys
 const KeyBadgeCell = ({ getValue }: { getValue: () => string | null }) => {
   const value = getValue();
-  if (!value) {
-    return <DefaultCell value="-" />;
-  }
-  return <BadgeCell value={value} color="marble" />;
+  return !value ? (
+    <DefaultCell value="-" />
+  ) : (
+    <BadgeCell value={value} color="marble" />
+  );
 };
 
-// Action type badge cell that shows the action type in a colored badge
 const ActionTypeBadgeCell = ({
   getValue,
 }: {
   getValue: () => string | null;
 }) => {
   const value = getValue();
-  if (!value) {
-    return <BadgeCell value="Consent" color="caution" />;
-  }
-
-  // Format the display text
   const displayText = formatActionType(value);
 
   // Choose color based on action type
-  let color;
-  switch (value.toLowerCase()) {
-    case "access":
-      color = "success";
-      break;
-    case "deletion":
-    case "erasure":
-      color = "error";
-      break;
-    case "consent":
-      color = "success";
-      break;
-    case "sale:opt_out":
-    case "sale:opt_in":
-      color = "alert";
-      break;
-    default:
-      color = "minos";
-  }
+  const colorMap: Record<string, string> = {
+    access: "success",
+    deletion: "error",
+    erasure: "error",
+  };
+
+  const key = value?.toLowerCase() || "consent";
+  const color = colorMap[key] || "minos";
 
   return <BadgeCell value={displayText} color={color} />;
 };
 
-// Execution timeframe badge cell
 const TimeframeBadgeCell = ({
   getValue,
 }: {
   getValue: () => number | null;
 }) => {
   const value = getValue();
-  if (!value) {
-    return <DefaultCell value="-" />;
-  }
-
-  return <DefaultCell value={`${value} days`} />;
+  return value ? (
+    <DefaultCell value={`${value} days`} />
+  ) : (
+    <DefaultCell value="-" />
+  );
 };
 
 // Action cell for policies
@@ -137,22 +109,20 @@ const PolicyActionsCell = ({
 }: {
   policy: PolicyResponse;
   onViewRules: (policy: PolicyResponse) => void;
-}) => {
-  return (
-    <Button
-      aria-label="View rules"
-      icon={<GearLightIcon />}
-      onClick={(e) => {
-        e.stopPropagation();
-        onViewRules(policy);
-      }}
-      data-testid={`view-rules-${policy.key || policy.name}`}
-      size="small"
-    >
-      View rules
-    </Button>
-  );
-};
+}) => (
+  <Button
+    aria-label="View rules"
+    icon={<GearLightIcon />}
+    onClick={(e) => {
+      e.stopPropagation();
+      onViewRules(policy);
+    }}
+    data-testid={`view-rules-${policy.key || policy.name}`}
+    size="small"
+  >
+    View rules
+  </Button>
+);
 
 const PoliciesPage: NextPage = () => {
   const router = useRouter();
@@ -166,17 +136,15 @@ const PoliciesPage: NextPage = () => {
     [setGlobalFilter],
   );
 
-  const policies = useMemo(() => data?.items || [], [data]);
-
   // Filter out policies with null drp_action
-  const validPolicies = useMemo(() => {
-    return policies.filter((policy) => policy.drp_action !== null);
-  }, [policies]);
+  const validPolicies = useMemo(
+    () => (data?.items || []).filter((policy) => policy.drp_action !== null),
+    [data],
+  );
 
+  // Apply search filter
   const filteredPolicies = useMemo(() => {
-    if (!globalFilter) {
-      return validPolicies;
-    }
+    if (!globalFilter) return validPolicies;
 
     const lowerCaseFilter = globalFilter.toLowerCase();
     return validPolicies.filter(
@@ -188,9 +156,9 @@ const PoliciesPage: NextPage = () => {
     );
   }, [validPolicies, globalFilter]);
 
+  // Handle policy row click
   const handleRowClick = useCallback(
     (policy: PolicyResponse) => {
-      // Navigate to policy detail page
       router.push({
         pathname: "/policies/[policyKey]",
         query: { policyKey: policy.key || encodeURIComponent(policy.name) },
@@ -199,15 +167,13 @@ const PoliciesPage: NextPage = () => {
     [router],
   );
 
-  // eslint-disable-next-line react/jsx-no-useless-fragment, react-hooks/exhaustive-deps
+  // Define table columns
   const columns = useMemo(
     () =>
       [
         columnHelper.accessor((row) => row.name, {
           id: "name",
-          // eslint-disable-next-line react/jsx-no-useless-fragment
           cell: (props) => <DefaultCell value={props.getValue()} />,
-          // eslint-disable-next-line react/jsx-no-useless-fragment
           header: (props) => (
             <DefaultHeaderCell value="Policy Name" {...props} />
           ),
@@ -215,9 +181,7 @@ const PoliciesPage: NextPage = () => {
         }),
         columnHelper.accessor((row) => row.key, {
           id: "key",
-          // eslint-disable-next-line react/jsx-no-useless-fragment
           cell: (props) => <KeyBadgeCell getValue={() => props.getValue()} />,
-          // eslint-disable-next-line react/jsx-no-useless-fragment
           header: (props) => (
             <DefaultHeaderCell value="Policy Key" {...props} />
           ),
@@ -225,11 +189,9 @@ const PoliciesPage: NextPage = () => {
         }),
         columnHelper.accessor((row) => row.drp_action, {
           id: "drp_action",
-          // eslint-disable-next-line react/jsx-no-useless-fragment
           cell: (props) => (
             <ActionTypeBadgeCell getValue={() => props.getValue()} />
           ),
-          // eslint-disable-next-line react/jsx-no-useless-fragment
           header: (props) => (
             <DefaultHeaderCell value="Action Type" {...props} />
           ),
@@ -237,11 +199,9 @@ const PoliciesPage: NextPage = () => {
         }),
         columnHelper.accessor((row) => row.execution_timeframe, {
           id: "execution_timeframe",
-          // eslint-disable-next-line react/jsx-no-useless-fragment
           cell: (props) => (
             <TimeframeBadgeCell getValue={() => props.getValue()} />
           ),
-          // eslint-disable-next-line react/jsx-no-useless-fragment
           header: (props) => (
             <DefaultHeaderCell value="Execution Timeframe" {...props} />
           ),
