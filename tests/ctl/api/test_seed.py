@@ -111,7 +111,6 @@ class TestFilterDataCategories:
             all_data_categories, excluded_data_categories
         ) == sorted(expected_result)
 
-    @pytest.mark.skip("this times out on CI")
     def test_filter_data_categories_no_third_level(self) -> None:
         """Test that the filter method works as intended"""
         excluded_data_categories = [
