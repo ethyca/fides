@@ -39,6 +39,7 @@ class Asset(Base):
     with_consent = Column(BOOLEAN, default=False, nullable=False)
     data_uses = Column(ARRAY(String), server_default="{}", nullable=False)
     description = Column(String, nullable=True)
+    page = Column(ARRAY(String), server_default="{}", nullable=False)
 
     # generic object to store additional attributes, specific to asset type
     meta = Column(
