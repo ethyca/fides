@@ -89,6 +89,7 @@ class CursorPaginationConfiguration(StrategyConfiguration):
 
     cursor_param: str
     field: str
+    has_next: Optional[str] = None
 
 
 class ApiKeyAuthenticationConfiguration(StrategyConfiguration):
