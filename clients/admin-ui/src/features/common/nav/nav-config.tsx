@@ -123,15 +123,16 @@ export const NAV_CONFIG: NavConfigGroup[] = [
       {
         title: "Request manager",
         path: routes.PRIVACY_REQUESTS_ROUTE,
+        exact: true,
         scopes: [
           ScopeRegistryEnum.PRIVACY_REQUEST_READ,
           ScopeRegistryEnum.PRIVACY_REQUEST_CREATE,
         ],
       },
       {
-        title: "Connection manager",
-        path: routes.DATASTORE_CONNECTION_ROUTE,
-        scopes: [ScopeRegistryEnum.CONNECTION_CREATE_OR_UPDATE],
+        title: "Request policies",
+        path: routes.PRIVACY_POLICY_ROUTE,
+        scopes: [ScopeRegistryEnum.PRIVACY_REQUEST_READ],
       },
       {
         title: "Configuration",
