@@ -13,9 +13,9 @@ export interface PrivacyCenterSettings {
   SERVER_SIDE_FIDES_API_URL: string | null; // e.g. http://fides:8080/api/v1
   CONFIG_CSS_URL: string; // e.g. file:///app/config/config.css
   CONFIG_JSON_URL: string; // e.g. file:///app/config/config.json
-  SHOW_BRAND_LINK: boolean; // whether to render the Ethyca brand link
   CUSTOM_PROPERTIES: boolean; // (optional) (default: true) enables the use of a single privacy center instance to serve different properties on different paths with custom configs
   FIDES_PRIVACY_CENTER__ROOT_PROPERTY_PATH: string | null; // (optional) setting this will fetch a property when navigating the root ("/") path.
+  FIDES_JS_MAX_AGE_SECONDS: number; // (optional) how long to cache the /fides.js bundle for, in seconds. Defaults to 1 hour (DEFAULT_FIDES_JS_MAX_AGE_SECONDS)
 
   // Fides.js options
   DEBUG: boolean; // whether console logs are enabled for consent components
@@ -40,5 +40,6 @@ export interface PrivacyCenterSettings {
   BASE_64_COOKIE: boolean; // whether or not to encode cookie as base64 on top of the default JSON string
   FIDES_PRIMARY_COLOR: string | null; // (optional) sets fides primary color
   FIDES_CLEAR_COOKIE: boolean; // (optional) deletes fides_consent cookie on reload
+  SHOW_BRAND_LINK: boolean; // whether to render the Ethyca brand link
   FIDES_CONSENT_OVERRIDE: ConsentMethod.ACCEPT | ConsentMethod.REJECT | null; // (optional) sets a previously learned consent preference for the user
 }
