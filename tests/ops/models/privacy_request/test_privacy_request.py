@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta, timezone
 from time import sleep
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List
 from uuid import uuid4
 
 import pytest
@@ -22,7 +22,6 @@ from fides.api.models.privacy_request import (
     PrivacyRequestNotifications,
     can_run_checkpoint,
 )
-from fides.api.schemas.policy import CurrentStep
 from fides.api.schemas.privacy_request import (
     CheckpointActionRequired,
     CustomPrivacyRequestField,
