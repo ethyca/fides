@@ -256,7 +256,10 @@ export const shouldResurfaceBanner = (
     experience.experience_config?.component === ComponentType.TCF_OVERLAY &&
     !!cookie
   ) {
-    if (experience.meta?.version_hash) {
+    if (
+      experience.meta?.version_hash &&
+      cookie.fides_meta.consentMethod !== ConsentMethod.DISMISS
+    ) {
       return experience.meta.version_hash !== cookie.tcf_version_hash;
     }
     return true;
