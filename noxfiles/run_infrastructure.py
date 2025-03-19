@@ -77,7 +77,7 @@ EXTERNAL_DATASTORE_CONFIG = {
 EXTERNAL_DATASTORES = list(EXTERNAL_DATASTORE_CONFIG.keys())
 ALL_DATASTORES = DOCKERFILE_DATASTORES + EXTERNAL_DATASTORES
 OPS_TEST_DIR = "tests/ops/"
-API_TEST_DIRS = [f"{OPS_TEST_DIR}api/", "tests/api/"]
+API_TEST_DIRS = [f"{OPS_TEST_DIR}api/", "tests/api/v1/endpoints/"]
 
 
 def run_infrastructure(
