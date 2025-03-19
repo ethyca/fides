@@ -19,9 +19,9 @@ from fides.api.models.connectionconfig import (
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.detection_discovery import MonitorConfig
 from fides.api.models.manual_webhook import AccessManualWebhook
-from fides.api.models.privacy_request import PrivacyRequestStatus
 from fides.api.models.sql_models import Dataset
 from fides.api.oauth.roles import APPROVER, OWNER, VIEWER
+from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.common.api.scope_registry import (
     CONNECTION_CREATE_OR_UPDATE,
     CONNECTION_DELETE,
