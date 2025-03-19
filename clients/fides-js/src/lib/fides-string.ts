@@ -11,7 +11,7 @@ export interface DecodedFidesString {
   tc: string;
   ac: string;
   gpp: string;
-  nc: string; // Base64 encoded Notice Consent String
+  nc: string;
 }
 
 /**
