@@ -92,4 +92,85 @@ describe("gtm", () => {
     expect(fidesEvent?.Fides.consent.test_notice_2).toBe("opt_out");
     expect(fidesEvent?.Fides.consent.test_notice_3).toBe("acknowledge");
   });
+
+  test("that fides includes not applicable privacy notices when includeNotApplicable is true", () => {
+    window.Fides = {
+      experience: {
+        privacy_notices: [
+          {
+            notice_key: "test_notice_1",
+            consent_mechanism: "opt_in",
+          },
+          {
+            notice_key: "test_notice_2",
+            consent_mechanism: "opt_out",
+          },
+          {
+            notice_key: "test_notice_3",
+            consent_mechanism: "notice_only",
+          },
+        ],
+        non_applicable_privacy_notices: ["na_notice_1", "na_notice_2"],
+      } as any,
+    } as any;
+
+    gtm({ includeNotApplicable: true });
+    window.dispatchEvent(
+      new CustomEvent("FidesUpdated", {
+        detail: {
+          consent: {
+            test_notice_1: true,
+            test_notice_2: false,
+            test_notice_3: true,
+          },
+        },
+      }),
+    );
+
+    const fidesEvent = window.dataLayer?.[window.dataLayer.length - 1];
+
+    expect(fidesEvent?.Fides.consent.na_notice_1).toBe(false);
+    expect(fidesEvent?.Fides.consent.na_notice_2).toBe(false);
+  });
+
+  test("that fides includes not applicable privacy notices and transforms them to strings", () => {
+    gtm({ includeNotApplicable: true });
+    window.Fides = {
+      experience: {
+        privacy_notices: [
+          {
+            notice_key: "test_notice_1",
+            consent_mechanism: "opt_in",
+          },
+          {
+            notice_key: "test_notice_2",
+            consent_mechanism: "opt_out",
+          },
+          {
+            notice_key: "test_notice_3",
+            consent_mechanism: "notice_only",
+          },
+        ],
+        non_applicable_privacy_notices: ["na_notice_1", "na_notice_2"],
+      } as any,
+    } as any;
+
+    gtm({ includeNotApplicable: true, asStringValues: true });
+    window.dispatchEvent(
+      new CustomEvent("FidesUpdated", {
+        detail: {
+          consent: {
+            test_notice_1: true,
+            test_notice_2: false,
+            test_notice_3: true,
+          },
+        },
+      }),
+    );
+
+    const fidesEvent = window.dataLayer?.[window.dataLayer.length - 1];
+
+    expect(fidesEvent?.Fides.consent.na_notice_1).toBe("not_applicable");
+    expect(fidesEvent?.Fides.consent.na_notice_2).toBe("not_applicable");
+  });
 });
