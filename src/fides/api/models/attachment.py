@@ -18,7 +18,10 @@ from fides.api.service.storage.s3 import (
     generic_retrieve_from_s3,
     generic_upload_to_s3,
 )
-from fides.api.service.storage.util import LOCAL_FIDES_UPLOAD_DIRECTORY, get_local_filename
+from fides.api.service.storage.util import (
+    LOCAL_FIDES_UPLOAD_DIRECTORY,
+    get_local_filename,
+)
 
 
 class AttachmentType(str, EnumType):
@@ -98,6 +101,7 @@ class Attachment(Base):
         "AttachmentReference",
         back_populates="attachment",
         cascade="all, delete",
+        uselist=True,
     )
 
     config = relationship(

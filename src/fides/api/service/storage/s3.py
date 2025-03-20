@@ -9,10 +9,9 @@ from fideslang.validation import AnyHttpUrlString
 from loguru import logger
 
 from fides.api.schemas.storage.storage import StorageSecrets
-
 from fides.api.util.aws_util import get_s3_client
-
 from fides.config import CONFIG
+
 
 def create_presigned_url_for_s3(
     s3_client: Any, bucket_name: str, file_key: str
@@ -39,7 +38,7 @@ def generic_upload_to_s3(  # pylint: disable=R0913
     bucket_name: str,
     file_key: str,
     auth_method: str,
-    document: bytes,
+    document: BytesIO,
 ) -> Optional[AnyHttpUrlString]:
     """
     Uploads arbitrary data to S3 returned from an access request.
@@ -92,7 +91,7 @@ def generic_retrieve_from_s3(
     bucket_name: str,
     file_key: str,
     auth_method: str,
-) -> Optional[bytes]:
+) -> Optional[BytesIO]:
     """Retrieves arbitrary data from s3"""
     logger.info("Starting S3 Retrieve of {}", file_key)
 

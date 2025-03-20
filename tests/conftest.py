@@ -86,6 +86,7 @@ TEST_CONFIG_PATH = "tests/ctl/test_config.toml"
 TEST_INVALID_CONFIG_PATH = "tests/ctl/test_invalid_config.toml"
 TEST_DEPRECATED_CONFIG_PATH = "tests/ctl/test_deprecated_config.toml"
 
+
 @pytest.fixture
 def s3_client(storage_config):
     with mock_aws():
@@ -97,6 +98,7 @@ def s3_client(storage_config):
         s3 = session.client("s3")
         s3.create_bucket(Bucket=storage_config.details[StorageDetails.BUCKET.value])
         yield s3
+
 
 @pytest.fixture(scope="session")
 def db(api_client, config):

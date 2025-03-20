@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import json
-import os
 import secrets
 import zipfile
 from io import BytesIO
@@ -21,7 +20,10 @@ from fides.api.service.storage.s3 import (
     create_presigned_url_for_s3,
     generic_upload_to_s3,
 )
-from fides.api.service.storage.util import LOCAL_FIDES_UPLOAD_DIRECTORY
+from fides.api.service.storage.util import (
+    LOCAL_FIDES_UPLOAD_DIRECTORY,
+    get_local_filename,
+)
 from fides.api.util.aws_util import get_s3_client
 from fides.api.util.cache import get_cache, get_encryption_cache_key
 from fides.api.util.encryption.aes_gcm_encryption_scheme import (
@@ -113,7 +115,7 @@ def upload_to_s3(  # pylint: disable=R0913
     file_key: str,
     resp_format: str,
     privacy_request: Optional[PrivacyRequest],
-    document: Optional[bytes],
+    document: Optional[BytesIO],
     auth_method: str,
 ) -> Optional[AnyHttpUrlString]:
     """Uploads arbitrary data to s3 returned from an access request"""

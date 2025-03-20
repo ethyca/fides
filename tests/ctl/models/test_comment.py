@@ -16,25 +16,6 @@ from fides.api.models.fides_user import FidesUser
 
 
 @pytest.fixture
-def comment_data(user):
-    return {
-        "user_id": user.id,
-        "comment_text": "This is a note",
-        "comment_type": CommentType.note,
-    }
-
-
-@pytest.fixture
-def comment(db, comment_data):
-    comment = Comment.create(db, data=comment_data)
-    yield comment
-    try:
-        comment.delete(db)
-    except Exception:
-        pass
-
-
-@pytest.fixture
 def comment_reference(db, comment):
     comment_reference = CommentReference.create(
         db=db,
@@ -112,8 +93,16 @@ def test_comment_reference_relationship(db, comment, comment_reference):
     )
 
 
-def test_comment_single_attachment_relationship(db, comment, attachment):
+def test_comment_single_attachment_relationship(
+    s3_client, db, comment, attachment, monkeypatch
+):
     """Test the relationship between comment and attachment."""
+
+    def mock_get_s3_client(auth_method, storage_secrets):
+        return s3_client
+
+    monkeypatch.setattr("fides.api.tasks.storage.get_s3_client", mock_get_s3_client)
+
     attachment_reference = AttachmentReference.create(
         db,
         data={
@@ -122,9 +111,8 @@ def test_comment_single_attachment_relationship(db, comment, attachment):
             "reference_type": AttachmentReferenceType.comment,
         },
     )
-    db.refresh(attachment_reference)
-    retrieved_comment = db.query(Comment).filter_by(id=comment.id).first()
 
+    retrieved_comment = db.query(Comment).filter_by(id=comment.id).first()
     attachments = retrieved_comment.attachments
 
     assert len(attachments) == 1
@@ -136,10 +124,20 @@ def test_comment_single_attachment_relationship(db, comment, attachment):
         attachments[0].references[0].reference_type
         == attachment_reference.reference_type
     )
+    attachment_reference.delete(db=db)
+    attachments[0].delete(db=db)
 
 
-def test_comment_multiple_attachments_relationship(db, comment, multiple_attachments):
+def test_comment_multiple_attachments_relationship(
+    s3_client, db, comment, multiple_attachments, monkeypatch
+):
     """Test the relationship between comment and multiple attachments."""
+
+    def mock_get_s3_client(auth_method, storage_secrets):
+        return s3_client
+
+    monkeypatch.setattr("fides.api.tasks.storage.get_s3_client", mock_get_s3_client)
+
     attachment_reference_1 = AttachmentReference.create(
         db,
         data={
@@ -214,13 +212,16 @@ def test_delete_comment_cascades(db, comment, comment_reference):
     assert retrieved_reference is None
 
 
-def test_delete_comment_cascades_to_attachments(s3_client, db, comment, attachment, monkeypatch):
+def test_delete_comment_cascades_to_attachments(
+    s3_client, db, comment, attachment, monkeypatch
+):
     """Test that deleting a comment cascades to its attachments."""
 
     def mock_get_s3_client(auth_method, storage_secrets):
         return s3_client
 
-    monkeypatch.setattr("fides.api.service.storage.s3.get_s3_client", mock_get_s3_client)
+    monkeypatch.setattr("fides.api.tasks.storage.get_s3_client", mock_get_s3_client)
+
     attachment_reference = AttachmentReference.create(
         db,
         data={
