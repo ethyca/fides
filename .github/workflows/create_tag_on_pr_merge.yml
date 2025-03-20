@@ -1,8 +1,9 @@
 name: Create Tag on PR Merge
 
 on:
-  pull_request:
-    types: [closed]
+  push:
+    branches:
+      - "main"
 
 jobs:
   create_tag:
