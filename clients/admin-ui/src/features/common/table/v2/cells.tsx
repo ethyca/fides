@@ -90,7 +90,7 @@ export const RelativeTimestampCell = ({
 };
 
 export const BadgeCellContainer = ({ children, ...props }: FlexProps) => (
-  <Flex alignItems="center" height="100%" mr={2} {...props}>
+  <Flex alignItems="center" height="100%" mr={2} overflow="auto" {...props}>
     {children}
   </Flex>
 );
