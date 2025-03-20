@@ -339,7 +339,7 @@ class TestStagedResourceModelWebMonitorResults:
                 "urn": urn,
                 "user_assigned_data_categories": ["user.contact.email"],
                 "name": "rul",
-                "resource_type": "Browser Request",
+                "resource_type": "Browser request",
                 "monitor_config_id": "my_web_monitor_1",
                 "diff_status": DiffStatus.ADDITION.value,
                 "system_id": system.id,

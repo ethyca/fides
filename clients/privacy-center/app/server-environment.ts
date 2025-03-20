@@ -32,7 +32,7 @@ import {
 
 export type PrivacyCenterServerSettings = Pick<
   PrivacyCenterSettings,
-  "SERVER_SIDE_FIDES_API_URL"
+  "SERVER_SIDE_FIDES_API_URL" | "FIDES_JS_MAX_AGE_SECONDS"
 >;
 
 /**
@@ -275,6 +275,7 @@ export const loadServerSettings = (): PrivacyCenterServerSettings => {
   const serverSideSettings: PrivacyCenterServerSettings = {
     SERVER_SIDE_FIDES_API_URL:
       settings.SERVER_SIDE_FIDES_API_URL || settings.FIDES_API_URL,
+    FIDES_JS_MAX_AGE_SECONDS: settings.FIDES_JS_MAX_AGE_SECONDS,
   };
 
   return serverSideSettings;

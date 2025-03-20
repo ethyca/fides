@@ -4,7 +4,8 @@ from typing import Any, Dict
 import pytest
 
 from fides.api.models.policy import Policy
-from fides.api.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
+from fides.api.models.privacy_request import PrivacyRequest
+from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.service.connectors.saas.authenticated_client import AuthenticatedClient
 from fides.api.service.connectors.saas_connector import ConsentPropagationStatus
 from fides.api.service.privacy_request.request_runner_service import (
