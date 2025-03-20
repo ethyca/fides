@@ -16,6 +16,7 @@ type FidesVariable = Omit<FidesEvent["detail"], "consent"> & {
 };
 
 export interface GtmOptions {
+  includeNotApplicable?: boolean;
   asStringValues?: boolean;
 }
 
@@ -33,11 +34,13 @@ const pushFidesVariableToGTM = (
   const { detail, type } = fidesEvent;
   // eslint-disable-next-line @typescript-eslint/naming-convention
   const { consent, extraDetails, fides_string, timestamp } = detail;
-  const { asStringValues } = options ?? {};
+  const { includeNotApplicable, asStringValues } = options ?? {};
   const consentValues: FidesVariable["consent"] = JSON.parse(
     JSON.stringify(consent),
   );
   const privacyNotices = window.Fides?.experience?.privacy_notices;
+  const nonApplicablePrivacyNotices =
+    window.Fides?.experience?.non_applicable_privacy_notices;
 
   if (privacyNotices && asStringValues) {
     Object.entries(consent).forEach(([key, value]) => {
@@ -46,6 +49,12 @@ const pushFidesVariableToGTM = (
         privacyNotices.find((notice) => notice.notice_key === key)
           ?.consent_mechanism,
       );
+    });
+  }
+
+  if (includeNotApplicable && nonApplicablePrivacyNotices) {
+    nonApplicablePrivacyNotices.forEach((key) => {
+      consentValues[key] = asStringValues ? "not_applicable" : false;
     });
   }
 
