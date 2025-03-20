@@ -30,12 +30,7 @@ from fides.api.schemas.privacy_request import (
     PrivacyRequestStatus,
 )
 from fides.api.schemas.redis_cache import Identity, LabeledIdentity
-from fides.api.util.cache import (
-    FidesopsRedis,
-    cache_task_tracking_key,
-    get_cache,
-    get_identity_cache_key,
-)
+from fides.api.util.cache import FidesopsRedis, get_cache, get_identity_cache_key
 from fides.api.util.constants import API_DATE_FORMAT
 from fides.config import CONFIG
 

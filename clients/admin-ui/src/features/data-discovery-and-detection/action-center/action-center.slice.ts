@@ -61,6 +61,7 @@ const actionCenterApi = baseApi.injectEndpoints({
           size,
           search,
           diff_status: "addition",
+          sort_by: "urn",
         },
       }),
       providesTags: () => ["Discovery Monitor Results"],

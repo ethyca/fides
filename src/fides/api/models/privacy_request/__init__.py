@@ -10,14 +10,19 @@ from .privacy_request import (
     PrivacyRequest,
     PrivacyRequestError,
     PrivacyRequestNotifications,
+)
+from .provided_identity import ProvidedIdentity, ProvidedIdentityType
+from .request_task import RequestTask, TraversalDetails
+from .webhook import (
+    CallbackType,
+    SecondPartyRequestFormat,
     generate_request_callback_pre_approval_jwe,
     generate_request_callback_resume_jwe,
     generate_request_task_callback_jwe,
 )
-from .provided_identity import ProvidedIdentity, ProvidedIdentityType
-from .request_task import RequestTask, TraversalDetails
 
 __all__ = [
+    "CallbackType",
     "Consent",
     "ConsentRequest",
     "COMPLETED_EXECUTION_LOG_STATUSES",
@@ -30,6 +35,7 @@ __all__ = [
     "ProvidedIdentity",
     "ProvidedIdentityType",
     "RequestTask",
+    "SecondPartyRequestFormat",
     "TraversalDetails",
     "can_run_checkpoint",
     "generate_request_callback_pre_approval_jwe",
