@@ -54,7 +54,7 @@ const ConsentTcfDetailModal = ({
       isCentered
     >
       <ModalOverlay />
-      <ModalContent>
+      <ModalContent data-testid="consent-tcf-detail-modal">
         <ModalCloseButton />
         <ModalHeader pb={2}>TCF Consent Details</ModalHeader>
         <ModalBody>
