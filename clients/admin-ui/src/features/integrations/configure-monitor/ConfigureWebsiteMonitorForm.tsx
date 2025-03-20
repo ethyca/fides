@@ -1,5 +1,5 @@
 import { format, parseISO } from "date-fns";
-import { AntButton, AntFlex, Text } from "fidesui";
+import { AntButton as Button, AntFlex as Flex, Text } from "fidesui";
 import { Form, Formik } from "formik";
 import { useRouter } from "next/router";
 import * as Yup from "yup";
@@ -115,7 +115,7 @@ const ConfigureWebsiteMonitorForm = ({
   };
 
   return (
-    <AntFlex vertical className="pt-4">
+    <Flex vertical className="pt-4">
       <FormInfoBox>
         <Text fontSize="sm">{FORM_COPY}</Text>
       </FormInfoBox>
@@ -127,7 +127,7 @@ const ConfigureWebsiteMonitorForm = ({
       >
         {({ values, resetForm }) => (
           <Form>
-            <AntFlex vertical gap="middle">
+            <Flex vertical gap="middle">
               <CustomTextInput
                 name="name"
                 id="name"
@@ -187,28 +187,24 @@ const ConfigureWebsiteMonitorForm = ({
                 id="execution_start_date"
                 tooltip={START_TIME_TOOLTIP_COPY}
               />
-              <AntFlex className="mt-2 justify-between">
-                <AntButton
+              <Flex className="mt-2 justify-between">
+                <Button
                   onClick={() => {
                     resetForm();
                     onClose();
                   }}
                 >
                   Cancel
-                </AntButton>
-                <AntButton
-                  type="primary"
-                  htmlType="submit"
-                  data-testid="save-btn"
-                >
+                </Button>
+                <Button type="primary" htmlType="submit" data-testid="save-btn">
                   Save
-                </AntButton>
-              </AntFlex>
-            </AntFlex>
+                </Button>
+              </Flex>
+            </Flex>
           </Form>
         )}
       </Formik>
-    </AntFlex>
+    </Flex>
   );
 };
 

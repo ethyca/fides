@@ -4,7 +4,7 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import {
-  AntButton,
+  AntButton as Button,
   AntEmpty as Empty,
   ConfirmationModal,
   Icons,
@@ -150,21 +150,21 @@ const SystemAssetsTable = ({ system }: { system: SystemResponse }) => {
       <TableActionBar>
         <SearchInput value={searchQuery} onChange={setSearchQuery} />
         <Spacer />
-        <AntButton
+        <Button
           icon={<Icons.Add />}
           iconPosition="end"
           onClick={onOpenAddEditModal}
           data-testid="add-asset-btn"
         >
           Add asset
-        </AntButton>
+        </Button>
         <AddEditAssetModal
           isOpen={addEditModalIsOpen}
           onClose={handleCloseModal}
           systemKey={system.fides_key}
           asset={selectedAsset}
         />
-        <AntButton
+        <Button
           icon={<Icons.TrashCan />}
           iconPosition="end"
           onClick={onOpenDeleteModal}
@@ -172,7 +172,7 @@ const SystemAssetsTable = ({ system }: { system: SystemResponse }) => {
           data-testid="bulk-delete-btn"
         >
           Remove
-        </AntButton>
+        </Button>
         <ConfirmationModal
           isOpen={isDeleteModalOpen}
           onClose={onCloseDeleteModal}

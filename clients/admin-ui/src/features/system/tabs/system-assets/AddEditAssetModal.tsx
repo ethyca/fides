@@ -1,6 +1,6 @@
 import {
-  AntButton,
-  AntFlex,
+  AntButton as Button,
+  AntFlex as Flex,
   Collapse,
   ModalProps,
   Text,
@@ -131,11 +131,11 @@ const AddEditAssetModal = ({
         {({ values, isValid, dirty }) => {
           return (
             <Form>
-              <AntFlex vertical className="pb-6 pt-4">
+              <Flex vertical className="pb-6 pt-4">
                 <FormInfoBox>
                   <Text fontSize="sm">{FORM_COPY}</Text>
                 </FormInfoBox>
-                <AntFlex vertical gap={20}>
+                <Flex vertical gap={20}>
                   <CustomTextInput
                     id="name"
                     name="name"
@@ -189,11 +189,11 @@ const AddEditAssetModal = ({
                       }
                     />
                   </Collapse>
-                </AntFlex>
-              </AntFlex>
-              <AntFlex justify="space-between">
-                <AntButton onClick={onClose}>Cancel</AntButton>
-                <AntButton
+                </Flex>
+              </Flex>
+              <Flex justify="space-between">
+                <Button onClick={onClose}>Cancel</Button>
+                <Button
                   type="primary"
                   htmlType="submit"
                   loading={addIsLoading || updateIsLoading}
@@ -201,8 +201,8 @@ const AddEditAssetModal = ({
                   data-testid="save-btn"
                 >
                   Save
-                </AntButton>
-              </AntFlex>
+                </Button>
+              </Flex>
             </Form>
           );
         }}

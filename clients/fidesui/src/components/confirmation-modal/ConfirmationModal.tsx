@@ -1,5 +1,5 @@
 import {
-  Button,
+  AntButton as Button,
   Modal,
   ModalBody,
   ModalContent,
@@ -34,19 +34,10 @@ export const ConfirmationModal = ({
       <ModalBody>{message}</ModalBody>
       <ModalFooter>
         <SimpleGrid columns={2} width="100%">
-          <Button
-            variant="outline"
-            mr={3}
-            onClick={onClose}
-            data-testid="cancel-btn"
-          >
+          <Button className="mr-3" onClick={onClose} data-testid="cancel-btn">
             Cancel
           </Button>
-          <Button
-            colorScheme="primary"
-            onClick={onConfirm}
-            data-testid="continue-btn"
-          >
+          <Button type="primary" onClick={onConfirm} data-testid="continue-btn">
             Continue
           </Button>
         </SimpleGrid>

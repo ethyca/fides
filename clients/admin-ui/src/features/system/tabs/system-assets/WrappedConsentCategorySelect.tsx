@@ -1,4 +1,4 @@
-import { AntFlex, FormControl } from "fidesui";
+import { AntFlex as Flex, FormControl } from "fidesui";
 import { useField } from "formik";
 
 import { ControlledSelectProps } from "~/features/common/form/ControlledSelect";
@@ -17,18 +17,19 @@ const WrappedConsentCategorySelect = ({
 
   return (
     <FormControl isInvalid={isInvalid} isRequired>
-      <AntFlex vertical>
-        <AntFlex align="center">
+      <Flex vertical>
+        <Flex align="center">
           {label && (
             <Label htmlFor={name} fontSize="xs" mr={1} {...labelProps}>
               {label}
             </Label>
           )}
           {tooltip && <QuestionTooltip label={tooltip} />}
-        </AntFlex>
+        </Flex>
         <ConsentCategorySelect
           {...field}
           mode="multiple"
+          // show checked options in the dropdown instead of removing them once selected
           selectedTaxonomies={[]}
           onChange={(newValue: any) => {
             setValue(newValue);
@@ -45,7 +46,7 @@ const WrappedConsentCategorySelect = ({
           message={meta.error}
           fieldName={name}
         />
-      </AntFlex>
+      </Flex>
     </FormControl>
   );
 };

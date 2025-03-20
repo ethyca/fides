@@ -1,6 +1,6 @@
 import {
-  AntButton,
-  AntFlex,
+  AntButton as Button,
+  AntFlex as Flex,
   ConfirmationModal,
   useDisclosure,
   useToast,
@@ -47,18 +47,18 @@ const SystemAssetActionsCell = ({
   };
 
   return (
-    <AntFlex className="gap-1">
-      <AntButton size="small" onClick={onEditClick} data-testid="edit-btn">
+    <Flex className="gap-1">
+      <Button size="small" onClick={onEditClick} data-testid="edit-btn">
         Edit
-      </AntButton>
-      <AntButton
+      </Button>
+      <Button
         size="small"
         onClick={onOpen}
         loading={isDeleting}
         data-testid="remove-btn"
       >
         Remove
-      </AntButton>
+      </Button>
       <ConfirmationModal
         isOpen={isOpen}
         onClose={onClose}
@@ -67,7 +67,7 @@ const SystemAssetActionsCell = ({
         message="Are you sure you want to ignore the selected assets? This action cannot be undone and may impact consent automation."
         isCentered
       />
-    </AntFlex>
+    </Flex>
   );
 };
 
