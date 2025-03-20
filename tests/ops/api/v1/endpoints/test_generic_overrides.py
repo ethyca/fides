@@ -85,6 +85,20 @@ def connection_type_datasets(db: Session) -> Generator[list[CtlDataset], None, N
             organization_fides_key="default_organization",
             collections=[],
         ),
+        CtlDataset(
+            fides_key="missing_namespace_dataset",
+            name="Missing Namespace Dataset",
+            organization_fides_key="default_organization",
+            collections=[],
+            fides_meta={},
+        ),
+        CtlDataset(
+            fides_key="missing_namespace_connection_type_dataset",
+            name="Missing Namespace and Connection Type Dataset",
+            organization_fides_key="default_organization",
+            collections=[],
+            fides_meta={"namespace": {}},
+        ),
     ]
     for dataset in datasets:
         db.add(dataset)
@@ -167,6 +181,8 @@ class TestGenericOverrides:
         assert "postgres_dataset" in dataset_keys
         assert "mysql_dataset" in dataset_keys
         assert "missing_connection_type_dataset" in dataset_keys
+        assert "missing_namespace_dataset" in dataset_keys
+        assert "missing_namespace_connection_type_dataset" in dataset_keys
 
         # Test filtering by bigquery connection type
         response = api_client.get(
@@ -178,6 +194,9 @@ class TestGenericOverrides:
         assert "bigquery_dataset" in dataset_keys
         assert "postgres_dataset" not in dataset_keys
         assert "mysql_dataset" not in dataset_keys
+        assert "missing_connection_type_dataset" not in dataset_keys
+        assert "missing_namespace_dataset" not in dataset_keys
+        assert "missing_namespace_connection_type_dataset" not in dataset_keys
 
         # Test filtering by postgres connection type
         response = api_client.get(
@@ -189,6 +208,9 @@ class TestGenericOverrides:
         assert "bigquery_dataset" not in dataset_keys
         assert "postgres_dataset" in dataset_keys
         assert "mysql_dataset" not in dataset_keys
+        assert "missing_connection_type_dataset" not in dataset_keys
+        assert "missing_namespace_dataset" not in dataset_keys
+        assert "missing_namespace_connection_type_dataset" not in dataset_keys
 
         # Test filtering by mysql connection type
         response = api_client.get(
@@ -200,6 +222,9 @@ class TestGenericOverrides:
         assert "bigquery_dataset" not in dataset_keys
         assert "postgres_dataset" not in dataset_keys
         assert "mysql_dataset" in dataset_keys
+        assert "missing_connection_type_dataset" not in dataset_keys
+        assert "missing_namespace_dataset" not in dataset_keys
+        assert "missing_namespace_connection_type_dataset" not in dataset_keys
 
         # Test with invalid connection type
         response = api_client.get(
