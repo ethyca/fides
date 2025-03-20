@@ -1,5 +1,6 @@
 import { FidesEvent, FidesEventType } from "../docs";
 import { FidesEventDetail } from "../lib/events";
+import { transformConsentToFidesUserPreference } from "../lib/shared-consent-utils";
 
 declare global {
   interface Window {
@@ -10,27 +11,54 @@ declare global {
 /**
  * Defines the structure of the Fides variable pushed to the GTM data layer
  */
-type FidesVariable = FidesEvent["detail"];
+type FidesVariable = Omit<FidesEvent["detail"], "consent"> & {
+  consent: Record<string, boolean | string>;
+};
+
+export interface GtmOptions {
+  asStringValues?: boolean;
+}
 
 // Helper function to push the Fides variable to the GTM data layer from a FidesEvent
-const pushFidesVariableToGTM = (fidesEvent: {
-  type: string;
-  detail: FidesEventDetail;
-}) => {
+const pushFidesVariableToGTM = (
+  fidesEvent: {
+    type: string;
+    detail: FidesEventDetail;
+  },
+  options?: GtmOptions,
+) => {
   // Initialize the dataLayer object, just in case we run before GTM is initialized
   const dataLayer = window.dataLayer ?? [];
   window.dataLayer = dataLayer;
+  const { detail, type } = fidesEvent;
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  const { consent, extraDetails, fides_string, timestamp } = detail;
+  const { asStringValues } = options ?? {};
+  const consentValues: FidesVariable["consent"] = JSON.parse(
+    JSON.stringify(consent),
+  );
+  const privacyNotices = window.Fides?.experience?.privacy_notices;
+
+  if (privacyNotices && asStringValues) {
+    Object.entries(consent).forEach(([key, value]) => {
+      consentValues[key] = transformConsentToFidesUserPreference(
+        value,
+        privacyNotices.find((notice) => notice.notice_key === key)
+          ?.consent_mechanism,
+      );
+    });
+  }
 
   // Construct the Fides variable that will be pushed to GTM
   const Fides: FidesVariable = {
-    consent: fidesEvent.detail.consent,
-    extraDetails: fidesEvent.detail.extraDetails,
-    fides_string: fidesEvent.detail.fides_string,
-    timestamp: fidesEvent.detail.timestamp,
+    consent: consentValues,
+    extraDetails,
+    fides_string,
+    timestamp,
   };
 
   // Push to the GTM dataLayer
-  dataLayer.push({ event: fidesEvent.type, Fides });
+  dataLayer.push({ event: type, Fides });
 };
 
 /**
@@ -38,7 +66,7 @@ const pushFidesVariableToGTM = (fidesEvent: {
  * The user's consent choices will automatically be pushed into GTM's
  * `dataLayer` under `Fides.consent` variable.
  */
-export const gtm = () => {
+export const gtm = (options?: GtmOptions) => {
   // List every FidesEventType as a record so that new additional events are
   // considered by future developers as to whether they should be pushed to GTM.
   const fidesEvents: Record<FidesEventType, boolean> = {
@@ -58,27 +86,32 @@ export const gtm = () => {
   // Listen for Fides events and cross-publish them to GTM
   events.forEach((eventName) => {
     window.addEventListener(eventName, (event) =>
-      pushFidesVariableToGTM(event),
+      pushFidesVariableToGTM(event, options),
     );
   });
 
   // If Fides was already initialized, publish a synthetic event immediately
   if (window.Fides?.initialized) {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    const { consent, fides_meta, identity, tcf_consent } = window.Fides;
     // Lookup the timestamp of the original FidesInitialized performance mark
     const timestamp =
       performance?.getEntriesByName("FidesInitialized")[0]?.startTime;
-    pushFidesVariableToGTM({
-      type: "FidesInitialized",
-      detail: {
-        consent: window.Fides.consent,
-        fides_meta: window.Fides.fides_meta,
-        identity: window.Fides.identity,
-        tcf_consent: window.Fides.tcf_consent,
-        timestamp,
-        extraDetails: {
-          consentMethod: window.Fides.fides_meta?.consentMethod,
+    pushFidesVariableToGTM(
+      {
+        type: "FidesInitialized",
+        detail: {
+          consent,
+          fides_meta,
+          identity,
+          tcf_consent,
+          timestamp,
+          extraDetails: {
+            consentMethod: fides_meta?.consentMethod,
+          },
         },
       },
-    });
+      options,
+    );
   }
 };

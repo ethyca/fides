@@ -51,4 +51,45 @@ describe("gtm", () => {
       ).toBeLessThan(1);
     },
   );
+
+  test("that fides transforms consent values to strings when asStringValues is true", () => {
+    // Mock the privacy notices
+    window.Fides = {
+      experience: {
+        privacy_notices: [
+          {
+            notice_key: "test_notice_1",
+            consent_mechanism: "opt_in",
+          },
+          {
+            notice_key: "test_notice_2",
+            consent_mechanism: "opt_out",
+          },
+          {
+            notice_key: "test_notice_3",
+            consent_mechanism: "notice_only",
+          },
+        ],
+      } as any,
+    } as any;
+
+    gtm({ asStringValues: true });
+    window.dispatchEvent(
+      new CustomEvent("FidesUpdated", {
+        detail: {
+          consent: {
+            test_notice_1: true,
+            test_notice_2: false,
+            test_notice_3: true,
+          },
+        },
+      }),
+    );
+
+    const fidesEvent = window.dataLayer?.[window.dataLayer.length - 1];
+
+    expect(fidesEvent?.Fides.consent.test_notice_1).toBe("opt_in");
+    expect(fidesEvent?.Fides.consent.test_notice_2).toBe("opt_out");
+    expect(fidesEvent?.Fides.consent.test_notice_3).toBe("acknowledge");
+  });
 });
