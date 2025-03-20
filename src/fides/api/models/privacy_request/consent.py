@@ -13,10 +13,8 @@ from sqlalchemy.orm import Session, relationship
 
 from fides.api.db.base_class import Base  # type: ignore[attr-defined]
 from fides.api.db.util import EnumColumn
-from fides.api.models.privacy_request.privacy_request import (
-    CustomPrivacyRequestField,
-    ProvidedIdentity,
-)
+from fides.api.models.privacy_request.privacy_request import CustomPrivacyRequestField
+from fides.api.models.privacy_request.provided_identity import ProvidedIdentity
 from fides.api.schemas.privacy_request import PrivacyRequestSource
 from fides.api.schemas.redis_cache import (
     CustomPrivacyRequestField as CustomPrivacyRequestFieldSchema,
