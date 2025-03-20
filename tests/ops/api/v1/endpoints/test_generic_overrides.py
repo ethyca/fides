@@ -1,3 +1,5 @@
+from typing import Generator
+
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
@@ -6,24 +8,103 @@ from fides.api.models.sql_models import Dataset as CtlDataset
 from fides.common.api.scope_registry import CTL_DATASET_READ
 
 
+@pytest.fixture
+def minimal_dataset(db: Session) -> Generator[CtlDataset, None, None]:
+    """Create a minimal test dataset and clean up after test"""
+    dataset = CtlDataset(
+        fides_key="test_dataset",
+        name="Test Dataset",
+        organization_fides_key="default_organization",
+        collections=[],
+    )
+    db.add(dataset)
+    db.commit()
+    yield dataset
+
+    # Cleanup
+    db.delete(dataset)
+    db.commit()
+
+
+@pytest.fixture
+def search_datasets(db: Session) -> Generator[list[CtlDataset], None, None]:
+    """Create test datasets for search and pagination tests and clean up after test"""
+    datasets = [
+        CtlDataset(
+            fides_key="test_dataset_1",
+            name="Test Dataset One",
+            organization_fides_key="default_organization",
+            collections=[],
+        ),
+        CtlDataset(
+            fides_key="test_dataset_2",
+            name="Another Dataset",
+            organization_fides_key="default_organization",
+            collections=[],
+        ),
+    ]
+    for dataset in datasets:
+        db.add(dataset)
+    db.commit()
+    yield datasets
+
+    # Cleanup
+    for dataset in datasets:
+        db.delete(dataset)
+    db.commit()
+
+
+@pytest.fixture
+def connection_type_datasets(db: Session) -> Generator[list[CtlDataset], None, None]:
+    """Create test datasets with different connection types and clean up after test"""
+    datasets = [
+        CtlDataset(
+            fides_key="bigquery_dataset",
+            name="BigQuery Dataset",
+            organization_fides_key="default_organization",
+            fides_meta={"namespace": {"connection_type": "bigquery"}},
+            collections=[],
+        ),
+        CtlDataset(
+            fides_key="postgres_dataset",
+            name="Postgres Dataset",
+            organization_fides_key="default_organization",
+            fides_meta={"namespace": {"connection_type": "postgres"}},
+            collections=[],
+        ),
+        CtlDataset(
+            fides_key="mysql_dataset",
+            name="MySQL Dataset",
+            organization_fides_key="default_organization",
+            fides_meta={"namespace": {"connection_type": "mysql"}},
+            collections=[],
+        ),
+        CtlDataset(
+            fides_key="missing_connection_type_dataset",
+            name="Missing Connection Type Dataset",
+            organization_fides_key="default_organization",
+            collections=[],
+        ),
+    ]
+    for dataset in datasets:
+        db.add(dataset)
+    db.commit()
+    yield datasets
+
+    # Cleanup
+    for dataset in datasets:
+        db.delete(dataset)
+    db.commit()
+
+
 class TestGenericOverrides:
     def test_list_dataset_paginated_minimal(
         self,
         api_client: TestClient,
-        db: Session,
+        minimal_dataset: CtlDataset,
         generate_auth_header,
     ):
         """Test the minimal parameter in list_dataset_paginated"""
-        # Setup test data
-        dataset = CtlDataset(
-            fides_key="test_dataset_2",
-            name="Test Dataset",
-            organization_fides_key="default_organization",
-            collections=[],
-        )
-        db.add(dataset)
-        db.commit()
-
         auth_header = generate_auth_header([CTL_DATASET_READ])
 
         # Test minimal=True
@@ -48,27 +129,10 @@ class TestGenericOverrides:
     def test_list_dataset_paginated_filters(
         self,
         api_client: TestClient,
-        db: Session,
+        search_datasets: list[CtlDataset],
         generate_auth_header,
     ):
         """Test the filters in list_dataset_paginated"""
-        # Setup test data
-        dataset1 = CtlDataset(
-            fides_key="test_dataset_1",
-            name="Test Dataset One",
-            organization_fides_key="default_organization",
-            collections=[],
-        )
-        dataset2 = CtlDataset(
-            fides_key="test_dataset_2",
-            name="Another Dataset",
-            organization_fides_key="default_organization",
-            collections=[],
-        )
-        db.add(dataset1)
-        db.add(dataset2)
-        db.commit()
-
         auth_header = generate_auth_header([CTL_DATASET_READ])
 
         # Test search filter
@@ -88,44 +152,10 @@ class TestGenericOverrides:
     def test_list_dataset_paginated_connection_type(
         self,
         api_client: TestClient,
-        db: Session,
+        connection_type_datasets: list[CtlDataset],
         generate_auth_header,
     ):
         """Test filtering datasets by connection_type"""
-        # Setup test data with different connection types
-        bigquery_dataset = CtlDataset(
-            fides_key="bigquery_dataset",
-            name="BigQuery Dataset",
-            organization_fides_key="default_organization",
-            fides_meta={"namespace": {"connection_type": "bigquery"}},
-            collections=[],
-        )
-        postgres_dataset = CtlDataset(
-            fides_key="postgres_dataset",
-            name="Postgres Dataset",
-            organization_fides_key="default_organization",
-            fides_meta={"namespace": {"connection_type": "postgres"}},
-            collections=[],
-        )
-        mysql_dataset = CtlDataset(
-            fides_key="mysql_dataset",
-            name="MySQL Dataset",
-            organization_fides_key="default_organization",
-            fides_meta={"namespace": {"connection_type": "mysql"}},
-            collections=[],
-        )
-        missing_connection_type_dataset = CtlDataset(
-            fides_key="missing_connection_type_dataset",
-            name="Missing Connection Type Dataset",
-            organization_fides_key="default_organization",
-            collections=[],
-        )
-        db.add(bigquery_dataset)
-        db.add(postgres_dataset)
-        db.add(mysql_dataset)
-        db.add(missing_connection_type_dataset)
-        db.commit()
-
         auth_header = generate_auth_header([CTL_DATASET_READ])
 
         # Test not filtering by connection type
