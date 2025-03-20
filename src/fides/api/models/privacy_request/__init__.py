@@ -1,9 +1,12 @@
 from .consent import Consent, ConsentRequest
-from .privacy_request import (
+from .execution_log import (
     COMPLETED_EXECUTION_LOG_STATUSES,
     EXITED_EXECUTION_LOG_STATUSES,
-    CustomPrivacyRequestField,
     ExecutionLog,
+    can_run_checkpoint,
+)
+from .privacy_request import (
+    CustomPrivacyRequestField,
     PrivacyRequest,
     PrivacyRequestError,
     PrivacyRequestNotifications,
@@ -11,7 +14,6 @@ from .privacy_request import (
     ProvidedIdentityType,
     RequestTask,
     TraversalDetails,
-    can_run_checkpoint,
     generate_request_callback_pre_approval_jwe,
     generate_request_callback_resume_jwe,
     generate_request_task_callback_jwe,
