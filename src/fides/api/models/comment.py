@@ -8,9 +8,9 @@ from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import Session, relationship
 
 from fides.api.db.base_class import Base
-from fides.api.models.attachment import Attachment, AttachmentReference
 
 if TYPE_CHECKING:
+    from fides.api.models.attachment import Attachment
     from fides.api.models.fides_user import FidesUser
 
 
