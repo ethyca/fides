@@ -23,14 +23,13 @@ from fides.api.models.privacy_notice import (
 )
 from fides.api.models.privacy_preference import PrivacyPreferenceHistory
 from fides.api.models.privacy_request import (
-    ExecutionLogStatus,
     PrivacyRequest,
-    PrivacyRequestStatus,
     ProvidedIdentity,
     RequestTask,
 )
 from fides.api.models.sql_models import Dataset as CtlDataset
 from fides.api.schemas.policy import ActionType
+from fides.api.schemas.privacy_request import ExecutionLogStatus, PrivacyRequestStatus
 from fides.api.schemas.redis_cache import Identity
 from fides.api.schemas.saas.saas_config import SaaSConfig
 from fides.api.service.connectors import get_connector

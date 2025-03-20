@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta, timezone
 from time import sleep
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List
 from uuid import uuid4
 
 import pytest
@@ -17,54 +17,24 @@ from fides.api.common_exceptions import (
 from fides.api.graph.config import CollectionAddress
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import (
-    CheckpointActionRequired,
-    ConsentRequest,
-    ManualAction,
     PrivacyRequest,
     PrivacyRequestError,
     PrivacyRequestNotifications,
-    PrivacyRequestStatus,
-    ProvidedIdentity,
     can_run_checkpoint,
 )
-from fides.api.schemas.policy import ActionType, CurrentStep
-from fides.api.schemas.privacy_request import CustomPrivacyRequestField
-from fides.api.schemas.redis_cache import Identity, LabeledIdentity
-from fides.api.util.cache import (
-    FidesopsRedis,
-    cache_task_tracking_key,
-    get_cache,
-    get_identity_cache_key,
+from fides.api.schemas.policy import CurrentStep
+from fides.api.schemas.privacy_request import (
+    CheckpointActionRequired,
+    CustomPrivacyRequestField,
+    ManualAction,
+    PrivacyRequestStatus,
 )
+from fides.api.schemas.redis_cache import Identity, LabeledIdentity
+from fides.api.util.cache import FidesopsRedis, get_cache, get_identity_cache_key
 from fides.api.util.constants import API_DATE_FORMAT
 from fides.config import CONFIG
 
 paused_location = CollectionAddress("test_dataset", "test_collection")
-
-
-def test_provided_identity_to_identity(
-    provided_identity_and_consent_request: Tuple,
-) -> None:
-    provided_identity = provided_identity_and_consent_request[0]
-    identity = provided_identity.as_identity_schema()
-    assert identity.email == "test@email.com"
-
-
-def test_blank_provided_identity_to_identity(
-    empty_provided_identity: ProvidedIdentity,
-) -> None:
-    identity = empty_provided_identity.as_identity_schema()
-    assert identity.email is None
-
-
-def test_custom_provided_identity_to_identity(
-    custom_provided_identity: ProvidedIdentity,
-) -> None:
-    identity = custom_provided_identity.as_identity_schema()
-    assert identity.customer_id == LabeledIdentity(
-        label=custom_provided_identity.field_label,
-        value=custom_provided_identity.encrypted_value.get("value"),
-    )
 
 
 def test_privacy_request(
@@ -1097,83 +1067,6 @@ class TestPrivacyRequestCustomFieldFunctions:
         assert privacy_request.get_persisted_custom_privacy_request_fields() == {}
 
 
-class TestConsentRequestCustomFieldFunctions:
-    """Similar to the above tests but for the ConsentRequest model but only testing persisting and retrieving from the database."""
-
-    @pytest.fixture(scope="function")
-    def consent_request(self, db) -> ConsentRequest:
-        provided_identity_data = {
-            "privacy_request_id": None,
-            "field_name": "email",
-            "encrypted_value": {"value": "test@email.com"},
-        }
-        provided_identity = ProvidedIdentity.create(db, data=provided_identity_data)
-
-        consent_request = ConsentRequest.create(
-            db=db,
-            data={
-                "provided_identity_id": provided_identity.id,
-            },
-        )
-
-        yield consent_request
-
-        consent_request.delete(db)
-
-    def test_persist_custom_privacy_request_fields(
-        self,
-        db,
-        consent_request,
-        allow_custom_privacy_request_field_collection_enabled,
-        allow_custom_privacy_request_fields_in_request_execution_enabled,
-    ):
-        consent_request.persist_custom_privacy_request_fields(
-            db=db,
-            custom_privacy_request_fields={
-                "first_name": CustomPrivacyRequestField(
-                    label="First name", value="John"
-                ),
-                "last_name": CustomPrivacyRequestField(label="Last name", value="Doe"),
-                "subscriber_ids": CustomPrivacyRequestField(
-                    label="Subscriber IDs", value=["123", "456"]
-                ),
-                "account_ids": CustomPrivacyRequestField(
-                    label="Account IDs", value=[123, 456]
-                ),
-            },
-        )
-        assert consent_request.get_persisted_custom_privacy_request_fields() == {
-            "first_name": {"label": "First name", "value": "John"},
-            "last_name": {"label": "Last name", "value": "Doe"},
-            "subscriber_ids": {"label": "Subscriber IDs", "value": ["123", "456"]},
-            "account_ids": {"label": "Account IDs", "value": [123, 456]},
-        }
-
-    def test_persist_custom_privacy_request_fields_collection_disabled(
-        self,
-        db,
-        consent_request,
-        allow_custom_privacy_request_field_collection_disabled,
-    ):
-        """Custom privacy request fields should not be persisted if collection is disabled"""
-        consent_request.persist_custom_privacy_request_fields(
-            db=db,
-            custom_privacy_request_fields={
-                "first_name": CustomPrivacyRequestField(
-                    label="First name", value="John"
-                ),
-                "last_name": CustomPrivacyRequestField(label="Last name", value="Doe"),
-                "subscriber_ids": CustomPrivacyRequestField(
-                    label="Subscriber IDs", value=["123", "456"]
-                ),
-                "account_ids": CustomPrivacyRequestField(
-                    label="Account IDs", value=[123, 456]
-                ),
-            },
-        )
-        assert consent_request.get_persisted_custom_privacy_request_fields() == {}
-
-
 class TestPrivacyRequestCustomIdentities:
     def test_cache_custom_identities(self, privacy_request):
         privacy_request.cache_identity(
@@ -1239,19 +1132,3 @@ class TestPrivacyRequestCustomIdentities:
             customer_id=LabeledIdentity(label="Custom ID", value=123),
             account_id=LabeledIdentity(label="Account ID", value="456"),
         )
-
-
-class TestGetCeleryTaskRequestTaskIds:
-    def test_get_celery_task_request_task_ids(self, privacy_request, request_task):
-        """Not all request tasks have celery task ids in this test -"""
-
-        assert privacy_request.get_request_task_celery_task_ids() == []
-
-        cache_task_tracking_key(request_task.id, "test_celery_task_key")
-        root_task = privacy_request.get_root_task_by_action(ActionType.access)
-        cache_task_tracking_key(root_task.id, "test_root_task_celery_key")
-
-        assert set(privacy_request.get_request_task_celery_task_ids()) == {
-            "test_celery_task_key",
-            "test_root_task_celery_key",
-        }

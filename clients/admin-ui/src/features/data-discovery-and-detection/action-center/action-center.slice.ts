@@ -1,10 +1,12 @@
 import { baseApi } from "~/features/common/api.slice";
 import { getQueryParamsFromArray } from "~/features/common/utils";
+import {
+  Page_StagedResourceAPIResponse_,
+  StagedResourceAPIResponse,
+} from "~/types/api";
 import { PaginationQueryParams } from "~/types/common/PaginationQueryParams";
 
 import {
-  DiscoveredAssetPaginatedResponse,
-  DiscoveredAssetResponse,
   MonitorSummaryPaginatedResponse,
   MonitorSystemAggregatePaginatedResponse,
 } from "./types";
@@ -48,7 +50,7 @@ const actionCenterApi = baseApi.injectEndpoints({
       providesTags: ["Discovery Monitor Results"],
     }),
     getDiscoveredAssets: build.query<
-      DiscoveredAssetPaginatedResponse,
+      Page_StagedResourceAPIResponse_,
       { key: string; system: string; search: string } & PaginationQueryParams
     >({
       query: ({ key, system, page = 1, size = 20, search }) => ({
@@ -59,6 +61,7 @@ const actionCenterApi = baseApi.injectEndpoints({
           size,
           search,
           diff_status: "addition",
+          sort_by: "urn",
         },
       }),
       providesTags: () => ["Discovery Monitor Results"],
@@ -158,7 +161,7 @@ const actionCenterApi = baseApi.injectEndpoints({
       any,
       {
         monitorId: string;
-        assets: DiscoveredAssetResponse[];
+        assets: StagedResourceAPIResponse[];
       }
     >({
       query: (params) => ({

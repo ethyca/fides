@@ -15,4 +15,5 @@ export type LocationGroup = {
   default_selected?: boolean;
   belongs_to?: Array<string>;
   regulation?: Array<string>;
+  is_country?: boolean;
 };

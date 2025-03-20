@@ -1,19 +1,24 @@
 import { ColumnDef, createColumnHelper } from "@tanstack/react-table";
 
+import { PRIVACY_NOTICE_REGION_RECORD } from "~/features/common/privacy-notice-regions";
 import {
   DefaultCell,
   IndeterminateCheckboxCell,
 } from "~/features/common/table/v2";
+import {
+  DefaultHeaderCell,
+  ListCellExpandable,
+} from "~/features/common/table/v2/cells";
+import { DiscoveredAssetActionsCell } from "~/features/data-discovery-and-detection/action-center/tables/cells/DiscoveredAssetActionsCell";
 import DiscoveredAssetDataUseCell from "~/features/data-discovery-and-detection/action-center/tables/cells/DiscoveredAssetDataUseCell";
-import { DiscoveredAssetResponse } from "~/features/data-discovery-and-detection/action-center/types";
+import { PrivacyNoticeRegion, StagedResourceAPIResponse } from "~/types/api";
 
-import { DiscoveredAssetActionsCell } from "../tables/cells/DiscoveredAssetActionsCell";
 import { SystemCell } from "../tables/cells/SystemCell";
 
 export const useDiscoveredAssetsColumns = () => {
-  const columnHelper = createColumnHelper<DiscoveredAssetResponse>();
+  const columnHelper = createColumnHelper<StagedResourceAPIResponse>();
 
-  const columns: ColumnDef<DiscoveredAssetResponse, any>[] = [
+  const columns: ColumnDef<StagedResourceAPIResponse, any>[] = [
     columnHelper.display({
       id: "select",
       cell: ({ row }) => (
@@ -77,7 +82,9 @@ export const useDiscoveredAssetsColumns = () => {
           value={
             props.getValue().length > 1
               ? `${props.getValue().length} locations`
-              : props.getValue()[0]
+              : PRIVACY_NOTICE_REGION_RECORD[
+                  props.getValue()[0] as PrivacyNoticeRegion
+                ]
           }
         />
       ),
@@ -100,6 +107,21 @@ export const useDiscoveredAssetsColumns = () => {
       ),
       header: "Discovery",
     }), */
+    columnHelper.accessor((row) => row.page, {
+      id: "page",
+      cell: (props) => (
+        <ListCellExpandable
+          values={props.getValue()}
+          valueSuffix="pages"
+          cellProps={props}
+        />
+      ),
+      header: (props) => <DefaultHeaderCell value="Detected on" {...props} />,
+      meta: {
+        showHeaderMenu: true,
+        disableRowClick: true,
+      },
+    }),
     columnHelper.display({
       id: "actions",
       cell: (props) => (
