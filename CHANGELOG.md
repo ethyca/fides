@@ -33,6 +33,9 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Support setting publisher country code in Consent Settings [#5902](https://github.com/ethyca/fides/pull/5902)
 - Added option for disabling consent notice toggles [#5872](https://github.com/ethyca/fides/pull/5872)
 
+### Changed
+- Changed discovered asset "system" cell to use `user_assigned_system_key` property [#5908](https://github.com/ethyca/fides/pull/5908)
+
 ### Fixed
 - Fixed UX issues with website monitor form [#5884](https://github.com/ethyca/fides/pull/5884)
 
