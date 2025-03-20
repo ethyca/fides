@@ -75,6 +75,15 @@ class DatasetReachability(FidesSchema):
 
 
 class DatasetResponse(Dataset):
+    """
+    Dataset response model for API endpoints.
+
+    Note: This class extends the Dataset model from fideslang rather than having a proper
+    dedicated API response model. We had to make the collections field
+    Optional and allow null values to support the minimal=true parameter in API responses,
+    even though collections is required in the base fideslang Dataset model.
+    """
+
     collections: Optional[List[DatasetCollection]] = Field(  # type: ignore
         description="An array of objects that describe the Dataset's collections.",
         default=None,
