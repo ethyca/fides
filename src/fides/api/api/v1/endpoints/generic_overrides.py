@@ -204,12 +204,13 @@ async def list_dataset_paginated(
 
     if not page and not size:
         results = await list_resource_query(db, filtered_query, CtlDataset)
+        response = [DatasetResponse.model_validate(result.__dict__) for result in results]
+        return response
     else:
         pagination_params = Params(page=page or 1, size=size or 50)
         results = await async_paginate(db, filtered_query, pagination_params)
-
-    response = [DatasetResponse.model_validate(result.__dict__) for result in results]
-    return response
+        results.items = [DatasetResponse.model_validate(result.__dict__) for result in results.items]
+        return results
 
 
 @dataset_router.get(
