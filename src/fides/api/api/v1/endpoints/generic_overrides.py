@@ -9,7 +9,7 @@ from fideslang.models import Dataset as FideslangDataset
 from pydantic import ValidationError as PydanticValidationError
 from sqlalchemy import not_, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, load_only
 from starlette import status
 from starlette.status import (
     HTTP_200_OK,
@@ -22,9 +22,10 @@ from fides.api.common_exceptions import KeyOrNameAlreadyExists, ValidationError
 from fides.api.db.base_class import get_key_from_data
 from fides.api.db.crud import list_resource_query
 from fides.api.db.ctl_session import get_async_db
-from fides.api.models.connectionconfig import ConnectionConfig
+from fides.api.models.connectionconfig import ConnectionConfig, ConnectionType
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.oauth.utils import verify_oauth_client
+from fides.api.schemas.dataset import DatasetResponse
 from fides.api.schemas.filter_params import FilterParams
 from fides.api.schemas.taxonomy_extensions import (
     DataCategory,
@@ -129,11 +130,10 @@ async def update_dataset(
             detail={"message": str(e)},
         )
 
-
 @dataset_router.get(
     "/dataset",
     dependencies=[Security(verify_oauth_client, scopes=[CTL_DATASET_READ])],
-    response_model=Union[Page[FideslangDataset], List[FideslangDataset]],
+    response_model=Union[Page[DatasetResponse], List[DatasetResponse]],
     name="List datasets (optionally paginated)",
 )
 async def list_dataset_paginated(
@@ -144,7 +144,9 @@ async def list_dataset_paginated(
     data_categories: Optional[List[str]] = Query(None),
     exclude_saas_datasets: Optional[bool] = Query(False),
     only_unlinked_datasets: Optional[bool] = Query(False),
-) -> Union[Page[FideslangDataset], List[FideslangDataset]]:
+    connection_type: Optional[ConnectionType] = Query(None),
+    minimal: Optional[bool] = Query(False),
+) -> Union[Page[DatasetResponse], List[DatasetResponse]]:
     """
     Get a list of all of the Datasets.
     If any pagination parameters (size or page) are provided, then the response will be paginated.
@@ -156,6 +158,19 @@ async def list_dataset_paginated(
 
     query = select(CtlDataset)
 
+    if minimal:
+        query = query.options(load_only(
+            CtlDataset.id,
+            CtlDataset.fides_key,
+            CtlDataset.organization_fides_key,
+            CtlDataset.name,
+            CtlDataset.created_at,
+            CtlDataset.updated_at,
+            CtlDataset.meta,
+            CtlDataset.fides_meta,
+            CtlDataset.description,
+        ))
+
     # Add filters for search and data categories
     filter_params = FilterParams(search=search, data_categories=data_categories)
     filtered_query = apply_filters_to_query(
@@ -164,6 +179,12 @@ async def list_dataset_paginated(
         taxonomy_model=CtlDataset,
         filter_params=filter_params,
     )
+
+    # If applicable, filter by connection type
+    if connection_type:
+        filtered_query = filtered_query.where(
+            CtlDataset.fides_meta["namespace"]["connection_type"].as_string() == connection_type.value
+        )
 
     # If applicable, keep only unlinked datasets
     if only_unlinked_datasets:
@@ -182,10 +203,13 @@ async def list_dataset_paginated(
         )
 
     if not page and not size:
-        return await list_resource_query(db, filtered_query, CtlDataset)
+        results = await list_resource_query(db, filtered_query, CtlDataset)
+    else:
+        pagination_params = Params(page=page or 1, size=size or 50)
+        results = await async_paginate(db, filtered_query, pagination_params)
 
-    pagination_params = Params(page=page or 1, size=size or 50)
-    return await async_paginate(db, filtered_query, pagination_params)
+    response = [DatasetResponse.model_validate(result.__dict__) for result in results]
+    return response
 
 
 @dataset_router.get(

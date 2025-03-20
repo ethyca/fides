@@ -1,8 +1,8 @@
 from typing import Any, Dict, List, Optional, Union
 
-from fideslang.models import Dataset
+from fideslang.models import Dataset, DatasetCollection
 from fideslang.validation import FidesKey
-from pydantic import ConfigDict
+from pydantic import ConfigDict, Field
 
 from fides.api.schemas.api import BulkResponse, BulkUpdateFailed
 from fides.api.schemas.base_class import FidesSchema
@@ -72,3 +72,14 @@ class DatasetReachability(FidesSchema):
 
     reachable: bool
     details: Optional[Union[str, List[Dict[str, Any]]]]
+
+
+class DatasetResponse(Dataset):
+    collections: Optional[List[DatasetCollection]] = Field(
+        description="An array of objects that describe the Dataset's collections.",
+        default=None,
+    )
+
+    model_config = ConfigDict(
+        extra="ignore", from_attributes=False, coerce_numbers_to_str=True
+    )
