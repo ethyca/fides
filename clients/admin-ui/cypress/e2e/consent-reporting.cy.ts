@@ -74,6 +74,53 @@ describe("Consent reporting", () => {
         expect(params.get("external_id")).to.equal("test@example.com");
       });
     });
+    it("shows consent preferences table after lookup", () => {
+      cy.intercept(
+        {
+          url: "/api/v1/current-privacy-preferences*",
+          method: "GET",
+        },
+        {
+          fixture: "consent-reporting/consent-lookup.json",
+        },
+      ).as("lookupConsentPreferences");
+
+      cy.getByTestId("consent-reporting-dropdown-btn").click();
+      cy.getByTestId("consent-preference-lookup-btn").click();
+      cy.getByTestId("subject-search-input").type("test@example.com{enter}");
+
+      cy.wait("@lookupConsentPreferences");
+      cy.get("#chakra-modal-consent-lookup-modal").within(() => {
+        cy.getByTestId("fidesTable-body").should("exist");
+        cy.getByTestId("fidesTable-body").find("tr").should("have.length", 5);
+      });
+    });
+    it("shows TCF details table and filters out system and vendor records", () => {
+      cy.intercept(
+        {
+          url: "/api/v1/current-privacy-preferences*",
+          method: "GET",
+        },
+        {
+          fixture: "consent-reporting/tcf-consent-lookup.json",
+        },
+      ).as("lookupConsentPreferences");
+
+      cy.getByTestId("consent-reporting-dropdown-btn").click();
+      cy.getByTestId("consent-preference-lookup-btn").click();
+      cy.getByTestId("subject-search-input").type("test@example.com{enter}");
+
+      cy.wait("@lookupConsentPreferences");
+      cy.getByTestId("fidesTable").should("exist");
+
+      cy.getByTestId("fidesTable")
+        .find("tr")
+        .each(($row) => {
+          const text = $row.text();
+          expect(text).to.not.include("vendor_");
+          expect(text).to.not.include("system_");
+        });
+    });
     it("loads the consent report table without date filters", () => {
       cy.intercept(
         {
