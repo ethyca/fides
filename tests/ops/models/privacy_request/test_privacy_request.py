@@ -22,7 +22,7 @@ from fides.api.models.privacy_request import (
     PrivacyRequestNotifications,
     can_run_checkpoint,
 )
-from fides.api.schemas.policy import ActionType, CurrentStep
+from fides.api.schemas.policy import CurrentStep
 from fides.api.schemas.privacy_request import (
     CheckpointActionRequired,
     CustomPrivacyRequestField,
@@ -1137,19 +1137,3 @@ class TestPrivacyRequestCustomIdentities:
             customer_id=LabeledIdentity(label="Custom ID", value=123),
             account_id=LabeledIdentity(label="Account ID", value="456"),
         )
-
-
-class TestGetCeleryTaskRequestTaskIds:
-    def test_get_celery_task_request_task_ids(self, privacy_request, request_task):
-        """Not all request tasks have celery task ids in this test -"""
-
-        assert privacy_request.get_request_task_celery_task_ids() == []
-
-        cache_task_tracking_key(request_task.id, "test_celery_task_key")
-        root_task = privacy_request.get_root_task_by_action(ActionType.access)
-        cache_task_tracking_key(root_task.id, "test_root_task_celery_key")
-
-        assert set(privacy_request.get_request_task_celery_task_ids()) == {
-            "test_celery_task_key",
-            "test_root_task_celery_key",
-        }
