@@ -1,5 +1,5 @@
 import { format, parseISO } from "date-fns";
-import { AntButton, AntFlex, Box, Text } from "fidesui";
+import { AntButton, AntFlex, Text } from "fidesui";
 import { Form, Formik } from "formik";
 import { useRouter } from "next/router";
 import * as Yup from "yup";
@@ -10,6 +10,7 @@ import {
   CustomTextInput,
 } from "~/features/common/form/inputs";
 import { enumToOptions } from "~/features/common/helpers";
+import FormInfoBox from "~/features/common/modals/FormInfoBox";
 import { PRIVACY_NOTICE_REGION_RECORD } from "~/features/common/privacy-notice-regions";
 import { formatKey } from "~/features/datastore-connections/add-connection/helpers";
 import { useGetOnlyCountryLocationsQuery } from "~/features/locations/locations.slice";
@@ -115,16 +116,9 @@ const ConfigureWebsiteMonitorForm = ({
 
   return (
     <AntFlex vertical className="pt-4">
-      <Box
-        p={4}
-        mb={4}
-        border="1px solid"
-        borderColor="gray.200"
-        bgColor="gray.50"
-        borderRadius="md"
-      >
+      <FormInfoBox>
         <Text fontSize="sm">{FORM_COPY}</Text>
-      </Box>
+      </FormInfoBox>
       <Formik
         initialValues={initialValues}
         enableReinitialize
