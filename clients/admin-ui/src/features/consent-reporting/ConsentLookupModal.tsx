@@ -81,12 +81,18 @@ const ConsentLookupModal = ({ isOpen, onClose }: ConsentLookupModalProps) => {
     manualPagination: true,
   });
 
-  const { tcfColumns, mapTcfPreferencesToRowColumns } = useTcfConsentColumns();
+  const {
+    tcfColumns,
+    mapTcfPreferencesToRowColumns,
+    filterTcfConsentPreferences,
+  } = useTcfConsentColumns();
   const tcfData = mapTcfPreferencesToRowColumns(searchResults);
-  const hasTcfData = !isEmpty(tcfData);
+  const filteredTcfData = filterTcfConsentPreferences(tcfData);
+
+  const hasTcfData = !isEmpty(filteredTcfData);
   const tcfTableInstance = useReactTable<TcfDetailRow>({
     getCoreRowModel: getCoreRowModel(),
-    data: tcfData,
+    data: filteredTcfData,
     columns: tcfColumns,
     getRowId: (row) => `${row.key}-${row.id}`,
     manualPagination: true,
