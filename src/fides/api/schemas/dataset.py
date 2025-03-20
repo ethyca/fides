@@ -75,7 +75,7 @@ class DatasetReachability(FidesSchema):
 
 
 class DatasetResponse(Dataset):
-    collections: Optional[List[DatasetCollection]] = Field(
+    collections: Optional[List[DatasetCollection]] = Field(  # type: ignore
         description="An array of objects that describe the Dataset's collections.",
         default=None,
     )

@@ -160,7 +160,7 @@ async def list_dataset_paginated(
     query = select(CtlDataset)
 
     if minimal:
-        query = query.options(
+        query = query.options(  # type: ignore[attr-defined]
             load_only(
                 CtlDataset.id,
                 CtlDataset.fides_key,
@@ -215,8 +215,8 @@ async def list_dataset_paginated(
 
     pagination_params = Params(page=page or 1, size=size or 50)
     results = await async_paginate(db, filtered_query, pagination_params)
-    results.items = [
-        DatasetResponse.model_validate(result.__dict__) for result in results.items
+    results.items = [  # type: ignore[attr-defined]
+        DatasetResponse.model_validate(result.__dict__) for result in results.items  # type: ignore[attr-defined]
     ]
     return results
 

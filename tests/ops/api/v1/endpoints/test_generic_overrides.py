@@ -1,13 +1,10 @@
 import pytest
-from httpx import AsyncClient
-# from sqlalchemy.ext.asyncio import Session
 from fastapi.testclient import TestClient
+from sqlalchemy.orm import Session
 
 from fides.api.models.sql_models import Dataset as CtlDataset
-# from fides.api.schemas.dataset import DatasetResponse
-# from fides.api.service.dataset.dataset_service import DatasetService
-from sqlalchemy.orm import Session
 from fides.common.api.scope_registry import CTL_DATASET_READ
+
 
 class TestGenericOverrides:
     def test_list_dataset_paginated_minimal(
@@ -117,15 +114,34 @@ class TestGenericOverrides:
             fides_meta={"namespace": {"connection_type": "mysql"}},
             collections=[],
         )
+        missing_connection_type_dataset = CtlDataset(
+            fides_key="missing_connection_type_dataset",
+            name="Missing Connection Type Dataset",
+            organization_fides_key="default_organization",
+            collections=[],
+        )
         db.add(bigquery_dataset)
         db.add(postgres_dataset)
         db.add(mysql_dataset)
+        db.add(missing_connection_type_dataset)
         db.commit()
 
         auth_header = generate_auth_header([CTL_DATASET_READ])
 
+        # Test not filtering by connection type
+        response = api_client.get("/api/v1/dataset", headers=auth_header)
+        assert response.status_code == 200
+        data = response.json()
+        dataset_keys = [item["fides_key"] for item in data]
+        assert "bigquery_dataset" in dataset_keys
+        assert "postgres_dataset" in dataset_keys
+        assert "mysql_dataset" in dataset_keys
+        assert "missing_connection_type_dataset" in dataset_keys
+
         # Test filtering by bigquery connection type
-        response = api_client.get("/api/v1/dataset?connection_type=bigquery", headers=auth_header)
+        response = api_client.get(
+            "/api/v1/dataset?connection_type=bigquery", headers=auth_header
+        )
         assert response.status_code == 200
         data = response.json()
         dataset_keys = [item["fides_key"] for item in data]
@@ -134,7 +150,9 @@ class TestGenericOverrides:
         assert "mysql_dataset" not in dataset_keys
 
         # Test filtering by postgres connection type
-        response = api_client.get("/api/v1/dataset?connection_type=postgres", headers=auth_header)
+        response = api_client.get(
+            "/api/v1/dataset?connection_type=postgres", headers=auth_header
+        )
         assert response.status_code == 200
         data = response.json()
         dataset_keys = [item["fides_key"] for item in data]
@@ -143,7 +161,9 @@ class TestGenericOverrides:
         assert "mysql_dataset" not in dataset_keys
 
         # Test filtering by mysql connection type
-        response = api_client.get("/api/v1/dataset?connection_type=mysql", headers=auth_header)
+        response = api_client.get(
+            "/api/v1/dataset?connection_type=mysql", headers=auth_header
+        )
         assert response.status_code == 200
         data = response.json()
         dataset_keys = [item["fides_key"] for item in data]
@@ -152,5 +172,9 @@ class TestGenericOverrides:
         assert "mysql_dataset" in dataset_keys
 
         # Test with invalid connection type
-        response = api_client.get("/api/v1/dataset?connection_type=invalid", headers=auth_header)
-        assert response.status_code == 422  # Unprocessable Entity for invalid enum value
+        response = api_client.get(
+            "/api/v1/dataset?connection_type=invalid", headers=auth_header
+        )
+        assert (
+            response.status_code == 422
+        )  # Unprocessable Entity for invalid enum value
