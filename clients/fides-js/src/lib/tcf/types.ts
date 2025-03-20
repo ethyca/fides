@@ -220,6 +220,11 @@ export interface TcfOtherConsent {
 
 export type TcfModelType = keyof TcfOtherConsent;
 
+/**
+ * NOTE: EnabledIds is a bit of a misnomer, it's actually the accepted/opted-in ids.
+ * Keep that in mind when dealing with UI toggles that are
+ * disabled/enabled vs checked/unchecked.
+ */
 export interface EnabledIds {
   purposesConsent: string[];
   customPurposesConsent: string[];

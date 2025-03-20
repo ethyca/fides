@@ -3,7 +3,7 @@ import { useMemo, useState } from "preact/hooks";
 
 import { UpdateEnabledIds } from "~/components/tcf/TcfTabs";
 
-import { ConsentMechanism, PrivacyExperience } from "../../lib/consent-types";
+import { PrivacyExperience } from "../../lib/consent-types";
 import {
   FidesEventDetailsPreference,
   FidesEventDetailsTrigger,
@@ -129,7 +129,7 @@ const TcfPurposes = ({
         purposes: uniquePurposes.filter((p) => p.isConsent),
         customPurposes: allCustomPurposesConsent.map((purpose) => ({
           ...purpose,
-          disabled: purpose.consent_mechanism === ConsentMechanism.NOTICE_ONLY,
+          disabled: purpose.disabled,
         })), // all custom purposes are "consent" purposes
         purposeModelType: "purposesConsent",
         enabledPurposeIds: enabledPurposeConsentIds,
