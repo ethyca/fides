@@ -3024,4 +3024,32 @@ describe("Fides-js TCF", () => {
       });
     });
   });
+
+  describe("Disabled custom notices", () => {
+    it("should be disabled in the overlay", () => {
+      // Disable the analytics notice which is opted in by default
+      stubTCFExperience({
+        includeCustomPurposes: true,
+        stubOptions: {
+          fidesDisabledNotices: ["analytics_opt_out"],
+        },
+      });
+      cy.get("button").contains("Manage preferences").click();
+      cy.getByTestId("toggle-Analytics").find("input").should("be.disabled"); // disabled by override
+      cy.getByTestId("toggle-Analytics").find("input").should("be.checked"); // opted in by default
+      cy.getByTestId("toggle-Advertising English")
+        .find("input")
+        .should("not.be.disabled"); // unaffected by override
+      cy.getByTestId("toggle-Advertising English")
+        .find("input")
+        .should("not.be.checked"); // opted out by default
+
+      // Opt out of all has no effect
+      cy.getByTestId("fides-modal-content")
+        .contains("button", "Opt out of all")
+        .should("be.visible")
+        .click();
+      cy.getByTestId("toggle-Analytics").find("input").should("be.checked"); // still opted in
+    });
+  });
 });
