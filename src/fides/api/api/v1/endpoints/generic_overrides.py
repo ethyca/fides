@@ -98,6 +98,11 @@ async def create_dataset(
                 else exc.message
             ),
         )
+    except KeyOrNameAlreadyExists as exc:
+        raise HTTPException(
+            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=str(exc),
+        )
 
 
 @dataset_router.put(

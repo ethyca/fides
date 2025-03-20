@@ -5,26 +5,17 @@ from __future__ import annotations
 import json
 from datetime import datetime, timedelta
 from enum import Enum as EnumType
-from typing import Any, Dict, List, Optional, Set, Tuple, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Set, Tuple, Union
 
 from celery.result import AsyncResult
 from loguru import logger
 from pydantic import BaseModel, ConfigDict
-from sqlalchemy import (
-    Boolean,
-    Column,
-    DateTime,
-    ForeignKey,
-    Integer,
-    String,
-    UniqueConstraint,
-)
+from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.mutable import MutableDict, MutableList
 from sqlalchemy.orm import Query, RelationshipProperty, Session, backref, relationship
 from sqlalchemy.orm.dynamic import AppenderQuery
-from sqlalchemy.sql import text
 from sqlalchemy_utils.types.encrypted.encrypted_type import (
     AesGcmEngine,
     StringEncryptedType,
@@ -64,6 +55,11 @@ from fides.api.models.pre_approval_webhook import (
     PreApprovalWebhook,
     PreApprovalWebhookReply,
 )
+from fides.api.models.privacy_request.execution_log import (
+    COMPLETED_EXECUTION_LOG_STATUSES,
+    EXITED_EXECUTION_LOG_STATUSES,
+    ExecutionLog,
+)
 from fides.api.oauth.jwt import generate_jwe
 from fides.api.schemas.base_class import FidesSchema
 from fides.api.schemas.drp_privacy_request import DrpPrivacyRequestCreate
@@ -84,12 +80,7 @@ from fides.api.schemas.privacy_request import (
 from fides.api.schemas.redis_cache import (
     CustomPrivacyRequestField as CustomPrivacyRequestFieldSchema,
 )
-from fides.api.schemas.redis_cache import (
-    Identity,
-    IdentityBase,
-    LabeledIdentity,
-    MultiValue,
-)
+from fides.api.schemas.redis_cache import Identity, LabeledIdentity, MultiValue
 from fides.api.tasks import celery_app
 from fides.api.util.cache import (
     FidesopsRedis,
@@ -116,23 +107,11 @@ from fides.common.api.scope_registry import (
 )
 from fides.config import CONFIG
 
-# Locations from which privacy request execution can be resumed, in order.
-EXECUTION_CHECKPOINTS = [
-    CurrentStep.pre_webhooks,
-    CurrentStep.access,
-    CurrentStep.upload_access,
-    CurrentStep.erasure,
-    CurrentStep.finalize_erasure,
-    CurrentStep.consent,
-    CurrentStep.finalize_consent,
-    CurrentStep.email_post_send,
-    CurrentStep.post_webhooks,
-]
-
-
-EmailRequestFulfillmentBodyParams = Dict[
-    CollectionAddress, Optional[CheckpointActionRequired]
-]
+if TYPE_CHECKING:
+    from fides.api.models.privacy_request.consent import (  # type: ignore[attr-defined]
+        Consent,
+        ConsentRequest,
+    )
 
 
 class CallbackType(EnumType):
@@ -1601,135 +1580,6 @@ class CustomPrivacyRequestField(HashMigrationMixin, Base):
         self.is_hash_migrated = True
 
 
-class Consent(Base):
-    """The DB ORM model for Consent."""
-
-    provided_identity_id = Column(
-        String,
-        ForeignKey(ProvidedIdentity.id),
-        nullable=False,
-    )
-    data_use = Column(String, nullable=False)
-    data_use_description = Column(String)
-    opt_in = Column(Boolean, nullable=False)
-    has_gpc_flag = Column(
-        Boolean,
-        server_default="f",
-        default=False,
-        nullable=False,
-    )
-    conflicts_with_gpc = Column(
-        Boolean,
-        server_default="f",
-        default=False,
-        nullable=False,
-    )
-
-    provided_identity = relationship(ProvidedIdentity, back_populates="consent")
-
-    UniqueConstraint(provided_identity_id, data_use, name="uix_identity_data_use")
-
-    identity: Optional[IdentityBase] = None
-
-
-class ConsentRequest(IdentityVerificationMixin, Base):
-    """Tracks consent requests."""
-
-    property_id = Column(
-        String,
-        nullable=True,
-    )
-    provided_identity_id = Column(
-        String, ForeignKey(ProvidedIdentity.id), nullable=False
-    )
-    provided_identity = relationship(
-        ProvidedIdentity,
-        back_populates="consent_request",
-    )
-
-    custom_fields = relationship(
-        CustomPrivacyRequestField, back_populates="consent_request"
-    )
-
-    preferences = Column(
-        MutableList.as_mutable(JSONB),
-        nullable=True,
-    )
-
-    identity_verified_at = Column(
-        DateTime(timezone=True),
-        nullable=True,
-    )
-
-    source = Column(EnumColumn(PrivacyRequestSource), nullable=True)
-
-    privacy_request_id = Column(String, ForeignKey(PrivacyRequest.id), nullable=True)
-    privacy_request = relationship(PrivacyRequest)
-
-    def get_cached_identity_data(self) -> Dict[str, Any]:
-        """Retrieves any identity data pertaining to this request from the cache."""
-        prefix = f"id-{self.id}-identity-*"
-        cache: FidesopsRedis = get_cache()
-        keys = cache.keys(prefix)
-        return {key.split("-")[-1]: cache.get(key) for key in keys}
-
-    def verify_identity(
-        self,
-        db: Session,
-        provided_code: Optional[str] = None,
-    ) -> None:
-        """
-        A method to call the internal identity verification method provided by the
-        `IdentityVerificationMixin`.
-        """
-        self._verify_identity(provided_code=provided_code)
-        self.identity_verified_at = datetime.utcnow()
-        self.save(db)
-
-    def persist_custom_privacy_request_fields(
-        self,
-        db: Session,
-        custom_privacy_request_fields: Optional[
-            Dict[str, CustomPrivacyRequestFieldSchema]
-        ],
-    ) -> None:
-        if not custom_privacy_request_fields:
-            return
-
-        if CONFIG.execution.allow_custom_privacy_request_field_collection:
-            for key, item in custom_privacy_request_fields.items():
-                if item.value:
-                    hashed_value = CustomPrivacyRequestField.hash_value(item.value)
-                    CustomPrivacyRequestField.create(
-                        db=db,
-                        data={
-                            "consent_request_id": self.id,
-                            "field_name": key,
-                            "field_label": item.label,
-                            "encrypted_value": {"value": item.value},
-                            "hashed_value": hashed_value,
-                        },
-                    )
-        else:
-            logger.info(
-                "Custom fields provided in consent request {}, but config setting 'CONFIG.execution.allow_custom_privacy_request_field_collection' prevents their storage.",
-                self.id,
-            )
-
-    def get_persisted_custom_privacy_request_fields(self) -> Dict[str, Any]:
-        return {
-            field.field_name: {
-                "label": field.field_label,
-                "value": field.encrypted_value["value"],
-            }
-            for field in self.custom_fields  # type: ignore[attr-defined]
-        }
-
-
-# Unique text to separate a step from a collection address, so we can store two values in one.
-PAUSED_SEPARATOR = "__fidesops_paused_sep__"
-
-
 def cache_action_required(
     cache_key: str,
     step: Optional[CurrentStep] = None,
@@ -1771,86 +1621,6 @@ def get_action_required_details(
         return _parse_cache_to_checkpoint_action_required(cached_stopped)
 
     return None
-
-
-COMPLETED_EXECUTION_LOG_STATUSES = [
-    ExecutionLogStatus.complete,
-    ExecutionLogStatus.skipped,
-]
-EXITED_EXECUTION_LOG_STATUSES = [
-    ExecutionLogStatus.complete,
-    ExecutionLogStatus.error,
-    ExecutionLogStatus.skipped,
-]
-
-
-class ExecutionLog(Base):
-    """
-    Stores the individual execution logs associated with a PrivacyRequest.
-
-    Execution logs contain information about the individual queries as they progress through the workflow
-    generated by the query builder.
-    """
-
-    connection_key = Column(String, index=True)
-    # Name of the fides-annotated dataset, for example: my-mongo-db
-    dataset_name = Column(String, index=True)
-    # Name of the particular collection or table affected
-    collection_name = Column(String, index=True)
-    # A JSON Array describing affected fields along with their data categories and paths
-    fields_affected = Column(MutableList.as_mutable(JSONB), nullable=True)
-    # Contains info, warning, or error messages
-    message = Column(String)
-    action_type = Column(
-        EnumColumn(ActionType),
-        index=True,
-        nullable=False,
-    )
-    status = Column(
-        EnumColumn(
-            ExecutionLogStatus,
-            native_enum=True,
-            values_callable=lambda x: [
-                i.value for i in x
-            ],  # Using ExecutionLogStatus values in database, even though app is using the names.
-        ),
-        index=True,
-        nullable=False,
-    )
-
-    privacy_request_id = Column(
-        String,
-        nullable=False,
-        index=True,
-    )
-
-    # Use clock_timestamp() instead of NOW() to get the actual current time at row creation,
-    # regardless of transaction state. This prevents timestamp caching within transactions
-    # and ensures more accurate creation times.
-    # https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-CURRENT
-
-    created_at = Column(
-        DateTime(timezone=True), server_default=text("clock_timestamp()")
-    )
-    updated_at = Column(
-        DateTime(timezone=True),
-        server_default=text("clock_timestamp()"),
-        onupdate=text("clock_timestamp()"),
-    )
-
-
-def can_run_checkpoint(
-    request_checkpoint: CurrentStep, from_checkpoint: Optional[CurrentStep] = None
-) -> bool:
-    """Determine whether we should run a specific checkpoint in privacy request execution
-
-    If there's no from_checkpoint specified we should always run the current checkpoint.
-    """
-    if not from_checkpoint:
-        return True
-    return EXECUTION_CHECKPOINTS.index(
-        request_checkpoint
-    ) >= EXECUTION_CHECKPOINTS.index(from_checkpoint)
 
 
 def _parse_cache_to_checkpoint_action_required(

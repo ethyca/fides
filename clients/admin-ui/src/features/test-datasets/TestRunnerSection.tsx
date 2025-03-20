@@ -30,6 +30,7 @@ import { isErrorResult } from "~/types/errors";
 
 import {
   finishTest,
+  interruptTest,
   selectCurrentDataset,
   selectCurrentPolicyKey,
   selectIsReachable,
@@ -231,6 +232,7 @@ const TestResultsSection = ({ connectionKey }: TestResultsSectionProps) => {
       }
 
       dispatch(startTest(currentDataset.fides_key));
+      toast(successToastParams("Test run started"));
 
       const result = await testDatasets({
         connection_key: connectionKey,
@@ -252,6 +254,11 @@ const TestResultsSection = ({ connectionKey }: TestResultsSectionProps) => {
       dispatch(finishTest());
       toast(errorToastParams("Failed to start test run"));
     }
+  };
+
+  const handleStopTest = () => {
+    dispatch(interruptTest());
+    toast(successToastParams("Test manually stopped by user"));
   };
 
   return (
@@ -283,13 +290,18 @@ const TestResultsSection = ({ connectionKey }: TestResultsSectionProps) => {
             size="small"
             type="primary"
             data-testid="run-btn"
-            onClick={handleTestRun}
-            loading={isTestRunning}
+            onClick={isTestRunning ? handleStopTest : handleTestRun}
             disabled={!currentPolicyKey || !isReachable}
           >
-            Run
+            {isTestRunning ? "Stop" : "Run"}
           </Button>
-          <QuestionTooltip label="Run a test access request using the provided test input data and the selected access policy" />
+          <QuestionTooltip
+            label={
+              isTestRunning
+                ? "Stop the currently running test"
+                : "Run a test access request using the provided test input data and the selected access policy"
+            }
+          />
         </HStack>
       </Heading>
       <Textarea

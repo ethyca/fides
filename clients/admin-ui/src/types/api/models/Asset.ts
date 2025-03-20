@@ -11,6 +11,7 @@ export type Asset = {
   name: string;
   asset_type: string;
   domain: string;
+  page?: Array<string>;
   base_url?: string | null;
   locations?: Array<string>;
   id: string;
