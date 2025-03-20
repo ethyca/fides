@@ -4,12 +4,10 @@ from __future__ import annotations
 
 import json
 from datetime import datetime, timedelta
-from enum import Enum as EnumType
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Set, Tuple, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Set, Union
 
 from celery.result import AsyncResult
 from loguru import logger
-from pydantic import BaseModel, ConfigDict
 from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.declarative import declared_attr
@@ -60,14 +58,16 @@ from fides.api.models.privacy_request.execution_log import (
     EXITED_EXECUTION_LOG_STATUSES,
     ExecutionLog,
 )
-from fides.api.oauth.jwt import generate_jwe
-from fides.api.schemas.base_class import FidesSchema
-from fides.api.schemas.drp_privacy_request import DrpPrivacyRequestCreate
-from fides.api.schemas.external_https import (
-    RequestTaskJWE,
-    SecondPartyResponseFormat,
-    WebhookJWE,
+from fides.api.models.privacy_request.provided_identity import ProvidedIdentity
+from fides.api.models.privacy_request.request_task import RequestTask
+from fides.api.models.privacy_request.webhook import (
+    CallbackType,
+    SecondPartyRequestFormat,
+    generate_request_callback_pre_approval_jwe,
+    generate_request_callback_resume_jwe,
 )
+from fides.api.schemas.drp_privacy_request import DrpPrivacyRequestCreate
+from fides.api.schemas.external_https import SecondPartyResponseFormat
 from fides.api.schemas.masking.masking_secrets import MaskingSecretCache
 from fides.api.schemas.policy import ActionType, CurrentStep
 from fides.api.schemas.privacy_request import (
@@ -84,7 +84,6 @@ from fides.api.schemas.redis_cache import Identity, LabeledIdentity, MultiValue
 from fides.api.tasks import celery_app
 from fides.api.util.cache import (
     FidesopsRedis,
-    celery_tasks_in_flight,
     get_all_cache_keys_for_privacy_request,
     get_async_task_tracking_cache_key,
     get_cache,
@@ -101,86 +100,12 @@ from fides.api.util.decrypted_identity_automaton import DecryptedIdentityAutomat
 from fides.api.util.identity_verification import IdentityVerificationMixin
 from fides.api.util.logger import Pii
 from fides.api.util.logger_context_utils import Contextualizable, LoggerContextKeys
-from fides.common.api.scope_registry import (
-    PRIVACY_REQUEST_CALLBACK_RESUME,
-    PRIVACY_REQUEST_REVIEW,
-)
 from fides.config import CONFIG
 
 if TYPE_CHECKING:
     from fides.api.models.privacy_request.consent import (  # type: ignore[attr-defined]
         Consent,
         ConsentRequest,
-    )
-
-
-class CallbackType(EnumType):
-    """We currently have three types of Webhooks: pre-approval, pre (-execution), post (-execution)"""
-
-    pre_approval = "pre_approval"
-    pre = "pre"  # pre-execution
-    post = "post"  # post-execution
-
-
-class SecondPartyRequestFormat(BaseModel):
-    """
-    The request body we will use when calling a user's HTTP endpoint from fides.api
-    This class is defined here to avoid circular import issues between this file and
-    models.policy
-    """
-
-    privacy_request_id: str
-    privacy_request_status: PrivacyRequestStatus
-    direction: WebhookDirection
-    callback_type: CallbackType
-    identity: Identity
-    policy_action: Optional[ActionType] = None
-    model_config = ConfigDict(use_enum_values=True)
-
-
-def generate_request_callback_resume_jwe(webhook: PolicyPreWebhook) -> str:
-    """
-    Generate a JWE to be used to resume privacy request execution.
-    """
-    jwe = WebhookJWE(
-        webhook_id=webhook.id,
-        scopes=[PRIVACY_REQUEST_CALLBACK_RESUME],
-        iat=datetime.now().isoformat(),
-    )
-    return generate_jwe(
-        json.dumps(jwe.model_dump(mode="json")),
-        CONFIG.security.app_encryption_key,
-    )
-
-
-def generate_request_callback_pre_approval_jwe(webhook: PreApprovalWebhook) -> str:
-    """
-    Generate a JWE to be used to mark privacy requests as eligible / not-eligible for pre approval.
-    """
-    jwe = WebhookJWE(
-        webhook_id=webhook.id,
-        scopes=[PRIVACY_REQUEST_REVIEW],
-        iat=datetime.now().isoformat(),
-    )
-    return generate_jwe(
-        json.dumps(jwe.model_dump(mode="json")),
-        CONFIG.security.app_encryption_key,
-    )
-
-
-def generate_request_task_callback_jwe(request_task: RequestTask) -> str:
-    """
-    Generate a JWE to be used to resume privacy request execution when a
-    callback endpoint is hit for a RequestTask
-    """
-    jwe = RequestTaskJWE(
-        request_task_id=request_task.id,
-        scopes=[PRIVACY_REQUEST_CALLBACK_RESUME],
-        iat=datetime.now().isoformat(),
-    )
-    return generate_jwe(
-        json.dumps(jwe.model_dump(mode="json")),
-        CONFIG.security.app_encryption_key,
     )
 
 
@@ -1356,128 +1281,6 @@ class PrivacyRequestNotifications(Base):
     notify_after_failures = Column(Integer, nullable=False)
 
 
-class ProvidedIdentityType(EnumType):
-    """Enum for privacy request identity types"""
-
-    email = "email"
-    phone_number = "phone_number"
-    ga_client_id = "ga_client_id"
-    ljt_readerID = "ljt_readerID"
-    fides_user_device_id = "fides_user_device_id"
-    external_id = "external_id"
-
-
-class ProvidedIdentity(HashMigrationMixin, Base):  # pylint: disable=R0904
-    """
-    A table for storing identity fields and values provided at privacy request
-    creation time.
-    """
-
-    privacy_request_id = Column(
-        String,
-        ForeignKey(
-            PrivacyRequest.id_field_path, ondelete="CASCADE", onupdate="CASCADE"
-        ),
-    )
-    privacy_request = relationship(
-        PrivacyRequest,
-        backref="provided_identities",
-    )  # Which privacy request this identity belongs to
-
-    field_name = Column(
-        String,
-        index=False,
-        nullable=False,
-    )
-    field_label = Column(
-        String,
-        index=False,
-        nullable=True,
-    )
-    hashed_value = Column(
-        String,
-        index=True,
-        unique=False,
-        nullable=True,
-    )  # This field is used as a blind index for exact match searches
-    encrypted_value = Column(
-        MutableDict.as_mutable(
-            StringEncryptedType(
-                JSONTypeOverride,
-                CONFIG.security.app_encryption_key,
-                AesGcmEngine,
-                "pkcs5",
-            )
-        ),
-        nullable=True,
-    )  # Type bytea in the db
-    consent = relationship(
-        "Consent", back_populates="provided_identity", cascade="delete, delete-orphan"
-    )
-    consent_request = relationship(
-        "ConsentRequest",
-        back_populates="provided_identity",
-        cascade="delete, delete-orphan",
-    )
-
-    @classmethod
-    def bcrypt_hash_value(
-        cls,
-        value: MultiValue,
-        encoding: str = "UTF-8",
-    ) -> str:
-        """
-        Temporary function used to hash values to the previously used bcrypt hashes.
-        This can be removed once the bcrypt to SHA-256 migration is complete.
-        """
-
-        SALT = "$2b$12$UErimNtlsE6qgYf2BrI1Du"
-        value_str = str(value)
-        hashed_value = hash_credential_with_salt(
-            value_str.encode(encoding),
-            SALT.encode(encoding),
-        )
-        return hashed_value
-
-    @classmethod
-    def hash_value(
-        cls,
-        value: MultiValue,
-        encoding: str = "UTF-8",
-    ) -> str:
-        """Utility function to hash the value with a generated salt"""
-        SALT = get_identity_salt()
-        value_str = str(value)
-        hashed_value = hash_value_with_salt(
-            value_str.encode(encoding),
-            SALT.encode(encoding),
-        )
-        return hashed_value
-
-    def migrate_hashed_fields(self) -> None:
-        if value := self.encrypted_value.get("value"):
-            self.hashed_value = self.hash_value(value)
-        self.is_hash_migrated = True
-
-    def as_identity_schema(self) -> Identity:
-        """Creates an Identity schema from a ProvidedIdentity record in the application DB."""
-
-        identity_dict = {}
-        if any(
-            [
-                not self.field_name,
-                not self.encrypted_value,
-            ]
-        ):
-            return Identity()
-
-        value = self.encrypted_value.get("value")  # type:ignore
-        if self.field_label:
-            value = LabeledIdentity(label=self.field_label, value=value)
-        identity_dict[self.field_name] = value
-        return Identity(**identity_dict)
-
-
 class CustomPrivacyRequestField(HashMigrationMixin, Base):
     @declared_attr
     def __tablename__(self) -> str:
@@ -1644,246 +1447,3 @@ def _parse_cache_to_checkpoint_action_required(
         collection=collection,
         action_needed=action_needed,
     )
-
-
-class TraversalDetails(FidesSchema):
-    """Schema to format saving pre-calculated traversal details on RequestTask.traversal_details"""
-
-    dataset_connection_key: str
-    incoming_edges: List[Tuple[str, str]]
-    outgoing_edges: List[Tuple[str, str]]
-    input_keys: List[str]
-    skipped_nodes: Optional[List[Tuple[str, str]]] = None
-
-    # TODO: remove this method once we support custom request fields in DSR graph.
-    @classmethod
-    def create_empty_traversal(cls, connection_key: str) -> TraversalDetails:
-        """
-        Creates an "empty" TraversalDetails object that only has the dataset connection key set.
-        This is a bit of a hacky workaround needed to implement the Dynamic Erasure Emails feature,
-        but we should no longer need it once the custom_request_fields are included in our graph
-        traversal
-        """
-        return cls(
-            dataset_connection_key=connection_key,
-            incoming_edges=[],
-            outgoing_edges=[],
-            input_keys=[],
-            skipped_nodes=[],
-        )
-
-
-class RequestTask(Base):
-    """
-    An individual Task for a Privacy Request.
-
-    When we execute a PrivacyRequest, we build a graph by combining the current datasets with the identity data
-    and we save the nodes (collections) in the graph as Request Tasks.
-
-    Currently, we build access, erasure, and consent Request Tasks.
-    """
-
-    privacy_request_id = Column(
-        String,
-        ForeignKey(PrivacyRequest.id_field_path, ondelete="SET NULL"),
-        nullable=True,
-        index=True,
-    )
-
-    # Identifiers of this request task
-    collection_address = Column(
-        String, nullable=False, index=True
-    )  # Of the format dataset_name:collection_name for convenience
-    dataset_name = Column(String, nullable=False, index=True)
-    collection_name = Column(String, nullable=False, index=True)
-    action_type = Column(EnumColumn(ActionType), nullable=False, index=True)
-
-    # Note that RequestTasks share statuses with ExecutionLogs.  When a RequestTask changes state, an ExecutionLog
-    # is also created with that state.  These are tied tightly together in GraphTask.
-    status = Column(
-        EnumColumn(
-            ExecutionLogStatus,
-            native_enum=False,
-            values_callable=lambda x: [
-                i.value for i in x
-            ],  # Using ExecutionLogStatus values in database, even though app is using the names.
-        ),  # character varying in database
-        index=True,
-        nullable=False,
-    )
-
-    upstream_tasks = Column(
-        MutableList.as_mutable(JSONB)
-    )  # List of collection address strings
-    downstream_tasks = Column(
-        MutableList.as_mutable(JSONB)
-    )  # List of collection address strings
-    all_descendant_tasks = Column(
-        MutableList.as_mutable(JSONB)
-    )  # All tasks that can be reached by the current task.  This is useful when this task fails,
-    # and we can mark every single one of these as failed.
-
-    # Raw data retrieved from an access request is stored here.  This contains all of the
-    # intermediate data we retrieved, needed for downstream tasks, but hasn't been filtered
-    # by data category for the end user.
-    access_data = Column(  # An encrypted JSON String - saved as a list of Rows
-        StringEncryptedType(
-            type_in=JSONTypeOverride,
-            key=CONFIG.security.app_encryption_key,
-            engine=AesGcmEngine,
-            padding="pkcs5",
-        ),
-    )
-
-    # This is the raw access data saved in erasure format (with placeholders preserved) to perform a masking request.
-    # First saved on the access node, and then copied to the corresponding erasure node.
-    data_for_erasures = Column(  # An encrypted JSON String - saved as a list of rows
-        StringEncryptedType(
-            type_in=JSONTypeOverride,
-            key=CONFIG.security.app_encryption_key,
-            engine=AesGcmEngine,
-            padding="pkcs5",
-        ),
-    )
-
-    # Written after an erasure is completed
-    rows_masked = Column(Integer)
-    # Written after a consent request is completed - not all consent
-    # connectors will end up sending a request
-    consent_sent = Column(Boolean)
-
-    # For async tasks awaiting callback
-    callback_succeeded = Column(Boolean)
-
-    # Stores a serialized collection that can be transformed back into a Collection to help
-    # execute the current task
-    collection = Column(MutableDict.as_mutable(JSONB))
-    # Stores key details from traversal.traverse in the format of TraversalDetails
-    traversal_details = Column(MutableDict.as_mutable(JSONB))
-
-    privacy_request: RelationshipProperty[PrivacyRequest] = relationship(
-        "PrivacyRequest",
-        back_populates="request_tasks",
-        uselist=False,
-    )
-
-    @property
-    def request_task_address(self) -> CollectionAddress:
-        """Convert the collection_address into Collection Address format"""
-        return CollectionAddress.from_string(self.collection_address)
-
-    @property
-    def is_root_task(self) -> bool:
-        """Convenience helper for asserting whether the task is a root task"""
-        return self.request_task_address == ROOT_COLLECTION_ADDRESS
-
-    @property
-    def is_terminator_task(self) -> bool:
-        """Convenience helper for asserting whether the task is a terminator task"""
-        return self.request_task_address == TERMINATOR_ADDRESS
-
-    def get_cached_task_id(self) -> Optional[str]:
-        """Gets the cached celery task ID for this request task."""
-        cache: FidesopsRedis = get_cache()
-        task_id = cache.get(get_async_task_tracking_cache_key(self.id))
-        return task_id
-
-    def get_access_data(self) -> List[Row]:
-        """Helper to retrieve access data or default to empty list"""
-        return self.access_data or []
-
-    def get_data_for_erasures(self) -> List[Row]:
-        """Helper to retrieve erasure data needed to build masking requests or default to empty list"""
-        return self.data_for_erasures or []
-
-    def update_status(self, db: Session, status: ExecutionLogStatus) -> None:
-        """Helper method to update a task's status"""
-        self.status = status
-        self.save(db)
-
-    def get_tasks_with_same_action_type(
-        self, db: Session, collection_address_str: str
-    ) -> Query:
-        """Fetch task on the same privacy request and action type as current by collection address"""
-        return db.query(RequestTask).filter(
-            RequestTask.privacy_request_id == self.privacy_request_id,
-            RequestTask.action_type == self.action_type,
-            RequestTask.collection_address == collection_address_str,
-        )
-
-    def get_pending_downstream_tasks(self, db: Session) -> Query:
-        """Returns the immediate downstream task objects that are still pending"""
-        return db.query(RequestTask).filter(
-            RequestTask.privacy_request_id == self.privacy_request_id,
-            RequestTask.action_type == self.action_type,
-            RequestTask.collection_address.in_(self.downstream_tasks or []),
-            RequestTask.status == ExecutionLogStatus.pending,
-        )
-
-    def can_queue_request_task(self, db: Session, should_log: bool = False) -> bool:
-        """Returns True if upstream tasks are complete and the current Request Task
-        is not running in another celery task.
-
-        This check ignores its database status - that is checked elsewhere.
-        """
-        return self.upstream_tasks_complete(
-            db, should_log
-        ) and not self.request_task_running(should_log)
-
-    def upstream_tasks_complete(self, db: Session, should_log: bool = False) -> bool:
-        """Determines if all of the upstream tasks of the current task are complete"""
-        upstream_tasks: Query = self.upstream_tasks_objects(db)
-        tasks_complete: bool = all(
-            upstream_task.status in COMPLETED_EXECUTION_LOG_STATUSES
-            for upstream_task in upstream_tasks
-        ) and upstream_tasks.count() == len(self.upstream_tasks or [])
-
-        if not tasks_complete and should_log:
-            logger.debug(
-                "Upstream tasks incomplete for {} task {}.",
-                self.action_type.value,
-                self.collection_address,
-            )
-
-        return tasks_complete
-
-    def upstream_tasks_objects(self, db: Session) -> Query:
-        """Returns Request Task objects that are upstream of the current Request Task"""
-        upstream_tasks: Query = db.query(RequestTask).filter(
-            RequestTask.privacy_request_id == self.privacy_request_id,
-            RequestTask.collection_address.in_(self.upstream_tasks or []),
-            RequestTask.action_type == self.action_type,
-        )
-        return upstream_tasks
-
-    def request_task_running(self, should_log: bool = False) -> bool:
-        """Returns a rough measure if the Request Task is already running -
-        not 100% accurate.
-
-        This is further only applicable if you are running workers and
-        CONFIG.execution.task_always_eager=False. This is just an extra check to reduce possible
-        over-scheduling, but it is also okay if the same node runs multiple times.
-        """
-        celery_task_id: Optional[str] = self.get_cached_task_id()
-        if not celery_task_id:
-            return False
-
-        if should_log:
-            logger.debug(
-                "Celery Task ID {} found for {} task {}.",
-                celery_task_id,
-                self.action_type.value,
-                self.collection_address,
-            )
-
-        task_in_flight: bool = celery_tasks_in_flight([celery_task_id])
-
-        if task_in_flight and should_log:
-            logger.debug(
-                "Celery Task {} already processing for {} task {}.",
-                celery_task_id,
-                self.action_type.value,
-                self.collection_address,
-            )
-
-        return task_in_flight
