@@ -38,6 +38,7 @@ const WrappedConsentCategorySelect = ({
           variant="outlined"
           autoFocus={false}
           status={isInvalid ? "error" : undefined}
+          data-testid={`controlled-select-${name}`}
         />
         <ErrorMessage
           isInvalid={isInvalid}

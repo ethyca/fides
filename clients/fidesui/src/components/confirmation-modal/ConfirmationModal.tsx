@@ -11,21 +11,21 @@ import {
 } from "fidesui";
 import React, { ReactNode } from "react";
 
-interface Props {
+interface Props extends Omit<ModalProps, "children"> {
   isOpen: boolean;
   onClose: () => void;
   onConfirm: () => void;
   title: string;
   message: ReactNode;
-  modalProps?: ModalProps;
 }
+
 export const ConfirmationModal = ({
   isOpen,
   onClose,
   onConfirm,
   title,
   message,
-  modalProps,
+  ...modalProps
 }: Props) => (
   <Modal isOpen={isOpen} onClose={onClose} size="lg" {...modalProps}>
     <ModalOverlay />

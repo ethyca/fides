@@ -128,7 +128,7 @@ const AddEditAssetModal = ({
         onSubmit={handleSaveClicked}
         validationSchema={validationSchema}
       >
-        {({ values, isValid }) => {
+        {({ values, isValid, dirty }) => {
           return (
             <Form>
               <AntFlex vertical className="pb-6 pt-4">
@@ -197,7 +197,8 @@ const AddEditAssetModal = ({
                   type="primary"
                   htmlType="submit"
                   loading={addIsLoading || updateIsLoading}
-                  disabled={!isValid}
+                  disabled={!isValid || !dirty}
+                  data-testid="save-btn"
                 >
                   Save
                 </AntButton>

@@ -48,10 +48,15 @@ const SystemAssetActionsCell = ({
 
   return (
     <AntFlex className="gap-1">
-      <AntButton size="small" onClick={onEditClick}>
+      <AntButton size="small" onClick={onEditClick} data-testid="edit-btn">
         Edit
       </AntButton>
-      <AntButton size="small" onClick={onOpen} loading={isDeleting}>
+      <AntButton
+        size="small"
+        onClick={onOpen}
+        loading={isDeleting}
+        data-testid="remove-btn"
+      >
         Remove
       </AntButton>
       <ConfirmationModal

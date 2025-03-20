@@ -154,6 +154,7 @@ const SystemAssetsTable = ({ system }: { system: SystemResponse }) => {
           icon={<Icons.Add />}
           iconPosition="end"
           onClick={onOpenAddEditModal}
+          data-testid="add-asset-btn"
         >
           Add asset
         </AntButton>
@@ -168,6 +169,7 @@ const SystemAssetsTable = ({ system }: { system: SystemResponse }) => {
           iconPosition="end"
           onClick={onOpenDeleteModal}
           disabled={!selectedAssetIds.length}
+          data-testid="bulk-delete-btn"
         >
           Remove
         </AntButton>
