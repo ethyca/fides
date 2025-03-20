@@ -130,6 +130,7 @@ async def update_dataset(
             detail={"message": str(e)},
         )
 
+
 @dataset_router.get(
     "/dataset",
     dependencies=[Security(verify_oauth_client, scopes=[CTL_DATASET_READ])],
@@ -159,17 +160,19 @@ async def list_dataset_paginated(
     query = select(CtlDataset)
 
     if minimal:
-        query = query.options(load_only(
-            CtlDataset.id,
-            CtlDataset.fides_key,
-            CtlDataset.organization_fides_key,
-            CtlDataset.name,
-            CtlDataset.created_at,
-            CtlDataset.updated_at,
-            CtlDataset.meta,
-            CtlDataset.fides_meta,
-            CtlDataset.description,
-        ))
+        query = query.options(
+            load_only(
+                CtlDataset.id,
+                CtlDataset.fides_key,
+                CtlDataset.organization_fides_key,
+                CtlDataset.name,
+                CtlDataset.created_at,
+                CtlDataset.updated_at,
+                CtlDataset.meta,
+                CtlDataset.fides_meta,
+                CtlDataset.description,
+            )
+        )
 
     # Add filters for search and data categories
     filter_params = FilterParams(search=search, data_categories=data_categories)
@@ -183,7 +186,8 @@ async def list_dataset_paginated(
     # If applicable, filter by connection type
     if connection_type:
         filtered_query = filtered_query.where(
-            CtlDataset.fides_meta["namespace"]["connection_type"].as_string() == connection_type.value
+            CtlDataset.fides_meta["namespace"]["connection_type"].as_string()
+            == connection_type.value
         )
 
     # If applicable, keep only unlinked datasets
@@ -204,13 +208,17 @@ async def list_dataset_paginated(
 
     if not page and not size:
         results = await list_resource_query(db, filtered_query, CtlDataset)
-        response = [DatasetResponse.model_validate(result.__dict__) for result in results]
+        response = [
+            DatasetResponse.model_validate(result.__dict__) for result in results
+        ]
         return response
-    else:
-        pagination_params = Params(page=page or 1, size=size or 50)
-        results = await async_paginate(db, filtered_query, pagination_params)
-        results.items = [DatasetResponse.model_validate(result.__dict__) for result in results.items]
-        return results
+
+    pagination_params = Params(page=page or 1, size=size or 50)
+    results = await async_paginate(db, filtered_query, pagination_params)
+    results.items = [
+        DatasetResponse.model_validate(result.__dict__) for result in results.items
+    ]
+    return results
 
 
 @dataset_router.get(
