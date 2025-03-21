@@ -5,15 +5,48 @@ import { DefaultCell } from "~/features/common/table/v2";
 import {
   BadgeCellExpandable,
   DefaultHeaderCell,
+  IndeterminateCheckboxCell,
   ListCellExpandable,
 } from "~/features/common/table/v2/cells";
+import SystemAssetActionsCell from "~/features/system/tabs/system-assets/SystemAssetActionsCell";
 import SystemAssetsDataUseCell from "~/features/system/tabs/system-assets/SystemAssetsDataUseCell";
 import { Asset, PrivacyNoticeRegion } from "~/types/api";
 
-const useSystemAssetColumns = () => {
+const useSystemAssetColumns = ({
+  systemKey,
+  onEditClick,
+}: {
+  systemKey: string;
+  onEditClick: (asset: Asset) => void;
+}) => {
   const columnHelper = createColumnHelper<Asset>();
 
   const columns: ColumnDef<Asset, any>[] = [
+    columnHelper.display({
+      id: "select",
+      cell: ({ row }) => (
+        <IndeterminateCheckboxCell
+          isChecked={row.getIsSelected()}
+          onChange={row.getToggleSelectedHandler()}
+          dataTestId={`select-${row.original.name || row.id}`}
+        />
+      ),
+      header: ({ table }) => (
+        <IndeterminateCheckboxCell
+          isChecked={table.getIsAllPageRowsSelected()}
+          isIndeterminate={table.getIsSomeRowsSelected()}
+          onChange={table.getToggleAllRowsSelectedHandler()}
+          dataTestId="select-all-rows"
+        />
+      ),
+      maxSize: 40,
+      meta: {
+        cellProps: {
+          borderRight: "none",
+          paddingRight: 0,
+        },
+      },
+    }),
     columnHelper.accessor((row) => row.name, {
       id: "name",
       cell: (props) => <DefaultCell value={props.getValue()} />,
@@ -63,6 +96,17 @@ const useSystemAssetColumns = () => {
         showHeaderMenu: true,
         disableRowClick: true,
       },
+    }),
+    columnHelper.display({
+      id: "actions",
+      cell: ({ row }) => (
+        <SystemAssetActionsCell
+          asset={row.original}
+          systemKey={systemKey}
+          onEditClick={() => onEditClick(row.original)}
+        />
+      ),
+      header: "Actions",
     }),
   ];
 
