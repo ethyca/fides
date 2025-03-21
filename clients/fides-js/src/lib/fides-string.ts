@@ -80,15 +80,38 @@ export const idsFromAcString = (acString: string) => {
  * Formats the fides_string with the GPP string from the CMP API.
  * In a TCF experience, appends the GPP string as the third part.
  * In a non-TCF experience, uses empty strings for TCF and AC parts.
+ * If the Notice Consent String is present, it will be preserved as the fourth part.
  * @param cmpApi Optional GPP CMP API instance.
  * @returns The formatted fides_string
+ *
+ * @example
+ * TCF with Notice Consent: "TC,AC,GPP,NC" → Output: "TC,AC,GPP,NC"
+ * TCF without Notice Consent: "TC,AC,GPP" → Output: "TC,AC,GPP"
+ * Non-TCF with GPP: ",,GPP" → Output: ",,GPP"
+ * Non-TCF with GPP and Notice Consent: ",,GPP,NC" → Output: ",,GPP,NC"
  */
-export const formatFidesStringWithGpp = (cmpApi: CmpApi): string => {
+export const formatFidesStringWithGpp = (
+  cmpApi: CmpApi,
+): string | undefined => {
   const gppString = cmpApi.getGppString();
-  return window.Fides.options.tcfEnabled
-    ? [...(window.Fides.fides_string?.split(FIDES_SEPARATOR) || []), "", ""]
-        .slice(0, 2)
-        .concat(gppString || "")
-        .join(FIDES_SEPARATOR)
-    : `,${gppString ? `,${gppString}` : ""}`;
+  if (!gppString) {
+    return window.Fides.fides_string;
+  }
+  const emptyStrings = new Array(4).fill("");
+  const existingParts = (
+    window.Fides.fides_string?.split(FIDES_SEPARATOR) || []
+  ).concat(emptyStrings);
+  const newParts = emptyStrings.map((part, index) => {
+    if (index < 2) {
+      return `${existingParts[index]},`;
+    }
+    if (index === 2) {
+      return gppString;
+    }
+    if (index === 3 && existingParts[3]) {
+      return `,${existingParts[3]}`;
+    }
+    return part;
+  });
+  return newParts.join("");
 };
