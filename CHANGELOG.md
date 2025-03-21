@@ -37,6 +37,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ### Fixed
 - Fixed UX issues with website monitor form [#5884](https://github.com/ethyca/fides/pull/5884)
+- Removed excessive authorization debug logs [#5920](https://github.com/ethyca/fides/pull/5920)
 
 ## [2.57.0](https://github.com/ethyca/fides/compare/2.56.2...2.57.0)
 
