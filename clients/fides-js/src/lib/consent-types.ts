@@ -164,6 +164,9 @@ export interface FidesGlobal extends Fides {
   encodeNoticeConsentString: (
     noticeConsent: Record<string, boolean | 0 | 1>,
   ) => string;
+  decodeNoticeConsentString: (base64String: string) => {
+    [noticeKey: string]: boolean;
+  };
   experience:
     | PrivacyExperience
     | PrivacyExperienceMinimal

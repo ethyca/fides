@@ -12,6 +12,7 @@ import type { TCData } from "@iabtechlabtcf/cmpapi";
 import { TCString } from "@iabtechlabtcf/core";
 
 import {
+  decodeNoticeConsentString,
   defaultShowModal,
   encodeNoticeConsentString,
   FidesCookie,
@@ -291,6 +292,7 @@ const _Fides: FidesGlobal = {
   showModal: defaultShowModal,
   getModalLinkLabel: () => DEFAULT_MODAL_LINK_LABEL,
   encodeNoticeConsentString,
+  decodeNoticeConsentString,
 };
 
 if (typeof window !== "undefined") {
