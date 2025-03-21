@@ -84,6 +84,7 @@ export const fetchExperience = async <T = PrivacyExperience>({
     exclude_gvl_languages: "true", // backwards compatibility for TCF optimization work
     include_meta: "true",
     include_gvl: "true",
+    include_non_applicable_notices: "true",
     ...(requestMinimalTCF && { minimal_tcf: "true" }),
     ...(propertyId && { property_id: propertyId }),
   };
