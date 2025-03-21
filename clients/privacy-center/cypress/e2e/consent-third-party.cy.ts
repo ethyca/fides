@@ -273,8 +273,8 @@ describe("Consent third party extensions", () => {
                     [PRIVACY_NOTICE_KEY_1]: false,
                     [PRIVACY_NOTICE_KEY_2]: true,
                     [PRIVACY_NOTICE_KEY_3]: true,
-                    na_notice_1: false,
-                    na_notice_2: false,
+                    na_notice_1: true,
+                    na_notice_2: true,
                   },
                   extraDetails: {
                     consentMethod: undefined,
@@ -294,8 +294,8 @@ describe("Consent third party extensions", () => {
                     [PRIVACY_NOTICE_KEY_1]: false,
                     [PRIVACY_NOTICE_KEY_2]: true,
                     [PRIVACY_NOTICE_KEY_3]: true,
-                    na_notice_1: false,
-                    na_notice_2: false,
+                    na_notice_1: true,
+                    na_notice_2: true,
                   },
                   extraDetails: {
                     servingComponent: "banner",
@@ -315,8 +315,8 @@ describe("Consent third party extensions", () => {
                     [PRIVACY_NOTICE_KEY_1]: true,
                     [PRIVACY_NOTICE_KEY_2]: true,
                     [PRIVACY_NOTICE_KEY_3]: true,
-                    na_notice_1: false,
-                    na_notice_2: false,
+                    na_notice_1: true,
+                    na_notice_2: true,
                   },
                   extraDetails: {
                     consentMethod: "accept",
@@ -335,8 +335,8 @@ describe("Consent third party extensions", () => {
                     [PRIVACY_NOTICE_KEY_1]: true,
                     [PRIVACY_NOTICE_KEY_2]: true,
                     [PRIVACY_NOTICE_KEY_3]: true,
-                    na_notice_1: false,
-                    na_notice_2: false,
+                    na_notice_1: true,
+                    na_notice_2: true,
                   },
                   extraDetails: {
                     consentMethod: "accept",

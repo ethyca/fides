@@ -129,8 +129,8 @@ describe("gtm", () => {
 
     const fidesEvent = window.dataLayer?.[window.dataLayer.length - 1];
 
-    expect(fidesEvent?.Fides.consent.na_notice_1).toBe(false);
-    expect(fidesEvent?.Fides.consent.na_notice_2).toBe(false);
+    expect(fidesEvent?.Fides.consent.na_notice_1).toBe(true);
+    expect(fidesEvent?.Fides.consent.na_notice_2).toBe(true);
   });
 
   test("that fides includes not applicable privacy notices and transforms them to strings", () => {
