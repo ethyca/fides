@@ -1,4 +1,4 @@
-import { AntButton, Box, Icons, VStack } from "fidesui";
+import { AntButton as Button, Box, Icons, VStack } from "fidesui";
 import palette from "fidesui/src/palette/palette.module.scss";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
@@ -136,7 +136,7 @@ export const UnconnectedMainSideNav = ({
           />
         </Box>
         <Box alignItems="center" pb={4}>
-          <AntButton
+          <Button
             href="https://docs.ethyca.com"
             target="_blank"
             className="border-none bg-transparent  hover:!bg-gray-700"
