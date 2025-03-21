@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from uuid import uuid4
 
-from sqlalchemy import Column, ForeignKey, String
+from sqlalchemy import Column, ForeignKey, String, Integer
 
 from fides.api.db.base_class import Base
 
@@ -27,6 +27,8 @@ class ExperienceNotices(Base):
     # Overrides Base.id so this is not a primary key.
     # Instead, we have a composite PK of notice_id and experience_config_id
     id = Column(String(255), default=generate_uuid)
+
+    order = Column(Integer, default=0, nullable=False)
 
     notice_id = Column(
         String,
