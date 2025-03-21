@@ -314,7 +314,7 @@ describe("Privacy notice driven consent", () => {
   });
 
   describe("when user has consented before", () => {
-    it("renders from privacy notices when user has consented before", () => {
+    beforeEach(() => {
       const uuid = "4fbb6edf-34f6-4717-a6f1-541fd1e5d585";
       const createdAt = "2023-04-28T12:00:00.000Z";
       const updatedAt = "2023-04-29T12:00:00.000Z";
@@ -328,6 +328,8 @@ describe("Privacy notice driven consent", () => {
         },
       };
       cy.setCookie(CONSENT_COOKIE_NAME, JSON.stringify(cookie));
+    });
+    it("renders from privacy notices when user has consented before", () => {
       // Visit the consent page with notices enabled
       cy.visit("/consent");
       cy.getByTestId("consent");
@@ -353,6 +355,18 @@ describe("Privacy notice driven consent", () => {
           preferences.map((p: ConsentOptionCreate) => p.preference),
         ).to.eql(["opt_in", "opt_out", "acknowledge"]);
       });
+    });
+
+    it("applies FIDES_DISABLED_NOTICES override", () => {
+      const overrides = {
+        FIDES_DISABLED_NOTICES: "analytics_opt_out",
+        ...SETTINGS,
+      };
+      cy.visit("/consent");
+      cy.getByTestId("consent");
+      cy.overrideSettings(overrides);
+      cy.wait("@getExperience");
+      cy.getByTestId("toggle-Analytics").find("input").should("be.disabled"); // disabled by override
     });
   });
 

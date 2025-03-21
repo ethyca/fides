@@ -6,7 +6,7 @@ import { useAppSelector } from "~/app/hooks";
 import { useFeatures } from "~/features/common/features";
 import ControlledRadioGroup from "~/features/common/form/ControlledRadioGroup";
 import { CustomCheckbox, CustomSwitch } from "~/features/common/form/inputs";
-import { selectGppSettings } from "~/features/privacy-requests";
+import { selectGppSettings } from "~/features/config-settings/config-settings.slice";
 import { GPPUSApproach, PrivacyExperienceGPPSettings } from "~/types/api";
 
 import FrameworkStatus from "./FrameworkStatus";
