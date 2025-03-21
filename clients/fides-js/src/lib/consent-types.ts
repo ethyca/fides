@@ -444,6 +444,7 @@ export type PrivacyExperience = {
   tcf_system_consents?: Array<TCFVendorConsentRecord>;
   tcf_system_legitimate_interests?: Array<TCFVendorLegitimateInterestsRecord>;
   tcf_system_relationships?: Array<TCFVendorRelationships>;
+  tcf_publisher_country_code?: string;
 
   /**
    * @deprecated For backwards compatibility purposes, whether the Experience should show a banner.
@@ -491,6 +492,7 @@ export interface PrivacyExperienceMinimal
     | "vendor_count"
     | "minimal_tcf"
     | "gvl"
+    | "tcf_publisher_country_code"
   > {
   experience_config: ExperienceConfigMinimal;
   vendor_count?: number;
