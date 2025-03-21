@@ -216,6 +216,7 @@ class PrivacyExperienceConfig(PrivacyExperienceConfigBase, Base):
         secondary="experiencenotices",
         backref="experience_configs",
         lazy="selectin",
+        order_by="desc(experiencenotices.order)",
     )
 
     translations: RelationshipProperty[List[ExperienceTranslation]] = relationship(

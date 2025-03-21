@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from uuid import uuid4
 
-from sqlalchemy import Column, ForeignKey, String
+from sqlalchemy import Column, ForeignKey, String, Integer
 
 from fides.api.db.base_class import Base
 
@@ -42,3 +42,4 @@ class ExperienceNotices(Base):
         nullable=False,
         primary_key=True,
     )
+    order = Column(Integer, default=0, nullable=False)
