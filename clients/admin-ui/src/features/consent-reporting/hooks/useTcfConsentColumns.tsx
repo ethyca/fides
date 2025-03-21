@@ -45,6 +45,19 @@ const useTcfConsentColumns = () => {
     [],
   );
 
+  const filterTcfConsentPreferences = useCallback(
+    (tcfPreferences: TcfDetailRow[]) => {
+      return tcfPreferences.filter((row) => {
+        // Exclude system and vendor preferences for tcf
+        // because in practice there are too many and it's not very helpful
+        const isSystemOrVendorPreference =
+          row.key.startsWith("system_") || row.key.startsWith("vendor_");
+        return !isSystemOrVendorPreference;
+      });
+    },
+    [],
+  );
+
   const columns = useMemo(
     () => [
       columnHelper.accessor((row) => row.key, {
@@ -80,6 +93,10 @@ const useTcfConsentColumns = () => {
     [],
   );
 
-  return { tcfColumns: columns, mapTcfPreferencesToRowColumns };
+  return {
+    tcfColumns: columns,
+    mapTcfPreferencesToRowColumns,
+    filterTcfConsentPreferences,
+  };
 };
 export default useTcfConsentColumns;
