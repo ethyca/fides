@@ -22,6 +22,7 @@ import {
   PrivacyExperience,
 } from "./lib/consent-types";
 import {
+  decodeNoticeConsentString,
   defaultShowModal,
   encodeNoticeConsentString,
   shouldResurfaceBanner,
@@ -232,6 +233,7 @@ const _Fides: FidesGlobal = {
   showModal: defaultShowModal,
   getModalLinkLabel: () => DEFAULT_MODAL_LINK_LABEL,
   encodeNoticeConsentString,
+  decodeNoticeConsentString,
 };
 
 updateWindowFides(_Fides);
