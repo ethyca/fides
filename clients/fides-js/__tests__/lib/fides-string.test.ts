@@ -27,7 +27,7 @@ describe("fidesString", () => {
       // Empty string
       {
         fidesString: "",
-        expected: { tc: "", ac: "", gpp: "" },
+        expected: { tc: "", ac: "", gpp: "", nc: "" },
       },
       // TC string only
       {
@@ -36,6 +36,7 @@ describe("fidesString", () => {
           tc: "CPzvOIAPzvOIAGXABBENAUEAAACAAAAAAAAAAAAAAAAA.IAAA",
           ac: "",
           gpp: "",
+          nc: "",
         },
       },
       // Without vendors disclosed
@@ -45,12 +46,13 @@ describe("fidesString", () => {
           tc: "CPzvOIAPzvOIAGXABBENAUEAAACAAAAAAAAAAAAAAAAA",
           ac: "",
           gpp: "",
+          nc: "",
         },
       },
       // Invalid case of only AC string- need core TC string
       {
         fidesString: ",1~2.3.4",
-        expected: { tc: "", ac: "", gpp: "" },
+        expected: { tc: "", ac: "", gpp: "", nc: "" },
       },
       // Both TC and AC string
       {
@@ -60,12 +62,13 @@ describe("fidesString", () => {
           tc: "CPzvOIAPzvOIAGXABBENAUEAAACAAAAAAAAAAAAAAAAA.IAAA",
           ac: "1~2.3.4",
           gpp: "",
+          nc: "",
         },
       },
       // GPP string only
       {
         fidesString: ",,DBABLA~BVAUAAAAAWA.QA",
-        expected: { tc: "", ac: "", gpp: "DBABLA~BVAUAAAAAWA.QA" },
+        expected: { tc: "", ac: "", gpp: "DBABLA~BVAUAAAAAWA.QA", nc: "" },
       },
       // TC + GPP string
       {
@@ -75,6 +78,7 @@ describe("fidesString", () => {
           tc: "CPzvOIAPzvOIAGXABBENAUEAAACAAAAAAAAAAAAAAAAA.IAAA",
           ac: "",
           gpp: "DBABLA~BVAUAAAAAWA.QA",
+          nc: "",
         },
       },
       // Complete string (TC + AC + GPP)
@@ -85,6 +89,7 @@ describe("fidesString", () => {
           tc: "CPzvOIAPzvOIAGXABBENAUEAAACAAAAAAAAAAAAAAAAA.IAAA",
           ac: "1~2.3.4",
           gpp: "DBABLA~BVAUAAAAAWA.QA",
+          nc: "",
         },
       },
       // No trailing comma when no GPP
@@ -95,16 +100,7 @@ describe("fidesString", () => {
           tc: "CPzvOIAPzvOIAGXABBENAUEAAACAAAAAAAAAAAAAAAAA.IAAA",
           ac: "1~2.3.4",
           gpp: "",
-        },
-      },
-      // With extra unexpected stuff
-      {
-        fidesString:
-          "CPzvOIAPzvOIAGXABBENAUEAAACAAAAAAAAAAAAAAAAA.IAAA,1~2.3.4,DBABLA~BVAUAAAAAWA.QA,extrastuff",
-        expected: {
-          tc: "CPzvOIAPzvOIAGXABBENAUEAAACAAAAAAAAAAAAAAAAA.IAAA",
-          ac: "1~2.3.4",
-          gpp: "DBABLA~BVAUAAAAAWA.QA",
+          nc: "",
         },
       },
     ])(
@@ -183,7 +179,7 @@ describe("fidesString", () => {
 
       it("appends GPP string to TC string when AC string is empty", () => {
         const cmpApi = new CmpApi(1, 1);
-        window.Fides.fides_string = "CPzvOIA.IAAA,";
+        window.Fides.fides_string = "CPzvOIA.IAAA";
         jest
           .spyOn(cmpApi, "getGppString")
           .mockReturnValue("DBABLA~BVAUAAAAAWA.QA");
@@ -200,6 +196,48 @@ describe("fidesString", () => {
 
         const result = formatFidesStringWithGpp(cmpApi);
         expect(result).toBe(",,DBABLA~BVAUAAAAAWA.QA");
+      });
+
+      it("injects GPP string to existing TC, AC, and NC strings", () => {
+        const cmpApi = new CmpApi(1, 1);
+        window.Fides.fides_string =
+          "CPzvOIA.IAAA,1~2.3.4,,eyJkYXRhX3NhbGVzX2FuZF9zaGFyaW5nIjoxLCJhbmFseXRpY3MiOjB9";
+        jest
+          .spyOn(cmpApi, "getGppString")
+          .mockReturnValue("DBABLA~BVAUAAAAAWA.QA");
+
+        const result = formatFidesStringWithGpp(cmpApi);
+        expect(result).toBe(
+          "CPzvOIA.IAAA,1~2.3.4,DBABLA~BVAUAAAAAWA.QA,eyJkYXRhX3NhbGVzX2FuZF9zaGFyaW5nIjoxLCJhbmFseXRpY3MiOjB9",
+        );
+      });
+
+      it("injects GPP string to TC string when AC string is empty and NC string exists", () => {
+        const cmpApi = new CmpApi(1, 1);
+        window.Fides.fides_string =
+          "CPzvOIA.IAAA,,,eyJkYXRhX3NhbGVzX2FuZF9zaGFyaW5nIjoxLCJhbmFseXRpY3MiOjB9";
+        jest
+          .spyOn(cmpApi, "getGppString")
+          .mockReturnValue("DBABLA~BVAUAAAAAWA.QA");
+
+        const result = formatFidesStringWithGpp(cmpApi);
+        expect(result).toBe(
+          "CPzvOIA.IAAA,,DBABLA~BVAUAAAAAWA.QA,eyJkYXRhX3NhbGVzX2FuZF9zaGFyaW5nIjoxLCJhbmFseXRpY3MiOjB9",
+        );
+      });
+
+      it("injects GPP string when only NC string exists", () => {
+        const cmpApi = new CmpApi(1, 1);
+        window.Fides.fides_string =
+          ",,,eyJkYXRhX3NhbGVzX2FuZF9zaGFyaW5nIjoxLCJhbmFseXRpY3MiOjB9";
+        jest
+          .spyOn(cmpApi, "getGppString")
+          .mockReturnValue("DBABLA~BVAUAAAAAWA.QA");
+
+        const result = formatFidesStringWithGpp(cmpApi);
+        expect(result).toBe(
+          ",,DBABLA~BVAUAAAAAWA.QA,eyJkYXRhX3NhbGVzX2FuZF9zaGFyaW5nIjoxLCJhbmFseXRpY3MiOjB9",
+        );
       });
     });
   });

@@ -23,6 +23,7 @@ import {
 } from "./consent-types";
 import {
   constructFidesRegionString,
+  decodeNoticeConsentString,
   experienceIsValid,
   getOverrideValidatorMapByType,
   getWindowObjFromPath,
@@ -39,6 +40,7 @@ import {
   updateCookieFromExperience,
   updateCookieFromNoticePreferences,
 } from "./cookie";
+import { decodeFidesString } from "./fides-string";
 import {
   DEFAULT_LOCALE,
   DEFAULT_MODAL_LINK_LABEL,
@@ -83,10 +85,10 @@ const retrieveEffectiveRegionString = async (
 
 /**
  * Opt out of notices that can be opted out of automatically.
- * This does not currently do anything with TCF.
- * Returns true if GPC has been applied
+ * This does not currently do anything with TCF unless the experience has custom notices applied.
+ * Returns true if GPC or Notice Consent string has been applied
  */
-const automaticallyApplyGPCPreferences = async ({
+const automaticallyApplyPreferences = async ({
   savedConsent,
   effectiveExperience,
   cookie,
@@ -112,7 +114,16 @@ const automaticallyApplyGPCPreferences = async ({
   }
 
   const context = getConsentContext();
-  if (!context.globalPrivacyControl) {
+  const { nc: noticeConsentString } = decodeFidesString(
+    fidesOptions.fidesString || "",
+  );
+  if (context.globalPrivacyControl) {
+    fidesDebugger("GPC is enabled");
+  }
+  if (noticeConsentString) {
+    fidesDebugger("Notice consent string found", noticeConsentString);
+  }
+  if (!context.globalPrivacyControl && !noticeConsentString) {
     return false;
   }
 
@@ -133,31 +144,51 @@ const automaticallyApplyGPCPreferences = async ({
     bestTranslation?.privacy_experience_config_history_id;
 
   let gpcApplied = false;
+  let noticeConsentApplied = false;
   const consentPreferencesToSave = effectiveExperience.privacy_notices.map(
     (notice) => {
       const hasPriorConsent = noticeHasConsentInCookie(notice, savedConsent);
       const bestNoticeTranslation = selectBestNoticeTranslation(i18n, notice);
+      const noticeConsent = decodeNoticeConsentString(noticeConsentString);
 
-      // only apply GPC for notices that do not have prior consent
-      if (
-        notice.has_gpc_flag &&
-        !hasPriorConsent &&
-        notice.consent_mechanism !== ConsentMechanism.NOTICE_ONLY
-      ) {
-        gpcApplied = true;
-        return new SaveConsentPreference(
-          notice,
-          transformConsentToFidesUserPreference(
-            false,
-            notice.consent_mechanism,
-          ),
-          bestNoticeTranslation?.privacy_notice_history_id,
-        );
+      if (notice.consent_mechanism !== ConsentMechanism.NOTICE_ONLY) {
+        // Notice Consent string takes precedence over GPC and overrides any prior consent
+        if (noticeConsent) {
+          const preference = noticeConsent[notice.notice_key];
+          if (preference !== undefined) {
+            noticeConsentApplied = true;
+            return new SaveConsentPreference(
+              notice,
+              transformConsentToFidesUserPreference(
+                preference,
+                notice.consent_mechanism,
+              ),
+              bestNoticeTranslation?.privacy_notice_history_id,
+            );
+          }
+        }
+        // only apply GPC for notices that do not have prior consent
+        if (
+          context.globalPrivacyControl &&
+          notice.has_gpc_flag &&
+          !hasPriorConsent
+        ) {
+          fidesDebugger("Applying GPC to notice");
+          gpcApplied = true;
+          return new SaveConsentPreference(
+            notice,
+            transformConsentToFidesUserPreference(
+              false,
+              notice.consent_mechanism,
+            ),
+            bestNoticeTranslation?.privacy_notice_history_id,
+          );
+        }
       }
       return new SaveConsentPreference(
         notice,
         transformConsentToFidesUserPreference(
-          resolveConsentValue(notice, context, savedConsent),
+          resolveConsentValue(notice, savedConsent),
           notice.consent_mechanism,
         ),
         bestNoticeTranslation?.privacy_notice_history_id,
@@ -165,13 +196,22 @@ const automaticallyApplyGPCPreferences = async ({
     },
   );
 
-  if (gpcApplied) {
+  if (gpcApplied || noticeConsentApplied) {
+    let consentMethod: ConsentMethod = ConsentMethod.SCRIPT;
+    if (noticeConsentApplied) {
+      fidesDebugger("Updating consent preferences with Notice Consent string");
+      consentMethod = ConsentMethod.SCRIPT;
+    }
+    if (gpcApplied) {
+      fidesDebugger("Updating consent preferences with GPC");
+      consentMethod = ConsentMethod.GPC;
+    }
     await updateConsentPreferences({
       servedNoticeHistoryId: uuidv4(),
       consentPreferencesToSave,
       privacyExperienceConfigHistoryId,
       experience: effectiveExperience,
-      consentMethod: ConsentMethod.GPC,
+      consentMethod,
       options: fidesOptions,
       userLocationString: fidesRegionString || undefined,
       cookie,
@@ -454,6 +494,7 @@ export const initialize = async ({
         options,
         overrides?.experienceTranslationOverrides,
       );
+
       // eslint-disable-next-line no-param-reassign
       fides.locale = i18n.locale || DEFAULT_LOCALE;
 
@@ -509,17 +550,15 @@ export const initialize = async ({
       }
 
       /**
-       * Last up: apply GPC to the current preferences automatically. This will
-       * set any applicable notices to "opt-out" unless the user has previously
-       * saved consent, etc.
+       * Last up: apply automated preferences.
        *
-       * NOTE: We want to finish initialization immediately while GPC updates
-       * continue to run in the background. To ensure that any GPC API calls
+       * NOTE: We want to finish initialization immediately while automated preferences
+       * continue to run in the background. To ensure that any preference API calls
        * don't block the rest of the code from executing, we use setTimeout with
        * no delay which simply moves it to the end of the JavaScript event queue.
        */
       setTimeout(
-        automaticallyApplyGPCPreferences.bind(null, {
+        automaticallyApplyPreferences.bind(null, {
           savedConsent: fides.saved_consent,
           effectiveExperience: fides.experience as PrivacyExperience,
           cookie: fides.cookie,

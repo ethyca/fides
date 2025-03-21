@@ -161,6 +161,12 @@ export interface FidesGlobal extends Fides {
   cookie?: FidesCookie;
   config?: FidesConfig;
   consent: NoticeConsent;
+  encodeNoticeConsentString: (
+    noticeConsent: Record<string, boolean | 0 | 1>,
+  ) => string;
+  decodeNoticeConsentString: (base64String: string) => {
+    [noticeKey: string]: boolean;
+  };
   experience:
     | PrivacyExperience
     | PrivacyExperienceMinimal

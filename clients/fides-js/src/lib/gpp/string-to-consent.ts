@@ -209,7 +209,8 @@ export const fidesStringToConsent = ({
   fidesString,
   cmpApi,
 }: FidesStringToConsentArgs) => {
-  if (!fidesString || !cmpApi) {
+  const { gpp: gppString }: DecodedFidesString = decodeFidesString(fidesString);
+  if (!fidesString || !gppString || !cmpApi) {
     return;
   }
 
@@ -228,7 +229,6 @@ export const fidesStringToConsent = ({
   const isTCF =
     experience.experience_config.component === ComponentType.TCF_OVERLAY;
 
-  const { gpp: gppString }: DecodedFidesString = decodeFidesString(fidesString);
   const fidesRegionString = constructFidesRegionString(geolocation);
   const matchTranslation = experience.experience_config.translations.find((t) =>
     areLocalesEqual(t.language, locale),

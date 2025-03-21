@@ -9,7 +9,7 @@ import { blueconic } from "./integrations/blueconic";
 import { gtm } from "./integrations/gtm";
 import { meta } from "./integrations/meta";
 import { shopify } from "./integrations/shopify";
-import { isConsentOverride, raise } from "./lib/common-utils";
+import { raise } from "./lib/common-utils";
 import {
   FidesConfig,
   FidesExperienceTranslationOverrides,
@@ -24,9 +24,10 @@ import {
   PrivacyExperience,
 } from "./lib/consent-types";
 import {
+  decodeNoticeConsentString,
   defaultShowModal,
-  isPrivacyExperience,
-  shouldResurfaceConsent,
+  encodeNoticeConsentString,
+  shouldResurfaceBanner,
 } from "./lib/consent-utils";
 import {
   consentCookieObjHasSomeConsentSet,
@@ -276,18 +277,7 @@ const _Fides: FidesGlobal = {
   initialized: false,
   onFidesEvent,
   shouldShowExperience() {
-    if (!isPrivacyExperience(this.experience)) {
-      // Nothing to show if there's no experience
-      return false;
-    }
-    if (isConsentOverride(this.options)) {
-      // If consent preference override exists, we should not show the experience
-      return false;
-    }
-    if (!this.cookie) {
-      throw new Error("Should have a cookie");
-    }
-    return shouldResurfaceConsent(
+    return shouldResurfaceBanner(
       this.experience,
       this.cookie,
       this.saved_consent,
@@ -297,6 +287,8 @@ const _Fides: FidesGlobal = {
   shopify,
   showModal: defaultShowModal,
   getModalLinkLabel: () => DEFAULT_MODAL_LINK_LABEL,
+  encodeNoticeConsentString,
+  decodeNoticeConsentString,
 };
 
 updateWindowFides(_Fides);
