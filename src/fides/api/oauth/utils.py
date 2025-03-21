@@ -344,7 +344,7 @@ def has_permissions(
         scopes_required = ",".join(endpoint_scopes.scopes)
         logger.debug(
             "Authorization failed. Missing required scopes: {}. Neither direct scopes nor role-derived scopes were sufficient.",
-            scopes_required
+            scopes_required,
         )
 
     return has_direct_scope or has_role
