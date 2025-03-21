@@ -1,7 +1,6 @@
 from __future__ import annotations
 
-from io import BytesIO
-from typing import Any, Dict, Optional
+from typing import IO, Any, Dict, Optional, Union
 
 from boto3.s3.transfer import TransferConfig
 from botocore.exceptions import ClientError, ParamValidationError
@@ -38,7 +37,7 @@ def generic_upload_to_s3(  # pylint: disable=R0913
     bucket_name: str,
     file_key: str,
     auth_method: str,
-    document: BytesIO,
+    document: IO,
 ) -> Optional[AnyHttpUrlString]:
     """
     Uploads arbitrary data to S3 returned from an access request.
@@ -55,21 +54,14 @@ def generic_upload_to_s3(  # pylint: disable=R0913
             multipart_chunksize=5 * 1024 * 1024,  # 5 MB chunk size
         )
 
-        try:
-            # Check if the document is a file-like object or raw bytes
-            if isinstance(document, bytes):
-                document = BytesIO(document)  # Wrap raw bytes in a file-like object
-
-            # Use upload_fileobj for efficient uploads (handles both small and large files)
-            s3_client.upload_fileobj(
-                Fileobj=document,
-                Bucket=bucket_name,
-                Key=file_key,
-                Config=transfer_config,
-            )
-        except Exception as e:
-            logger.error("Encountered error while uploading S3 object: {}", e)
-            raise e
+        # Use upload_fileobj for efficient uploads (handles both small and large files)
+        s3_client.upload_fileobj(
+            Fileobj=document,
+            Bucket=bucket_name,
+            Key=file_key,
+            Config=transfer_config,
+        )
+        logger.info("S3 Upload of {} completed successfully", file_key)
 
         # Generate a presigned URL for the uploaded file
         presigned_url: AnyHttpUrlString = create_presigned_url_for_s3(
@@ -86,25 +78,75 @@ def generic_upload_to_s3(  # pylint: disable=R0913
         raise ValueError(f"The parameters you provided are incorrect: {e}")
 
 
+def generic_download_from_s3(
+    storage_secrets: Dict[StorageSecrets, Any],
+    bucket_name: str,
+    file_key: str,
+    auth_method: str,
+) -> Optional[AnyHttpUrlString]:
+    """
+    Generates a presigned URL for downloading an S3 object.
+
+    :param storage_secrets: S3 storage secrets
+    :param bucket_name: Name of the S3 bucket
+    :param file_key: Key of the file in the bucket
+    :param auth_method: Authentication method for S3
+    :return: A presigned URL (str) for the S3 object
+    """
+    logger.info("Generating presigned URL for downloading file: {}", file_key)
+
+    try:
+        s3_client = get_s3_client(auth_method, storage_secrets)
+
+        # Generate a presigned URL for the file
+        presigned_url = create_presigned_url_for_s3(s3_client, bucket_name, file_key)
+        return presigned_url
+
+    except (ClientError, ParamValidationError) as e:
+        logger.error("Failed to generate presigned URL for S3 object: {}", e)
+        return None
+
+
 def generic_retrieve_from_s3(
     storage_secrets: Dict[StorageSecrets, Any],
     bucket_name: str,
     file_key: str,
     auth_method: str,
-) -> Optional[BytesIO]:
-    """Retrieves arbitrary data from s3"""
+    size_threshold: int = 5 * 1024 * 1024,  # 5 MB threshold
+) -> Union[IO, AnyHttpUrlString]:
+    """
+    Retrieves arbitrary data from S3. Returns the file contents if the file is small,
+    or a presigned URL to download the file if it is large.
+
+    :param storage_secrets: S3 storage secrets
+    :param bucket_name: Name of the S3 bucket
+    :param file_key: Key of the file in the bucket
+    :param auth_method: Authentication method for S3
+    :param size_threshold: Size threshold in bytes to determine small vs large files
+    :return: File contents (IO) for small files or a presigned URL (str) for large files
+    """
     logger.info("Starting S3 Retrieve of {}", file_key)
 
     try:
         s3_client = get_s3_client(auth_method, storage_secrets)
         try:
-            response = s3_client.get_object(Bucket=bucket_name, Key=file_key)
-            return response["Body"].read()
+            # Get the object metadata to check its size
+            head_response = s3_client.head_object(Bucket=bucket_name, Key=file_key)
+            file_size = head_response["ContentLength"]
+
+            if file_size <= size_threshold:
+                # File is small, return its contents
+                response = s3_client.get_object(Bucket=bucket_name, Key=file_key)
+                return response["Body"].read()
+
+            # File is large, return a presigned URL
+            return create_presigned_url_for_s3(s3_client, bucket_name, file_key)
+
         except Exception as e:
-            logger.error("Encountered error while retrieving s3 object: {}", e)
+            logger.error("Encountered error while retrieving S3 object: {}", e)
             raise e
     except ClientError as e:
-        logger.error("Encountered error while retrieving s3 object: {}", e)
+        logger.error("Encountered error while retrieving S3 object: {}", e)
         raise e
     except ParamValidationError as e:
         raise ValueError(f"The parameters you provided are incorrect: {e}")

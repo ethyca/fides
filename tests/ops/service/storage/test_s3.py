@@ -1,3 +1,5 @@
+from io import BytesIO
+
 import boto3
 import pytest
 from moto import mock_aws
@@ -34,7 +36,9 @@ def test_generic_upload_to_s3(s3_client, storage_config, monkeypatch):
     storage_secrets = storage_config.secrets
     file_key = "test-file"
     auth_method = storage_config.details[StorageDetails.AUTH_METHOD.value]
-    document = b"This is a test document."
+    document = BytesIO(b"This is a test document.")
+
+    copy_document = document.getvalue()
 
     presigned_url = generic_upload_to_s3(
         storage_secrets=storage_secrets,
@@ -46,10 +50,9 @@ def test_generic_upload_to_s3(s3_client, storage_config, monkeypatch):
 
     # Verify the file was uploaded
     response = s3_client.get_object(Bucket=bucket_name, Key=file_key)
-    assert response["Body"].read() == document
+    assert response["Body"].read() == copy_document
 
     # Verify the presigned URL is generated
-    print(presigned_url)
     assert bucket_name in presigned_url
 
 
@@ -82,6 +85,39 @@ def test_upload_with_invalid_bucket(s3_client, storage_config, monkeypatch):
         assert "NoSuchBucket" in str(e.value)
 
 
+def test_generic_download_from_s3_with_large_file(
+    s3_client, storage_config, monkeypatch
+):
+
+    def mock_get_s3_client(auth_method, storage_secrets):
+        return s3_client
+
+    monkeypatch.setattr("fides.api.tasks.storage.get_s3_client", mock_get_s3_client)
+
+    bucket_name = storage_config.details[StorageDetails.BUCKET.value]
+    storage_secrets = storage_config.secrets
+    file_key = "test-file"
+    auth_method = storage_config.details[StorageDetails.AUTH_METHOD.value]
+    document = BytesIO(b"0" * (5 * 1024 * 1024))  # 5 MB document
+
+    copy_document = document.getvalue()
+
+    presigned_url = generic_upload_to_s3(
+        storage_secrets=storage_secrets,
+        bucket_name=bucket_name,
+        file_key=file_key,
+        auth_method=auth_method,
+        document=document,
+    )
+
+    # Verify the file was uploaded
+    response = s3_client.get_object(Bucket=bucket_name, Key=file_key)
+    assert response["Body"].read() == copy_document
+
+    # Verify the presigned URL is generated
+    assert bucket_name in presigned_url
+
+
 def test_generic_retrieve_from_s3(s3_client, storage_config, monkeypatch):
 
     def mock_get_s3_client(auth_method, storage_secrets):
@@ -108,6 +144,36 @@ def test_generic_retrieve_from_s3(s3_client, storage_config, monkeypatch):
 
     # Verify the document was retrieved correctly
     assert retrieved_document == document
+
+
+def test_generic_retrieve_from_s3_with_large_file(
+    s3_client, storage_config, monkeypatch
+):
+
+    def mock_get_s3_client(auth_method, storage_secrets):
+        return s3_client
+
+    monkeypatch.setattr("fides.api.tasks.storage.get_s3_client", mock_get_s3_client)
+
+    s3, bucket_name = s3_client, storage_config.details[StorageDetails.BUCKET.value]
+    storage_secrets = storage_config.secrets
+    file_key = "test-file"
+    auth_method = storage_config.details[StorageDetails.AUTH_METHOD.value]
+    document = b"0" * (5 * 1024 * 1025)  # 5 MB document
+
+    # Upload the document first
+    s3.put_object(Bucket=bucket_name, Key=file_key, Body=document)
+
+    # Retrieve the document
+    presigned_url = generic_retrieve_from_s3(
+        storage_secrets=storage_secrets,
+        bucket_name=bucket_name,
+        file_key=file_key,
+        auth_method=auth_method,
+    )
+
+    # Verify the document was retrieved correctly
+    assert bucket_name in presigned_url
 
 
 def test_generic_retrieve_file_not_found(s3_client, storage_config, monkeypatch):
