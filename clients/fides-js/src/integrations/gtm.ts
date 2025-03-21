@@ -67,7 +67,7 @@ const pushFidesVariableToGTM = (
 
   if (includeNotApplicable && nonApplicablePrivacyNotices) {
     nonApplicablePrivacyNotices.forEach((key) => {
-      consentValues[key] = asStringValues ? "not_applicable" : false;
+      consentValues[key] = asStringValues ? "not_applicable" : true;
     });
   }
 
