@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import IO, Any, Dict, Optional, Union
+from io import BytesIO
+from typing import Any, Dict, Optional, Union
 
 from boto3.s3.transfer import TransferConfig
 from botocore.exceptions import ClientError, ParamValidationError
@@ -37,7 +38,7 @@ def generic_upload_to_s3(  # pylint: disable=R0913
     bucket_name: str,
     file_key: str,
     auth_method: str,
-    document: IO,
+    document: BytesIO,
 ) -> Optional[AnyHttpUrlString]:
     """
     Uploads arbitrary data to S3 returned from an access request.
@@ -113,7 +114,7 @@ def generic_retrieve_from_s3(
     file_key: str,
     auth_method: str,
     size_threshold: int = 5 * 1024 * 1024,  # 5 MB threshold
-) -> Union[IO, AnyHttpUrlString]:
+) -> Union[BytesIO, AnyHttpUrlString]:
     """
     Retrieves arbitrary data from S3. Returns the file contents if the file is small,
     or a presigned URL to download the file if it is large.
@@ -123,7 +124,7 @@ def generic_retrieve_from_s3(
     :param file_key: Key of the file in the bucket
     :param auth_method: Authentication method for S3
     :param size_threshold: Size threshold in bytes to determine small vs large files
-    :return: File contents (IO) for small files or a presigned URL (str) for large files
+    :return: File contents (BytesIO) for small files or a presigned URL (str) for large files
     """
     logger.info("Starting S3 Retrieve of {}", file_key)
 
