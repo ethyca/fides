@@ -3,6 +3,7 @@ from enum import Enum as EnumType
 from io import BytesIO
 from typing import Any, Optional
 
+from fastapi import UploadFile
 from loguru import logger as log
 from sqlalchemy import Column
 from sqlalchemy import Enum as EnumColumn
@@ -111,7 +112,7 @@ class Attachment(Base):
         uselist=False,
     )
 
-    def upload(self, attachment: BytesIO) -> None:
+    def upload(self, attachment: UploadFile) -> None:
         """Uploads an attachment to S3 or local storage."""
         if self.config.type == StorageType.s3:
             bucket_name = f"{self.config.details[StorageDetails.BUCKET.value]}"
@@ -183,7 +184,7 @@ class Attachment(Base):
         db: Session,
         *,
         data: dict[str, Any],
-        attachment_file: BytesIO,
+        attachment_file: UploadFile,
         check_name: bool = False,
     ) -> "Attachment":
         """Creates a new attachment record in the database and uploads the attachment to S3."""

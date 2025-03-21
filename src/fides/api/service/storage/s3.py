@@ -5,6 +5,7 @@ from typing import Any, Dict, Optional, Union
 
 from boto3.s3.transfer import TransferConfig
 from botocore.exceptions import ClientError, ParamValidationError
+from fastapi import UploadFile
 from fideslang.validation import AnyHttpUrlString
 from loguru import logger
 
@@ -38,7 +39,7 @@ def generic_upload_to_s3(  # pylint: disable=R0913
     bucket_name: str,
     file_key: str,
     auth_method: str,
-    document: BytesIO,
+    document: BytesIO | UploadFile,
 ) -> Optional[AnyHttpUrlString]:
     """
     Uploads arbitrary data to S3 returned from an access request.
