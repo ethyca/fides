@@ -39,8 +39,21 @@ const pushFidesVariableToGTM = (
     JSON.stringify(consent),
   );
   const privacyNotices = window.Fides?.experience?.privacy_notices;
-  const nonApplicablePrivacyNotices =
-    window.Fides?.experience?.non_applicable_privacy_notices;
+  // TODO: retrieve actual from API, these are an example of common notices
+  /* const nonApplicablePrivacyNotices =
+    window.Fides?.experience?.non_applicable_privacy_notices; */
+  const EXAMPLE_NOTICE_KEYS = [
+    "essential",
+    "functional",
+    "sales_sharing_targeted_advertising",
+    "audience_measurement",
+    "analytics",
+    "social_media",
+  ];
+  const nonApplicablePrivacyNotices = EXAMPLE_NOTICE_KEYS.filter(
+    (key) => !privacyNotices?.some((notice) => notice.notice_key === key),
+  );
+  // end example
 
   if (privacyNotices && asStringValues) {
     Object.entries(consent).forEach(([key, value]) => {
