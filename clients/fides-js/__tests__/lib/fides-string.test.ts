@@ -179,7 +179,7 @@ describe("fidesString", () => {
 
       it("appends GPP string to TC string when AC string is empty", () => {
         const cmpApi = new CmpApi(1, 1);
-        window.Fides.fides_string = "CPzvOIA.IAAA,";
+        window.Fides.fides_string = "CPzvOIA.IAAA";
         jest
           .spyOn(cmpApi, "getGppString")
           .mockReturnValue("DBABLA~BVAUAAAAAWA.QA");
@@ -196,6 +196,48 @@ describe("fidesString", () => {
 
         const result = formatFidesStringWithGpp(cmpApi);
         expect(result).toBe(",,DBABLA~BVAUAAAAAWA.QA");
+      });
+
+      it("injects GPP string to existing TC, AC, and NC strings", () => {
+        const cmpApi = new CmpApi(1, 1);
+        window.Fides.fides_string =
+          "CPzvOIA.IAAA,1~2.3.4,,eyJkYXRhX3NhbGVzX2FuZF9zaGFyaW5nIjoxLCJhbmFseXRpY3MiOjB9";
+        jest
+          .spyOn(cmpApi, "getGppString")
+          .mockReturnValue("DBABLA~BVAUAAAAAWA.QA");
+
+        const result = formatFidesStringWithGpp(cmpApi);
+        expect(result).toBe(
+          "CPzvOIA.IAAA,1~2.3.4,DBABLA~BVAUAAAAAWA.QA,eyJkYXRhX3NhbGVzX2FuZF9zaGFyaW5nIjoxLCJhbmFseXRpY3MiOjB9",
+        );
+      });
+
+      it("injects GPP string to TC string when AC string is empty and NC string exists", () => {
+        const cmpApi = new CmpApi(1, 1);
+        window.Fides.fides_string =
+          "CPzvOIA.IAAA,,,eyJkYXRhX3NhbGVzX2FuZF9zaGFyaW5nIjoxLCJhbmFseXRpY3MiOjB9";
+        jest
+          .spyOn(cmpApi, "getGppString")
+          .mockReturnValue("DBABLA~BVAUAAAAAWA.QA");
+
+        const result = formatFidesStringWithGpp(cmpApi);
+        expect(result).toBe(
+          "CPzvOIA.IAAA,,DBABLA~BVAUAAAAAWA.QA,eyJkYXRhX3NhbGVzX2FuZF9zaGFyaW5nIjoxLCJhbmFseXRpY3MiOjB9",
+        );
+      });
+
+      it("injects GPP string when only NC string exists", () => {
+        const cmpApi = new CmpApi(1, 1);
+        window.Fides.fides_string =
+          ",,,eyJkYXRhX3NhbGVzX2FuZF9zaGFyaW5nIjoxLCJhbmFseXRpY3MiOjB9";
+        jest
+          .spyOn(cmpApi, "getGppString")
+          .mockReturnValue("DBABLA~BVAUAAAAAWA.QA");
+
+        const result = formatFidesStringWithGpp(cmpApi);
+        expect(result).toBe(
+          ",,DBABLA~BVAUAAAAAWA.QA,eyJkYXRhX3NhbGVzX2FuZF9zaGFyaW5nIjoxLCJhbmFseXRpY3MiOjB9",
+        );
       });
     });
   });
