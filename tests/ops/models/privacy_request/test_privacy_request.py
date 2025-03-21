@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta, timezone
+from io import BytesIO
 from time import sleep
 from typing import Any, Dict, List
 from uuid import uuid4
@@ -1161,17 +1162,17 @@ def test_retrieve_attachments_from_privacy_request(
     attachment1 = Attachment.create_and_upload(
         db=db,
         data=attachment_data,
-        attachment_file=b"contents of test file 1",
+        attachment_file=BytesIO(b"contents of test file 1"),
     )
     attachment2 = Attachment.create_and_upload(
         db=db,
         data=attachment_data,
-        attachment_file=b"contents of test file 2",
+        attachment_file=BytesIO(b"contents of test file 2"),
     )
     attachment3 = Attachment.create_and_upload(
         db=db,
         data=attachment_data,
-        attachment_file=b"contents of test file 3",
+        attachment_file=BytesIO(b"contents of test file 3"),
     )
 
     # Associate Attachments with the PrivacyRequest

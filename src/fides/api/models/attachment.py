@@ -1,7 +1,9 @@
 import os
 from enum import Enum as EnumType
+from io import BytesIO
 from typing import Any, Optional
 
+from fastapi import UploadFile
 from loguru import logger as log
 from sqlalchemy import Column
 from sqlalchemy import Enum as EnumColumn
@@ -110,7 +112,7 @@ class Attachment(Base):
         uselist=False,
     )
 
-    def upload(self, attachment: bytes) -> None:
+    def upload(self, attachment: UploadFile) -> None:
         """Uploads an attachment to S3 or local storage."""
         if self.config.type == StorageType.s3:
             bucket_name = f"{self.config.details[StorageDetails.BUCKET.value]}"
@@ -128,12 +130,16 @@ class Attachment(Base):
         if self.config.type == StorageType.local:
             filename = get_local_filename(self.id)
             with open(filename, "wb") as file:
-                file.write(attachment)
+                # Write the file in chunks to avoid loading the entire content into memory
+                for chunk in iter(
+                    lambda: attachment.read(1024 * 1024), b""
+                ):  # 1 MB chunks
+                    file.write(chunk)
             return
 
         raise ValueError(f"Unsupported storage type: {self.config.type}")
 
-    def retrieve_attachment(self) -> Optional[bytes]:
+    def retrieve_attachment(self) -> Optional[BytesIO]:
         """Returns the attachment from S3 in bytes form."""
         if self.config.type == StorageType.s3:
             bucket_name = f"{self.config.details[StorageDetails.BUCKET.value]}"
@@ -178,7 +184,7 @@ class Attachment(Base):
         db: Session,
         *,
         data: dict[str, Any],
-        attachment_file: bytes,
+        attachment_file: UploadFile,
         check_name: bool = False,
     ) -> "Attachment":
         """Creates a new attachment record in the database and uploads the attachment to S3."""
@@ -191,6 +197,7 @@ class Attachment(Base):
             return attachment_model
         except Exception as e:
             log.error(f"Failed to upload attachment: {e}")
+            log.error(f"{e}")
             attachment_model.delete(db)
             raise e
 
