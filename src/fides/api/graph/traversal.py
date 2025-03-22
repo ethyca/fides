@@ -278,8 +278,6 @@ class BaseTraversal:
             and edge.f2.collection_address() in remaining_node_keys
         }
 
-        logger.info("Remaining edges after filtering: {}", remaining_edges)
-
         # error if there are edges that have not been visited
         if remaining_edges:
             logger.error(
