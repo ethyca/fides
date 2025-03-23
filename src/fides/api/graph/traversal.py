@@ -262,11 +262,11 @@ class BaseTraversal:
         # error if there are nodes that have not been visited
         if remaining_node_keys:
             logger.error(
-                "Some nodes were not reachable: {}",
+                "Some collections were not reachable: {}",
                 ", ".join([str(x) for x in remaining_node_keys]),
             )
             raise UnreachableNodesError(
-                f"Some nodes were not reachable: {', '.join([str(x) for x in remaining_node_keys])}",
+                f"Some collections were not reachable: {', '.join([str(x) for x in remaining_node_keys])}",
                 [key.value for key in remaining_node_keys],
             )
 

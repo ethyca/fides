@@ -48,7 +48,7 @@ class TestPolicyAwareTraversal:
         with pytest.raises(UnreachableNodesError) as exc:
             Traversal(dataset_graph, identity_seed, policy=policy)
         assert (
-            "Some nodes were not reachable: unreachable_with_data_categories:address"
+            "Some collections were not reachable: unreachable_with_data_categories:address"
             in str(exc)
         )
 
@@ -73,6 +73,6 @@ class TestPolicyAwareTraversal:
                 ],
             )
         assert (
-            "Some nodes were not reachable: internal_references:customer_accounts"
+            "Some collections were not reachable: internal_references:customer_accounts"
             in str(exc)
         )

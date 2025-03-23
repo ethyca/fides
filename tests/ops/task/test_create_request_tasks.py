@@ -500,7 +500,7 @@ class TestPersistAccessRequestTasks:
                 privacy_request_proceed=False,
             )
 
-        assert "Some nodes were not reachable:" in str(err.value)
+        assert "Some collections were not reachable:" in str(err.value)
         assert "dataset_with_unreachable_collections:login" in str(err.value)
         assert "dataset_with_unreachable_collections:report" in str(err.value)
 
