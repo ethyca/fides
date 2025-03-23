@@ -48,8 +48,6 @@ class TraversalValidationStep(DatasetValidationStep):
 
             from fides.service.dataset.dataset_config_service import DatasetFilter
 
-            logger.info(f"Complete graph: {complete_graph.edges}")
-
             Traversal(
                 complete_graph,
                 {k: None for k in unique_identities},

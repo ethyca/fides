@@ -248,18 +248,15 @@ async def delete_dataset(
     status_code=status.HTTP_200_OK,
     name="Validate dataset",
 )
-async def validate_dataset_standalone(
+async def validate_standalone_dataset(
     dataset: FideslangDataset,
     dataset_service: DatasetService = Depends(get_dataset_service),
 ) -> ValidateDatasetResponse:
     """
     Validate a dataset schema without requiring a connection config.
 
-    This endpoint performs schema validation only and does not check traversability
-    since it's not associated with a specific connection.
-
     Returns a ValidateDatasetResponse with the validated dataset and traversal details
-    that indicate the dataset's traversability status is unknown.
+    that indicate the dataset's traversability status.
     """
     try:
         return dataset_service.validate_dataset(dataset)

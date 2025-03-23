@@ -121,7 +121,6 @@ class DatasetConfigService:
                 message=str(exception),
                 data=dataset.model_dump(),
             )
-            logger.warning(f"Dataset validation failed 3: {str(exception)}")
             return None, error
 
         except (PydanticValidationError, DatasetNotFoundException):
