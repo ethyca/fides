@@ -477,6 +477,7 @@ export type { TCFBannerExperienceMinimalResponse } from "./models/TCFBannerExper
 export type { TCFFeatureRecord } from "./models/TCFFeatureRecord";
 export type { TCFFeatureSave } from "./models/TCFFeatureSave";
 export { TCFLegalBasisEnum } from "./models/TCFLegalBasisEnum";
+export type { TCFPublisherSettings } from "./models/TCFPublisherSettings";
 export type { TCFPurposeConsentRecord } from "./models/TCFPurposeConsentRecord";
 export type { TCFPurposeLegitimateInterestsRecord } from "./models/TCFPurposeLegitimateInterestsRecord";
 export type { TCFPurposeOverrideSchema } from "./models/TCFPurposeOverrideSchema";

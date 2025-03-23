@@ -100,6 +100,8 @@ const loadEnvironmentVariables = () => {
       (process.env.FIDES_PRIVACY_CENTER__FIDES_KNOWN_PREFERENCE as
         | ConsentMethod.ACCEPT
         | ConsentMethod.REJECT) || null,
+    FIDES_DISABLED_NOTICES:
+      process.env.FIDES_PRIVACY_CENTER__FIDES_DISABLED_NOTICES || null,
   };
   return settings;
 };

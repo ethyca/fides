@@ -15,13 +15,13 @@ import {
   PaginationBar,
   useServerSidePagination,
 } from "~/features/common/table/v2";
+import { useGetConfigurationSettingsQuery } from "~/features/config-settings/config-settings.slice";
 import { useGetAggregateMonitorResultsQuery } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
 import { DisabledMonitorsPage } from "~/features/data-discovery-and-detection/action-center/DisabledMonitorsPage";
 import { EmptyMonitorsResult } from "~/features/data-discovery-and-detection/action-center/EmptyMonitorsResult";
 import { MonitorResult } from "~/features/data-discovery-and-detection/action-center/MonitorResult";
 import { MonitorAggregatedResults } from "~/features/data-discovery-and-detection/action-center/types";
 import { SearchInput } from "~/features/data-discovery-and-detection/SearchInput";
-import { useGetConfigurationSettingsQuery } from "~/features/privacy-requests";
 
 const ActionCenterPage = () => {
   const toast = useToast();
