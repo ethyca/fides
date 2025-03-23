@@ -1,5 +1,5 @@
 import {
-  Button,
+  AntButton as Button,
   Modal,
   ModalBody,
   ModalContent,
@@ -11,21 +11,21 @@ import {
 } from "fidesui";
 import React, { ReactNode } from "react";
 
-interface Props {
+interface Props extends Omit<ModalProps, "children"> {
   isOpen: boolean;
   onClose: () => void;
   onConfirm: () => void;
   title: string;
   message: ReactNode;
-  modalProps?: ModalProps;
 }
+
 export const ConfirmationModal = ({
   isOpen,
   onClose,
   onConfirm,
   title,
   message,
-  modalProps,
+  ...modalProps
 }: Props) => (
   <Modal isOpen={isOpen} onClose={onClose} size="lg" {...modalProps}>
     <ModalOverlay />
@@ -34,19 +34,10 @@ export const ConfirmationModal = ({
       <ModalBody>{message}</ModalBody>
       <ModalFooter>
         <SimpleGrid columns={2} width="100%">
-          <Button
-            variant="outline"
-            mr={3}
-            onClick={onClose}
-            data-testid="cancel-btn"
-          >
+          <Button className="mr-3" onClick={onClose} data-testid="cancel-btn">
             Cancel
           </Button>
-          <Button
-            colorScheme="primary"
-            onClick={onConfirm}
-            data-testid="continue-btn"
-          >
+          <Button type="primary" onClick={onConfirm} data-testid="continue-btn">
             Continue
           </Button>
         </SimpleGrid>
