@@ -40,15 +40,40 @@ class DatasetFilter(NodeFilter):
     """
     Filter that excludes nodes that are not part of the specified dataset.
     This ensures that unreachable nodes from other datasets are not treated as errors.
+    Also excludes nodes if their upstream dependency is in the current dataset.
+
+    Nodes are not flagged as unreachable if their parent is in the same dataset
+    but the parent itself is unreachable.
     """
 
-    def __init__(self, dataset_name: str):
+    def __init__(self, dataset_key: str):
         super().__init__()
-        self.dataset_name = dataset_name
+        self.dataset_key = dataset_key
 
     def exclude_node(self, node: TraversalNode) -> bool:
-        """Returns True if the node is not part of the dataset"""
-        return node.address.dataset != self.dataset_name
+        """
+        Returns True if:
+        1. The node is not part of the dataset, or
+        2. The node has upstream dependencies within the current dataset
+        """
+        # Exclude if not part of the dataset
+        if node.address.dataset != self.dataset_key:
+            return True
+
+        # Check for upstream dependencies in the same dataset
+        for refs in node.node.collection.references().values():
+            for field_address, direction in refs:
+                if (
+                    direction == "from"
+                    and field_address.collection_address().dataset == self.dataset_key
+                ):
+                    self.skipped_nodes[str(node.address)] = (
+                        f'Skipping "{node.address.value}" as its upstream dependency '
+                        f'"{field_address.collection_address().value}" is in the current dataset'
+                    )
+                    return True
+
+        return False
 
 
 class DatasetConfigService:
@@ -96,7 +121,7 @@ class DatasetConfigService:
                 message=str(exception),
                 data=dataset.model_dump(),
             )
-            logger.warning(f"Dataset validation failed: {str(exception)}")
+            logger.warning(f"Dataset validation failed 3: {str(exception)}")
             return None, error
 
         except (PydanticValidationError, DatasetNotFoundException):

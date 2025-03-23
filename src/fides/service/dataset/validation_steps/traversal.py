@@ -1,3 +1,5 @@
+from uuid import uuid4
+
 from loguru import logger
 
 from fides.api.common_exceptions import TraversalError, ValidationError
@@ -17,18 +19,23 @@ class TraversalValidationStep(DatasetValidationStep):
     """Validates dataset traversability"""
 
     def validate(self, context: DatasetValidationContext) -> None:
-        if not context.connection_config:
-            logger.warning(
-                "Skipping traversal validation, no connection config provided"
-            )
-            return
-
         try:
             graph = convert_dataset_to_graph(
-                context.dataset, context.connection_config.key
+                context.dataset,
+                (
+                    context.connection_config.key
+                    if context.connection_config
+                    else str(uuid4())
+                ),
             )
 
-            if context.connection_config.connection_type == ConnectionType.saas:
+            connection_type = (
+                context.connection_config.connection_type
+                if context.connection_config
+                else None
+            )
+
+            if connection_type == ConnectionType.saas:
                 graph = merge_datasets(
                     graph,
                     context.connection_config.get_saas_config().get_graph(
@@ -38,7 +45,16 @@ class TraversalValidationStep(DatasetValidationStep):
 
             complete_graph = DatasetGraph(graph)
             unique_identities = set(complete_graph.identity_keys.values())
-            Traversal(complete_graph, {k: None for k in unique_identities})
+
+            from fides.service.dataset.dataset_config_service import DatasetFilter
+
+            logger.info(f"Complete graph: {complete_graph.edges}")
+
+            Traversal(
+                complete_graph,
+                {k: None for k in unique_identities},
+                node_filters=[DatasetFilter(context.dataset.fides_key)],
+            )
 
             context.traversal_details = DatasetTraversalDetails(
                 is_traversable=True, msg=None

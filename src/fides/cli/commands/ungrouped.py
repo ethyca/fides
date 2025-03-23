@@ -30,6 +30,7 @@ from fides.common.utils import (
 from fides.config.create import create_and_update_config_file
 from fides.core import api as _api
 from fides.core import audit as _audit
+from fides.core import dataset as _dataset
 from fides.core import evaluate as _evaluate
 from fides.core import parse as _parse
 from fides.core import push as _push
@@ -77,7 +78,6 @@ def get_resource(ctx: click.Context, resource_type: str, fides_key: str) -> None
         resource_key=fides_key,
         headers=config.user.auth_header,
     )
-    print_divider()
     echo_green(yaml.dump({resource_type: [resource]}))
 
 
@@ -310,3 +310,67 @@ def parse(ctx: click.Context, manifests_dir: str, verbose: bool = False) -> None
     taxonomy = _parse.parse(manifests_dir=manifests_dir)
     if verbose:
         pretty_echo(taxonomy.model_dump(mode="json"), color="green")
+
+
+@click.command()  # type: ignore
+@click.pass_context
+@click.argument("resource", type=str)
+@click.argument("path_or_key", type=str)
+@click.option(
+    "--local",
+    is_flag=True,
+    help="Validate locally without connecting to the server.",
+)
+@verbose_flag
+@with_analytics
+def validate(
+    ctx: click.Context, resource: str, path_or_key: str, local: bool, verbose: bool
+) -> None:
+    """
+    Validate a dataset by fides_key or file path.
+
+    RESOURCE: Must be 'dataset' (the only supported resource type)
+    PATH_OR_KEY: Either a dataset fides_key or a path to a YAML file
+
+    Examples:
+        fides validate dataset my_dataset_key
+        fides validate dataset /path/to/dataset.yml
+    """
+    config = ctx.obj["CONFIG"]
+
+    if resource.lower() != "dataset":
+        echo_red("Only 'dataset' validation is currently supported")
+        raise SystemExit(1)
+
+    # Use global local mode if enabled
+    if config.cli.local_mode:
+        local = True
+
+    # Get server connection details if not in local mode
+    url = None if local else config.cli.server_url
+    headers = None if local else config.user.auth_header
+
+    # Validate dataset
+    result = _dataset.validate_dataset_from_path(
+        path_or_key=path_or_key, url=url, headers=headers, local=local
+    )
+
+    # Display results
+    print_divider()
+    if result["success"]:
+        echo_green(result["message"])
+        if verbose and result.get("details"):
+            pretty_echo(yaml.dump(result["details"]))
+        elif not local and result.get("details") is not None:
+            details = result.get("details", {})
+            traversal_details = details.get("traversal_details")
+
+            if traversal_details is not None:
+                traversable = traversal_details.get("is_traversable")
+                if traversable is True:
+                    echo_green("✓ Dataset is traversable")
+                elif traversable is False:
+                    error_msg = traversal_details.get("msg", "Unknown error")
+                    echo_red(f"✗ Dataset is not traversable: {error_msg}")
+    else:
+        echo_red(result["message"])
