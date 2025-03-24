@@ -1,3 +1,4 @@
+/* eslint-disable no-underscore-dangle */
 /**
  * FidesJS: JavaScript SDK for Fides (https://github.com/ethyca/fides)
  *
@@ -134,6 +135,7 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
   makeStub({
     gdprAppliesDefault: optionsOverrides?.fidesTcfGdprApplies,
   });
+
   const experienceTranslationOverrides: Partial<FidesExperienceTranslationOverrides> =
     getOverridesByType<Partial<FidesExperienceTranslationOverrides>>(
       OverrideType.EXPERIENCE_TRANSLATION,
@@ -200,6 +202,7 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
     updateWindowFides(this);
     dispatchFidesEvent("FidesInitialized", this.cookie, config.options.debug, {
       shouldShowExperience: this.shouldShowExperience(),
+      firstInit: true,
     });
   }
   this.experience = initialFides?.experience ?? config.experience;
@@ -218,6 +221,7 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
   // Dispatch the "FidesInitialized" event to update listeners with the initial state.
   dispatchFidesEvent("FidesInitialized", this.cookie, config.options.debug, {
     shouldShowExperience: this.shouldShowExperience(),
+    firstInit: false,
   });
 }
 
