@@ -174,6 +174,9 @@ function encodeNoticeConsentString(consent: Record<string, boolean | 0 | 1>) {
 }
 ```
 
+For debugging purposes, you can decode the Notice Consent string using the
+`window.Fides.decodeNoticeConsentString` function (see [Fides.decodeNoticeConsentString](Fides.md#decodenoticeconsentstring)).
+
 Note: The Notice Consent string will take precedence over [GPC](/docs/regulations/gpc) and override any prior user consent.
 
 Defaults to `undefined`.

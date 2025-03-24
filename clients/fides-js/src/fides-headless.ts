@@ -12,6 +12,7 @@ import { shopify } from "./integrations/shopify";
 import { raise } from "./lib/common-utils";
 import {
   FidesConfig,
+  FidesCookie,
   FidesExperienceTranslationOverrides,
   FidesGlobal,
   FidesInitOptionsOverrides,
@@ -33,6 +34,7 @@ import {
 } from "./lib/cookie";
 import { initializeDebugger } from "./lib/debugger";
 import { dispatchFidesEvent, onFidesEvent } from "./lib/events";
+import { DecodedFidesString, decodeFidesString } from "./lib/fides-string";
 import { DEFAULT_LOCALE, DEFAULT_MODAL_LINK_LABEL } from "./lib/i18n";
 import {
   getInitialCookie,
@@ -117,7 +119,10 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
   // DEFER: not implemented - ability to override Fides consent with OneTrust overrides
   const consentPrefsOverrides: GetPreferencesFnResp | null =
     await customGetConsentPreferences(config);
-  // DEFER: not implemented - ability to override notice-based consent with the consentPrefsOverrides.consent obj
+  // if we don't already have a fidesString override, use fidesString from consent prefs if they exist
+  if (!optionsOverrides.fidesString && consentPrefsOverrides?.fides_string) {
+    optionsOverrides.fidesString = consentPrefsOverrides.fides_string;
+  }
   const overrides: Partial<FidesOverrides> = {
     optionsOverrides,
     consentPrefsOverrides,
@@ -129,7 +134,6 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
   };
   this.cookie = {
     ...getInitialCookie(config),
-    ...overrides.consentPrefsOverrides?.consent,
   };
 
   // Keep a copy of saved consent from the cookie, since we update the "cookie"
@@ -137,6 +141,25 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
   this.saved_consent = {
     ...this.cookie.consent,
   };
+
+  // Update the fidesString if we have an override and the NC portion is valid
+  const { fidesString } = config.options;
+  if (fidesString) {
+    try {
+      // Make sure Notice Consent string is valid before we assign it
+      const { nc: ncString }: DecodedFidesString =
+        decodeFidesString(fidesString);
+      this.decodeNoticeConsentString(ncString);
+      const updatedCookie: Partial<FidesCookie> = {
+        fides_string: fidesString,
+      };
+      this.cookie = { ...this.cookie, ...updatedCookie };
+    } catch (error) {
+      fidesDebugger(
+        `Could not decode ncString from ${fidesString}, it may be invalid. ${error}`,
+      );
+    }
+  }
 
   const initialFides = getInitialFides({
     ...config,
