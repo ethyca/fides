@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from io import BytesIO
 from typing import IO, Any, Dict, Optional, Tuple
 
 from boto3.s3.transfer import TransferConfig
@@ -61,7 +60,7 @@ def generic_upload_to_s3(  # pylint: disable=R0913
     bucket_name: str,
     file_key: str,
     auth_method: str,
-    document: BytesIO | IO[bytes],
+    document: IO[bytes],
 ) -> Optional[AnyHttpUrlString]:
     """
     Uploads arbitrary data to S3 returned from an access request.
