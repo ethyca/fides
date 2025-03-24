@@ -2,6 +2,7 @@
 
 import { headers } from "next/headers";
 
+import debugLogServer from "~/app/server-utils/debugLogServer";
 import { NextSearchParams } from "~/types/next";
 
 import {
@@ -36,7 +37,7 @@ const lookupGeolocationServerSide = async ({
 
       const [country, region] = geolocationQuery.split("-");
       const location = geolocationQuery.replace("-", "_");
-      fidesDebugger(`Using location provided via query param: ${location}`);
+      debugLogServer(`Using location provided via query param: ${location}`);
 
       return {
         location,
@@ -67,7 +68,7 @@ const lookupGeolocationServerSide = async ({
     }
     if (VALID_ISO_3166_LOCATION_REGEX.test(geolocation)) {
       const location = geolocation.replace("-", "_").toLowerCase();
-      fidesDebugger(`Using location provided by CDN headers: ${location}`);
+      debugLogServer(`Using location provided by CDN headers: ${location}`);
 
       return {
         location,
@@ -77,7 +78,7 @@ const lookupGeolocationServerSide = async ({
     }
   }
 
-  fidesDebugger(`Using location: null`);
+  debugLogServer(`Using location: null`);
   return null;
 };
 export default lookupGeolocationServerSide;
