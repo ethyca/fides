@@ -199,7 +199,6 @@ class Attachment(Base):
             return attachment_model
         except Exception as e:
             log.error(f"Failed to upload attachment: {e}")
-            log.error(f"{e}")
             attachment_model.delete(db)
             raise e
 
