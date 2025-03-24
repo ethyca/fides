@@ -12,11 +12,17 @@ from fides.api.schemas.storage.storage import StorageSecrets
 from fides.api.util.aws_util import get_s3_client
 from fides.config import CONFIG
 
+LARGE_FILE_THRESHOLD = 5 * 1024 * 1024  # 5 MB threshold for large files
+LARGE_FILE_WARNING_TEXT = (
+    "File is too large to display directly. Please use the provided link to download."
+)
+
 
 def create_presigned_url_for_s3(
     s3_client: Any, bucket_name: str, file_key: str
 ) -> AnyHttpUrlString:
-    """ "Generate a presigned URL to share an S3 object
+    """
+    Generates a presigned URL to share an S3 object
 
     :param s3_client: s3 base client
     :param bucket_name: string
@@ -43,6 +49,12 @@ def generic_upload_to_s3(  # pylint: disable=R0913
     """
     Uploads arbitrary data to S3 returned from an access request.
     Handles both small and large uploads.
+
+    :param storage_secrets: S3 storage secrets
+    :param bucket_name: Name of the S3 bucket
+    :param file_key: Key of the file in the bucket
+    :param auth_method: Authentication method for S3
+    :param document: File contents to upload
     """
     logger.info("Starting S3 Upload of {}", file_key)
 
@@ -51,8 +63,8 @@ def generic_upload_to_s3(  # pylint: disable=R0913
 
         # Define a transfer configuration for multipart uploads
         transfer_config = TransferConfig(
-            multipart_threshold=5 * 1024 * 1024,  # 5 MB threshold for multipart uploads
-            multipart_chunksize=5 * 1024 * 1024,  # 5 MB chunk size
+            multipart_threshold=LARGE_FILE_THRESHOLD,  # 5 MB threshold for multipart uploads
+            multipart_chunksize=LARGE_FILE_THRESHOLD,  # 5 MB chunk size
         )
 
         # Use upload_fileobj for efficient uploads (handles both small and large files)
@@ -113,7 +125,7 @@ def generic_retrieve_from_s3(
     bucket_name: str,
     file_key: str,
     auth_method: str,
-    size_threshold: int = 5 * 1024 * 1024,  # 5 MB threshold
+    size_threshold: int = LARGE_FILE_THRESHOLD,  # 5 MB threshold
 ) -> Union[BytesIO, AnyHttpUrlString]:
     """
     Retrieves arbitrary data from S3. Returns the file contents if the file is small,
@@ -136,12 +148,17 @@ def generic_retrieve_from_s3(
             file_size = head_response["ContentLength"]
 
             if file_size <= size_threshold:
-                # File is small, return its contents
+                # File is small, return its contents and presigned url
                 response = s3_client.get_object(Bucket=bucket_name, Key=file_key)
-                return response["Body"].read()
+                return response["Body"].read(), create_presigned_url_for_s3(
+                    s3_client, bucket_name, file_key
+                )
 
-            # File is large, return a presigned URL
-            return create_presigned_url_for_s3(s3_client, bucket_name, file_key)
+            # File is large, return warning text and a presigned URL
+            return (
+                LARGE_FILE_WARNING_TEXT,
+                create_presigned_url_for_s3(s3_client, bucket_name, file_key),
+            )
 
         except Exception as e:
             logger.error("Encountered error while retrieving S3 object: {}", e)

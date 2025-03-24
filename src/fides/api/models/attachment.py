@@ -1,8 +1,9 @@
 import os
 from enum import Enum as EnumType
 from io import BytesIO
-from typing import IO, Any, Optional
+from typing import IO, Any, Optional, Tuple, Union
 
+from fideslang.validation import AnyHttpUrlString
 from loguru import logger as log
 from sqlalchemy import Column
 from sqlalchemy import Enum as EnumColumn
@@ -138,7 +139,9 @@ class Attachment(Base):
 
         raise ValueError(f"Unsupported storage type: {self.config.type}")
 
-    def retrieve_attachment(self) -> Optional[BytesIO]:
+    def retrieve_attachment(
+        self,
+    ) -> Optional[Tuple[BytesIO, Union[AnyHttpUrlString, str]]]:
         """Returns the attachment from S3 in bytes form."""
         if self.config.type == StorageType.s3:
             bucket_name = f"{self.config.details[StorageDetails.BUCKET.value]}"
@@ -153,7 +156,7 @@ class Attachment(Base):
         if self.config.type == StorageType.local:
             filename = f"{LOCAL_FIDES_UPLOAD_DIRECTORY}/{self.id}"
             with open(filename, "rb") as file:
-                return file.read()
+                return file.read(), filename
 
         raise ValueError(f"Unsupported storage type: {self.config.type}")
 

@@ -13,6 +13,7 @@ from fides.api.models.attachment import (
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.storage import StorageConfig
 from fides.api.schemas.storage.storage import StorageDetails
+from fides.api.service.storage.util import LOCAL_FIDES_UPLOAD_DIRECTORY
 
 
 @pytest.fixture(
@@ -31,6 +32,18 @@ def attachment_file(request):
     """
     file_name, file_content = request.param
     return file_name, BytesIO(file_content)
+
+
+def verify_attachment_created_uploaded_s3(attachment, attachment_file_copy):
+    retrieved_file, download_url = attachment.retrieve_attachment()
+    assert retrieved_file == attachment_file_copy
+    assert attachment.config.details[StorageDetails.BUCKET.value] in download_url
+
+
+def verify_attachment_created_uploaded_local(attachment, attachment_file_copy):
+    retrieved_attachment, download_path = attachment.retrieve_attachment()
+    assert retrieved_attachment == attachment_file_copy
+    assert download_path == f"{LOCAL_FIDES_UPLOAD_DIRECTORY}/{attachment.id}"
 
 
 def test_create_attachment_without_attachement_file_raises_error(db, attachment_data):
@@ -70,7 +83,7 @@ def test_create_attachment_with_S3_storage(
         )
         is not None
     )
-    assert retrieved_attachment.retrieve_attachment() == attachment_file_copy
+    verify_attachment_created_uploaded_s3(attachment, attachment_file_copy)
     attachment.delete(db)
 
 
@@ -91,7 +104,7 @@ def test_create_attachment_with_local_storage(
     assert retrieved_attachment.file_name == attachment.file_name
     assert retrieved_attachment.attachment_type == attachment.attachment_type
 
-    assert retrieved_attachment.retrieve_attachment() == attachment_file_copy
+    verify_attachment_created_uploaded_local(attachment, attachment_file_copy)
     attachment.delete(db)
 
 
@@ -124,8 +137,7 @@ def test_retrieve_attachment_from_s3(
     attachment = Attachment.create_and_upload(
         db, data=attachment_data, attachment_file=attachment_file[1]
     )
-    retrieved_file = attachment.retrieve_attachment()
-    assert retrieved_file == attachment_file_copy
+    verify_attachment_created_uploaded_s3(attachment, attachment_file_copy)
     attachment.delete(db)
 
 
@@ -140,7 +152,7 @@ def test_retrieve_attachment_from_local(
         db=db, data=attachment_data, attachment_file=attachment_file[1]
     )
 
-    assert attachment.retrieve_attachment() == attachment_file_copy
+    verify_attachment_created_uploaded_local(attachment, attachment_file_copy)
     attachment.delete(db)
 
 
@@ -159,8 +171,7 @@ def test_delete_attachment_from_s3(
     attachment = Attachment.create_and_upload(
         db, data=attachment_data, attachment_file=attachment_file[1]
     )
-
-    assert attachment.retrieve_attachment() == attachment_file_copy
+    verify_attachment_created_uploaded_s3(attachment, attachment_file_copy)
 
     # Delete the file using the method
     attachment.delete_attachment_from_storage()
@@ -183,8 +194,7 @@ def test_delete_attachment_from_local(
     attachment = Attachment.create_and_upload(
         db=db, data=attachment_data, attachment_file=attachment_file[1]
     )
-
-    assert attachment.retrieve_attachment() == attachment_file_copy
+    verify_attachment_created_uploaded_local(attachment, attachment_file_copy)
 
     # Delete the file using the method
     attachment.delete_attachment_from_storage()
