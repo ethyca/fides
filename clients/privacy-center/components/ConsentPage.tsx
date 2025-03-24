@@ -267,11 +267,7 @@ const ConsentPage: NextPage = () => {
 
   return (
     <Stack as="main" align="center" data-testid="consent">
-      <ClientMetadata
-        title="Privacy Center"
-        description="Privacy Center"
-        icon={config.favicon_path}
-      />
+      <ClientMetadata title="Privacy Center" icon={config.favicon_path} />
 
       {/* Wait until i18n is initalized so we can diplay the correct language and
        also we can use the correct history ids */}
