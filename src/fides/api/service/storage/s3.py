@@ -21,6 +21,9 @@ LARGE_FILE_WARNING_TEXT = (
 def maybe_get_s3_client(
     auth_method: str, storage_secrets: Dict[StorageSecrets, Any]
 ) -> Any:
+    """
+    Returns an S3 client if the client can be created successfully, otherwise raises an exception.
+    """
     try:
         return get_s3_client(auth_method, storage_secrets)
     except ClientError as e:
@@ -104,7 +107,7 @@ def generic_download_from_s3(
     auth_method: str,
 ) -> Optional[AnyHttpUrlString]:
     """
-    Generates a presigned URL for downloading an S3 object.
+    Returns a presigned URL for downloading an S3 object.
 
     :param storage_secrets: S3 storage secrets
     :param bucket_name: Name of the S3 bucket
@@ -128,8 +131,9 @@ def generic_retrieve_from_s3(
     size_threshold: int = LARGE_FILE_THRESHOLD,  # 5 MB threshold
 ) -> Tuple[str, AnyHttpUrlString]:
     """
-    Retrieves arbitrary data from S3. Returns the file contents if the file is small,
-    or a presigned URL to download the file if it is large.
+    Retrieves arbitrary data from S3.
+    Returns the file contents and presigned url to download the file if the file is small,
+    or a warning message with the presigned URL to download the file if it is large.
 
     :param storage_secrets: S3 storage secrets
     :param bucket_name: Name of the S3 bucket
