@@ -93,11 +93,7 @@ def generic_upload_to_s3(  # pylint: disable=R0913
     logger.info("S3 Upload of {} completed successfully", file_key)
 
     # Generate a presigned URL for the uploaded file
-    presigned_url: AnyHttpUrlString = create_presigned_url_for_s3(
-        s3_client, bucket_name, file_key
-    )
-
-    return presigned_url
+    return create_presigned_url_for_s3(s3_client, bucket_name, file_key)
 
 
 def generic_download_from_s3(
@@ -174,7 +170,14 @@ def generic_delete_from_s3(
     file_key: str,
     auth_method: str,
 ) -> None:
-    """Deletes arbitrary data from s3"""
+    """
+    Deletes arbitrary data from s3
+
+    :param storage_secrets: S3 storage secrets
+    :param bucket_name: Name of the S3 bucket
+    :param file_key: Key of the file in the bucket
+    :param auth_method: Authentication method for S3
+    """
     logger.info("Starting S3 Delete of {}", file_key)
 
     s3_client = maybe_get_s3_client(auth_method, storage_secrets)
