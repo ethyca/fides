@@ -232,10 +232,13 @@ async def log_request(request: Request, call_next: Callable) -> Response:
         response = Response(status_code=500)
 
     handler_time = datetime.now() - start
+
+    # Take the total time in seconds and convert it to milliseconds, rounding to 3 decimal places
+    total_time = round(handler_time.total_seconds() * 1000, 3)
     logger.bind(
         method=request.method,
         status_code=response.status_code,
-        handler_time=f"{round(handler_time.microseconds * 0.001,3)}ms",
+        handler_time=f"{total_time}ms",
         path=request.url.path,
     ).info("Request received")
     return response

@@ -33,6 +33,8 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Support setting publisher country code in Consent Settings [#5902](https://github.com/ethyca/fides/pull/5902)
 - Added option for disabling consent notice toggles [#5872](https://github.com/ethyca/fides/pull/5872)
 - Added UI to manually update Assets in the system asset view [#5914](https://github.com/ethyca/fides/pull/5914)
+- Use the experience's `tcf_publisher_country_code` when building TC strings [#5921](https://github.com/ethyca/fides/pull/5921)
+- Added extra debug logging and fixed handler time calculation [#5927](https://github.com/ethyca/fides/pull/5927)
 
 ### Changed
 - Changed discovered asset "system" cell to use `user_assigned_system_key` property [#5908](https://github.com/ethyca/fides/pull/5908)
