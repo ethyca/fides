@@ -18,6 +18,20 @@ LARGE_FILE_WARNING_TEXT = (
 )
 
 
+def maybe_get_s3_client(
+    auth_method: str, storage_secrets: Dict[StorageSecrets, Any]
+) -> Any:
+    try:
+        return get_s3_client(auth_method, storage_secrets)
+    except ClientError as e:
+        logger.error(
+            "Encountered error while uploading and generating link for S3 object: {}", e
+        )
+        raise e
+    except ParamValidationError as e:
+        raise ValueError(f"The parameters you provided are incorrect: {e}")
+
+
 def create_presigned_url_for_s3(
     s3_client: Any, bucket_name: str, file_key: str
 ) -> AnyHttpUrlString:
@@ -58,37 +72,29 @@ def generic_upload_to_s3(  # pylint: disable=R0913
     """
     logger.info("Starting S3 Upload of {}", file_key)
 
-    try:
-        s3_client = get_s3_client(auth_method, storage_secrets)
+    s3_client = maybe_get_s3_client(auth_method, storage_secrets)
 
-        # Define a transfer configuration for multipart uploads
-        transfer_config = TransferConfig(
-            multipart_threshold=LARGE_FILE_THRESHOLD,  # 5 MB threshold for multipart uploads
-            multipart_chunksize=LARGE_FILE_THRESHOLD,  # 5 MB chunk size
-        )
+    # Define a transfer configuration for multipart uploads
+    transfer_config = TransferConfig(
+        multipart_threshold=LARGE_FILE_THRESHOLD,  # 5 MB threshold for multipart uploads
+        multipart_chunksize=LARGE_FILE_THRESHOLD,  # 5 MB chunk size
+    )
 
-        # Use upload_fileobj for efficient uploads (handles both small and large files)
-        s3_client.upload_fileobj(
-            Fileobj=document,
-            Bucket=bucket_name,
-            Key=file_key,
-            Config=transfer_config,
-        )
-        logger.info("S3 Upload of {} completed successfully", file_key)
+    # Use upload_fileobj for efficient uploads (handles both small and large files)
+    s3_client.upload_fileobj(
+        Fileobj=document,
+        Bucket=bucket_name,
+        Key=file_key,
+        Config=transfer_config,
+    )
+    logger.info("S3 Upload of {} completed successfully", file_key)
 
-        # Generate a presigned URL for the uploaded file
-        presigned_url: AnyHttpUrlString = create_presigned_url_for_s3(
-            s3_client, bucket_name, file_key
-        )
+    # Generate a presigned URL for the uploaded file
+    presigned_url: AnyHttpUrlString = create_presigned_url_for_s3(
+        s3_client, bucket_name, file_key
+    )
 
-        return presigned_url
-    except ClientError as e:
-        logger.error(
-            "Encountered error while uploading and generating link for S3 object: {}", e
-        )
-        raise e
-    except ParamValidationError as e:
-        raise ValueError(f"The parameters you provided are incorrect: {e}")
+    return presigned_url
 
 
 def generic_download_from_s3(
@@ -108,16 +114,10 @@ def generic_download_from_s3(
     """
     logger.info("Generating presigned URL for downloading file: {}", file_key)
 
-    try:
-        s3_client = get_s3_client(auth_method, storage_secrets)
+    s3_client = maybe_get_s3_client(auth_method, storage_secrets)
 
-        # Generate a presigned URL for the file
-        presigned_url = create_presigned_url_for_s3(s3_client, bucket_name, file_key)
-        return presigned_url
-
-    except (ClientError, ParamValidationError) as e:
-        logger.error("Failed to generate presigned URL for S3 object: {}", e)
-        return None
+    # Generate a presigned URL for the file
+    return create_presigned_url_for_s3(s3_client, bucket_name, file_key)
 
 
 def generic_retrieve_from_s3(
@@ -126,7 +126,7 @@ def generic_retrieve_from_s3(
     file_key: str,
     auth_method: str,
     size_threshold: int = LARGE_FILE_THRESHOLD,  # 5 MB threshold
-) -> Tuple[BytesIO, AnyHttpUrlString]:
+) -> Tuple[str, AnyHttpUrlString]:
     """
     Retrieves arbitrary data from S3. Returns the file contents if the file is small,
     or a presigned URL to download the file if it is large.
@@ -140,34 +140,28 @@ def generic_retrieve_from_s3(
     """
     logger.info("Starting S3 Retrieve of {}", file_key)
 
+    s3_client = maybe_get_s3_client(auth_method, storage_secrets)
     try:
-        s3_client = get_s3_client(auth_method, storage_secrets)
-        try:
-            # Get the object metadata to check its size
-            head_response = s3_client.head_object(Bucket=bucket_name, Key=file_key)
-            file_size = head_response["ContentLength"]
+        # Get the object metadata to check its size
+        head_response = s3_client.head_object(Bucket=bucket_name, Key=file_key)
+        file_size = head_response["ContentLength"]
 
-            if file_size <= size_threshold:
-                # File is small, return its contents and presigned url
-                response = s3_client.get_object(Bucket=bucket_name, Key=file_key)
-                return response["Body"].read(), create_presigned_url_for_s3(
-                    s3_client, bucket_name, file_key
-                )
-
-            # File is large, return warning text and a presigned URL
-            return (
-                LARGE_FILE_WARNING_TEXT,
-                create_presigned_url_for_s3(s3_client, bucket_name, file_key),
+        if file_size <= size_threshold:
+            # File is small, return its contents and presigned url
+            response = s3_client.get_object(Bucket=bucket_name, Key=file_key)
+            return response["Body"].read(), create_presigned_url_for_s3(
+                s3_client, bucket_name, file_key
             )
 
-        except Exception as e:
-            logger.error("Encountered error while retrieving S3 object: {}", e)
-            raise e
-    except ClientError as e:
+        # File is large, return warning text and a presigned URL
+        return (
+            LARGE_FILE_WARNING_TEXT,
+            create_presigned_url_for_s3(s3_client, bucket_name, file_key),
+        )
+
+    except Exception as e:
         logger.error("Encountered error while retrieving S3 object: {}", e)
         raise e
-    except ParamValidationError as e:
-        raise ValueError(f"The parameters you provided are incorrect: {e}")
 
 
 def generic_delete_from_s3(
@@ -179,15 +173,9 @@ def generic_delete_from_s3(
     """Deletes arbitrary data from s3"""
     logger.info("Starting S3 Delete of {}", file_key)
 
+    s3_client = maybe_get_s3_client(auth_method, storage_secrets)
     try:
-        s3_client = get_s3_client(auth_method, storage_secrets)
-        try:
-            s3_client.delete_object(Bucket=bucket_name, Key=file_key)
-        except Exception as e:
-            logger.error("Encountered error while deleting s3 object: {}", e)
-            raise e
-    except ClientError as e:
+        s3_client.delete_object(Bucket=bucket_name, Key=file_key)
+    except Exception as e:
         logger.error("Encountered error while deleting s3 object: {}", e)
         raise e
-    except ParamValidationError as e:
-        raise ValueError(f"The parameters you provided are incorrect: {e}")

@@ -3,7 +3,9 @@ from tempfile import SpooledTemporaryFile
 
 import boto3
 import pytest
+from botocore.exceptions import ClientError, ParamValidationError
 from moto import mock_aws
+from pytest import param
 
 from fides.api.schemas.storage.storage import StorageDetails
 from fides.api.service.storage.s3 import (
@@ -12,10 +14,70 @@ from fides.api.service.storage.s3 import (
     generic_delete_from_s3,
     generic_retrieve_from_s3,
     generic_upload_to_s3,
+    maybe_get_s3_client,
 )
 
 TEST_DOCUMENT = b"This is a test document."
 TEST_SPOOLED_DOC = SpooledTemporaryFile()
+
+
+@pytest.mark.parametrize(
+    "mock_get_s3_client, expected_exception, expected_message",
+    [
+        param(
+            lambda auth_method, storage_secrets: "mock_s3_client",
+            None,
+            None,
+            id="success",
+        ),
+        param(
+            lambda auth_method, storage_secrets: (
+                _ for _ in ()  # Empty generator to raise exception
+            ).throw(
+                ClientError(
+                    {"Error": {"Code": "403", "Message": "Access Denied"}}, "GetObject"
+                )
+            ),
+            ClientError,
+            "Access Denied",
+            id="client_error",
+        ),
+        param(
+            lambda auth_method, storage_secrets: (
+                _ for _ in ()  # Empty generator to raise exception
+            ).throw(ParamValidationError(report="Invalid parameters")),
+            ValueError,
+            "The parameters you provided are incorrect",
+            id="param_validation_error",
+        ),
+    ],
+)
+def test_maybe_get_s3_client(
+    monkeypatch, mock_get_s3_client, expected_exception, expected_message
+):
+    """
+    Test maybe_get_s3_client for all potential outcomes:
+    - Successful return of s3_client
+    - Raising ClientError
+    - Raising ParamValidationError
+    """
+
+    # Mock the get_s3_client function
+    monkeypatch.setattr(
+        "fides.api.service.storage.s3.get_s3_client", mock_get_s3_client
+    )
+
+    auth_method = "test_auth_method"
+    storage_secrets = {"key": "value"}  # Example secrets
+
+    if expected_exception:
+        # Test for exceptions
+        with pytest.raises(expected_exception) as excinfo:
+            maybe_get_s3_client(auth_method, storage_secrets)
+        assert expected_message in str(excinfo.value)
+    else:
+        result = maybe_get_s3_client(auth_method, storage_secrets)
+        assert result == "mock_s3_client"
 
 
 @pytest.mark.parametrize(
