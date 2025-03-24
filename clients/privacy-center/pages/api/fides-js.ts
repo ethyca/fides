@@ -16,7 +16,7 @@ import {
 import { promises as fsPromises } from "fs";
 import type { NextApiRequest, NextApiResponse } from "next";
 
-import { getFidesApiUrl } from "~/app/server-environment";
+import { getFidesApiUrl, loadServerSettings } from "~/app/server-environment";
 import { getPrivacyCenterEnvironmentCached } from "~/app/server-utils";
 import { LOCATION_HEADERS, lookupGeolocation } from "~/common/geolocation";
 import { safeLookupPropertyId } from "~/common/property-id";
@@ -337,6 +337,7 @@ export default async function handler(
   `;
 
   // Instruct any caches to store this response, since these bundles do not change often
+  const serverSettings = loadServerSettings();
   const cacheHeaders: CacheControl = {
     "max-age": serverSettings.FIDES_JS_MAX_AGE_SECONDS,
     public: true,
