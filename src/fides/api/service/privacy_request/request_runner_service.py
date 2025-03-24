@@ -67,7 +67,6 @@ from fides.api.tasks import DatabaseTask, celery_app
 from fides.api.tasks.scheduled.scheduler import scheduler
 from fides.api.util.collection_util import Row
 from fides.api.util.logger import Pii, _log_exception, _log_warning
-from fides.api.util.logger_context_utils import LoggerContextKeys, log_context
 from fides.common.api.v1.urn_registry import (
     PRIVACY_REQUEST_TRANSFER_TO_PARENT,
     V1_URL_PREFIX,
@@ -296,21 +295,19 @@ def run_privacy_request(
         ):
             logger.info("Resuming privacy request from checkpoint: '{}'", from_step)
 
-    with logger.contextualize(
-        privacy_request_source=(
-            privacy_request.source.value if privacy_request.source else None
-        ),
-        privacy_request_id=privacy_request.id,
-    ):
-        with self.get_new_session() as session:
-            privacy_request = PrivacyRequest.get(
-                db=session, object_id=privacy_request_id
+    with self.get_new_session() as session:
+        privacy_request = PrivacyRequest.get(db=session, object_id=privacy_request_id)
+        if not privacy_request:
+            raise common_exceptions.PrivacyRequestNotFound(
+                f"Privacy request with id {privacy_request_id} not found"
             )
-            if not privacy_request:
-                raise common_exceptions.PrivacyRequestNotFound(
-                    f"Privacy request with id {privacy_request_id} not found"
-                )
 
+        with logger.contextualize(
+            privacy_request_source=(
+                privacy_request.source.value if privacy_request.source else None
+            ),
+            privacy_request_id=privacy_request.id,
+        ):
             if privacy_request.status == PrivacyRequestStatus.canceled:
                 logger.info("Terminating privacy request: request canceled.")
                 return
