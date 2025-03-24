@@ -8,6 +8,7 @@ import {
   experienceIsValid,
   fetchExperience,
   FidesConfig,
+  parseFidesDisabledNotices,
   PrivacyExperience,
   PrivacyExperienceMinimal,
   UserGeolocation,
@@ -22,8 +23,6 @@ import {
 import { LOCATION_HEADERS, lookupGeolocation } from "~/common/geolocation";
 import { safeLookupPropertyId } from "~/common/property-id";
 
-// one hour, how long the client should cache fides.js for
-const FIDES_JS_MAX_AGE_SECONDS = 60 * 60;
 // one hour, how long until the custom-fides.css is refreshed
 const CUSTOM_FIDES_CSS_TTL_MS = 3600 * 1000;
 
@@ -268,6 +267,9 @@ export default async function handler(
       fidesPrimaryColor: environment.settings.FIDES_PRIMARY_COLOR,
       fidesClearCookie: environment.settings.FIDES_CLEAR_COOKIE,
       fidesConsentOverride: environment.settings.FIDES_CONSENT_OVERRIDE,
+      fidesDisabledNotices: parseFidesDisabledNotices(
+        environment.settings.FIDES_DISABLED_NOTICES || undefined,
+      ),
     },
     experience: experience || undefined,
     geolocation: geolocation || undefined,
@@ -339,7 +341,7 @@ export default async function handler(
 
   // Instruct any caches to store this response, since these bundles do not change often
   const cacheHeaders: CacheControl = {
-    "max-age": FIDES_JS_MAX_AGE_SECONDS,
+    "max-age": serverSettings.FIDES_JS_MAX_AGE_SECONDS,
     public: true,
   };
 

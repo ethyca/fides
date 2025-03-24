@@ -2895,6 +2895,40 @@ describe("Consent overlay", () => {
           "rgb(153, 144, 0)",
         );
       });
+      it("applies fides_disabled_notices override", () => {
+        // Disable the analytics notice which is opted in by default
+        let overrides = {
+          fides_disabled_notices: "analytics_opt_out",
+        };
+        cy.fixture("consent/experience_banner_modal.json").then(() => {
+          stubConfig(
+            {
+              options: {
+                customOptionsPath: TEST_OVERRIDE_WINDOW_PATH,
+              },
+            },
+            null,
+            null,
+            { ...overrides },
+          );
+        });
+        cy.get("button").contains("Manage preferences").click();
+        cy.getByTestId("toggle-Analytics").find("input").should("be.disabled"); // disabled by override
+        cy.getByTestId("toggle-Analytics").find("input").should("be.checked"); // opted in by default
+        cy.getByTestId("toggle-Advertising")
+          .find("input")
+          .should("not.be.disabled"); // unaffected by override
+        cy.getByTestId("toggle-Advertising")
+          .find("input")
+          .should("not.be.checked"); // opted out by default
+
+        // Opt out of all has no effect
+        cy.getByTestId("fides-modal-content")
+          .contains("button", "Opt out of all")
+          .should("be.visible")
+          .click();
+        cy.getByTestId("toggle-Analytics").find("input").should("be.checked"); // still opted in
+      });
     });
   });
 

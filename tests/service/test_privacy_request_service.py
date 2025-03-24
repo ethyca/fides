@@ -12,16 +12,16 @@ from fides.api.models.fides_user import FidesUser
 from fides.api.models.fides_user_permissions import FidesUserPermissions
 from fides.api.models.policy import Policy
 from fides.api.models.pre_approval_webhook import PreApprovalWebhook
-from fides.api.models.privacy_request import (
-    ExecutionLog,
-    ExecutionLogStatus,
-    PrivacyRequestSource,
-    PrivacyRequestStatus,
-)
+from fides.api.models.privacy_request import ExecutionLog
 from fides.api.models.property import Property
 from fides.api.oauth.roles import APPROVER
 from fides.api.schemas.policy import ActionType
-from fides.api.schemas.privacy_request import PrivacyRequestCreate
+from fides.api.schemas.privacy_request import (
+    ExecutionLogStatus,
+    PrivacyRequestCreate,
+    PrivacyRequestSource,
+    PrivacyRequestStatus,
+)
 from fides.api.schemas.redis_cache import Identity
 from fides.config.config_proxy import ConfigProxy
 from fides.service.messaging.messaging_service import MessagingService

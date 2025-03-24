@@ -1,5 +1,5 @@
 import { format, parseISO } from "date-fns";
-import { AntButton, AntFlex, Box, Text } from "fidesui";
+import { AntButton as Button, AntFlex as Flex, Text } from "fidesui";
 import { Form, Formik } from "formik";
 import { useRouter } from "next/router";
 import * as Yup from "yup";
@@ -10,6 +10,7 @@ import {
   CustomTextInput,
 } from "~/features/common/form/inputs";
 import { enumToOptions } from "~/features/common/helpers";
+import FormInfoBox from "~/features/common/modals/FormInfoBox";
 import { PRIVACY_NOTICE_REGION_RECORD } from "~/features/common/privacy-notice-regions";
 import { formatKey } from "~/features/datastore-connections/add-connection/helpers";
 import { useGetOnlyCountryLocationsQuery } from "~/features/locations/locations.slice";
@@ -114,17 +115,10 @@ const ConfigureWebsiteMonitorForm = ({
   };
 
   return (
-    <AntFlex vertical className="pt-4">
-      <Box
-        p={4}
-        mb={4}
-        border="1px solid"
-        borderColor="gray.200"
-        bgColor="gray.50"
-        borderRadius="md"
-      >
+    <Flex vertical className="pt-4">
+      <FormInfoBox>
         <Text fontSize="sm">{FORM_COPY}</Text>
-      </Box>
+      </FormInfoBox>
       <Formik
         initialValues={initialValues}
         enableReinitialize
@@ -133,7 +127,7 @@ const ConfigureWebsiteMonitorForm = ({
       >
         {({ values, resetForm }) => (
           <Form>
-            <AntFlex vertical gap="middle">
+            <Flex vertical gap="middle">
               <CustomTextInput
                 name="name"
                 id="name"
@@ -193,28 +187,24 @@ const ConfigureWebsiteMonitorForm = ({
                 id="execution_start_date"
                 tooltip={START_TIME_TOOLTIP_COPY}
               />
-              <AntFlex className="mt-2 justify-between">
-                <AntButton
+              <Flex className="mt-2 justify-between">
+                <Button
                   onClick={() => {
                     resetForm();
                     onClose();
                   }}
                 >
                   Cancel
-                </AntButton>
-                <AntButton
-                  type="primary"
-                  htmlType="submit"
-                  data-testid="save-btn"
-                >
+                </Button>
+                <Button type="primary" htmlType="submit" data-testid="save-btn">
                   Save
-                </AntButton>
-              </AntFlex>
-            </AntFlex>
+                </Button>
+              </Flex>
+            </Flex>
           </Form>
         )}
       </Formik>
-    </AntFlex>
+    </Flex>
   );
 };
 
