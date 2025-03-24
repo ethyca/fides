@@ -198,6 +198,9 @@ export default async function handler(
         propertyId,
         requestMinimalTCF: true,
       });
+      fidesDebugger(
+        `Fetched relevant experiences from server-side (${userLanguageString}).`,
+      );
       experienceIsValid(experience);
     }
   }
