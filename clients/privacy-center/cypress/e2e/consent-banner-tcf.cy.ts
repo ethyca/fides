@@ -2268,6 +2268,58 @@ describe("Fides-js TCF", () => {
     });
   });
 
+  describe("publisher country code", () => {
+    beforeEach(() => {
+      cy.intercept("PATCH", `${API_URL}${FidesEndpointPaths.NOTICES_SERVED}`, {
+        fixture: "consent/notices_served_tcf.json",
+      }).as("patchNoticesServed");
+      cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
+    });
+
+    it("should set default publisher country code (AA) when none is provided", () => {
+      stubTCFExperience({});
+      cy.window().then((win) => {
+        win.__tcfapi("addEventListener", 2, cy.stub().as("TCFEvent"));
+      });
+      cy.waitUntilFidesInitialized().then(() => {
+        cy.get("div#fides-banner").should("be.visible");
+        cy.get("button").contains("Opt in to all").click();
+        cy.get("@TCFEvent")
+          .its("lastCall.args")
+          .then(([tcData, success]) => {
+            expect(success).to.eql(true);
+            expect(tcData.publisherCC).to.eql("AA");
+            const tcString = tcData.tcString;
+            const decodedTCString = TCString.decode(tcString);
+            expect(decodedTCString.publisherCountryCode).to.equal("AA");
+          });
+      });
+    });
+
+    it("should set provided publisher country code in TC string", () => {
+      cy.fixture("consent/experience_tcf.json").then((payload) => {
+        const experience = payload.items[0];
+        experience.tcf_publisher_country_code = "US";
+        stubTCFExperience({ experienceFullOverride: experience });
+      });
+      cy.window().then((win) => {
+        win.__tcfapi("addEventListener", 2, cy.stub().as("TCFEvent"));
+      });
+      cy.waitUntilFidesInitialized().then(() => {
+        cy.get("div#fides-banner").should("be.visible");
+        cy.get("button").contains("Opt in to all").click();
+        cy.get("@TCFEvent")
+          .its("lastCall.args")
+          .then(([tcData, success]) => {
+            expect(success).to.eql(true);
+            expect(tcData.publisherCC).to.eql("US");
+            const tcString = tcData.tcString;
+            const decodedTCString = TCString.decode(tcString);
+            expect(decodedTCString.publisherCountryCode).to.equal("US");
+          });
+      });
+    });
+  });
   /**
    * There are the following potential sources of user preferences:
    * 1) fides_string override option (via config.options.fidesString)
