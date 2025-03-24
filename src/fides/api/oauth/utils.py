@@ -340,7 +340,8 @@ def has_permissions(
         token_data=token_data, client=client, endpoint_scopes=endpoint_scopes
     )
 
-    if not has_direct_scope and not has_role:
+    has_permissions = has_direct_scope or has_role
+    if not has_permissions:
         scopes_required = ",".join(endpoint_scopes.scopes)
         logger.debug(
             "Authorization failed. Missing required scopes: {}. Neither direct scopes nor role-derived scopes were sufficient.",
