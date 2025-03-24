@@ -174,6 +174,7 @@ class PrivacyRequest(
         primaryjoin="PrivacyRequest.id == AttachmentReference.reference_id",
         secondaryjoin="Attachment.id == AttachmentReference.attachment_id",
         order_by="Attachment.created_at",
+        viewonly=True,
     )
     comments = relationship(
         Comment,
@@ -181,6 +182,7 @@ class PrivacyRequest(
         primaryjoin="PrivacyRequest.id == CommentReference.reference_id",
         secondaryjoin="Comment.id == CommentReference.comment_id",
         order_by="Comment.created_at",
+        viewonly=True,
     )
     property_id = Column(String, nullable=True)
 

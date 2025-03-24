@@ -98,6 +98,7 @@ class Comment(Base):
         secondaryjoin="Attachment.id == AttachmentReference.attachment_id",
         order_by="Attachment.created_at",
         uselist=True,
+        viewonly=True,
     )
 
     def delete(self, db: Session) -> None:
