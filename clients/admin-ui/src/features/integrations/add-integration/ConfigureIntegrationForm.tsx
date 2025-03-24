@@ -14,8 +14,8 @@ import {
   usePatchDatastoreConnectionMutation,
   usePatchDatastoreConnectionSecretsMutation,
 } from "~/features/datastore-connections";
-import { useDatasetConfigField } from "~/features/datastore-connections/system_portal_config/forms/fields/DatasetConfigField/useDatasetConfigField";
 import { formatKey } from "~/features/datastore-connections/add-connection/helpers";
+import { useDatasetConfigField } from "~/features/datastore-connections/system_portal_config/forms/fields/DatasetConfigField/useDatasetConfigField";
 import {
   useGetAllSystemsQuery,
   usePatchSystemConnectionConfigsMutation,
@@ -77,12 +77,10 @@ const ConfigureIntegrationForm = ({
     value: d.fides_key,
   }));
 
-  const {
-    patchConnectionDatasetConfig,
-    initialDatasets,
-  } = useDatasetConfigField({
-    connectionConfig: connection,
-  });
+  const { patchConnectionDatasetConfig, initialDatasets } =
+    useDatasetConfigField({
+      connectionConfig: connection,
+    });
 
   const submitPending =
     secretsIsLoading || patchIsLoading || systemPatchIsLoading;

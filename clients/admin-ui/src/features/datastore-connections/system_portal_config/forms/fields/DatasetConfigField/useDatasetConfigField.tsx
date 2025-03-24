@@ -52,7 +52,6 @@ export const useDatasetConfigField = ({
     connectionConfigKey: string,
     { showSuccessAlert = true }: { showSuccessAlert?: boolean } = {},
   ) => {
-
     const newDatasetPairs: DatasetConfigCtlDataset[] =
       values.dataset?.map((datasetKey) => ({
         fides_key: datasetKey,
