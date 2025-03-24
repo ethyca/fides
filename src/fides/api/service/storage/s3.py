@@ -79,8 +79,8 @@ def generic_upload_to_s3(  # pylint: disable=R0913
 
     # Define a transfer configuration for multipart uploads
     transfer_config = TransferConfig(
-        multipart_threshold=LARGE_FILE_THRESHOLD,  # 5 MB threshold for multipart uploads
-        multipart_chunksize=LARGE_FILE_THRESHOLD,  # 5 MB chunk size
+        multipart_threshold=LARGE_FILE_THRESHOLD,
+        multipart_chunksize=LARGE_FILE_THRESHOLD,
     )
 
     # Use upload_fileobj for efficient uploads (handles both small and large files)
