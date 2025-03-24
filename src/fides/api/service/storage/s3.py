@@ -84,15 +84,20 @@ def generic_upload_to_s3(  # pylint: disable=R0913
     )
 
     # Use upload_fileobj for efficient uploads (handles both small and large files)
-    s3_client.upload_fileobj(
-        Fileobj=document,
-        Bucket=bucket_name,
-        Key=file_key,
-        Config=transfer_config,
-    )
-    logger.info("S3 Upload of {} completed successfully", file_key)
+    try:
+        # Use upload_fileobj for efficient uploads (handles both small and large files)
+        s3_client.upload_fileobj(
+            Fileobj=document,
+            Bucket=bucket_name,
+            Key=file_key,
+            Config=transfer_config,
+        )
+    except Exception as e:
+        logger.error(f"Failed to upload file {file_key} to bucket {bucket_name}: {e}")
+        raise e  # Re-raise the exception if you want it to propagate
 
     # Generate a presigned URL for the uploaded file
+    logger.info(f"Successfully uploaded file {file_key} to bucket {bucket_name}")
     return create_presigned_url_for_s3(s3_client, bucket_name, file_key)
 
 
