@@ -122,7 +122,7 @@ const loadConfigFile = async (
         path = urlString.replace("file:", "");
       }
       const file = await fsPromises.readFile(path || url, "utf-8");
-      console.debug(`Loaded configuration file: ${urlString}`);
+      fidesDebugger(`Loaded configuration file: ${urlString}`);
       return file;
     } catch (err: any) {
       // Catch "file not found" errors (ENOENT)
