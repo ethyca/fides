@@ -39,10 +39,20 @@ from fides.api.graph.config import (
     CollectionAddress,
 )
 from fides.api.migrations.hash_migration_mixin import HashMigrationMixin
-from fides.api.models.attachment import Attachment, AttachmentReference
+from fides.api.models.attachment import (
+    Attachment,
+    AttachmentReference,
+    AttachmentReferenceType,
+    delete_all_attachments,
+)
 from fides.api.models.audit_log import AuditLog
 from fides.api.models.client import ClientDetail
-from fides.api.models.comment import Comment, CommentReference
+from fides.api.models.comment import (
+    Comment,
+    CommentReference,
+    CommentReferenceType,
+    delete_all_comments,
+)
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.manual_webhook import AccessManualWebhook
 from fides.api.models.policy import (
@@ -169,20 +179,29 @@ class PrivacyRequest(
         backref="privacy_requests",
     )
     attachments = relationship(
-        Attachment,
+        "Attachment",
         secondary="attachment_reference",
-        primaryjoin="PrivacyRequest.id == AttachmentReference.reference_id",
+        primaryjoin="and_(PrivacyRequest.id == AttachmentReference.reference_id, "
+        "AttachmentReference.reference_type == 'privacy_request')",
         secondaryjoin="Attachment.id == AttachmentReference.attachment_id",
         order_by="Attachment.created_at",
-        viewonly=True,
+        back_populates="privacy_requests",
+        cascade="all, delete",
+        passive_deletes=True,
+        uselist=True,
     )
+
     comments = relationship(
-        Comment,
+        "Comment",
         secondary="comment_reference",
-        primaryjoin="PrivacyRequest.id == CommentReference.reference_id",
+        primaryjoin="and_(PrivacyRequest.id == CommentReference.reference_id, "
+        "CommentReference.reference_type == 'privacy_request')",
         secondaryjoin="Comment.id == CommentReference.comment_id",
         order_by="Comment.created_at",
-        viewonly=True,
+        back_populates="privacy_requests",
+        cascade="all, delete",
+        passive_deletes=True,
+        uselist=True,
     )
     property_id = Column(String, nullable=True)
 
@@ -325,6 +344,8 @@ class PrivacyRequest(
         deleting this object from the database
         """
         self.clear_cached_values()
+        delete_all_attachments(db, self.id, AttachmentReferenceType.privacy_request)
+        delete_all_comments(db, self.id, CommentReferenceType.privacy_request)
 
         for provided_identity in self.provided_identities:  # type: ignore[attr-defined]
             provided_identity.delete(db=db)

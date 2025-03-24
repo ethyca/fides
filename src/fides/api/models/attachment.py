@@ -1,7 +1,7 @@
 import os
 from enum import Enum as EnumType
 from io import BytesIO
-from typing import IO, Any, Optional, Tuple, Union
+from typing import IO, TYPE_CHECKING, Any, Optional, Tuple, Union
 
 from fideslang.validation import AnyHttpUrlString
 from loguru import logger as log
@@ -24,6 +24,10 @@ from fides.api.service.storage.util import (
     LOCAL_FIDES_UPLOAD_DIRECTORY,
     get_local_filename,
 )
+
+if TYPE_CHECKING:
+    from fides.api.models.comment import Comment
+    from fides.api.models.privacy_request import PrivacyRequest
 
 
 class AttachmentType(str, EnumType):
@@ -55,7 +59,9 @@ class AttachmentReference(Base):
         """Overriding base class method to set the table name."""
         return "attachment_reference"
 
-    attachment_id = Column(String, ForeignKey("attachment.id"), nullable=False)
+    attachment_id = Column(
+        String, ForeignKey("attachment.id", ondelete="CASCADE"), nullable=False
+    )
     reference_id = Column(String, nullable=False)
     reference_type = Column(EnumColumn(AttachmentReferenceType), nullable=False)
 
@@ -65,11 +71,8 @@ class AttachmentReference(Base):
         ),
     )
 
-    attachment = relationship(
-        "Attachment",
-        back_populates="references",
-        uselist=False,
-    )
+    # Relationships
+    attachment = relationship("Attachment", back_populates="references")
 
     @classmethod
     def create(
@@ -102,8 +105,26 @@ class Attachment(Base):
     references = relationship(
         "AttachmentReference",
         back_populates="attachment",
-        cascade="all, delete",
+        cascade="all, delete-orphan",
         uselist=True,
+    )
+
+    privacy_requests = relationship(
+        "PrivacyRequest",
+        secondary="attachment_reference",
+        primaryjoin="and_(Attachment.id == AttachmentReference.attachment_id, "
+        "AttachmentReference.reference_type == 'privacy_request')",
+        secondaryjoin="PrivacyRequest.id == AttachmentReference.reference_id",
+        back_populates="attachments",
+    )
+
+    comments = relationship(
+        "Comment",
+        back_populates="attachments",
+        secondary="attachment_reference",
+        primaryjoin="and_(Attachment.id == AttachmentReference.attachment_id, "
+        "AttachmentReference.reference_type == 'comment')",
+        secondaryjoin="Comment.id == AttachmentReference.reference_id",
     )
 
     config = relationship(
@@ -216,4 +237,28 @@ class Attachment(Base):
     def delete(self, db: Session) -> None:
         """Deletes an attachment record from the database and deletes the attachment from S3."""
         self.delete_attachment_from_storage()
+        for attachment_reference in self.references:
+            attachment_reference.delete(db)
         super().delete(db=db)
+
+
+def delete_all_attachments(
+    db: Session, reference_id: str, reference_type: AttachmentReferenceType
+) -> None:
+    """
+    Deletes attachments associated with this reference_id and reference_type.
+    Deletes all references to the attachments.
+    """
+    # Query attachments explicitly to avoid lazy loading
+    attachments = (
+        db.query(Attachment)
+        .join(AttachmentReference)
+        .filter(
+            AttachmentReference.reference_id == reference_id,
+            AttachmentReference.reference_type == reference_type,
+        )
+        .all()
+    )
+
+    for attachment in attachments:
+        attachment.delete(db)

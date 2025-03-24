@@ -9,6 +9,7 @@ from fides.api.models.attachment import (
     AttachmentReference,
     AttachmentReferenceType,
     AttachmentType,
+    delete_all_attachments,
 )
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.storage import StorageConfig
@@ -334,3 +335,47 @@ def test_attachment_reference_unique_ids(db, attachment_reference):
     with pytest.raises(IntegrityError):
         db.commit()
     db.rollback()
+
+
+def test_delete_all_attachments(db, attachment, comment, privacy_request):
+    """
+    Tests delete_all_attachments function only deletes attachments if they have
+     no other active references.
+    """
+    # create attachment references to comment and privacy request
+    AttachmentReference.create(
+        db,
+        data={
+            "attachment_id": attachment.id,
+            "reference_id": privacy_request.id,
+            "reference_type": AttachmentReferenceType.privacy_request,
+        },
+    )
+    AttachmentReference.create(
+        db,
+        data={
+            "attachment_id": attachment.id,
+            "reference_id": comment.id,
+            "reference_type": AttachmentReferenceType.comment,
+        },
+    )
+
+    # delete all attachments associated with the comment
+    # should delete all attachments and references to the attachment
+    delete_all_attachments(
+        db, reference_id=comment.id, reference_type=AttachmentReferenceType.comment
+    )
+    retrieved_attachment = db.query(Attachment).filter_by(id=attachment.id).first()
+    assert retrieved_attachment is None
+
+    # verify the reference to the "deleted" comment is removed
+    retrieved_comment_reference = (
+        db.query(AttachmentReference).filter_by(reference_id=comment.id).first()
+    )
+    assert retrieved_comment_reference is None
+
+    # verify the attachment and reference to the privacy request is also removed
+    retrieved_pr_reference = (
+        db.query(AttachmentReference).filter_by(reference_id=privacy_request.id).first()
+    )
+    assert retrieved_pr_reference is None
