@@ -22,6 +22,10 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.57.0...main)
 
 ### Added
+- Support for location based privacy center actions [#5803](https://github.com/ethyca/fides/pull/5803)
+
+### Changed
+- Privacy Center was updated to use React 19 and Nextjs 15 [#5803](https://github.com/ethyca/fides/pull/5803)
 - Added `is_country` field on locations [#5885](https://github.com/ethyca/fides/pull/5885)
 - Added `page` column to `Asset` table/model [#5898](https://github.com/ethyca/fides/pull/5898) https://github.com/ethyca/fides/labels/db-migration
 - Change `Browser Request` values to `Browser request` in Asset and StagedResource models [#5898](https://github.com/ethyca/fides/pull/5898) https://github.com/ethyca/fides/labels/db-migration

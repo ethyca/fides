@@ -1,3 +1,5 @@
+"use client";
+
 import {
   Flex,
   Heading,
@@ -8,10 +10,10 @@ import {
   useToast,
 } from "fidesui";
 import type { NextPage } from "next";
-import { useRouter } from "next/router";
+import { useSearchParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
 
-import { useAppDispatch, useAppSelector } from "~/app/hooks";
+import { useAppSelector } from "~/app/hooks";
 import { ConfigErrorToastOptions } from "~/common/toast-options";
 import BrandLink from "~/components/BrandLink";
 import ConsentCard from "~/components/consent/ConsentCard";
@@ -30,17 +32,11 @@ import {
   selectIsNoticeDriven,
   useSettings,
 } from "~/features/common/settings.slice";
-import {
-  clearLocation,
-  selectPrivacyExperience,
-  setLocation,
-} from "~/features/consent/consent.slice";
+import { selectPrivacyExperience } from "~/features/consent/consent.slice";
 import { useSubscribeToPrivacyExperienceQuery } from "~/features/consent/hooks";
 import { useGetIdVerificationConfigQuery } from "~/features/id-verification";
 
-const Home: NextPage = () => {
-  const router = useRouter();
-  const dispatch = useAppDispatch();
+const HomePage: NextPage = () => {
   const config = useConfig();
   const [isVerificationRequired, setIsVerificationRequired] =
     useState<boolean>(false);
@@ -81,19 +77,7 @@ const Home: NextPage = () => {
   useSubscribeToPrivacyExperienceQuery();
   const noticeEmptyStateModal = useDisclosure();
 
-  useEffect(() => {
-    if (router.query.geolocation) {
-      // Ensure the query parameter is a string
-      const geolocation = Array.isArray(router.query.geolocation)
-        ? router.query.geolocation[0]
-        : router.query.geolocation;
-
-      dispatch(setLocation(geolocation));
-    } else {
-      // clear the location override if the geolocation query param isn't provided
-      dispatch(clearLocation());
-    }
-  }, [router.query.geolocation, dispatch]);
+  const searchParams = useSearchParams();
 
   const experience = useAppSelector(selectPrivacyExperience);
   const isNoticeDriven = useAppSelector(selectIsNoticeDriven);
@@ -148,6 +132,7 @@ const Home: NextPage = () => {
     );
   });
 
+  const showConsentModal = searchParams?.get("showConsentModal") === "true";
   if (config.includeConsent && config.consent) {
     content.push(
       <ConsentCard
@@ -158,7 +143,7 @@ const Home: NextPage = () => {
         onOpen={handleConsentCardOpen}
       />,
     );
-    if (router.query?.showConsentModal === "true") {
+    if (showConsentModal) {
       // manually override whether to show the consent modal given
       // the query param `showConsentModal`
       isConsentModalOpen = true;
@@ -275,4 +260,4 @@ const Home: NextPage = () => {
   );
 };
 
-export default Home;
+export default HomePage;
