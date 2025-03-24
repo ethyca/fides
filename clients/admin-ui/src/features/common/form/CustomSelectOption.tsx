@@ -1,6 +1,6 @@
-import { AntButton as Button, AntButtonProps } from "fidesui";
+import { AntButton as Button, AntButtonProps as ButtonProps } from "fidesui";
 
-interface CustomSelectOptionProps extends Omit<AntButtonProps, "type"> {}
+interface CustomSelectOptionProps extends Omit<ButtonProps, "type"> {}
 
 /**
  * A button that looks like an Ant Select Option for use in custom dropdowns.

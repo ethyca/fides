@@ -13,12 +13,14 @@ from fides.api.db.base_class import Base
 from fides.api.models.fides_user import FidesUser  # pylint: disable=unused-import
 from fides.api.models.storage import StorageConfig  # pylint: disable=unused-import
 from fides.api.schemas.storage.storage import StorageDetails, StorageType
-from fides.api.tasks.storage import (
-    LOCAL_FIDES_UPLOAD_DIRECTORY,
+from fides.api.service.storage.s3 import (
     generic_delete_from_s3,
     generic_retrieve_from_s3,
+    generic_upload_to_s3,
+)
+from fides.api.service.storage.util import (
+    LOCAL_FIDES_UPLOAD_DIRECTORY,
     get_local_filename,
-    upload_to_s3,
 )
 
 
@@ -91,7 +93,6 @@ class Attachment(Base):
 
     user = relationship(
         "FidesUser",
-        backref="attachments",
         lazy="selectin",
         uselist=False,
     )
@@ -114,13 +115,10 @@ class Attachment(Base):
         if self.config.type == StorageType.s3:
             bucket_name = f"{self.config.details[StorageDetails.BUCKET.value]}"
             auth_method = self.config.details[StorageDetails.AUTH_METHOD.value]
-            upload_to_s3(
+            generic_upload_to_s3(
                 storage_secrets=self.config.secrets,
-                data={},
                 bucket_name=bucket_name,
                 file_key=self.id,
-                resp_format=self.config.format,
-                privacy_request=None,
                 document=attachment,
                 auth_method=auth_method,
             )

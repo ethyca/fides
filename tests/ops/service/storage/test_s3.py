@@ -3,7 +3,7 @@ import pytest
 from moto import mock_aws
 
 from fides.api.schemas.storage.storage import StorageDetails
-from fides.api.tasks.storage import (
+from fides.api.service.storage.s3 import (
     generic_delete_from_s3,
     generic_retrieve_from_s3,
     generic_upload_to_s3,

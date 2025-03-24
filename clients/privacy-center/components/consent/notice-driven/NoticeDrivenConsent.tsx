@@ -27,6 +27,7 @@ import useI18n from "~/common/hooks/useI18n";
 import { ErrorToastOptions, SuccessToastOptions } from "~/common/toast-options";
 import BrandLink from "~/components/BrandLink";
 import { useProperty } from "~/features/common/property.slice";
+import { useSettings } from "~/features/common/settings.slice";
 import {
   selectPrivacyExperience,
   selectUserRegion,
@@ -52,6 +53,7 @@ import ConsentItemAccordion from "./ConsentItemAccordion";
 const NoticeDrivenConsent = ({ base64Cookie }: { base64Cookie: boolean }) => {
   const router = useRouter();
   const toast = useToast();
+  const settings = useSettings();
 
   const [consentRequestId] = useLocalStorage("consentRequestId", "");
   const [verificationCode] = useLocalStorage("verificationCode", "");
@@ -159,6 +161,8 @@ const NoticeDrivenConsent = ({ base64Cookie }: { base64Cookie: boolean }) => {
       return [];
     }
 
+    const disabledNotices = settings.FIDES_DISABLED_NOTICES?.split(",") || [];
+
     return notices.map((notice) => {
       const noticeTranslation = selectNoticeTranslation(
         notice as PrivacyNotice,
@@ -173,6 +177,10 @@ const NoticeDrivenConsent = ({ base64Cookie }: { base64Cookie: boolean }) => {
         consentContext,
       });
 
+      const isDisabled =
+        notice.consent_mechanism === ConsentMechanism.NOTICE_ONLY ||
+        disabledNotices.includes(notice.notice_key);
+
       return {
         name: notice.name || "",
         description: noticeTranslation.description || "",
@@ -180,7 +188,7 @@ const NoticeDrivenConsent = ({ base64Cookie }: { base64Cookie: boolean }) => {
         historyId: noticeTranslation.privacy_notice_history_id,
         value,
         gpcStatus,
-        disabled: notice.consent_mechanism === ConsentMechanism.NOTICE_ONLY,
+        disabled: isDisabled,
         bestTranslation: noticeTranslation,
         children: notice?.children?.map((noticeChild) => {
           const childNoticeTranslation = selectNoticeTranslation(
@@ -199,7 +207,13 @@ const NoticeDrivenConsent = ({ base64Cookie }: { base64Cookie: boolean }) => {
         }),
       };
     });
-  }, [consentContext, experience, draftPreferences, selectNoticeTranslation]);
+  }, [
+    consentContext,
+    experience,
+    draftPreferences,
+    selectNoticeTranslation,
+    settings,
+  ]);
 
   const handleCancel = () => {
     router.push("/");

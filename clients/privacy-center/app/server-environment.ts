@@ -31,7 +31,7 @@ import {
 
 export type PrivacyCenterServerSettings = Pick<
   PrivacyCenterSettings,
-  "SERVER_SIDE_FIDES_API_URL"
+  "SERVER_SIDE_FIDES_API_URL" | "FIDES_JS_MAX_AGE_SECONDS"
 >;
 
 /**
@@ -66,6 +66,7 @@ export type PrivacyCenterClientSettings = Pick<
   | "FIDES_PRIMARY_COLOR"
   | "FIDES_CLEAR_COOKIE"
   | "FIDES_CONSENT_OVERRIDE"
+  | "FIDES_DISABLED_NOTICES"
 >;
 
 export type Styles = string;
@@ -270,6 +271,21 @@ export const loadStylesFromFile = async (
   return file;
 };
 
+/**
+ * Load server settings from global environment variables
+ * The returned Server settings should never be exposed to the client
+ */
+export const loadServerSettings = (): PrivacyCenterServerSettings => {
+  const settings = loadEnvironmentVariables();
+  const serverSideSettings: PrivacyCenterServerSettings = {
+    SERVER_SIDE_FIDES_API_URL:
+      settings.SERVER_SIDE_FIDES_API_URL || settings.FIDES_API_URL,
+    FIDES_JS_MAX_AGE_SECONDS: settings.FIDES_JS_MAX_AGE_SECONDS,
+  };
+
+  return serverSideSettings;
+};
+
 export const getFidesApiUrl = () => {
   const settings = loadEnvironmentVariables();
   return settings.SERVER_SIDE_FIDES_API_URL || settings.FIDES_API_URL;
@@ -309,6 +325,7 @@ export const getClientSettings = (): PrivacyCenterClientSettings => {
     FIDES_PRIMARY_COLOR: settings.FIDES_PRIMARY_COLOR,
     FIDES_CLEAR_COOKIE: settings.FIDES_CLEAR_COOKIE,
     FIDES_CONSENT_OVERRIDE: settings.FIDES_CONSENT_OVERRIDE,
+    FIDES_DISABLED_NOTICES: settings.FIDES_DISABLED_NOTICES,
   };
 
   return clientSettings;

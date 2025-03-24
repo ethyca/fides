@@ -20,12 +20,9 @@ from fides.api.graph.execution import ExecutionNode
 from fides.api.graph.graph import DatasetGraph, Edge
 from fides.api.graph.traversal import Traversal
 from fides.api.models.connectionconfig import ConnectionConfig
-from fides.api.models.privacy_request import (
-    ExecutionLogStatus,
-    PrivacyRequestStatus,
-    RequestTask,
-)
+from fides.api.models.privacy_request import RequestTask
 from fides.api.schemas.policy import ActionType
+from fides.api.schemas.privacy_request import ExecutionLogStatus, PrivacyRequestStatus
 from fides.api.service.connectors import PostgreSQLConnector
 from fides.api.task.create_request_tasks import (
     collect_tasks_fn,
