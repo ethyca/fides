@@ -22,7 +22,6 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "test": "jest --watchAll",
-    "test:no-watch": "jest",
     "test:ci": "jest",
     "typecheck": "tsc --noEmit"
   },
