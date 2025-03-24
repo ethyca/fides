@@ -1,9 +1,9 @@
 const ClientMetadata = ({
-  title,
-  description,
+  title = "Privacy Center",
+  description = "Privacy Center",
   icon,
 }: {
-  title: string;
+  title?: string;
   description: string;
   icon?: string | null;
 }) => (
