@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from io import BytesIO
-from typing import IO, Any, Dict, Optional, Union
+from typing import IO, Any, Dict, Optional, Tuple
 
 from boto3.s3.transfer import TransferConfig
 from botocore.exceptions import ClientError, ParamValidationError
@@ -126,7 +126,7 @@ def generic_retrieve_from_s3(
     file_key: str,
     auth_method: str,
     size_threshold: int = LARGE_FILE_THRESHOLD,  # 5 MB threshold
-) -> Union[BytesIO, AnyHttpUrlString]:
+) -> Tuple[BytesIO, AnyHttpUrlString]:
     """
     Retrieves arbitrary data from S3. Returns the file contents if the file is small,
     or a presigned URL to download the file if it is large.
