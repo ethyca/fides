@@ -15,9 +15,19 @@ type FidesVariable = Omit<FidesEvent["detail"], "consent"> & {
   consent: Record<string, boolean | string>;
 };
 
+export enum GtmNonApplicableFlagMode {
+  OMIT = "omit",
+  INCLUDE = "include",
+}
+
+export enum GtmFlagType {
+  BOOLEAN = "boolean",
+  CONSENT_MECHANISM = "consent_mechanism",
+}
+
 export interface GtmOptions {
-  includeNotApplicable?: boolean;
-  asStringValues?: boolean;
+  non_applicable_flag_mode?: GtmNonApplicableFlagMode;
+  flag_type?: GtmFlagType;
 }
 
 // Helper function to push the Fides variable to the GTM data layer from a FidesEvent
@@ -34,7 +44,11 @@ const pushFidesVariableToGTM = (
   const { detail, type } = fidesEvent;
   // eslint-disable-next-line @typescript-eslint/naming-convention
   const { consent, extraDetails, fides_string, timestamp } = detail;
-  const { includeNotApplicable, asStringValues } = options ?? {};
+  const {
+    non_applicable_flag_mode:
+      nonApplicableFlagMode = GtmNonApplicableFlagMode.OMIT,
+    flag_type: flagType = GtmFlagType.BOOLEAN,
+  } = options ?? {};
   const consentValues: FidesVariable["consent"] = JSON.parse(
     JSON.stringify(consent),
   );
@@ -42,7 +56,7 @@ const pushFidesVariableToGTM = (
   const nonApplicablePrivacyNotices =
     window.Fides?.experience?.non_applicable_privacy_notices;
 
-  if (privacyNotices && asStringValues) {
+  if (privacyNotices && flagType === GtmFlagType.CONSENT_MECHANISM) {
     Object.entries(consent).forEach(([key, value]) => {
       consentValues[key] = transformConsentToFidesUserPreference(
         value,
@@ -52,9 +66,13 @@ const pushFidesVariableToGTM = (
     });
   }
 
-  if (includeNotApplicable && nonApplicablePrivacyNotices) {
+  if (
+    nonApplicableFlagMode === GtmNonApplicableFlagMode.INCLUDE &&
+    nonApplicablePrivacyNotices
+  ) {
     nonApplicablePrivacyNotices.forEach((key) => {
-      consentValues[key] = asStringValues ? "not_applicable" : true;
+      consentValues[key] =
+        flagType === GtmFlagType.CONSENT_MECHANISM ? "not_applicable" : true;
     });
   }
 
