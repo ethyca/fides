@@ -363,7 +363,7 @@ describe("Privacy notice driven consent", () => {
         FIDES_DISABLED_NOTICES: "analytics_opt_out",
         ...SETTINGS,
       };
-      cy.visit("/consent");
+      cy.visitConsent({ settingsOverride: overrides });
       cy.getByTestId("consent");
       cy.overrideSettings(overrides);
       cy.wait("@getExperience");
