@@ -160,6 +160,10 @@ async def list_dataset_paginated(
     query = select(CtlDataset)
 
     if minimal:
+        # .options() allows us to modify how the query loads data by configuring the query's loading behavior
+        # load_only() optimizes the query by only loading the specified columns from the database
+        # This reduces memory usage and query time by not loading unnecessary columns
+        # The columns specified below are the minimal set needed for the DatasetResponse model
         query = query.options(  # type: ignore[attr-defined]
             load_only(
                 CtlDataset.id,
