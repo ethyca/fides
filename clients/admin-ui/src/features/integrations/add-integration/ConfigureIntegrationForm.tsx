@@ -9,10 +9,12 @@ import { CustomTextInput } from "~/features/common/form/inputs";
 import { getErrorMessage } from "~/features/common/helpers";
 import { useGetConnectionTypeSecretSchemaQuery } from "~/features/connection-type";
 import type { ConnectionTypeSecretSchemaResponse } from "~/features/connection-type/types";
+import { useGetAllDatasetsQuery } from "~/features/dataset";
 import {
   usePatchDatastoreConnectionMutation,
   usePatchDatastoreConnectionSecretsMutation,
 } from "~/features/datastore-connections";
+import { useDatasetConfigField } from "~/features/datastore-connections/system_portal_config/forms/fields/DatasetConfigField/useDatasetConfigField";
 import { formatKey } from "~/features/datastore-connections/add-connection/helpers";
 import {
   useGetAllSystemsQuery,
@@ -38,6 +40,7 @@ type FormValues = {
   description: string;
   system_fides_key?: string;
   secrets?: ConnectionSecrets;
+  dataset?: string[];
 };
 
 const ConfigureIntegrationForm = ({
@@ -68,6 +71,19 @@ const ConfigureIntegrationForm = ({
     value: s.fides_key,
   }));
 
+  const { data: allDatasets } = useGetAllDatasetsQuery();
+  const datasetOptions = allDatasets?.map((d) => ({
+    label: d.name ?? d.fides_key,
+    value: d.fides_key,
+  }));
+
+  const {
+    patchConnectionDatasetConfig,
+    initialDatasets,
+  } = useDatasetConfigField({
+    connectionConfig: connection,
+  });
+
   const submitPending =
     secretsIsLoading || patchIsLoading || systemPatchIsLoading;
 
@@ -78,6 +94,7 @@ const ConfigureIntegrationForm = ({
       secrets?.properties,
       (s, key) => connection?.secrets?.[key] ?? "",
     ),
+    dataset: initialDatasets,
   };
 
   const toast = useToast();
@@ -114,6 +131,7 @@ const ConfigureIntegrationForm = ({
           disabled: false,
           description: values.description,
           secrets: values.secrets,
+          dataset: values.dataset,
         };
 
     // if system is attached, use patch request that attaches to system
@@ -172,6 +190,16 @@ const ConfigureIntegrationForm = ({
       } successfully`,
     });
     onCancel();
+
+    if (
+      connectionPayload &&
+      values.dataset &&
+      connectionOption.identifier === ConnectionType.DATAHUB
+    ) {
+      await patchConnectionDatasetConfig(values, connectionPayload.key, {
+        showSuccessAlert: false,
+      });
+    }
   };
 
   if (secretsSchemaIsLoading) {
@@ -246,6 +274,17 @@ const ConfigureIntegrationForm = ({
                 label="System"
                 tooltip="The system to associate with the integration"
                 layout="stacked"
+              />
+            )}
+            {connectionOption.identifier === ConnectionType.DATAHUB && (
+              <ControlledSelect
+                id="dataset"
+                name="dataset"
+                options={datasetOptions ?? []}
+                label="Datasets"
+                tooltip="The datasets to associate with the integration"
+                layout="stacked"
+                mode="multiple"
               />
             )}
             <div className="flex w-full justify-between">
