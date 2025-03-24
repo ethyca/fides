@@ -91,6 +91,9 @@ export const generateFidesString = async ({
     tcModel.isServiceSpecific = true;
     tcModel.supportOOB = false;
 
+    if (experience.tcf_publisher_country_code) {
+      tcModel.publisherCountryCode = experience.tcf_publisher_country_code;
+    }
     // Narrow the GVL to say we've only showed these vendors provided by our experience
     const gvlUID = experience.minimal_tcf
       ? uniqueGvlVendorIdsFromMinimal(experience as PrivacyExperienceMinimal)
