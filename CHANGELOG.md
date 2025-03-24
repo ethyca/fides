@@ -38,9 +38,8 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ### Changed
 - Changed discovered asset "system" cell to use `user_assigned_system_key` property [#5908](https://github.com/ethyca/fides/pull/5908)
-
-### Changed
 - Changed Dataset endpoint, it now has `minimal` parameter, and can be filtered by `fides_meta.namespace.connection_type` [#5915](https://github.com/ethyca/fides/pull/5915)
+- Datahub integration now allows datasets to be selected [#5926](https://github.com/ethyca/fides/pull/5926)
 
 ### Fixed
 - Fixed UX issues with website monitor form [#5884](https://github.com/ethyca/fides/pull/5884)
