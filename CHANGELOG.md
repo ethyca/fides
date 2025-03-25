@@ -50,11 +50,14 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Fixed consent reporting table issues, add external id column [#5918](https://github.com/ethyca/fides/pull/5918)
 - Removed excessive authorization debug logs [#5920](https://github.com/ethyca/fides/pull/5920)
 - Fixed fix incorrect calls to TCF api update method [#5916](https://github.com/ethyca/fides/pull/5916)
+- Fixed "unvisited edges" error when dealing with optional identities [#5923](https://github.com/ethyca/fides/pull/5923)
+
+### Removed
+- Removed beta flag for Datahub feature [#5937](https://github.com/ethyca/fides/pull/5937)
 
 ## [2.57.1](https://github.com/ethyca/fides/compare/2.57.0...2.57.1)
 
 ### Changed
-
 - Added extra debug logging and fixed handler time calculation [#5927](https://github.com/ethyca/fides/pull/5927)
 
 ## [2.57.0](https://github.com/ethyca/fides/compare/2.56.2...2.57.0)

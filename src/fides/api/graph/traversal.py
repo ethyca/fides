@@ -270,6 +270,14 @@ class BaseTraversal:
                 [key.value for key in remaining_node_keys],
             )
 
+        # filter out remaining_edges if the nodes they link are allowed to remain unreachable
+        remaining_edges = {
+            edge
+            for edge in remaining_edges
+            if edge.f1.collection_address() in remaining_node_keys
+            and edge.f2.collection_address() in remaining_node_keys
+        }
+
         # error if there are edges that have not been visited
         if remaining_edges:
             logger.error(
