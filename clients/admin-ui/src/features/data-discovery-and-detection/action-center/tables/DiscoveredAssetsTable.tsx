@@ -22,6 +22,7 @@ import { uniq } from "lodash";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 
+import DataTabsHeader from "~/features/common/DataTabsHeader";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { useAlert } from "~/features/common/hooks";
 import {
@@ -44,6 +45,8 @@ import {
   useUpdateAssetsSystemMutation,
 } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
 import AddDataUsesModal from "~/features/data-discovery-and-detection/action-center/AddDataUsesModal";
+import useDiscoveredAssetsTabs from "~/features/data-discovery-and-detection/action-center/tables/useDiscoveredAssetsTabs";
+import { DiffStatus } from "~/types/api";
 
 import { SearchInput } from "../../SearchInput";
 import { AssignSystemModal } from "../AssignSystemModal";
@@ -108,12 +111,15 @@ export const DiscoveredAssetsTable = ({
     resetPageIndexToDefault();
   }, [monitorId, searchQuery, resetPageIndexToDefault]);
 
+  const { filterTabs, filterTabIndex, onTabChange, activeParams } =
+    useDiscoveredAssetsTabs({ systemId });
+
   const { data, isLoading, isFetching } = useGetDiscoveredAssetsQuery({
     key: monitorId,
-    system: systemId,
     page: pageIndex,
     size: pageSize,
     search: searchQuery,
+    ...activeParams,
   });
 
   useEffect(() => {
@@ -125,7 +131,9 @@ export const DiscoveredAssetsTable = ({
     }
   }, [data, systemId, onSystemName, setTotalPages]);
 
-  const { columns } = useDiscoveredAssetsColumns();
+  const { columns } = useDiscoveredAssetsColumns({
+    readonly: activeParams.diff_status.includes(DiffStatus.MONITORED),
+  });
 
   const tableInstance = useReactTable({
     getCoreRowModel: getCoreRowModel(),
@@ -186,10 +194,14 @@ export const DiscoveredAssetsTable = ({
     }
     const assets = selectedAssets.map((asset) => {
       // eslint-disable-next-line @typescript-eslint/naming-convention
-      const data_uses = uniq([...(asset.data_uses || []), ...newDataUses]);
+      const user_assigned_data_uses = uniq([
+        ...(asset.data_uses || []),
+        ...(asset.user_assigned_data_uses || []),
+        ...newDataUses,
+      ]);
       return {
         urn: asset.urn,
-        data_uses,
+        user_assigned_data_uses,
       };
     });
     const result = await updateAssetsMutation({
@@ -250,6 +262,14 @@ export const DiscoveredAssetsTable = ({
 
   return (
     <>
+      <DataTabsHeader
+        data={filterTabs}
+        data-testid="system-tabs"
+        index={filterTabIndex}
+        isLazy
+        isManual
+        onChange={onTabChange}
+      />
       <TableActionBar>
         <SearchInput value={searchQuery} onChange={setSearchQuery} />
         <Flex alignItems="center">
