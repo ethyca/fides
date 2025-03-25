@@ -9,6 +9,7 @@ import {
   ButtonType,
   ConsentMechanism,
   ConsentMethod,
+  FidesCookie,
   PrivacyExperience,
   PrivacyExperienceMinimal,
   PrivacyNoticeWithPreference,
@@ -18,6 +19,10 @@ import {
   experienceIsValid,
   isPrivacyExperience,
 } from "../../lib/consent-utils";
+import {
+  consentCookieObjHasSomeConsentSet,
+  getFidesConsentCookie,
+} from "../../lib/cookie";
 import { dispatchFidesEvent } from "../../lib/events";
 import { useNoticesServed } from "../../lib/hooks";
 import {
@@ -89,6 +94,7 @@ export const TcfOverlay = ({
     setCurrentLocale,
     setIsLoading: setIsI18nLoading,
   } = useI18n();
+  const parsedCookie: FidesCookie | undefined = getFidesConsentCookie();
   const minExperienceLocale =
     experienceMinimal?.experience_config?.translations?.[0]?.language;
   const defaultLocale = i18n.getDefaultLocale();
@@ -492,8 +498,10 @@ export const TcfOverlay = ({
   }, [cookie, options.debug]);
 
   const handleDismiss = useCallback(() => {
-    handleUpdateAllPreferences(ConsentMethod.DISMISS, draftIds);
-  }, [handleUpdateAllPreferences, draftIds]);
+    if (!consentCookieObjHasSomeConsentSet(parsedCookie?.consent)) {
+      handleUpdateAllPreferences(ConsentMethod.DISMISS, draftIds);
+    }
+  }, [handleUpdateAllPreferences, draftIds, parsedCookie?.consent]);
 
   const experienceConfig =
     experience?.experience_config || experienceMinimal.experience_config;

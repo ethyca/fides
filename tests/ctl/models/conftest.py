@@ -1,3 +1,5 @@
+from io import BytesIO
+
 import pytest
 
 from fides.api.models.attachment import (
@@ -21,17 +23,17 @@ def multiple_attachments(s3_client, db, attachment_data, user, monkeypatch):
     attachment_data["user_id"] = user.id
     attachment_data["file_name"] = "file_1.txt"
     attachment_1 = Attachment.create_and_upload(
-        db, data=attachment_data, attachment_file=b"file content 1"
+        db, data=attachment_data, attachment_file=BytesIO(b"file content 1")
     )
 
     attachment_data["file_name"] = "file_2.txt"
     attachment_2 = Attachment.create_and_upload(
-        db, data=attachment_data, attachment_file=b"file content 2"
+        db, data=attachment_data, attachment_file=BytesIO(b"file content 2")
     )
 
     attachment_data["file_name"] = "file_3.txt"
     attachment_3 = Attachment.create_and_upload(
-        db, data=attachment_data, attachment_file=b"file content 3"
+        db, data=attachment_data, attachment_file=BytesIO(b"file content 3")
     )
 
     yield attachment_1, attachment_2, attachment_3

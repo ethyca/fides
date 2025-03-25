@@ -66,32 +66,23 @@ export interface Fides {
   consent: Record<string, boolean>;
 
   /**
-   * User's current consent string(s) combined into a single value. The string
-   * consists of three parts separated by commas in the format:
-   * `TC_STRING,AC_STRING,GPP_STRING` where:
+   * User's current consent string(s) combined into a single value. This is used by
+   * FidesJS to store IAB consent strings from various frameworks such as TCF, GPP,
+   * and Google's "Additional Consent" string. Additionally, we support passing a
+   * Notice Consent string, which is a base64 encoded string of the user's Notice
+   * Consent preferences. See {@link FidesOptions.fides_string} for more details.
+   *
+   * The string consists of four parts separated by commas in the format:
+   * `TC_STRING,AC_STRING,GPP_STRING,NC_STRING` where:
    *
    * - TC_STRING: IAB TCF (Transparency & Consent Framework) string
-   * - AC_STRING: Google's Additional Consent string, derived from TC_STRING
+   * - AC_STRING: Google's Additional Consent string
    * - GPP_STRING: IAB GPP (Global Privacy Platform) string
-   *
-   * Note: The AC_STRING can only exist if TC_STRING exists, as it's derived from it.
-   * When GPP is enabled, the GPP_STRING portion is automatically initialized during
-   * FidesJS initialization, either preserving any existing GPP string or using a
-   * default value. The GPP_STRING is independent and can exist with or without the
-   * other strings.
+   * - NC_STRING: Base64 encoded string of the user's Notice Consent preferences.
    *
    * @example
-   * // Complete string with all parts:
    * console.log(Fides.fides_string);
-   * // "CPzHq4APzHq4AAMABBENAUEAALAAAEOAAAAAAEAEACACAAAA,1~61.70,DBABLA~BVAUAAAAAWA.QA"
-   *
-   * // TC and AC strings only (no GPP):
-   * console.log(Fides.fides_string);
-   * // "CPzHq4APzHq4AAMABBENAUEAALAAAEOAAAAAAEAEACACAAAA,1~61.70"
-   *
-   * // GPP string only:
-   * console.log(Fides.fides_string);
-   * // ",,DBABLA~BVAUAAAAAWA.QA"
+   * // "CPzHq4APzHq4AAMABBENAUEAALAAAEOAAAAAAEAEACACAAAA,1~61.70,DBABLA~BVAUAAAAAWA.QA,eyJkYXRhX3NhbGVzX2FuZF9zaGFyaW5nIjowLCJhbmFseXRpY3MiOjF9"
    */
   fides_string?: string;
 
@@ -278,6 +269,36 @@ export interface Fides {
    * preferences) or in the case when the previous consent is no longer valid.
    */
   shouldShowExperience: () => boolean;
+
+  /**
+   * Encode the user's consent preferences into a Notice Consent string. See {@link FidesOptions.fides_string} for more details.
+   *
+   * @example
+   * ```ts
+   * const encoded = Fides.encodeNoticeConsentString({data_sales_and_sharing:0,analytics:1});
+   * console.log(encoded); // "eyJkYXRhX3NhbGVzX2FuZF9zaGFyaW5nIjowLCJhbmFseXRpY3MiOjF9"
+   * ```
+   *
+   * @param consent The user's consent preferences to encode. (Numeric values are supported for smaller string results and will be decoded to boolean values)
+   */
+  encodeNoticeConsentString: (
+    consent: Record<string, boolean | 0 | 1>,
+  ) => string;
+
+  /**
+   * Decode a Notice Consent string into a user's consent preferences. See {@link FidesOptions.fides_string} for more details.
+   *
+   * @example
+   * ```ts
+   * const decoded = Fides.decodeNoticeConsentString("eyJkYXRhX3NhbGVzX2FuZF9zaGFyaW5nIjowLCJhbmFseXRpY3MiOjF9");
+   * console.log(decoded); // {data_sales_and_sharing: false, analytics: true}
+   * ```
+   *
+   * @param base64String The Notice Consent string to decode.
+   */
+  decodeNoticeConsentString: (base64String: string) => {
+    [noticeKey: string]: boolean;
+  };
 
   /**
    * NOTE: The properties below are all marked @internal, despite being exported

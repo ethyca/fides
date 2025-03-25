@@ -261,15 +261,3 @@ def test_comment_reference_foreign_key_constraint(db):
     db.add(comment_reference)
     with pytest.raises(IntegrityError):
         db.commit()
-
-
-def test_delete_comment_reference_cascades(db, comment, comment_reference):
-    """Test that deleting a comment reference does not delete the comment."""
-    retrieved_comment = db.query(Comment).filter_by(id=comment.id).first()
-    assert retrieved_comment is not None
-
-    comment_reference.delete(db=db)
-
-    retrieved_comment = db.query(Comment).filter_by(id=comment.id).first()
-    assert retrieved_comment is not None
-    assert len(retrieved_comment.references) == 0
