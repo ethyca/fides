@@ -186,7 +186,7 @@ class ConnectionConfig(Base):
             )
         ),
         nullable=True,
-    )  # Type bytea in the db
+    )  # Type bytes in the db
     last_test_timestamp = Column(DateTime(timezone=True))
     last_test_succeeded = Column(Boolean)
     disabled = Column(Boolean, server_default="f", default=False)

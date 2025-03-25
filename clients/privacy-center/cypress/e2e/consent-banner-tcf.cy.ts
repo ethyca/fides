@@ -174,6 +174,13 @@ describe("Fides-js TCF", () => {
     it("should render the banner if there is no saved version hash", () => {
       cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
       stubTCFExperience({});
+      cy.window().then((win) => {
+        win.__tcfapi("addEventListener", 2, ({ eventStatus }) => {
+          if (eventStatus) {
+            expect(eventStatus).to.eql("tcloaded");
+          }
+        });
+      });
       cy.waitUntilFidesInitialized().then(() => {
         cy.get("@FidesUIShown").should("have.been.calledOnce");
         cy.get("div#fides-banner").should("be.visible");
@@ -186,6 +193,13 @@ describe("Fides-js TCF", () => {
       });
       cy.setCookie(CONSENT_COOKIE_NAME, JSON.stringify(cookie));
       stubTCFExperience({});
+      cy.window().then((win) => {
+        win.__tcfapi("addEventListener", 2, ({ eventStatus }) => {
+          if (eventStatus) {
+            expect(eventStatus).to.eql("cmpuishown");
+          }
+        });
+      });
       cy.waitUntilFidesInitialized().then(() => {
         cy.get("@FidesUIShown").should("have.been.calledOnce");
         cy.get("div#fides-banner").should("be.visible");
@@ -198,6 +212,13 @@ describe("Fides-js TCF", () => {
       });
       cy.setCookie(CONSENT_COOKIE_NAME, JSON.stringify(cookie));
       stubTCFExperience({});
+      cy.window().then((win) => {
+        win.__tcfapi("addEventListener", 2, ({ eventStatus }) => {
+          if (eventStatus) {
+            expect(eventStatus).to.eql("tcloaded");
+          }
+        });
+      });
       cy.waitUntilFidesInitialized().then(() => {
         // The banner has a delay, so in order to assert its non-existence, we have
         // to give it a chance to come up first. Otherwise, the following gets will
@@ -468,6 +489,7 @@ describe("Fides-js TCF", () => {
                 extraDetails: {
                   consentMethod: undefined,
                   shouldShowExperience: true,
+                  firstInit: false,
                 },
                 fides_string: undefined,
               },
@@ -1114,6 +1136,7 @@ describe("Fides-js TCF", () => {
                   extraDetails: {
                     consentMethod: undefined,
                     shouldShowExperience: true,
+                    firstInit: false,
                   },
                   fides_string: undefined,
                 },

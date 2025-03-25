@@ -76,11 +76,13 @@ describe("Privacy notice driven consent", () => {
     beforeEach(() => {
       cy.clearAllCookies();
       cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
-      cy.visit("/consent");
-      cy.getByTestId("consent");
-      cy.overrideSettings(SETTINGS);
-      cy.getByTestId("consent");
-      cy.wait("@getVerificationConfig");
+      cy.visitConsent({
+        settingsOverride: {
+          IS_OVERLAY_ENABLED: true,
+          IS_GEOLOCATION_ENABLED: true,
+          GEOLOCATION_API_URL,
+        },
+      });
     });
 
     it("populates its header from the experience config", () => {
@@ -331,9 +333,8 @@ describe("Privacy notice driven consent", () => {
     });
     it("renders from privacy notices when user has consented before", () => {
       // Visit the consent page with notices enabled
-      cy.visit("/consent");
+      cy.visitConsent({ settingsOverride: SETTINGS });
       cy.getByTestId("consent");
-      cy.overrideSettings(SETTINGS);
       // Should follow state of consent cookie
       cy.wait("@getExperience").then(() => {
         cy.getByTestId(`consent-item-${PRIVACY_NOTICE_ID_1}`).within(() => {
@@ -362,7 +363,7 @@ describe("Privacy notice driven consent", () => {
         FIDES_DISABLED_NOTICES: "analytics_opt_out",
         ...SETTINGS,
       };
-      cy.visit("/consent");
+      cy.visitConsent({ settingsOverride: overrides });
       cy.getByTestId("consent");
       cy.overrideSettings(overrides);
       cy.wait("@getExperience");
@@ -372,9 +373,10 @@ describe("Privacy notice driven consent", () => {
 
   describe("consent reporting", () => {
     beforeEach(() => {
-      cy.visit("/consent");
+      cy.visitConsent({
+        settingsOverride: SETTINGS,
+      });
       cy.getByTestId("consent");
-      cy.overrideSettings(SETTINGS);
     });
 
     it("can make calls to consent reporting endpoints", () => {
@@ -405,8 +407,7 @@ describe("Privacy notice driven consent", () => {
     });
 
     it("renders hierarchical notices correctly", () => {
-      cy.visit("/consent");
-      cy.getByTestId("consent");
+      cy.visitConsent({ settingsOverride: SETTINGS });
       cy.overrideSettings(SETTINGS);
       cy.wait("@getExperience");
 
@@ -421,9 +422,7 @@ describe("Privacy notice driven consent", () => {
     });
 
     it("parent toggle should toggle all children", () => {
-      cy.visit("/consent");
-      cy.getByTestId("consent");
-      cy.overrideSettings(SETTINGS);
+      cy.visitConsent({ settingsOverride: SETTINGS });
       cy.wait("@getExperience");
 
       cy.getByTestId("consent-item-pri_notice-advertising-000")
@@ -456,9 +455,7 @@ describe("Privacy notice driven consent", () => {
     });
 
     it("toggle all children should toggle parent", () => {
-      cy.visit("/consent");
-      cy.getByTestId("consent");
-      cy.overrideSettings(SETTINGS);
+      cy.visitConsent({ settingsOverride: SETTINGS });
       cy.wait("@getExperience");
 
       cy.getByTestId("consent-item-pri_notice-advertising-000")
@@ -482,9 +479,7 @@ describe("Privacy notice driven consent", () => {
     });
 
     it("can save hierarchical notices", () => {
-      cy.visit("/consent");
-      cy.getByTestId("consent");
-      cy.overrideSettings(SETTINGS);
+      cy.visitConsent({ settingsOverride: SETTINGS });
       cy.wait("@getExperience");
 
       cy.getByTestId("consent-item-pri_notice-advertising-000").click();
