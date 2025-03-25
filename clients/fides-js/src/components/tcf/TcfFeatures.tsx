@@ -1,7 +1,10 @@
 import { h } from "preact";
 
 import { PrivacyExperience } from "../../lib/consent-types";
-import { FidesServingToggleDetails } from "../../lib/events";
+import {
+  FidesEventDetailsPreference,
+  FidesEventDetailsTrigger,
+} from "../../lib/events";
 import { useI18n } from "../../lib/i18n/i18n-context";
 import { TCFFeatureRecord, TCFSpecialFeatureRecord } from "../../lib/tcf/types";
 import EmbeddedVendorList from "./EmbeddedVendorList";
@@ -40,7 +43,8 @@ const TcfFeatures = ({
   enabledSpecialFeatureIds: string[];
   onChange: (
     payload: UpdateEnabledIds,
-    toggleDetails: FidesServingToggleDetails,
+    triggerDetails: FidesEventDetailsTrigger,
+    preferenceDetails: FidesEventDetailsPreference,
   ) => void;
 }) => {
   const { i18n } = useI18n();
@@ -51,9 +55,11 @@ const TcfFeatures = ({
         title={i18n.t("static.tcf.features")}
         items={allFeatures ?? []}
         enabledIds={enabledFeatureIds}
-        onToggle={(newEnabledIds, _, toggleDetails) =>
-          onChange({ newEnabledIds, modelType: "features" }, toggleDetails)
-        }
+        onToggle={() => {
+          // Regular features cannot be toggled - they are notice-only.
+          // The hideToggles prop ensures the UI doesn't show toggle controls,
+          // and this no-op handler ensures no events are fired even if somehow triggered.
+        }}
         renderToggleChild={(f) => (
           <FeatureChildren type="features" feature={f} />
         )}
@@ -64,10 +70,14 @@ const TcfFeatures = ({
         title={i18n.t("static.tcf.special_features")}
         items={allSpecialFeatures ?? []}
         enabledIds={enabledSpecialFeatureIds}
-        onToggle={(newEnabledIds, _, toggleDetails) =>
+        onToggle={(newEnabledIds, item, triggerDetails) =>
           onChange(
             { newEnabledIds, modelType: "specialFeatures" },
-            toggleDetails,
+            triggerDetails,
+            {
+              key: `tcf_special_feature_${item.id}`,
+              type: "tcf_special_feature",
+            },
           )
         }
         renderToggleChild={(f) => (

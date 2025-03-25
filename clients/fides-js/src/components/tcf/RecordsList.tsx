@@ -1,7 +1,7 @@
 import { h, VNode } from "preact";
 
 import { PrivacyNoticeTranslation } from "../../lib/consent-types";
-import { FidesServingToggleDetails } from "../../lib/events";
+import { FidesEventDetailsTrigger } from "../../lib/events";
 import { DEFAULT_LOCALE, getCurrentLocale } from "../../lib/i18n";
 import { useI18n } from "../../lib/i18n/i18n-context";
 import DataUseToggle from "../DataUseToggle";
@@ -29,7 +29,7 @@ interface Props<T extends RecordListItem> {
   onToggle: (
     payload: string[],
     item: T,
-    toggleDetails: FidesServingToggleDetails,
+    triggerDetails: FidesEventDetailsTrigger,
   ) => void;
   renderBadgeLabel?: (item: T) => string | undefined;
   hideToggles?: boolean;
@@ -50,16 +50,16 @@ const RecordsList = <T extends RecordListItem>({
     return null;
   }
 
-  const handleToggle = (item: T, toggleDetails: FidesServingToggleDetails) => {
+  const handleToggle = (item: T, triggerDetails: FidesEventDetailsTrigger) => {
     const purposeId = `${item.id}`;
     if (enabledIds.indexOf(purposeId) !== -1) {
       onToggle(
         enabledIds.filter((e) => e !== purposeId),
         item,
-        toggleDetails,
+        triggerDetails,
       );
     } else {
-      onToggle([...enabledIds, purposeId], item, toggleDetails);
+      onToggle([...enabledIds, purposeId], item, triggerDetails);
     }
   };
 
@@ -88,8 +88,8 @@ const RecordsList = <T extends RecordListItem>({
           key={item.id}
           title={item.bestTranslation?.title || getNameForItem(item)}
           noticeKey={`${item.id}`}
-          onToggle={(_, extraDetails) => {
-            handleToggle(item, extraDetails);
+          onToggle={(_, triggerDetails) => {
+            handleToggle(item, triggerDetails);
           }}
           checked={enabledIds.indexOf(`${item.id}`) !== -1}
           badge={renderBadgeLabel ? renderBadgeLabel(item) : undefined}

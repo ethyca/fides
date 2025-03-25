@@ -26,6 +26,7 @@ const pushFidesVariableToGTM = (fidesEvent: {
     consent: fidesEvent.detail.consent,
     extraDetails: fidesEvent.detail.extraDetails,
     fides_string: fidesEvent.detail.fides_string,
+    timestamp: fidesEvent.detail.timestamp,
   };
 
   // Push to the GTM dataLayer
@@ -63,6 +64,9 @@ export const gtm = () => {
 
   // If Fides was already initialized, publish a synthetic event immediately
   if (window.Fides?.initialized) {
+    // Lookup the timestamp of the original FidesInitialized performance mark
+    const timestamp =
+      performance?.getEntriesByName("FidesInitialized")[0]?.startTime;
     pushFidesVariableToGTM({
       type: "FidesInitialized",
       detail: {
@@ -70,6 +74,7 @@ export const gtm = () => {
         fides_meta: window.Fides.fides_meta,
         identity: window.Fides.identity,
         tcf_consent: window.Fides.tcf_consent,
+        timestamp,
         extraDetails: {
           consentMethod: window.Fides.fides_meta?.consentMethod,
         },

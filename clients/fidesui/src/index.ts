@@ -1,7 +1,7 @@
 // Unmodified components exported directly from ChakraUI
 export * from "@chakra-ui/icons";
 export * from "@chakra-ui/react";
-export { getCSSVar } from "@chakra-ui/utils";
+export { getCSSVar } from "@chakra-ui/react";
 export * from "@chakra-ui/utils";
 
 // Unmodified component exported directly from Ant Design
@@ -61,6 +61,7 @@ export type {
 
 // Higher-order components
 export { CustomSelect as AntSelect } from "./hoc";
+export { CustomDateRangePicker as AntDateRangePicker } from "./hoc";
 
 /**
  * Custom Re-exports

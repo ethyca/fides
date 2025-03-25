@@ -9,19 +9,26 @@ import {
   ConsentMechanism,
   EmptyExperience,
   FidesCookie,
+  FidesExperienceLanguageValidatorMap,
   FidesInitOptions,
-  FidesOptions,
+  FidesOverrideValidatorMap,
+  FidesWindowOverrides,
   GpcStatus,
   NoticeConsent,
   OverrideType,
   PrivacyExperience,
   PrivacyExperienceMinimal,
   PrivacyNotice,
+  PrivacyNoticeItem,
   PrivacyNoticeWithPreference,
+  SaveConsentPreference,
   UserConsentPreference,
   UserGeolocation,
 } from "./consent-types";
-import { noticeHasConsentInCookie } from "./shared-consent-utils";
+import {
+  noticeHasConsentInCookie,
+  transformConsentToFidesUserPreference,
+} from "./shared-consent-utils";
 import { TcfModelsRecord } from "./tcf/types";
 
 /**
@@ -138,8 +145,8 @@ export const validateOptions = (options: FidesInitOptions): boolean => {
 export const getOverrideValidatorMapByType = (
   overrideType: OverrideType,
 ):
-  | typeof FIDES_OVERRIDE_OPTIONS_VALIDATOR_MAP
-  | typeof FIDES_OVERRIDE_EXPERIENCE_LANGUAGE_VALIDATOR_MAP
+  | FidesOverrideValidatorMap[]
+  | FidesExperienceLanguageValidatorMap[]
   | null => {
   // eslint-disable-next-line default-case
   switch (overrideType) {
@@ -266,7 +273,7 @@ export const shouldResurfaceConsent = (
  */
 export const getWindowObjFromPath = (
   path: string[],
-): FidesOptions | undefined => {
+): FidesWindowOverrides | undefined => {
   // Implicitly start from the global "window" object
   if (path[0] === "window") {
     path.shift();
@@ -314,3 +321,36 @@ export const getGpcStatusFromNotice = ({
 export const defaultShowModal = () => {
   fidesDebugger("The current experience does not support displaying a modal.");
 };
+
+/**
+ * Parses a comma-separated string of notice keys into an array of strings.
+ * Handles undefined input, trims whitespace, and filters out empty strings.
+ */
+export const parseFidesDisabledNotices = (
+  value: string | undefined,
+): string[] => {
+  if (!value) {
+    return [];
+  }
+
+  return value
+    .split(",")
+    .map((key) => key.trim())
+    .filter(Boolean);
+};
+
+export const createConsentPreferencesToSave = (
+  privacyNoticeList: PrivacyNoticeItem[],
+  enabledPrivacyNoticeKeys: string[],
+): SaveConsentPreference[] =>
+  privacyNoticeList.map((item) => {
+    const userPreference = transformConsentToFidesUserPreference(
+      enabledPrivacyNoticeKeys.includes(item.notice.notice_key),
+      item.notice.consent_mechanism,
+    );
+    return new SaveConsentPreference(
+      item.notice,
+      userPreference,
+      item.bestTranslation?.privacy_notice_history_id,
+    );
+  });

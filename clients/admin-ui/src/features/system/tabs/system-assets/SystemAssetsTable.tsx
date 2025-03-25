@@ -1,7 +1,20 @@
-import { getCoreRowModel, useReactTable } from "@tanstack/react-table";
-import { AntEmpty as Empty } from "fidesui";
+import {
+  getCoreRowModel,
+  RowSelectionState,
+  useReactTable,
+} from "@tanstack/react-table";
+import {
+  AntButton as Button,
+  AntEmpty as Empty,
+  ConfirmationModal,
+  Icons,
+  Spacer,
+  useDisclosure,
+  useToast,
+} from "fidesui";
 import { useEffect, useState } from "react";
 
+import { getErrorMessage } from "~/features/common/helpers";
 import {
   FidesTableV2,
   PaginationBar,
@@ -9,10 +22,16 @@ import {
   TableSkeletonLoader,
   useServerSidePagination,
 } from "~/features/common/table/v2";
+import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { SearchInput } from "~/features/data-discovery-and-detection/SearchInput";
-import { useGetSystemAssetsQuery } from "~/features/system/system.slice";
+import {
+  useDeleteSystemAssetsMutation,
+  useGetSystemAssetsQuery,
+} from "~/features/system/system-assets.slice";
+import AddEditAssetModal from "~/features/system/tabs/system-assets/AddEditAssetModal";
 import useSystemAssetColumns from "~/features/system/tabs/system-assets/useSystemAssetColumns";
-import { SystemResponse } from "~/types/api";
+import { Asset, SystemResponse } from "~/types/api";
+import { isErrorResult } from "~/types/errors";
 
 const SystemAssetsTable = ({ system }: { system: SystemResponse }) => {
   const {
@@ -31,6 +50,14 @@ const SystemAssetsTable = ({ system }: { system: SystemResponse }) => {
   } = useServerSidePagination();
 
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedAsset, setSelectedAsset] = useState<Asset | undefined>(
+    undefined,
+  );
+  const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
+
+  const [deleteAssets] = useDeleteSystemAssetsMutation();
+
+  const toast = useToast();
 
   const { data, isLoading, isFetching } = useGetSystemAssetsQuery({
     fides_key: system.fides_key,
@@ -38,6 +65,18 @@ const SystemAssetsTable = ({ system }: { system: SystemResponse }) => {
     page: pageIndex,
     size: pageSize,
   });
+
+  const {
+    isOpen: addEditModalIsOpen,
+    onClose: onCloseAddEditModal,
+    onOpen: onOpenAddEditModal,
+  } = useDisclosure();
+
+  const {
+    isOpen: isDeleteModalOpen,
+    onClose: onCloseDeleteModal,
+    onOpen: onOpenDeleteModal,
+  } = useDisclosure();
 
   useEffect(() => {
     resetPageIndexToDefault();
@@ -47,7 +86,20 @@ const SystemAssetsTable = ({ system }: { system: SystemResponse }) => {
     setTotalPages(data?.pages);
   }, [data, setTotalPages]);
 
-  const columns = useSystemAssetColumns();
+  const handleEditAsset = (a: Asset) => {
+    setSelectedAsset(a);
+    onOpenAddEditModal();
+  };
+
+  const handleCloseModal = () => {
+    setSelectedAsset(undefined);
+    onCloseAddEditModal();
+  };
+
+  const columns = useSystemAssetColumns({
+    systemKey: system.fides_key,
+    onEditClick: handleEditAsset,
+  });
 
   const tableInstance = useReactTable({
     getCoreRowModel: getCoreRowModel(),
@@ -55,7 +107,35 @@ const SystemAssetsTable = ({ system }: { system: SystemResponse }) => {
     manualPagination: true,
     data: data?.items || [],
     columnResizeMode: "onChange",
+    onRowSelectionChange: setRowSelection,
+    state: {
+      rowSelection,
+    },
   });
+
+  const selectedRows = tableInstance.getSelectedRowModel().rows;
+  const selectedAssetIds = selectedRows.map((row) => row.original.id);
+
+  const handleBulkDelete = async () => {
+    const result = await deleteAssets({
+      systemKey: system.fides_key,
+      asset_ids: selectedAssetIds,
+    });
+    if (isErrorResult(result)) {
+      toast(
+        errorToastParams(
+          getErrorMessage(
+            result.error,
+            "A problem occurred removing these assets. Please try again.",
+          ),
+        ),
+      );
+    } else {
+      tableInstance.resetRowSelection();
+      toast(successToastParams("Assets removed successfully"));
+    }
+    onCloseDeleteModal();
+  };
 
   if (!system) {
     return null;
@@ -69,6 +149,38 @@ const SystemAssetsTable = ({ system }: { system: SystemResponse }) => {
     <>
       <TableActionBar>
         <SearchInput value={searchQuery} onChange={setSearchQuery} />
+        <Spacer />
+        <Button
+          icon={<Icons.Add />}
+          iconPosition="end"
+          onClick={onOpenAddEditModal}
+          data-testid="add-asset-btn"
+        >
+          Add asset
+        </Button>
+        <AddEditAssetModal
+          isOpen={addEditModalIsOpen}
+          onClose={handleCloseModal}
+          systemKey={system.fides_key}
+          asset={selectedAsset}
+        />
+        <Button
+          icon={<Icons.TrashCan />}
+          iconPosition="end"
+          onClick={onOpenDeleteModal}
+          disabled={!selectedAssetIds.length}
+          data-testid="bulk-delete-btn"
+        >
+          Remove
+        </Button>
+        <ConfirmationModal
+          isOpen={isDeleteModalOpen}
+          onClose={onCloseDeleteModal}
+          onConfirm={handleBulkDelete}
+          title="Remove assets"
+          message="Are you sure you want to remove the selected assets? This action cannot be undone and may impact consent automation."
+          isCentered
+        />
       </TableActionBar>
       <FidesTableV2
         tableInstance={tableInstance}
@@ -81,7 +193,7 @@ const SystemAssetsTable = ({ system }: { system: SystemResponse }) => {
         }
       />
       <PaginationBar
-        totalRows={data?.items?.length || 0}
+        totalRows={data?.total || 0}
         pageSizes={PAGE_SIZES}
         setPageSize={setPageSize}
         onPreviousPageClick={onPreviousPageClick}

@@ -18,6 +18,8 @@ import {
   FidesOptions,
   FidesOverrides,
   GetPreferencesFnResp,
+  NoticeConsent,
+  OtToFidesConsentMapping,
   OverrideType,
   PrivacyExperience,
 } from "./lib/consent-types";
@@ -28,11 +30,14 @@ import {
 } from "./lib/consent-utils";
 import {
   consentCookieObjHasSomeConsentSet,
+  getFidesConsentCookie,
+  getOTConsentCookie,
+  otCookieToFidesConsent,
   updateExperienceFromCookieConsentNotices,
 } from "./lib/cookie";
 import { initializeDebugger } from "./lib/debugger";
 import { dispatchFidesEvent, onFidesEvent } from "./lib/events";
-import { DEFAULT_MODAL_LINK_LABEL } from "./lib/i18n";
+import { DEFAULT_LOCALE, DEFAULT_MODAL_LINK_LABEL } from "./lib/i18n";
 import {
   getInitialCookie,
   getInitialFides,
@@ -47,7 +52,7 @@ import { customGetConsentPreferences } from "./services/external/preferences";
 declare global {
   interface Window {
     Fides: FidesGlobal;
-    fides_overrides: FidesOptions;
+    fides_overrides: Partial<FidesOptions>;
     fidesDebugger: (...args: unknown[]) => void;
   }
 }
@@ -61,13 +66,12 @@ const updateWindowFides = (fidesGlobal: FidesGlobal) => {
 const updateExperience: UpdateExperienceFn = ({
   cookie,
   experience,
-  isExperienceClientSideFetched,
 }): Partial<PrivacyExperience> => {
   let updatedExperience: PrivacyExperience = experience;
   const preferencesExistOnCookie = consentCookieObjHasSomeConsentSet(
     cookie.consent,
   );
-  if (isExperienceClientSideFetched && preferencesExistOnCookie) {
+  if (preferencesExistOnCookie) {
     // If we have some preferences on the cookie, we update client-side experience with those preferences
     // if the name matches. This is used for client-side UI.
     updatedExperience = updateExperienceFromCookieConsentNotices({
@@ -76,6 +80,45 @@ const updateExperience: UpdateExperienceFn = ({
     });
   }
   return updatedExperience;
+};
+
+const readConsentFromOneTrust = (
+  config: FidesConfig,
+  optionsOverrides: Partial<FidesInitOptionsOverrides>,
+): NoticeConsent | undefined => {
+  const otConsentCookie =
+    !!optionsOverrides.otFidesMapping && getOTConsentCookie();
+  if (!optionsOverrides.otFidesMapping || !otConsentCookie) {
+    fidesDebugger(
+      "OT cookie or OT-Fides mapping does not exist, skipping mapping consent to Fides cookie...",
+      config.options,
+    );
+    return undefined;
+  }
+  try {
+    const decodedString = decodeURIComponent(optionsOverrides.otFidesMapping);
+    const strippedString = decodedString.replace(/^'|'$/g, "");
+    const otFidesMappingParsed: OtToFidesConsentMapping =
+      JSON.parse(strippedString);
+    const otToFidesConsent: NoticeConsent = otCookieToFidesConsent(
+      otConsentCookie,
+      otFidesMappingParsed,
+    );
+    if (otToFidesConsent) {
+      fidesDebugger(
+        `Fides consent built based on OT consent: ${JSON.stringify(otToFidesConsent)}`,
+        config.options,
+      );
+      return otToFidesConsent;
+    }
+    return undefined;
+  } catch (e) {
+    fidesDebugger(
+      `Failed to map OT consent to Fides consent due to: ${e}`,
+      config.options,
+    );
+  }
+  return undefined;
 };
 
 /**
@@ -124,12 +167,20 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
     consentPrefsOverrides,
     experienceTranslationOverrides,
   };
+
+  // Check for an existing cookie for this device
+  let consentFromOneTrust: NoticeConsent | undefined;
+  if (optionsOverrides.otFidesMapping && !getFidesConsentCookie()) {
+    consentFromOneTrust = readConsentFromOneTrust(config, optionsOverrides);
+  }
   config = {
     ...config,
     options: { ...config.options, ...overrides.optionsOverrides },
   };
-  this.cookie = {
-    ...getInitialCookie(config),
+  this.cookie = getInitialCookie(config);
+  this.cookie.consent = {
+    ...this.cookie.consent,
+    ...consentFromOneTrust,
     ...overrides.consentPrefsOverrides?.consent,
   };
 
@@ -176,6 +227,7 @@ const _Fides: FidesGlobal = {
   consent: {},
   experience: undefined,
   geolocation: {},
+  locale: DEFAULT_LOCALE,
   options: {
     debug: true,
     isOverlayEnabled: false,
@@ -204,6 +256,8 @@ const _Fides: FidesGlobal = {
     fidesClearCookie: false,
     showFidesBrandLink: true,
     fidesConsentOverride: null,
+    otFidesMapping: null,
+    fidesDisabledNotices: null,
   },
   fides_meta: {},
   identity: {},

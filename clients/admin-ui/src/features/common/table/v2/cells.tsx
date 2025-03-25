@@ -7,19 +7,22 @@ import {
   AntSwitchProps as SwitchProps,
   AntTag as Tag,
   AntTagProps as TagProps,
+  AntTooltip as Tooltip,
   Checkbox,
   CheckboxProps,
   Flex,
   FlexProps,
+  List,
+  ListItem,
   Text,
   TextProps,
-  Tooltip,
   useDisclosure,
   useToast,
   WarningIcon,
 } from "fidesui";
 import { useField, useFormikContext } from "formik";
-import { ReactNode, useEffect, useMemo, useState } from "react";
+import { isBoolean } from "lodash";
+import { ReactElement, ReactNode, useEffect, useMemo, useState } from "react";
 
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import ConfirmationModal from "~/features/common/modals/ConfirmationModal";
@@ -35,7 +38,7 @@ export const DefaultCell = <T,>({
   ...chakraStyleProps
 }: {
   cellProps?: FidesCellProps<T>;
-  value: string | undefined | number | null | boolean;
+  value: string | ReactElement | undefined | number | null | boolean;
 } & TextProps) => {
   const expandable = !!cellProps?.cell.column.columnDef.meta?.showHeaderMenu;
   const isExpanded = expandable && !!cellProps?.cellState?.isExpanded;
@@ -51,7 +54,7 @@ export const DefaultCell = <T,>({
       title={isExpanded && !!value ? undefined : value?.toString()}
       {...chakraStyleProps}
     >
-      {value !== null && value !== undefined ? value.toString() : value}
+      {isBoolean(value) ? value.toString() : value}
     </Text>
   );
 };
@@ -73,7 +76,7 @@ export const RelativeTimestampCell = ({
 
   return (
     <Flex alignItems="center" height="100%">
-      <Tooltip label={formattedDate} hasArrow>
+      <Tooltip title={formattedDate}>
         <Text
           fontSize="xs"
           lineHeight={4}
@@ -99,7 +102,7 @@ export const BadgeCell = ({
   suffix,
   ...tagProps
 }: {
-  value: string | number;
+  value: string | number | null | undefined;
   suffix?: string;
 } & TagProps) => (
   <BadgeCellContainer>
@@ -218,6 +221,96 @@ export const BadgeCellExpandable = <T,>({
       </Flex>
     );
   }, [displayValues, isCollapsed, isWrappedState, values, tagProps]);
+};
+
+export const ListCellExpandable = <T,>({
+  values,
+  valueSuffix,
+  cellProps,
+}: {
+  values: string[] | undefined;
+  valueSuffix: string;
+  cellProps?: Omit<FidesCellProps<T>, "onRowClick">;
+}) => {
+  const { isExpanded, version } = cellProps?.cellState || {};
+  const [isCollapsed, setIsCollapsed] = useState<boolean>(!isExpanded);
+
+  useEffect(() => {
+    // Also reset isCollapsed state when version changes.
+    // This is to handle the case where the user expands cells individually.
+    // "Expand/Collapse All" will not be reapplied otherwise.
+    setIsCollapsed(!isExpanded);
+  }, [isExpanded, version]);
+
+  return useMemo(() => {
+    if (!values?.length) {
+      return null;
+    }
+
+    if (values.length === 1) {
+      return (
+        <Text
+          fontSize="xs"
+          lineHeight={4}
+          fontWeight="normal"
+          textOverflow="ellipsis"
+          overflow="hidden"
+        >
+          {values[0]}
+        </Text>
+      );
+    }
+
+    return (
+      <Flex
+        flexDirection="row"
+        alignItems="center"
+        gap={1}
+        pt={2}
+        pb={2}
+        onClick={(e) => {
+          if (!isCollapsed) {
+            e.stopPropagation();
+            setIsCollapsed(true);
+          }
+        }}
+        cursor={isCollapsed ? undefined : "pointer"}
+      >
+        {isCollapsed && (
+          <>
+            <Text fontSize="xs" lineHeight={4} fontWeight="normal">
+              {values.length} {valueSuffix}
+            </Text>
+            <Button
+              type="link"
+              size="small"
+              onClick={() => setIsCollapsed(false)}
+              className="text-xs font-normal"
+            >
+              View
+            </Button>
+          </>
+        )}
+        {!isCollapsed && (
+          <List overflow="hidden">
+            {values.map((value) => (
+              <ListItem
+                key={value}
+                fontSize="xs"
+                lineHeight={4}
+                listStyleType="none"
+                textOverflow="ellipsis"
+                whiteSpace="nowrap"
+                overflow="hidden"
+              >
+                {value}
+              </ListItem>
+            ))}
+          </List>
+        )}
+      </Flex>
+    );
+  }, [isCollapsed, values, valueSuffix]);
 };
 
 export const GroupCountBadgeCell = ({

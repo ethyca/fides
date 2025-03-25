@@ -2128,11 +2128,14 @@ describe("Consent overlay", () => {
           .then((event: CustomEvent) => {
             // Check that the extraDetails includes context about what changed
             expect(event.type).to.equal("FidesUIChanged");
-            expect(event.detail.extraDetails).to.have.property("servingToggle");
-            expect(event.detail.extraDetails.servingToggle).to.deep.include({
+            expect(event.detail.extraDetails).to.have.property("trigger");
+            expect(event.detail.extraDetails.trigger).to.deep.include({
               label: "Advertising",
-              id: PRIVACY_NOTICE_KEY_1,
               checked: true,
+            });
+            expect(event.detail.extraDetails.preference).to.deep.include({
+              key: "advertising",
+              type: "notice",
             });
           });
         cy.get("@FidesUpdating").should("not.have.been.called");
@@ -2173,6 +2176,7 @@ describe("Consent overlay", () => {
         .should("have.been.callCount", 4) // FidesInitialized + FidesUIShown + FidesUpdating + FidesUpdated
         // First call should be from initialization, before the user accepts all
         .its("firstCall.args.0")
+        .then((actual) => Cypress._.omit(actual, "Fides.timestamp"))
         .should("deep.equal", {
           event: "FidesInitialized",
           Fides: {
@@ -2191,6 +2195,7 @@ describe("Consent overlay", () => {
       cy.get("@dataLayerPush")
         // Second call is FidesUIShown when banner appears
         .its("secondCall.args.0")
+        .then((actual) => Cypress._.omit(actual, "Fides.timestamp"))
         .should("deep.equal", {
           event: "FidesUIShown",
           Fides: {
@@ -2209,6 +2214,7 @@ describe("Consent overlay", () => {
       cy.get("@dataLayerPush")
         // Third call is when the user accepts all
         .its("thirdCall.args.0")
+        .then((actual) => Cypress._.omit(actual, "Fides.timestamp"))
         .should("deep.equal", {
           event: "FidesUpdating",
           Fides: {
@@ -2226,6 +2232,7 @@ describe("Consent overlay", () => {
       cy.get("@dataLayerPush")
         // Fourth call is when the preferences finish updating
         .its("lastCall.args.0")
+        .then((actual) => Cypress._.omit(actual, "Fides.timestamp"))
         .should("deep.equal", {
           event: "FidesUpdated",
           Fides: {
@@ -2533,8 +2540,8 @@ describe("Consent overlay", () => {
               id: "pri_notice-applied",
               notice_key: "applied",
               has_gpc_flag: true,
-              consent_mechanism: ConsentMechanism.OPT_OUT,
-              default_preference: UserConsentPreference.OPT_IN,
+              consent_mechanism: ConsentMechanism.OPT_IN,
+              default_preference: UserConsentPreference.OPT_OUT,
             }),
             mockPrivacyNotice({
               title: "Notice only",
@@ -2887,6 +2894,40 @@ describe("Consent overlay", () => {
           "background-color",
           "rgb(153, 144, 0)",
         );
+      });
+      it("applies fides_disabled_notices override", () => {
+        // Disable the analytics notice which is opted in by default
+        let overrides = {
+          fides_disabled_notices: "analytics_opt_out",
+        };
+        cy.fixture("consent/experience_banner_modal.json").then(() => {
+          stubConfig(
+            {
+              options: {
+                customOptionsPath: TEST_OVERRIDE_WINDOW_PATH,
+              },
+            },
+            null,
+            null,
+            { ...overrides },
+          );
+        });
+        cy.get("button").contains("Manage preferences").click();
+        cy.getByTestId("toggle-Analytics").find("input").should("be.disabled"); // disabled by override
+        cy.getByTestId("toggle-Analytics").find("input").should("be.checked"); // opted in by default
+        cy.getByTestId("toggle-Advertising")
+          .find("input")
+          .should("not.be.disabled"); // unaffected by override
+        cy.getByTestId("toggle-Advertising")
+          .find("input")
+          .should("not.be.checked"); // opted out by default
+
+        // Opt out of all has no effect
+        cy.getByTestId("fides-modal-content")
+          .contains("button", "Opt out of all")
+          .should("be.visible")
+          .click();
+        cy.getByTestId("toggle-Analytics").find("input").should("be.checked"); // still opted in
       });
     });
   });

@@ -36,6 +36,7 @@ import { MonitorConfigEnableCell } from "~/features/integrations/configure-monit
 import {
   ConnectionConfigurationResponse,
   ConnectionSystemTypeMap,
+  ConnectionType,
   MonitorConfig,
 } from "~/types/api";
 
@@ -46,6 +47,10 @@ const EMPTY_RESPONSE = {
   size: 50,
   pages: 0,
 };
+
+const DATA_DISCOVERY_MONITOR_COPY = `A data discovery monitor observes configured systems for data model changes to proactively discover and classify data risks. Monitors can observe part or all of a project, dataset, table, or API for changes and each can be assigned to a different data steward.`;
+
+const WEBSITE_MONITOR_COPY = `Configure your website monitor to identify active ad tech vendors and tracking technologies across your site. This monitor will analyze selected pages for vendor activity, compliance with privacy requirements, and data collection practices. Set your preferences below to customize the monitor frequency and scan locations.`;
 
 const columnHelper = createColumnHelper<MonitorConfig>();
 
@@ -219,11 +224,10 @@ const MonitorConfigTab = ({
 
   return (
     <>
-      <Text maxW="720px" mb={6} fontSize="sm">
-        A data discovery monitor observes configured systems for data model
-        changes to proactively discover and classify data risks. Monitors can
-        observe part or all of a project, dataset, table, or API for changes and
-        each can be assigned to a different data steward.
+      <Text maxW="720px" mb={6} fontSize="sm" data-testid="monitor-description">
+        {integrationOption?.identifier === ConnectionType.WEBSITE
+          ? WEBSITE_MONITOR_COPY
+          : DATA_DISCOVERY_MONITOR_COPY}
       </Text>
       <TableActionBar>
         <Spacer />

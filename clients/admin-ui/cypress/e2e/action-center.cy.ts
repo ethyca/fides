@@ -82,7 +82,7 @@ describe("Action center", () => {
       // description
       cy.getByTestId(`monitor-result-${webMonitorKey}`).should(
         "contain",
-        "92 Browser Requests, 5 Cookies detected.",
+        "92 Browser requests, 5 Cookies detected.",
       );
       // monitor name
       cy.getByTestId(`monitor-result-${webMonitorKey}`).should(
@@ -301,7 +301,7 @@ describe("Action center", () => {
       cy.getByTestId("system-select").should("not.exist");
       cy.getByTestId("success-alert").should(
         "contain",
-        'Browser Request "0d22c925-3a81-4f10-bfdc-69a5d67e93bc" has been assigned to Fidesctl System.',
+        'Browser request "0d22c925-3a81-4f10-bfdc-69a5d67e93bc" has been assigned to Fidesctl System.',
       );
     });
   });
@@ -335,6 +335,16 @@ describe("Action center", () => {
         .contains("Without consent")
         .realHover();
       cy.get(".ant-tooltip-inner").should("contain", "January"); */
+      cy.getByTestId("column-page").should("exist");
+      cy.getByTestId("row-0-col-page").should("contain", "single_page");
+      cy.getByTestId("row-1-col-page").within(() => {
+        cy.get("p").should("contain", "3 pages");
+        cy.get("button").click({ force: true });
+        cy.get("li").should("have.length", 3);
+      });
+      // show nothing when page field is undefined or []
+      cy.getByTestId("row-2-col-page").should("be.empty");
+      cy.getByTestId("row-3-col-page").should("be.empty");
       cy.getByTestId("column-actions").should("exist");
       cy.getByTestId("row-0-col-actions").within(() => {
         cy.getByTestId("add-btn").should("exist");
@@ -351,7 +361,7 @@ describe("Action center", () => {
       cy.getByTestId("system-select").should("not.exist");
       cy.getByTestId("success-alert").should(
         "contain",
-        'Browser Request "destination" has been assigned to Fidesctl System.',
+        'Browser request "destination" has been assigned to Fidesctl System.',
       );
 
       // Wait for previous UI animations to reset or Cypress chokes on the next part
@@ -373,7 +383,7 @@ describe("Action center", () => {
       cy.getByTestId("system-select").should("not.exist");
       cy.getByTestId("success-alert").should(
         "contain",
-        'Browser Request "collect" has been assigned to Demo Marketing System.',
+        'Browser request "collect" has been assigned to Demo Marketing System.',
       );
     });
     it("should allow creating a new system and assigning an asset to it", () => {
@@ -393,7 +403,7 @@ describe("Action center", () => {
       cy.wait("@patchAssets");
       cy.getByTestId("success-alert").should(
         "contain",
-        'Test System has been added to your system inventory and the Browser Request "gtm.js" has been assigned to that system.',
+        'Test System has been added to your system inventory and the Browser request "gtm.js" has been assigned to that system.',
       );
     });
     it("should add individual assets", () => {
@@ -403,7 +413,7 @@ describe("Action center", () => {
       cy.wait("@addAssets");
       cy.getByTestId("success-alert").should(
         "contain",
-        'Browser Request "11020051272" has been added to the system inventory.',
+        'Browser request "11020051272" has been added to the system inventory.',
       );
     });
     it("should ignore individual assets", () => {
@@ -413,7 +423,7 @@ describe("Action center", () => {
       cy.wait("@ignoreAssets");
       cy.getByTestId("success-alert").should(
         "contain",
-        'Browser Request "11020051272" has been ignored and will not appear in future scans.',
+        'Browser request "11020051272" has been ignored and will not appear in future scans.',
       );
     });
     it("should bulk add assets", () => {

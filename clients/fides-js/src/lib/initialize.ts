@@ -13,10 +13,9 @@ import {
   FidesCookie,
   FidesGlobal,
   FidesInitOptions,
-  FidesOptions,
   FidesOverrides,
+  FidesWindowOverrides,
   NoticeConsent,
-  OverrideExperienceTranslations,
   OverrideType,
   PrivacyExperience,
   SaveConsentPreference,
@@ -34,12 +33,14 @@ import { resolveConsentValue } from "./consent-value";
 import {
   getCookieByName,
   getOrMakeFidesCookie,
+  getOTConsentCookie,
   isNewFidesCookie,
   makeConsentDefaultsLegacy,
   updateCookieFromExperience,
   updateCookieFromNoticePreferences,
 } from "./cookie";
 import {
+  DEFAULT_LOCALE,
   DEFAULT_MODAL_LINK_LABEL,
   I18n,
   initializeI18n,
@@ -58,8 +59,6 @@ import { searchForElement } from "./ui-utils";
 export type UpdateExperienceFn = (args: {
   cookie: FidesCookie;
   experience: PrivacyExperience;
-  debug?: boolean;
-  isExperienceClientSideFetched: boolean;
 }) => Partial<PrivacyExperience>;
 
 const retrieveEffectiveRegionString = async (
@@ -206,17 +205,21 @@ export const getOverridesByType = <T>(
     const customPathArr: "" | null | string[] =
       config.options.customOptionsPath &&
       config.options.customOptionsPath.split(".");
-    const windowObj:
-      | Partial<FidesOptions & OverrideExperienceTranslations>
-      | undefined =
+    const windowObj: FidesWindowOverrides | undefined =
       customPathArr && customPathArr.length >= 0
         ? getWindowObjFromPath(customPathArr)
-        : window.fides_overrides;
+        : (window.fides_overrides as FidesWindowOverrides);
 
     // Look for each of the override options in all three locations: query params, window object, cookie
     const overrideValidatorMap = getOverrideValidatorMapByType(type);
     overrideValidatorMap?.forEach(
-      ({ overrideName, overrideType, overrideKey, validationRegex }) => {
+      ({
+        overrideName,
+        overrideType,
+        overrideKey,
+        validationRegex,
+        transform,
+      }) => {
         const queryParamOverride: string | null = queryParams.get(overrideKey);
         const windowObjOverride: string | boolean | undefined = windowObj
           ? windowObj[overrideKey]
@@ -227,8 +230,12 @@ export const getOverridesByType = <T>(
         const value = queryParamOverride || windowObjOverride || cookieOverride;
         if (value && validationRegex.test(value.toString())) {
           // coerce to expected type
-          overrides[overrideName as keyof T] =
-            overrideType === "string" ? value : JSON.parse(value.toString());
+          if (transform) {
+            overrides[overrideName as keyof T] = transform(value.toString());
+          } else {
+            overrides[overrideName as keyof T] =
+              overrideType === "string" ? value : JSON.parse(value.toString());
+          }
         }
       },
     );
@@ -270,7 +277,9 @@ export const getInitialFides = ({
     }) => PrivacyExperience;
   }): Partial<FidesGlobal> | null => {
   const hasExistingCookie = !isNewFidesCookie(cookie);
-  if (!hasExistingCookie && !options.fidesString) {
+  const otConsentCookie = !!options.otFidesMapping && getOTConsentCookie();
+  const isOtMigrationMode = !!otConsentCookie && !!options.otFidesMapping;
+  if (!hasExistingCookie && !options.fidesString && !isOtMigrationMode) {
     // A TC str can be injected and take effect even if the user has no previous Fides Cookie
     return null;
   }
@@ -394,17 +403,20 @@ export const initialize = async ({
        * with some additional client-side state so that it is initialized with
        * the user's current consent preferences, etc. and ready to display!
        */
-      const updatedExperience = updateExperience({
-        cookie: fides.cookie!,
-        experience: fides.experience,
-        isExperienceClientSideFetched: fetchedClientSideExperience,
-      });
-      fidesDebugger(
-        "Updated experience from saved preferences",
-        updatedExperience,
-      );
-      // eslint-disable-next-line no-param-reassign
-      fides.experience = { ...fides.experience, ...updatedExperience };
+      if (fetchedClientSideExperience) {
+        // If it's not client side fetched, we don't update anything since the cookie has already
+        // been updated earlier.
+        const updatedExperience = updateExperience({
+          cookie: fides.cookie!,
+          experience: fides.experience,
+        });
+        // eslint-disable-next-line no-param-reassign
+        fides.experience = { ...fides.experience, ...updatedExperience };
+        fidesDebugger(
+          "Updated experience from saved preferences",
+          updatedExperience,
+        );
+      }
 
       /**
        * Finally, update the "cookie" state to track the user's *current*
@@ -442,6 +454,8 @@ export const initialize = async ({
         options,
         overrides?.experienceTranslationOverrides,
       );
+      // eslint-disable-next-line no-param-reassign
+      fides.locale = i18n.locale || DEFAULT_LOCALE;
 
       // Provide the modal link label function to the client based on the current locale unless specified via props.
       getModalLinkLabel = (props) =>

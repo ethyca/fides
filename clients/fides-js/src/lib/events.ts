@@ -16,21 +16,31 @@ export type FidesEventExtraDetails = Record<
 >;
 
 /**
- * Defines the properties available on event.detail. Currently the FidesCookie
- * and an extra field `meta` for any other details that the event wants to pass
- * around.
+ * Defines the properties available on event.detail. Currently includes:
+ * - FidesCookie properties
+ * - debug flag
+ * - extraDetails for additional event context
+ * - timestamp from performance.mark() if available
  */
 export type FidesEventDetail = FidesCookie & {
   debug?: boolean;
   extraDetails?: FidesEventExtraDetails;
+  timestamp?: number;
 };
 
 /**
- * Defines the properties available on event.detail.extraDetails.servingToggle
+ * Defines the properties available on event.detail.extraDetails.trigger
  */
-export type FidesServingToggleDetails = NonNullable<
+export type FidesEventDetailsTrigger = NonNullable<
   DocsFidesEvent["detail"]["extraDetails"]
->["servingToggle"];
+>["trigger"];
+
+/**
+ * Defines the properties available on event.detail.extraDetails.preference
+ */
+export type FidesEventDetailsPreference = NonNullable<
+  DocsFidesEvent["detail"]["extraDetails"]
+>["preference"];
 
 /**
  * TODO (PROD-1815): Replace this type with this: import { FidesEvent } from "../types"
@@ -38,6 +48,11 @@ export type FidesServingToggleDetails = NonNullable<
  * However, this will require locking down some types and refactoring usage.
  */
 export type FidesEvent = CustomEvent<FidesEventDetail>;
+
+/**
+ * Export the FidesEventType type from the docs module, for usage in tests.
+ */
+export type { FidesEventType };
 
 /**
  * Dispatch a custom event on the window object, providing the current Fides
@@ -59,19 +74,26 @@ export const dispatchFidesEvent = (
   type: FidesEventType,
   cookie: FidesCookie | undefined,
   debug: boolean,
-  extraDetails?: FidesEvent["detail"]["extraDetails"],
+  extraDetails?: FidesEventExtraDetails,
 ) => {
   if (typeof window !== "undefined" && typeof CustomEvent !== "undefined") {
     // Extracts consentMethod directly from the cookie instead of having to pass in duplicate data to this method
     const constructedExtraDetails: FidesEventExtraDetails = {
-      consentMethod: cookie?.fides_meta.consentMethod,
+      consentMethod: cookie?.fides_meta
+        .consentMethod as FidesEventExtraDetails["consentMethod"],
       ...extraDetails,
     };
+    const perfMark = performance?.mark?.(type);
+    const timestamp = perfMark?.startTime;
     const event = new CustomEvent(type, {
-      detail: { ...cookie, debug, extraDetails: constructedExtraDetails },
+      detail: {
+        ...cookie,
+        debug,
+        extraDetails: constructedExtraDetails,
+        timestamp,
+      },
       bubbles: true,
     });
-    const perfMark = performance?.mark?.(type);
     fidesDebugger(
       `Dispatching event type ${type} ${
         constructedExtraDetails?.servingComponent
@@ -81,7 +103,7 @@ export const dispatchFidesEvent = (
         constructedExtraDetails
           ? `with extra details ${JSON.stringify(constructedExtraDetails)} `
           : ""
-      } (${perfMark?.startTime?.toFixed(2)}ms)`,
+      } (${timestamp?.toFixed(2)}ms)`,
     );
     window.dispatchEvent(event);
   }

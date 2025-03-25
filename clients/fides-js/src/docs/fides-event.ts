@@ -103,6 +103,14 @@ export interface FidesEvent extends CustomEvent {
     fides_string?: string;
 
     /**
+     * High-precision timestamp from {@link https://developer.mozilla.org/en-US/docs/Web/API/Performance/mark performance.mark()}
+     * representing when this event was created. The timestamp is measured in milliseconds since page load.
+     *
+     * May be undefined if the Performance API is not available.
+     */
+    timestamp?: number;
+
+    /**
      * Extra event properties, for additional context.
      */
     extraDetails?: {
@@ -122,12 +130,92 @@ export interface FidesEvent extends CustomEvent {
       consentMethod?: "accept" | "reject" | "save" | "dismiss" | "gpc";
 
       /**
-       * What toggle (if any) caused this event.
+       * What UI element (if any) triggered this event.
        */
-      servingToggle?: {
-        label: string;
-        id: string;
-        checked: boolean;
+      trigger?: {
+        /**
+         * The type of element that triggered the event. Additional types may be
+         * added over time (e.g. "button", "link"), so expect this type to grow.
+         */
+        type: "toggle";
+
+        /**
+         * The UI label of the element that triggered the event.
+         */
+        label?: string;
+
+        /**
+         * The checked state of the element that triggered the event.
+         * Only present when type is "toggle".
+         */
+        checked?: boolean;
+      };
+
+      /**
+       * Information about the specific preference being changed, if this event
+       * was triggered by a preference change.
+       *
+       * @example
+       * ```ts
+       * // For a notice toggle:
+       * preference: {
+       *   key: "advertising",
+       *   type: "notice"
+       * }
+       *
+       * // For a TCF purpose toggle:
+       * preference: {
+       *   key: "tcf_purpose_consent_4",
+       *   type: "tcf_purpose_consent"
+       * }
+       *
+       * // For a TCF vendor toggle:
+       * preference: {
+       *   key: "gvl.2",
+       *   type: "tcf_vendor_consent",
+       *   vendor_id: "gvl.2",
+       *   vendor_list: "gvl",
+       *   vendor_list_id: "2",
+       *   vendor_name: "Captify"
+       * }
+       * ```
+       */
+      preference?: {
+        /**
+         * The unique key identifying this preference
+         */
+        key: string;
+
+        /**
+         * The type of preference being changed
+         */
+        type:
+          | "notice"
+          | "tcf_purpose_consent"
+          | "tcf_purpose_legitimate_interest"
+          | "tcf_special_feature"
+          | "tcf_vendor_consent"
+          | "tcf_vendor_legitimate_interest";
+
+        /**
+         * The vendor ID if this is a vendor-related preference
+         */
+        vendor_id?: string;
+
+        /**
+         * The vendor list type if this is a vendor-related preference
+         */
+        vendor_list?: "gvl" | "gacp" | "fds";
+
+        /**
+         * The vendor list ID if this is a vendor-related preference
+         */
+        vendor_list_id?: string;
+
+        /**
+         * The vendor name if this is a vendor-related preference
+         */
+        vendor_name?: string;
       };
     };
   };

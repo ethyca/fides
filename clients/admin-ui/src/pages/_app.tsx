@@ -5,6 +5,8 @@ import "@fontsource/inter/700.css";
 import "../theme/tailwind.css";
 import "../theme/global.scss";
 
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
 import { FidesUIProvider, Flex } from "fidesui";
 import type { AppProps } from "next/app";
 import React, { ReactNode } from "react";
@@ -22,6 +24,8 @@ import store, { persistor } from "../app/store";
 import theme from "../theme";
 import Login from "./login";
 import LoginWithOIDC from "./login/[provider]";
+
+dayjs.extend(utc);
 
 if (process.env.NEXT_PUBLIC_MOCK_API) {
   // eslint-disable-next-line global-require

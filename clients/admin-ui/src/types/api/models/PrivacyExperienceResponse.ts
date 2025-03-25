@@ -4,7 +4,7 @@
 
 import type { ExperienceConfigResponseNoNotices } from "./ExperienceConfigResponseNoNotices";
 import type { ExperienceMeta } from "./ExperienceMeta";
-import type { GPPApplicationConfigResponse } from "./GPPApplicationConfigResponse";
+import type { PrivacyExperienceGPPSettings } from "./PrivacyExperienceGPPSettings";
 import type { PrivacyNoticeRegion } from "./PrivacyNoticeRegion";
 import type { PrivacyNoticeResponse } from "./PrivacyNoticeResponse";
 import type { TCFFeatureRecord } from "./TCFFeatureRecord";
@@ -30,7 +30,7 @@ export type PrivacyExperienceResponse = {
   created_at: string;
   updated_at: string;
   region: PrivacyNoticeRegion;
-  gpp_settings?: GPPApplicationConfigResponse | null;
+  gpp_settings?: PrivacyExperienceGPPSettings | null;
   tcf_purpose_consents?: Array<TCFPurposeConsentRecord>;
   tcf_purpose_legitimate_interests?: Array<TCFPurposeLegitimateInterestsRecord>;
   tcf_special_purposes?: Array<TCFSpecialPurposeRecord>;
