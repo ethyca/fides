@@ -1,0 +1,48 @@
+{
+  "purpose_consent_preferences": [],
+  "purpose_legitimate_interests_preferences": [],
+  "vendor_consent_preferences": [],
+  "vendor_legitimate_interests_preferences": [],
+  "special_feature_preferences": [],
+  "special_purpose_preferences": [],
+  "feature_preferences": [],
+  "system_consent_preferences": [],
+  "system_legitimate_interests_preferences": [],
+  "preferences": [
+    {
+      "privacy_notice_history_id": "pri_7e3f0e85-324b-4e66-929f-5b2c29e98d8c",
+      "preference": "opt_out",
+      "notice_key": "data_sales_and_sharing213213",
+      "notice_id": "pri_3e5490b6-29fe-48b6-81a1-466e386e878b",
+      "version": 2
+    },
+    {
+      "privacy_notice_history_id": "pri_f55229d6-0f60-4925-9bc5-c86460c2525b",
+      "preference": "opt_out",
+      "notice_key": "marketing",
+      "notice_id": "pri_263ee089-93d3-4648-ab74-12c3ef7df774",
+      "version": 3
+    },
+    {
+      "privacy_notice_history_id": "pri_2ef10af7-b3a8-4b51-b828-fda0a4b70f0a",
+      "preference": "opt_in",
+      "notice_key": "analytics",
+      "notice_id": "pri_b46f8339-2136-4464-9bbf-692b6aa99958",
+      "version": 2
+    },
+    {
+      "privacy_notice_history_id": "pri_c04e7e4a-37ba-4227-9bce-42a721a3cf4e",
+      "preference": "opt_out",
+      "notice_key": "functional",
+      "notice_id": "pri_08a32936-a193-4f72-9636-1b4c19e965d9",
+      "version": 2
+    },
+    {
+      "privacy_notice_history_id": "pri_1ec95c49-7945-4b12-b665-daf41933dab8",
+      "preference": "opt_out",
+      "notice_key": "sales_sharing_targeted_advertising_gpp_us_national",
+      "notice_id": "pri_9d74c917-acdc-43e3-98d3-0336942b3853",
+      "version": 5
+    }
+  ]
+}
