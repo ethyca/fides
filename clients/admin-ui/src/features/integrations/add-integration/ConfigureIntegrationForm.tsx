@@ -9,7 +9,7 @@ import { CustomTextInput } from "~/features/common/form/inputs";
 import { getErrorMessage } from "~/features/common/helpers";
 import { useGetConnectionTypeSecretSchemaQuery } from "~/features/connection-type";
 import type { ConnectionTypeSecretSchemaResponse } from "~/features/connection-type/types";
-import { useGetAllDatasetsQuery } from "~/features/dataset";
+import { useGetAllFilteredDatasetsQuery } from "~/features/dataset";
 import {
   usePatchDatastoreConnectionMutation,
   usePatchDatastoreConnectionSecretsMutation,
@@ -71,7 +71,10 @@ const ConfigureIntegrationForm = ({
     value: s.fides_key,
   }));
 
-  const { data: allDatasets } = useGetAllDatasetsQuery();
+  const { data: allDatasets } = useGetAllFilteredDatasetsQuery({
+    minimal: true,
+    connection_type: ConnectionType.BIGQUERY,
+  });
   const datasetOptions = allDatasets?.map((d) => ({
     label: d.name ?? d.fides_key,
     value: d.fides_key,
