@@ -34,7 +34,6 @@ export const useDatasetConfigField = ({
 
   const { data: unlinkedDatasets } = useGetAllFilteredDatasetsQuery({
     onlyUnlinkedDatasets: true,
-    minimal: true,
   });
 
   const unlinkedDatasetOptions: Option[] = useMemo(
