@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta, timezone
+from io import BytesIO
 from time import sleep
 from typing import Any, Dict, List
 from uuid import uuid4
@@ -6,7 +7,7 @@ from uuid import uuid4
 import pytest
 import requests_mock
 from pydantic import ValidationError
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
 from fides.api.common_exceptions import (
     ClientUnsuccessfulException,
@@ -1161,17 +1162,17 @@ def test_retrieve_attachments_from_privacy_request(
     attachment1 = Attachment.create_and_upload(
         db=db,
         data=attachment_data,
-        attachment_file=b"contents of test file 1",
+        attachment_file=BytesIO(b"contents of test file 1"),
     )
     attachment2 = Attachment.create_and_upload(
         db=db,
         data=attachment_data,
-        attachment_file=b"contents of test file 2",
+        attachment_file=BytesIO(b"contents of test file 2"),
     )
     attachment3 = Attachment.create_and_upload(
         db=db,
         data=attachment_data,
-        attachment_file=b"contents of test file 3",
+        attachment_file=BytesIO(b"contents of test file 3"),
     )
 
     # Associate Attachments with the PrivacyRequest
@@ -1196,9 +1197,12 @@ def test_retrieve_attachments_from_privacy_request(
     assert attachments[1].id == attachment2.id
     assert attachments[2].id == attachment3.id
 
-    attachment1.delete(db)
-    attachment2.delete(db)
-    attachment3.delete(db)
+    # Verify deleting the privacy request deletes the attachments.
+    privacy_request.delete(db)
+    db.commit()
+    assert Attachment.get(db, object_id=attachment1.id) is None
+    assert Attachment.get(db, object_id=attachment2.id) is None
+    assert Attachment.get(db, object_id=attachment3.id) is None
 
 
 def test_privacy_request_get_attachment_by_id(db, attachment, privacy_request):
@@ -1260,9 +1264,12 @@ def test_retrieve_comments_from_privacy_request(db, comment_data, privacy_reques
     assert comments[1].id == comment2.id
     assert comments[2].id == comment3.id
 
-    comment1.delete(db)
-    comment2.delete(db)
-    comment3.delete(db)
+    # Verify deleting the privacy request deletes the comments.
+    privacy_request.delete(db)
+    db.commit()
+    assert Comment.get(db, object_id=comment1.id) is None
+    assert Comment.get(db, object_id=comment2.id) is None
+    assert Comment.get(db, object_id=comment3.id) is None
 
 
 def test_privacy_request_get_comment_by_id(db, comment, privacy_request):

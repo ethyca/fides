@@ -99,7 +99,7 @@ def test_generic_retrieve_from_s3(s3_client, storage_config, monkeypatch):
     s3.put_object(Bucket=bucket_name, Key=file_key, Body=document)
 
     # Retrieve the document
-    retrieved_document = generic_retrieve_from_s3(
+    retrieved_document, _ = generic_retrieve_from_s3(
         storage_secrets=storage_secrets,
         bucket_name=bucket_name,
         file_key=file_key,

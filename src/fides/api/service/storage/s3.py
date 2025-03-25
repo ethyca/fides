@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from io import BytesIO
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Tuple
 
 from boto3.s3.transfer import TransferConfig
 from botocore.exceptions import ClientError, ParamValidationError
@@ -91,7 +91,7 @@ def generic_retrieve_from_s3(
     bucket_name: str,
     file_key: str,
     auth_method: str,
-) -> Optional[BytesIO]:
+) -> Tuple[str, AnyHttpUrlString]:
     """Retrieves arbitrary data from s3"""
     logger.info("Starting S3 Retrieve of {}", file_key)
 
@@ -99,7 +99,9 @@ def generic_retrieve_from_s3(
         s3_client = get_s3_client(auth_method, storage_secrets)
         try:
             response = s3_client.get_object(Bucket=bucket_name, Key=file_key)
-            return response["Body"].read()
+            return response["Body"].read(), create_presigned_url_for_s3(
+                s3_client, bucket_name, file_key
+            )
         except Exception as e:
             logger.error("Encountered error while retrieving s3 object: {}", e)
             raise e

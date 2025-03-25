@@ -11,6 +11,7 @@ from fides.api.models.comment import (
     CommentReference,
     CommentReferenceType,
     CommentType,
+    delete_all_comments,
 )
 from fides.api.models.fides_user import FidesUser
 
@@ -273,3 +274,25 @@ def test_delete_comment_reference_cascades(db, comment, comment_reference):
     retrieved_comment = db.query(Comment).filter_by(id=comment.id).first()
     assert retrieved_comment is not None
     assert len(retrieved_comment.references) == 0
+
+
+def test_delete_all_comments(db, comment, privacy_request):
+    """Test deleting all comments associated with a reference."""
+    CommentReference.create(
+        db,
+        data={
+            "comment_id": comment.id,
+            "reference_id": privacy_request.id,
+            "reference_type": CommentReferenceType.privacy_request,
+        },
+    )
+    comment_id = comment.id
+    delete_all_comments(db, privacy_request.id, CommentReferenceType.privacy_request)
+
+    retrieved_comment = db.query(Comment).filter_by(id=comment_id).first()
+    assert retrieved_comment is None
+
+    retrieved_comment_reference = (
+        db.query(CommentReference).filter_by(comment_id=comment_id).first()
+    )
+    assert retrieved_comment_reference is None
