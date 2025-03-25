@@ -61,6 +61,7 @@ def generic_upload_to_s3(  # pylint: disable=R0913
     file_key: str,
     auth_method: str,
     document: IO[bytes],
+    size_threshold: int = LARGE_FILE_THRESHOLD,  # 5 MB threshold
 ) -> Optional[AnyHttpUrlString]:
     """
     Uploads arbitrary data to S3 returned from an access request.
@@ -78,8 +79,8 @@ def generic_upload_to_s3(  # pylint: disable=R0913
 
     # Define a transfer configuration for multipart uploads
     transfer_config = TransferConfig(
-        multipart_threshold=LARGE_FILE_THRESHOLD,
-        multipart_chunksize=LARGE_FILE_THRESHOLD,
+        multipart_threshold=size_threshold,
+        multipart_chunksize=size_threshold,
     )
 
     # Use upload_fileobj for efficient uploads (handles both small and large files)
