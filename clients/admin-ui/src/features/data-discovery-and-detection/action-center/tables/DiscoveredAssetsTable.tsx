@@ -124,7 +124,8 @@ export const DiscoveredAssetsTable = ({
 
   useEffect(() => {
     if (data) {
-      const firstSystemName = data.items[0]?.system || systemId || "";
+      const firstSystemName =
+        data.items[0]?.system || systemName || systemId || "";
       setTotalPages(data.pages || 1);
       setSystemName(firstSystemName);
       onSystemName?.(firstSystemName);
