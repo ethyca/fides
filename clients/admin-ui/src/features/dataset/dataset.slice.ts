@@ -55,9 +55,9 @@ const datasetApi = baseApi.injectEndpoints({
     getAllFilteredDatasets: build.query<
       Dataset[],
       {
-        onlyUnlinkedDatasets: boolean;
-        minimal: boolean;
-        connection_type: ConnectionType;
+        onlyUnlinkedDatasets?: boolean;
+        minimal?: boolean;
+        connection_type?: ConnectionType;
       }
     >({
       query: ({ onlyUnlinkedDatasets, minimal, connection_type }) => ({
