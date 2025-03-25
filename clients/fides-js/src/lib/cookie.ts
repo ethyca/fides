@@ -85,7 +85,7 @@ export const makeFidesCookie = (consent?: NoticeConsent): FidesCookie => {
       fides_user_device_id: userDeviceId || generateFidesUserDeviceId(), // the fallback here is a bit overkill, but it is mostly to make the unit test work since it doesn't have a global context.
     },
     fides_meta: {
-      version: "0.9.0",
+      version: process.env.FIDES_VERSION || "unknown",
       createdAt: now.toISOString(),
       updatedAt: "",
     },

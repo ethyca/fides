@@ -181,6 +181,7 @@ export interface FidesGlobal extends Fides {
   options: FidesInitOptions;
   saved_consent: NoticeConsent;
   tcf_consent: TcfOtherConsent;
+  version: string;
   blueconic: typeof blueconic;
   gtm: typeof gtm;
   init: (config?: FidesConfig) => Promise<void>;
