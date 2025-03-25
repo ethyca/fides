@@ -308,49 +308,6 @@ describe("Consent settings", () => {
         ) as FidesCookie;
         expect(cookie.fides_meta.consentMethod).to.eql("save");
       });
-
-      cy.visit("/fides-js-demo.html");
-      cy.get("#consent-json");
-      cy.waitUntilFidesInitialized().then(() => {
-        cy.window({ timeout: 1000 }).should("have.property", "dataLayer");
-        cy.window().then((win) => {
-          // Now all of the cookie keys should be populated.
-          expect(win).to.have.nested.property("Fides.consent").that.eql({
-            data_sales: false,
-            tracking: false,
-            analytics: true,
-            gpc_test: true,
-          });
-
-          // GTM configuration
-          const timestamp = win.dataLayer[0]?.Fides?.timestamp;
-          expect(win)
-            .to.have.nested.property("dataLayer[0]")
-            .that.eql({
-              event: "FidesInitialized",
-              Fides: {
-                consent: {
-                  data_sales: false,
-                  tracking: false,
-                  analytics: true,
-                  gpc_test: true,
-                },
-                extraDetails: {
-                  consentMethod: "save",
-                },
-                fides_string: undefined,
-                timestamp,
-              },
-            });
-          // Meta Pixel configuration
-          expect(win)
-            .to.have.nested.property("fbq.queue")
-            .that.eql([
-              ["consent", "revoke"],
-              ["dataProcessingOptions", ["LDU"], 1, 1000],
-            ]);
-        });
-      });
     });
 
     describe("when globalPrivacyControl is enabled", () => {

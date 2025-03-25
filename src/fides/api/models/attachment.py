@@ -1,6 +1,6 @@
 import os
 from enum import Enum as EnumType
-from typing import Any, Optional
+from typing import IO, Any, Optional
 
 from loguru import logger as log
 from sqlalchemy import Column
@@ -110,7 +110,7 @@ class Attachment(Base):
         uselist=False,
     )
 
-    def upload(self, attachment: bytes) -> None:
+    def upload(self, attachment: IO[bytes]) -> None:
         """Uploads an attachment to S3 or local storage."""
         if self.config.type == StorageType.s3:
             bucket_name = f"{self.config.details[StorageDetails.BUCKET.value]}"
@@ -128,7 +128,7 @@ class Attachment(Base):
         if self.config.type == StorageType.local:
             filename = get_local_filename(self.id)
             with open(filename, "wb") as file:
-                file.write(attachment)
+                file.write(attachment.read())
             return
 
         raise ValueError(f"Unsupported storage type: {self.config.type}")
@@ -148,7 +148,7 @@ class Attachment(Base):
         if self.config.type == StorageType.local:
             filename = f"{LOCAL_FIDES_UPLOAD_DIRECTORY}/{self.id}"
             with open(filename, "rb") as file:
-                return file.read()
+                return file.read(), filename
 
         raise ValueError(f"Unsupported storage type: {self.config.type}")
 
@@ -178,7 +178,7 @@ class Attachment(Base):
         db: Session,
         *,
         data: dict[str, Any],
-        attachment_file: bytes,
+        attachment_file: IO[bytes],
         check_name: bool = False,
     ) -> "Attachment":
         """Creates a new attachment record in the database and uploads the attachment to S3."""

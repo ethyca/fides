@@ -23,12 +23,8 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ### Added
 - Support for location based privacy center actions [#5803](https://github.com/ethyca/fides/pull/5803)
-
-### Changed
-- Privacy Center was updated to use React 19 and Nextjs 15 [#5803](https://github.com/ethyca/fides/pull/5803)
 - Added `is_country` field on locations [#5885](https://github.com/ethyca/fides/pull/5885)
 - Added `page` column to `Asset` table/model [#5898](https://github.com/ethyca/fides/pull/5898) https://github.com/ethyca/fides/labels/db-migration
-- Change `Browser Request` values to `Browser request` in Asset and StagedResource models [#5898](https://github.com/ethyca/fides/pull/5898) https://github.com/ethyca/fides/labels/db-migration
 - Added new `has_next` parameter for the `cursor` pagination strategy [#5888](https://github.com/ethyca/fides/pull/5888)
 - Support `FIDES_PRIVACY_CENTER__FIDES_JS_MAX_AGE_SECONDS` configuration option for `fides-privacy-center` to override default cache duration for /fides.js [#5909](https://github.com/ethyca/fides/pull/5909)
 - Add properties for user assigned systems/data_uses on staged resources [5841](https://github.com/ethyca/fides/pull/5841) https://github.com/ethyca/fides/labels/db-migration
@@ -38,8 +34,13 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Added option for disabling consent notice toggles [#5872](https://github.com/ethyca/fides/pull/5872)
 - Added UI to manually update Assets in the system asset view [#5914](https://github.com/ethyca/fides/pull/5914)
 - Use the experience's `tcf_publisher_country_code` when building TC strings [#5921](https://github.com/ethyca/fides/pull/5921)
+- Added size thresholds to S3 upload and retrieval methods for more efficient document processing. [#5922](https://github.com/ethyca/fides/pull/5922)
+- Added support for Notice Consent String integration in Fides String [#5895](https://github.com/ethyca/fides/pull/5895)
+- Added support for new options for Fides.gtm method [#5917](https://github.com/ethyca/fides/pull/5917)
 
 ### Changed
+- Privacy Center was updated to use React 19 and Nextjs 15 [#5803](https://github.com/ethyca/fides/pull/5803) https://github.com/ethyca/fides/labels/high-risk
+- Change `Browser Request` values to `Browser request` in Asset and StagedResource models [#5898](https://github.com/ethyca/fides/pull/5898) https://github.com/ethyca/fides/labels/db-migration
 - Changed discovered asset "system" cell to use `user_assigned_system_key` property [#5908](https://github.com/ethyca/fides/pull/5908)
 - Changed Dataset endpoint, it now has `minimal` parameter, and can be filtered by `fides_meta.namespace.connection_type` [#5915](https://github.com/ethyca/fides/pull/5915)
 - Datahub integration now allows datasets to be selected [#5926](https://github.com/ethyca/fides/pull/5926)

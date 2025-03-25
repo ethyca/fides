@@ -1,5 +1,9 @@
 import { FidesEventType } from "../../src/docs";
-import { gtm } from "../../src/integrations/gtm";
+import {
+  gtm,
+  GtmFlagType,
+  GtmNonApplicableFlagMode,
+} from "../../src/integrations/gtm";
 
 const fidesEvents: Record<FidesEventType, boolean> = {
   FidesInitializing: false,
@@ -51,4 +55,129 @@ describe("gtm", () => {
       ).toBeLessThan(1);
     },
   );
+
+  test("that fides transforms consent values to strings when asStringValues is true", () => {
+    // Mock the privacy notices
+    window.Fides = {
+      experience: {
+        privacy_notices: [
+          {
+            notice_key: "test_notice_1",
+            consent_mechanism: "opt_in",
+          },
+          {
+            notice_key: "test_notice_2",
+            consent_mechanism: "opt_out",
+          },
+          {
+            notice_key: "test_notice_3",
+            consent_mechanism: "notice_only",
+          },
+        ],
+      } as any,
+    } as any;
+
+    gtm({ flag_type: GtmFlagType.CONSENT_MECHANISM });
+    window.dispatchEvent(
+      new CustomEvent("FidesUpdated", {
+        detail: {
+          consent: {
+            test_notice_1: true,
+            test_notice_2: false,
+            test_notice_3: true,
+          },
+        },
+      }),
+    );
+
+    const fidesEvent = window.dataLayer?.[window.dataLayer.length - 1];
+
+    expect(fidesEvent?.Fides.consent.test_notice_1).toBe("opt_in");
+    expect(fidesEvent?.Fides.consent.test_notice_2).toBe("opt_out");
+    expect(fidesEvent?.Fides.consent.test_notice_3).toBe("acknowledge");
+  });
+
+  test("that fides includes not applicable privacy notices when includeNotApplicable is true", () => {
+    window.Fides = {
+      experience: {
+        privacy_notices: [
+          {
+            notice_key: "test_notice_1",
+            consent_mechanism: "opt_in",
+          },
+          {
+            notice_key: "test_notice_2",
+            consent_mechanism: "opt_out",
+          },
+          {
+            notice_key: "test_notice_3",
+            consent_mechanism: "notice_only",
+          },
+        ],
+        non_applicable_privacy_notices: ["na_notice_1", "na_notice_2"],
+      } as any,
+    } as any;
+
+    gtm({ non_applicable_flag_mode: GtmNonApplicableFlagMode.INCLUDE });
+    window.dispatchEvent(
+      new CustomEvent("FidesUpdated", {
+        detail: {
+          consent: {
+            test_notice_1: true,
+            test_notice_2: false,
+            test_notice_3: true,
+          },
+        },
+      }),
+    );
+
+    const fidesEvent = window.dataLayer?.[window.dataLayer.length - 1];
+
+    expect(fidesEvent?.Fides.consent.na_notice_1).toBe(true);
+    expect(fidesEvent?.Fides.consent.na_notice_2).toBe(true);
+  });
+
+  test("that fides includes not applicable privacy notices and transforms them to strings", () => {
+    gtm({ non_applicable_flag_mode: GtmNonApplicableFlagMode.INCLUDE });
+    window.Fides = {
+      experience: {
+        privacy_notices: [
+          {
+            notice_key: "test_notice_1",
+            consent_mechanism: "opt_in",
+          },
+          {
+            notice_key: "test_notice_2",
+            consent_mechanism: "opt_out",
+          },
+          {
+            notice_key: "test_notice_3",
+            consent_mechanism: "notice_only",
+          },
+        ],
+        non_applicable_privacy_notices: ["na_notice_1", "na_notice_2"],
+      } as any,
+    } as any;
+
+    gtm({
+      non_applicable_flag_mode: GtmNonApplicableFlagMode.INCLUDE,
+      flag_type: GtmFlagType.CONSENT_MECHANISM,
+    });
+    window.dispatchEvent(
+      new CustomEvent("FidesUpdated", {
+        detail: {
+          consent: {
+            test_notice_1: true,
+            test_notice_2: false,
+            test_notice_3: true,
+          },
+        },
+      }),
+    );
+
+    const fidesEvent = window.dataLayer?.[window.dataLayer.length - 1];
+
+    expect(fidesEvent?.Fides.consent.na_notice_1).toBe("not_applicable");
+    expect(fidesEvent?.Fides.consent.na_notice_2).toBe("not_applicable");
+  });
 });
