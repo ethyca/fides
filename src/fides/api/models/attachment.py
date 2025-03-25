@@ -120,11 +120,11 @@ class Attachment(Base):
 
     comments = relationship(
         "Comment",
-        back_populates="attachments",
         secondary="attachment_reference",
         primaryjoin="and_(Attachment.id == AttachmentReference.attachment_id, "
         "AttachmentReference.reference_type == 'comment')",
         secondaryjoin="Comment.id == AttachmentReference.reference_id",
+        back_populates="attachments",
     )
 
     config = relationship(

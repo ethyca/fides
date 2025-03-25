@@ -100,7 +100,6 @@ class Comment(Base):
         "AttachmentReference.reference_type == 'comment')",
         secondaryjoin="Attachment.id == AttachmentReference.attachment_id",
         order_by="Attachment.created_at",
-        back_populates="comments",
     )
 
     privacy_requests = relationship(
