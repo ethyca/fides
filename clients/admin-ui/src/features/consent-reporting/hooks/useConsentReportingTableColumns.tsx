@@ -89,7 +89,7 @@ const useConsentReportingTableColumns = ({
         cell: ({ getValue }) => {
           const value = getValue();
           const label = value === "tcf" ? value.toUpperCase() : value;
-          return <BadgeCell value={label} />;
+          return <DefaultCell value={label} />;
         },
         header: (props) => (
           <DefaultHeaderCell value="Privacy notice" {...props} />
