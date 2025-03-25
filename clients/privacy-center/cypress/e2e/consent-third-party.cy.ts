@@ -189,10 +189,19 @@ describe("Consent third party extensions", () => {
                 });
               cy.get("@dataLayerPush")
                 .its("firstCall.args.0.Fides.extraDetails")
-                .should("deep.equal", {
-                  consentMethod: undefined,
-                  shouldShowExperience: true,
-                });
+                .should(
+                  "deep.equal",
+                  isTCF
+                    ? {
+                        consentMethod: undefined,
+                        shouldShowExperience: true,
+                        firstInit: false,
+                      }
+                    : {
+                        consentMethod: undefined,
+                        shouldShowExperience: true,
+                      },
+                );
 
               // Second call is FidesUIShown when banner appears
               cy.get("@dataLayerPush")
@@ -315,10 +324,19 @@ describe("Consent third party extensions", () => {
                 });
               cy.get("@dataLayerPush")
                 .its("firstCall.args.0.Fides.extraDetails")
-                .should("deep.equal", {
-                  consentMethod: undefined,
-                  shouldShowExperience: true,
-                });
+                .should(
+                  "deep.equal",
+                  isTCF
+                    ? {
+                        consentMethod: undefined,
+                        shouldShowExperience: true,
+                        firstInit: false,
+                      }
+                    : {
+                        consentMethod: undefined,
+                        shouldShowExperience: true,
+                      },
+                );
 
               // Second call is FidesUIShown when banner appears
               cy.get("@dataLayerPush")
