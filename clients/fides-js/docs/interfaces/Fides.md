@@ -362,13 +362,6 @@ preferences) or in the case when the previous consent is no longer valid.
 
 Encode the user's consent preferences into a Notice Consent string. See [FidesOptions.fides_string](FidesOptions.md#fides_string) for more details.
 
-#### Example
-
-```ts
-const encoded = Fides.encodeNoticeConsentString({data_sales_and_sharing:0,analytics:1});
-console.log(encoded); // "eyJkYXRhX3NhbGVzX2FuZF9zaGFyaW5nIjowLCJhbmFseXRpY3MiOjF9"
-```
-
 #### Parameters
 
 | Parameter | Type | Description |
@@ -379,6 +372,13 @@ console.log(encoded); // "eyJkYXRhX3NhbGVzX2FuZF9zaGFyaW5nIjowLCJhbmFseXRpY3MiOj
 
 `string`
 
+#### Example
+
+```ts
+const encoded = Fides.encodeNoticeConsentString({data_sales_and_sharing:0,analytics:1});
+console.log(encoded); // "eyJkYXRhX3NhbGVzX2FuZF9zaGFyaW5nIjowLCJhbmFseXRpY3MiOjF9"
+```
+
 ***
 
 ### decodeNoticeConsentString()
@@ -386,13 +386,6 @@ console.log(encoded); // "eyJkYXRhX3NhbGVzX2FuZF9zaGFyaW5nIjowLCJhbmFseXRpY3MiOj
 > **decodeNoticeConsentString**: (`base64String`) => `object`
 
 Decode a Notice Consent string into a user's consent preferences. See [FidesOptions.fides_string](FidesOptions.md#fides_string) for more details.
-
-#### Example
-
-```ts
-const decoded = Fides.decodeNoticeConsentString("eyJkYXRhX3NhbGVzX2FuZF9zaGFyaW5nIjowLCJhbmFseXRpY3MiOjF9");
-console.log(decoded); // {data_sales_and_sharing: false, analytics: true}
-```
 
 #### Parameters
 
@@ -403,3 +396,10 @@ console.log(decoded); // {data_sales_and_sharing: false, analytics: true}
 #### Returns
 
 `object`
+
+#### Example
+
+```ts
+const decoded = Fides.decodeNoticeConsentString("eyJkYXRhX3NhbGVzX2FuZF9zaGFyaW5nIjowLCJhbmFseXRpY3MiOjF9");
+console.log(decoded); // {data_sales_and_sharing: false, analytics: true}
+```
