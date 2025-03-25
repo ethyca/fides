@@ -19,9 +19,39 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - https://github.com/ethyca/fides/labels/high-risk: to indicate that a change is a "high-risk" change that could potentially lead to unanticipated regressions or degradations
 - https://github.com/ethyca/fides/labels/db-migration: to indicate that a given change includes a DB migration
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.57.0...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.57.1...main)
 
 
+### Changed
+- Privacy Center was updated to use React 19 and Nextjs 15 [#5803](https://github.com/ethyca/fides/pull/5803)
+- Added `is_country` field on locations [#5885](https://github.com/ethyca/fides/pull/5885)
+- Added `page` column to `Asset` table/model [#5898](https://github.com/ethyca/fides/pull/5898) https://github.com/ethyca/fides/labels/db-migration
+- Change `Browser Request` values to `Browser request` in Asset and StagedResource models [#5898](https://github.com/ethyca/fides/pull/5898) https://github.com/ethyca/fides/labels/db-migration
+- Added new `has_next` parameter for the `cursor` pagination strategy [#5888](https://github.com/ethyca/fides/pull/5888)
+- Support `FIDES_PRIVACY_CENTER__FIDES_JS_MAX_AGE_SECONDS` configuration option for `fides-privacy-center` to override default cache duration for /fides.js [#5909](https://github.com/ethyca/fides/pull/5909)
+- Add properties for user assigned systems/data_uses on staged resources [5841](https://github.com/ethyca/fides/pull/5841) https://github.com/ethyca/fides/labels/db-migration
+- Added tooltips to the buttons in the dataset test UI [#5899](https://github.com/ethyca/fides/pull/5899)
+- Added the ability to stop a test privacy request in the dataset test UI [#5901](https://github.com/ethyca/fides/pull/5901)
+- Support setting publisher country code in Consent Settings [#5902](https://github.com/ethyca/fides/pull/5902)
+- Added option for disabling consent notice toggles [#5872](https://github.com/ethyca/fides/pull/5872)
+- Added UI to manually update Assets in the system asset view [#5914](https://github.com/ethyca/fides/pull/5914)
+- Use the experience's `tcf_publisher_country_code` when building TC strings [#5921](https://github.com/ethyca/fides/pull/5921)
+
+### Changed
+- Changed discovered asset "system" cell to use `user_assigned_system_key` property [#5908](https://github.com/ethyca/fides/pull/5908)
+- Changed Dataset endpoint, it now has `minimal` parameter, and can be filtered by `fides_meta.namespace.connection_type` [#5915](https://github.com/ethyca/fides/pull/5915)
+- Datahub integration now allows datasets to be selected [#5926](https://github.com/ethyca/fides/pull/5926)
+
+### Fixed
+- Fixed UX issues with website monitor form [#5884](https://github.com/ethyca/fides/pull/5884)
+- Removed excessive authorization debug logs [#5920](https://github.com/ethyca/fides/pull/5920)
+- Fixed fix incorrect calls to TCF api update method [#5916](https://github.com/ethyca/fides/pull/5916)
+
+## [2.57.1](https://github.com/ethyca/fides/compare/2.57.0...2.57.1)
+
+### Changed
+
+- Added extra debug logging and fixed handler time calculation [#5927](https://github.com/ethyca/fides/pull/5927)
 
 ## [2.57.0](https://github.com/ethyca/fides/compare/2.56.2...2.57.0)
 
