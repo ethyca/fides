@@ -150,12 +150,27 @@ class Attachment(Base):
 
         if self.config.type == StorageType.local:
             filename = get_local_filename(self.id)
+
+            # Validate that attachment is a file-like object
+            if not hasattr(attachment, "read"):
+                raise TypeError(f"Expected a file-like object, got {type(attachment)}")
+
+            # Reset the file pointer to the beginning
+            try:
+                attachment.seek(0)
+            except Exception as e:
+                raise ValueError(f"Failed to reset file pointer for attachment: {e}")
+
+            # Write the file in chunks to avoid loading the entire content into memory
             with open(filename, "wb") as file:
-                # Write the file in chunks to avoid loading the entire content into memory
                 for chunk in iter(
                     lambda: attachment.read(1024 * 1024), b""
                 ):  # 1 MB chunks
+                    if not isinstance(chunk, bytes):
+                        raise TypeError(f"Expected bytes, got {type(chunk)}")
                     file.write(chunk)
+
+            log.info(f"Uploaded {self.file_name} to local storage at {filename}")
             return
 
         raise ValueError(f"Unsupported storage type: {self.config.type}")
