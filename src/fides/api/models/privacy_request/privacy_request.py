@@ -43,7 +43,6 @@ from fides.api.models.attachment import (
     Attachment,
     AttachmentReference,
     AttachmentReferenceType,
-    delete_all_attachments,
 )
 from fides.api.models.audit_log import AuditLog
 from fides.api.models.client import ClientDetail
@@ -344,7 +343,9 @@ class PrivacyRequest(
         deleting this object from the database
         """
         self.clear_cached_values()
-        delete_all_attachments(db, self.id, AttachmentReferenceType.privacy_request)
+        Attachment.delete_attachments_for_reference_and_type(
+            db, self.id, AttachmentReferenceType.privacy_request
+        )
         delete_all_comments(db, self.id, CommentReferenceType.privacy_request)
 
         for provided_identity in self.provided_identities:  # type: ignore[attr-defined]

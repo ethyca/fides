@@ -241,24 +241,24 @@ class Attachment(Base):
             attachment_reference.delete(db)
         super().delete(db=db)
 
-
-def delete_all_attachments(
-    db: Session, reference_id: str, reference_type: AttachmentReferenceType
-) -> None:
-    """
-    Deletes attachments associated with this reference_id and reference_type.
-    Deletes all references to the attachments.
-    """
-    # Query attachments explicitly to avoid lazy loading
-    attachments = (
-        db.query(Attachment)
-        .join(AttachmentReference)
-        .filter(
-            AttachmentReference.reference_id == reference_id,
-            AttachmentReference.reference_type == reference_type,
+    @staticmethod
+    def delete_attachments_for_reference_and_type(
+        db: Session, reference_id: str, reference_type: AttachmentReferenceType
+    ) -> None:
+        """
+        Deletes attachments associated with this reference_id and reference_type.
+        Deletes all references to the attachments.
+        """
+        # Query attachments explicitly to avoid lazy loading
+        attachments = (
+            db.query(Attachment)
+            .join(AttachmentReference)
+            .filter(
+                AttachmentReference.reference_id == reference_id,
+                AttachmentReference.reference_type == reference_type,
+            )
+            .all()
         )
-        .all()
-    )
 
-    for attachment in attachments:
-        attachment.delete(db)
+        for attachment in attachments:
+            attachment.delete(db)

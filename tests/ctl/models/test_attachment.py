@@ -9,7 +9,6 @@ from fides.api.models.attachment import (
     AttachmentReference,
     AttachmentReferenceType,
     AttachmentType,
-    delete_all_attachments,
 )
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.storage import StorageConfig
@@ -338,10 +337,7 @@ def test_attachment_reference_unique_ids(db, attachment_reference):
 
 
 def test_delete_all_attachments(db, attachment, comment, privacy_request):
-    """
-    Tests delete_all_attachments function only deletes attachments if they have
-     no other active references.
-    """
+    """Tests delete_all_attachments_for_reference_and_type function."""
     # create attachment references to comment and privacy request
     AttachmentReference.create(
         db,
@@ -362,7 +358,7 @@ def test_delete_all_attachments(db, attachment, comment, privacy_request):
 
     # delete all attachments associated with the comment
     # should delete all attachments and references to the attachment
-    delete_all_attachments(
+    Attachment.delete_attachments_for_reference_and_type(
         db, reference_id=comment.id, reference_type=AttachmentReferenceType.comment
     )
     retrieved_attachment = db.query(Attachment).filter_by(id=attachment.id).first()
