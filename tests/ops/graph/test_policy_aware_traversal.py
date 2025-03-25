@@ -50,3 +50,15 @@ class TestPolicyAwareTraversal:
             "Some nodes were not reachable: unreachable_with_data_categories:address"
             in str(exc)
         )
+
+    def test_allowed_unvisited_edge(
+        self, policy, unvisited_edge_dataset_config: DatasetConfig
+    ):
+        """
+        Test that a traversal with an unvisited edge will not raise an error
+        if the edge belongs to collections that are allowed to be unreachable.
+        """
+        graph_dataset = unvisited_edge_dataset_config.get_graph()
+        dataset_graph = DatasetGraph(graph_dataset)
+        identity_seed: Dict[str, str] = {"email": "something"}
+        Traversal(dataset_graph, identity_seed, policy=policy)
