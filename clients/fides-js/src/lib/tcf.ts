@@ -220,11 +220,26 @@ export const initializeTcfCmpApi = () => {
     },
   });
 
-  // Initialize api with TC str, we don't yet show UI, so we use false
+  // For rules around when to update the TC string, see
+  // https://github.com/InteractiveAdvertisingBureau/GDPR-Transparency-and-Consent-Framework/blob/master/TCFv2/IAB%20Tech%20Lab%20-%20CMP%20API%20v2.md#addeventlistener
+
+  // Initialize api with TC string. We only want to *update*
+  // the TC string if all of the following are true:
+  //   1. TC string was _already set_ on a prior visit.
+  //   2. We are _not_ going to show the banner (i.e. the TCF hash has not changed).
+  //   3. It is the _first_ init (This should only ever happen once per visit).
   // see https://github.com/InteractiveAdvertisingBureau/iabtcf-es/tree/master/modules/cmpapi#dont-show-ui--tc-string-does-not-need-an-update
   window.addEventListener("FidesInitialized", (event) => {
     const tcString = extractTCStringForCmpApi(event);
-    cmpApi.update(tcString, false);
+    if (
+      !!tcString &&
+      !!event.detail.extraDetails &&
+      !event.detail.extraDetails.shouldShowExperience &&
+      event.detail.extraDetails.firstInit
+    ) {
+      // we are not showing the experience, so we use false
+      cmpApi.update(tcString, false);
+    }
   });
   // UI is visible
   // see https://github.com/InteractiveAdvertisingBureau/iabtcf-es/tree/master/modules/cmpapi#show-ui--tc-string-needs-update
@@ -233,12 +248,7 @@ export const initializeTcfCmpApi = () => {
     const tcString = extractTCStringForCmpApi(event);
     cmpApi.update(tcString, true);
   });
-  // UI is no longer visible
-  // see https://github.com/InteractiveAdvertisingBureau/iabtcf-es/tree/master/modules/cmpapi#dont-show-ui--tc-string-does-not-need-an-update
-  window.addEventListener("FidesModalClosed", (event) => {
-    const tcString = extractTCStringForCmpApi(event);
-    cmpApi.update(tcString, false);
-  });
+
   // User preference collected
   // see https://github.com/InteractiveAdvertisingBureau/iabtcf-es/tree/master/modules/cmpapi#show-ui--tc-string-needs-update
   window.addEventListener("FidesUpdated", (event) => {
