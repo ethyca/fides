@@ -2,6 +2,7 @@ import logging
 import uuid
 from copy import deepcopy
 from datetime import datetime, timedelta, timezone
+from io import BytesIO
 from typing import Dict, Generator, List, Optional
 from unittest import mock
 from uuid import uuid4
@@ -3887,7 +3888,7 @@ def attachment(s3_client, db, attachment_data, monkeypatch):
         "fides.api.service.storage.s3.get_s3_client", mock_get_s3_client
     )
     attachment = Attachment.create_and_upload(
-        db, data=attachment_data, attachment_file=b"file content"
+        db, data=attachment_data, attachment_file=BytesIO(b"file content")
     )
     yield attachment
     attachment.delete(db)

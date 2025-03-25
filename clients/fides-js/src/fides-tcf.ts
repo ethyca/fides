@@ -12,16 +12,17 @@ import type { TCData } from "@iabtechlabtcf/cmpapi";
 import { TCString } from "@iabtechlabtcf/core";
 
 import {
+  decodeNoticeConsentString,
   defaultShowModal,
+  encodeNoticeConsentString,
   FidesCookie,
-  isPrivacyExperience,
-  shouldResurfaceConsent,
+  shouldResurfaceBanner,
 } from "./fides";
 import { blueconic } from "./integrations/blueconic";
 import { gtm } from "./integrations/gtm";
 import { meta } from "./integrations/meta";
 import { shopify } from "./integrations/shopify";
-import { isConsentOverride, raise } from "./lib/common-utils";
+import { raise } from "./lib/common-utils";
 import {
   FidesConfig,
   FidesExperienceTranslationOverrides,
@@ -159,7 +160,6 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
   };
   this.cookie = {
     ...getInitialCookie(config),
-    ...overrides.consentPrefsOverrides?.consent,
   };
 
   // Keep a copy of saved consent from the cookie, since we update the "cookie"
@@ -279,27 +279,19 @@ const _Fides: FidesGlobal = {
   initialized: false,
   onFidesEvent,
   shouldShowExperience() {
-    if (!isPrivacyExperience(this.experience)) {
-      // Nothing to show if there's no experience
-      return false;
-    }
-    if (isConsentOverride(this.options)) {
-      // If consent preference was automatic, we should not show the experience
-      return false;
-    }
-    if (!this.cookie) {
-      throw new Error("Should have a cookie");
-    }
-    return shouldResurfaceConsent(
+    return shouldResurfaceBanner(
       this.experience,
       this.cookie,
       this.saved_consent,
+      this.options,
     );
   },
   meta,
   shopify,
   showModal: defaultShowModal,
   getModalLinkLabel: () => DEFAULT_MODAL_LINK_LABEL,
+  encodeNoticeConsentString,
+  decodeNoticeConsentString,
 };
 
 if (typeof window !== "undefined") {
