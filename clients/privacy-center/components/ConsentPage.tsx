@@ -1,3 +1,5 @@
+"use client";
+
 import {
   FidesCookie,
   getConsentContext,
@@ -10,7 +12,7 @@ import {
 } from "fides-js";
 import { Stack, useToast } from "fidesui";
 import type { NextPage } from "next";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
@@ -40,7 +42,9 @@ import { useSubscribeToPrivacyExperienceQuery } from "~/features/consent/hooks";
 import { useGetIdVerificationConfigQuery } from "~/features/id-verification";
 import { ConsentPreferences } from "~/types/api";
 
-const Consent: NextPage = () => {
+import ClientMetadata from "./ClientMetadata";
+
+const ConsentPage: NextPage = () => {
   const settings = useSettings();
   const { BASE_64_COOKIE } = settings;
   const [consentRequestId] = useLocalStorage("consentRequestId", "");
@@ -263,6 +267,8 @@ const Consent: NextPage = () => {
 
   return (
     <Stack as="main" align="center" data-testid="consent">
+      <ClientMetadata title="Privacy Center" icon={config.favicon_path} />
+
       {/* Wait until i18n is initalized so we can diplay the correct language and
        also we can use the correct history ids */}
       {isI18nInitialized && (
@@ -285,4 +291,4 @@ const Consent: NextPage = () => {
   );
 };
 
-export default Consent;
+export default ConsentPage;

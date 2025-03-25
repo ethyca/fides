@@ -10,6 +10,7 @@ describe("Consent modal deeplink", () => {
     cy.visit("/?showConsentModal=true");
     cy.loadConfigFixture("config/config_consent.json").as("config");
     cy.overrideSettings({ IS_OVERLAY_ENABLED: false });
+
     cy.intercept("POST", `${API_URL}/consent-request`, {
       body: {
         consent_request_id: "consent-request-id",
@@ -58,8 +59,17 @@ describe("Consent modal deeplink", () => {
 describe("Consent settings", () => {
   beforeEach(() => {
     cy.visit("/");
+    // This type of override is flaky. We should refactor it to intercept
+    // the Server component request instead.
+    // eslint-disable-next-line cypress/no-unnecessary-waiting
+    cy.wait(500);
     cy.loadConfigFixture("config/config_consent.json").as("config");
     cy.overrideSettings({ IS_OVERLAY_ENABLED: false });
+    cy.waitUntil(() =>
+      cy
+        .getByTestId("description")
+        .should("contain", "This Privacy Center is exclusively about consent"),
+    );
   });
 
   describe("when the user isn't verified", () => {
@@ -204,10 +214,7 @@ describe("Consent settings", () => {
         },
       ).as("patchConsentPreferences");
 
-      cy.visit("/consent");
-      cy.getByTestId("consent");
-      cy.loadConfigFixture("config/config_consent.json").as("config");
-      cy.overrideSettings({ IS_OVERLAY_ENABLED: false });
+      cy.visitConsent({ settingsOverride: { IS_OVERLAY_ENABLED: false } });
     });
 
     it("populates its header and description from config", () => {
@@ -348,10 +355,11 @@ describe("Consent settings", () => {
 
     describe("when globalPrivacyControl is enabled", () => {
       beforeEach(() => {
-        cy.visit("/consent?globalPrivacyControl=true");
+        cy.visitConsent({
+          settingsOverride: { IS_OVERLAY_ENABLED: false },
+          urlParams: { globalPrivacyControl: "true" },
+        });
         cy.getByTestId("consent");
-        cy.loadConfigFixture("config/config_consent.json").as("config");
-        cy.overrideSettings({ IS_OVERLAY_ENABLED: false });
       });
 
       it("applies the GPC defaults", () => {

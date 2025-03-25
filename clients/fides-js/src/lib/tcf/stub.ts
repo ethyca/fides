@@ -142,7 +142,17 @@ export const makeStub = ({
   if (!cmpFrame) {
     // we have recur'd up the windows and have found no __tcfapiLocator frame
     addFrame(TCF_FRAME_NAME);
-    currentWindow.__tcfapi = tcfAPIHandler;
+    const tcfApi = tcfAPIHandler;
+    if (typeof tcfApi !== "function") {
+      throw new Error("TCF API failed to initialize");
+    }
+    currentWindow.__tcfapi = tcfApi;
     currentWindow.addEventListener("message", postMessageEventHandler, false);
+
+    if (currentWindow.Fides.options.debug) {
+      currentWindow?.__tcfapi?.("addEventListener", 2, (data) =>
+        fidesDebugger("TCF API Updated", data, data.eventStatus),
+      );
+    }
   }
 };

@@ -16,10 +16,8 @@ import {
 import { promises as fsPromises } from "fs";
 import type { NextApiRequest, NextApiResponse } from "next";
 
-import {
-  loadPrivacyCenterEnvironment,
-  loadServerSettings,
-} from "~/app/server-environment";
+import { getFidesApiUrl, loadServerSettings } from "~/app/server-environment";
+import { getPrivacyCenterEnvironmentCached } from "~/app/server-utils";
 import { LOCATION_HEADERS, lookupGeolocation } from "~/common/geolocation";
 import { safeLookupPropertyId } from "~/common/property-id";
 
@@ -109,8 +107,9 @@ export default async function handler(
   res: NextApiResponse,
 ) {
   // Load the configured consent options (data uses, defaults, etc.) from environment
-  const environment = await loadPrivacyCenterEnvironment();
-  const serverSettings = await loadServerSettings();
+  const environment = await getPrivacyCenterEnvironmentCached({
+    skipGeolocation: true,
+  });
 
   let options: ConsentOption[] = [];
   if (environment.config?.consent?.page.consentOptions) {
@@ -191,12 +190,13 @@ export default async function handler(
       experience = await fetchExperience({
         userLocationString: fidesRegionString,
         userLanguageString,
-        fidesApiUrl:
-          serverSettings.SERVER_SIDE_FIDES_API_URL ||
-          environment.settings.FIDES_API_URL,
+        fidesApiUrl: getFidesApiUrl(),
         propertyId,
         requestMinimalTCF: true,
       });
+      fidesDebugger(
+        `Fetched relevant experiences from server-side (${userLanguageString}).`,
+      );
       experienceIsValid(experience);
     }
   }
@@ -340,6 +340,7 @@ export default async function handler(
   `;
 
   // Instruct any caches to store this response, since these bundles do not change often
+  const serverSettings = loadServerSettings();
   const cacheHeaders: CacheControl = {
     "max-age": serverSettings.FIDES_JS_MAX_AGE_SECONDS,
     public: true,
@@ -351,6 +352,7 @@ export default async function handler(
     .setHeader("Content-Type", "application/javascript")
     // Allow CORS since this is a static file we do not need to lock down
     .setHeader("Access-Control-Allow-Origin", "*")
+    .setHeader("Access-Control-Allow-Headers", "*")
     .setHeader("Cache-Control", stringify(cacheHeaders))
     // Ignore cache if user's geolocation or language changes
     .setHeader("Vary", [...LOCATION_HEADERS, "Accept-Language"])
@@ -372,12 +374,7 @@ async function fetchCustomFidesCss(
 
   if (shouldRefresh) {
     try {
-      const environment = await loadPrivacyCenterEnvironment();
-      const serverSettings = await loadServerSettings();
-
-      const fidesUrl =
-        serverSettings.SERVER_SIDE_FIDES_API_URL ||
-        environment.settings.FIDES_API_URL;
+      const fidesUrl = getFidesApiUrl();
       const response = await fetch(
         `${fidesUrl}/plus/custom-asset/custom-fides.css`,
       );

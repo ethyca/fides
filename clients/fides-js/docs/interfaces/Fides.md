@@ -128,6 +128,17 @@ The modal's "Trigger link label" text can be customized, per regulation, for eac
 Use this function to get the label in the appropriate language for the user's current locale.
 To always return in the default language only, pass the `disableLocalization` option as `true`.
 
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `options`? | `object` |
+| `options.disableLocalization`? | `boolean` |
+
+#### Returns
+
+`string`
+
 #### Examples
 
 Getting the link text in the user's current locale (eg. Spanish):
@@ -147,17 +158,6 @@ Applying the link text to a custom modal link element:
  document.getElementById('fides-modal-link-label').innerText = Fides.getModalLinkLabel();
 </script>
 ```
-
-#### Parameters
-
-| Parameter | Type |
-| ------ | ------ |
-| `options`? | `object` |
-| `options.disableLocalization`? | `boolean` |
-
-#### Returns
-
-`string`
 
 ***
 
@@ -188,6 +188,10 @@ automated searching for, and binding the click event to, the modal link. If usin
 Fides Cloud, contact Ethyca Support for details on adjusting global settings.
 
 This function is not available for Headless experiences.
+
+#### Returns
+
+`void`
 
 #### Examples
 
@@ -227,10 +231,6 @@ function myCustomShowModalFunction() {
 }
 ```
 
-#### Returns
-
-`void`
-
 ***
 
 ### gtm()
@@ -245,6 +245,10 @@ they occur, which can then be used to trigger/block tags in GTM based on
 
 See the Google Tag Manager tutorial for more: [https://fid.es/configuring-gtm-consent](https://fid.es/configuring-gtm-consent)
 
+#### Returns
+
+`void`
+
 #### Example
 
 Enabling the GTM integration in your site's `<head>`:
@@ -254,10 +258,6 @@ Enabling the GTM integration in your site's `<head>`:
   <script>Fides.gtm()</script>
 </head>
 ```
-
-#### Returns
-
-`void`
 
 ***
 
@@ -309,15 +309,6 @@ directly access `window.addEventListener`.
 
 Returns an unsubscribe function that can be called to remove the event listener.
 
-#### Example
-
-```ts
-const unsubscribe = Fides.onFidesEvent("FidesUpdated", (detail) => {
-  console.log(detail.consent);
-  unsubscribe();
-});
-```
-
 #### Parameters
 
 | Parameter | Type | Description |
@@ -333,19 +324,28 @@ const unsubscribe = Fides.onFidesEvent("FidesUpdated", (detail) => {
 
 `void`
 
+#### Example
+
+```ts
+const unsubscribe = Fides.onFidesEvent("FidesUpdated", (detail) => {
+  console.log(detail.consent);
+  unsubscribe();
+});
+```
+
 ***
 
 ### ~~reinitialize()~~
 
 > **reinitialize**: () => `Promise`\<`void`\>
 
-#### Deprecated
-
-`Fides.init()` can now be used directly instead of `Fides.reinitialize()`.
-
 #### Returns
 
 `Promise`\<`void`\>
+
+#### Deprecated
+
+`Fides.init()` can now be used directly instead of `Fides.reinitialize()`.
 
 ***
 
