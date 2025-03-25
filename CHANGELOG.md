@@ -50,6 +50,9 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Removed excessive authorization debug logs [#5920](https://github.com/ethyca/fides/pull/5920)
 - Fixed fix incorrect calls to TCF api update method [#5916](https://github.com/ethyca/fides/pull/5916)
 
+### Removed
+ - Removed beta flag for Datahub feature [#xxxx](https://github.com/ethyca/fides/pull/xxxx)
+
 ## [2.57.0](https://github.com/ethyca/fides/compare/2.56.2...2.57.0)
 
 ### Added
