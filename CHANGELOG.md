@@ -40,6 +40,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Use the experience's `tcf_publisher_country_code` when building TC strings [#5921](https://github.com/ethyca/fides/pull/5921)
 - Added size thresholds to S3 upload and retrieval methods for more efficient document processing. [#5922](https://github.com/ethyca/fides/pull/5922)
 - Added support for Notice Consent String integration in Fides String [#5895](https://github.com/ethyca/fides/pull/5895)
+- Added support for new options for Fides.gtm method [#5917](https://github.com/ethyca/fides/pull/5917)
 
 ### Changed
 - Changed discovered asset "system" cell to use `user_assigned_system_key` property [#5908](https://github.com/ethyca/fides/pull/5908)
