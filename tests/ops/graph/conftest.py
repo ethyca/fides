@@ -74,3 +74,5 @@ multiple_identities_dataset_config = create_dataset_config_fixture(
 reachable_by_reference_dataset_config = create_dataset_config_fixture(
     "reachable_by_reference.yml"
 )
+
+unvisited_edge_dataset_config = create_dataset_config_fixture("unvisited_edge.yml")
