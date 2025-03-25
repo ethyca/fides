@@ -46,12 +46,7 @@ from fides.api.models.attachment import (
 )
 from fides.api.models.audit_log import AuditLog
 from fides.api.models.client import ClientDetail
-from fides.api.models.comment import (
-    Comment,
-    CommentReference,
-    CommentReferenceType,
-    delete_all_comments,
-)
+from fides.api.models.comment import Comment, CommentReference, CommentReferenceType
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.manual_webhook import AccessManualWebhook
 from fides.api.models.policy import (
@@ -346,7 +341,9 @@ class PrivacyRequest(
         Attachment.delete_attachments_for_reference_and_type(
             db, self.id, AttachmentReferenceType.privacy_request
         )
-        delete_all_comments(db, self.id, CommentReferenceType.privacy_request)
+        Comment.delete_comments_for_reference_and_type(
+            db, self.id, CommentReferenceType.privacy_request
+        )
 
         for provided_identity in self.provided_identities:  # type: ignore[attr-defined]
             provided_identity.delete(db=db)

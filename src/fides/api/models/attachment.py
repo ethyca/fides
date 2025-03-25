@@ -246,8 +246,24 @@ class Attachment(Base):
         db: Session, reference_id: str, reference_type: AttachmentReferenceType
     ) -> None:
         """
-        Deletes attachments associated with this reference_id and reference_type.
+        Deletes attachments associated with a given reference_id and reference_type.
         Deletes all references to the attachments.
+
+        Args:
+            db: Database session
+            reference_id: ID of the reference
+            reference_type: Type of the reference
+
+        Examples:
+
+        - Delete all attachments associated with a comment.
+           ``Attachment.delete_attachments_for_reference_and_type(
+               db, comment.id, AttachmentReferenceType.comment
+           )``
+        - Delete all attachments associated with a privacy request.
+           ``Attachment.delete_attachments_for_reference_and_type(
+               db, privacy_request.id, AttachmentReferenceType.privacy_request
+            )``
         """
         # Query attachments explicitly to avoid lazy loading
         attachments = (

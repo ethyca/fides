@@ -11,7 +11,6 @@ from fides.api.models.comment import (
     CommentReference,
     CommentReferenceType,
     CommentType,
-    delete_all_comments,
 )
 from fides.api.models.fides_user import FidesUser
 
@@ -287,7 +286,9 @@ def test_delete_all_comments(db, comment, privacy_request):
         },
     )
     comment_id = comment.id
-    delete_all_comments(db, privacy_request.id, CommentReferenceType.privacy_request)
+    Comment.delete_comments_for_reference_and_type(
+        db, privacy_request.id, CommentReferenceType.privacy_request
+    )
 
     retrieved_comment = db.query(Comment).filter_by(id=comment_id).first()
     assert retrieved_comment is None

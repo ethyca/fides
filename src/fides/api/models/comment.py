@@ -122,24 +122,35 @@ class Comment(Base):
             reference.delete(db)
         db.delete(self)
 
+    @staticmethod
+    def delete_comments_for_reference_and_type(
+        db: Session, reference_id: str, reference_type: CommentReferenceType
+    ) -> None:
+        """
+        Deletes comments associated with a given reference_id and reference_type.
+        Delete all references to the comments.
 
-def delete_all_comments(
-    db: Session, reference_id: str, reference_type: CommentReferenceType
-) -> None:
-    """
-    Deletes comments associated with this reference_id and reference_type.
-    Delete all references to the comments.
-    """
-    # Query comments explicitly to avoid lazy loading
-    comments = (
-        db.query(Comment)
-        .join(CommentReference)
-        .filter(
-            CommentReference.reference_id == reference_id,
-            CommentReference.reference_type == reference_type,
+        Args:
+            db: Database session.
+            reference_id: The reference id to delete.
+            reference_type: The reference type to delete
+
+        Examples:
+          - Delete all comments associated with a privacy request.
+            ``Comment.delete_comments_for_reference_and_type(
+                db, privacy_request.id, CommentReferenceType.privacy_request
+            )``
+        """
+        # Query comments explicitly to avoid lazy loading
+        comments = (
+            db.query(Comment)
+            .join(CommentReference)
+            .filter(
+                CommentReference.reference_id == reference_id,
+                CommentReference.reference_type == reference_type,
+            )
+            .all()
         )
-        .all()
-    )
 
-    for comment in comments:
-        comment.delete(db)
+        for comment in comments:
+            comment.delete(db)
