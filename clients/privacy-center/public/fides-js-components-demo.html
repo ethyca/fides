@@ -213,7 +213,9 @@
       };
       if (init !== "false") {
         window.Fides.init(fidesConfig);
-        Fides.gtm();
+        Fides.gtm(
+          !!window.fides_overrides && window.fides_overrides.gtmOptions,
+        );
       }
     </script>
 

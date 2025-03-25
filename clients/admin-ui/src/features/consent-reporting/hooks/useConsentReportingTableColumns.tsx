@@ -89,7 +89,7 @@ const useConsentReportingTableColumns = ({
         cell: ({ getValue }) => {
           const value = getValue();
           const label = value === "tcf" ? value.toUpperCase() : value;
-          return <BadgeCell value={label} />;
+          return <DefaultCell value={label} />;
         },
         header: (props) => (
           <DefaultHeaderCell value="Privacy notice" {...props} />
@@ -131,6 +131,12 @@ const useConsentReportingTableColumns = ({
           <DefaultHeaderCell value="Request timestamp" {...props} />
         ),
         size: 120,
+      }),
+      columnHelper.accessor((row) => row.external_id, {
+        id: "external_id",
+        cell: ({ getValue }) => <DefaultCell value={getValue()} />,
+        header: (props) => <DefaultHeaderCell value="External ID" {...props} />,
+        enableSorting: false,
       }),
       columnHelper.accessor((row) => row.email, {
         id: "email",

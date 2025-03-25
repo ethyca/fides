@@ -19,11 +19,13 @@
         const geolocation = params.get("geolocation");
         const gpp = params.get("gpp");
         const src = `/fides.js${!!params.size ? `?${params.toString()}` : ""}`;
+        document.write('<script src="' + src + '"><\/script>');
         if (gpp === "debug") {
           document.write('<script src="/fides-ext-gpp.js"><\/script>');
         }
-        document.write('<script src="' + src + '"><\/script>');
-        document.write("<script>Fides.gtm();<\/script>");
+        document.write(
+          "<script>Fides.gtm(!!window.fides_overrides && window.fides_overrides.gtmOptions);<\/script>",
+        );
       })();
       var deleteCookie = function () {
         document.cookie =
