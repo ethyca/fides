@@ -9,9 +9,10 @@ import { blueconic } from "./integrations/blueconic";
 import { gtm } from "./integrations/gtm";
 import { meta } from "./integrations/meta";
 import { shopify } from "./integrations/shopify";
-import { isConsentOverride, raise } from "./lib/common-utils";
+import { raise } from "./lib/common-utils";
 import {
   FidesConfig,
+  FidesCookie,
   FidesExperienceTranslationOverrides,
   FidesGlobal,
   FidesInitOptionsOverrides,
@@ -24,9 +25,10 @@ import {
   PrivacyExperience,
 } from "./lib/consent-types";
 import {
+  decodeNoticeConsentString,
   defaultShowModal,
-  isPrivacyExperience,
-  shouldResurfaceConsent,
+  encodeNoticeConsentString,
+  shouldResurfaceBanner,
 } from "./lib/consent-utils";
 import {
   consentCookieObjHasSomeConsentSet,
@@ -37,6 +39,7 @@ import {
 } from "./lib/cookie";
 import { initializeDebugger } from "./lib/debugger";
 import { dispatchFidesEvent, onFidesEvent } from "./lib/events";
+import { DecodedFidesString, decodeFidesString } from "./lib/fides-string";
 import { DEFAULT_LOCALE, DEFAULT_MODAL_LINK_LABEL } from "./lib/i18n";
 import {
   getInitialCookie,
@@ -161,7 +164,10 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
     );
   const consentPrefsOverrides: GetPreferencesFnResp | null =
     await customGetConsentPreferences(config);
-  // DEFER: not implemented - ability to override notice-based consent with the consentPrefsOverrides.consent obj
+  // if we don't already have a fidesString override, use fidesString from consent prefs if they exist
+  if (!optionsOverrides.fidesString && consentPrefsOverrides?.fides_string) {
+    optionsOverrides.fidesString = consentPrefsOverrides.fides_string;
+  }
   const overrides: Partial<FidesOverrides> = {
     optionsOverrides,
     consentPrefsOverrides,
@@ -181,7 +187,6 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
   this.cookie.consent = {
     ...this.cookie.consent,
     ...consentFromOneTrust,
-    ...overrides.consentPrefsOverrides?.consent,
   };
 
   // Keep a copy of saved consent from the cookie, since we update the "cookie"
@@ -190,6 +195,24 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
     ...this.cookie.consent,
   };
 
+  // Update the fidesString if we have an override and the NC portion is valid
+  const { fidesString } = config.options;
+  if (fidesString) {
+    try {
+      // Make sure Notice Consent string is valid before we assign it
+      const { nc: ncString }: DecodedFidesString =
+        decodeFidesString(fidesString);
+      this.decodeNoticeConsentString(ncString);
+      const updatedCookie: Partial<FidesCookie> = {
+        fides_string: fidesString,
+      };
+      this.cookie = { ...this.cookie, ...updatedCookie };
+    } catch (error) {
+      fidesDebugger(
+        `Could not decode ncString from ${fidesString}, it may be invalid. ${error}`,
+      );
+    }
+  }
   const initialFides = getInitialFides({
     ...config,
     cookie: this.cookie,
@@ -276,18 +299,7 @@ const _Fides: FidesGlobal = {
   initialized: false,
   onFidesEvent,
   shouldShowExperience() {
-    if (!isPrivacyExperience(this.experience)) {
-      // Nothing to show if there's no experience
-      return false;
-    }
-    if (isConsentOverride(this.options)) {
-      // If consent preference override exists, we should not show the experience
-      return false;
-    }
-    if (!this.cookie) {
-      throw new Error("Should have a cookie");
-    }
-    return shouldResurfaceConsent(
+    return shouldResurfaceBanner(
       this.experience,
       this.cookie,
       this.saved_consent,
@@ -297,6 +309,8 @@ const _Fides: FidesGlobal = {
   shopify,
   showModal: defaultShowModal,
   getModalLinkLabel: () => DEFAULT_MODAL_LINK_LABEL,
+  encodeNoticeConsentString,
+  decodeNoticeConsentString,
 };
 
 updateWindowFides(_Fides);
