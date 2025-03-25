@@ -39,8 +39,10 @@ from fides.api.graph.config import (
     CollectionAddress,
 )
 from fides.api.migrations.hash_migration_mixin import HashMigrationMixin
+from fides.api.models.attachment import Attachment, AttachmentReference
 from fides.api.models.audit_log import AuditLog
 from fides.api.models.client import ClientDetail
+from fides.api.models.comment import Comment, CommentReference
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.manual_webhook import AccessManualWebhook
 from fides.api.models.policy import (
@@ -165,6 +167,20 @@ class PrivacyRequest(
     policy = relationship(
         Policy,
         backref="privacy_requests",
+    )
+    attachments = relationship(
+        Attachment,
+        secondary="attachment_reference",
+        primaryjoin="PrivacyRequest.id == AttachmentReference.reference_id",
+        secondaryjoin="Attachment.id == AttachmentReference.attachment_id",
+        order_by="Attachment.created_at",
+    )
+    comments = relationship(
+        Comment,
+        secondary="comment_reference",
+        primaryjoin="PrivacyRequest.id == CommentReference.reference_id",
+        secondaryjoin="Comment.id == CommentReference.comment_id",
+        order_by="Comment.created_at",
     )
     property_id = Column(String, nullable=True)
 
@@ -1010,6 +1026,51 @@ class PrivacyRequest(
     def consent_tasks(self) -> Query:
         """Return existing Consent Request Tasks for the current privacy request"""
         return self.request_tasks.filter(RequestTask.action_type == ActionType.consent)
+
+    def get_comment_by_id(self, db: Session, comment_id: str) -> Optional[Comment]:
+        """Get the comment associated with the privacy request"""
+        comment = (
+            db.query(Comment)
+            .join(CommentReference, Comment.id == CommentReference.comment_id)
+            .filter(
+                CommentReference.reference_id
+                == self.id,  # Ensure the comment is linked to this privacy request
+                Comment.id == comment_id,  # Match the specific comment ID
+            )
+            .first()
+        )
+        if not comment:
+            logger.info(
+                f"Comment with id {comment_id} not found on privacy request {self.id}"
+            )
+        return comment
+
+    def get_attachment_by_id(
+        self, db: Session, attachment_id: str
+    ) -> Optional[Attachment]:
+        """Get the attachment associated with the privacy request"""
+        attachment = (
+            db.query(Attachment)
+            .join(
+                AttachmentReference, Attachment.id == AttachmentReference.attachment_id
+            )
+            .filter(
+                AttachmentReference.reference_id == self.id,
+                Attachment.id == attachment_id,
+            )
+            .first()
+        )
+        if not attachment:
+            logger.info(
+                f"Attachment with id {attachment_id} not found on privacy request {self.id}"
+            )
+        return attachment
+
+    def delete_attachment_by_id(self, db: Session, attachment_id: str) -> None:
+        """Delete the attachment associated with the privacy request"""
+        attachment = self.get_attachment_by_id(db, attachment_id)
+        if attachment:
+            attachment.delete(db)
 
     def get_existing_request_task(
         self,

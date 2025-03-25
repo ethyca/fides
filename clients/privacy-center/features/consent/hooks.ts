@@ -28,14 +28,17 @@ import {
 export const useSubscribeToPrivacyExperienceQuery = () => {
   const { IS_GEOLOCATION_ENABLED, GEOLOCATION_API_URL } = useSettings();
   const skipFetchExperience = !useAppSelector(selectIsNoticeDriven);
+  const region = useAppSelector(selectUserRegion);
   const skipFetchGeolocation =
-    skipFetchExperience || !IS_GEOLOCATION_ENABLED || !GEOLOCATION_API_URL;
+    skipFetchExperience ||
+    !IS_GEOLOCATION_ENABLED ||
+    !GEOLOCATION_API_URL ||
+    !!region;
 
   useGetUserGeolocationQuery(GEOLOCATION_API_URL, {
     skip: skipFetchGeolocation,
   });
 
-  const region = useAppSelector(selectUserRegion);
   const propertyId = useAppSelector(selectPropertyId);
   const params = {
     // Casting should be safe because we skip in the hook below if region does not exist

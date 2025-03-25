@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta, timezone
+from io import BytesIO
 from time import sleep
 from typing import Any, Dict, List
 from uuid import uuid4
@@ -15,6 +16,18 @@ from fides.api.common_exceptions import (
     PrivacyRequestPaused,
 )
 from fides.api.graph.config import CollectionAddress
+from fides.api.models.attachment import (
+    Attachment,
+    AttachmentReference,
+    AttachmentReferenceType,
+    AttachmentType,
+)
+from fides.api.models.comment import (
+    Comment,
+    CommentReference,
+    CommentReferenceType,
+    CommentType,
+)
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import (
     PrivacyRequest,
@@ -1132,3 +1145,139 @@ class TestPrivacyRequestCustomIdentities:
             customer_id=LabeledIdentity(label="Custom ID", value=123),
             account_id=LabeledIdentity(label="Account ID", value="456"),
         )
+
+
+def test_retrieve_attachments_from_privacy_request(
+    s3_client, db, attachment_data, privacy_request, monkeypatch
+):
+    # Create Attachments
+
+    def mock_get_s3_client(auth_method, storage_secrets):
+        return s3_client
+
+    monkeypatch.setattr(
+        "fides.api.service.storage.s3.get_s3_client", mock_get_s3_client
+    )
+
+    attachment1 = Attachment.create_and_upload(
+        db=db,
+        data=attachment_data,
+        attachment_file=BytesIO(b"contents of test file 1"),
+    )
+    attachment2 = Attachment.create_and_upload(
+        db=db,
+        data=attachment_data,
+        attachment_file=BytesIO(b"contents of test file 2"),
+    )
+    attachment3 = Attachment.create_and_upload(
+        db=db,
+        data=attachment_data,
+        attachment_file=BytesIO(b"contents of test file 3"),
+    )
+
+    # Associate Attachments with the PrivacyRequest
+    for attachment in [attachment1, attachment2, attachment3]:
+        AttachmentReference.create(
+            db,
+            data={
+                "reference_id": privacy_request.id,
+                "attachment_id": attachment.id,
+                "reference_type": AttachmentReferenceType.privacy_request,
+            },
+        )
+    # Verify that attachments can be retrieved
+    retrieved_request = (
+        db.query(PrivacyRequest).filter_by(id=privacy_request.id).first()
+    )
+    attachments = retrieved_request.attachments
+
+    assert len(attachments) == 3
+    # Verify that the attachments are in the correct order
+    assert attachments[0].id == attachment1.id
+    assert attachments[1].id == attachment2.id
+    assert attachments[2].id == attachment3.id
+
+    attachment1.delete(db)
+    attachment2.delete(db)
+    attachment3.delete(db)
+
+
+def test_privacy_request_get_attachment_by_id(db, attachment, privacy_request):
+    # Associate Attachment with the PrivacyRequest
+    AttachmentReference.create(
+        db,
+        data={
+            "reference_id": privacy_request.id,
+            "attachment_id": attachment.id,
+            "reference_type": AttachmentReferenceType.privacy_request,
+        },
+    )
+
+    retrieved_attachment = privacy_request.get_attachment_by_id(db, attachment.id)
+    assert retrieved_attachment.id == attachment.id
+
+
+def test_privacy_request_delete_attachment_by_id(db, attachment, privacy_request):
+    # Associate Attachment with the PrivacyRequest
+    AttachmentReference.create(
+        db,
+        data={
+            "reference_id": privacy_request.id,
+            "attachment_id": attachment.id,
+            "reference_type": AttachmentReferenceType.privacy_request,
+        },
+    )
+
+    privacy_request.delete_attachment_by_id(db, attachment.id)
+    assert privacy_request.get_attachment_by_id(db, attachment.id) is None
+
+
+def test_retrieve_comments_from_privacy_request(db, comment_data, privacy_request):
+    # Create Comments
+    comment1 = Comment.create(db=db, data=comment_data)
+    comment2 = Comment.create(db=db, data=comment_data)
+    comment3 = Comment.create(db=db, data=comment_data)
+
+    # Associate Comments with the PrivacyRequest
+    for comment in [comment1, comment2, comment3]:
+        CommentReference.create(
+            db,
+            data={
+                "reference_id": privacy_request.id,
+                "comment_id": comment.id,
+                "reference_type": CommentReferenceType.privacy_request,
+            },
+        )
+
+    # Verify that comments can be retrieved
+    retrieved_request = (
+        db.query(PrivacyRequest).filter_by(id=privacy_request.id).first()
+    )
+    comments = retrieved_request.comments
+
+    assert len(comments) == 3
+    # Verify that the comments are in the correct order
+    assert comments[0].id == comment1.id
+    assert comments[1].id == comment2.id
+    assert comments[2].id == comment3.id
+
+    comment1.delete(db)
+    comment2.delete(db)
+    comment3.delete(db)
+
+
+def test_privacy_request_get_comment_by_id(db, comment, privacy_request):
+    # Associate Comments with the PrivacyRequest
+    CommentReference.create(
+        db,
+        data={
+            "reference_id": privacy_request.id,
+            "comment_id": comment.id,
+            "reference_type": CommentReferenceType.privacy_request,
+        },
+    )
+
+    # Verify that comments can be retrieved
+    retrieved_comment = privacy_request.get_comment_by_id(db, comment.id)
+
+    assert retrieved_comment.id == comment.id

@@ -161,6 +161,12 @@ export interface FidesGlobal extends Fides {
   cookie?: FidesCookie;
   config?: FidesConfig;
   consent: NoticeConsent;
+  encodeNoticeConsentString: (
+    noticeConsent: Record<string, boolean | 0 | 1>,
+  ) => string;
+  decodeNoticeConsentString: (base64String: string) => {
+    [noticeKey: string]: boolean;
+  };
   experience:
     | PrivacyExperience
     | PrivacyExperienceMinimal
@@ -242,9 +248,7 @@ export interface FidesCookie {
 }
 
 export type GetPreferencesFnResp = {
-  // Overrides the value for Fides.consent for the user's notice-based preferences (e.g. { data_sales: false })
-  consent?: NoticeConsent;
-  // Overrides the value for Fides.fides_string for the user's TCF+AC preferences (e.g. 1a2a3a.AAABA,1~123.121)
+  // Overrides the value for Fides.fides_string for the user's consent preferences
   fides_string?: string;
   // An explicit version hash for provided fides_string when calculating whether consent should be re-triggered
   version_hash?: string;
@@ -444,6 +448,7 @@ export type PrivacyExperience = {
   tcf_system_consents?: Array<TCFVendorConsentRecord>;
   tcf_system_legitimate_interests?: Array<TCFVendorLegitimateInterestsRecord>;
   tcf_system_relationships?: Array<TCFVendorRelationships>;
+  tcf_publisher_country_code?: string;
 
   /**
    * @deprecated For backwards compatibility purposes, whether the Experience should show a banner.
@@ -462,6 +467,7 @@ export type PrivacyExperience = {
   available_locales?: string[];
   vendor_count?: number;
   minimal_tcf?: boolean;
+  non_applicable_privacy_notices?: Array<PrivacyNotice["notice_key"]>;
 };
 
 interface ExperienceConfigTranslationMinimal
@@ -491,6 +497,8 @@ export interface PrivacyExperienceMinimal
     | "vendor_count"
     | "minimal_tcf"
     | "gvl"
+    | "tcf_publisher_country_code"
+    | "non_applicable_privacy_notices"
   > {
   experience_config: ExperienceConfigMinimal;
   vendor_count?: number;
