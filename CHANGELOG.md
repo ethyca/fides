@@ -19,7 +19,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - https://github.com/ethyca/fides/labels/high-risk: to indicate that a change is a "high-risk" change that could potentially lead to unanticipated regressions or degradations
 - https://github.com/ethyca/fides/labels/db-migration: to indicate that a given change includes a DB migration
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.57.0...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.57.1...main)
 
 ### Added
 - Support for location based privacy center actions [#5803](https://github.com/ethyca/fides/pull/5803)
@@ -38,7 +38,6 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Added option for disabling consent notice toggles [#5872](https://github.com/ethyca/fides/pull/5872)
 - Added UI to manually update Assets in the system asset view [#5914](https://github.com/ethyca/fides/pull/5914)
 - Use the experience's `tcf_publisher_country_code` when building TC strings [#5921](https://github.com/ethyca/fides/pull/5921)
-- Added extra debug logging and fixed handler time calculation [#5927](https://github.com/ethyca/fides/pull/5927)
 
 ### Changed
 - Changed discovered asset "system" cell to use `user_assigned_system_key` property [#5908](https://github.com/ethyca/fides/pull/5908)
@@ -49,6 +48,12 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Fixed UX issues with website monitor form [#5884](https://github.com/ethyca/fides/pull/5884)
 - Removed excessive authorization debug logs [#5920](https://github.com/ethyca/fides/pull/5920)
 - Fixed fix incorrect calls to TCF api update method [#5916](https://github.com/ethyca/fides/pull/5916)
+
+## [2.57.1](https://github.com/ethyca/fides/compare/2.57.0...2.57.1)
+
+### Changed
+
+- Added extra debug logging and fixed handler time calculation [#5927](https://github.com/ethyca/fides/pull/5927)
 
 ## [2.57.0](https://github.com/ethyca/fides/compare/2.56.2...2.57.0)
 
