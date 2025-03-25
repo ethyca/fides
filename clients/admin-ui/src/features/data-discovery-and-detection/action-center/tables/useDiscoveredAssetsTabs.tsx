@@ -31,7 +31,7 @@ const getTabFromIndex = (index: number) => {
   );
 };
 
-export const useDiscoveredAssetsTabs = ({ systemId }: { systemId: string }) => {
+const useDiscoveredAssetsTabs = ({ systemId }: { systemId: string }) => {
   const router = useRouter();
   const getInitialTabIndex = () => {
     const hash: string = router.asPath.split("#")[1];
