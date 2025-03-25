@@ -81,12 +81,18 @@ const ConsentLookupModal = ({ isOpen, onClose }: ConsentLookupModalProps) => {
     manualPagination: true,
   });
 
-  const { tcfColumns, mapTcfPreferencesToRowColumns } = useTcfConsentColumns();
+  const {
+    tcfColumns,
+    mapTcfPreferencesToRowColumns,
+    filterTcfConsentPreferences,
+  } = useTcfConsentColumns();
   const tcfData = mapTcfPreferencesToRowColumns(searchResults);
-  const hasTcfData = !isEmpty(tcfData);
+  const filteredTcfData = filterTcfConsentPreferences(tcfData);
+
+  const hasTcfData = !isEmpty(filteredTcfData);
   const tcfTableInstance = useReactTable<TcfDetailRow>({
     getCoreRowModel: getCoreRowModel(),
-    data: tcfData,
+    data: filteredTcfData,
     columns: tcfColumns,
     getRowId: (row) => `${row.key}-${row.id}`,
     manualPagination: true,
@@ -108,9 +114,9 @@ const ConsentLookupModal = ({ isOpen, onClose }: ConsentLookupModalProps) => {
         <ModalBody>
           <Typography.Paragraph>
             Use this search to look up an individual&apos;s latest consent
-            record. You can search by phone number, email, or device ID to
-            retrieve the most recent consent preference associated with that
-            exact identifier.
+            record. You can search by phone number, email, external ID or device
+            ID to retrieve the most recent consent preference associated with
+            that exact identifier.
           </Typography.Paragraph>
           <Typography.Paragraph>
             <strong>Note:</strong> This is an exact match search—partial entries
@@ -122,7 +128,7 @@ const ConsentLookupModal = ({ isOpen, onClose }: ConsentLookupModalProps) => {
             <Form.Item label="Subject search" className="mb-4 mt-6">
               <Input.Search
                 data-testid="subject-search-input"
-                placeholder="Enter email, phone number, or device ID"
+                placeholder="Enter email, phone number, external ID or device ID"
                 enterButton="Search"
                 onSearch={handleSearch}
                 loading={isSearching}
