@@ -467,6 +467,7 @@ export type PrivacyExperience = {
   available_locales?: string[];
   vendor_count?: number;
   minimal_tcf?: boolean;
+  non_applicable_privacy_notices?: Array<PrivacyNotice["notice_key"]>;
 };
 
 interface ExperienceConfigTranslationMinimal
@@ -497,6 +498,7 @@ export interface PrivacyExperienceMinimal
     | "minimal_tcf"
     | "gvl"
     | "tcf_publisher_country_code"
+    | "non_applicable_privacy_notices"
   > {
   experience_config: ExperienceConfigMinimal;
   vendor_count?: number;
