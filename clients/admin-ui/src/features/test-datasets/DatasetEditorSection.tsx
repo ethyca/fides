@@ -73,7 +73,8 @@ const EditorSection = ({ connectionKey }: EditorSectionProps) => {
   const currentPolicyKey = useAppSelector(selectCurrentPolicyKey);
   const activeSystem = useAppSelector(selectActiveSystem) as SystemResponse;
   const connectionConfig = activeSystem?.connection_configs || null;
-  const isSaasConnector = connectionConfig?.connection_type === ConnectionType.SAAS;
+  const isSaasConnector =
+    connectionConfig?.connection_type === ConnectionType.SAAS;
 
   const {
     data: datasetConfigs,
@@ -102,11 +103,10 @@ const EditorSection = ({ connectionKey }: EditorSectionProps) => {
   }, [reachability, dispatch]);
 
   useEffect(() => {
-    if (
-      isSaasConnector &&
-      connectionConfig?.saas_config
-    ) {
-      setSaasConfigContent(yaml.dump(removeNulls(connectionConfig.saas_config)));
+    if (isSaasConnector && connectionConfig?.saas_config) {
+      setSaasConfigContent(
+        yaml.dump(removeNulls(connectionConfig.saas_config)),
+      );
     }
   }, [connectionConfig, isSaasConnector]);
 
@@ -232,7 +232,14 @@ const EditorSection = ({ connectionKey }: EditorSectionProps) => {
   };
 
   return (
-    <VStack alignItems="stretch" flex="1" maxWidth="70vw" maxHeight="50vh" spacing={2} mb={0}>
+    <VStack
+      alignItems="stretch"
+      flex="1"
+      maxWidth="70vw"
+      maxHeight="50vh"
+      spacing={2}
+      mb={0}
+    >
       <HStack justifyContent="space-between" alignItems="center">
         <HStack>
           <Text>Edit dataset: </Text>
@@ -295,7 +302,13 @@ const EditorSection = ({ connectionKey }: EditorSectionProps) => {
           </Box>
           <TabPanels flex="1" height="calc(100% - 4px)">
             <TabPanel p={0} height="100%" pb={0}>
-              <VStack flex="1" alignItems="stretch" spacing={2} height="100%" pb={0}>
+              <VStack
+                flex="1"
+                alignItems="stretch"
+                spacing={2}
+                height="100%"
+                pb={0}
+              >
                 <Stack
                   border="1px solid"
                   borderColor="gray.200"
@@ -328,9 +341,13 @@ const EditorSection = ({ connectionKey }: EditorSectionProps) => {
                 </Stack>
                 {reachability && (
                   <Stack
-                    backgroundColor={reachability?.reachable ? "green.50" : "red.50"}
+                    backgroundColor={
+                      reachability?.reachable ? "green.50" : "red.50"
+                    }
                     border="1px solid"
-                    borderColor={reachability?.reachable ? "green.500" : "red.500"}
+                    borderColor={
+                      reachability?.reachable ? "green.500" : "red.500"
+                    }
                     borderRadius="md"
                     p={2}
                     flexShrink={0}
@@ -358,7 +375,13 @@ const EditorSection = ({ connectionKey }: EditorSectionProps) => {
             </TabPanel>
             {isSaasConnector && (
               <TabPanel p={0} height="100%" pb={0}>
-                <VStack flex="1" alignItems="stretch" spacing={2} height="100%" pb={0}>
+                <VStack
+                  flex="1"
+                  alignItems="stretch"
+                  spacing={2}
+                  height="100%"
+                  pb={0}
+                >
                   <Stack
                     border="1px solid"
                     borderColor="gray.200"
