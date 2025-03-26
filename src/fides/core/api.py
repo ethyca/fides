@@ -4,8 +4,7 @@ from typing import Dict, List, Optional, Union
 
 import requests
 
-from fides.api.util.endpoint_utils import API_PREFIX
-
+API_PREFIX = "/api/v1"
 
 def generate_resource_url(
     url: str,

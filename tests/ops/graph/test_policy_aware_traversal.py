@@ -7,6 +7,7 @@ from fides.api.graph.config import GraphDataset
 from fides.api.graph.graph import DatasetGraph
 from fides.api.graph.traversal import Traversal
 from fides.api.models.datasetconfig import DatasetConfig
+from fides.service.dataset.dataset_config_service import DatasetFilter
 
 
 class TestPolicyAwareTraversal:
@@ -47,6 +48,31 @@ class TestPolicyAwareTraversal:
         with pytest.raises(UnreachableNodesError) as exc:
             Traversal(dataset_graph, identity_seed, policy=policy)
         assert (
-            "Some nodes were not reachable: unreachable_with_data_categories:address"
+            "Some collections were not reachable: unreachable_with_data_categories:address"
+            in str(exc)
+        )
+
+    def test_traversal_with_dataset_filter(
+        self, internal_references_dataset_config: DatasetConfig
+    ):
+        """
+        Verify that nodes are not flagged as unreachable if their parent is in the same dataset
+        but the parent itself is unreachable.
+        """
+        dataset_graph, identity_seed = self._create_graph_and_seed(
+            internal_references_dataset_config
+        )
+        with pytest.raises(UnreachableNodesError) as exc:
+            Traversal(
+                dataset_graph,
+                identity_seed,
+                node_filters=[
+                    DatasetFilter(
+                        internal_references_dataset_config.ctl_dataset.fides_key
+                    )
+                ],
+            )
+        assert (
+            "Some collections were not reachable: internal_references:customer_accounts"
             in str(exc)
         )

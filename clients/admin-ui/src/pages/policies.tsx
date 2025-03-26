@@ -79,8 +79,8 @@ const ActionTypeBadgeCell = ({
   // Choose color based on action type
   const colorMap: Record<string, string> = {
     access: "success",
-    deletion: "error",
-    erasure: "error",
+    deletion: "terracotta",
+    erasure: "terracotta",
   };
 
   const key = value?.toLowerCase() || "consent";
@@ -144,7 +144,9 @@ const PoliciesPage: NextPage = () => {
 
   // Apply search filter
   const filteredPolicies = useMemo(() => {
-    if (!globalFilter) return validPolicies;
+    if (!globalFilter) {
+      return validPolicies;
+    }
 
     const lowerCaseFilter = globalFilter.toLowerCase();
     return validPolicies.filter(
