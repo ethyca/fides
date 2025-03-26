@@ -53,6 +53,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Removed excessive authorization debug logs [#5920](https://github.com/ethyca/fides/pull/5920)
 - Fixed fix incorrect calls to TCF api update method [#5916](https://github.com/ethyca/fides/pull/5916)
 - Fixed "unvisited edges" error when dealing with optional identities [#5923](https://github.com/ethyca/fides/pull/5923)
+- Fixed issue where sometimes an experience translation couldn't be added [#5942](https://github.com/ethyca/fides/pull/5942)
 
 ### Removed
 - Removed beta flag for Datahub feature [#5937](https://github.com/ethyca/fides/pull/5937)
