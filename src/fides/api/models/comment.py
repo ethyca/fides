@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING, Any
 
 from sqlalchemy import Column
 from sqlalchemy import Enum as EnumColumn
-from sqlalchemy import ForeignKey, String, UniqueConstraint
+from sqlalchemy import ForeignKey, String, UniqueConstraint, orm
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import Session, relationship
 
@@ -91,24 +91,8 @@ class Comment(Base):
         back_populates="comment",
         cascade="all, delete-orphan",
         uselist=True,
-    )
-
-    attachments = relationship(
-        "Attachment",
-        secondary="attachment_reference",
-        primaryjoin="and_(Comment.id == AttachmentReference.reference_id, "
-        "AttachmentReference.reference_type == 'comment')",
-        secondaryjoin="Attachment.id == AttachmentReference.attachment_id",
-        order_by="Attachment.created_at",
-    )
-
-    privacy_requests = relationship(
-        "PrivacyRequest",
-        secondary="comment_reference",
-        primaryjoin="and_(Comment.id == CommentReference.comment_id, "
-        "CommentReference.reference_type == 'privacy_request')",
-        secondaryjoin="PrivacyRequest.id == CommentReference.reference_id",
-        back_populates="comments",
+        foreign_keys=[CommentReference.comment_id],
+        primaryjoin=lambda: Comment.id == orm.foreign(CommentReference.comment_id),
     )
 
     def delete(self, db: Session) -> None:

@@ -179,8 +179,7 @@ class PrivacyRequest(
         "AttachmentReference.reference_type == 'privacy_request')",
         secondaryjoin="Attachment.id == AttachmentReference.attachment_id",
         order_by="Attachment.created_at",
-        cascade="all, delete",
-        passive_deletes=True,
+        viewonly=True,
         uselist=True,
     )
 
@@ -191,8 +190,7 @@ class PrivacyRequest(
         "CommentReference.reference_type == 'privacy_request')",
         secondaryjoin="Comment.id == CommentReference.comment_id",
         order_by="Comment.created_at",
-        cascade="all, delete",
-        passive_deletes=True,
+        viewonly=True,
         uselist=True,
     )
     property_id = Column(String, nullable=True)

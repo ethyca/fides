@@ -7,7 +7,7 @@ from fideslang.validation import AnyHttpUrlString
 from loguru import logger as log
 from sqlalchemy import Column
 from sqlalchemy import Enum as EnumColumn
-from sqlalchemy import ForeignKey, String, UniqueConstraint
+from sqlalchemy import ForeignKey, String, UniqueConstraint, orm
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import Session, relationship
 
@@ -107,24 +107,9 @@ class Attachment(Base):
         back_populates="attachment",
         cascade="all, delete-orphan",
         uselist=True,
-    )
-
-    privacy_requests = relationship(
-        "PrivacyRequest",
-        secondary="attachment_reference",
-        primaryjoin="and_(Attachment.id == AttachmentReference.attachment_id, "
-        "AttachmentReference.reference_type == 'privacy_request')",
-        secondaryjoin="PrivacyRequest.id == AttachmentReference.reference_id",
-        back_populates="attachments",
-    )
-
-    comments = relationship(
-        "Comment",
-        secondary="attachment_reference",
-        primaryjoin="and_(Attachment.id == AttachmentReference.attachment_id, "
-        "AttachmentReference.reference_type == 'comment')",
-        secondaryjoin="Comment.id == AttachmentReference.reference_id",
-        back_populates="attachments",
+        foreign_keys=[AttachmentReference.attachment_id],
+        primaryjoin=lambda: Attachment.id
+        == orm.foreign(AttachmentReference.attachment_id),
     )
 
     config = relationship(

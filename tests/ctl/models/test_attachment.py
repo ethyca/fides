@@ -386,3 +386,81 @@ def test_delete_all_attachments(db, attachment, comment, privacy_request):
         db.query(AttachmentReference).filter_by(reference_id=privacy_request.id).first()
     )
     assert retrieved_pr_reference is None
+
+
+def test_attachment_relationship_warnings(
+    s3_client, db, attachment, comment, privacy_request, monkeypatch
+):
+    """Test that no SQLAlchemy relationship warnings occur when creating and accessing Attachment relationships."""
+    import warnings
+
+    from sqlalchemy import exc as sa_exc
+
+    def mock_get_s3_client(auth_method, storage_secrets):
+        return s3_client
+
+    monkeypatch.setattr("fides.api.tasks.storage.get_s3_client", mock_get_s3_client)
+
+    with warnings.catch_warnings(record=True) as warning_list:
+        warnings.simplefilter("always")
+
+        # Create references to both comment and privacy request
+        attachment_ref_1 = AttachmentReference.create(
+            db,
+            data={
+                "attachment_id": attachment.id,
+                "reference_id": comment.id,
+                "reference_type": AttachmentReferenceType.comment,
+            },
+        )
+        db.refresh(attachment)
+        db.refresh(comment)
+
+        attachment_ref_2 = AttachmentReference.create(
+            db,
+            data={
+                "attachment_id": attachment.id,
+                "reference_id": privacy_request.id,
+                "reference_type": AttachmentReferenceType.privacy_request,
+            },
+        )
+        db.refresh(attachment)
+        db.refresh(privacy_request)
+
+        # Test accessing relationships in various ways
+        assert len(attachment.references) == 2
+
+        # Query references directly
+        refs = (
+            db.query(AttachmentReference)
+            .filter(AttachmentReference.attachment_id == attachment.id)
+            .all()
+        )
+        assert len(refs) == 2
+        assert any(
+            ref.reference_type == AttachmentReferenceType.comment for ref in refs
+        )
+        assert any(
+            ref.reference_type == AttachmentReferenceType.privacy_request
+            for ref in refs
+        )
+
+        # Verify no SQLAlchemy relationship warnings were emitted
+        sqlalchemy_warnings = [
+            w for w in warning_list if issubclass(w.category, sa_exc.SAWarning)
+        ]
+        assert (
+            len(sqlalchemy_warnings) == 0
+        ), f"SQLAlchemy warnings found: {[str(w.message) for w in sqlalchemy_warnings]}"
+
+        # Cleanup
+        if db.query(AttachmentReference).filter_by(id=attachment_ref_2.id).first():
+            attachment_ref_2.delete(db)
+            db.commit()
+
+        if db.query(AttachmentReference).filter_by(id=attachment_ref_1.id).first():
+            attachment_ref_1.delete(db)
+            db.commit()
+
+        # Refresh the session to ensure clean state
+        db.expire_all()
