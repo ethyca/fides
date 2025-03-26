@@ -1,4 +1,5 @@
 import {
+  ColumnDef,
   createColumnHelper,
   getCoreRowModel,
   getFilteredRowModel,
@@ -28,6 +29,12 @@ import {
 } from "~/features/policy/policy.slice";
 import { DrpAction, RuleResponseWithTargets } from "~/types/api";
 
+type TargetItem = {
+  label: string;
+  key: string;
+};
+
+// Column helper with proper typing
 const columnHelper = createColumnHelper<RuleResponseWithTargets>();
 
 // Handle empty state when no rules are found
@@ -50,13 +57,15 @@ const NameCell = ({ getValue }: { getValue: () => string | null }) => (
   <DefaultCell value={getValue() || "-"} />
 );
 
-const NameHeader = (props: any) => (
+const NameHeader = ({ ...props }: any) => (
   <DefaultHeaderCell value="Rule Name" {...props} />
 );
 
 // Function to format action types to be more readable
 const formatActionType = (actionType: string | null): string => {
-  if (!actionType) return "-";
+  if (!actionType) {
+    return "-";
+  }
 
   // Map common action types with proper capitalization
   const actionTypeMap: Record<string, string> = {
@@ -76,10 +85,24 @@ const formatActionType = (actionType: string | null): string => {
   );
 };
 
+// Choose color based on action type
+const actionColorMap: Record<string, string> = {
+  access: "success",
+  deletion: "terracotta",
+  erasure: "terracotta",
+};
+
 // Action type cell component
-const ActionTypeCell = ({ getValue }: { getValue: () => string | null }) => (
-  <DefaultCell value={formatActionType(getValue())} />
-);
+const ActionTypeCell = ({ getValue }: { getValue: () => string | null }) => {
+  const actionType = getValue();
+  if (!actionType) {
+    return <DefaultCell value="-" />;
+  }
+
+  const key = actionType.toLowerCase();
+  const color = actionColorMap[key] || "gray";
+  return <BadgeCell value={formatActionType(actionType)} color={color} />;
+};
 
 const ActionTypeHeader = (props: any) => (
   <DefaultHeaderCell value="Action Type" {...props} />
@@ -134,10 +157,12 @@ const MaskingStrategyHeaderCell = (props: any) => (
 );
 
 // Targets cell component
-const TargetsCell = ({ getValue }: { getValue: () => any[] }) => {
+const TargetsCell = ({ getValue }: { getValue: () => TargetItem[] }) => {
   const targets = getValue();
 
-  if (!targets?.length) return <DefaultCell value="-" />;
+  if (!targets?.length) {
+    return <DefaultCell value="-" />;
+  }
 
   return (
     <Box
@@ -152,13 +177,20 @@ const TargetsCell = ({ getValue }: { getValue: () => any[] }) => {
   );
 };
 
-const TargetsHeader = (props: any) => (
+// Wrapper component for the targets cell
+const TargetsCellWrapper = ({ getValue }: { getValue: () => any }) => {
+  return <TargetsCell getValue={getValue} />;
+};
+
+const TargetsHeader = ({ ...props }: any) => (
   <DefaultHeaderCell value="Targets" {...props} />
 );
 
 // Helper to extract masking strategy
 const extractMaskingStrategy = (rule: any): string | null => {
-  if (!rule.masking_strategy) return null;
+  if (!rule.masking_strategy) {
+    return null;
+  }
 
   return typeof rule.masking_strategy === "string"
     ? rule.masking_strategy
@@ -179,7 +211,9 @@ const PolicyDetailPage: NextPage = () => {
 
   // Find the current policy
   const policy = useMemo(() => {
-    if (!policiesData?.items || !policyKey) return null;
+    if (!policiesData?.items || !policyKey) {
+      return null;
+    }
 
     return policiesData.items.find(
       (p) => p.key === policyKey || p.name === decodeURIComponent(policyKey),
@@ -189,7 +223,9 @@ const PolicyDetailPage: NextPage = () => {
   // Filter and format rules
   const rules = useMemo(() => {
     // No policy or rules data
-    if (!policy) return [];
+    if (!policy) {
+      return [];
+    }
 
     // Get rules from API response or policy object
     const sourceRules = rulesData?.items?.length
@@ -218,7 +254,7 @@ const PolicyDetailPage: NextPage = () => {
 
   // Define table columns
   const columns = useMemo(() => {
-    const baseColumns = [
+    const baseColumns: ColumnDef<RuleResponseWithTargets, any>[] = [
       columnHelper.accessor((row) => row.name, {
         id: "name",
         cell: NameCell,
@@ -246,21 +282,19 @@ const PolicyDetailPage: NextPage = () => {
     }
 
     // Add targets column
-    baseColumns.push(
-      columnHelper.accessor(
-        (row) =>
-          (row.targets || []).map((t) => ({
-            label: t.data_category,
-            key: t.data_category,
-          })),
-        {
-          id: "targets",
-          cell: TargetsCell,
-          header: TargetsHeader,
-          size: 450,
-        },
-      ),
-    );
+    baseColumns.push({
+      id: "targets",
+      header: TargetsHeader,
+      cell: TargetsCellWrapper,
+      size: 450,
+      accessorFn: (row) => {
+        const targets = row.targets || [];
+        return targets.map((t) => ({
+          label: t.data_category,
+          key: t.data_category,
+        }));
+      },
+    });
 
     return baseColumns;
   }, [policy?.drp_action]);
