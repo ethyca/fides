@@ -2156,14 +2156,8 @@ class TestPutConnectionConfigSecrets:
         )
         assert resp.status_code == 422
         error_detail = json.loads(resp.text)["detail"][0]
-        assert (
-            error_detail["type"]
-            == "missing"
-        )
-        assert (
-            error_detail["loc"]
-            == ["frequency"]
-        )
+        assert error_detail["type"] == "missing"
+        assert error_detail["loc"] == ["frequency"]
 
     def test_put_datahub_connection_config_secrets_missing_glossary_node(
         self,
@@ -2189,14 +2183,8 @@ class TestPutConnectionConfigSecrets:
         )
         assert resp.status_code == 422
         error_detail = json.loads(resp.text)["detail"][0]
-        assert (
-            error_detail["type"]
-            == "missing"
-        )
-        assert (
-            error_detail["loc"]
-            == ["glossary_node"]
-        )
+        assert error_detail["type"] == "missing"
+        assert error_detail["loc"] == ["glossary_node"]
 
     @pytest.mark.unit_saas
     def test_put_saas_example_connection_config_secrets(
