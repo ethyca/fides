@@ -1,5 +1,4 @@
 import { ColumnDef, createColumnHelper } from "@tanstack/react-table";
-import { AntTag as Tag } from "fidesui";
 
 import { PRIVACY_NOTICE_REGION_RECORD } from "~/features/common/privacy-notice-regions";
 import { DefaultCell } from "~/features/common/table/v2";
@@ -9,6 +8,7 @@ import {
   IndeterminateCheckboxCell,
   ListCellExpandable,
 } from "~/features/common/table/v2/cells";
+import AssetSystemCell from "~/features/system/tabs/system-assets/AssetSystemCell";
 import SystemAssetActionsCell from "~/features/system/tabs/system-assets/SystemAssetActionsCell";
 import SystemAssetsDataUseCell from "~/features/system/tabs/system-assets/SystemAssetsDataUseCell";
 import { Asset, PrivacyNoticeRegion } from "~/types/api";
@@ -62,7 +62,13 @@ const useSystemAssetColumns = ({
     }),
     columnHelper.display({
       id: "system",
-      cell: () => <Tag color="white">{systemName}</Tag>,
+      cell: (props) => (
+        <AssetSystemCell
+          systemKey={systemKey}
+          systemName={systemName}
+          asset={props.row.original}
+        />
+      ),
       header: "System",
     }),
     columnHelper.accessor((row) => row.data_uses, {
