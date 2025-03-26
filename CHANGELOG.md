@@ -37,6 +37,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Added size thresholds to S3 upload and retrieval methods for more efficient document processing. [#5922](https://github.com/ethyca/fides/pull/5922)
 - Added support for Notice Consent String integration in Fides String [#5895](https://github.com/ethyca/fides/pull/5895)
 - Added support for new options for Fides.gtm method [#5917](https://github.com/ethyca/fides/pull/5917)
+- Added tab-based filtering and row persistence to web monitor assets table [#5933](https://github.com/ethyca/fides/pull/5933)
 
 ### Changed
 - Privacy Center was updated to use React 19 and Nextjs 15 [#5803](https://github.com/ethyca/fides/pull/5803) https://github.com/ethyca/fides/labels/high-risk

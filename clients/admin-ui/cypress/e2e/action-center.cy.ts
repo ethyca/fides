@@ -393,7 +393,7 @@ describe("Action center", () => {
         cy.getByTestId("system-badge").click();
       });
       cy.wait("@getSystemsPaginated");
-      cy.getByTestId("add-new-system").click();
+      cy.getByTestId("add-new-system").click({ force: true });
       cy.getByTestId("add-modal-content").should("exist");
       cy.getByTestId("vendor-name-select").antSelect("Aniview LTD");
       cy.getByTestId("save-btn").click();
@@ -512,6 +512,36 @@ describe("Action center", () => {
         "contain",
         "Consent categories added to 3 assets from Google Tag Manager.",
       );
+    });
+
+    describe("tab navigation", () => {
+      it("updates URL hash when switching tabs", () => {
+        cy.visit(
+          `${ACTION_CENTER_ROUTE}/${webMonitorKey}/${systemId}#attention-required`,
+        );
+        cy.location("hash").should("eq", "#attention-required");
+
+        // eslint-disable-next-line cypress/no-unnecessary-waiting
+        cy.wait(500);
+        cy.getByTestId("tab-Recent activity").click({ force: true });
+        cy.location("hash").should("eq", "#recent-activity");
+        // "recent activity" tab should be read-only
+        cy.getByTestId("row-0-col-system").within(() => {
+          cy.getByTestId("system-badge")
+            .should("exist")
+            .should("not.have.attr", "onClick");
+          cy.getByTestId("add-system-btn").should("not.exist");
+        });
+        cy.getByTestId("row-0-col-data_use").within(() => {
+          cy.getByTestId("taxonomy-add-btn").should("not.exist");
+        });
+        cy.getByTestId("col-actions").should("not.exist");
+
+        // eslint-disable-next-line cypress/no-unnecessary-waiting
+        cy.wait(500);
+        cy.getByTestId("tab-Ignored").click({ force: true });
+        cy.location("hash").should("eq", "#ignored");
+      });
     });
   });
 });
