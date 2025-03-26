@@ -37,6 +37,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Added size thresholds to S3 upload and retrieval methods for more efficient document processing. [#5922](https://github.com/ethyca/fides/pull/5922)
 - Added support for Notice Consent String integration in Fides String [#5895](https://github.com/ethyca/fides/pull/5895)
 - Added support for new options for Fides.gtm method [#5917](https://github.com/ethyca/fides/pull/5917)
+- Added tab-based filtering and row persistence to web monitor assets table [#5933](https://github.com/ethyca/fides/pull/5933)
 
 ### Changed
 - Privacy Center was updated to use React 19 and Nextjs 15 [#5803](https://github.com/ethyca/fides/pull/5803) https://github.com/ethyca/fides/labels/high-risk
@@ -44,6 +45,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Changed discovered asset "system" cell to use `user_assigned_system_key` property [#5908](https://github.com/ethyca/fides/pull/5908)
 - Changed Dataset endpoint, it now has `minimal` parameter, and can be filtered by `fides_meta.namespace.connection_type` [#5915](https://github.com/ethyca/fides/pull/5915)
 - Datahub integration now allows datasets to be selected [#5926](https://github.com/ethyca/fides/pull/5926)
+- Enable Consent Reporting screen by default. Update consent lookup table column. [#5936](https://github.com/ethyca/fides/pull/5936)
 
 ### Fixed
 - Fixed UX issues with website monitor form [#5884](https://github.com/ethyca/fides/pull/5884)
