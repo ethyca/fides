@@ -353,6 +353,9 @@ describe("Privacy experiences", () => {
     describe("editing translations", () => {
       beforeEach(() => {
         stubTranslationConfig(true);
+        stubPrivacyNoticesCrud();
+        stubLocations();
+        stubProperties();
         cy.visit(`${PRIVACY_EXPERIENCE_ROUTE}/pri_001`);
         cy.wait("@getExperienceDetail");
       });
