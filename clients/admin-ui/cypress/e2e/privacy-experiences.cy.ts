@@ -418,12 +418,11 @@ describe("Privacy experiences", () => {
 
               // Fill out all required fields with 'Test'
               const typeOptions = { delay: 50 };
-              getRequiredFields(type).forEach((field) => {
-                cy.getByTestId(`input-translations.0.${field}`).type(
-                  "Test",
-                  typeOptions,
-                );
-              });
+              cy.getByTestId("privacy-experience-detail-page")
+                .find("input[required], textarea[required]")
+                .each(($input) => {
+                  cy.wrap($input).type("Test", typeOptions);
+                });
 
               // Verify save button is enabled
               cy.getByTestId("save-btn").should("not.be.disabled");
