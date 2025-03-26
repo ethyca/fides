@@ -1,4 +1,3 @@
-import { translationTestCases } from "cypress/fixtures/privacy-experiences/translation-test-data";
 import {
   stubExperienceConfig,
   stubFidesCloud,
@@ -11,11 +10,24 @@ import {
 
 import { PREVIEW_CONTAINER_ID } from "~/constants";
 import { PRIVACY_EXPERIENCE_ROUTE } from "~/features/common/nav/routes";
+import { getTranslationFormFields } from "~/features/privacy-experience/form/helpers";
 import { RoleRegistryEnum } from "~/types/api";
-import { SupportedLanguage } from "~/types/api";
+import {
+  ComponentType,
+  ExperienceTranslationCreate,
+  SupportedLanguage,
+} from "~/types/api";
 
 const EXPERIENCE_ID = "pri_0338d055-f91b-4a17-ad4e-600c61551199";
 const DISABLED_EXPERIENCE_ID = "pri_8fd9d334-e625-4365-ba25-9c368f0b1231";
+
+// Helper function to get required fields for a component type
+const getRequiredFields = (component: ComponentType): string[] => {
+  const formFields = getTranslationFormFields(component);
+  return Object.entries(formFields)
+    .filter(([_, config]) => config.included && config.required)
+    .map(([field]) => field);
+};
 
 describe("Privacy experiences", () => {
   beforeEach(() => {
@@ -375,75 +387,54 @@ describe("Privacy experiences", () => {
         );
       });
 
-      it.only("can add new translations with all required fields", () => {
-        translationTestCases.forEach(({ component, translations }) => {
+      it("can add new translations with all required fields", () => {
+        const components = [
+          { type: ComponentType.PRIVACY_CENTER, displayName: "Privacy center" },
+          { type: ComponentType.MODAL, displayName: "Modal" },
+          {
+            type: ComponentType.BANNER_AND_MODAL,
+            displayName: "Banner and modal",
+          },
+        ];
+
+        components.forEach(({ type, displayName }) => {
           // Create new experience with the component type
           cy.visit(`${PRIVACY_EXPERIENCE_ROUTE}/new`);
-          cy.getByTestId("input-name").type(`${component} Test`);
-          cy.getByTestId("controlled-select-component").antSelect(component);
+          cy.getByTestId("input-name").type(`${displayName} Test`);
+          cy.getByTestId("controlled-select-component").antSelect(displayName);
           cy.getByTestId("add-privacy-notice").click();
           cy.getByTestId("select-privacy-notice").antSelect(0);
           cy.getByTestId("add-location").click();
           cy.getByTestId("select-location").antSelect("France");
 
-          // Add translations
-          translations.forEach((translation) => {
-            // Add new translation
-            cy.getByTestId("add-language").click();
-            cy.getByTestId("select-language").antSelect(
-              translation.language === "en-GB"
-                ? "English (UK)"
-                : "French (Canada)",
-            );
+          // Add translations for both languages
+          [SupportedLanguage.EN_GB, SupportedLanguage.FR_CA].forEach(
+            (language) => {
+              // Add new translation
+              cy.getByTestId("add-language").click();
+              cy.getByTestId("select-language").antSelect(
+                language === "en-GB" ? "English (UK)" : "French (Canada)",
+              );
 
-            // Fill out all required fields with faster typing
-            const typeOptions = { delay: 50 };
-            cy.getByTestId("input-translations.0.title").type(
-              translation.title,
-              typeOptions,
-            );
-            cy.getByTestId("input-translations.0.description").type(
-              translation.description,
-              typeOptions,
-            );
-            cy.getByTestId("input-translations.0.accept_button_label").type(
-              translation.accept_button_label,
-              typeOptions,
-            );
-            cy.getByTestId("input-translations.0.reject_button_label").type(
-              translation.reject_button_label,
-              typeOptions,
-            );
-            cy.getByTestId("input-translations.0.save_button_label").type(
-              translation.save_button_label,
-              typeOptions,
-            );
+              // Fill out all required fields with 'Test'
+              const typeOptions = { delay: 50 };
+              getRequiredFields(type).forEach((field) => {
+                cy.getByTestId(`input-translations.0.${field}`).type(
+                  "Test",
+                  typeOptions,
+                );
+              });
 
-            // Fields for modal and banner and modal
-            if (component !== "Privacy center") {
-              cy.getByTestId(
-                "input-translations.0.acknowledge_button_label",
-              ).type(translation.acknowledge_button_label!, typeOptions);
-            }
+              // Verify save button is enabled
+              cy.getByTestId("save-btn").should("not.be.disabled");
 
-            // Privacy preferences link label is only required for banner and modal
-            if (component === "Banner and modal") {
-              cy.getByTestId(
-                "input-translations.0.privacy_preferences_link_label",
-              ).type(translation.privacy_preferences_link_label!, typeOptions);
-            }
+              // Save the translation
+              cy.getByTestId("save-btn").click();
 
-            // Verify save button is enabled
-            cy.getByTestId("save-btn").should("not.be.disabled");
-
-            // Save the translation
-            cy.getByTestId("save-btn").click();
-
-            // Verify the translation was added
-            cy.getByTestId(`language-row-${translation.language}`).should(
-              "exist",
-            );
-          });
+              // Verify the translation was added
+              cy.getByTestId(`language-row-${language}`).should("exist");
+            },
+          );
 
           // Save the experience
           cy.getByTestId("save-btn").click();
