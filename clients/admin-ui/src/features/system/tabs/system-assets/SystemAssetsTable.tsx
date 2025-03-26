@@ -9,6 +9,7 @@ import {
   ConfirmationModal,
   Icons,
   Spacer,
+  Text,
   useDisclosure,
   useToast,
 } from "fidesui";
@@ -32,6 +33,8 @@ import AddEditAssetModal from "~/features/system/tabs/system-assets/AddEditAsset
 import useSystemAssetColumns from "~/features/system/tabs/system-assets/useSystemAssetColumns";
 import { Asset, SystemResponse } from "~/types/api";
 import { isErrorResult } from "~/types/errors";
+
+const COPY = `This page displays all assets associated with this system. Use the table below to review and manage these technologies for compliance and detailed insights.`;
 
 const SystemAssetsTable = ({ system }: { system: SystemResponse }) => {
   const {
@@ -97,6 +100,7 @@ const SystemAssetsTable = ({ system }: { system: SystemResponse }) => {
   };
 
   const columns = useSystemAssetColumns({
+    systemName: system.name ?? system.fides_key,
     systemKey: system.fides_key,
     onEditClick: handleEditAsset,
   });
@@ -147,6 +151,9 @@ const SystemAssetsTable = ({ system }: { system: SystemResponse }) => {
 
   return (
     <>
+      <Text fontSize="sm" mb={4}>
+        {COPY}
+      </Text>
       <TableActionBar>
         <SearchInput value={searchQuery} onChange={setSearchQuery} />
         <Spacer />
