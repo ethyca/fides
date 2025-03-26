@@ -19,7 +19,14 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - https://github.com/ethyca/fides/labels/high-risk: to indicate that a change is a "high-risk" change that could potentially lead to unanticipated regressions or degradations
 - https://github.com/ethyca/fides/labels/db-migration: to indicate that a given change includes a DB migration
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.57.1...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.58.0...main)
+
+
+
+
+
+
+## [2.58.0](https://github.com/ethyca/fides/compare/2.57.1...2.58.0)
 
 ### Added
 - Support for location based privacy center actions [#5803](https://github.com/ethyca/fides/pull/5803)
