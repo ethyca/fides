@@ -16,9 +16,15 @@ const IS_DEV = process.env.NODE_ENV === "development";
 const GZIP_SIZE_ERROR_KB = 45; // fail build if bundle size exceeds this
 const GZIP_SIZE_WARN_KB = 35; // log a warning if bundle size exceeds this
 
-// Get version from package.json
-const pkg = JSON.parse(readFileSync("./package.json", "utf8"));
-const VERSION = pkg.version;
+// Get version from changelog Unreleased section
+const changelog = readFileSync("../../CHANGELOG.md", "utf8");
+const unreleasedIndex = changelog.indexOf("## [Unreleased]");
+const contextStart = Math.max(0, unreleasedIndex - 50);
+const contextEnd = Math.min(changelog.length, unreleasedIndex + 100);
+const unreleasedMatch = changelog
+  .substring(contextStart, contextEnd)
+  .match(/## \[Unreleased\]\(.*?compare\/([0-9]+.[0-9]+.[0-9]+)\.\.\.main\)/);
+const VERSION = unreleasedMatch ? unreleasedMatch[1] : "0.0.0";
 
 // TCF
 const GZIP_SIZE_TCF_ERROR_KB = 90;
