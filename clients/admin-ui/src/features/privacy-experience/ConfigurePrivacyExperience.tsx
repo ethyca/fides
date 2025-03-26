@@ -1,6 +1,5 @@
 import { AntButton as Button, Flex, Spacer, Text, useToast } from "fidesui";
 import { Form, Formik } from "formik";
-import { pick } from "lodash";
 import { useRouter } from "next/router";
 import React, { useState } from "react";
 import * as Yup from "yup";
@@ -19,6 +18,7 @@ import {
   transformConfigResponseToCreate,
   TranslationWithLanguageName,
 } from "~/features/privacy-experience/form/helpers";
+import { FIELD_VALIDATION_DATA } from "~/features/privacy-experience/form/translations-form-validations";
 import {
   selectAllLanguages,
   selectPage as selectLanguagePage,
@@ -38,42 +38,33 @@ import {
   ExperienceConfigCreate,
   ExperienceConfigResponse,
   ExperienceTranslation,
+  ExperienceTranslationCreate,
   SupportedLanguage,
 } from "~/types/api";
 import { isErrorResult } from "~/types/errors";
+
+const buildTranslationSchema = (componentType: ComponentType): Yup.Schema => {
+  const formFields = getTranslationFormFields(componentType);
+  const schema: Record<string, Yup.Schema> = {};
+
+  Object.entries(formFields).forEach(([field, config]) => {
+    if (config.included) {
+      const fieldData =
+        FIELD_VALIDATION_DATA[field as keyof ExperienceTranslationCreate];
+      schema[field] = config.required
+        ? fieldData.validation.required().label(fieldData.label)
+        : fieldData.validation.nullable().label(fieldData.label);
+    }
+  });
+
+  return Yup.object().shape(schema);
+};
 
 const translationSchema = ({
   componentType,
 }: {
   componentType: ComponentType;
-}) => {
-  const translationFormFields = getTranslationFormFields(componentType);
-  const allValidations = {
-    title: Yup.string().required().label("Title"),
-    description: Yup.string().required().label("Description"),
-    accept_button_label: Yup.string().required().label("Accept button label"),
-    reject_button_label: Yup.string().required().label("Reject button label"),
-    save_button_label: Yup.string().required().label("Save button label"),
-    acknowledge_button_label: Yup.string()
-      .required()
-      .label("Acknowledge button label"),
-    privacy_policy_url: Yup.string()
-      .url()
-      .nullable()
-      .label("Privacy policy URL"),
-    is_default: Yup.boolean(),
-    privacy_preferences_link_label: Yup.string()
-      .required()
-      .label("Privacy preferences link label"),
-  };
-
-  const currentValidations = pick(
-    allValidations,
-    Object.keys(translationFormFields),
-  );
-
-  return Yup.object().shape(currentValidations);
-};
+}) => buildTranslationSchema(componentType);
 
 const validationSchema = Yup.object().shape({
   name: Yup.string().required().label("Experience name"),
