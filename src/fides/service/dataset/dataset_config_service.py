@@ -167,8 +167,33 @@ class DatasetConfigService:
     def validate_dataset_config(
         self, connection_config: ConnectionConfig, dataset: FideslangDataset
     ) -> ValidateDatasetResponse:
+        """Validate a dataset config by collecting active dataset graphs."""
+        # Get graphs for all enabled datasets
+        graph_datasets = []
+        datasets = DatasetConfig.all(db=self.db)
+        for ds in datasets:
+            if not ds.connection_config.disabled:
+                try:
+                    graph_datasets.append(ds.get_graph())
+                except Exception:
+                    continue
 
-        return DatasetValidator(self.db, dataset, connection_config).validate()
+        # Include sibling datasets if the connection config is disabled
+        if connection_config and connection_config.disabled:
+            for sibling in connection_config.datasets:
+                try:
+                    graph_datasets.append(sibling.get_graph())
+                except Exception:
+                    continue
+
+        try:
+            return DatasetValidator(
+                self.db, dataset, connection_config, graph_datasets=graph_datasets
+            ).validate()
+        except Exception as e:
+            logger.warning(f"Error validating with dataset graphs: {e}")
+            # Fall back to standard validation without dataset graphs
+            return DatasetValidator(self.db, dataset, connection_config).validate()
 
     def get_dataset_reachability(
         self, dataset_config: DatasetConfig, policy: Optional[Policy] = None
@@ -199,33 +224,32 @@ class DatasetConfigService:
         # We still want to check reachability even if our dataset config's connection is disabled.
         # We also consider the siblings, because if the connection is enabled, then all the
         # datasets will be enabled with it.
-        sibling_dataset_graphs = []
         if dataset_config.connection_config.disabled:
             for sibling in dataset_config.connection_config.datasets:
                 try:
-                    sibling_dataset_graphs.append(sibling.get_graph())
+                    dataset_graphs.append(sibling.get_graph())
                 except PydanticValidationError:
                     continue
 
         try:
-            dataset_graph = DatasetGraph(*dataset_graphs, *sibling_dataset_graphs)
-        except ValidationError as exc:
-            return (
-                False,
-                f'The following dataset references do not exist "{", ".join(exc.errors)}"',
-            )
+            # Create the complete graph from all dataset graphs
+            dataset_graph = DatasetGraph(*dataset_graphs)
 
-        # dummy data is enough to determine traversability
-        identity_seed: Dict[str, str] = {
-            k: "something" for k in dataset_graph.identity_keys.values()
-        }
+            # dummy data is enough to determine traversability
+            identity_seed: Dict[str, str] = {
+                k: "something" for k in dataset_graph.identity_keys.values()
+            }
 
-        try:
             Traversal(
                 dataset_graph,
                 identity_seed,
                 policy=policy,
                 node_filters=[DatasetFilter(dataset_config.fides_key)],
+            )
+        except ValidationError as exc:
+            return (
+                False,
+                f'The following dataset references do not exist "{", ".join(exc.errors)}"',
             )
         except UnreachableNodesError as exc:
             return (
