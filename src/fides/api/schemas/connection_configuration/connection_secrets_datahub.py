@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import ClassVar, List
+from typing import ClassVar, List, Optional
 
 from pydantic import Field
 
@@ -28,12 +28,12 @@ class DatahubSchema(ConnectionConfigSecretsSchema):
         description="The token used to authenticate with your DataHub server.",
         json_schema_extra={"sensitive": True},
     )
-    frequency: PeriodicIntegrationFrequency = Field(
+    frequency: Optional[PeriodicIntegrationFrequency] = Field(
         title="Frequency",
         description="The frequency at which the integration should run. Defaults to daily.",
-        default=PeriodicIntegrationFrequency.daily.value,
+        default=PeriodicIntegrationFrequency.daily,
     )
-    glossary_node: str = Field(
+    glossary_node: Optional[str] = Field(
         title="Glossary Node",
         description="The glossary node name to use on Datahub for Fides Data Categories. Defaults to FidesDataCategories",
         default="FidesDataCategories",
