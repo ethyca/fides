@@ -24,12 +24,6 @@
     "test": true,
     "production": false
   },
-  "consentReporting": {
-    "description": "Page to download consent reports by date",
-    "development": true,
-    "test": true,
-    "production": false
-  },
   "dataDiscoveryAndDetection": {
     "description": "Data discovery and detection",
     "development": true,
