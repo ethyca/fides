@@ -2019,6 +2019,7 @@ class TestPutConnectionConfigSecrets:
             "datahub_server_url": "https://datahub.example.com",
             "datahub_token": "test",
             "frequency": "weekly",
+            "glossary_node": "FidesDataCategories",
         }
         resp = api_client.put(
             url + "?verify=False",
@@ -2056,6 +2057,8 @@ class TestPutConnectionConfigSecrets:
         payload = {
             "datahub_server_url": "https://datahub.example.com",
             "datahub_token": "test",
+            "frequency": "daily",
+            "glossary_node": "FidesDataCategories",
         }
         resp = api_client.put(
             url + "?verify=False",
