@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.57.2b0.post0.dev7"
+    "version": "2.57.2b0.post0.dev8"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -17110,20 +17110,20 @@
               }
             ],
             "title": "Frequency",
-            "description": "The frequency at which the integration should run. Defaults to daily.",
-            "default": "daily"
+            "description": "The frequency at which the integration should run. Available options are daily, weekly, and monthly."
           },
           "glossary_node": {
             "type": "string",
             "title": "Glossary Node",
-            "description": "The glossary node name to use on Datahub for Fides Data Categories. Defaults to FidesDataCategories",
-            "default": "FidesDataCategories"
+            "description": "The glossary node name to use on Datahub for Fides Data Categories. (e.g. FidesDataCategories)"
           }
         },
         "type": "object",
         "required": [
           "datahub_server_url",
-          "datahub_token"
+          "datahub_token",
+          "frequency",
+          "glossary_node"
         ],
         "title": "DatahubDocsSchema",
         "description": "Datahub Schema for API docs."
