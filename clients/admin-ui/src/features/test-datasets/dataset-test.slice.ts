@@ -48,6 +48,17 @@ export const datasetTestSlice = createSlice({
       draftState.privacyRequestId = null;
       draftState.isTestRunning = false;
     },
+    interruptTest: (draftState) => {
+      if (draftState.currentDataset?.fides_key) {
+        draftState.testResults = {
+          ...draftState.testResults,
+          [draftState.currentDataset.fides_key]: "",
+        };
+      }
+      draftState.logs = [];
+      draftState.privacyRequestId = null;
+      draftState.isTestRunning = false;
+    },
     setTestInputs: (
       draftState,
       action: PayloadAction<{
@@ -125,6 +136,7 @@ export const {
   startTest,
   setPrivacyRequestId,
   finishTest,
+  interruptTest,
   setTestInputs,
   setCurrentPolicyKey,
   setCurrentDataset,

@@ -1,7 +1,6 @@
 import { TCString } from "@iabtechlabtcf/core";
 
 import { extractIds } from "../common-utils";
-import { getConsentContext } from "../consent-context";
 import {
   ConsentMechanism,
   FidesCookie,
@@ -18,15 +17,20 @@ import {
   transformTcfPreferencesToCookieKeys,
 } from "../cookie";
 import {
+  DecodedFidesString,
+  decodeFidesString,
+  idsFromAcString,
+} from "../fides-string";
+import {
   transformConsentToFidesUserPreference,
   transformUserPreferenceToBoolean,
 } from "../shared-consent-utils";
 import { generateFidesString } from "../tcf";
 import { FIDES_SYSTEM_COOKIE_KEY_MAP, TCF_KEY_MAP } from "./constants";
-import { decodeFidesString, idsFromAcString } from "./fidesString";
 import {
   EnabledIds,
   GVLTranslationJson,
+  PrivacyNoticeWithBestTranslation,
   TCFFeatureRecord,
   TCFFeatureSave,
   TcfModels,
@@ -88,9 +92,11 @@ export const buildTcfEntitiesFromCookieAndFidesString = (
 
   // Now update tcfEntities based on the fides string
   if (cookie.fides_string) {
-    const { tc: tcString, ac: acString } = decodeFidesString(
-      cookie.fides_string,
-    );
+    const { tc: tcString, ac: acString }: DecodedFidesString =
+      decodeFidesString(cookie.fides_string);
+    if (!tcString) {
+      return tcfEntities;
+    }
     const acStringIds = idsFromAcString(acString);
 
     // Populate every field from tcModel
@@ -267,11 +273,10 @@ export const getEnabledIdsNotice = (
     return [];
   }
   const parsedCookie: FidesCookie | undefined = getFidesConsentCookie();
-  const context = getConsentContext();
 
   return noticeList
     .map((notice) => {
-      const value = resolveConsentValue(notice, context, parsedCookie?.consent);
+      const value = resolveConsentValue(notice, parsedCookie?.consent);
       return { ...notice, consentValue: value };
     })
     .filter((notice) => notice.consentValue)
@@ -450,12 +455,12 @@ export const createTcfSavePayloadFromMinExp = ({
  * @param consentPreferencesToSave - Any Custom Notice preferences to save.
  * @returns A promise that resolves to the updated Fides cookie.
  */
-export const updateCookie = async (
+export const updateTCFCookie = async (
   oldCookie: FidesCookie,
   tcf: TcfSavePreferences,
   enabledIds: EnabledIds,
   experience: PrivacyExperience | PrivacyExperienceMinimal,
-  consentPreferencesToSave: SaveConsentPreference[],
+  consentPreferencesToSave?: SaveConsentPreference[],
 ): Promise<FidesCookie> => {
   const tcString = await generateFidesString({
     tcStringPreferences: enabledIds,
@@ -495,4 +500,24 @@ export const getGVLPurposeList = (gvlTranslations: Record<string, any>) => {
     });
   });
   return GVLPurposeList;
+};
+
+export const createTCFConsentPreferencesToSave = (
+  privacyNoticeList: PrivacyNoticeWithBestTranslation[],
+  enabledPrivacyNoticeIds: string[],
+): SaveConsentPreference[] => {
+  if (!privacyNoticeList || !enabledPrivacyNoticeIds) {
+    return [];
+  }
+  return privacyNoticeList.map((item) => {
+    const userPreference = transformConsentToFidesUserPreference(
+      enabledPrivacyNoticeIds.includes(item.id),
+      item.consent_mechanism,
+    );
+    return new SaveConsentPreference(
+      item,
+      userPreference,
+      item.bestTranslation?.privacy_notice_history_id,
+    );
+  });
 };

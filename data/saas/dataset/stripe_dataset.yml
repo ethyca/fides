@@ -756,6 +756,10 @@ dataset:
             data_categories: [user.name]
             fidesops_meta:
               data_type: string
+              masking_strategy_override:
+                strategy: string_rewrite
+                configuration:
+                  rewrite_value: "MASKED" # account_holder_name cannot be unset
           - name: account_holder_type
             data_categories: [system.operations]
           - name: account_type

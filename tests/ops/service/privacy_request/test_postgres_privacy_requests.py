@@ -6,11 +6,8 @@ from sqlalchemy import column, select, table
 
 from fides.api.graph.config import CollectionAddress, FieldPath
 from fides.api.models.audit_log import AuditLog, AuditLogAction
-from fides.api.models.privacy_request import (
-    ExecutionLog,
-    ExecutionLogStatus,
-    PrivacyRequestStatus,
-)
+from fides.api.models.privacy_request import ExecutionLog
+from fides.api.schemas.privacy_request import ExecutionLogStatus, PrivacyRequestStatus
 from fides.api.util.data_category import DataCategory
 from tests.ops.integration_tests.test_execution import get_sorted_execution_logs
 from tests.ops.service.privacy_request.test_request_runner_service import (
@@ -451,14 +448,30 @@ def test_create_and_process_access_request_postgres_with_disabled_integration(
         task_timeout=PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL,
     )
 
-    first, *rest = pr.execution_logs.order_by("created_at")
+    execution_logs = pr.execution_logs.order_by("created_at")
+    logs = {
+        (log.dataset_name, log.status.value, log.collection_name)
+        for log in execution_logs
+    }
 
-    assert first.dataset_name == "Dataset reference validation"
-    assert first.status == ExecutionLogStatus.complete
-
-    for execution_log in rest:
-        assert execution_log.dataset_name == "Dataset traversal"
-        assert execution_log.status == ExecutionLogStatus.error
+    assert logs == {
+        ("Dataset reference validation", "complete", None),
+        (
+            "Dataset traversal",
+            "skipped",
+            "postgres_example_test_dataset.service_request",
+        ),
+        ("Dataset traversal", "skipped", "postgres_example_test_dataset.product"),
+        ("Dataset traversal", "skipped", "postgres_example_test_dataset.login"),
+        ("Dataset traversal", "skipped", "postgres_example_test_dataset.visit"),
+        ("Dataset traversal", "skipped", "postgres_example_test_dataset.report"),
+        ("Dataset traversal", "skipped", "postgres_example_test_dataset.order_item"),
+        ("Dataset traversal", "skipped", "postgres_example_test_dataset.address"),
+        ("Dataset traversal", "skipped", "postgres_example_test_dataset.orders"),
+        ("Dataset traversal", "skipped", "postgres_example_test_dataset.payment_card"),
+        ("Dataset traversal", "skipped", "postgres_example_test_dataset.employee"),
+        ("Dataset traversal", "skipped", "postgres_example_test_dataset.customer"),
+    }
 
     connection_config.disabled = True
     connection_config.save(db=db)

@@ -8,6 +8,7 @@
 import {
   ComponentType,
   CONSENT_COOKIE_NAME,
+  ConsentMethod,
   FidesCookie,
   FidesEndpointPaths,
   PrivacyExperience,
@@ -55,6 +56,24 @@ describe("Fides-js GPP extension", () => {
     cy.intercept("PATCH", `${API_URL}${FidesEndpointPaths.NOTICES_SERVED}`, {
       fixture: "consent/notices_served_tcf.json",
     }).as("patchNoticesServed");
+  });
+
+  describe("with GPP forced", () => {
+    it("loads the gpp extension", () => {
+      cy.visit({
+        url: "/fides-js-demo.html",
+        qs: { gpp: "true" },
+      });
+      cy.window().then((win) => {
+        win.__gpp("ping", cy.stub().as("gppPing"));
+        cy.get("@gppPing")
+          .should("have.been.calledOnce")
+          .its("lastCall.args")
+          .then(([, success]) => {
+            expect(success).to.eql(true);
+          });
+      });
+    });
   });
 
   it("does not load the GPP extension if it is not enabled", () => {
@@ -317,6 +336,71 @@ describe("Fides-js GPP extension", () => {
             expect(gppString).to.contain("DBABMA~");
             expect(gppString).not.to.contain(tcString);
           });
+      });
+    });
+
+    it("can handle a fides string being passed in", () => {
+      cy.setCookie(
+        "fides_string",
+        "CQNvpkAQNvpkAGXABBENBfFgALAAAENAAAAAFyQAQFyAXJABAXIAAAAA,1~,DBABMA~CQNvpkAQNvpkAGXABBENBfFgALAAAENAAAAAFyQAQFyAXJABAXIAAAAA",
+      );
+      const cookie = mockCookie({
+        tcf_version_hash: TCF_VERSION_HASH,
+      });
+      cy.setCookie(CONSENT_COOKIE_NAME, JSON.stringify(cookie));
+      stubTCFExperience({
+        experienceFullOverride: { gpp_settings: tcfGppSettings },
+        experienceMinimalOverride: { gpp_settings: tcfGppSettings },
+      });
+
+      // check that the fides string is used to set the preference
+      cy.waitUntilFidesInitialized().then(() => {
+        cy.wait("@patchPrivacyPreference").then((interception) => {
+          const {
+            preferences,
+            privacy_experience_config_history_id,
+            method,
+            purpose_consent_preferences,
+            purpose_legitimate_interests_preferences,
+            vendor_consent_preferences,
+            vendor_legitimate_interests_preferences,
+            system_consent_preferences,
+            system_legitimate_interests_preferences,
+          } = interception.request.body;
+          expect(method).to.eql(ConsentMethod.SCRIPT);
+          expect(preferences).to.eql([]);
+          expect(privacy_experience_config_history_id).to.eql(
+            "pri_exp-history-tcf-overlay-en-00",
+          );
+          expect(purpose_consent_preferences).to.eql([
+            { id: 1, preference: "opt_in" },
+            { id: 3, preference: "opt_in" },
+            { id: 4, preference: "opt_in" },
+          ]);
+          expect(purpose_legitimate_interests_preferences).to.eql([
+            { id: 2, preference: "opt_in" },
+            { id: 7, preference: "opt_in" },
+            { id: 8, preference: "opt_in" },
+            { id: 10, preference: "opt_in" },
+          ]);
+          expect(vendor_consent_preferences).to.eql([
+            { id: "gvl.740", preference: "opt_in" },
+          ]);
+          expect(vendor_legitimate_interests_preferences).to.eql([
+            { id: "gvl.740", preference: "opt_in" },
+          ]);
+          expect(system_consent_preferences).to.eql([]);
+          expect(system_legitimate_interests_preferences).to.eql([]);
+        });
+        cy.get("#fides-modal-link").should("be.visible");
+        cy.get("@FidesUIShown").should("not.have.been.called");
+        cy.get("#fides-modal-link").click();
+        cy.getByTestId("toggle-Use profiles to select personalised advertising")
+          .find("input")
+          .should("be.checked");
+        cy.getByTestId("toggle-Use profiles to select personalised content")
+          .find("input")
+          .should("not.be.checked");
       });
     });
 
@@ -594,6 +678,31 @@ describe("Fides-js GPP extension", () => {
             });
         });
       });
+
+      it("can handle a fides string being passed in", () => {
+        cy.setCookie("fides_string", ",,DBABBg~BUoAAABY.QA");
+        visitDemoWithGPP({});
+        cy.waitUntilCookieExists(CONSENT_COOKIE_NAME).then(() => {
+          cy.getCookie(CONSENT_COOKIE_NAME).then((cookie) => {
+            const fidesCookie: FidesCookie = JSON.parse(
+              decodeURIComponent(cookie!.value),
+            );
+            const { consent } = fidesCookie;
+            expect(consent).to.eql({ data_sales_sharing_gpp_us_state: true });
+          });
+        });
+        cy.wait("@patchPrivacyPreference").then((interception) => {
+          expect(interception.request.body.method).to.eql(ConsentMethod.SCRIPT);
+          expect(interception.request.body.preferences).to.eql([
+            {
+              privacy_notice_history_id:
+                "pri_notice-history-gpp-data-sales-en-000",
+              preference: "opt_in",
+            },
+          ]);
+        });
+        cy.get("@FidesUIShown").should("not.have.been.called");
+      });
     });
     describe("when visiting from a state that does not have an applicable section", () => {
       beforeEach(() => {
@@ -752,6 +861,31 @@ describe("Fides-js GPP extension", () => {
             });
         });
       });
+
+      it("can handle a fides string being passed in", () => {
+        cy.setCookie("fides_string", ",,DBABBg~BUoAAABY.QA");
+        visitDemoWithGPP({});
+        cy.waitUntilCookieExists(CONSENT_COOKIE_NAME).then(() => {
+          cy.getCookie(CONSENT_COOKIE_NAME).then((cookie) => {
+            const fidesCookie: FidesCookie = JSON.parse(
+              decodeURIComponent(cookie!.value),
+            );
+            const { consent } = fidesCookie;
+            expect(consent).to.eql({ data_sales_sharing_gpp_us_state: true });
+          });
+        });
+        cy.wait("@patchPrivacyPreference").then((interception) => {
+          expect(interception.request.body.method).to.eql(ConsentMethod.SCRIPT);
+          expect(interception.request.body.preferences).to.eql([
+            {
+              privacy_notice_history_id:
+                "pri_notice-history-gpp-data-sales-en-000",
+              preference: "opt_in",
+            },
+          ]);
+        });
+        cy.get("@FidesUIShown").should("not.have.been.called");
+      });
     });
     describe("when visiting from a state that does not have an applicable section", () => {
       beforeEach(() => {
@@ -815,24 +949,6 @@ describe("Fides-js GPP extension", () => {
               expect(data.pingData.signalStatus).to.eql("ready");
             });
         });
-      });
-    });
-  });
-
-  describe("with GPP forced", () => {
-    it("loads the gpp extension", () => {
-      cy.visit({
-        url: "/fides-js-demo.html",
-        qs: { gpp: "true" },
-      });
-      cy.window().then((win) => {
-        win.__gpp("ping", cy.stub().as("gppPing"));
-        cy.get("@gppPing")
-          .should("have.been.calledOnce")
-          .its("lastCall.args")
-          .then(([, success]) => {
-            expect(success).to.eql(true);
-          });
       });
     });
   });

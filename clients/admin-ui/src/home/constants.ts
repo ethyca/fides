@@ -38,7 +38,7 @@ export const MODULE_CARD_ITEMS: ModuleCardConfig[] = [
   },
   {
     color: palette.FIDESUI_OLIVE,
-    description: "Add third party applications and databases to your data map",
+    description: "Add third party applications and databases to your data map.",
     href: `${ADD_SYSTEMS_ROUTE}`,
     key: ModuleCardKeys.ADD_SYSTEMS,
     name: "Add systems",
@@ -49,7 +49,7 @@ export const MODULE_CARD_ITEMS: ModuleCardConfig[] = [
   {
     color: palette.FIDESUI_TERRACOTTA,
     description:
-      "Review system information for all systems in your organization",
+      "Review system information for all systems in your organization.",
     href: `${SYSTEM_ROUTE}`,
     key: ModuleCardKeys.VIEW_SYSTEMS,
     name: "View systems",
@@ -73,7 +73,7 @@ export const MODULE_CARD_ITEMS: ModuleCardConfig[] = [
   {
     color: palette.FIDESUI_NECTAR,
     description:
-      "Manage privacy notices and experiences for all domains in your organization",
+      "Manage privacy notices and experiences for all domains in your organization.",
     href: `${CONFIGURE_CONSENT_ROUTE}`,
     key: ModuleCardKeys.CONFIGURE_CONSENT,
     name: "Manage consent",

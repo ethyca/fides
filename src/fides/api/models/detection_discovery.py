@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, Iterable, List, Optional, Type
 
@@ -277,6 +277,18 @@ class StagedResource(Base):
         server_default="{}",
         default=dict,
     )
+    user_assigned_data_uses = Column(
+        ARRAY(String),
+        nullable=False,
+        server_default="{}",
+        default=dict,
+    )
+    user_assigned_system_id = Column(
+        String,
+        ForeignKey(System.id_field_path),
+        nullable=True,
+        index=True,
+    )
 
     # pointers to child and parent URNs
     children = Column(
@@ -388,7 +400,9 @@ class MonitorExecution(Base):
     )
     status = Column(String, nullable=True)
     started = Column(
-        DateTime(timezone=True), nullable=True, default=datetime.now(timezone.utc)
+        DateTime(timezone=True),
+        nullable=True,
+        server_default=func.now(),
     )
     completed = Column(DateTime(timezone=True), nullable=True)
     classification_instances = Column(

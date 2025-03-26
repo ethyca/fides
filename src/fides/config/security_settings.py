@@ -3,7 +3,6 @@
 # pylint: disable=C0115,C0116, E0213
 from typing import List, Optional, Pattern, Tuple, Union
 
-import validators
 from pydantic import Field, SerializeAsAny, ValidationInfo, field_validator
 from pydantic_settings import SettingsConfigDict
 from slowapi.wrappers import parse_many  # type: ignore
@@ -176,22 +175,17 @@ class SecuritySettings(FidesSettings):
     @field_validator("cors_origins", mode="before")
     @classmethod
     def assemble_cors_origins(cls, v: Union[str, List[str]]) -> Union[List[str], str]:
-        """Return a list of valid origins for CORS requests"""
+        """
+        Return a list of origins for CORS requests.
 
-        def validate(values: List[str]) -> None:
-            for value in values:
-                if value != "*":
-                    if not validators.url(value):
-                        raise ValueError(f"{value} is not a valid url")
-
+        This validator allows us to parse a comma-separated string of origins
+        into a list of origins, since the `cors_origins` field can be set
+        as a comma-separated string or a list of strings.
+        """
         if isinstance(v, str) and not v.startswith("["):
             values = [i.strip() for i in v.split(",")]
-            validate(values)
-
             return values
-        if isinstance(v, (list, str)):
-            validate(v)  # type: ignore
-
+        if isinstance(v, list):
             return v
         raise ValueError(v)
 

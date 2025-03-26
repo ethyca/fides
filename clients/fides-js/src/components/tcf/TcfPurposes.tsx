@@ -3,7 +3,7 @@ import { useMemo, useState } from "preact/hooks";
 
 import { UpdateEnabledIds } from "~/components/tcf/TcfTabs";
 
-import { ConsentMechanism, PrivacyExperience } from "../../lib/consent-types";
+import { PrivacyExperience } from "../../lib/consent-types";
 import {
   FidesEventDetailsPreference,
   FidesEventDetailsTrigger,
@@ -129,7 +129,7 @@ const TcfPurposes = ({
         purposes: uniquePurposes.filter((p) => p.isConsent),
         customPurposes: allCustomPurposesConsent.map((purpose) => ({
           ...purpose,
-          disabled: purpose.consent_mechanism === ConsentMechanism.NOTICE_ONLY,
+          disabled: purpose.disabled,
         })), // all custom purposes are "consent" purposes
         purposeModelType: "purposesConsent",
         enabledPurposeIds: enabledPurposeConsentIds,
@@ -189,7 +189,9 @@ const TcfPurposes = ({
     let key;
     if (modelType === "customPurposesConsent") {
       type = "notice" as const;
-      key = `${item.id}`;
+      // For custom purposes (privacy notices), we can use the notice_key
+      // to be consistent with regular notices in FidesUIChanged events
+      key = (item as PrivacyNoticeWithBestTranslation).notice_key;
     } else if (modelType === "purposesConsent") {
       type = "tcf_purpose_consent" as const;
       key = `${type}_${item.id}`;

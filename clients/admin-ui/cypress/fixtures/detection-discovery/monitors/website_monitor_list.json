@@ -1,0 +1,34 @@
+{
+  "items": [
+    {
+      "name": "test website monitor",
+      "key": "test_website_monitor",
+      "connection_config_key": "test_website_integration",
+      "classify_params": {},
+      "datasource_params": {
+        "locations": ["us", "ca"],
+        "exclude_domains": ["example.com"]
+      },
+      "databases": [],
+      "excluded_databases": [],
+      "enabled": true
+    },
+    {
+      "name": "test website monitor 2",
+      "key": "test_website_monitor_2",
+      "connection_config_key": "test_website_integration",
+      "classify_params": {},
+      "datasource_params": {
+        "locations": ["us", "ca"],
+        "exclude_domains": ["example.com"]
+      },
+      "databases": [],
+      "excluded_databases": [],
+      "enabled": true
+    }
+  ],
+  "total": 2,
+  "page": 1,
+  "size": 10,
+  "pages": 1
+}

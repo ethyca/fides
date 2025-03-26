@@ -27,6 +27,7 @@ export const baseApi = createApi({
     "Consentable Items",
     "Consent Reporting",
     "Consent Reporting Export",
+    "Country Locations",
     "Current Privacy Preferences",
     "Custom Assets",
     "Custom Field Definition",

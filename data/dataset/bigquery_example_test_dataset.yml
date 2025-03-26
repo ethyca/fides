@@ -64,6 +64,7 @@ dataset:
             fides_meta:
               identity: email
               data_type: string
+              read_only: True
           - name: custom_id
             data_categories: [user.unique_id]
             fides_meta:
@@ -76,6 +77,24 @@ dataset:
             fides_meta:
               data_type: string
               length: 40
+          - name: tags
+            data_categories: [user]
+            fides_meta:
+              data_type: string[]
+          - name: purchase_history
+            fides_meta:
+              data_type: object[]
+            fields:
+              - name: item_id
+                data_categories: [system.operations]
+              - name: price
+                data_categories: [user.financial]
+              - name: purchase_date
+                data_categories: [system.operations]
+              - name: item_tags
+                data_categories: [user]
+                fides_meta:
+                  data_type: string[]
 
       - name: employee
         fides_meta:
@@ -256,6 +275,7 @@ dataset:
           - name: email
             data_categories: [user.contact.email]
             fides_meta:
+              read_only: true
               identity: email
               data_type: string
           - name: last_visit
