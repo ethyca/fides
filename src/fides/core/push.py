@@ -6,7 +6,7 @@ from typing import Dict, List, Tuple
 from deepdiff import DeepDiff
 from fideslang.models import FidesModel, Taxonomy
 
-from fides.common.utils import echo_green, echo_red, handle_cli_response
+from fides.common.utils import echo_green, echo_yellow, handle_cli_response
 from fides.core import api
 from fides.core.api_helpers import get_server_resources
 
@@ -107,8 +107,8 @@ def push(
 
     missing_datasets = get_orphan_datasets(taxonomy)
     if len(missing_datasets) > 0:
-        echo_red(
-            "Orphan Dataset Warning: The following datasets are not found referenced on a System"
+        echo_yellow(
+            "Orphan dataset warning: The following datasets are not found referenced on a System"
         )
         for dataset in missing_datasets:
             print(dataset)

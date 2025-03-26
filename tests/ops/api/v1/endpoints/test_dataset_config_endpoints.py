@@ -392,7 +392,8 @@ class TestValidateDataset:
         assert response_body["traversal_details"]
         assert response_body["traversal_details"]["is_traversable"] is False
         assert (
-            "Some nodes were not reachable" in response_body["traversal_details"]["msg"]
+            "Some collections were not reachable"
+            in response_body["traversal_details"]["msg"]
         )
         assert (
             "postgres_example_test_dataset:address"
@@ -452,7 +453,7 @@ class TestValidateDataset:
         assert response_body["traversal_details"]["is_traversable"] is False
         assert (
             response_body["traversal_details"]["msg"]
-            == "Some nodes were not reachable: saas_connector_example:messages"
+            == "Some collections were not reachable: saas_connector_example:messages"
         )
 
     def test_put_validate_dataset(

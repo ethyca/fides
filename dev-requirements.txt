@@ -27,3 +27,7 @@ types-urllib3==1.26.23
 watchfiles==0.19.0
 werkzeug==3.0.6
 xenon==0.9.0
+# I forked Uvicorn so I could optimize the reload process. The default behavior is to watch everything under the current working directory.
+# However, this causes the file change detection to not start until about 5 minutes after server start. With the optimization, the file change
+# detection is almost instant since we're only watching a few directories.
+git+https://github.com/galvana/uvicorn.git@optimized-reload#egg=uvicorn

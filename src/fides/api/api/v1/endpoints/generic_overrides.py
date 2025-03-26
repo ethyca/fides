@@ -25,6 +25,7 @@ from fides.api.db.ctl_session import get_async_db
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.oauth.utils import verify_oauth_client
+from fides.api.schemas.dataset import ValidateDatasetResponse
 from fides.api.schemas.filter_params import FilterParams
 from fides.api.schemas.taxonomy_extensions import (
     DataCategory,
@@ -237,6 +238,36 @@ async def delete_dataset(
         raise HTTPException(
             status_code=HTTP_404_NOT_FOUND,
             detail={"message": str(e)},
+        )
+
+
+@dataset_router.post(
+    "/dataset/validate",
+    dependencies=[Security(verify_oauth_client, scopes=[CTL_DATASET_READ])],
+    response_model=ValidateDatasetResponse,
+    status_code=status.HTTP_200_OK,
+    name="Validate dataset",
+)
+async def validate_standalone_dataset(
+    dataset: FideslangDataset,
+    dataset_service: DatasetService = Depends(get_dataset_service),
+) -> ValidateDatasetResponse:
+    """
+    Validate a dataset schema without requiring a connection config.
+
+    Returns a ValidateDatasetResponse with the validated dataset and traversal details
+    that indicate the dataset's traversability status.
+    """
+    try:
+        return dataset_service.validate_dataset(dataset)
+    except (ValidationError, PydanticValidationError) as exc:
+        raise HTTPException(
+            status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=jsonable_encoder(
+                exc.errors(include_url=False, include_input=False)
+                if isinstance(exc, PydanticValidationError)
+                else exc.message
+            ),
         )
 
 

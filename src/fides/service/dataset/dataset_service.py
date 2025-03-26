@@ -6,6 +6,7 @@ from loguru import logger
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.schemas.dataset import ValidateDatasetResponse
 from fides.service.dataset.dataset_validator import DatasetValidator
 
@@ -37,8 +38,18 @@ class DatasetService:
         """
         Validates a standalone dataset for create/update operations, performing all necessary validations.
         """
+        graph_datasets = []
+        datasets = DatasetConfig.all(db=self.db)
+        for ds in datasets:
+            if not ds.connection_config.disabled:
+                try:
+                    graph_datasets.append(ds.get_graph())
+                except Exception:
+                    continue
 
-        return DatasetValidator(self.db, dataset).validate()
+        return DatasetValidator(
+            self.db, dataset, graph_datasets=graph_datasets
+        ).validate()
 
     def create_dataset(self, dataset: FideslangDataset) -> CtlDataset:
         """Create a new dataset with validation"""

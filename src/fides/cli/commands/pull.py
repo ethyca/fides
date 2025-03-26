@@ -5,7 +5,7 @@ from click_default_group import DefaultGroup
 
 from fides.cli.options import fides_key_argument, manifests_dir_argument
 from fides.cli.utils import with_analytics, with_server_health_check
-from fides.common.utils import echo_red
+from fides.common.utils import echo_green, echo_red
 from fides.core import parse as _parse
 from fides.core import pull as _pull
 from fides.core.utils import git_is_dirty
@@ -60,26 +60,103 @@ def pull_all(
 
 @pull.command(name="dataset")  # type: ignore
 @click.pass_context
-@fides_key_argument
+@click.argument("fides_key", required=False)
 @manifests_dir_argument
+@click.option(
+    "--all",
+    is_flag=True,
+    default=False,
+    help="Pull all datasets from the server.",
+)
+@click.option(
+    "--separate-files",
+    is_flag=True,
+    default=False,
+    help="Write each dataset to a separate file named after its fides_key.",
+)
+@with_analytics
+@with_server_health_check
 def dataset(
     ctx: click.Context,
-    fides_key: str,
+    fides_key: Optional[str],
     manifests_dir: str,
+    all: bool,
+    separate_files: bool,
 ) -> None:
     """
-    Retrieve a specific dataset from the server and update the local manifest files.
+    Retrieve datasets from the server and update the local manifest files.
+
+    If FIDES_KEY is provided, only that dataset will be pulled.
+    If --all is specified, all datasets will be pulled.
+    If --separate-files is specified, each dataset will be written to a separate file.
     """
+    if not fides_key and not all:
+        echo_red("Error: Either FIDES_KEY or --all must be specified.")
+        raise SystemExit(1)
 
     config = ctx.obj["CONFIG"]
-    _pull.pull(
-        url=config.cli.server_url,
-        manifests_dir=manifests_dir,
-        headers=config.user.auth_header,
-        fides_key=fides_key,
-        resource_type="dataset",
-        all_resources_file=None,
-    )
+
+    if fides_key:
+        # Check for unstaged git changes before proceeding
+        if git_is_dirty(manifests_dir):
+            echo_red(
+                f"There are unstaged changes in your manifest directory: '{manifests_dir}' \nAborting pull!"
+            )
+            raise SystemExit(1)
+
+        _pull.pull(
+            url=config.cli.server_url,
+            manifests_dir=manifests_dir,
+            headers=config.user.auth_header,
+            fides_key=fides_key,
+            resource_type="dataset",
+            all_resources_file=None,
+        )
+    elif all:
+        # Check for unstaged git changes before proceeding
+        if git_is_dirty(manifests_dir):
+            echo_red(
+                f"There are unstaged changes in your manifest directory: '{manifests_dir}' \nAborting pull!"
+            )
+            raise SystemExit(1)
+
+        # Get all available datasets from server
+        from fides.core.api_helpers import list_server_resources
+        from fides.core.pull import remove_nulls
+
+        datasets = list_server_resources(
+            url=config.cli.server_url,
+            headers=config.user.auth_header,
+            resource_type="dataset",
+            exclude_keys=[],
+        )
+
+        if not datasets:
+            echo_red("No datasets found on the server.")
+            return
+
+        # Remove null values
+        datasets = [remove_nulls(dataset) for dataset in datasets]
+
+        if separate_files:
+            # Write each dataset to a separate file
+            for dataset in datasets:
+                if "fides_key" in dataset:
+                    fides_key = dataset["fides_key"]
+                    manifest_path = f"{manifests_dir.rstrip('/')}/{fides_key}.yml"
+                    from fides.core.pull import write_manifest_file
+
+                    write_manifest_file(manifest_path, {"dataset": [dataset]})
+        else:
+            # Write all datasets to a single file
+            all_datasets_file = f"{manifests_dir.rstrip('/')}/datasets.yml"
+            from fides.core.pull import write_manifest_file
+
+            write_manifest_file(all_datasets_file, {"dataset": datasets})
+
+        from fides.common.utils import echo_green
+
+        echo_green("Pull complete.")
 
 
 @pull.command(name="system")  # type: ignore

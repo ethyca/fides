@@ -9,7 +9,7 @@ from typing import Any, Dict, Optional, Tuple, Type, Union
 
 import toml
 from loguru import logger as log
-from pydantic import ConfigDict, Field
+from pydantic import Field
 from pydantic_settings import (
     BaseSettings,
     PydanticBaseSettingsSource,
