@@ -1,5 +1,5 @@
 import { ColumnDef, createColumnHelper } from "@tanstack/react-table";
-import { AntTag } from "fidesui";
+import { AntTag as Tag } from "fidesui";
 
 import { PRIVACY_NOTICE_REGION_RECORD } from "~/features/common/privacy-notice-regions";
 import { DefaultCell } from "~/features/common/table/v2";
@@ -62,7 +62,7 @@ const useSystemAssetColumns = ({
     }),
     columnHelper.display({
       id: "system",
-      cell: () => <AntTag color="white">{systemName}</AntTag>,
+      cell: () => <Tag color="white">{systemName}</Tag>,
       header: "System",
     }),
     columnHelper.accessor((row) => row.data_uses, {
