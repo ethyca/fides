@@ -15,9 +15,8 @@ const ConsentCategorySelect = ({
     (use) => use.active && CONSENT_CATEGORIES.includes(use.fides_key),
   );
 
-  const options: TaxonomySelectOption[] = consentCategories
-    .filter((c) => !selectedTaxonomies.includes(c.fides_key))
-    .map((consentCategory) => {
+  const options: TaxonomySelectOption[] = consentCategories.map(
+    (consentCategory) => {
       const { name, primaryName } = getDataUseDisplayNameProps(
         consentCategory.fides_key,
       );
@@ -27,7 +26,8 @@ const ConsentCategorySelect = ({
         primaryName,
         description: consentCategory.description || "",
       };
-    });
+    },
+  );
   return <TaxonomySelect options={options} {...props} />;
 };
 
