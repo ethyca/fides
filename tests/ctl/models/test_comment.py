@@ -13,6 +13,7 @@ from fides.api.models.comment import (
     CommentType,
 )
 from fides.api.models.fides_user import FidesUser
+from fides.api.models.privacy_request import PrivacyRequest
 
 
 @pytest.fixture
@@ -82,21 +83,10 @@ def test_comment_fidesuser_foreign_key_constraint(db, comment):
     assert retrieved_comment is not None
 
 
-def test_comment_reference_relationship(db, comment, comment_reference):
-    """Test the relationship between comment and comment reference."""
-
-    retrieved_comment = db.query(Comment).filter_by(id=comment.id).first()
-
-    assert len(retrieved_comment.references) == 1
-    assert (
-        retrieved_comment.references[0].reference_id == comment_reference.reference_id
-    )
-
-
 def test_comment_single_attachment_relationship(
     s3_client, db, comment, attachment, monkeypatch
 ):
-    """Test the relationship between comment and attachment."""
+    """Test the relationship between comment and a single attachment reference."""
 
     def mock_get_s3_client(auth_method, storage_secrets):
         return s3_client
@@ -111,86 +101,73 @@ def test_comment_single_attachment_relationship(
             "reference_type": AttachmentReferenceType.comment,
         },
     )
+    db.refresh(comment)
 
-    retrieved_comment = db.query(Comment).filter_by(id=comment.id).first()
-    attachments = retrieved_comment.attachments
+    # Query attachment references directly
+    attachment_refs = (
+        db.query(AttachmentReference)
+        .filter(
+            AttachmentReference.reference_id == comment.id,
+            AttachmentReference.reference_type == AttachmentReferenceType.comment,
+        )
+        .all()
+    )
 
-    assert len(attachments) == 1
-    assert attachments[0].id == attachment.id
-    assert (
-        attachments[0].references[0].reference_id == attachment_reference.reference_id
-    )
-    assert (
-        attachments[0].references[0].reference_type
-        == attachment_reference.reference_type
-    )
+    assert len(attachment_refs) == 1
+    assert attachment_refs[0].attachment_id == attachment.id
+    assert attachment_refs[0].reference_id == comment.id
+    assert attachment_refs[0].reference_type == AttachmentReferenceType.comment
+
     attachment_reference.delete(db=db)
-    attachments[0].delete(db=db)
+    attachment.delete(db=db)
 
 
 def test_comment_multiple_attachments_relationship(
     s3_client, db, comment, multiple_attachments, monkeypatch
 ):
-    """Test the relationship between comment and multiple attachments."""
+    """Test the relationship between comment and multiple attachment references."""
 
     def mock_get_s3_client(auth_method, storage_secrets):
         return s3_client
 
     monkeypatch.setattr("fides.api.tasks.storage.get_s3_client", mock_get_s3_client)
 
-    attachment_reference_1 = AttachmentReference.create(
-        db,
-        data={
-            "attachment_id": multiple_attachments[0].id,
-            "reference_id": comment.id,
-            "reference_type": AttachmentReferenceType.comment,
-        },
-    )
-    attachment_reference_2 = AttachmentReference.create(
-        db,
-        data={
-            "attachment_id": multiple_attachments[1].id,
-            "reference_id": comment.id,
-            "reference_type": AttachmentReferenceType.comment,
-        },
-    )
-    attachment_reference_3 = AttachmentReference.create(
-        db,
-        data={
-            "attachment_id": multiple_attachments[2].id,
-            "reference_id": comment.id,
-            "reference_type": AttachmentReferenceType.comment,
-        },
+    # Create all references
+    references = []
+    for attachment in multiple_attachments:
+        ref = AttachmentReference.create(
+            db,
+            data={
+                "attachment_id": attachment.id,
+                "reference_id": comment.id,
+                "reference_type": AttachmentReferenceType.comment,
+            },
+        )
+        references.append(ref)
+
+    db.refresh(comment)
+
+    # Query attachment references directly
+    attachment_refs = (
+        db.query(AttachmentReference)
+        .filter(
+            AttachmentReference.reference_id == comment.id,
+            AttachmentReference.reference_type == AttachmentReferenceType.comment,
+        )
+        .all()
     )
 
-    retrieved_comment = db.query(Comment).filter_by(id=comment.id).first()
+    assert len(attachment_refs) == 3
+    for i, ref in enumerate(attachment_refs):
+        assert ref.attachment_id == multiple_attachments[i].id
+        assert ref.reference_id == comment.id
+        assert ref.reference_type == AttachmentReferenceType.comment
 
-    attachments = retrieved_comment.attachments
-    assert len(attachments) == 3
-    assert attachments[0].id == multiple_attachments[0].id
-    assert (
-        attachments[0].references[0].reference_id == attachment_reference_1.reference_id
-    )
-    assert (
-        attachments[0].references[0].reference_type
-        == attachment_reference_1.reference_type
-    )
-    assert attachments[1].id == multiple_attachments[1].id
-    assert (
-        attachments[1].references[0].reference_id == attachment_reference_2.reference_id
-    )
-    assert (
-        attachments[1].references[0].reference_type
-        == attachment_reference_2.reference_type
-    )
-    assert attachments[2].id == multiple_attachments[2].id
-    assert (
-        attachments[2].references[0].reference_id == attachment_reference_3.reference_id
-    )
-    assert (
-        attachments[2].references[0].reference_type
-        == attachment_reference_3.reference_type
-    )
+    # Cleanup
+    for ref in references:
+        ref.delete(db=db)
+    for attachment in multiple_attachments:
+        attachment.delete(db=db)
 
 
 def test_delete_comment_cascades(db, comment, comment_reference):
@@ -215,7 +192,7 @@ def test_delete_comment_cascades(db, comment, comment_reference):
 def test_delete_comment_cascades_to_attachments(
     s3_client, db, comment, attachment, monkeypatch
 ):
-    """Test that deleting a comment cascades to its attachments."""
+    """Test that deleting a comment cascades to its attachment references."""
 
     def mock_get_s3_client(auth_method, storage_secrets):
         return s3_client
@@ -230,25 +207,34 @@ def test_delete_comment_cascades_to_attachments(
             "reference_type": AttachmentReferenceType.comment,
         },
     )
+    db.refresh(comment)
 
-    retrieved_comment = db.query(Comment).filter_by(id=comment.id).first()
-    attachments = retrieved_comment.attachments
-    assert len(attachments) == 1
+    # Query attachment references directly
+    attachment_refs = (
+        db.query(AttachmentReference)
+        .filter(
+            AttachmentReference.reference_id == comment.id,
+            AttachmentReference.reference_type == AttachmentReferenceType.comment,
+        )
+        .all()
+    )
+    assert len(attachment_refs) == 1
 
     comment.delete(db=db)
 
+    # Verify comment is deleted
     retrieved_comment = db.query(Comment).filter_by(id=comment.id).first()
     assert retrieved_comment is None
 
+    # Verify attachment is deleted
     retrieved_attachment = db.query(Attachment).filter_by(id=attachment.id).first()
     assert retrieved_attachment is None
 
-    retrieved_attachment_reference = (
-        db.query(AttachmentReference)
-        .filter_by(reference_id=attachment_reference.reference_id)
-        .first()
+    # Verify reference is deleted
+    retrieved_reference = (
+        db.query(AttachmentReference).filter_by(id=attachment_reference.id).first()
     )
-    assert retrieved_attachment_reference is None
+    assert retrieved_reference is None
 
 
 def test_comment_reference_foreign_key_constraint(db):
@@ -261,3 +247,119 @@ def test_comment_reference_foreign_key_constraint(db):
     db.add(comment_reference)
     with pytest.raises(IntegrityError):
         db.commit()
+
+
+def test_delete_comment_reference_cascades(db, comment, comment_reference):
+    """Test that deleting a comment reference does not delete the comment."""
+    retrieved_comment = db.query(Comment).filter_by(id=comment.id).first()
+    assert retrieved_comment is not None
+
+    comment_reference.delete(db=db)
+
+    retrieved_comment = db.query(Comment).filter_by(id=comment.id).first()
+    assert retrieved_comment is not None
+    assert len(retrieved_comment.references) == 0
+
+
+def test_delete_all_comments(db, comment, privacy_request):
+    """Test deleting all comments associated with a reference."""
+    CommentReference.create(
+        db,
+        data={
+            "comment_id": comment.id,
+            "reference_id": privacy_request.id,
+            "reference_type": CommentReferenceType.privacy_request,
+        },
+    )
+    comment_id = comment.id
+    Comment.delete_comments_for_reference_and_type(
+        db, privacy_request.id, CommentReferenceType.privacy_request
+    )
+
+    retrieved_comment = db.query(Comment).filter_by(id=comment_id).first()
+    assert retrieved_comment is None
+
+    retrieved_comment_reference = (
+        db.query(CommentReference).filter_by(comment_id=comment_id).first()
+    )
+    assert retrieved_comment_reference is None
+
+
+def test_relationship_warning_conditions(
+    s3_client, db, comment, attachment, privacy_request, monkeypatch
+):
+    """Test the conditions that previously caused SQLAlchemy relationship warnings."""
+
+    def mock_get_s3_client(auth_method, storage_secrets):
+        return s3_client
+
+    monkeypatch.setattr("fides.api.tasks.storage.get_s3_client", mock_get_s3_client)
+
+    # Create attachment reference for comment
+    attachment_ref_1 = AttachmentReference.create(
+        db,
+        data={
+            "attachment_id": attachment.id,
+            "reference_id": comment.id,
+            "reference_type": AttachmentReferenceType.comment,
+        },
+    )
+    db.refresh(comment)
+    db.refresh(attachment)
+
+    # Create attachment reference for privacy request
+    attachment_ref_2 = AttachmentReference.create(
+        db,
+        data={
+            "attachment_id": attachment.id,
+            "reference_id": privacy_request.id,
+            "reference_type": AttachmentReferenceType.privacy_request,
+        },
+    )
+    db.refresh(privacy_request)
+    db.refresh(attachment)
+
+    # Create comment reference for privacy request
+    comment_ref = CommentReference.create(
+        db,
+        data={
+            "comment_id": comment.id,
+            "reference_id": privacy_request.id,
+            "reference_type": CommentReferenceType.privacy_request,
+        },
+    )
+    db.refresh(comment)
+    db.refresh(privacy_request)
+
+    # Query attachment references directly
+    comment_attachment_refs = (
+        db.query(AttachmentReference)
+        .filter(
+            AttachmentReference.reference_id == comment.id,
+            AttachmentReference.reference_type == AttachmentReferenceType.comment,
+        )
+        .all()
+    )
+    assert len(comment_attachment_refs) == 1
+    assert comment_attachment_refs[0].attachment_id == attachment.id
+
+    attachment_refs = attachment.references
+    assert len(attachment_refs) == 2
+    assert any(ref.reference_id == comment.id for ref in attachment_refs)
+    assert any(ref.reference_id == privacy_request.id for ref in attachment_refs)
+
+    # Cleanup - do this in reverse order of creation and check existence first
+    if db.query(CommentReference).filter_by(id=comment_ref.id).first():
+        comment_ref.delete(db)
+        db.commit()
+
+    if db.query(AttachmentReference).filter_by(id=attachment_ref_2.id).first():
+        attachment_ref_2.delete(db)
+        db.commit()
+
+    if db.query(AttachmentReference).filter_by(id=attachment_ref_1.id).first():
+        attachment_ref_1.delete(db)
+        db.commit()
+
+    # Refresh the session to ensure clean state
+    db.expire_all()
