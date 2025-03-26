@@ -1,5 +1,6 @@
 import { AntButton as Button, Flex, Spacer, Text, useToast } from "fidesui";
 import { Form, Formik } from "formik";
+import { pick } from "lodash";
 import { useRouter } from "next/router";
 import React, { useState } from "react";
 import * as Yup from "yup";
@@ -14,6 +15,7 @@ import { useGetConfigurationSettingsQuery } from "~/features/config-settings/con
 import {
   defaultInitialValues,
   findLanguageDisplayName,
+  getTranslationFormFields,
   transformConfigResponseToCreate,
   TranslationWithLanguageName,
 } from "~/features/privacy-experience/form/helpers";
@@ -40,8 +42,13 @@ import {
 } from "~/types/api";
 import { isErrorResult } from "~/types/errors";
 
-const translationSchema = (requirePreferencesLink: boolean) =>
-  Yup.object().shape({
+const translationSchema = ({
+  componentType,
+}: {
+  componentType: ComponentType;
+}) => {
+  const translationFormFields = getTranslationFormFields(componentType);
+  const allValidations = {
     title: Yup.string().required().label("Title"),
     description: Yup.string().required().label("Description"),
     accept_button_label: Yup.string().required().label("Accept button label"),
@@ -55,21 +62,25 @@ const translationSchema = (requirePreferencesLink: boolean) =>
       .nullable()
       .label("Privacy policy URL"),
     is_default: Yup.boolean(),
-    privacy_preferences_link_label: requirePreferencesLink
-      ? Yup.string().required().label("Privacy preferences link label")
-      : Yup.string().nullable().label("Privacy preferences link label"),
-  });
+    privacy_preferences_link_label: Yup.string()
+      .required()
+      .label("Privacy preferences link label"),
+  };
+
+  const currentValidations = pick(
+    allValidations,
+    Object.keys(translationFormFields),
+  );
+
+  return Yup.object().shape(currentValidations);
+};
 
 const validationSchema = Yup.object().shape({
   name: Yup.string().required().label("Experience name"),
   component: Yup.string().required().label("Experience type"),
-  translations: Yup.array().when("component", {
-    is: (value: ComponentType) =>
-      value === ComponentType.BANNER_AND_MODAL ||
-      value === ComponentType.TCF_OVERLAY,
-    then: (schema) => schema.of(translationSchema(true)),
-    otherwise: (schema) => schema.of(translationSchema(false)),
-  }),
+  translations: Yup.array().when("component", ([component], schema) =>
+    schema.of(translationSchema({ componentType: component })),
+  ),
 });
 
 const ConfigurePrivacyExperience = ({
