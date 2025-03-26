@@ -15,6 +15,7 @@ class TestDatahubConnector:
                 "datahub_server_url": "http://testserver",
                 "datahub_token": "testtoken",
                 "frequency": "daily",
+                "glossary_node": "FidesDataCategories",
             },
         )
 

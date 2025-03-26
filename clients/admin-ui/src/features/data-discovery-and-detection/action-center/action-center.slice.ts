@@ -145,7 +145,7 @@ const actionCenterApi = baseApi.injectEndpoints({
         url: `/plus/discovery-monitor/${params.monitorId}/results`,
         body: params.urnList.map((urn) => ({
           urn,
-          system_key: params.systemKey,
+          user_assigned_system_key: params.systemKey,
         })),
       }),
       invalidatesTags: ["Discovery Monitor Results", "System Assets"],

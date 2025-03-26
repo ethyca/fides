@@ -130,7 +130,7 @@ export const DiscoveredAssetsTable = ({
       setSystemName(firstSystemName);
       onSystemName?.(firstSystemName);
     }
-  }, [data, systemId, onSystemName, setTotalPages]);
+  }, [data, systemId, onSystemName, setTotalPages, systemName]);
 
   const { columns } = useDiscoveredAssetsColumns({
     readonly: activeParams.diff_status.includes(DiffStatus.MONITORED),
@@ -196,8 +196,7 @@ export const DiscoveredAssetsTable = ({
     const assets = selectedAssets.map((asset) => {
       // eslint-disable-next-line @typescript-eslint/naming-convention
       const user_assigned_data_uses = uniq([
-        ...(asset.data_uses || []),
-        ...(asset.user_assigned_data_uses || []),
+        ...(asset.user_assigned_data_uses || asset.data_uses || []),
         ...newDataUses,
       ]);
       return {
@@ -214,10 +213,13 @@ export const DiscoveredAssetsTable = ({
     } else {
       tableInstance.resetRowSelection();
       successAlert(
-        `Consent categories added to ${selectedUrns.length} assets from ${systemName}.`,
+        `Consent categories added to ${selectedUrns.length} assets${
+          systemName ? ` from ${systemName}` : ""
+        }.`,
         `Confirmed`,
       );
     }
+    setIsAddDataUseModalOpen(false);
   };
 
   const handleBulkIgnore = async () => {
