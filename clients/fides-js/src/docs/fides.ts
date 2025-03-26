@@ -301,6 +301,47 @@ export interface Fides {
   };
 
   /**
+   * The detected geolocation that Fides uses to determine the user's experience.
+   * This field is read-only.
+   *
+   * @example
+   * ```ts
+   * {
+   *   "country": "ca",
+   *   "location": "ca-on",
+   *   "region": "on"
+   * }
+   * ```
+   */
+  geolocation?: any;
+
+  /**
+   * The detected i18n locale that Fides uses to determine the language shown to the user.
+   *
+   * @example
+   * ```ts
+   * "en"
+   * ```
+   *
+   * This field is read-only.
+   */
+  locale: string;
+
+  /**
+   * The user's identity values, which only include a copy of the fides user device id that we store in the fides_consent cookie e.g.
+   *
+   * @example
+   * ```ts
+   * {
+   *   "fides_user_device_id": "1234-"
+   * }
+   * ```
+   *
+   * This field is read-only.
+   */
+  identity: Record<string, string>;
+
+  /**
    * NOTE: The properties below are all marked @internal, despite being exported
    * on the global Fides object. This is because they are mostly implementation
    * details and internals that we probably *should* be hiding, to avoid
@@ -328,23 +369,6 @@ export interface Fides {
    * @internal
    */
   fides_meta: Record<any, any>;
-
-  /**
-   * @internal
-   */
-  geolocation?: any;
-
-  /**
-   * @internal
-   */
-  locale: string;
-
-  /**
-   * DEFER (PROD-1815): This probably *should* be part of the documented SDK.
-   *
-   * @internal
-   */
-  identity: Record<string, string>;
 
   /**
    * @internal
