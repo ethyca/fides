@@ -1,3 +1,4 @@
+import { translationTestCases } from "cypress/fixtures/privacy-experiences/translation-test-data";
 import {
   stubExperienceConfig,
   stubFidesCloud,
@@ -11,6 +12,7 @@ import {
 import { PREVIEW_CONTAINER_ID } from "~/constants";
 import { PRIVACY_EXPERIENCE_ROUTE } from "~/features/common/nav/routes";
 import { RoleRegistryEnum } from "~/types/api";
+import { SupportedLanguage } from "~/types/api";
 
 const EXPERIENCE_ID = "pri_0338d055-f91b-4a17-ad4e-600c61551199";
 const DISABLED_EXPERIENCE_ID = "pri_8fd9d334-e625-4365-ba25-9c368f0b1231";
@@ -373,93 +375,80 @@ describe("Privacy experiences", () => {
         );
       });
 
-      it("can add new translations with all required fields", () => {
-        const translations = [
-          {
-            language: "English (UK)",
-            code: "en-GB",
-            title: "UK Title",
-            description: "UK Desc",
-            accept: "OK",
-            reject: "No",
-            save: "Save",
-            acknowledge: "OK",
-            preferences: "Prefs",
-            privacy_policy: "Policy",
-            privacy_policy_url: "https://example.com/privacy",
-            modal_link: "Open",
-          },
-          {
-            language: "French (Canada)",
-            code: "fr-CA",
-            title: "Titre FR",
-            description: "Desc FR",
-            accept: "Oui",
-            reject: "Non",
-            save: "Save",
-            acknowledge: "OK",
-            preferences: "Prefs",
-            privacy_policy: "Politique",
-            privacy_policy_url: "https://example.com/fr/privacy",
-            modal_link: "Ouvrir",
-          },
-        ];
+      it.only("can add new translations with all required fields", () => {
+        translationTestCases.forEach(({ component, translations }) => {
+          // Create new experience with the component type
+          cy.visit(`${PRIVACY_EXPERIENCE_ROUTE}/new`);
+          cy.getByTestId("input-name").type(`${component} Test`);
+          cy.getByTestId("controlled-select-component").antSelect(component);
+          cy.getByTestId("add-privacy-notice").click();
+          cy.getByTestId("select-privacy-notice").antSelect(0);
+          cy.getByTestId("add-location").click();
+          cy.getByTestId("select-location").antSelect("France");
 
-        translations.forEach((translation) => {
-          // Add new translation
-          cy.getByTestId("add-language").click();
-          cy.getByTestId("select-language").antSelect(translation.language);
+          // Add translations
+          translations.forEach((translation) => {
+            // Add new translation
+            cy.getByTestId("add-language").click();
+            cy.getByTestId("select-language").antSelect(
+              translation.language === "en-GB"
+                ? "English (UK)"
+                : "French (Canada)",
+            );
 
-          // Fill out all required fields with faster typing
-          const typeOptions = { delay: 50 };
-          cy.getByTestId("input-translations.0.title").type(
-            translation.title,
-            typeOptions,
-          );
-          cy.getByTestId("input-translations.0.description").type(
-            translation.description,
-            typeOptions,
-          );
-          cy.getByTestId("input-translations.0.accept_button_label").type(
-            translation.accept,
-            typeOptions,
-          );
-          cy.getByTestId("input-translations.0.reject_button_label").type(
-            translation.reject,
-            typeOptions,
-          );
-          cy.getByTestId("input-translations.0.save_button_label").type(
-            translation.save,
-            typeOptions,
-          );
-          cy.getByTestId("input-translations.0.acknowledge_button_label").type(
-            translation.acknowledge,
-            typeOptions,
-          );
-          cy.getByTestId(
-            "input-translations.0.privacy_preferences_link_label",
-          ).type(translation.preferences, typeOptions);
-          cy.getByTestId("input-translations.0.privacy_policy_link_label").type(
-            translation.privacy_policy,
-            typeOptions,
-          );
-          cy.getByTestId("input-translations.0.privacy_policy_url").type(
-            translation.privacy_policy_url,
-            typeOptions,
-          );
-          cy.getByTestId("input-translations.0.modal_link_label").type(
-            translation.modal_link,
-            typeOptions,
-          );
+            // Fill out all required fields with faster typing
+            const typeOptions = { delay: 50 };
+            cy.getByTestId("input-translations.0.title").type(
+              translation.title,
+              typeOptions,
+            );
+            cy.getByTestId("input-translations.0.description").type(
+              translation.description,
+              typeOptions,
+            );
+            cy.getByTestId("input-translations.0.accept_button_label").type(
+              translation.accept_button_label,
+              typeOptions,
+            );
+            cy.getByTestId("input-translations.0.reject_button_label").type(
+              translation.reject_button_label,
+              typeOptions,
+            );
+            cy.getByTestId("input-translations.0.save_button_label").type(
+              translation.save_button_label,
+              typeOptions,
+            );
 
-          // Verify save button is enabled
-          cy.getByTestId("save-btn").should("not.be.disabled");
+            // Fields for modal and banner and modal
+            if (component !== "Privacy center") {
+              cy.getByTestId(
+                "input-translations.0.acknowledge_button_label",
+              ).type(translation.acknowledge_button_label!, typeOptions);
+            }
 
-          // Save the translation
+            // Privacy preferences link label is only required for banner and modal
+            if (component === "Banner and modal") {
+              cy.getByTestId(
+                "input-translations.0.privacy_preferences_link_label",
+              ).type(translation.privacy_preferences_link_label!, typeOptions);
+            }
+
+            // Verify save button is enabled
+            cy.getByTestId("save-btn").should("not.be.disabled");
+
+            // Save the translation
+            cy.getByTestId("save-btn").click();
+
+            // Verify the translation was added
+            cy.getByTestId(`language-row-${translation.language}`).should(
+              "exist",
+            );
+          });
+
+          // Save the experience
           cy.getByTestId("save-btn").click();
-
-          // Verify the translation was added
-          cy.getByTestId(`language-row-${translation.code}`).should("exist");
+          cy.url().should("match", /privacy-experience$/);
+          cy.getByTestId("toast-success-msg").should("exist");
         });
       });
     });
