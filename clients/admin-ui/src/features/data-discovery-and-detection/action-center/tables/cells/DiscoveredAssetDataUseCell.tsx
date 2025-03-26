@@ -23,12 +23,14 @@ const DiscoveredAssetDataUseCell = ({
 
   const { getDataUseDisplayName } = useTaxonomies();
 
+  const currentDataUses =
+    asset.user_assigned_data_uses || asset.data_uses || [];
+
   const handleAddDataUse = async (newDataUse: string) => {
-    const existingUses = asset.data_uses || [];
     const result = await updateAssetsDataUseMutation({
       monitorId: asset.monitor_config_id!,
       urnList: [asset.urn],
-      dataUses: [...existingUses, newDataUse],
+      dataUses: [...currentDataUses, newDataUse],
     });
     if (isErrorResult(result)) {
       errorAlert(getErrorMessage(result.error));
@@ -42,11 +44,10 @@ const DiscoveredAssetDataUseCell = ({
   };
 
   const handleDeleteDataUse = async (useToDelete: string) => {
-    const existingUses = asset.data_uses || [];
     const result = await updateAssetsDataUseMutation({
       monitorId: asset.monitor_config_id!,
       urnList: [asset.urn],
-      dataUses: existingUses.filter((use) => use !== useToDelete),
+      dataUses: currentDataUses.filter((use) => use !== useToDelete),
     });
     if (isErrorResult(result)) {
       errorAlert(getErrorMessage(result.error));
@@ -58,7 +59,7 @@ const DiscoveredAssetDataUseCell = ({
     }
   };
 
-  const dataUses = asset.data_uses?.filter((use) => isConsentCategory(use));
+  const dataUses = currentDataUses.filter((use) => isConsentCategory(use));
 
   return (
     <TaxonomyCellContainer>

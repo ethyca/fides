@@ -186,10 +186,13 @@ export const DiscoveredAssetsTable = ({
     }
     const assets = selectedAssets.map((asset) => {
       // eslint-disable-next-line @typescript-eslint/naming-convention
-      const data_uses = uniq([...(asset.data_uses || []), ...newDataUses]);
+      const user_assigned_data_uses = uniq([
+        ...(asset.user_assigned_data_uses || asset.data_uses || []),
+        ...newDataUses,
+      ]);
       return {
         urn: asset.urn,
-        data_uses,
+        user_assigned_data_uses,
       };
     });
     const result = await updateAssetsMutation({
@@ -201,10 +204,13 @@ export const DiscoveredAssetsTable = ({
     } else {
       tableInstance.resetRowSelection();
       successAlert(
-        `Consent categories added to ${selectedUrns.length} assets from ${systemName}.`,
+        `Consent categories added to ${selectedUrns.length} assets${
+          systemName ? ` from ${systemName}` : ""
+        }.`,
         `Confirmed`,
       );
     }
+    setIsAddDataUseModalOpen(false);
   };
 
   const handleBulkIgnore = async () => {

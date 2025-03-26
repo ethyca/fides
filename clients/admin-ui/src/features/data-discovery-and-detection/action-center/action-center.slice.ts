@@ -137,7 +137,7 @@ const actionCenterApi = baseApi.injectEndpoints({
         url: `/plus/discovery-monitor/${params.monitorId}/results`,
         body: params.urnList.map((urn) => ({
           urn,
-          system_key: params.systemKey,
+          user_assigned_system_key: params.systemKey,
         })),
       }),
       invalidatesTags: ["Discovery Monitor Results", "System Assets"],
@@ -151,7 +151,7 @@ const actionCenterApi = baseApi.injectEndpoints({
         url: `/plus/discovery-monitor/${params.monitorId}/results`,
         body: params.urnList.map((urn) => ({
           urn,
-          data_uses: params.dataUses,
+          user_assigned_data_uses: params.dataUses,
         })),
       }),
       invalidatesTags: ["Discovery Monitor Results"],

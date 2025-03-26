@@ -1,4 +1,5 @@
 import { ColumnDef, createColumnHelper } from "@tanstack/react-table";
+import { AntTag } from "fidesui";
 
 import { PRIVACY_NOTICE_REGION_RECORD } from "~/features/common/privacy-notice-regions";
 import { DefaultCell } from "~/features/common/table/v2";
@@ -14,9 +15,11 @@ import { Asset, PrivacyNoticeRegion } from "~/types/api";
 
 const useSystemAssetColumns = ({
   systemKey,
+  systemName,
   onEditClick,
 }: {
   systemKey: string;
+  systemName: string;
   onEditClick: (asset: Asset) => void;
 }) => {
   const columnHelper = createColumnHelper<Asset>();
@@ -57,10 +60,21 @@ const useSystemAssetColumns = ({
       cell: (props) => <DefaultCell value={props.getValue()} />,
       header: "Type",
     }),
+    columnHelper.display({
+      id: "system",
+      cell: () => <AntTag color="white">{systemName}</AntTag>,
+      header: "System",
+    }),
     columnHelper.accessor((row) => row.data_uses, {
       id: "data_uses",
-      cell: (props) => <SystemAssetsDataUseCell values={props.getValue()} />,
+      cell: (props) => (
+        <SystemAssetsDataUseCell
+          asset={props.row.original}
+          systemId={systemKey}
+        />
+      ),
       header: "Categories of consent",
+      size: 200,
     }),
     columnHelper.accessor((row) => row.locations, {
       id: "locations",
@@ -73,9 +87,7 @@ const useSystemAssetColumns = ({
         />
       ),
       header: "Locations",
-      meta: {
-        width: "auto",
-      },
+      size: 300,
     }),
     columnHelper.accessor((row) => row.domain, {
       id: "domain",
