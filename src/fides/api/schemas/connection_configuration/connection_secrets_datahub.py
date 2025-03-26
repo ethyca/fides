@@ -31,7 +31,7 @@ class DatahubSchema(ConnectionConfigSecretsSchema):
     frequency: Optional[PeriodicIntegrationFrequency] = Field(
         title="Frequency",
         description="The frequency at which the integration should run. Defaults to daily.",
-        default=PeriodicIntegrationFrequency.daily,
+        default=PeriodicIntegrationFrequency.daily.value,
     )
     glossary_node: Optional[str] = Field(
         title="Glossary Node",
