@@ -15,8 +15,10 @@ const ConsentCategorySelect = ({
     (use) => use.active && CONSENT_CATEGORIES.includes(use.fides_key),
   );
 
+  console.log(selectedTaxonomies);
+
   const options: TaxonomySelectOption[] = consentCategories
-    .filter((c) => !selectedTaxonomies.includes(c.fides_key))
+    // .filter((c) => !selectedTaxonomies.includes(c.fides_key))
     .map((consentCategory) => {
       const { name, primaryName } = getDataUseDisplayNameProps(
         consentCategory.fides_key,

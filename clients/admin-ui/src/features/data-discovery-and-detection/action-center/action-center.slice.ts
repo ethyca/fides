@@ -1,6 +1,7 @@
 import { baseApi } from "~/features/common/api.slice";
 import { getQueryParamsFromArray } from "~/features/common/utils";
 import {
+  DiffStatus,
   Page_StagedResourceAPIResponse_,
   StagedResourceAPIResponse,
 } from "~/types/api";
@@ -14,6 +15,13 @@ import {
 interface MonitorResultSystemQueryParams {
   monitor_config_key: string;
   resolved_system_ids: string[];
+}
+
+interface DiscoveredAssetsQueryParams {
+  key: string;
+  system?: string;
+  search?: string;
+  diff_status?: DiffStatus[];
 }
 
 const actionCenterApi = baseApi.injectEndpoints({
@@ -51,16 +59,16 @@ const actionCenterApi = baseApi.injectEndpoints({
     }),
     getDiscoveredAssets: build.query<
       Page_StagedResourceAPIResponse_,
-      { key: string; system: string; search: string } & PaginationQueryParams
+      DiscoveredAssetsQueryParams & PaginationQueryParams
     >({
-      query: ({ key, system, page = 1, size = 20, search }) => ({
+      query: ({ key, system, page = 1, size = 20, search, diff_status }) => ({
         url: `/plus/discovery-monitor/${key}/results`,
         params: {
           resolved_system_id: system,
           page,
           size,
           search,
-          diff_status: "addition",
+          diff_status,
           sort_by: "urn",
         },
       }),

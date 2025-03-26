@@ -13,8 +13,10 @@ import { isErrorResult } from "~/types/errors";
 
 const DiscoveredAssetDataUseCell = ({
   asset,
+  readonly,
 }: {
   asset: StagedResourceAPIResponse;
+  readonly?: boolean;
 }) => {
   const [isAdding, setIsAdding] = useState(false);
 
@@ -59,13 +61,29 @@ const DiscoveredAssetDataUseCell = ({
     }
   };
 
-  const dataUses = currentDataUses.filter((use) => isConsentCategory(use));
+  const dataUses = asset.user_assigned_data_uses?.length
+    ? asset.user_assigned_data_uses
+    : asset.data_uses;
+
+  const consentUses = dataUses?.filter((use) => isConsentCategory(use));
+
+  if (readonly) {
+    return (
+      <TaxonomyCellContainer>
+        {consentUses?.map((d) => (
+          <Tag key={d} color="white">
+            {getDataUseDisplayName(d)}
+          </Tag>
+        ))}
+      </TaxonomyCellContainer>
+    );
+  }
 
   return (
     <TaxonomyCellContainer>
       {!isAdding && (
         <>
-          {dataUses?.map((d) => (
+          {consentUses?.map((d) => (
             <Tag
               key={d}
               data-testid={`data-use-${d}`}
@@ -98,7 +116,7 @@ const DiscoveredAssetDataUseCell = ({
           bgColor="#fff"
         >
           <ConsentCategorySelect
-            selectedTaxonomies={dataUses || []}
+            selectedTaxonomies={consentUses || []}
             onSelect={handleAddDataUse}
             onBlur={() => setIsAdding(false)}
             open
