@@ -130,7 +130,7 @@ export const DiscoveredAssetsTable = ({
       setSystemName(firstSystemName);
       onSystemName?.(firstSystemName);
     }
-  }, [data, systemId, onSystemName, setTotalPages]);
+  }, [data, systemId, onSystemName, setTotalPages, systemName]);
 
   const { columns } = useDiscoveredAssetsColumns({
     readonly: activeParams.diff_status.includes(DiffStatus.MONITORED),
