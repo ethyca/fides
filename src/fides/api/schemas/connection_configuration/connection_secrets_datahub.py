@@ -28,15 +28,13 @@ class DatahubSchema(ConnectionConfigSecretsSchema):
         description="The token used to authenticate with your DataHub server.",
         json_schema_extra={"sensitive": True},
     )
-    frequency: Optional[PeriodicIntegrationFrequency] = Field(
+    frequency: PeriodicIntegrationFrequency = Field(
         title="Frequency",
-        description="The frequency at which the integration should run. Defaults to daily.",
-        default=PeriodicIntegrationFrequency.daily.value,
+        description="The frequency at which the integration should run. Available options are daily, weekly, and monthly.",
     )
-    glossary_node: Optional[str] = Field(
+    glossary_node: str = Field(
         title="Glossary Node",
-        description="The glossary node name to use on Datahub for Fides Data Categories. Defaults to FidesDataCategories",
-        default="FidesDataCategories",
+        description="The glossary node name to use on Datahub for Fides Data Categories. (e.g. FidesDataCategories)",
     )
 
     _required_components: ClassVar[List[str]] = ["datahub_server_url", "datahub_token"]
