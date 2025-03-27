@@ -21,7 +21,8 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.58.0...main)
 
-
+### Fixed
+- Updated relationships for Comments, Attachments and PrivacyRequests to remove overlap sqlalchemy error. [#5929](https://github.com/ethyca/fides/pull/5929)
 
 
 
