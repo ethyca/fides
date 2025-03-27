@@ -15,7 +15,11 @@ import { PrivacyNoticeRegion, StagedResourceAPIResponse } from "~/types/api";
 
 import { SystemCell } from "../tables/cells/SystemCell";
 
-export const useDiscoveredAssetsColumns = () => {
+export const useDiscoveredAssetsColumns = ({
+  readonly,
+}: {
+  readonly: boolean;
+}) => {
   const columnHelper = createColumnHelper<StagedResourceAPIResponse>();
 
   const columns: ColumnDef<StagedResourceAPIResponse, any>[] = [
@@ -56,6 +60,7 @@ export const useDiscoveredAssetsColumns = () => {
           <SystemCell
             aggregateSystem={props.row.original}
             monitorConfigId={props.row.original.monitor_config_id}
+            readonly={readonly}
           />
         ),
       header: "System",
@@ -67,7 +72,10 @@ export const useDiscoveredAssetsColumns = () => {
     columnHelper.display({
       id: "data_use",
       cell: (props) => (
-        <DiscoveredAssetDataUseCell asset={props.row.original} />
+        <DiscoveredAssetDataUseCell
+          asset={props.row.original}
+          readonly={readonly}
+        />
       ),
       header: "Categories of consent",
       size: 400,
@@ -122,16 +130,21 @@ export const useDiscoveredAssetsColumns = () => {
         disableRowClick: true,
       },
     }),
-    columnHelper.display({
-      id: "actions",
-      cell: (props) => (
-        <DiscoveredAssetActionsCell asset={props.row.original} />
-      ),
-      header: "Actions",
-      meta: {
-        disableRowClick: true,
-      },
-    }),
   ];
+
+  if (!readonly) {
+    columns.push(
+      columnHelper.display({
+        id: "actions",
+        cell: (props) => (
+          <DiscoveredAssetActionsCell asset={props.row.original} />
+        ),
+        header: "Actions",
+        meta: {
+          disableRowClick: true,
+        },
+      }),
+    );
+  }
   return { columns };
 };

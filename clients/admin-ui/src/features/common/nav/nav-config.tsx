@@ -167,7 +167,6 @@ export const NAV_CONFIG: NavConfigGroup[] = [
       {
         title: "Consent reporting",
         path: routes.CONSENT_REPORTING_ROUTE,
-        requiresFlag: "consentReporting",
         requiresPlus: true,
         scopes: [ScopeRegistryEnum.PRIVACY_NOTICE_READ],
       },
@@ -305,6 +304,11 @@ if (process.env.NEXT_PUBLIC_APP_ENV === "development") {
       {
         title: "Ant Design POC",
         path: routes.ANT_POC_ROUTE,
+        scopes: [],
+      },
+      {
+        title: "Fides JS Docs",
+        path: routes.FIDES_JS_DOCS,
         scopes: [],
       },
     ],

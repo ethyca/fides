@@ -18,10 +18,12 @@ const columnHelper = createColumnHelper<PreferenceWithNoticeInformation>();
 const useConsentLookupTableColumns = () => {
   const columns = useMemo(
     () => [
-      columnHelper.accessor((row) => row.notice_id, {
-        id: "notice_id",
+      columnHelper.accessor((row) => row.notice_name, {
+        id: "notice_name",
         cell: ({ getValue }) => <DefaultCell value={getValue()} />,
-        header: (props) => <DefaultHeaderCell value="Notice Id" {...props} />,
+        header: (props) => (
+          <DefaultHeaderCell value="Privacy notice" {...props} />
+        ),
         enableSorting: false,
       }),
       columnHelper.accessor((row) => row.notice_key, {

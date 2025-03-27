@@ -339,7 +339,16 @@ def has_permissions(
     has_role: bool = _has_scope_via_role(
         token_data=token_data, client=client, endpoint_scopes=endpoint_scopes
     )
-    return has_direct_scope or has_role
+
+    has_required_permissions = has_direct_scope or has_role
+    if not has_required_permissions:
+        scopes_required = ",".join(endpoint_scopes.scopes)
+        logger.debug(
+            "Authorization failed. Missing required scopes: {}. Neither direct scopes nor role-derived scopes were sufficient.",
+            scopes_required,
+        )
+
+    return has_required_permissions
 
 
 def _has_scope_via_role(
@@ -385,16 +394,7 @@ def _has_direct_scopes(
 
 def has_scope_subset(user_scopes: List[str], endpoint_scopes: SecurityScopes) -> bool:
     """Are the required scopes a subset of the scopes belonging to the user?"""
-    if not set(endpoint_scopes.scopes).issubset(user_scopes):
-        scopes_required = ",".join(endpoint_scopes.scopes)
-        scopes_provided = ",".join(user_scopes)
-        logger.debug(
-            "Auth token missing required scopes: {}. Scopes provided: {}.",
-            scopes_required,
-            scopes_provided,
-        )
-        return False
-    return True
+    return set(endpoint_scopes.scopes).issubset(user_scopes)
 
 
 def create_temporary_user_for_login_flow(config: FidesConfig) -> FidesUser:

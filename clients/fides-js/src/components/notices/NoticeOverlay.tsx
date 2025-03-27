@@ -22,6 +22,7 @@ import {
 } from "../../lib/consent-utils";
 import { resolveConsentValue } from "../../lib/consent-value";
 import {
+  consentCookieObjHasSomeConsentSet,
   getFidesConsentCookie,
   updateCookieFromNoticePreferences,
 } from "../../lib/cookie";
@@ -44,13 +45,13 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
   experience,
   fidesRegionString,
   cookie,
-  savedConsent,
   propertyId,
 }) => {
   const { i18n, currentLocale, setCurrentLocale } = useI18n();
+  const parsedCookie: FidesCookie | undefined = getFidesConsentCookie();
+  const savedConsent = window.Fides.saved_consent;
 
   // TODO (PROD-1792): restore useMemo here but ensure that saved changes are respected
-  const parsedCookie: FidesCookie | undefined = getFidesConsentCookie();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const initialEnabledNoticeKeys = (consent?: NoticeConsent) => {
     if (experience.privacy_notices) {
@@ -58,7 +59,6 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
       return experience.privacy_notices.map((notice) => {
         const val = resolveConsentValue(
           notice,
-          getConsentContext(),
           consent || savedConsent || parsedCookie?.consent,
         );
         return val ? (notice.notice_key as PrivacyNotice["notice_key"]) : "";
@@ -282,8 +282,17 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
   }, [cookie, options.debug]);
 
   const handleDismiss = useCallback(() => {
-    handleUpdatePreferences(ConsentMethod.DISMISS, initialEnabledNoticeKeys());
-  }, [handleUpdatePreferences, initialEnabledNoticeKeys]);
+    if (!consentCookieObjHasSomeConsentSet(parsedCookie?.consent)) {
+      handleUpdatePreferences(
+        ConsentMethod.DISMISS,
+        initialEnabledNoticeKeys(),
+      );
+    }
+  }, [
+    handleUpdatePreferences,
+    initialEnabledNoticeKeys,
+    parsedCookie?.consent,
+  ]);
 
   const experienceConfig = experience.experience_config;
   if (!experienceConfig) {
