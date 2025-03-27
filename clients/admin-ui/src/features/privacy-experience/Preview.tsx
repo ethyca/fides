@@ -12,6 +12,7 @@ import {
   translationOrDefault,
 } from "~/features/privacy-experience/preview/helpers";
 import { useLazyGetPrivacyNoticeByIdQuery } from "~/features/privacy-notices/privacy-notices.slice";
+import theme from "~/theme";
 import {
   ComponentType,
   ExperienceConfigCreate,
@@ -20,8 +21,8 @@ import {
   PrivacyNoticeResponse,
 } from "~/types/api";
 
+import { useFeatures } from "../common/features";
 import { COMPONENT_MAP } from "./constants";
-import theme from "~/theme";
 
 declare global {
   interface Window {
@@ -36,12 +37,13 @@ const NoPreviewNotice = ({
   title: string;
   description: string;
 }) => (
-  <Flex className="h-full justify-center items-center">
+  <Flex className="h-full items-center justify-center">
     <Flex
-      className="rounded-md p-6 items-center gap-2 max-w-512"
+      className="items-center gap-2 rounded-md p-6"
       style={{
         backgroundColor: theme.colors.white,
         boxShadow: theme.shadows.md,
+        maxWidth: 512,
       }}
       vertical
       data-testid="no-preview-notice"
@@ -74,11 +76,14 @@ const Preview = ({
   const isPreviewAvailable = [
     ComponentType.BANNER_AND_MODAL,
     ComponentType.MODAL,
+    ComponentType.TCF_OVERLAY,
   ].includes(values.component);
 
   const toast = useToast();
 
   const [getPrivacyNoticeByIdTrigger] = useLazyGetPrivacyNoticeByIdQuery();
+
+  const { systemsCount } = useFeatures();
 
   const getPrivacyNotice = async (id: string) => {
     const result = await getPrivacyNoticeByIdTrigger(id);
@@ -114,13 +119,16 @@ const Preview = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [values.privacy_notice_ids]);
 
-  const fidesJsScript = "/lib/fides.js";
-
   // Create the base FidesConfig JSON that will be used to initialize fides.js
   const baseConfig = useMemo(
     () => buildBaseConfig(initialValues, noticesOnConfig),
     [initialValues, noticesOnConfig],
   );
+
+  const fidesJsScript =
+    values.component === ComponentType.TCF_OVERLAY
+      ? "/lib/fides-tcf.js"
+      : "/lib/fides.js";
 
   useEffect(() => {
     // if current component is a modal, we want to force fides.js to show a modal, not a banner component
@@ -156,14 +164,23 @@ const Preview = ({
         ? values.layer1_button_options
         : Layer1ButtonOption.OPT_IN_OPT_OUT;
     baseConfig.options.preventDismissal = !values.dismissable;
+    baseConfig.experience.vendor_count = systemsCount;
     if (
       window.Fides &&
-      values.privacy_notice_ids?.length &&
+      (values.privacy_notice_ids?.length ||
+        values.component === ComponentType.TCF_OVERLAY) &&
       isPreviewAvailable
     ) {
       window.Fides.init(baseConfig as any);
     }
-  }, [values, translation, baseConfig, allPrivacyNotices, isPreviewAvailable]);
+  }, [
+    values,
+    translation,
+    baseConfig,
+    allPrivacyNotices,
+    isPreviewAvailable,
+    systemsCount,
+  ]);
 
   const modal = document.getElementById("fides-modal");
   if (modal) {
@@ -180,7 +197,10 @@ const Preview = ({
     );
   }
 
-  if (!values.privacy_notice_ids?.length) {
+  if (
+    !values.privacy_notice_ids?.length &&
+    values.component !== ComponentType.TCF_OVERLAY
+  ) {
     return (
       <NoPreviewNotice
         title="No privacy notices added"
@@ -191,7 +211,7 @@ const Preview = ({
   }
 
   return (
-    <Flex className="h-full w-full justify-center items-center overflow-scroll">
+    <Flex className="size-full items-center justify-center overflow-scroll">
       {/* style overrides for preview model */}
       <style jsx global>{`
         div#fides-overlay {
@@ -199,7 +219,10 @@ const Preview = ({
         }
         div#${PREVIEW_CONTAINER_ID} {
           width: 100%;
-          padding: 45px 0;
+          padding-top: 45px;
+          ${values.component !== ComponentType.TCF_OVERLAY
+            ? "padding-bottom: 45px;"
+            : ""}
           margin: auto;
           pointer-events: none;
         }
@@ -238,7 +261,8 @@ const Preview = ({
           justify-content: center;
           background-color: unset;
           ${
-            values.component === ComponentType.BANNER_AND_MODAL
+            values.component === ComponentType.BANNER_AND_MODAL ||
+            values.component === ComponentType.TCF_OVERLAY
               ? "padding-bottom: 3rem;"
               : ""
           }
@@ -322,7 +346,7 @@ const Preview = ({
             }
             `}</style>
       )}
-      <Script id="fides-js-base" src={fidesJsScript} />
+      <Script id="fides-js-script" src={fidesJsScript} />
       <div id={PREVIEW_CONTAINER_ID} />
     </Flex>
   );

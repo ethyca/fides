@@ -207,7 +207,11 @@ export const PrivacyExperiencesTable = () => {
 
   const onRowClick = ({ id }: ExperienceConfigListViewResponse) => {
     if (userCanUpdate) {
-      router.push(`${PRIVACY_EXPERIENCE_ROUTE}/${id}`);
+      // NOTE: do not use router.push here!
+      // The experience Preview relies on loading the FidesJS script dynamically
+      // and caching it can cause problems especially when switching between
+      // TCF and non-TCF experiences.
+      window.location.href = `${PRIVACY_EXPERIENCE_ROUTE}/${id}`;
     }
   };
 
