@@ -19,7 +19,7 @@ import getIntegrationTypeInfo, {
   SUPPORTED_INTEGRATIONS,
 } from "~/features/integrations/add-integration/allIntegrationTypes";
 import MonitorConfigTab from "~/features/integrations/configure-monitor/MonitorConfigTab";
-import DatahubScanTab from "~/features/integrations/configure-scan/DatahubScanTab";
+import DatahubDataSyncTab from "~/features/integrations/configure-scan/DatahubDataSyncTab";
 import ConfigureIntegrationModal from "~/features/integrations/ConfigureIntegrationModal";
 import ConnectionStatusNotice from "~/features/integrations/ConnectionStatusNotice";
 import IntegrationBox from "~/features/integrations/IntegrationBox";
@@ -103,9 +103,9 @@ const IntegrationDetailView: NextPage = () => {
       ),
     },
     {
-      label: "Scan",
+      label: "Data sync",
       content: (
-        <DatahubScanTab
+        <DatahubDataSyncTab
           integration={connection!}
           integrationOption={integrationOption}
         />
