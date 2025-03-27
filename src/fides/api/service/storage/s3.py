@@ -64,7 +64,7 @@ def generic_upload_to_s3(  # pylint: disable=R0913
     size_threshold: int = LARGE_FILE_THRESHOLD,  # 5 MB threshold
 ) -> Optional[AnyHttpUrlString]:
     """
-    Uploads arbitrary data to S3 returned from an access request.
+    Uploads file like objects to S3.
     Handles both small and large uploads.
 
     :param storage_secrets: S3 storage secrets
@@ -74,6 +74,19 @@ def generic_upload_to_s3(  # pylint: disable=R0913
     :param document: File contents to upload
     """
     logger.info("Starting S3 Upload of {}", file_key)
+
+    # Validate that the document is a file-like object
+    if not hasattr(document, "read") or not hasattr(document, "seek"):
+        raise TypeError(
+            f"The 'document' parameter must be a file-like object supporting 'read' and 'seek'. "
+            f"Received: {type(document)}"
+        )
+
+    # Ensure the file pointer is at the beginning
+    try:
+        document.seek(0)
+    except Exception as e:
+        raise ValueError(f"Failed to reset file pointer for document: {e}")
 
     s3_client = maybe_get_s3_client(auth_method, storage_secrets)
 

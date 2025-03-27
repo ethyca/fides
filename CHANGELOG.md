@@ -19,7 +19,15 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - https://github.com/ethyca/fides/labels/high-risk: to indicate that a change is a "high-risk" change that could potentially lead to unanticipated regressions or degradations
 - https://github.com/ethyca/fides/labels/db-migration: to indicate that a given change includes a DB migration
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.57.1...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.58.0...main)
+
+### Fixed
+- Updated relationships for Comments, Attachments and PrivacyRequests to remove overlap sqlalchemy error. [#5929](https://github.com/ethyca/fides/pull/5929)
+
+
+
+
+## [2.58.0](https://github.com/ethyca/fides/compare/2.57.1...2.58.0)
 
 ### Added
 - Support for location based privacy center actions [#5803](https://github.com/ethyca/fides/pull/5803)
@@ -38,6 +46,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Added support for Notice Consent String integration in Fides String [#5895](https://github.com/ethyca/fides/pull/5895)
 - Added support for new options for Fides.gtm method [#5917](https://github.com/ethyca/fides/pull/5917)
 - Added tab-based filtering and row persistence to web monitor assets table [#5933](https://github.com/ethyca/fides/pull/5933)
+- Add inline editing for system assets table [#5940](https://github.com/ethyca/fides/pull/5940)
 
 ### Changed
 - Privacy Center was updated to use React 19 and Nextjs 15 [#5803](https://github.com/ethyca/fides/pull/5803) https://github.com/ethyca/fides/labels/high-risk
@@ -45,6 +54,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Changed discovered asset "system" cell to use `user_assigned_system_key` property [#5908](https://github.com/ethyca/fides/pull/5908)
 - Changed Dataset endpoint, it now has `minimal` parameter, and can be filtered by `fides_meta.namespace.connection_type` [#5915](https://github.com/ethyca/fides/pull/5915)
 - Datahub integration now allows datasets to be selected [#5926](https://github.com/ethyca/fides/pull/5926)
+- Enable Consent Reporting screen by default. Update consent lookup table column. [#5936](https://github.com/ethyca/fides/pull/5936)
 
 ### Fixed
 - Fixed UX issues with website monitor form [#5884](https://github.com/ethyca/fides/pull/5884)
@@ -81,6 +91,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Refactored privacy request processing to never re-use sessions [#5862](https://github.com/ethyca/fides/pull/5862)
 - Updated hover state of menu items to be more visible [#5868](https://github.com/ethyca/fides/pull/5868)
 - Use `gpp_settings.cmp_api_required` to determine if GPP CMP API should be included in bundle [#5883](https://github.com/ethyca/fides/pull/5883)
+- Updates Fides interface docs to expose additional fields [#5878](https://github.com/ethyca/fides/pull/5878)
 
 ### Developer Experience
 - Moved non-prod Admin UI dependencies to devDependencies [#5832](https://github.com/ethyca/fides/pull/5832)

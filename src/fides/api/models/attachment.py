@@ -1,11 +1,13 @@
 import os
 from enum import Enum as EnumType
-from typing import IO, Any, Optional
+from io import BytesIO
+from typing import IO, TYPE_CHECKING, Any, Optional, Tuple, Union
 
+from fideslang.validation import AnyHttpUrlString
 from loguru import logger as log
 from sqlalchemy import Column
 from sqlalchemy import Enum as EnumColumn
-from sqlalchemy import ForeignKey, String, UniqueConstraint
+from sqlalchemy import ForeignKey, String, UniqueConstraint, orm
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import Session, relationship
 
@@ -22,6 +24,10 @@ from fides.api.service.storage.util import (
     LOCAL_FIDES_UPLOAD_DIRECTORY,
     get_local_filename,
 )
+
+if TYPE_CHECKING:
+    from fides.api.models.comment import Comment
+    from fides.api.models.privacy_request import PrivacyRequest
 
 
 class AttachmentType(str, EnumType):
@@ -53,7 +59,9 @@ class AttachmentReference(Base):
         """Overriding base class method to set the table name."""
         return "attachment_reference"
 
-    attachment_id = Column(String, ForeignKey("attachment.id"), nullable=False)
+    attachment_id = Column(
+        String, ForeignKey("attachment.id", ondelete="CASCADE"), nullable=False
+    )
     reference_id = Column(String, nullable=False)
     reference_type = Column(EnumColumn(AttachmentReferenceType), nullable=False)
 
@@ -63,11 +71,8 @@ class AttachmentReference(Base):
         ),
     )
 
-    attachment = relationship(
-        "Attachment",
-        back_populates="references",
-        uselist=False,
-    )
+    # Relationships
+    attachment = relationship("Attachment", back_populates="references")
 
     @classmethod
     def create(
@@ -100,8 +105,11 @@ class Attachment(Base):
     references = relationship(
         "AttachmentReference",
         back_populates="attachment",
-        cascade="all, delete",
+        cascade="all, delete-orphan",
         uselist=True,
+        foreign_keys=[AttachmentReference.attachment_id],
+        primaryjoin=lambda: Attachment.id
+        == orm.foreign(AttachmentReference.attachment_id),
     )
 
     config = relationship(
@@ -127,13 +135,34 @@ class Attachment(Base):
 
         if self.config.type == StorageType.local:
             filename = get_local_filename(self.id)
+
+            # Validate that attachment is a file-like object
+            if not hasattr(attachment, "read"):
+                raise TypeError(f"Expected a file-like object, got {type(attachment)}")
+
+            # Reset the file pointer to the beginning
+            try:
+                attachment.seek(0)
+            except Exception as e:
+                raise ValueError(f"Failed to reset file pointer for attachment: {e}")
+
+            # Write the file in chunks to avoid loading the entire content into memory
             with open(filename, "wb") as file:
-                file.write(attachment.read())
+                for chunk in iter(
+                    lambda: attachment.read(1024 * 1024), b""
+                ):  # 1 MB chunks
+                    if not isinstance(chunk, bytes):
+                        raise TypeError(f"Expected bytes, got {type(chunk)}")
+                    file.write(chunk)
+
+            log.info(f"Uploaded {self.file_name} to local storage at {filename}")
             return
 
         raise ValueError(f"Unsupported storage type: {self.config.type}")
 
-    def retrieve_attachment(self) -> Optional[bytes]:
+    def retrieve_attachment(
+        self,
+    ) -> Optional[Tuple[BytesIO, Union[AnyHttpUrlString, str]]]:
         """Returns the attachment from S3 in bytes form."""
         if self.config.type == StorageType.s3:
             bucket_name = f"{self.config.details[StorageDetails.BUCKET.value]}"
@@ -208,4 +237,44 @@ class Attachment(Base):
     def delete(self, db: Session) -> None:
         """Deletes an attachment record from the database and deletes the attachment from S3."""
         self.delete_attachment_from_storage()
+        for attachment_reference in self.references:
+            attachment_reference.delete(db)
         super().delete(db=db)
+
+    @staticmethod
+    def delete_attachments_for_reference_and_type(
+        db: Session, reference_id: str, reference_type: AttachmentReferenceType
+    ) -> None:
+        """
+        Deletes attachments associated with a given reference_id and reference_type.
+        Deletes all references to the attachments.
+
+        Args:
+            db: Database session
+            reference_id: ID of the reference
+            reference_type: Type of the reference
+
+        Examples:
+
+        - Delete all attachments associated with a comment.
+           ``Attachment.delete_attachments_for_reference_and_type(
+               db, comment.id, AttachmentReferenceType.comment
+           )``
+        - Delete all attachments associated with a privacy request.
+           ``Attachment.delete_attachments_for_reference_and_type(
+               db, privacy_request.id, AttachmentReferenceType.privacy_request
+            )``
+        """
+        # Query attachments explicitly to avoid lazy loading
+        attachments = (
+            db.query(Attachment)
+            .join(AttachmentReference)
+            .filter(
+                AttachmentReference.reference_id == reference_id,
+                AttachmentReference.reference_type == reference_type,
+            )
+            .all()
+        )
+
+        for attachment in attachments:
+            attachment.delete(db)
