@@ -266,6 +266,7 @@ def validate_process_consent_webhook_function(f: Callable) -> None:
             "Provided SaaS process consent webhook function must declare at least 5 parameters"
         )
 
+
 def validate_authorize_consent_webhook_function(f: Callable) -> None:
     pass
 
