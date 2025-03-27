@@ -55,6 +55,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Changed Dataset endpoint, it now has `minimal` parameter, and can be filtered by `fides_meta.namespace.connection_type` [#5915](https://github.com/ethyca/fides/pull/5915)
 - Datahub integration now allows datasets to be selected [#5926](https://github.com/ethyca/fides/pull/5926)
 - Enable Consent Reporting screen by default. Update consent lookup table column. [#5936](https://github.com/ethyca/fides/pull/5936)
+- Bumped Next.js for all frontend apps to latest patch versions. [#5946](https://github.com/ethyca/fides/pull/5946)
 
 ### Fixed
 - Fixed UX issues with website monitor form [#5884](https://github.com/ethyca/fides/pull/5884)
