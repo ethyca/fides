@@ -45,7 +45,7 @@ import { isErrorResult } from "~/types/errors";
 
 const buildTranslationSchema = (componentType: ComponentType): Yup.Schema => {
   const formFields = getTranslationFormFields(componentType);
-  const schema: Record<string, Yup.Schema> = {};
+  const schema: Record<keyof ExperienceTranslationCreate, Yup.Schema> = {};
 
   Object.entries(formFields).forEach(([field, config]) => {
     if (config.included) {
