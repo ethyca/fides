@@ -1,5 +1,5 @@
 import { FidesGlobal } from "fides-js/src/lib/consent-types";
-import { Flex, Text, useToast } from "fidesui";
+import { AntFlex as Flex, Text, useToast } from "fidesui";
 import { useFormikContext } from "formik";
 import Script from "next/script";
 import React, { useEffect, useMemo, useState } from "react";
@@ -21,6 +21,7 @@ import {
 } from "~/types/api";
 
 import { COMPONENT_MAP } from "./constants";
+import theme from "~/theme";
 
 declare global {
   interface Window {
@@ -35,16 +36,14 @@ const NoPreviewNotice = ({
   title: string;
   description: string;
 }) => (
-  <Flex h="full" justify="center" align="center">
+  <Flex className="h-full justify-center items-center">
     <Flex
-      bgColor="white"
-      borderRadius="md"
-      p={6}
-      boxShadow="md"
-      direction="column"
-      align="center"
-      gap="2"
-      maxW="512px"
+      className="rounded-md p-6 items-center gap-2 max-w-512"
+      style={{
+        backgroundColor: theme.colors.white,
+        boxShadow: theme.shadows.md,
+      }}
+      vertical
       data-testid="no-preview-notice"
     >
       <Text fontSize="lg" fontWeight="500" align="center">
@@ -192,15 +191,16 @@ const Preview = ({
   }
 
   return (
-    <Flex h="full" justify="center" align="center" overflow="scroll">
+    <Flex className="h-full w-full justify-center items-center overflow-scroll">
       {/* style overrides for preview model */}
       <style jsx global>{`
         div#fides-overlay {
           z-index: 5000 !important;
         }
         div#${PREVIEW_CONTAINER_ID} {
-          padding-top: 45px;
-          margin: auto !important;
+          width: 100%;
+          padding: 45px 0;
+          margin: auto;
           pointer-events: none;
         }
         div#fides-banner-container {
@@ -239,7 +239,7 @@ const Preview = ({
           background-color: unset;
           ${
             values.component === ComponentType.BANNER_AND_MODAL
-              ? "padding-top: 3rem; padding-bottom: 3rem;"
+              ? "padding-bottom: 3rem;"
               : ""
           }
         }`}
@@ -247,15 +247,12 @@ const Preview = ({
       ) : null}
       {isMobilePreview ? (
         <style>{`
-            div#${PREVIEW_CONTAINER_ID} {
-              width: 70% !important;
+            div#fides-overlay-wrapper {
+              max-width: 400px;
+              margin: auto;
             }
             div.fides-modal-button-group {
               flex-direction: column !important;
-            }
-            div#fides-modal {
-              width: 70% !important;
-              margin: auto;
             }
             div#fides-banner {
               padding: 24px;
@@ -305,20 +302,27 @@ const Preview = ({
             `}</style>
       ) : (
         <style>{`
-            div#fides-banner {
-              width: 90% !important;
+              div#fides-banner {
+                width: 60%;
+              }
+            @media (min-width: 768px) {
+              div#fides-banner {
+                width: 100%;
+              }
+            }
+            @media (min-width: 1155px) {
+              div#fides-banner {
+                width: 90%;
+              }
+            }
+            @media (min-width: 1440px) {
+              div#fides-banner {
+                width: 60%;
+              }
             }
             `}</style>
       )}
-      <Script
-        id="fides-js-base"
-        src={fidesJsScript}
-        onReady={() => {
-          if (isPreviewAvailable) {
-            window.Fides?.init(baseConfig as any);
-          }
-        }}
-      />
+      <Script id="fides-js-base" src={fidesJsScript} />
       <div id={PREVIEW_CONTAINER_ID} />
     </Flex>
   );
