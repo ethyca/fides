@@ -1,8 +1,8 @@
 from typing import Any, Dict, List, Optional, Union
 
-from fideslang.models import Dataset
+from fideslang.models import Dataset, DatasetCollection
 from fideslang.validation import FidesKey
-from pydantic import ConfigDict
+from pydantic import ConfigDict, Field
 
 from fides.api.schemas.api import BulkResponse, BulkUpdateFailed
 from fides.api.schemas.base_class import FidesSchema
@@ -72,3 +72,23 @@ class DatasetReachability(FidesSchema):
 
     reachable: bool
     details: Optional[Union[str, List[Dict[str, Any]]]]
+
+
+class DatasetResponse(Dataset):
+    """
+    Dataset response model for API endpoints.
+
+    Note: This class extends the Dataset model from fideslang rather than having a proper
+    dedicated API response model. We had to make the collections field
+    Optional and allow null values to support the minimal=true parameter in API responses,
+    even though collections is required in the base fideslang Dataset model.
+    """
+
+    collections: Optional[List[DatasetCollection]] = Field(  # type: ignore
+        description="An array of objects that describe the Dataset's collections.",
+        default=None,
+    )
+
+    model_config = ConfigDict(
+        extra="ignore", from_attributes=False, coerce_numbers_to_str=True
+    )

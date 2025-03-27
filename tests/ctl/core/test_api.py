@@ -3368,6 +3368,7 @@ class TestHealthchecks:
             "workers_enabled": True,
             "workers": [],
             "queue_counts": {
+                "fides.dsr": 0,
                 "fidesops.messaging": 0,
                 "fides.privacy_preferences": 0,
                 "fides": 0,

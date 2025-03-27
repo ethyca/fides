@@ -1,0 +1,12 @@
+# Cursor ignore file
+# Prevent sensitive files from being shared with Cursor
+# Uses the same syntax as .gitignore
+# https://docs.cursor.com/context/ignore-files
+
+# Environment files
+!example.env
+!sample.env
+.env.local
+.env
+.env*
+*.env

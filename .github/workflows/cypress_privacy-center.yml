@@ -1,0 +1,52 @@
+name: Privacy Center/FidesJS Cypress Tests
+
+on:
+  pull_request:
+    paths:
+      - "clients/privacy-center/**"
+      - "clients/fides-js/**"
+      - ".github/workflows/cypress_privacy-center.yml"
+  push:
+    branches:
+      - "main"
+      - "release-**"
+
+env:
+  CI: true
+
+jobs:
+  Privacy-Center-Cypress:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: clients
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build FidesJS
+        working-directory: clients/fides-js
+        run: npm run build
+
+      - name: Cypress Privacy Center E2E Tests
+        uses: cypress-io/github-action@v6
+        with:
+          working-directory: clients/privacy-center
+          install: false
+          start: npm run cy:start
+          wait-on: "http://localhost:3001"
+          wait-on-timeout: 180
+
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: cypress-videos-privacy-center
+          path: /home/runner/work/fides/fides/clients/privacy-center/cypress/videos/*.mp4

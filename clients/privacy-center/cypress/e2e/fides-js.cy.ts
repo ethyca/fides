@@ -1,3 +1,5 @@
+import { DEFAULT_FIDES_JS_MAX_AGE_SECONDS } from "~/app/server-utils/loadEnvironmentVariables";
+
 describe("fides.js API route", () => {
   it("returns the fides.js package bundled with the global config", () => {
     cy.request("/fides.js").then((response) => {
@@ -125,13 +127,15 @@ describe("fides.js API route", () => {
       });
     });
 
-    it("stores publicly for at least one hour, at most one day", () => {
+    it("stores publicly for FIDES_PRIVACY_CENTER__FIDES_JS_MAX_AGE_SECONDS seconds", () => {
+      // NOTE: It's not possible to modify the environment variable in the test,
+      // so we just check the default value is respected here
       cy.get("@cacheHeaders").should("match", /public/);
       cy.get("@cacheHeaders")
         .invoke("match", /max-age=(?<expiry>\d+)/)
         .its("groups.expiry")
         .then(parseInt)
-        .should("be.within", 3600, 86400);
+        .should("equal", DEFAULT_FIDES_JS_MAX_AGE_SECONDS);
     });
 
     it("generates 'etag' that is consistent when re-requested", () => {

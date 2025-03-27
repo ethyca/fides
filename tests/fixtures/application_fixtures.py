@@ -2,6 +2,7 @@ import logging
 import uuid
 from copy import deepcopy
 from datetime import datetime, timedelta, timezone
+from io import BytesIO
 from typing import Dict, Generator, List, Optional
 from unittest import mock
 from uuid import uuid4
@@ -18,8 +19,10 @@ from toml import load as load_toml
 from fides.api.common_exceptions import SystemManagerException
 from fides.api.graph.graph import DatasetGraph
 from fides.api.models.application_config import ApplicationConfig
+from fides.api.models.attachment import Attachment, AttachmentType
 from fides.api.models.audit_log import AuditLog, AuditLogAction
 from fides.api.models.client import ClientDetail
+from fides.api.models.comment import Comment, CommentType
 from fides.api.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
@@ -270,20 +273,24 @@ def custom_data_category(db: Session) -> Generator:
 @pytest.fixture(scope="function")
 def storage_config(db: Session) -> Generator:
     name = str(uuid4())
-    storage_config = StorageConfig.create(
-        db=db,
-        data={
-            "name": name,
-            "type": StorageType.s3,
-            "details": {
-                StorageDetails.AUTH_METHOD.value: AWSAuthMethod.SECRET_KEYS.value,
-                StorageDetails.NAMING.value: FileNaming.request_id.value,
-                StorageDetails.BUCKET.value: "test_bucket",
-            },
-            "key": "my_test_config",
-            "format": ResponseFormat.json,
+    data = {
+        "name": name,
+        "type": StorageType.s3,
+        "details": {
+            StorageDetails.AUTH_METHOD.value: AWSAuthMethod.SECRET_KEYS.value,
+            StorageDetails.NAMING.value: FileNaming.request_id.value,
+            StorageDetails.BUCKET.value: "test_bucket",
         },
-    )
+        "key": "my_test_config",
+        "format": ResponseFormat.json,
+    }
+
+    storage_config = StorageConfig.get_by_key_or_id(db, data=data)
+    if storage_config is None:
+        storage_config = StorageConfig.create(
+            db=db,
+            data=data,
+        )
     storage_config.set_secrets(
         db=db,
         storage_secrets={
@@ -298,18 +305,21 @@ def storage_config(db: Session) -> Generator:
 @pytest.fixture(scope="function")
 def storage_config_local(db: Session) -> Generator:
     name = str(uuid4())
-    storage_config = StorageConfig.create(
-        db=db,
-        data={
-            "name": name,
-            "type": StorageType.local,
-            "details": {
-                StorageDetails.NAMING.value: FileNaming.request_id.value,
-            },
-            "key": "my_test_config_local",
-            "format": ResponseFormat.json,
+    data = {
+        "name": name,
+        "type": StorageType.local,
+        "details": {
+            StorageDetails.NAMING.value: FileNaming.request_id.value,
         },
-    )
+        "key": "my_test_config_local",
+        "format": ResponseFormat.json,
+    }
+    storage_config = StorageConfig.get_by_key_or_id(db, data=data)
+    if storage_config is None:
+        storage_config = StorageConfig.create(
+            db=db,
+            data=data,
+        )
     yield storage_config
     storage_config.delete(db)
 
@@ -3854,3 +3864,47 @@ def dataset_graph_with_unreachable_collections(
     )
     dataset_graph = DatasetGraph(graph)
     yield dataset_graph
+
+
+@pytest.fixture
+def attachment_data(user, storage_config):
+    """Returns attachment data."""
+    return {
+        "user_id": user.id,
+        "file_name": "file.txt",
+        "attachment_type": AttachmentType.internal_use_only,
+        "storage_key": storage_config.key,
+    }
+
+
+@pytest.fixture(scope="function")
+def attachment(s3_client, db, attachment_data, monkeypatch):
+    """Creates an attachment."""
+
+    def mock_get_s3_client(auth_method, storage_secrets):
+        return s3_client
+
+    monkeypatch.setattr(
+        "fides.api.service.storage.s3.get_s3_client", mock_get_s3_client
+    )
+    attachment = Attachment.create_and_upload(
+        db, data=attachment_data, attachment_file=BytesIO(b"file content")
+    )
+    yield attachment
+    attachment.delete(db)
+
+
+@pytest.fixture(scope="function")
+def comment_data(user):
+    return {
+        "user_id": user.id,
+        "comment_text": "This is a note",
+        "comment_type": CommentType.note,
+    }
+
+
+@pytest.fixture(scope="function")
+def comment(db, comment_data):
+    comment = Comment.create(db, data=comment_data)
+    yield comment
+    comment.delete(db)

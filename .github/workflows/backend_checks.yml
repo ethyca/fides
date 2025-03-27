@@ -15,7 +15,7 @@ on:
 
 env:
   IMAGE: ethyca/fides:local
-  DEFAULT_PYTHON_VERSION: "3.10.13"
+  DEFAULT_PYTHON_VERSION: "3.10.16"
   # Docker auth with read-only permissions.
   DOCKER_USER: ${{ secrets.DOCKER_USER }}
   DOCKER_RO_TOKEN: ${{ secrets.DOCKER_RO_TOKEN }}
@@ -47,7 +47,7 @@ jobs:
     strategy:
       matrix:
         # NOTE: These are the currently supported/tested Python Versions
-        python_version: ["3.9.18", "3.10.13"]
+        python_version: ["3.9.21", "3.10.16"]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -209,7 +209,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python_version: ["3.9.18", "3.10.13"]
+        python_version: ["3.9.21", "3.10.16"]
         test_selection:
           - "ctl-not-external"
           - "ops-unit-api"
@@ -266,7 +266,7 @@ jobs:
     strategy:
       max-parallel: 1 # This prevents collisions in shared external resources
       matrix:
-        python_version: ["3.9.18", "3.10.13"]
+        python_version: ["3.9.21", "3.10.16"]
     runs-on: ubuntu-latest
     timeout-minutes: 20
     # In PRs run with the "unsafe" label, or run on a "push" event to main
@@ -328,7 +328,7 @@ jobs:
     strategy:
       max-parallel: 1 # This prevents collisions in shared external resources
       matrix:
-        python_version: ["3.9.18", "3.10.13"]
+        python_version: ["3.9.21", "3.10.16"]
     runs-on: ubuntu-latest
     timeout-minutes: 30
     # In PRs run with the "unsafe" label, or run on a "push" event to main
@@ -427,7 +427,7 @@ jobs:
     strategy:
       max-parallel: 1 # This prevents collisions in shared external resources
       matrix:
-        python_version: ["3.9.18", "3.10.13"]
+        python_version: ["3.9.21", "3.10.16"]
     steps:
       - name: Download container
         uses: actions/download-artifact@v4

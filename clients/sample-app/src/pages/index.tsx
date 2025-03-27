@@ -7,6 +7,13 @@ import Home from "../components/Home";
 import pool from "../lib/db";
 import { Product } from "../types";
 
+declare global {
+  interface Window {
+    Fides: any;
+    fides_overrides: any;
+  }
+}
+
 interface Props {
   gtmContainerId: string | null;
   privacyCenterUrl: string;
@@ -82,7 +89,9 @@ const IndexPage = ({ gtmContainerId, privacyCenterUrl, products }: Props) => {
         onReady={() => {
           // Enable the GTM integration, if GTM is configured
           if (gtmContainerId) {
-            (window as any).Fides.gtm();
+            window.Fides.gtm(
+              !!window.fides_overrides && window.fides_overrides.gtmOptions,
+            );
           }
         }}
       />

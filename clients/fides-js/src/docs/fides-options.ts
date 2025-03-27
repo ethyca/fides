@@ -126,7 +126,41 @@ export interface FidesOptions {
    * Fides.fides_string}). Can be used to synchronize consent preferences for a
    * registered user from a custom backend, where the `fides_string` could be
    * provided by the server across multiple devices, etc.
-   * selecting the best translations for the FidesJS UI.
+   *
+   * The string consists of four parts separated by commas in the format:
+   * `TC_STRING,AC_STRING,GPP_STRING,NC_STRING` where:
+   *
+   * - TC_STRING: IAB TCF (Transparency & Consent Framework) string
+   * - AC_STRING: Google's Additional Consent string
+   * - GPP_STRING: IAB GPP (Global Privacy Platform) string
+   * - NC_STRING: Base64 encoded string of the user's Notice Consent preferences.
+   *
+   * @example
+   * // Complete string with all parts:
+   * // "CPzHq4APzHq4AAMABBENAUEAALAAAEOAAAAAAEAEACACAAAA,1~61.70,DBABLA~BVAUAAAAAWA.QA,eyJkYXRhX3NhbGVzX2FuZF9zaGFyaW5nIjowLCJhbmFseXRpY3MiOjF9"
+   *
+   * // TC and AC strings only:
+   * // "CPzHq4APzHq4AAMABBENAUEAALAAAEOAAAAAAEAEACACAAAA,1~61.70"
+   *
+   * // GPP string only:
+   * // ",,DBABLA~BVAUAAAAAWA.QA"
+   *
+   * // Notice Consent string only:
+   * // ",,,eyJkYXRhX3NhbGVzX2FuZF9zaGFyaW5nIjowLCJhbmFseXRpY3MiOjF9"
+   *
+   * To properly encode the Notice Consent string, use the
+   * `window.Fides.encodeNoticeConsentString` function (see {@link Fides.encodeNoticeConsentString}) or write your own function that
+   * looks something like:
+   * ```ts
+   * function encodeNoticeConsentString(consent: Record<string, boolean | 0 | 1>) {
+   *   return btoa(JSON.stringify(consent));
+   * }
+   * ```
+   *
+   * For debugging purposes, you can decode the Notice Consent string using the
+   * `window.Fides.decodeNoticeConsentString` function (see {@link Fides.decodeNoticeConsentString}).
+   *
+   * Note: The Notice Consent string will take precedence over [GPC](/docs/regulations/gpc) and override any prior user consent.
    *
    * Defaults to `undefined`.
    */
@@ -154,4 +188,37 @@ export interface FidesOptions {
    * Defaults to `undefined`.
    */
   fides_consent_override: "accept" | "reject";
+
+  /**
+   * Given a OneTrust → Fides notice mapping exists and the OneTrust cookie exists, Fides will “migrate” those consents to Fides privacy notices, and write to the Fides cookie.
+   *
+   * This way, Fides customers that are migrating away from OneTrust don’t need to show their users new consent dialogues when switching to Fides.
+   * that those preferences are respected.
+   *
+   * Example original otFidesMapping data:
+   * {
+   *    'C0001': ['essential_cookies'],
+   *    'C0002': ['analytics_tracking'],
+   *    'C0004': ['advertising', 'targeted_ads']
+   * }
+   *
+   * To encode original data to the format expected by this field, use:
+   * encodeURIComponent(JSON.stringify(otFidesMapping))
+   *
+   * To decode this field, use:
+   * JSON.parse(decodeURIComponent(ot_fides_mapping))
+   *
+   * Field defaults to `undefined`.
+   *
+   */
+  ot_fides_mapping: string;
+
+  /**
+   * A comma-separated list of notice_keys to disable their respective Toggle elements in the CMP Overlay.
+   *
+   * For example: "data_sales,data_sharing,analytics"
+   *
+   * Defaults to `undefined`.
+   */
+  fides_disabled_notices: string;
 }

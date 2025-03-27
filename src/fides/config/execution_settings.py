@@ -21,7 +21,7 @@ class ExecutionSettings(FidesSettings):
     )
     require_manual_request_approval: bool = Field(
         default=False,
-        description="Whether privacy requests require explicit approval to execute.",
+        description="Whether access and erasure privacy requests require explicit approval to execute. Consent privacy requests are always auto-approved.",
     )
     subject_identity_verification_required: bool = Field(
         default=False,

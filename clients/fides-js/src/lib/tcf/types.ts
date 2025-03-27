@@ -1,6 +1,7 @@
 import type { GVL } from "@iabtechlabtcf/core";
 
 import {
+  ConsentMechanism,
   PrivacyExperience,
   PrivacyNoticeTranslation,
   PrivacyNoticeWithPreference,
@@ -45,6 +46,7 @@ export type TCFPurposeConsentRecord = {
   id: number;
   name: string;
   description: string;
+  consent_mechanism?: ConsentMechanism;
   illustrations: Array<string>;
   data_uses: Array<string>;
   default_preference?: UserConsentPreference;
@@ -218,6 +220,11 @@ export interface TcfOtherConsent {
 
 export type TcfModelType = keyof TcfOtherConsent;
 
+/**
+ * NOTE: EnabledIds is a bit of a misnomer, it's actually the accepted/opted-in ids.
+ * Keep that in mind when dealing with UI toggles that are
+ * disabled/enabled vs checked/unchecked.
+ */
 export interface EnabledIds {
   purposesConsent: string[];
   customPurposesConsent: string[];

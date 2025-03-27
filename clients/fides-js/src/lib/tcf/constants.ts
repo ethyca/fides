@@ -53,7 +53,7 @@ export const TCF_KEY_MAP: {
   },
 ];
 
-// These preferences are stored in the cooke on `tcf_consent` instead of `fides_string` because they
+// These preferences are stored in the cookie on `tcf_consent` instead of `fides_string` because they
 // pertain to Fides Systems instead of vendors on the FidesString.
 export const FIDES_SYSTEM_COOKIE_KEY_MAP: {
   cookieKey: TcfModelType;

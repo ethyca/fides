@@ -7,10 +7,10 @@
  */
 export type StagedResourceUpdateRequest = {
   urn: string;
+  user_assigned_data_categories?: Array<string> | null;
   /**
-   * The data uses associated with the resource
+   * User assigned data uses overriding auto assigned data uses
    */
-  data_uses?: Array<string> | null;
-  user_assigned_data_categories?: Array<string>;
-  system_key?: string | null;
+  user_assigned_data_uses?: Array<string> | null;
+  user_assigned_system_key?: string | null;
 };

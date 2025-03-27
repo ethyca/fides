@@ -10,13 +10,9 @@ from fides.api.graph.config import ROOT_COLLECTION_ADDRESS, TERMINATOR_ADDRESS
 from fides.api.graph.graph import DatasetGraph
 from fides.api.graph.traversal import Traversal, TraversalNode
 from fides.api.models.datasetconfig import convert_dataset_to_graph
-from fides.api.models.privacy_request import (
-    ExecutionLog,
-    ExecutionLogStatus,
-    PrivacyRequestStatus,
-    RequestTask,
-)
+from fides.api.models.privacy_request import ExecutionLog, RequestTask
 from fides.api.schemas.policy import ActionType
+from fides.api.schemas.privacy_request import ExecutionLogStatus, PrivacyRequestStatus
 from fides.api.task.create_request_tasks import (
     collect_tasks_fn,
     get_existing_ready_tasks,
@@ -162,6 +158,7 @@ payment_card_serialized_traversal_details = {
         ]
     ],
     "dataset_connection_key": "my_postgres_db_1",
+    "skipped_nodes": None,
 }
 
 
@@ -1205,6 +1202,7 @@ class TestPersistConsentRequestTasks:
             "incoming_edges": [],
             "outgoing_edges": [],
             "dataset_connection_key": "saas_connector_example",
+            "skipped_nodes": None,
         }
 
     @mock.patch(

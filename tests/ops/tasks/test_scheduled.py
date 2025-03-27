@@ -4,7 +4,7 @@ from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.date import DateTrigger
 from apscheduler.triggers.interval import IntervalTrigger
 
-from fides.api.models.privacy_request import PrivacyRequestStatus
+from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.service.privacy_request.email_batch_service import (
     BATCH_EMAIL_SEND,
     initiate_scheduled_batch_email_send,

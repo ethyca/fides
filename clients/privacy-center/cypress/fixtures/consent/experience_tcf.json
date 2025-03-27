@@ -955,6 +955,34 @@
             ],
             "dataDeclaration": [1, 2, 4, 6, 11],
             "deviceStorageDisclosureUrl": "https://static.cpx.to/gvl/deviceStorageDisclosure.json"
+          },
+          "3": {
+            "id": 3,
+            "name": "DoubleVerify Inc.​",
+            "purposes": [],
+            "legIntPurposes": [2, 7, 10],
+            "flexiblePurposes": [2, 7, 10],
+            "specialPurposes": [1, 2],
+            "features": [],
+            "specialFeatures": [],
+            "cookieMaxAgeSeconds": null,
+            "usesCookies": false,
+            "cookieRefresh": false,
+            "urls": [
+              {
+                "langId": "en",
+                "privacy": "https://doubleverify.com/privacy-notice/solutions-privacy-notice",
+                "legIntClaim": "https://doubleverify.com/privacy-notice/solutions-privacy-notice"
+              }
+            ],
+            "usesNonCookieAccess": false,
+            "dataRetention": {
+              "stdRetention": 45,
+              "purposes": {},
+              "specialPurposes": {}
+            },
+            "dataDeclaration": [1, 2, 4, 6, 8, 11],
+            "deviceStorageDisclosureUrl": "https://cdn.doubleverify.com/static/Doubleverify_TCF.json"
           }
         }
       },

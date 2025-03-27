@@ -28,7 +28,7 @@ import {
   selectCORSOrigins,
   useGetConfigurationSettingsQuery,
   usePutConfigurationSettingsMutation,
-} from "~/features/privacy-requests/privacy-requests.slice";
+} from "~/features/config-settings/config-settings.slice";
 import { PlusApplicationConfig } from "~/types/api";
 
 type FormValues = CORSOrigins;

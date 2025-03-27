@@ -233,12 +233,14 @@ export const selectUserRegion = createSelector(
       let geolocation: UserGeolocation | undefined = {
         location: consentState.location,
       };
+
       if (!geolocation.location) {
         geolocation = consentApi.endpoints.getUserGeolocation.select(
           settings.GEOLOCATION_API_URL,
         )(RootState)?.data;
+        return constructFidesRegionString(geolocation) as PrivacyNoticeRegion;
       }
-      return constructFidesRegionString(geolocation) as PrivacyNoticeRegion;
+      return geolocation.location as PrivacyNoticeRegion;
     }
     return undefined;
   },

@@ -28,7 +28,7 @@ class TestPolicyAwareTraversal:
         dataset_graph, identity_seed = self._create_graph_and_seed(
             directly_reachable_dataset_config
         )
-        Traversal(dataset_graph, identity_seed, policy)
+        Traversal(dataset_graph, identity_seed, policy=policy)
 
     def test_ignores_unreachable_without_data_category(
         self, policy, unreachable_without_data_categories_dataset_config: DatasetConfig
@@ -36,7 +36,7 @@ class TestPolicyAwareTraversal:
         dataset_graph, identity_seed = self._create_graph_and_seed(
             unreachable_without_data_categories_dataset_config
         )
-        Traversal(dataset_graph, identity_seed, policy)
+        Traversal(dataset_graph, identity_seed, policy=policy)
 
     def test_unreachable_with_data_category_errors(
         self, policy, unreachable_with_data_categories_dataset_config: DatasetConfig
@@ -45,8 +45,20 @@ class TestPolicyAwareTraversal:
             unreachable_with_data_categories_dataset_config
         )
         with pytest.raises(UnreachableNodesError) as exc:
-            Traversal(dataset_graph, identity_seed, policy)
+            Traversal(dataset_graph, identity_seed, policy=policy)
         assert (
             "Some nodes were not reachable: unreachable_with_data_categories:address"
             in str(exc)
         )
+
+    def test_allowed_unvisited_edge(
+        self, policy, unvisited_edge_dataset_config: DatasetConfig
+    ):
+        """
+        Test that a traversal with an unvisited edge will not raise an error
+        if the edge belongs to collections that are allowed to be unreachable.
+        """
+        graph_dataset = unvisited_edge_dataset_config.get_graph()
+        dataset_graph = DatasetGraph(graph_dataset)
+        identity_seed: Dict[str, str] = {"email": "something"}
+        Traversal(dataset_graph, identity_seed, policy=policy)

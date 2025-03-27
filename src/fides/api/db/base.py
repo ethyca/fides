@@ -4,6 +4,7 @@
 from fides.api.db.base_class import Base
 from fides.api.models.application_config import ApplicationConfig
 from fides.api.models.asset import Asset
+from fides.api.models.attachment import Attachment, AttachmentReference
 from fides.api.models.audit_log import AuditLog
 from fides.api.models.authentication_request import AuthenticationRequest
 from fides.api.models.client import ClientDetail

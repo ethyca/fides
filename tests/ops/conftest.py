@@ -12,6 +12,7 @@ from fides.api.db.base import Base
 from fides.api.db.session import get_db_engine, get_db_session
 from fides.api.models.sql_models import DataCategory as DataCategoryDbModel
 from fides.api.tasks.scheduled.scheduler import async_scheduler, scheduler
+from fides.api.util.data_category import get_data_categories_from_db
 from tests.conftest import create_citext_extension
 
 
@@ -62,17 +63,23 @@ def fideslang_data_categories(db):
     """
     Creates a database record for each data category in the fideslang taxonomy.
     """
-    cats = []
-    for obj in DEFAULT_TAXONOMY.data_category:
-        try:
-            cats.append(DataCategoryDbModel.from_fideslang_obj(obj).save(db))
-        except IntegrityError:
-            pass
 
-    yield cats
+    categories = []
+    existing_categories = get_data_categories_from_db(db)
 
-    for cat in cats:
+    for default_category in DEFAULT_TAXONOMY.data_category:
+        if default_category.fides_key not in existing_categories:
+            try:
+                categories.append(
+                    DataCategoryDbModel.from_fideslang_obj(default_category).save(db)
+                )
+            except IntegrityError:
+                pass
+
+    yield categories
+
+    for category in categories:
         try:
-            cat.delete(db)
+            category.delete(db)
         except ObjectDeletedError:
             pass

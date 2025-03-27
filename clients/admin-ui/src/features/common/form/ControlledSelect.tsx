@@ -13,7 +13,7 @@ import { useState } from "react";
 import QuestionTooltip from "../QuestionTooltip";
 import { ErrorMessage, Label } from "./inputs";
 
-interface ControlledSelectProps extends SelectProps {
+export interface ControlledSelectProps extends SelectProps {
   name: string;
   label?: string;
   labelProps?: FormLabelProps;
@@ -98,6 +98,7 @@ export const ControlledSelect = ({
                 onSearch={props.mode === "tags" ? handleSearch : undefined}
                 onChange={handleChange}
                 value={field.value || undefined} // solves weird bug where placeholder won't appear if value is an empty string ""
+                status={isInvalid ? "error" : undefined}
               />
               <ErrorMessage
                 isInvalid={isInvalid}
@@ -137,6 +138,7 @@ export const ControlledSelect = ({
           onSearch={props.mode === "tags" ? handleSearch : undefined}
           onChange={handleChange}
           value={field.value || undefined} // solves weird bug where placeholder won't appear if value is an empty string ""
+          status={isInvalid ? "error" : undefined}
         />
         <ErrorMessage
           isInvalid={isInvalid}

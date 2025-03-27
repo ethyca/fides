@@ -8,7 +8,8 @@ from __future__ import annotations
 
 import logging
 import sys
-from typing import TYPE_CHECKING, Any, Dict, List, Optional
+from contextlib import contextmanager
+from typing import TYPE_CHECKING, Any, Dict, Generator, List, Optional
 
 from loguru import logger
 from loguru._handler import Message
@@ -213,3 +214,20 @@ def obfuscate_message(message: str) -> str:
 def format_and_obfuscate(record) -> str:  # type: ignore[no-untyped-def]
     record["extra"]["obfuscated_message"] = obfuscate_message(record["message"])
     return "[{level}] {extra[obfuscated_message]}\n{exception}"
+
+
+# pylint: disable=protected-access
+@contextmanager
+def suppress_logging() -> Generator:
+    """
+    Temporarily suppress all logging by setting the log level to CRITICAL.
+    """
+
+    current_level = logger._core.min_level  # type: ignore[attr-defined]
+    logger._core.min_level = logger.level("CRITICAL").no  # type: ignore[attr-defined]
+
+    try:
+        yield
+    finally:
+        # Restore original configuration
+        logger._core.min_level = current_level  # type: ignore[attr-defined]

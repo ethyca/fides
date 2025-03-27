@@ -49,7 +49,12 @@ const AddIntegrationModal = ({
     : "Add integration";
 
   return (
-    <FormModal isOpen={isOpen} onClose={handleCancel} title={modalTitle}>
+    <FormModal
+      size="2xl"
+      isOpen={isOpen}
+      onClose={handleCancel}
+      title={modalTitle}
+    >
       {step === IntegrationModalStep.LIST_VIEW && (
         <SelectIntegrationType
           onCancel={handleCancel}

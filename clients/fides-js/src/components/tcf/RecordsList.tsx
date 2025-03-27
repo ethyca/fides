@@ -1,6 +1,7 @@
 import { h, VNode } from "preact";
 
 import { PrivacyNoticeTranslation } from "../../lib/consent-types";
+import { FidesEventDetailsTrigger } from "../../lib/events";
 import { DEFAULT_LOCALE, getCurrentLocale } from "../../lib/i18n";
 import { useI18n } from "../../lib/i18n/i18n-context";
 import DataUseToggle from "../DataUseToggle";
@@ -16,6 +17,7 @@ export interface RecordListItem {
   id: string | number;
   name?: string;
   bestTranslation?: PrivacyNoticeTranslation | null; // only used for custom purposes
+  disabled?: boolean; // only used for custom purposes
 }
 
 interface Props<T extends RecordListItem> {
@@ -24,7 +26,11 @@ interface Props<T extends RecordListItem> {
   title: string;
   enabledIds: string[];
   renderToggleChild?: (item: T, isCustomPurpose?: boolean) => VNode;
-  onToggle: (payload: string[], item: T) => void;
+  onToggle: (
+    payload: string[],
+    item: T,
+    triggerDetails: FidesEventDetailsTrigger,
+  ) => void;
   renderBadgeLabel?: (item: T) => string | undefined;
   hideToggles?: boolean;
 }
@@ -44,15 +50,16 @@ const RecordsList = <T extends RecordListItem>({
     return null;
   }
 
-  const handleToggle = (item: T) => {
+  const handleToggle = (item: T, triggerDetails: FidesEventDetailsTrigger) => {
     const purposeId = `${item.id}`;
     if (enabledIds.indexOf(purposeId) !== -1) {
       onToggle(
         enabledIds.filter((e) => e !== purposeId),
         item,
+        triggerDetails,
       );
     } else {
-      onToggle([...enabledIds, purposeId], item);
+      onToggle([...enabledIds, purposeId], item, triggerDetails);
     }
   };
 
@@ -81,14 +88,15 @@ const RecordsList = <T extends RecordListItem>({
           key={item.id}
           title={item.bestTranslation?.title || getNameForItem(item)}
           noticeKey={`${item.id}`}
-          onToggle={() => {
-            handleToggle(item);
+          onToggle={(_, triggerDetails) => {
+            handleToggle(item, triggerDetails);
           }}
           checked={enabledIds.indexOf(`${item.id}`) !== -1}
           badge={renderBadgeLabel ? renderBadgeLabel(item) : undefined}
           includeToggle={!hideToggles}
           onLabel={toggleOnLabel}
           offLabel={toggleOffLabel}
+          disabled={item.disabled}
         >
           {renderToggleChild
             ? renderToggleChild(item, Boolean(item.bestTranslation))

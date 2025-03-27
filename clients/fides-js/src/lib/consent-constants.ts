@@ -1,9 +1,8 @@
 import {
-  FidesExperienceTranslationOverrides,
-  FidesInitOptionsOverrides,
-  FidesOptions,
-  OverrideExperienceTranslations,
+  FidesExperienceLanguageValidatorMap,
+  FidesOverrideValidatorMap,
 } from "./consent-types";
+import { parseFidesDisabledNotices } from "./consent-utils";
 import { LOCALE_REGEX } from "./i18n/i18n-constants";
 
 /**
@@ -25,109 +24,114 @@ export const VALID_ISO_3166_LOCATION_REGEX =
  * provided by customers just-in-time for the `Fides.init()` call and override
  * default FidesInitOptions, etc.
  */
-export const FIDES_OVERRIDE_OPTIONS_VALIDATOR_MAP: {
-  overrideName: keyof FidesInitOptionsOverrides;
-  overrideType: "string" | "boolean";
-  overrideKey: keyof FidesOptions;
-  validationRegex: RegExp;
-}[] = [
-  {
-    overrideName: "fidesEmbed",
-    overrideType: "boolean",
-    overrideKey: "fides_embed",
-    validationRegex: /^(true|false)$/,
-  },
-  {
-    overrideName: "fidesDisableSaveApi",
-    overrideType: "boolean",
-    overrideKey: "fides_disable_save_api",
-    validationRegex: /^(true|false)$/,
-  },
-  {
-    overrideName: "fidesDisableNoticesServedApi",
-    overrideType: "boolean",
-    overrideKey: "fides_disable_notices_served_api",
-    validationRegex: /^(true|false)$/,
-  },
-  {
-    overrideName: "fidesDisableBanner",
-    overrideType: "boolean",
-    overrideKey: "fides_disable_banner",
-    validationRegex: /^(true|false)$/,
-  },
-  {
-    overrideName: "fidesString",
-    overrideType: "string",
-    overrideKey: "fides_string",
-    validationRegex: /(.*)/,
-  },
-  {
-    overrideName: "fidesTcfGdprApplies",
-    overrideType: "boolean",
-    overrideKey: "fides_tcf_gdpr_applies",
-    validationRegex: /^(true|false)$/,
-  },
-  {
-    overrideName: "fidesLocale",
-    overrideType: "string",
-    overrideKey: "fides_locale",
-    validationRegex: LOCALE_REGEX,
-  },
-  {
-    overrideName: "fidesPrimaryColor",
-    overrideType: "string",
-    overrideKey: "fides_primary_color",
-    validationRegex: /(.*)/,
-  },
-  {
-    overrideName: "fidesClearCookie",
-    overrideType: "string",
-    overrideKey: "fides_clear_cookie",
-    validationRegex: /(.*)/,
-  },
-  {
-    overrideName: "fidesConsentOverride",
-    overrideType: "string",
-    overrideKey: "fides_consent_override",
-    validationRegex: /^(accept|reject)$/,
-  },
-];
+export const FIDES_OVERRIDE_OPTIONS_VALIDATOR_MAP: FidesOverrideValidatorMap[] =
+  [
+    {
+      overrideName: "fidesEmbed",
+      overrideType: "boolean",
+      overrideKey: "fides_embed",
+      validationRegex: /^(true|false)$/,
+    },
+    {
+      overrideName: "fidesDisableSaveApi",
+      overrideType: "boolean",
+      overrideKey: "fides_disable_save_api",
+      validationRegex: /^(true|false)$/,
+    },
+    {
+      overrideName: "fidesDisableNoticesServedApi",
+      overrideType: "boolean",
+      overrideKey: "fides_disable_notices_served_api",
+      validationRegex: /^(true|false)$/,
+    },
+    {
+      overrideName: "fidesDisableBanner",
+      overrideType: "boolean",
+      overrideKey: "fides_disable_banner",
+      validationRegex: /^(true|false)$/,
+    },
+    {
+      overrideName: "fidesString",
+      overrideType: "string",
+      overrideKey: "fides_string",
+      validationRegex: /(.*)/,
+    },
+    {
+      overrideName: "fidesTcfGdprApplies",
+      overrideType: "boolean",
+      overrideKey: "fides_tcf_gdpr_applies",
+      validationRegex: /^(true|false)$/,
+    },
+    {
+      overrideName: "fidesLocale",
+      overrideType: "string",
+      overrideKey: "fides_locale",
+      validationRegex: LOCALE_REGEX,
+    },
+    {
+      overrideName: "fidesPrimaryColor",
+      overrideType: "string",
+      overrideKey: "fides_primary_color",
+      validationRegex: /(.*)/,
+    },
+    {
+      overrideName: "fidesClearCookie",
+      overrideType: "string",
+      overrideKey: "fides_clear_cookie",
+      validationRegex: /(.*)/,
+    },
+    {
+      overrideName: "fidesConsentOverride",
+      overrideType: "string",
+      overrideKey: "fides_consent_override",
+      validationRegex: /^(accept|reject)$/,
+    },
+    {
+      overrideName: "otFidesMapping",
+      overrideType: "string",
+      overrideKey: "ot_fides_mapping",
+      validationRegex: /(.*)/,
+    },
+    {
+      overrideName: "fidesDisabledNotices",
+      overrideType: "array",
+      overrideKey: "fides_disabled_notices",
+      validationRegex: /(.*)/,
+      transform: parseFidesDisabledNotices,
+    },
+  ];
 
 /**
  * Allows various user-provided experience lang overrides to be validated and mapped to the appropriate Fides variable.
  * overrideName is Fides internal, but overrideKey is the key the user uses to override the option.
  */
-export const FIDES_OVERRIDE_EXPERIENCE_LANGUAGE_VALIDATOR_MAP: {
-  overrideName: keyof FidesExperienceTranslationOverrides;
-  overrideType: "string";
-  overrideKey: keyof OverrideExperienceTranslations;
-  validationRegex: RegExp;
-}[] = [
-  {
-    overrideName: "title",
-    overrideType: "string",
-    overrideKey: "fides_title",
-    validationRegex: /(.*)/,
-  },
-  {
-    overrideName: "description",
-    overrideType: "string",
-    overrideKey: "fides_description",
-    validationRegex: /(.*)/,
-  },
-  {
-    overrideName: "privacy_policy_url",
-    overrideType: "string",
-    overrideKey: "fides_privacy_policy_url",
-    validationRegex: /(.*)/,
-  },
-  {
-    overrideName: "override_language",
-    overrideType: "string",
-    overrideKey: "fides_override_language",
-    validationRegex: LOCALE_REGEX,
-  },
-];
+export const FIDES_OVERRIDE_EXPERIENCE_LANGUAGE_VALIDATOR_MAP: FidesExperienceLanguageValidatorMap[] =
+  [
+    {
+      overrideName: "title",
+      overrideType: "string",
+      overrideKey: "fides_title",
+      validationRegex: /(.*)/,
+    },
+    {
+      overrideName: "description",
+      overrideType: "string",
+      overrideKey: "fides_description",
+      validationRegex: /(.*)/,
+    },
+    {
+      overrideName: "privacy_policy_url",
+      overrideType: "string",
+      overrideKey: "fides_privacy_policy_url",
+      validationRegex: /(.*)/,
+    },
+    {
+      overrideName: "override_language",
+      overrideType: "string",
+      overrideKey: "fides_override_language",
+      validationRegex: LOCALE_REGEX,
+    },
+  ];
 
 export const FIDES_OVERLAY_WRAPPER = "fides-overlay-wrapper";
 export const FIDES_I18N_ICON = "fides-i18n-icon";

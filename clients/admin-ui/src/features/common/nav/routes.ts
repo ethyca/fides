@@ -72,3 +72,5 @@ export const MESSAGING_EDIT_ROUTE = "/messaging/[id]";
 export const OPENID_AUTHENTICATION_ROUTE = "/settings/openid-authentication";
 
 export const ANT_POC_ROUTE = "/ant-poc";
+
+export const FIDES_JS_DOCS = "/fides-js-docs";

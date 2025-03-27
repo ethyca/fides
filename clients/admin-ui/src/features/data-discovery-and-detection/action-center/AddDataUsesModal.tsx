@@ -29,6 +29,11 @@ const AddDataUsesModal = ({
     onClose();
   };
 
+  const handleSave = () => {
+    onSave(selectedDataUses);
+    handleReset();
+  };
+
   return (
     <FormModal title="Add consent category" {...props} onClose={handleReset}>
       <Flex vertical gap={20} className="pb-6 pt-4">
@@ -55,7 +60,7 @@ const AddDataUsesModal = ({
           type="primary"
           disabled={!selectedDataUses.length}
           loading={isSaving}
-          onClick={() => onSave(selectedDataUses)}
+          onClick={handleSave}
           data-testid="save-btn"
         >
           Save

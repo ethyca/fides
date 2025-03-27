@@ -99,6 +99,7 @@
     {
       "id": "us",
       "name": "United States",
+      "selected": true,
       "continent": "North America",
       "belongs_to": []
     },

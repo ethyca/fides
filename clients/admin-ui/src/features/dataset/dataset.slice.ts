@@ -4,6 +4,7 @@ import type { RootState } from "~/app/store";
 import { baseApi } from "~/features/common/api.slice";
 import {
   BulkPutDataset,
+  ConnectionType,
   Dataset,
   GenerateRequestPayload,
   GenerateResponse,
@@ -30,6 +31,8 @@ interface DatasetDeleteResponse {
 interface DatasetFiltersQueryParams {
   exclude_saas_datasets?: boolean;
   only_unlinked_datasets?: boolean;
+  minimal?: boolean;
+  connection_type?: ConnectionType;
 }
 
 const datasetApi = baseApi.injectEndpoints({
@@ -51,11 +54,19 @@ const datasetApi = baseApi.injectEndpoints({
     }),
     getAllFilteredDatasets: build.query<
       Dataset[],
-      { onlyUnlinkedDatasets: boolean }
+      {
+        onlyUnlinkedDatasets?: boolean;
+        minimal?: boolean;
+        connection_type?: ConnectionType;
+      }
     >({
-      query: ({ onlyUnlinkedDatasets }) => ({
-        url: `/filter/dataset`,
-        params: { only_unlinked_datasets: onlyUnlinkedDatasets },
+      query: ({ onlyUnlinkedDatasets, minimal, connection_type }) => ({
+        url: `/dataset`,
+        params: {
+          only_unlinked_datasets: onlyUnlinkedDatasets,
+          minimal,
+          connection_type,
+        },
       }),
       providesTags: () => ["Datasets"],
     }),

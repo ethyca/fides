@@ -1,10 +1,13 @@
 import { baseApi } from "~/features/common/api.slice";
 import { getQueryParamsFromArray } from "~/features/common/utils";
+import {
+  DiffStatus,
+  Page_StagedResourceAPIResponse_,
+  StagedResourceAPIResponse,
+} from "~/types/api";
 import { PaginationQueryParams } from "~/types/common/PaginationQueryParams";
 
 import {
-  DiscoveredAssetPaginatedResponse,
-  DiscoveredAssetResponse,
   MonitorSummaryPaginatedResponse,
   MonitorSystemAggregatePaginatedResponse,
 } from "./types";
@@ -12,6 +15,13 @@ import {
 interface MonitorResultSystemQueryParams {
   monitor_config_key: string;
   resolved_system_ids: string[];
+}
+
+interface DiscoveredAssetsQueryParams {
+  key: string;
+  system?: string;
+  search?: string;
+  diff_status?: DiffStatus[];
 }
 
 const actionCenterApi = baseApi.injectEndpoints({
@@ -48,17 +58,18 @@ const actionCenterApi = baseApi.injectEndpoints({
       providesTags: ["Discovery Monitor Results"],
     }),
     getDiscoveredAssets: build.query<
-      DiscoveredAssetPaginatedResponse,
-      { key: string; system: string; search: string } & PaginationQueryParams
+      Page_StagedResourceAPIResponse_,
+      DiscoveredAssetsQueryParams & PaginationQueryParams
     >({
-      query: ({ key, system, page = 1, size = 20, search }) => ({
+      query: ({ key, system, page = 1, size = 20, search, diff_status }) => ({
         url: `/plus/discovery-monitor/${key}/results`,
         params: {
           resolved_system_id: system,
           page,
           size,
           search,
-          diff_status: "addition",
+          diff_status,
+          sort_by: "urn",
         },
       }),
       providesTags: () => ["Discovery Monitor Results"],
@@ -134,7 +145,7 @@ const actionCenterApi = baseApi.injectEndpoints({
         url: `/plus/discovery-monitor/${params.monitorId}/results`,
         body: params.urnList.map((urn) => ({
           urn,
-          system_key: params.systemKey,
+          user_assigned_system_key: params.systemKey,
         })),
       }),
       invalidatesTags: ["Discovery Monitor Results", "System Assets"],
@@ -148,7 +159,7 @@ const actionCenterApi = baseApi.injectEndpoints({
         url: `/plus/discovery-monitor/${params.monitorId}/results`,
         body: params.urnList.map((urn) => ({
           urn,
-          data_uses: params.dataUses,
+          user_assigned_data_uses: params.dataUses,
         })),
       }),
       invalidatesTags: ["Discovery Monitor Results"],
@@ -158,7 +169,7 @@ const actionCenterApi = baseApi.injectEndpoints({
       any,
       {
         monitorId: string;
-        assets: DiscoveredAssetResponse[];
+        assets: StagedResourceAPIResponse[];
       }
     >({
       query: (params) => ({

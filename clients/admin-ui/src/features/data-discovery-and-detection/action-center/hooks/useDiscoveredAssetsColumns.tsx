@@ -1,19 +1,28 @@
 import { ColumnDef, createColumnHelper } from "@tanstack/react-table";
 
+import { PRIVACY_NOTICE_REGION_RECORD } from "~/features/common/privacy-notice-regions";
 import {
   DefaultCell,
   IndeterminateCheckboxCell,
 } from "~/features/common/table/v2";
+import {
+  DefaultHeaderCell,
+  ListCellExpandable,
+} from "~/features/common/table/v2/cells";
+import { DiscoveredAssetActionsCell } from "~/features/data-discovery-and-detection/action-center/tables/cells/DiscoveredAssetActionsCell";
 import DiscoveredAssetDataUseCell from "~/features/data-discovery-and-detection/action-center/tables/cells/DiscoveredAssetDataUseCell";
-import { DiscoveredAssetResponse } from "~/features/data-discovery-and-detection/action-center/types";
+import { PrivacyNoticeRegion, StagedResourceAPIResponse } from "~/types/api";
 
-import { DiscoveredAssetActionsCell } from "../tables/cells/DiscoveredAssetActionsCell";
 import { SystemCell } from "../tables/cells/SystemCell";
 
-export const useDiscoveredAssetsColumns = () => {
-  const columnHelper = createColumnHelper<DiscoveredAssetResponse>();
+export const useDiscoveredAssetsColumns = ({
+  readonly,
+}: {
+  readonly: boolean;
+}) => {
+  const columnHelper = createColumnHelper<StagedResourceAPIResponse>();
 
-  const columns: ColumnDef<DiscoveredAssetResponse, any>[] = [
+  const columns: ColumnDef<StagedResourceAPIResponse, any>[] = [
     columnHelper.display({
       id: "select",
       cell: ({ row }) => (
@@ -51,6 +60,7 @@ export const useDiscoveredAssetsColumns = () => {
           <SystemCell
             aggregateSystem={props.row.original}
             monitorConfigId={props.row.original.monitor_config_id}
+            readonly={readonly}
           />
         ),
       header: "System",
@@ -62,7 +72,10 @@ export const useDiscoveredAssetsColumns = () => {
     columnHelper.display({
       id: "data_use",
       cell: (props) => (
-        <DiscoveredAssetDataUseCell asset={props.row.original} />
+        <DiscoveredAssetDataUseCell
+          asset={props.row.original}
+          readonly={readonly}
+        />
       ),
       header: "Categories of consent",
       size: 400,
@@ -77,7 +90,9 @@ export const useDiscoveredAssetsColumns = () => {
           value={
             props.getValue().length > 1
               ? `${props.getValue().length} locations`
-              : props.getValue()[0]
+              : PRIVACY_NOTICE_REGION_RECORD[
+                  props.getValue()[0] as PrivacyNoticeRegion
+                ]
           }
         />
       ),
@@ -100,16 +115,36 @@ export const useDiscoveredAssetsColumns = () => {
       ),
       header: "Discovery",
     }), */
-    columnHelper.display({
-      id: "actions",
+    columnHelper.accessor((row) => row.page, {
+      id: "page",
       cell: (props) => (
-        <DiscoveredAssetActionsCell asset={props.row.original} />
+        <ListCellExpandable
+          values={props.getValue()}
+          valueSuffix="pages"
+          cellProps={props}
+        />
       ),
-      header: "Actions",
+      header: (props) => <DefaultHeaderCell value="Detected on" {...props} />,
       meta: {
+        showHeaderMenu: true,
         disableRowClick: true,
       },
     }),
   ];
+
+  if (!readonly) {
+    columns.push(
+      columnHelper.display({
+        id: "actions",
+        cell: (props) => (
+          <DiscoveredAssetActionsCell asset={props.row.original} />
+        ),
+        header: "Actions",
+        meta: {
+          disableRowClick: true,
+        },
+      }),
+    );
+  }
   return { columns };
 };

@@ -7,6 +7,7 @@ export enum IntegrationFilterTabs {
   DATABASE = "Database",
   DATA_CATALOG = "Data Catalog",
   DATA_WAREHOUSE = "Data Warehouse",
+  WEBSITE = "Website",
 }
 
 const useIntegrationFilterTabs = (integrationTypes?: IntegrationTypeInfo[]) => {

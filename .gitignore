@@ -257,3 +257,7 @@ saas_config.toml
 
 # multilang migration backup files produced by db init
 multilang_migration_backup_*
+
+# Cursor
+
+.cursor/rules

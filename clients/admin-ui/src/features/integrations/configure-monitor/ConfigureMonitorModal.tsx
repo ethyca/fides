@@ -10,9 +10,11 @@ import {
 } from "~/features/data-discovery-and-detection/discovery-detection.slice";
 import ConfigureMonitorDatabasesForm from "~/features/integrations/configure-monitor/ConfigureMonitorDatabasesForm";
 import ConfigureMonitorForm from "~/features/integrations/configure-monitor/ConfigureMonitorForm";
+import ConfigureWebsiteMonitorForm from "~/features/integrations/configure-monitor/ConfigureWebsiteMonitorForm";
 import {
   ConnectionConfigurationResponse,
   ConnectionSystemTypeMap,
+  ConnectionType,
   MonitorConfig,
 } from "~/types/api";
 import { isErrorResult, RTKResult } from "~/types/errors";
@@ -81,6 +83,28 @@ const ConfigureMonitorModal = ({
       }
     }
   };
+
+  if (integrationOption.identifier === ConnectionType.WEBSITE) {
+    return (
+      <FormModal
+        title={
+          monitor?.name
+            ? `Configure ${monitor.name}`
+            : "Configure website monitor"
+        }
+        isOpen={isOpen}
+        onClose={onClose}
+      >
+        <ConfigureWebsiteMonitorForm
+          monitor={monitor}
+          // @ts-ignore - "secrets" is typed as "null"
+          url={integration.secrets!.url as string}
+          onClose={onClose}
+          onSubmit={handleSubmit}
+        />
+      </FormModal>
+    );
+  }
 
   return (
     <FormModal

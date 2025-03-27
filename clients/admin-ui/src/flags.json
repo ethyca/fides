@@ -24,12 +24,6 @@
     "test": true,
     "production": false
   },
-  "consentReporting": {
-    "description": "Page to download consent reports by date",
-    "development": true,
-    "test": true,
-    "production": false
-  },
   "dataDiscoveryAndDetection": {
     "description": "Data discovery and detection",
     "development": true,
@@ -56,12 +50,6 @@
   },
   "downloadAccessRequestResults": {
     "description": "Download access data from completed requests",
-    "development": true,
-    "test": true,
-    "production": false
-  },
-  "datahub": {
-    "description": "Share Fides data categories with your Datahub instance",
     "development": true,
     "test": true,
     "production": false

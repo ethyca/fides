@@ -22,13 +22,14 @@ import type { StagedResourceTypeValue } from "./StagedResourceTypeValue";
  */
 export type StagedResourceAPIResponse = {
   urn: string;
+  user_assigned_data_categories?: Array<string> | null;
   /**
-   * The data uses associated with the resource
+   * User assigned data uses overriding auto assigned data uses
    */
-  data_uses?: Array<string> | null;
-  user_assigned_data_categories?: Array<string>;
-  system_key?: string | null;
+  user_assigned_data_uses?: Array<string> | null;
+  user_assigned_system_key?: string | null;
   name?: string | null;
+  system_key?: string | null;
   description?: string | null;
   monitor_config_id?: string | null;
   updated_at?: string | null;
@@ -37,6 +38,10 @@ export type StagedResourceAPIResponse = {
    */
   diff_status?: DiffStatus | null;
   resource_type?: StagedResourceTypeValue | null;
+  /**
+   * The data uses associated with the staged resource
+   */
+  data_uses?: Array<string> | null;
   source_modified?: string | null;
   classifications?: Array<Classification>;
   /**
@@ -55,6 +60,10 @@ export type StagedResourceAPIResponse = {
    * The parent(s) of the asset, i.e. from where the asset was identified
    */
   parent?: Array<string>;
+  /**
+   * The page(s) where the asset was discovered
+   */
+  page?: Array<string>;
   parent_domain?: string | null;
   /**
    * The location(s) from which the asset was discovered
@@ -72,6 +81,10 @@ export type StagedResourceAPIResponse = {
    * The Fides System ID associated with the asset
    */
   system_id?: string | null;
+  /**
+   * User assigned system ID overriding auto assigned system ID
+   */
+  user_assigned_system_id?: string | null;
   database_name?: string | null;
   schema_name?: string | null;
   parent_table_urn?: string | null;

@@ -7,13 +7,14 @@ from sqlalchemy_utils import create_database, database_exists, drop_database
 from toml import load as load_toml
 
 from fides.api.db.session import get_db_engine, get_db_session
+from fides.api.models.asset import Asset
 from fides.api.models.connectionconfig import (
     AccessLevel,
     ConnectionConfig,
     ConnectionType,
 )
 from fides.api.models.privacy_experience import PrivacyExperienceConfig
-from fides.api.service.connectors import TimescaleConnector
+from fides.api.service.connectors.timescale_connector import TimescaleConnector
 from fides.config import CONFIG
 
 integration_config = load_toml("tests/ops/integration_test_config.toml")

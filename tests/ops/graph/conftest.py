@@ -58,3 +58,21 @@ unreachable_without_data_categories_dataset_config = create_dataset_config_fixtu
 unreachable_with_data_categories_dataset_config = create_dataset_config_fixture(
     "unreachable_with_data_categories.yml"
 )
+
+optional_identities_dataset_config = create_dataset_config_fixture(
+    "optional_identities.yml"
+)
+
+unreachable_collection_dataset_config = create_dataset_config_fixture(
+    "unreachable_collection.yml"
+)
+
+multiple_identities_dataset_config = create_dataset_config_fixture(
+    "multiple_identities.yml"
+)
+
+reachable_by_reference_dataset_config = create_dataset_config_fixture(
+    "reachable_by_reference.yml"
+)
+
+unvisited_edge_dataset_config = create_dataset_config_fixture("unvisited_edge.yml")

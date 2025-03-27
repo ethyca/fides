@@ -86,6 +86,7 @@ const withCustomProps = (WrappedComponent: typeof Tag) => {
           <Icons.CloseLarge size={10} />
         </button>
       ) : undefined,
+      ...props,
       children: (
         <>
           {hasSparkle && <SparkleIcon />}
@@ -98,7 +99,6 @@ const withCustomProps = (WrappedComponent: typeof Tag) => {
           )}
         </>
       ),
-      ...props,
     };
 
     return onClick ? (

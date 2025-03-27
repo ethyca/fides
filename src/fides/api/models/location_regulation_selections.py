@@ -317,6 +317,7 @@ class Location(LocationRegulationBase):
 
     belongs_to: List[str] = []
     regulation: List[str] = []
+    is_country: bool = False
 
 
 class LocationGroup(Location):

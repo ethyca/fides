@@ -17,12 +17,9 @@ from fides.api.models.connectionconfig import (
     ConnectionType,
 )
 from fides.api.models.datasetconfig import convert_dataset_to_graph
-from fides.api.models.privacy_request import (
-    CheckpointActionRequired,
-    ExecutionLog,
-    PrivacyRequest,
-)
+from fides.api.models.privacy_request import ExecutionLog, PrivacyRequest
 from fides.api.schemas.policy import CurrentStep
+from fides.api.schemas.privacy_request import CheckpointActionRequired
 from fides.api.task.graph_task import get_cached_data_for_erasures
 from fides.config import CONFIG
 from tests.fixtures.application_fixtures import integration_secrets

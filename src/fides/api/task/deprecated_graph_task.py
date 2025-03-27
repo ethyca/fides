@@ -115,15 +115,33 @@ def run_access_request_deprecated(
 ) -> Dict[str, List[Row]]:
     """Deprecated: Run the access request sequentially in-memory using Dask"""
     try:
-        traversal: Traversal = Traversal(graph, identity, policy)
-        privacy_request.add_success_execution_log(
-            session,
-            connection_key=None,
-            dataset_name="Dataset traversal",
-            collection_name=None,
-            message=f"Traversal successful for privacy request: {privacy_request.id}",
-            action_type=ActionType.access,
-        )
+        traversal: Traversal = Traversal(graph, identity, policy=policy)
+        # Add execution logs for skipped nodes
+        if traversal.skipped_nodes:
+            logger.warning(
+                "Some nodes were skipped, the identities provided were not sufficient to reach them"
+            )
+
+            for node_address, skip_message in traversal.skipped_nodes.items():
+                logger.debug(skip_message)
+                privacy_request.add_skipped_execution_log(
+                    session,
+                    connection_key=None,
+                    dataset_name="Dataset traversal",
+                    collection_name=node_address.replace(":", "."),
+                    message=skip_message,
+                    action_type=ActionType.access,
+                )
+        # Or log success if all collections are reachable
+        else:
+            privacy_request.add_success_execution_log(
+                session,
+                connection_key=None,
+                dataset_name="Dataset traversal",
+                collection_name=None,
+                message=f"Traversal successful for privacy request: {privacy_request.id}",
+                action_type=ActionType.access,
+            )
 
     except TraversalError as err:
         log_traversal_error_and_update_privacy_request(privacy_request, session, err)
@@ -205,7 +223,7 @@ def run_erasure_request_deprecated(  # pylint: disable = too-many-arguments
     session: Session,
 ) -> Dict[str, int]:
     """Deprecated: Run an erasure request sequentially in-memory using Dask"""
-    traversal: Traversal = Traversal(graph, identity, policy)
+    traversal: Traversal = Traversal(graph, identity, policy=policy)
     with TaskResources(
         privacy_request, policy, connection_configs, EMPTY_REQUEST_TASK, session
     ) as resources:

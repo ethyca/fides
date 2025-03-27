@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Callable
 from uuid import uuid4
 
+import boto3
 import pytest
 import requests
 import yaml
@@ -16,7 +17,9 @@ from fideslang import DEFAULT_TAXONOMY, models
 from fideslang.models import System as SystemSchema
 from httpx import AsyncClient
 from loguru import logger
+from moto import mock_aws
 from sqlalchemy.engine.base import Engine
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 
@@ -82,6 +85,19 @@ CONFIG = get_config()
 TEST_CONFIG_PATH = "tests/ctl/test_config.toml"
 TEST_INVALID_CONFIG_PATH = "tests/ctl/test_invalid_config.toml"
 TEST_DEPRECATED_CONFIG_PATH = "tests/ctl/test_deprecated_config.toml"
+
+
+@pytest.fixture
+def s3_client(storage_config):
+    with mock_aws():
+        session = boto3.Session(
+            aws_access_key_id="fake_access_key",
+            aws_secret_access_key="fake_secret_key",
+            region_name="us-east-1",
+        )
+        s3 = session.client("s3")
+        s3.create_bucket(Bucket=storage_config.details[StorageDetails.BUCKET.value])
+        yield s3
 
 
 @pytest.fixture(scope="session")
@@ -325,14 +341,21 @@ def application_user(db, oauth_client):
 
 @pytest.fixture
 def user(db):
-    user = FidesUser.create(
-        db=db,
-        data={
-            "username": "test_fidesops_user",
-            "password": "TESTdcnG@wzJeu0&%3Qe2fGo7",
-            "email_address": "fides.user@ethyca.com",
-        },
-    )
+    try:
+        user = FidesUser.create(
+            db=db,
+            data={
+                "username": "test_fidesops_user",
+                "password": "TESTdcnG@wzJeu0&%3Qe2fGo7",
+                "email_address": "fides.user@ethyca.com",
+            },
+        )
+        permission = FidesUserPermissions.create(
+            db=db, data={"user_id": user.id, "roles": [APPROVER]}
+        )
+    except IntegrityError:
+        user = db.query(FidesUser).filter_by(username="test_fidesops_user").first()
+        permission = db.query(FidesUserPermissions).filter_by(user_id=user.id).first()
     client = ClientDetail(
         hashed_secret="thisisatest",
         salt="thisisstillatest",
@@ -340,8 +363,6 @@ def user(db):
         scopes=[],
         user_id=user.id,
     )
-
-    FidesUserPermissions.create(db=db, data={"user_id": user.id, "roles": [APPROVER]})
 
     db.add(client)
     db.commit()

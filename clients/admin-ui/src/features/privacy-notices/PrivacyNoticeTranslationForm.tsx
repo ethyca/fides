@@ -20,6 +20,7 @@ import { useState } from "react";
 import { useAppSelector } from "~/app/hooks";
 import FormSection from "~/features/common/form/FormSection";
 import { CustomTextArea, CustomTextInput } from "~/features/common/form/inputs";
+import { useGetConfigurationSettingsQuery } from "~/features/config-settings/config-settings.slice";
 import {
   selectAllLanguages,
   selectPage,
@@ -27,7 +28,6 @@ import {
   useGetAllLanguagesQuery,
 } from "~/features/privacy-experience/language.slice";
 import { OOBTranslationNotice } from "~/features/privacy-experience/PrivacyExperienceTranslationForm";
-import { useGetConfigurationSettingsQuery } from "~/features/privacy-requests";
 import {
   NoticeTranslation,
   NoticeTranslationCreate,

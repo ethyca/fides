@@ -232,6 +232,7 @@ const AntPOC: NextPage = () => {
                 <Tag color="nectar">nectar</Tag>
                 <Tag color="error">error</Tag>
                 <Tag color="warning">warning</Tag>
+                <Tag color="caution">caution</Tag>
                 <Tag color="success">success</Tag>
                 <Tag color="info">info</Tag>
                 <Tag color="alert">alert</Tag>
