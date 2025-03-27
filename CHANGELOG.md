@@ -21,14 +21,15 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.58.0...main)
 
+
 ### Added
 - Added DataHub dataset sync functionality UI with feedback and error handling [#5949](https://github.com/ethyca/fides/pull/5949)
 
+### Changed
+- Bumped Next.js for all frontend apps to latest patch versions. [#5946](https://github.com/ethyca/fides/pull/5946)
+
 ### Fixed
 - Updated relationships for Comments, Attachments and PrivacyRequests to remove overlap sqlalchemy error. [#5929](https://github.com/ethyca/fides/pull/5929)
-
-
-
 
 ## [2.58.0](https://github.com/ethyca/fides/compare/2.57.1...2.58.0)
 
@@ -65,6 +66,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Removed excessive authorization debug logs [#5920](https://github.com/ethyca/fides/pull/5920)
 - Fixed fix incorrect calls to TCF api update method [#5916](https://github.com/ethyca/fides/pull/5916)
 - Fixed "unvisited edges" error when dealing with optional identities [#5923](https://github.com/ethyca/fides/pull/5923)
+- Fixed issue where sometimes an experience translation couldn't be added [#5942](https://github.com/ethyca/fides/pull/5942)
 
 ### Removed
 - Removed beta flag for Datahub feature [#5937](https://github.com/ethyca/fides/pull/5937)
