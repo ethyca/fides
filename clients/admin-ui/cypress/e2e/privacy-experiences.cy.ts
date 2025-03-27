@@ -10,13 +10,8 @@ import {
 
 import { PREVIEW_CONTAINER_ID } from "~/constants";
 import { PRIVACY_EXPERIENCE_ROUTE } from "~/features/common/nav/routes";
-import { getTranslationFormFields } from "~/features/privacy-experience/form/helpers";
 import { RoleRegistryEnum } from "~/types/api";
-import {
-  ComponentType,
-  ExperienceTranslationCreate,
-  SupportedLanguage,
-} from "~/types/api";
+import { ComponentType, SupportedLanguage } from "~/types/api";
 
 const EXPERIENCE_ID = "pri_0338d055-f91b-4a17-ad4e-600c61551199";
 const DISABLED_EXPERIENCE_ID = "pri_8fd9d334-e625-4365-ba25-9c368f0b1231";
