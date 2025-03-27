@@ -49,13 +49,18 @@ const DatahubDataSyncTab = ({
       });
 
       const successCount = response.data?.succeeded.length ?? 0;
-      const failedCount = response.data?.failed.length ?? 0;
-      const message = `DataHub sync started successfully. ${successCount} dataset(s) queued for sync${failedCount > 0 ? `, ${failedCount} dataset(s) failed` : ''}.`;
+      const message = `Fides has begun syncing with DataHub. There ${successCount === 1 ? 'is' : 'are'} ${successCount} dataset${successCount === 1 ? '' : 's'} queued for syncing.`;
 
       toast(successToastParams(message));
     } catch (error) {
       console.error("Failed to sync datasets:", error);
-      // TODO: Add error handling/notification
+      toast({
+        title: "Error syncing datasets",
+        description: "There was an error syncing your datasets with DataHub. Please try again.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
     } finally {
       setIsSyncing(false);
     }
