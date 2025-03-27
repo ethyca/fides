@@ -88,6 +88,7 @@ const DatahubScanTab = ({
             value: dataset.fides_key,
           }))}
           onChange={(values) => setSelectedDatasets(values)}
+          value={selectedDatasets}
           placeholder="Select datasets..."
           className="w-full"
           data-testid="dataset-selector"
