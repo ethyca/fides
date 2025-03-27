@@ -45,13 +45,14 @@ import { isErrorResult } from "~/types/errors";
 
 const buildTranslationSchema = (componentType: ComponentType): Yup.Schema => {
   const formFields = getTranslationFormFields(componentType);
-  const schema: Record<keyof ExperienceTranslationCreate, Yup.Schema> = {};
+  const schema: Partial<Record<keyof ExperienceTranslationCreate, Yup.Schema>> =
+    {};
 
   Object.entries(formFields).forEach(([field, config]) => {
+    const fieldKey = field as keyof ExperienceTranslationCreate;
     if (config.included) {
-      const fieldData =
-        FIELD_VALIDATION_DATA[field as keyof ExperienceTranslationCreate];
-      schema[field] = config.required
+      const fieldData = FIELD_VALIDATION_DATA[fieldKey];
+      schema[fieldKey] = config.required
         ? fieldData.validation.required().label(fieldData.label)
         : fieldData.validation.nullable().label(fieldData.label);
     }
