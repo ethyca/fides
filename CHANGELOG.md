@@ -27,6 +27,9 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ### Fixed
 - Updated relationships for Comments, Attachments and PrivacyRequests to remove overlap sqlalchemy error. [#5929](https://github.com/ethyca/fides/pull/5929)
 
+### Removed
+- Removed datasetClassificationUpdates flag and related functionality from admin UI. [#HA-427](https://github.com/ethyca/fides/pull/HA-427)
+
 ## [2.58.0](https://github.com/ethyca/fides/compare/2.57.1...2.58.0)
 
 ### Added
