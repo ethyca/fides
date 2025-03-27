@@ -1,6 +1,6 @@
 /* eslint-disable react/no-unstable-nested-components */
 
-import { Text, VStack, Button, useToast, Link } from "fidesui";
+import { Text, VStack, Button, useToast, Link, Spinner } from "fidesui";
 import { useGetAllFilteredDatasetsQuery } from "~/features/dataset";
 import { useGetConnectionConfigDatasetConfigsQuery } from "~/features/datastore-connections";
 import { useSyncDatahubConnectionMutation } from "~/features/plus/plus.slice";
@@ -10,6 +10,7 @@ import {
   ConnectionSystemTypeMap,
   ConnectionType,
 } from "~/types/api";
+import { useState } from "react";
 
 const DATAHUB_COPY_1 = `If you're using DataHub for metadata management, select sync datasets to push data categories from Fides to your DataHub datasets.`;
 
@@ -29,11 +30,13 @@ const DatahubDataSyncTab = ({
     minimal: true,
     connection_type: ConnectionType.BIGQUERY,
   });
-  const [syncDatahubConnection] = useSyncDatahubConnectionMutation();
+  const [syncDatahubConnection, { isLoading }] = useSyncDatahubConnectionMutation();
   const toast = useToast();
+  const [isSyncing, setIsSyncing] = useState(false);
 
   const handleSync = async () => {
     try {
+      setIsSyncing(true);
       const configuredDatasetIds = datasetConfigs?.items?.map(config => config.fides_key) ?? [];
       const bigqueryDatasetIds = bigqueryDatasets?.map(dataset => dataset.fides_key) ?? [];
 
@@ -53,6 +56,8 @@ const DatahubDataSyncTab = ({
     } catch (error) {
       console.error("Failed to sync datasets:", error);
       // TODO: Add error handling/notification
+    } finally {
+      setIsSyncing(false);
     }
   };
 
@@ -81,6 +86,8 @@ const DatahubDataSyncTab = ({
         onClick={handleSync}
         data-testid="sync-button"
         width="fit-content"
+        isLoading={isSyncing || isLoading}
+        loadingText="Syncing datasets..."
       >
         Sync Datasets
       </Button>
