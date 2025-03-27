@@ -38,7 +38,7 @@
     "framer-motion": "12.4.7",
     "headers-polyfill": "^4.0.3",
     "immer": "^9.0.21",
-    "next": "^15.1.7",
+    "next": "^15.2.3",
     "next-swagger-doc": "^0.4.0",
     "react": "^19.0.0",
     "react-dom": "19.0.0",
