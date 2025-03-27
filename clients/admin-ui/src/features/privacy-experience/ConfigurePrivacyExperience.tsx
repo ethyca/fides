@@ -1,11 +1,10 @@
 import {
-  AntButton as Button,
   AntFlex as Flex,
   AntRadio as Radio,
   Spacer,
   Text,
-  useToast,
   theme,
+  useToast,
 } from "fidesui";
 import { Form, Formik } from "formik";
 import { useRouter } from "next/router";
@@ -198,7 +197,7 @@ const ConfigurePrivacyExperience = ({
     >
       <Form style={{ height: "100vh" }}>
         <Flex
-          className="w-full h-full"
+          className="size-full"
           data-testid="privacy-experience-detail-page"
         >
           {translationToEdit ? (
@@ -222,7 +221,7 @@ const ConfigurePrivacyExperience = ({
             style={{ backgroundColor: theme.colors.gray[50] }}
           >
             <Flex
-              className="flex-row p-4 items-center"
+              className="flex-row items-center p-4"
               style={{
                 backgroundColor: theme.colors.white,
                 borderBottom: `1px solid ${theme.colors.gray[100]}`,
@@ -236,7 +235,7 @@ const ConfigurePrivacyExperience = ({
                 onChange={(e) => setIsMobilePreview(e.target.value)}
                 defaultValue={false}
               >
-                <Radio.Button value={true} title="View mobile preview">
+                <Radio.Button value title="View mobile preview">
                   <MobileIcon />
                 </Radio.Button>
                 <Radio.Button value={false} title="View desktop preview">
