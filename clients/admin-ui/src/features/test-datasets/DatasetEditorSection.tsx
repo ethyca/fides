@@ -2,9 +2,9 @@ import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query/fetchBaseQuery"
 import {
   AntButton as Button,
   AntSelect as Select,
+  Box,
   ErrorWarningIcon,
   GreenCheckCircleIcon,
-  Heading,
   HStack,
   Stack,
   Tab,
@@ -16,7 +16,6 @@ import {
   Tooltip,
   useToast,
   VStack,
-  Box,
 } from "fidesui";
 import yaml, { YAMLException } from "js-yaml";
 import { useEffect, useMemo, useState } from "react";
@@ -225,7 +224,8 @@ const EditorSection = ({ connectionKey }: EditorSectionProps) => {
   const getClipboardContent = () => {
     if (tabIndex === 0) {
       return editorContent;
-    } else if (tabIndex === 1 && isSaasConnector) {
+    }
+    if (tabIndex === 1 && isSaasConnector) {
       return saasConfigContent;
     }
     return "";
