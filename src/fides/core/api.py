@@ -6,6 +6,7 @@ import requests
 
 API_PREFIX = "/api/v1"
 
+
 def generate_resource_url(
     url: str,
     resource_type: str = "",
