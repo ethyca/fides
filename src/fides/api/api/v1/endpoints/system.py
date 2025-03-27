@@ -369,7 +369,6 @@ async def create(
     Override `System` create/POST to handle `.privacy_declarations` defined inline,
     for backward compatibility and ease of use for API users.
     """
-    logger.info(f"resource: {resource}")
     return await create_system(resource, db, current_user.id if current_user else None)
 
 
