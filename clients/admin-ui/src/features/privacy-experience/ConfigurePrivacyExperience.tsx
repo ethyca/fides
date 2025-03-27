@@ -1,4 +1,12 @@
-import { AntButton as Button, Flex, Spacer, Text, useToast } from "fidesui";
+import {
+  AntButton as Button,
+  AntFlex as Flex,
+  AntRadio as Radio,
+  Spacer,
+  Text,
+  useToast,
+  theme,
+} from "fidesui";
 import { Form, Formik } from "formik";
 import { useRouter } from "next/router";
 import React, { useState } from "react";
@@ -190,9 +198,7 @@ const ConfigurePrivacyExperience = ({
     >
       <Form style={{ height: "100vh" }}>
         <Flex
-          w="full"
-          h="full"
-          direction="row"
+          className="w-full h-full"
           data-testid="privacy-experience-detail-page"
         >
           {translationToEdit ? (
@@ -210,32 +216,33 @@ const ConfigurePrivacyExperience = ({
               onCreateTranslation={handleCreateNewTranslation}
             />
           )}
-          <Flex direction="column" w="75%" bgColor="gray.50" overflowY="hidden">
+          <Flex
+            vertical
+            className="w-full overflow-y-hidden"
+            style={{ backgroundColor: theme.colors.gray[50] }}
+          >
             <Flex
-              direction="row"
-              p={4}
-              align="center"
-              bgColor="white"
-              borderBottom="1px solid #DEE5EE"
+              className="flex-row p-4 items-center"
+              style={{
+                backgroundColor: theme.colors.white,
+                borderBottom: `1px solid ${theme.colors.gray[100]}`,
+              }}
             >
               <Text fontSize="md" fontWeight="semibold">
                 PREVIEW
               </Text>
               <Spacer />
-              <div className="flex gap-2">
-                <Button
-                  icon={<MobileIcon />}
-                  aria-label="View mobile preview"
-                  onClick={() => setIsMobilePreview(true)}
-                  className={isMobilePreview ? "bg-gray-200" : undefined}
-                />
-                <Button
-                  icon={<DesktopIcon />}
-                  aria-label="View desktop preview"
-                  onClick={() => setIsMobilePreview(false)}
-                  className={!isMobilePreview ? "bg-gray-200" : undefined}
-                />
-              </div>
+              <Radio.Group
+                onChange={(e) => setIsMobilePreview(e.target.value)}
+                defaultValue={false}
+              >
+                <Radio.Button value={true} title="View mobile preview">
+                  <MobileIcon />
+                </Radio.Button>
+                <Radio.Button value={false} title="View desktop preview">
+                  <DesktopIcon />
+                </Radio.Button>
+              </Radio.Group>
             </Flex>
             <Preview
               allPrivacyNotices={allPrivacyNotices}
