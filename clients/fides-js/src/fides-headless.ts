@@ -197,6 +197,7 @@ const _Fides: FidesGlobal = {
   experience: undefined,
   geolocation: {},
   locale: DEFAULT_LOCALE,
+  version: process.env.FIDES_VERSION || "unknown",
   options: {
     debug: true,
     isOverlayEnabled: false,
