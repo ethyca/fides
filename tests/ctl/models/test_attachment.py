@@ -1,4 +1,5 @@
 from io import BytesIO
+from tempfile import SpooledTemporaryFile
 
 import pytest
 from sqlalchemy.exc import IntegrityError
@@ -30,8 +31,11 @@ def attachment_file(request):
     Each parameter is a tuple of (filename, file content as bytes).
     A new BytesIO object is created for each test to avoid reuse issues.
     """
-    file_name, file_content = request.param
-    return file_name, BytesIO(file_content)
+    filename, file_content = request.param
+    attachment_file = SpooledTemporaryFile(max_size=1024, mode="w+b")
+    attachment_file.write(file_content)
+    attachment_file.seek(0)  # Reset the file pointer
+    return filename, attachment_file
 
 
 def verify_attachment_created_uploaded_s3(attachment, attachment_file_copy):
@@ -56,8 +60,9 @@ def test_create_attachment_with_S3_storage(
     s3_client, db, user, attachment_data, attachment_file, monkeypatch
 ):
     """Test creating an attachment."""
-    # Create a copy of the file-like object
-    attachment_file_copy = attachment_file[1].getvalue()
+    # Create a copy of the file content for verification
+    attachment_file_copy = attachment_file[1].read()
+    attachment_file[1].seek(0)  # Reset the file pointer again for the test
 
     def mock_get_s3_client(auth_method, storage_secrets):
         return s3_client
@@ -91,7 +96,9 @@ def test_create_attachment_with_local_storage(
     db, attachment_data, attachment_file, storage_config_local
 ):
     """Test creating an attachment."""
-    attachment_file_copy = attachment_file[1].getvalue()
+    # Create a copy of the file content for verification
+    attachment_file_copy = attachment_file[1].read()
+    attachment_file[1].seek(0)  # Reset the file pointer again for the test
 
     attachment_data["storage_key"] = storage_config_local.key
     attachment = Attachment.create_and_upload(
@@ -126,8 +133,9 @@ def test_retrieve_attachment_from_s3(
     s3_client, db, attachment_data, attachment_file, monkeypatch
 ):
     """Test retrieving an attachment (bytes) from S3."""
-    # Create a copy of the file-like object
-    attachment_file_copy = attachment_file[1].getvalue()
+    # Create a copy of the file content for verification
+    attachment_file_copy = attachment_file[1].read()
+    attachment_file[1].seek(0)  # Reset the file pointer again for the test
 
     def mock_get_s3_client(auth_method, storage_secrets):
         return s3_client
@@ -145,8 +153,9 @@ def test_retrieve_attachment_from_local(
     db, attachment_data, attachment_file, storage_config_local
 ):
     """Test retrieving an attachment locally."""
-    # Create a copy of the file-like object
-    attachment_file_copy = attachment_file[1].getvalue()
+    # Create a copy of the file content for verification
+    attachment_file_copy = attachment_file[1].read()
+    attachment_file[1].seek(0)  # Reset the file pointer again for the test
     attachment_data["storage_key"] = storage_config_local.key
     attachment = Attachment.create_and_upload(
         db=db, data=attachment_data, attachment_file=attachment_file[1]
@@ -160,8 +169,9 @@ def test_delete_attachment_from_s3(
     s3_client, db, attachment_data, attachment_file, monkeypatch
 ):
     """Test deleting an attachment from S3."""
-    # Create a copy of the file-like object
-    attachment_file_copy = attachment_file[1].getvalue()
+    # Create a copy of the file content for verification
+    attachment_file_copy = attachment_file[1].read()
+    attachment_file[1].seek(0)  # Reset the file pointer again for the test
 
     def mock_get_s3_client(auth_method, storage_secrets):
         return s3_client
@@ -188,8 +198,9 @@ def test_delete_attachment_from_local(
     db, attachment_data, attachment_file, storage_config_local
 ):
     """Test deleting an attachment locally."""
-    # Create a copy of the file-like object
-    attachment_file_copy = attachment_file[1].getvalue()
+    # Create a copy of the file content for verification
+    attachment_file_copy = attachment_file[1].read()
+    attachment_file[1].seek(0)  # Reset the file pointer again for the test
     attachment_data["storage_key"] = storage_config_local.key
     attachment = Attachment.create_and_upload(
         db=db, data=attachment_data, attachment_file=attachment_file[1]
@@ -334,3 +345,122 @@ def test_attachment_reference_unique_ids(db, attachment_reference):
     with pytest.raises(IntegrityError):
         db.commit()
     db.rollback()
+
+
+def test_delete_all_attachments(db, attachment, comment, privacy_request):
+    """Tests delete_all_attachments_for_reference_and_type function."""
+    # create attachment references to comment and privacy request
+    AttachmentReference.create(
+        db,
+        data={
+            "attachment_id": attachment.id,
+            "reference_id": privacy_request.id,
+            "reference_type": AttachmentReferenceType.privacy_request,
+        },
+    )
+    AttachmentReference.create(
+        db,
+        data={
+            "attachment_id": attachment.id,
+            "reference_id": comment.id,
+            "reference_type": AttachmentReferenceType.comment,
+        },
+    )
+
+    # delete all attachments associated with the comment
+    # should delete all attachments and references to the attachment
+    Attachment.delete_attachments_for_reference_and_type(
+        db, reference_id=comment.id, reference_type=AttachmentReferenceType.comment
+    )
+    retrieved_attachment = db.query(Attachment).filter_by(id=attachment.id).first()
+    assert retrieved_attachment is None
+
+    # verify the reference to the "deleted" comment is removed
+    retrieved_comment_reference = (
+        db.query(AttachmentReference).filter_by(reference_id=comment.id).first()
+    )
+    assert retrieved_comment_reference is None
+
+    # verify the attachment and reference to the privacy request is also removed
+    retrieved_pr_reference = (
+        db.query(AttachmentReference).filter_by(reference_id=privacy_request.id).first()
+    )
+    assert retrieved_pr_reference is None
+
+
+def test_attachment_relationship_warnings(
+    s3_client, db, attachment, comment, privacy_request, monkeypatch
+):
+    """Test that no SQLAlchemy relationship warnings occur when creating and accessing Attachment relationships."""
+    import warnings
+
+    from sqlalchemy import exc as sa_exc
+
+    def mock_get_s3_client(auth_method, storage_secrets):
+        return s3_client
+
+    monkeypatch.setattr("fides.api.tasks.storage.get_s3_client", mock_get_s3_client)
+
+    with warnings.catch_warnings(record=True) as warning_list:
+        warnings.simplefilter("always")
+
+        # Create references to both comment and privacy request
+        attachment_ref_1 = AttachmentReference.create(
+            db,
+            data={
+                "attachment_id": attachment.id,
+                "reference_id": comment.id,
+                "reference_type": AttachmentReferenceType.comment,
+            },
+        )
+        db.refresh(attachment)
+        db.refresh(comment)
+
+        attachment_ref_2 = AttachmentReference.create(
+            db,
+            data={
+                "attachment_id": attachment.id,
+                "reference_id": privacy_request.id,
+                "reference_type": AttachmentReferenceType.privacy_request,
+            },
+        )
+        db.refresh(attachment)
+        db.refresh(privacy_request)
+
+        # Test accessing relationships in various ways
+        assert len(attachment.references) == 2
+
+        # Query references directly
+        refs = (
+            db.query(AttachmentReference)
+            .filter(AttachmentReference.attachment_id == attachment.id)
+            .all()
+        )
+        assert len(refs) == 2
+        assert any(
+            ref.reference_type == AttachmentReferenceType.comment for ref in refs
+        )
+        assert any(
+            ref.reference_type == AttachmentReferenceType.privacy_request
+            for ref in refs
+        )
+
+        # Verify no SQLAlchemy relationship warnings were emitted
+        sqlalchemy_warnings = [
+            w for w in warning_list if issubclass(w.category, sa_exc.SAWarning)
+        ]
+        assert (
+            len(sqlalchemy_warnings) == 0
+        ), f"SQLAlchemy warnings found: {[str(w.message) for w in sqlalchemy_warnings]}"
+
+        # Cleanup
+        if db.query(AttachmentReference).filter_by(id=attachment_ref_2.id).first():
+            attachment_ref_2.delete(db)
+            db.commit()
+
+        if db.query(AttachmentReference).filter_by(id=attachment_ref_1.id).first():
+            attachment_ref_1.delete(db)
+            db.commit()
+
+        # Refresh the session to ensure clean state
+        db.expire_all()

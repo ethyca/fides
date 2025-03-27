@@ -8,15 +8,18 @@ import {
   IndeterminateCheckboxCell,
   ListCellExpandable,
 } from "~/features/common/table/v2/cells";
+import AssetSystemCell from "~/features/system/tabs/system-assets/AssetSystemCell";
 import SystemAssetActionsCell from "~/features/system/tabs/system-assets/SystemAssetActionsCell";
 import SystemAssetsDataUseCell from "~/features/system/tabs/system-assets/SystemAssetsDataUseCell";
 import { Asset, PrivacyNoticeRegion } from "~/types/api";
 
 const useSystemAssetColumns = ({
   systemKey,
+  systemName,
   onEditClick,
 }: {
   systemKey: string;
+  systemName: string;
   onEditClick: (asset: Asset) => void;
 }) => {
   const columnHelper = createColumnHelper<Asset>();
@@ -57,10 +60,27 @@ const useSystemAssetColumns = ({
       cell: (props) => <DefaultCell value={props.getValue()} />,
       header: "Type",
     }),
+    columnHelper.display({
+      id: "system",
+      cell: (props) => (
+        <AssetSystemCell
+          systemKey={systemKey}
+          systemName={systemName}
+          asset={props.row.original}
+        />
+      ),
+      header: "System",
+    }),
     columnHelper.accessor((row) => row.data_uses, {
       id: "data_uses",
-      cell: (props) => <SystemAssetsDataUseCell values={props.getValue()} />,
+      cell: (props) => (
+        <SystemAssetsDataUseCell
+          asset={props.row.original}
+          systemId={systemKey}
+        />
+      ),
       header: "Categories of consent",
+      size: 200,
     }),
     columnHelper.accessor((row) => row.locations, {
       id: "locations",
@@ -73,9 +93,7 @@ const useSystemAssetColumns = ({
         />
       ),
       header: "Locations",
-      meta: {
-        width: "auto",
-      },
+      size: 300,
     }),
     columnHelper.accessor((row) => row.domain, {
       id: "domain",

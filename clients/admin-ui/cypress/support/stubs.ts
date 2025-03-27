@@ -507,6 +507,9 @@ export const stubExperienceConfig = () => {
   cy.intercept("GET", "/api/v1/experience-config/available_translations", {
     fixture: "privacy-notices/available-translations.json",
   }).as("getAvailableTranslations");
+  cy.intercept("POST", "/api/v1/experience-config", {
+    fixture: "privacy-experiences/experienceConfig.json",
+  }).as("postExperience");
   stubPlus(true);
 };
 

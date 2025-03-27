@@ -14,9 +14,11 @@ import { useGetConfigurationSettingsQuery } from "~/features/config-settings/con
 import {
   defaultInitialValues,
   findLanguageDisplayName,
+  getTranslationFormFields,
   transformConfigResponseToCreate,
   TranslationWithLanguageName,
 } from "~/features/privacy-experience/form/helpers";
+import { FIELD_VALIDATION_DATA } from "~/features/privacy-experience/form/translations-form-validations";
 import {
   selectAllLanguages,
   selectPage as selectLanguagePage,
@@ -36,40 +38,41 @@ import {
   ExperienceConfigCreate,
   ExperienceConfigResponse,
   ExperienceTranslation,
+  ExperienceTranslationCreate,
   SupportedLanguage,
 } from "~/types/api";
 import { isErrorResult } from "~/types/errors";
 
-const translationSchema = (requirePreferencesLink: boolean) =>
-  Yup.object().shape({
-    title: Yup.string().required().label("Title"),
-    description: Yup.string().required().label("Description"),
-    accept_button_label: Yup.string().required().label("Accept button label"),
-    reject_button_label: Yup.string().required().label("Reject button label"),
-    save_button_label: Yup.string().required().label("Save button label"),
-    acknowledge_button_label: Yup.string()
-      .required()
-      .label("Acknowledge button label"),
-    privacy_policy_url: Yup.string()
-      .url()
-      .nullable()
-      .label("Privacy policy URL"),
-    is_default: Yup.boolean(),
-    privacy_preferences_link_label: requirePreferencesLink
-      ? Yup.string().required().label("Privacy preferences link label")
-      : Yup.string().nullable().label("Privacy preferences link label"),
+const buildTranslationSchema = (componentType: ComponentType): Yup.Schema => {
+  const formFields = getTranslationFormFields(componentType);
+  const schema: Partial<Record<keyof ExperienceTranslationCreate, Yup.Schema>> =
+    {};
+
+  Object.entries(formFields).forEach(([field, config]) => {
+    const fieldKey = field as keyof ExperienceTranslationCreate;
+    if (config.included) {
+      const fieldData = FIELD_VALIDATION_DATA[fieldKey];
+      schema[fieldKey] = config.required
+        ? fieldData.validation.required().label(fieldData.label)
+        : fieldData.validation.nullable().label(fieldData.label);
+    }
   });
+
+  return Yup.object().shape(schema);
+};
+
+const translationSchema = ({
+  componentType,
+}: {
+  componentType: ComponentType;
+}) => buildTranslationSchema(componentType);
 
 const validationSchema = Yup.object().shape({
   name: Yup.string().required().label("Experience name"),
   component: Yup.string().required().label("Experience type"),
-  translations: Yup.array().when("component", {
-    is: (value: ComponentType) =>
-      value === ComponentType.BANNER_AND_MODAL ||
-      value === ComponentType.TCF_OVERLAY,
-    then: (schema) => schema.of(translationSchema(true)),
-    otherwise: (schema) => schema.of(translationSchema(false)),
-  }),
+  translations: Yup.array().when("component", ([component], schema) =>
+    schema.of(translationSchema({ componentType: component })),
+  ),
 });
 
 const ConfigurePrivacyExperience = ({
