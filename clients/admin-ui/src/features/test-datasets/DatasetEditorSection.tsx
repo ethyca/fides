@@ -234,13 +234,14 @@ const EditorSection = ({ connectionKey }: EditorSectionProps) => {
   return (
     <VStack
       alignItems="stretch"
+      display="flex"
       flex="1"
       maxWidth="70vw"
       maxHeight="50vh"
       spacing={2}
-      mb={0}
     >
-      <HStack justifyContent="space-between" alignItems="center">
+      {/* Header section with dataset selector and buttons */}
+      <HStack justifyContent="space-between" alignItems="center" flexShrink={0}>
         <HStack>
           <Text>Edit dataset: </Text>
           <Select
@@ -280,18 +281,29 @@ const EditorSection = ({ connectionKey }: EditorSectionProps) => {
         </HStack>
       </HStack>
 
-      <Box position="relative" mb={0}>
+      {/* Main content area with tabs */}
+      <Box
+        position="relative"
+        display="flex"
+        flex="1"
+        minHeight={0}
+        overflow="hidden"
+      >
         <Tabs
           index={tabIndex}
           onChange={setTabIndex}
+          display="flex"
+          flexDirection="column"
           flex="1"
           variant="enclosed"
           size="sm"
-          height="calc(45vh - 50px)"
+          width="100%"
+          height="100%"
         >
-          <Box mb={0} borderBottom="none">
+          {/* Tab headers */}
+          <Box borderBottom="none" flexShrink={0}>
             <HStack alignItems="center" width="100%">
-              <TabList mb="-1px" ml="4px">
+              <TabList ml="4px">
                 <Tab>Dataset</Tab>
                 {isSaasConnector && <Tab>API configuration</Tab>}
               </TabList>
@@ -300,26 +312,43 @@ const EditorSection = ({ connectionKey }: EditorSectionProps) => {
               </Box>
             </HStack>
           </Box>
-          <TabPanels flex="1" height="calc(100% - 4px)">
-            <TabPanel p={0} height="100%" pb={0}>
+
+          {/* Tab content */}
+          <TabPanels
+            display="flex"
+            flexDirection="column"
+            flex="1"
+            overflow="hidden"
+          >
+            {/* Dataset Tab */}
+            <TabPanel
+              display="flex"
+              flexDirection="column"
+              height="100%"
+              p={0}
+              overflow="hidden"
+            >
               <VStack
                 flex="1"
+                display="flex"
                 alignItems="stretch"
                 spacing={2}
-                height="100%"
-                pb={0}
+                minHeight={0}
+                overflow="hidden"
               >
+                {/* Editor */}
                 <Stack
+                  display="flex"
+                  flexDirection="column"
+                  flex="1"
+                  minHeight={0}
                   border="1px solid"
                   borderColor="gray.200"
                   borderRadius="md"
-                  justifyContent="space-between"
                   py={4}
                   pr={4}
                   data-testid="empty-state"
-                  flex="1"
-                  height="calc(100% - 40px)"
-                  overflowY="auto"
+                  overflow="hidden"
                 >
                   <Editor
                     defaultLanguage="yaml"
@@ -339,6 +368,8 @@ const EditorSection = ({ connectionKey }: EditorSectionProps) => {
                     theme="light"
                   />
                 </Stack>
+
+                {/* Reachability status */}
                 {reachability && (
                   <Stack
                     backgroundColor={
@@ -351,8 +382,6 @@ const EditorSection = ({ connectionKey }: EditorSectionProps) => {
                     borderRadius="md"
                     p={2}
                     flexShrink={0}
-                    maxHeight="40px"
-                    overflowY="hidden"
                     mb={0}
                   >
                     <HStack alignItems="center">
@@ -373,25 +402,34 @@ const EditorSection = ({ connectionKey }: EditorSectionProps) => {
                 )}
               </VStack>
             </TabPanel>
+
+            {/* API Configuration Tab */}
             {isSaasConnector && (
-              <TabPanel p={0} height="100%" pb={0}>
+              <TabPanel
+                display="flex"
+                flexDirection="column"
+                height="100%"
+                p={0}
+                overflow="hidden"
+              >
                 <VStack
                   flex="1"
+                  display="flex"
                   alignItems="stretch"
-                  spacing={2}
-                  height="100%"
-                  pb={0}
+                  minHeight={0}
+                  overflow="hidden"
                 >
                   <Stack
+                    display="flex"
+                    flexDirection="column"
+                    flex="1"
+                    minHeight={0}
                     border="1px solid"
                     borderColor="gray.200"
                     borderRadius="md"
-                    justifyContent="space-between"
                     py={4}
                     pr={4}
-                    flex="1"
-                    height="100%"
-                    overflowY="auto"
+                    overflow="hidden"
                   >
                     <Editor
                       defaultLanguage="yaml"
