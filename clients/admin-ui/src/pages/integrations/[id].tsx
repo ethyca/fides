@@ -19,10 +19,12 @@ import getIntegrationTypeInfo, {
   SUPPORTED_INTEGRATIONS,
 } from "~/features/integrations/add-integration/allIntegrationTypes";
 import MonitorConfigTab from "~/features/integrations/configure-monitor/MonitorConfigTab";
+import DatahubScanTab from "~/features/integrations/configure-scan/DatahubScanTab";
 import ConfigureIntegrationModal from "~/features/integrations/ConfigureIntegrationModal";
 import ConnectionStatusNotice from "~/features/integrations/ConnectionStatusNotice";
 import IntegrationBox from "~/features/integrations/IntegrationBox";
 import useIntegrationOption from "~/features/integrations/useIntegrationOption";
+import { ConnectionType } from "~/types/api";
 
 const IntegrationDetailView: NextPage = () => {
   const { query } = useRouter();
@@ -100,7 +102,22 @@ const IntegrationDetailView: NextPage = () => {
         />
       ),
     },
+    {
+      label: "Scan",
+      content: (
+        <DatahubScanTab
+          integration={connection!}
+          integrationOption={integrationOption}
+        />
+      ),
+    },
   ];
+
+  if (connection?.connection_type === ConnectionType.DATAHUB) {
+    tabs.splice(1, 1); // Remove Data discovery tab
+  } else {
+    tabs.splice(2, 1); // Remove Scan tab
+  }
 
   return (
     <Layout title="Integrations">
