@@ -58,8 +58,7 @@ async def create_resource(
                 log.debug("Creating resource")
                 query = _insert(sql_model.__table__).values(resource_dict)
                 await async_session.execute(query)
-            except SQLAlchemyError as err:
-                log.info(f"SQLAlchemyError: {err}")
+            except SQLAlchemyError:
                 sa_error = errors.QueryError()
                 log.bind(error=sa_error.detail["error"]).info(  # type: ignore[index]
                     "Failed to create resource"
