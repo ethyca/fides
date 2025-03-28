@@ -159,7 +159,8 @@ class TestExperienceConfig:
 
         # Cleanup
         for translation in config.translations:
-            translation.histories[0].delete(db)
+            for history in translation.histories:
+                history.delete(db)
             translation.delete(db)
         config.delete(db)
 
@@ -187,7 +188,8 @@ class TestExperienceConfig:
 
         # Cleanup
         for translation in config.translations:
-            translation.histories[0].delete(db)
+            for history in translation.histories:
+                history.delete(db)
             translation.delete(db)
         config.delete(db)
 
@@ -213,7 +215,8 @@ class TestExperienceConfig:
 
         # Cleanup
         for translation in config.translations:
-            translation.histories[0].delete(db)
+            for history in translation.histories:
+                history.delete(db)
             translation.delete(db)
         config.delete(db)
 
@@ -242,6 +245,13 @@ class TestExperienceConfig:
         config.save(db)
 
         assert config.reject_all_mechanism == RejectAllMechanism.REJECT_CONSENT_ONLY
+
+        # Cleanup
+        for translation in config.translations:
+            for history in translation.histories:
+                history.delete(db)
+            translation.delete(db)
+        config.delete(db)
 
     def test_update_privacy_experience_config_level(self, db, privacy_notice):
         config = PrivacyExperienceConfig.create(
