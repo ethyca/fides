@@ -93,7 +93,15 @@ const IntegrationDetailView: NextPage = () => {
         </Box>
       ),
     },
-    {
+  ];
+
+  if (connection?.connection_type === ConnectionType.DATAHUB) {
+    tabs.push({
+      label: "Data sync",
+      content: <DatahubDataSyncTab integration={connection!} />,
+    });
+  } else {
+    tabs.push({
       label: "Data discovery",
       content: (
         <MonitorConfigTab
@@ -101,17 +109,7 @@ const IntegrationDetailView: NextPage = () => {
           integrationOption={integrationOption}
         />
       ),
-    },
-    {
-      label: "Data sync",
-      content: <DatahubDataSyncTab integration={connection!} />,
-    },
-  ];
-
-  if (connection?.connection_type === ConnectionType.DATAHUB) {
-    tabs.splice(1, 1); // Remove Data discovery tab
-  } else {
-    tabs.splice(2, 1); // Remove Scan tab
+    });
   }
 
   return (

@@ -1,7 +1,6 @@
 /* eslint-disable react/no-unstable-nested-components */
 
 import { Button, Link, Text, useToast, VStack } from "fidesui";
-import { useState } from "react";
 
 import { successToastParams } from "~/features/common/toast";
 import { useGetAllFilteredDatasetsQuery } from "~/features/dataset";
@@ -28,11 +27,9 @@ const DatahubDataSyncTab = ({
   const [syncDatahubConnection, { isLoading }] =
     useSyncDatahubConnectionMutation();
   const toast = useToast();
-  const [isSyncing, setIsSyncing] = useState(false);
 
   const handleSync = async () => {
     try {
-      setIsSyncing(true);
       const configuredDatasetIds =
         datasetConfigs?.items?.map((config) => config.fides_key) ?? [];
       const bigqueryDatasetIds =
@@ -62,8 +59,6 @@ const DatahubDataSyncTab = ({
         duration: 5000,
         isClosable: true,
       });
-    } finally {
-      setIsSyncing(false);
     }
   };
 
@@ -92,7 +87,7 @@ const DatahubDataSyncTab = ({
         onClick={handleSync}
         data-testid="sync-button"
         width="fit-content"
-        isLoading={isSyncing || isLoading}
+        isLoading={isLoading}
         loadingText="Syncing datasets..."
       >
         Sync Datasets
