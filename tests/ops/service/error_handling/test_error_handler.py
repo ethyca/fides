@@ -1,4 +1,3 @@
-"""Tests for the ErrorHandler utility class."""
 
 import pytest
 from fastapi import HTTPException
