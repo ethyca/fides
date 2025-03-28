@@ -25,8 +25,7 @@ from fides.api.models.sql_models import System  # type: ignore[attr-defined]
 
 class Asset(Base):
     """
-    Web assets associated with a system. This model will supersede `Cookies` once we have established
-    a migration path and backward compatibility with all `Cookies` related APIs.
+    Web assets associated with a system
     """
 
     # Common attributes
