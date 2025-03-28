@@ -1,4 +1,3 @@
-
 import pytest
 from fastapi import HTTPException
 from starlette.status import (

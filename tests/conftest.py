@@ -89,6 +89,7 @@ TEST_DEPRECATED_CONFIG_PATH = "tests/ctl/test_deprecated_config.toml"
 
 sys.path.append(str(Path(__file__).resolve().parent.parent / "src"))
 
+
 @pytest.fixture
 def s3_client(storage_config):
     with mock_aws():
