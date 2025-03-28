@@ -7,9 +7,8 @@ Create Date: 2025-02-18 18:33:56.039924
 """
 
 import uuid
-from typing import Dict, List, Tuple
+from typing import Dict, Tuple
 
-import psycopg2
 import sqlalchemy as sa
 from alembic import op
 from loguru import logger
@@ -24,13 +23,7 @@ depends_on = None
 
 
 def upgrade():
-    try:
-        op.add_column("asset", sa.Column("description", sa.String(), nullable=True))
-    except psycopg2.errors.DuplicateColumn:
-        logger.warning(
-            "Column 'description' already exists in 'asset' table. Skipping column addition."
-        )
-
+    # migrate existing cookies to assets
     connection = op.get_bind()
     result = connection.execute(
         sa.text(
@@ -116,8 +109,6 @@ def upgrade():
 
 
 def downgrade():
-    op.drop_column("asset", "description")
-
     # Recreate the cookies table
     logger.debug("Recreating cookies table")
     op.create_table(
