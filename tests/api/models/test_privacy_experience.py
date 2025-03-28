@@ -10,6 +10,7 @@ from fides.api.models.privacy_experience import (
     PrivacyExperience,
     PrivacyExperienceConfig,
     PrivacyExperienceConfigHistory,
+    RejectAllMechanism,
     upsert_privacy_experiences_after_config_update,
 )
 from fides.api.schemas.language import SupportedLanguage
@@ -135,6 +136,122 @@ class TestExperienceConfig:
         history.delete(db)
 
         config.delete(db=db)
+
+    def test_create_tcf_experience_config_without_reject_all_mechanism(self, db):
+        """Test that when a TCF experience config is created without specifying reject_all_mechanism,
+        it defaults to REJECT_ALL"""
+        config = PrivacyExperienceConfig.create(
+            db=db,
+            data={
+                "component": ComponentType.tcf_overlay,
+                "name": "TCF Experience Config",
+                "translations": [
+                    {
+                        "language": SupportedLanguage.english,
+                        "title": "TCF Experience",
+                        "description": "TCF Experience Description",
+                    }
+                ],
+            },
+        )
+
+        assert config.reject_all_mechanism == RejectAllMechanism.REJECT_ALL
+
+        # Cleanup
+        for translation in config.translations:
+            for history in translation.histories:
+                history.delete(db)
+            translation.delete(db)
+        config.delete(db)
+
+    def test_create_tcf_experience_config_with_reject_all_mechanism(self, db):
+        """Test that when a TCF experience config is created with an explicit reject_all_mechanism,
+        it uses that value"""
+        # First create the config without reject_all_mechanism
+        config = PrivacyExperienceConfig.create(
+            db=db,
+            data={
+                "component": ComponentType.tcf_overlay,
+                "name": "TCF Experience Config",
+                "reject_all_mechanism": RejectAllMechanism.REJECT_CONSENT_ONLY,
+                "translations": [
+                    {
+                        "language": SupportedLanguage.english,
+                        "title": "TCF Experience",
+                        "description": "TCF Experience Description",
+                    }
+                ],
+            },
+        )
+        # Now check that the reject_all_mechanism is set to the explicit value, not the default
+        assert config.reject_all_mechanism == RejectAllMechanism.REJECT_CONSENT_ONLY
+
+        # Cleanup
+        for translation in config.translations:
+            for history in translation.histories:
+                history.delete(db)
+            translation.delete(db)
+        config.delete(db)
+
+    def test_create_non_tcf_experience_config(self, db):
+        """Test that when a non-TCF experience config is created, reject_all_mechanism remains None"""
+        config = PrivacyExperienceConfig.create(
+            db=db,
+            data={
+                "component": ComponentType.banner_and_modal,
+                "name": "Banner Experience Config",
+                "translations": [
+                    {
+                        "language": SupportedLanguage.english,
+                        "title": "Banner Experience",
+                        "description": "Banner Experience Description",
+                    }
+                ],
+            },
+        )
+
+        # Check that the reject_all_mechanism is None, since this is not a TCF experience config
+        assert config.reject_all_mechanism is None
+
+        # Cleanup
+        for translation in config.translations:
+            for history in translation.histories:
+                history.delete(db)
+            translation.delete(db)
+        config.delete(db)
+
+    def test_update_tcf_experience_config_reject_all_mechanism(self, db):
+        """Test that when a TCF experience config is updated to reject consent only,
+        the reject_all_mechanism is set to REJECT_CONSENT_ONLY"""
+        config = PrivacyExperienceConfig.create(
+            db=db,
+            data={
+                "component": ComponentType.tcf_overlay,
+                "name": "TCF Experience Config",
+                "translations": [
+                    {
+                        "language": SupportedLanguage.english,
+                        "title": "TCF Experience",
+                        "description": "TCF Experience Description",
+                    }
+                ],
+            },
+        )
+
+        assert config.reject_all_mechanism is RejectAllMechanism.REJECT_ALL
+
+        # Now update the config to reject consent only
+        config.reject_all_mechanism = RejectAllMechanism.REJECT_CONSENT_ONLY
+        config.save(db)
+
+        assert config.reject_all_mechanism == RejectAllMechanism.REJECT_CONSENT_ONLY
+
+        # Cleanup
+        for translation in config.translations:
+            for history in translation.histories:
+                history.delete(db)
+            translation.delete(db)
+        config.delete(db)
 
     def test_update_privacy_experience_config_level(self, db, privacy_notice):
         config = PrivacyExperienceConfig.create(
