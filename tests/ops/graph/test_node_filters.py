@@ -38,8 +38,9 @@ class TestOptionalIdentityFilter:
 
         with pytest.raises(UnreachableNodesError) as exc:
             Traversal(dataset_graph, identities)
-        assert "Some nodes were not reachable: unreachable_collection:address" in str(
-            exc
+        assert (
+            "Some collections were not reachable: unreachable_collection:address"
+            in str(exc)
         )
 
     def test_reachable_by_reference_does_not_raise_exception(

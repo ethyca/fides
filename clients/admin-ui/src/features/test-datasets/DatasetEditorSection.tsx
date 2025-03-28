@@ -2,11 +2,16 @@ import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import {
   AntButton as Button,
   AntSelect as Select,
+  Box,
   ErrorWarningIcon,
   GreenCheckCircleIcon,
-  Heading,
   HStack,
   Stack,
+  Tab,
+  TabList,
+  TabPanel,
+  TabPanels,
+  Tabs,
   Text,
   Tooltip,
   useToast,
@@ -25,7 +30,8 @@ import {
   useGetConnectionConfigDatasetConfigsQuery,
   useGetDatasetReachabilityQuery,
 } from "~/features/datastore-connections";
-import { Dataset } from "~/types/api";
+import { selectActiveSystem } from "~/features/system/system.slice";
+import { ConnectionType, Dataset, SystemResponse } from "~/types/api";
 
 import {
   selectCurrentDataset,
@@ -58,10 +64,16 @@ const EditorSection = ({ connectionKey }: EditorSectionProps) => {
   const toast = useToast();
   const dispatch = useAppDispatch();
   const [updateDataset] = useUpdateDatasetMutation();
+  const [tabIndex, setTabIndex] = useState(0);
 
   const [editorContent, setEditorContent] = useState<string>("");
+  const [saasConfigContent, setSaasConfigContent] = useState<string>("");
   const currentDataset = useAppSelector(selectCurrentDataset);
   const currentPolicyKey = useAppSelector(selectCurrentPolicyKey);
+  const activeSystem = useAppSelector(selectActiveSystem) as SystemResponse;
+  const connectionConfig = activeSystem?.connection_configs || null;
+  const isSaasConnector =
+    connectionConfig?.connection_type === ConnectionType.SAAS;
 
   const {
     data: datasetConfigs,
@@ -88,6 +100,14 @@ const EditorSection = ({ connectionKey }: EditorSectionProps) => {
       dispatch(setReachability(reachability.reachable));
     }
   }, [reachability, dispatch]);
+
+  useEffect(() => {
+    if (isSaasConnector && connectionConfig?.saas_config) {
+      setSaasConfigContent(
+        yaml.dump(removeNulls(connectionConfig.saas_config)),
+      );
+    }
+  }, [connectionConfig, isSaasConnector]);
 
   const datasetOptions = useMemo(
     () =>
@@ -200,15 +220,28 @@ const EditorSection = ({ connectionKey }: EditorSectionProps) => {
     }
   };
 
+  // Get appropriate content for the clipboard button based on current tab
+  const getClipboardContent = () => {
+    if (tabIndex === 0) {
+      return editorContent;
+    }
+    if (tabIndex === 1 && isSaasConnector) {
+      return saasConfigContent;
+    }
+    return "";
+  };
+
   return (
-    <VStack alignItems="stretch" flex="1" maxWidth="70vw" maxHeight="100vh">
-      <Heading
-        as="h3"
-        size="sm"
-        display="flex"
-        alignItems="center"
-        justifyContent="space-between"
-      >
+    <VStack
+      alignItems="stretch"
+      display="flex"
+      flex="1"
+      maxWidth="70vw"
+      maxHeight="50vh"
+      spacing={2}
+    >
+      {/* Header section with dataset selector and buttons */}
+      <HStack justifyContent="space-between" alignItems="center" flexShrink={0}>
         <HStack>
           <Text>Edit dataset: </Text>
           <Select
@@ -219,7 +252,6 @@ const EditorSection = ({ connectionKey }: EditorSectionProps) => {
             onChange={handleDatasetChange}
             className="w-64"
           />
-          <ClipboardButton copyText={editorContent} />
         </HStack>
         <HStack spacing={2}>
           <Tooltip
@@ -247,62 +279,181 @@ const EditorSection = ({ connectionKey }: EditorSectionProps) => {
             </Button>
           </Tooltip>
         </HStack>
-      </Heading>
-      <Stack
-        border="1px solid"
-        borderColor="gray.200"
-        borderRadius="md"
-        justifyContent="space-between"
-        py={4}
-        pr={4}
-        data-testid="empty-state"
-        flex="1 1 auto"
-        minHeight="200px"
+      </HStack>
+
+      {/* Main content area with tabs */}
+      <Box
+        position="relative"
+        display="flex"
+        flex="1"
+        minHeight={0}
+        overflow="hidden"
       >
-        <Editor
-          defaultLanguage="yaml"
-          value={editorContent}
+        <Tabs
+          index={tabIndex}
+          onChange={setTabIndex}
+          display="flex"
+          flexDirection="column"
+          flex="1"
+          variant="enclosed"
+          size="sm"
+          width="100%"
           height="100%"
-          onChange={(value) => setEditorContent(value || "")}
-          onMount={() => {}}
-          options={{
-            fontFamily: "Menlo",
-            fontSize: 13,
-            minimap: { enabled: false },
-            readOnly: false,
-            hideCursorInOverviewRuler: true,
-            overviewRulerBorder: false,
-            scrollBeyondLastLine: false,
-          }}
-          theme="light"
-        />
-      </Stack>
-      {reachability && (
-        <Stack
-          backgroundColor={reachability?.reachable ? "green.50" : "red.50"}
-          border="1px solid"
-          borderColor={reachability?.reachable ? "green.500" : "red.500"}
-          borderRadius="md"
-          p={2}
-          flexShrink={0}
-          mt={2}
         >
-          <HStack alignItems="center">
-            <HStack flex="1">
-              {reachability?.reachable ? (
-                <GreenCheckCircleIcon />
-              ) : (
-                <ErrorWarningIcon />
-              )}
-              <Text fontSize="sm" whiteSpace="pre-wrap">
-                {reachability?.reachable
-                  ? "Dataset is reachable"
-                  : `Dataset is not reachable. ${getReachabilityMessage(reachability?.details)}`}
-              </Text>
+          {/* Tab headers */}
+          <Box borderBottom="none" flexShrink={0}>
+            <HStack alignItems="center" width="100%">
+              <TabList ml="4px">
+                <Tab>Dataset</Tab>
+                {isSaasConnector && <Tab>API configuration</Tab>}
+              </TabList>
+              <Box position="absolute" right="0" top="0" zIndex="1">
+                <ClipboardButton copyText={getClipboardContent()} />
+              </Box>
             </HStack>
-          </HStack>
-        </Stack>
-      )}
+          </Box>
+
+          {/* Tab content */}
+          <TabPanels
+            display="flex"
+            flexDirection="column"
+            flex="1"
+            overflow="hidden"
+          >
+            {/* Dataset Tab */}
+            <TabPanel
+              display="flex"
+              flexDirection="column"
+              height="100%"
+              p={0}
+              overflow="hidden"
+            >
+              <VStack
+                flex="1"
+                display="flex"
+                alignItems="stretch"
+                spacing={2}
+                minHeight={0}
+                overflow="hidden"
+              >
+                {/* Editor */}
+                <Stack
+                  display="flex"
+                  flexDirection="column"
+                  flex="1"
+                  minHeight={0}
+                  border="1px solid"
+                  borderColor="gray.200"
+                  borderRadius="md"
+                  py={4}
+                  pr={4}
+                  data-testid="empty-state"
+                  overflow="hidden"
+                >
+                  <Editor
+                    defaultLanguage="yaml"
+                    value={editorContent}
+                    height="100%"
+                    onChange={(value) => setEditorContent(value || "")}
+                    onMount={() => {}}
+                    options={{
+                      fontFamily: "Menlo",
+                      fontSize: 13,
+                      minimap: { enabled: false },
+                      readOnly: false,
+                      hideCursorInOverviewRuler: true,
+                      overviewRulerBorder: false,
+                      scrollBeyondLastLine: false,
+                    }}
+                    theme="light"
+                  />
+                </Stack>
+
+                {/* Reachability status */}
+                {reachability && (
+                  <Stack
+                    backgroundColor={
+                      reachability?.reachable ? "green.50" : "red.50"
+                    }
+                    border="1px solid"
+                    borderColor={
+                      reachability?.reachable ? "green.500" : "red.500"
+                    }
+                    borderRadius="md"
+                    p={2}
+                    flexShrink={0}
+                    mb={0}
+                  >
+                    <HStack alignItems="center">
+                      <HStack flex="1">
+                        {reachability?.reachable ? (
+                          <GreenCheckCircleIcon />
+                        ) : (
+                          <ErrorWarningIcon />
+                        )}
+                        <Text fontSize="sm" whiteSpace="pre-wrap">
+                          {reachability?.reachable
+                            ? "Dataset is reachable"
+                            : `Dataset is not reachable. ${getReachabilityMessage(reachability?.details)}`}
+                        </Text>
+                      </HStack>
+                    </HStack>
+                  </Stack>
+                )}
+              </VStack>
+            </TabPanel>
+
+            {/* API Configuration Tab */}
+            {isSaasConnector && (
+              <TabPanel
+                display="flex"
+                flexDirection="column"
+                height="100%"
+                p={0}
+                overflow="hidden"
+              >
+                <VStack
+                  flex="1"
+                  display="flex"
+                  alignItems="stretch"
+                  minHeight={0}
+                  overflow="hidden"
+                >
+                  <Stack
+                    display="flex"
+                    flexDirection="column"
+                    flex="1"
+                    minHeight={0}
+                    border="1px solid"
+                    borderColor="gray.200"
+                    borderRadius="md"
+                    py={4}
+                    pr={4}
+                    overflow="hidden"
+                  >
+                    <Editor
+                      defaultLanguage="yaml"
+                      value={saasConfigContent}
+                      height="100%"
+                      onMount={() => {}}
+                      options={{
+                        fontFamily: "Menlo",
+                        fontSize: 13,
+                        minimap: { enabled: false },
+                        readOnly: true,
+                        hideCursorInOverviewRuler: true,
+                        overviewRulerBorder: false,
+                        scrollBeyondLastLine: false,
+                      }}
+                      theme="light"
+                    />
+                  </Stack>
+                </VStack>
+              </TabPanel>
+            )}
+          </TabPanels>
+        </Tabs>
+      </Box>
     </VStack>
   );
 };

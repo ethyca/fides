@@ -18,6 +18,7 @@ from loguru import logger
 
 echo_red = partial(click.secho, fg="red", bold=True)
 echo_green = partial(click.secho, fg="green", bold=True)
+echo_yellow = partial(click.secho, fg="yellow", bold=True)
 
 
 def print_divider(character: str = "-", character_length: int = 10) -> None:

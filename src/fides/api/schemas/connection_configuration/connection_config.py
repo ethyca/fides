@@ -11,7 +11,7 @@ from fides.api.models.connectionconfig import AccessLevel, ConnectionType
 from fides.api.schemas.api import BulkResponse, BulkUpdateFailed
 from fides.api.schemas.connection_configuration import connection_secrets_schemas
 from fides.api.schemas.policy import ActionType
-from fides.api.schemas.saas.saas_config import SaaSConfigBase
+from fides.api.schemas.saas.saas_config import SaaSConfig
 from fides.api.util.connection_type import get_connection_type_secret_schema
 
 
@@ -86,7 +86,7 @@ class ConnectionConfigurationResponse(BaseModel):
     disabled: Optional[bool] = False
     last_test_timestamp: Optional[datetime] = None
     last_test_succeeded: Optional[bool] = None
-    saas_config: Optional[SaaSConfigBase] = None
+    saas_config: Optional[SaaSConfig] = None
     secrets: Optional[Dict[str, Any]] = None
     authorized: Optional[bool] = False
     enabled_actions: Optional[List[ActionType]] = None

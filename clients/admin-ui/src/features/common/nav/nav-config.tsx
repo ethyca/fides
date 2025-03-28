@@ -129,9 +129,9 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         ],
       },
       {
-        title: "Connection manager",
-        path: routes.DATASTORE_CONNECTION_ROUTE,
-        scopes: [ScopeRegistryEnum.CONNECTION_CREATE_OR_UPDATE],
+        title: "Request policies",
+        path: routes.PRIVACY_POLICY_ROUTE,
+        scopes: [ScopeRegistryEnum.PRIVACY_REQUEST_READ],
       },
       {
         title: "Configuration",

@@ -2,7 +2,7 @@ services:
   fides:
     container_name: fides
     image: ethyca/fides:local
-    command: uvicorn --host 0.0.0.0 --port 8080 --reload --reload-dir src --reload-dir data --reload-include='*.yml' fides.api.main:app
+    command: uvicorn --host 0.0.0.0 --port 8080 --reload --reload-dir src --reload-dir data --reload-include='*.yml' --reload-exclude='.fides/*' fides.api.main:app
     healthcheck:
       test: ["CMD", "curl", "-f", "http://0.0.0.0:8080/health"]
       interval: 20s

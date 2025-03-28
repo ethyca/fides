@@ -4,6 +4,7 @@ from typing import List, Optional, Type, TypeVar
 from fideslang.models import Dataset as FideslangDataset
 from sqlalchemy.orm import Session
 
+from fides.api.graph.config import GraphDataset
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.schemas.dataset import DatasetTraversalDetails, ValidateDatasetResponse
 
@@ -18,11 +19,13 @@ class DatasetValidationContext:
         db: Session,
         dataset: FideslangDataset,
         connection_config: Optional[ConnectionConfig] = None,
+        graph_datasets: Optional[List[GraphDataset]] = None,
     ):
         self.db = db
         self.dataset = dataset
         self.connection_config = connection_config
         self.traversal_details: Optional[DatasetTraversalDetails] = None
+        self.graph_datasets = graph_datasets or []
 
 
 class DatasetValidationStep(ABC):
@@ -47,8 +50,11 @@ class DatasetValidator:
         dataset: FideslangDataset,
         connection_config: Optional[ConnectionConfig] = None,
         skip_steps: Optional[List[Type[DatasetValidationStep]]] = None,
+        graph_datasets: Optional[List[GraphDataset]] = None,
     ):
-        self.context = DatasetValidationContext(db, dataset, connection_config)
+        self.context = DatasetValidationContext(
+            db, dataset, connection_config, graph_datasets
+        )
         self.skip_steps = skip_steps or []
         self.validation_steps = [
             step()

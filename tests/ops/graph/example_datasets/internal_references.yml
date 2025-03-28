@@ -1,0 +1,111 @@
+dataset:
+- fides_key: internal_references
+  name: Internal References
+  description: Dataset with internal references
+  collections:
+  - name: customer_accounts
+    fields:
+    - name: account_id
+      fides_meta:
+        data_type: string
+    - name: account_status
+    - name: account_type
+    - name: creation_date
+    - name: customer_id
+      fides_meta:
+        data_type: string
+    - name: last_login_date
+    - name: payment_status
+    - name: subscription_level
+  - name: customer_addresses
+    fields:
+    - name: address
+      fides_meta:
+        data_type: object
+      fields:
+      - name: street_line1
+        data_categories:
+        - user.contact.address.street
+        fides_meta:
+          data_type: string
+      - name: street_line2
+        data_categories:
+        - user.contact.address.street
+        fides_meta:
+          data_type: string
+      - name: city
+        data_categories:
+        - user.contact.address.city
+        fides_meta:
+          data_type: string
+      - name: state
+        data_categories:
+        - user.contact.address.state
+        fides_meta:
+          data_type: string
+      - name: postal_code
+        data_categories:
+        - user.contact.address.postal_code
+        fides_meta:
+          data_type: string
+      - name: country
+        data_categories:
+        - user.contact.address.country
+        fides_meta:
+          data_type: string
+    - name: address_type
+    - name: created_at
+    - name: customer_id
+      fides_meta:
+        references:
+        - dataset: internal_references
+          field: customer_profiles.id
+          direction: from
+    - name: id
+    - name: is_default
+    - name: label
+    - name: updated_at
+  - name: customer_profiles
+    fields:
+    - name: date_of_birth
+    - name: email
+      fides_meta:
+        identity: email
+        data_type: string
+    - name: first_name
+      fides_meta:
+        data_type: string
+    - name: id
+    - name: last_name
+      fides_meta:
+        data_type: string
+    - name: loyalty_tier
+    - name: phone_number
+    - name: registration_date
+  - name: purchase_history
+    fields:
+    - name: account_id
+      fides_meta:
+        references:
+        - dataset: internal_references
+          field: customer_accounts.account_id
+          direction: from
+    - name: id
+    - name: items
+      fides_meta:
+        data_type: object[]
+      fields:
+      - name: product_id
+      - name: product_name
+      - name: quantity
+      - name: unit_price
+      - name: discount_amount
+    - name: order_number
+    - name: purchase_date
+    - name: shipping_address_id
+      fides_meta:
+        references:
+        - dataset: internal_references
+          field: customer_addresses.id
+          direction: to
+    - name: total_amount

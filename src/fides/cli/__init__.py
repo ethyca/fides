@@ -12,13 +12,11 @@ from importlib.metadata import version
 from platform import system
 
 from fideslog.sdk.python.client import AnalyticsClient
-from rich_click import Context, echo, group, option, pass_context, secho, version_option
+from rich_click import Context, echo, group, option, pass_context, version_option
 
 import fides
-from fides.cli.utils import check_server
 from fides.config import get_config
 
-from . import cli_formatting
 from .commands.annotate import annotate
 from .commands.db import database
 from .commands.deploy import deploy
@@ -34,6 +32,7 @@ from .commands.ungrouped import (
     parse,
     push,
     status,
+    validate,
     webserver,
     worker,
 )
@@ -55,6 +54,7 @@ API_COMMANDS = [
     push,
     worker,
     user,
+    validate,
 ]
 ALL_COMMANDS = API_COMMANDS + LOCAL_COMMANDS
 VERSION = fides.__version__
@@ -91,7 +91,7 @@ def cli(ctx: Context, config_path: str, local: bool) -> None:
     """
 
     ctx.ensure_object(dict)
-    config = get_config(config_path, verbose=True)
+    config = get_config(config_path, verbose=False)
     command = ctx.invoked_subcommand or ""
 
     if not (local or config.cli.local_mode):

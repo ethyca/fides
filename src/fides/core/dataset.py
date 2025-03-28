@@ -2,6 +2,7 @@
 
 from typing import Dict, List, Optional, Tuple
 
+import requests
 import sqlalchemy
 from fideslang import manifests
 from fideslang.models import Dataset, DatasetCollection, DatasetField
@@ -19,7 +20,7 @@ from fides.connectors.aws import (
 )
 from fides.connectors.bigquery import get_bigquery_engine
 from fides.connectors.models import AWSConfig, BigQueryConfig
-from fides.core.api_helpers import list_server_resources
+from fides.core.api_helpers import get_server_resource, list_server_resources
 from fides.core.parse import parse
 from fides.core.utils import check_fides_key, generate_unique_fides_key, get_db_engine
 
@@ -440,3 +441,146 @@ def get_snowflake_table_fields(
     column_cursor = engine.execute(text(f'SHOW COLUMNS IN "{schema}"."{table}"'))
     columns = [row[2] for row in column_cursor]
     return table, columns
+
+
+def validate_dataset_from_path(
+    path_or_key: str,
+    url: Optional[AnyHttpUrlString] = None,
+    headers: Optional[Dict[str, str]] = None,
+    local: bool = False,
+) -> Dict:
+    """
+    Validates a dataset from a file path or by its fides key.
+
+    Args:
+        path_or_key: Either a path to a YAML file containing a dataset or a fides_key
+        url: API URL when fetching from server (None for local validation)
+        headers: Auth headers when fetching from server
+        local: Whether to perform only local validation without the server
+
+    Returns:
+        Dictionary with validation results including success status and details
+
+    CLI Usage:
+        fides validate dataset <fides_key_or_path>
+    """
+    dataset = None
+
+    # Load dataset from file if it's a YAML path
+    if path_or_key.endswith((".yml", ".yaml")):
+        try:
+            # Parse returns a Taxonomy object which has a dataset attribute (not a dict)
+            taxonomy = parse(path_or_key)
+            datasets = taxonomy.dataset or []
+
+            if not datasets:
+                return {
+                    "success": False,
+                    "message": f"No datasets found in {path_or_key}",
+                }
+
+            dataset = datasets[0]
+            if len(datasets) > 1:
+                echo_red(
+                    f"Multiple datasets found in {path_or_key}. Validating only: {dataset.fides_key}"
+                )
+        except Exception as e:
+            return {"success": False, "message": f"Error parsing dataset: {str(e)}"}
+
+    # In local mode, try to find the dataset by fides_key in the default location
+    elif local and not path_or_key.endswith((".yml", ".yaml")):
+        try:
+            # Try to find the dataset in the default directory
+            taxonomy = parse(".fides")
+            if taxonomy.dataset:
+                dataset = next(
+                    (d for d in taxonomy.dataset if d.fides_key == path_or_key), None
+                )
+
+            # If not found, try in data/dataset directory
+            if not dataset:
+                try:
+                    taxonomy = parse("data/dataset")
+                    if taxonomy.dataset:
+                        dataset = next(
+                            (d for d in taxonomy.dataset if d.fides_key == path_or_key),
+                            None,
+                        )
+                except Exception:
+                    pass
+
+            if not dataset:
+                return {
+                    "success": False,
+                    "message": f"Could not find dataset with fides_key '{path_or_key}' in local configuration",
+                }
+        except Exception as e:
+            return {"success": False, "message": f"Error finding dataset: {str(e)}"}
+
+    # Fetch dataset from server by fides_key
+    elif not local and url and headers:
+        try:
+            dataset_dict = get_server_resource(
+                url=str(url),
+                resource_type="dataset",
+                resource_key=path_or_key,
+                headers=headers,
+            )
+            dataset = Dataset.model_validate(dataset_dict)
+        except Exception as e:
+            return {
+                "success": False,
+                "message": f"Error fetching dataset '{path_or_key}': {str(e)}",
+            }
+    else:
+        return {
+            "success": False,
+            "message": "Please provide either a YAML file path or a fides_key with server connection",
+        }
+
+    # Local validation (schema only)
+    if local or not url:
+        # Dataset was already validated during parsing/loading
+        return {
+            "success": True,
+            "message": f"Dataset '{dataset.fides_key}' is valid according to the schema",
+            "details": {
+                "dataset": dataset.model_dump(),
+                "traversal_details": {"is_traversable": "Unknown"},
+            },
+        }
+
+    # Server-side validation
+    try:
+        # Use the standalone dataset validation endpoint
+        response = requests.post(
+            f"{url}/api/v1/dataset/validate",
+            json=dataset.model_dump(mode="json"),
+            headers=headers,
+        )
+
+        if response.status_code == 200:
+            result = response.json()
+            return {
+                "success": True,
+                "message": f"Dataset '{dataset.fides_key}' passed validation",
+                "details": result,
+            }
+        else:
+            error_msg = "Server error"
+            if response.status_code < 500:
+                try:
+                    error_data = response.json()
+                    error_msg = error_data.get("detail", response.reason)
+                except Exception:
+                    error_msg = response.reason
+
+            return {
+                "success": False,
+                "message": f"Dataset validation failed 2: {error_msg}",
+            }
+    except Exception as e:
+        return {
+            "success": False,
+            "message": f"Error during validation request: {str(e)}",
+        }

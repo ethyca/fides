@@ -75,4 +75,7 @@ reachable_by_reference_dataset_config = create_dataset_config_fixture(
     "reachable_by_reference.yml"
 )
 
+internal_references_dataset_config = create_dataset_config_fixture(
+    "internal_references.yml"
+)
 unvisited_edge_dataset_config = create_dataset_config_fixture("unvisited_edge.yml")
