@@ -347,9 +347,13 @@ def replace_references_with_identities(
 
     for collection in modified_graph_dataset.collections:
         for field in collection.fields:
-            for ref, edge_direction in field.references[:]:
-                if edge_direction == "from" and ref.dataset != dataset_key:
-                    field.identity = f"{ref.dataset}_{ref.collection}_{'_'.join(ref.field_path.levels)}"
-                    field.references.remove((ref, "from"))
+            # Use a copy of the references list since we're modifying it during iteration
+            references_copy = field.references.copy()
+            for ref, edge_direction in references_copy:
+                # Remove both "from" and "to" references that point outside the current dataset
+                if ref.dataset != dataset_key:
+                    if edge_direction == "from":
+                        field.identity = f"{ref.dataset}_{ref.collection}_{'_'.join(ref.field_path.levels)}"
+                    field.references.remove((ref, edge_direction))
 
     return modified_graph_dataset
