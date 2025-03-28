@@ -80,12 +80,26 @@ const Preview = ({
   const { systemsCount } = useFeatures();
 
   useEffect(() => {
-    if (
-      values.privacy_notice_ids &&
-      values.component !== ComponentType.TCF_OVERLAY
-    ) {
+    if (values.privacy_notice_ids) {
       const notices = values.privacy_notice_ids
         .map((id) => allPrivacyNotices.find((notice) => notice?.id === id))
+        .map((notice) => {
+          if (
+            values.component === ComponentType.TCF_OVERLAY &&
+            notice !== undefined
+          ) {
+            return {
+              ...notice,
+              translations: [
+                {
+                  language: "en",
+                  text: notice?.name,
+                },
+              ],
+            };
+          }
+          return notice;
+        })
         .filter(
           (notice): notice is PrivacyNoticeResponse => notice !== undefined,
         );
