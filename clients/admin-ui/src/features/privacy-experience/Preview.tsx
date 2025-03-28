@@ -1,17 +1,15 @@
 import { FidesGlobal } from "fides-js/src/lib/consent-types";
-import { AntFlex as Flex, Text, useToast } from "fidesui";
+import { AntFlex as Flex, Text } from "fidesui";
 import { useFormikContext } from "formik";
 import Script from "next/script";
 import React, { useEffect, useMemo, useState } from "react";
 
 import { PREVIEW_CONTAINER_ID } from "~/constants";
-import { getErrorMessage } from "~/features/common/helpers";
 import { TranslationWithLanguageName } from "~/features/privacy-experience/form/helpers";
 import {
   buildBaseConfig,
   translationOrDefault,
 } from "~/features/privacy-experience/preview/helpers";
-import { useLazyGetPrivacyNoticeByIdQuery } from "~/features/privacy-notices/privacy-notices.slice";
 import theme from "~/theme";
 import {
   ComponentType,
@@ -79,45 +77,23 @@ const Preview = ({
     ComponentType.TCF_OVERLAY,
   ].includes(values.component);
 
-  const toast = useToast();
-
-  const [getPrivacyNoticeByIdTrigger] = useLazyGetPrivacyNoticeByIdQuery();
-
   const { systemsCount } = useFeatures();
-
-  const getPrivacyNotice = async (id: string) => {
-    const result = await getPrivacyNoticeByIdTrigger(id);
-    if (result.isError) {
-      const errorMsg = getErrorMessage(
-        result.error,
-        "A problem occurred while fetching privacy notice data.  Some notices may not display correctly on the preview.",
-      );
-      toast({ status: "error", description: errorMsg });
-    }
-    const { data } = await getPrivacyNoticeByIdTrigger(id);
-    return data;
-  };
 
   useEffect(() => {
     if (
       values.privacy_notice_ids &&
       values.component !== ComponentType.TCF_OVERLAY
     ) {
-      Promise.all(
-        values.privacy_notice_ids!.map((id) => getPrivacyNotice(id)),
-      ).then((data) =>
-        // TS can't tell that we filter out notices that are undefined here
-        // @ts-ignore
-        setNoticesOnConfig(data.filter((notice) => notice !== undefined)),
-      );
+      const notices = values.privacy_notice_ids
+        .map((id) => allPrivacyNotices.find((notice) => notice?.id === id))
+        .filter(
+          (notice): notice is PrivacyNoticeResponse => notice !== undefined,
+        );
+      setNoticesOnConfig(notices);
     } else {
       setNoticesOnConfig([]);
     }
-    // ESLint wants us to have getPrivacyNotice in the dependencies, but doing
-    // so makes the privacy notice queries fire on every re-render;
-    // we can omit it because it isn't calculated from state or props
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [values.privacy_notice_ids]);
+  }, [values.privacy_notice_ids, allPrivacyNotices, values.component]);
 
   // Create the base FidesConfig JSON that will be used to initialize fides.js
   const baseConfig = useMemo(
