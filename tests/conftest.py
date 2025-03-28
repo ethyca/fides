@@ -1,7 +1,6 @@
 import asyncio
 import json
 import os
-import sys
 import time
 from datetime import datetime
 from pathlib import Path
@@ -86,8 +85,6 @@ CONFIG = get_config()
 TEST_CONFIG_PATH = "tests/ctl/test_config.toml"
 TEST_INVALID_CONFIG_PATH = "tests/ctl/test_invalid_config.toml"
 TEST_DEPRECATED_CONFIG_PATH = "tests/ctl/test_deprecated_config.toml"
-
-sys.path.append(str(Path(__file__).resolve().parent.parent / "src"))
 
 
 @pytest.fixture

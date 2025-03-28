@@ -9,7 +9,106 @@ T = TypeVar("T")
 
 
 class ErrorHandler:
-    """Utility class for handling errors consistently throughout the application."""
+    """Utility class for handling errors consistently throughout the application.
+
+    Usage Examples:
+    -----------------------------------------------------------------------------
+
+    1. Basic Validation:
+    ```python
+    from fastapi import FastAPI
+    from fides.service.error_handling.error_handler import ErrorHandler
+
+    app = FastAPI()
+
+    @app.post("/users")
+    def create_user(age: int):
+        # Simple validation
+        ErrorHandler.validate(age >= 18, "User must be 18 or older")
+        return {"message": "User created"}
+
+    @app.get("/items/{item_id}")
+    def get_item(item_id: str):
+        # Direct error raising
+        if not item_id:
+            ErrorHandler.raise_error("Item ID is required", status_code=400)
+        return {"item_id": item_id}
+    ```
+
+    2. Exception Handling Decorator:
+    ```python
+    @app.post("/orders")
+    @ErrorHandler.handle_exceptions("Failed to create order")
+    def create_order(order_data: dict):
+        if not order_data.get("items"):
+            raise ValueError("Order must contain items")
+        # Process order...
+        return {"message": "Order created"}
+
+    @app.get("/products/{product_id}")
+    @ErrorHandler.handle_exceptions("Failed to fetch product", status_code=404)
+    def get_product(product_id: str):
+        product = database.get_product(product_id)
+        if not product:
+            raise ValueError("Product not found")
+        return product
+    ```
+
+    3. Complex Validation:
+    ```python
+    @app.post("/payments")
+    @ErrorHandler.handle_exceptions("Payment processing failed")
+    def process_payment(payment: dict):
+        # Validate amount
+        ErrorHandler.validate(
+            payment.get("amount", 0) > 0,
+            "Payment amount must be positive",
+            HTTP_400_BAD_REQUEST
+        )
+
+        # Validate currency
+        ErrorHandler.validate(
+            payment.get("currency") in ["USD", "EUR"],
+            "Invalid currency",
+            HTTP_400_BAD_REQUEST,
+            "Unsupported currency provided"  # Optional log message
+        )
+
+        # Custom error for insufficient funds
+        if payment.get("amount", 0) > get_balance():
+            ErrorHandler.raise_error(
+                "Insufficient funds",
+                status_code=HTTP_400_BAD_REQUEST,
+                log_message="User attempted payment exceeding balance"
+            )
+
+        return {"status": "payment processed"}
+    ```
+
+    4. Error Logging:
+    ```python
+    @app.post("/imports")
+    @ErrorHandler.handle_exceptions("Import failed")
+    def import_data(data: dict):
+        try:
+            process_import(data)
+        except Exception as e:
+            # Log error with custom message before raising
+            ErrorHandler.raise_error(
+                "Import failed: invalid format",
+                status_code=400,
+                log_message=f"Import failed with error: {str(e)}"
+            )
+        return {"status": "import complete"}
+    ```
+
+    Key Features:
+    - Simple validation with custom error messages
+    - Consistent error handling across endpoints
+    - Built-in error logging
+    - HTTP status code customization
+    - Exception handling decorator for common patterns
+    """
 
     @staticmethod
     def raise_error(
