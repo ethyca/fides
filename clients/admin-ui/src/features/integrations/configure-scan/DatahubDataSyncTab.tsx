@@ -1,16 +1,13 @@
 /* eslint-disable react/no-unstable-nested-components */
 
-import { Text, VStack, Button, useToast, Link, Spinner } from "fidesui";
+import { Button, Link, Text, useToast, VStack } from "fidesui";
+import { useState } from "react";
+
+import { successToastParams } from "~/features/common/toast";
 import { useGetAllFilteredDatasetsQuery } from "~/features/dataset";
 import { useGetConnectionConfigDatasetConfigsQuery } from "~/features/datastore-connections";
 import { useSyncDatahubConnectionMutation } from "~/features/plus/plus.slice";
-import { successToastParams } from "~/features/common/toast";
-import {
-  ConnectionConfigurationResponse,
-  ConnectionSystemTypeMap,
-  ConnectionType,
-} from "~/types/api";
-import { useState } from "react";
+import { ConnectionConfigurationResponse, ConnectionType } from "~/types/api";
 
 const DATAHUB_COPY_1 = `If you're using DataHub for metadata management, select sync datasets to push data categories from Fides to your DataHub datasets.`;
 
@@ -18,30 +15,34 @@ const DATAHUB_COPY_2 = `Fides assigns data categories to datasets based on your 
 
 const DatahubDataSyncTab = ({
   integration,
-  integrationOption,
 }: {
   integration: ConnectionConfigurationResponse;
-  integrationOption?: ConnectionSystemTypeMap;
 }) => {
   const { data: datasetConfigs } = useGetConnectionConfigDatasetConfigsQuery(
-    integration.key
+    integration.key,
   );
   const { data: bigqueryDatasets } = useGetAllFilteredDatasetsQuery({
     minimal: true,
     connection_type: ConnectionType.BIGQUERY,
   });
-  const [syncDatahubConnection, { isLoading }] = useSyncDatahubConnectionMutation();
+  const [syncDatahubConnection, { isLoading }] =
+    useSyncDatahubConnectionMutation();
   const toast = useToast();
   const [isSyncing, setIsSyncing] = useState(false);
 
   const handleSync = async () => {
     try {
       setIsSyncing(true);
-      const configuredDatasetIds = datasetConfigs?.items?.map(config => config.fides_key) ?? [];
-      const bigqueryDatasetIds = bigqueryDatasets?.map(dataset => dataset.fides_key) ?? [];
+      const configuredDatasetIds =
+        datasetConfigs?.items?.map((config) => config.fides_key) ?? [];
+      const bigqueryDatasetIds =
+        bigqueryDatasets?.map((dataset) => dataset.fides_key) ?? [];
 
       // Use configured datasets if available, otherwise fall back to all BigQuery datasets
-      const datasetIds = configuredDatasetIds.length > 0 ? configuredDatasetIds : bigqueryDatasetIds;
+      const datasetIds =
+        configuredDatasetIds.length > 0
+          ? configuredDatasetIds
+          : bigqueryDatasetIds;
 
       const response = await syncDatahubConnection({
         connectionKey: integration.key,
@@ -49,14 +50,14 @@ const DatahubDataSyncTab = ({
       });
 
       const successCount = response.data?.succeeded.length ?? 0;
-      const message = `Fides has begun syncing with DataHub. There ${successCount === 1 ? 'is' : 'are'} ${successCount} dataset${successCount === 1 ? '' : 's'} queued for syncing.`;
+      const message = `Fides has begun syncing with DataHub. There ${successCount === 1 ? "is" : "are"} ${successCount} dataset${successCount === 1 ? "" : "s"} queued for syncing.`;
 
       toast(successToastParams(message));
     } catch (error) {
-      console.error("Failed to sync datasets:", error);
       toast({
         title: "Error syncing datasets",
-        description: "There was an error syncing your datasets with DataHub. Please try again.",
+        description:
+          "There was an error syncing your datasets with DataHub. Please try again.",
         status: "error",
         duration: 5000,
         isClosable: true,

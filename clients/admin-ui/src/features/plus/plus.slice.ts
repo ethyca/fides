@@ -26,6 +26,7 @@ import {
   ClassifySystem,
   CloudConfig,
   ConnectionConfigurationResponse,
+  ConnectionDatahubSyncResponse,
   ConsentableItem,
   CustomAssetType,
   CustomFieldDefinition,
@@ -41,10 +42,6 @@ import {
   SystemScanResponse,
   SystemsDiff,
   TCFPurposeOverrideSchema,
-  ConnectionDatahubSyncResponse,
-  ConnectionSystemTypeMap,
-  ConnectionType,
-  Dataset,
 } from "~/types/api";
 import {
   DataUseDeclaration,
@@ -478,7 +475,10 @@ const plusApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Consentable Items"],
     }),
-    syncDatahubConnection: build.mutation<ConnectionDatahubSyncResponse, { connectionKey: string; datasetIds: string[] }>({
+    syncDatahubConnection: build.mutation<
+      ConnectionDatahubSyncResponse,
+      { connectionKey: string; datasetIds: string[] }
+    >({
       query: ({ connectionKey, datasetIds }) => ({
         url: `plus/connection/datahub/${connectionKey}/sync`,
         method: "POST",

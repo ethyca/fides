@@ -104,12 +104,7 @@ const IntegrationDetailView: NextPage = () => {
     },
     {
       label: "Data sync",
-      content: (
-        <DatahubDataSyncTab
-          integration={connection!}
-          integrationOption={integrationOption}
-        />
-      ),
+      content: <DatahubDataSyncTab integration={connection!} />,
     },
   ];
 
