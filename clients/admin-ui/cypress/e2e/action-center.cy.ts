@@ -514,7 +514,7 @@ describe("Action center", () => {
       );
     });
 
-    describe.only("tab navigation", () => {
+    describe("tab navigation", () => {
       it("updates URL hash when switching tabs", () => {
         cy.visit(
           `${ACTION_CENTER_ROUTE}/${webMonitorKey}/${systemId}#attention-required`,
