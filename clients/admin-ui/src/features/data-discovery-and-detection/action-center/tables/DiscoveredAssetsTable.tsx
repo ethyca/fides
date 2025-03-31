@@ -331,14 +331,18 @@ export const DiscoveredAssetsTable = ({
                 >
                   Assign system
                 </MenuItem>
-                <MenuDivider />
-                <MenuItem
-                  fontSize="small"
-                  onClick={handleBulkIgnore}
-                  data-testid="bulk-ignore"
-                >
-                  Ignore
-                </MenuItem>
+                {!activeParams.diff_status.includes(DiffStatus.MUTED) && (
+                  <>
+                    <MenuDivider />
+                    <MenuItem
+                      fontSize="small"
+                      onClick={handleBulkIgnore}
+                      data-testid="bulk-ignore"
+                    >
+                      Ignore
+                    </MenuItem>
+                  </>
+                )}
               </MenuList>
             </Menu>
 
