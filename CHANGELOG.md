@@ -28,6 +28,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ### Changed
 - Bumped Next.js for all frontend apps to latest patch versions. [#5946](https://github.com/ethyca/fides/pull/5946)
+- Changed action center result tables to use expandable cells for multi-value results [#5963](https://github.com/ethyca/fides/pull/5963)
 
 ### Fixed
 - Updated relationships for Comments, Attachments and PrivacyRequests to remove overlap sqlalchemy error. [#5929](https://github.com/ethyca/fides/pull/5929)
