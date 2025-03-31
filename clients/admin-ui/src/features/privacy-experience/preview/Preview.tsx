@@ -155,6 +155,7 @@ const Preview = ({
         : Layer1ButtonOption.OPT_IN_OPT_OUT;
     baseConfig.options.preventDismissal = !values.dismissable;
     baseConfig.experience.vendor_count = systemsCount;
+    baseConfig.experience.experience_config.component = values.component;
     if (
       window.Fides &&
       (values.privacy_notice_ids?.length ||
@@ -177,12 +178,11 @@ const Preview = ({
     modal.removeAttribute("tabindex");
   }
 
-  if (!isPreviewAvailable) {
+  if (!values.component) {
     return (
       <NoPreviewNotice
-        title={`${COMPONENT_MAP.get(values.component)} preview not available`}
-        description={`There is no preview available for ${COMPONENT_MAP.get(values.component)}. You can edit the available settings
-      and languages to the left.`}
+        title="No privacy experience type selected"
+        description="Please select a privacy experience type to preview."
       />
     );
   }
@@ -196,6 +196,15 @@ const Preview = ({
         title="No privacy notices added"
         description='To view a preview of this experience, add a privacy notice under
       "Privacy Notices" to the left.'
+      />
+    );
+  }
+  if (!isPreviewAvailable) {
+    return (
+      <NoPreviewNotice
+        title={`${COMPONENT_MAP.get(values.component)} preview not available`}
+        description={`There is no preview available for ${COMPONENT_MAP.get(values.component)}. You can edit the available settings
+    and languages to the left.`}
       />
     );
   }
