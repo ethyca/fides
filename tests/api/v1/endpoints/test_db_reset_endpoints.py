@@ -1,7 +1,7 @@
 import pytest
-from fides.api.db.database import configure_db
 from starlette.testclient import TestClient
 
+from fides.api.db.database import configure_db
 from fides.api.util.endpoint_utils import API_PREFIX
 from fides.config import CONFIG, FidesConfig
 
@@ -11,8 +11,7 @@ class TestDBResetEndpoints:
     async def setup_db(self):
         """Setup the database with required resources before running tests"""
         await configure_db(
-            database_url=CONFIG.database.sqlalchemy_test_database_uri,
-            samples=False
+            database_url=CONFIG.database.sqlalchemy_test_database_uri, samples=False
         )
 
     async def test_db_reset_dev_mode_enabled(
