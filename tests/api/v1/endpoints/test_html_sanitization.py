@@ -1,4 +1,3 @@
-
 #!/usr/bin/env python3
 """
 Final test to understand NH3's handling of link attributes.
@@ -6,7 +5,6 @@ Testing with different attribute combinations to find what's allowed.
 """
 
 from src.fides.api.custom_types import validate_html_str
-
 
 
 def test_html_sanitization():
