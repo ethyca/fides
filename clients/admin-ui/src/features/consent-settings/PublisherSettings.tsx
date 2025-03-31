@@ -4,7 +4,7 @@ import { useFormikContext } from "formik";
 import { useFeatures } from "~/features/common/features";
 import { useGetOnlyCountryLocationsQuery } from "~/features/locations/locations.slice";
 import { getSelectedRegions } from "~/features/privacy-experience/form/helpers";
-import { TCFPublisherSettings } from "~/types/api";
+import { TCFPublisherSettings } from "~/types/api/models/TCFPublisherSettings";
 
 import SettingsBox from "./SettingsBox";
 
