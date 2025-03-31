@@ -32,8 +32,11 @@ from fides.api.cryptography.schemas.jwt import (
     JWE_PAYLOAD_SYSTEMS,
 )
 from fides.api.db.ctl_session import sync_engine
+from fides.api.db.session import get_db_engine, get_db_session
 from fides.api.db.system import create_system
 from fides.api.main import app
+from fides.api.models.application_config import ApplicationConfig
+from fides.api.models.client import _get_root_client_detail
 from fides.api.models.privacy_request import (
     EXITED_EXECUTION_LOG_STATUSES,
     RequestTask,
@@ -311,14 +314,9 @@ def oauth_client(db):
 
 
 @pytest.fixture
-def oauth_root_client(db):
+def oauth_root_client(config):
     """Return the configured root client (never persisted)"""
-    return ClientDetail.get(
-        db,
-        object_id=CONFIG.security.oauth_root_client_id,
-        config=CONFIG,
-        scopes=SCOPE_REGISTRY,
-    )
+    return _get_root_client_detail(config, scopes=SCOPE_REGISTRY, roles=[])
 
 
 @pytest.fixture
@@ -700,10 +698,10 @@ def celery_config():
     return {"task_always_eager": False}
 
 
-@pytest.fixture(autouse=True, scope="session")
-def celery_enable_logging():
-    """Turns on celery output logs."""
-    return True
+# @pytest.fixture(autouse=True, scope="session")
+# def celery_enable_logging():
+#     """Turns on celery output logs."""
+#     return True
 
 
 @pytest.fixture(autouse=True, scope="session")
@@ -884,7 +882,7 @@ def subject_identity_verification_required(db):
     ApplicationConfig.update_config_set(db, CONFIG)
 
 
-@pytest.fixture(autouse=True, scope="function")
+@pytest.fixture(scope="function")
 def subject_identity_verification_not_required(db):
     """Disable identity verification for most tests unless overridden"""
     original_value = CONFIG.execution.subject_identity_verification_required
@@ -908,7 +906,7 @@ def disable_consent_identity_verification(db):
     ApplicationConfig.update_config_set(db, CONFIG)
 
 
-@pytest.fixture(autouse=True, scope="function")
+@pytest.fixture(scope="function")
 def privacy_request_complete_email_notification_disabled(db):
     """Disable request completion email for most tests unless overridden"""
     original_value = CONFIG.notifications.send_request_completion_notification
@@ -921,7 +919,7 @@ def privacy_request_complete_email_notification_disabled(db):
     db.commit()
 
 
-@pytest.fixture(autouse=True, scope="function")
+@pytest.fixture(scope="function")
 def privacy_request_receipt_notification_disabled(db):
     """Disable request receipt notification for most tests unless overridden"""
     original_value = CONFIG.notifications.send_request_receipt_notification
@@ -934,7 +932,7 @@ def privacy_request_receipt_notification_disabled(db):
     db.commit()
 
 
-@pytest.fixture(autouse=True, scope="function")
+@pytest.fixture(scope="function")
 def privacy_request_review_notification_disabled(db):
     """Disable request review notification for most tests unless overridden"""
     original_value = CONFIG.notifications.send_request_review_notification
@@ -947,7 +945,7 @@ def privacy_request_review_notification_disabled(db):
     db.commit()
 
 
-@pytest.fixture(scope="function", autouse=True)
+@pytest.fixture(scope="function")
 def set_notification_service_type_mailgun(db):
     """Set default notification service type"""
     original_value = CONFIG.notifications.notification_service_type
@@ -1008,7 +1006,7 @@ def set_property_specific_messaging_enabled(db):
     ApplicationConfig.update_config_set(db, CONFIG)
 
 
-@pytest.fixture(autouse=True, scope="function")
+@pytest.fixture(scope="function")
 def set_property_specific_messaging_disabled(db):
     """Disable property specific messaging for all tests unless overridden"""
     original_value = CONFIG.notifications.enable_property_specific_messaging
@@ -1821,7 +1819,7 @@ def connection_client(db, connection_config):
     client.delete(db)
 
 
-@pytest.fixture(scope="function", autouse=True)
+@pytest.fixture(scope="function")
 def load_default_data_uses(db):
     for data_use in DEFAULT_TAXONOMY.data_use:
         # weirdly, only in some test scenarios, we already have the default taxonomy
