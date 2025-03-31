@@ -21,6 +21,9 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.58.0...main)
 
+### Added
+- Added `reject_all_mechanism` to `PrivacyExperienceConfig` [#5952](https://github.com/ethyca/fides/pull/5952) https://github.com/ethyca/fides/labels/db-migration
+
 ### Changed
 - Bumped Next.js for all frontend apps to latest patch versions. [#5946](https://github.com/ethyca/fides/pull/5946)
 
