@@ -146,7 +146,7 @@ const Preview = ({
       }
     }
     baseConfig.experience.experience_config.show_layer1_notices =
-      !!values.privacy_notice_ids?.length && !!values.show_layer1_notices;
+      !!noticesOnConfig?.length && !!values.show_layer1_notices;
     baseConfig.experience.experience_config.layer1_button_options =
       (values.component === ComponentType.BANNER_AND_MODAL ||
         values.component === ComponentType.TCF_OVERLAY) &&
@@ -158,14 +158,16 @@ const Preview = ({
     baseConfig.experience.experience_config.component = values.component;
     if (
       window.Fides &&
-      (values.privacy_notice_ids?.length ||
+      (noticesOnConfig?.length ||
         values.component === ComponentType.TCF_OVERLAY) &&
       isPreviewAvailable
     ) {
+      // reinitialize fides.js each time the form changes
       window.Fides.init(baseConfig as any);
     }
   }, [
     values,
+    noticesOnConfig,
     translation,
     baseConfig,
     allPrivacyNotices,
@@ -187,8 +189,18 @@ const Preview = ({
     );
   }
 
+  if (!isPreviewAvailable) {
+    return (
+      <NoPreviewNotice
+        title={`${COMPONENT_MAP.get(values.component)} preview not available`}
+        description={`There is no preview available for ${COMPONENT_MAP.get(values.component)}. You can edit the available settings
+    and languages to the left.`}
+      />
+    );
+  }
+
   if (
-    !values.privacy_notice_ids?.length &&
+    !noticesOnConfig?.length &&
     values.component !== ComponentType.TCF_OVERLAY
   ) {
     return (
@@ -196,15 +208,6 @@ const Preview = ({
         title="No privacy notices added"
         description='To view a preview of this experience, add a privacy notice under
       "Privacy Notices" to the left.'
-      />
-    );
-  }
-  if (!isPreviewAvailable) {
-    return (
-      <NoPreviewNotice
-        title={`${COMPONENT_MAP.get(values.component)} preview not available`}
-        description={`There is no preview available for ${COMPONENT_MAP.get(values.component)}. You can edit the available settings
-    and languages to the left.`}
       />
     );
   }
@@ -345,7 +348,15 @@ const Preview = ({
             }
             `}</style>
       )}
-      <Script id="fides-js-script" src={fidesJsScript} />
+      <Script
+        id="fides-js-script"
+        src={fidesJsScript}
+        onReady={() => {
+          if (!window.Fides.experience) {
+            window.Fides?.init(baseConfig as any);
+          }
+        }}
+      />
       <div id={PREVIEW_CONTAINER_ID} />
     </Flex>
   );
