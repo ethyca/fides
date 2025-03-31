@@ -6,19 +6,12 @@ from tests.ops.integration_tests.saas.connector_runner import ConnectorRunner
 from tests.ops.test_helpers.saas_test_utils import poll_for_existence
 
 
-@pytest.mark.skip(
-    "Flaky Test - to be investigated in https://ethyca.atlassian.net/browse/LJ-425"
-)
 @pytest.mark.integration_saas
 class TestHubspotConnector:
 
     def test_hubspot_connection_test(self, hubspot_runner: ConnectorRunner) -> None:
         hubspot_runner.test_connection()
 
-    @pytest.mark.parametrize(
-        "dsr_version",
-        ["use_dsr_3_0", "use_dsr_2_0"],
-    )
     async def test_hubspot_access_request_task(
         self,
         hubspot_runner: ConnectorRunner,
