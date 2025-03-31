@@ -102,7 +102,20 @@ export const buildBaseConfig = (
         region: "eea",
         minimal_tcf: true,
         gvl: { vendors: {} },
-        tcf_purpose_names: [""],
+        tcf_purpose_names: [
+          // DEFERRED (LJ-614): replace with applicable purpose names from new endpoint
+          "Store and/or access information on a device",
+          "Use limited data to select advertising",
+          "Create profiles for personalised advertising",
+          "Use profiles to select personalised advertising",
+          "Create profiles to personalise content",
+          "Use profiles to select personalised content",
+          "Measure advertising performance",
+          "Measure content performance",
+          "Understand audiences through statistics or combinations of data from different sources",
+          "Develop and improve services",
+          "Use limited data to select content",
+        ],
       },
     };
     baseConfig.options.apiOptions = {
