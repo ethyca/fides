@@ -277,7 +277,7 @@ const ConfigureIntegrationForm = ({
                 layout="stacked"
               />
             )}
-            {connection?.connection_type === ConnectionType.DATAHUB && (
+            {connectionOption.identifier === ConnectionType.DATAHUB && (
               <ControlledSelect
                 id="dataset"
                 name="dataset"
