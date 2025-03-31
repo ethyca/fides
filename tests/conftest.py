@@ -698,10 +698,10 @@ def celery_config():
     return {"task_always_eager": False}
 
 
-# @pytest.fixture(autouse=True, scope="session")
-# def celery_enable_logging():
-#     """Turns on celery output logs."""
-#     return True
+@pytest.fixture(autouse=True, scope="session")
+def celery_enable_logging():
+    """Turns on celery output logs."""
+    return True
 
 
 @pytest.fixture(autouse=True, scope="session")
