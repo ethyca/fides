@@ -19,8 +19,8 @@ import {
   PrivacyNoticeResponse,
 } from "~/types/api";
 
-import { useFeatures } from "../common/features";
-import { COMPONENT_MAP } from "./constants";
+import { useFeatures } from "../../common/features";
+import { COMPONENT_MAP } from "../constants";
 
 declare global {
   interface Window {

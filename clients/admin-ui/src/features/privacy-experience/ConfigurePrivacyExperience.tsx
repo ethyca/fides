@@ -32,7 +32,7 @@ import {
   selectPageSize as selectLanguagePageSize,
   useGetAllLanguagesQuery,
 } from "~/features/privacy-experience/language.slice";
-import Preview from "~/features/privacy-experience/Preview";
+import Preview from "~/features/privacy-experience/preview/Preview";
 import {
   usePatchExperienceConfigMutation,
   usePostExperienceConfigMutation,
