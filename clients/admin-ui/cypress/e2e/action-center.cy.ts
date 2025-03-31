@@ -514,7 +514,7 @@ describe("Action center", () => {
       );
     });
 
-    describe("tab navigation", () => {
+    describe.only("tab navigation", () => {
       it("updates URL hash when switching tabs", () => {
         cy.visit(
           `${ACTION_CENTER_ROUTE}/${webMonitorKey}/${systemId}#attention-required`,
@@ -548,7 +548,7 @@ describe("Action center", () => {
         cy.getByTestId("row-0-col-select").find("label").click();
         cy.getByTestId("row-2-col-select").find("label").click();
         cy.getByTestId("row-3-col-select").find("label").click();
-        cy.getByTestId("bulk_actions_menu").click();
+        cy.getByTestId("bulk-actions-menu").click();
         cy.getByTestId("bulk-ignore").should("not.exist");
       });
     });
