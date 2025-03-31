@@ -68,7 +68,7 @@ def validate_html_str(val: str) -> str:
     }
 
     ALLOWED_ATTRIBUTES = {
-        "a": ["href", "target"],
+        "a": {"href", "target"},
     }
 
     if val:
