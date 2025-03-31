@@ -483,6 +483,7 @@ export interface ExperienceConfigMinimal
     | "auto_detect_language"
     | "dismissable"
     | "auto_subdomain_cookie_deletion"
+    | "layer1_button_options"
   > {
   translations: ExperienceConfigTranslationMinimal[];
 }
@@ -761,6 +762,7 @@ export enum Layer1ButtonOption {
   // defines the buttons to show in the layer 1 banner
   ACKNOWLEDGE = "acknowledge", // show acknowledge button
   OPT_IN_OPT_OUT = "opt_in_opt_out", // show opt in and opt out buttons
+  OPT_IN_ONLY = "opt_in_only", // TCF only, hide opt out button
 }
 
 export enum ConsentMethod {
