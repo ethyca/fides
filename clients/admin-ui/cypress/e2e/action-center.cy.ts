@@ -526,6 +526,7 @@ describe("Action center", () => {
         cy.getByTestId("tab-Recent activity").click({ force: true });
         cy.location("hash").should("eq", "#recent-activity");
         // "recent activity" tab should be read-only
+        cy.getByTestId("bulk-actions-menu").should("be.disabled");
         cy.getByTestId("row-0-col-system").within(() => {
           cy.getByTestId("system-badge")
             .should("exist")
@@ -535,6 +536,7 @@ describe("Action center", () => {
         cy.getByTestId("row-0-col-data_use").within(() => {
           cy.getByTestId("taxonomy-add-btn").should("not.exist");
         });
+        cy.getByTestId("row-0-col-select").should("not.exist");
         cy.getByTestId("col-actions").should("not.exist");
 
         // eslint-disable-next-line cypress/no-unnecessary-waiting
