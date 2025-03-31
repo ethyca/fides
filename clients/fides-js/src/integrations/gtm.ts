@@ -1,10 +1,12 @@
 import { FidesEvent, FidesEventType } from "../docs";
+import { FidesGlobal } from "../lib/consent-types";
 import { FidesEventDetail } from "../lib/events";
 import { transformConsentToFidesUserPreference } from "../lib/shared-consent-utils";
 
 declare global {
   interface Window {
     dataLayer?: any[];
+    Fides: FidesGlobal;
   }
 }
 
