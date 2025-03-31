@@ -66,8 +66,13 @@ def validate_html_str(val: str) -> str:
         "strong",
         "u",
     }
+
+    ALLOWED_ATTRIBUTES = {
+        "a": ["href", "target"],
+    }
+
     if val:
-        return clean(val, tags=ALLOWED_HTML_TAGS)
+        return clean(val, tags=ALLOWED_HTML_TAGS, attributes=ALLOWED_ATTRIBUTES)
     return val
 
 
