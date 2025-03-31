@@ -1,3 +1,5 @@
+@use "sass:string";
+
 $colors: (
   "full-black": #000000,
   "full-white": #ffffff,
@@ -58,12 +60,12 @@ $colors: (
 }
 
 @function str-replace($string, $search, $replace: "") {
-  $index: str-index($string, $search);
+  $index: string.index($string, $search);
 
   @if $index {
-    @return str-slice($string, 1, $index - 1) + $replace +
+    @return string.slice($string, 1, $index - 1) + $replace +
       str-replace(
-        str-slice($string, $index + str-length($search)),
+        string.slice($string, $index + string.length($search)),
         $search,
         $replace
       );
@@ -82,6 +84,6 @@ $colors: (
  */
 :export {
   @each $color, $value in $colors {
-    #{to-upper-case(getPrefixedColor("FIDESUI_", str-replace(unquote($color), '-', '_')))}: $value;
+    #{string.to-upper-case(getPrefixedColor("FIDESUI_", str-replace(string.unquote($color), '-', '_')))}: $value;
   }
 }
