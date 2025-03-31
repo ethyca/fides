@@ -6,6 +6,7 @@ import type { ExperienceTranslation } from "./ExperienceTranslation";
 import type { Layer1ButtonOption } from "./Layer1ButtonOption";
 import type { MinimalProperty } from "./MinimalProperty";
 import type { PrivacyNoticeRegion } from "./PrivacyNoticeRegion";
+import type { RejectAllMechanism } from "./RejectAllMechanism";
 
 /**
  * The schema to update an ExperienceConfig via the API.
@@ -30,4 +31,8 @@ export type ExperienceConfigUpdate = {
   translations: Array<ExperienceTranslation>;
   privacy_notice_ids: Array<string>;
   properties: Array<MinimalProperty>;
+  /**
+   * Determines the behavior of the reject all button
+   */
+  reject_all_mechanism?: RejectAllMechanism | null;
 };
