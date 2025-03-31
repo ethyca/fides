@@ -146,13 +146,10 @@ def test_create_and_process_access_request_saas_hubspot(
     policy,
     policy_pre_execution_webhooks,
     policy_post_execution_webhooks,
-    dsr_version,
-    request,
     hubspot_identity_email,
     hubspot_data,
     run_privacy_request_task,
 ):
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
 
     customer_email = hubspot_identity_email
     data = {

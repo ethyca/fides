@@ -15,14 +15,11 @@ class TestHubspotConnector:
     async def test_hubspot_access_request_task(
         self,
         hubspot_runner: ConnectorRunner,
-        dsr_version,
-        request,
         policy: Policy,
         hubspot_identity_email,
         hubspot_data,
     ) -> None:
         """Full access request based on the Hubspot SaaS config"""
-        request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
 
         dataset_name = hubspot_runner.dataset_config.fides_key
 
