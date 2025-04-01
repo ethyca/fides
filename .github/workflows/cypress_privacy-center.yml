@@ -20,6 +20,9 @@ jobs:
     defaults:
       run:
         working-directory: clients
+    strategy:
+      matrix:
+        containers: [1, 2, 3]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -44,9 +47,12 @@ jobs:
           start: npm run cy:start
           wait-on: "http://localhost:3001"
           wait-on-timeout: 180
+          parallel: true
+          containers: ${{ matrix.containers }}
+          record: false
 
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
-          name: cypress-videos-privacy-center
+          name: cypress-videos-privacy-center-${{ matrix.containers }}
           path: /home/runner/work/fides/fides/clients/privacy-center/cypress/videos/*.mp4
