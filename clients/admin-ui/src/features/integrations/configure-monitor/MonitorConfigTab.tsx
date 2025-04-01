@@ -162,7 +162,7 @@ const MonitorConfigTab = ({
       const scopeColumn = columnHelper.accessor((row) => row.databases, {
         id: "projects",
         cell: (props) =>
-          props.getValue().length === 0 ? (
+          props.getValue()?.length === 0 ? (
             <DefaultCell value="All projects" />
           ) : (
             <GroupCountBadgeCell
@@ -175,35 +175,64 @@ const MonitorConfigTab = ({
         header: (props) => <DefaultHeaderCell value="Scope" {...props} />,
       });
 
-      const sourceUrlColumn = columnHelper.accessor((row) => {
-        const secrets = integration.secrets as WebsiteSchema | null;
-        return secrets?.url;
-      }, {
-        id: "source_url",
-        cell: (props) => <DefaultCell value={props.getValue() ?? "Not scheduled"} />,
-        header: (props) => <DefaultHeaderCell value="Source URL" {...props} />,
-      });
+      const sourceUrlColumn = columnHelper.accessor(
+        () => {
+          const secrets = integration.secrets as WebsiteSchema | null;
+          return secrets?.url;
+        },
+        {
+          id: "source_url",
+          cell: (props) => (
+            <DefaultCell value={props.getValue() ?? "Not scheduled"} />
+          ),
+          header: (props) => (
+            <DefaultHeaderCell value="Source URL" {...props} />
+          ),
+        },
+      );
 
-      const scanFrequencyColumn = columnHelper.accessor((row) => row.execution_frequency, {
-        id: "frequency",
-        cell: (props) => <DefaultCell value={props.getValue() ?? "Not scheduled"} />,
-        header: (props) => <DefaultHeaderCell value="Scan frequency" {...props} />,
-      });
+      const scanFrequencyColumn = columnHelper.accessor(
+        (row) => row.execution_frequency,
+        {
+          id: "frequency",
+          cell: (props) => (
+            <DefaultCell value={props.getValue() ?? "Not scheduled"} />
+          ),
+          header: (props) => (
+            <DefaultHeaderCell value="Scan frequency" {...props} />
+          ),
+        },
+      );
 
-      const lastScanColumn = columnHelper.accessor((row) => row.last_monitored, {
-        id: "last_monitored",
-        cell: (props) => <RelativeTimestampCell time={props.getValue()} />,
-        header: (props) => <DefaultHeaderCell value="Last scan" {...props} />,
-      });
+      const lastScanColumn = columnHelper.accessor(
+        (row) => row.last_monitored,
+        {
+          id: "last_monitored",
+          cell: (props) => <RelativeTimestampCell time={props.getValue()} />,
+          header: (props) => <DefaultHeaderCell value="Last scan" {...props} />,
+        },
+      );
 
-      const regionsColumn = columnHelper.accessor((row) => {
-        const params = row.datasource_params as WebsiteMonitorParams | null;
-        return params?.locations?.map((location) => PRIVACY_NOTICE_REGION_RECORD[location as keyof typeof PRIVACY_NOTICE_REGION_RECORD]).join(", ") || "No regions selected";
-      }, {
-        id: "regions",
-        cell: (props) => <DefaultCell value={props.getValue()} />,
-        header: (props) => <DefaultHeaderCell value="Regions" {...props} />,
-      });
+      const regionsColumn = columnHelper.accessor(
+        (row) => {
+          const params = row.datasource_params as WebsiteMonitorParams | null;
+          return (
+            params?.locations
+              ?.map(
+                (location) =>
+                  PRIVACY_NOTICE_REGION_RECORD[
+                    location as keyof typeof PRIVACY_NOTICE_REGION_RECORD
+                  ],
+              )
+              .join(", ") || "No regions selected"
+          );
+        },
+        {
+          id: "regions",
+          cell: (props) => <DefaultCell value={props.getValue()} />,
+          header: (props) => <DefaultHeaderCell value="Regions" {...props} />,
+        },
+      );
 
       const statusColumn = columnHelper.accessor((row) => row.enabled, {
         id: "status",
