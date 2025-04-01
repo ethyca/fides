@@ -22,26 +22,7 @@ export const useDiscoveredAssetsColumns = ({
 }) => {
   const columnHelper = createColumnHelper<StagedResourceAPIResponse>();
 
-  const columns: ColumnDef<StagedResourceAPIResponse, any>[] = [
-    columnHelper.display({
-      id: "select",
-      cell: ({ row }) => (
-        <IndeterminateCheckboxCell
-          isChecked={row.getIsSelected()}
-          onChange={row.getToggleSelectedHandler()}
-          dataTestId={`select-${row.original.name || row.id}`}
-        />
-      ),
-      header: ({ table }) => (
-        <IndeterminateCheckboxCell
-          isChecked={table.getIsAllPageRowsSelected()}
-          isIndeterminate={table.getIsSomeRowsSelected()}
-          onChange={table.getToggleAllRowsSelectedHandler()}
-          dataTestId="select-all-rows"
-        />
-      ),
-      maxSize: 40,
-    }),
+  const readonlyColumns: ColumnDef<StagedResourceAPIResponse, any>[] = [
     columnHelper.accessor((row) => row.name, {
       id: "name",
       cell: (props) => <DefaultCell value={props.getValue()} />,
@@ -132,19 +113,42 @@ export const useDiscoveredAssetsColumns = ({
     }),
   ];
 
-  if (!readonly) {
-    columns.push(
-      columnHelper.display({
-        id: "actions",
-        cell: (props) => (
-          <DiscoveredAssetActionsCell asset={props.row.original} />
-        ),
-        header: "Actions",
-        meta: {
-          disableRowClick: true,
-        },
-      }),
-    );
+  if (readonly) {
+    return { columns: readonlyColumns };
   }
-  return { columns };
+
+  const editableColumns = [
+    columnHelper.display({
+      id: "select",
+      cell: ({ row }) => (
+        <IndeterminateCheckboxCell
+          isChecked={row.getIsSelected()}
+          onChange={row.getToggleSelectedHandler()}
+          dataTestId={`select-${row.original.name || row.id}`}
+        />
+      ),
+      header: ({ table }) => (
+        <IndeterminateCheckboxCell
+          isChecked={table.getIsAllPageRowsSelected()}
+          isIndeterminate={table.getIsSomeRowsSelected()}
+          onChange={table.getToggleAllRowsSelectedHandler()}
+          dataTestId="select-all-rows"
+        />
+      ),
+      maxSize: 40,
+    }),
+    ...readonlyColumns,
+    columnHelper.display({
+      id: "actions",
+      cell: (props) => (
+        <DiscoveredAssetActionsCell asset={props.row.original} />
+      ),
+      header: "Actions",
+      meta: {
+        disableRowClick: true,
+      },
+    }),
+  ];
+
+  return { columns: editableColumns };
 };
