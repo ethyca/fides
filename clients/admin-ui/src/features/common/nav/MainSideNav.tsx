@@ -137,10 +137,11 @@ export const UnconnectedMainSideNav = ({
         </Box>
         <Box alignItems="center" pb={4}>
           <Button
+            type="primary"
             href="https://docs.ethyca.com"
             target="_blank"
             className="border-none bg-transparent  hover:!bg-gray-700"
-            icon={<Icons.Help color="white" />}
+            icon={<Icons.Help />}
           />
           {username && (
             <div className="inline-block">
