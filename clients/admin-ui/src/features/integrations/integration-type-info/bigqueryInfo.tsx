@@ -41,11 +41,7 @@ export const BQ_PLACEHOLDER = {
   created_at: "",
 };
 
-export const BIGQUERY_TAGS = [
-  "DSR Automation",
-  "Discovery",
-  "Detection",
-];
+export const BIGQUERY_TAGS = ["DSR Automation", "Discovery", "Detection"];
 
 export const BigQueryOverview = () => (
   <>

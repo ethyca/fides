@@ -17,11 +17,7 @@ export const SCYLLA_PLACEHOLDER = {
   created_at: "",
 };
 
-export const SCYLLA_TAGS = [
-  "DSR Automation",
-  "Discovery",
-  "Detection",
-];
+export const SCYLLA_TAGS = ["DSR Automation", "Discovery", "Detection"];
 
 export const ScyllaOverview = () => (
   <>

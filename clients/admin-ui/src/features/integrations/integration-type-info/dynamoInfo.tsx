@@ -20,7 +20,12 @@ export const DYNAMO_PLACEHOLDER = {
   created_at: "",
 };
 
-export const DYNAMO_TAGS = ["Database", "DSR Automation", "Discovery", "Detection"];
+export const DYNAMO_TAGS = [
+  "Database",
+  "DSR Automation",
+  "Discovery",
+  "Detection",
+];
 
 export const DynamoOverview = () => (
   <>

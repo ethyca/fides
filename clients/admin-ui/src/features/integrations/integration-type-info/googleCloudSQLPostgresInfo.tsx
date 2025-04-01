@@ -17,10 +17,7 @@ export const GOOGLE_CLOUD_SQL_POSTGRES_PLACEHOLDER = {
   created_at: "",
 };
 
-export const GOOGLE_CLOUD_SQL_POSTGRES_TAGS = [
-  "Discovery",
-  "Detection",
-];
+export const GOOGLE_CLOUD_SQL_POSTGRES_TAGS = ["Discovery", "Detection"];
 
 export const GoogleCloudSQLPostgresOverview = () => (
   <>
