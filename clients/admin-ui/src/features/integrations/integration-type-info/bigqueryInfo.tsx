@@ -42,10 +42,9 @@ export const BQ_PLACEHOLDER = {
 };
 
 export const BIGQUERY_TAGS = [
-  "Data Warehouse",
-  "BigQuery",
+  "DSR Automation",
   "Discovery",
-  "Inventory",
+  "Detection",
 ];
 
 export const BigQueryOverview = () => (

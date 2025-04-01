@@ -18,12 +18,8 @@ export const GOOGLE_CLOUD_SQL_MYSQL_PLACEHOLDER = {
 };
 
 export const GOOGLE_CLOUD_SQL_MYSQL_TAGS = [
-  "Database",
-  "Detection",
   "Discovery",
-  "DSR automation",
-  "GCP",
-  "MySQL",
+  "Detection",
 ];
 
 export const GoogleCloudSQLMySQLOverview = () => (

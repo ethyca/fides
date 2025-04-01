@@ -18,11 +18,8 @@ export const RDS_POSTGRES_PLACEHOLDER = {
 };
 
 export const RDS_POSTGRES_TAGS = [
-  "Database",
   "Detection",
   "Discovery",
-  "RDS",
-  "Postgres",
 ];
 
 export const RDSPostgresOverview = () => (

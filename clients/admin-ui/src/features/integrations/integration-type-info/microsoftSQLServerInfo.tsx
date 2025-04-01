@@ -18,10 +18,9 @@ export const MICROSOFT_SQL_SERVER_PLACEHOLDER = {
 };
 
 export const MICROSOFT_SQL_SERVER_TAGS = [
-  "Database",
+  "DSR Automation",
   "Detection",
   "Discovery",
-  "Microsoft SQL Server",
 ];
 
 export const MicrosoftSQLServerOverview = () => (

@@ -17,7 +17,7 @@ export const MYSQL_PLACEHOLDER = {
   created_at: "",
 };
 
-export const MYSQL_TAGS = ["Database", "Detection", "Discovery", "MySQL"];
+export const MYSQL_TAGS = ["DSR Automation", "Detection", "Discovery"];
 
 export const MySQLOverview = () => (
   <>

@@ -18,12 +18,8 @@ export const GOOGLE_CLOUD_SQL_POSTGRES_PLACEHOLDER = {
 };
 
 export const GOOGLE_CLOUD_SQL_POSTGRES_TAGS = [
-  "Database",
   "Detection",
   "Discovery",
-  "DSR automation",
-  "GCP",
-  "Postgres",
 ];
 
 export const GoogleCloudSQLPostgresOverview = () => (
