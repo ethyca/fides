@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.57.1"
+    "version": "2.58.0"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -13490,6 +13490,39 @@
               "default": false,
               "title": "Only Unlinked Datasets"
             }
+          },
+          {
+            "name": "connection_type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/ConnectionType"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Connection Type"
+            }
+          },
+          {
+            "name": "minimal",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": false,
+              "title": "Minimal"
+            }
           }
         ],
         "responses": {
@@ -13500,12 +13533,12 @@
                 "schema": {
                   "anyOf": [
                     {
-                      "$ref": "#/components/schemas/Page_Dataset_"
+                      "$ref": "#/components/schemas/Page_DatasetResponse_"
                     },
                     {
                       "type": "array",
                       "items": {
-                        "$ref": "#/components/schemas/Dataset"
+                        "$ref": "#/components/schemas/DatasetResponse"
                       }
                     }
                   ],
@@ -17077,20 +17110,20 @@
               }
             ],
             "title": "Frequency",
-            "description": "The frequency at which the integration should run. Defaults to daily.",
-            "default": "daily"
+            "description": "The frequency at which the integration should run. Available options are daily, weekly, and monthly."
           },
           "glossary_node": {
             "type": "string",
             "title": "Glossary Node",
-            "description": "The glossary node name to use on Datahub for Fides Data Categories. Defaults to FidesDataCategories",
-            "default": "FidesDataCategories"
+            "description": "The glossary node name to use on Datahub for Fides Data Categories. (e.g. FidesDataCategories)"
           }
         },
         "type": "object",
         "required": [
           "datahub_server_url",
-          "datahub_token"
+          "datahub_token",
+          "frequency",
+          "glossary_node"
         ],
         "title": "DatahubDocsSchema",
         "description": "Datahub Schema for API docs."
@@ -17439,6 +17472,118 @@
         ],
         "title": "DatasetReachability",
         "description": "Response containing reachability details for a single dataset"
+      },
+      "DatasetResponse": {
+        "properties": {
+          "fides_key": {
+            "type": "string",
+            "title": "Fides Key",
+            "description": "A unique key used to identify this resource."
+          },
+          "organization_fides_key": {
+            "type": "string",
+            "title": "Organization Fides Key",
+            "description": "Defines the Organization that this resource belongs to.",
+            "default": "default_organization"
+          },
+          "tags": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tags"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name",
+            "description": "Human-Readable name for this resource."
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description",
+            "description": "A detailed description of what this resource is."
+          },
+          "meta": {
+            "anyOf": [
+              {
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Meta",
+            "description": "An optional property to store any extra information for a resource. Data can be structured in any way: simple set of `key: value` pairs or deeply nested objects."
+          },
+          "data_categories": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Data Categories",
+            "description": "Array of Data Category resources identified by `fides_key`, that apply to all collections in the Dataset."
+          },
+          "fides_meta": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DatasetMetadata"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "\n    The DatasetMetadata resource model.\n\n    Object used to hold application specific metadata for a dataset\n    "
+          },
+          "collections": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/DatasetCollection"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Collections",
+            "description": "An array of objects that describe the Dataset's collections."
+          }
+        },
+        "type": "object",
+        "required": [
+          "fides_key"
+        ],
+        "title": "DatasetResponse",
+        "description": "Dataset response model for API endpoints.\n\nNote: This class extends the Dataset model from fideslang rather than having a proper\ndedicated API response model. We had to make the collections field\nOptional and allow null values to support the minimal=true parameter in API responses,\neven though collections is required in the base fideslang Dataset model."
       },
       "DatasetTestRequest": {
         "properties": {
@@ -20530,6 +20675,73 @@
           "size"
         ],
         "title": "Page[DatasetConfigSchema]"
+      },
+      "Page_DatasetResponse_": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/DatasetResponse"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Total"
+          },
+          "page": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Page"
+          },
+          "size": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Size"
+          },
+          "pages": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pages"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "total",
+          "page",
+          "size"
+        ],
+        "title": "Page[DatasetResponse]"
       },
       "Page_Dataset_": {
         "properties": {
