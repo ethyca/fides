@@ -19,6 +19,7 @@ import { useEffect, useMemo, useState } from "react";
 
 import FidesSpinner from "~/features/common/FidesSpinner";
 import { MonitorIcon } from "~/features/common/Icon/MonitorIcon";
+import { PRIVACY_NOTICE_REGION_RECORD } from "~/features/common/privacy-notice-regions";
 import {
   DefaultCell,
   DefaultHeaderCell,
@@ -38,6 +39,8 @@ import {
   ConnectionSystemTypeMap,
   ConnectionType,
   MonitorConfig,
+  WebsiteMonitorParams,
+  WebsiteSchema,
 } from "~/types/api";
 
 const EMPTY_RESPONSE = {
@@ -149,13 +152,14 @@ const MonitorConfigTab = ({
   }, [totalPages, setTotalPages]);
 
   const columns: ColumnDef<MonitorConfig, any>[] = useMemo(
-    () => [
-      columnHelper.accessor((row) => row.name, {
+    () => {
+      const nameColumn = columnHelper.accessor((row) => row.name, {
         id: "name",
         cell: (props) => <DefaultCell value={props.getValue()} />,
         header: (props) => <DefaultHeaderCell value="Name" {...props} />,
-      }),
-      columnHelper.accessor((row) => row.databases, {
+      });
+
+      const scopeColumn = columnHelper.accessor((row) => row.databases, {
         id: "projects",
         cell: (props) =>
           props.getValue().length === 0 ? (
@@ -169,29 +173,47 @@ const MonitorConfigTab = ({
             />
           ),
         header: (props) => <DefaultHeaderCell value="Scope" {...props} />,
-      }),
-      columnHelper.accessor((row) => row.execution_frequency, {
+      });
+
+      const sourceUrlColumn = columnHelper.accessor((row) => {
+        const secrets = integration.secrets as WebsiteSchema | null;
+        return secrets?.url;
+      }, {
+        id: "source_url",
+        cell: (props) => <DefaultCell value={props.getValue() ?? "Not scheduled"} />,
+        header: (props) => <DefaultHeaderCell value="Source URL" {...props} />,
+      });
+
+      const scanFrequencyColumn = columnHelper.accessor((row) => row.execution_frequency, {
         id: "frequency",
-        cell: (props) => (
-          <DefaultCell value={props.getValue() ?? "Not scheduled"} />
-        ),
-        header: (props) => (
-          <DefaultHeaderCell value="Scan frequency" {...props} />
-        ),
-      }),
-      columnHelper.accessor((row) => row.last_monitored, {
+        cell: (props) => <DefaultCell value={props.getValue() ?? "Not scheduled"} />,
+        header: (props) => <DefaultHeaderCell value="Scan frequency" {...props} />,
+      });
+
+      const lastScanColumn = columnHelper.accessor((row) => row.last_monitored, {
         id: "last_monitored",
         cell: (props) => <RelativeTimestampCell time={props.getValue()} />,
         header: (props) => <DefaultHeaderCell value="Last scan" {...props} />,
-      }),
-      columnHelper.accessor((row) => row.enabled, {
+      });
+
+      const regionsColumn = columnHelper.accessor((row) => {
+        const params = row.datasource_params as WebsiteMonitorParams | null;
+        return params?.locations?.map((location) => PRIVACY_NOTICE_REGION_RECORD[location as keyof typeof PRIVACY_NOTICE_REGION_RECORD]).join(", ") || "No regions selected";
+      }, {
+        id: "regions",
+        cell: (props) => <DefaultCell value={props.getValue()} />,
+        header: (props) => <DefaultHeaderCell value="Regions" {...props} />,
+      });
+
+      const statusColumn = columnHelper.accessor((row) => row.enabled, {
         id: "status",
         cell: MonitorConfigEnableCell,
         header: (props) => <DefaultHeaderCell value="Status" {...props} />,
         size: 0,
         meta: { disableRowClick: true },
-      }),
-      columnHelper.display({
+      });
+
+      const actionsColumn = columnHelper.display({
         id: "action",
         cell: (props) => (
           <MonitorConfigActionsCell
@@ -201,8 +223,29 @@ const MonitorConfigTab = ({
         ),
         header: "Actions",
         meta: { disableRowClick: true },
-      }),
-    ],
+      });
+
+      if (integrationOption?.identifier === ConnectionType.WEBSITE) {
+        return [
+          nameColumn,
+          sourceUrlColumn,
+          scanFrequencyColumn,
+          regionsColumn,
+          lastScanColumn,
+          statusColumn,
+          actionsColumn,
+        ];
+      }
+
+      return [
+        nameColumn,
+        scopeColumn,
+        scanFrequencyColumn,
+        lastScanColumn,
+        statusColumn,
+        actionsColumn,
+      ];
+    },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [],
   );
