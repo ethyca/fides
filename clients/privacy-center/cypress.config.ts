@@ -17,8 +17,10 @@ export default defineConfig({
               test.attempts.some((attempt) => attempt.state === "failed"),
             );
             if (!failures) {
-              // delete the video if the spec passed and no tests retried
-              fs.unlinkSync(results.video);
+              // delete the video if the spec passed, the video exists, and no tests retried
+              if (fs.existsSync(results.video)) {
+                fs.unlinkSync(results.video);
+              }
             }
           }
         },
