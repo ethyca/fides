@@ -17,13 +17,7 @@ export const RDS_MYSQL_PLACEHOLDER = {
   created_at: "",
 };
 
-export const RDS_MYSQL_TAGS = [
-  "Database",
-  "Detection",
-  "Discovery",
-  "RDS",
-  "MySQL",
-];
+export const RDS_MYSQL_TAGS = ["Discovery", "Detection"];
 
 export const RDSMySQLOverview = () => (
   <>

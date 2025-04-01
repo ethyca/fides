@@ -17,7 +17,7 @@ export const DATAHUB_PLACEHOLDER = {
   created_at: "",
 };
 
-export const DATAHUB_TAGS = ["Data catalog"];
+export const DATAHUB_TAGS = ["Sync"];
 
 export const DatahubOverview = () => (
   <>
