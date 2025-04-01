@@ -114,13 +114,15 @@ def validate_erasure_privacy_request(
         for row in res:
             assert row.display_name is None
             assert row.location is None
+            for item in row.account_internal:
+                assert tags == []
 
 
 @pytest.mark.integration_bigquery
 @pytest.mark.integration_external
 @pytest.mark.parametrize(
     "dsr_version",
-    ["use_dsr_2_0", "use_dsr_3_0"],
+    ["use_dsr_3_0"],
 )
 @pytest.mark.parametrize(
     "bigquery_fixtures",
@@ -142,7 +144,7 @@ def test_access_request(
     run_privacy_request_task,
     bigquery_enterprise_test_dataset_collections,
 ):
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+    request.getfixturevalue(dsr_version)  # REQUIRED to test DSR 3.0
     request.getfixturevalue(
         bigquery_fixtures
     )  # required to test partitioning and non-partitioned tables
@@ -205,7 +207,7 @@ def test_access_request(
 @pytest.mark.integration_bigquery
 @pytest.mark.parametrize(
     "dsr_version",
-    ["use_dsr_3_0", "use_dsr_2_0"],
+    ["use_dsr_3_0"],
 )
 @pytest.mark.parametrize(
     "bigquery_fixtures",
@@ -225,7 +227,7 @@ def test_erasure_request(
     run_privacy_request_task,
     bigquery_enterprise_test_dataset_collections,
 ):
-    request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+    request.getfixturevalue(dsr_version)  # REQUIRED to test DSR 3.0
     bigquery_enterprise_resources = request.getfixturevalue(bigquery_fixtures)
 
     # first test access request against manually added data

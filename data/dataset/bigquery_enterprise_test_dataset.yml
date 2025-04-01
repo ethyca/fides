@@ -198,6 +198,20 @@ dataset:
            data_categories: [system.operations]
          - name: website_url
            data_categories: [user]
+         - name: account_internal
+           fides_meta:
+             data_type: object[]
+           fields:
+             - name: account_type
+               data_categories: [ system.operations ]
+             - name: score
+               data_categories: [ system.operations ]
+             - name: expiry_date
+               data_categories: [ system.operations ]
+             - name: tags
+               data_categories: [ user ]
+               fides_meta:
+                 data_type: string[]
        fides_meta:
          erase_after:
            - enterprise_dsr_testing.comments

@@ -562,8 +562,8 @@ def bigquery_enterprise_resources(
 
         # Create test user data
         stmt = f"""
-            insert into enterprise_dsr_testing.users (id, display_name, last_access_date, creation_date, location)
-            values ({user_id}, '{display_name}', '{last_access_date}', '{creation_date}', '{location}');
+            insert into enterprise_dsr_testing.users (id, display_name, last_access_date, creation_date, location, account_internal)
+            values ({user_id}, '{display_name}', '{last_access_date}', '{creation_date}', '{location}', [STRUCT('SILVER' as account_type, 1.04 as score, '2029-01-15' as expiry_date, ['mysql', 'html'] as tags), STRUCT('GOLD' as account_type, 0.87 as score, '2029-02-20' as expiry_date, ['css', 'html'] as tags)]);
         """
         connection.execute(stmt)
 
@@ -654,8 +654,8 @@ def bigquery_enterprise_resources_with_partitioning(
 
         # Create test user data
         stmt = f"""
-            insert into enterprise_dsr_testing.users (id, display_name, last_access_date, creation_date, location)
-            values ({user_id}, '{display_name}', '{last_access_date}', '{creation_date}', '{location}');
+            insert into enterprise_dsr_testing.users (id, display_name, last_access_date, creation_date, location, account_internal)
+            values ({user_id}, '{display_name}', '{last_access_date}', '{creation_date}', '{location}', [STRUCT('SILVER' as account_type, 1.04 as score, '2029-01-15' as expiry_date, ['mysql', 'html'] as tags), STRUCT('GOLD' as account_type, 0.87 as score, '2029-02-20' as expiry_date, ['css', 'html'] as tags)]);
         """
         connection.execute(stmt)
 
@@ -761,6 +761,9 @@ def seed_bigquery_enterprise_integration_db(
     with bigquery_client.connect() as connection:
 
         stmt = f"CREATE TABLE enterprise_dsr_testing.stackoverflow_posts_partitioned partition by date(creation_date) as select * from enterprise_dsr_testing.stackoverflow_posts;"
+        connection.execute(stmt)
+
+        stmt = f"ALTER TABLE enterprise_dsr_testing.users ADD COLUMN IF NOT EXISTS account_internal ARRAY<STRUCT<account_type STRING, score FLOAT64, expiry_date STRING, tags ARRAY<STRING>>;"
         connection.execute(stmt)
 
     print(
