@@ -45,7 +45,6 @@ def test_html_sanitization_blocks_script_tags_injections():
 
     assert sanitized == expected
 
-
 def test_html_sanitization_blocks_javascript_url_injections():
     """Test that the validate_html_str function blocks javascript url injections"""
 
@@ -65,5 +64,27 @@ def test_html_sanitization_blocks_form_injections():
     sanitized = validate_html_str(test_html)
 
     expected = 'See our <a href="https://www.somerandomwebsite.com/cookies/" target="_blank" rel="noopener noreferrer">privacy policy</a>'
+
+    assert sanitized == expected
+
+def test_html_sanitization_blocks_img_onalert_injections():
+    """Test that the validate_html_str function blocks img onalert injections"""
+
+    test_html = 'See our <img src=x:alert(alt) onerror=eval(src) alt=xss>Cookie policy'
+
+    sanitized = validate_html_str(test_html)
+
+    expected = 'See our Cookie policy'
+
+    assert sanitized == expected
+
+def test_html_sanitization_blocks_div_with_onclick_injection():
+    """Test that the validate_html_str function blocks div with onclick injection"""
+
+    test_html = 'See our <div onclick="alert(\'XSS\')">privacy policy</div>'
+
+    sanitized = validate_html_str(test_html)
+
+    expected = 'See our <div>privacy policy</div>'
 
     assert sanitized == expected
