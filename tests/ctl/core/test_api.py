@@ -965,6 +965,21 @@ class TestSystemCreate:
         assert privacy_decl.shared_categories == ["user"]
         assert privacy_decl.flexible_legal_basis_for_processing is True
 
+    def test_system_create_with_privacy_policy(
+        self, generate_auth_header, db, test_config, system_create_request_body
+    ):
+        auth_header = generate_auth_header(scopes=[SYSTEM_CREATE])
+
+        result = _api.create(
+            url=test_config.cli.server_url,
+            headers=auth_header,
+            resource_type="system",
+            json_resource=system_create_request_body.json(exclude_none=True),
+        )
+
+        assert result.status_code == HTTP_201_CREATED
+        assert result.json()["privacy_policy"] == "https://www.example.com/privacy_policy"
+
     async def test_system_create_minimal_request_body(
         self, generate_auth_header, db, test_config, system_create_request_body
     ):
