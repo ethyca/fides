@@ -70,10 +70,10 @@ export const useDiscoveredAssetsColumns = ({
       cell: (props) => (
         <BadgeCellExpandable
           values={props.getValue().map((location: PrivacyNoticeRegion) => ({
-            label: PRIVACY_NOTICE_REGION_RECORD[location],
+            label: PRIVACY_NOTICE_REGION_RECORD[location] ?? location,
             key: location,
           }))}
-          cellProps={props as any}
+          cellProps={props}
         />
       ),
       header: "Locations",
