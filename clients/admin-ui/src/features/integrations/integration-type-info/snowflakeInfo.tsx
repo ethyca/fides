@@ -19,8 +19,8 @@ export const SNOWFLAKE_PLACEHOLDER = {
 
 export const SNOWFLAKE_TAGS = [
   "DSR Automation",
-  "Detection",
   "Discovery",
+  "Detection",
 ];
 
 export const SnowflakeOverview = () => (

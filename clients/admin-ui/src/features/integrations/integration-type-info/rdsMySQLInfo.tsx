@@ -18,8 +18,8 @@ export const RDS_MYSQL_PLACEHOLDER = {
 };
 
 export const RDS_MYSQL_TAGS = [
-  "Detection",
   "Discovery",
+  "Detection",
 ];
 
 export const RDSMySQLOverview = () => (
