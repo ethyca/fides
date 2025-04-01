@@ -127,6 +127,7 @@ export type { DatasetConfigSchema } from "./models/DatasetConfigSchema";
 export type { DatasetField } from "./models/DatasetField";
 export type { DatasetMetadata } from "./models/DatasetMetadata";
 export type { DatasetReachability } from "./models/DatasetReachability";
+export type { DatasetResponse } from "./models/DatasetResponse";
 export type { DatasetSchema } from "./models/DatasetSchema";
 export type { DatasetTestRequest } from "./models/DatasetTestRequest";
 export type { DatasetTraversalDetails } from "./models/DatasetTraversalDetails";
@@ -306,6 +307,7 @@ export type { Page_CustomReportResponseMinimal_ } from "./models/Page_CustomRepo
 export type { Page_DatamapReport_ } from "./models/Page_DatamapReport_";
 export type { Page_Dataset_ } from "./models/Page_Dataset_";
 export type { Page_DatasetConfigSchema_ } from "./models/Page_DatasetConfigSchema_";
+export type { Page_DatasetResponse_ } from "./models/Page_DatasetResponse_";
 export type { Page_ExecutionLogDetailResponse_ } from "./models/Page_ExecutionLogDetailResponse_";
 export type { Page_ExperienceConfigListViewResponse_ } from "./models/Page_ExperienceConfigListViewResponse_";
 export type { Page_Language_ } from "./models/Page_Language_";
@@ -337,6 +339,7 @@ export type { PartialPrivacyCenterConfig } from "./models/PartialPrivacyCenterCo
 export type { PartialPrivacyRequestOption } from "./models/PartialPrivacyRequestOption";
 export { PeriodicIntegrationFrequency } from "./models/PeriodicIntegrationFrequency";
 export type { PlusApplicationConfig } from "./models/PlusApplicationConfig";
+export type { PlusConsentSettingsApplicationConfig } from "./models/PlusConsentSettingsApplicationConfig";
 export type { PolicyMaskingSpec } from "./models/PolicyMaskingSpec";
 export type { PolicyMaskingSpecResponse } from "./models/PolicyMaskingSpecResponse";
 export type { PolicyResponse } from "./models/PolicyResponse";
@@ -404,6 +407,7 @@ export type { RecordConsentServedRequest } from "./models/RecordConsentServedReq
 export type { RecordsServedResponse } from "./models/RecordsServedResponse";
 export type { RedshiftDocsSchema } from "./models/RedshiftDocsSchema";
 export type { Registration } from "./models/Registration";
+export { RejectAllMechanism } from "./models/RejectAllMechanism";
 export { ReportExportFormat } from "./models/ReportExportFormat";
 export { ReportType } from "./models/ReportType";
 export { RequestOrigin } from "./models/RequestOrigin";
@@ -477,7 +481,6 @@ export type { TCFBannerExperienceMinimalResponse } from "./models/TCFBannerExper
 export type { TCFFeatureRecord } from "./models/TCFFeatureRecord";
 export type { TCFFeatureSave } from "./models/TCFFeatureSave";
 export { TCFLegalBasisEnum } from "./models/TCFLegalBasisEnum";
-export type { TCFPublisherSettings } from "./models/TCFPublisherSettings";
 export type { TCFPurposeConsentRecord } from "./models/TCFPurposeConsentRecord";
 export type { TCFPurposeLegitimateInterestsRecord } from "./models/TCFPurposeLegitimateInterestsRecord";
 export type { TCFPurposeOverrideSchema } from "./models/TCFPurposeOverrideSchema";
