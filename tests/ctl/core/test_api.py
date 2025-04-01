@@ -978,7 +978,9 @@ class TestSystemCreate:
         )
 
         assert result.status_code == HTTP_201_CREATED
-        assert result.json()["privacy_policy"] == "https://www.example.com/privacy_policy"
+        assert (
+            result.json()["privacy_policy"] == "https://www.example.com/privacy_policy"
+        )
 
     async def test_system_create_minimal_request_body(
         self, generate_auth_header, db, test_config, system_create_request_body
