@@ -38,6 +38,7 @@ jobs:
       - name: Cypress Admin UI E2E Tests
         uses: cypress-io/github-action@v6
         with:
+          command: npm run cy:parallel
           working-directory: clients/admin-ui
           install: false
           start: npm run cy:start
