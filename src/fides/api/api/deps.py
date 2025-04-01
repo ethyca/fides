@@ -31,7 +31,7 @@ def get_db() -> Generator:
 @contextmanager
 def get_autoclose_db_session() -> Generator[Session, None, None]:
     """
-    Return a database session that automatically closes when the context exits.
+    Return a database session as a context manager that automatically closes when the context exits.
 
     Unlike get_api_session which is managed by FastAPI's dependency injection,
     this context manager explicitly closes the session when exiting the context.
