@@ -41,39 +41,39 @@ jobs:
 
       - name: Check for backend changes
         id: check_changes
-        # For Pull Requests
-        if: github.event_name == 'pull_request'
         run: |
-          if git diff --name-only origin/${{ github.base_ref }} HEAD | grep -q "^src/"; then
-            echo "src_changed=true" >> $GITHUB_OUTPUT
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            if git diff --name-only origin/${{ github.base_ref }} HEAD | grep -q "^src/"; then
+              echo "has_changes=true" >> $GITHUB_OUTPUT
+            else
+              echo "No changes detected in src directory, skipping tests"
+              echo "has_changes=false" >> $GITHUB_OUTPUT
+            fi
           else
-            echo "No changes detected in src directory, skipping tests"
-            exit 0  # Exit with success status
-          fi
-
-      - name: Check for backend changes (push event)
-        id: check_changes_push
-        # For Push events
-        if: github.event_name == 'push'
-        run: |
-          if git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep -q "^src/"; then
-            echo "src_changed=true" >> $GITHUB_OUTPUT
-          else
-            echo "No changes detected in src directory, skipping tests"
-            exit 0  # Exit with success status
+            # Push event
+            if git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep -q "^src/"; then
+              echo "has_changes=true" >> $GITHUB_OUTPUT
+            else
+              echo "No changes detected in src directory, skipping tests"
+              echo "has_changes=false" >> $GITHUB_OUTPUT
+            fi
           fi
 
       - name: Set Up Python
+        if: steps.check_changes.outputs.has_changes == 'true'
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
           cache: "pip"
 
       - name: Install Nox
+        if: steps.check_changes.outputs.has_changes == 'true'
         run: pip install nox>=2022
 
       - name: Install Dev Requirements
+        if: steps.check_changes.outputs.has_changes == 'true'
         run: pip install -r dev-requirements.txt
 
       - name: Run Static Check
+        if: steps.check_changes.outputs.has_changes == 'true'
         run: nox -s ${{ matrix.session_name }}
