@@ -32,7 +32,9 @@ import {
 } from "~/features/config-settings/config-settings.slice";
 import FrameworkStatus from "~/features/consent-settings/FrameworkStatus";
 import GppConfiguration from "~/features/consent-settings/GppConfiguration";
-import PublisherSettings from "~/features/consent-settings/PublisherSettings";
+import PublisherSettings, {
+  TCFPublisherSettings,
+} from "~/features/consent-settings/PublisherSettings";
 import PurposeOverrides from "~/features/consent-settings/PurposeOverrides";
 import SettingsBox from "~/features/consent-settings/SettingsBox";
 import {
@@ -43,7 +45,6 @@ import {
 import {
   PrivacyExperienceGPPSettings,
   TCFLegalBasisEnum,
-  TCFPublisherSettings,
   TCFPurposeOverrideSchema,
 } from "~/types/api";
 

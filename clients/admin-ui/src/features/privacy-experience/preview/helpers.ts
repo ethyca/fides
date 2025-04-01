@@ -1,10 +1,10 @@
 /* eslint-disable*/
 
 import { PREVIEW_CONTAINER_ID } from "~/constants";
-import { Layer1ButtonOption } from "~/features/privacy-experience/form/constants";
 import {
   ExperienceConfigCreate,
   ExperienceTranslation,
+  Layer1ButtonOption,
   PrivacyNoticeResponse,
   SupportedLanguage,
 } from "~/types/api";

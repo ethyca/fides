@@ -157,7 +157,7 @@ export interface FidesInitOptions {
  * ensure that the documented interface isn't overly specific in areas we may
  * need to change.
  */
-export interface FidesGlobal extends Fides {
+export interface FidesGlobal extends Omit<Fides, "gtm"> {
   cookie?: FidesCookie;
   config?: FidesConfig;
   consent: NoticeConsent;

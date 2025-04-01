@@ -31,8 +31,9 @@ const AccountDropdownMenu = ({
     >
       <Button
         tabIndex={0}
+        type="primary"
         className="border-none bg-transparent hover:!bg-gray-700 focus:!bg-gray-700"
-        icon={<Icons.User color="white" />}
+        icon={<Icons.User />}
         data-testid="header-menu-button"
       />
     </Dropdown>

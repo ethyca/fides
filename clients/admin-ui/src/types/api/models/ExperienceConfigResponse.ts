@@ -8,6 +8,7 @@ import type { ExperienceTranslationResponse } from "./ExperienceTranslationRespo
 import type { Layer1ButtonOption } from "./Layer1ButtonOption";
 import type { MinimalProperty } from "./MinimalProperty";
 import type { PrivacyNoticeRegion } from "./PrivacyNoticeRegion";
+import type { RejectAllMechanism } from "./RejectAllMechanism";
 
 /**
  * An API representation of ExperienceConfig used for response payloads
@@ -30,4 +31,8 @@ export type ExperienceConfigResponse = {
   privacy_notices?: Array<EmbeddedPrivacyNoticeResponse>;
   translations?: Array<ExperienceTranslationResponse>;
   properties?: Array<MinimalProperty>;
+  /**
+   * Determines the behavior of the reject all button
+   */
+  reject_all_mechanism?: RejectAllMechanism | null;
 };

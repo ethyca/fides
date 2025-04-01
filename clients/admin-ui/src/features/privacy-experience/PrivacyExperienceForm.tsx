@@ -23,7 +23,6 @@ import {
   selectLocationsRegulations,
   useGetLocationsRegulationsQuery,
 } from "~/features/locations/locations.slice";
-import { Layer1ButtonOption } from "~/features/privacy-experience/form/constants";
 import { getSelectedRegionIds } from "~/features/privacy-experience/form/helpers";
 import { selectAllLanguages } from "~/features/privacy-experience/language.slice";
 import {
@@ -42,6 +41,7 @@ import {
   ConsentMechanism,
   ExperienceConfigCreate,
   ExperienceTranslation,
+  Layer1ButtonOption,
   LimitedPrivacyNoticeResponseSchema,
   Property,
   SupportedLanguage,

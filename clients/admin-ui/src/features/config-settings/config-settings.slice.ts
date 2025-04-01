@@ -11,7 +11,7 @@ import {
   PrivacyExperienceGPPSettings,
   SecurityApplicationConfig,
 } from "~/types/api";
-import { PlusConsentSettings } from "~/types/api/models/PlusConsentSettings";
+import { PlusConsentSettingsApplicationConfig } from "~/types/api/models/PlusConsentSettingsApplicationConfig";
 
 import type { RootState } from "../../app/store";
 
@@ -173,13 +173,13 @@ export const selectGppSettings: (
   },
 );
 
-const defaultPlusConsentSettings: PlusConsentSettings = {
+const defaultPlusConsentSettings: PlusConsentSettingsApplicationConfig = {
   tcf_publisher_country_code: null,
 };
 
 export const selectPlusConsentSettings: (
   state: RootState,
-) => PlusConsentSettings = createSelector(
+) => PlusConsentSettingsApplicationConfig = createSelector(
   [
     (state) => state,
     configSettingsApi.endpoints.getConfigurationSettings.select({

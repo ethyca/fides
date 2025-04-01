@@ -132,8 +132,12 @@ export const DiscoveredAssetsTable = ({
     }
   }, [data, systemId, onSystemName, setTotalPages, systemName]);
 
+  const disableEditing = activeParams.diff_status.includes(
+    DiffStatus.MONITORED,
+  );
+
   const { columns } = useDiscoveredAssetsColumns({
-    readonly: activeParams.diff_status.includes(DiffStatus.MONITORED),
+    readonly: disableEditing,
   });
 
   const tableInstance = useReactTable({
@@ -293,7 +297,11 @@ export const DiscoveredAssetsTable = ({
                 iconPosition="end"
                 loading={anyBulkActionIsLoading}
                 data-testid="bulk-actions-menu"
-                disabled={!selectedUrns.length || anyBulkActionIsLoading}
+                disabled={
+                  !selectedUrns.length ||
+                  anyBulkActionIsLoading ||
+                  disableEditing
+                }
                 // @ts-ignore - `type` prop is for Ant button, not Chakra MenuButton
                 type="primary"
               >
@@ -323,14 +331,18 @@ export const DiscoveredAssetsTable = ({
                 >
                   Assign system
                 </MenuItem>
-                <MenuDivider />
-                <MenuItem
-                  fontSize="small"
-                  onClick={handleBulkIgnore}
-                  data-testid="bulk-ignore"
-                >
-                  Ignore
-                </MenuItem>
+                {!activeParams.diff_status.includes(DiffStatus.MUTED) && (
+                  <>
+                    <MenuDivider />
+                    <MenuItem
+                      fontSize="small"
+                      onClick={handleBulkIgnore}
+                      data-testid="bulk-ignore"
+                    >
+                      Ignore
+                    </MenuItem>
+                  </>
+                )}
               </MenuList>
             </Menu>
 

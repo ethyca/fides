@@ -6,11 +6,10 @@ import {
   ExperienceTranslationCreate,
   ExperienceTranslationResponse,
   Language,
+  Layer1ButtonOption,
   PrivacyNoticeRegion,
   SupportedLanguage,
 } from "~/types/api";
-
-import { Layer1ButtonOption } from "./constants";
 
 interface LocationOrLocationGroup {
   selected?: boolean;

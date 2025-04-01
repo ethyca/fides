@@ -6,7 +6,6 @@ import React, { useEffect, useMemo, useState } from "react";
 
 import { PREVIEW_CONTAINER_ID } from "~/constants";
 import { getErrorMessage } from "~/features/common/helpers";
-import { Layer1ButtonOption } from "~/features/privacy-experience/form/constants";
 import { TranslationWithLanguageName } from "~/features/privacy-experience/form/helpers";
 import {
   buildBaseConfig,
@@ -16,6 +15,7 @@ import { useLazyGetPrivacyNoticeByIdQuery } from "~/features/privacy-notices/pri
 import {
   ComponentType,
   ExperienceConfigCreate,
+  Layer1ButtonOption,
   LimitedPrivacyNoticeResponseSchema,
   PrivacyNoticeResponse,
 } from "~/types/api";
