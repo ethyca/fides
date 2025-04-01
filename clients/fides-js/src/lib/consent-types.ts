@@ -484,6 +484,7 @@ export interface ExperienceConfigMinimal
     | "dismissable"
     | "auto_subdomain_cookie_deletion"
     | "layer1_button_options"
+    | "reject_all_mechanism"
   > {
   translations: ExperienceConfigTranslationMinimal[];
 }
@@ -763,6 +764,12 @@ export enum Layer1ButtonOption {
   ACKNOWLEDGE = "acknowledge", // show acknowledge button
   OPT_IN_OPT_OUT = "opt_in_opt_out", // show opt in and opt out buttons
   OPT_IN_ONLY = "opt_in_only", // TCF only, hide opt out button
+}
+
+export enum RejectAllMechanism {
+  // Applies to TCF only
+  REJECT_ALL = "reject_all", // reject all purposes and legitimate interests
+  REJECT_CONSENT_ONLY = "reject_consent_only", // do not reject legitimate interests
 }
 
 export enum ConsentMethod {
