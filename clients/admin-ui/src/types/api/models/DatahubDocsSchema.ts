@@ -17,11 +17,11 @@ export type DatahubDocsSchema = {
    */
   datahub_token: string;
   /**
-   * The frequency at which the integration should run. Defaults to daily.
+   * The frequency at which the integration should run. Available options are daily, weekly, and monthly.
    */
-  frequency?: PeriodicIntegrationFrequency;
+  frequency: PeriodicIntegrationFrequency;
   /**
-   * The glossary node name to use on Datahub for Fides Data Categories. Defaults to FidesDataCategories
+   * The glossary node name to use on Datahub for Fides Data Categories. (e.g. FidesDataCategories)
    */
-  glossary_node?: string;
+  glossary_node: string;
 };

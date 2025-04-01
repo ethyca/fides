@@ -6,6 +6,7 @@ import {
 
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { useAlert } from "~/features/common/hooks";
+import { DiffStatus } from "~/types/api";
 import { StagedResourceAPIResponse } from "~/types/api/models/StagedResourceAPIResponse";
 
 import {
@@ -29,7 +30,8 @@ export const DiscoveredAssetActionsCell = ({
 
   const anyActionIsLoading = isAddingResults || isIgnoringResults;
 
-  const { urn, name, resource_type: type } = asset;
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  const { urn, name, resource_type: type, diff_status } = asset;
 
   const handleAdd = async () => {
     const result = await addMonitorResultAssetsMutation({
@@ -79,15 +81,17 @@ export const DiscoveredAssetActionsCell = ({
           Add
         </Button>
       </Tooltip>
-      <Button
-        data-testid="ignore-btn"
-        size="small"
-        onClick={handleIgnore}
-        disabled={anyActionIsLoading}
-        loading={isIgnoringResults}
-      >
-        Ignore
-      </Button>
+      {diff_status !== DiffStatus.MUTED && (
+        <Button
+          data-testid="ignore-btn"
+          size="small"
+          onClick={handleIgnore}
+          disabled={anyActionIsLoading}
+          loading={isIgnoringResults}
+        >
+          Ignore
+        </Button>
+      )}
     </Space>
   );
 };
