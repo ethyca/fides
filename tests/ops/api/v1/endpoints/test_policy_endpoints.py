@@ -1286,6 +1286,29 @@ class TestRuleTargets:
         response_data = resp.json()["succeeded"]
         assert len(response_data) == 2
 
+    def test_create_rule_targets_with_invalid_rule_key(
+        self,
+        api_client: TestClient,
+        generate_auth_header,
+        policy,
+    ):
+        """
+        Test that creating rule targets with an invalid rule key returns a 404
+        """
+        data = []
+        auth_header = generate_auth_header(scopes=[scopes.RULE_CREATE_OR_UPDATE])
+        resp = api_client.patch(
+            self.get_rule_url(policy.key, "invalid_rule_key"),
+            json=data,
+            headers=auth_header,
+        )
+
+        assert resp.status_code == 404
+        assert (
+            resp.json()["detail"]
+            == "No Rule found for key invalid_rule_key on Policy example_access_request_policy."
+        )
+
     def test_create_rule_targets_as_root(
         self,
         api_client: TestClient,
