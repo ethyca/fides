@@ -120,6 +120,11 @@ class DatabaseSettings(FidesSettings):
         description="Programmatically created synchronous connection string for the configured database (either application or test).",
         exclude=True,
     )
+    database_config_sync_mode: str = Field(
+        default="write",
+        description="Write server's configuration back to the database on startup. If this variable is set to `write` the configuration will be synced to the database. If this variable is set to `none` it will skip writing to the database.",
+        exclude=True,
+    )
 
     @field_validator("password", mode="before")
     @classmethod
