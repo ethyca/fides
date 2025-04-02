@@ -72,6 +72,9 @@ const Overlay: FunctionComponent<Props> = ({
 
   useEffect(() => {
     if (disableBanner === null) {
+      // We check for disableBanner being `null` so that this only ever gets set
+      // during initialization and not with every change to the cookie/consent.
+      // This is also why exaustive-deps is being ignored below.
       setDisableBanner(
         !shouldResurfaceBanner(experience, cookie, savedConsent, options),
       );
@@ -79,6 +82,7 @@ const Overlay: FunctionComponent<Props> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [disableBanner]);
 
+  // When fidesEmbed is enabled, this should be set immediately (don't wait for css animation support)
   const [bannerIsOpen, setBannerIsOpen] = useState(
     options.fidesEmbed
       ? shouldResurfaceBanner(experience, cookie, savedConsent, options)
