@@ -41,7 +41,8 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ## [2.58.1](https://github.com/ethyca/fides/compare/2.58.0...2.58.1)
 
-
+### Fixed
+- Fixed an issue with banner dismisal resulting in resurfaced banner [#5979](https://github.com/ethyca/fides/pull/5979)
 
 ## [2.58.0](https://github.com/ethyca/fides/compare/2.57.1...2.58.0)
 
