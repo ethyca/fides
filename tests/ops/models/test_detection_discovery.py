@@ -524,7 +524,7 @@ class TestMonitorConfigModel:
                     "hour": 0,
                     "minute": 42,
                     "second": 5,
-                    "month": "5,8,11,2",  # May is month 5, so it will run in May, Aug, Nov, Feb
+                    "month": "2,5,8,11",  # May is month 5, so it will run in May, Aug, Nov, Feb
                 },
             ),
             (
@@ -624,7 +624,7 @@ class TestMonitorConfigModel:
                     "hour": 0,
                     "minute": 42,
                     "second": 5,
-                    "month": "5,8,11,2",  # May is month 5, so it will run in May, Aug, Nov, Feb
+                    "month": "2,5,8,11",  # May is month 5, so it will run in May, Aug, Nov, Feb
                 },
             ),
             (

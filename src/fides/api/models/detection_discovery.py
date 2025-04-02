@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime
 from enum import Enum
+from re import match
 from typing import Any, Dict, Iterable, List, Optional, Type
 
 from loguru import logger
@@ -38,6 +39,12 @@ class MonitorFrequency(Enum):
     QUARTERLY = "Quarterly"
     YEARLY = "Yearly"
     NOT_SCHEDULED = "Not scheduled"
+
+
+# pattern for a string of 4 comma-separated integers,
+# used to represent the months of the year that the monitor will run
+# on quarterly basis, in cron format
+QUARTERLY_MONTH_PATTERN = r"^\d+,\d+,\d+,\d+$"
 
 
 class MonitorConfig(Base):
@@ -140,10 +147,13 @@ class MonitorConfig(Base):
             or self.monitor_execution_trigger.get("hour", None) is None
         ):
             return MonitorFrequency.NOT_SCHEDULED
-        if self.monitor_execution_trigger.get("month", None) is not None:
+        month_trigger = self.monitor_execution_trigger.get("month", None)
+        if month_trigger is not None:
+            if isinstance(month_trigger, str) and match(
+                QUARTERLY_MONTH_PATTERN, month_trigger
+            ):
+                return MonitorFrequency.QUARTERLY
             return MonitorFrequency.YEARLY
-        if self.monitor_execution_trigger.get("month_of_quarter", None) is not None:
-            return MonitorFrequency.QUARTERLY
         if self.monitor_execution_trigger.get("day", None) is not None:
             return MonitorFrequency.MONTHLY
         if self.monitor_execution_trigger.get("day_of_week", None) is not None:
