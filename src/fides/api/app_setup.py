@@ -182,7 +182,8 @@ async def run_database_startup(app: FastAPI) -> None:
     db = get_api_session()
     logger.info("Loading config settings into database...")
     try:
-        ApplicationConfig.update_config_set(db, CONFIG)
+        if CONFIG.database.database_config_sync_mode == "write":
+            ApplicationConfig.update_config_set(db, CONFIG)
     except Exception as e:
         logger.error("Error occurred writing config settings to database: {}", str(e))
         raise FidesError(
