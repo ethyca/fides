@@ -160,6 +160,12 @@ Cypress.Commands.add(
         cy.stub(win.dataLayer, "push").as("dataLayerPush");
       },
     };
+    if (!queryParams || !queryParams.disable_animations) {
+      if (!queryParams) {
+        queryParams = {};
+      }
+      queryParams.disable_animations = "true";
+    }
     if (queryParams) {
       visitOptions.qs = queryParams;
     }
