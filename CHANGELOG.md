@@ -39,7 +39,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ### Removed
 - Removed datasetClassificationUpdates flag from admin UI. [#5950](https://github.com/ethyca/fides/pull/5950)
 
-## [2.58.0](https://github.com/ethyca/fides/compare/2.58.0...2.58.1)
+## [2.58.1](https://github.com/ethyca/fides/compare/2.58.0...2.58.1)
 
 
 
