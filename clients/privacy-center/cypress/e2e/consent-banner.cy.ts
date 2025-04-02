@@ -183,7 +183,7 @@ describe("Consent overlay", () => {
               .property("consentMethod")
               .is.eql(ConsentMethod.ACCEPT);
           });
-          cy.get("#fides-banner").should("not.exist");
+          cy.get("#fides-banner").should("not.be.visible");
         });
       });
 
