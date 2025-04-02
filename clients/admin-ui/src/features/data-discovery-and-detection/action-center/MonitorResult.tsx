@@ -102,10 +102,10 @@ export const MonitorResult = ({
               description={`${assetCountString} detected.`}
             />
           </Col>
-          <Col span={3} className="flex items-center justify-end">
+          <Col span={4} className="flex items-center justify-end">
             <Text ellipsis={{ tooltip: name }}>{name}</Text>
           </Col>
-          <Col span={3} className="flex items-center justify-end">
+          <Col span={2} className="flex items-center justify-end">
             {!!lastMonitoredDistance && (
               <Tooltip title={formattedLastMonitored}>
                 <Text
