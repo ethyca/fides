@@ -2,6 +2,7 @@ import { h, VNode } from "preact";
 
 import {
   FidesInitOptions,
+  Layer1ButtonOption,
   PrivacyExperience,
   PrivacyExperienceMinimal,
 } from "../../lib/consent-types";
@@ -40,6 +41,11 @@ export const TcfConsentButtons = ({
       onRejectAll={onRejectAll}
       renderFirstButton={renderFirstButton}
       isInModal={isInModal}
+      hideRejectAll={
+        !isInModal &&
+        experience.experience_config.layer1_button_options ===
+          Layer1ButtonOption.OPT_IN_ONLY
+      }
       options={options}
       isTCF
       isMinimalTCF={experience.minimal_tcf}

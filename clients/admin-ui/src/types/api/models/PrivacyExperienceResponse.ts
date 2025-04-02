@@ -7,6 +7,7 @@ import type { ExperienceMeta } from "./ExperienceMeta";
 import type { PrivacyExperienceGPPSettings } from "./PrivacyExperienceGPPSettings";
 import type { PrivacyNoticeRegion } from "./PrivacyNoticeRegion";
 import type { PrivacyNoticeResponse } from "./PrivacyNoticeResponse";
+import type { RejectAllMechanism } from "./RejectAllMechanism";
 import type { TCFFeatureRecord } from "./TCFFeatureRecord";
 import type { TCFPurposeConsentRecord } from "./TCFPurposeConsentRecord";
 import type { TCFPurposeLegitimateInterestsRecord } from "./TCFPurposeLegitimateInterestsRecord";
@@ -42,10 +43,15 @@ export type PrivacyExperienceResponse = {
   tcf_system_consents?: Array<TCFVendorConsentRecord>;
   tcf_system_legitimate_interests?: Array<TCFVendorLegitimateInterestsRecord>;
   tcf_system_relationships?: Array<TCFVendorRelationships>;
+  tcf_publisher_country_code?: string | null;
   /**
    * The Privacy Notices associated with this experience, if applicable
    */
   privacy_notices?: Array<PrivacyNoticeResponse> | null;
+  /**
+   * The notice keys of the Privacy Notices that are enabled, but not applicable to the experience
+   */
+  non_applicable_privacy_notices?: Array<string> | null;
   /**
    * The Experience Config and its translations
    */
@@ -54,4 +60,8 @@ export type PrivacyExperienceResponse = {
   gvl_translations?: null;
   available_locales?: Array<string> | null;
   meta?: ExperienceMeta | null;
+  /**
+   * Determines the behavior of the reject all button
+   */
+  reject_all_mechanism?: RejectAllMechanism | null;
 };

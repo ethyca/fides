@@ -196,19 +196,39 @@ export interface Fides {
    * they occur, which can then be used to trigger/block tags in GTM based on
    * `Fides.consent` preferences or other business logic.
    *
-   * See the Google Tag Manager tutorial for more: {@link
-   * https://fid.es/configuring-gtm-consent}
+   * See the [Google Tag Manager tutorial](/docs/tutorials/consent-management/consent-management-configuration/google-tag-manager-consent-mode) for more.
+   *
+   * @param options - Optional configuration for the GTM integration
+   * @param options.non_applicable_flag_mode - Controls how non-applicable privacy notices are handled in the data layer. Can be "omit" (default) to exclude non-applicable notices, or "include" to include them with a default value.
+   * @param options.flag_type - Controls how consent values are represented in the data layer. Can be "boolean" (default) for true/false values, or "consent_mechanism" for string values like "opt_in", "opt_out", "acknowledge", "not_applicable".
    *
    * @example
-   * Enabling the GTM integration in your site's `<head>`:
+   * Basic usage in your site's `<head>`:
    * ```html
    * <head>
    *   <script src="path/to/fides.js"></script>
    *   <script>Fides.gtm()</script>
    * </head>
    * ```
+   *
+   * @example
+   * With options to include non-applicable notices and use consent mechanism strings:
+   * ```html
+   * <head>
+   *   <script src="path/to/fides.js"></script>
+   *   <script>
+   *     Fides.gtm({
+   *       non_applicable_flag_mode: "include",
+   *       flag_type: "consent_mechanism"
+   *     });
+   *   </script>
+   * </head>
+   * ```
    */
-  gtm: () => void;
+  gtm: (options?: {
+    non_applicable_flag_mode?: "omit" | "include";
+    flag_type?: "boolean" | "consent_mechanism";
+  }) => void;
 
   /**
    * Initializes FidesJS with an initial configuration object.
