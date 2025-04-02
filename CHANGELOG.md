@@ -19,7 +19,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - https://github.com/ethyca/fides/labels/high-risk: to indicate that a change is a "high-risk" change that could potentially lead to unanticipated regressions or degradations
 - https://github.com/ethyca/fides/labels/db-migration: to indicate that a given change includes a DB migration
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.58.0...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.58.1...main)
 
 ### Added
 - Added `reject_all_mechanism` to `PrivacyExperienceConfig` [#5952](https://github.com/ethyca/fides/pull/5952) https://github.com/ethyca/fides/labels/db-migration
@@ -39,6 +39,10 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ### Removed
 - Removed datasetClassificationUpdates flag from admin UI. [#5950](https://github.com/ethyca/fides/pull/5950)
+
+## [2.58.1](https://github.com/ethyca/fides/compare/2.58.0...2.58.1)
+
+
 
 ## [2.58.0](https://github.com/ethyca/fides/compare/2.57.1...2.58.0)
 
