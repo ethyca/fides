@@ -10,6 +10,10 @@ from sqlalchemy import Boolean, Column, DateTime
 from sqlalchemy import Enum as EnumColumn
 from sqlalchemy import String
 from sqlalchemy.orm import Session, relationship
+from sqlalchemy_utils.types.encrypted.encrypted_type import (
+    AesGcmEngine,
+    StringEncryptedType,
+)
 
 from fides.api.common_exceptions import SystemManagerException
 from fides.api.cryptography.cryptographic_util import (
@@ -21,7 +25,8 @@ from fides.api.models.audit_log import AuditLog
 
 # Intentionally importing SystemManager here to build the FidesUser.systems relationship
 from fides.api.models.system_manager import SystemManager  # type: ignore[unused-import]
-from fides.api.schemas.user import DisabledReason
+from fides.api.schemas.user import DisabledReason, LoginMethod
+from fides.config import CONFIG
 
 if TYPE_CHECKING:
     from fides.api.models.sql_models import System  # type: ignore[attr-defined]
@@ -40,6 +45,16 @@ class FidesUser(Base):
     disabled_reason = Column(EnumColumn(DisabledReason), nullable=True)
     last_login_at = Column(DateTime(timezone=True), nullable=True)
     password_reset_at = Column(DateTime(timezone=True), nullable=True)
+    login_method = Column(EnumColumn(LoginMethod), nullable=True)
+    totp_secret = Column(
+        StringEncryptedType(
+            type_in=String(),
+            key=CONFIG.security.app_encryption_key,
+            engine=AesGcmEngine,
+            padding="pkcs5",
+        ),
+        nullable=True,
+    )
 
     # passive_deletes="all" prevents audit logs from having their
     # privacy_request_id set to null when a privacy_request is deleted.
