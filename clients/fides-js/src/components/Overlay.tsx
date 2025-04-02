@@ -2,13 +2,7 @@
 import "./fides.css";
 
 import { FunctionComponent, h, VNode } from "preact";
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "preact/hooks";
+import { useCallback, useEffect, useRef, useState } from "preact/hooks";
 
 import { useA11yDialog } from "../lib/a11y-dialog";
 import { FIDES_OVERLAY_WRAPPER } from "../lib/consent-constants";
@@ -74,13 +68,19 @@ const Overlay: FunctionComponent<Props> = ({
     !experience || !!options.fidesEmbed || options.modalLinkId === "";
   const modalLink = useElementById(modalLinkId, modalLinkIsDisabled);
   const modalLinkRef = useRef<HTMLElement | null>(null);
+  const [disableBanner, setDisableBanner] = useState<boolean | null>(null);
 
-  const showBanner = useMemo(() => {
-    return shouldResurfaceBanner(experience, cookie, savedConsent, options);
-  }, [cookie, savedConsent, experience, options]);
+  useEffect(() => {
+    if (disableBanner === null) {
+      setDisableBanner(
+        !shouldResurfaceBanner(experience, cookie, savedConsent, options),
+      );
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [disableBanner]);
 
   const [bannerIsOpen, setBannerIsOpen] = useState(
-    options.fidesEmbed ? showBanner : false,
+    options.fidesEmbed ? !disableBanner : false,
   );
 
   useEffect(() => {
@@ -140,12 +140,12 @@ const Overlay: FunctionComponent<Props> = ({
   // The delay is needed for the banner CSS animation
   useEffect(() => {
     const delayBanner = setTimeout(() => {
-      if (showBanner) {
+      if (!disableBanner) {
         setBannerIsOpen(true);
       }
     }, delayBannerMilliseconds);
     return () => clearTimeout(delayBanner);
-  }, [showBanner, setBannerIsOpen]);
+  }, [disableBanner, setBannerIsOpen]);
 
   useEffect(() => {
     if (!!experience && !options.fidesEmbed) {
@@ -200,20 +200,19 @@ const Overlay: FunctionComponent<Props> = ({
 
   return (
     <div id={FIDES_OVERLAY_WRAPPER} tabIndex={-1}>
-      {showBanner && bannerIsOpen && isUiBlocking && (
+      {!disableBanner && bannerIsOpen && isUiBlocking && (
         <div className="fides-modal-overlay" />
       )}
 
-      {showBanner
-        ? renderBanner({
-            isOpen: bannerIsOpen,
-            isEmbedded: options.fidesEmbed,
-            onClose: () => {
-              setBannerIsOpen(false);
-            },
-            onManagePreferencesClick: handleManagePreferencesClick,
-          })
-        : null}
+      {!disableBanner &&
+        renderBanner({
+          isOpen: bannerIsOpen,
+          isEmbedded: options.fidesEmbed,
+          onClose: () => {
+            setBannerIsOpen(false);
+          },
+          onManagePreferencesClick: handleManagePreferencesClick,
+        })}
       {options.fidesEmbed ? (
         bannerIsOpen || !renderModalContent || !renderModalFooter ? null : (
           <ConsentContent

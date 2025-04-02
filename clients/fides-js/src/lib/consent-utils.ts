@@ -241,7 +241,7 @@ export const shouldResurfaceBanner = (
     | undefined,
   cookie: FidesCookie | undefined,
   savedConsent: NoticeConsent,
-  options?: FidesInitOptions,
+  options: FidesInitOptions,
 ): boolean => {
   // Never resurface banner if it is disabled
   if (options?.fidesDisableBanner) {
