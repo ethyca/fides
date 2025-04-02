@@ -24,6 +24,7 @@ interface ConsentButtonProps {
   onRejectAll: () => void;
   options: FidesInitOptions;
   hideOptInOut?: boolean;
+  hideRejectAll?: boolean;
   isInModal?: boolean;
   isTCF?: boolean;
   isMinimalTCF?: boolean;
@@ -35,7 +36,8 @@ export const ConsentButtons = ({
   renderFirstButton,
   onAcceptAll,
   onRejectAll,
-  hideOptInOut = false,
+  hideOptInOut,
+  hideRejectAll,
   options,
   isInModal,
   isTCF,
@@ -86,13 +88,15 @@ export const ConsentButtons = ({
                 loading={isLoadingModal}
               />
             )}
-            <Button
-              buttonType={ButtonType.PRIMARY}
-              label={i18n.t("exp.reject_button_label")}
-              onClick={onRejectAll}
-              className="fides-reject-all-button"
-              loading={isGVLLoading}
-            />
+            {!hideRejectAll && (
+              <Button
+                buttonType={ButtonType.PRIMARY}
+                label={i18n.t("exp.reject_button_label")}
+                onClick={onRejectAll}
+                className="fides-reject-all-button"
+                loading={isGVLLoading}
+              />
+            )}
             <Button
               buttonType={ButtonType.PRIMARY}
               label={i18n.t("exp.accept_button_label")}
