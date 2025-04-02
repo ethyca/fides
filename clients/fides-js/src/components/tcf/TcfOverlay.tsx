@@ -13,6 +13,7 @@ import {
   PrivacyExperience,
   PrivacyExperienceMinimal,
   PrivacyNoticeWithPreference,
+  RejectAllMechanism,
   ServingComponent,
 } from "../../lib/consent-types";
 import {
@@ -460,12 +461,29 @@ export const TcfOverlay = ({
             );
           })
           .map((n) => n.id) ?? EMPTY_ENABLED_IDS;
+      if (
+        experience?.experience_config?.reject_all_mechanism ===
+        RejectAllMechanism.REJECT_CONSENT_ONLY
+      ) {
+        // Do not reject legitimate interests if the reject all mechanism is set to "Reject Consent Only"
+        enabledIds.purposesLegint = draftIds.purposesLegint;
+        fidesDebugger(
+          "Reject all mechanism is set to 'Reject Consent Only'. Ignoring legitimate interests during opt out.",
+          enabledIds,
+          draftIds,
+        );
+      }
       handleUpdateAllPreferences(
         wasAutomated ? ConsentMethod.SCRIPT : ConsentMethod.REJECT,
         enabledIds,
       );
     },
-    [draftIds, handleUpdateAllPreferences, privacyNoticesWithBestTranslation],
+    [
+      draftIds,
+      experience?.experience_config?.reject_all_mechanism,
+      handleUpdateAllPreferences,
+      privacyNoticesWithBestTranslation,
+    ],
   );
 
   useEffect(() => {

@@ -26,9 +26,12 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Added DataHub dataset sync functionality UI with feedback and error handling [#5949](https://github.com/ethyca/fides/pull/5949)
 - Added `opt_in_only` to `Layer1ButtonOption` [#5958](https://github.com/ethyca/fides/pull/5958)
 - Added support for links in `<a>` tags on the custom HTML description [#5960](https://github.com/ethyca/fides/pull/5960)
+- Added "Reject all" behavior and visibility options to TCF Experience config form [#5964](https://github.com/ethyca/fides/pull/5964)
+
 
 ### Changed
 - Bumped Next.js for all frontend apps to latest patch versions. [#5946](https://github.com/ethyca/fides/pull/5946)
+- Updating UI for Integrations, the tags now represent capabilities of the integrations [#5973](https://github.com/ethyca/fides/pull/5973)
 
 ### Fixed
 - Updated relationships for Comments, Attachments and PrivacyRequests to remove overlap sqlalchemy error. [#5929](https://github.com/ethyca/fides/pull/5929)
