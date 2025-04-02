@@ -303,6 +303,7 @@ const _Fides: FidesGlobal = {
       this.experience,
       this.cookie,
       this.saved_consent,
+      this.options,
     );
   },
   meta,
