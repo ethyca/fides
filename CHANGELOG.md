@@ -27,6 +27,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Added `opt_in_only` to `Layer1ButtonOption` [#5958](https://github.com/ethyca/fides/pull/5958)
 - Added support for links in `<a>` tags on the custom HTML description [#5960](https://github.com/ethyca/fides/pull/5960)
 - Added "Reject all" behavior and visibility options to TCF Experience config form [#5964](https://github.com/ethyca/fides/pull/5964)
+- Added `TCFConfiguration` and `TCFPublisherRestriction` models [#5983](https://github.com/ethyca/fides/pull/5983) https://github.com/ethyca/fides/labels/db-migration
 
 
 ### Changed
