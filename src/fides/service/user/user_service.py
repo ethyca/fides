@@ -122,7 +122,6 @@ class UserService:
             logger.warning("Username is missing, skipping invite deletion.")
 
         client = self.perform_login(
-            self.db,
             self.config.security.oauth_client_id_length_bytes,
             self.config.security.oauth_client_secret_length_bytes,
             user,
