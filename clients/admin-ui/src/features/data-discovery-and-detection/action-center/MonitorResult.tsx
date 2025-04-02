@@ -1,10 +1,10 @@
 import { formatDistance } from "date-fns";
 import {
   AntAvatar as Avatar,
-  AntCol,
+  AntCol as Col,
   AntList as List,
   AntListItemProps as ListItemProps,
-  AntRow,
+  AntRow as Row,
   AntSkeleton as Skeleton,
   AntTooltip as Tooltip,
   AntTypography as Typography,
@@ -67,8 +67,8 @@ export const MonitorResult = ({
   return (
     <List.Item data-testid={`monitor-result-${key}`} {...props}>
       <Skeleton avatar title={false} loading={showSkeleton} active>
-        <AntRow gutter={12} className="w-full">
-          <AntCol span={18} className="align-middle">
+        <Row gutter={12} className="w-full">
+          <Col span={18} className="align-middle">
             <List.Item.Meta
               avatar={
                 <Avatar
@@ -101,11 +101,11 @@ export const MonitorResult = ({
               }
               description={`${assetCountString} detected.`}
             />
-          </AntCol>
-          <AntCol span={3} className="flex items-center justify-end">
+          </Col>
+          <Col span={3} className="flex items-center justify-end">
             <Text ellipsis={{ tooltip: name }}>{name}</Text>
-          </AntCol>
-          <AntCol span={3} className="flex items-center justify-end">
+          </Col>
+          <Col span={3} className="flex items-center justify-end">
             {!!lastMonitoredDistance && (
               <Tooltip title={formattedLastMonitored}>
                 <Text
@@ -116,8 +116,8 @@ export const MonitorResult = ({
                 </Text>
               </Tooltip>
             )}
-          </AntCol>
-        </AntRow>
+          </Col>
+        </Row>
       </Skeleton>
     </List.Item>
   );
