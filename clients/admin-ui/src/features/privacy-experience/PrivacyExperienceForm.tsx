@@ -44,6 +44,7 @@ import {
   Layer1ButtonOption,
   LimitedPrivacyNoticeResponseSchema,
   Property,
+  RejectAllMechanism,
   SupportedLanguage,
 } from "~/types/api";
 
@@ -68,7 +69,29 @@ const componentTypeOptions: SelectProps["options"] = [
   },
 ];
 
-const buttonLayoutOptions: SelectProps["options"] = [
+const tcfRejectAllMechanismOptions: SelectProps["options"] = [
+  {
+    label: "Reject All",
+    value: RejectAllMechanism.REJECT_ALL,
+  },
+  {
+    label: "Reject Consent Only",
+    value: RejectAllMechanism.REJECT_CONSENT_ONLY,
+  },
+];
+
+const tcfBannerButtonOptions: SelectProps["options"] = [
+  {
+    label: "Banner and modal",
+    value: Layer1ButtonOption.OPT_IN_OPT_OUT,
+  },
+  {
+    label: "Modal only",
+    value: Layer1ButtonOption.OPT_IN_ONLY,
+  },
+];
+
+const bannerButtonOptions: SelectProps["options"] = [
   {
     label: "Opt In/Opt Out",
     value: Layer1ButtonOption.OPT_IN_OPT_OUT,
@@ -222,6 +245,49 @@ export const PrivacyExperienceForm = ({
         />
       )}
       <Collapse
+        in={values.component === ComponentType.TCF_OVERLAY}
+        animateOpacity
+      >
+        <ControlledSelect
+          name="reject_all_mechanism"
+          id="reject_all_mechanism"
+          options={tcfRejectAllMechanismOptions}
+          defaultValue={RejectAllMechanism.REJECT_ALL}
+          label="Reject all behavior"
+          layout="stacked"
+          disabled={values.component !== ComponentType.TCF_OVERLAY}
+          tooltip="Reject All: Blocks both consent and legitimate interest data processing across all purposes, features, and vendors. Reject Consent-Only: Blocks only consent-based processing, but allows legitimate interest processing to continue, requiring separate objection."
+        />
+      </Collapse>
+      <Collapse
+        in={
+          values.component === ComponentType.BANNER_AND_MODAL ||
+          values.component === ComponentType.TCF_OVERLAY
+        }
+        animateOpacity
+      >
+        <ControlledSelect
+          name="layer1_button_options"
+          id="layer1_button_options"
+          defaultValue={Layer1ButtonOption.OPT_IN_OPT_OUT}
+          options={
+            values.component === ComponentType.TCF_OVERLAY
+              ? tcfBannerButtonOptions
+              : bannerButtonOptions
+          }
+          label={
+            values.component === ComponentType.TCF_OVERLAY
+              ? "Reject all visibility"
+              : "Banner options"
+          }
+          layout="stacked"
+          disabled={
+            values.component !== ComponentType.BANNER_AND_MODAL &&
+            values.component !== ComponentType.TCF_OVERLAY
+          }
+        />
+      </Collapse>
+      <Collapse
         in={
           values.component !== ComponentType.PRIVACY_CENTER &&
           values.component !== ComponentType.HEADLESS
@@ -237,34 +303,6 @@ export const PrivacyExperienceForm = ({
           />
         </Box>
       </Collapse>
-      <Collapse
-        in={values.component === ComponentType.BANNER_AND_MODAL}
-        animateOpacity
-      >
-        <ControlledSelect
-          name="layer1_button_options"
-          id="layer1_button_options"
-          options={buttonLayoutOptions}
-          label="Banner options"
-          layout="stacked"
-          disabled={values.component !== ComponentType.BANNER_AND_MODAL}
-        />
-      </Collapse>
-      <ScrollableList
-        label="Associated properties"
-        addButtonLabel="Add property"
-        idField="id"
-        nameField="name"
-        allItems={allProperties.map((property: Property) => ({
-          id: property.id,
-          name: property.name,
-        }))}
-        values={values.properties ?? []}
-        setValues={(newValues) => setFieldValue("properties", newValues)}
-        draggable
-        maxHeight={100}
-        baseTestId="property"
-      />
       <Divider />
       <Heading fontSize="md" fontWeight="semibold">
         Privacy notices
@@ -277,7 +315,6 @@ export const PrivacyExperienceForm = ({
           setValues={(newValues) =>
             setFieldValue("privacy_notice_ids", newValues)
           }
-          // @ts-ignore
           canDeleteItem={(item: string): boolean => {
             return Boolean(item !== TCF_PLACEHOLDER_ID);
           }}
@@ -376,6 +413,26 @@ export const PrivacyExperienceForm = ({
           Edit experience text
         </Button>
       )}
+      <Divider />
+      <Heading fontSize="md" fontWeight="semibold">
+        Properties
+      </Heading>
+      <ScrollableList
+        label="Associated properties"
+        addButtonLabel="Add property"
+        idField="id"
+        nameField="name"
+        allItems={allProperties.map((property: Property) => ({
+          id: property.id,
+          name: property.name,
+        }))}
+        values={values.properties ?? []}
+        setValues={(newValues) => setFieldValue("properties", newValues)}
+        draggable
+        maxHeight={100}
+        baseTestId="property"
+      />
+      <Divider />
       <CustomSwitch
         name="auto_subdomain_cookie_deletion"
         id="auto_subdomain_cookie_deletion"

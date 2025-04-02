@@ -2508,3 +2508,31 @@ dataset:
         data_categories: [system.operations]
       - name: page
         data_categories: [system.operations]
+  - name: tcf_configuration
+    fields:
+      - name: id
+        data_categories: [system.operations]
+      - name: name
+        data_categories: [system.operations]
+      - name: created_at
+        data_categories: [system.operations]
+      - name: updated_at
+        data_categories: [system.operations]
+  - name: tcf_publisher_restriction
+    fields:
+      - name: id
+        data_categories: [system.operations]
+      - name: tcf_configuration_id
+        data_categories: [system.operations]
+      - name: purpose_id
+        data_categories: [system.operations]
+      - name: restriction_type
+        data_categories: [system.operations]
+      - name: vendor_restriction
+        data_categories: [system.operations]
+      - name: range_entries
+        data_categories: [system.operations]
+      - name: created_at
+        data_categories: [system.operations]
+      - name: updated_at
+        data_categories: [system.operations]
