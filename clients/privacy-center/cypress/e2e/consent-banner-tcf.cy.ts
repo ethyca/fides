@@ -222,11 +222,6 @@ describe("Fides-js TCF", () => {
         });
       });
       cy.waitUntilFidesInitialized().then(() => {
-        // The banner has a delay, so in order to assert its non-existence, we have
-        // to give it a chance to come up first. Otherwise, the following gets will
-        // pass regardless.
-        // eslint-disable-next-line cypress/no-unnecessary-waiting
-        cy.wait(500);
         cy.get("@FidesUIShown").should("not.have.been.called");
         cy.get("div#fides-banner").should("not.exist");
       });
@@ -236,11 +231,6 @@ describe("Fides-js TCF", () => {
 
       stubTCFExperience({ stubOptions: { fidesDisableBanner: true } });
       cy.waitUntilFidesInitialized().then(() => {
-        // The banner has a delay, so in order to assert its non-existence, we have
-        // to give it a chance to come up first. Otherwise, the following gets will
-        // pass regardless.
-        // eslint-disable-next-line cypress/no-unnecessary-waiting
-        cy.wait(500);
         cy.get("@FidesUIShown").should("not.have.been.called");
         cy.get("div#fides-banner").should("not.exist");
       });
