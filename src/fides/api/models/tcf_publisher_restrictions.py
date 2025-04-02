@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, ValidationError, model_validator
 from sqlalchemy import Column
@@ -38,7 +38,7 @@ class RangeEntry(BaseModel):
     """
 
     start_vendor_id: int = Field(description="The starting vendor ID in the range")
-    end_vendor_id: int | None = Field(
+    end_vendor_id: Optional[int] = Field(
         default=None, description="The ending vendor ID in the range (inclusive)"
     )
 
