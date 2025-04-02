@@ -1259,10 +1259,14 @@ class TestSystemCreate:
         assert result.status_code == HTTP_201_CREATED
         result_json = result.json()
         assert result_json["fides_key"] == system_create_request_body.fides_key
-        assert result_json["vendor_deleted_date"] == vendor_deleted_date.isoformat().replace('+00:00', 'Z')
+        assert result_json[
+            "vendor_deleted_date"
+        ] == vendor_deleted_date.isoformat().replace("+00:00", "Z")
 
         # Verify the system was created in the database with the correct vendor deleted date
-        system = System.get_by(db, field="fides_key", value=system_create_request_body.fides_key)
+        system = System.get_by(
+            db, field="fides_key", value=system_create_request_body.fides_key
+        )
         assert system.vendor_deleted_date == vendor_deleted_date
 
 
