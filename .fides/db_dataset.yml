@@ -559,6 +559,12 @@ dataset:
     - name: email_address
       data_categories:
       - user.contact.email
+    - name: login_method
+      data_categories:
+      - system.operations
+    - name: totp_secret
+      data_categories:
+      - system.operations
   - name: fidesuserpermissions
     fields:
     - name: created_at
