@@ -190,6 +190,7 @@ export const BadgeCellExpandable = <T,>({
         gap={1.5}
         pt={2}
         pb={2}
+        overflowX="auto"
         onClick={(e) => {
           if (!isCollapsed) {
             e.stopPropagation();
