@@ -59,8 +59,8 @@ from fides.api.models.storage import StorageConfig
 from fides.api.models.system_compass_sync import SystemCompassSync
 from fides.api.models.system_history import SystemHistory
 from fides.api.models.system_manager import SystemManager
-from fides.api.models.tcf_purpose_overrides import TCFPurposeOverride
 from fides.api.models.tcf_publisher_restrictions import (
     TCFConfiguration,
     TCFPublisherRestriction,
 )
+from fides.api.models.tcf_purpose_overrides import TCFPurposeOverride

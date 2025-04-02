@@ -14,7 +14,7 @@ from constants_nox import (
     START_APP,
     WITH_TEST_CONFIG,
 )
-from setup_tests_nox import pytest_ctl, pytest_lib, pytest_nox, pytest_ops, pytest_api
+from setup_tests_nox import pytest_api, pytest_ctl, pytest_lib, pytest_nox, pytest_ops
 from utils_nox import install_requirements
 
 
