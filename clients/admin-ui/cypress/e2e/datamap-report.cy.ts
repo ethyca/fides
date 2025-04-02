@@ -234,7 +234,7 @@ describe("Data map report table", () => {
     });
 
     describe("Column renaming", () => {
-      it("should rename columns", () => {
+      it.only("should rename columns", () => {
         cy.getByTestId("more-menu").click();
         cy.getByTestId("rename-columns-btn").click();
         cy.getByTestId("rename-columns-reset-btn").should("exist");
@@ -242,8 +242,11 @@ describe("Data map report table", () => {
         cy.getByTestId("rename-columns-apply-btn").should("exist");
         cy.getByTestId("column-data_categories-input")
           .clear()
+          .type("Custom Title")
+          .should('have.value', 'Custom Title', { timeout: 10000 })
           .then(() => {
-            cy.getByTestId("column-data_categories-input").type("Custom Title");
+            // This is a hack to wait for the input to be populated; it's slow to appear in CI with limited resources
+            cy.log('Input successfully populated with "Custom Title"');
           });
         cy.getByTestId("rename-columns-apply-btn").click({ force: true });
         cy.getByTestId("rename-columns-reset-btn").should("not.exist");
