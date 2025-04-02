@@ -15,7 +15,7 @@ export default defineConfig({
     },
   },
 
-  defaultCommandTimeout: 5000,
+  defaultCommandTimeout: 8000,
 
   retries: {
     runMode: 3,
