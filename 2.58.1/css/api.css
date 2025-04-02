@@ -1,0 +1,50 @@
+/* -- START: API Reference CSS -- */
+
+
+/* Hide the "Schemas" (models) section and the "Links" column in the responses */
+
+#swagger-ui .swagger-ui section.models,
+#swagger-ui .swagger-ui td.response-col_links {
+    display: none;
+    padding: 0px;
+    margin: 0px;
+}
+
+
+/* Increase the font-size for some elements, for clarity */
+
+#swagger-ui .swagger-ui .col_header {
+    font-size: 16px;
+    font-weight: bold;
+}
+
+#swagger-ui .swagger-ui .opblock .opblock-summary-description {
+    font-size: 16px;
+}
+
+
+/* Tighten margins & padding for some elements */
+
+#swagger-ui .swagger-ui .model-example {
+    margin: 0px;
+}
+
+#swagger-ui .swagger-ui .tab,
+#swagger-ui .swagger-ui .tabitem {
+    margin: 4px;
+}
+
+#swagger-ui .swagger-ui .info {
+    margin: 12px 12px 12px 0px;
+}
+
+#swagger-ui .swagger-ui .opblock-tag {
+    padding: 12px 0px 12px 0px;
+}
+
+
+/* Remove the harsh lime green in code examples */
+
+#swagger-ui .swagger-ui code span[style="color: rgb(162, 252, 162);"] {
+    color: inherit !important;
+}
