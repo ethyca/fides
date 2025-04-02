@@ -80,7 +80,9 @@ const Overlay: FunctionComponent<Props> = ({
   }, [disableBanner]);
 
   const [bannerIsOpen, setBannerIsOpen] = useState(
-    options.fidesEmbed ? !disableBanner : false,
+    options.fidesEmbed
+      ? shouldResurfaceBanner(experience, cookie, savedConsent, options)
+      : false,
   );
 
   useEffect(() => {
