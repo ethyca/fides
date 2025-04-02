@@ -11,7 +11,7 @@
     "copy-export": "mkdir -p ../../src/fides/ui-build/static/admin/ && rsync -a --delete out/ ../../src/fides/ui-build/static/admin/",
     "cy:open": "cypress open",
     "cy:run": "cypress run",
-    "cy:parallel": "cypress-parallel -s cy:run -t 3 -d cypress/e2e -n ../node_modules/cypress-multi-reporters",
+    "cy:parallel": "cypress-parallel -s cy:run -t 3 -d cypress/e2e -r spec -n ../node_modules/cypress-multi-reporters",
     "cy:start": "export NODE_ENV=test && next build && next start",
     "dev": "next dev -p 3000",
     "dev:mock": "echo '🚨 Running with mock API'; NEXT_PUBLIC_MOCK_API=true next dev",
