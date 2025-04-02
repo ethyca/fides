@@ -355,7 +355,7 @@ export const GroupCountBadgeCell = ({
   }
 
   return (
-    <Flex alignItems="center" height="100%" gap={0} overflowX="hidden">
+    <Flex alignItems="center" height="100%" gap={2} overflowX="hidden">
       {tags}
     </Flex>
   );
