@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.58.1b4.post0.dev6"
+    "version": "2.58.1b4.post0.dev7"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -15181,6 +15181,30 @@
       },
       "ConnectionConfigurationResponse": {
         "properties": {
+          "connection_type": {
+            "$ref": "#/components/schemas/ConnectionType"
+          },
+          "secrets": {
+            "anyOf": [
+              {
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Secrets"
+          },
+          "saas_config": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SaaSConfigBase"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "name": {
             "anyOf": [
               {
@@ -15206,9 +15230,6 @@
               }
             ],
             "title": "Description"
-          },
-          "connection_type": {
-            "$ref": "#/components/schemas/ConnectionType"
           },
           "access": {
             "$ref": "#/components/schemas/AccessLevel"
@@ -15265,27 +15286,6 @@
             ],
             "title": "Last Test Succeeded"
           },
-          "saas_config": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/SaaSConfigBase"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "secrets": {
-            "anyOf": [
-              {
-                "type": "object"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Secrets"
-          },
           "authorized": {
             "anyOf": [
               {
@@ -15315,13 +15315,13 @@
         },
         "type": "object",
         "required": [
-          "key",
           "connection_type",
+          "key",
           "access",
           "created_at"
         ],
         "title": "ConnectionConfigurationResponse",
-        "description": "Describes the returned schema for a ConnectionConfiguration."
+        "description": "Describes the returned schema for a ConnectionConfiguration.\n\nThe mixin base class ensures that `secrets` sensitive values are masked."
       },
       "ConnectionSystemTypeMap": {
         "properties": {
@@ -26629,7 +26629,7 @@
                 "type": "null"
               }
             ],
-            "description": "\n    Describes the returned schema for a ConnectionConfiguration.\n    "
+            "description": "\n    Describes the returned schema for a ConnectionConfiguration.\n\n    The mixin base class ensures that `secrets` sensitive values are masked.\n    "
           },
           "data_stewards": {
             "anyOf": [
