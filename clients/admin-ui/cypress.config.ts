@@ -6,7 +6,7 @@ export default defineConfig({
     experimentalRunAllSpecs: true,
     setupNodeEvents(on) {
       on("before:browser:launch", (browser, launchOptions) => {
-        if (browser.family === "chromium") {
+        if (browser.family === "chromium" && browser.name !== "electron") {
           // No need for tests to be slowed down by animations!
           launchOptions.args.push("--force-prefers-reduced-motion");
         }
