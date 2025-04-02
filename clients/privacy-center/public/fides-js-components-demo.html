@@ -29,6 +29,11 @@
           "fides_consent=;Path=/;expires='Thu, 01 Jan 1970 00:00:01 GMT';";
         location.reload();
       };
+      if (params.get("disable_animations") === "true") {
+        document.write(
+          "<style>div#fides-banner-container:not(.fides-embedded) { transition: none !important; }</style>",
+        );
+      }
     </script>
     <script>
       // Our cypress test suite requires injecting consent options through an obj on window
@@ -238,9 +243,6 @@
         background: none;
         cursor: pointer;
         text-decoration: underline;
-      }
-      div#fides-banner-container:not(.fides-embedded) {
-        transition: none !important;
       }
     </style>
   </head>
