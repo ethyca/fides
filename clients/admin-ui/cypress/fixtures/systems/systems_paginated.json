@@ -1,14 +1,11 @@
 {
   "items": [
     {
-      "fides_key": "fidesctl_system",
+      "fides_key": "test_system",
       "organization_fides_key": "default_organization",
-      "tags": null,
-      "name": "Fidesctl System",
-      "description": "Software that functionally applies Fides.",
-      "meta": null,
-      "fidesctl_meta": null,
-      "system_type": "Service",
+      "name": "Test System",
+      "description": "A test system",
+      "system_type": "SYSTEM",
       "privacy_declarations": [
         {
           "name": "Store system data.",
@@ -16,90 +13,90 @@
           "data_use": "functional.service.improve",
           "data_subjects": ["anonymous_user"],
           "dataset_references": ["public"],
-          "cookies": [{ "name": "cookie" }, { "name": "cookie2" }],
-          "id": "pri_ac9d4dfb-d033-4b06-bc7f-968df8d125ff"
+          "cookies": [
+            {
+              "name": "cookie",
+              "path": "/",
+              "domain": "example.com",
+              "type": "cookie",
+              "cookie_refresh": false,
+              "max_age_seconds": 86400,
+              "uses_non_cookie_access": false,
+              "purposes": [1, 2, 3, 4, 7],
+              "special_purposes": [],
+              "features": [],
+              "special_features": [],
+              "vendor_id": "gvl.780",
+              "vendor_name": "Aniview LTD",
+              "gvl_version": null
+            },
+            {
+              "name": "cookie2",
+              "path": "/",
+              "domain": "example.com",
+              "type": "cookie",
+              "cookie_refresh": false,
+              "max_age_seconds": 86400,
+              "uses_non_cookie_access": false,
+              "purposes": [1, 2, 3, 4, 7],
+              "special_purposes": [],
+              "features": [],
+              "special_features": [],
+              "vendor_id": "gvl.780",
+              "vendor_name": "Aniview LTD",
+              "gvl_version": null
+            }
+          ],
+          "vendor_id": "gvl.780",
+          "vendor_name": "Aniview LTD",
+          "purpose": 3,
+          "special_purpose": null,
+          "gvl_version": "3"
         }
       ],
-      "administrating_department": "Not defined",
-      "ingress": [],
-      "egress": [],
       "cookies": [
         {
-          "name": "test_cookie",
+          "name": "cookie",
           "path": "/",
-          "domain": "https://www.example.com"
-        }
-      ]
-    },
-    {
-      "fides_key": "demo_analytics_system",
-      "organization_fides_key": "default_organization",
-      "tags": null,
-      "name": "Demo Analytics System",
-      "description": "A system used for analyzing customer behaviour.",
-      "meta": null,
-      "fidesctl_meta": null,
-      "system_type": "Service",
-      "egress": null,
-      "ingress": [
+          "domain": "example.com",
+          "type": "cookie",
+          "cookie_refresh": false,
+          "max_age_seconds": 86400,
+          "uses_non_cookie_access": false,
+          "purposes": [1, 2, 3, 4, 7],
+          "special_purposes": [],
+          "features": [],
+          "special_features": [],
+          "vendor_id": "gvl.780",
+          "vendor_name": "Aniview LTD",
+          "gvl_version": null
+        },
         {
-          "fides_key": "demo_marketing_system",
-          "type": "system",
-          "data_categories": null
+          "name": "cookie2",
+          "path": "/",
+          "domain": "example.com",
+          "type": "cookie",
+          "cookie_refresh": false,
+          "max_age_seconds": 86400,
+          "uses_non_cookie_access": false,
+          "purposes": [1, 2, 3, 4, 7],
+          "special_purposes": [],
+          "features": [],
+          "special_features": [],
+          "vendor_id": "gvl.780",
+          "vendor_name": "Aniview LTD",
+          "gvl_version": null
         }
       ],
-      "privacy_declarations": [
-        {
-          "name": "Analyze customer behaviour for improvements.",
-          "data_categories": ["user.contact", "user.device.cookie_id"],
-          "data_use": "functional.service.improve",
-          "data_subjects": ["customer"],
-          "dataset_references": ["demo_users_dataset"],
-          "egress": null,
-          "ingress": null,
-          "cookies": [],
-          "id": "pri_ac9d4dfb-d033-4b06-bc7f-968df8d125ff"
-        }
-      ],
-      "administrating_department": "Engineering",
-      "cookies": []
-    },
-    {
-      "fides_key": "demo_marketing_system",
-      "organization_fides_key": "default_organization",
-      "tags": null,
-      "name": "Demo Marketing System",
-      "description": "Collect data about our users for marketing.",
-      "meta": null,
-      "fidesctl_meta": null,
-      "system_type": "Service",
-      "egress": [
-        {
-          "fides_key": "demo_analytics_system",
-          "type": "system",
-          "data_categories": null
-        }
-      ],
-      "ingress": null,
-      "privacy_declarations": [
-        {
-          "name": "Collect data for marketing",
-          "data_categories": ["user.device.cookie_id"],
-          "data_use": "marketing",
-          "data_subjects": ["customer"],
-          "dataset_references": null,
-          "egress": null,
-          "ingress": null,
-          "cookies": [{ "name": "_ga" }],
-          "id": "pri_06430a1c-1365-422e-90a7-d444ddb32181"
-        }
-      ],
-      "administrating_department": "Marketing",
-      "cookies": []
+      "vendor_id": "gvl.780",
+      "vendor_name": "Aniview LTD",
+      "purpose": 3,
+      "special_purpose": null,
+      "gvl_version": "3"
     }
   ],
-  "total": 3,
+  "total": 1,
   "page": 1,
-  "size": 20,
+  "size": 10,
   "pages": 1
 }
