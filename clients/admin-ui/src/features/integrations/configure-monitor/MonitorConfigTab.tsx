@@ -28,11 +28,11 @@ import {
   TableActionBar,
   useServerSidePagination,
 } from "~/features/common/table/v2";
-import { RelativeTimestampCell } from "~/features/common/table/v2/cells";
 import { useGetMonitorsByIntegrationQuery } from "~/features/data-discovery-and-detection/discovery-detection.slice";
 import ConfigureMonitorModal from "~/features/integrations/configure-monitor/ConfigureMonitorModal";
 import MonitorConfigActionsCell from "~/features/integrations/configure-monitor/MonitorConfigActionsCell";
 import { MonitorConfigEnableCell } from "~/features/integrations/configure-monitor/MonitorConfigEnableCell";
+import MonitorStatusCell from "~/features/integrations/configure-monitor/MonitorStatusCell";
 import {
   ConnectionConfigurationResponse,
   ConnectionSystemTypeMap,
@@ -179,10 +179,11 @@ const MonitorConfigTab = ({
           <DefaultHeaderCell value="Scan frequency" {...props} />
         ),
       }),
-      columnHelper.accessor((row) => row.last_monitored, {
-        id: "last_monitored",
-        cell: (props) => <RelativeTimestampCell time={props.getValue()} />,
+      columnHelper.display({
+        id: "monitor_status",
+        cell: (props) => <MonitorStatusCell monitor={props.row.original} />,
         header: (props) => <DefaultHeaderCell value="Last scan" {...props} />,
+        meta: { disableRowClick: true },
       }),
       columnHelper.accessor((row) => row.enabled, {
         id: "status",
