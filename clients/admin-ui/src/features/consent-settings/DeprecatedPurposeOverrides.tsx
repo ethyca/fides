@@ -39,7 +39,7 @@ const LegalBasisContainer = ({
   );
 };
 
-const PurposeOverrides = () => {
+const DeprecatedPurposeOverrides = () => {
   const { values, setFieldValue } = useFormikContext<{
     purposeOverrides: FormPurposeOverride[];
   }>();
@@ -170,4 +170,4 @@ const PurposeOverrides = () => {
     />
   );
 };
-export default PurposeOverrides;
+export default DeprecatedPurposeOverrides;

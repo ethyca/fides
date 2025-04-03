@@ -14,6 +14,7 @@ const SettingsBox = ({
     {...props}
   >
     <Text
+      as="h3"
       fontSize="md"
       fontWeight="bold"
       lineHeight={5}
