@@ -7,7 +7,7 @@ import {
   ConnectionType,
 } from "~/types/api";
 
-import { getWebsiteIconUrl } from "../common/utils";
+import { getDomain, getWebsiteIconUrl } from "../common/utils";
 import {
   CONNECTION_TYPE_LOGO_MAP,
   CONNECTOR_LOGOS_PATH,
@@ -32,19 +32,6 @@ const isWebsiteConnection = (
   obj: any,
 ): obj is ConnectionConfigurationResponse => {
   return obj?.connection_type === ConnectionType.WEBSITE;
-};
-
-const getDomain = (urlOrDomain: string): string => {
-  try {
-    // Try to parse as URL first
-    const url = new URL(
-      urlOrDomain.startsWith("http") ? urlOrDomain : `https://${urlOrDomain}`,
-    );
-    return url.hostname;
-  } catch {
-    // If URL parsing fails, assume it's already a domain
-    return urlOrDomain.replace(/^(https?:\/\/)?(www\.)?/, "");
-  }
 };
 
 const ConnectionTypeLogo = ({
