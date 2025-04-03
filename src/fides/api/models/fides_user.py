@@ -1,7 +1,6 @@
 # pylint: disable=unused-import
 from __future__ import annotations
 
-import uuid
 from datetime import datetime
 from typing import TYPE_CHECKING, Any, List
 
@@ -24,7 +23,6 @@ from fides.api.db.base_class import Base
 from fides.api.models.audit_log import AuditLog
 
 # Intentionally importing SystemManager here to build the FidesUser.systems relationship
-from fides.api.models.system_manager import SystemManager  # type: ignore[unused-import]
 from fides.api.schemas.user import DisabledReason, LoginMethod
 from fides.config import CONFIG
 
@@ -94,11 +92,11 @@ class FidesUser(Base):
         """Create a FidesUser by hashing the password with a generated salt
         and storing the hashed password and the salt"""
 
-        # we set a dummy password if one isn't provided because this means it's part of the user
-        # invite flow and the password will be set by the user after they accept their invite
-        hashed_password, salt = FidesUser.hash_password(
-            data.get("password") or str(uuid.uuid4())
-        )
+        if data.get("password"):
+            hashed_password, salt = FidesUser.hash_password(data.get("password"))
+        else:
+            hashed_password = None
+            salt = None
 
         user = super().create(
             db,
@@ -111,6 +109,7 @@ class FidesUser(Base):
                 "last_name": data.get("last_name"),
                 "disabled": data.get("disabled") or False,
                 "disabled_reason": data.get("disabled_reason"),
+                "login_method": data.get("login_method"),
             },
             check_name=check_name,
         )
@@ -119,6 +118,9 @@ class FidesUser(Base):
 
     def credentials_valid(self, password: str, encoding: str = "UTF-8") -> bool:
         """Verifies that the provided password is correct."""
+        if self.salt is None:
+            return False
+
         provided_password_hash = hash_credential_with_salt(
             password.encode(encoding),
             self.salt.encode(encoding),

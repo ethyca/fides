@@ -3,7 +3,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Optional
 
-from pydantic import EmailStr, field_validator
+from pydantic import ConfigDict, EmailStr, field_validator
 
 from fides.api.cryptography.cryptographic_util import decode_password
 from fides.api.schemas.base_class import FidesSchema
@@ -26,6 +26,8 @@ class UserCreate(FidesSchema):
     first_name: Optional[str] = None
     last_name: Optional[str] = None
     disabled: bool = False
+
+    model_config = ConfigDict(extra="ignore")
 
     @field_validator("username")
     @classmethod
@@ -140,7 +142,7 @@ class UserUpdate(FidesSchema):
     first_name: Optional[str] = None
     last_name: Optional[str] = None
 
-
+    model_config = ConfigDict(extra="ignore")
 class DisabledReason(Enum):
     """Reasons for why a user is disabled"""
 

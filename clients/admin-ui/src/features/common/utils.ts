@@ -120,3 +120,16 @@ export const getOptionsFromMap = <T = string>(
 export const getWebsiteIconUrl = (domain: string, size = 24) => {
   return `https://cdn.brandfetch.io/${domain}/icon/theme/light/fallback/404/h/${size}/w/${size}?c=1idbRjELpikqQ1PLiqb`;
 };
+
+export const getDomain = (urlOrDomain: string): string => {
+  try {
+    // Try to parse as URL first
+    const url = new URL(
+      urlOrDomain.startsWith("http") ? urlOrDomain : `https://${urlOrDomain}`,
+    );
+    return url.hostname;
+  } catch {
+    // If URL parsing fails, assume it's already a domain
+    return urlOrDomain.replace(/^(https?:\/\/)?(www\.)?/, "");
+  }
+};
