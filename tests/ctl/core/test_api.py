@@ -2848,17 +2848,21 @@ class TestSystemDelete:
 class TestDefaultTaxonomyCrud:
     @pytest.mark.parametrize("endpoint", TAXONOMY_ENDPOINTS)
     def test_api_cannot_delete_default(
-        self, test_config: FidesConfig, endpoint: str
+        self, test_config: FidesConfig, generate_auth_header, endpoint: str
     ) -> None:
         resource = getattr(DEFAULT_TAXONOMY, endpoint)[0]
+        token_scopes: List[str] = [f"{CLI_SCOPE_PREFIX_MAPPING[endpoint]}:{DELETE}"]
+        auth_header = generate_auth_header(scopes=token_scopes)
 
         result = _api.delete(
             url=test_config.cli.server_url,
             resource_type=endpoint,
             resource_id=resource.fides_key,
-            headers=test_config.user.auth_header,
+            headers=auth_header,
         )
-        assert result.status_code == 403
+        assert (
+            result.status_code == 403
+        ), f"Expected 403 but got {result.status_code}: {result.json()}"
         assert (
             "cannot modify 'is_default' field on an existing resource"
             in result.json()["detail"]["error"]
@@ -2866,118 +2870,166 @@ class TestDefaultTaxonomyCrud:
 
     @pytest.mark.parametrize("endpoint", TAXONOMY_ENDPOINTS)
     def test_api_can_update_default(
-        self, test_config: FidesConfig, endpoint: str
+        self, test_config: FidesConfig, generate_auth_header, endpoint: str
     ) -> None:
         """Should be able to update as long as `is_default` is not changing"""
         resource = getattr(DEFAULT_TAXONOMY, endpoint)[0]
         json_resource = resource.json(exclude_none=True)
+        token_scopes: List[str] = [f"{CLI_SCOPE_PREFIX_MAPPING[endpoint]}:{UPDATE}"]
+        auth_header = generate_auth_header(scopes=token_scopes)
 
         result = _api.update(
             url=test_config.cli.server_url,
-            headers=test_config.user.auth_header,
+            headers=auth_header,
             resource_type=endpoint,
             json_resource=json_resource,
         )
-        assert result.status_code == 200
+        assert (
+            result.status_code == 200
+        ), f"Expected 200 but got {result.status_code}: {result.json()}"
 
     @pytest.mark.parametrize("endpoint", TAXONOMY_ENDPOINTS)
     def test_api_can_upsert_default(
-        self, test_config: FidesConfig, endpoint: str
+        self, test_config: FidesConfig, generate_auth_header, endpoint: str
     ) -> None:
         """Should be able to upsert as long as `is_default` is not changing"""
         resources = [
             r.model_dump(mode="json") for r in getattr(DEFAULT_TAXONOMY, endpoint)[0:2]
         ]
+        token_scopes: List[str] = [
+            f"{CLI_SCOPE_PREFIX_MAPPING[endpoint]}:{CREATE}",
+            f"{CLI_SCOPE_PREFIX_MAPPING[endpoint]}:{UPDATE}",
+        ]
+        auth_header = generate_auth_header(scopes=token_scopes)
+
         result = _api.upsert(
             url=test_config.cli.server_url,
-            headers=test_config.user.auth_header,
+            headers=auth_header,
             resource_type=endpoint,
             resources=resources,
         )
-        assert result.status_code == 200
+        assert (
+            result.status_code == 200
+        ), f"Expected 200 but got {result.status_code}: {result.json()}"
 
     @pytest.mark.parametrize("endpoint", TAXONOMY_ENDPOINTS)
     def test_api_cannot_create_default_taxonomy(
-        self, test_config: FidesConfig, resources_dict: Dict, endpoint: str
+        self,
+        test_config: FidesConfig,
+        resources_dict: Dict,
+        generate_auth_header,
+        endpoint: str,
     ) -> None:
         manifest = resources_dict[endpoint]
 
         #  Set fields for default labels
         manifest.is_default = True
         manifest.version_added = "2.0.0"
+        token_scopes: List[str] = [f"{CLI_SCOPE_PREFIX_MAPPING[endpoint]}:{CREATE}"]
+        auth_header = generate_auth_header(scopes=token_scopes)
 
         result = _api.create(
             url=test_config.cli.server_url,
             resource_type=endpoint,
             json_resource=manifest.json(exclude_none=True),
-            headers=test_config.user.auth_header,
+            headers=auth_header,
         )
-        assert result.status_code == 403
         assert (
-            "cannot create a resource where 'is_default' is true"
-            in result.json()["detail"]["error"]
-        )
+            result.status_code == 403
+        ), f"Expected 403 but got {result.status_code}: {result.json()}"
+        response_json = result.json()
+        assert "cannot create a resource where 'is_default' is true" in str(
+            response_json
+        ), f"Expected error message not found in response: {response_json}"
 
         _api.delete(
             url=test_config.cli.server_url,
             resource_type=endpoint,
             resource_id=manifest.fides_key,
-            headers=test_config.user.auth_header,
+            headers=auth_header,
         )
 
     @pytest.mark.parametrize("endpoint", TAXONOMY_ENDPOINTS)
     def test_api_cannot_upsert_default_taxonomy(
-        self, test_config: FidesConfig, resources_dict: Dict, endpoint: str
+        self,
+        test_config: FidesConfig,
+        resources_dict: Dict,
+        generate_auth_header,
+        endpoint: str,
     ) -> None:
         manifest = resources_dict[endpoint]
 
-        #  Set fields for default labels
+        # Use a unique fides_key that won't conflict with default taxonomy
+        manifest.fides_key = f"test_unique_{manifest.fides_key}"
+        manifest.name = f"Test Unique {manifest.name}"
         manifest.is_default = True
         manifest.version_added = "2.0.0"
 
+        # Update parent_key if it exists (for data categories)
+        if hasattr(manifest, "parent_key") and manifest.parent_key is not None:
+            manifest.parent_key = f"test_unique_{manifest.parent_key}"
+
+        token_scopes: List[str] = [
+            f"{CLI_SCOPE_PREFIX_MAPPING[endpoint]}:{CREATE}",
+            f"{CLI_SCOPE_PREFIX_MAPPING[endpoint]}:{UPDATE}",
+        ]
+        auth_header = generate_auth_header(scopes=token_scopes)
+
         result = _api.upsert(
             url=test_config.cli.server_url,
-            headers=test_config.user.auth_header,
+            headers=auth_header,
             resource_type=endpoint,
             resources=[manifest.model_dump(mode="json")],
         )
-        assert result.status_code == 403
-        print(f"Result: {result.json()}")
         assert (
-            "cannot create a resource where 'is_default' is true"
-            in result.json()["detail"]["error"]
-        )
+            result.status_code == 403
+        ), f"Expected 403 but got {result.status_code}: {result.json()}"
+        response_json = result.json()
+        assert "cannot create a resource where 'is_default' is true" in str(
+            response_json
+        ), f"Expected error message not found in response: {response_json}"
 
         _api.delete(
             url=test_config.cli.server_url,
             resource_type=endpoint,
             resource_id=manifest.fides_key,
-            headers=test_config.user.auth_header,
+            headers=auth_header,
         )
 
     @pytest.mark.parametrize("endpoint", TAXONOMY_ENDPOINTS)
     def test_api_cannot_update_is_default(
-        self, test_config: FidesConfig, resources_dict: Dict, endpoint: str
+        self,
+        test_config: FidesConfig,
+        resources_dict: Dict,
+        generate_auth_header,
+        endpoint: str,
     ) -> None:
         manifest = resources_dict[endpoint]
+        token_scopes: List[str] = [f"{CLI_SCOPE_PREFIX_MAPPING[endpoint]}:{CREATE}"]
+        auth_header = generate_auth_header(scopes=token_scopes)
+
         _api.create(
             url=test_config.cli.server_url,
             resource_type=endpoint,
             json_resource=manifest.json(exclude_none=True),
-            headers=test_config.user.auth_header,
+            headers=auth_header,
         )
 
         #  Set fields for default labels
         manifest.is_default = True
         manifest.version_added = "2.0.0"
+        token_scopes: List[str] = [f"{CLI_SCOPE_PREFIX_MAPPING[endpoint]}:{UPDATE}"]
+        auth_header = generate_auth_header(scopes=token_scopes)
 
         result = _api.update(
             url=test_config.cli.server_url,
-            headers=test_config.user.auth_header,
+            headers=auth_header,
             resource_type=endpoint,
             json_resource=manifest.json(exclude_none=True),
         )
-        assert result.status_code == 403
+        assert (
+            result.status_code == 403
+        ), f"Expected 403 but got {result.status_code}: {result.json()}"
         assert (
             "cannot modify 'is_default' field on an existing resource"
             in result.json()["detail"]["error"]
@@ -2985,7 +3037,11 @@ class TestDefaultTaxonomyCrud:
 
     @pytest.mark.parametrize("endpoint", TAXONOMY_ENDPOINTS)
     def test_api_cannot_upsert_is_default(
-        self, test_config: FidesConfig, resources_dict: Dict, endpoint: str
+        self,
+        test_config: FidesConfig,
+        resources_dict: Dict,
+        generate_auth_header,
+        endpoint: str,
     ) -> None:
         manifest = resources_dict[endpoint]
         second_item = manifest.model_copy()
@@ -2995,24 +3051,34 @@ class TestDefaultTaxonomyCrud:
         manifest.version_added = "2.0.0"
 
         second_item.is_default = False
+        token_scopes: List[str] = [f"{CLI_SCOPE_PREFIX_MAPPING[endpoint]}:{CREATE}"]
+        auth_header = generate_auth_header(scopes=token_scopes)
 
         _api.create(
             url=test_config.cli.server_url,
             resource_type=endpoint,
             json_resource=second_item.json(exclude_none=True),
-            headers=test_config.user.auth_header,
+            headers=auth_header,
         )
+
+        token_scopes: List[str] = [
+            f"{CLI_SCOPE_PREFIX_MAPPING[endpoint]}:{CREATE}",
+            f"{CLI_SCOPE_PREFIX_MAPPING[endpoint]}:{UPDATE}",
+        ]
+        auth_header = generate_auth_header(scopes=token_scopes)
 
         result = _api.upsert(
             url=test_config.cli.server_url,
-            headers=test_config.user.auth_header,
+            headers=auth_header,
             resource_type=endpoint,
             resources=[
                 manifest.model_dump(mode="json"),
                 second_item.model_dump(mode="json"),
             ],
         )
-        assert result.status_code == 403
+        assert (
+            result.status_code == 403
+        ), f"Expected 403 but got {result.status_code}: {result.json()}"
         assert (
             "cannot modify 'is_default' field on an existing resource"
             in result.json()["detail"]["error"]
@@ -3022,13 +3088,13 @@ class TestDefaultTaxonomyCrud:
             url=test_config.cli.server_url,
             resource_type=endpoint,
             resource_id=manifest.fides_key,
-            headers=test_config.user.auth_header,
+            headers=auth_header,
         )
         _api.delete(
             url=test_config.cli.server_url,
             resource_type=endpoint,
             resource_id=second_item.fides_key,
-            headers=test_config.user.auth_header,
+            headers=auth_header,
         )
 
 
