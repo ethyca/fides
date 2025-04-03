@@ -1,7 +1,7 @@
 """adding login method and totp secret to fides user
 
 Revision ID: 99c603c1b8f9
-Revises: 67d01c4e124e
+Revises: 6e565c16dae1
 Create Date: 2025-04-02 01:55:57.890545
 
 """
@@ -12,7 +12,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "99c603c1b8f9"
-down_revision = "67d01c4e124e"
+down_revision = "6e565c16dae1"
 branch_labels = None
 depends_on = None
 
