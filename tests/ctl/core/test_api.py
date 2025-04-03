@@ -598,7 +598,6 @@ class TestSystemCreate:
             joint_controller_info="Jane Doe",
             data_security_practices="We encrypt all your data in transit and at rest",
             cookie_max_age_seconds="31536000",
-            uses_cookies=True,
             cookie_refresh=True,
             uses_non_cookie_access=True,
             legitimate_interest_disclosure_url="http://www.example.com/legitimate_interest_disclosure",
@@ -925,6 +924,14 @@ class TestSystemCreate:
 
         assert result.status_code == HTTP_201_CREATED
         json_results = result.json()
+        assert json_results["privacy_declarations"][0]["assets"] == [
+            {
+                "name": "essential_cookie",
+                "asset_type": "Cookie",
+                "domain": "example.com",
+            }
+        ]
+        assert json_results["privacy_declarations"][1]["assets"] == []
         assert json_results["data_stewards"] == []
 
         systems = System.all(db)
@@ -980,6 +987,10 @@ class TestSystemCreate:
             == "http://www.example.com/legitimate_interest_disclosure"
         )
         assert system.data_stewards == []
+        assert [asset.name for asset in systems[0].privacy_declarations[0].assets] == [
+            "essential_cookie"
+        ]
+        assert systems[0].privacy_declarations[1].assets == []
 
         privacy_decl = system.privacy_declarations[0]
         assert privacy_decl.name == "declaration-name"
@@ -3082,6 +3093,8 @@ class TestDefaultTaxonomyCrud:
             resource_type=endpoint,
             resources=[manifest.model_dump(mode="json")],
         )
+        assert result.status_code == 403
+        print(f"Result: {result.json()}")
         assert (
             result.status_code == 403
         ), f"Expected 403 but got {result.status_code}: {result.json()}"
@@ -3393,6 +3406,7 @@ class TestPrivacyDeclarationGetPurposeLegalBasisOverride:
             ],
         )
 
+        print(f"Resource: {resource}")
         system = await create_system(
             resource, async_session_temp, CONFIG.security.oauth_root_client_id
         )
