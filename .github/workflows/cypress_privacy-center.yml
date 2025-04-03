@@ -28,6 +28,12 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20.x
+          cache: 'npm'
+          cache-dependency-path: |
+            clients/package-lock.json
+            clients/privacy-center/package-lock.json
+            clients/fides-js/package-lock.json
+            clients/fidesui/package-lock.json
 
       - name: Install dependencies
         run: npm install

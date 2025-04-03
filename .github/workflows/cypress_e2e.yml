@@ -37,6 +37,11 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+          cache-dependency-path: |
+            clients/package-lock.json
+            clients/cypress-e2e/package-lock.json
+            clients/fides-js/package-lock.json
 
       - name: Login to Docker Hub
         uses: docker/login-action@v3
