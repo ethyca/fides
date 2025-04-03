@@ -119,6 +119,9 @@ class FidesUser(Base):
 
     def credentials_valid(self, password: str, encoding: str = "UTF-8") -> bool:
         """Verifies that the provided password is correct."""
+        if self.salt is None:
+            return False
+
         provided_password_hash = hash_credential_with_salt(
             password.encode(encoding),
             self.salt.encode(encoding),
