@@ -10,6 +10,7 @@ import {
 export interface TCFConfiguration {
   id: string;
   name: string;
+  restrictions_per_purpose?: Record<number, string>;
 }
 
 interface CreateTCFConfigurationRequest {
@@ -69,6 +70,14 @@ export const tcfConfigApi = baseApi.injectEndpoints({
       }),
       providesTags: () => ["TCF Purpose Override"],
     }),
+    getTCFConfiguration: build.query<TCFConfiguration, string>({
+      query: (id) => ({
+        url: `/plus/tcf/configurations/${id}`,
+      }),
+      providesTags: (_result, _error, id) => [
+        { type: "TCF Purpose Override", id },
+      ],
+    }),
     createTCFConfiguration: build.mutation<
       TCFConfiguration,
       CreateTCFConfigurationRequest
@@ -92,6 +101,7 @@ export const tcfConfigApi = baseApi.injectEndpoints({
 
 export const {
   useGetTCFConfigurationsQuery,
+  useGetTCFConfigurationQuery,
   useCreateTCFConfigurationMutation,
   useDeleteTCFConfigurationMutation,
 } = tcfConfigApi;
