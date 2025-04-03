@@ -7,7 +7,7 @@ const SettingsBox = ({
   ...props
 }: { title: string; children: ReactNode } & BoxProps) => (
   <Box
-    backgroundColor="gray.50"
+    backgroundColor="var(--fidesui-bg-corinth)"
     borderRadius="4px"
     padding="3"
     data-testid={`setting-${title}`}
