@@ -2,28 +2,21 @@ import { SerializedError } from "@reduxjs/toolkit";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import {
   AntButton as Button,
-  AntSelect as Select,
   AntSpace as Space,
   AntSwitch as Switch,
   Skeleton,
   Text,
   useToast,
 } from "fidesui";
-import { Form, Formik } from "formik";
-import { useState } from "react";
-import * as Yup from "yup";
+import { useEffect, useState } from "react";
 
-import { CustomTextInput } from "~/features/common/form/inputs";
 import { getErrorMessage } from "~/features/common/helpers";
-import FormModal from "~/features/common/modals/FormModal";
-import { errorToastParams, successToastParams } from "~/features/common/toast";
-import {
-  useCreateTCFConfigurationMutation,
-  useGetTCFConfigurationsQuery,
-} from "~/features/consent-settings/tcf-config.slice";
+import { errorToastParams } from "~/features/common/toast";
+import { useGetTCFConfigurationsQuery } from "~/features/consent-settings/tcf-config.slice";
 import { isErrorResult } from "~/types/errors";
 
 import DocsLink from "../common/DocsLink";
+import { useLocalStorage } from "../common/hooks/useLocalStorage";
 import QuestionTooltip from "../common/QuestionTooltip";
 import { usePatchConfigurationSettingsMutation } from "../config-settings/config-settings.slice";
 import {
@@ -31,7 +24,9 @@ import {
   useGetTcfPurposeOverridesQuery,
   usePatchTcfPurposeOverridesMutation,
 } from "../plus/plus.slice";
+import { CreateTCFConfigModal } from "./CreateTCFConfigModal";
 import SettingsBox from "./SettingsBox";
+import { TCFConfigurationDropdown } from "./TCFConfigurationDropdown";
 
 const PUBLISHER_RESTRICTIONS_DOCS_URL =
   "https://ethyca.com/docs/tutorials/consent-management/consent-management-configuration/configure-tcf#vendor-overrides";
@@ -40,90 +35,27 @@ interface PublisherRestrictionsConfigProps {
   isTCFOverrideEnabled: boolean;
 }
 
-interface CreateTCFConfigModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-}
-
-const ValidationSchema = Yup.object().shape({
-  name: Yup.string().required().label("Name"),
-});
-
-const CreateTCFConfigModal = ({
-  isOpen,
-  onClose,
-}: CreateTCFConfigModalProps) => {
-  const toast = useToast();
-  const [createTCFConfiguration] = useCreateTCFConfigurationMutation();
-
-  const handleSubmit = async (values: { name: string }) => {
-    const result = await createTCFConfiguration({ name: values.name });
-    if (isErrorResult(result)) {
-      toast(errorToastParams(getErrorMessage(result.error)));
-    } else {
-      toast(successToastParams("Successfully created TCF configuration"));
-      onClose();
-    }
-  };
-
-  return (
-    <FormModal
-      title="Create a new TCF configuration"
-      isOpen={isOpen}
-      onClose={onClose}
-    >
-      <Formik
-        initialValues={{ name: "" }}
-        onSubmit={handleSubmit}
-        validationSchema={ValidationSchema}
-      >
-        {({ isValid, dirty }) => (
-          <Form>
-            <Space direction="vertical" size="small" className="w-full">
-              <Text>
-                TCF configurations allow you to define unique sets of publisher
-                restrictions. These configurations can be added to privacy
-                experiences.
-              </Text>
-              <CustomTextInput
-                id="name"
-                name="name"
-                label="Name"
-                isRequired
-                variant="stacked"
-              />
-              <Space className="w-full justify-end pt-6">
-                <Button onClick={onClose}>Cancel</Button>
-                <Button
-                  type="primary"
-                  htmlType="submit"
-                  disabled={!isValid || !dirty}
-                >
-                  Save
-                </Button>
-              </Space>
-            </Space>
-          </Form>
-        )}
-      </Formik>
-    </FormModal>
-  );
-};
-
 export const PublisherRestrictionsConfig = ({
   isTCFOverrideEnabled,
 }: PublisherRestrictionsConfigProps) => {
   const [showTcfOverrideConfig, setShowTcfOverrideConfig] =
     useState<boolean>(isTCFOverrideEnabled);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [selectedTCFConfigId, setSelectedTCFConfigId] = useState<string | null>(
-    null,
-  );
+  const [selectedTCFConfigId, setSelectedTCFConfigId] = useLocalStorage<
+    string | null
+  >("selectedTCFConfigId", null);
   const { data: tcfConfigurations, isLoading: isTcfConfigurationsLoading } =
     useGetTCFConfigurationsQuery(
       { page: 1, size: 50 },
       { skip: !isTCFOverrideEnabled },
     );
+
+  // Automatically select first configuration when available
+  useEffect(() => {
+    if (tcfConfigurations?.items?.length && !selectedTCFConfigId) {
+      setSelectedTCFConfigId(tcfConfigurations.items[0].id);
+    }
+  }, [tcfConfigurations?.items, selectedTCFConfigId, setSelectedTCFConfigId]);
 
   const toast = useToast();
 
@@ -178,6 +110,15 @@ export const PublisherRestrictionsConfig = ({
     handleResult(result);
   };
 
+  const handleDeleteTCFConfig = async (id: string) => {
+    // TODO: Implement the actual delete mutation when available
+    console.warn("Delete TCF config not yet implemented", id);
+    toast({
+      status: "info",
+      description: "Delete TCF configuration not yet implemented",
+    });
+  };
+
   return (
     <SettingsBox title="Publisher restrictions" fontSize="sm">
       <Space direction="vertical" size="small">
@@ -215,16 +156,12 @@ export const PublisherRestrictionsConfig = ({
                   </DocsLink>{" "}
                   in our docs.
                 </Text>
-                <Select
-                  className="w-auto"
-                  defaultValue={tcfConfigurations?.items?.[0]?.id}
-                  options={
-                    tcfConfigurations?.items?.map((c) => ({
-                      label: c.name,
-                      value: c.id,
-                    })) || []
-                  }
-                  onChange={(value) => setSelectedTCFConfigId(value)}
+                <TCFConfigurationDropdown
+                  selectedConfigId={selectedTCFConfigId || ""}
+                  configurations={tcfConfigurations?.items || []}
+                  isLoading={isTcfConfigurationsLoading}
+                  onConfigurationSelect={setSelectedTCFConfigId}
+                  onConfigurationDelete={handleDeleteTCFConfig}
                 />
               </>
             )}
@@ -248,6 +185,9 @@ export const PublisherRestrictionsConfig = ({
       <CreateTCFConfigModal
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
+        onSuccess={(configId) => {
+          setSelectedTCFConfigId(configId);
+        }}
       />
     </SettingsBox>
   );
