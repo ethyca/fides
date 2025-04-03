@@ -80,12 +80,20 @@ export const tcfConfigApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: () => ["TCF Purpose Override"],
     }),
+    deleteTCFConfiguration: build.mutation<void, string>({
+      query: (id) => ({
+        url: `/plus/tcf/configurations/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: () => ["TCF Purpose Override"],
+    }),
   }),
 });
 
 export const {
   useGetTCFConfigurationsQuery,
   useCreateTCFConfigurationMutation,
+  useDeleteTCFConfigurationMutation,
 } = tcfConfigApi;
 
 export default tcfConfigSlice.reducer;

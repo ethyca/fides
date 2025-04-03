@@ -23,6 +23,7 @@ import { useHasPermission } from "~/features/common/Restrict";
 import { ScopeRegistryEnum } from "~/types/api";
 
 import { CreateTCFConfigModal } from "./CreateTCFConfigModal";
+import { useDeleteTCFConfigurationMutation } from "./tcf-config.slice";
 
 interface TCFConfiguration {
   id: string;
@@ -34,7 +35,7 @@ interface TCFConfigurationDropdownProps {
   configurations: TCFConfiguration[];
   isLoading?: boolean;
   onConfigurationSelect: (configId: string) => void;
-  onConfigurationDelete: (configId: string) => void;
+  onConfigurationDelete?: (configId: string) => void;
 }
 
 interface DropdownContentProps {
@@ -50,6 +51,7 @@ interface DropdownContentProps {
   setConfigToDelete: (config: TCFConfiguration) => void;
   isLoading: boolean;
   setDropdownOpen: (open: boolean) => void;
+  configurations: TCFConfiguration[];
 }
 
 const LoadingContent = () => (
@@ -75,6 +77,7 @@ const ConfigurationList = ({
   | "userCanCreateConfigs"
   | "modalOnOpen"
   | "setDropdownOpen"
+  | "configurations"
 >) => (
   <Radio.Group
     onChange={(e) => handleSelection(e.target.value)}
@@ -124,6 +127,7 @@ const DropdownContent = ({
   setConfigToDelete,
   isLoading,
   setDropdownOpen,
+  configurations,
 }: DropdownContentProps) => {
   const [currentSelection, setCurrentSelection] =
     useState<string>(selectedConfigId);
@@ -171,14 +175,16 @@ const DropdownContent = ({
         boxShadow: "var(--ant-box-shadow)",
       }}
     >
-      <InputGroup size="sm">
-        <Input
-          className="mb-4"
-          placeholder="Search..."
-          onChange={(e) => setSearchTerm(e.target.value)}
-          value={searchTerm}
-        />
-      </InputGroup>
+      {configurations.length > 10 && (
+        <InputGroup size="sm">
+          <Input
+            className="mb-4"
+            placeholder="Search..."
+            onChange={(e) => setSearchTerm(e.target.value)}
+            value={searchTerm}
+          />
+        </InputGroup>
+      )}
 
       {content}
 
@@ -229,6 +235,7 @@ export const TCFConfigurationDropdown = ({
   ]);
 
   const toast = useToast({ id: "tcf-config-toast" });
+  const [deleteTCFConfiguration] = useDeleteTCFConfigurationMutation();
 
   const {
     isOpen: modalIsOpen,
@@ -268,9 +275,14 @@ export const TCFConfigurationDropdown = ({
 
   const handleDeleteConfig = async (id: string) => {
     try {
-      await onConfigurationDelete(id);
+      await deleteTCFConfiguration(id).unwrap();
+      onConfigurationDelete?.(id);
       setConfigToDelete(undefined);
       onDeleteClose();
+      toast({
+        status: "success",
+        description: `Configuration "${configToDelete?.name}" was successfully deleted.`,
+      });
     } catch (error: any) {
       const errorMsg = getErrorMessage(
         error,
@@ -303,6 +315,7 @@ export const TCFConfigurationDropdown = ({
             setConfigToDelete,
             isLoading,
             setDropdownOpen,
+            configurations,
           })
         }
       >
@@ -334,14 +347,9 @@ export const TCFConfigurationDropdown = ({
             handleDeleteConfig(configToDelete.id);
           }
         }}
-        title="Delete Configuration"
-        message={
-          <Text>
-            You are about to permanently delete the configuration named{" "}
-            <strong>{configToDelete?.name}</strong>. Are you sure you would like
-            to continue?
-          </Text>
-        }
+        title="Delete configuration"
+        message="Are you sure you want to delete this configuration? This action
+            cannot be undone."
       />
     </>
   );
