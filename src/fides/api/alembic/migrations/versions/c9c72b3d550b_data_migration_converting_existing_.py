@@ -1,7 +1,7 @@
 """data migration converting existing 'Cookies' resources to 'Asset' resources with type 'Cookie'
 
 Revision ID: c9c72b3d550b
-Revises: 67d01c4e124e
+Revises: 6e565c16dae1
 Create Date: 2025-02-18 18:33:56.039924
 
 """
@@ -17,7 +17,7 @@ from fides.api.models.asset import Asset
 
 # revision identifiers, used by Alembic.
 revision = "c9c72b3d550b"
-down_revision = "67d01c4e124e"
+down_revision = "6e565c16dae1"
 branch_labels = None
 depends_on = None
 
