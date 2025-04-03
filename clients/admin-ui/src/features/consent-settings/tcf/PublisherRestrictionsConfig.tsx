@@ -12,20 +12,21 @@ import { useEffect, useState } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";
 import { errorToastParams } from "~/features/common/toast";
-import { useGetTCFConfigurationsQuery } from "~/features/consent-settings/tcf-config.slice";
+import { useGetTCFConfigurationsQuery } from "~/features/consent-settings/tcf/tcf-config.slice";
 import { isErrorResult } from "~/types/errors";
 
-import DocsLink from "../common/DocsLink";
-import { useLocalStorage } from "../common/hooks/useLocalStorage";
-import QuestionTooltip from "../common/QuestionTooltip";
-import { usePatchConfigurationSettingsMutation } from "../config-settings/config-settings.slice";
+import DocsLink from "../../common/DocsLink";
+import { useLocalStorage } from "../../common/hooks/useLocalStorage";
+import QuestionTooltip from "../../common/QuestionTooltip";
+import { usePatchConfigurationSettingsMutation } from "../../config-settings/config-settings.slice";
 import {
   useGetHealthQuery,
   useGetTcfPurposeOverridesQuery,
   usePatchTcfPurposeOverridesMutation,
-} from "../plus/plus.slice";
+} from "../../plus/plus.slice";
+import SettingsBox from "../SettingsBox";
 import { CreateTCFConfigModal } from "./CreateTCFConfigModal";
-import SettingsBox from "./SettingsBox";
+import { PublisherRestrictionsTable } from "./PublisherRestrictionsTable";
 import { TCFConfigurationDropdown } from "./TCFConfigurationDropdown";
 
 const PUBLISHER_RESTRICTIONS_DOCS_URL =
@@ -179,6 +180,7 @@ export const PublisherRestrictionsConfig = ({
           setSelectedTCFConfigId(configId);
         }}
       />
+      <PublisherRestrictionsTable className="mt-3" />
     </SettingsBox>
   );
 };

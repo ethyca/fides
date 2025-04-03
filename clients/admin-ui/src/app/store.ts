@@ -25,7 +25,7 @@ import { healthApi } from "~/features/common/health.slice";
 import { dirtyFormsSlice } from "~/features/common/hooks/dirty-forms.slice";
 import { configWizardSlice } from "~/features/config-wizard/config-wizard.slice";
 import { connectionTypeSlice } from "~/features/connection-type";
-import { tcfConfigSlice } from "~/features/consent-settings/tcf-config.slice";
+import { tcfConfigSlice } from "~/features/consent-settings/tcf/tcf-config.slice";
 import { discoveryDetectionSlice } from "~/features/data-discovery-and-detection/discovery-detection.slice";
 import { dataSubjectsSlice } from "~/features/data-subjects/data-subject.slice";
 import { dataUseSlice } from "~/features/data-use/data-use.slice";

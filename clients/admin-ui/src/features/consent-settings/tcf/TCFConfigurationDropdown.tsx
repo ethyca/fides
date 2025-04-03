@@ -22,8 +22,8 @@ import { TrashCanOutlineIcon } from "~/features/common/Icon/TrashCanOutlineIcon"
 import { useHasPermission } from "~/features/common/Restrict";
 import { ScopeRegistryEnum } from "~/types/api";
 
-import { CreateTCFConfigModal } from "./tcf/CreateTCFConfigModal";
-import { useDeleteTCFConfigurationMutation } from "./tcf/tcf-config.slice";
+import { CreateTCFConfigModal } from "./CreateTCFConfigModal";
+import { useDeleteTCFConfigurationMutation } from "./tcf-config.slice";
 
 interface TCFConfiguration {
   id: string;

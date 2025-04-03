@@ -26,14 +26,13 @@ import {
   useGetConfigurationSettingsQuery,
   usePatchConfigurationSettingsMutation,
 } from "~/features/config-settings/config-settings.slice";
-import DeprecatedPurposeOverrides from "~/features/consent-settings/DeprecatedPurposeOverrides";
 import FrameworkStatus from "~/features/consent-settings/FrameworkStatus";
 import GppConfiguration from "~/features/consent-settings/GppConfiguration";
-import { PublisherRestrictionsConfig } from "~/features/consent-settings/PublisherRestrictionsConfig";
 import PublisherSettings, {
   TCFPublisherSettings,
 } from "~/features/consent-settings/PublisherSettings";
 import SettingsBox from "~/features/consent-settings/SettingsBox";
+import { PublisherRestrictionsConfig } from "~/features/consent-settings/tcf/PublisherRestrictionsConfig";
 import {
   useGetHealthQuery,
   useGetTcfPurposeOverridesQuery,
@@ -211,7 +210,6 @@ const ConsentConfigPage: NextPage = () => {
             {({ dirty, isValid, isSubmitting }) => (
               <Form>
                 <Stack spacing={6}>
-                  {!!isTcfOverrideEnabled && <DeprecatedPurposeOverrides />}
                   <PublisherSettings />
                   <GppConfiguration />
                   <Button

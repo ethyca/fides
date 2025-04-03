@@ -10,10 +10,10 @@ import * as Yup from "yup";
 import { CustomTextInput } from "~/features/common/form/inputs";
 import FormModal from "~/features/common/modals/FormModal";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
-import { useCreateTCFConfigurationMutation } from "~/features/consent-settings/tcf-config.slice";
+import { useCreateTCFConfigurationMutation } from "~/features/consent-settings/tcf/tcf-config.slice";
 import { isErrorResult } from "~/types/errors";
 
-import { getErrorMessage } from "../common/helpers";
+import { getErrorMessage } from "../../common/helpers";
 
 interface CreateTCFConfigModalProps {
   isOpen: boolean;
@@ -39,7 +39,6 @@ export const CreateTCFConfigModal = ({
       toast(errorToastParams(getErrorMessage(result.error)));
     } else {
       toast(successToastParams("Successfully created TCF configuration"));
-      console.log("onSuccess", !!onSuccess);
       onSuccess?.(result.data.id);
       onClose();
     }
