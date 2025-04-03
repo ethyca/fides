@@ -14,8 +14,9 @@ import {
 
 import { useAlert } from "~/features/common/hooks";
 import { DiscoveryMonitorItem } from "~/features/data-discovery-and-detection/types/DiscoveryMonitorItem";
+import { findResourceType } from "~/features/data-discovery-and-detection/utils/findResourceType";
 import getResourceName from "~/features/data-discovery-and-detection/utils/getResourceName";
-import { DiffStatus } from "~/types/api";
+import { DiffStatus, StagedResourceTypeValue } from "~/types/api";
 
 import ActionButton from "../../ActionButton";
 import {
@@ -66,9 +67,13 @@ const DiscoveryItemActionsCell = ({ resource }: DiscoveryItemActionsProps) => {
   const showMuteAction =
     itemHasClassificationChanges || childItemsHaveClassificationChanges;
 
+  const showReclassifyAction =
+    findResourceType(resource) !== StagedResourceTypeValue.FIELD;
+
   // if promote and mute are both shown, show "Reclassify" in an overflow menu
   // to avoid having too many buttons in the cell
-  const showReclassifyInOverflow = showPromoteAction && showMuteAction;
+  const showReclassifyInOverflow =
+    showPromoteAction && showMuteAction && showReclassifyAction;
 
   const handlePromote = async () => {
     await promoteResourceMutation({
@@ -123,7 +128,7 @@ const DiscoveryItemActionsCell = ({ resource }: DiscoveryItemActionsProps) => {
           loading={muteIsLoading}
         />
       )}
-      {!showReclassifyInOverflow && (
+      {showReclassifyAction && !showReclassifyInOverflow && (
         <ActionButton
           title="Reclassify"
           icon={<RepeatIcon />}
@@ -132,29 +137,31 @@ const DiscoveryItemActionsCell = ({ resource }: DiscoveryItemActionsProps) => {
           loading={confirmIsLoading}
         />
       )}
-      <Spacer />
       {showReclassifyInOverflow && (
-        <Menu>
-          <MenuButton
-            as={Button}
-            size="small"
-            // TS expects Chakra's type prop (HTML type) but we want to assign the Ant type
-            // @ts-ignore
-            type="text"
-            icon={<MoreIcon transform="rotate(90deg)" />}
-            className="w-6 gap-0"
-            data-testid="actions-overflow-btn"
-          />
-          <MenuList>
-            <MenuItem
-              onClick={handleReclassify}
-              icon={<RepeatIcon />}
-              data-testid="action-reclassify"
-            >
-              Reclassify
-            </MenuItem>
-          </MenuList>
-        </Menu>
+        <>
+          <Spacer />
+          <Menu>
+            <MenuButton
+              as={Button}
+              size="small"
+              // TS expects Chakra's type prop (HTML type) but we want to assign the Ant type
+              // @ts-ignore
+              type="text"
+              icon={<MoreIcon transform="rotate(90deg)" />}
+              className="w-6 gap-0"
+              data-testid="actions-overflow-btn"
+            />
+            <MenuList>
+              <MenuItem
+                onClick={handleReclassify}
+                icon={<RepeatIcon />}
+                data-testid="action-reclassify"
+              >
+                Reclassify
+              </MenuItem>
+            </MenuList>
+          </Menu>
+        </>
       )}
     </HStack>
   );
