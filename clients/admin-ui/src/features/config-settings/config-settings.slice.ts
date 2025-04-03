@@ -200,7 +200,7 @@ export const selectPlusConsentSettings: (
 );
 
 const defaultPlusSecuritySettings = {
-  allow_username_password_fallback: false,
+  allow_username_password_login: false,
 };
 
 export const selectPlusSecuritySettings: (

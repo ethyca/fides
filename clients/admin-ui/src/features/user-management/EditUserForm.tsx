@@ -23,6 +23,7 @@ const useUserForm = (profile: User) => {
     last_name: profile.last_name ?? "",
     password: "",
     id: profile.id,
+    login_method: profile.login_method ?? "sso",
   };
 
   const handleSubmit = async (values: FormValues) => {

@@ -26,7 +26,10 @@ import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { TrashCanSolidIcon } from "~/features/common/Icon/TrashCanSolidIcon";
 import { USER_MANAGEMENT_ROUTE } from "~/features/common/nav/routes";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
-import { selectPlusSecuritySettings } from "~/features/config-settings/config-settings.slice";
+import {
+  useGetConfigurationSettingsQuery,
+  selectPlusSecuritySettings,
+} from "~/features/config-settings/config-settings.slice";
 import { useGetEmailInviteStatusQuery } from "~/features/messaging/messaging.slice";
 import { useGetAllOpenIDProvidersQuery } from "~/features/openid-authentication/openprovider.slice";
 
@@ -79,23 +82,30 @@ export interface UserFormProps {
 }
 
 const UserForm = ({ onSubmit, initialValues, canEditNames }: UserFormProps) => {
+  // Hooks
   const router = useRouter();
   const toast = useToast();
   const dispatch = useAppDispatch();
   const deleteModal = useDisclosure();
 
-  const activeUser = useAppSelector(selectActiveUser);
+  // Queries
   const { data: emailInviteStatus } = useGetEmailInviteStatusQuery();
-  const inviteUsersViaEmail = emailInviteStatus?.enabled || false;
-  const { plus: isPlusEnabled } = useFeatures();
-  const plusSecuritySettings = useAppSelector(selectPlusSecuritySettings);
-  const allowUsernameAndPassword =
-    plusSecuritySettings?.allow_username_password_fallback;
+  const { data: openidProviders } = useGetAllOpenIDProvidersQuery();
+  useGetConfigurationSettingsQuery({ api_set: false });
 
+  // Selectors
+  const activeUser = useAppSelector(selectActiveUser);
+  const plusSecuritySettings = useAppSelector(selectPlusSecuritySettings);
+
+  // Feature flags
+  const { plus: isPlusEnabled } = useFeatures();
+
+  // Derived state
+  const inviteUsersViaEmail = emailInviteStatus?.enabled || false;
+  const allowUsernameAndPassword =
+    plusSecuritySettings?.allow_username_password_login || false;
   const isNewUser = !activeUser;
   const nameDisabled = isNewUser ? false : !canEditNames;
-
-  const { data: openidProviders } = useGetAllOpenIDProvidersQuery();
   const ssoEnabled = (openidProviders && openidProviders.length > 0) || false;
 
   const showPasswordField = shouldShowPasswordField(
@@ -103,7 +113,7 @@ const UserForm = ({ onSubmit, initialValues, canEditNames }: UserFormProps) => {
     inviteUsersViaEmail,
     isPlusEnabled,
     ssoEnabled,
-    allowUsernameAndPassword || false,
+    allowUsernameAndPassword,
     activeUser?.login_method,
   );
 
@@ -118,14 +128,39 @@ const UserForm = ({ onSubmit, initialValues, canEditNames }: UserFormProps) => {
     inviteUsersViaEmail,
     isPlusEnabled,
     ssoEnabled,
-    allowUsernameAndPassword || false,
+    allowUsernameAndPassword,
     activeUser?.login_method,
   );
 
   const handleSubmit = async (values: FormValues) => {
-    // first either update or create the user
-    const { password, ...payloadWithoutPassword } = values;
-    const payload = showPasswordField ? values : payloadWithoutPassword;
+    // Determine which fields should be included based on current form state
+    const includePassword = shouldShowPasswordField(
+      isNewUser,
+      inviteUsersViaEmail,
+      isPlusEnabled,
+      ssoEnabled,
+      allowUsernameAndPassword,
+      values.login_method,
+    );
+
+    // Create a clean payload with only the fields we want to submit
+    const payload: Record<string, any> = {
+      username: values.username,
+      email_address: values.email_address,
+      first_name: values.first_name,
+      last_name: values.last_name,
+    };
+
+    // Only include login_method if the selector is shown
+    if (showLoginMethodSelector) {
+      payload.login_method = values.login_method;
+    }
+
+    // Only include password if it should be shown
+    if (includePassword && values.password) {
+      payload.password = values.password;
+    }
+
     const result = await onSubmit(payload);
     if (isErrorResult(result)) {
       toast(errorToastParams(getErrorMessage(result.error)));
@@ -145,23 +180,11 @@ const UserForm = ({ onSubmit, initialValues, canEditNames }: UserFormProps) => {
     }
   };
 
-  // The password field is only available when creating a new user.
-  // Otherwise, it is within the UpdatePasswordModal
-  let validationSchema: Yup.ObjectSchema<Yup.AnyObject> = ValidationSchema;
-
-  validationSchema = showPasswordField
-    ? validationSchema
-    : validationSchema.omit(["password"]);
-
-  validationSchema = showLoginMethodSelector
-    ? validationSchema
-    : validationSchema.omit(["login_method"]);
-
   return (
     <Formik
       onSubmit={handleSubmit}
       initialValues={initialValues ?? defaultInitialValues}
-      validationSchema={validationSchema}
+      validationSchema={ValidationSchema}
       data-testid="user-form"
     >
       {({ dirty, isSubmitting, isValid, values }) => (
@@ -258,6 +281,7 @@ const UserForm = ({ onSubmit, initialValues, canEditNames }: UserFormProps) => {
                   ]}
                   isRequired
                   data-testid="select-login-method"
+                  disabled={!isNewUser}
                 />
               )}
               {shouldShowPasswordField(
@@ -265,7 +289,7 @@ const UserForm = ({ onSubmit, initialValues, canEditNames }: UserFormProps) => {
                 inviteUsersViaEmail,
                 isPlusEnabled,
                 ssoEnabled,
-                allowUsernameAndPassword || false,
+                allowUsernameAndPassword,
                 values?.login_method,
               ) && (
                 <CustomTextInput
