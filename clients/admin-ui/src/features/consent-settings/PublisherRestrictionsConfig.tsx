@@ -110,15 +110,6 @@ export const PublisherRestrictionsConfig = ({
     handleResult(result);
   };
 
-  const handleDeleteTCFConfig = async (id: string) => {
-    // TODO: Implement the actual delete mutation when available
-    console.warn("Delete TCF config not yet implemented", id);
-    toast({
-      status: "info",
-      description: "Delete TCF configuration not yet implemented",
-    });
-  };
-
   return (
     <SettingsBox title="Publisher restrictions" fontSize="sm">
       <Space direction="vertical" size="small">
@@ -161,7 +152,6 @@ export const PublisherRestrictionsConfig = ({
                   configurations={tcfConfigurations?.items || []}
                   isLoading={isTcfConfigurationsLoading}
                   onConfigurationSelect={setSelectedTCFConfigId}
-                  onConfigurationDelete={handleDeleteTCFConfig}
                 />
               </>
             )}
