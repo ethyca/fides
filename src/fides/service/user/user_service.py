@@ -40,6 +40,7 @@ class UserService:
                 db=self.db, data={"username": user.username, "invite_code": invite_code}
             )
             user.update(self.db, data={"disabled": True})
+            # TODO: refactor to use MessagingService
             dispatch_message(
                 self.db,
                 action_type=MessagingActionType.USER_INVITE,
@@ -48,6 +49,10 @@ class UserService:
                 message_body_params=UserInviteBodyParams(
                     username=user.username, invite_code=invite_code
                 ),
+            )
+        else:
+            logger.debug(
+                "Skipping invitation email, an email messaging provider is not enabled",
             )
 
     def perform_login(
