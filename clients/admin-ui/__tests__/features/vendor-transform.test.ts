@@ -1,99 +1,116 @@
-import { transformSystemsToCookies } from "~/features/configure-consent/vendor-transform";
-import { Cookies, SystemResponse } from "~/types/api";
+import { transformSystemsToCookies } from "../../features/vendor-transform";
 
-const mockCookie = (name: string): Cookies => ({ name, path: "/" });
-const mockSystem = ({
+const mockCookie = (name: string) => ({
   name,
-  dataUseCookies,
-}: {
-  name: string;
-  dataUseCookies: Record<string, Cookies[]>;
-}) => {
-  const declarations = Object.entries(dataUseCookies).map(([use, cookies]) => ({
-    data_use: use,
-    cookies,
-  }));
-  const system = {
-    name,
-    fides_key: name,
-    privacy_declarations: declarations,
-  } as SystemResponse;
-  return system;
-};
+  path: "/",
+  domain: "example.com",
+  type: "cookie",
+  cookie_refresh: false,
+  max_age_seconds: 86400,
+  uses_non_cookie_access: false,
+  purposes: [1, 2, 3, 4, 7],
+  special_purposes: [],
+  features: [],
+  special_features: [],
+  vendor_id: "gvl.780",
+  vendor_name: "Aniview LTD",
+  gvl_version: null,
+});
 
-describe("vendor transforms", () => {
-  describe("transformSystemsToCookies", () => {
-    it("should transform when there are no cookies", () => {
-      const systems = [
-        mockSystem({ name: "one", dataUseCookies: {} }),
-        mockSystem({ name: "two", dataUseCookies: { declaration: [] } }),
-      ];
-      expect(transformSystemsToCookies(systems)).toEqual([
-        { name: "one", id: "one" },
-        { name: "two", id: "two" },
-      ]);
-    });
+describe("transformSystemsToCookies", () => {
+  it("should transform systems with no cookies", () => {
+    const systems = [
+      {
+        fides_key: "test_system",
+        name: "Test System",
+        privacy_declarations: [
+          {
+            name: "Store system data.",
+            data_categories: ["system.operations", "user.contact"],
+            data_use: "functional.service.improve",
+            data_subjects: ["anonymous_user"],
+            dataset_references: ["public"],
+            cookies: [],
+          },
+        ],
+        cookies: [],
+      },
+    ];
+    const result = transformSystemsToCookies(systems);
+    expect(result).toEqual([]);
+  });
 
-    it("should transform when there is one cookie", () => {
-      const cookie = mockCookie("_ga");
-      const systems = [
-        mockSystem({ name: "one", dataUseCookies: {} }),
-        mockSystem({ name: "two", dataUseCookies: { declaration: [cookie] } }),
-      ];
-      expect(transformSystemsToCookies(systems)).toEqual([
-        { name: "one", id: "one" },
-        { name: "two", id: "two", dataUse: "declaration", cookie },
-      ]);
-    });
+  it("should transform systems with one cookie", () => {
+    const systems = [
+      {
+        fides_key: "test_system",
+        name: "Test System",
+        privacy_declarations: [
+          {
+            name: "Store system data.",
+            data_categories: ["system.operations", "user.contact"],
+            data_use: "functional.service.improve",
+            data_subjects: ["anonymous_user"],
+            dataset_references: ["public"],
+            cookies: [mockCookie("cookie1")],
+          },
+        ],
+        cookies: [mockCookie("cookie1")],
+      },
+    ];
+    const result = transformSystemsToCookies(systems);
+    expect(result).toEqual([mockCookie("cookie1")]);
+  });
 
-    it("should transform when there are multiple cookies on a data use", () => {
-      const cookie = mockCookie("_ga");
-      const cookie2 = mockCookie("_ga2");
-      const systems = [
-        mockSystem({ name: "one", dataUseCookies: {} }),
-        mockSystem({
-          name: "two",
-          dataUseCookies: { declaration: [cookie, cookie2] },
-        }),
-      ];
-      expect(transformSystemsToCookies(systems)).toEqual([
-        { name: "one", id: "one" },
-        { name: "two", id: "two", dataUse: "declaration", cookie },
-        { name: "two", id: "two", dataUse: "declaration", cookie: cookie2 },
-      ]);
-    });
+  it("should transform systems with multiple cookies", () => {
+    const systems = [
+      {
+        fides_key: "test_system",
+        name: "Test System",
+        privacy_declarations: [
+          {
+            name: "Store system data.",
+            data_categories: ["system.operations", "user.contact"],
+            data_use: "functional.service.improve",
+            data_subjects: ["anonymous_user"],
+            dataset_references: ["public"],
+            cookies: [mockCookie("cookie1"), mockCookie("cookie2")],
+          },
+        ],
+        cookies: [mockCookie("cookie1"), mockCookie("cookie2")],
+      },
+    ];
+    const result = transformSystemsToCookies(systems);
+    expect(result).toEqual([mockCookie("cookie1"), mockCookie("cookie2")]);
+  });
 
-    it("should transform when there are multiple data uses that use the same cookie", () => {
-      const cookie = mockCookie("_ga");
-      const systems = [
-        mockSystem({ name: "one", dataUseCookies: {} }),
-        mockSystem({
-          name: "two",
-          dataUseCookies: { declaration: [cookie], declaration2: [cookie] },
-        }),
-      ];
-      expect(transformSystemsToCookies(systems)).toEqual([
-        { name: "one", id: "one" },
-        { name: "two", id: "two", dataUse: "declaration", cookie },
-        { name: "two", id: "two", dataUse: "declaration2", cookie },
-      ]);
-    });
-
-    it("should transform multiple systems", () => {
-      const cookie = mockCookie("_ga");
-      const cookie2 = mockCookie("_ga2");
-      const systems = [
-        mockSystem({ name: "one", dataUseCookies: { declaration: [cookie] } }),
-        mockSystem({
-          name: "two",
-          dataUseCookies: { declaration: [cookie], declaration2: [cookie2] },
-        }),
-      ];
-      expect(transformSystemsToCookies(systems)).toEqual([
-        { name: "one", id: "one", dataUse: "declaration", cookie },
-        { name: "two", id: "two", dataUse: "declaration", cookie },
-        { name: "two", id: "two", dataUse: "declaration2", cookie: cookie2 },
-      ]);
-    });
+  it("should transform systems with multiple data uses", () => {
+    const systems = [
+      {
+        fides_key: "test_system",
+        name: "Test System",
+        privacy_declarations: [
+          {
+            name: "Store system data.",
+            data_categories: ["system.operations", "user.contact"],
+            data_use: "functional.service.improve",
+            data_subjects: ["anonymous_user"],
+            dataset_references: ["public"],
+            cookies: [mockCookie("cookie1")],
+          },
+          {
+            name: "Analyze customer behaviour.",
+            data_categories: ["user.contact"],
+            data_use: "functional.service.improve",
+            data_subjects: ["anonymous_user"],
+            dataset_references: ["public"],
+            cookies: [mockCookie("cookie2")],
+          },
+        ],
+        cookies: [mockCookie("cookie1"), mockCookie("cookie2")],
+      },
+    ];
+    const result = transformSystemsToCookies(systems);
+    expect(result).toEqual([mockCookie("cookie1"), mockCookie("cookie2")]);
   });
 });
