@@ -35,9 +35,13 @@ def upgrade():
             nullable=True,
         ),
     )
+    op.alter_column("fidesuser", "hashed_password", nullable=True)
+    op.alter_column("fidesuser", "salt", nullable=True)
 
 
 def downgrade():
+    op.alter_column("fidesuser", "hashed_password", nullable=False)
+    op.alter_column("fidesuser", "salt", nullable=False)
     op.drop_column("fidesuser", "totp_secret")
     op.drop_column("fidesuser", "login_method")
     op.execute("DROP TYPE loginmethod")
