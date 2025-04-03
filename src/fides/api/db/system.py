@@ -192,9 +192,6 @@ async def update_system(
         resource, "privacy_declarations"
     )  # remove the attribute on the system since we've already updated declarations
 
-    if "cookies" in resource.model_dump():
-        delattr(resource, "cookies")
-
     # perform any updates on the system resource itself
     updated_system = await update_resource(System, resource.model_dump(), db)
 
@@ -298,10 +295,6 @@ async def create_system(
     privacy_declarations = resource.privacy_declarations
     # remove the attribute on the system update since the declarations will be created separately
     delattr(resource, "privacy_declarations")
-
-    # Adding cookies via the system is no longer supported
-    if "cookies" in resource.model_dump():
-        delattr(resource, "cookies")
 
     # create the system resource using generic creation
     # the system must be created before the privacy declarations so that it can be referenced
