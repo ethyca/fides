@@ -3,11 +3,14 @@ import {
   AntFlex as Flex,
   AntFlexProps as FlexProps,
   AntTag as Tag,
+  Skeleton,
   Text,
 } from "fidesui";
 
 import { useAppSelector } from "~/app/hooks";
 import { selectPurposes } from "~/features/common/purpose.slice";
+
+import { TCFConfiguration } from "./tcf-config.slice";
 
 const FORBIDDEN_LEGITIMATE_INTEREST_PURPOSE_IDS = [1, 3, 4, 5, 6];
 
@@ -90,11 +93,19 @@ const FauxRow = ({
   />
 );
 
+interface PublisherRestrictionsTableProps extends Omit<FlexProps, "children"> {
+  config?: TCFConfiguration;
+  isLoading?: boolean;
+}
+
 export const PublisherRestrictionsTable = ({
+  config,
+  isLoading,
   style,
   ...props
-}: Omit<FlexProps, "children">): JSX.Element => {
+}: PublisherRestrictionsTableProps): JSX.Element => {
   const { purposes } = useAppSelector(selectPurposes);
+
   return (
     <Flex
       vertical
@@ -135,9 +146,12 @@ export const PublisherRestrictionsTable = ({
           <FauxTableCell width="600px">
             Purpose {purpose.id}: {purpose.name}
           </FauxTableCell>
-
           <FauxTableCell flex={1} borderLeft>
-            none
+            {isLoading ? (
+              <Skeleton height="16px" width="100%" />
+            ) : (
+              config?.restrictions_per_purpose?.[purpose.id] || "none"
+            )}
           </FauxTableCell>
           <FauxTableCell width="100px" borderLeft>
             {FORBIDDEN_LEGITIMATE_INTEREST_PURPOSE_IDS.includes(purpose.id) ? (
@@ -147,7 +161,7 @@ export const PublisherRestrictionsTable = ({
             )}
           </FauxTableCell>
           <FauxTableCell width="100px" borderLeft>
-            {!FORBIDDEN_LEGITIMATE_INTEREST_PURPOSE_IDS.includes(purpose.id) ? (
+            {FORBIDDEN_LEGITIMATE_INTEREST_PURPOSE_IDS.includes(purpose.id) ? (
               <div />
             ) : (
               <Button size="small">Edit</Button>

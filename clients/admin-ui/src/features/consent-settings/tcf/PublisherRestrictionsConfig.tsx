@@ -12,7 +12,10 @@ import { useEffect, useState } from "react";
 
 import { getErrorMessage } from "~/features/common/helpers";
 import { errorToastParams } from "~/features/common/toast";
-import { useGetTCFConfigurationsQuery } from "~/features/consent-settings/tcf/tcf-config.slice";
+import {
+  useGetTCFConfigurationQuery,
+  useGetTCFConfigurationsQuery,
+} from "~/features/consent-settings/tcf/tcf-config.slice";
 import { isErrorResult } from "~/types/errors";
 
 import DocsLink from "../../common/DocsLink";
@@ -50,6 +53,11 @@ export const PublisherRestrictionsConfig = ({
       { page: 1, size: 50 },
       { skip: !isTCFOverrideEnabled },
     );
+
+  const { data: selectedConfig, isFetching: isSelectedConfigLoading } =
+    useGetTCFConfigurationQuery(selectedTCFConfigId || "", {
+      skip: !selectedTCFConfigId,
+    });
 
   // Automatically select first configuration when available
   useEffect(() => {
@@ -180,7 +188,13 @@ export const PublisherRestrictionsConfig = ({
           setSelectedTCFConfigId(configId);
         }}
       />
-      <PublisherRestrictionsTable className="mt-3" />
+      {showTcfOverrideConfig && (
+        <PublisherRestrictionsTable
+          className="mt-3"
+          config={selectedConfig}
+          isLoading={isSelectedConfigLoading}
+        />
+      )}
     </SettingsBox>
   );
 };
