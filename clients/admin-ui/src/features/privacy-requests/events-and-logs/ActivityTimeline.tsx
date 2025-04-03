@@ -6,6 +6,7 @@ import {
 } from "privacy-requests/types";
 import React, { useEffect, useState } from "react";
 
+import ActivityTimelineCollapse from "./ActivityTimelineCollapse";
 import LogDrawer from "./LogDrawer";
 import TimelineEntry from "./TimelineEntry";
 
@@ -59,22 +60,9 @@ const ActivityTimeline = ({ subjectRequest }: ActivityTimelineProps) => {
     onOpen();
   };
 
-  const items = map(results, (values, key) => ({ key, values }));
-
   return (
     <Box width="100%">
-      {/* <List
-        dataSource={items}
-        renderItem={(item) => (
-          <ActivityTimelineEntry
-            author="Fides"
-            timestamp=""
-            title={item.key}
-            type=""
-            content=""
-          />
-        )}
-      /> */}
+      <ActivityTimelineCollapse results={results} />
       {results &&
         resultKeys.map((key, index) => (
           <TimelineEntry
