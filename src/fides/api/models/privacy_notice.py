@@ -202,7 +202,6 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
             Asset.asset_type == "Cookie",
             or_(*[text(query) for query in or_queries]),
         )
-        print(f"Query: {query}")
 
         return query.all()
 

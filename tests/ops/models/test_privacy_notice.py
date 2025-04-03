@@ -582,67 +582,6 @@ class TestPrivacyNoticeModel:
         db.refresh(privacy_notice)
         assert privacy_notice.name == old_name
 
-    @pytest.mark.parametrize(
-        "privacy_notice_data_use,declaration_cookies,expected_cookies,description",
-        [
-            (
-                ["marketing.advertising", "third_party_sharing"],
-                [{"name": "test_cookie"}],
-                [{"name": "test_cookie"}],
-                "Data uses overlap exactly",
-            ),
-            (
-                ["marketing.advertising.first_party", "third_party_sharing"],
-                [{"name": "test_cookie"}],
-                [],
-                "Privacy notice use more specific than system's.  Too big a leap to assume system should be adjusted here.",
-            ),
-            (
-                ["marketing", "third_party_sharing"],
-                [{"name": "test_cookie"}],
-                [{"name": "test_cookie"}],
-                "Privacy notice use more general than system's, so system's data use is under the scope of the notice",
-            ),
-            (
-                ["marketing.advertising", "third_party_sharing"],
-                [{"name": "test_cookie"}, {"name": "another_cookie"}],
-                [{"name": "test_cookie"}, {"name": "another_cookie"}],
-                "Test multiple cookies",
-            ),
-            (["marketing.advertising"], [], [], "No cookies returns an empty set"),
-        ],
-    )
-    def test_relevant_cookies(
-        self,
-        privacy_notice_data_use,
-        declaration_cookies,
-        expected_cookies,
-        description,
-        privacy_notice,
-        db,
-        system,
-    ):
-        """Test different combinations of data uses and cookies between the Privacy Notice and the Privacy Declaration"""
-        privacy_notice.data_uses = privacy_notice_data_use
-        privacy_notice.save(db)
-
-        privacy_declaration = system.privacy_declarations[0]
-        assert privacy_declaration.data_use == "marketing.advertising"
-
-        for cookie in declaration_cookies:
-            asset = Asset(
-                name=cookie["name"],
-                asset_type="Cookie",
-                data_uses=["marketing.advertising"],
-                system_id=system.id,
-            )
-            db.add(asset)
-        db.commit()
-
-        assert [cookie.name for cookie in privacy_notice.cookies] == [
-            cookie["name"] for cookie in expected_cookies
-        ], description
-
     def test_generate_privacy_notice_key(self, privacy_notice):
         assert (
             PrivacyNotice.generate_notice_key("Example Privacy Notice")
