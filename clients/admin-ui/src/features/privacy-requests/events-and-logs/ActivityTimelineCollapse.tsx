@@ -25,7 +25,7 @@ const ActivityTimelineCollapse = ({ results }: ActivityTimelineProps) => {
         <span className={styles.timestamp}>
           {formatDate(values[0].updated_at)}
         </span>
-        <Tag>test</Tag>
+        <Tag color="sandstone">Request update</Tag>
       </div>
     ),
     children: <EventLog eventLogs={values} openErrorPanel={() => {}} />,
