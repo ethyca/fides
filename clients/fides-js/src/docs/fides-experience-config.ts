@@ -47,7 +47,7 @@ export interface FidesExperienceConfig {
   /**
    * This property corresponds with the "Banner options" in the Banner
    * and Modal components. This helps determine which buttons are visible
-   * on the banner presented to the user. (e.g. `"acknowledge"` or `"opt_in_opt_out"`)
+   * on the banner presented to the user. (e.g. `"acknowledge"`, `"opt_in_opt_out"`, or `"opt_in_only" (TCF)`)
    */
   layer1_button_options?: string;
 
@@ -75,6 +75,12 @@ export interface FidesExperienceConfig {
    * List of all available translations for the current experience.
    */
   translations: Array<Record<string, any>>;
+
+  /**
+   * This corresponds with the "Reject all mechanism" configuration option for TCF overlay experiences.
+   * Determines whether opting out of all purposes blocks everything (both consent and legitimate interest processing) or only blocks consent-based processing while allowing legitimate interest to continue.
+   */
+  reject_all_mechanism: string;
 
   /**
    * @internal

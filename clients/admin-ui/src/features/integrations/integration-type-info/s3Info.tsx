@@ -21,7 +21,7 @@ export const S3_PLACEHOLDER = {
   created_at: "",
 };
 
-export const S3_TAGS = ["Data Warehouse", "S3", "Detection", "Discovery"];
+export const S3_TAGS = ["DSR Automation", "Discovery", "Detection"];
 
 export const S3Overview = () => (
   <>

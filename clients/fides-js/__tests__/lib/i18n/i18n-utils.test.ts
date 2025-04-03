@@ -910,10 +910,11 @@ describe("i18n-utils", () => {
       component: string;
       experience_config: Omit<
         ExperienceConfig,
-        "component" | "layer1_button_options"
+        "component" | "layer1_button_options" | "reject_all_mechanism"
       > & {
         component: string;
         layer1_button_options: string;
+        reject_all_mechanism: string;
       };
       privacy_notices: Array<
         Omit<

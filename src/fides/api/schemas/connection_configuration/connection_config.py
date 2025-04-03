@@ -71,29 +71,23 @@ def mask_sensitive_fields(
     return new_connection_secrets
 
 
-class ConnectionConfigurationResponse(BaseModel):
+class ConnectionConfigSecretsMixin(BaseModel):
     """
-    Describes the returned schema for a ConnectionConfiguration.
+    A schema mixin to declare a connection config `secrets` attribute
+    and handle masking of sensitive values based on `connection_type`
+    and (optionally) a `saas_config`.
     """
 
-    name: Optional[str] = None
-    key: FidesKey
-    description: Optional[str] = None
     connection_type: ConnectionType
-    access: AccessLevel
-    created_at: datetime
-    updated_at: Optional[datetime] = None
-    disabled: Optional[bool] = False
-    last_test_timestamp: Optional[datetime] = None
-    last_test_succeeded: Optional[bool] = None
-    saas_config: Optional[SaaSConfigBase] = None
     secrets: Optional[Dict[str, Any]] = None
-    authorized: Optional[bool] = False
-    enabled_actions: Optional[List[ActionType]] = None
+    saas_config: Optional[SaaSConfigBase] = None
 
     @model_validator(mode="after")
-    def mask_sensitive_values(self) -> "ConnectionConfigurationResponse":
-        """Mask sensitive values in the response."""
+    def mask_sensitive_values(self) -> "ConnectionConfigSecretsMixin":
+        """
+        Mask sensitive values in the `secrets` attribute based on `connection_type`
+        and (optionally) a `saas_config`.
+        """
         if self.secrets is None:
             return self
 
@@ -115,6 +109,26 @@ class ConnectionConfigurationResponse(BaseModel):
 
         self.secrets = mask_sensitive_fields(cast(dict, self.secrets), secret_schema)
         return self
+
+
+class ConnectionConfigurationResponse(ConnectionConfigSecretsMixin):
+    """
+    Describes the returned schema for a ConnectionConfiguration.
+
+    The mixin base class ensures that `secrets` sensitive values are masked.
+    """
+
+    name: Optional[str] = None
+    key: FidesKey
+    description: Optional[str] = None
+    access: AccessLevel
+    created_at: datetime
+    updated_at: Optional[datetime] = None
+    disabled: Optional[bool] = False
+    last_test_timestamp: Optional[datetime] = None
+    last_test_succeeded: Optional[bool] = None
+    authorized: Optional[bool] = False
+    enabled_actions: Optional[List[ActionType]] = None
 
     model_config = ConfigDict(from_attributes=True)
 

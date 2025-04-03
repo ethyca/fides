@@ -372,7 +372,7 @@ describe("shouldResurfaceBanner", () => {
       expected: true,
     },
     {
-      label: "returns true when consent method is DISMISS",
+      label: "returns false when consent method is DISMISS",
       experience: mockExperience,
       cookie: {
         ...mockCookie,
@@ -380,7 +380,7 @@ describe("shouldResurfaceBanner", () => {
       },
       savedConsent: mockSavedConsent,
       options: {},
-      expected: true,
+      expected: false,
     },
     {
       label: "returns true when notice consent is missing",

@@ -241,7 +241,7 @@ export const shouldResurfaceBanner = (
     | undefined,
   cookie: FidesCookie | undefined,
   savedConsent: NoticeConsent,
-  options?: FidesInitOptions,
+  options: FidesInitOptions,
 ): boolean => {
   // Never resurface banner if it is disabled
   if (options?.fidesDisableBanner) {
@@ -284,13 +284,8 @@ export const shouldResurfaceBanner = (
     return false;
   }
 
-  // resurface in the special case where the saved consent
-  // is only recorded with a consentMethod of "dismiss" or "gpc"
-  if (
-    cookie &&
-    (cookie.fides_meta.consentMethod === ConsentMethod.GPC ||
-      cookie.fides_meta.consentMethod === ConsentMethod.DISMISS)
-  ) {
+  // resurface in the special case where the saved consent is "gpc"
+  if (cookie?.fides_meta.consentMethod === ConsentMethod.GPC) {
     return true;
   }
 

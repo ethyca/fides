@@ -17,12 +17,7 @@ export const SNOWFLAKE_PLACEHOLDER = {
   created_at: "",
 };
 
-export const SNOWFLAKE_TAGS = [
-  "Data warehouse",
-  "Detection",
-  "Discovery",
-  "DSR automation",
-];
+export const SNOWFLAKE_TAGS = ["DSR Automation", "Discovery", "Detection"];
 
 export const SnowflakeOverview = () => (
   <>

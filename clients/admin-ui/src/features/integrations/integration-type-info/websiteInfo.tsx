@@ -23,10 +23,12 @@ const WebsiteIntegrationOverview = () => (
   </>
 );
 
+const WEBSITE_TAGS = ["Consent", "Discovery", "Detection"];
+
 const WEBSITE_INTEGRATION_TYPE_INFO = {
   placeholder: WEBSITE_INTEGRATION_PLACEHOLDER,
   category: ConnectionCategory.WEBSITE,
-  tags: ["Website", "Discovery", "Inventory"],
+  tags: WEBSITE_TAGS,
   overview: <WebsiteIntegrationOverview />,
 };
 

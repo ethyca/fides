@@ -141,11 +141,11 @@ describe("Banner and modal dismissal", () => {
               cy.get("@FidesUpdated").should("not.have.been.called");
             });
 
-            it("should resurface the banner if dismissed without consent", () => {
+            it("should not resurface the banner if dismissed without consent", () => {
               cy.get("#fides-banner").should("be.visible");
               cy.get("#fides-banner .fides-close-button").click();
               cy.reload();
-              cy.get("#fides-banner").should("be.visible");
+              cy.get("#fides-banner").should("not.be.visible");
             });
 
             it("should not resurface the banner if consented without dismissing", () => {

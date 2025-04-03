@@ -151,9 +151,11 @@ const Preview = ({
     baseConfig.experience.experience_config.show_layer1_notices =
       !!values.privacy_notice_ids?.length && !!values.show_layer1_notices;
     baseConfig.experience.experience_config.layer1_button_options =
-      (values.component === ComponentType.BANNER_AND_MODAL &&
-        values.layer1_button_options) ||
-      Layer1ButtonOption.OPT_IN_OPT_OUT;
+      (values.component === ComponentType.BANNER_AND_MODAL ||
+        values.component === ComponentType.TCF_OVERLAY) &&
+      values.layer1_button_options
+        ? values.layer1_button_options
+        : Layer1ButtonOption.OPT_IN_OPT_OUT;
     baseConfig.options.preventDismissal = !values.dismissable;
     if (
       window.Fides &&
