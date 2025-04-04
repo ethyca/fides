@@ -1,18 +1,14 @@
 import { getCoreRowModel, useReactTable } from "@tanstack/react-table";
 import { AntButton as Button, AntFlex as Flex, Spacer, Text } from "fidesui";
+import { useRouter } from "next/router";
 import { useState } from "react";
 
 import { FidesTableV2, TableActionBar } from "~/features/common/table/v2";
 
 import { RestrictionType, VendorRestriction } from "./constants";
 import { PurposeRestrictionFormModal } from "./PurposeRestrictionFormModal";
+import { PurposeRestriction } from "./types";
 import { usePurposeRestrictionTableColumns } from "./usePurposeRestrictionTableColumns";
-
-export interface PurposeRestriction {
-  restriction_type: RestrictionType;
-  vendor_restriction: VendorRestriction;
-  vendor_ids: string[];
-}
 
 const EmptyTableNotice = ({ onAdd }: { onAdd: () => void }) => (
   <Flex
@@ -38,13 +34,20 @@ const EmptyTableNotice = ({ onAdd }: { onAdd: () => void }) => (
 export const PurposeRestrictionsTable = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const columns = usePurposeRestrictionTableColumns();
+  const router = useRouter();
+
+  // Get purpose ID from the URL
+  const purposeId = router.query.purpose_id
+    ? parseInt(router.query.purpose_id as string, 10)
+    : undefined;
 
   // TASK: Fetch data from API
-  const data = [
+  const data: PurposeRestriction[] = [
     {
       restriction_type: RestrictionType.PURPOSE_RESTRICTION,
       vendor_restriction: VendorRestriction.RESTRICT_SPECIFIC,
       vendor_ids: ["123", "456", "10-100"],
+      purpose_id: purposeId,
     },
   ];
 
@@ -79,6 +82,8 @@ export const PurposeRestrictionsTable = () => {
       <PurposeRestrictionFormModal
         isOpen={isModalOpen}
         onClose={handleCloseModal}
+        existingRestrictions={data}
+        purposeId={purposeId}
       />
     </Flex>
   );

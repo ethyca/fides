@@ -10,7 +10,7 @@ import {
   VendorRestriction,
 } from "./constants";
 import { PublisherRestrictionActionCell } from "./PublisherRestrictionActionCell";
-import { PurposeRestriction } from "./PurposeRestrictionsTable";
+import { PurposeRestriction } from "./types";
 
 const columnHelper = createColumnHelper<PurposeRestriction>();
 
@@ -45,7 +45,12 @@ export const usePurposeRestrictionTableColumns = () => {
       columnHelper.display({
         id: "actions",
         cell: (props) => (
-          <PublisherRestrictionActionCell currentValues={props.row.original} />
+          <PublisherRestrictionActionCell
+            currentValues={props.row.original}
+            existingRestrictions={props.table
+              .getRowModel()
+              .rows.map((row) => row.original)}
+          />
         ),
         header: "Actions",
         size: 154,
