@@ -61,6 +61,22 @@ def get_api_session() -> Session:
     return db
 
 
+def get_read_api_session() -> Session:
+    global _engine  # pylint: disable=W0603
+    if not _engine:
+        _engine = get_db_engine(
+            database_uri=CONFIG.database.sqlalchemy_read_database_uri,
+            pool_size=CONFIG.database.api_engine_pool_size,
+            max_overflow=CONFIG.database.api_engine_max_overflow,
+            keepalives_idle=CONFIG.database.api_engine_keepalives_idle,
+            keepalives_interval=CONFIG.database.api_engine_keepalives_interval,
+            keepalives_count=CONFIG.database.api_engine_keepalives_count,
+        )
+    SessionLocal = get_db_session(CONFIG, engine=_engine)
+    db = SessionLocal()
+    return db
+
+
 def get_config_proxy(db: Session = Depends(get_db)) -> ConfigProxy:
     return ConfigProxy(db)
 
