@@ -9,6 +9,8 @@ from fides.api.schemas.storage.storage import (
     StorageType,
 )
 from fides.api.util.aws_util import get_aws_session
+from google.oauth2 import service_account
+from google.auth.transport.requests import Request
 
 
 def secrets_are_valid(
@@ -37,8 +39,23 @@ def _s3_authenticator(secrets: Dict[StorageSecrets, Any]) -> bool:
         return False
 
 
+def _gcs_authenticator(secrets: Dict) -> bool:
+    """Autenticates secrets for Google Cloud Storage, returns true if secrets are valid"""
+    try:
+        # FIXME: should convert secrets to json?
+        credentials = service_account.Credentials.from_service_account_info(
+            secrets
+        )
+        # To validate the credentials, it is necessary to make a request to Google Cloud API
+        credentials.refresh(Request())
+        return True
+    except Exception:
+        return False
+
+
 def _get_authenticator_from_config(storage_type: StorageType) -> Any:
     """Determines which uploader method to use based on storage type"""
     return {
         StorageType.s3.value: _s3_authenticator,
+        StorageType.gcs.value: _gcs_authenticator,
     }[storage_type.value]
