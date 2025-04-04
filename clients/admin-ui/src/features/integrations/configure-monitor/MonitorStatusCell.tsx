@@ -20,48 +20,7 @@ import { MonitorStatusResponse } from "~/types/api/models/MonitorStatusResponse"
 
 import styles from "./MonitorStatusCell.module.scss";
 
-const DUMMY_IN_PROGRESS_MONITOR: MonitorStatusResponse = {
-  name: "Test Monitor",
-  connection_config_key: "test-connection",
-  execution_records: [
-    {
-      id: "1",
-      monitor_config_key: "test-monitor",
-      status: MonitorExecutionStatus.IN_PROGRESS,
-    },
-  ],
-  last_monitored: "2024-06-04T11:11:11+00:00",
-};
-
-const DUMMY_COMPLETED_MONITOR: MonitorStatusResponse = {
-  name: "Test Monitor",
-  connection_config_key: "test-connection",
-  execution_records: [
-    {
-      id: "1",
-      monitor_config_key: "test-monitor",
-      status: MonitorExecutionStatus.COMPLETED,
-    },
-  ],
-  last_monitored: "2024-06-04T11:11:11+00:00",
-};
-
-const DUMMY_ERROR_MONITOR: MonitorStatusResponse = {
-  name: "Test Monitor",
-  connection_config_key: "test-connection",
-  execution_records: [
-    {
-      id: "1",
-      monitor_config_key: "test-monitor",
-      status: MonitorExecutionStatus.ERRORED,
-      messages: ["Error message 1", "Error message 2"],
-      completed: "2024-06-04T11:11:11+00:00",
-    },
-  ],
-};
-
 const MonitorStatusCell = ({ monitor }: { monitor: MonitorStatusResponse }) => {
-  //   const monitor = DUMMY_ERROR_MONITOR;
   const executionRecord = monitor.execution_records?.[0];
   const { isOpen, onOpen, onClose } = useDisclosure();
   const lastCompletedTime = monitor.last_monitored
@@ -95,22 +54,27 @@ const MonitorStatusCell = ({ monitor }: { monitor: MonitorStatusResponse }) => {
   if (executionRecord.status === MonitorExecutionStatus.COMPLETED) {
     return (
       <Tooltip title={formattedTime}>
-        <Tag color="success">{formattedDistance}</Tag>
+        <Tag color="success" data-testid="tag-success">
+          {formattedDistance}
+        </Tag>
       </Tooltip>
     );
   }
   if (executionRecord.status === MonitorExecutionStatus.ERRORED) {
     return (
       <>
-        {/* TODO: fix hover background color */}
-        <Tag color="error" className={styles.monitorStatusTag}>
+        <Tag
+          color="error"
+          className={styles.monitorStatusTag}
+          data-testid="tag-error"
+        >
           <Typography.Text onClick={onOpen} className={styles.errorTagText}>
             Incomplete
           </Typography.Text>
         </Tag>
         <Drawer isOpen={isOpen} onClose={onClose} size="md">
           <DrawerOverlay />
-          <DrawerContent>
+          <DrawerContent data-testid="error-log-drawer">
             <DrawerHeader>Failure log</DrawerHeader>
             <DrawerCloseButton />
             <DrawerBody>
@@ -121,7 +85,7 @@ const MonitorStatusCell = ({ monitor }: { monitor: MonitorStatusResponse }) => {
               )}
               {executionRecord.messages?.map((message, idx) => (
                 // eslint-disable-next-line react/no-array-index-key
-                <Fragment key={idx}>
+                <Fragment key={idx} data-testid="error-log-message">
                   <Typography.Paragraph>{message}</Typography.Paragraph>
                   {idx < executionRecord.messages!.length - 1 && (
                     <Divider className="mb-3" />

@@ -299,9 +299,7 @@ const MonitorConfigTab = ({
   return (
     <>
       <Text maxW="720px" mb={6} fontSize="sm" data-testid="monitor-description">
-        {integrationOption?.identifier === ConnectionType.WEBSITE
-          ? WEBSITE_MONITOR_COPY
-          : DATA_DISCOVERY_MONITOR_COPY}
+        {isWebsiteMonitor ? WEBSITE_MONITOR_COPY : DATA_DISCOVERY_MONITOR_COPY}
       </Text>
       <TableActionBar>
         <Spacer />
