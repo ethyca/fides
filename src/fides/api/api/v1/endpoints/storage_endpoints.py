@@ -40,6 +40,7 @@ from fides.api.schemas.storage.storage import (
     FULLY_CONFIGURED_STORAGE_TYPES,
     AWSAuthMethod,
     BulkPutStorageConfigResponse,
+    GCSAuthMethod,
     StorageConfigStatus,
     StorageConfigStatusMessage,
     StorageDestination,
@@ -419,8 +420,7 @@ def get_storage_status(
 
 def _storage_config_requires_secrets(storage_config: StorageConfig) -> bool:
     return (
-        storage_config.details.get(StorageDetails.AUTH_METHOD.value, None)
-        == AWSAuthMethod.SECRET_KEYS.value
+        storage_config.details.get(StorageDetails.AUTH_METHOD.value, None) in [AWSAuthMethod.SECRET_KEYS.value, GCSAuthMethod.SERVICE_ACCOUNT_KEYS.value]
     )
 
 
