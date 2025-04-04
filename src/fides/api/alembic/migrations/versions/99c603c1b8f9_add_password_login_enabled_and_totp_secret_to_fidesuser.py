@@ -1,4 +1,4 @@
-"""adding login method and totp secret to fides user
+"""add password login enabled and totp secret to fidesuser
 
 Revision ID: 99c603c1b8f9
 Revises: 6e565c16dae1
