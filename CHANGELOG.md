@@ -24,6 +24,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ### Added
 - Added `reject_all_mechanism` to `PrivacyExperienceConfig` [#5952](https://github.com/ethyca/fides/pull/5952) https://github.com/ethyca/fides/labels/db-migration
 - Added DataHub dataset sync functionality UI with feedback and error handling [#5949](https://github.com/ethyca/fides/pull/5949)
+- Added support for TCF preview in Admin UI experience form [#5962](https://github.com/ethyca/fides/pull/5962)
 - Added `opt_in_only` to `Layer1ButtonOption` [#5958](https://github.com/ethyca/fides/pull/5958)
 - Added support for links in `<a>` tags on the custom HTML description [#5960](https://github.com/ethyca/fides/pull/5960)
 - Added "Reject all" behavior and visibility options to TCF Experience config form [#5964](https://github.com/ethyca/fides/pull/5964)
@@ -203,6 +204,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ### Fixed
 - Fixed GPP string and section inconsistencies [#5765](https://github.com/ethyca/fides/pull/5765)
 - Fixed sending of notifications for privacy request receipts [#5777](https://github.com/ethyca/fides/pull/5777)
+- Fixed create systems with vendor_deleted_at field [#5786](https://github.com/ethyca/fides/pull/5786)
 
 ## [2.55.0](https://github.com/ethyca/fides/compare/2.54.0...2.55.0)
 
