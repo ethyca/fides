@@ -66,6 +66,7 @@ class DatabaseSettings(FidesSettings):
         description="The hostname of the application database server.",
     )
     read_server: str = Field(
+        default="default-db",
         description="The hostname of the application read database server.",
     )
     task_engine_pool_size: int = Field(
