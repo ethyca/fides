@@ -737,18 +737,13 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
                 raise SkippingConsentPropagation(
                     "Consent preferences are already up-to-date"
                 )
-            cache = get_cache()
-            timestamp = datetime.now().isoformat()
-            cache.set_encoded_object(
-                f"{saas_config.type}_{identity_data['email']}_{timestamp}",
-                notice_id_to_preference_map,
-            )
-            logger.info(
-                "UPDATE connection_type {} email {} notice_map {}",
-                saas_config.type,
-                identity_data["email"],
-                notice_id_to_preference_map,
-            )
+            if identity_data.get("email"):
+                cache = get_cache()
+                timestamp = datetime.now().isoformat()
+                cache.set_encoded_object(
+                    f"{saas_config.type}_{identity_data['email']}_{timestamp}",
+                    notice_id_to_preference_map,
+                )
 
         else:
             # follow the basic (global opt-in/out) SaaS consent flow
