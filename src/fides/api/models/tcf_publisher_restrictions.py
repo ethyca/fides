@@ -4,8 +4,9 @@ from typing import Any, Dict, List, Optional
 from pydantic import BaseModel, Field, ValidationError, model_validator
 from sqlalchemy import Column
 from sqlalchemy import Enum as EnumColumn
-from sqlalchemy import ForeignKey, Index, Integer, String
+from sqlalchemy import ForeignKey, Index, Integer, String, insert, select
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import Session
 
@@ -123,6 +124,10 @@ class TCFPublisherRestriction(Base):
         ),
     )
 
+    def __init__(self, **kwargs: Any) -> None:
+        validated_kwargs = self.validate_publisher_restriction_data(kwargs)
+        super().__init__(**validated_kwargs)
+
     @staticmethod
     def validate_entires_for_vendor_restriction(
         entries: List[RangeEntry], vendor_restriction: TCFVendorRestriction
@@ -153,16 +158,11 @@ class TCFPublisherRestriction(Base):
                 )
 
     @classmethod
-    def create(
-        cls,
-        db: Session,
-        *,
-        data: Dict[str, Any],
-        check_name: bool = True,
-    ) -> "TCFPublisherRestriction":
+    def validate_publisher_restriction_data(
+        cls, data: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """
-        Create a new TCFPublisherRestriction with validated range_entries.
-        Validates each range entry using the RangeEntry Pydantic model.
+        Validate the restriction data.
         """
         raw_range_entries = data.get("range_entries", [])
 
@@ -183,4 +183,48 @@ class TCFPublisherRestriction(Base):
 
         data["range_entries"] = [entry.model_dump() for entry in validated_entries]
 
+        return data
+
+    @classmethod
+    def create(
+        cls,
+        db: Session,
+        *,
+        data: Dict[str, Any],
+        check_name: bool = False,
+    ) -> "TCFPublisherRestriction":
+        """
+        Create a new TCFPublisherRestriction with validated range_entries.
+        Validates each range entry using the RangeEntry Pydantic model.
+        """
+        data = cls.validate_publisher_restriction_data(data)
+
         return super().create(db=db, data=data, check_name=check_name)
+
+    @classmethod
+    async def create_async(
+        cls,
+        async_db: AsyncSession,
+        *,
+        data: Dict[str, Any],
+    ) -> "TCFPublisherRestriction":
+        """
+        Create a new TCFPublisherRestriction with validated range_entries.
+        """
+
+        data = cls.validate_publisher_restriction_data(data)
+
+        values = {
+            "tcf_configuration_id": data["tcf_configuration_id"],
+            "purpose_id": data["purpose_id"],
+            "restriction_type": data["restriction_type"],
+            "vendor_restriction": data["vendor_restriction"],
+            "range_entries": data["range_entries"],
+        }
+
+        insert_stmt = insert(cls).values(values)  # type: ignore[arg-type]
+        result = await async_db.execute(insert_stmt)
+        record_id = result.inserted_primary_key.id
+
+        created_record = await async_db.execute(select(cls).where(cls.id == record_id))  # type: ignore[arg-type]
+        return created_record.scalars().first()
