@@ -91,17 +91,20 @@ def validate_erasure_privacy_request(
     with bigquery_client.connect() as connection:
         stmt = f"select text from enterprise_dsr_testing.post_history where id = {post_history_id};"
         res = connection.execute(stmt).all()
+        assert len(res) == 1
         for row in res:
             assert row.text is None
 
         stmt = f"select user_display_name, text from enterprise_dsr_testing.comments where id = {comment_id};"
         res = connection.execute(stmt).all()
+        assert len(res) == 1
         for row in res:
             assert row.user_display_name is None
             assert row.text is None
 
         stmt = f"select owner_user_id, owner_display_name, body from enterprise_dsr_testing.stackoverflow_posts_partitioned where id = {post_id};"
         res = connection.execute(stmt).all()
+        assert len(res) == 1
         for row in res:
             assert (
                 row.owner_user_id == bigquery_enterprise_resources["user_id"]
@@ -109,13 +112,19 @@ def validate_erasure_privacy_request(
             assert row.owner_display_name is None
             assert row.body is None
 
-        stmt = f"select display_name, location from enterprise_dsr_testing.users where id = {user_id};"
+        stmt = f"select display_name, about_me, age, down_votes, location, account_internal from enterprise_dsr_testing.users where id = {user_id};"
         res = connection.execute(stmt).all()
+        assert len(res) == 1
         for row in res:
+            assert row.about_me is None
+            assert row.age is not None  # not targeted by policy
             assert row.display_name is None
             assert row.location is None
+            assert row.down_votes is not None  # not targeted by policy
+            # assert nested fields are appropriately handled
             for item in row.account_internal:
-                assert tags == []
+                assert item["tags"] == []
+                assert item["account_type"] is not None  # not targeted by policy
 
 
 @pytest.mark.integration_bigquery

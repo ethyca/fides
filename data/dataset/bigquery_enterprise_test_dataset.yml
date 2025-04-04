@@ -180,7 +180,7 @@ dataset:
          - name: down_votes
            data_categories: [system.operations]
          - name: id
-           data_categories: [user.contact]
+           data_categories: [system.operations]
            fides_meta:
              identity: stackoverflow_user_id
              data_type: integer
@@ -209,7 +209,7 @@ dataset:
              - name: expiry_date
                data_categories: [ system.operations ]
              - name: tags
-               data_categories: [ user ]
+               data_categories: [ user.contact ]
                fides_meta:
                  data_type: string[]
        fides_meta:

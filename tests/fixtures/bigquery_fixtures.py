@@ -556,14 +556,17 @@ def bigquery_enterprise_resources(
         display_name = (
             f"fides_testing_{user_id}"  # prefix to do manual cleanup if needed
         )
+        about_me = "HI hello"
+        age = 25
+        down_votes = 9
         last_access_date = datetime.now()
         creation_date = datetime.now()
         location = "Dream World"
 
         # Create test user data
         stmt = f"""
-            insert into enterprise_dsr_testing.users (id, display_name, last_access_date, creation_date, location, account_internal)
-            values ({user_id}, '{display_name}', '{last_access_date}', '{creation_date}', '{location}', [STRUCT('SILVER' as account_type, 1.04 as score, '2029-01-15' as expiry_date, ['mysql', 'html'] as tags), STRUCT('GOLD' as account_type, 0.87 as score, '2029-02-20' as expiry_date, ['css', 'html'] as tags)]);
+            insert into enterprise_dsr_testing.users (id, display_name, about_me, age, down_votes, last_access_date, creation_date, location, account_internal)
+            values ({user_id}, '{display_name}', '{about_me}', '{age}', {down_votes}, '{last_access_date}', '{creation_date}', '{location}', [STRUCT('SILVER' as account_type, 1.04 as score, '2029-01-15' as expiry_date, ['mysql', 'html'] as tags), STRUCT('GOLD' as account_type, 0.87 as score, '2029-02-20' as expiry_date, ['css', 'html'] as tags)]);
         """
         connection.execute(stmt)
 
