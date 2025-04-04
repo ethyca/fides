@@ -65,6 +65,10 @@ class DatabaseSettings(FidesSettings):
         default="default-db",
         description="The hostname of the application database server.",
     )
+    read_server: str = Field(
+        default="default-db",
+        description="The hostname of the application read database server.",
+    )
     task_engine_pool_size: int = Field(
         default=50,
         description="Number of concurrent database connections Fides will use for executing privacy request tasks, either locally or on each worker. Note that the pool begins with no connections, but as they are requested the connections are maintained and reused up to this limit.",
@@ -105,6 +109,11 @@ class DatabaseSettings(FidesSettings):
         description="Programmatically created connection string for the application database.",
         exclude=True,
     )
+    sqlalchemy_read_database_uri: str = Field(
+        default="",
+        description="Programmatically created connection string for the read only application database.",
+        exclude=True,
+    )
     sqlalchemy_test_database_uri: str = Field(
         default="",
         description="Programmatically created connection string for the test database.",
@@ -120,6 +129,14 @@ class DatabaseSettings(FidesSettings):
         description="Programmatically created synchronous connection string for the configured database (either application or test).",
         exclude=True,
     )
+
+    # @field_validator("read_sever", mode="before")
+    # def copy_server_if_no_read_server(
+    #     cls, value: Optional[str], info: ValidationInfo
+    # ) -> str:
+    #     if not value:
+    #         return info.data.get("server")
+    #     return value
 
     @field_validator("password", mode="before")
     @classmethod
@@ -206,6 +223,32 @@ class DatabaseSettings(FidesSettings):
                 username=info.data.get("user"),
                 password=info.data.get("password"),
                 host=info.data.get("server"),
+                port=port,
+                path=f"{info.data.get('db') or ''}",
+                query=(
+                    urlencode(
+                        cast(Dict, info.data.get("params")), quote_via=quote, safe="/"
+                    )
+                    if info.data.get("params")
+                    else None
+                ),
+            )
+        )
+
+    @field_validator("sqlalchemy_read_database_uri", mode="before")
+    @classmethod
+    def assemble_read_db_connection(cls, v: Optional[str], info: ValidationInfo) -> str:
+        """Join DB connection credentials into a synchronous connection string."""
+        if isinstance(v, str) and v:
+            return v
+
+        port: int = port_integer_converter(info)
+        return str(
+            PostgresDsn.build(  # pylint: disable=no-member
+                scheme="postgresql",
+                username=info.data.get("user"),
+                password=info.data.get("password"),
+                host=info.data.get("read_server"),
                 port=port,
                 path=f"{info.data.get('db') or ''}",
                 query=(
