@@ -491,9 +491,11 @@ describe("System management with Plus features", () => {
       cy.wait("@getSystemAssets");
       cy.getByTestId("row-0-col-name").should("contain", "ar_debug");
       cy.getByTestId("row-0-col-locations").should("contain", "United States");
+      cy.getByTestId("row-0-col-data_uses").should("contain", "analytics");
+      cy.getByTestId("row-0-col-data_uses").should("not.contain", "employment");
     });
 
-    describe("asset operations", () => {
+    describe.only("asset operations", () => {
       beforeEach(() => {
         cy.getByTestId("tab-Assets").click({ force: true });
         cy.wait("@getSystemAssets");
@@ -524,17 +526,24 @@ describe("System management with Plus features", () => {
           .should("have.class", "ant-select-disabled");
         cy.getByTestId("controlled-select-data_uses")
           .should("contain", "analytics")
-          .should("not.be.disabled");
+          .should("not.contain", "employment")
+          .antSelect("essential");
         cy.getByTestId("input-domain")
           .should("have.value", ".doubleclick.net")
           .should("be.disabled");
         cy.getByTestId("input-description")
           .should("have.value", "This is a test description")
-          .clear()
+          .clear({ force: true })
           .type("Updating the description");
 
         cy.getByTestId("save-btn").click();
-        cy.wait("@updateSystemAssets");
+        cy.wait("@updateSystemAssets").then((interception) => {
+          expect(interception.request.body[0].data_uses).to.eql([
+            "analytics",
+            "essential",
+            "employment",
+          ]);
+        });
       });
 
       it("can delete an asset", () => {
