@@ -23,7 +23,7 @@ const WebsiteIntegrationOverview = () => (
   </>
 );
 
-const WEBSITE_TAGS = ["Consent Automation", "Discovery", "Detection"];
+const WEBSITE_TAGS = ["Consent", "Discovery", "Detection"];
 
 const WEBSITE_INTEGRATION_TYPE_INFO = {
   placeholder: WEBSITE_INTEGRATION_PLACEHOLDER,

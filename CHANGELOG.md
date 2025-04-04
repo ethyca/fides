@@ -19,13 +19,17 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - https://github.com/ethyca/fides/labels/high-risk: to indicate that a change is a "high-risk" change that could potentially lead to unanticipated regressions or degradations
 - https://github.com/ethyca/fides/labels/db-migration: to indicate that a given change includes a DB migration
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.58.0...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.58.1...main)
 
 ### Added
 - Added `reject_all_mechanism` to `PrivacyExperienceConfig` [#5952](https://github.com/ethyca/fides/pull/5952) https://github.com/ethyca/fides/labels/db-migration
 - Added DataHub dataset sync functionality UI with feedback and error handling [#5949](https://github.com/ethyca/fides/pull/5949)
+- Added support for TCF preview in Admin UI experience form [#5962](https://github.com/ethyca/fides/pull/5962)
 - Added `opt_in_only` to `Layer1ButtonOption` [#5958](https://github.com/ethyca/fides/pull/5958)
+- Added support for links in `<a>` tags on the custom HTML description [#5960](https://github.com/ethyca/fides/pull/5960)
 - Added "Reject all" behavior and visibility options to TCF Experience config form [#5964](https://github.com/ethyca/fides/pull/5964)
+- Added `TCFConfiguration` and `TCFPublisherRestriction` models [#5983](https://github.com/ethyca/fides/pull/5983) https://github.com/ethyca/fides/labels/db-migration
+
 
 ### Changed
 - Bumped Next.js for all frontend apps to latest patch versions. [#5946](https://github.com/ethyca/fides/pull/5946)
@@ -33,9 +37,15 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ### Fixed
 - Updated relationships for Comments, Attachments and PrivacyRequests to remove overlap sqlalchemy error. [#5929](https://github.com/ethyca/fides/pull/5929)
+- Hide "Reclassify" option on fields in D&D tables [#5956](https://github.com/ethyca/fides/pull/5956)
 
 ### Removed
 - Removed datasetClassificationUpdates flag from admin UI. [#5950](https://github.com/ethyca/fides/pull/5950)
+
+## [2.58.1](https://github.com/ethyca/fides/compare/2.58.0...2.58.1)
+
+### Fixed
+- Fixed an issue with banner dismisal resulting in resurfaced banner [#5979](https://github.com/ethyca/fides/pull/5979)
 
 ## [2.58.0](https://github.com/ethyca/fides/compare/2.57.1...2.58.0)
 
@@ -194,6 +204,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ### Fixed
 - Fixed GPP string and section inconsistencies [#5765](https://github.com/ethyca/fides/pull/5765)
 - Fixed sending of notifications for privacy request receipts [#5777](https://github.com/ethyca/fides/pull/5777)
+- Fixed create systems with vendor_deleted_at field [#5786](https://github.com/ethyca/fides/pull/5786)
 
 ## [2.55.0](https://github.com/ethyca/fides/compare/2.54.0...2.55.0)
 
