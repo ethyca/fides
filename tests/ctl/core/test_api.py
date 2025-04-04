@@ -1239,6 +1239,36 @@ class TestSystemCreate:
             0,
         ]
 
+    async def test_system_create_with_vendor_deleted_date(
+        self, generate_auth_header, db, test_config, system_create_request_body
+    ):
+        """Test creating a system with a vendor deleted date"""
+        auth_header = generate_auth_header(scopes=[SYSTEM_CREATE])
+
+        # Set a vendor deleted date in the past
+        vendor_deleted_date = datetime.now(timezone.utc) - timedelta(days=1)
+        system_create_request_body.vendor_deleted_date = vendor_deleted_date
+
+        result = _api.create(
+            url=test_config.cli.server_url,
+            headers=auth_header,
+            resource_type="system",
+            json_resource=system_create_request_body.json(exclude_none=True),
+        )
+
+        assert result.status_code == HTTP_201_CREATED
+        result_json = result.json()
+        assert result_json["fides_key"] == system_create_request_body.fides_key
+        assert result_json[
+            "vendor_deleted_date"
+        ] == vendor_deleted_date.isoformat().replace("+00:00", "Z")
+
+        # Verify the system was created in the database with the correct vendor deleted date
+        system = System.get_by(
+            db, field="fides_key", value=system_create_request_body.fides_key
+        )
+        assert system.vendor_deleted_date == vendor_deleted_date
+
 
 @pytest.mark.unit
 class TestSystemGet:
