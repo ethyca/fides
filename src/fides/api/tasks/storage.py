@@ -16,6 +16,7 @@ from fides.api.schemas.storage.storage import ResponseFormat, StorageSecrets
 from fides.api.service.privacy_request.dsr_package.dsr_report_builder import (
     DsrReportBuilder,
 )
+from fides.api.service.storage.gcs import get_gcs_client
 from fides.api.service.storage.s3 import (
     create_presigned_url_for_s3,
     generic_upload_to_s3,
@@ -155,6 +156,32 @@ def upload_to_s3(  # pylint: disable=R0913
         raise e
     except ParamValidationError as e:
         raise ValueError(f"The parameters you provided are incorrect: {e}")
+
+
+def upload_to_gcs(
+    storage_secrets: Dict,
+    data: Dict,
+    bucket_name: str,
+    file_key: str,
+    privacy_request: PrivacyRequest,
+    auth_method: str,
+    resp_format: str = ResponseFormat.json.value,
+) -> str:
+    """Uploads access request data to a Google Cloud Storage bucket"""
+    logger.info("Starting Google Cloud Storage upload of {}", file_key)
+
+    storage_client = get_gcs_client(auth_method, storage_secrets)
+    bucket = storage_client.bucket(bucket_name)
+
+    blob = bucket.blob(file_key)
+    in_memory_file = write_to_in_memory_buffer(resp_format, data, privacy_request)
+    blob.upload_from_string(in_memory_file.getvalue())
+
+    logger.info("File {} uploaded to {}", file_key, blob.public_url)
+    return blob.public_url
+    # FIXME: By default, uploaded files are not public, so blob.public_url may not work
+    # file_url = f"https://storage.googleapis.com/{bucket_name}/{destination_blob_name}"
+    # return file_url
 
 
 def upload_to_local(
