@@ -66,7 +66,6 @@ class DatabaseSettings(FidesSettings):
         description="The hostname of the application database server.",
     )
     read_server: str = Field(
-        default="default-db",
         description="The hostname of the application read database server.",
     )
     task_engine_pool_size: int = Field(
@@ -109,6 +108,11 @@ class DatabaseSettings(FidesSettings):
         description="Programmatically created connection string for the application database.",
         exclude=True,
     )
+    sqlalchemy_read_database_uri: str = Field(
+        default="",
+        description="Programmatically created connection string for the read only application database.",
+        exclude=True,
+    )
     sqlalchemy_test_database_uri: str = Field(
         default="",
         description="Programmatically created connection string for the test database.",
@@ -124,6 +128,14 @@ class DatabaseSettings(FidesSettings):
         description="Programmatically created synchronous connection string for the configured database (either application or test).",
         exclude=True,
     )
+
+    # @field_validator("read_sever", mode="before")
+    # def copy_server_if_no_read_server(
+    #     cls, value: Optional[str], info: ValidationInfo
+    # ) -> str:
+    #     if not value:
+    #         return info.data.get("server")
+    #     return value
 
     @field_validator("password", mode="before")
     @classmethod
