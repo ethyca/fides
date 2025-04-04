@@ -65,6 +65,10 @@ class DatabaseSettings(FidesSettings):
         default="default-db",
         description="The hostname of the application database server.",
     )
+    read_server: str = Field(
+        default="default-db",
+        description="The hostname of the application read database server.",
+    )
     task_engine_pool_size: int = Field(
         default=50,
         description="Number of concurrent database connections Fides will use for executing privacy request tasks, either locally or on each worker. Note that the pool begins with no connections, but as they are requested the connections are maintained and reused up to this limit.",
