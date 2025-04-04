@@ -495,7 +495,7 @@ describe("System management with Plus features", () => {
       cy.getByTestId("row-0-col-data_uses").should("not.contain", "employment");
     });
 
-    describe.only("asset operations", () => {
+    describe("asset operations", () => {
       beforeEach(() => {
         cy.getByTestId("tab-Assets").click({ force: true });
         cy.wait("@getSystemAssets");
