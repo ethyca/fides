@@ -2,6 +2,7 @@
 
 import { PREVIEW_CONTAINER_ID } from "~/constants";
 import {
+  ComponentType,
   ExperienceConfigCreate,
   ExperienceTranslation,
   Layer1ButtonOption,
@@ -37,54 +38,94 @@ export const buildExperienceTranslation = (
 export const buildBaseConfig = (
   experienceConfig: Partial<ExperienceConfigCreate>,
   notices: PrivacyNoticeResponse[],
-) => ({
-  options: {
-    debug: false,
-    geolocationApiUrl: "",
-    isGeolocationEnabled: false,
-    isOverlayEnabled: true,
-    isPrefetchEnabled: false,
-    overlayParentId: PREVIEW_CONTAINER_ID,
-    modalLinkId: null,
-    privacyCenterUrl: "http://localhost:3000",
-    fidesApiUrl: "http://localhost:8080/api/v1",
-    preventDismissal: experienceConfig.dismissable ?? false,
-    allowHTMLDescription: true,
-    fidesString: null,
-    fidesJsBaseUrl: "",
-    base64Cookie: false,
-    fidesLocale: experienceConfig.translations?.[0]?.language,
-    fidesClearCookie: true,
-  },
-  experience: {
-    id: "pri_111",
-    region: "us_ca",
-    component: "banner_and_modal",
-    available_locales: experienceConfig.translations?.map((t) => t.language),
-    experience_config: {
-      id: "pri_222",
-      regions: ["us_ca"],
-      component: "banner_and_modal",
-      disabled: false,
-      is_default: true,
-      dismissable: experienceConfig.dismissable,
-      show_layer1_notices: false,
-      layer1_button_options: Layer1ButtonOption.OPT_IN_OPT_OUT,
-      allow_language_selection: true,
-      auto_detect_language: true,
-      auto_subdomain_cookie_deletion: true,
-      language: "en",
-      // in preview mode, we show the first translation in the main window, even when multiple translations are configured
-      translations: [buildExperienceTranslation(experienceConfig)],
+) => {
+  const baseConfig: any = {
+    options: {
+      allowHTMLDescription: true,
+      base64Cookie: false,
+      debug: false,
+      fidesApiUrl: "http://localhost:8080/api/v1",
+      fidesClearCookie: true,
+      fidesDisableSaveApi: true,
+      fidesDisableNoticesServedApi: true,
+      fidesJsBaseUrl: "",
+      fidesLocale: experienceConfig.translations?.[0]?.language,
+      fidesString: null,
+      geolocationApiUrl: "",
+      isGeolocationEnabled: false,
+      isOverlayEnabled: true,
+      isPrefetchEnabled: false,
+      modalLinkId: null,
+      overlayParentId: PREVIEW_CONTAINER_ID,
+      preventDismissal: experienceConfig.dismissable ?? false,
+      privacyCenterUrl: "http://localhost:3000",
+      showFidesBrandLink: true,
     },
-    privacy_notices: notices,
-  },
-  geolocation: {
-    country: "US",
-    location: "US-CA",
-    region: "CA",
-  },
-});
+    experience: {
+      available_locales: experienceConfig.translations?.map((t) => t.language),
+      component: experienceConfig.component,
+      experience_config: {
+        allow_language_selection: true,
+        auto_detect_language: true,
+        auto_subdomain_cookie_deletion: true,
+        component: experienceConfig.component,
+        disabled: false,
+        dismissable: experienceConfig.dismissable,
+        id: "pri_222",
+        is_default: true,
+        language: "en",
+        layer1_button_options: Layer1ButtonOption.OPT_IN_OPT_OUT,
+        properties: [],
+        regions: ["us_ca"],
+        show_layer1_notices: false,
+        // in preview mode, we show the first translation in the main window, even when multiple translations are configured
+        translations: [buildExperienceTranslation(experienceConfig)],
+      },
+      id: "pri_111",
+      privacy_notices: notices,
+      region: "us_ca",
+    },
+    geolocation: {
+      country: "US",
+      location: "US-CA",
+      region: "CA",
+    },
+  };
+  if (experienceConfig.component === ComponentType.TCF_OVERLAY) {
+    baseConfig.options.fidesTcfGdprApplies = true;
+    baseConfig.options.tcf_enabled = true;
+    baseConfig.geolocation = { location: "eea", country: "eea" };
+    baseConfig.experience.experience_config.regions = ["eea"];
+    baseConfig.experience = {
+      ...baseConfig.experience,
+      ...{
+        region: "eea",
+        minimal_tcf: true,
+        gvl: { vendors: {} },
+        tcf_purpose_names: [
+          // DEFERRED (LJ-614): replace with applicable purpose names from new endpoint
+          "Store and/or access information on a device",
+          "Use limited data to select advertising",
+          "Create profiles for personalised advertising",
+          "Use profiles to select personalised advertising",
+          "Create profiles to personalise content",
+          "Use profiles to select personalised content",
+          "Measure advertising performance",
+          "Measure content performance",
+          "Understand audiences through statistics or combinations of data from different sources",
+          "Develop and improve services",
+          "Use limited data to select content",
+        ],
+      },
+    };
+    baseConfig.options.apiOptions = {
+      getPrivacyExperienceFn: async () => {
+        return baseConfig.experience;
+      },
+    };
+  }
+  return baseConfig;
+};
 
 /**
  * fill in any empty strings in a translation with the defaults from `buildBaseConfig`
