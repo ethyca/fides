@@ -23,7 +23,7 @@ from fides.api.db.base_class import Base
 from fides.api.models.audit_log import AuditLog
 
 # Intentionally importing SystemManager here to build the FidesUser.systems relationship
-from fides.api.schemas.user import DisabledReason, LoginMethod
+from fides.api.schemas.user import DisabledReason
 from fides.config import CONFIG
 
 if TYPE_CHECKING:

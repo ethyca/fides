@@ -147,10 +147,3 @@ class DisabledReason(Enum):
     """Reasons for why a user is disabled"""
 
     pending_invite = "pending_invite"
-
-
-class LoginMethod(str, Enum):
-    """Methods for logging in"""
-
-    username_password = "username_password"
-    sso = "sso"
