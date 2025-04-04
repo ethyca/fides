@@ -11,8 +11,8 @@ import {
   Spacer,
   ViewOffIcon,
 } from "fidesui";
-import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 
+import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { useAlert } from "~/features/common/hooks";
 import { DiscoveryMonitorItem } from "~/features/data-discovery-and-detection/types/DiscoveryMonitorItem";
 import { findResourceType } from "~/features/data-discovery-and-detection/utils/findResourceType";
