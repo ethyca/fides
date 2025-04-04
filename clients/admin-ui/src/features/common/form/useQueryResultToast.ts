@@ -1,6 +1,5 @@
-import { useToast } from "fidesui";
-
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
+import { useAlert } from "~/features/common/hooks";
 import { RTKResult } from "~/types/errors";
 
 const useQueryResultToast = ({
@@ -10,13 +9,13 @@ const useQueryResultToast = ({
   defaultSuccessMsg: string;
   defaultErrorMsg: string;
 }) => {
-  const toast = useToast();
+  const { successAlert, errorAlert } = useAlert();
   const toastResult = (result: RTKResult) => {
     if (isErrorResult(result)) {
       const errorMsg = getErrorMessage(result.error, defaultErrorMsg);
-      toast({ status: "error", description: errorMsg });
+      errorAlert(errorMsg);
     } else {
-      toast({ status: "success", description: defaultSuccessMsg });
+      successAlert(defaultSuccessMsg);
     }
   };
 

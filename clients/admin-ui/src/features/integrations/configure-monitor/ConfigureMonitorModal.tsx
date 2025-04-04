@@ -1,7 +1,8 @@
 import { UseDisclosureReturn, useToast } from "fidesui";
 
 import FidesSpinner from "~/features/common/FidesSpinner";
-import useQueryResultToast from "~/features/common/form/useQueryResultToast";
+import { getErrorMessage } from "~/features/common/helpers";
+import { useAlert } from "~/features/common/hooks";
 import FormModal from "~/features/common/modals/FormModal";
 import { DEFAULT_TOAST_PARAMS } from "~/features/common/toast";
 import {
@@ -14,14 +15,19 @@ import ConfigureWebsiteMonitorForm from "~/features/integrations/configure-monit
 import {
   ConnectionConfigurationResponse,
   ConnectionSystemTypeMap,
-  ConnectionType,
   MonitorConfig,
+  MonitorFrequency,
 } from "~/types/api";
 import { isErrorResult, RTKResult } from "~/types/errors";
 
 const TIMEOUT_DELAY = 5000;
 const TIMEOUT_COPY =
   "Saving this monitor is taking longer than expected. Fides will continue processing it in the background, and you can check back later to view the updates.";
+
+const WEBSITE_MONITOR_NOW_SCANNING_MESSAGE =
+  "Your monitor has been created and is now scanning your website. Once the monitor is finished scanning, results can be found in the action center.";
+
+const WEBSITE_MONITOR_NOT_SCHEDULED_MESSAGE = `Your monitor has been created with no schedule.  Select "Scan" in the table below to begin scanning your website.`;
 
 const ConfigureMonitorModal = ({
   isOpen,
@@ -32,6 +38,7 @@ const ConfigureMonitorModal = ({
   isEditing,
   integration,
   integrationOption,
+  isWebsiteMonitor,
 }: Pick<UseDisclosureReturn, "isOpen" | "onClose"> & {
   formStep: number;
   monitor?: MonitorConfig;
@@ -39,6 +46,7 @@ const ConfigureMonitorModal = ({
   onAdvance: (m: MonitorConfig) => void;
   integration: ConnectionConfigurationResponse;
   integrationOption: ConnectionSystemTypeMap;
+  isWebsiteMonitor?: boolean;
 }) => {
   const [putMonitorMutationTrigger, { isLoading: isSubmitting }] =
     usePutDiscoveryMonitorMutation();
@@ -53,14 +61,7 @@ const ConfigureMonitorModal = ({
 
   const toast = useToast();
 
-  const { toastResult } = useQueryResultToast({
-    defaultSuccessMsg: `Monitor ${
-      isEditing ? "updated" : "created"
-    } successfully`,
-    defaultErrorMsg: `A problem occurred while ${
-      isEditing ? "updating" : "creating"
-    } this monitor`,
-  });
+  const { successAlert, errorAlert } = useAlert();
 
   const handleSubmit = async (values: MonitorConfig) => {
     let result: RTKResult | undefined;
@@ -77,14 +78,30 @@ const ConfigureMonitorModal = ({
     result = await putMonitorMutationTrigger(values);
     if (result) {
       clearTimeout(timeout);
-      toastResult(result);
-      if (!isErrorResult(result)) {
-        onClose();
+      if (isErrorResult(result)) {
+        errorAlert(getErrorMessage(result.error), "Error creating monitor");
+        return;
       }
+      if (isEditing) {
+        successAlert("Monitor updated successfully");
+        onClose();
+        return;
+      }
+      if (isWebsiteMonitor) {
+        successAlert(
+          values.execution_frequency === MonitorFrequency.NOT_SCHEDULED
+            ? WEBSITE_MONITOR_NOT_SCHEDULED_MESSAGE
+            : WEBSITE_MONITOR_NOW_SCANNING_MESSAGE,
+        );
+        onClose();
+        return;
+      }
+      successAlert("Monitor created successfully");
+      onClose();
     }
   };
 
-  if (integrationOption.identifier === ConnectionType.WEBSITE) {
+  if (isWebsiteMonitor) {
     return (
       <FormModal
         title={

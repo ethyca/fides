@@ -1,0 +1,11 @@
+.errorResultTimestamp {
+  color: var(--fidesui-neutral-400);
+}
+
+.errorTagText {
+  &:hover {
+    text-decoration: underline;
+  }
+  font-size: var(--fidesui-font-size-sm);
+  cursor: pointer;
+}

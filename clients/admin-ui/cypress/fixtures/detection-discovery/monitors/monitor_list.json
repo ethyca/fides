@@ -14,7 +14,13 @@
       },
       "databases": ["prj-bigquery-000001", "prj-bqextract-000002"],
       "execution_start_date": "2024-06-04T11:11:11+00:00",
-      "execution_frequency": "Daily"
+      "execution_frequency": "Daily",
+      "execution_records": [
+        {
+          "status": "In progress",
+          "completed": "2024-06-04T11:11:11+00:00"
+        }
+      ]
     },
     {
       "name": "test monitor 2",
@@ -30,7 +36,15 @@
       },
       "databases": [],
       "execution_start_date": "2024-06-04T11:11:11+00:00",
-      "execution_frequency": "Weekly"
+      "execution_frequency": "Weekly",
+      "execution_records": [
+        {
+          "id": "1",
+          "monitor_config_key": "test-monitor",
+          "status": "Completed",
+          "completed": "2024-06-04T11:11:11+00:00"
+        }
+      ]
     },
     {
       "name": "test monitor 3",
@@ -46,7 +60,16 @@
       },
       "databases": [],
       "execution_start_date": "2024-06-04T11:11:11+00:00",
-      "execution_frequency": "Monthly"
+      "execution_frequency": "Monthly",
+      "execution_records": [
+        {
+          "id": "1",
+          "monitor_config_key": "test-monitor",
+          "status": "Errored",
+          "messages": ["Error message 1", "Error message 2"],
+          "completed": "2024-06-04T11:11:11+00:00"
+        }
+      ]
     }
   ],
   "total": 3,
