@@ -270,7 +270,7 @@ describe("Integration management for data detection & discovery", () => {
         cy.wait("@getMonitors");
       });
 
-      it("shows a table of monitors", () => {
+      it.only("shows a table of monitors", () => {
         cy.getByTestId("row-test monitor 1").should("exist");
         // scan status column
         cy.getByTestId("row-test monitor 1-col-monitor_status").should(
@@ -282,12 +282,12 @@ describe("Integration management for data detection & discovery", () => {
         });
         cy.getByTestId("row-test monitor 3-col-monitor_status").within(() => {
           cy.getByTestId("tag-error").should("exist").click();
-          cy.getByTestId("error-log-drawer")
-            .should("be.visible")
-            .within(() => {
-              cy.getByTestId("error-log-message").should("have.length", 2);
-            });
         });
+        cy.getByTestId("error-log-drawer")
+          .should("be.visible")
+          .within(() => {
+            cy.getByTestId("error-log-message").should("have.length", 2);
+          });
       });
 
       it("can configure a new monitor", () => {

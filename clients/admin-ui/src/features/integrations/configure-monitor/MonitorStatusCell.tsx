@@ -85,8 +85,10 @@ const MonitorStatusCell = ({ monitor }: { monitor: MonitorStatusResponse }) => {
               )}
               {executionRecord.messages?.map((message, idx) => (
                 // eslint-disable-next-line react/no-array-index-key
-                <Fragment key={idx} data-testid="error-log-message">
-                  <Typography.Paragraph>{message}</Typography.Paragraph>
+                <Fragment key={idx}>
+                  <Typography.Paragraph data-testid="error-log-message">
+                    {message}
+                  </Typography.Paragraph>
                   {idx < executionRecord.messages!.length - 1 && (
                     <Divider className="mb-3" />
                   )}
