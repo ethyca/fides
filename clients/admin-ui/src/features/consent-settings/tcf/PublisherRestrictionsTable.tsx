@@ -6,13 +6,13 @@ import {
   Skeleton,
   Text,
 } from "fidesui";
+import NextLink from "next/link";
 
 import { useAppSelector } from "~/app/hooks";
 import { selectPurposes } from "~/features/common/purpose.slice";
 
+import { FORBIDDEN_LEGITIMATE_INTEREST_PURPOSE_IDS } from "./constants";
 import { TCFConfiguration } from "./tcf-config.slice";
-
-const FORBIDDEN_LEGITIMATE_INTEREST_PURPOSE_IDS = [1, 3, 4, 5, 6];
 
 interface FauxTableCellProps extends FlexProps {
   borderLeft?: boolean;
@@ -164,7 +164,13 @@ export const PublisherRestrictionsTable = ({
             {FORBIDDEN_LEGITIMATE_INTEREST_PURPOSE_IDS.includes(purpose.id) ? (
               <div />
             ) : (
-              <Button size="small">Edit</Button>
+              <NextLink
+                href={`/settings/consent/${config?.id}/${purpose.id}`}
+                passHref
+                legacyBehavior
+              >
+                <Button size="small">Edit</Button>
+              </NextLink>
             )}
           </FauxTableCell>
         </FauxRow>
