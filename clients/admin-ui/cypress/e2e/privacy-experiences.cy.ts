@@ -413,7 +413,7 @@ describe("Privacy experiences", () => {
         cy.get("#preview-container")
           .find("#fides-banner")
           .find("#fides-banner-notices")
-          .contains("Essential");
+          .contains("Data Sales and Sharing");
       });
 
       it("does not show option to display privacy notices in modal preview when clicked", () => {
@@ -469,7 +469,7 @@ describe("Privacy experiences", () => {
         );
       });
 
-      it("doesn't show a preview while editing TCF experience", () => {
+      it("shows a preview while editing TCF experience", () => {
         cy.fixture("privacy-experiences/experienceConfig.json").then((data) => {
           cy.intercept("GET", "/api/v1/experience-config/pri*", {
             ...data,
@@ -478,8 +478,8 @@ describe("Privacy experiences", () => {
         });
         cy.wait("@getTCFExperience");
         cy.getByTestId("input-dismissable").should("be.visible");
-        cy.getByTestId("no-preview-notice").contains(
-          "TCF overlay preview not available",
+        cy.get(`#${PREVIEW_CONTAINER_ID}`).contains(
+          "Manage your consent preferences",
         );
       });
     });
