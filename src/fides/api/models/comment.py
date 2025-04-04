@@ -1,15 +1,19 @@
 from enum import Enum as EnumType
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from sqlalchemy import Column
 from sqlalchemy import Enum as EnumColumn
-from sqlalchemy import ForeignKey, String, UniqueConstraint
+from sqlalchemy import ForeignKey, String, UniqueConstraint, orm
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import Session, relationship
 
 from fides.api.db.base_class import Base
-from fides.api.models.attachment import Attachment, AttachmentReference
-from fides.api.models.fides_user import FidesUser  # pylint: disable=unused-import
+from fides.api.models.attachment import Attachment, AttachmentReferenceType
+
+if TYPE_CHECKING:
+    from fides.api.models.attachment import AttachmentReference
+    from fides.api.models.fides_user import FidesUser
+    from fides.api.models.privacy_request import PrivacyRequest
 
 
 class CommentType(str, EnumType):
@@ -78,7 +82,6 @@ class Comment(Base):
 
     user = relationship(
         "FidesUser",
-        backref="comments",
         lazy="selectin",
         uselist=False,
     )
@@ -86,24 +89,51 @@ class Comment(Base):
     references = relationship(
         "CommentReference",
         back_populates="comment",
-        cascade="all, delete",
+        cascade="all, delete-orphan",
         uselist=True,
+        foreign_keys=[CommentReference.comment_id],
+        primaryjoin=lambda: Comment.id == orm.foreign(CommentReference.comment_id),
     )
-
-    def get_attachments(self, db: Session) -> list[Attachment]:
-        """Retrieve all attachments associated with this comment."""
-        stmt = (
-            db.query(Attachment)
-            .join(
-                AttachmentReference, Attachment.id == AttachmentReference.attachment_id
-            )
-            .where(AttachmentReference.reference_id == self.id)
-        )
-        return db.execute(stmt).scalars().all()
 
     def delete(self, db: Session) -> None:
         """Delete the comment and all associated references."""
-        attachments = self.get_attachments(db)
-        for attachment in attachments:
-            attachment.delete(db)
+        # Delete the comment
+        Attachment.delete_attachments_for_reference_and_type(
+            db, self.id, AttachmentReferenceType.comment
+        )
+        for reference in self.references:
+            reference.delete(db)
         db.delete(self)
+
+    @staticmethod
+    def delete_comments_for_reference_and_type(
+        db: Session, reference_id: str, reference_type: CommentReferenceType
+    ) -> None:
+        """
+        Deletes comments associated with a given reference_id and reference_type.
+        Delete all references to the comments.
+
+        Args:
+            db: Database session.
+            reference_id: The reference id to delete.
+            reference_type: The reference type to delete
+
+        Examples:
+          - Delete all comments associated with a privacy request.
+            ``Comment.delete_comments_for_reference_and_type(
+                db, privacy_request.id, CommentReferenceType.privacy_request
+            )``
+        """
+        # Query comments explicitly to avoid lazy loading
+        comments = (
+            db.query(Comment)
+            .join(CommentReference)
+            .filter(
+                CommentReference.reference_id == reference_id,
+                CommentReference.reference_type == reference_type,
+            )
+            .all()
+        )
+
+        for comment in comments:
+            comment.delete(db)

@@ -1183,6 +1183,8 @@ dataset:
       data_categories: [system.operations]
     - name: updated_at
       data_categories: [system.operations]
+    - name: reject_all_mechanism
+      data_categories: [system.operations]
   - name: privacyexperienceconfighistory
     description: 'Historical table to store all versions of Experience Config History for record keeping'
     fields:
@@ -1247,6 +1249,8 @@ dataset:
     - name: updated_at
       data_categories: [system.operations]
     - name: version
+      data_categories: [system.operations]
+    - name: reject_all_mechanism
       data_categories: [system.operations]
   - name: privacynoticetemplate
     data_categories: []
@@ -2331,6 +2335,10 @@ dataset:
       data_categories: [system]
     - name: user_assigned_data_categories
       data_categories: [system]
+    - name: user_assigned_data_uses
+      data_categories: [system]
+    - name: user_assigned_system_id
+      data_categories: [system]
     - name: data_uses
       data_categories: [system]
     - name: system_id
@@ -2497,4 +2505,34 @@ dataset:
       - name: updated_at
         data_categories: [system.operations]
       - name: description
+        data_categories: [system.operations]
+      - name: page
+        data_categories: [system.operations]
+  - name: tcf_configuration
+    fields:
+      - name: id
+        data_categories: [system.operations]
+      - name: name
+        data_categories: [system.operations]
+      - name: created_at
+        data_categories: [system.operations]
+      - name: updated_at
+        data_categories: [system.operations]
+  - name: tcf_publisher_restriction
+    fields:
+      - name: id
+        data_categories: [system.operations]
+      - name: tcf_configuration_id
+        data_categories: [system.operations]
+      - name: purpose_id
+        data_categories: [system.operations]
+      - name: restriction_type
+        data_categories: [system.operations]
+      - name: vendor_restriction
+        data_categories: [system.operations]
+      - name: range_entries
+        data_categories: [system.operations]
+      - name: created_at
+        data_categories: [system.operations]
+      - name: updated_at
         data_categories: [system.operations]

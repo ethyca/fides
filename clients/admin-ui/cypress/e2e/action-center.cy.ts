@@ -82,7 +82,7 @@ describe("Action center", () => {
       // description
       cy.getByTestId(`monitor-result-${webMonitorKey}`).should(
         "contain",
-        "92 Browser Requests, 5 Cookies detected.",
+        "92 Browser requests, 5 Cookies detected.",
       );
       // monitor name
       cy.getByTestId(`monitor-result-${webMonitorKey}`).should(
@@ -301,7 +301,7 @@ describe("Action center", () => {
       cy.getByTestId("system-select").should("not.exist");
       cy.getByTestId("success-alert").should(
         "contain",
-        'Browser Request "0d22c925-3a81-4f10-bfdc-69a5d67e93bc" has been assigned to Fidesctl System.',
+        'Browser request "0d22c925-3a81-4f10-bfdc-69a5d67e93bc" has been assigned to Fidesctl System.',
       );
     });
   });
@@ -335,6 +335,16 @@ describe("Action center", () => {
         .contains("Without consent")
         .realHover();
       cy.get(".ant-tooltip-inner").should("contain", "January"); */
+      cy.getByTestId("column-page").should("exist");
+      cy.getByTestId("row-0-col-page").should("contain", "single_page");
+      cy.getByTestId("row-1-col-page").within(() => {
+        cy.get("p").should("contain", "3 pages");
+        cy.get("button").click({ force: true });
+        cy.get("li").should("have.length", 3);
+      });
+      // show nothing when page field is undefined or []
+      cy.getByTestId("row-2-col-page").should("be.empty");
+      cy.getByTestId("row-3-col-page").should("be.empty");
       cy.getByTestId("column-actions").should("exist");
       cy.getByTestId("row-0-col-actions").within(() => {
         cy.getByTestId("add-btn").should("exist");
@@ -351,7 +361,7 @@ describe("Action center", () => {
       cy.getByTestId("system-select").should("not.exist");
       cy.getByTestId("success-alert").should(
         "contain",
-        'Browser Request "destination" has been assigned to Fidesctl System.',
+        'Browser request "destination" has been assigned to Fidesctl System.',
       );
 
       // Wait for previous UI animations to reset or Cypress chokes on the next part
@@ -373,7 +383,7 @@ describe("Action center", () => {
       cy.getByTestId("system-select").should("not.exist");
       cy.getByTestId("success-alert").should(
         "contain",
-        'Browser Request "collect" has been assigned to Demo Marketing System.',
+        'Browser request "collect" has been assigned to Demo Marketing System.',
       );
     });
     it("should allow creating a new system and assigning an asset to it", () => {
@@ -383,7 +393,7 @@ describe("Action center", () => {
         cy.getByTestId("system-badge").click();
       });
       cy.wait("@getSystemsPaginated");
-      cy.getByTestId("add-new-system").click();
+      cy.getByTestId("add-new-system").click({ force: true });
       cy.getByTestId("add-modal-content").should("exist");
       cy.getByTestId("vendor-name-select").antSelect("Aniview LTD");
       cy.getByTestId("save-btn").click();
@@ -393,7 +403,7 @@ describe("Action center", () => {
       cy.wait("@patchAssets");
       cy.getByTestId("success-alert").should(
         "contain",
-        'Test System has been added to your system inventory and the Browser Request "gtm.js" has been assigned to that system.',
+        'Test System has been added to your system inventory and the Browser request "gtm.js" has been assigned to that system.',
       );
     });
     it("should add individual assets", () => {
@@ -403,7 +413,7 @@ describe("Action center", () => {
       cy.wait("@addAssets");
       cy.getByTestId("success-alert").should(
         "contain",
-        'Browser Request "11020051272" has been added to the system inventory.',
+        'Browser request "11020051272" has been added to the system inventory.',
       );
     });
     it("should ignore individual assets", () => {
@@ -413,7 +423,7 @@ describe("Action center", () => {
       cy.wait("@ignoreAssets");
       cy.getByTestId("success-alert").should(
         "contain",
-        'Browser Request "11020051272" has been ignored and will not appear in future scans.',
+        'Browser request "11020051272" has been ignored and will not appear in future scans.',
       );
     });
     it("should bulk add assets", () => {
@@ -502,6 +512,45 @@ describe("Action center", () => {
         "contain",
         "Consent categories added to 3 assets from Google Tag Manager.",
       );
+    });
+
+    describe("tab navigation", () => {
+      it("updates URL hash when switching tabs", () => {
+        cy.visit(
+          `${ACTION_CENTER_ROUTE}/${webMonitorKey}/${systemId}#attention-required`,
+        );
+        cy.location("hash").should("eq", "#attention-required");
+
+        // eslint-disable-next-line cypress/no-unnecessary-waiting
+        cy.wait(500);
+        cy.getByTestId("tab-Recent activity").click({ force: true });
+        cy.location("hash").should("eq", "#recent-activity");
+
+        // "recent activity" tab should be read-only
+        cy.getByTestId("bulk-actions-menu").should("be.disabled");
+        cy.getByTestId("row-0-col-system").within(() => {
+          cy.getByTestId("system-badge")
+            .should("exist")
+            .should("not.have.attr", "onClick");
+          cy.getByTestId("add-system-btn").should("not.exist");
+        });
+        cy.getByTestId("row-0-col-data_use").within(() => {
+          cy.getByTestId("taxonomy-add-btn").should("not.exist");
+        });
+        cy.getByTestId("row-0-col-select").should("not.exist");
+        cy.getByTestId("col-actions").should("not.exist");
+
+        // eslint-disable-next-line cypress/no-unnecessary-waiting
+        cy.wait(500);
+        cy.getByTestId("tab-Ignored").click({ force: true });
+        cy.location("hash").should("eq", "#ignored");
+        // "ignore" option should not show in bulk actions menu
+        cy.getByTestId("row-0-col-select").find("label").click();
+        cy.getByTestId("row-2-col-select").find("label").click();
+        cy.getByTestId("row-3-col-select").find("label").click();
+        cy.getByTestId("bulk-actions-menu").click();
+        cy.getByTestId("bulk-ignore").should("not.exist");
+      });
     });
   });
 });

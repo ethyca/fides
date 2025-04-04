@@ -1,38 +1,28 @@
 import { ColumnDef, createColumnHelper } from "@tanstack/react-table";
 
+import { PRIVACY_NOTICE_REGION_RECORD } from "~/features/common/privacy-notice-regions";
 import {
   DefaultCell,
   IndeterminateCheckboxCell,
 } from "~/features/common/table/v2";
+import {
+  DefaultHeaderCell,
+  ListCellExpandable,
+} from "~/features/common/table/v2/cells";
+import { DiscoveredAssetActionsCell } from "~/features/data-discovery-and-detection/action-center/tables/cells/DiscoveredAssetActionsCell";
 import DiscoveredAssetDataUseCell from "~/features/data-discovery-and-detection/action-center/tables/cells/DiscoveredAssetDataUseCell";
-import { DiscoveredAssetResponse } from "~/features/data-discovery-and-detection/action-center/types";
+import { PrivacyNoticeRegion, StagedResourceAPIResponse } from "~/types/api";
 
-import { DiscoveredAssetActionsCell } from "../tables/cells/DiscoveredAssetActionsCell";
 import { SystemCell } from "../tables/cells/SystemCell";
 
-export const useDiscoveredAssetsColumns = () => {
-  const columnHelper = createColumnHelper<DiscoveredAssetResponse>();
+export const useDiscoveredAssetsColumns = ({
+  readonly,
+}: {
+  readonly: boolean;
+}) => {
+  const columnHelper = createColumnHelper<StagedResourceAPIResponse>();
 
-  const columns: ColumnDef<DiscoveredAssetResponse, any>[] = [
-    columnHelper.display({
-      id: "select",
-      cell: ({ row }) => (
-        <IndeterminateCheckboxCell
-          isChecked={row.getIsSelected()}
-          onChange={row.getToggleSelectedHandler()}
-          dataTestId={`select-${row.original.name || row.id}`}
-        />
-      ),
-      header: ({ table }) => (
-        <IndeterminateCheckboxCell
-          isChecked={table.getIsAllPageRowsSelected()}
-          isIndeterminate={table.getIsSomeRowsSelected()}
-          onChange={table.getToggleAllRowsSelectedHandler()}
-          dataTestId="select-all-rows"
-        />
-      ),
-      maxSize: 40,
-    }),
+  const readonlyColumns: ColumnDef<StagedResourceAPIResponse, any>[] = [
     columnHelper.accessor((row) => row.name, {
       id: "name",
       cell: (props) => <DefaultCell value={props.getValue()} />,
@@ -51,6 +41,7 @@ export const useDiscoveredAssetsColumns = () => {
           <SystemCell
             aggregateSystem={props.row.original}
             monitorConfigId={props.row.original.monitor_config_id}
+            readonly={readonly}
           />
         ),
       header: "System",
@@ -62,7 +53,10 @@ export const useDiscoveredAssetsColumns = () => {
     columnHelper.display({
       id: "data_use",
       cell: (props) => (
-        <DiscoveredAssetDataUseCell asset={props.row.original} />
+        <DiscoveredAssetDataUseCell
+          asset={props.row.original}
+          readonly={readonly}
+        />
       ),
       header: "Categories of consent",
       size: 400,
@@ -77,7 +71,9 @@ export const useDiscoveredAssetsColumns = () => {
           value={
             props.getValue().length > 1
               ? `${props.getValue().length} locations`
-              : props.getValue()[0]
+              : PRIVACY_NOTICE_REGION_RECORD[
+                  props.getValue()[0] as PrivacyNoticeRegion
+                ]
           }
         />
       ),
@@ -100,6 +96,48 @@ export const useDiscoveredAssetsColumns = () => {
       ),
       header: "Discovery",
     }), */
+    columnHelper.accessor((row) => row.page, {
+      id: "page",
+      cell: (props) => (
+        <ListCellExpandable
+          values={props.getValue()}
+          valueSuffix="pages"
+          cellProps={props}
+        />
+      ),
+      header: (props) => <DefaultHeaderCell value="Detected on" {...props} />,
+      meta: {
+        showHeaderMenu: true,
+        disableRowClick: true,
+      },
+    }),
+  ];
+
+  if (readonly) {
+    return { columns: readonlyColumns };
+  }
+
+  const editableColumns = [
+    columnHelper.display({
+      id: "select",
+      cell: ({ row }) => (
+        <IndeterminateCheckboxCell
+          isChecked={row.getIsSelected()}
+          onChange={row.getToggleSelectedHandler()}
+          dataTestId={`select-${row.original.name || row.id}`}
+        />
+      ),
+      header: ({ table }) => (
+        <IndeterminateCheckboxCell
+          isChecked={table.getIsAllPageRowsSelected()}
+          isIndeterminate={table.getIsSomeRowsSelected()}
+          onChange={table.getToggleAllRowsSelectedHandler()}
+          dataTestId="select-all-rows"
+        />
+      ),
+      maxSize: 40,
+    }),
+    ...readonlyColumns,
     columnHelper.display({
       id: "actions",
       cell: (props) => (
@@ -111,5 +149,6 @@ export const useDiscoveredAssetsColumns = () => {
       },
     }),
   ];
-  return { columns };
+
+  return { columns: editableColumns };
 };

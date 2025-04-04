@@ -637,4 +637,59 @@ describe("Consent FidesEvents", () => {
       expectFidesEventSequence(expectedEvents);
     });
   });
+
+  describe("when tcf_overlay experience with custom purposes", () => {
+    beforeEach(() => {
+      // Load the tcf_overlay experience with custom purposes enabled
+      cy.fixture("consent/experience_tcf.json").then((payload) => {
+        const experience = payload.items[0];
+        stubTCFExperience({
+          experienceFullOverride: experience,
+          includeCustomPurposes: true,
+        });
+      });
+    });
+
+    it("should use notice_key in FidesUIChanged events for custom purposes", () => {
+      const expectedEvents: FidesEventExpectation[] = [
+        { type: "FidesInitializing", detail: {} },
+        { type: "FidesInitialized", detail: {} },
+        {
+          type: "FidesUIShown",
+          detail: { extraDetails: { servingComponent: "tcf_banner" } },
+        },
+      ];
+
+      // Open TCF modal and toggle the custom purpose
+      cy.get(".fides-manage-preferences-button").click();
+      expectedEvents.push({
+        type: "FidesUIShown",
+        detail: { extraDetails: { servingComponent: "tcf_overlay" } },
+      });
+
+      cy.getByTestId("toggle-Advertising English")
+        .find(".fides-toggle-input")
+        .click();
+
+      expectedEvents.push({
+        type: "FidesUIChanged",
+        detail: {
+          extraDetails: {
+            servingComponent: "modal",
+            trigger: {
+              type: "toggle",
+              label: "Advertising English",
+              checked: true,
+            },
+            preference: {
+              key: "advertising", // Should use notice_key instead of ID
+              type: "notice",
+            },
+          },
+        },
+      });
+
+      expectFidesEventSequence(expectedEvents);
+    });
+  });
 });

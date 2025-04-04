@@ -6,15 +6,17 @@ import { useAlert } from "~/features/common/hooks";
 import useTaxonomies from "~/features/common/hooks/useTaxonomies";
 import { useUpdateAssetsDataUseMutation } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
 import ConsentCategorySelect from "~/features/data-discovery-and-detection/action-center/ConsentCategorySelect";
-import { DiscoveredAssetResponse } from "~/features/data-discovery-and-detection/action-center/types";
 import isConsentCategory from "~/features/data-discovery-and-detection/action-center/utils/isConsentCategory";
 import TaxonomyCellContainer from "~/features/data-discovery-and-detection/tables/cells/TaxonomyCellContainer";
+import { StagedResourceAPIResponse } from "~/types/api/models/StagedResourceAPIResponse";
 import { isErrorResult } from "~/types/errors";
 
 const DiscoveredAssetDataUseCell = ({
   asset,
+  readonly,
 }: {
-  asset: DiscoveredAssetResponse;
+  asset: StagedResourceAPIResponse;
+  readonly?: boolean;
 }) => {
   const [isAdding, setIsAdding] = useState(false);
 
@@ -23,12 +25,14 @@ const DiscoveredAssetDataUseCell = ({
 
   const { getDataUseDisplayName } = useTaxonomies();
 
+  const currentDataUses =
+    asset.user_assigned_data_uses || asset.data_uses || [];
+
   const handleAddDataUse = async (newDataUse: string) => {
-    const existingUses = asset.data_uses || [];
     const result = await updateAssetsDataUseMutation({
       monitorId: asset.monitor_config_id!,
       urnList: [asset.urn],
-      dataUses: [...existingUses, newDataUse],
+      dataUses: [...currentDataUses, newDataUse],
     });
     if (isErrorResult(result)) {
       errorAlert(getErrorMessage(result.error));
@@ -42,11 +46,10 @@ const DiscoveredAssetDataUseCell = ({
   };
 
   const handleDeleteDataUse = async (useToDelete: string) => {
-    const existingUses = asset.data_uses || [];
     const result = await updateAssetsDataUseMutation({
       monitorId: asset.monitor_config_id!,
       urnList: [asset.urn],
-      dataUses: existingUses.filter((use) => use !== useToDelete),
+      dataUses: currentDataUses.filter((use) => use !== useToDelete),
     });
     if (isErrorResult(result)) {
       errorAlert(getErrorMessage(result.error));
@@ -58,13 +61,29 @@ const DiscoveredAssetDataUseCell = ({
     }
   };
 
-  const dataUses = asset.data_uses?.filter((use) => isConsentCategory(use));
+  const dataUses = asset.user_assigned_data_uses?.length
+    ? asset.user_assigned_data_uses
+    : asset.data_uses;
+
+  const consentUses = dataUses?.filter((use) => isConsentCategory(use));
+
+  if (readonly) {
+    return (
+      <TaxonomyCellContainer>
+        {consentUses?.map((d) => (
+          <Tag key={d} color="white">
+            {getDataUseDisplayName(d)}
+          </Tag>
+        ))}
+      </TaxonomyCellContainer>
+    );
+  }
 
   return (
     <TaxonomyCellContainer>
       {!isAdding && (
         <>
-          {dataUses?.map((d) => (
+          {consentUses?.map((d) => (
             <Tag
               key={d}
               data-testid={`data-use-${d}`}
@@ -97,7 +116,7 @@ const DiscoveredAssetDataUseCell = ({
           bgColor="#fff"
         >
           <ConsentCategorySelect
-            selectedTaxonomies={dataUses || []}
+            selectedTaxonomies={consentUses || []}
             onSelect={handleAddDataUse}
             onBlur={() => setIsAdding(false)}
             open

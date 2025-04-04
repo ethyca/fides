@@ -8,6 +8,7 @@ from fides.api.models.attachment import Attachment, AttachmentReference
 from fides.api.models.audit_log import AuditLog
 from fides.api.models.authentication_request import AuthenticationRequest
 from fides.api.models.client import ClientDetail
+from fides.api.models.comment import Comment, CommentReference
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.consent_automation import ConsentAutomation
 from fides.api.models.custom_asset import CustomAsset
@@ -58,4 +59,8 @@ from fides.api.models.storage import StorageConfig
 from fides.api.models.system_compass_sync import SystemCompassSync
 from fides.api.models.system_history import SystemHistory
 from fides.api.models.system_manager import SystemManager
+from fides.api.models.tcf_publisher_restrictions import (
+    TCFConfiguration,
+    TCFPublisherRestriction,
+)
 from fides.api.models.tcf_purpose_overrides import TCFPurposeOverride

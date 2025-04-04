@@ -13,9 +13,11 @@ from fides.api.models.privacy_request import (
     PrivacyRequest,
     PrivacyRequestError,
     PrivacyRequestNotifications,
+)
+from fides.api.schemas.privacy_request import (
+    PrivacyRequestDRPStatus,
     PrivacyRequestStatus,
 )
-from fides.api.schemas.privacy_request import PrivacyRequestDRPStatus
 from fides.api.util.cache import cache_task_tracking_key, get_drp_request_body_cache_key
 from fides.common.api.scope_registry import (
     POLICY_READ,
@@ -560,7 +562,9 @@ class TestDrpRevoke:
         assert privacy_request.status == PrivacyRequestStatus.in_processing
         assert privacy_request.canceled_at is None
 
-    @mock.patch("fides.api.models.privacy_request.celery_app.control.revoke")
+    @mock.patch(
+        "fides.api.models.privacy_request.privacy_request.celery_app.control.revoke"
+    )
     def test_revoke(
         self,
         revoke_task_mock,
@@ -596,7 +600,9 @@ class TestDrpRevoke:
             not revoke_task_mock.called
         ), "No celery task cached, so we don't attempt to revoke"
 
-    @mock.patch("fides.api.models.privacy_request.celery_app.control.revoke")
+    @mock.patch(
+        "fides.api.models.privacy_request.privacy_request.celery_app.control.revoke"
+    )
     def test_revoke_with_request_tasks(
         self,
         revoke_task_mock,

@@ -16,7 +16,7 @@ export interface NoticeToggleProps {
   title: string;
   description?: string;
   checked: boolean;
-  disabled: boolean;
+  disabled?: boolean;
   gpcStatus: GpcStatus;
 }
 

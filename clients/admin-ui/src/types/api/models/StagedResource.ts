@@ -10,13 +10,14 @@ import type { StagedResourceTypeValue } from "./StagedResourceTypeValue";
  */
 export type StagedResource = {
   urn: string;
+  user_assigned_data_categories?: Array<string> | null;
   /**
-   * The data uses associated with the resource
+   * User assigned data uses overriding auto assigned data uses
    */
-  data_uses?: Array<string> | null;
-  user_assigned_data_categories?: Array<string>;
-  system_key?: string | null;
+  user_assigned_data_uses?: Array<string> | null;
+  user_assigned_system_key?: string | null;
   name?: string | null;
+  system_key?: string | null;
   description?: string | null;
   monitor_config_id?: string | null;
   updated_at?: string | null;
@@ -25,4 +26,8 @@ export type StagedResource = {
    */
   diff_status?: DiffStatus | null;
   resource_type?: StagedResourceTypeValue | null;
+  /**
+   * The data uses associated with the staged resource
+   */
+  data_uses?: Array<string> | null;
 };

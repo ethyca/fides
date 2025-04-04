@@ -215,6 +215,7 @@ jobs:
           - "ops-unit-api"
           - "ops-unit-non-api"
           - "ops-integration"
+          - "api"
           - "lib"
 
     runs-on: ubuntu-latest

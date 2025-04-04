@@ -1,3 +1,4 @@
+import { isConsentOverride } from "./common-utils";
 import {
   FIDES_OVERRIDE_EXPERIENCE_LANGUAGE_VALIDATOR_MAP,
   FIDES_OVERRIDE_OPTIONS_VALIDATOR_MAP,
@@ -7,10 +8,13 @@ import { ConsentContext } from "./consent-context";
 import {
   ComponentType,
   ConsentMechanism,
+  ConsentMethod,
   EmptyExperience,
   FidesCookie,
+  FidesExperienceLanguageValidatorMap,
   FidesInitOptions,
-  FidesOptions,
+  FidesOverrideValidatorMap,
+  FidesWindowOverrides,
   GpcStatus,
   NoticeConsent,
   OverrideType,
@@ -143,8 +147,8 @@ export const validateOptions = (options: FidesInitOptions): boolean => {
 export const getOverrideValidatorMapByType = (
   overrideType: OverrideType,
 ):
-  | typeof FIDES_OVERRIDE_OPTIONS_VALIDATOR_MAP
-  | typeof FIDES_OVERRIDE_EXPERIENCE_LANGUAGE_VALIDATOR_MAP
+  | FidesOverrideValidatorMap[]
+  | FidesExperienceLanguageValidatorMap[]
   | null => {
   // eslint-disable-next-line default-case
   switch (overrideType) {
@@ -208,31 +212,66 @@ export const experienceIsValid = (
  */
 export const getTcfDefaultPreference = (tcfObject: TcfModelsRecord) =>
   tcfObject.default_preference ?? UserConsentPreference.OPT_OUT;
-
 /**
- * Returns true if there are notices in the experience that require a user preference
- * or if an experience's version hash does not match up.
+ * Determines whether the consent banner should be shown to the user based on various conditions.
+ *
+ * The banner will NOT be shown if:
+ * - Banner is explicitly disabled via fidesDisableBanner option
+ * - No valid privacy experience exists
+ * - Experience is modal-only or headless component type
+ * - No privacy notices exist in the experience
+ * - Consent was previously set via override
+ *
+ * The banner WILL be shown if:
+ * - No prior consent exists
+ * - For TCF experiences, when version_hash doesn't match saved hash
+ * - Prior consent was only recorded via "dismiss" or "gpc" methods
+ *
+ * @param experience - The privacy experience configuration
+ * @param cookie - The current Fides cookie state
+ * @param savedConsent - Previously saved notice consent preferences
+ * @param options - Optional FidesJS initialization options
+ * @returns boolean indicating whether banner should be shown
  */
-export const shouldResurfaceConsent = (
-  experience: PrivacyExperience | PrivacyExperienceMinimal,
-  cookie: FidesCookie,
+export const shouldResurfaceBanner = (
+  experience:
+    | PrivacyExperience
+    | PrivacyExperienceMinimal
+    | EmptyExperience
+    | undefined,
+  cookie: FidesCookie | undefined,
   savedConsent: NoticeConsent,
+  options: FidesInitOptions,
 ): boolean => {
-  // Always resurface consent for TCF unless the saved version_hash matches
-  if (experience.experience_config?.component === ComponentType.TCF_OVERLAY) {
-    if (experience.meta?.version_hash) {
+  // Never resurface banner if it is disabled
+  if (options?.fidesDisableBanner) {
+    return false;
+  }
+  // Never surface banner if there's no experience
+  if (!isPrivacyExperience(experience)) {
+    return false;
+  }
+  // Always resurface banner for TCF unless the saved version_hash matches
+  if (
+    experience.experience_config?.component === ComponentType.TCF_OVERLAY &&
+    !!cookie
+  ) {
+    if (
+      experience.meta?.version_hash &&
+      cookie.fides_meta.consentMethod !== ConsentMethod.DISMISS
+    ) {
       return experience.meta.version_hash !== cookie.tcf_version_hash;
     }
     return true;
   }
-  // Never surface consent for modal-only or headless experiences
+  // Never surface banner for modal-only or headless experiences
   if (
     experience.experience_config?.component === ComponentType.MODAL ||
     experience.experience_config?.component === ComponentType.HEADLESS
   ) {
     return false;
   }
-  // Do not surface consent for null or empty notices
+  // Do not surface banner for null or empty notices
   if (!(experience as PrivacyExperience)?.privacy_notices?.length) {
     return false;
   }
@@ -240,15 +279,24 @@ export const shouldResurfaceConsent = (
   if (!savedConsent) {
     return true;
   }
+  // Never surface banner if consent was set by override
+  if (options && isConsentOverride(options)) {
+    return false;
+  }
+
+  // resurface in the special case where the saved consent is "gpc"
+  if (cookie?.fides_meta.consentMethod === ConsentMethod.GPC) {
+    return true;
+  }
+
   // Lastly, if we do have a prior consent state, resurface if we find *any*
   // notices that don't have prior consent in that state
-  // TODO (PROD-1792): we should *also* resurface in the special case where the
-  // saved consent is only recorded with a consentMethod of "dismiss"
-  return Boolean(
-    !(experience as PrivacyExperience).privacy_notices?.every((notice) =>
-      noticeHasConsentInCookie(notice, savedConsent),
-    ),
+  const hasConsentInCookie = (
+    experience as PrivacyExperience
+  ).privacy_notices?.every((notice) =>
+    noticeHasConsentInCookie(notice, savedConsent),
   );
+  return !hasConsentInCookie;
 };
 
 /**
@@ -271,7 +319,7 @@ export const shouldResurfaceConsent = (
  */
 export const getWindowObjFromPath = (
   path: string[],
-): FidesOptions | undefined => {
+): FidesWindowOverrides | undefined => {
   // Implicitly start from the global "window" object
   if (path[0] === "window") {
     path.shift();
@@ -320,6 +368,23 @@ export const defaultShowModal = () => {
   fidesDebugger("The current experience does not support displaying a modal.");
 };
 
+/**
+ * Parses a comma-separated string of notice keys into an array of strings.
+ * Handles undefined input, trims whitespace, and filters out empty strings.
+ */
+export const parseFidesDisabledNotices = (
+  value: string | undefined,
+): string[] => {
+  if (!value) {
+    return [];
+  }
+
+  return value
+    .split(",")
+    .map((key) => key.trim())
+    .filter(Boolean);
+};
+
 export const createConsentPreferencesToSave = (
   privacyNoticeList: PrivacyNoticeItem[],
   enabledPrivacyNoticeKeys: string[],
@@ -335,3 +400,53 @@ export const createConsentPreferencesToSave = (
       item.bestTranslation?.privacy_notice_history_id,
     );
   });
+
+/**
+ * Encodes consent data into a base64 string for the Notice Consent slot
+ * @param consentData Object mapping notice keys to boolean consent values
+ * @returns Base64 encoded string representation of the consent data
+ */
+export const encodeNoticeConsentString = (consentData: {
+  [noticeKey: string]: boolean | 0 | 1;
+}): string => {
+  try {
+    const jsonString = JSON.stringify(consentData);
+    return btoa(jsonString.replace(/\s/g, ""));
+  } catch (error) {
+    throw new Error("Failed to encode Notice Consent string:", {
+      cause: error,
+    });
+  }
+};
+
+/**
+ * Decodes a base64 Notice Consent string back into consent data
+ * @param base64String The base64 encoded Notice Consent string
+ * @returns Decoded consent data object or null if decoding fails
+ */
+export const decodeNoticeConsentString = (
+  base64String: string,
+): {
+  [noticeKey: string]: boolean;
+} => {
+  if (!base64String) {
+    return {};
+  }
+
+  try {
+    const jsonString = atob(base64String);
+    const parsedData = JSON.parse(jsonString);
+
+    // Convert any numeric values (1 or 0) to boolean
+    return Object.fromEntries(
+      Object.entries(parsedData).map(([key, value]) => [
+        key,
+        value === 0 || value === 1 ? !!value : Boolean(value),
+      ]),
+    );
+  } catch (error) {
+    throw new Error("Failed to decode Notice Consent string:", {
+      cause: error,
+    });
+  }
+};
