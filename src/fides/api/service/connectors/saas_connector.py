@@ -1,5 +1,6 @@
 # pylint: disable=too-many-lines
 import json
+from datetime import datetime
 from json import JSONDecodeError
 from typing import Any, Dict, List, Optional, Tuple, Union, cast
 
@@ -50,6 +51,7 @@ from fides.api.service.saas_request.saas_request_override_factory import (
     SaaSRequestOverrideFactory,
     SaaSRequestType,
 )
+from fides.api.util.cache import get_cache
 from fides.api.util.collection_util import Row
 from fides.api.util.consent_util import (
     add_complete_system_status_for_consent_reporting,
@@ -735,6 +737,18 @@ class SaaSConnector(BaseConnector[AuthenticatedClient], Contextualizable):
                 raise SkippingConsentPropagation(
                     "Consent preferences are already up-to-date"
                 )
+            cache = get_cache()
+            timestamp = datetime.now().isoformat()
+            cache.set_encoded_object(
+                f"{saas_config.type}_{identity_data['email']}_{timestamp}",
+                notice_id_to_preference_map,
+            )
+            logger.info(
+                "UPDATE connection_type {} email {} notice_map {}",
+                saas_config.type,
+                identity_data["email"],
+                notice_id_to_preference_map,
+            )
 
         else:
             # follow the basic (global opt-in/out) SaaS consent flow
