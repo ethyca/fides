@@ -9,5 +9,7 @@ export enum MonitorFrequency {
   DAILY = "Daily",
   WEEKLY = "Weekly",
   MONTHLY = "Monthly",
+  QUARTERLY = "Quarterly",
+  YEARLY = "Yearly",
   NOT_SCHEDULED = "Not scheduled",
 }
