@@ -53,7 +53,11 @@ describe("Consent third party extensions", () => {
       it("pushes Fides events to the GTM integration", () => {
         cy.waitUntilFidesInitialized().then(() => {
           cy.get("@FidesUIShown").then(() => {
-            cy.contains("button", "Opt in to all").should("be.visible").click();
+            cy.get("div#fides-banner").within(() => {
+              cy.contains("button", "Opt in to all")
+                .should("be.visible")
+                .click();
+            });
             cy.get("@dataLayerPush")
               .should("have.been.callCount", 4) // FidesInitialized + FidesUIShown + FidesUpdating + FidesUpdated
               // First call should be from initialization, before the user accepts all
@@ -171,9 +175,11 @@ describe("Consent third party extensions", () => {
 
           cy.waitUntilFidesInitialized().then(() => {
             cy.get("@FidesUIShown").then(() => {
-              cy.contains("button", "Opt in to all")
-                .should("be.visible")
-                .click();
+              cy.get("div#fides-banner").within(() => {
+                cy.contains("button", "Opt in to all")
+                  .should("be.visible")
+                  .click();
+              });
               cy.get("@dataLayerPush").should("have.been.callCount", 4); // FidesInitialized + FidesUIShown + FidesUpdating + FidesUpdated
 
               // First call should be from initialization, before the user accepts all
@@ -304,9 +310,11 @@ describe("Consent third party extensions", () => {
         it("includes non-applicable privacy notices in the dataLayer", () => {
           cy.waitUntilFidesInitialized().then(() => {
             cy.get("@FidesUIShown").then(() => {
-              cy.contains("button", "Opt in to all")
-                .should("be.visible")
-                .click();
+              cy.get("div#fides-banner").within(() => {
+                cy.contains("button", "Opt in to all")
+                  .should("be.visible")
+                  .click();
+              });
               cy.get("@dataLayerPush").should("have.been.callCount", 4); // FidesInitialized + FidesUIShown + FidesUpdating + FidesUpdated
 
               // First call should be from initialization, before the user accepts all

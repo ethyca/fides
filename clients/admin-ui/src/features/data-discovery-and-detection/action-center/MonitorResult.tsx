@@ -14,7 +14,11 @@ import NextLink from "next/link";
 import { useEffect, useState } from "react";
 
 import { ACTION_CENTER_ROUTE } from "~/features/common/nav/routes";
-import { formatDate, getWebsiteIconUrl } from "~/features/common/utils";
+import {
+  formatDate,
+  getDomain,
+  getWebsiteIconUrl,
+} from "~/features/common/utils";
 
 import { MonitorAggregatedResults } from "./types";
 
@@ -39,6 +43,7 @@ export const MonitorResult = ({
     updates,
     last_monitored: lastMonitored,
     warning,
+    secrets,
     key,
   } = monitorSummary;
 
@@ -62,7 +67,10 @@ export const MonitorResult = ({
     if (property) {
       setIconUrl(getWebsiteIconUrl(property));
     }
-  }, [property]);
+    if (secrets?.url) {
+      setIconUrl(getWebsiteIconUrl(getDomain(secrets.url)));
+    }
+  }, [property, secrets?.url]);
 
   return (
     <List.Item data-testid={`monitor-result-${key}`} {...props}>
