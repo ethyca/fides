@@ -209,16 +209,6 @@ const Overlay: FunctionComponent<Props> = ({
       {!disableBanner && bannerIsOpen && isUiBlocking && (
         <div className="fides-modal-overlay" />
       )}
-
-      {!disableBanner &&
-        renderBanner({
-          isOpen: bannerIsOpen,
-          isEmbedded: options.fidesEmbed,
-          onClose: () => {
-            setBannerIsOpen(false);
-          },
-          onManagePreferencesClick: handleManagePreferencesClick,
-        })}
       {options.fidesEmbed ? (
         bannerIsOpen || !renderModalContent || !renderModalFooter ? null : (
           <ConsentContent
@@ -258,6 +248,15 @@ const Overlay: FunctionComponent<Props> = ({
           {renderModalContent && renderModalContent()}
         </ConsentModal>
       )}
+      {!disableBanner &&
+        renderBanner({
+          isOpen: bannerIsOpen,
+          isEmbedded: options.fidesEmbed,
+          onClose: () => {
+            setBannerIsOpen(false);
+          },
+          onManagePreferencesClick: handleManagePreferencesClick,
+        })}
     </div>
   );
 };

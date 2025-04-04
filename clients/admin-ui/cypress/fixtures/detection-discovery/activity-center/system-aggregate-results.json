@@ -6,7 +6,7 @@
       "system_key": null,
       "vendor_id": null,
       "total_updates": 108,
-      "locations": ["USA"],
+      "locations": ["us"],
       "domains": [
         "alb.reddit.com",
         "api.hubapi.com",
@@ -45,7 +45,7 @@
       "system_key": "system_key-8fe42cdb-af2e-4b9e-9b38-f75673180b88",
       "vendor_id": "fds.1046",
       "total_updates": 10,
-      "locations": ["USA"],
+      "locations": ["us"],
       "data_uses": ["essential", "collect"],
       "domains": [
         "td.doubleclick.net",
@@ -59,7 +59,7 @@
       "system_key": "system_key-652c8984-ade7-470b-bce4-7e184621be9d",
       "vendor_id": "fds.1053",
       "total_updates": 6,
-      "locations": ["USA", "Canada"],
+      "locations": ["us", "ca"],
       "domains": [
         "forms.hsforms.com",
         ".hs-analytics.net",
@@ -74,7 +74,7 @@
       "system_key": null,
       "vendor_id": "fds.1047",
       "total_updates": 1,
-      "locations": ["USA"],
+      "locations": ["us"],
       "domains": ["analytics.google.com"]
     }
   ],

@@ -6,6 +6,7 @@ import {
   IndeterminateCheckboxCell,
 } from "~/features/common/table/v2";
 import {
+  BadgeCellExpandable,
   DefaultHeaderCell,
   ListCellExpandable,
 } from "~/features/common/table/v2/cells";
@@ -67,17 +68,20 @@ export const useDiscoveredAssetsColumns = ({
     columnHelper.accessor((row) => row.locations, {
       id: "locations",
       cell: (props) => (
-        <DefaultCell
-          value={
-            props.getValue().length > 1
-              ? `${props.getValue().length} locations`
-              : PRIVACY_NOTICE_REGION_RECORD[
-                  props.getValue()[0] as PrivacyNoticeRegion
-                ]
-          }
+        <BadgeCellExpandable
+          values={props.getValue().map((location: PrivacyNoticeRegion) => ({
+            label: PRIVACY_NOTICE_REGION_RECORD[location] ?? location,
+            key: location,
+          }))}
+          cellProps={props}
         />
       ),
       header: "Locations",
+      size: 300,
+      meta: {
+        showHeaderMenu: true,
+        disableRowClick: true,
+      },
     }),
     columnHelper.accessor((row) => row.domain, {
       id: "domain",

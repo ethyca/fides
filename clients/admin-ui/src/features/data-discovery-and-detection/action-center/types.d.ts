@@ -9,6 +9,7 @@ export interface MonitorAggregatedResults {
   name: string;
   total_updates: number;
   warning?: boolean | string;
+  secrets?: { url: string };
 }
 
 export interface MonitorSummaryPaginatedResponse

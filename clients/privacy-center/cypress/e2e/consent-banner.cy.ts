@@ -75,7 +75,6 @@ describe("Consent overlay", () => {
 
       it("does not render banner", () => {
         cy.get("div#fides-banner").should("not.exist");
-        cy.contains("button", "Opt in to all").should("not.exist");
       });
 
       it("does not render modal link", () => {
@@ -163,7 +162,9 @@ describe("Consent overlay", () => {
       });
 
       it("should allow accepting all", () => {
-        cy.contains("button", "Opt in to all").should("be.visible").click();
+        cy.get("div#fides-banner").within(() => {
+          cy.contains("button", "Opt in to all").should("be.visible").click();
+        });
         cy.waitUntilCookieExists(CONSENT_COOKIE_NAME).then(() => {
           cy.getCookie(CONSENT_COOKIE_NAME).then((cookie) => {
             const cookieKeyConsent: FidesCookie = JSON.parse(
@@ -182,12 +183,14 @@ describe("Consent overlay", () => {
               .property("consentMethod")
               .is.eql(ConsentMethod.ACCEPT);
           });
-          cy.contains("button", "Opt in to all").should("not.be.visible");
+          cy.get("#fides-banner").should("not.be.visible");
         });
       });
 
       it("should support rejecting all consent options but keeping notice-only true", () => {
-        cy.contains("button", "Opt out of all").should("be.visible").click();
+        cy.get("div#fides-banner").within(() => {
+          cy.contains("button", "Opt out of all").should("be.visible").click();
+        });
         cy.waitUntilCookieExists(CONSENT_COOKIE_NAME).then(() => {
           cy.getCookie(CONSENT_COOKIE_NAME).then((cookie) => {
             const cookieKeyConsent: FidesCookie = JSON.parse(
@@ -963,7 +966,9 @@ describe("Consent overlay", () => {
       });
 
       it("can remove all cookies when rejecting all", () => {
-        cy.contains("button", "Opt out of all").click();
+        cy.get("div#fides-banner").within(() => {
+          cy.contains("button", "Opt out of all").click();
+        });
         cy.get("@FidesUpdated")
           .should("have.been.calledOnce")
           .its("lastCall.args.0.detail.extraDetails.consentMethod")
@@ -1454,7 +1459,6 @@ describe("Consent overlay", () => {
 
       it("does not render banner", () => {
         cy.get("div#fides-banner").should("not.exist");
-        cy.contains("button", "Opt in to all").should("not.exist");
       });
 
       it("does not render modal link", () => {
@@ -1479,8 +1483,8 @@ describe("Consent overlay", () => {
           expect(interception.request.query.region).to.eq("us_ca");
         });
         cy.get("div#fides-banner").should("exist");
-        cy.contains("button", "Opt in to all").should("exist");
         cy.get("div#fides-banner").within(() => {
+          cy.contains("button", "Opt in to all").should("exist");
           cy.get(
             "div#fides-banner-description.fides-banner-description",
           ).contains("[banner] We use cookies and similar methods");
@@ -1507,8 +1511,8 @@ describe("Consent overlay", () => {
         // we still need geolocation because it is needed to save consent preference
         cy.wait("@getGeolocation");
         cy.get("div#fides-banner").should("exist");
-        cy.contains("button", "Opt in to all").should("exist");
         cy.get("div#fides-banner").within(() => {
+          cy.contains("button", "Opt in to all").should("exist");
           cy.get(
             "div#fides-banner-description.fides-banner-description",
           ).contains("[banner-opts] We use cookies and similar methods");
@@ -1536,7 +1540,6 @@ describe("Consent overlay", () => {
         // we still need geolocation because it is needed to save consent preference
         cy.wait("@getGeolocation");
         cy.get("div#fides-banner").should("not.exist");
-        cy.contains("button", "Opt in to all").should("not.exist");
       });
 
       it("does not render modal link", () => {
@@ -1562,7 +1565,6 @@ describe("Consent overlay", () => {
 
       it("does not geolocate and does not render the banner", () => {
         cy.get("div#fides-banner").should("not.exist");
-        cy.contains("button", "Opt in to all").should("not.exist");
       });
 
       it("does not render modal link", () => {
@@ -1587,8 +1589,8 @@ describe("Consent overlay", () => {
             expect(interception.request.query.region).to.eq("us_ca");
           });
           cy.get("div#fides-banner").should("exist");
-          cy.contains("button", "Opt in to all").should("exist");
           cy.get("div#fides-banner").within(() => {
+            cy.contains("button", "Opt in to all").should("exist");
             cy.get(
               "div#fides-banner-description.fides-banner-description",
             ).contains("[banner] We use cookies and similar methods");
@@ -1668,7 +1670,6 @@ describe("Consent overlay", () => {
         it("does not render banner", () => {
           cy.wait("@getGeolocation");
           cy.get("div#fides-banner").should("not.exist");
-          cy.contains("button", "Opt in to all").should("not.exist");
         });
 
         it("hides the modal link", () => {
@@ -1699,8 +1700,8 @@ describe("Consent overlay", () => {
           expect(interception.request.query.region).to.eq("us_ca");
         });
         cy.get("div#fides-banner").should("exist");
-        cy.contains("button", "Opt in to all").should("exist");
         cy.get("div#fides-banner").within(() => {
+          cy.contains("button", "Opt in to all").should("exist");
           cy.get(
             "div#fides-banner-description.fides-banner-description",
           ).contains("[banner] We use cookies and similar methods");
@@ -2182,7 +2183,9 @@ describe("Consent overlay", () => {
 
     describe("when preferences are changed / saved", () => {
       it("emits FidesUpdating -> FidesUpdated events when reject all is clicked", () => {
-        cy.contains("button", "Opt out of all").should("be.visible").click();
+        cy.get("div#fides-banner").within(() => {
+          cy.contains("button", "Opt out of all").click();
+        });
         cy.get("@FidesUIChanged").should("not.have.been.called");
         cy.get("@FidesInitialized")
           // First event, before the user rejects all
@@ -2219,7 +2222,9 @@ describe("Consent overlay", () => {
       });
 
       it("emits FidesUpdating -> FidesUpdated events when accept all is clicked", () => {
-        cy.contains("button", "Opt in to all").should("be.visible").click();
+        cy.get("div#fides-banner").within(() => {
+          cy.contains("button", "Opt in to all").should("be.visible").click();
+        });
         cy.get("@FidesUIChanged").should("not.have.been.called");
         cy.get("@FidesInitialized")
           // First event, before the user accepts all

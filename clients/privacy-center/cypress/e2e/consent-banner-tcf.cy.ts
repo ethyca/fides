@@ -2370,7 +2370,9 @@ describe("Fides-js TCF", () => {
       });
       cy.waitUntilFidesInitialized().then(() => {
         cy.get("div#fides-banner").should("be.visible");
-        cy.get("button").contains("Opt in to all").click();
+        cy.get("div#fides-banner").within(() => {
+          cy.get("button").contains("Opt in to all").click();
+        });
         cy.get("@TCFEvent")
           .its("lastCall.args")
           .then(([tcData, success]) => {
@@ -2394,7 +2396,9 @@ describe("Fides-js TCF", () => {
       });
       cy.waitUntilFidesInitialized().then(() => {
         cy.get("div#fides-banner").should("be.visible");
-        cy.get("button").contains("Opt in to all").click();
+        cy.get("div#fides-banner").within(() => {
+          cy.get("button").contains("Opt in to all").click();
+        });
         cy.get("@TCFEvent")
           .its("lastCall.args")
           .then(([tcData, success]) => {
