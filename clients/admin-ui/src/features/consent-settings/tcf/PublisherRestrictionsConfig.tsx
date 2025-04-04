@@ -28,12 +28,10 @@ import {
   usePatchTcfPurposeOverridesMutation,
 } from "../../plus/plus.slice";
 import SettingsBox from "../SettingsBox";
+import { PUBLISHER_RESTRICTIONS_DOCS_URL } from "./constants";
 import { CreateTCFConfigModal } from "./CreateTCFConfigModal";
 import { PublisherRestrictionsTable } from "./PublisherRestrictionsTable";
 import { TCFConfigurationDropdown } from "./TCFConfigurationDropdown";
-
-const PUBLISHER_RESTRICTIONS_DOCS_URL =
-  "https://ethyca.com/docs/tutorials/consent-management/consent-management-configuration/configure-tcf#vendor-overrides";
 
 interface PublisherRestrictionsConfigProps {
   isTCFOverrideEnabled: boolean;
