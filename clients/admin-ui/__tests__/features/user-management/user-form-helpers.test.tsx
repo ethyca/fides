@@ -1,7 +1,6 @@
 import {
-  isPasswordFieldRequired,
-  shouldShowLoginMethodSelector,
   shouldShowPasswordField,
+  shouldShowPasswordLoginToggle,
   shouldShowPasswordManagement,
 } from "~/features/user-management/user-form-helpers";
 
@@ -17,13 +16,13 @@ describe("UserForm helper functions", () => {
   const SSO_DISABLED = false;
   const USERNAME_PASSWORD_ALLOWED = true;
   const USERNAME_PASSWORD_NOT_ALLOWED = false;
-  const LOGIN_USERNAME_PASSWORD = "username_password";
-  const LOGIN_SSO = "sso";
+  const PASSWORD_LOGIN_ENABLED = true;
+  const PASSWORD_LOGIN_DISABLED = false;
 
-  describe("shouldShowLoginMethodSelector", () => {
+  describe("shouldShowPasswordLoginToggle", () => {
     it("returns true when all conditions are met", () => {
       expect(
-        shouldShowLoginMethodSelector(
+        shouldShowPasswordLoginToggle(
           PLUS_ENABLED,
           SSO_ENABLED,
           USERNAME_PASSWORD_ALLOWED,
@@ -33,7 +32,7 @@ describe("UserForm helper functions", () => {
 
     it("returns false when Plus is disabled", () => {
       expect(
-        shouldShowLoginMethodSelector(
+        shouldShowPasswordLoginToggle(
           PLUS_DISABLED,
           SSO_ENABLED,
           USERNAME_PASSWORD_ALLOWED,
@@ -43,7 +42,7 @@ describe("UserForm helper functions", () => {
 
     it("returns false when SSO is disabled", () => {
       expect(
-        shouldShowLoginMethodSelector(
+        shouldShowPasswordLoginToggle(
           PLUS_ENABLED,
           SSO_DISABLED,
           USERNAME_PASSWORD_ALLOWED,
@@ -53,7 +52,7 @@ describe("UserForm helper functions", () => {
 
     it("returns false when username/password is not allowed", () => {
       expect(
-        shouldShowLoginMethodSelector(
+        shouldShowPasswordLoginToggle(
           PLUS_ENABLED,
           SSO_ENABLED,
           USERNAME_PASSWORD_NOT_ALLOWED,
@@ -63,7 +62,7 @@ describe("UserForm helper functions", () => {
 
     it("handles undefined allowUsernameAndPassword parameter", () => {
       expect(
-        shouldShowLoginMethodSelector(PLUS_ENABLED, SSO_ENABLED, undefined),
+        shouldShowPasswordLoginToggle(PLUS_ENABLED, SSO_ENABLED, undefined),
       ).toBe(false);
     });
   });
@@ -77,7 +76,7 @@ describe("UserForm helper functions", () => {
           PLUS_ENABLED,
           SSO_ENABLED,
           USERNAME_PASSWORD_ALLOWED,
-          LOGIN_USERNAME_PASSWORD,
+          PASSWORD_LOGIN_ENABLED,
         ),
       ).toBe(false);
     });
@@ -90,7 +89,7 @@ describe("UserForm helper functions", () => {
           PLUS_ENABLED,
           SSO_ENABLED,
           USERNAME_PASSWORD_ALLOWED,
-          LOGIN_USERNAME_PASSWORD,
+          PASSWORD_LOGIN_ENABLED,
         ),
       ).toBe(false);
     });
@@ -103,7 +102,7 @@ describe("UserForm helper functions", () => {
           PLUS_DISABLED,
           SSO_DISABLED,
           USERNAME_PASSWORD_NOT_ALLOWED,
-          undefined,
+          PASSWORD_LOGIN_DISABLED,
         ),
       ).toBe(true);
     });
@@ -116,7 +115,7 @@ describe("UserForm helper functions", () => {
           PLUS_DISABLED,
           SSO_DISABLED,
           USERNAME_PASSWORD_NOT_ALLOWED,
-          undefined,
+          PASSWORD_LOGIN_DISABLED,
         ),
       ).toBe(false);
     });
@@ -129,7 +128,7 @@ describe("UserForm helper functions", () => {
           PLUS_ENABLED,
           SSO_DISABLED,
           USERNAME_PASSWORD_NOT_ALLOWED,
-          undefined,
+          PASSWORD_LOGIN_DISABLED,
         ),
       ).toBe(true);
     });
@@ -142,7 +141,7 @@ describe("UserForm helper functions", () => {
           PLUS_ENABLED,
           SSO_ENABLED,
           USERNAME_PASSWORD_ALLOWED,
-          LOGIN_USERNAME_PASSWORD,
+          PASSWORD_LOGIN_ENABLED,
         ),
       ).toBe(true);
     });
@@ -155,7 +154,7 @@ describe("UserForm helper functions", () => {
           PLUS_ENABLED,
           SSO_ENABLED,
           USERNAME_PASSWORD_ALLOWED,
-          LOGIN_SSO,
+          PASSWORD_LOGIN_DISABLED,
         ),
       ).toBe(false);
     });
@@ -168,7 +167,7 @@ describe("UserForm helper functions", () => {
           PLUS_ENABLED,
           SSO_ENABLED,
           USERNAME_PASSWORD_ALLOWED,
-          undefined,
+          PASSWORD_LOGIN_DISABLED,
         ),
       ).toBe(false);
     });
@@ -181,7 +180,7 @@ describe("UserForm helper functions", () => {
           PLUS_ENABLED,
           SSO_ENABLED,
           undefined,
-          LOGIN_USERNAME_PASSWORD,
+          PASSWORD_LOGIN_ENABLED,
         ),
       ).toBe(false);
     });
@@ -194,7 +193,7 @@ describe("UserForm helper functions", () => {
           PLUS_ENABLED,
           SSO_ENABLED,
           USERNAME_PASSWORD_NOT_ALLOWED,
-          LOGIN_USERNAME_PASSWORD,
+          PASSWORD_LOGIN_ENABLED,
         ),
       ).toBe(false);
     });
@@ -207,7 +206,7 @@ describe("UserForm helper functions", () => {
           PLUS_DISABLED,
           SSO_ENABLED,
           USERNAME_PASSWORD_ALLOWED,
-          LOGIN_SSO,
+          PASSWORD_LOGIN_DISABLED,
         ),
       ).toBe(true);
     });
@@ -218,7 +217,7 @@ describe("UserForm helper functions", () => {
           PLUS_ENABLED,
           SSO_DISABLED,
           USERNAME_PASSWORD_ALLOWED,
-          LOGIN_SSO,
+          PASSWORD_LOGIN_DISABLED,
         ),
       ).toBe(true);
     });
@@ -229,7 +228,7 @@ describe("UserForm helper functions", () => {
           PLUS_ENABLED,
           SSO_ENABLED,
           USERNAME_PASSWORD_ALLOWED,
-          LOGIN_USERNAME_PASSWORD,
+          PASSWORD_LOGIN_ENABLED,
         ),
       ).toBe(true);
     });
@@ -240,7 +239,7 @@ describe("UserForm helper functions", () => {
           PLUS_ENABLED,
           SSO_ENABLED,
           USERNAME_PASSWORD_ALLOWED,
-          LOGIN_SSO,
+          PASSWORD_LOGIN_DISABLED,
         ),
       ).toBe(false);
     });
@@ -273,7 +272,7 @@ describe("UserForm helper functions", () => {
           PLUS_ENABLED,
           SSO_ENABLED,
           USERNAME_PASSWORD_NOT_ALLOWED,
-          LOGIN_USERNAME_PASSWORD,
+          PASSWORD_LOGIN_ENABLED,
         ),
       ).toBe(false);
     });
@@ -284,113 +283,7 @@ describe("UserForm helper functions", () => {
           PLUS_ENABLED,
           SSO_ENABLED,
           undefined,
-          LOGIN_USERNAME_PASSWORD,
-        ),
-      ).toBe(false);
-    });
-  });
-
-  describe("isPasswordFieldRequired", () => {
-    it("returns false when not a new user", () => {
-      expect(
-        isPasswordFieldRequired(
-          EXISTING_USER,
-          NO_EMAIL_INVITE,
-          PLUS_ENABLED,
-          SSO_ENABLED,
-          USERNAME_PASSWORD_ALLOWED,
-          LOGIN_USERNAME_PASSWORD,
-        ),
-      ).toBe(false);
-    });
-
-    it("returns false when inviting users via email", () => {
-      expect(
-        isPasswordFieldRequired(
-          NEW_USER,
-          INVITE_BY_EMAIL,
-          PLUS_ENABLED,
-          SSO_ENABLED,
-          USERNAME_PASSWORD_ALLOWED,
-          LOGIN_USERNAME_PASSWORD,
-        ),
-      ).toBe(false);
-    });
-
-    it("returns true when Plus is disabled for new users", () => {
-      expect(
-        isPasswordFieldRequired(
-          NEW_USER,
-          NO_EMAIL_INVITE,
-          PLUS_DISABLED,
-          SSO_DISABLED,
-          USERNAME_PASSWORD_NOT_ALLOWED,
-          undefined,
-        ),
-      ).toBe(true);
-    });
-
-    it("returns true when SSO is disabled for new users", () => {
-      expect(
-        isPasswordFieldRequired(
-          NEW_USER,
-          NO_EMAIL_INVITE,
-          PLUS_ENABLED,
-          SSO_DISABLED,
-          USERNAME_PASSWORD_NOT_ALLOWED,
-          undefined,
-        ),
-      ).toBe(true);
-    });
-
-    it("returns true when using username/password login with SSO", () => {
-      expect(
-        isPasswordFieldRequired(
-          NEW_USER,
-          NO_EMAIL_INVITE,
-          PLUS_ENABLED,
-          SSO_ENABLED,
-          USERNAME_PASSWORD_ALLOWED,
-          LOGIN_USERNAME_PASSWORD,
-        ),
-      ).toBe(true);
-    });
-
-    it("returns false when using SSO login", () => {
-      expect(
-        isPasswordFieldRequired(
-          NEW_USER,
-          NO_EMAIL_INVITE,
-          PLUS_ENABLED,
-          SSO_ENABLED,
-          USERNAME_PASSWORD_ALLOWED,
-          LOGIN_SSO,
-        ),
-      ).toBe(false);
-    });
-
-    it("handles undefined loginMethod when other conditions would require password", () => {
-      expect(
-        isPasswordFieldRequired(
-          NEW_USER,
-          NO_EMAIL_INVITE,
-          PLUS_ENABLED,
-          SSO_ENABLED,
-          USERNAME_PASSWORD_ALLOWED,
-          undefined,
-        ),
-      ).toBe(false);
-    });
-
-    it("returns false when all conditions are true except allowUsernameAndPassword is false", () => {
-      expect(
-        isPasswordFieldRequired(
-          NEW_USER,
-          NO_EMAIL_INVITE,
-          PLUS_ENABLED,
-          SSO_ENABLED,
-          USERNAME_PASSWORD_NOT_ALLOWED,
-          LOGIN_USERNAME_PASSWORD,
+          PASSWORD_LOGIN_ENABLED,
         ),
       ).toBe(false);
     });

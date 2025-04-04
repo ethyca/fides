@@ -19,16 +19,15 @@ import * as Yup from "yup";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { useFeatures } from "~/features/common/features";
-import { ControlledSelect } from "~/features/common/form/ControlledSelect";
-import { CustomTextInput } from "~/features/common/form/inputs";
+import { CustomSwitch, CustomTextInput } from "~/features/common/form/inputs";
 import { passwordValidation } from "~/features/common/form/validation";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { TrashCanSolidIcon } from "~/features/common/Icon/TrashCanSolidIcon";
 import { USER_MANAGEMENT_ROUTE } from "~/features/common/nav/routes";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import {
-  useGetConfigurationSettingsQuery,
   selectPlusSecuritySettings,
+  useGetConfigurationSettingsQuery,
 } from "~/features/config-settings/config-settings.slice";
 import { useGetEmailInviteStatusQuery } from "~/features/messaging/messaging.slice";
 import { useGetAllOpenIDProvidersQuery } from "~/features/openid-authentication/openprovider.slice";
@@ -36,16 +35,15 @@ import { useGetAllOpenIDProvidersQuery } from "~/features/openid-authentication/
 import PasswordManagement from "./PasswordManagement";
 import { User, UserCreate, UserCreateResponse } from "./types";
 import {
-  isPasswordFieldRequired,
-  shouldShowLoginMethodSelector,
   shouldShowPasswordField,
+  shouldShowPasswordLoginToggle,
   shouldShowPasswordManagement,
 } from "./user-form-helpers";
 import { selectActiveUser, setActiveUserId } from "./user-management.slice";
 
-// Extended type for the form that includes login_method
+// Extended type for the form with password_login_enabled
 interface UserCreateExtended extends UserCreate {
-  login_method?: string;
+  password_login_enabled?: boolean;
 }
 
 const defaultInitialValues: UserCreateExtended = {
@@ -54,7 +52,7 @@ const defaultInitialValues: UserCreateExtended = {
   email_address: "",
   last_name: "",
   password: "",
-  login_method: "sso",
+  password_login_enabled: false,
 };
 
 export type FormValues = typeof defaultInitialValues;
@@ -65,7 +63,7 @@ const ValidationSchema = Yup.object().shape({
   first_name: Yup.string().label("First name"),
   last_name: Yup.string().label("Last name"),
   password: passwordValidation.label("Password"),
-  login_method: Yup.string().label("Login method"),
+  password_login_enabled: Yup.boolean().label("Allow password login"),
 });
 
 export interface UserFormProps {
@@ -108,29 +106,20 @@ const UserForm = ({ onSubmit, initialValues, canEditNames }: UserFormProps) => {
   const nameDisabled = isNewUser ? false : !canEditNames;
   const ssoEnabled = (openidProviders && openidProviders.length > 0) || false;
 
-  const showPasswordField = shouldShowPasswordField(
-    isNewUser,
-    inviteUsersViaEmail,
-    isPlusEnabled,
-    ssoEnabled,
-    allowUsernameAndPassword,
-    activeUser?.login_method,
-  );
-
-  const showLoginMethodSelector = shouldShowLoginMethodSelector(
+  const showPasswordLoginToggle = shouldShowPasswordLoginToggle(
     isPlusEnabled,
     ssoEnabled,
     allowUsernameAndPassword,
   );
 
-  const passwordFieldIsRequired = isPasswordFieldRequired(
-    isNewUser,
-    inviteUsersViaEmail,
-    isPlusEnabled,
-    ssoEnabled,
-    allowUsernameAndPassword,
-    activeUser?.login_method,
-  );
+  // Initialize form values from initialValues or defaults
+  let formInitialValues = initialValues ?? defaultInitialValues;
+  if (activeUser && "password_login_enabled" in activeUser) {
+    formInitialValues = {
+      ...formInitialValues,
+      password_login_enabled: !!activeUser.password_login_enabled,
+    };
+  }
 
   const handleSubmit = async (values: FormValues) => {
     // Determine which fields should be included based on current form state
@@ -140,20 +129,20 @@ const UserForm = ({ onSubmit, initialValues, canEditNames }: UserFormProps) => {
       isPlusEnabled,
       ssoEnabled,
       allowUsernameAndPassword,
-      values.login_method,
+      values.password_login_enabled,
     );
 
-    // Create a clean payload with only the fields we want to submit
-    const payload: Record<string, any> = {
+    // Create a clean payload
+    const payload: UserCreateExtended = {
       username: values.username,
       email_address: values.email_address,
       first_name: values.first_name,
       last_name: values.last_name,
     };
 
-    // Only include login_method if the selector is shown
-    if (showLoginMethodSelector) {
-      payload.login_method = values.login_method;
+    // Only include password_login_enabled if the toggle is shown
+    if (showPasswordLoginToggle) {
+      payload.password_login_enabled = values.password_login_enabled;
     }
 
     // Only include password if it should be shown
@@ -183,7 +172,7 @@ const UserForm = ({ onSubmit, initialValues, canEditNames }: UserFormProps) => {
   return (
     <Formik
       onSubmit={handleSubmit}
-      initialValues={initialValues ?? defaultInitialValues}
+      initialValues={formInitialValues}
       validationSchema={ValidationSchema}
       data-testid="user-form"
     >
@@ -215,7 +204,7 @@ const UserForm = ({ onSubmit, initialValues, canEditNames }: UserFormProps) => {
                       isPlusEnabled,
                       ssoEnabled,
                       allowUsernameAndPassword || false,
-                      activeUser?.login_method,
+                      values.password_login_enabled,
                     ) && (
                       <PasswordManagement data-testid="password-management" />
                     )}
@@ -266,22 +255,15 @@ const UserForm = ({ onSubmit, initialValues, canEditNames }: UserFormProps) => {
                 disabled={nameDisabled}
                 data-testid="input-last-name"
               />
-              {showLoginMethodSelector && (
-                <ControlledSelect
-                  name="login_method"
-                  label="Login method"
-                  layout="stacked"
-                  defaultValue="sso"
-                  options={[
-                    {
-                      label: "Username and Password",
-                      value: "username_password",
-                    },
-                    { label: "SSO", value: "sso" },
-                  ]}
-                  isRequired
-                  data-testid="select-login-method"
-                  disabled={!isNewUser}
+              {showPasswordLoginToggle && (
+                <CustomSwitch
+                  name="password_login_enabled"
+                  label="Allow password login"
+                  tooltip="When enabled, user can log in with username and password. When disabled, user must use SSO."
+                  variant="stacked"
+                  isDisabled={!isNewUser}
+                  data-testid="toggle-allow-password-login"
+                  size="default"
                 />
               )}
               {shouldShowPasswordField(
@@ -290,7 +272,7 @@ const UserForm = ({ onSubmit, initialValues, canEditNames }: UserFormProps) => {
                 isPlusEnabled,
                 ssoEnabled,
                 allowUsernameAndPassword,
-                values?.login_method,
+                values.password_login_enabled,
               ) && (
                 <CustomTextInput
                   name="password"
@@ -299,7 +281,7 @@ const UserForm = ({ onSubmit, initialValues, canEditNames }: UserFormProps) => {
                   placeholder="********"
                   type="password"
                   tooltip="Password must contain at least 8 characters, 1 number, 1 capital letter, 1 lowercase letter, and at least 1 symbol."
-                  isRequired={passwordFieldIsRequired}
+                  isRequired
                   data-testid="input-password"
                 />
               )}
