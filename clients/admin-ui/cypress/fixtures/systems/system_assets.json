@@ -11,7 +11,7 @@
       ],
       "locations": ["us", "ca"],
       "with_consent": false,
-      "data_uses": ["analytics"],
+      "data_uses": ["analytics", "employment"],
       "description": "This is a test description"
     },
     {

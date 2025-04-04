@@ -5,6 +5,7 @@ import { getErrorMessage } from "~/features/common/helpers";
 import { useAlert } from "~/features/common/hooks/useAlert";
 import useTaxonomies from "~/features/common/hooks/useTaxonomies";
 import ConsentCategorySelect from "~/features/data-discovery-and-detection/action-center/ConsentCategorySelect";
+import isConsentCategory from "~/features/data-discovery-and-detection/action-center/utils/isConsentCategory";
 import TaxonomyCellContainer from "~/features/data-discovery-and-detection/tables/cells/TaxonomyCellContainer";
 import { useUpdateSystemAssetsMutation } from "~/features/system/system-assets.slice";
 import { Asset } from "~/types/api";
@@ -56,10 +57,12 @@ const SystemAssetsDataUseCell = ({
   };
 
   const cellValues =
-    asset.data_uses?.map((use) => ({
-      label: getDataUseDisplayName(use),
-      key: use,
-    })) ?? [];
+    asset.data_uses
+      ?.filter((use) => isConsentCategory(use))
+      .map((use) => ({
+        label: getDataUseDisplayName(use),
+        key: use,
+      })) ?? [];
 
   return (
     <TaxonomyCellContainer>
