@@ -6,6 +6,7 @@ import {
   useToast,
 } from "fidesui";
 import { Form, Formik } from "formik";
+import * as Yup from "yup";
 
 import { ControlledSelect } from "~/features/common/form/ControlledSelect";
 import FormModal from "~/features/common/modals/FormModal";
@@ -17,17 +18,19 @@ import {
   VENDOR_RESTRICTION_LABELS,
   VendorRestriction,
 } from "./constants";
+import { FormValues, PurposeRestriction } from "./types";
+import {
+  checkForVendorRestrictionConflicts,
+  ERROR_MESSAGE,
+  isValidVendorIdFormat,
+} from "./validation-utils";
 
 interface PurposeRestrictionFormModalProps {
   isOpen: boolean;
   onClose: () => void;
   initialValues?: FormValues;
-}
-
-interface FormValues {
-  restriction_type: string;
-  vendor_restriction: string;
-  vendor_ids?: string[];
+  existingRestrictions?: PurposeRestriction[];
+  purposeId?: number;
 }
 
 const defaultInitialValues: FormValues = {
@@ -40,6 +43,8 @@ export const PurposeRestrictionFormModal = ({
   isOpen,
   onClose,
   initialValues = defaultInitialValues,
+  existingRestrictions = [],
+  purposeId,
 }: PurposeRestrictionFormModalProps) => {
   const toast = useToast();
 
@@ -74,6 +79,48 @@ export const PurposeRestrictionFormModal = ({
     },
   ];
 
+  // Create validation schema
+  const validationSchema = Yup.object().shape({
+    restriction_type: Yup.string().required("Restriction type is required"),
+    vendor_restriction: Yup.string().required("Vendor restriction is required"),
+    vendor_ids: Yup.array().when("vendor_restriction", {
+      is: (val: string) => val !== VendorRestriction.RESTRICT_ALL,
+      then: (schema) =>
+        schema
+          .required("At least one vendor ID is required")
+          .min(1, "At least one vendor ID is required")
+          .test(
+            "valid-format",
+            "Vendor IDs must be numbers or ranges (e.g., 10 or 15-300)",
+            (value) => value?.every((id) => isValidVendorIdFormat(id)) ?? true,
+          )
+          .test(
+            "no-conflicts",
+            ERROR_MESSAGE,
+            (value, context) =>
+              !checkForVendorRestrictionConflicts(
+                {
+                  ...context.parent,
+                  vendor_ids: value,
+                } as FormValues,
+                existingRestrictions,
+                purposeId,
+              ),
+          ),
+      otherwise: (schema) =>
+        schema.test(
+          "no-conflicts-restrict-all",
+          ERROR_MESSAGE,
+          (_, context) =>
+            !checkForVendorRestrictionConflicts(
+              context.parent as FormValues,
+              existingRestrictions,
+              purposeId,
+            ),
+        ),
+    }),
+  });
+
   const handleSubmit = (values: FormValues) => {
     // TASK: Submit to API
     console.log("Form values:", values);
@@ -83,7 +130,11 @@ export const PurposeRestrictionFormModal = ({
 
   return (
     <FormModal isOpen={isOpen} onClose={onClose} title="Edit restriction">
-      <Formik initialValues={initialValues} onSubmit={handleSubmit}>
+      <Formik
+        initialValues={initialValues}
+        onSubmit={handleSubmit}
+        validationSchema={validationSchema}
+      >
         {({ values }) => (
           <Form>
             <Flex vertical className="gap-6">
