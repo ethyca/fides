@@ -218,6 +218,32 @@ class DatabaseSettings(FidesSettings):
             )
         )
 
+    @field_validator("sqlalchemy_read_database_uri", mode="before")
+    @classmethod
+    def assemble_read_db_connection(cls, v: Optional[str], info: ValidationInfo) -> str:
+        """Join DB connection credentials into a synchronous connection string."""
+        if isinstance(v, str) and v:
+            return v
+
+        port: int = port_integer_converter(info)
+        return str(
+            PostgresDsn.build(  # pylint: disable=no-member
+                scheme="postgresql",
+                username=info.data.get("user"),
+                password=info.data.get("password"),
+                host=info.data.get("read_server"),
+                port=port,
+                path=f"{info.data.get('db') or ''}",
+                query=(
+                    urlencode(
+                        cast(Dict, info.data.get("params")), quote_via=quote, safe="/"
+                    )
+                    if info.data.get("params")
+                    else None
+                ),
+            )
+        )
+
     @field_validator("sqlalchemy_test_database_uri", mode="before")
     @classmethod
     def assemble_test_db_connection(cls, v: Optional[str], info: ValidationInfo) -> str:
