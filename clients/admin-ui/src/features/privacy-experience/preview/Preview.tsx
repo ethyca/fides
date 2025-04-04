@@ -150,7 +150,7 @@ const Preview = ({
     baseConfig.experience.experience_config.layer1_button_options =
       (values.component === ComponentType.BANNER_AND_MODAL ||
         values.component === ComponentType.TCF_OVERLAY) &&
-        values.layer1_button_options
+      values.layer1_button_options
         ? values.layer1_button_options
         : Layer1ButtonOption.OPT_IN_OPT_OUT;
     baseConfig.options.preventDismissal = !values.dismissable;
@@ -228,8 +228,8 @@ const Preview = ({
           width: 100%;
           padding-top: 45px;
           ${values.component !== ComponentType.TCF_OVERLAY
-          ? "padding-bottom: 45px;"
-          : ""}
+            ? "padding-bottom: 45px;"
+            : ""}
           margin: auto;
           pointer-events: none;
         }
@@ -267,11 +267,12 @@ const Preview = ({
           display: flex !important;
           justify-content: center;
           background-color: unset;
-          ${values.component === ComponentType.BANNER_AND_MODAL ||
-              values.component === ComponentType.TCF_OVERLAY
+          ${
+            values.component === ComponentType.BANNER_AND_MODAL ||
+            values.component === ComponentType.TCF_OVERLAY
               ? "padding-bottom: 3rem;"
               : ""
-            }
+          }
         }`}
         </style>
       ) : null}
