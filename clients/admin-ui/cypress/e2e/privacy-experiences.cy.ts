@@ -181,8 +181,155 @@ describe("Privacy experiences", () => {
   describe("forms", () => {
     describe("creating a new experience config", () => {
       beforeEach(() => {
+        // Set up all necessary stubs before visiting the page
+        cy.login();
+
+        // Set up other stubs first
+        stubFidesCloud();
+        stubLanguages();
+        stubPrivacyNoticesCrud();
+        stubTranslationConfig(false);
+        stubLocations();
+        stubProperties();
+
+        // Set up plusHealth mock with TCF enabled
+        cy.intercept("GET", "/api/v1/plus/health", {
+          statusCode: 200,
+          body: {
+            tcf: {
+              enabled: true,
+            },
+            fidesplus_version: "1.0.0",
+            system_scanner: {
+              enabled: false,
+            },
+            dictionary: {
+              enabled: false,
+            },
+            fides_cloud: {
+              enabled: false,
+            },
+          },
+        }).as("getPlusHealth");
+
+        // Visit the page
         cy.visit(`${PRIVACY_EXPERIENCE_ROUTE}/new`);
-        cy.wait("@getNotices");
+
+        // Wait for all necessary API calls
+        cy.wait([
+          "@getNotices",
+          "@getPlusHealth",
+          "@getLocations",
+          "@getProperties",
+        ]);
+      });
+
+      it("shows TCF overlay option when plusHealth.tcf.enabled is true", () => {
+        // Wait for the form to be ready
+        cy.getByTestId("input-name").should("exist");
+
+        // Click and verify dropdown content
+        cy.getByTestId("controlled-select-component").click();
+        cy.get(".ant-select-dropdown")
+          .should("be.visible")
+          .and("contain", "TCF overlay");
+      });
+
+      it("does not show TCF overlay option when plusHealth.tcf.enabled is false", () => {
+        // Update the plusHealth mock to disable TCF
+        cy.intercept("GET", "/api/v1/plus/health", {
+          statusCode: 200,
+          body: {
+            tcf: {
+              enabled: false,
+            },
+            fidesplus_version: "1.0.0",
+            system_scanner: {
+              enabled: false,
+            },
+            dictionary: {
+              enabled: false,
+            },
+            fides_cloud: {
+              enabled: false,
+            },
+          },
+        }).as("getPlusHealth");
+
+        // Reload the page to get the new plusHealth state
+        cy.reload();
+        cy.wait("@getPlusHealth");
+
+        cy.getByTestId("controlled-select-component").click();
+        cy.get(".ant-select-dropdown").should("not.contain", "TCF overlay");
+      });
+
+      it("can create a TCF overlay experience when tcf is enabled", () => {
+        // Update the plusHealth mock to enable TCF
+        cy.intercept("GET", "/api/v1/plus/health", {
+          statusCode: 200,
+          body: {
+            tcf: {
+              enabled: true,
+            },
+            fidesplus_version: "1.0.0",
+            system_scanner: {
+              enabled: false,
+            },
+            dictionary: {
+              enabled: false,
+            },
+            fides_cloud: {
+              enabled: false,
+            },
+          },
+        }).as("getPlusHealth");
+
+        // Reload the page to get the new plusHealth state
+        cy.reload();
+        cy.wait("@getPlusHealth");
+
+        // Fill out the form
+        cy.getByTestId("input-name").type("TCF Experience");
+        cy.getByTestId("controlled-select-component").antSelect("TCF overlay");
+
+        // Wait for the TCF-specific fields to be visible
+        cy.getByTestId("controlled-select-reject_all_mechanism").should(
+          "be.visible",
+        );
+        cy.getByTestId("controlled-select-layer1_button_options").should(
+          "be.visible",
+        );
+
+        // Add a privacy notice manually
+        cy.getByTestId("add-privacy-notice").click();
+        cy.getByTestId("select-privacy-notice").antSelect(0);
+
+        // Set up the POST intercept
+        cy.intercept("POST", "/api/v1/experience-config", {
+          statusCode: 200,
+        }).as("postExperience");
+
+        // Save the form
+        cy.getByTestId("save-btn").click();
+
+        // Wait for the POST request and verify key fields
+        cy.wait("@postExperience").then((interception) => {
+          const { body } = interception.request;
+
+          // Check each field individually
+          expect(body.component).to.equal("tcf_overlay");
+          expect(body.name).to.equal("TCF Experience");
+
+          // Layer1 button options should exist
+          expect(body).to.have.property("layer1_button_options");
+
+          // There should be at least one privacy notice ID
+          expect(body.privacy_notice_ids).to.be.an("array").and.not.be.empty;
+
+          // Log the whole body for debugging
+          cy.log(JSON.stringify(body));
+        });
       });
 
       it("can create an experience", () => {

@@ -153,7 +153,7 @@ const Preview = ({
     baseConfig.experience.experience_config.layer1_button_options =
       (values.component === ComponentType.BANNER_AND_MODAL ||
         values.component === ComponentType.TCF_OVERLAY) &&
-        values.layer1_button_options
+      values.layer1_button_options
         ? values.layer1_button_options
         : Layer1ButtonOption.OPT_IN_OPT_OUT;
     baseConfig.options.preventDismissal = !values.dismissable;
@@ -175,7 +175,11 @@ const Preview = ({
     const componentName = COMPONENT_MAP.get(values.component);
     return (
       <NoPreviewNotice
-        title={componentName ? `${componentName} preview not available` : "Preview not available"}
+        title={
+          componentName
+            ? `${componentName} preview not available`
+            : "Preview not available"
+        }
         description={`There is no preview available for ${componentName || "this component"}. You can edit the available settings
       and languages to the left.`}
       />
@@ -238,10 +242,11 @@ const Preview = ({
           display: flex !important;
           justify-content: center;
           background-color: unset;
-          ${values.component === ComponentType.BANNER_AND_MODAL
+          ${
+            values.component === ComponentType.BANNER_AND_MODAL
               ? "padding-top: 3rem; padding-bottom: 3rem;"
               : ""
-            }
+          }
         }`}
         </style>
       ) : null}
