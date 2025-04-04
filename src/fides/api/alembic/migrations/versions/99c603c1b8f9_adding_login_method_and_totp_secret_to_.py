@@ -18,12 +18,11 @@ depends_on = None
 
 
 def upgrade():
-    op.execute("CREATE TYPE loginmethod AS ENUM ('username_password', 'sso')")
     op.add_column(
         "fidesuser",
         sa.Column(
-            "login_method",
-            sa.Enum("username_password", "sso", name="loginmethod"),
+            "password_login_enabled",
+            sa.Boolean(),
             nullable=True,
         ),
     )
@@ -43,5 +42,4 @@ def downgrade():
     op.alter_column("fidesuser", "hashed_password", nullable=False)
     op.alter_column("fidesuser", "salt", nullable=False)
     op.drop_column("fidesuser", "totp_secret")
-    op.drop_column("fidesuser", "login_method")
-    op.execute("DROP TYPE loginmethod")
+    op.drop_column("fidesuser", "password_login_enabled")

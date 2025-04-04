@@ -43,7 +43,7 @@ class FidesUser(Base):
     disabled_reason = Column(EnumColumn(DisabledReason), nullable=True)
     last_login_at = Column(DateTime(timezone=True), nullable=True)
     password_reset_at = Column(DateTime(timezone=True), nullable=True)
-    login_method = Column(EnumColumn(LoginMethod), nullable=True)
+    password_login_enabled = Column(Boolean, nullable=True)
     totp_secret = Column(
         StringEncryptedType(
             type_in=String(),
@@ -109,7 +109,7 @@ class FidesUser(Base):
                 "last_name": data.get("last_name"),
                 "disabled": data.get("disabled") or False,
                 "disabled_reason": data.get("disabled_reason"),
-                "login_method": data.get("login_method"),
+                "password_login_enabled": data.get("password_login_enabled"),
             },
             check_name=check_name,
         )
