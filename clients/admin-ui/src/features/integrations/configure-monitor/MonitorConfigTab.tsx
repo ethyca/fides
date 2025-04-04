@@ -87,6 +87,9 @@ const MonitorConfigTab = ({
   integration: ConnectionConfigurationResponse;
   integrationOption?: ConnectionSystemTypeMap;
 }) => {
+  const isWebsiteMonitor =
+    integrationOption?.identifier === ConnectionType.WEBSITE;
+
   const {
     PAGE_SIZES,
     pageSize,
@@ -197,6 +200,7 @@ const MonitorConfigTab = ({
         cell: (props) => (
           <MonitorConfigActionsCell
             onEditClick={() => handleEditMonitor(props.row.original)}
+            isWebsiteMonitor={isWebsiteMonitor}
             monitorId={props.row.original.key!}
           />
         ),
@@ -249,6 +253,7 @@ const MonitorConfigTab = ({
           isEditing={isEditing}
           integration={integration}
           integrationOption={integrationOption!}
+          isWebsiteMonitor={isWebsiteMonitor}
         />
       </TableActionBar>
       <FidesTableV2
