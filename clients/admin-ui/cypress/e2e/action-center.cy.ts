@@ -163,12 +163,19 @@ describe("Action center", () => {
       cy.getByTestId("row-1-col-data_use").children().should("have.length", 1);
 
       // multiple locations
-      cy.getByTestId("row-2-col-locations").should("contain", "2 locations");
+      cy.getByTestId("row-2-col-locations")
+        .should("contain", "United States")
+        .and("contain", "Canada");
       // single location
-      cy.getByTestId("row-3-col-locations").should("contain", "USA");
+      cy.getByTestId("row-3-col-locations").should("contain", "United States");
 
       // multiple domains
-      cy.getByTestId("row-0-col-domains").should("contain", "29 domains");
+      cy.getByTestId("row-0-col-domains")
+        .should("contain", "29 domains")
+        .within(() => {
+          cy.get("button").click({ force: true });
+          cy.get("li").should("have.length", 29);
+        });
       // single domain
       cy.getByTestId("row-3-col-domains").should(
         "contain",
