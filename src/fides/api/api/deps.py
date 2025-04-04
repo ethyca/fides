@@ -12,6 +12,7 @@ from fides.config import get_config as get_app_config
 from fides.config.config_proxy import ConfigProxy
 
 _engine = None
+_read_engine = None
 
 
 def get_config() -> FidesConfig:
@@ -23,6 +24,15 @@ def get_db() -> Generator:
     """Return our database session"""
     try:
         db = get_api_session()
+        yield db
+    finally:
+        db.close()
+
+
+def get_readonly_db() -> Generator:
+    """Return our readonly database session"""
+    try:
+        db = get_readonly_api_session()
         yield db
     finally:
         db.close()
@@ -51,6 +61,26 @@ def get_api_session() -> Session:
             keepalives_count=CONFIG.database.api_engine_keepalives_count,
         )
     SessionLocal = get_db_session(CONFIG, engine=_engine)
+    db = SessionLocal()
+    return db
+
+
+def get_readonly_api_session() -> Session:
+    """Gets the shared readonly database session to use for API functionality"""
+    if not CONFIG.database.sqlalchemy_readonly_database_uri:
+        return get_api_session()
+
+    global _read_engine  # pylint: disable=W0603
+    if not _read_engine:
+        _read_engine = get_db_engine(
+            database_uri=CONFIG.database.sqlalchemy_readonly_database_uri,
+            pool_size=CONFIG.database.api_engine_pool_size,
+            max_overflow=CONFIG.database.api_engine_max_overflow,
+            keepalives_idle=CONFIG.database.api_engine_keepalives_idle,
+            keepalives_interval=CONFIG.database.api_engine_keepalives_interval,
+            keepalives_count=CONFIG.database.api_engine_keepalives_count,
+        )
+    SessionLocal = get_db_session(CONFIG, engine=_read_engine)
     db = SessionLocal()
     return db
 
