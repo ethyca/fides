@@ -92,8 +92,8 @@ class FidesUser(Base):
         """Create a FidesUser by hashing the password with a generated salt
         and storing the hashed password and the salt"""
 
-        if data.get("password"):
-            hashed_password, salt = FidesUser.hash_password(data.get("password"))
+        if password := data.get("password"):
+            hashed_password, salt = FidesUser.hash_password(password)
         else:
             hashed_password = None
             salt = None
