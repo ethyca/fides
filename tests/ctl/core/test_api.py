@@ -563,13 +563,6 @@ class TestSystemCreate:
                     data_shared_with_third_parties=True,
                     third_parties="Third Party Marketing Dept.",
                     shared_categories=["user"],
-                    cookies=[
-                        {
-                            "name": "essential_cookie",
-                            "path": "/",
-                            "domain": "example.com",
-                        }
-                    ],
                 ),
                 models.PrivacyDeclaration(
                     name="declaration-name-2",
@@ -876,11 +869,6 @@ class TestSystemCreate:
 
         assert result.status_code == HTTP_201_CREATED
         json_results = result.json()
-        assert json_results["cookies"] == []  # No cookies at System level
-        assert json_results["privacy_declarations"][0]["cookies"] == [
-            {"name": "essential_cookie", "path": "/", "domain": "example.com"}
-        ]
-        assert json_results["privacy_declarations"][1]["cookies"] == []
         assert json_results["data_stewards"] == []
 
         systems = System.all(db)
@@ -936,11 +924,6 @@ class TestSystemCreate:
             == "http://www.example.com/legitimate_interest_disclosure"
         )
         assert system.data_stewards == []
-        assert [cookie.name for cookie in systems[0].cookies] == []
-        assert [
-            cookie.name for cookie in systems[0].privacy_declarations[0].cookies
-        ] == ["essential_cookie"]
-        assert systems[0].privacy_declarations[1].cookies == []
 
         privacy_decl = system.privacy_declarations[0]
         assert privacy_decl.name == "declaration-name"
@@ -1030,7 +1013,6 @@ class TestSystemCreate:
             assert getattr(system, field) is False
 
         expected_empty_list = [
-            "cookies",
             "dataset_references",
             "data_stewards",
             "legal_basis_for_profiling",
@@ -1693,56 +1675,6 @@ class TestSystemUpdate:
         )
 
     @pytest.fixture(scope="function")
-    def system_update_request_body_with_system_cookies(self, system) -> SystemSchema:
-        return SystemSchema(
-            organization_fides_key="1",
-            fides_key=system.fides_key,
-            system_type="SYSTEM",
-            name=self.updated_system_name,
-            description="Test Policy",
-            cookies=[
-                {"name": "my_system_cookie", "domain": "example.com"},
-                {"name": "my_other_system_cookie"},
-            ],
-            privacy_declarations=[
-                models.PrivacyDeclaration(
-                    name="declaration-name",
-                    data_categories=[],
-                    data_use="essential",
-                    data_subjects=[],
-                    dataset_references=[],
-                    ingress=None,
-                    egress=None,
-                )
-            ],
-        )
-
-    @pytest.fixture(scope="function")
-    def system_update_request_body_with_privacy_declaration_cookies(
-        self, system
-    ) -> SystemSchema:
-        return SystemSchema(
-            organization_fides_key="1",
-            fides_key=system.fides_key,
-            system_type="SYSTEM",
-            name=self.updated_system_name,
-            description="Test Policy",
-            privacy_declarations=[
-                models.PrivacyDeclaration(
-                    name="declaration-name",
-                    data_categories=[],
-                    data_use="essential",
-                    data_subjects=[],
-                    dataset_references=[],
-                    cookies=[
-                        {"name": "my_cookie", "domain": "example.com"},
-                        {"name": "my_other_cookie"},
-                    ],
-                )
-            ],
-        )
-
-    @pytest.fixture(scope="function")
     def system_update_request_body_with_new_dictionary_fields(
         self, system
     ) -> SystemSchema:
@@ -1792,13 +1724,6 @@ class TestSystemUpdate:
                     data_shared_with_third_parties=True,
                     third_parties="Third Party Marketing Dept.",
                     shared_categories=["user"],
-                    cookies=[
-                        {
-                            "name": "essential_cookie",
-                            "path": "/",
-                            "domain": "example.com",
-                        }
-                    ],
                 )
             ],
         )
@@ -2385,94 +2310,6 @@ class TestSystemUpdate:
                 if hasattr(decl, field) and isinstance(decl_val, typing.Hashable):
                     assert decl_val == json_results["privacy_declarations"][i][field]
 
-    def test_system_update_system_cookies(
-        self,
-        test_config,
-        system_update_request_body_with_system_cookies,
-        system,
-        db,
-        generate_system_manager_header,
-    ):
-        assert system.name != self.updated_system_name
-        assert len(system.cookies) == 1
-
-        auth_header = generate_system_manager_header([system.id])
-        result = _api.update(
-            url=test_config.cli.server_url,
-            headers=auth_header,
-            resource_type="system",
-            json_resource=system_update_request_body_with_system_cookies.json(
-                exclude_none=True
-            ),
-        )
-        assert result.status_code == HTTP_200_OK
-        assert result.json()["name"] == self.updated_system_name
-        # System level cookies removed
-        assert result.json()["cookies"] == [
-            {"name": "my_system_cookie", "domain": "example.com", "path": None},
-            {"name": "my_other_system_cookie", "domain": None, "path": None},
-        ]
-
-        # Privacy declaration cookies added
-        assert result.json()["privacy_declarations"][0]["cookies"] == []
-
-        db.refresh(system)
-        assert system.name == self.updated_system_name
-        assert len(system.cookies) == 2
-        assert len(system.privacy_declarations[0].cookies) == 0
-
-        system_history = (
-            db.query(SystemHistory).filter(SystemHistory.system_id == system.id).first()
-        )
-        cookie_history = system_history.after["cookies"]
-        assert {cookie["name"] for cookie in cookie_history} == {
-            "my_system_cookie",
-            "my_other_system_cookie",
-        }
-
-    def test_system_update_privacy_declaration_cookies(
-        self,
-        test_config,
-        system_update_request_body_with_privacy_declaration_cookies,
-        system,
-        db,
-        generate_system_manager_header,
-    ):
-        assert system.name != self.updated_system_name
-        assert len(system.cookies) == 1
-
-        auth_header = generate_system_manager_header([system.id])
-        result = _api.update(
-            url=test_config.cli.server_url,
-            headers=auth_header,
-            resource_type="system",
-            json_resource=system_update_request_body_with_privacy_declaration_cookies.json(
-                exclude_none=True
-            ),
-        )
-        assert result.status_code == HTTP_200_OK
-        assert result.json()["name"] == self.updated_system_name
-        # System level cookies removed
-        assert result.json()["cookies"] == []
-        # Privacy declaration cookies added
-        assert sorted(
-            result.json()["privacy_declarations"][0]["cookies"], key=lambda r: r["name"]
-        ) == sorted(
-            [
-                {"name": "my_cookie", "path": None, "domain": "example.com"},
-                {"name": "my_other_cookie", "path": None, "domain": None},
-            ],
-            key=lambda r: r["name"],
-        )
-
-        db.refresh(system)
-        assert system.name == self.updated_system_name
-        assert (
-            len(system.cookies)
-            == 0  # System cookies were deleted because they weren't in the request
-        )  # Two from the current privacy declaration
-        assert len(system.privacy_declarations[0].cookies) == 2
-
     @pytest.mark.parametrize(
         "update_declarations",
         [
@@ -2484,7 +2321,6 @@ class TestSystemUpdate:
                         data_use="essential",
                         data_subjects=[],
                         dataset_references=[],
-                        cookies=[],
                         egress=None,
                         ingress=None,
                     )
@@ -2499,7 +2335,6 @@ class TestSystemUpdate:
                         data_use="essential",
                         data_subjects=[],
                         dataset_references=[],
-                        cookies=[],
                         egress=None,
                         ingress=None,
                     ),
@@ -2509,7 +2344,6 @@ class TestSystemUpdate:
                         data_use="third_party_sharing",
                         data_subjects=[],
                         dataset_references=[],
-                        cookies=[],
                         egress=None,
                         ingress=None,
                     ),
@@ -2524,7 +2358,6 @@ class TestSystemUpdate:
                         data_use="third_party_sharing",
                         data_subjects=[],
                         dataset_references=[],
-                        cookies=[],
                         ingress=None,
                         egress=None,
                     ),
@@ -2534,7 +2367,6 @@ class TestSystemUpdate:
                         data_use="marketing.advertising",
                         data_subjects=[],
                         dataset_references=[],
-                        cookies=[],
                         ingress=None,
                         egress=None,
                     ),
@@ -2549,7 +2381,6 @@ class TestSystemUpdate:
                         data_use="marketing.advertising",
                         data_subjects=[],
                         dataset_references=[],
-                        cookies=[],
                         egress=None,
                         ingress=None,
                     ),
@@ -2559,7 +2390,6 @@ class TestSystemUpdate:
                         data_use="marketing.advertising",
                         data_subjects=[],
                         dataset_references=[],
-                        cookies=[],
                         egress=None,
                         ingress=None,
                     ),
@@ -3018,17 +2848,21 @@ class TestSystemDelete:
 class TestDefaultTaxonomyCrud:
     @pytest.mark.parametrize("endpoint", TAXONOMY_ENDPOINTS)
     def test_api_cannot_delete_default(
-        self, test_config: FidesConfig, endpoint: str
+        self, test_config: FidesConfig, generate_auth_header, endpoint: str
     ) -> None:
         resource = getattr(DEFAULT_TAXONOMY, endpoint)[0]
+        token_scopes: List[str] = [f"{CLI_SCOPE_PREFIX_MAPPING[endpoint]}:{DELETE}"]
+        auth_header = generate_auth_header(scopes=token_scopes)
 
         result = _api.delete(
             url=test_config.cli.server_url,
             resource_type=endpoint,
             resource_id=resource.fides_key,
-            headers=test_config.user.auth_header,
+            headers=auth_header,
         )
-        assert result.status_code == 403
+        assert (
+            result.status_code == 403
+        ), f"Expected 403 but got {result.status_code}: {result.json()}"
         assert (
             "cannot modify 'is_default' field on an existing resource"
             in result.json()["detail"]["error"]
@@ -3036,117 +2870,166 @@ class TestDefaultTaxonomyCrud:
 
     @pytest.mark.parametrize("endpoint", TAXONOMY_ENDPOINTS)
     def test_api_can_update_default(
-        self, test_config: FidesConfig, endpoint: str
+        self, test_config: FidesConfig, generate_auth_header, endpoint: str
     ) -> None:
         """Should be able to update as long as `is_default` is not changing"""
         resource = getattr(DEFAULT_TAXONOMY, endpoint)[0]
         json_resource = resource.json(exclude_none=True)
+        token_scopes: List[str] = [f"{CLI_SCOPE_PREFIX_MAPPING[endpoint]}:{UPDATE}"]
+        auth_header = generate_auth_header(scopes=token_scopes)
 
         result = _api.update(
             url=test_config.cli.server_url,
-            headers=test_config.user.auth_header,
+            headers=auth_header,
             resource_type=endpoint,
             json_resource=json_resource,
         )
-        assert result.status_code == 200
+        assert (
+            result.status_code == 200
+        ), f"Expected 200 but got {result.status_code}: {result.json()}"
 
     @pytest.mark.parametrize("endpoint", TAXONOMY_ENDPOINTS)
     def test_api_can_upsert_default(
-        self, test_config: FidesConfig, endpoint: str
+        self, test_config: FidesConfig, generate_auth_header, endpoint: str
     ) -> None:
         """Should be able to upsert as long as `is_default` is not changing"""
         resources = [
             r.model_dump(mode="json") for r in getattr(DEFAULT_TAXONOMY, endpoint)[0:2]
         ]
+        token_scopes: List[str] = [
+            f"{CLI_SCOPE_PREFIX_MAPPING[endpoint]}:{CREATE}",
+            f"{CLI_SCOPE_PREFIX_MAPPING[endpoint]}:{UPDATE}",
+        ]
+        auth_header = generate_auth_header(scopes=token_scopes)
+
         result = _api.upsert(
             url=test_config.cli.server_url,
-            headers=test_config.user.auth_header,
+            headers=auth_header,
             resource_type=endpoint,
             resources=resources,
         )
-        assert result.status_code == 200
+        assert (
+            result.status_code == 200
+        ), f"Expected 200 but got {result.status_code}: {result.json()}"
 
     @pytest.mark.parametrize("endpoint", TAXONOMY_ENDPOINTS)
     def test_api_cannot_create_default_taxonomy(
-        self, test_config: FidesConfig, resources_dict: Dict, endpoint: str
+        self,
+        test_config: FidesConfig,
+        resources_dict: Dict,
+        generate_auth_header,
+        endpoint: str,
     ) -> None:
         manifest = resources_dict[endpoint]
 
         #  Set fields for default labels
         manifest.is_default = True
         manifest.version_added = "2.0.0"
+        token_scopes: List[str] = [f"{CLI_SCOPE_PREFIX_MAPPING[endpoint]}:{CREATE}"]
+        auth_header = generate_auth_header(scopes=token_scopes)
 
         result = _api.create(
             url=test_config.cli.server_url,
             resource_type=endpoint,
             json_resource=manifest.json(exclude_none=True),
-            headers=test_config.user.auth_header,
+            headers=auth_header,
         )
-        assert result.status_code == 403
         assert (
-            "cannot create a resource where 'is_default' is true"
-            in result.json()["detail"]["error"]
-        )
+            result.status_code == 403
+        ), f"Expected 403 but got {result.status_code}: {result.json()}"
+        response_json = result.json()
+        assert "cannot create a resource where 'is_default' is true" in str(
+            response_json
+        ), f"Expected error message not found in response: {response_json}"
 
         _api.delete(
             url=test_config.cli.server_url,
             resource_type=endpoint,
             resource_id=manifest.fides_key,
-            headers=test_config.user.auth_header,
+            headers=auth_header,
         )
 
     @pytest.mark.parametrize("endpoint", TAXONOMY_ENDPOINTS)
     def test_api_cannot_upsert_default_taxonomy(
-        self, test_config: FidesConfig, resources_dict: Dict, endpoint: str
+        self,
+        test_config: FidesConfig,
+        resources_dict: Dict,
+        generate_auth_header,
+        endpoint: str,
     ) -> None:
         manifest = resources_dict[endpoint]
 
-        #  Set fields for default labels
+        # Use a unique fides_key that won't conflict with default taxonomy
+        manifest.fides_key = f"test_unique_{manifest.fides_key}"
+        manifest.name = f"Test Unique {manifest.name}"
         manifest.is_default = True
         manifest.version_added = "2.0.0"
 
+        # Update parent_key if it exists (for data categories)
+        if hasattr(manifest, "parent_key") and manifest.parent_key is not None:
+            manifest.parent_key = f"test_unique_{manifest.parent_key}"
+
+        token_scopes: List[str] = [
+            f"{CLI_SCOPE_PREFIX_MAPPING[endpoint]}:{CREATE}",
+            f"{CLI_SCOPE_PREFIX_MAPPING[endpoint]}:{UPDATE}",
+        ]
+        auth_header = generate_auth_header(scopes=token_scopes)
+
         result = _api.upsert(
             url=test_config.cli.server_url,
-            headers=test_config.user.auth_header,
+            headers=auth_header,
             resource_type=endpoint,
             resources=[manifest.model_dump(mode="json")],
         )
-        assert result.status_code == 403
         assert (
-            "cannot create a resource where 'is_default' is true"
-            in result.json()["detail"]["error"]
-        )
+            result.status_code == 403
+        ), f"Expected 403 but got {result.status_code}: {result.json()}"
+        response_json = result.json()
+        assert "cannot create a resource where 'is_default' is true" in str(
+            response_json
+        ), f"Expected error message not found in response: {response_json}"
 
         _api.delete(
             url=test_config.cli.server_url,
             resource_type=endpoint,
             resource_id=manifest.fides_key,
-            headers=test_config.user.auth_header,
+            headers=auth_header,
         )
 
     @pytest.mark.parametrize("endpoint", TAXONOMY_ENDPOINTS)
     def test_api_cannot_update_is_default(
-        self, test_config: FidesConfig, resources_dict: Dict, endpoint: str
+        self,
+        test_config: FidesConfig,
+        resources_dict: Dict,
+        generate_auth_header,
+        endpoint: str,
     ) -> None:
         manifest = resources_dict[endpoint]
+        token_scopes: List[str] = [f"{CLI_SCOPE_PREFIX_MAPPING[endpoint]}:{CREATE}"]
+        auth_header = generate_auth_header(scopes=token_scopes)
+
         _api.create(
             url=test_config.cli.server_url,
             resource_type=endpoint,
             json_resource=manifest.json(exclude_none=True),
-            headers=test_config.user.auth_header,
+            headers=auth_header,
         )
 
         #  Set fields for default labels
         manifest.is_default = True
         manifest.version_added = "2.0.0"
+        token_scopes: List[str] = [f"{CLI_SCOPE_PREFIX_MAPPING[endpoint]}:{UPDATE}"]
+        auth_header = generate_auth_header(scopes=token_scopes)
 
         result = _api.update(
             url=test_config.cli.server_url,
-            headers=test_config.user.auth_header,
+            headers=auth_header,
             resource_type=endpoint,
             json_resource=manifest.json(exclude_none=True),
         )
-        assert result.status_code == 403
+        assert (
+            result.status_code == 403
+        ), f"Expected 403 but got {result.status_code}: {result.json()}"
         assert (
             "cannot modify 'is_default' field on an existing resource"
             in result.json()["detail"]["error"]
@@ -3154,7 +3037,11 @@ class TestDefaultTaxonomyCrud:
 
     @pytest.mark.parametrize("endpoint", TAXONOMY_ENDPOINTS)
     def test_api_cannot_upsert_is_default(
-        self, test_config: FidesConfig, resources_dict: Dict, endpoint: str
+        self,
+        test_config: FidesConfig,
+        resources_dict: Dict,
+        generate_auth_header,
+        endpoint: str,
     ) -> None:
         manifest = resources_dict[endpoint]
         second_item = manifest.model_copy()
@@ -3164,24 +3051,34 @@ class TestDefaultTaxonomyCrud:
         manifest.version_added = "2.0.0"
 
         second_item.is_default = False
+        token_scopes: List[str] = [f"{CLI_SCOPE_PREFIX_MAPPING[endpoint]}:{CREATE}"]
+        auth_header = generate_auth_header(scopes=token_scopes)
 
         _api.create(
             url=test_config.cli.server_url,
             resource_type=endpoint,
             json_resource=second_item.json(exclude_none=True),
-            headers=test_config.user.auth_header,
+            headers=auth_header,
         )
+
+        token_scopes: List[str] = [
+            f"{CLI_SCOPE_PREFIX_MAPPING[endpoint]}:{CREATE}",
+            f"{CLI_SCOPE_PREFIX_MAPPING[endpoint]}:{UPDATE}",
+        ]
+        auth_header = generate_auth_header(scopes=token_scopes)
 
         result = _api.upsert(
             url=test_config.cli.server_url,
-            headers=test_config.user.auth_header,
+            headers=auth_header,
             resource_type=endpoint,
             resources=[
                 manifest.model_dump(mode="json"),
                 second_item.model_dump(mode="json"),
             ],
         )
-        assert result.status_code == 403
+        assert (
+            result.status_code == 403
+        ), f"Expected 403 but got {result.status_code}: {result.json()}"
         assert (
             "cannot modify 'is_default' field on an existing resource"
             in result.json()["detail"]["error"]
@@ -3191,13 +3088,13 @@ class TestDefaultTaxonomyCrud:
             url=test_config.cli.server_url,
             resource_type=endpoint,
             resource_id=manifest.fides_key,
-            headers=test_config.user.auth_header,
+            headers=auth_header,
         )
         _api.delete(
             url=test_config.cli.server_url,
             resource_type=endpoint,
             resource_id=second_item.fides_key,
-            headers=test_config.user.auth_header,
+            headers=auth_header,
         )
 
 
