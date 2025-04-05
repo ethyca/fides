@@ -8,6 +8,7 @@ from fides.service.dataset.dataset_config_service import DatasetConfigService
 from fides.service.dataset.dataset_service import DatasetService
 from fides.service.messaging.messaging_service import MessagingService
 from fides.service.privacy_request.privacy_request_service import PrivacyRequestService
+from fides.service.user.user_service import UserService
 
 
 def get_messaging_service(
@@ -32,3 +33,11 @@ def get_dataset_service(db: Session = Depends(get_db)) -> DatasetService:
 
 def get_dataset_config_service(db: Session = Depends(get_db)) -> DatasetConfigService:
     return DatasetConfigService(db)
+
+
+def get_user_service(
+    db: Session = Depends(get_db),
+    config: FidesConfig = Depends(get_config),
+    config_proxy: ConfigProxy = Depends(get_config_proxy),
+) -> UserService:
+    return UserService(db, config, config_proxy)
