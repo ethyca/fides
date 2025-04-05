@@ -13,7 +13,6 @@ import {
 } from "fidesui";
 import { Form, Formik } from "formik";
 import { useRouter } from "next/router";
-import React from "react";
 import DeleteUserModal from "user-management/DeleteUserModal";
 import * as Yup from "yup";
 
@@ -57,14 +56,37 @@ const defaultInitialValues: UserCreateExtended = {
 
 export type FormValues = typeof defaultInitialValues;
 
-const ValidationSchema = Yup.object().shape({
-  username: Yup.string().required().label("Username"),
-  email_address: Yup.string().email().required().label("Email address"),
-  first_name: Yup.string().label("First name"),
-  last_name: Yup.string().label("Last name"),
-  password: passwordValidation.label("Password"),
-  password_login_enabled: Yup.boolean().label("Allow password login"),
-});
+// Create a dynamic validation schema function that returns the appropriate schema
+const getValidationSchema = (
+  isNewUser: boolean,
+  inviteUsersViaEmail: boolean,
+  isPlusEnabled: boolean,
+  ssoEnabled: boolean,
+  allowUsernameAndPassword: boolean,
+) => {
+  return Yup.object().shape({
+    username: Yup.string().required().label("Username"),
+    email_address: Yup.string().email().required().label("Email address"),
+    first_name: Yup.string().label("First name"),
+    last_name: Yup.string().label("Last name"),
+    // Use the same condition for validation as for rendering the field
+    password: Yup.string().when(["password_login_enabled"], {
+      is: (password_login_enabled: boolean) => {
+        return shouldShowPasswordField(
+          isNewUser,
+          inviteUsersViaEmail,
+          isPlusEnabled,
+          ssoEnabled,
+          allowUsernameAndPassword,
+          password_login_enabled,
+        );
+      },
+      then: () => passwordValidation.label("Password"),
+      otherwise: () => Yup.string().optional().label("Password"),
+    }),
+    password_login_enabled: Yup.boolean().label("Allow password login"),
+  });
+};
 
 export interface UserFormProps {
   onSubmit: (values: FormValues) => Promise<
@@ -121,6 +143,15 @@ const UserForm = ({ onSubmit, initialValues, canEditNames }: UserFormProps) => {
     };
   }
 
+  // Get validation schema based on current form state
+  const validationSchema = getValidationSchema(
+    isNewUser,
+    inviteUsersViaEmail,
+    isPlusEnabled,
+    ssoEnabled,
+    allowUsernameAndPassword,
+  );
+
   const handleSubmit = async (values: FormValues) => {
     // Determine which fields should be included based on current form state
     const includePassword = shouldShowPasswordField(
@@ -173,7 +204,7 @@ const UserForm = ({ onSubmit, initialValues, canEditNames }: UserFormProps) => {
     <Formik
       onSubmit={handleSubmit}
       initialValues={formInitialValues}
-      validationSchema={ValidationSchema}
+      validationSchema={validationSchema}
       data-testid="user-form"
     >
       {({ dirty, isSubmitting, isValid, values }) => (
