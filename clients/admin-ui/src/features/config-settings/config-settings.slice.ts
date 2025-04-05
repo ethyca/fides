@@ -198,3 +198,29 @@ export const selectPlusConsentSettings: (
     );
   },
 );
+
+const defaultPlusSecuritySettings = {
+  allow_username_password_login: false,
+};
+
+export const selectPlusSecuritySettings: (
+  state: RootState,
+) => typeof defaultPlusSecuritySettings = createSelector(
+  [
+    (state) => state,
+    configSettingsApi.endpoints.getConfigurationSettings.select({
+      api_set: true,
+    }),
+    configSettingsApi.endpoints.getConfigurationSettings.select({
+      api_set: false,
+    }),
+  ],
+  (state, { data: apiSetConfig }, { data: config }) => {
+    return selectSetting(
+      "plus_security_settings",
+      defaultPlusSecuritySettings,
+      apiSetConfig,
+      config,
+    );
+  },
+);
