@@ -35,7 +35,7 @@
     "fides-js": "*",
     "fidesui": "*",
     "formik": "^2.2.9",
-    "framer-motion": "12.4.7",
+    "framer-motion": "12.4.10",
     "headers-polyfill": "^4.0.3",
     "immer": "^9.0.21",
     "next": "^15.2.3",
