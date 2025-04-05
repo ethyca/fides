@@ -143,6 +143,8 @@ class UserUpdate(FidesSchema):
     last_name: Optional[str] = None
 
     model_config = ConfigDict(extra="ignore")
+
+
 class DisabledReason(Enum):
     """Reasons for why a user is disabled"""
 
