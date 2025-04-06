@@ -73,7 +73,7 @@ def _get_system_from_fides_key(
     return resp
 
 
-async def verify_oauth_client_for_system_from_request_body(
+def verify_oauth_client_for_system_from_request_body(
     security_scopes: SecurityScopes,
     authorization: str = Security(oauth2_scheme),
     db: Session = Depends(get_db),

@@ -70,16 +70,16 @@ def test_is_token_expired(issued_at, token_duration_min, expected):
     assert is_token_expired(issued_at, token_duration_min) is expected
 
 
-async def test_verify_oauth_malformed_oauth_client(db):
+def test_verify_oauth_malformed_oauth_client(db):
     with pytest.raises(AuthorizationError):
-        await verify_oauth_client(
+        verify_oauth_client(
             SecurityScopes([USER_READ]),
             authorization="invalid",
             db=db,
         )
 
 
-async def test_verify_oauth_client_no_issued_at(db, config, user):
+def test_verify_oauth_client_no_issued_at(db, config, user):
     payload = {
         JWE_PAYLOAD_SCOPES: [USER_READ],
         JWE_PAYLOAD_CLIENT_ID: user.client.id,
@@ -91,14 +91,14 @@ async def test_verify_oauth_client_no_issued_at(db, config, user):
         config.security.app_encryption_key,
     )
     with pytest.raises(AuthorizationError):
-        await verify_oauth_client(
+        verify_oauth_client(
             SecurityScopes([USER_READ]),
             token,
             db=db,
         )
 
 
-async def test_verify_oauth_client_expired(db, config, user):
+def test_verify_oauth_client_expired(db, config, user):
     scope = [USER_READ]
     payload = {
         JWE_PAYLOAD_SCOPES: scope,
@@ -111,14 +111,14 @@ async def test_verify_oauth_client_expired(db, config, user):
         config.security.app_encryption_key,
     )
     with pytest.raises(AuthorizationError):
-        await verify_oauth_client(
+        verify_oauth_client(
             SecurityScopes(scope),
             token,
             db=db,
         )
 
 
-async def test_verify_oauth_client_no_client_id(db, config):
+def test_verify_oauth_client_no_client_id(db, config):
     scope = [USER_READ]
     payload = {
         JWE_PAYLOAD_SCOPES: scope,
@@ -131,14 +131,14 @@ async def test_verify_oauth_client_no_client_id(db, config):
         config.security.app_encryption_key,
     )
     with pytest.raises(AuthorizationError):
-        await verify_oauth_client(
+        verify_oauth_client(
             SecurityScopes(scope),
             token,
             db=db,
         )
 
 
-async def test_verify_oauth_client_no_client(db, config, user):
+def test_verify_oauth_client_no_client(db, config, user):
     scopes = [USER_READ]
     payload = {
         JWE_PAYLOAD_SCOPES: scopes,
@@ -153,14 +153,14 @@ async def test_verify_oauth_client_no_client(db, config, user):
     user.client.delete(db)
     assert user.client is None
     with pytest.raises(AuthorizationError):
-        await verify_oauth_client(
+        verify_oauth_client(
             SecurityScopes(scopes),
             token,
             db=db,
         )
 
 
-async def test_verify_oauth_client_wrong_security_scope(db, config, user):
+def test_verify_oauth_client_wrong_security_scope(db, config, user):
     payload = {
         JWE_PAYLOAD_SCOPES: [USER_DELETE],
         JWE_PAYLOAD_CLIENT_ID: user.client.id,
@@ -172,14 +172,14 @@ async def test_verify_oauth_client_wrong_security_scope(db, config, user):
         config.security.app_encryption_key,
     )
     with pytest.raises(AuthorizationError):
-        await verify_oauth_client(
+        verify_oauth_client(
             SecurityScopes([USER_READ]),
             token,
             db=db,
         )
 
 
-async def test_verify_oauth_client_wrong_client_scope(db, config, user):
+def test_verify_oauth_client_wrong_client_scope(db, config, user):
     scopes = [USER_READ]
     payload = {
         JWE_PAYLOAD_SCOPES: scopes,
@@ -193,7 +193,7 @@ async def test_verify_oauth_client_wrong_client_scope(db, config, user):
     )
     user.client.scopes = [USER_DELETE]
     with pytest.raises(AuthorizationError):
-        await verify_oauth_client(
+        verify_oauth_client(
             SecurityScopes(scopes),
             token,
             db=db,
@@ -201,7 +201,7 @@ async def test_verify_oauth_client_wrong_client_scope(db, config, user):
 
 
 class TestVerifyOauthClientRoles:
-    async def test_token_does_not_have_roles(self, db, config):
+    def test_token_does_not_have_roles(self, db, config):
         """Test that roles aren't required to be on the token - scopes can still be assigned directly"""
         client, _ = ClientDetail.create_client_and_secret(
             db,
@@ -220,14 +220,14 @@ class TestVerifyOauthClientRoles:
             json.dumps(payload),
             config.security.app_encryption_key,
         )
-        verified_client = await verify_oauth_client(
+        verified_client = verify_oauth_client(
             SecurityScopes([PRIVACY_REQUEST_REVIEW]),
             token,
             db=db,
         )
         assert client == verified_client
 
-    async def test_verify_oauth_client_roles(self, db, config, owner_user):
+    def test_verify_oauth_client_roles(self, db, config, owner_user):
         """Test token has a valid role and the client also has the matching role
         Scopes aren't directly assigned but the user inherits the USER_READ scope
         via the OWNER role.
@@ -241,14 +241,14 @@ class TestVerifyOauthClientRoles:
             json.dumps(payload),
             config.security.app_encryption_key,
         )
-        client = await verify_oauth_client(
+        client = verify_oauth_client(
             SecurityScopes([PRIVACY_REQUEST_REVIEW]),
             token,
             db=db,
         )
         assert client == owner_user.client
 
-    async def test_no_roles_on_client(self, db, config, user):
+    def test_no_roles_on_client(self, db, config, user):
         """Test token has a role with the correct scopes but that role is not on the client"""
         payload = {
             JWE_PAYLOAD_ROLES: [OWNER],
@@ -260,13 +260,13 @@ class TestVerifyOauthClientRoles:
             config.security.app_encryption_key,
         )
         with pytest.raises(AuthorizationError):
-            await verify_oauth_client(
+            verify_oauth_client(
                 SecurityScopes([PRIVACY_REQUEST_REVIEW]),
                 token,
                 db=db,
             )
 
-    async def test_no_roles_on_client_but_has_scopes_coverage(self, db, config, user):
+    def test_no_roles_on_client_but_has_scopes_coverage(self, db, config, user):
         """Test roles on token are outdated but token still has scopes coverage"""
         user.client.scopes = [PRIVACY_REQUEST_REVIEW]
         user.client.save(db)
@@ -280,16 +280,14 @@ class TestVerifyOauthClientRoles:
             json.dumps(payload),
             config.security.app_encryption_key,
         )
-        client = await verify_oauth_client(
+        client = verify_oauth_client(
             SecurityScopes([PRIVACY_REQUEST_REVIEW]),
             token,
             db=db,
         )
         assert client == user.client
 
-    async def test_token_does_not_have_role_with_coverage(
-        self, db, config, viewer_user
-    ):
+    def test_token_does_not_have_role_with_coverage(self, db, config, viewer_user):
         """Test token only has a viewer role, which is not enough to view the particular endpoint
         as it is missing DATASET_CREATE_OR_UPDATE scopes
         """
@@ -305,7 +303,7 @@ class TestVerifyOauthClientRoles:
         )
 
         with pytest.raises(AuthorizationError):
-            await verify_oauth_client(
+            verify_oauth_client(
                 SecurityScopes([DATASET_CREATE_OR_UPDATE]),
                 token,
                 db=db,
