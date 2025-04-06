@@ -1,7 +1,7 @@
 """adding masking secrets
 
 Revision ID: 7e9a2b52f498
-Revises: ae65da77c468
+Revises: 6e565c16dae1
 Create Date: 2024-12-23 23:29:53.557951
 
 """
@@ -12,7 +12,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "7e9a2b52f498"
-down_revision = "ae65da77c468"
+down_revision = "6e565c16dae1"
 branch_labels = None
 depends_on = None
 
