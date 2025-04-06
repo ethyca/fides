@@ -231,7 +231,11 @@ def flatten_dict(data: Any, prefix: str = "", separator: str = ".") -> Dict[str,
     items = {}
 
     if isinstance(data, dict):
-        # If the dictionary is empty, store it as is
+        # Handle top-level empty dictionary case
+        if not data and not prefix:
+            return {}
+
+        # If the dictionary is empty but has a prefix, store it as is
         if not data:
             items[prefix] = {}
             return items
