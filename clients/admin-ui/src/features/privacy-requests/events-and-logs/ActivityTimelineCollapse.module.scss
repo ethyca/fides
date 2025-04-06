@@ -5,13 +5,24 @@ $horizontal-padding: 20px;
 }
 
 .item {
-  border: $border-width solid transparent !important;
+  border: $border-width solid transparent;
+
   border-radius: 6px !important;
   transition: border-color 0.2s ease-in-out;
   margin-bottom: 20px;
 
-  &:hover {
-    border-color: var(--fidesui-neutral-100) !important;
+  // important needed to override ant's ghost border-bottom:0
+  border-bottom: 1px solid transparent !important;
+
+  &:hover,
+  &--error {
+    border-color: var(--fidesui-neutral-100);
+    border-bottom-color: var(--fidesui-neutral-100) !important;
+  }
+
+  &--error,
+  &--error:hover {
+    border-left: 8px solid var(--fidesui-error);
   }
 }
 
@@ -31,6 +42,10 @@ $horizontal-padding: 20px;
 
 .title {
   font-weight: 600;
+
+  &--error {
+    color: var(--fidesui-error);
+  }
 }
 
 .timestamp {
