@@ -9,7 +9,7 @@ import {
 import {
   ADD_MULTIPLE_VENDORS_ROUTE,
   CONFIGURE_CONSENT_ROUTE,
-} from "~/features/common/nav/v2/routes";
+} from "~/features/common/nav/routes";
 import { RoleRegistryEnum } from "~/types/api";
 
 describe("Consent configuration", () => {

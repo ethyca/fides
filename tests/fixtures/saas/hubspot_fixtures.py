@@ -36,7 +36,7 @@ def hubspot_secrets(saas_config):
     }
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture
 def hubspot_identity_email():
     return generate_random_email()
 
@@ -195,15 +195,41 @@ class HubspotTestClient:
         )
         return user_response
 
+    def opt_in_subscription_preferences(
+        self, email: str, subscription_id: str
+    ) -> requests.Response:
+        body = {
+            "emailAddress": f"{email}",
+            "subscriptionId": f"{subscription_id}",
+            "statusState": "SUBSCRIBED",
+            "channel": "EMAIL",
+            "legalBasis": "LEGITIMATE_INTEREST_CLIENT",
+            "legalBasisExplanation": "At users request, we opted them in",
+        }
+        subscription_response: requests.Response = requests.post(
+            url=f"{self.base_url}/communication-preferences/v4/statuses/{email}",
+            headers=self.headers,
+            json=body,
+        )
+        assert subscription_response.ok
+        return subscription_response.json()
+
     def get_email_subscriptions(self, email: str) -> requests.Response:
         email_subscriptions: requests.Response = requests.get(
-            url=f"{self.base_url}/communication-preferences/v3/status/email/{email}",
+            url=f"{self.base_url}/communication-preferences/v4/statuses/{email}?channel=EMAIL",
             headers=self.headers,
         )
         return email_subscriptions
 
+    def get_all_subscriptions(self) -> requests.Response:
+        subscriptions_responses: requests.Response = requests.get(
+            url=f"{self.base_url}/communication-preferences/v4/definitions",
+            headers=self.headers,
+        )
+        return subscriptions_responses.json()
 
-@pytest.fixture(scope="function")
+
+@pytest.fixture
 def hubspot_test_client(
     hubspot_secrets,
 ) -> Generator:
@@ -239,7 +265,7 @@ def user_exists(user_id: str, hubspot_test_client: HubspotTestClient) -> Any:
         return user_body
 
 
-def create_hubspot_data(test_client, email):
+def create_hubspot_data(test_client: HubspotTestClient, email):
     # create contact
     contacts_response = test_client.create_contact(email=email)
     contacts_body = contacts_response.json()
@@ -248,6 +274,7 @@ def create_hubspot_data(test_client, email):
     # create user
     users_response = test_client.create_user(email=email)
     users_body = users_response.json()
+
     user_id = users_body["id"]
 
     # no need to subscribe contact, since creating a contact auto-subscribes them
@@ -268,11 +295,16 @@ def create_hubspot_data(test_client, email):
         (user_id, test_client),
         error_message=error_message,
     )
+    subscriptions = test_client.get_all_subscriptions()
+    for subscription in subscriptions["results"]:
+        test_client.opt_in_subscription_preferences(
+            email=email, subscription_id=subscription["id"]
+        )
     sleep(3)
     return contact_id, user_id
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture
 def hubspot_data(
     hubspot_test_client: HubspotTestClient,
     hubspot_identity_email: str,

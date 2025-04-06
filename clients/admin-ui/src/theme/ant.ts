@@ -25,6 +25,7 @@ export const antTheme: AntThemeConfig = {
     borderRadius: 4,
     wireframe: true,
     colorTextBase: palette.FIDESUI_MINOS,
+    colorTextHeading: palette.FIDESUI_MINOS,
     colorErrorBg: "#ffdcd6", // custom override
     colorErrorBorder: "#f2aca5", // custom override
     colorWarningBg: "#ffecc9", // custom override
@@ -55,8 +56,11 @@ export const antTheme: AntThemeConfig = {
       optionActiveBg: palette.FIDESUI_NEUTRAL_50,
     },
     Menu: {
-      itemHeight: 36,
       itemHoverBg: palette.FIDESUI_NEUTRAL_50,
+      darkItemBg: palette.FIDESUI_MINOS,
+      darkItemColor: palette.FIDESUI_CORINTH,
+      darkSubMenuItemBg: palette.FIDESUI_MINOS,
+      darkItemSelectedBg: palette.FIDESUI_SANDSTONE,
     },
     Tooltip: {
       colorBgSpotlight: palette.FIDESUI_MINOS,
@@ -65,6 +69,9 @@ export const antTheme: AntThemeConfig = {
     },
     Transfer: {
       controlItemBgActiveHover: palette.FIDESUI_SANDSTONE,
+    },
+    Typography: {
+      fontSizeHeading2: 20,
     },
   },
 };

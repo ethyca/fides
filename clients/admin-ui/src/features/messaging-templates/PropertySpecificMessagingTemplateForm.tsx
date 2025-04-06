@@ -1,4 +1,4 @@
-import { MESSAGING_ROUTE } from "common/nav/v2/routes";
+import { MESSAGING_ROUTE } from "common/nav/routes";
 import { AntButton as Button, Box, Flex } from "fidesui";
 import { Form, Formik, useFormikContext } from "formik";
 import { useRouter } from "next/router";

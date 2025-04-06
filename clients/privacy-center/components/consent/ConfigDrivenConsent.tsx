@@ -7,7 +7,7 @@ import {
   saveFidesCookie,
 } from "fides-js";
 import { Divider, Stack, useToast } from "fidesui";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 import React, { useCallback, useEffect, useMemo } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";

@@ -6,19 +6,31 @@ import {
   FidesCookie,
   PrivacyExperience,
   PrivacyExperienceMinimal,
+  PrivacyNoticeWithPreference,
   RecordConsentServedRequest,
+  SaveConsentPreference,
 } from "../consent-types";
-import { transformTcfPreferencesToCookieKeys } from "../cookie";
+import { resolveConsentValue } from "../consent-value";
+import {
+  buildCookieConsentFromConsentPreferences,
+  getFidesConsentCookie,
+  transformTcfPreferencesToCookieKeys,
+} from "../cookie";
+import {
+  DecodedFidesString,
+  decodeFidesString,
+  idsFromAcString,
+} from "../fides-string";
 import {
   transformConsentToFidesUserPreference,
   transformUserPreferenceToBoolean,
 } from "../shared-consent-utils";
 import { generateFidesString } from "../tcf";
 import { FIDES_SYSTEM_COOKIE_KEY_MAP, TCF_KEY_MAP } from "./constants";
-import { decodeFidesString, idsFromAcString } from "./fidesString";
 import {
   EnabledIds,
   GVLTranslationJson,
+  PrivacyNoticeWithBestTranslation,
   TCFFeatureRecord,
   TCFFeatureSave,
   TcfModels,
@@ -80,9 +92,11 @@ export const buildTcfEntitiesFromCookieAndFidesString = (
 
   // Now update tcfEntities based on the fides string
   if (cookie.fides_string) {
-    const { tc: tcString, ac: acString } = decodeFidesString(
-      cookie.fides_string,
-    );
+    const { tc: tcString, ac: acString }: DecodedFidesString =
+      decodeFidesString(cookie.fides_string);
+    if (!tcString) {
+      return tcfEntities;
+    }
     const acStringIds = idsFromAcString(acString);
 
     // Populate every field from tcModel
@@ -148,7 +162,23 @@ export const updateExperienceFromCookieConsentTcf = ({
       experience,
     );
   }
-  return { ...experience, ...tcfEntities };
+
+  // If the given TCF experience has no custom notices, return standard TCF entities along with experience
+  if (!experience.privacy_notices) {
+    return { ...experience, ...tcfEntities };
+  }
+
+  const noticesWithConsent: PrivacyNoticeWithPreference[] | undefined =
+    experience.privacy_notices?.map((notice) => {
+      const preference = Object.keys(cookie.consent).includes(notice.notice_key)
+        ? transformConsentToFidesUserPreference(
+            Boolean(cookie.consent[notice.notice_key]),
+            notice.consent_mechanism,
+          )
+        : undefined;
+      return { ...notice, current_preference: preference };
+    });
+  return { ...experience, ...tcfEntities, privacy_notices: noticesWithConsent };
 };
 
 /**
@@ -230,6 +260,27 @@ export const getEnabledIds = (modelList: TcfModels) => {
     })
     .filter((model) => model.consentValue)
     .map((model) => `${model.id}`);
+};
+
+/**
+ * Retrieves the enabled IDs from the given Notice list. This is used to
+ * determine which IDs are currently enabled for the user to display in the UI.
+ */
+export const getEnabledIdsNotice = (
+  noticeList: PrivacyNoticeWithPreference[],
+) => {
+  if (!noticeList) {
+    return [];
+  }
+  const parsedCookie: FidesCookie | undefined = getFidesConsentCookie();
+
+  return noticeList
+    .map((notice) => {
+      const value = resolveConsentValue(notice, parsedCookie?.consent);
+      return { ...notice, consentValue: value };
+    })
+    .filter((notice) => notice.consentValue)
+    .map((notice) => `${notice.id}`);
 };
 
 const transformTcfModelToTcfSave = ({
@@ -399,26 +450,34 @@ export const createTcfSavePayloadFromMinExp = ({
  *
  * @param oldCookie - The old Fides cookie.
  * @param tcf - The TCF save preferences representing the data sent to the backend.
- * @param enabledIds - The user's enabled IDs.
+ * @param enabledIds - The user's enabled IDs. This could include both TCF and custom enabled IDs
  * @param experience - The full privacy experience.
+ * @param consentPreferencesToSave - Any Custom Notice preferences to save.
  * @returns A promise that resolves to the updated Fides cookie.
  */
-export const updateCookie = async (
+export const updateTCFCookie = async (
   oldCookie: FidesCookie,
   tcf: TcfSavePreferences,
   enabledIds: EnabledIds,
   experience: PrivacyExperience | PrivacyExperienceMinimal,
+  consentPreferencesToSave?: SaveConsentPreference[],
 ): Promise<FidesCookie> => {
   const tcString = await generateFidesString({
     tcStringPreferences: enabledIds,
     experience,
   });
-  return {
+  const result = {
     ...oldCookie,
     fides_string: tcString,
     tcf_consent: transformTcfPreferencesToCookieKeys(tcf),
     tcf_version_hash: experience.meta?.version_hash,
   };
+  if (consentPreferencesToSave) {
+    result.consent = buildCookieConsentFromConsentPreferences(
+      consentPreferencesToSave,
+    );
+  }
+  return result;
 };
 
 /**
@@ -441,4 +500,24 @@ export const getGVLPurposeList = (gvlTranslations: Record<string, any>) => {
     });
   });
   return GVLPurposeList;
+};
+
+export const createTCFConsentPreferencesToSave = (
+  privacyNoticeList: PrivacyNoticeWithBestTranslation[],
+  enabledPrivacyNoticeIds: string[],
+): SaveConsentPreference[] => {
+  if (!privacyNoticeList || !enabledPrivacyNoticeIds) {
+    return [];
+  }
+  return privacyNoticeList.map((item) => {
+    const userPreference = transformConsentToFidesUserPreference(
+      enabledPrivacyNoticeIds.includes(item.id),
+      item.consent_mechanism,
+    );
+    return new SaveConsentPreference(
+      item,
+      userPreference,
+      item.bestTranslation?.privacy_notice_history_id,
+    );
+  });
 };

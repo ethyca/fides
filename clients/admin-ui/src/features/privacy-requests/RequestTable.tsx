@@ -139,14 +139,13 @@ export const RequestTable = ({ ...props }: BoxProps): JSX.Element => {
           setGlobalFilter={handleSearch}
           placeholder="Search by request ID or identity value"
         />
-        <HStack alignItems="center" spacing={4}>
-          <Button data-testid="filter-btn" size="small" onClick={onOpen}>
+        <HStack alignItems="center" spacing={2}>
+          <Button data-testid="filter-btn" onClick={onOpen}>
             Filter
           </Button>
           <Button
             aria-label="Export report"
             data-testid="export-btn"
-            size="small"
             icon={<DownloadLightIcon ml="1.5px" />}
             onClick={handleExport}
           />

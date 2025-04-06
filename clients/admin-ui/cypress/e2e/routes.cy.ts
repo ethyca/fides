@@ -14,7 +14,7 @@ import {
   DATAMAP_ROUTE,
   LOCATIONS_ROUTE,
   PRIVACY_NOTICES_ROUTE,
-} from "~/features/common/nav/v2/routes";
+} from "~/features/common/nav/routes";
 import { RoleRegistryEnum } from "~/types/api";
 
 describe("Routes", () => {

@@ -90,8 +90,8 @@ export interface FidesInitOptions {
   // Whether to include the GPP extension
   gppEnabled: boolean;
 
-  // Whether we should "embed" the fides.js overlay UI (ie. “Layer 2”) into a web page instead of as a pop-up
-  // overlay, and never render the banner (ie. “Layer 1”).
+  // Whether we should "embed" the fides.js overlay UI (ie. "Layer 2") into a web page instead of as a pop-up
+  // overlay, and never render the banner (ie. "Layer 1").
   fidesEmbed: boolean;
 
   // Whether we should disable saving consent preferences to the Fides API.
@@ -142,6 +142,12 @@ export interface FidesInitOptions {
 
   // Whether to reject all consent preferences by default
   fidesConsentOverride: ConsentMethod.ACCEPT | ConsentMethod.REJECT | null;
+
+  // If defined, maps OT cookie consent to Fides cookie consent
+  otFidesMapping?: string | null;
+
+  // List of notice_keys to disable their respective Toggle elements in the CMP Overlay
+  fidesDisabledNotices: string[] | null;
 }
 
 /**
@@ -151,10 +157,16 @@ export interface FidesInitOptions {
  * ensure that the documented interface isn't overly specific in areas we may
  * need to change.
  */
-export interface FidesGlobal extends Fides {
+export interface FidesGlobal extends Omit<Fides, "gtm"> {
   cookie?: FidesCookie;
   config?: FidesConfig;
   consent: NoticeConsent;
+  encodeNoticeConsentString: (
+    noticeConsent: Record<string, boolean | 0 | 1>,
+  ) => string;
+  decodeNoticeConsentString: (base64String: string) => {
+    [noticeKey: string]: boolean;
+  };
   experience:
     | PrivacyExperience
     | PrivacyExperienceMinimal
@@ -163,6 +175,7 @@ export interface FidesGlobal extends Fides {
   fides_meta: FidesJSMeta;
   fides_string?: string | undefined;
   geolocation?: UserGeolocation;
+  locale: string;
   identity: FidesJSIdentity;
   initialized: boolean;
   options: FidesInitOptions;
@@ -180,6 +193,18 @@ export interface FidesGlobal extends Fides {
   shopify: typeof shopify;
   shouldShowExperience: () => boolean;
   showModal: () => void;
+}
+
+/**
+ * Store the OneTrust to Fides consent mappings from ot_group_id -> array of fides notice keys, e.g.
+ * {
+ *     C0001: ["essential"],
+ *     C0002: ["analytics_opt_out"],
+ *     C0004: ["advertising", "marketing"],
+ *   }
+ */
+export interface OtToFidesConsentMapping {
+  [key: string]: string[];
 }
 
 /**
@@ -223,9 +248,7 @@ export interface FidesCookie {
 }
 
 export type GetPreferencesFnResp = {
-  // Overrides the value for Fides.consent for the user’s notice-based preferences (e.g. { data_sales: false })
-  consent?: NoticeConsent;
-  // Overrides the value for Fides.fides_string for the user’s TCF+AC preferences (e.g. 1a2a3a.AAABA,1~123.121)
+  // Overrides the value for Fides.fides_string for the user's consent preferences
   fides_string?: string;
   // An explicit version hash for provided fides_string when calculating whether consent should be re-triggered
   version_hash?: string;
@@ -425,6 +448,7 @@ export type PrivacyExperience = {
   tcf_system_consents?: Array<TCFVendorConsentRecord>;
   tcf_system_legitimate_interests?: Array<TCFVendorLegitimateInterestsRecord>;
   tcf_system_relationships?: Array<TCFVendorRelationships>;
+  tcf_publisher_country_code?: string;
 
   /**
    * @deprecated For backwards compatibility purposes, whether the Experience should show a banner.
@@ -443,6 +467,7 @@ export type PrivacyExperience = {
   available_locales?: string[];
   vendor_count?: number;
   minimal_tcf?: boolean;
+  non_applicable_privacy_notices?: Array<PrivacyNotice["notice_key"]>;
 };
 
 interface ExperienceConfigTranslationMinimal
@@ -458,6 +483,8 @@ export interface ExperienceConfigMinimal
     | "auto_detect_language"
     | "dismissable"
     | "auto_subdomain_cookie_deletion"
+    | "layer1_button_options"
+    | "reject_all_mechanism"
   > {
   translations: ExperienceConfigTranslationMinimal[];
 }
@@ -466,11 +493,14 @@ export interface PrivacyExperienceMinimal
   extends Pick<
     PrivacyExperience,
     | "id"
+    | "privacy_notices"
     | "available_locales"
     | "gpp_settings"
     | "vendor_count"
     | "minimal_tcf"
     | "gvl"
+    | "tcf_publisher_country_code"
+    | "non_applicable_privacy_notices"
   > {
   experience_config: ExperienceConfigMinimal;
   vendor_count?: number;
@@ -616,6 +646,16 @@ export type PrivacyNoticeWithPreference = PrivacyNotice & {
   current_preference?: UserConsentPreference;
 };
 
+/**
+ * Special PrivacyNoticeItem, where we've narrowed the list of
+ * available translations to the singular "best" translation that should be
+ * displayed, and paired that with the source notice itself.
+ */
+export type PrivacyNoticeItem = {
+  notice: PrivacyNoticeWithPreference;
+  bestTranslation: PrivacyNoticeTranslation | null;
+};
+
 export enum EnforcementLevel {
   FRONTEND = "frontend",
   SYSTEM_WIDE = "system_wide",
@@ -643,6 +683,7 @@ export enum ComponentType {
   MODAL = "modal",
   PRIVACY_CENTER = "privacy_center",
   TCF_OVERLAY = "tcf_overlay",
+  HEADLESS = "headless",
 }
 
 export enum BannerEnabled {
@@ -690,6 +731,8 @@ export type FidesInitOptionsOverrides = Pick<
   | "fidesPrimaryColor"
   | "fidesClearCookie"
   | "fidesConsentOverride"
+  | "otFidesMapping"
+  | "fidesDisabledNotices"
 >;
 
 export type FidesExperienceTranslationOverrides = {
@@ -720,6 +763,13 @@ export enum Layer1ButtonOption {
   // defines the buttons to show in the layer 1 banner
   ACKNOWLEDGE = "acknowledge", // show acknowledge button
   OPT_IN_OPT_OUT = "opt_in_opt_out", // show opt in and opt out buttons
+  OPT_IN_ONLY = "opt_in_only", // TCF only, hide opt out button
+}
+
+export enum RejectAllMechanism {
+  // Applies to TCF only
+  REJECT_ALL = "reject_all", // reject all purposes and legitimate interests
+  REJECT_CONSENT_ONLY = "reject_consent_only", // do not reject legitimate interests
 }
 
 export enum ConsentMethod {
@@ -874,4 +924,28 @@ export type ConsentOption = {
 
 export type LegacyConsentConfig = {
   options: ConsentOption[];
+};
+
+interface FidesValidatorMap<T, K> {
+  overrideName: keyof T;
+  overrideType: "string" | "boolean" | "array";
+  overrideKey: K;
+  validationRegex: RegExp;
+  transform?: (value: string) => any;
+}
+
+export type FidesOverrideValidatorMap = FidesValidatorMap<
+  FidesInitOptionsOverrides,
+  keyof FidesOptions
+>;
+
+export type FidesExperienceLanguageValidatorMap = FidesValidatorMap<
+  FidesExperienceTranslationOverrides,
+  string
+>;
+
+export type FidesWindowOverrides = Partial<
+  FidesOptions & OverrideExperienceTranslations
+> & {
+  [key: string]: string | boolean | undefined;
 };

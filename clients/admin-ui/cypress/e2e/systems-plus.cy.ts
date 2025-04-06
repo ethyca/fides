@@ -1,6 +1,7 @@
 import {
   stubDatasetCrud,
   stubPlus,
+  stubSystemAssets,
   stubSystemCrud,
   stubSystemIntegrations,
   stubSystemVendors,
@@ -15,7 +16,7 @@ import {
   DATAMAP_ROUTE,
   INDEX_ROUTE,
   SYSTEM_ROUTE,
-} from "~/features/common/nav/v2/routes";
+} from "~/features/common/nav/routes";
 import { RoleRegistryEnum } from "~/types/api";
 
 describe("System management with Plus features", () => {
@@ -367,6 +368,10 @@ describe("System management with Plus features", () => {
     it("select page checkbox only selects rows on the displayed page", () => {
       cy.visit(ADD_SYSTEMS_MULTIPLE_ROUTE);
       cy.wait("@getSystemVendors");
+      // unreliable test because when dictionary loads it overrides the rows selected
+      // adding a .wait to make it more reliable
+      // eslint-disable-next-line cypress/no-unnecessary-waiting
+      cy.wait(500);
       cy.getByTestId("select-page-checkbox")
         .get("[type='checkbox']")
         .check({ force: true });
@@ -465,6 +470,116 @@ describe("System management with Plus features", () => {
     });
   });
 
+  describe("asset list", () => {
+    beforeEach(() => {
+      stubSystemAssets();
+      cy.visit(`${SYSTEM_ROUTE}/configure/demo_analytics_system`);
+      cy.wait("@getSystem");
+    });
+
+    it("shows an empty state", () => {
+      cy.intercept("GET", "/api/v1/plus/system-assets/*", {
+        fixture: "empty-pagination",
+      }).as("getEmptySystemAssets");
+      cy.getByTestId("tab-Assets").click({ force: true });
+      cy.wait("@getEmptySystemAssets");
+      cy.getByTestId("empty-state").should("exist");
+    });
+
+    it("lists assets in the system assets tab", () => {
+      cy.getByTestId("tab-Assets").click({ force: true });
+      cy.wait("@getSystemAssets");
+      cy.getByTestId("row-0-col-name").should("contain", "ar_debug");
+      cy.getByTestId("row-0-col-locations").should("contain", "United States");
+    });
+
+    describe("asset operations", () => {
+      beforeEach(() => {
+        cy.getByTestId("tab-Assets").click({ force: true });
+        cy.wait("@getSystemAssets");
+      });
+
+      it("can add a new asset", () => {
+        cy.getByTestId("add-asset-btn").click();
+        cy.getByTestId("add-modal-content").should("exist");
+        cy.getByTestId("input-name").type("test_cookie");
+        cy.getByTestId("input-domain").type("example.com");
+        cy.getByTestId("controlled-select-asset_type").antSelect("Cookie");
+        cy.getByTestId("controlled-select-data_uses").antSelect("analytics");
+        cy.getByTestId("save-btn").click();
+        cy.wait("@addSystemAsset");
+      });
+
+      it("can edit an existing asset", () => {
+        cy.getByTestId("row-0-col-actions").within(() => {
+          cy.getByTestId("edit-btn").click();
+        });
+        cy.getByTestId("add-modal-content").should("exist");
+
+        cy.getByTestId("input-name")
+          .should("have.value", "ar_debug")
+          .should("be.disabled");
+        cy.getByTestId("controlled-select-asset_type")
+          .should("contain", "Cookie")
+          .should("have.class", "ant-select-disabled");
+        cy.getByTestId("controlled-select-data_uses")
+          .should("contain", "analytics")
+          .should("not.be.disabled");
+        cy.getByTestId("input-domain")
+          .should("have.value", ".doubleclick.net")
+          .should("be.disabled");
+        cy.getByTestId("input-description")
+          .should("have.value", "This is a test description")
+          .clear()
+          .type("Updating the description");
+
+        cy.getByTestId("save-btn").click();
+        cy.wait("@updateSystemAssets");
+      });
+
+      it("can delete an asset", () => {
+        cy.getByTestId("row-0-col-actions").within(() => {
+          cy.getByTestId("remove-btn").click();
+        });
+
+        cy.getByTestId("confirmation-modal").should("exist");
+        cy.getByTestId("continue-btn").click();
+        cy.wait("@deleteSystemAssets");
+      });
+
+      it("validates base URL for non-cookie assets", () => {
+        cy.getByTestId("add-asset-btn").click();
+        cy.getByTestId("add-modal-content").should("exist");
+
+        cy.getByTestId("input-name").type("test_tag");
+        cy.getByTestId("input-domain").type("example.com");
+        cy.getByTestId("controlled-select-asset_type").antSelect(
+          "Javascript tag",
+        );
+        cy.getByTestId("controlled-select-data_uses").antSelect("analytics");
+        // blur the input without entering anything to trigger the error
+        cy.getByTestId("input-base_url").clear().blur();
+        cy.getByTestId("save-btn").should("be.disabled");
+        cy.getByTestId("error-base_url").should(
+          "contain",
+          "Base URL is required",
+        );
+        cy.getByTestId("input-base_url").type("https://example.com/script.js");
+        cy.getByTestId("save-btn").click();
+        cy.wait("@addSystemAsset");
+      });
+
+      it("can bulk delete assets", () => {
+        cy.getByTestId("row-0-col-select").click();
+        cy.getByTestId("row-1-col-select").click();
+        cy.getByTestId("bulk-delete-btn").click();
+        cy.getByTestId("confirmation-modal").should("exist");
+        cy.getByTestId("continue-btn").click();
+        cy.wait("@deleteSystemAssets");
+      });
+    });
+  });
+
   describe("tab navigation", () => {
     it("updates URL hash when switching tabs", () => {
       cy.visit(`${SYSTEM_ROUTE}/configure/demo_analytics_system#information`);
@@ -487,7 +602,12 @@ describe("System management with Plus features", () => {
 
       // eslint-disable-next-line cypress/no-unnecessary-waiting
       cy.wait(500);
-      cy.getByTestId("tab-History").click();
+      cy.getByTestId("tab-Assets").click({ force: true });
+      cy.location("hash").should("eq", "#assets");
+
+      // eslint-disable-next-line cypress/no-unnecessary-waiting
+      cy.wait(500);
+      cy.getByTestId("tab-History").click({ force: true });
       cy.location("hash").should("eq", "#history");
     });
 

@@ -90,26 +90,36 @@ describe("Smoke test", () => {
     });
   });
 
-  it("can access Mongo and Postgres connectors from the Admin UI", () => {
-    cy.visit(ADMIN_UI_URL);
-    cy.login();
-
-    // Postgres
-    cy.getByTestId("System inventory-nav-link").click();
-    cy.getByTestId("system-cookie_house_postgresql_database").within(() => {
-      cy.getByTestId("edit-btn").click();
+  describe("can access Mongo and Postgres connectors from the Admin UI", () => {
+    beforeEach(() => {
+      cy.visit(ADMIN_UI_URL);
+      cy.login();
     });
 
-    cy.getByTestId("tab-Integrations").click();
-    cy.get("button").contains("Test").click();
+    it("can access Postgres connectors from the Admin UI", () => {
+      // Postgres
+      cy.getByTestId("Data inventory-nav-group").click();
+      cy.getByTestId("System inventory-nav-link").click();
+      cy.getByTestId("system-cookie_house_postgresql_database").within(() => {
+        cy.getByTestId("edit-btn").click();
+      });
 
-    // Mongo
-    cy.getByTestId("System inventory-nav-link").click();
-    cy.getByTestId("system-cookie_house_customer_database").within(() => {
-      cy.getByTestId("edit-btn").click();
+      cy.getByTestId("tab-Integrations").click();
+      cy.getByTestId("test-connection-button").click();
+      cy.getByTestId("toast-success-msg").should("be.visible");
     });
-    cy.getByTestId("tab-Integrations").click();
-    cy.get("button").contains("Test").click();
+
+    it("can access Mongo connectors from the Admin UI", () => {
+      // Mongo
+      cy.getByTestId("Data inventory-nav-group").click();
+      cy.getByTestId("System inventory-nav-link").click();
+      cy.getByTestId("system-cookie_house_customer_database").within(() => {
+        cy.getByTestId("edit-btn").click();
+      });
+      cy.getByTestId("tab-Integrations").click();
+      cy.getByTestId("test-connection-button").click();
+      cy.getByTestId("toast-success-msg").should("be.visible");
+    });
   });
 
   it("can manage consent preferences from the Privacy Center", () => {

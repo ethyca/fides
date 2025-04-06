@@ -15,7 +15,7 @@ on:
 
 env:
   IMAGE: ethyca/fides:local
-  DEFAULT_PYTHON_VERSION: "3.10.13"
+  DEFAULT_PYTHON_VERSION: "3.10.16"
   # Docker auth with read-only permissions.
   DOCKER_USER: ${{ secrets.DOCKER_USER }}
   DOCKER_RO_TOKEN: ${{ secrets.DOCKER_RO_TOKEN }}
@@ -47,7 +47,7 @@ jobs:
     strategy:
       matrix:
         # NOTE: These are the currently supported/tested Python Versions
-        python_version: ["3.9.18", "3.10.13"]
+        python_version: ["3.9.21", "3.10.16"]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -58,7 +58,7 @@ jobs:
         uses: docker/setup-buildx-action@v3
 
       - name: Build container
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           builder: ${{ steps.buildx.outputs.name }}
           context: .
@@ -74,43 +74,6 @@ jobs:
           name: python-${{ matrix.python_version }}
           path: /tmp/python-${{ matrix.python_version }}.tar
           retention-days: 1
-
-  ###################
-  ## Static Checks ##
-  ###################
-  Static-Checks:
-    strategy:
-      matrix:
-        session_name:
-          [
-            '"isort(check)"',
-            '"black(check)"',
-            "mypy",
-            "pylint",
-            "xenon",
-            "check_install",
-            '"pytest(nox)"',
-          ]
-    runs-on: ubuntu-latest
-    continue-on-error: true
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Set Up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
-          cache: "pip"
-
-      - name: Install Nox
-        run: pip install nox>=2022
-
-      - name: Install Dev Requirements
-        run: pip install -r dev-requirements.txt
-
-      - name: Run Static Check
-        run: nox -s ${{ matrix.session_name }}
 
   ##################
   ## Performance ##
@@ -246,12 +209,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python_version: ["3.9.18", "3.10.13"]
+        python_version: ["3.9.21", "3.10.16"]
         test_selection:
           - "ctl-not-external"
           - "ops-unit-api"
           - "ops-unit-non-api"
           - "ops-integration"
+          - "api"
           - "lib"
 
     runs-on: ubuntu-latest
@@ -288,7 +252,7 @@ jobs:
         run: nox -s "pytest(${{ matrix.test_selection }})"
 
       - name: Upload coverage
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: true
@@ -303,7 +267,7 @@ jobs:
     strategy:
       max-parallel: 1 # This prevents collisions in shared external resources
       matrix:
-        python_version: ["3.9.18", "3.10.13"]
+        python_version: ["3.9.21", "3.10.16"]
     runs-on: ubuntu-latest
     timeout-minutes: 20
     # In PRs run with the "unsafe" label, or run on a "push" event to main
@@ -320,6 +284,12 @@ jobs:
 
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Set Up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
+          cache: "pip"
 
       - name: Install Nox
         run: pip install nox>=2022
@@ -359,9 +329,9 @@ jobs:
     strategy:
       max-parallel: 1 # This prevents collisions in shared external resources
       matrix:
-        python_version: ["3.9.18", "3.10.13"]
+        python_version: ["3.9.21", "3.10.16"]
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     # In PRs run with the "unsafe" label, or run on a "push" event to main
     if: contains(github.event.pull_request.labels.*.name, 'run unsafe ci checks') || github.event_name == 'push'
     steps:
@@ -376,6 +346,12 @@ jobs:
 
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Set Up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
+          cache: "pip"
 
       - name: Install Nox
         run: pip install nox>=2022
@@ -452,7 +428,7 @@ jobs:
     strategy:
       max-parallel: 1 # This prevents collisions in shared external resources
       matrix:
-        python_version: ["3.9.18", "3.10.13"]
+        python_version: ["3.9.21", "3.10.16"]
     steps:
       - name: Download container
         uses: actions/download-artifact@v4
@@ -463,11 +439,17 @@ jobs:
       - name: Load image
         run: docker load --input /tmp/python-${{ matrix.python_version }}.tar
 
-      - name: Install Nox
-        run: pip install nox>=2022
-
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Set Up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
+          cache: "pip"
+
+      - name: Install Nox
+        run: pip install nox>=2022
 
       - name: Get Vault Token
         uses: hashicorp/vault-action@v2.5.0

@@ -30,11 +30,11 @@ export const initOverlay = async ({
   propertyId,
   translationOverrides,
 }: OverlayProps & {
-  renderOverlay: (props: OverlayProps, parent: ContainerNode) => void;
+  renderOverlay?: (props: OverlayProps, parent: ContainerNode) => void;
 }): Promise<void> => {
   fidesDebugger("Initializing Fides consent overlays...");
 
-  async function renderFidesOverlay(): Promise<void> {
+  const renderFidesOverlay = async (): Promise<void> => {
     try {
       fidesDebugger("Injecting Fides overlay CSS & HTML into the DOM...");
 
@@ -63,6 +63,7 @@ export const initOverlay = async ({
 
       // update CSS variables based on configured primary color
       if (options.fidesPrimaryColor) {
+        fidesDebugger("setting primary color to", options.fidesPrimaryColor);
         document.documentElement.style.setProperty(
           "--fides-overlay-primary-color",
           options.fidesPrimaryColor,
@@ -131,10 +132,11 @@ export const initOverlay = async ({
       }
 
       if (
-        experience.experience_config?.component === ComponentType.MODAL ||
-        experience.experience_config?.component ===
-          ComponentType.BANNER_AND_MODAL ||
-        experience.experience_config?.component === ComponentType.TCF_OVERLAY
+        !!renderOverlay &&
+        (experience.experience_config?.component === ComponentType.MODAL ||
+          experience.experience_config?.component ===
+            ComponentType.BANNER_AND_MODAL ||
+          experience.experience_config?.component === ComponentType.TCF_OVERLAY)
       ) {
         // Render the Overlay to the DOM!
         renderOverlay(
@@ -158,7 +160,7 @@ export const initOverlay = async ({
       fidesDebugger(e);
       return Promise.reject(e);
     }
-  }
+  };
 
   // Ensure we only render the overlay to the document once it's interactive
   // NOTE: do not wait for "complete" state, as this can delay rendering on sites with heavy assets

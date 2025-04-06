@@ -5,6 +5,7 @@ import {
   getKeysFromMap,
   getOptionsFromMap,
   getPII,
+  getWebsiteIconUrl,
 } from "~/features/common/utils";
 
 // TODO: add tests for the other utils functions
@@ -82,5 +83,20 @@ describe(getOptionsFromMap.name, () => {
     const EMPTY_MOCK_MAP = new Map();
     const result = getOptionsFromMap(EMPTY_MOCK_MAP);
     expect(result).toEqual([]);
+  });
+});
+
+describe(getWebsiteIconUrl.name, () => {
+  it("should return the icon URL", () => {
+    const result = getWebsiteIconUrl("example.com");
+    expect(result).toEqual(
+      "https://cdn.brandfetch.io/example.com/icon/theme/light/fallback/404/h/24/w/24?c=1idbRjELpikqQ1PLiqb",
+    );
+  });
+  it("should return the icon URL with a custom size", () => {
+    const result = getWebsiteIconUrl("example.com", 56);
+    expect(result).toEqual(
+      "https://cdn.brandfetch.io/example.com/icon/theme/light/fallback/404/h/56/w/56?c=1idbRjELpikqQ1PLiqb",
+    );
   });
 });

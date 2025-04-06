@@ -77,7 +77,10 @@ EXTERNAL_DATASTORE_CONFIG = {
 EXTERNAL_DATASTORES = list(EXTERNAL_DATASTORE_CONFIG.keys())
 ALL_DATASTORES = DOCKERFILE_DATASTORES + EXTERNAL_DATASTORES
 OPS_TEST_DIR = "tests/ops/"
-API_TEST_DIR = f"{OPS_TEST_DIR}api/"
+OPS_API_TEST_DIRS = [
+    f"{OPS_TEST_DIR}api/",
+]
+API_TEST_DIR = "tests/api/"
 
 
 def run_infrastructure(
@@ -134,7 +137,7 @@ def run_infrastructure(
         return _open_shell(path, COMPOSE_SERVICE_NAME)
 
     if run_application:
-        return _run_application(path)
+        return _run_application(path, COMPOSE_SERVICE_NAME)
 
     if run_quickstart:
         return _run_quickstart(path, COMPOSE_SERVICE_NAME)
@@ -239,12 +242,12 @@ def _open_shell(
     _run_cmd_or_err(f"docker compose {path} run {service_name} /bin/bash")
 
 
-def _run_application(docker_compose_path: str) -> None:
+def _run_application(docker_compose_path: str, service_name: str) -> None:
     """
     Runs the application at `docker_compose_path` without detaching it from the shell
     """
     _run_cmd_or_err('echo "Running application"')
-    _run_cmd_or_err(f"docker compose {docker_compose_path} up")
+    _run_cmd_or_err(f"docker compose {docker_compose_path} up {service_name}")
 
 
 def _run_tests(

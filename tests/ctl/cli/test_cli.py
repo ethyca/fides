@@ -4,7 +4,6 @@ from base64 import b64decode
 from json import dump, loads
 from typing import Generator
 
-import click
 import pytest
 import yaml
 from click.testing import CliRunner
@@ -146,7 +145,7 @@ def test_parse(test_config_path: str, test_cli_runner: CliRunner) -> None:
 
 class TestDB:
     @pytest.mark.skip(
-        "This test is timing out only in CI: Safe-Tests (3.10.13, ctl-not-external)"
+        "This test is timing out only in CI: Safe-Tests (3.10.16, ctl-not-external)"
     )
     @pytest.mark.integration
     def test_reset_db(self, test_config_path: str, test_cli_runner: CliRunner) -> None:
@@ -324,6 +323,28 @@ class TestAnnotate:
 
         assert result.exit_code == 0
         print(result.output)
+
+    def test_regression_annotate_dataset(
+        self,
+        test_config_path: str,
+        test_cli_runner: CliRunner,
+    ):
+        test_cli_runner.invoke(
+            cli,
+            [
+                "-f",
+                test_config_path,
+                "annotate",
+                "dataset",
+                "tests/ctl/data/failing_direction.yml",
+            ],
+            input="user\n",
+        )
+        with open("tests/ctl/data/failing_direction.yml", "r") as dataset_yml:
+            try:
+                dataset_yml = yaml.safe_load(dataset_yml)
+            except yaml.constructor.ConstructorError:
+                assert False, "The yaml file is not valid"
 
 
 @pytest.mark.integration

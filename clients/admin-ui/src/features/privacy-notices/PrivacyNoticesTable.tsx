@@ -23,13 +23,14 @@ import NextLink from "next/link";
 import { useRouter } from "next/router";
 import { useEffect, useMemo } from "react";
 
-import { PRIVACY_NOTICES_ROUTE } from "~/features/common/nav/v2/routes";
+import { PRIVACY_NOTICES_ROUTE } from "~/features/common/nav/routes";
+import { PRIVACY_NOTICE_REGION_RECORD } from "~/features/common/privacy-notice-regions";
 import { useHasPermission } from "~/features/common/Restrict";
+import { BadgeCellExpandable } from "~/features/common/table/v2/cells";
 import { useGetHealthQuery } from "~/features/plus/plus.slice";
 import {
   EnablePrivacyNoticeCell,
   getNoticeChildren,
-  getRegions,
   MechanismCell,
   PrivacyNoticeStatusCell,
 } from "~/features/privacy-notices/cells";
@@ -37,6 +38,7 @@ import { FRAMEWORK_MAP } from "~/features/privacy-notices/constants";
 import { useGetAllPrivacyNoticesQuery } from "~/features/privacy-notices/privacy-notices.slice";
 import {
   LimitedPrivacyNoticeResponseSchema,
+  PrivacyNoticeRegion,
   ScopeRegistryEnum,
 } from "~/types/api";
 
@@ -143,19 +145,22 @@ export const PrivacyNoticesTable = () => {
         }),
         columnHelper.accessor((row) => row.configured_regions, {
           id: "regions",
-          cell: (props) =>
-            getRegions(props.getValue())?.length ? (
-              <GroupCountBadgeCell
-                suffix="Locations"
-                value={getRegions(props.getValue())}
-                {...props}
-              />
-            ) : (
-              <DefaultCell value="Unassigned" />
-            ),
+          cell: (props) => (
+            <BadgeCellExpandable
+              values={
+                props.getValue()?.map((location: PrivacyNoticeRegion) => ({
+                  label: PRIVACY_NOTICE_REGION_RECORD[location] ?? location,
+                  key: location,
+                })) ?? []
+              }
+              cellProps={props}
+            />
+          ),
           header: (props) => <DefaultHeaderCell value="Locations" {...props} />,
+          size: 250,
           meta: {
             showHeaderMenu: true,
+            disableRowClick: true,
           },
         }),
         columnHelper.accessor((row) => row.disabled, {
@@ -232,11 +237,7 @@ export const PrivacyNoticesTable = () => {
                 passHref
                 legacyBehavior
               >
-                <Button
-                  size="small"
-                  type="primary"
-                  data-testid="add-privacy-notice-btn"
-                >
+                <Button type="primary" data-testid="add-privacy-notice-btn">
                   Add a privacy notice +
                 </Button>
               </NextLink>

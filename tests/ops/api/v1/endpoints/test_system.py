@@ -21,9 +21,9 @@ from fides.api.models.connectionconfig import (
 from fides.api.models.datasetconfig import DatasetConfig
 from fides.api.models.fides_user import FidesUser
 from fides.api.models.manual_webhook import AccessManualWebhook
-from fides.api.models.privacy_request import PrivacyRequestStatus
 from fides.api.models.sql_models import Dataset, System
 from fides.api.schemas.policy import ActionType
+from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.common.api.scope_registry import (
     CONNECTION_CREATE_OR_UPDATE,
     CONNECTION_DELETE,
@@ -31,6 +31,7 @@ from fides.common.api.scope_registry import (
     SAAS_CONNECTION_INSTANTIATE,
     STORAGE_DELETE,
     SYSTEM_MANAGER_UPDATE,
+    SYSTEM_UPDATE,
 )
 from fides.common.api.v1.urn_registry import V1_URL_PREFIX
 from tests.conftest import generate_role_header_for_user
@@ -108,6 +109,31 @@ def connections():
             "access": "read",
         },
     ]
+
+
+class TestPatchSystem:
+    def test_system_patch_hidden(
+        self,
+        system,
+        api_client: TestClient,
+        generate_auth_header,
+        db: Session,
+    ):
+        url = V1_URL_PREFIX + f"/system/hidden"
+        auth_header = generate_auth_header(
+            scopes=[SYSTEM_UPDATE, SYSTEM_MANAGER_UPDATE]
+        )
+        result = api_client.patch(
+            url=f"{url}?hidden=true",
+            headers=auth_header,
+            json=[system.fides_key],
+            timeout=15,
+        )
+        assert result.status_code == HTTP_200_OK
+        assert result.json() == {
+            "message": "Updated hidden status for systems",
+            "updated": 1,
+        }
 
 
 class TestPatchSystemConnections:

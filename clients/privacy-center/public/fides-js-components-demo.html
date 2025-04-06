@@ -1,7 +1,7 @@
 <!doctype html>
 <html>
   <head>
-    <title>fides-js script demo page</title>
+    <title>fides-js script components demo page</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <!--
@@ -207,11 +207,15 @@
           privacyCenterUrl: "http://localhost:3001",
           fidesApiUrl: "http://localhost:8080/api/v1",
           fidesPrimaryColor: "#008000",
+          showFidesBrandLink: true,
+          otFidesMapping: null,
         },
       };
       if (init !== "false") {
         window.Fides.init(fidesConfig);
-        Fides.gtm();
+        Fides.gtm(
+          !!window.fides_overrides && window.fides_overrides.gtmOptions,
+        );
       }
     </script>
 
@@ -351,6 +355,13 @@
       } else {
         window.addEventListener("FidesInitialized", onInitialized);
       }
+      window.addEventListener("FidesUpdated", () => {
+        document.getElementById("consent-json").textContent = JSON.stringify(
+          Fides.consent,
+          null,
+          2,
+        );
+      });
     })();
   </script>
 </html>

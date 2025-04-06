@@ -6,12 +6,6 @@
     "production": false,
     "userCannotModify": true
   },
-  "datasetClassificationUpdates": {
-    "description": "Enable per-collection dataset classification instead of bulk updates.",
-    "development": true,
-    "production": false,
-    "test": false
-  },
   "organizationManagement": {
     "description": "Management page to configure Organization details for RoPA reporting, messaging, etc.",
     "development": true,
@@ -24,14 +18,20 @@
     "test": true,
     "production": false
   },
-  "consentReporting": {
-    "description": "Page to download consent reports by date",
+  "dataDiscoveryAndDetection": {
+    "description": "Data discovery and detection",
     "development": true,
     "test": true,
     "production": false
   },
-  "dataDiscoveryAndDetection": {
-    "description": "Data discovery and detection",
+  "dataCatalog": {
+    "description": "Data catalog view",
+    "development": true,
+    "test": true,
+    "production": false
+  },
+  "webMonitor": {
+    "description": "Monitor websites for activity",
     "development": true,
     "test": true,
     "production": false

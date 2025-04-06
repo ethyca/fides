@@ -406,9 +406,7 @@ async def create_system(
 
     # create the system resource using generic creation
     # the system must be created before the privacy declarations so that it can be referenced
-    resource_dict = resource.model_dump(
-        mode="json"
-    )  # mode=json helps Url fields be converted to strings before saving to db
+    resource_dict = resource.model_dump()
 
     # set the current user's ID
     resource_dict["user_id"] = current_user_id

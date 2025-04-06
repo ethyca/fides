@@ -17,10 +17,15 @@
         window.render_delay = 0; // increment the delay to test/mimic a slow loading or dynamic page
         const params = new URLSearchParams(window.location.search);
         const geolocation = params.get("geolocation");
+        const gpp = params.get("gpp");
         const src = `/fides.js${!!params.size ? `?${params.toString()}` : ""}`;
-
         document.write('<script src="' + src + '"><\/script>');
-        document.write("<script>Fides.gtm();<\/script>");
+        if (gpp === "debug") {
+          document.write('<script src="/fides-ext-gpp.js"><\/script>');
+        }
+        document.write(
+          "<script>Fides.gtm(!!window.fides_overrides && window.fides_overrides.gtmOptions);<\/script>",
+        );
       })();
       var deleteCookie = function () {
         document.cookie =
@@ -169,6 +174,12 @@
           consent: Fides.consent.tracking,
           dataUse: Fides.consent.data_sales,
         });
+
+        // update the modal link label if it's not already set. This is useful for displaying the correct language after fides has initialized and the user's language has been detected.
+        const modalLink = document.getElementById("fides-modal-link");
+        if (!!modalLink) {
+          modalLink.innerText = Fides.getModalLinkLabel();
+        }
       };
 
       // Handle both synchronous & asynchronous initialization

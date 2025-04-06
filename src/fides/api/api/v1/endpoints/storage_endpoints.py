@@ -252,7 +252,7 @@ def get_configs(
     """
     Retrieves configs for storage.
     """
-    logger.info("Finding all storage configurations with pagination params {}", params)
+    logger.debug("Finding all storage configurations with pagination params {}", params)
     return paginate(
         StorageConfig.query(db).order_by(StorageConfig.created_at.desc()), params=params
     )
@@ -269,7 +269,7 @@ def get_config_by_key(
     """
     Retrieves configs for storage by key.
     """
-    logger.info("Finding storage config with key '{}'", config_key)
+    logger.debug("Finding storage config with key '{}'", config_key)
 
     storage_config = StorageConfig.get_by(db, field="key", value=config_key)
     if not storage_config:
@@ -324,7 +324,7 @@ def get_active_default_config(
     """
     Retrieves the active default storage config.
     """
-    logger.info("Finding active default storage config")
+    logger.debug("Finding active default storage config")
     storage_config = get_active_default_storage_config(db)
     if not storage_config:
         raise HTTPException(
@@ -568,7 +568,7 @@ def get_default_configs(
     """
     Retrieves default configs for each storage types.
     """
-    logger.info(
+    logger.debug(
         "Finding default storage configurations with pagination params {}", params
     )
     return paginate(
@@ -590,7 +590,7 @@ def get_default_config_by_type(
     """
     Retrieves default config for given storage type.
     """
-    logger.info("Finding default config for storage type '{}'", storage_type.value)
+    logger.debug("Finding default config for storage type '{}'", storage_type.value)
     storage_config = get_default_storage_config_by_type(db, storage_type)
     if not storage_config:
         raise HTTPException(

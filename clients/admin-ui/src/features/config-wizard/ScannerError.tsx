@@ -1,5 +1,5 @@
 import {
-  Badge,
+  AntTag as Tag,
   Container,
   Divider,
   Heading,
@@ -35,9 +35,7 @@ const ScannerError = ({
 }) => (
   <Stack data-testid="scanner-error" spacing="4">
     <HStack>
-      <Badge color="white" bg="red.500" py="2">
-        Error
-      </Badge>
+      <Tag color="error">Error</Tag>
       <Heading color="red.500" size="lg">
         Failed to Scan
       </Heading>

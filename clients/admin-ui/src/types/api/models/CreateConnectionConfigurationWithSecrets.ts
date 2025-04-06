@@ -27,6 +27,7 @@ import type { ScyllaDocsSchema } from "./ScyllaDocsSchema";
 import type { SnowflakeDocsSchema } from "./SnowflakeDocsSchema";
 import type { SovrnDocsSchema } from "./SovrnDocsSchema";
 import type { TimescaleDocsSchema } from "./TimescaleDocsSchema";
+import type { WebsiteSchema } from "./WebsiteSchema";
 
 /**
  * Schema for creating a connection configuration including secrets.
@@ -62,6 +63,7 @@ export type CreateConnectionConfigurationWithSecrets = {
     | SnowflakeDocsSchema
     | SovrnDocsSchema
     | TimescaleDocsSchema
+    | WebsiteSchema
     | null;
   saas_connector_type?: string | null;
 };

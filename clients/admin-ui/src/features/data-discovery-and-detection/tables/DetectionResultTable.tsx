@@ -24,11 +24,10 @@ import useDetectionResultColumns from "~/features/data-discovery-and-detection/h
 import useDetectionResultFilterTabs from "~/features/data-discovery-and-detection/hooks/useDetectionResultsFilterTabs";
 import useDiscoveryRoutes from "~/features/data-discovery-and-detection/hooks/useDiscoveryRoutes";
 import IconLegendTooltip from "~/features/data-discovery-and-detection/IndicatorLegend";
-import { StagedResourceType } from "~/features/data-discovery-and-detection/types/StagedResourceType";
 import { findResourceType } from "~/features/data-discovery-and-detection/utils/findResourceType";
 import getResourceRowName from "~/features/data-discovery-and-detection/utils/getResourceRowName";
 import isNestedField from "~/features/data-discovery-and-detection/utils/isNestedField";
-import { StagedResource } from "~/types/api";
+import { StagedResource, StagedResourceTypeValue } from "~/types/api";
 
 import { SearchInput } from "../SearchInput";
 
@@ -150,7 +149,7 @@ const DetectionResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
     });
 
   const getRowIsClickable = (row: StagedResource) =>
-    resourceType !== StagedResourceType.FIELD || isNestedField(row);
+    resourceType !== StagedResourceTypeValue.FIELD || isNestedField(row);
 
   const tableInstance = useReactTable<StagedResource>({
     getCoreRowModel: getCoreRowModel(),

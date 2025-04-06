@@ -32,16 +32,13 @@ from fides.api.models.audit_log import AuditLog, AuditLogAction
 from fides.api.models.client import ClientDetail
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.models.datasetconfig import DatasetConfig
-from fides.api.models.policy import CurrentStep, Policy
+from fides.api.models.policy import Policy
 from fides.api.models.pre_approval_webhook import PreApprovalWebhookReply
 from fides.api.models.privacy_request import (
     ExecutionLog,
-    ExecutionLogStatus,
     PrivacyRequest,
     PrivacyRequestError,
     PrivacyRequestNotifications,
-    PrivacyRequestSource,
-    PrivacyRequestStatus,
     generate_request_task_callback_jwe,
 )
 from fides.api.oauth.jwt import generate_jwe
@@ -55,10 +52,15 @@ from fides.api.schemas.messaging.messaging import (
     RequestReviewDenyBodyParams,
     SubjectIdentityVerificationBodyParams,
 )
-from fides.api.schemas.policy import ActionType, PolicyResponse
+from fides.api.schemas.policy import ActionType, CurrentStep, PolicyResponse
+from fides.api.schemas.privacy_request import (
+    ExecutionLogStatus,
+    PrivacyRequestSource,
+    PrivacyRequestStatus,
+)
 from fides.api.schemas.redis_cache import Identity, LabeledIdentity
 from fides.api.task.graph_runners import access_runner
-from fides.api.tasks import MESSAGING_QUEUE_NAME
+from fides.api.tasks import DSR_QUEUE_NAME, MESSAGING_QUEUE_NAME
 from fides.api.util.cache import get_encryption_cache_key
 from fides.api.util.data_category import get_user_data_categories
 from fides.api.util.encryption.secrets_util import SecretsUtil
@@ -98,6 +100,7 @@ from fides.common.api.v1.urn_registry import (
     PRIVACY_REQUEST_PRE_APPROVE_ELIGIBLE,
     PRIVACY_REQUEST_PRE_APPROVE_NOT_ELIGIBLE,
     PRIVACY_REQUEST_REQUEUE,
+    PRIVACY_REQUEST_RESUBMIT,
     PRIVACY_REQUEST_RESUME,
     PRIVACY_REQUEST_RESUME_FROM_REQUIRES_INPUT,
     PRIVACY_REQUEST_RETRY,
@@ -113,7 +116,9 @@ from fides.common.api.v1.urn_registry import (
 )
 from fides.config import CONFIG
 from tests.conftest import generate_role_header_for_user
-from tests.ops.api.v1.endpoints.test_dataset_endpoints import get_connection_dataset_url
+from tests.ops.api.v1.endpoints.test_dataset_config_endpoints import (
+    get_connection_dataset_url,
+)
 
 page_size = Params().size
 
@@ -128,10 +133,10 @@ class TestCreatePrivacyRequest:
         return V1_URL_PREFIX + PRIVACY_REQUESTS
 
     @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
     )
     @mock.patch(
-        "fides.api.api.v1.endpoints.privacy_request_endpoints.dispatch_message_task.apply_async"
+        "fides.service.messaging.messaging_service.dispatch_message_task.apply_async"
     )
     def test_create_privacy_request(
         self,
@@ -160,7 +165,7 @@ class TestCreatePrivacyRequest:
         assert not mock_dispatch_message.called
 
     @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
     )
     def test_create_privacy_request_stores_identities(
         self,
@@ -194,7 +199,7 @@ class TestCreatePrivacyRequest:
         assert run_access_request_mock.called
 
     @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
     )
     def test_create_privacy_request_stores_custom_identities(
         self,
@@ -231,7 +236,7 @@ class TestCreatePrivacyRequest:
         assert run_access_request_mock.called
 
     @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
     )
     def test_create_privacy_request_stores_custom_fields(
         self,
@@ -272,7 +277,7 @@ class TestCreatePrivacyRequest:
         assert run_access_request_mock.called
 
     @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
     )
     def test_create_privacy_request_stores_multivalue_custom_fields(
         self,
@@ -321,7 +326,7 @@ class TestCreatePrivacyRequest:
         assert run_access_request_mock.called
 
     @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
     )
     def test_create_privacy_request_links_existing_custom_fields(
         self,
@@ -359,7 +364,7 @@ class TestCreatePrivacyRequest:
         assert run_access_request_mock.called
 
     @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
     )
     @mock.patch(
         "fides.api.models.privacy_request.PrivacyRequest.trigger_pre_approval_webhook"
@@ -392,7 +397,7 @@ class TestCreatePrivacyRequest:
         assert not mock_trigger_pre_approval_webhook.called
 
     @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
     )
     @mock.patch(
         "fides.api.models.privacy_request.PrivacyRequest.trigger_pre_approval_webhook"
@@ -426,7 +431,7 @@ class TestCreatePrivacyRequest:
         assert mock_trigger_pre_approval_webhook.called
 
     @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
     )
     @mock.patch(
         "fides.api.models.privacy_request.PrivacyRequest.trigger_pre_approval_webhook"
@@ -459,7 +464,7 @@ class TestCreatePrivacyRequest:
         assert not mock_trigger_pre_approval_webhook.called
 
     @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
     )
     def test_create_privacy_request_with_masking_configuration(
         self,
@@ -514,7 +519,7 @@ class TestCreatePrivacyRequest:
         )
 
     @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
     )
     def test_create_privacy_request_starts_processing(
         self,
@@ -539,7 +544,7 @@ class TestCreatePrivacyRequest:
         pr.delete(db=db)
 
     @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
     )
     def test_create_privacy_request_with_external_id(
         self,
@@ -569,7 +574,7 @@ class TestCreatePrivacyRequest:
         assert run_access_request_mock.called
 
     @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
     )
     def test_create_privacy_request_caches_identity(
         self,
@@ -597,7 +602,7 @@ class TestCreatePrivacyRequest:
         assert run_access_request_mock.called
 
     @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
     )
     def test_create_privacy_request_caches_masking_secrets(
         self,
@@ -653,7 +658,7 @@ class TestCreatePrivacyRequest:
         )
 
     @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
     )
     def test_create_privacy_request_caches_encryption_keys(
         self,
@@ -731,7 +736,7 @@ class TestCreatePrivacyRequest:
         pr.delete(db=db)
 
     @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
     )
     def test_create_privacy_request_creates_system_audit_log(
         self,
@@ -769,7 +774,7 @@ class TestCreatePrivacyRequest:
         "fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher"
     )
     @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
     )
     def test_create_privacy_request_error_notification(
         self,
@@ -1956,6 +1961,19 @@ class TestGetPrivacyRequests:
 
         privacy_request.delete(db)
 
+    def test_get_privacy_requests_csv_format_max_rows_limit(
+        self,
+        db,
+        generate_auth_header,
+        api_client,
+        url,
+        privacy_requests,
+        set_max_privacy_request_download_rows,
+    ):
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_READ])
+        response = api_client.get(url + f"?download_csv=True", headers=auth_header)
+        assert 400 == response.status_code
+
     def test_get_requires_input_privacy_request_resume_info(
         self, db, privacy_request, generate_auth_header, api_client, url
     ):
@@ -2073,7 +2091,7 @@ class TestGetPrivacyRequests:
         assert data["days_left"] == days_left
 
     @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
     )
     def test_sort_privacy_request_by_due_date(
         self,
@@ -3232,7 +3250,7 @@ class TestPrivacyRequestSearch:
         assert data["days_left"] == days_left
 
     @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
     )
     def test_sort_privacy_request_by_due_date(
         self,
@@ -3543,8 +3561,7 @@ class TestRequestPreview:
         assert response.status_code == 400
         assert (
             response.json()["detail"]
-            == "Referred to object postgres_example_test_dataset:customer:id does not "
-            "exist. Make sure all referenced datasets are included in the request body."
+            == "Referenced object postgres_example_test_dataset:customer:id from dataset mongo_test does not exist. Make sure all referenced datasets are included in the request body."
         )
 
         # Use the dataset endpoint to create the Postgres DatasetConfig
@@ -3635,7 +3652,7 @@ class TestApprovePrivacyRequest:
         assert response.status_code == 403
 
     @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
     )
     def test_approve_privacy_request_approver_role(
         self, _, url, api_client, generate_role_header, privacy_request, db
@@ -3649,7 +3666,7 @@ class TestApprovePrivacyRequest:
         assert response.status_code == 200
 
     @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
     )
     def test_approve_privacy_request_does_not_exist(
         self, submit_mock, db, url, api_client, generate_auth_header, privacy_request
@@ -3674,7 +3691,7 @@ class TestApprovePrivacyRequest:
         [PrivacyRequestStatus.complete, PrivacyRequestStatus.canceled],
     )
     @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
     )
     def test_approve_privacy_request_in_non_pending_state(
         self,
@@ -3704,7 +3721,7 @@ class TestApprovePrivacyRequest:
         assert not submit_mock.called
 
     @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
     )
     def test_approve_deleted_privacy_request(
         self,
@@ -3734,7 +3751,7 @@ class TestApprovePrivacyRequest:
         assert not submit_mock.called
 
     @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
     )
     def test_approve_privacy_request_no_user_on_client(
         self,
@@ -3765,10 +3782,10 @@ class TestApprovePrivacyRequest:
         assert submit_mock.called
 
     @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
     )
     @mock.patch(
-        "fides.api.api.v1.endpoints.privacy_request_endpoints.dispatch_message_task.apply_async"
+        "fides.service.messaging.messaging_service.dispatch_message_task.apply_async"
     )
     def test_approve_privacy_request(
         self,
@@ -3821,10 +3838,10 @@ class TestApprovePrivacyRequest:
         privacy_request.delete(db)
 
     @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
     )
     @mock.patch(
-        "fides.api.api.v1.endpoints.privacy_request_endpoints.dispatch_message_task.apply_async"
+        "fides.service.messaging.messaging_service.dispatch_message_task.apply_async"
     )
     def test_approve_privacy_request_with_custom_fields(
         self,
@@ -3879,10 +3896,10 @@ class TestApprovePrivacyRequest:
         privacy_request.delete(db)
 
     @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
     )
     @mock.patch(
-        "fides.api.api.v1.endpoints.privacy_request_endpoints.dispatch_message_task.apply_async"
+        "fides.service.messaging.messaging_service.dispatch_message_task.apply_async"
     )
     def test_approve_privacy_request_creates_audit_log_and_sends_email(
         self,
@@ -3918,7 +3935,7 @@ class TestApprovePrivacyRequest:
         ).first()
 
         assert approval_audit_log is not None
-        assert approval_audit_log.message == ""
+        assert approval_audit_log.message == None
 
         approval_audit_log.delete(db)
 
@@ -4072,10 +4089,10 @@ class TestMarkPrivacyRequestPreApproveEligible:
         assert response.status_code == 400
 
     @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
     )
     @mock.patch(
-        "fides.api.api.v1.endpoints.privacy_request_endpoints.dispatch_message_task.apply_async"
+        "fides.service.messaging.messaging_service.dispatch_message_task.apply_async"
     )
     def test_mark_eligible_but_not_all_webhook_replies_received(
         self,
@@ -4102,10 +4119,10 @@ class TestMarkPrivacyRequestPreApproveEligible:
         assert not mock_dispatch_message.called
 
     @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
     )
     @mock.patch(
-        "fides.api.api.v1.endpoints.privacy_request_endpoints.dispatch_message_task.apply_async"
+        "fides.service.messaging.messaging_service.dispatch_message_task.apply_async"
     )
     def test_mark_eligible_webhook_deleted(
         self,
@@ -4145,10 +4162,10 @@ class TestMarkPrivacyRequestPreApproveEligible:
         assert mock_dispatch_message.called
 
     @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
     )
     @mock.patch(
-        "fides.api.api.v1.endpoints.privacy_request_endpoints.dispatch_message_task.apply_async"
+        "fides.service.messaging.messaging_service.dispatch_message_task.apply_async"
     )
     def test_mark_eligible_but_some_webhooks_not_eligible(
         self,
@@ -4185,10 +4202,10 @@ class TestMarkPrivacyRequestPreApproveEligible:
         assert not mock_dispatch_message.called
 
     @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
     )
     @mock.patch(
-        "fides.api.api.v1.endpoints.privacy_request_endpoints.dispatch_message_task.apply_async"
+        "fides.service.messaging.messaging_service.dispatch_message_task.apply_async"
     )
     def test_mark_eligible_and_all_webhooks_eligible(
         self,
@@ -4231,7 +4248,7 @@ class TestMarkPrivacyRequestPreApproveEligible:
         ).first()
 
         assert approval_audit_log is not None
-        assert approval_audit_log.message == ""
+        assert approval_audit_log.message == None
         assert approval_audit_log.webhook_id == pre_approval_webhooks[1].id
 
         approval_audit_log.delete(db)
@@ -4362,10 +4379,10 @@ class TestMarkPrivacyRequestPreApproveNotEligible:
         assert response.status_code == 400
 
     @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
     )
     @mock.patch(
-        "fides.api.api.v1.endpoints.privacy_request_endpoints.dispatch_message_task.apply_async"
+        "fides.service.messaging.messaging_service.dispatch_message_task.apply_async"
     )
     def test_mark_not_eligible(
         self,
@@ -4392,10 +4409,10 @@ class TestMarkPrivacyRequestPreApproveNotEligible:
         assert not mock_dispatch_message.called
 
     @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
     )
     @mock.patch(
-        "fides.api.api.v1.endpoints.privacy_request_endpoints.dispatch_message_task.apply_async"
+        "fides.service.messaging.messaging_service.dispatch_message_task.apply_async"
     )
     def test_mark_not_eligible_with_previous_eligible(
         self,
@@ -4459,7 +4476,7 @@ class TestDenyPrivacyRequest:
         assert response.status_code == 403
 
     @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
     )
     def test_deny_privacy_request_does_not_exist(
         self, submit_mock, db, url, api_client, generate_auth_header, privacy_request
@@ -4480,7 +4497,7 @@ class TestDenyPrivacyRequest:
         assert not submit_mock.called
 
     @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
     )
     def test_deny_completed_privacy_request(
         self, submit_mock, db, url, api_client, generate_auth_header, privacy_request
@@ -4501,7 +4518,7 @@ class TestDenyPrivacyRequest:
         assert not submit_mock.called
 
     @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
     )
     def test_deny_deleted_privacy_request(
         self,
@@ -4531,10 +4548,10 @@ class TestDenyPrivacyRequest:
         assert not submit_mock.called
 
     @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
     )
     @mock.patch(
-        "fides.api.api.v1.endpoints.privacy_request_endpoints.dispatch_message_task.apply_async"
+        "fides.service.messaging.messaging_service.dispatch_message_task.apply_async"
     )
     def test_deny_privacy_request_without_denial_reason(
         self,
@@ -4604,10 +4621,10 @@ class TestDenyPrivacyRequest:
         privacy_request.delete(db)
 
     @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
     )
     @mock.patch(
-        "fides.api.api.v1.endpoints.privacy_request_endpoints.dispatch_message_task.apply_async"
+        "fides.service.messaging.messaging_service.dispatch_message_task.apply_async"
     )
     def test_deny_privacy_request_with_denial_reason(
         self,
@@ -4805,7 +4822,7 @@ class TestResumePrivacyRequest:
         )
 
     @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
     )
     def test_resume_privacy_request(
         self,
@@ -4970,7 +4987,7 @@ class TestBulkRestartFromFailure:
         ]
 
     @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
     )
     def test_restart_from_failure_no_stopped_step(
         self, submit_mock, api_client, url, generate_auth_header, db, privacy_requests
@@ -4994,13 +5011,16 @@ class TestBulkRestartFromFailure:
 
         # Just restarted from the beginning
         submit_mock.assert_called_with(
-            privacy_request_id=privacy_requests[0].id,
-            from_step=None,
-            from_webhook_id=None,
+            queue=DSR_QUEUE_NAME,
+            kwargs={
+                "privacy_request_id": privacy_requests[0].id,
+                "from_step": None,
+                "from_webhook_id": None,
+            },
         )
 
     @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
     )
     def test_restart_from_failure_from_specific_collection(
         self, submit_mock, api_client, url, generate_auth_header, db, privacy_requests
@@ -5028,13 +5048,16 @@ class TestBulkRestartFromFailure:
         assert privacy_requests[0].id in succeeded_ids
 
         submit_mock.assert_called_with(
-            privacy_request_id=privacy_requests[0].id,
-            from_step=CurrentStep.access.value,
-            from_webhook_id=None,
+            queue=DSR_QUEUE_NAME,
+            kwargs={
+                "privacy_request_id": privacy_requests[0].id,
+                "from_step": CurrentStep.access.value,
+                "from_webhook_id": None,
+            },
         )
 
     @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
     )
     def test_restart_from_failure_outside_graph(
         self, submit_mock, api_client, url, generate_auth_header, db, privacy_requests
@@ -5060,13 +5083,16 @@ class TestBulkRestartFromFailure:
         assert privacy_requests[0].id in succeeded_ids
 
         submit_mock.assert_called_with(
-            privacy_request_id=privacy_requests[0].id,
-            from_step=CurrentStep.email_post_send.value,
-            from_webhook_id=None,
+            queue=DSR_QUEUE_NAME,
+            kwargs={
+                "privacy_request_id": privacy_requests[0].id,
+                "from_step": CurrentStep.email_post_send.value,
+                "from_webhook_id": None,
+            },
         )
 
     @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
     )
     def test_mixed_result(
         self, submit_mock, api_client, url, generate_auth_header, db, privacy_requests
@@ -5096,9 +5122,12 @@ class TestBulkRestartFromFailure:
         assert bad_test_id in failed_ids
 
         submit_mock.assert_called_with(
-            privacy_request_id=privacy_requests[0].id,
-            from_step=CurrentStep.access.value,
-            from_webhook_id=None,
+            queue=DSR_QUEUE_NAME,
+            kwargs={
+                "privacy_request_id": privacy_requests[0].id,
+                "from_step": CurrentStep.access.value,
+                "from_webhook_id": None,
+            },
         )
 
 
@@ -5151,7 +5180,7 @@ class TestRestartFromFailure:
         )
 
     @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
     )
     def test_restart_from_failure_no_stopped_step(
         self, submit_mock, api_client, url, generate_auth_header, db, privacy_request
@@ -5167,15 +5196,18 @@ class TestRestartFromFailure:
         assert privacy_request.status == PrivacyRequestStatus.in_processing
 
         submit_mock.assert_called_with(
-            privacy_request_id=privacy_request.id,
-            from_step=None,
-            from_webhook_id=None,
+            queue=DSR_QUEUE_NAME,
+            kwargs={
+                "privacy_request_id": privacy_request.id,
+                "from_step": None,
+                "from_webhook_id": None,
+            },
         )
 
         privacy_request.delete(db)
 
     @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
     )
     def test_restart_from_failure_from_access_step(
         self, submit_mock, api_client, url, generate_auth_header, db, privacy_request
@@ -5195,13 +5227,16 @@ class TestRestartFromFailure:
         assert privacy_request.status == PrivacyRequestStatus.in_processing
 
         submit_mock.assert_called_with(
-            privacy_request_id=privacy_request.id,
-            from_step=CurrentStep.access.value,
-            from_webhook_id=None,
+            queue=DSR_QUEUE_NAME,
+            kwargs={
+                "privacy_request_id": privacy_request.id,
+                "from_step": CurrentStep.access.value,
+                "from_webhook_id": None,
+            },
         )
 
     @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
     )
     def test_restart_from_email_post_send(
         self, submit_mock, api_client, url, generate_auth_header, db, privacy_request
@@ -5221,9 +5256,12 @@ class TestRestartFromFailure:
         assert privacy_request.status == PrivacyRequestStatus.in_processing
 
         submit_mock.assert_called_with(
-            privacy_request_id=privacy_request.id,
-            from_step=CurrentStep.email_post_send.value,
-            from_webhook_id=None,
+            queue=DSR_QUEUE_NAME,
+            kwargs={
+                "privacy_request_id": privacy_request.id,
+                "from_step": CurrentStep.email_post_send.value,
+                "from_webhook_id": None,
+            },
         )
 
 
@@ -5256,7 +5294,7 @@ class TestVerifyIdentity:
         )
 
     @mock.patch(
-        "fides.api.api.v1.endpoints.privacy_request_endpoints.dispatch_message_task.apply_async"
+        "fides.service.messaging.messaging_service.dispatch_message_task.apply_async"
     )
     def test_verification_code_expired(
         self,
@@ -5280,7 +5318,7 @@ class TestVerifyIdentity:
         assert not mock_dispatch_message.called
 
     @mock.patch(
-        "fides.api.api.v1.endpoints.privacy_request_endpoints.dispatch_message_task.apply_async"
+        "fides.service.messaging.messaging_service.dispatch_message_task.apply_async"
     )
     def test_invalid_code(
         self,
@@ -5305,7 +5343,7 @@ class TestVerifyIdentity:
         assert not mock_dispatch_message.called
 
     @mock.patch(
-        "fides.api.api.v1.endpoints.privacy_request_endpoints.dispatch_message_task.apply_async"
+        "fides.service.messaging.messaging_service.dispatch_message_task.apply_async"
     )
     def test_too_many_attempts(
         self,
@@ -5345,10 +5383,10 @@ class TestVerifyIdentity:
         assert privacy_request._get_cached_verification_code_attempt_count() == 0
 
     @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
     )
     @mock.patch(
-        "fides.api.api.v1.endpoints.privacy_request_endpoints.dispatch_message_task.apply_async"
+        "fides.service.messaging.messaging_service.dispatch_message_task.apply_async"
     )
     def test_verify_identity_no_admin_approval_needed(
         self,
@@ -5408,10 +5446,10 @@ class TestVerifyIdentity:
         assert queue == MESSAGING_QUEUE_NAME
 
     @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
     )
     @mock.patch(
-        "fides.api.api.v1.endpoints.privacy_request_endpoints.dispatch_message_task.apply_async"
+        "fides.service.messaging.messaging_service.dispatch_message_task.apply_async"
     )
     @mock.patch(
         "fides.api.models.privacy_request.PrivacyRequest.trigger_pre_approval_webhook"
@@ -5462,10 +5500,10 @@ class TestVerifyIdentity:
         assert mock_trigger_pre_approval_webhook.called
 
     @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
     )
     @mock.patch(
-        "fides.api.api.v1.endpoints.privacy_request_endpoints.dispatch_message_task.apply_async"
+        "fides.service.messaging.messaging_service.dispatch_message_task.apply_async"
     )
     def test_verify_identity_no_admin_approval_needed_email_disabled(
         self,
@@ -5507,10 +5545,10 @@ class TestVerifyIdentity:
         assert not mock_dispatch_message.called
 
     @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
     )
     @mock.patch(
-        "fides.api.api.v1.endpoints.privacy_request_endpoints.dispatch_message_task.apply_async"
+        "fides.service.messaging.messaging_service.dispatch_message_task.apply_async"
     )
     def test_verify_identity_admin_approval_needed(
         self,
@@ -5570,10 +5608,10 @@ class TestVerifyIdentity:
         assert queue == MESSAGING_QUEUE_NAME
 
     @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
     )
     @mock.patch(
-        "fides.api.api.v1.endpoints.privacy_request_endpoints.dispatch_message_task.apply_async"
+        "fides.service.messaging.messaging_service.dispatch_message_task.apply_async"
     )
     def test_verify_identity_with_custom_identity_admin_approval_needed(
         self,
@@ -5682,9 +5720,9 @@ class TestCreatePrivacyRequestEmailVerificationRequired:
         pr.delete(db=db)
 
     @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
     )
-    @mock.patch("fides.api.service._verification.dispatch_message")
+    @mock.patch("fides.service.messaging.messaging_service.dispatch_message")
     def test_create_privacy_request_with_email_config(
         self,
         mock_dispatch_message,
@@ -6497,7 +6535,7 @@ class TestResumePrivacyRequestFromRequiresInput:
         )
 
     @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
     )
     def test_resume_from_requires_input_status_data_empty_but_confirmed(
         self,
@@ -6521,13 +6559,17 @@ class TestResumePrivacyRequestFromRequiresInput:
         assert response.json()["status"] == PrivacyRequestStatus.in_processing
         assert run_privacy_request_mock.called
 
-        call_kwargs = run_privacy_request_mock.call_args.kwargs
-        assert call_kwargs["privacy_request_id"] == privacy_request_requires_input.id
-        assert call_kwargs["from_webhook_id"] is None
-        assert call_kwargs["from_step"] is None
+        run_privacy_request_mock.assert_called_with(
+            queue=DSR_QUEUE_NAME,
+            kwargs={
+                "privacy_request_id": privacy_request_requires_input.id,
+                "from_webhook_id": None,
+                "from_step": None,
+            },
+        )
 
     @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
     )
     def test_resume_from_requires_input_status(
         self,
@@ -6547,10 +6589,14 @@ class TestResumePrivacyRequestFromRequiresInput:
         assert response.json()["status"] == PrivacyRequestStatus.in_processing
         assert run_privacy_request_mock.called
 
-        call_kwargs = run_privacy_request_mock.call_args.kwargs
-        assert call_kwargs["privacy_request_id"] == privacy_request_requires_input.id
-        assert call_kwargs["from_webhook_id"] is None
-        assert call_kwargs["from_step"] is None
+        run_privacy_request_mock.assert_called_with(
+            queue=DSR_QUEUE_NAME,
+            kwargs={
+                "privacy_request_id": privacy_request_requires_input.id,
+                "from_webhook_id": None,
+                "from_step": None,
+            },
+        )
 
 
 class TestCreatePrivacyRequestEmailReceiptNotification:
@@ -6569,10 +6615,10 @@ class TestCreatePrivacyRequestEmailReceiptNotification:
         ApplicationConfig.update_config_set(db, CONFIG)
 
     @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
     )
     @mock.patch(
-        "fides.api.api.v1.endpoints.privacy_request_endpoints.dispatch_message_task.apply_async"
+        "fides.service.messaging.messaging_service.dispatch_message_task.apply_async"
     )
     def test_create_privacy_request_no_email_config(
         self,
@@ -6622,10 +6668,10 @@ class TestCreatePrivacyRequestEmailReceiptNotification:
         pr.delete(db=db)
 
     @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
     )
     @mock.patch(
-        "fides.api.api.v1.endpoints.privacy_request_endpoints.dispatch_message_task.apply_async"
+        "fides.service.messaging.messaging_service.dispatch_message_task.apply_async"
     )
     def test_create_privacy_request_with_email_config(
         self,
@@ -6690,7 +6736,7 @@ class TestCreatePrivacyRequestAuthenticated:
         ApplicationConfig.update_config_set(db, CONFIG)
 
     @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
     )
     def test_create_privacy_request(
         self,
@@ -6723,7 +6769,7 @@ class TestCreatePrivacyRequestAuthenticated:
         ],
     )
     @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
     )
     def test_request_manager_privacy_request_stores_submitted_by(
         self,
@@ -6764,7 +6810,7 @@ class TestCreatePrivacyRequestAuthenticated:
 
     @pytest.mark.usefixtures("verification_config")
     @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
     )
     def test_create_privacy_request_bypass_verification(
         self,
@@ -6816,7 +6862,7 @@ class TestCreatePrivacyRequestAuthenticated:
         assert 403 == response.status_code
 
     @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
     )
     def test_create_privacy_request_stores_identities(
         self,
@@ -6852,7 +6898,7 @@ class TestCreatePrivacyRequestAuthenticated:
 
     @pytest.mark.usefixtures("require_manual_request_approval")
     @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
     )
     def test_create_privacy_request_require_manual_approval(
         self,
@@ -6878,7 +6924,7 @@ class TestCreatePrivacyRequestAuthenticated:
         assert not run_access_request_mock.called
 
     @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
     )
     def test_create_privacy_request_with_masking_configuration(
         self,
@@ -6932,7 +6978,7 @@ class TestCreatePrivacyRequestAuthenticated:
         )
 
     @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
     )
     def test_create_privacy_request_starts_processing(
         self,
@@ -6955,7 +7001,7 @@ class TestCreatePrivacyRequestAuthenticated:
         assert resp.status_code == 200
 
     @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
     )
     def test_create_privacy_request_with_external_id(
         self,
@@ -6986,7 +7032,7 @@ class TestCreatePrivacyRequestAuthenticated:
         assert run_access_request_mock.called
 
     @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
     )
     def test_create_privacy_request_caches_identity(
         self,
@@ -7016,7 +7062,7 @@ class TestCreatePrivacyRequestAuthenticated:
         assert run_access_request_mock.called
 
     @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
     )
     def test_create_privacy_request_caches_masking_secrets(
         self,
@@ -7074,7 +7120,7 @@ class TestCreatePrivacyRequestAuthenticated:
         )
 
     @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
     )
     def test_create_privacy_request_caches_encryption_keys(
         self,
@@ -7155,7 +7201,7 @@ class TestCreatePrivacyRequestAuthenticated:
         assert pr.get_async_execution_task() is not None
 
     @mock.patch(
-        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.delay"
+        "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
     )
     def test_create_privacy_request_creates_system_audit_log(
         self,
@@ -7561,7 +7607,7 @@ class TestRequeuePrivacyRequest:
         assert 400 == response.status_code
         assert (
             response.json()["detail"]
-            == f"Request failed. Cannot re-queue privacy request {privacy_request.id} with status {privacy_request.status.value}"
+            == f"Cannot re-queue privacy request {privacy_request.id} with status {privacy_request.status.value}"
         )
 
     def test_requeue_deleted_privacy_request(
@@ -7584,7 +7630,7 @@ class TestRequeuePrivacyRequest:
         )
 
     @mock.patch(
-        "fides.api.api.v1.endpoints.privacy_request_endpoints.queue_privacy_request"
+        "fides.service.privacy_request.privacy_request_service.queue_privacy_request"
     )
     def test_requeue_privacy_request_from_cached_failure_point(
         self,
@@ -7609,7 +7655,7 @@ class TestRequeuePrivacyRequest:
 
     @pytest.mark.usefixtures("consent_request_task")
     @mock.patch(
-        "fides.api.api.v1.endpoints.privacy_request_endpoints.queue_privacy_request"
+        "fides.service.privacy_request.privacy_request_service.queue_privacy_request"
     )
     def test_requeue_privacy_request_with_consent_tasks(
         self,
@@ -7630,7 +7676,7 @@ class TestRequeuePrivacyRequest:
 
     @pytest.mark.usefixtures("erasure_request_task", "request_task")
     @mock.patch(
-        "fides.api.api.v1.endpoints.privacy_request_endpoints.queue_privacy_request"
+        "fides.service.privacy_request.privacy_request_service.queue_privacy_request"
     )
     def test_requeue_privacy_request_with_erasure_tasks(
         self,
@@ -7658,7 +7704,7 @@ class TestRequeuePrivacyRequest:
 
     @pytest.mark.usefixtures("erasure_request_task", "request_task")
     @mock.patch(
-        "fides.api.api.v1.endpoints.privacy_request_endpoints.queue_privacy_request"
+        "fides.service.privacy_request.privacy_request_service.queue_privacy_request"
     )
     def test_requeue_privacy_request_erasure_tasks_but_access_step_not_complete(
         self,
@@ -7679,7 +7725,7 @@ class TestRequeuePrivacyRequest:
 
     @pytest.mark.usefixtures("request_task")
     @mock.patch(
-        "fides.api.api.v1.endpoints.privacy_request_endpoints.queue_privacy_request"
+        "fides.service.privacy_request.privacy_request_service.queue_privacy_request"
     )
     def test_requeue_privacy_request_with_access_tasks(
         self,
@@ -8401,6 +8447,7 @@ class TestPrivacyRequestFilteredResults:
         response = api_client.get(url, headers=auth_header)
         assert response.status_code == 403
 
+    @pytest.mark.integration_postgres
     @pytest.mark.usefixtures("default_access_policy", "dsr_testing_tools_enabled")
     @pytest.mark.parametrize(
         "auth_header,expected_status",
@@ -8414,24 +8461,34 @@ class TestPrivacyRequestFilteredResults:
     )
     def test_filtered_results_with_roles(
         self,
-        db,
-        privacy_request,
+        connection_config,
+        postgres_example_test_dataset_config,
         auth_header,
         expected_status,
-        test_client: TestClient,
+        api_client: TestClient,
+        generate_auth_header,
         request,
     ) -> None:
-        # this endpoint is only for test privacy requests
-        privacy_request.source = PrivacyRequestSource.dataset_test
-        db.commit()
-
-        url = V1_URL_PREFIX + PRIVACY_REQUEST_FILTERED_RESULTS.format(
-            privacy_request_id=privacy_request.id
+        dataset_url = get_connection_dataset_url(
+            connection_config, postgres_example_test_dataset_config
         )
-        auth_header = request.getfixturevalue(auth_header)
-        response = test_client.get(
+        response = api_client.post(
+            dataset_url + "/test",
+            headers=generate_auth_header(scopes=[DATASET_TEST]),
+            json={
+                "policy_key": "default_access_policy",
+                "identities": {"email": "jane@example.com"},
+            },
+        )
+        assert response.status_code == HTTP_200_OK
+
+        privacy_request_id = response.json()["privacy_request_id"]
+        url = V1_URL_PREFIX + PRIVACY_REQUEST_FILTERED_RESULTS.format(
+            privacy_request_id=privacy_request_id
+        )
+        response = api_client.get(
             url,
-            headers=auth_header,
+            headers=request.getfixturevalue(auth_header),
         )
         assert response.status_code == expected_status
 
@@ -8453,7 +8510,10 @@ class TestPrivacyRequestFilteredResults:
         response = api_client.post(
             dataset_url + "/test",
             headers=auth_header,
-            json={"email": "jane@example.com"},
+            json={
+                "policy_key": "default_access_policy",
+                "identities": {"email": "jane@example.com"},
+            },
         )
         assert response.status_code == HTTP_200_OK
 
@@ -8493,7 +8553,10 @@ class TestPrivacyRequestFilteredResults:
         response = api_client.post(
             dataset_url + "/test",
             headers=auth_header,
-            json={"email": "jane@example.com"},
+            json={
+                "policy_key": "default_access_policy",
+                "identities": {"email": "jane@example.com"},
+            },
         )
         assert response.status_code == HTTP_200_OK
 
@@ -8539,8 +8602,11 @@ class TestPrivacyRequestFilteredResults:
             dataset_url + "/test",
             headers=auth_header,
             json={
-                "email": "employee-1@example.com",
-                "postgres_example_test_dataset:customer:id": 1,
+                "policy_key": "default_access_policy",
+                "identities": {
+                    "email": "employee-1@example.com",
+                    "postgres_example_test_dataset:customer:id": 1,
+                },
             },
         )
         assert response.status_code == HTTP_200_OK
@@ -8560,3 +8626,64 @@ class TestPrivacyRequestFilteredResults:
             "status",
             "results",
         }
+
+
+class TestResubmitPrivacyRequest:
+    @pytest.fixture(scope="function")
+    def url(self, privacy_request):
+        return V1_URL_PREFIX + PRIVACY_REQUEST_RESUBMIT.format(
+            privacy_request_id=privacy_request.id
+        )
+
+    def test_resubmit_privacy_request_not_authenticated(self, url, api_client) -> None:
+        response = api_client.post(url, headers={})
+        assert response.status_code == 401
+
+    def test_resubmit_privacy_request_wrong_scope(
+        self,
+        url,
+        api_client: TestClient,
+        generate_auth_header,
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[DATASET_CREATE_OR_UPDATE])
+        response = api_client.post(url, headers=auth_header)
+        assert response.status_code == 403
+
+    @pytest.mark.parametrize(
+        "auth_header,expected_status",
+        [
+            ("owner_auth_header", HTTP_200_OK),
+            ("contributor_auth_header", HTTP_200_OK),
+            ("viewer_and_approver_auth_header", HTTP_403_FORBIDDEN),
+            ("viewer_auth_header", HTTP_403_FORBIDDEN),
+            ("approver_auth_header", HTTP_403_FORBIDDEN),
+        ],
+    )
+    def test_resubmit_privacy_request_with_roles(
+        self,
+        url,
+        auth_header,
+        expected_status,
+        test_client: TestClient,
+        request,
+    ) -> None:
+
+        auth_header = request.getfixturevalue(auth_header)
+        response = test_client.post(
+            url,
+            headers=auth_header,
+        )
+        assert response.status_code == expected_status
+
+    def test_resubmit_privacy_request(
+        self,
+        url,
+        api_client: TestClient,
+        generate_auth_header,
+    ) -> None:
+        auth_header = generate_auth_header(scopes=[PRIVACY_REQUEST_CREATE])
+        response = api_client.post(
+            url,
+            headers=auth_header,
+        )
+        assert response.status_code == HTTP_200_OK

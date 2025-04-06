@@ -6,12 +6,10 @@ from sqlalchemy import column, select, table
 
 from fides.api.graph.config import CollectionAddress, FieldPath
 from fides.api.models.audit_log import AuditLog, AuditLogAction
-from fides.api.models.privacy_request import (
-    ExecutionLog,
-    ExecutionLogStatus,
-    PrivacyRequestStatus,
-)
+from fides.api.models.privacy_request import ExecutionLog
+from fides.api.schemas.privacy_request import ExecutionLogStatus, PrivacyRequestStatus
 from fides.api.util.data_category import DataCategory
+from tests.ops.integration_tests.test_execution import get_sorted_execution_logs
 from tests.ops.service.privacy_request.test_request_runner_service import (
     PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL,
     get_privacy_request_results,
@@ -160,9 +158,16 @@ def test_upload_access_results_has_data_use_map(
     "dsr_version",
     ["use_dsr_3_0", "use_dsr_2_0"],
 )
+@pytest.mark.parametrize(
+    "dataset_config",
+    [
+        "postgres_example_test_dataset_config_read_access",
+        "postgres_example_test_dataset_config_read_access_without_primary_keys",
+    ],
+)
 def test_create_and_process_access_request_postgres(
     trigger_webhook_mock,
-    postgres_example_test_dataset_config_read_access,
+    dataset_config,
     postgres_integration_db,
     db,
     cache,
@@ -174,6 +179,7 @@ def test_create_and_process_access_request_postgres(
     run_privacy_request_task,
 ):
     request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+    request.getfixturevalue(dataset_config)
 
     customer_email = "customer-1@example.com"
     data = {
@@ -196,7 +202,7 @@ def test_create_and_process_access_request_postgres(
         assert results[key] is not None
         assert results[key] != {}
 
-    result_key_prefix = f"postgres_example_test_dataset:"
+    result_key_prefix = "postgres_example_test_dataset:"
     customer_key = result_key_prefix + "customer"
     assert results[customer_key][0]["email"] == customer_email
 
@@ -278,14 +284,14 @@ def test_create_and_process_access_request_with_custom_identities_postgres(
         assert results[key] is not None
         assert results[key] != {}
 
-    result_key_prefix = f"postgres_example_test_dataset:"
+    result_key_prefix = "postgres_example_test_dataset:"
     customer_key = result_key_prefix + "customer"
     assert results[customer_key][0]["email"] == customer_email
 
     visit_key = result_key_prefix + "visit"
     assert results[visit_key][0]["email"] == customer_email
 
-    loyalty_key = f"postgres_example_test_extended_dataset:loyalty"
+    loyalty_key = "postgres_example_test_extended_dataset:loyalty"
     assert results[loyalty_key][0]["id"] == loyalty_id
 
     log_id = pr.execution_logs[0].id
@@ -355,7 +361,7 @@ def test_create_and_process_access_request_with_valid_skipped_collection(
 
     assert "login" not in results.keys()
 
-    result_key_prefix = f"postgres_example_test_dataset:"
+    result_key_prefix = "postgres_example_test_dataset:"
     customer_key = result_key_prefix + "customer"
     assert results[customer_key][0]["email"] == customer_email
 
@@ -442,9 +448,30 @@ def test_create_and_process_access_request_postgres_with_disabled_integration(
         task_timeout=PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL,
     )
 
-    for execution_log in pr.execution_logs:
-        assert execution_log.dataset_name == "Dataset traversal"
-        assert execution_log.status == ExecutionLogStatus.error
+    execution_logs = pr.execution_logs.order_by("created_at")
+    logs = {
+        (log.dataset_name, log.status.value, log.collection_name)
+        for log in execution_logs
+    }
+
+    assert logs == {
+        ("Dataset reference validation", "complete", None),
+        (
+            "Dataset traversal",
+            "skipped",
+            "postgres_example_test_dataset.service_request",
+        ),
+        ("Dataset traversal", "skipped", "postgres_example_test_dataset.product"),
+        ("Dataset traversal", "skipped", "postgres_example_test_dataset.login"),
+        ("Dataset traversal", "skipped", "postgres_example_test_dataset.visit"),
+        ("Dataset traversal", "skipped", "postgres_example_test_dataset.report"),
+        ("Dataset traversal", "skipped", "postgres_example_test_dataset.order_item"),
+        ("Dataset traversal", "skipped", "postgres_example_test_dataset.address"),
+        ("Dataset traversal", "skipped", "postgres_example_test_dataset.orders"),
+        ("Dataset traversal", "skipped", "postgres_example_test_dataset.payment_card"),
+        ("Dataset traversal", "skipped", "postgres_example_test_dataset.employee"),
+        ("Dataset traversal", "skipped", "postgres_example_test_dataset.customer"),
+    }
 
     connection_config.disabled = True
     connection_config.save(db=db)
@@ -457,11 +484,19 @@ def test_create_and_process_access_request_postgres_with_disabled_integration(
         task_timeout=PRIVACY_REQUEST_TASK_TIMEOUT_EXTERNAL,
     )
 
-    assert pr.execution_logs.count() == 1
+    logs = get_sorted_execution_logs(db, pr)
 
-    execution_log = pr.execution_logs[0]
-    assert execution_log.dataset_name == "Dataset traversal"
-    assert execution_log.status == ExecutionLogStatus.complete
+    if dsr_version == "use_dsr_3_0":
+        assert logs == [
+            ("Dataset reference validation", "complete"),
+            ("Dataset traversal", "complete"),
+            ("Dataset reference validation", "complete"),
+        ]
+    else:
+        assert logs == [
+            ("Dataset reference validation", "complete"),
+            ("Dataset traversal", "complete"),
+        ]
 
 
 @pytest.mark.integration_postgres
@@ -712,9 +747,16 @@ def test_create_and_process_erasure_request_with_table_joins(
     "dsr_version",
     ["use_dsr_3_0", "use_dsr_2_0"],
 )
+@pytest.mark.parametrize(
+    "dataset_config",
+    [
+        "postgres_example_test_dataset_config_read_access",
+        "postgres_example_test_dataset_config_read_access_without_primary_keys",
+    ],
+)
 def test_create_and_process_erasure_request_read_access(
     postgres_integration_db,
-    postgres_example_test_dataset_config_read_access,
+    dataset_config,
     db,
     cache,
     erasure_policy,
@@ -723,6 +765,7 @@ def test_create_and_process_erasure_request_read_access(
     run_privacy_request_task,
 ):
     request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+    request.getfixturevalue(dataset_config)
 
     customer_email = "customer-2@example.com"
     customer_id = 2
@@ -739,7 +782,7 @@ def test_create_and_process_erasure_request_read_access(
         data,
     )
     errored_execution_logs = pr.execution_logs.filter_by(status="error")
-    assert errored_execution_logs.count() == 9
+    assert errored_execution_logs.count() == 11
     assert (
         errored_execution_logs[0].message
         == "No values were erased since this connection "

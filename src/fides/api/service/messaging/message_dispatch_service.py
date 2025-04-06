@@ -19,10 +19,6 @@ from fides.api.models.messaging import (  # type: ignore[attr-defined]
     get_messaging_method,
 )
 from fides.api.models.messaging_template import MessagingTemplate
-from fides.api.models.privacy_request import (
-    PrivacyRequestError,
-    PrivacyRequestNotifications,
-)
 from fides.api.schemas.messaging.messaging import (
     CONFIGURABLE_MESSAGING_ACTION_TYPES,
     AccessRequestCompleteBodyParams,
@@ -42,62 +38,18 @@ from fides.api.schemas.messaging.messaging import (
     UserInviteBodyParams,
 )
 from fides.api.schemas.redis_cache import Identity
-from fides.api.service.connectors.base_email_connector import (
-    get_email_messaging_config_service_type,
-)
 from fides.api.service.messaging.messaging_crud_service import (
     get_basic_messaging_template_by_type_or_default,
     get_enabled_messaging_template_by_type_and_property,
 )
-from fides.api.tasks import MESSAGING_QUEUE_NAME, DatabaseTask, celery_app
+from fides.api.tasks import DatabaseTask, celery_app
 from fides.api.util.logger import Pii
 from fides.config import CONFIG
 from fides.config.config_proxy import ConfigProxy
+from fides.service.messaging.aws_ses_service import AWS_SES_Service
 
 EMAIL_JOIN_STRING = ", "
 EMAIL_TEMPLATE_NAME = "fides"
-
-
-def check_and_dispatch_error_notifications(db: Session) -> None:
-    config_proxy = ConfigProxy(db)
-    privacy_request_notifications = PrivacyRequestNotifications.all(db=db)
-    if not privacy_request_notifications:
-        return None
-
-    unsent_errors = PrivacyRequestError.filter(
-        db=db, conditions=(PrivacyRequestError.message_sent.is_(False))
-    ).all()
-    if not unsent_errors:
-        return None
-
-    email_config = (
-        config_proxy.notifications.notification_service_type in EMAIL_MESSAGING_SERVICES
-    )
-
-    if (
-        email_config
-        and len(unsent_errors) >= privacy_request_notifications[0].notify_after_failures
-    ):
-        for email in privacy_request_notifications[0].email.split(EMAIL_JOIN_STRING):
-            dispatch_message_task.apply_async(
-                queue=MESSAGING_QUEUE_NAME,
-                kwargs={
-                    "message_meta": FidesopsMessage(
-                        action_type=MessagingActionType.PRIVACY_REQUEST_ERROR_NOTIFICATION,
-                        body_params=ErrorNotificationBodyParams(
-                            unsent_errors=len(unsent_errors)
-                        ),
-                    ).model_dump(mode="json"),
-                    "service_type": config_proxy.notifications.notification_service_type,
-                    "to_identity": {"email": email},
-                    "property_id": None,
-                },
-            )
-
-        for error in unsent_errors:
-            error.update(db=db, data={"message_sent": True})
-
-    return None
 
 
 @celery_app.task(base=DatabaseTask, bind=True)
@@ -114,12 +66,12 @@ def dispatch_message_task(
     schema = FidesopsMessage.model_validate(message_meta)
     with self.get_new_session() as db:
         dispatch_message(
-            db,
-            schema.action_type,
-            Identity.model_validate(to_identity),
-            service_type,
-            schema.body_params,
-            property_id,
+            db=db,
+            action_type=schema.action_type,
+            to_identity=Identity.model_validate(to_identity),
+            service_type=service_type,
+            message_body_params=schema.body_params,
+            property_id=property_id,
         )
 
 
@@ -185,6 +137,7 @@ def message_send_enabled(
     property_specific_messaging_enabled = ConfigProxy(
         db
     ).notifications.enable_property_specific_messaging
+
     if property_specific_messaging_enabled:
         # Only email messaging method is supported when property-specific messaging is enabled.
         service_type = get_email_messaging_config_service_type(db=db)
@@ -210,6 +163,7 @@ def message_send_enabled(
 def dispatch_message(
     db: Session,
     action_type: MessagingActionType,
+    *,
     to_identity: Optional[Identity],
     service_type: Optional[str],
     message_body_params: Optional[
@@ -316,14 +270,21 @@ def dispatch_message(
     if subject_override and isinstance(message, EmailForActionType):
         message.subject = subject_override
 
+    to = (
+        to_identity.email
+        if messaging_method == MessagingMethod.EMAIL
+        else to_identity.phone_number
+    )
+
+    if not to:
+        error_message = f"No {'email' if messaging_method == MessagingMethod.EMAIL else 'phone'} identity supplied."
+        logger.error(f"Message failed to send. {error_message}")
+        raise MessageDispatchException(error_message)
+
     dispatcher(
         messaging_config,
         message,
-        (
-            to_identity.email
-            if messaging_method == MessagingMethod.EMAIL
-            else to_identity.phone_number
-        ),
+        to,
     )
 
 
@@ -517,27 +478,38 @@ def _get_dispatcher_from_config_type(
         MessagingServiceType.mailchimp_transactional: _mailchimp_transactional_dispatcher,
         MessagingServiceType.twilio_text: _twilio_sms_dispatcher,
         MessagingServiceType.twilio_email: _twilio_email_dispatcher,
+        MessagingServiceType.aws_ses: _aws_ses_dispatcher,
     }
     return handler.get(message_service_type)  # type: ignore
+
+
+def validate_config(
+    messaging_config: MessagingConfig,
+    config_name: str,
+    validate_details: Optional[bool] = True,
+) -> None:
+    """
+    Validates that the messaging config has the required details and secrets.
+    """
+    condition = (
+        not messaging_config.details or not messaging_config.secrets
+        if validate_details
+        else not messaging_config.secrets
+    )
+
+    if condition:
+        error_message = f"No {config_name} config {'details or secrets' if validate_details else 'secrets'} supplied."
+        logger.error(f"Message failed to send. {error_message}")
+        raise MessageDispatchException(error_message)
 
 
 def _mailchimp_transactional_dispatcher(
     messaging_config: MessagingConfig,
     message: EmailForActionType,
-    to: Optional[str],
+    to: str,
 ) -> None:
     """Dispatches email using Mailchimp Transactional"""
-    if not to:
-        logger.error("Message failed to send. No email identity supplied.")
-        raise MessageDispatchException("No email identity supplied.")
-
-    if not messaging_config.details or not messaging_config.secrets:
-        logger.error(
-            "Message failed to send. No Mailchimp Transactional config details or secrets supplied."
-        )
-        raise MessageDispatchException(
-            "No Mailchimp Transactional config details or secrets supplied."
-        )
+    validate_config(messaging_config, "Mailchimp Transactional")
 
     from_email = messaging_config.details[MessagingServiceDetails.EMAIL_FROM.value]
     data = json.dumps(
@@ -586,18 +558,10 @@ def _mailchimp_transactional_dispatcher(
 def _mailgun_dispatcher(
     messaging_config: MessagingConfig,
     message: EmailForActionType,
-    to: Optional[str],
+    to: str,
 ) -> None:
     """Dispatches email using Mailgun"""
-    if not to:
-        logger.error("Message failed to send. No email identity supplied.")
-        raise MessageDispatchException("No email identity supplied.")
-
-    if not messaging_config.details or not messaging_config.secrets:
-        logger.error(
-            "Message failed to send. No mailgun config details or secrets supplied."
-        )
-        raise MessageDispatchException("No mailgun config details or secrets supplied.")
+    validate_config(messaging_config, "Mailgun")
 
     base_url = (
         "https://api.mailgun.net"
@@ -675,19 +639,10 @@ def _mailgun_dispatcher(
 def _twilio_email_dispatcher(
     messaging_config: MessagingConfig,
     message: EmailForActionType,
-    to: Optional[str],
+    to: str,
 ) -> None:
     """Dispatches email using twilio sendgrid"""
-    if not to:
-        logger.error("Message failed to send. No email identity supplied.")
-        raise MessageDispatchException("No email identity supplied.")
-    if not messaging_config.details or not messaging_config.secrets:
-        logger.error(
-            "Message failed to send. No twilio email config details or secrets supplied."
-        )
-        raise MessageDispatchException(
-            "No twilio email config details or secrets supplied."
-        )
+    validate_config(messaging_config, "Twilio email")
 
     try:
         sg = sendgrid.SendGridAPIClient(
@@ -733,15 +688,11 @@ def _twilio_email_dispatcher(
 def _twilio_sms_dispatcher(
     messaging_config: MessagingConfig,
     message: str,
-    to: Optional[str],
+    to: str,
 ) -> None:
     """Dispatches SMS using Twilio"""
-    if not to:
-        logger.error("Message failed to send. No phone identity supplied.")
-        raise MessageDispatchException("No phone identity supplied.")
-    if messaging_config.secrets is None:
-        logger.error("Message failed to send. No config secrets supplied.")
-        raise MessageDispatchException("No config secrets supplied.")
+    validate_config(messaging_config, "Twilio SMS", validate_details=False)
+
     account_sid = messaging_config.secrets[
         MessagingServiceSecrets.TWILIO_ACCOUNT_SID.value
     ]
@@ -773,6 +724,22 @@ def _twilio_sms_dispatcher(
     except TwilioRestException as e:
         logger.error("Twilio SMS failed to send: {}", Pii(str(e)))
         raise MessageDispatchException(f"Twilio SMS failed to send due to: {Pii(e)}")
+
+
+def _aws_ses_dispatcher(
+    messaging_config: MessagingConfig,
+    message: EmailForActionType,
+    to: str,
+) -> None:
+    validate_config(messaging_config, "AWS SES")
+
+    aws_ses_serivce = AWS_SES_Service(messaging_config)
+
+    try:
+        aws_ses_serivce.send_email(to, message.subject, message.body)
+    except Exception as e:
+        logger.error("Email failed to send: {}", Pii(str(e)))
+        raise MessageDispatchException(f"AWS SES email failed to send due to: {Pii(e)}")
 
 
 def _get_template_id_if_exists(
@@ -810,3 +777,64 @@ def _compose_twilio_mail(
         content = Content("text/html", message_body)
         mail = Mail(from_email, to_email, subject, content)
     return mail
+
+
+def get_email_messaging_config_service_type(db: Session) -> Optional[str]:
+    """
+    Email connectors require that an email messaging service has been configured.
+    Prefers Twilio if both Twilio email AND Mailgun has been configured.
+    """
+
+    # if there's a specified messaging service type, and it's an email service, we use that
+    if (
+        configured_service_type := ConfigProxy(
+            db
+        ).notifications.notification_service_type
+    ) is not None and configured_service_type in EMAIL_MESSAGING_SERVICES:
+        return configured_service_type
+
+    # if no specified messaging service type, fall back to hardcoded preference hierarchy
+    messaging_configs: Optional[List[MessagingConfig]] = MessagingConfig.query(
+        db=db
+    ).all()
+    if not messaging_configs:
+        # let messaging dispatch service handle non-existent service
+        return None
+
+    twilio_email_config = next(
+        (
+            config
+            for config in messaging_configs
+            if config.service_type == MessagingServiceType.twilio_email
+        ),
+        None,
+    )
+    if twilio_email_config:
+        # First choice: use Twilio
+        return MessagingServiceType.twilio_email.value
+
+    mailgun_config = next(
+        (
+            config
+            for config in messaging_configs
+            if config.service_type == MessagingServiceType.mailgun
+        ),
+        None,
+    )
+    if mailgun_config:
+        # Second choice: use Mailgun
+        return MessagingServiceType.mailgun.value
+
+    mailchimp_transactional_config = next(
+        (
+            config
+            for config in messaging_configs
+            if config.service_type == MessagingServiceType.mailchimp_transactional
+        ),
+        None,
+    )
+    if mailchimp_transactional_config:
+        # Third choice: use Mailchimp Transactional
+        return MessagingServiceType.mailchimp_transactional.value
+
+    return None

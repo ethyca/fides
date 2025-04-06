@@ -167,7 +167,7 @@ class TestPostMessagingConfig:
         assert 422 == response.status_code
         assert (
             json.loads(response.text)["detail"][0]["msg"]
-            == "Input should be 'mailgun', 'twilio_text', 'twilio_email' or 'mailchimp_transactional'"
+            == "Input should be 'mailgun', 'twilio_text', 'twilio_email', 'mailchimp_transactional' or 'aws_ses'"
         )
 
     def test_post_email_config_with_no_key(
@@ -401,6 +401,37 @@ class TestPostMessagingConfig:
             "details": None,
         }
         assert expected_response == response_body
+        email_config.delete(db)
+
+    def test_post_aws_ses_email_config(
+        self,
+        db,
+        url,
+        api_client,
+        generate_auth_header,
+    ):
+        aws_ses_payload = {
+            "key": "my_aws_ses_email_config",
+            "name": "aws_ses_email",
+            "service_type": MessagingServiceType.aws_ses.value,
+            "details": {
+                "aws_region": "us-east-1",
+                "email_from": "test@test.com",
+                "domain": "example.com",
+            },
+        }
+
+        auth_header = generate_auth_header([MESSAGING_CREATE_OR_UPDATE])
+
+        response = api_client.post(url, headers=auth_header, json=aws_ses_payload)
+        assert 200 == response.status_code
+        response_body = json.loads(response.text)
+        assert response_body == aws_ses_payload
+
+        email_config = db.query(MessagingConfig).filter_by(
+            key="my_aws_ses_email_config"
+        )[0]
+        assert email_config.details == aws_ses_payload["details"]
         email_config.delete(db)
 
 
@@ -784,6 +815,105 @@ class TestPutMessagingConfigSecretTwilioSms:
             f"Either the twilio_messaging_service_sid or the twilio_sender_phone_number should be supplied"
             in response.text
         )
+
+
+class TestPutMessagingConfigSecretsAWSSES:
+    @pytest.fixture(scope="function")
+    def url(self, messaging_config_aws_ses) -> str:
+        return (V1_URL_PREFIX + MESSAGING_SECRETS).format(
+            config_key=messaging_config_aws_ses.key
+        )
+
+    @pytest.fixture(scope="function")
+    def payload(self):
+        return {
+            MessagingServiceSecrets.AWS_AUTH_METHOD.value: "secret_keys",
+            MessagingServiceSecrets.AWS_ACCESS_KEY_ID.value: "1234",
+            MessagingServiceSecrets.AWS_SECRET_ACCESS_KEY.value: "5678",
+        }
+
+    def test_put_config_secrets_unauthenticated(
+        self, api_client: TestClient, payload, url
+    ):
+        response = api_client.put(url, headers={}, json=payload)
+        assert 401 == response.status_code
+
+    def test_put_config_secrets_wrong_scope(
+        self, api_client: TestClient, payload, url, generate_auth_header
+    ):
+        auth_header = generate_auth_header([MESSAGING_READ])
+        response = api_client.put(url, headers=auth_header, json=payload)
+        assert 403 == response.status_code
+
+    def test_update_with_invalid_secrets_key(
+        self, api_client: TestClient, generate_auth_header, url
+    ):
+        auth_header = generate_auth_header([MESSAGING_CREATE_OR_UPDATE])
+        response = api_client.put(url, headers=auth_header, json={"bad_key": "12345"})
+
+        assert response.status_code == 422
+        assert response.json()["detail"] == [
+            {
+                "loc": [],
+                "type": "value_error",
+                "msg": "Value error, MessagingServiceSecretsAWS_SES must be supplied all of: ['auth_method'].",
+            }
+        ]
+
+    def test_update_with_missing_secret_keys(
+        self, api_client: TestClient, generate_auth_header, url
+    ):
+        auth_header = generate_auth_header([MESSAGING_CREATE_OR_UPDATE])
+        response = api_client.put(
+            url, headers=auth_header, json={"auth_method": "secret_keys"}
+        )
+
+        assert response.status_code == 422
+        assert response.json()["detail"] == [
+            {
+                "loc": [],
+                "type": "value_error",
+                "msg": "Value error, An Access Key ID and a Secret Access Key must be provided if using the `secret_keys` Authentication Method",
+            }
+        ]
+
+    def test_put_config_secrets(
+        self,
+        db: Session,
+        api_client: TestClient,
+        payload,
+        url,
+        generate_auth_header,
+        messaging_config_aws_ses,
+    ):
+        auth_header = generate_auth_header([MESSAGING_CREATE_OR_UPDATE])
+        response = api_client.put(url, headers=auth_header, json=payload)
+        assert 200 == response.status_code
+
+        db.refresh(messaging_config_aws_ses)
+
+        assert json.loads(response.text) == {
+            "msg": "Secrets updated for MessagingConfig with key: my_aws_ses_config.",
+            "test_status": None,
+            "failure_reason": None,
+        }
+        assert (
+            messaging_config_aws_ses.secrets[
+                MessagingServiceSecrets.AWS_ACCESS_KEY_ID.value
+            ]
+            == "1234"
+        )
+        assert (
+            messaging_config_aws_ses.secrets[
+                MessagingServiceSecrets.AWS_SECRET_ACCESS_KEY.value
+            ]
+            == "5678"
+        )
+        assert (
+            messaging_config_aws_ses.secrets[
+                MessagingServiceSecrets.AWS_AUTH_METHOD.value
+            ]
+        ) == "secret_keys"
 
 
 class TestGetMessagingConfigs:

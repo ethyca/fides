@@ -1239,6 +1239,36 @@ class TestSystemCreate:
             0,
         ]
 
+    async def test_system_create_with_vendor_deleted_date(
+        self, generate_auth_header, db, test_config, system_create_request_body
+    ):
+        """Test creating a system with a vendor deleted date"""
+        auth_header = generate_auth_header(scopes=[SYSTEM_CREATE])
+
+        # Set a vendor deleted date in the past
+        vendor_deleted_date = datetime.now(timezone.utc) - timedelta(days=1)
+        system_create_request_body.vendor_deleted_date = vendor_deleted_date
+
+        result = _api.create(
+            url=test_config.cli.server_url,
+            headers=auth_header,
+            resource_type="system",
+            json_resource=system_create_request_body.json(exclude_none=True),
+        )
+
+        assert result.status_code == HTTP_201_CREATED
+        result_json = result.json()
+        assert result_json["fides_key"] == system_create_request_body.fides_key
+        assert result_json[
+            "vendor_deleted_date"
+        ] == vendor_deleted_date.isoformat().replace("+00:00", "Z")
+
+        # Verify the system was created in the database with the correct vendor deleted date
+        system = System.get_by(
+            db, field="fides_key", value=system_create_request_body.fides_key
+        )
+        assert system.vendor_deleted_date == vendor_deleted_date
+
 
 @pytest.mark.unit
 class TestSystemGet:
@@ -1262,6 +1292,30 @@ class TestSystemGet:
         assert steward["username"] == system_manager.username
         assert "first_name" in steward
         assert "last_name" in steward
+
+    def test_system_privacy_declarations_are_sorted(self, test_config, system, db):
+        """Test system Privacy Declarations are returned in alphabetical order by name."""
+        data = {
+            "data_use": "essential",
+            "name": "Another Declaration Name",
+            "system_id": system.id,
+            "data_subjects": [],
+            "data_categories": [],
+        }
+        new_pd = PrivacyDeclaration.create(db, data=data)
+
+        result = _api.get(
+            url=test_config.cli.server_url,
+            headers=test_config.user.auth_header,
+            resource_type="system",
+            resource_id=system.fides_key,
+        )
+        assert result.status_code == 200
+
+        privacy_declarations = result.json()["privacy_declarations"]
+        assert len(privacy_declarations) == 2
+        assert privacy_declarations[0]["name"] == "Another Declaration Name"
+        assert privacy_declarations[1]["name"] == "Collect data for marketing"
 
 
 @pytest.mark.unit
@@ -1535,102 +1589,6 @@ class TestSystemList:
         assert len(result_json["items"]) == 1
 
         assert result_json["items"][0]["fides_key"] == tcf_system.fides_key
-
-    def test_list_with_dnd_filter(
-        self,
-        test_config,
-        system_with_cleanup,  # one that has a connection config
-        system_third_party_sharing,  # one that doesn't have a connection config
-    ):
-        result = _api.ls(
-            url=test_config.cli.server_url,
-            headers=test_config.user.auth_header,
-            resource_type="system",
-            query_params={
-                "page": 1,
-                "size": 5,
-                "dnd_relevant": "true",
-            },
-        )
-
-        assert result.status_code == 200
-        result_json = result.json()
-        assert result_json["total"] == 1
-        assert len(result_json["items"]) == 1
-
-        # only "system_with_cleanup" has a connection config attached to it in fixtures
-        assert result_json["items"][0]["fides_key"] == system_with_cleanup.fides_key
-
-    def test_list_with_show_hidden(
-        self,
-        test_config,
-        system_hidden,
-        system_with_cleanup,
-    ):
-
-        result = _api.ls(
-            url=test_config.cli.server_url,
-            headers=test_config.user.auth_header,
-            resource_type="system",
-            query_params={
-                "page": 1,
-                "size": 5,
-                "show_hidden": "true",
-            },
-        )
-
-        assert result.status_code == 200
-        result_json = result.json()
-        assert result_json["total"] == 2
-        assert len(result_json["items"]) == 2
-
-        actual_keys = [item["fides_key"] for item in result_json["items"]]
-        assert system_hidden.fides_key in actual_keys
-        assert system_with_cleanup.fides_key in actual_keys
-
-        result = _api.ls(
-            url=test_config.cli.server_url,
-            headers=test_config.user.auth_header,
-            resource_type="system",
-            query_params={
-                "page": 1,
-                "size": 5,
-                "show_hidden": "false",
-            },
-        )
-
-        assert result.status_code == 200
-        result_json = result.json()
-        assert result_json["total"] == 1
-        assert len(result_json["items"]) == 1
-
-        assert result_json["items"][0]["fides_key"] == system_with_cleanup.fides_key
-
-    def test_list_with_show_hidden_and_dnd_relevant(
-        self,
-        test_config,
-        system_hidden,
-        system_with_cleanup,
-    ):
-
-        result = _api.ls(
-            url=test_config.cli.server_url,
-            headers=test_config.user.auth_header,
-            resource_type="system",
-            query_params={
-                "page": 1,
-                "size": 5,
-                "show_hidden": "true",
-                "dnd_relevant": "true",
-            },
-        )
-
-        assert result.status_code == 200
-        result_json = result.json()
-        assert result_json["total"] == 1
-        assert len(result_json["items"]) == 1
-
-        assert result_json["items"][0]["fides_key"] == system_with_cleanup.fides_key
 
     @pytest.mark.skip("Until we re-visit filter implementation")
     def test_list_with_pagination_and_multiple_filters_2(
@@ -3072,7 +3030,7 @@ class TestDefaultTaxonomyCrud:
         )
         assert result.status_code == 403
         assert (
-            "cannot modify a resource where 'is_default' is true"
+            "cannot modify 'is_default' field on an existing resource"
             in result.json()["detail"]["error"]
         )
 
@@ -3256,7 +3214,9 @@ class TestCrudActiveProperty:
         self, test_config: FidesConfig, endpoint: str
     ) -> None:
         """Ensure we can toggle `active` property on default taxonomy elements"""
-        resource = getattr(DEFAULT_TAXONOMY, endpoint)[0]
+        # Use the third element to avoid deactivating top-level items, which deactivates
+        # all their descendants and we'd need to manually re-activate each one.
+        resource = getattr(DEFAULT_TAXONOMY, endpoint)[2]
         resource = TAXONOMY_EXTENSIONS[endpoint](
             **resource.model_dump(mode="json")
         )  # cast resource to extended model
@@ -3312,6 +3272,7 @@ class TestCrudActiveProperty:
             **resource.model_dump(mode="json")
         )  # cast resource to extended model
         resource.fides_key = resource.fides_key + "_test_create_active_false"
+        resource.name = resource.name + "_test_create_active_false"
         resource.is_default = False
         resource.version_added = None
         resource.active = False
@@ -3336,6 +3297,8 @@ class TestCrudActiveProperty:
         assert result.json()["active"] is False
 
         resource.fides_key = resource.fides_key + "_test_create_active_true"
+        resource.name = resource.name + "_test_create_active_true"
+        resource.is_default = False
         resource.active = True
         json_resource = resource.json(exclude_none=True)
         token_scopes: List[str] = [f"{CLI_SCOPE_PREFIX_MAPPING[endpoint]}:{CREATE}"]
@@ -3435,6 +3398,7 @@ class TestHealthchecks:
             "workers_enabled": True,
             "workers": [],
             "queue_counts": {
+                "fides.dsr": 0,
                 "fidesops.messaging": 0,
                 "fides.privacy_preferences": 0,
                 "fides": 0,

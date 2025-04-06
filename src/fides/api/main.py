@@ -40,9 +40,13 @@ from fides.api.service.privacy_request.email_batch_service import (
     initiate_scheduled_batch_email_send,
 )
 from fides.api.service.privacy_request.request_service import (
+    initiate_interrupted_task_requeue_poll,
     initiate_poll_for_exited_privacy_request_tasks,
     initiate_scheduled_dsr_data_removal,
 )
+
+# pylint: disable=wildcard-import, unused-wildcard-import
+from fides.api.service.saas_request.override_implementations import *
 from fides.api.tasks.scheduled.scheduler import async_scheduler, scheduler
 from fides.api.ui import (
     get_admin_index_as_response,
@@ -91,6 +95,7 @@ async def lifespan(wrapped_app: FastAPI) -> AsyncGenerator[None, None]:
     initiate_scheduled_batch_email_send()
     initiate_poll_for_exited_privacy_request_tasks()
     initiate_scheduled_dsr_data_removal()
+    initiate_interrupted_task_requeue_poll()
     initiate_bcrypt_migration_task()
 
     logger.debug("Sending startup analytics events...")
@@ -227,10 +232,13 @@ async def log_request(request: Request, call_next: Callable) -> Response:
         response = Response(status_code=500)
 
     handler_time = datetime.now() - start
+
+    # Take the total time in seconds and convert it to milliseconds, rounding to 3 decimal places
+    total_time = round(handler_time.total_seconds() * 1000, 3)
     logger.bind(
         method=request.method,
         status_code=response.status_code,
-        handler_time=f"{round(handler_time.microseconds * 0.001,3)}ms",
+        handler_time=f"{total_time}ms",
         path=request.url.path,
     ).info("Request received")
     return response

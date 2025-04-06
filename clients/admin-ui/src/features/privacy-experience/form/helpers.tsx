@@ -6,15 +6,15 @@ import {
   ExperienceTranslationCreate,
   ExperienceTranslationResponse,
   Language,
+  Layer1ButtonOption,
   PrivacyNoticeRegion,
   SupportedLanguage,
 } from "~/types/api";
 
-import { Layer1ButtonOption } from "./constants";
-
 interface LocationOrLocationGroup {
   selected?: boolean;
   id: string;
+  name: string;
 }
 
 export const getSelectedRegionIds = (
@@ -23,6 +23,9 @@ export const getSelectedRegionIds = (
   allLocations
     ?.filter((loc) => loc.selected)
     .map((loc) => loc.id as PrivacyNoticeRegion) ?? [];
+
+export const getSelectedRegions = (allLocations?: LocationOrLocationGroup[]) =>
+  allLocations?.filter((loc) => loc.selected) ?? [];
 
 export const defaultTranslations: ExperienceTranslationCreate[] = [
   {

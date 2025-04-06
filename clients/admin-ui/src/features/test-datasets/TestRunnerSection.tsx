@@ -1,5 +1,6 @@
 import {
   AntButton as Button,
+  AntSelect as Select,
   Heading,
   HStack,
   Text,
@@ -7,7 +8,7 @@ import {
   useToast,
   VStack,
 } from "fidesui";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useSelector } from "react-redux";
 
 import { useAppDispatch } from "~/app/hooks";
@@ -19,17 +20,25 @@ import {
   useGetDatasetInputsQuery,
   useTestDatastoreConnectionDatasetsMutation,
 } from "~/features/datastore-connections";
-import { useGetFilteredResultsQuery } from "~/features/privacy-requests";
+import { useGetPoliciesQuery } from "~/features/policy/policy.slice";
+import {
+  useGetFilteredResultsQuery,
+  useGetTestLogsQuery,
+} from "~/features/privacy-requests";
 import { PrivacyRequestStatus } from "~/types/api";
 import { isErrorResult } from "~/types/errors";
 
 import {
   finishTest,
+  interruptTest,
   selectCurrentDataset,
+  selectCurrentPolicyKey,
+  selectIsReachable,
   selectIsTestRunning,
   selectPrivacyRequestId,
   selectTestInputs,
   selectTestResults,
+  setCurrentPolicyKey,
   setPrivacyRequestId,
   setTestInputs,
   setTestResults,
@@ -46,8 +55,10 @@ const TestResultsSection = ({ connectionKey }: TestResultsSectionProps) => {
   const [testDatasets] = useTestDatastoreConnectionDatasetsMutation();
 
   const currentDataset = useSelector(selectCurrentDataset);
+  const isReachable = useSelector(selectIsReachable);
   const testResults = useSelector(selectTestResults);
   const testInputs = useSelector(selectTestInputs);
+  const currentPolicyKey = useSelector(selectCurrentPolicyKey);
   const isTestRunning = useSelector(selectIsTestRunning);
   const privacyRequestId = useSelector(selectPrivacyRequestId);
 
@@ -60,12 +71,19 @@ const TestResultsSection = ({ connectionKey }: TestResultsSectionProps) => {
   }, [currentDataset, testInputs]);
 
   // Poll for results when we have a privacy request ID
-  const { data: filteredResults } = useGetFilteredResultsQuery(
+  const { data: filteredResults, error: filteredResultsError } =
+    useGetFilteredResultsQuery(
+      { privacy_request_id: privacyRequestId! },
+      {
+        skip: !privacyRequestId || !currentDataset?.fides_key,
+        pollingInterval: 2000,
+      },
+    );
+
+  // Get test logs with refetch capability
+  const { refetch: refetchLogs } = useGetTestLogsQuery(
     { privacy_request_id: privacyRequestId! },
-    {
-      skip: !privacyRequestId || !currentDataset?.fides_key,
-      pollingInterval: 2000,
-    },
+    { skip: !privacyRequestId },
   );
 
   // Get dataset inputs
@@ -78,6 +96,20 @@ const TestResultsSection = ({ connectionKey }: TestResultsSectionProps) => {
       skip: !connectionKey || !currentDataset?.fides_key,
       refetchOnMountOrArgChange: true,
     },
+  );
+
+  const { data: policies } = useGetPoliciesQuery();
+  const policyOptions = useMemo(
+    () =>
+      (policies?.items || [])
+        .filter((policy) =>
+          policy.rules?.some((rule) => rule.action_type === "access"),
+        )
+        .map((item) => ({
+          value: item.key,
+          label: item.name,
+        })),
+    [policies?.items],
   );
 
   useEffect(() => {
@@ -103,6 +135,17 @@ const TestResultsSection = ({ connectionKey }: TestResultsSectionProps) => {
   useEffect(() => {
     const currentDatasetKey = currentDataset?.fides_key;
 
+    // Handle 404 errors by stopping polling and showing error
+    if (
+      filteredResultsError &&
+      "status" in filteredResultsError &&
+      filteredResultsError.status === 404
+    ) {
+      dispatch(finishTest());
+      toast(errorToastParams("Test run failed"));
+      return;
+    }
+
     if (
       !filteredResults ||
       filteredResults.privacy_request_id !== privacyRequestId ||
@@ -119,22 +162,30 @@ const TestResultsSection = ({ connectionKey }: TestResultsSectionProps) => {
 
     if (filteredResults.status === PrivacyRequestStatus.COMPLETE) {
       if (isTestRunning) {
-        dispatch(setTestResults(resultsAction));
-        dispatch(finishTest());
-        toast(successToastParams("Test run completed successfully"));
+        // Do one final log fetch before finishing
+        refetchLogs().then(() => {
+          dispatch(setTestResults(resultsAction));
+          dispatch(finishTest());
+          toast(successToastParams("Test run completed successfully"));
+        });
       }
     } else if (filteredResults.status === PrivacyRequestStatus.ERROR) {
-      dispatch(setTestResults(resultsAction));
-      dispatch(finishTest());
-      toast(errorToastParams("Test run failed"));
+      // Do one final log fetch before finishing
+      refetchLogs().then(() => {
+        dispatch(setTestResults(resultsAction));
+        dispatch(finishTest());
+        toast(errorToastParams("Test run failed"));
+      });
     }
   }, [
     filteredResults,
+    filteredResultsError,
     privacyRequestId,
     currentDataset,
     isTestRunning,
     dispatch,
     toast,
+    refetchLogs,
   ]);
 
   const handleInputChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -155,8 +206,19 @@ const TestResultsSection = ({ connectionKey }: TestResultsSectionProps) => {
     }
   };
 
+  const handlePolicyChange = (policyKey: string) => {
+    dispatch(setCurrentPolicyKey(policyKey));
+  };
+
+  const currentPolicyKeyValue = useMemo(() => {
+    if (!currentPolicyKey || !policies?.items) {
+      return null;
+    }
+    return currentPolicyKey;
+  }, [currentPolicyKey, policies?.items]);
+
   const handleTestRun = async () => {
-    if (!currentDataset?.fides_key) {
+    if (!currentDataset?.fides_key || !currentPolicyKey) {
       return;
     }
 
@@ -170,11 +232,13 @@ const TestResultsSection = ({ connectionKey }: TestResultsSectionProps) => {
       }
 
       dispatch(startTest(currentDataset.fides_key));
+      toast(successToastParams("Test run started"));
 
       const result = await testDatasets({
         connection_key: connectionKey,
         dataset_key: currentDataset.fides_key,
-        input_data: parsedInput,
+        identities: parsedInput,
+        policy_key: currentPolicyKey,
       });
 
       if (isErrorResult(result)) {
@@ -192,6 +256,11 @@ const TestResultsSection = ({ connectionKey }: TestResultsSectionProps) => {
     }
   };
 
+  const handleStopTest = () => {
+    dispatch(interruptTest());
+    toast(successToastParams("Test manually stopped by user"));
+  };
+
   return (
     <VStack alignItems="stretch" flex="1" maxWidth="70vw" minHeight="0">
       <Heading
@@ -202,21 +271,37 @@ const TestResultsSection = ({ connectionKey }: TestResultsSectionProps) => {
         justifyContent="space-between"
       >
         <HStack>
-          <Text>Test inputs (identities and references)</Text>
+          <Text>Test inputs</Text>
           <ClipboardButton copyText={inputValue} />
         </HStack>
         <HStack>
-          <QuestionTooltip label="Run a test access request using the provided test input data" />
+          <Select
+            id="policy"
+            aria-label="Policy selector"
+            data-testid="policy-select"
+            placeholder="Select policy"
+            value={currentPolicyKeyValue}
+            options={policyOptions}
+            onChange={handlePolicyChange}
+            className="w-64"
+          />
           <Button
             htmlType="submit"
             size="small"
             type="primary"
             data-testid="run-btn"
-            onClick={handleTestRun}
-            loading={isTestRunning}
+            onClick={isTestRunning ? handleStopTest : handleTestRun}
+            disabled={!currentPolicyKey || !isReachable}
           >
-            Run
+            {isTestRunning ? "Stop" : "Run"}
           </Button>
+          <QuestionTooltip
+            label={
+              isTestRunning
+                ? "Stop the currently running test"
+                : "Run a test access request using the provided test input data and the selected access policy"
+            }
+          />
         </HStack>
       </Heading>
       <Textarea

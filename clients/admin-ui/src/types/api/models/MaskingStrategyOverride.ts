@@ -5,7 +5,7 @@
 import type { MaskingStrategies } from "./MaskingStrategies";
 
 /**
- * Overrides policy-level masking strategies.
+ * Overrides collection-level masking strategies.
  */
 export type MaskingStrategyOverride = {
   strategy: MaskingStrategies;

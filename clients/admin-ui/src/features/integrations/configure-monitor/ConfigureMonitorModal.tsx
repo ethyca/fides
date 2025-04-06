@@ -5,14 +5,16 @@ import useQueryResultToast from "~/features/common/form/useQueryResultToast";
 import FormModal from "~/features/common/modals/FormModal";
 import { DEFAULT_TOAST_PARAMS } from "~/features/common/toast";
 import {
-  useGetDatabasesByConnectionQuery,
+  useGetAvailableDatabasesByConnectionQuery,
   usePutDiscoveryMonitorMutation,
 } from "~/features/data-discovery-and-detection/discovery-detection.slice";
 import ConfigureMonitorDatabasesForm from "~/features/integrations/configure-monitor/ConfigureMonitorDatabasesForm";
 import ConfigureMonitorForm from "~/features/integrations/configure-monitor/ConfigureMonitorForm";
+import ConfigureWebsiteMonitorForm from "~/features/integrations/configure-monitor/ConfigureWebsiteMonitorForm";
 import {
   ConnectionConfigurationResponse,
   ConnectionSystemTypeMap,
+  ConnectionType,
   MonitorConfig,
 } from "~/types/api";
 import { isErrorResult, RTKResult } from "~/types/errors";
@@ -41,7 +43,7 @@ const ConfigureMonitorModal = ({
   const [putMonitorMutationTrigger, { isLoading: isSubmitting }] =
     usePutDiscoveryMonitorMutation();
 
-  const { data: databases } = useGetDatabasesByConnectionQuery({
+  const { data: databases } = useGetAvailableDatabasesByConnectionQuery({
     page: 1,
     size: 25,
     connection_config_key: integration.key,
@@ -81,6 +83,28 @@ const ConfigureMonitorModal = ({
       }
     }
   };
+
+  if (integrationOption.identifier === ConnectionType.WEBSITE) {
+    return (
+      <FormModal
+        title={
+          monitor?.name
+            ? `Configure ${monitor.name}`
+            : "Configure website monitor"
+        }
+        isOpen={isOpen}
+        onClose={onClose}
+      >
+        <ConfigureWebsiteMonitorForm
+          monitor={monitor}
+          // @ts-ignore - "secrets" is typed as "null"
+          url={integration.secrets!.url as string}
+          onClose={onClose}
+          onSubmit={handleSubmit}
+        />
+      </FormModal>
+    );
+  }
 
   return (
     <FormModal

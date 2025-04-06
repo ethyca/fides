@@ -6,7 +6,9 @@ import pytest
 import requests
 from fideslang import DEFAULT_TAXONOMY
 from pytest import MonkeyPatch
+from sqlalchemy.exc import IntegrityError
 
+from fides.api.db.base_class import Base
 from fides.api.db.ctl_session import sync_engine, sync_session
 from fides.api.models.sql_models import DataUse
 from fides.core import api

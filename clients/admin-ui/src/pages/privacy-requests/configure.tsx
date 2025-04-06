@@ -9,7 +9,7 @@ import type { NextPage } from "next";
 import NextLink from "next/link";
 
 import Layout from "~/features/common/Layout";
-import { PRIVACY_REQUESTS_ROUTE } from "~/features/common/nav/v2/routes";
+import { PRIVACY_REQUESTS_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 
 const { Text } = Typography;

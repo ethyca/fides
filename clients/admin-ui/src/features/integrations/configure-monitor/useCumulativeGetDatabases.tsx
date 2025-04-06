@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 
 import {
-  useGetDatabasesByConnectionQuery,
-  useLazyGetDatabasesByConnectionQuery,
+  useGetAvailableDatabasesByConnectionQuery,
+  useLazyGetAvailableDatabasesByConnectionQuery,
 } from "~/features/data-discovery-and-detection/discovery-detection.slice";
 
 const TIMEOUT_DELAY = 5000;
@@ -22,7 +22,7 @@ const useCumulativeGetDatabases = (
   const [nextPage, setNextPage] = useState(2);
 
   const { data: initialResult, isLoading: initialIsLoading } =
-    useGetDatabasesByConnectionQuery({
+    useGetAvailableDatabasesByConnectionQuery({
       page: 1,
       size: 25,
       connection_config_key: integrationKey,
@@ -57,7 +57,7 @@ const useCumulativeGetDatabases = (
   const [
     refetchTrigger,
     { isLoading: refetchIsLoading, isFetching: refetchIsFetching },
-  ] = useLazyGetDatabasesByConnectionQuery();
+  ] = useLazyGetAvailableDatabasesByConnectionQuery();
 
   const isLoading = refetchIsLoading || refetchIsFetching || initialIsLoading;
 

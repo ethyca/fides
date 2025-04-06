@@ -391,8 +391,6 @@ async def ls(  # pylint: disable=invalid-name
     data_uses: Optional[List[FidesKey]] = Query(None),
     data_categories: Optional[List[FidesKey]] = Query(None),
     data_subjects: Optional[List[FidesKey]] = Query(None),
-    dnd_relevant: Optional[bool] = Query(None),
-    show_hidden: Optional[bool] = Query(False),
     show_deleted: Optional[bool] = Query(False),
 ) -> List:
     """Get a list of all of the Systems.
@@ -400,16 +398,7 @@ async def ls(  # pylint: disable=invalid-name
     Otherwise all Systems will be returned (this may be a slow operation if there are many systems,
     so using the pagination parameters is recommended).
     """
-    if not (
-        size
-        or page
-        or search
-        or data_uses
-        or data_categories
-        or data_subjects
-        or dnd_relevant
-        or show_hidden
-    ):
+    if not (size or page or search or data_uses or data_categories or data_subjects):
         # if no advanced parameters are passed, we return a very basic list of all System resources
         # to maintain backward compatibility of the original API, which backs some important client usages, e.g. the fides CLI
 
@@ -423,21 +412,6 @@ async def ls(  # pylint: disable=invalid-name
     if any([data_uses, data_categories, data_subjects]):
         query = query.outerjoin(
             PrivacyDeclaration, System.id == PrivacyDeclaration.system_id
-        )
-
-    # Fetch any system that is relevant for Detection and Discovery, ie any of the following:
-    # - has connection configurations (has some integration for DnD or SaaS)
-    # - has dataset references
-    if dnd_relevant:
-        query = query.filter(
-            (System.connection_configs != None)  # pylint: disable=singleton-comparison
-            | (System.dataset_references.any())
-        )
-
-    # Filter out any hidden systems, unless explicilty asked for
-    if not show_hidden:
-        query = query.filter(
-            System.hidden == False  # pylint: disable=singleton-comparison
         )
 
     # Filter out any vendor deleted systems, unless explicitly asked for
@@ -466,6 +440,37 @@ async def ls(  # pylint: disable=invalid-name
     duplicates_removed = filtered_query.distinct(System.id)
 
     return await async_paginate(db, duplicates_removed, pagination_params)
+
+
+@SYSTEM_ROUTER.patch(
+    "/hidden",
+    response_model=Dict,
+    dependencies=[
+        Security(
+            verify_oauth_client_prod,
+            scopes=[SYSTEM_UPDATE],
+        )
+    ],
+)
+def patch_hidden(
+    fides_keys: List[str],
+    hidden: bool,
+    db: Session = Depends(deps.get_db),
+) -> Dict:
+    """
+    Patch the hidden status of a list of systems. Request body must be a list of system Fides keys.
+    """
+    systems = db.execute(select(System).filter(System.fides_key.in_(fides_keys)))
+    systems = systems.scalars().all()
+
+    for system in systems:
+        system.hidden = hidden
+    db.commit()
+
+    return {
+        "message": "Updated hidden status for systems",
+        "updated": len(systems),
+    }
 
 
 @SYSTEM_ROUTER.get(

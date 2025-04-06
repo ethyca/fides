@@ -1,5 +1,5 @@
 import { getErrorMessage } from "common/helpers";
-import { MESSAGING_ROUTE } from "common/nav/v2/routes";
+import { MESSAGING_ROUTE } from "common/nav/routes";
 import { Box, Spinner, useToast } from "fidesui";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";

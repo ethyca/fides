@@ -39,7 +39,9 @@ def get_pre_approval_webhook_list(
     """
     Return a paginated list of all PreApprovalWebhook records in this system
     """
-    logger.info("Finding all pre_approval webhooks with pagination params '{}'", params)
+    logger.debug(
+        "Finding all pre_approval webhooks with pagination params '{}'", params
+    )
     pre_approval_webhooks = PreApprovalWebhook.query(db=db).order_by(
         PreApprovalWebhook.created_at.desc()
     )
@@ -50,7 +52,7 @@ def get_pre_approval_webhook_or_error(
     db: Session, webhook_key: FidesKey
 ) -> PreApprovalWebhook:
     """Helper method to load PreApprovalWebhook or throw a 404"""
-    logger.info("Finding PreApprovalWebhook with key '{}'", webhook_key)
+    logger.debug("Finding PreApprovalWebhook with key '{}'", webhook_key)
     pre_approval_webhook = PreApprovalWebhook.get_by(
         db=db, field="key", value=webhook_key
     )

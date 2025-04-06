@@ -1,7 +1,7 @@
 import React from "react";
 
 import FixedLayout from "~/features/common/FixedLayout";
-import { DATA_DISCOVERY_ROUTE } from "~/features/common/nav/v2/routes";
+import { DATA_DISCOVERY_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 import DiscoveryMonitorBreadcrumbs from "~/features/data-discovery-and-detection/DiscoveryMonitorBreadcrumbs";
 import useDiscoveryRoutes from "~/features/data-discovery-and-detection/hooks/useDiscoveryRoutes";

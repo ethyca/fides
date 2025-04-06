@@ -1,0 +1,1 @@
+"use strict";Object.defineProperty(exports,"__esModule",{value:!0}),exports.InvalidFieldError=void 0;class InvalidFieldError extends Error{constructor(r){super(r),this.name="InvalidFieldError"}}exports.InvalidFieldError=InvalidFieldError;

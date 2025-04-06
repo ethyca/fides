@@ -13,8 +13,6 @@ dataset:
             data_categories: [user.contact.address.street]
           - name: id
             data_categories: [system.operations]
-            fides_meta:
-              primary_key: True
           - name: state
             data_categories: [user.contact.address.state]
           - name: street
@@ -39,6 +37,26 @@ dataset:
                 - dataset: bigquery_example_test_dataset
                   field: address.id
                   direction: to
+          - name: extra_address_data
+            fides_meta:
+              type: object
+            fields:
+              - name: city
+                data_categories: [user.contact.address.city]
+              - name: house
+                data_categories: [user.contact.address.street]
+              - name: id
+                data_categories: [system.operations]
+              - name: state
+                data_categories: [user.contact.address.state]
+              - name: street
+                data_categories: [user.contact.address.street]
+              - name: address_id
+                data_categories: [system.operations]
+                references:
+                  - dataset: bigquery_example_test_dataset
+                    field: address.id
+                    direction: to
           - name: created
             data_categories: [system.operations]
           - name: email
@@ -46,6 +64,7 @@ dataset:
             fides_meta:
               identity: email
               data_type: string
+              read_only: True
           - name: custom_id
             data_categories: [user.unique_id]
             fides_meta:
@@ -53,13 +72,29 @@ dataset:
               data_type: string
           - name: id
             data_categories: [user.unique_id]
-            fides_meta:
-              primary_key: True
           - name: name
             data_categories: [user.name]
             fides_meta:
               data_type: string
               length: 40
+          - name: tags
+            data_categories: [user]
+            fides_meta:
+              data_type: string[]
+          - name: purchase_history
+            fides_meta:
+              data_type: object[]
+            fields:
+              - name: item_id
+                data_categories: [system.operations]
+              - name: price
+                data_categories: [user.financial]
+              - name: purchase_date
+                data_categories: [system.operations]
+              - name: item_tags
+                data_categories: [user]
+                fides_meta:
+                  data_type: string[]
 
       - name: employee
         fides_meta:
@@ -80,8 +115,6 @@ dataset:
               data_type: string
           - name: id
             data_categories: [user.unique_id]
-            fides_meta:
-              primary_key: True
           - name: name
             data_categories: [user.name]
             fides_meta:
@@ -98,8 +131,6 @@ dataset:
                   direction: from
           - name: id
             data_categories: [system.operations]
-            fides_meta:
-              primary_key: True
           - name: time
             data_categories: [user.sensor]
 
@@ -114,8 +145,6 @@ dataset:
                   direction: from
           - name: id
             data_categories: [system.operations]
-            fides_meta:
-              primary_key: True
           - name: shipping_address_id
             data_categories: [system.operations]
             fides_meta:
@@ -166,8 +195,6 @@ dataset:
                   direction: from
           - name: id
             data_categories: [system.operations]
-            fides_meta:
-              primary_key: True
           - name: name
             data_categories: [user.financial]
           - name: preferred
@@ -177,8 +204,6 @@ dataset:
         fields:
           - name: id
             data_categories: [system.operations]
-            fides_meta:
-              primary_key: True
           - name: name
             data_categories: [system.operations]
           - name: price
@@ -193,8 +218,6 @@ dataset:
               data_type: string
           - name: id
             data_categories: [system.operations]
-            fides_meta:
-              primary_key: True
           - name: month
             data_categories: [system.operations]
           - name: name
@@ -227,8 +250,6 @@ dataset:
                   direction: from
           - name: id
             data_categories: [system.operations]
-            fides_meta:
-              primary_key: True
           - name: opened
             data_categories: [system.operations]
 
@@ -254,7 +275,30 @@ dataset:
           - name: email
             data_categories: [user.contact.email]
             fides_meta:
+              read_only: true
               identity: email
               data_type: string
           - name: last_visit
             data_categories: [system.operations]
+
+      - name: customer_profile
+        fields:
+          - name: id
+            data_categories: [system.operations]
+          - name: contact_info
+            fides_meta:
+              type: object
+            fields:
+              - name: primary_email
+                data_categories: [user.contact.email]
+                fides_meta:
+                  identity: email
+                  data_type: string
+              - name: phone_number
+                data_categories: [user.contact.phone_number]
+                fides_meta:
+                  data_type: string
+          - name: address
+            data_categories: [user.contact.address]
+            fides_meta:
+              data_type: string

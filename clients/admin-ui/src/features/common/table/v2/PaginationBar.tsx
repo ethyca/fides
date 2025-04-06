@@ -44,7 +44,7 @@ export const useServerSidePagination = () => {
   const defaultPageIndex = 1;
   const [pageSize, setPageSize] = useState(PAGE_SIZES[0]);
   const [pageIndex, setPageIndex] = useState<number>(defaultPageIndex);
-  const [totalPages, setTotalPages] = useState<number | null>();
+  const [totalPages, setTotalPages] = useState<number | null | undefined>(1);
   const onPreviousPageClick = useCallback(() => {
     setPageIndex((prev) => prev - 1);
   }, [setPageIndex]);
@@ -52,14 +52,23 @@ export const useServerSidePagination = () => {
   const onNextPageClick = useCallback(() => {
     setPageIndex((prev) => prev + 1);
   }, [setPageIndex]);
-  const isNextPageDisabled = useMemo(
-    () => pageIndex === totalPages,
-    [pageIndex, totalPages],
-  );
 
-  const startRange =
-    (pageIndex - 1) * pageSize === 0 ? 1 : (pageIndex - 1) * pageSize;
-  const endRange = (pageIndex - 1) * pageSize + pageSize;
+  const isNextPageDisabled = useMemo(() => {
+    const noPages = !totalPages;
+    const lastPage = !!totalPages && pageIndex === totalPages;
+    return noPages || lastPage;
+  }, [pageIndex, totalPages]);
+
+  let startRange;
+  let endRange;
+  if (totalPages) {
+    const pageStartIndex = (pageIndex - 1) * pageSize;
+    startRange = pageStartIndex + 1;
+    endRange = pageStartIndex + pageSize;
+  } else {
+    startRange = 0;
+    endRange = 0;
+  }
 
   const resetPageIndexToDefault = useCallback(() => {
     setPageIndex(defaultPageIndex);

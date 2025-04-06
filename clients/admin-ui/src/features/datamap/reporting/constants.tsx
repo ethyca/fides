@@ -27,7 +27,7 @@ export enum COLUMN_IDS {
   LEGAL_ADDRESS = "legal_address",
   COOKIE_REFRESH = "cookie_refresh",
   DATA_SECURITY_PRACTICES = "data_security_practices",
-  DATA_SHARED_WITH_THIRD_PARTIES = "DATA_SHARED_WITH_THIRD_PARTIES",
+  DATA_SHARED_WITH_THIRD_PARTIES = "data_shared_with_third_parties",
   DATA_STEWARDS = "data_stewards",
   DECLARATION_NAME = "declaration_name",
   DOES_INTERNATIONAL_TRANSFERS = "does_international_transfers",
@@ -43,7 +43,6 @@ export enum COLUMN_IDS {
   LEGAL_BASIS_FOR_PROFILING = "legal_basis_for_profiling",
   LEGAL_BASIS_FOR_TRANSFERS = "legal_basis_for_transfers",
   LEGITIMATE_INTEREST_DISCLOSURE_URL = "legitimate_interest_disclosure_url",
-  LINK_TO_PROCESSOR_CONTRACT = "link_to_processor_contract",
   PROCESSES_PERSONAL_DATA = "processes_personal_data",
   REASON_FOR_EXEMPTION = "reason_for_exemption",
   REQUIRES_DATA_PROTECTION_ASSESSMENTS = "requires_data_protection_assessments",
@@ -51,8 +50,6 @@ export enum COLUMN_IDS {
   RETENTION_PERIOD = "retention_period",
   SHARED_CATEGORIES = "shared_categories",
   SPECIAL_CATEGORY_LEGAL_BASIS = "special_category_legal_basis",
-  SYSTEM_DEPENDENCIES = "system_dependencies",
-  THIRD_COUNTRY_SAFEGUARDS = "third_country_safeguards",
   THIRD_PARTIES = "third_parties",
   COOKIES = "cookies",
   USES_COOKIES = "uses_cookies",
@@ -60,6 +57,7 @@ export enum COLUMN_IDS {
   USES_PROFILING = "uses_profiling",
   SYSTEM_UNDECLARED_DATA_CATEGORIES = "system_undeclared_data_categories",
   DATA_USE_UNDECLARED_DATA_CATEGORIES = "data_use_undeclared_data_categories",
+  PROCESSES_SPECIAL_CATEGORY_DATA = "processes_special_category_data",
 }
 
 export const DEFAULT_COLUMN_NAMES: Record<COLUMN_IDS, string> = {
@@ -81,7 +79,7 @@ export const DEFAULT_COLUMN_NAMES: Record<COLUMN_IDS, string> = {
   [COLUMN_IDS.DECLARATION_NAME]: "Declaration name",
   [COLUMN_IDS.DOES_INTERNATIONAL_TRANSFERS]: "Does international transfers",
   [COLUMN_IDS.DPA_LOCATION]: "DPA location",
-  [COLUMN_IDS.DESTINATIONS]: "Destinations",
+  [COLUMN_IDS.DESTINATIONS]: "Destination",
   [COLUMN_IDS.EXEMPT_FROM_PRIVACY_REGULATIONS]:
     "Exempt from privacy regulations",
   [COLUMN_IDS.FEATURES]: "Features",
@@ -89,13 +87,12 @@ export const DEFAULT_COLUMN_NAMES: Record<COLUMN_IDS, string> = {
   [COLUMN_IDS.FLEXIBLE_LEGAL_BASIS_FOR_PROCESSING]:
     "Flexible legal basis for processing",
   [COLUMN_IDS.IMPACT_ASSESSMENT_LOCATION]: "Impact assessment location",
-  [COLUMN_IDS.SOURCES]: "Sources",
+  [COLUMN_IDS.SOURCES]: "Source",
   [COLUMN_IDS.JOINT_CONTROLLER_INFO]: "Joint controller info",
   [COLUMN_IDS.LEGAL_BASIS_FOR_PROFILING]: "Legal basis for profiling",
   [COLUMN_IDS.LEGAL_BASIS_FOR_TRANSFERS]: "Legal basis for transfers",
   [COLUMN_IDS.LEGITIMATE_INTEREST_DISCLOSURE_URL]:
     "Legitimate interest disclosure URL",
-  [COLUMN_IDS.LINK_TO_PROCESSOR_CONTRACT]: "Link to processor contract",
   [COLUMN_IDS.PROCESSES_PERSONAL_DATA]: "Processes personal data",
   [COLUMN_IDS.REASON_FOR_EXEMPTION]: "Reason for exemption",
   [COLUMN_IDS.REQUIRES_DATA_PROTECTION_ASSESSMENTS]:
@@ -104,8 +101,6 @@ export const DEFAULT_COLUMN_NAMES: Record<COLUMN_IDS, string> = {
   [COLUMN_IDS.RETENTION_PERIOD]: "Retention period",
   [COLUMN_IDS.SHARED_CATEGORIES]: "Shared categories",
   [COLUMN_IDS.SPECIAL_CATEGORY_LEGAL_BASIS]: "Special category legal basis",
-  [COLUMN_IDS.SYSTEM_DEPENDENCIES]: "System dependencies",
-  [COLUMN_IDS.THIRD_COUNTRY_SAFEGUARDS]: "Third country safeguards",
   [COLUMN_IDS.THIRD_PARTIES]: "Third parties",
   [COLUMN_IDS.SYSTEM_UNDECLARED_DATA_CATEGORIES]:
     "System undeclared data categories",
@@ -115,4 +110,6 @@ export const DEFAULT_COLUMN_NAMES: Record<COLUMN_IDS, string> = {
   [COLUMN_IDS.USES_COOKIES]: "Uses cookies",
   [COLUMN_IDS.USES_NON_COOKIE_ACCESS]: "Uses non-cookie access",
   [COLUMN_IDS.USES_PROFILING]: "Uses profiling",
+  [COLUMN_IDS.PROCESSES_SPECIAL_CATEGORY_DATA]:
+    "Processes special category data",
 };

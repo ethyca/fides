@@ -18,6 +18,7 @@ from fides.config import CONFIG, FidesConfig
 
 MESSAGING_QUEUE_NAME = "fidesops.messaging"
 PRIVACY_PREFERENCES_QUEUE_NAME = "fides.privacy_preferences"  # This queue is used in Fidesplus for saving privacy preferences and notices served
+DSR_QUEUE_NAME = "fides.dsr"  # This queue is used for running data subject requests
 
 NEW_SESSION_RETRIES = 5
 
@@ -78,7 +79,9 @@ class DatabaseTask(Task):  # pylint: disable=W0223
         # but a new session is instantiated each time the method is invoked
         # to prevent session overlap when requests are executing concurrently
         # when in task_always_eager mode (i.e. without proper workers)
-        return self._sessionmaker()
+        new_session = self._sessionmaker()
+        logger.debug(f"DatabaseTaskSession ID: {id(new_session)}. Self ID: {id(self)}")
+        return new_session
 
 
 def _create_celery(config: FidesConfig = CONFIG) -> Celery:

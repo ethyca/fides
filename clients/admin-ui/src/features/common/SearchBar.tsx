@@ -24,7 +24,7 @@ const SearchBar = ({
     onChange(event.target.value);
 
   return (
-    <Space.Compact className="w-96">
+    <Space.Compact className="w-96" data-testid="search-bar">
       <Input
         autoComplete="off"
         value={search}

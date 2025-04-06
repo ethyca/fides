@@ -23,7 +23,7 @@ import * as Yup from "yup";
 import { useAppDispatch } from "~/app/hooks";
 import { CustomTextInput } from "~/features/common/form/inputs";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
-import { USER_MANAGEMENT_ROUTE } from "~/features/common/nav/v2/routes";
+import { USER_MANAGEMENT_ROUTE } from "~/features/common/nav/routes";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 
 import { User } from "./types";
@@ -94,7 +94,12 @@ const DeleteUserModal = ({
               <ModalHeader>Delete User</ModalHeader>
               <ModalCloseButton />
               <ModalBody>
-                <Alert status="warning" overflow="visible">
+                <Alert
+                  status="warning"
+                  overflow="visible"
+                  colorScheme="warn"
+                  marginBottom={4}
+                >
                   <AlertIcon />
                   <AlertDescription>
                     <Text as="span" mb={2}>
@@ -125,7 +130,7 @@ const DeleteUserModal = ({
               </ModalBody>
 
               <ModalFooter>
-                <div className="w-full gap-2">
+                <div className="flex w-full gap-2">
                   <Button onClick={onClose} className="w-1/2">
                     Cancel
                   </Button>

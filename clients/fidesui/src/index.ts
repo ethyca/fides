@@ -1,7 +1,7 @@
 // Unmodified components exported directly from ChakraUI
 export * from "@chakra-ui/icons";
 export * from "@chakra-ui/react";
-export { getCSSVar } from "@chakra-ui/utils";
+export { getCSSVar } from "@chakra-ui/react";
 export * from "@chakra-ui/utils";
 
 // Unmodified component exported directly from Ant Design
@@ -11,29 +11,41 @@ export type {
   FlexProps as AntFlexProps,
   FormInstance as AntFormInstance,
   InputProps as AntInputProps,
+  ListProps as AntListProps,
+  MenuProps as AntMenuProps,
+  RadioGroupProps as AntRadioGroupProps,
   SelectProps as AntSelectProps,
   SwitchProps as AntSwitchProps,
+  TabsProps as AntTabsProps,
+  TagProps as AntTagProps,
   GetProps,
   InputRef,
+  RadioChangeEvent,
 } from "antd/lib";
 export {
   Alert as AntAlert,
+  Avatar as AntAvatar,
   Breadcrumb as AntBreadcrumb,
   Button as AntButton,
   Card as AntCard,
   Checkbox as AntCheckbox,
   Col as AntCol,
   Divider as AntDivider,
+  Dropdown as AntDropdown,
+  Empty as AntEmpty,
   Flex as AntFlex,
   Form as AntForm,
   Input as AntInput,
   Layout as AntLayout,
+  List as AntList,
   Menu as AntMenu,
+  message as antMessage,
   Radio as AntRadio,
   Row as AntRow,
+  Skeleton as AntSkeleton,
   Space as AntSpace,
   Switch as AntSwitch,
-  Tag as AntTag,
+  Tabs as AntTabs,
   Tooltip as AntTooltip,
   Typography as AntTypography,
 } from "antd/lib";
@@ -41,6 +53,7 @@ export type {
   BreadcrumbItemType as AntBreadcrumbItemType,
   BreadcrumbProps as AntBreadcrumbProps,
 } from "antd/lib/breadcrumb/Breadcrumb";
+export type { ListItemProps as AntListItemProps } from "antd/lib/list";
 export type {
   BaseOptionType as AntBaseOptionType,
   DefaultOptionType as AntDefaultOptionType,
@@ -48,6 +61,7 @@ export type {
 
 // Higher-order components
 export { CustomSelect as AntSelect } from "./hoc";
+export { CustomDateRangePicker as AntDateRangePicker } from "./hoc";
 
 /**
  * Custom Re-exports
@@ -83,3 +97,4 @@ export { ExampleComponent } from "./components/example-component";
 export { FloatingMenu } from "./components/floating-menu";
 export { PrimaryLink, SecondaryLink } from "./components/links";
 export { SystemsCheckboxTable } from "./components/systems-checkbox-table";
+export { CustomTag as AntTag } from "./hoc";

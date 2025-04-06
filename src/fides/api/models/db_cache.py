@@ -4,6 +4,7 @@ from typing import ByteString, Optional
 from sqlalchemy import Column, Index, String
 from sqlalchemy.dialects.postgresql import BYTEA
 from sqlalchemy.orm import Session
+from sqlalchemy.orm.attributes import flag_modified
 
 from fides.api.db.base_class import Base
 
@@ -78,6 +79,9 @@ class DBCache(Base):
         db_cache_entry = cls.get_cache_entry(db, namespace, cache_key)
         if db_cache_entry:
             db_cache_entry.cache_value = cache_value
+            # We manually flag it as modified so that the update runs even if the cache_value hasn't changed
+            # so the updated_at field of the cache entry gets updated.
+            flag_modified(db_cache_entry, "cache_value")
         else:
             db_cache_entry = cls(
                 namespace=namespace.value, cache_key=cache_key, cache_value=cache_value

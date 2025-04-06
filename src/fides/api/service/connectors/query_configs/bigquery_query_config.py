@@ -1,13 +1,14 @@
 from typing import Any, Dict, List, Optional, Union, cast
 
+import pydash
 from fideslang.models import MaskingStrategies
 from loguru import logger
 from sqlalchemy import MetaData, Table, text
 from sqlalchemy.engine import Engine
 from sqlalchemy.sql import Delete, Update  # type: ignore
-from sqlalchemy.sql.elements import ColumnElement
+from sqlalchemy.sql.elements import ColumnElement, TextClause
 
-from fides.api.graph.config import Field
+from fides.api.graph.config import Field, FieldPath
 from fides.api.graph.execution import ExecutionNode
 from fides.api.models.policy import Policy
 from fides.api.models.privacy_request import PrivacyRequest
@@ -17,7 +18,14 @@ from fides.api.schemas.namespace_meta.bigquery_namespace_meta import (
 from fides.api.service.connectors.query_configs.query_config import (
     QueryStringWithoutTuplesOverrideQueryConfig,
 )
-from fides.api.util.collection_util import Row, filter_nonempty_values
+from fides.api.util.collection_util import (
+    Row,
+    filter_nonempty_values,
+    flatten_dict,
+    merge_dicts,
+    replace_none_arrays,
+    unflatten_dict,
+)
 
 
 class BigQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
@@ -120,18 +128,45 @@ class BigQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
         A List of multiple Update objects are returned for partitioned tables; for a non-partitioned table,
         a single Update object is returned in a List for consistent typing.
 
-        TODO: DRY up this method and `generate_delete` a bit
+        This implementation handles nested fields by grouping them as JSON objects rather than
+        individual field updates.
+
+        See the README.md in this directory for a detailed example of how nested data is handled.
         """
+
+        # 1. Take update_value_map as-is (already flattened)
         update_value_map: Dict[str, Any] = self.update_value_map(row, policy, request)
-        non_empty_primary_keys: Dict[str, Field] = filter_nonempty_values(
+
+        # 2. Flatten the row
+        flattened_row = flatten_dict(row)
+
+        # 3. Merge flattened_row with update_value_map (update_value_map takes precedence)
+        merged_dict = merge_dicts(flattened_row, update_value_map)
+
+        # 4. Unflatten the merged dictionary
+        nested_result = unflatten_dict(merged_dict)
+
+        # 5. Replace any arrays containing only None values with empty arrays
+        nested_result = replace_none_arrays(nested_result)  # type: ignore
+
+        # 6. Only keep top-level keys that are in the update_value_map
+        top_level_keys = {key.split(".")[0] for key in update_value_map}
+
+        # Filter the nested result to only include those top-level keys
+        final_update_map = {
+            k: v for k, v in nested_result.items() if k in top_level_keys
+        }
+
+        # Use existing non-empty reference fields mechanism for WHERE clause
+        non_empty_reference_field_keys: Dict[str, Field] = filter_nonempty_values(
             {
-                fpath.string_path: fld.cast(row[fpath.string_path])
-                for fpath, fld in self.primary_key_field_paths.items()
-                if fpath.string_path in row
+                fpath.string_path: fld.cast(pydash.get(row, fpath.string_path))
+                for fpath, fld in self.reference_field_paths.items()
+                if pydash.get(row, fpath.string_path) is not None
             }
         )
 
-        valid = len(non_empty_primary_keys) > 0 and update_value_map
+        valid = len(non_empty_reference_field_keys) > 0 and final_update_map
         if not valid:
             logger.warning(
                 "There is not enough data to generate a valid update statement for {}",
@@ -140,8 +175,8 @@ class BigQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
             return []
 
         table = Table(self._generate_table_name(), MetaData(bind=client), autoload=True)
-        pk_clauses: List[ColumnElement] = [
-            getattr(table.c, k) == v for k, v in non_empty_primary_keys.items()
+        where_clauses: List[ColumnElement] = [
+            getattr(table.c, k) == v for k, v in non_empty_reference_field_keys.items()
         ]
 
         if self.partitioning:
@@ -153,13 +188,13 @@ class BigQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
             for partition_clause in partition_clauses:
                 partitioned_queries.append(
                     table.update()
-                    .where(*(pk_clauses + [text(partition_clause)]))
-                    .values(**update_value_map)
+                    .where(*(where_clauses + [text(partition_clause)]))
+                    .values(**final_update_map)
                 )
 
             return partitioned_queries
 
-        return [table.update().where(*pk_clauses).values(**update_value_map)]
+        return [table.update().where(*where_clauses).values(**final_update_map)]
 
     def generate_delete(self, row: Row, client: Engine) -> List[Delete]:
         """Returns a List of SQLAlchemy DELETE statements for BigQuery. Does not actually execute the delete statement.
@@ -172,15 +207,15 @@ class BigQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
         TODO: DRY up this method and `generate_update` a bit
         """
 
-        non_empty_primary_keys: Dict[str, Field] = filter_nonempty_values(
+        non_empty_reference_field_keys: Dict[str, Field] = filter_nonempty_values(
             {
                 fpath.string_path: fld.cast(row[fpath.string_path])
-                for fpath, fld in self.primary_key_field_paths.items()
+                for fpath, fld in self.reference_field_paths.items()
                 if fpath.string_path in row
             }
         )
 
-        valid = len(non_empty_primary_keys) > 0
+        valid = len(non_empty_reference_field_keys) > 0
         if not valid:
             logger.warning(
                 "There is not enough data to generate a valid DELETE statement for {}",
@@ -189,8 +224,8 @@ class BigQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
             return []
 
         table = Table(self._generate_table_name(), MetaData(bind=client), autoload=True)
-        pk_clauses: List[ColumnElement] = [
-            getattr(table.c, k) == v for k, v in non_empty_primary_keys.items()
+        where_clauses: List[ColumnElement] = [
+            getattr(table.c, k) == v for k, v in non_empty_reference_field_keys.items()
         ]
 
         if self.partitioning:
@@ -202,9 +237,82 @@ class BigQueryQueryConfig(QueryStringWithoutTuplesOverrideQueryConfig):
 
             for partition_clause in partition_clauses:
                 partitioned_queries.append(
-                    table.delete().where(*(pk_clauses + [text(partition_clause)]))
+                    table.delete().where(*(where_clauses + [text(partition_clause)]))
                 )
 
             return partitioned_queries
 
-        return [table.delete().where(*pk_clauses)]
+        return [table.delete().where(*where_clauses)]
+
+    def format_fields_for_query(
+        self,
+        field_paths: List[FieldPath],
+    ) -> List[str]:
+        """
+        Returns field paths in a format they can be added into SQL queries.
+        Only returns non-nested fields (fields with exactly one level).
+        """
+
+        formatted_fields = []
+        for field_path in field_paths:
+            if len(field_path.levels) == 1:
+                formatted_fields.append(field_path.levels[0])
+        return formatted_fields
+
+    def generate_raw_query_without_tuples(
+        self, field_list: List[str], filters: Dict[str, List[Any]]
+    ) -> Optional[TextClause]:
+        """
+        Allows executing a somewhat raw query where the field_list and filters do not depend
+        on the Node or Graph structure.
+
+        This is an override of the base class method that supports nested fields for BigQuery.
+
+        Examples with dot-delimited field names, notice the periods are replaced with underscores in the parameter bindings:
+
+        1. Single value filter:
+           field_list = ["id", "name", "email"]
+           filters = {"user.id": [123]}
+
+           Generates: SELECT id, name, email FROM `project_id.dataset_id.table_name` WHERE (user.id = :user_id)
+           With parameter binding: user_id = 123
+
+        2. Multiple value filter:
+           field_list = ["id", "name", "email"]
+           filters = {"user.status": ["active", "pending"]}
+
+           Generates: SELECT id, name, email FROM `project_id.dataset_id.table_name` WHERE (user.status IN (:user_status_in_stmt_generated_0, :user_status_in_stmt_generated_1))
+           With parameter bindings: user_status_in_stmt_generated_0 = "active", user_status_in_stmt_generated_1 = "pending"
+        """
+        clauses = []
+        query_data = {}
+        for field_name, field_value in filters.items():
+            # Replace dots with underscores in field names for parameter binding
+            field_binding_name = field_name.replace(".", "_")
+            data = set(field_value)
+            if len(data) == 1:
+                clauses.append(
+                    self.format_clause_for_query(field_name, "=", field_binding_name)
+                )
+                query_data[field_binding_name] = data.pop()
+            elif len(data) > 1:
+                data_vals = list(data)
+                query_data_keys: List[str] = []
+                for val in data_vals:
+                    # appending "_in_stmt_generated_" (can be any arbitrary str) so that this name has lower chance of conflicting with pre-existing column in table
+                    query_data_name = (
+                        field_binding_name
+                        + "_in_stmt_generated_"
+                        + str(data_vals.index(val))
+                    )
+                    query_data[query_data_name] = val
+                    query_data_keys.append(self.format_query_data_name(query_data_name))
+                operand = ", ".join(query_data_keys)
+                clauses.append(self.format_clause_for_query(field_name, "IN", operand))
+
+        if len(clauses) > 0:
+            formatted_fields = ", ".join(field_list)
+            query_str = self.get_formatted_query_string(formatted_fields, clauses)
+            return text(query_str).params(query_data)
+
+        return None

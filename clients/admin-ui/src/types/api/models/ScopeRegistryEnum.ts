@@ -70,6 +70,7 @@ export enum ScopeRegistryEnum {
   DATASET_CREATE_OR_UPDATE = "dataset:create_or_update",
   DATASET_DELETE = "dataset:delete",
   DATASET_READ = "dataset:read",
+  DATASET_TEST = "dataset:test",
   DISCOVERY_MONITOR_READ = "discovery_monitor:read",
   DISCOVERY_MONITOR_UPDATE = "discovery_monitor:update",
   ENCRYPTION_EXEC = "encryption:exec",
@@ -123,6 +124,8 @@ export enum ScopeRegistryEnum {
   PRIVACY_REQUEST_VIEW_DATA = "privacy-request:view_data",
   PRIVACY_CENTER_CONFIG_READ = "privacy_center_config:read",
   PRIVACY_CENTER_CONFIG_UPDATE = "privacy_center_config:update",
+  PRIVACY_EXPERIENCE_CACHE_DELETE = "privacy_experience_cache:delete",
+  PRIVACY_EXPERIENCE_CACHE_UPDATE = "privacy_experience_cache:update",
   PRIVACY_PREFERENCES_CREATE = "privacy_preferences:create",
   PROPERTY_CREATE = "property:create",
   PROPERTY_DELETE = "property:delete",
@@ -166,4 +169,5 @@ export enum ScopeRegistryEnum {
   WEBHOOK_CREATE_OR_UPDATE = "webhook:create_or_update",
   WEBHOOK_DELETE = "webhook:delete",
   WEBHOOK_READ = "webhook:read",
+  WORKER_STATS_READ = "worker-stats:read",
 }

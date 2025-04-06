@@ -1,0 +1,13 @@
+dataset:
+  - fides_key: <instance_fides_key>
+    name: Interruptible Dataset
+    description: Test dataset with collections that take time to process
+    collections:
+      - name: users
+        fields: []
+      - name: orders
+        fields: []
+      - name: preferences
+        fields: []
+      - name: notifications
+        fields: []

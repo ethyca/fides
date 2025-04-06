@@ -4,18 +4,19 @@ from loguru import logger
 from sqlalchemy.orm import Query, Session
 
 from fides.api.common_exceptions import MessageDispatchException
-from fides.api.models.policy import CurrentStep, Policy, Rule
-from fides.api.models.privacy_request import PrivacyRequest, PrivacyRequestStatus
-from fides.api.schemas.policy import ActionType
+from fides.api.models.policy import Policy, Rule
+from fides.api.models.privacy_request import PrivacyRequest
+from fides.api.schemas.policy import ActionType, CurrentStep
+from fides.api.schemas.privacy_request import PrivacyRequestStatus
 from fides.api.service.connectors import get_connector
 from fides.api.service.privacy_request.request_runner_service import (
     get_consent_email_connection_configs,
     get_erasure_email_connection_configs,
-    queue_privacy_request,
 )
 from fides.api.tasks import DatabaseTask, celery_app
 from fides.api.tasks.scheduled.scheduler import scheduler
 from fides.config import get_config
+from fides.service.privacy_request.privacy_request_service import queue_privacy_request
 
 CONFIG = get_config()
 BATCH_EMAIL_SEND = "batch_email_send"

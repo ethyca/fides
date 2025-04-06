@@ -1,6 +1,6 @@
 import { AntButton as Button, Box, Center, Stack, Text } from "fidesui";
 
-import { ADD_SYSTEMS_ROUTE } from "../common/nav/v2/routes";
+import { ADD_SYSTEMS_ROUTE } from "../common/nav/routes";
 
 const GetStarted = () => {
   return (

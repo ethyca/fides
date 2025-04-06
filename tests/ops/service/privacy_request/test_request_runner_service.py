@@ -8,6 +8,7 @@ import pydash
 import pytest
 from pydantic import ValidationError
 from sqlalchemy.orm import Session
+from sqlalchemy.orm.attributes import flag_modified
 
 from fides.api.common_exceptions import (
     ClientUnsuccessfulException,
@@ -15,16 +16,9 @@ from fides.api.common_exceptions import (
 )
 from fides.api.graph.graph import DatasetGraph
 from fides.api.models.application_config import ApplicationConfig
-from fides.api.models.policy import CurrentStep, PolicyPostWebhook
-from fides.api.models.privacy_request import (
-    ActionType,
-    CheckpointActionRequired,
-    ExecutionLog,
-    ExecutionLogStatus,
-    PolicyPreWebhook,
-    PrivacyRequest,
-    PrivacyRequestStatus,
-)
+from fides.api.models.datasetconfig import DatasetConfig
+from fides.api.models.policy import PolicyPostWebhook, PolicyPreWebhook
+from fides.api.models.privacy_request import ExecutionLog, PrivacyRequest
 from fides.api.schemas.masking.masking_configuration import MaskingConfiguration
 from fides.api.schemas.masking.masking_secrets import MaskingSecretCache
 from fides.api.schemas.messaging.messaging import (
@@ -32,8 +26,13 @@ from fides.api.schemas.messaging.messaging import (
     MessagingActionType,
     MessagingServiceType,
 )
-from fides.api.schemas.policy import Rule
-from fides.api.schemas.privacy_request import Consent
+from fides.api.schemas.policy import ActionType, CurrentStep, Rule
+from fides.api.schemas.privacy_request import (
+    CheckpointActionRequired,
+    Consent,
+    ExecutionLogStatus,
+    PrivacyRequestStatus,
+)
 from fides.api.schemas.redis_cache import Identity
 from fides.api.service.masking.strategy.masking_strategy import MaskingStrategy
 from fides.api.service.privacy_request.request_runner_service import (
@@ -1461,3 +1460,140 @@ class TestAsyncCallbacks:
             # node cannot be paused
             db.refresh(pr)
             assert pr.status == PrivacyRequestStatus.complete
+
+
+class TestDatasetReferenceValidation:
+    @pytest.mark.usefixtures("dataset_config")
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.access_runner"
+    )
+    @pytest.mark.parametrize(
+        "dsr_version",
+        ["use_dsr_3_0", "use_dsr_2_0"],
+    )
+    def test_dataset_reference_validation_success(
+        self,
+        run_access,
+        db: Session,
+        privacy_request: PrivacyRequest,
+        run_privacy_request_task,
+        request,
+        dsr_version,
+    ):
+        """Test that successful dataset reference validation is logged"""
+
+        request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+
+        # Run privacy request
+        run_privacy_request_task.delay(privacy_request.id).get(
+            timeout=PRIVACY_REQUEST_TASK_TIMEOUT
+        )
+
+        # Verify success log was created
+        success_logs = privacy_request.execution_logs.filter_by(status="complete").all()
+
+        validation_logs = [
+            log
+            for log in success_logs
+            if log.dataset_name == "Dataset reference validation"
+        ]
+
+        assert len(validation_logs) == 1
+        log = validation_logs[0]
+        assert log.connection_key is None
+        assert log.collection_name is None
+        assert (
+            log.message
+            == f"Dataset reference validation successful for privacy request: {privacy_request.id}"
+        )
+        assert log.action_type == privacy_request.policy.get_action_type()
+
+    @mock.patch(
+        "fides.api.service.privacy_request.request_runner_service.access_runner"
+    )
+    @pytest.mark.parametrize(
+        "dsr_version",
+        ["use_dsr_3_0", "use_dsr_2_0"],
+    )
+    def test_dataset_reference_validation_error(
+        self,
+        run_access,
+        db: Session,
+        privacy_request: PrivacyRequest,
+        dataset_config: DatasetConfig,
+        run_privacy_request_task,
+        request,
+        dsr_version,
+    ):
+        """Test that dataset reference validation errors are logged"""
+
+        request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+
+        # Add invalid dataset reference that will cause validation error
+        dataset_config.ctl_dataset.collections[0]["fields"][0]["fides_meta"] = {
+            "references": [
+                {"dataset": "invalid_dataset", "field": "invalid_collection.field"}
+            ]
+        }
+        flag_modified(dataset_config.ctl_dataset, "collections")
+        dataset_config.save(db)
+
+        # Run privacy request
+        run_privacy_request_task.delay(privacy_request.id).get(
+            timeout=PRIVACY_REQUEST_TASK_TIMEOUT
+        )
+
+        # Verify error log was created
+        error_logs = privacy_request.execution_logs.filter_by(status="error").all()
+
+        validation_logs = [
+            log
+            for log in error_logs
+            if log.dataset_name == "Dataset reference validation"
+        ]
+
+        assert len(validation_logs) == 1
+        log = validation_logs[0]
+        assert log.connection_key is None
+        assert log.collection_name is None
+        assert (
+            "Referenced object invalid_dataset:invalid_collection:field from dataset postgres_example_subscriptions_dataset does not exist"
+            in log.message
+        )
+        assert log.action_type == privacy_request.policy.get_action_type()
+
+
+class TestSkipCollectionsWithOptionalIdentities:
+    @pytest.mark.parametrize(
+        "dsr_version",
+        ["use_dsr_3_0", "use_dsr_2_0"],
+    )
+    def test_skip_collections_with_optional_identities(
+        self,
+        privacy_request: PrivacyRequest,
+        run_privacy_request_task,
+        optional_identities_dataset_config,
+        dsr_version,
+        request,
+    ):
+        """Test that collections with optional identities are skipped"""
+
+        request.getfixturevalue(dsr_version)  # REQUIRED to test both DSR 3.0 and 2.0
+
+        # Run privacy request
+        run_privacy_request_task.delay(privacy_request.id).get(timeout=300)
+
+        skipped_logs = privacy_request.execution_logs.filter_by(
+            status=ExecutionLogStatus.skipped
+        ).all()
+        assert len(skipped_logs) == 1, "No skipped execution logs were created"
+
+        # Verify the skipped log for dataset traversal
+        skipped_log = skipped_logs[0]
+        assert skipped_log.privacy_request_id == privacy_request.id
+        assert skipped_log.status == ExecutionLogStatus.skipped
+        assert skipped_log.dataset_name == "Dataset traversal"
+        assert skipped_log.collection_name == "optional_identities.customer"
+        assert skipped_log.message == (
+            'Skipping the "optional_identities:customer" collection, it is reachable by the "user_id" identity but only the "email" identity was provided'
+        )

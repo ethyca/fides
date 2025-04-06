@@ -201,7 +201,6 @@ const VendorSelector = ({
         <Box width="100%" className="relative">
           <Select<VendorOption, VendorOption>
             id="vendorName"
-            showSearch
             labelInValue
             autoFocus
             allowClear

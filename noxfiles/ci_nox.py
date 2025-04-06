@@ -14,7 +14,7 @@ from constants_nox import (
     START_APP,
     WITH_TEST_CONFIG,
 )
-from setup_tests_nox import pytest_ctl, pytest_lib, pytest_nox, pytest_ops
+from setup_tests_nox import pytest_api, pytest_ctl, pytest_lib, pytest_nox, pytest_ops
 from utils_nox import install_requirements
 
 
@@ -95,13 +95,19 @@ def xenon(session: nox.Session) -> None:
         "src",
         "tests",
         "scripts",
-        "--max-absolute B",
-        "--max-modules B",
-        "--max-average A",
-        "--ignore 'data, docs'",
-        "--exclude src/fides/_version.py",
+        "--max-absolute=B",
+        "--max-modules=B",
+        "--max-average=A",
+        "--ignore=data,docs",
+        "--exclude=src/fides/_version.py",
     )
-    session.run(*command)
+    session.run(*command, success_codes=[0, 1])
+    session.warn(
+        "Note: This command was malformed so it's been failing to report complexity issues."
+    )
+    session.warn(
+        "Intentionally suppressing the error status code for now to slowly work through the issues."
+    )
 
 
 ##################
@@ -281,6 +287,7 @@ TEST_GROUPS = [
     nox.param("ops-integration", id="ops-integration"),
     nox.param("ops-external-datastores", id="ops-external-datastores"),
     nox.param("ops-saas", id="ops-saas"),
+    nox.param("api", id="api"),
     nox.param("lib", id="lib"),
     nox.param("nox", id="nox"),
 ]
@@ -296,6 +303,7 @@ TEST_MATRIX: Dict[str, Callable] = {
     "ops-integration": partial(pytest_ops, mark="integration"),
     "ops-external-datastores": partial(pytest_ops, mark="external_datastores"),
     "ops-saas": partial(pytest_ops, mark="saas"),
+    "api": pytest_api,
     "lib": pytest_lib,
     "nox": pytest_nox,
 }

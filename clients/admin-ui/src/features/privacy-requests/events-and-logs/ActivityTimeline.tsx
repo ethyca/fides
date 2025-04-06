@@ -1,5 +1,9 @@
-import { Box, Text, useDisclosure } from "fidesui";
-import { ExecutionLog, PrivacyRequestEntity } from "privacy-requests/types";
+import { Box, useDisclosure } from "fidesui";
+import {
+  ExecutionLog,
+  ExecutionLogStatus,
+  PrivacyRequestEntity,
+} from "privacy-requests/types";
 import React, { useEffect, useState } from "react";
 
 import LogDrawer from "./LogDrawer";
@@ -15,6 +19,9 @@ const ActivityTimeline = ({ subjectRequest }: ActivityTimelineProps) => {
   const [currentKey, setCurrentKey] = useState<string>("");
   const [isViewingError, setViewingError] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [currentStatus, setCurrentStatus] = useState<ExecutionLogStatus>(
+    ExecutionLogStatus.ERROR,
+  );
 
   const { results } = subjectRequest;
   const resultKeys = results ? Object.keys(results) : [];
@@ -26,8 +33,11 @@ const ActivityTimeline = ({ subjectRequest }: ActivityTimelineProps) => {
     }
   }, [results, currentKey]);
 
-  const openErrorPanel = (message: string) => {
+  const openErrorPanel = (message: string, status?: ExecutionLogStatus) => {
     setErrorMessage(message);
+    if (status) {
+      setCurrentStatus(status);
+    }
     setViewingError(true);
   };
 
@@ -51,9 +61,6 @@ const ActivityTimeline = ({ subjectRequest }: ActivityTimelineProps) => {
 
   return (
     <Box width="100%">
-      <Text color="gray.900" fontSize="md" fontWeight="500" mb={1}>
-        Activity timeline
-      </Text>
       {results &&
         resultKeys.map((key, index) => (
           <TimelineEntry
@@ -70,6 +77,7 @@ const ActivityTimeline = ({ subjectRequest }: ActivityTimelineProps) => {
         currentLogs={currentLogs}
         isViewingError={isViewingError}
         errorMessage={errorMessage}
+        currentStatus={currentStatus}
         onOpenErrorPanel={openErrorPanel}
         onCloseErrorPanel={closeErrorPanel}
       />

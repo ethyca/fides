@@ -1,4 +1,4 @@
-import { Flex, FormControl, Tag, VStack } from "fidesui";
+import { AntTag as Tag, Flex, FormControl, VStack } from "fidesui";
 import { useField } from "formik";
 import _ from "lodash";
 import React, { useEffect, useRef, useState } from "react";
@@ -90,7 +90,7 @@ const SystemDataTags = ({
           {(height ? field.value : longestValue).map(
             (value: any, index: number) => (
               // eslint-disable-next-line react/no-array-index-key
-              <Tag key={index} colorScheme="gray" size="md" m={1}>
+              <Tag key={index} color="marble" className="m-1">
                 {typeof value === "object" ? value.fides_key : value}
               </Tag>
             ),

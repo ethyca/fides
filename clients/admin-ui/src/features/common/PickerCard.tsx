@@ -1,6 +1,6 @@
 import {
   AntButton as Button,
-  Badge,
+  AntTag as Tag,
   Box,
   Checkbox,
   CheckboxGroup,
@@ -87,14 +87,9 @@ export const PickerCheckboxList = <T extends { id: string; name: string }>({
         {toggle ?? null}
       </Flex>
       {numSelected > 0 ? (
-        <Badge
-          colorScheme="purple"
-          variant="solid"
-          width="fit-content"
-          data-testid="num-selected-badge"
-        >
+        <Tag className="w-fit" data-testid="num-selected-badge">
           {numSelected} selected
-        </Badge>
+        </Tag>
       ) : null}
       <VStack paddingLeft="6" fontSize="sm" alignItems="start" spacing="2">
         <CheckboxGroup colorScheme="complimentary">

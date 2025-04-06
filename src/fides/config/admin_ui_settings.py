@@ -17,4 +17,8 @@ class AdminUISettings(FidesSettings):
     url: SerializeAsAny[Optional[AnyHttpUrlStringRemovesSlash]] = Field(
         default=None, description="The base URL for the Admin UI."
     )
+    max_privacy_request_download_rows: int = Field(
+        default=100000,
+        description="The maximum number of rows permitted to be returned in a privacy request report download",
+    )
     model_config = SettingsConfigDict(env_prefix="FIDES__ADMIN_UI__")

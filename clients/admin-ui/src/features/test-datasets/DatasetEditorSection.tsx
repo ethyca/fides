@@ -1,4 +1,4 @@
-import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query/fetchBaseQuery";
+import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import {
   AntButton as Button,
   AntSelect as Select,
@@ -8,6 +8,7 @@ import {
   HStack,
   Stack,
   Text,
+  Tooltip,
   useToast,
   VStack,
 } from "fidesui";
@@ -26,12 +27,32 @@ import {
 } from "~/features/datastore-connections";
 import { Dataset } from "~/types/api";
 
-import { selectCurrentDataset, setCurrentDataset } from "./dataset-test.slice";
+import {
+  selectCurrentDataset,
+  selectCurrentPolicyKey,
+  setCurrentDataset,
+  setReachability,
+} from "./dataset-test.slice";
 import { removeNulls } from "./helpers";
 
 interface EditorSectionProps {
   connectionKey: string;
 }
+
+const getReachabilityMessage = (details: any) => {
+  if (Array.isArray(details)) {
+    const firstDetail = details[0];
+
+    if (!firstDetail) {
+      return "";
+    }
+
+    const message = firstDetail.msg || "";
+    const location = firstDetail.loc ? ` (${firstDetail.loc})` : "";
+    return `${message}${location}`;
+  }
+  return details;
+};
 
 const EditorSection = ({ connectionKey }: EditorSectionProps) => {
   const toast = useToast();
@@ -40,6 +61,7 @@ const EditorSection = ({ connectionKey }: EditorSectionProps) => {
 
   const [editorContent, setEditorContent] = useState<string>("");
   const currentDataset = useAppSelector(selectCurrentDataset);
+  const currentPolicyKey = useAppSelector(selectCurrentPolicyKey);
 
   const {
     data: datasetConfigs,
@@ -54,11 +76,18 @@ const EditorSection = ({ connectionKey }: EditorSectionProps) => {
       {
         connectionKey,
         datasetKey: currentDataset?.fides_key || "",
+        policyKey: currentPolicyKey,
       },
       {
-        skip: !connectionKey || !currentDataset?.fides_key,
+        skip: !connectionKey || !currentDataset?.fides_key || !currentPolicyKey,
       },
     );
+
+  useEffect(() => {
+    if (reachability) {
+      dispatch(setReachability(reachability.reachable));
+    }
+  }, [reachability, dispatch]);
 
   const datasetOptions = useMemo(
     () =>
@@ -90,10 +119,21 @@ const EditorSection = ({ connectionKey }: EditorSectionProps) => {
   }, [currentDataset]);
 
   useEffect(() => {
-    if (connectionKey && currentDataset?.fides_key) {
+    if (currentPolicyKey && currentDataset?.fides_key && connectionKey) {
       refetchReachability();
     }
-  }, [connectionKey, currentDataset, refetchReachability]);
+  }, [
+    currentPolicyKey,
+    currentDataset?.fides_key,
+    connectionKey,
+    refetchReachability,
+  ]);
+
+  useEffect(() => {
+    if (reachability) {
+      dispatch(setReachability(reachability.reachable));
+    }
+  }, [reachability, dispatch]);
 
   const handleDatasetChange = async (value: string) => {
     const selectedConfig = datasetConfigs?.items.find(
@@ -142,6 +182,7 @@ const EditorSection = ({ connectionKey }: EditorSectionProps) => {
     );
     toast(successToastParams("Successfully modified dataset"));
     await refetchDatasets();
+    await refetchReachability();
   };
 
   const handleRefresh = async () => {
@@ -181,18 +222,30 @@ const EditorSection = ({ connectionKey }: EditorSectionProps) => {
           <ClipboardButton copyText={editorContent} />
         </HStack>
         <HStack spacing={2}>
-          <Button
-            htmlType="submit"
-            size="small"
-            data-testid="refresh-btn"
-            onClick={handleRefresh}
-            loading={isDatasetConfigsLoading}
+          <Tooltip
+            label="Refresh to load the latest data from the database. This will overwrite any unsaved local changes."
+            hasArrow
+            placement="top"
           >
-            Refresh
-          </Button>
-          <Button htmlType="submit" size="small" onClick={handleSave}>
-            Save
-          </Button>
+            <Button
+              htmlType="submit"
+              size="small"
+              data-testid="refresh-btn"
+              onClick={handleRefresh}
+              loading={isDatasetConfigsLoading}
+            >
+              Refresh
+            </Button>
+          </Tooltip>
+          <Tooltip
+            label="Save your changes to update the dataset in the database."
+            hasArrow
+            placement="top"
+          >
+            <Button htmlType="submit" size="small" onClick={handleSave}>
+              Save
+            </Button>
+          </Tooltip>
         </HStack>
       </Heading>
       <Stack
@@ -224,30 +277,32 @@ const EditorSection = ({ connectionKey }: EditorSectionProps) => {
           theme="light"
         />
       </Stack>
-      <Stack
-        backgroundColor={reachability?.reachable ? "green.50" : "red.50"}
-        border="1px solid"
-        borderColor={reachability?.reachable ? "green.500" : "red.500"}
-        borderRadius="md"
-        p={2}
-        flexShrink={0}
-        mt={2}
-      >
-        <HStack alignItems="center">
-          <HStack flex="1">
-            {reachability?.reachable ? (
-              <GreenCheckCircleIcon />
-            ) : (
-              <ErrorWarningIcon />
-            )}
-            <Text fontSize="sm" whiteSpace="pre-wrap">
-              {reachability?.reachable
-                ? "Dataset is reachable"
-                : `Dataset is not reachable. ${reachability?.details}`}
-            </Text>
+      {reachability && (
+        <Stack
+          backgroundColor={reachability?.reachable ? "green.50" : "red.50"}
+          border="1px solid"
+          borderColor={reachability?.reachable ? "green.500" : "red.500"}
+          borderRadius="md"
+          p={2}
+          flexShrink={0}
+          mt={2}
+        >
+          <HStack alignItems="center">
+            <HStack flex="1">
+              {reachability?.reachable ? (
+                <GreenCheckCircleIcon />
+              ) : (
+                <ErrorWarningIcon />
+              )}
+              <Text fontSize="sm" whiteSpace="pre-wrap">
+                {reachability?.reachable
+                  ? "Dataset is reachable"
+                  : `Dataset is not reachable. ${getReachabilityMessage(reachability?.details)}`}
+              </Text>
+            </HStack>
           </HStack>
-        </HStack>
-      </Stack>
+        </Stack>
+      )}
     </VStack>
   );
 };

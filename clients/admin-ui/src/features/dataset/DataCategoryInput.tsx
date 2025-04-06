@@ -1,9 +1,14 @@
-import { Box, FormLabel, Grid, Stack } from "fidesui";
+import {
+  AntSpace as Space,
+  AntTag as Tag,
+  Box,
+  FormLabel,
+  Grid,
+} from "fidesui";
 
 import { DataCategory } from "~/types/api";
 
 import QuestionTooltip from "../common/QuestionTooltip";
-import TaxonomyEntityTag from "../taxonomy/TaxonomyEntityTag";
 import DataCategoryDropdown from "./DataCategoryDropdown";
 
 export interface Props {
@@ -30,7 +35,7 @@ const DataCategoryInput = ({
   return (
     <Grid templateColumns="1fr 3fr">
       <FormLabel>Data Categories</FormLabel>
-      <Stack>
+      <Space direction="vertical" size="small">
         <Box display="flex" alignItems="center">
           <Box mr="2" width="100%">
             <DataCategoryDropdown
@@ -41,18 +46,20 @@ const DataCategoryInput = ({
           </Box>
           <QuestionTooltip label={tooltip} />
         </Box>
-        <Stack data-testid="selected-categories">
+        <Space direction="vertical" size={2} data-testid="selected-categories">
           {sortedCheckedDataCategories.map((dc) => (
-            <TaxonomyEntityTag
-              key={dc}
-              name={dc}
+            <Tag
+              closable
               onClose={() => {
                 handleRemoveDataCategory(dc);
               }}
-            />
+              key={dc}
+            >
+              {dc}
+            </Tag>
           ))}
-        </Stack>
-      </Stack>
+        </Space>
+      </Space>
     </Grid>
   );
 };

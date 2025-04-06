@@ -4,7 +4,7 @@ import NextLink from "next/link";
 
 import { useAppSelector } from "~/app/hooks";
 import Layout from "~/features/common/Layout";
-import { LOCATIONS_ROUTE } from "~/features/common/nav/v2/routes";
+import { LOCATIONS_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 import {
   selectLocationsRegulations,

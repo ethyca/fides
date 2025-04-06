@@ -222,6 +222,83 @@ class TestSaaSQueryConfig:
             == '{\n  "merge_fields": {"FNAME": "MASKED", "LNAME": "MASKED"}\n}\n'
         )
 
+    def test_generate_update_stmt_read_only_fields(
+        self,
+        privacy_request,
+        erasure_policy_string_rewrite_address,
+        combined_traversal,
+        saas_example_connection_config,
+    ):
+        saas_config: SaaSConfig = saas_example_connection_config.get_saas_config()
+        endpoints = saas_config.top_level_endpoint_dict
+        update_request = endpoints["member"].requests.update
+
+        member = combined_traversal.traversal_node_dict[
+            CollectionAddress(saas_config.fides_key, "member")
+        ].to_mock_execution_node()
+
+        config = SaaSQueryConfig(member, endpoints, {}, update_request)
+        row = {
+            "id": "123",
+            "merge_fields": {
+                "FNAME": "First",
+                "LNAME": "Last",
+                # address is a list of objects
+                "ADDRESS": [
+                    {
+                        "addr1": "123 Main St",
+                        "city": "San Francisco",
+                        "state": "CA",
+                        "zip": "94105",
+                        # country is read_only so it will not be present on the update body
+                        "country": "USA",
+                    },
+                    {
+                        "addr1": "124 Main St",
+                        "city": "San Fernando",
+                        "state": "BA",
+                        "zip": "94205",
+                        # country is read_only so it will not be present on the update body
+                        "country": "ARG",
+                    },
+                ],
+                # PHONE is read_only so it will not be present on the update body
+                "PHONE": "555-555-5555",
+            },
+            "list_id": "abc",
+        }
+
+        # build request by taking a row, masking it, and adding it to
+        # the body of a PUT request
+        prepared_request: SaaSRequestParams = config.generate_update_stmt(
+            row, erasure_policy_string_rewrite_address, privacy_request
+        )
+        assert prepared_request.method == HTTPMethod.PUT.value
+        assert prepared_request.path == "/3.0/lists/abc/members/123"
+        assert prepared_request.headers == {"Content-Type": "application/json"}
+        assert prepared_request.query_params == {}
+        request_body = json.loads(prepared_request.body)
+        assert request_body == {
+            "merge_fields": {
+                "FNAME": "MASKED",
+                "LNAME": "MASKED",
+                "ADDRESS": [
+                    {
+                        "addr1": "MASKED",
+                        "city": "MASKED",
+                        "state": "MASKED",
+                        "zip": "MASKED",
+                    },
+                    {
+                        "addr1": "MASKED",
+                        "city": "MASKED",
+                        "state": "MASKED",
+                        "zip": "MASKED",
+                    },
+                ],
+            }
+        }
+
     def test_generate_update_stmt_custom_http_method(
         self,
         privacy_request,
@@ -751,6 +828,216 @@ class TestSaaSQueryConfig:
         assert opt_out_request.method == HTTPMethod.POST.value
         assert opt_out_request.path == "/allowlists/delete"
         assert json.loads(opt_out_request.body) == {"first_name": "John"}
+
+    def test_all_value_map_simple_object(
+        self,
+        combined_traversal,
+        saas_example_connection_config,
+    ):
+        """
+        Test that the all_value_map method correctly creates paths for simple nested objects.
+        """
+        saas_config: SaaSConfig = saas_example_connection_config.get_saas_config()
+        endpoints = saas_config.top_level_endpoint_dict
+
+        member = combined_traversal.traversal_node_dict[
+            CollectionAddress(saas_config.fides_key, "member")
+        ].to_mock_execution_node()
+
+        config = SaaSQueryConfig(member, endpoints, {})
+
+        # Test with nested object
+        row = {
+            "id": "123",
+            "merge_fields": {
+                "FNAME": "First",
+                "LNAME": "Last",
+            },
+            "list_id": "abc",
+        }
+
+        assert config.all_value_map(row) == {
+            "id": "123",
+            "merge_fields.FNAME": "First",
+            "merge_fields.LNAME": "Last",
+            "list_id": "abc",
+        }
+
+    def test_all_value_map_array_indices(
+        self,
+        combined_traversal,
+        saas_example_connection_config,
+    ):
+        """
+        Test that the all_value_map method correctly handles array indices in paths.
+        """
+        saas_config: SaaSConfig = saas_example_connection_config.get_saas_config()
+        endpoints = saas_config.top_level_endpoint_dict
+
+        member = combined_traversal.traversal_node_dict[
+            CollectionAddress(saas_config.fides_key, "member")
+        ].to_mock_execution_node()
+
+        config = SaaSQueryConfig(member, endpoints, {})
+
+        # Test with array data
+        row_with_array = {
+            "id": "123",
+            "tags": ["tag1", "tag2", "tag3"],
+            "addresses": [
+                {
+                    "addr1": "123 Main St",
+                    "city": "San Francisco",
+                    "state": "CA",
+                    "zip": "94107",
+                },
+                {
+                    "addr1": "456 Market St",
+                    "city": "San Francisco",
+                    "state": "CA",
+                    "zip": "94102",
+                },
+            ],
+        }
+
+        assert config.all_value_map(row_with_array) == {
+            "id": "123",
+            "tags.0": "tag1",
+            "tags.1": "tag2",
+            "tags.2": "tag3",
+            "addresses.0.addr1": "123 Main St",
+            "addresses.0.city": "San Francisco",
+            "addresses.0.state": "CA",
+            "addresses.0.zip": "94107",
+            "addresses.1.addr1": "456 Market St",
+            "addresses.1.city": "San Francisco",
+            "addresses.1.state": "CA",
+            "addresses.1.zip": "94102",
+        }
+
+    def test_all_value_map_complex_nested_arrays(
+        self,
+        combined_traversal,
+        saas_example_connection_config,
+    ):
+        """
+        Test that the all_value_map method correctly handles deeply nested arrays with multiple levels.
+        """
+        saas_config: SaaSConfig = saas_example_connection_config.get_saas_config()
+        endpoints = saas_config.top_level_endpoint_dict
+
+        member = combined_traversal.traversal_node_dict[
+            CollectionAddress(saas_config.fides_key, "member")
+        ].to_mock_execution_node()
+
+        config = SaaSQueryConfig(member, endpoints, {})
+
+        # Test with deeply nested array
+        complex_row = {
+            "id": "123",
+            "contacts": [
+                {
+                    "type": "work",
+                    "numbers": [
+                        {"label": "phone", "value": "123-456-7890"},
+                        {"label": "fax", "value": "123-456-7891"},
+                    ],
+                },
+                {
+                    "type": "home",
+                    "numbers": [
+                        {"label": "phone", "value": "987-654-3210"},
+                    ],
+                },
+            ],
+        }
+
+        assert config.all_value_map(complex_row) == {
+            "id": "123",
+            "contacts.0.type": "work",
+            "contacts.1.type": "home",
+            "contacts.0.numbers.0.label": "phone",
+            "contacts.0.numbers.0.value": "123-456-7890",
+            "contacts.0.numbers.1.label": "fax",
+            "contacts.0.numbers.1.value": "123-456-7891",
+            "contacts.1.numbers.0.label": "phone",
+            "contacts.1.numbers.0.value": "987-654-3210",
+        }
+
+    def test_all_value_map_with_update_value_map(
+        self,
+        privacy_request,
+        erasure_policy_string_rewrite,
+        combined_traversal,
+        saas_example_connection_config,
+    ):
+        """
+        Test that all_value_map and update_value_map work together correctly
+        with arrays when generating update parameters.
+        """
+        saas_config: SaaSConfig = saas_example_connection_config.get_saas_config()
+        endpoints = saas_config.top_level_endpoint_dict
+        update_request = endpoints["member"].requests.update
+
+        member = combined_traversal.traversal_node_dict[
+            CollectionAddress(saas_config.fides_key, "member")
+        ].to_mock_execution_node()
+
+        config = SaaSQueryConfig(member, endpoints, {}, update_request)
+
+        # Create a row with nested arrays that will be masked
+        row = {
+            "id": "123",
+            "merge_fields": {"FNAME": "First", "LNAME": "Last"},
+            "list_id": "abc",
+            "interests": ["sports", "music", "travel"],
+            "addresses": [
+                {
+                    "addr1": "123 Main St",
+                    "city": "San Francisco",
+                    "state": "CA",
+                    "zip": "94107",
+                },
+                {
+                    "addr1": "456 Market St",
+                    "city": "New York",
+                    "state": "NY",
+                    "zip": "10001",
+                },
+            ],
+        }
+
+        # Directly call generate_update_param_values to integrate all_value_map and update_value_map
+        param_values = config.generate_update_param_values(
+            row, erasure_policy_string_rewrite, privacy_request, update_request
+        )
+
+        # Verify the masked_object matches expected
+        assert param_values.get("masked_object_fields") == {
+            "merge_fields": {"FNAME": "MASKED", "LNAME": "MASKED"}
+        }
+
+        # Verify the complete_object matches expected
+        assert param_values.get("all_object_fields") == {
+            "id": "123",
+            "list_id": "abc",
+            "merge_fields": {"FNAME": "MASKED", "LNAME": "MASKED"},
+            "interests": ["sports", "music", "travel"],
+            "addresses": [
+                {
+                    "addr1": "123 Main St",
+                    "city": "San Francisco",
+                    "state": "CA",
+                    "zip": "94107",
+                },
+                {
+                    "addr1": "456 Market St",
+                    "city": "New York",
+                    "state": "NY",
+                    "zip": "10001",
+                },
+            ],
+        }
 
 
 class TestGenerateProductList:

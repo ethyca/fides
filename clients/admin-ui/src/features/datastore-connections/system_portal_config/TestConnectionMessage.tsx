@@ -7,9 +7,15 @@ type TestConnectionMessageProps = {
 
 const TestConnectionMessage = ({ status }: TestConnectionMessageProps) => (
   <>
-    {status === "success" && <Text>Connection test was successful</Text>}
+    {status === "success" && (
+      <Text data-testid="toast-success-msg">
+        Connection test was successful
+      </Text>
+    )}
     {status === "error" && (
-      <Text>Test failed: please check your connection info</Text>
+      <Text data-testid="toast-error-msg">
+        Test failed: please check your connection info
+      </Text>
     )}
   </>
 );

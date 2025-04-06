@@ -18,12 +18,14 @@ import {
 } from "~/features/common/helpers";
 import Layout from "~/features/common/Layout";
 import PageHeader from "~/features/common/PageHeader";
+import { useHasPermission } from "~/features/common/Restrict";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import TaxonomyEditDrawer from "~/features/taxonomy/components/TaxonomyEditDrawer";
 import TaxonomyInteractiveTree from "~/features/taxonomy/components/TaxonomyInteractiveTree";
 import {
   CoreTaxonomiesEnum,
   TAXONOMY_ROOT_NODE_ID,
+  taxonomyTypeToScopeRegistryEnum,
 } from "~/features/taxonomy/constants";
 import useTaxonomySlices from "~/features/taxonomy/hooks/useTaxonomySlices";
 import { TaxonomyEntity } from "~/features/taxonomy/types";
@@ -94,6 +96,10 @@ const TaxonomyPage: NextPage = () => {
     "active",
   ) as TaxonomyEntity[];
 
+  const userCanAddLabels = useHasPermission([
+    taxonomyTypeToScopeRegistryEnum(taxonomyType).CREATE,
+  ]);
+
   return (
     <Layout title="Taxonomy">
       <Flex vertical className="h-full">
@@ -129,6 +135,7 @@ const TaxonomyPage: NextPage = () => {
 
           {!!taxonomyItems.length && (
             <TaxonomyInteractiveTree
+              userCanAddLabels={userCanAddLabels}
               taxonomyItems={
                 showDisabledItems ? taxonomyItems : activeTaxonomyItems
               }

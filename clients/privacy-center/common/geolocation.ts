@@ -11,17 +11,17 @@ import type { NextApiRequest } from "next";
  * Economic Area; this is not part of ISO 3166-2, but is supported for
  * convenience.
  */
-const VALID_ISO_3166_LOCATION_REGEX =
+export const VALID_ISO_3166_LOCATION_REGEX =
   /^(?:([a-z]{2})(-[a-z0-9]{1,3})?|(eea))$/i;
 
 // Regex to validate a standalone ISO-3166-2 region code, which must be a 1-3
 // alphanumeric character region code (e.g. "CA", "123", "X")
-const VALID_ISO_3166_2_REGION_REGEX = /^[a-z0-9]{1,3}?$/i;
+export const VALID_ISO_3166_2_REGION_REGEX = /^[a-z0-9]{1,3}?$/i;
 
 // Constants for the supported CloudFront geolocation headers
 // (see https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/adding-cloudfront-headers.html#cloudfront-headers-viewer-location)
-const CLOUDFRONT_HEADER_COUNTRY = "cloudfront-viewer-country";
-const CLOUDFRONT_HEADER_REGION = "cloudfront-viewer-country-region";
+export const CLOUDFRONT_HEADER_COUNTRY = "cloudfront-viewer-country";
+export const CLOUDFRONT_HEADER_REGION = "cloudfront-viewer-country-region";
 export const LOCATION_HEADERS = [
   CLOUDFRONT_HEADER_COUNTRY,
   CLOUDFRONT_HEADER_REGION,
@@ -31,7 +31,6 @@ export const LOCATION_HEADERS = [
  * Lookup the "geolocation" (ie country and region) for the given request by looking for either:
  * 1) An explicit "geolocation" query param (e.g. https://privacy.example.com/some/path?geolocation=US-CA)
  * 2) Supported geolocation headers (e.g. "Cloudfront-Viewer-Country: US")
- * 3) A geolocation API URL to infer location based on IP
  *
  * If none of these are found, return a null geolocation.
  *

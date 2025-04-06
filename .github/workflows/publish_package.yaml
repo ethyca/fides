@@ -110,7 +110,7 @@ jobs:
       - name: Send Repository Dispatch Event
         # only run on an alpha or beta tag
         if: steps.check-alpha-tag.outputs.match == 'true' || steps.check-beta-tag.outputs.match == 'true'
-        uses: peter-evans/repository-dispatch@v2
+        uses: peter-evans/repository-dispatch@v3
         with:
           client-payload: '{"tag": "${{ github.ref_name }}"}'
           event-type: new-fides-feature-tag

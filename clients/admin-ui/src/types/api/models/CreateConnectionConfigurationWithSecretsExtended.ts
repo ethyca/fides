@@ -28,6 +28,7 @@ import type { ScyllaDocsSchema } from "./ScyllaDocsSchema";
 import type { SnowflakeDocsSchema } from "./SnowflakeDocsSchema";
 import type { SovrnDocsSchema } from "./SovrnDocsSchema";
 import type { TimescaleDocsSchema } from "./TimescaleDocsSchema";
+import type { WebsiteSchema } from "./WebsiteSchema";
 
 /**
  * An extension of the base fides model with the addition of plus-only fields
@@ -63,6 +64,7 @@ export type CreateConnectionConfigurationWithSecretsExtended = {
     | SnowflakeDocsSchema
     | SovrnDocsSchema
     | TimescaleDocsSchema
+    | WebsiteSchema
     | null;
   saas_connector_type?: string | null;
   enabled_actions: Array<ActionType>;

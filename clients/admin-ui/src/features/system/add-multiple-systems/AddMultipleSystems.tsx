@@ -31,14 +31,13 @@ import {
 import { errorToastParams, successToastParams } from "common/toast";
 import {
   AntButton as Button,
-  Badge,
+  AntTag as Tag,
+  AntTooltip as Tooltip,
   Box,
   Flex,
   HStack,
   Spinner,
-  Tag,
   Text,
-  Tooltip,
   useDisclosure,
   useToast,
   VStack,
@@ -48,7 +47,7 @@ import { useEffect, useMemo, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import ConfirmationModal from "~/features/common/modals/ConfirmationModal";
-import { INDEX_ROUTE } from "~/features/common/nav/v2/routes";
+import { INDEX_ROUTE } from "~/features/common/nav/routes";
 import AddVendor from "~/features/configure-consent/AddVendor";
 import {
   DictSystems,
@@ -64,8 +63,8 @@ export const VendorSourceCell = ({ value }: { value: string }) => {
   const labels = vendorSourceLabels[source] ?? { label: "", fullName: "" };
   return (
     <Flex alignItems="center" justifyContent="center" height="100%" mr="2">
-      <Tooltip label={labels.fullName} placement="top">
-        <Badge>{labels.label}</Badge>
+      <Tooltip title={labels.fullName}>
+        <Tag>{labels.label}</Tag>
       </Tooltip>
     </Flex>
   );
@@ -263,7 +262,7 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
           successToastParams(
             `Successfully added ${
               vendorIds.length
-            } ${systemText.toLocaleLowerCase()}`,
+            } ${systemText.toLocaleLowerCase()}${vendorIds.length > 1 ? "s" : ""}`,
           ),
         );
       }
@@ -273,20 +272,6 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
   const anyNewSelectedRows = tableInstance
     .getSelectedRowModel()
     .rows.some((row) => !row.original.linked_system);
-
-  const isTooltipDisabled = useMemo(() => {
-    /*
-      The tooltip surrounding the add button is conditionally displayed.
-
-      It displays if no rows have been selected or if all of the vendors
-      are already linked to systems
-    */
-    if (!anyNewSelectedRows || allRowsLinkedToSystem) {
-      return false;
-    }
-
-    return true;
-  }, [anyNewSelectedRows, allRowsLinkedToSystem]);
 
   if (!dictionaryService && !isLoadingHealthCheck) {
     router.push(INDEX_ROUTE);
@@ -360,16 +345,10 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
               <Text fontWeight="700" fontSize="sm" lineHeight="2" ml={4}>
                 {totalSelectSystemsLength.toLocaleString("en")} selected
               </Text>
-              <Tooltip
-                label={toolTipText}
-                shouldWrapChildren
-                placement="top"
-                isDisabled={isTooltipDisabled}
-              >
+              <Tooltip title={toolTipText}>
                 <Button
                   onClick={onOpen}
                   data-testid="add-multiple-systems-btn"
-                  size="small"
                   disabled={!anyNewSelectedRows}
                   className="ml-4"
                 >
@@ -380,10 +359,7 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
           ) : null}
         </Flex>
         <HStack spacing={4} alignItems="center">
-          <AddVendor
-            buttonLabel="Add custom vendor"
-            buttonProps={{ size: "small" }}
-          />
+          <AddVendor buttonLabel="Add custom vendor" />
           {isTcfEnabled ? (
             // Wrap in a span so it is consistent height with the add button, whose
             // Tooltip wraps a span
@@ -391,14 +367,10 @@ export const AddMultipleSystems = ({ redirectRoute }: Props) => {
               <Button
                 onClick={onOpenFilter}
                 data-testid="filter-multiple-systems-btn"
-                size="small"
               >
-                Filter{" "}
+                Filter
                 {totalFilters > 0 ? (
-                  <Tag borderRadius="full" size="sm" ml={2}>
-                    {" "}
-                    {totalFilters}{" "}
-                  </Tag>
+                  <Tag className="mr-0">{totalFilters}</Tag>
                 ) : null}
               </Button>
             </span>

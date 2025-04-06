@@ -1,6 +1,6 @@
 import { ItemOption } from "common/dropdown/types";
 
-import { DATASTORE_CONNECTION_ROUTE } from "~/features/common/nav/v2/routes";
+import { DATASTORE_CONNECTION_ROUTE } from "~/features/common/nav/routes";
 import { SystemType } from "~/types/api";
 
 import { AddConnectionStep, ConnectorParameterOption } from "./types";

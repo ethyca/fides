@@ -21,7 +21,7 @@ import { useRouter } from "next/router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { getQueryParamsFromList } from "~/features/common/modals/FilterModal";
-import { ADD_MULTIPLE_VENDORS_ROUTE } from "~/features/common/nav/v2/routes";
+import { ADD_MULTIPLE_VENDORS_ROUTE } from "~/features/common/nav/routes";
 import AddVendor from "~/features/configure-consent/AddVendor";
 import {
   ConsentManagementFilterModal,
@@ -280,16 +280,14 @@ export const ConsentManagementTable = () => {
           consentCategoryOptions={consentCategoryOptions}
           onConsentCategoryChange={onConsentCategoryChange}
         />
-        <HStack alignItems="center" spacing={4}>
+        <HStack alignItems="center" spacing={2}>
           <AddVendor
             buttonLabel="Add vendors"
-            buttonProps={{ size: "small" }}
             onButtonClick={dictionaryService ? goToAddMultiple : undefined}
           />
           <Button
             onClick={onOpenFilter}
             data-testid="filter-multiple-systems-btn"
-            size="small"
           >
             Filter
           </Button>

@@ -195,7 +195,6 @@ export const CustomFieldsTable = ({ ...rest }: BoxProps): JSX.Element => {
   const AddCustomFieldButton = () => (
     <Restrict scopes={[ScopeRegistryEnum.CUSTOM_FIELD_DEFINITION_CREATE]}>
       <Button
-        size="small"
         type="primary"
         data-testid="add-custom-field-btn"
         onClick={onOpen}

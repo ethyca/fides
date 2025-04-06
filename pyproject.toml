@@ -57,7 +57,6 @@ module = [
   "okta.*",
   "pandas.*",
   "pg8000.*",
-  "plotly.*",
   "pydash.*",
   "pygtrie.*",
   "pymongo.*",
@@ -70,7 +69,6 @@ module = [
   "sqlalchemy.future.*",
   "twilio.*",
   "uvicorn.*",
-  "validators.*",
 ]
 ignore_missing_imports = true
 

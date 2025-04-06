@@ -3,7 +3,7 @@ import { useRouter } from "next/router";
 import React from "react";
 
 import { TrashCanOutlineIcon } from "~/features/common/Icon/TrashCanOutlineIcon";
-import { PROPERTIES_ROUTE } from "~/features/common/nav/v2/routes";
+import { PROPERTIES_ROUTE } from "~/features/common/nav/routes";
 import Restrict from "~/features/common/Restrict";
 import NewJavaScriptTag from "~/features/privacy-experience/NewJavaScriptTag";
 import { Property, ScopeRegistryEnum } from "~/types/api";

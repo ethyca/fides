@@ -84,6 +84,7 @@ export const fetchExperience = async <T = PrivacyExperience>({
     exclude_gvl_languages: "true", // backwards compatibility for TCF optimization work
     include_meta: "true",
     include_gvl: "true",
+    include_non_applicable_notices: "true",
     ...(requestMinimalTCF && { minimal_tcf: "true" }),
     ...(propertyId && { property_id: propertyId }),
   };
@@ -91,7 +92,9 @@ export const fetchExperience = async <T = PrivacyExperience>({
 
   /* Fetch experience */
   fidesDebugger(
-    `Fetching ${requestMinimalTCF ? "minimal TCF" : "full"} experience in location: ${userLocationString}`,
+    `Fetching experience in location: ${userLocationString}.`,
+    `${requestMinimalTCF ? "Minimal TCF requested if applicable." : ""}`,
+    `${fidesApiUrl}${FidesEndpointPaths.PRIVACY_EXPERIENCE}?${params}`,
   );
 
   let response: Response;
@@ -125,7 +128,7 @@ export const fetchExperience = async <T = PrivacyExperience>({
     const firstLanguage =
       experience.experience_config?.translations?.[0].language;
     fidesDebugger(
-      `Recieved ${requestMinimalTCF ? "minimal TCF" : "full"} experience response from Fides API${requestMinimalTCF ? ` (${firstLanguage})` : ""}`,
+      `Recieved ${experience.minimal_tcf ? "minimal TCF " : ""}experience response from Fides API${experience.minimal_tcf ? ` (${firstLanguage})` : ""}`,
     );
     return experience as T;
   } catch (e) {

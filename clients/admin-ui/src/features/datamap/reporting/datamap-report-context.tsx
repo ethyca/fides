@@ -12,6 +12,17 @@ import { DATAMAP_GROUPING } from "~/types/api";
 import { DatamapReportFilterSelections } from "../types";
 import { COLUMN_IDS, DATAMAP_LOCAL_STORAGE_KEYS } from "./constants";
 
+export const DEFAULT_COLUMN_VISIBILITY = {
+  [COLUMN_IDS.SYSTEM_UNDECLARED_DATA_CATEGORIES]: false,
+  [COLUMN_IDS.DATA_USE_UNDECLARED_DATA_CATEGORIES]: false,
+};
+
+export const DEFAULT_COLUMN_FILTERS = {
+  dataUses: [],
+  dataSubjects: [],
+  dataCategories: [],
+};
+
 interface DatamapReportContextProps {
   savedCustomReportId: string;
   setSavedCustomReportId: Dispatch<SetStateAction<string>>;
@@ -51,11 +62,7 @@ export const DatamapReportProvider = ({
   const [selectedFilters, setSelectedFilters] =
     useLocalStorage<DatamapReportFilterSelections>(
       DATAMAP_LOCAL_STORAGE_KEYS.FILTERS,
-      {
-        dataUses: [],
-        dataSubjects: [],
-        dataCategories: [],
-      },
+      DEFAULT_COLUMN_FILTERS,
     );
 
   const [columnOrder, setColumnOrder] = useLocalStorage<string[]>(
@@ -65,10 +72,7 @@ export const DatamapReportProvider = ({
 
   const [columnVisibility, setColumnVisibility] = useLocalStorage<
     Record<string, boolean>
-  >(DATAMAP_LOCAL_STORAGE_KEYS.COLUMN_VISIBILITY, {
-    [COLUMN_IDS.SYSTEM_UNDECLARED_DATA_CATEGORIES]: false,
-    [COLUMN_IDS.DATA_USE_UNDECLARED_DATA_CATEGORIES]: false,
-  });
+  >(DATAMAP_LOCAL_STORAGE_KEYS.COLUMN_VISIBILITY, DEFAULT_COLUMN_VISIBILITY);
 
   const [columnSizing, setColumnSizing] = useLocalStorage<
     Record<string, number>

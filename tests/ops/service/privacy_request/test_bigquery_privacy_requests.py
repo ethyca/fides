@@ -78,8 +78,13 @@ def test_create_and_process_access_request_bigquery(
     # this covers access requests against a partitioned table
     visit_partitioned_table_key = "bigquery_example_test_dataset:visit_partitioned"
     assert len(results[visit_partitioned_table_key]) == 1
+    assert results[visit_partitioned_table_key][0]["email"] == customer_email
+
+    customer_profile_table_key = "bigquery_example_test_dataset:customer_profile"
+    assert len(results[customer_profile_table_key]) == 1
     assert (
-        results[visit_partitioned_table_key][0]["email"] == bigquery_resources["email"]
+        results[customer_profile_table_key][0]["contact_info"]["primary_email"]
+        == customer_email
     )
 
     pr.delete(db=db)

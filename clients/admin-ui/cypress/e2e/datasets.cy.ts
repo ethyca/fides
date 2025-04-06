@@ -20,6 +20,7 @@ describe("Dataset", () => {
 
     it("Can navigate to the datasets list view", () => {
       cy.visit("/");
+      cy.getByTestId("Data inventory-nav-group").click();
       cy.getByTestId("Manage datasets-nav-link").click();
       cy.wait("@getFilteredDatasets");
       cy.getByTestId("dataset-table");

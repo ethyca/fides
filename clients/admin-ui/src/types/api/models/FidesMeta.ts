@@ -3,6 +3,7 @@
 /* eslint-disable */
 
 import type { FidesDatasetReference } from "./FidesDatasetReference";
+import type { FieldMaskingStrategyOverride } from "./FieldMaskingStrategyOverride";
 
 /**
  * Supplementary metadata used by the Fides application for additional features.
@@ -40,4 +41,8 @@ export type FidesMeta = {
    * Optionally specify that a field may be used as a custom request field in DSRs. The value is the name of the field in the DSR.
    */
   custom_request_field?: string | null;
+  /**
+   * Optionally specify a masking strategy override for this field.
+   */
+  masking_strategy_override?: FieldMaskingStrategyOverride | null;
 };

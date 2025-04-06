@@ -1,6 +1,6 @@
 import { stubPlus, stubTaxonomyEntities } from "cypress/support/stubs";
 
-import { CUSTOM_FIELDS_ROUTE } from "~/features/common/nav/v2/routes";
+import { CUSTOM_FIELDS_ROUTE } from "~/features/common/nav/routes";
 import { RoleRegistryEnum } from "~/types/api";
 
 const TAXONOMY_SINGLE_SELECT_ID = "plu_1850be9e-fabc-424d-8224-2fc44c84605a";

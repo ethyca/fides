@@ -1,5 +1,6 @@
 /* eslint-disable spaced-comment */
 import {
+  ComponentType,
   ExperienceConfigTranslation,
   FidesEndpointPaths,
   FidesInitOptions,
@@ -1600,9 +1601,11 @@ describe("Consent i18n", () => {
     describe("displays localized texts", () => {
       beforeEach(() => {
         beforeAll();
-        cy.visitWithLanguage("/consent", SPANISH_LOCALE);
+        cy.visitConsent({
+          settingsOverride: SETTINGS,
+          language: SPANISH_LOCALE,
+        });
         cy.getByTestId("consent");
-        cy.overrideSettings(SETTINGS);
         cy.wait("@getExperience");
       });
 
@@ -1774,6 +1777,60 @@ describe("Consent i18n", () => {
           cy.get(".fides-toggle:first").click();
           cy.get(".fides-toggle:first").contains("On").should("not.exist");
         });
+      });
+    });
+  });
+
+  describe("when localizing the modal link", () => {
+    it("displays the modal link in the default locale when not provided", () => {
+      visitDemoWithI18n({
+        navigatorLanguage: ENGLISH_LOCALE,
+        fixture: "experience_banner_modal.json",
+        overrideExperience: (experience: any) => {
+          experience.experience_config!.translations[0].modal_link_label = "";
+          return experience;
+        },
+      });
+      cy.waitUntilFidesInitialized().then(() => {
+        cy.get("#fides-modal-link").contains("Manage preferences");
+      });
+    });
+
+    it("displays the modal link in English", () => {
+      visitDemoWithI18n({
+        navigatorLanguage: ENGLISH_LOCALE,
+        fixture: "experience_banner_modal.json",
+      });
+      cy.waitUntilFidesInitialized().then(() => {
+        cy.get("#fides-modal-link").contains("Manage my consent preferences");
+      });
+    });
+
+    it("displays the modal link in Spanish", () => {
+      visitDemoWithI18n({
+        navigatorLanguage: SPANISH_LOCALE,
+        fixture: "experience_banner_modal.json",
+      });
+      cy.waitUntilFidesInitialized().then(() => {
+        cy.get("#fides-modal-link").contains(
+          "Administrar mis preferencias de consentimiento",
+        );
+      });
+    });
+
+    it("displays the modal link in the correct locale when experience is Headless", () => {
+      visitDemoWithI18n({
+        navigatorLanguage: SPANISH_LOCALE,
+        fixture: "experience_banner_modal.json",
+        overrideExperience: (experience: any) => {
+          experience.experience_config!.component = ComponentType.HEADLESS;
+          return experience;
+        },
+      });
+      cy.waitUntilFidesInitialized().then(() => {
+        cy.get("#fides-modal-link").contains(
+          "Administrar mis preferencias de consentimiento",
+        );
       });
     });
   });

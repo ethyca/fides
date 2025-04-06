@@ -8,10 +8,7 @@ import {
   stubTaxonomyEntities,
 } from "cypress/support/stubs";
 
-import {
-  EDIT_SYSTEM_ROUTE,
-  SYSTEM_ROUTE,
-} from "~/features/common/nav/v2/routes";
+import { EDIT_SYSTEM_ROUTE, SYSTEM_ROUTE } from "~/features/common/nav/routes";
 
 describe("System integrations", () => {
   beforeEach(() => {

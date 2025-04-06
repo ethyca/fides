@@ -20,7 +20,7 @@ import {
 import { RTKErrorResult } from "~/types/errors";
 
 import { ControlledSelect } from "../common/form/ControlledSelect";
-import { NextBreadcrumb } from "../common/nav/v2/NextBreadcrumb";
+import { NextBreadcrumb } from "../common/nav/NextBreadcrumb";
 import {
   changeStep,
   selectOrganizationFidesKey,

@@ -3,7 +3,7 @@ import { useRouter } from "next/router";
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 
-import { USER_MANAGEMENT_ROUTE } from "~/features/common/nav/v2/routes";
+import { USER_MANAGEMENT_ROUTE } from "~/features/common/nav/routes";
 import Restrict from "~/features/common/Restrict";
 import SearchBar from "~/features/common/SearchBar";
 import { ScopeRegistryEnum } from "~/types/api";

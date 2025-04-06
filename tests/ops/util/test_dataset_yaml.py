@@ -412,5 +412,5 @@ class TestConvertDatasetToGraphSkipProcessing:
 
         assert (
             exc.value.message
-            == "Referred to object a_dataset:a_collection:id does not exist"
+            == "Referenced object a_dataset:a_collection:id from dataset a_dataset does not exist"
         )

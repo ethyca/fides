@@ -1,5 +1,5 @@
 # If you update this, also update `DEFAULT_PYTHON_VERSION` in the GitHub workflow files
-ARG PYTHON_VERSION="3.10.13"
+ARG PYTHON_VERSION="3.10.16"
 #########################
 ## Compile Python Deps ##
 #########################
@@ -31,11 +31,6 @@ RUN apt-get update && \
     python-dev-is-python3 \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
-
-# Install Python Dependencies
-
-COPY dev-requirements.txt .
-RUN pip install --user -U pip --no-cache-dir -r dev-requirements.txt
 
 # Activate a Python venv
 RUN python3 -m venv /opt/fides
@@ -164,6 +159,8 @@ FROM backend AS prod
 COPY --from=built_frontend /fides/clients/admin-ui/out/ /fides/src/fides/ui-build/static/admin
 USER root
 # Install without a symlink
+RUN pip install --no-cache-dir setuptools wheel
+RUN pip install --no-cache-dir --upgrade packaging
 RUN python setup.py sdist
 
 # USER root commented out for debugging

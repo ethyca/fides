@@ -25,7 +25,7 @@ import { useDispatch } from "react-redux";
 import { usePollForClassifications } from "~/features/common/classifications";
 import { useFeatures } from "~/features/common/features";
 import Layout from "~/features/common/Layout";
-import { DATASET_DETAIL_ROUTE } from "~/features/common/nav/v2/routes";
+import { DATASET_DETAIL_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 import {
   DefaultCell,

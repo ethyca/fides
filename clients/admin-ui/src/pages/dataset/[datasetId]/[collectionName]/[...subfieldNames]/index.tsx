@@ -21,13 +21,13 @@ import { useRouter } from "next/router";
 import { useCallback, useMemo, useState } from "react";
 
 import Layout from "~/features/common/Layout";
-import { NextBreadcrumbProps } from "~/features/common/nav/v2/NextBreadcrumb";
+import { NextBreadcrumbProps } from "~/features/common/nav/NextBreadcrumb";
 import {
   DATASET_COLLECTION_DETAIL_ROUTE,
   DATASET_COLLECTION_SUBFIELD_DETAIL_ROUTE,
   DATASET_DETAIL_ROUTE,
   DATASET_ROUTE,
-} from "~/features/common/nav/v2/routes";
+} from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
 import {
   BadgeCell,
@@ -38,7 +38,7 @@ import {
   TableActionBar,
   TableSkeletonLoader,
 } from "~/features/common/table/v2";
-import TaxonomiesPicker from "~/features/common/TaxonomiesPicker";
+import TaxonomySelectCell from "~/features/common/table/v2/TaxonomySelectCell";
 import { DATA_BREADCRUMB_ICONS } from "~/features/data-discovery-and-detection/DiscoveryMonitorBreadcrumbs";
 import {
   useGetDatasetByKeyQuery,
@@ -199,7 +199,7 @@ const FieldsDetailPage: NextPage = () => {
             props.row.original.fields && props.row.original.fields?.length > 0;
           return (
             !hasSubfields && (
-              <TaxonomiesPicker
+              <TaxonomySelectCell
                 selectedTaxonomies={props.getValue() || []}
                 onAddTaxonomy={(dataCategory) =>
                   handleAddDataCategory({ dataCategory, field })

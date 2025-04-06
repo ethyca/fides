@@ -46,12 +46,7 @@ const DEFAULT_ACTIVE_COLUMNS = [
   SYSTEM_DESCRIPTION,
 ];
 
-const DEPRECATED_COLUMNS = [
-  "third_country_combined",
-  "system.third_country_safeguards",
-  "dataset.fides_key",
-  "system.link_to_processor_contract",
-];
+const DEPRECATED_COLUMNS = ["third_country_combined", "dataset.fides_key"];
 
 // API endpoints
 const datamapApi = baseApi.injectEndpoints({

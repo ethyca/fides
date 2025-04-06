@@ -220,9 +220,9 @@ def get_connection_types(
     if (system_type == SystemType.database or system_type is None) and (
         ActionType.access in action_types or ActionType.erasure in action_types
     ):
-        database_types: list[str] = sorted(
+        database_types: list[ConnectionType] = sorted(
             [
-                conn_type.value
+                conn_type
                 for conn_type in ConnectionType
                 if conn_type
                 not in [
@@ -238,14 +238,15 @@ def get_connection_types(
                     ConnectionType.sovrn,
                 ]
                 and is_match(conn_type.value)
-            ]
+            ],
+            key=lambda x: x.value,
         )
         connection_system_types.extend(
             [
                 ConnectionSystemTypeMap(
                     identifier=item,
-                    type=SystemType.database,
-                    human_readable=ConnectionType(item).human_readable,
+                    type=item.system_type,
+                    human_readable=item.human_readable,
                     supported_actions=[ActionType.access, ActionType.erasure],
                 )
                 for item in database_types
@@ -336,4 +337,5 @@ def get_connection_types(
                 for email_type in email_types
             ]
         )
+
     return connection_system_types

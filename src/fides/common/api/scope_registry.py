@@ -69,6 +69,7 @@ USER_PERMISSION = "user-permission"
 VALIDATE = "validate"
 VIEW_DATA = "view_data"
 WEBHOOK = "webhook"
+WORKER_STATS = "worker-stats"
 
 ASSIGN_OWNERS = "assign_owners"
 
@@ -232,6 +233,8 @@ WEBHOOK_CREATE_OR_UPDATE = f"{WEBHOOK}:{CREATE_OR_UPDATE}"
 WEBHOOK_DELETE = f"{WEBHOOK}:{DELETE}"
 WEBHOOK_READ = f"{WEBHOOK}:{READ}"
 
+WORKER_STATS_READ = f"{WORKER_STATS}:{READ}"
+
 SCOPE_DOCS = {
     CONFIG_READ: "View the configuration",
     CONFIG_UPDATE: "Update the configuration",
@@ -350,6 +353,7 @@ SCOPE_DOCS = {
     WEBHOOK_CREATE_OR_UPDATE: "Create or update web hooks",
     WEBHOOK_DELETE: "Remove web hooks",
     WEBHOOK_READ: "View web hooks",
+    WORKER_STATS_READ: "View worker statistics",
 }
 
 SCOPE_REGISTRY = list(SCOPE_DOCS.keys())

@@ -7,15 +7,19 @@ from pathlib import Path
 from typing import Callable
 from uuid import uuid4
 
+import boto3
 import pytest
 import requests
 import yaml
 from fastapi import Query
 from fastapi.testclient import TestClient
 from fideslang import DEFAULT_TAXONOMY, models
+from fideslang.models import System as SystemSchema
 from httpx import AsyncClient
 from loguru import logger
+from moto import mock_aws
 from sqlalchemy.engine.base import Engine
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 
@@ -28,9 +32,11 @@ from fides.api.cryptography.schemas.jwt import (
     JWE_PAYLOAD_SYSTEMS,
 )
 from fides.api.db.ctl_session import sync_engine
+from fides.api.db.system import create_system
 from fides.api.main import app
 from fides.api.models.privacy_request import (
     EXITED_EXECUTION_LOG_STATUSES,
+    RequestTask,
     generate_request_callback_pre_approval_jwe,
     generate_request_callback_resume_jwe,
 )
@@ -40,6 +46,7 @@ from fides.api.oauth.roles import APPROVER, CONTRIBUTOR, OWNER, VIEWER_AND_APPRO
 from fides.api.schemas.messaging.messaging import MessagingServiceType
 from fides.api.task.graph_runners import access_runner, consent_runner, erasure_runner
 from fides.api.tasks import celery_app
+from fides.api.tasks.scheduled.scheduler import async_scheduler, scheduler
 from fides.api.util.cache import get_cache
 from fides.api.util.collection_util import Row
 from fides.common.api.scope_registry import SCOPE_REGISTRY
@@ -58,6 +65,7 @@ from tests.fixtures.integration_fixtures import *
 from tests.fixtures.manual_fixtures import *
 from tests.fixtures.manual_webhook_fixtures import *
 from tests.fixtures.mariadb_fixtures import *
+from tests.fixtures.messaging_fixtures import *
 from tests.fixtures.mongodb_fixtures import *
 from tests.fixtures.mssql_fixtures import *
 from tests.fixtures.mysql_fixtures import *
@@ -77,6 +85,46 @@ CONFIG = get_config()
 TEST_CONFIG_PATH = "tests/ctl/test_config.toml"
 TEST_INVALID_CONFIG_PATH = "tests/ctl/test_invalid_config.toml"
 TEST_DEPRECATED_CONFIG_PATH = "tests/ctl/test_deprecated_config.toml"
+
+
+@pytest.fixture
+def s3_client(storage_config):
+    with mock_aws():
+        session = boto3.Session(
+            aws_access_key_id="fake_access_key",
+            aws_secret_access_key="fake_secret_key",
+            region_name="us-east-1",
+        )
+        s3 = session.client("s3")
+        s3.create_bucket(Bucket=storage_config.details[StorageDetails.BUCKET.value])
+        yield s3
+
+
+@pytest.fixture(scope="session")
+def db(api_client, config):
+    """Return a connection to the test DB"""
+    # Create the test DB engine
+    assert config.test_mode
+    assert requests.post != api_client.post
+    engine = get_db_engine(
+        database_uri=config.database.sqlalchemy_test_database_uri,
+    )
+
+    create_citext_extension(engine)
+
+    if not scheduler.running:
+        scheduler.start()
+    if not async_scheduler.running:
+        async_scheduler.start()
+
+    SessionLocal = get_db_session(config, engine=engine)
+    the_session = SessionLocal()
+    # Setup above...
+
+    yield the_session
+    # Teardown below...
+    the_session.close()
+    engine.dispose()
 
 
 @pytest.fixture(scope="session")
@@ -293,14 +341,21 @@ def application_user(db, oauth_client):
 
 @pytest.fixture
 def user(db):
-    user = FidesUser.create(
-        db=db,
-        data={
-            "username": "test_fidesops_user",
-            "password": "TESTdcnG@wzJeu0&%3Qe2fGo7",
-            "email_address": "fides.user@ethyca.com",
-        },
-    )
+    try:
+        user = FidesUser.create(
+            db=db,
+            data={
+                "username": "test_fidesops_user",
+                "password": "TESTdcnG@wzJeu0&%3Qe2fGo7",
+                "email_address": "fides.user@ethyca.com",
+            },
+        )
+        permission = FidesUserPermissions.create(
+            db=db, data={"user_id": user.id, "roles": [APPROVER]}
+        )
+    except IntegrityError:
+        user = db.query(FidesUser).filter_by(username="test_fidesops_user").first()
+        permission = db.query(FidesUserPermissions).filter_by(user_id=user.id).first()
     client = ClientDetail(
         hashed_secret="thisisatest",
         salt="thisisstillatest",
@@ -308,8 +363,6 @@ def user(db):
         scopes=[],
         user_id=user.id,
     )
-
-    FidesUserPermissions.create(db=db, data={"user_id": user.id, "roles": [APPROVER]})
 
     db.add(client)
     db.commit()
@@ -1268,6 +1321,24 @@ def system(db: Session) -> System:
     )
 
     db.refresh(system)
+    return system
+
+
+@pytest.fixture()
+@pytest.mark.asyncio
+async def system_async(async_session):
+    """Creates a system for testing with an async session, to be used in async tests"""
+    resource = SystemSchema(
+        fides_key=str(uuid4()),
+        organization_fides_key="default_organization",
+        name="test_system_1",
+        system_type="test",
+        privacy_declarations=[],
+    )
+
+    system = await create_system(
+        resource, async_session, CONFIG.security.oauth_root_client_id
+    )
     return system
 
 

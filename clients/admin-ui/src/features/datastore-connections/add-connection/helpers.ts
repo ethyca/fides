@@ -1,10 +1,10 @@
 /**
- * Format the Connection key to be lower case and replace empty spaces with an underscore
+ * Format the connection key to be lower case and replace spaces and '.' with underscores
  * @param key Connection key
  * @returns
  */
 export const formatKey = (key: string): string =>
-  key.toLowerCase().replace(/ /g, "_");
+  key.toLowerCase().replace(/ |\./g, "_");
 
 /**
  * Modify the current history entry, replacing it with the new URL

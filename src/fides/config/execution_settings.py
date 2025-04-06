@@ -21,7 +21,7 @@ class ExecutionSettings(FidesSettings):
     )
     require_manual_request_approval: bool = Field(
         default=False,
-        description="Whether privacy requests require explicit approval to execute.",
+        description="Whether access and erasure privacy requests require explicit approval to execute. Consent privacy requests are always auto-approved.",
     )
     subject_identity_verification_required: bool = Field(
         default=False,
@@ -57,8 +57,16 @@ class ExecutionSettings(FidesSettings):
         default=30,
         description="Seconds between polling for Privacy Requests that should change state",
     )
+    interrupted_task_requeue_interval: int = Field(
+        default=300,
+        description="Seconds between polling for interrupted tasks to requeue",
+    )
     use_dsr_3_0: bool = Field(
         default=False,
         description="Temporary flag to switch to using DSR 3.0 to process your tasks.",
+    )
+    fuzzy_search_enabled: bool = Field(
+        default=True,
+        description="Whether fuzzy search is enabled for privacy request lookups.",
     )
     model_config = SettingsConfigDict(env_prefix=ENV_PREFIX)

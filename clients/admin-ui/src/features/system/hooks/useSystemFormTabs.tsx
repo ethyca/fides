@@ -12,7 +12,10 @@ import {
   useIsAnyFormDirty,
 } from "~/features/common/hooks/useIsAnyFormDirty";
 import { useSystemOrDatamapRoute } from "~/features/common/hooks/useSystemOrDatamapRoute";
-import { INTEGRATION_MANAGEMENT_ROUTE } from "~/features/common/nav/v2/routes";
+import {
+  EDIT_SYSTEM_ROUTE,
+  INTEGRATION_MANAGEMENT_ROUTE,
+} from "~/features/common/nav/routes";
 import {
   DEFAULT_TOAST_PARAMS,
   errorToastParams,
@@ -33,6 +36,7 @@ import {
   useGetSystemByFidesKeyQuery,
 } from "~/features/system/system.slice";
 import SystemInformationForm from "~/features/system/SystemInformationForm";
+import SystemAssetsTable from "~/features/system/tabs/system-assets/SystemAssetsTable";
 import { SystemResponse } from "~/types/api";
 
 const SYSTEM_TABS = {
@@ -52,8 +56,12 @@ const SYSTEM_TABS = {
     index: 3,
     hash: "#integrations",
   },
-  HISTORY: {
+  ASSETS: {
     index: 4,
+    hash: "#assets",
+  },
+  HISTORY: {
+    index: 5,
     hash: "#history",
   },
 } as const;
@@ -118,7 +126,7 @@ const useSystemFormTabs = ({
     useState<boolean | undefined>(undefined);
   const { plus: isPlusEnabled } = useFeatures();
   const {
-    flags: { dataDiscoveryAndDetection },
+    flags: { dataDiscoveryAndDetection, webMonitor },
   } = useFlags();
   const { plus: hasPlus } = useFeatures();
 
@@ -146,6 +154,11 @@ const useSystemFormTabs = ({
         setShowSaveMessage(true);
       }
       dispatch(setActiveSystem(system));
+      router.push({
+        pathname: EDIT_SYSTEM_ROUTE,
+        query: { id: system.fides_key },
+      });
+
       const toastParams = {
         ...DEFAULT_TOAST_PARAMS,
         description: (
@@ -250,7 +263,7 @@ const useSystemFormTabs = ({
           {showSaveMessage ? (
             <Box backgroundColor="gray.100" px={6} py={3}>
               <Text
-                color="gray.500"
+                color="primary.900"
                 fontSize="sm"
                 data-testid="save-help-message"
               >
@@ -315,7 +328,7 @@ const useSystemFormTabs = ({
                 <>
                   Add an integration to start managing privacy requests and
                   consent. Visit{" "}
-                  <Link href={INTEGRATION_MANAGEMENT_ROUTE} color="purple.500">
+                  <Link href={INTEGRATION_MANAGEMENT_ROUTE} color="link.900">
                     Integration Management
                   </Link>{" "}
                   to set up monitoring on databases.
@@ -340,6 +353,16 @@ const useSystemFormTabs = ({
       isDisabled: !activeSystem,
     },
   ];
+
+  if (isPlusEnabled && webMonitor) {
+    tabData.push({
+      label: "Assets",
+      content: activeSystem ? (
+        <SystemAssetsTable system={activeSystem} />
+      ) : null,
+      isDisabled: !activeSystem,
+    });
+  }
 
   if (isPlusEnabled) {
     tabData.push({

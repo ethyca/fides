@@ -4,7 +4,6 @@ import {
   AntSelectProps as SelectProps,
 } from "fidesui";
 
-import useTaxonomies from "../hooks/useTaxonomies";
 import styles from "./TaxonomySelect.module.scss";
 
 export interface TaxonomySelectOption {
@@ -15,7 +14,7 @@ export interface TaxonomySelectOption {
   className?: string;
 }
 
-const TaxonomyOption = ({ data }: { data: TaxonomySelectOption }) => {
+export const TaxonomyOption = ({ data }: { data: TaxonomySelectOption }) => {
   return (
     <Flex
       gap={12}
@@ -30,48 +29,26 @@ const TaxonomyOption = ({ data }: { data: TaxonomySelectOption }) => {
   );
 };
 
-interface TaxonomySelectProps
-  extends SelectProps<string, TaxonomySelectOption> {
+export interface TaxonomySelectProps
+  extends Omit<SelectProps<string, TaxonomySelectOption>, "options"> {
   selectedTaxonomies: string[];
   showDisabled?: boolean;
 }
+
 export const TaxonomySelect = ({
-  selectedTaxonomies,
-  showDisabled = false,
+  options,
   ...props
-}: TaxonomySelectProps) => {
-  const { getDataCategoryDisplayNameProps, getDataCategories } =
-    useTaxonomies();
-
-  const getActiveDataCategories = () =>
-    getDataCategories().filter((c) => c.active);
-
-  const dataCategories = showDisabled
-    ? getDataCategories()
-    : getActiveDataCategories();
-
-  const options: TaxonomySelectOption[] = dataCategories
-    .filter((category) => !selectedTaxonomies.includes(category.fides_key))
-    .map((category) => {
-      const { name, primaryName } = getDataCategoryDisplayNameProps(
-        category.fides_key,
-      );
-      return {
-        value: category.fides_key,
-        name,
-        primaryName,
-        description: category.description || "",
-        className: styles.option,
-      };
-    });
+}: SelectProps<string, TaxonomySelectOption>) => {
+  const selectOptions = options?.map((opt) => ({
+    ...opt,
+    className: styles.option,
+  }));
 
   return (
     <Select<string, TaxonomySelectOption>
+      options={selectOptions}
       autoFocus
-      showSearch
       variant="borderless"
-      placeholder="Select a category..."
-      options={options}
       optionRender={TaxonomyOption}
       dropdownStyle={{ minWidth: "500px" }}
       className="w-full p-0"

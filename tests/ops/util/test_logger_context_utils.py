@@ -161,10 +161,117 @@ class TestLogContextDecorator:
             logger.info("processing")
             return other_param, task_id
 
-        func("something", task_id="abc123")
+        func("something", "abc123")
 
         assert loguru_caplog.records[0].extra == {
             LoggerContextKeys.task_id.value: "abc123"
+        }
+
+    def test_log_context_with_multiple_positional_captured_args(self, loguru_caplog):
+        """Test that multiple captured args work with positional arguments"""
+
+        @log_context(
+            capture_args={
+                "task_id": LoggerContextKeys.task_id,
+                "request_id": LoggerContextKeys.privacy_request_id,
+            }
+        )
+        def func(other_param: str, task_id: str, request_id: str):
+            logger.info("processing")
+            return other_param, task_id, request_id
+
+        # Pass all arguments as positional arguments
+        func("something", "abc123", "req456")
+
+        assert loguru_caplog.records[0].extra == {
+            LoggerContextKeys.task_id.value: "abc123",
+            LoggerContextKeys.privacy_request_id.value: "req456",
+        }
+
+    def test_log_context_with_mixed_positional_and_keyword_only_args(
+        self, loguru_caplog
+    ):
+        """Test that captured args work with functions that have a mix of positional and keyword-only arguments"""
+
+        @log_context(
+            capture_args={
+                "task_id": LoggerContextKeys.task_id,
+                "request_id": LoggerContextKeys.privacy_request_id,
+            }
+        )
+        def func(task_id: str, *, request_id: str):
+            logger.info("processing")
+            return task_id, request_id
+
+        # Pass task_id as positional and request_id as keyword (required)
+        func("abc123", request_id="req456")
+
+        assert loguru_caplog.records[0].extra == {
+            LoggerContextKeys.task_id.value: "abc123",
+            LoggerContextKeys.privacy_request_id.value: "req456",
+        }
+
+    def test_log_context_with_keyword_only_args(self, loguru_caplog):
+        """Test that captured args work with functions that have only keyword-only arguments"""
+
+        @log_context(
+            capture_args={
+                "task_id": LoggerContextKeys.task_id,
+                "request_id": LoggerContextKeys.privacy_request_id,
+            }
+        )
+        def func(*, task_id: str, request_id: str):
+            logger.info("processing")
+            return task_id, request_id
+
+        # All arguments must be passed as keywords
+        func(task_id="abc123", request_id="req456")
+
+        assert loguru_caplog.records[0].extra == {
+            LoggerContextKeys.task_id.value: "abc123",
+            LoggerContextKeys.privacy_request_id.value: "req456",
+        }
+
+    def test_log_context_with_default_parameters(self, loguru_caplog):
+        """Test that captured args work with functions that have default parameters"""
+
+        @log_context(
+            capture_args={
+                "task_id": LoggerContextKeys.task_id,
+                "request_id": LoggerContextKeys.privacy_request_id,
+            }
+        )
+        def func(task_id: str = "default_task", request_id: str = "default_request"):
+            logger.info("processing")
+            return task_id, request_id
+
+        # Call with no arguments - should use defaults
+        func()
+
+        assert loguru_caplog.records[0].extra == {
+            LoggerContextKeys.task_id.value: "default_task",
+            LoggerContextKeys.privacy_request_id.value: "default_request",
+        }
+
+    def test_log_context_with_overridden_default_parameters(self, loguru_caplog):
+        """Test that captured args work with functions where default parameters are overridden"""
+
+        @log_context(
+            capture_args={
+                "task_id": LoggerContextKeys.task_id,
+                "request_id": LoggerContextKeys.privacy_request_id,
+            }
+        )
+        def func(task_id: str = "default_task", request_id: str = "default_request"):
+            logger.info("processing")
+            return task_id, request_id
+
+        # Override only one default parameter
+        func(task_id="abc123")
+
+        assert loguru_caplog.records[0].extra == {
+            LoggerContextKeys.task_id.value: "abc123",
+            LoggerContextKeys.privacy_request_id.value: "default_request",
         }
 
 

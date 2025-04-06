@@ -148,7 +148,7 @@ export const DatamapReportFilterModal = ({
       data-testid="datamap-report-filter-modal"
     >
       <Accordion allowToggle>
-        <FilterModalAccordionItem label={columnNameMap.data_use}>
+        <FilterModalAccordionItem label={columnNameMap.data_uses}>
           <CheckboxTree
             nodes={dataUseNodes}
             selected={checkedUses}

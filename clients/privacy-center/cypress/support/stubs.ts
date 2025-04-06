@@ -71,6 +71,7 @@ export const stubConfig = (
   mockExperienceApiResp?: any,
   demoPageQueryParams?: Cypress.VisitOptions["qs"] | null,
   demoPageWindowParams?: any,
+  skipVisit?: boolean,
 ) => {
   cy.fixture("consent/fidesjs_options_banner_modal.json").then((config) => {
     const updatedConfig = {
@@ -137,11 +138,13 @@ export const stubConfig = (
       { fixture: "consent/notices_served.json" },
     ).as("patchNoticesServed");
     cy.log("Visiting consent demo with config", updatedConfig);
-    cy.visitConsentDemo(
-      updatedConfig,
-      demoPageQueryParams,
-      demoPageWindowParams,
-    );
+    if (!skipVisit) {
+      cy.visitConsentDemo(
+        updatedConfig,
+        demoPageQueryParams,
+        demoPageWindowParams,
+      );
+    }
   });
 };
 
@@ -170,6 +173,8 @@ interface StubExperienceTCFProps {
   demoPageQueryParams?: Cypress.VisitOptions["qs"] | null;
   demoPageWindowParams?: any;
   experienceIsInvalid?: boolean;
+  skipVisit?: boolean;
+  includeCustomPurposes?: boolean;
 }
 export const stubTCFExperience = ({
   stubOptions,
@@ -180,6 +185,8 @@ export const stubTCFExperience = ({
   demoPageQueryParams,
   demoPageWindowParams,
   experienceIsInvalid,
+  skipVisit,
+  includeCustomPurposes,
 }: StubExperienceTCFProps) => {
   return cy
     .fixture("consent/experience_tcf_minimal.json")
@@ -203,6 +210,16 @@ export const stubTCFExperience = ({
           experienceFullItem,
           experienceFullOverride,
         );
+        if (includeCustomPurposes) {
+          cy.fixture("consent/custom_tcf_notices.json").then(
+            (customNotices) => {
+              experienceMinItem.privacy_notices =
+                customNotices["privacy_notices"];
+              experienceFull.items[0].privacy_notices =
+                customNotices["privacy_notices"];
+            },
+          );
+        }
         // set initial experience to minimal
         // set stubbed /privacy-experience response to full
         stubConfig(
@@ -225,6 +242,7 @@ export const stubTCFExperience = ({
           experienceFull,
           demoPageQueryParams,
           demoPageWindowParams,
+          skipVisit,
         );
       });
     });

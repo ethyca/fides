@@ -1,6 +1,6 @@
 import { stubSystemCrud, stubTaxonomyEntities } from "cypress/support/stubs";
 
-import { ADD_SYSTEMS_ROUTE } from "~/features/common/nav/v2/routes";
+import { ADD_SYSTEMS_ROUTE } from "~/features/common/nav/routes";
 
 describe("Config Wizard", () => {
   beforeEach(() => {

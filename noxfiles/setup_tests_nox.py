@@ -13,7 +13,12 @@ from constants_nox import (
     START_APP,
     START_APP_WITH_EXTERNAL_POSTGRES,
 )
-from run_infrastructure import API_TEST_DIR, OPS_TEST_DIR, run_infrastructure
+from run_infrastructure import (
+    API_TEST_DIR,
+    OPS_API_TEST_DIRS,
+    OPS_TEST_DIR,
+    run_infrastructure,
+)
 
 
 def pytest_lib(session: Session, coverage_arg: str) -> None:
@@ -92,11 +97,15 @@ def pytest_ctl(session: Session, mark: str, coverage_arg: str) -> None:
         session.run(*LOGIN, external=True)
         run_command = (
             *EXEC,
+            "timeout",
+            "--signal=INT",
+            "360",
             "pytest",
             coverage_arg,
             "tests/ctl/",
             "-m",
             mark,
+            "--full-trace",
         )
         session.run(*run_command, external=True)
 
@@ -116,17 +125,18 @@ def pytest_ops(
                 *EXEC,
                 "pytest",
                 coverage_arg,
-                API_TEST_DIR,
+                *OPS_API_TEST_DIRS,
                 "-m",
                 "not integration and not integration_external and not integration_saas",
             )
         elif subset_dir == "non-api":
+            ignore_args = [f"--ignore={dir}" for dir in OPS_API_TEST_DIRS]
             run_command = (
                 *EXEC,
                 "pytest",
                 coverage_arg,
                 OPS_TEST_DIR,
-                f"--ignore={API_TEST_DIR}",
+                *ignore_args,
                 "-m",
                 "not integration and not integration_external and not integration_saas",
             )
@@ -281,3 +291,18 @@ def pytest_ops(
             "--tb=no",
         )
         session.run(*run_command, external=True)
+
+
+def pytest_api(session: Session, coverage_arg: str) -> None:
+    """Runs tests under /tests/api/"""
+    session.notify("teardown")
+    session.run(*START_APP, external=True)
+    run_command = (
+        *EXEC,
+        "pytest",
+        coverage_arg,
+        API_TEST_DIR,
+        "-m",
+        "not integration and not integration_external and not integration_saas",
+    )
+    session.run(*run_command, external=True)
