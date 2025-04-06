@@ -14,5 +14,5 @@ export type UserResponse = {
   last_name?: string | null;
   disabled?: boolean | null;
   disabled_reason?: string | null;
-  login_method?: string | null;
+  password_login_enabled?: string | null;
 };
