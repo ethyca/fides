@@ -37,7 +37,7 @@ from starlette.status import (
     HTTP_400_BAD_REQUEST,
     HTTP_403_FORBIDDEN,
     HTTP_404_NOT_FOUND,
-    HTTP_422_UNPROCESSABLE_ENTITY
+    HTTP_422_UNPROCESSABLE_ENTITY,
 )
 
 from fides.api.api import deps
@@ -83,7 +83,7 @@ from fides.api.oauth.utils import (
 )
 from fides.api.schemas.dataset import CollectionAddressResponse, DryRunDatasetResponse
 from fides.api.schemas.external_https import PrivacyRequestResumeFormat
-from fides.api.schemas.policy import ActionType, CurrentStep
+from fides.api.schemas.policy import ActionType
 from fides.api.schemas.privacy_request import (
     BulkPostPrivacyRequests,
     BulkReviewResponse,
@@ -1856,6 +1856,7 @@ def resume_privacy_request_from_requires_input(
     )
 
     return privacy_request  # type: ignore[return-value]
+
 
 @router.get(
     REQUEST_TASKS,
