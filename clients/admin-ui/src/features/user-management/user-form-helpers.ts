@@ -20,7 +20,6 @@ const isPasswordLoginEnabled = (
   );
 };
 
-// This is the new recommended function name
 export const shouldShowPasswordLoginToggle = (
   isPlusEnabled: boolean,
   ssoEnabled: boolean,
