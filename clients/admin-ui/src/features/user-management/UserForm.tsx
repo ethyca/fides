@@ -42,7 +42,7 @@ import { selectActiveUser, setActiveUserId } from "./user-management.slice";
 
 // Extended type for the form with password_login_enabled
 interface UserCreateExtended extends UserCreate {
-  password_login_enabled?: boolean;
+  password_login_enabled?: boolean | null;
 }
 
 const defaultInitialValues: UserCreateExtended = {
