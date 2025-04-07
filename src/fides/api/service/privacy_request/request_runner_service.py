@@ -66,7 +66,7 @@ from fides.api.task.graph_task import (
 )
 from fides.api.tasks import DatabaseTask, celery_app
 from fides.api.tasks.scheduled.scheduler import scheduler
-from fides.api.util.cache import cache_task_tracking_key, get_all_masking_secret_keys
+from fides.api.util.cache import get_all_masking_secret_keys
 from fides.api.util.collection_util import Row
 from fides.api.util.logger import Pii, _log_exception, _log_warning
 from fides.common.api.v1.urn_registry import (

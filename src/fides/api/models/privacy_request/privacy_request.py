@@ -1514,7 +1514,7 @@ def get_action_required_details(
 
 
 def _parse_cache_to_checkpoint_action_required(
-    cache: dict[str, Any]
+    cache: dict[str, Any],
 ) -> CheckpointActionRequired:
     collection = (
         CollectionAddress(

@@ -1,5 +1,8 @@
+import json
 from typing import Dict, List
 
+from fides.api.db.session import get_db_session
+from fides.api.models.masking_secret import MaskingSecret
 from fides.api.models.privacy_request import PrivacyRequest
 from fides.api.schemas.masking.masking_secrets import (
     MaskingSecretCache,
@@ -10,7 +13,9 @@ from fides.api.service.masking.strategy.masking_strategy_aes_encrypt import (
     AesEncryptionMaskingStrategy,
 )
 from fides.api.service.masking.strategy.masking_strategy_hmac import HmacMaskingStrategy
+from fides.api.util.cache import get_cache, get_masking_secret_cache_key
 from fides.api.util.encryption.secrets_util import SecretsUtil
+from fides.config import CONFIG
 
 from ...test_helpers.cache_secrets_helper import cache_secret, clear_cache_secrets
 
@@ -137,3 +142,85 @@ def test_build_masking_secrets_for_cache() -> None:
         masking_meta
     )
     assert len(result) == 2
+
+
+def test_get_masking_secret_from_cache(privacy_request: PrivacyRequest) -> None:
+    """Test the direct get_masking_secret method retrieving a secret from cache."""
+    privacy_request_id = privacy_request.id
+    masking_strategy = "strategy1"
+    secret_type = SecretType.key
+    secret_value = "cached-secret"
+
+    cache = get_cache()
+    cache_key = get_masking_secret_cache_key(
+        privacy_request_id=privacy_request_id,
+        masking_strategy=masking_strategy,
+        secret_type=secret_type,
+    )
+    cache.set(cache_key, json.dumps(secret_value))
+
+    result = SecretsUtil.get_masking_secret(
+        privacy_request_id=privacy_request_id,
+        masking_strategy=masking_strategy,
+        secret_type=secret_type,
+    )
+
+    assert result == secret_value
+    # Clean up cache
+    cache.delete(cache_key)
+
+
+def test_get_masking_secret_from_db(privacy_request: PrivacyRequest) -> None:
+    """Test the direct get_masking_secret method retrieving a secret from database."""
+    privacy_request_id = privacy_request.id
+    masking_strategy = "strategy1"
+    secret_type = SecretType.key
+    secret_value = "db-secret"
+
+    # Create a masking secret in the database
+    session_local = get_db_session(CONFIG)
+    with session_local() as session:
+        masking_secret = MaskingSecret(
+            privacy_request_id=privacy_request_id,
+            masking_strategy=masking_strategy,
+            secret_type=secret_type,
+        )
+        masking_secret.set_secret(secret_value)
+        session.add(masking_secret)
+        session.commit()
+
+    result = SecretsUtil.get_masking_secret(
+        privacy_request_id=privacy_request_id,
+        masking_strategy=masking_strategy,
+        secret_type=secret_type,
+    )
+
+    # Result could be str or bytes depending on DB encoding
+    assert result == secret_value or result == secret_value.encode("utf-8")
+
+
+def test_get_masking_secret_not_found(privacy_request: PrivacyRequest) -> None:
+    """Test behavior when a masking secret is not found."""
+    privacy_request_id = privacy_request.id
+    masking_strategy = "nonexistent"
+    secret_type = SecretType.key
+
+    result = SecretsUtil.get_masking_secret(
+        privacy_request_id=privacy_request_id,
+        masking_strategy=masking_strategy,
+        secret_type=secret_type,
+    )
+
+    assert result is None
+
+
+def test_get_masking_secret_error_handling() -> None:
+    """Test error handling in get_masking_secret with invalid inputs."""
+    result = SecretsUtil.get_masking_secret(
+        privacy_request_id="non-existent-id",
+        masking_strategy="non-existent-strategy",
+        secret_type=SecretType.key,
+    )
+
+    # Should return None, not throw an exception
+    assert result is None
