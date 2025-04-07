@@ -276,7 +276,7 @@ class TestPull:
             [
                 "pull",
                 resource_type,
-                "--all",
+                "--all-resources",
                 "--separate-files",
             ],
         )
