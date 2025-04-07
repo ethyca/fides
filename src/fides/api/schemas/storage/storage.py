@@ -79,7 +79,6 @@ class StorageDetailsLocal(FileBasedStorageDetails):
     """The details required to configurate local storage configuration"""
 
 
-# FIXME: change its name to be aws specific and create a new one for gcs?
 class StorageSecrets(Enum):
     """Enum for storage secret keys"""
 
