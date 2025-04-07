@@ -79,7 +79,7 @@ const ConfigureWebsiteMonitorForm = ({
   const initialValues: WebsiteMonitorConfig = {
     name: monitor?.name || "",
     execution_frequency:
-      monitor?.execution_frequency || MonitorFrequency.MONTHLY,
+      monitor?.execution_frequency || MonitorFrequency.NOT_SCHEDULED,
     execution_start_date: format(initialDate, "yyyy-MM-dd'T'HH:mm"),
     url,
     connection_config_key: integrationId,
@@ -113,6 +113,14 @@ const ConfigureWebsiteMonitorForm = ({
     };
     onSubmit(payload);
   };
+
+  // Website monitors shouldn't support daily or weekly frequencies
+  const frequencyOptions = enumToOptions(MonitorFrequency).filter(
+    (option) =>
+      ![MonitorFrequency.DAILY, MonitorFrequency.WEEKLY].includes(
+        option.value as MonitorFrequency,
+      ),
+  );
 
   return (
     <Flex vertical className="pt-4">
@@ -174,7 +182,7 @@ const ConfigureWebsiteMonitorForm = ({
               <ControlledSelect
                 name="execution_frequency"
                 id="execution_frequency"
-                options={enumToOptions(MonitorFrequency)}
+                options={frequencyOptions}
                 label="Automatic execution frequency"
                 layout="stacked"
               />
