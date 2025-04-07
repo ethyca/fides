@@ -4,6 +4,7 @@ import type { RootState } from "~/app/store";
 import { baseApi } from "~/features/common/api.slice";
 import {
   Page_TCFConfigurationResponse_,
+  Page_TCFPublisherRestrictionResponse_,
   TCFConfigurationDetail,
   TCFConfigurationRequest,
   TCFPublisherRestrictionRequest,
@@ -53,6 +54,21 @@ export const selectTCFConfigFilters = createSelector(
 // TCF configurations API
 export const tcfConfigApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
+    getPublisherRestrictions: build.query<
+      Page_TCFPublisherRestrictionResponse_,
+      {
+        configuration_id: string;
+        purpose_id: number;
+      } & Partial<PaginationQueryParams>
+    >({
+      query: ({ configuration_id, purpose_id, ...params }) => ({
+        url: `/plus/tcf/configurations/${configuration_id}/publisher_restrictions`,
+        params: { purpose_id, ...params },
+      }),
+      providesTags: (_result, _error, { configuration_id }) => [
+        { type: "TCF Purpose Override", id: configuration_id },
+      ],
+    }),
     getTCFConfigurations: build.query<
       Page_TCFConfigurationResponse_,
       Partial<PaginationQueryParams>
@@ -123,6 +139,7 @@ export const tcfConfigApi = baseApi.injectEndpoints({
 });
 
 export const {
+  useGetPublisherRestrictionsQuery,
   useGetTCFConfigurationsQuery,
   useGetTCFConfigurationQuery,
   useCreateTCFConfigurationMutation,

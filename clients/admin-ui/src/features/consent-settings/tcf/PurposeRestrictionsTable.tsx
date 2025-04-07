@@ -1,12 +1,19 @@
 import { getCoreRowModel, useReactTable } from "@tanstack/react-table";
 import { AntButton as Button, AntFlex as Flex, Spacer, Text } from "fidesui";
 import { useRouter } from "next/router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-import { FidesTableV2, TableActionBar } from "~/features/common/table/v2";
-import { TCFRestrictionType, TCFVendorRestriction } from "~/types/api";
+import {
+  FidesTableV2,
+  PaginationBar,
+  TableActionBar,
+  TableSkeletonLoader,
+  useServerSidePagination,
+} from "~/features/common/table/v2";
+import { RangeEntry } from "~/types/api";
 
 import { PurposeRestrictionFormModal } from "./PurposeRestrictionFormModal";
+import { useGetPublisherRestrictionsQuery } from "./tcf-config.slice";
 import { PurposeRestriction } from "./types";
 import { usePurposeRestrictionTableColumns } from "./usePurposeRestrictionTableColumns";
 
@@ -36,27 +43,60 @@ export const PurposeRestrictionsTable = () => {
   const columns = usePurposeRestrictionTableColumns();
   const router = useRouter();
 
-  // Get purpose ID from the URL
+  const {
+    PAGE_SIZES,
+    pageSize,
+    setPageSize: updatePageSize,
+    onPreviousPageClick,
+    isPreviousPageDisabled,
+    onNextPageClick,
+    isNextPageDisabled,
+    startRange,
+    endRange,
+    pageIndex,
+    setTotalPages,
+  } = useServerSidePagination();
+
   const purposeId = router.query.purpose_id
     ? parseInt(router.query.purpose_id as string, 10)
     : undefined;
 
   const configurationId = router.query.configuration_id as string;
 
-  // TASK: Fetch data from API
-  const data: PurposeRestriction[] = [
-    {
-      restriction_type: TCFRestrictionType.PURPOSE_RESTRICTION,
-      vendor_restriction: TCFVendorRestriction.RESTRICT_SPECIFIC_VENDORS,
-      vendor_ids: ["123", "456", "10-100"],
-      purpose_id: purposeId,
-    },
-  ];
+  const { data: restrictionsData, isFetching } =
+    useGetPublisherRestrictionsQuery(
+      {
+        configuration_id: configurationId,
+        purpose_id: purposeId ?? 0,
+        page: pageIndex,
+        size: pageSize,
+      },
+      { skip: !configurationId || !purposeId },
+    );
+
+  useEffect(() => {
+    setTotalPages(restrictionsData?.pages ?? 1);
+  }, [restrictionsData?.pages, setTotalPages]);
+
+  const transformedData: PurposeRestriction[] = (
+    restrictionsData?.items || []
+  ).map((item) => ({
+    id: item.id,
+    restriction_type: item.restriction_type,
+    vendor_restriction: item.vendor_restriction,
+    vendor_ids:
+      item.range_entries?.map((range: RangeEntry) =>
+        range.end_vendor_id
+          ? `${range.start_vendor_id}-${range.end_vendor_id}`
+          : range.start_vendor_id.toString(),
+      ) || [],
+    purpose_id: item.purpose_id,
+  }));
 
   const table = useReactTable<PurposeRestriction>({
     getCoreRowModel: getCoreRowModel(),
     columns,
-    data: data || [],
+    data: transformedData,
     columnResizeMode: "onChange",
     manualPagination: true,
   });
@@ -77,14 +117,29 @@ export const PurposeRestrictionsTable = () => {
           Add restriction +
         </Button>
       </TableActionBar>
-      <FidesTableV2
-        tableInstance={table}
-        emptyTableNotice={<EmptyTableNotice onAdd={handleOpenModal} />}
+      {isFetching ? (
+        <TableSkeletonLoader rowHeight={36} numRows={20} />
+      ) : (
+        <FidesTableV2
+          tableInstance={table}
+          emptyTableNotice={<EmptyTableNotice onAdd={handleOpenModal} />}
+        />
+      )}
+      <PaginationBar
+        totalRows={restrictionsData?.total ?? 0}
+        pageSizes={PAGE_SIZES}
+        setPageSize={updatePageSize}
+        onPreviousPageClick={onPreviousPageClick}
+        isPreviousPageDisabled={isPreviousPageDisabled || isFetching}
+        onNextPageClick={onNextPageClick}
+        isNextPageDisabled={isNextPageDisabled || isFetching}
+        startRange={startRange}
+        endRange={endRange}
       />
       <PurposeRestrictionFormModal
         isOpen={isModalOpen}
         onClose={handleCloseModal}
-        existingRestrictions={data}
+        existingRestrictions={transformedData}
         purposeId={purposeId}
         configurationId={configurationId}
       />
