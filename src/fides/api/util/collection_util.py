@@ -122,6 +122,7 @@ def extract_key_for_address(
     return f"{dataset}:{collection}"
 
 
+# pylint: disable=too-many-branches
 def unflatten_dict(flat_dict: Dict[str, Any], separator: str = ".") -> Dict[str, Any]:
     """
     Converts a dictionary of paths/values into a nested dictionary
@@ -188,6 +189,7 @@ def unflatten_dict(flat_dict: Dict[str, Any], separator: str = ".") -> Dict[str,
     return output
 
 
+# pylint: disable=too-many-branches
 def flatten_dict(data: Any, prefix: str = "", separator: str = ".") -> Dict[str, Any]:
     """
     Recursively flatten a dictionary or list into a flat dictionary with dot-notation keys.
@@ -228,7 +230,7 @@ def flatten_dict(data: Any, prefix: str = "", separator: str = ".") -> Dict[str,
     Returns:
         A flattened dictionary with dot-notation keys
     """
-    items = {}
+    items: Dict[str, Any] = {}
 
     if isinstance(data, dict):
         # Handle top-level empty dictionary case
