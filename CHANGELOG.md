@@ -29,7 +29,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Added support for links in `<a>` tags on the custom HTML description [#5960](https://github.com/ethyca/fides/pull/5960)
 - Added "Reject all" behavior and visibility options to TCF Experience config form [#5964](https://github.com/ethyca/fides/pull/5964)
 - Added `TCFConfiguration` and `TCFPublisherRestriction` models [#5983](https://github.com/ethyca/fides/pull/5983) https://github.com/ethyca/fides/labels/db-migration
-
+- Support `Quarterly` and `Yearly` monitor scheduling [#5981](https://github.com/ethyca/fides/pull/5981)
 
 ### Changed
 - Bumped Next.js for all frontend apps to latest patch versions. [#5946](https://github.com/ethyca/fides/pull/5946)
