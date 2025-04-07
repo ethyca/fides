@@ -14,7 +14,7 @@ import styles from "./ActivityTimelineCollapse.module.scss";
 import EventLog from "./EventLog";
 
 interface ActivityTimelineProps {
-  results: PrivacyRequestResults;
+  results?: PrivacyRequestResults;
 }
 
 const ActivityTimelineCollapse = ({ results }: ActivityTimelineProps) => {
