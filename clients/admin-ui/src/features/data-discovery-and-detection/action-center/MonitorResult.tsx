@@ -81,7 +81,7 @@ export const MonitorResult = ({
               avatar={
                 <Avatar
                   src={iconUrl}
-                  size="medium"
+                  size={30}
                   icon={<Icons.Wikis />}
                   style={{
                     backgroundColor: "transparent",
