@@ -190,6 +190,7 @@ export const BadgeCellExpandable = <T,>({
         gap={1.5}
         pt={2}
         pb={2}
+        overflowX="auto"
         onClick={(e) => {
           if (!isCollapsed) {
             e.stopPropagation();
@@ -354,7 +355,7 @@ export const GroupCountBadgeCell = ({
   }
 
   return (
-    <Flex alignItems="center" height="100%" gap={0} overflowX="hidden">
+    <Flex alignItems="center" height="100%" gap={2} overflowX="hidden">
       {tags}
     </Flex>
   );
