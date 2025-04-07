@@ -114,12 +114,15 @@ const ConfigureWebsiteMonitorForm = ({
     onSubmit(payload);
   };
 
-  // Website monitors shouldn't support daily or weekly frequencies
-  const frequencyOptions = enumToOptions(MonitorFrequency).filter(
-    (option) =>
-      ![MonitorFrequency.DAILY, MonitorFrequency.WEEKLY].includes(
-        option.value as MonitorFrequency,
-      ),
+  // Website monitors should only support
+  // monthly, quarterly, yearly, and not scheduled frequencies
+  const frequencyOptions = enumToOptions(MonitorFrequency).filter((option) =>
+    [
+      MonitorFrequency.MONTHLY,
+      MonitorFrequency.QUARTERLY,
+      MonitorFrequency.YEARLY,
+      MonitorFrequency.NOT_SCHEDULED,
+    ].includes(option.value as MonitorFrequency),
   );
 
   return (
