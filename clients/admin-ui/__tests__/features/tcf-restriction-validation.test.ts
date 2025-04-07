@@ -1,4 +1,8 @@
-import { TCFRestrictionType, TCFVendorRestriction } from "~/types/api";
+import {
+  RangeEntry,
+  TCFRestrictionType,
+  TCFVendorRestriction,
+} from "~/types/api";
 
 import {
   FormValues,
@@ -6,6 +10,8 @@ import {
 } from "../../src/features/consent-settings/tcf/types";
 import {
   checkForVendorRestrictionConflicts,
+  convertVendorIdsToRangeEntries,
+  convertVendorIdToRangeEntry,
   doRangesOverlap,
   isValidVendorIdFormat,
   parseVendorIdToRange,
@@ -185,6 +191,7 @@ describe("checkForVendorRestrictionConflicts", () => {
   it("should return false when existing restrictions are for a different purpose", () => {
     const existingRestrictions: PurposeRestriction[] = [
       {
+        id: "1",
         purpose_id: 2, // Different purpose ID
         restriction_type: TCFRestrictionType.PURPOSE_RESTRICTION,
         vendor_restriction: TCFVendorRestriction.RESTRICT_SPECIFIC_VENDORS,
@@ -203,6 +210,7 @@ describe("checkForVendorRestrictionConflicts", () => {
   it("should return false when existing restrictions have a different restriction type", () => {
     const existingRestrictions: PurposeRestriction[] = [
       {
+        id: "1",
         purpose_id: purposeId,
         restriction_type: TCFRestrictionType.REQUIRE_CONSENT, // Different restriction type
         vendor_restriction: TCFVendorRestriction.RESTRICT_SPECIFIC_VENDORS,
@@ -222,6 +230,7 @@ describe("checkForVendorRestrictionConflicts", () => {
     // When existing restriction is RESTRICT_ALL
     const existingRestrictions: PurposeRestriction[] = [
       {
+        id: "1",
         purpose_id: purposeId,
         restriction_type: TCFRestrictionType.PURPOSE_RESTRICTION,
         vendor_restriction: TCFVendorRestriction.RESTRICT_ALL_VENDORS,
@@ -245,6 +254,7 @@ describe("checkForVendorRestrictionConflicts", () => {
 
     const existingSpecificRestrictions: PurposeRestriction[] = [
       {
+        id: "1",
         purpose_id: purposeId,
         restriction_type: TCFRestrictionType.PURPOSE_RESTRICTION,
         vendor_restriction: TCFVendorRestriction.RESTRICT_SPECIFIC_VENDORS,
@@ -269,6 +279,7 @@ describe("checkForVendorRestrictionConflicts", () => {
 
     const existingAllowSpecificRestrictions: PurposeRestriction[] = [
       {
+        id: "1",
         purpose_id: purposeId,
         restriction_type: TCFRestrictionType.PURPOSE_RESTRICTION,
         vendor_restriction: TCFVendorRestriction.ALLOW_SPECIFIC_VENDORS,
@@ -286,6 +297,7 @@ describe("checkForVendorRestrictionConflicts", () => {
     // Test with non-overlapping ranges
     const existingNonOverlappingRestrictions: PurposeRestriction[] = [
       {
+        id: "1",
         purpose_id: purposeId,
         restriction_type: TCFRestrictionType.PURPOSE_RESTRICTION,
         vendor_restriction: TCFVendorRestriction.ALLOW_SPECIFIC_VENDORS,
@@ -310,6 +322,7 @@ describe("checkForVendorRestrictionConflicts", () => {
 
     const existingRestrictSpecificRestrictions: PurposeRestriction[] = [
       {
+        id: "1",
         purpose_id: purposeId,
         restriction_type: TCFRestrictionType.PURPOSE_RESTRICTION,
         vendor_restriction: TCFVendorRestriction.RESTRICT_SPECIFIC_VENDORS,
@@ -327,6 +340,7 @@ describe("checkForVendorRestrictionConflicts", () => {
     // Test with non-overlapping ranges
     const existingNonOverlappingRestrictions: PurposeRestriction[] = [
       {
+        id: "1",
         purpose_id: purposeId,
         restriction_type: TCFRestrictionType.PURPOSE_RESTRICTION,
         vendor_restriction: TCFVendorRestriction.RESTRICT_SPECIFIC_VENDORS,
@@ -351,6 +365,7 @@ describe("checkForVendorRestrictionConflicts", () => {
 
     const existingRestrictions: PurposeRestriction[] = [
       {
+        id: "1",
         purpose_id: purposeId,
         restriction_type: TCFRestrictionType.PURPOSE_RESTRICTION,
         vendor_restriction: TCFVendorRestriction.RESTRICT_SPECIFIC_VENDORS,
@@ -379,5 +394,149 @@ describe("checkForVendorRestrictionConflicts", () => {
       purposeId,
     );
     expect(result2).toBe(true);
+  });
+
+  it("should ignore the restriction being edited when checking for conflicts", () => {
+    const existingRestrictions: PurposeRestriction[] = [
+      {
+        id: "1",
+        purpose_id: purposeId,
+        restriction_type: TCFRestrictionType.PURPOSE_RESTRICTION,
+        vendor_restriction: TCFVendorRestriction.RESTRICT_SPECIFIC_VENDORS,
+        vendor_ids: ["1-10"],
+      },
+      {
+        id: "2",
+        purpose_id: purposeId,
+        restriction_type: TCFRestrictionType.PURPOSE_RESTRICTION,
+        vendor_restriction: TCFVendorRestriction.RESTRICT_SPECIFIC_VENDORS,
+        vendor_ids: ["5-15"],
+      },
+    ];
+
+    // Should detect conflict when not editing any restriction
+    const result1 = checkForVendorRestrictionConflicts(
+      baseFormValues,
+      existingRestrictions,
+      purposeId,
+    );
+    expect(result1).toBe(true);
+
+    // Should not detect conflict when editing the conflicting restriction
+    const result2 = checkForVendorRestrictionConflicts(
+      baseFormValues,
+      existingRestrictions,
+      purposeId,
+      "1", // ID of the first restriction
+    );
+    expect(result2).toBe(true); // Still true because of conflict with second restriction
+
+    // Should not detect conflict when editing the only conflicting restriction
+    const result3 = checkForVendorRestrictionConflicts(
+      baseFormValues,
+      [existingRestrictions[0]], // Only the first restriction
+      purposeId,
+      "1", // ID of the first restriction
+    );
+    expect(result3).toBe(false);
+  });
+
+  it("should ignore the restriction being edited when checking RESTRICT_ALL conflicts", () => {
+    const existingRestrictions: PurposeRestriction[] = [
+      {
+        id: "1",
+        purpose_id: purposeId,
+        restriction_type: TCFRestrictionType.PURPOSE_RESTRICTION,
+        vendor_restriction: TCFVendorRestriction.RESTRICT_ALL_VENDORS,
+        vendor_ids: [],
+      },
+    ];
+
+    // Should detect conflict when not editing any restriction
+    const result1 = checkForVendorRestrictionConflicts(
+      baseFormValues,
+      existingRestrictions,
+      purposeId,
+    );
+    expect(result1).toBe(true);
+
+    // Should not detect conflict when editing the RESTRICT_ALL restriction
+    const result2 = checkForVendorRestrictionConflicts(
+      baseFormValues,
+      existingRestrictions,
+      purposeId,
+      "1", // ID of the RESTRICT_ALL restriction
+    );
+    expect(result2).toBe(false);
+  });
+});
+
+describe("convertVendorIdToRangeEntry", () => {
+  it("should convert single numbers to RangeEntry objects", () => {
+    expect(convertVendorIdToRangeEntry("1")).toEqual({
+      start_vendor_id: 1,
+      end_vendor_id: null,
+    });
+    expect(convertVendorIdToRangeEntry("123")).toEqual({
+      start_vendor_id: 123,
+      end_vendor_id: null,
+    });
+    expect(convertVendorIdToRangeEntry("9999")).toEqual({
+      start_vendor_id: 9999,
+      end_vendor_id: null,
+    });
+  });
+
+  it("should convert valid ranges to RangeEntry objects", () => {
+    expect(convertVendorIdToRangeEntry("1-10")).toEqual({
+      start_vendor_id: 1,
+      end_vendor_id: 10,
+    });
+    expect(convertVendorIdToRangeEntry("15-300")).toEqual({
+      start_vendor_id: 15,
+      end_vendor_id: 300,
+    });
+  });
+
+  it("should return null for invalid formats", () => {
+    expect(convertVendorIdToRangeEntry("")).toBeNull();
+    expect(convertVendorIdToRangeEntry("abc")).toBeNull();
+    expect(convertVendorIdToRangeEntry("1-")).toBeNull();
+    expect(convertVendorIdToRangeEntry("-10")).toBeNull();
+    expect(convertVendorIdToRangeEntry("10-5")).toBeNull(); // Start greater than end
+    expect(convertVendorIdToRangeEntry("a-10")).toBeNull();
+    expect(convertVendorIdToRangeEntry("10-b")).toBeNull();
+  });
+});
+
+describe("convertVendorIdsToRangeEntries", () => {
+  it("should convert an array of vendor IDs to RangeEntry objects", () => {
+    const input = ["1", "5-10", "20"];
+    const expected: RangeEntry[] = [
+      { start_vendor_id: 1, end_vendor_id: null },
+      { start_vendor_id: 5, end_vendor_id: 10 },
+      { start_vendor_id: 20, end_vendor_id: null },
+    ];
+    expect(convertVendorIdsToRangeEntries(input)).toEqual(expected);
+  });
+
+  it("should handle empty arrays", () => {
+    expect(convertVendorIdsToRangeEntries([])).toEqual([]);
+    expect(convertVendorIdsToRangeEntries()).toEqual([]); // undefined case
+  });
+
+  it("should filter out invalid entries", () => {
+    const input = ["1", "invalid", "5-10", "10-5", "20"];
+    const expected: RangeEntry[] = [
+      { start_vendor_id: 1, end_vendor_id: null },
+      { start_vendor_id: 5, end_vendor_id: 10 },
+      { start_vendor_id: 20, end_vendor_id: null },
+    ];
+    expect(convertVendorIdsToRangeEntries(input)).toEqual(expected);
+  });
+
+  it("should handle arrays with all invalid entries", () => {
+    const input = ["invalid", "10-5", "abc", "-10"];
+    expect(convertVendorIdsToRangeEntries(input)).toEqual([]);
   });
 });

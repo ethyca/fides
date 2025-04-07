@@ -11,7 +11,11 @@ import * as Yup from "yup";
 import { ControlledSelect } from "~/features/common/form/ControlledSelect";
 import FormModal from "~/features/common/modals/FormModal";
 import { successToastParams } from "~/features/common/toast";
-import { TCFRestrictionType, TCFVendorRestriction } from "~/types/api";
+import {
+  TCFPublisherRestrictionRequest,
+  TCFRestrictionType,
+  TCFVendorRestriction,
+} from "~/types/api";
 
 import {
   RESTRICTION_TYPE_LABELS,
@@ -20,6 +24,7 @@ import {
 import { FormValues, PurposeRestriction } from "./types";
 import {
   checkForVendorRestrictionConflicts,
+  convertVendorIdsToRangeEntries,
   ERROR_MESSAGE,
   isValidVendorIdFormat,
 } from "./validation-utils";
@@ -30,6 +35,7 @@ interface PurposeRestrictionFormModalProps {
   initialValues?: FormValues;
   existingRestrictions?: PurposeRestriction[];
   purposeId?: number;
+  restrictionId?: string;
 }
 
 const defaultInitialValues: FormValues = {
@@ -44,6 +50,7 @@ export const PurposeRestrictionFormModal = ({
   initialValues = defaultInitialValues,
   existingRestrictions = [],
   purposeId,
+  restrictionId,
 }: PurposeRestrictionFormModalProps) => {
   const toast = useToast();
 
@@ -109,6 +116,7 @@ export const PurposeRestrictionFormModal = ({
                 } as FormValues,
                 existingRestrictions,
                 purposeId,
+                restrictionId,
               ),
           ),
       otherwise: (schema) =>
@@ -120,14 +128,26 @@ export const PurposeRestrictionFormModal = ({
               context.parent as FormValues,
               existingRestrictions,
               purposeId,
+              restrictionId,
             ),
         ),
     }),
   });
 
-  const handleSubmit = (values: FormValues) => {
+  const handleSubmit = async (values: FormValues): Promise<void> => {
+    // Convert form values to API request format
+    const request: TCFPublisherRestrictionRequest = {
+      purpose_id: purposeId ?? 0, // You might want to handle this case differently
+      restriction_type: values.restriction_type as TCFRestrictionType,
+      vendor_restriction: values.vendor_restriction as TCFVendorRestriction,
+      range_entries:
+        values.vendor_restriction !== TCFVendorRestriction.RESTRICT_ALL_VENDORS
+          ? convertVendorIdsToRangeEntries(values.vendor_ids)
+          : [],
+    };
+
     // TASK: Submit to API
-    console.log("Form values:", values);
+    console.log("API request:", request);
     toast(successToastParams("Restriction updated successfully"));
     onClose();
   };

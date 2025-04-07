@@ -1,6 +1,7 @@
 import { TCFRestrictionType, TCFVendorRestriction } from "~/types/api";
 
 export interface PurposeRestriction {
+  id?: string;
   restriction_type: TCFRestrictionType;
   vendor_restriction: TCFVendorRestriction;
   vendor_ids: string[];

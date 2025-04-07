@@ -47,6 +47,7 @@ export const PublisherRestrictionActionCell = ({
         initialValues={currentValues}
         existingRestrictions={existingRestrictions}
         purposeId={purposeId}
+        restrictionId={currentValues?.id}
       />
 
       <ConfirmationModal

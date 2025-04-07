@@ -1,4 +1,4 @@
-import { TCFVendorRestriction } from "~/types/api";
+import { RangeEntry, TCFVendorRestriction } from "~/types/api";
 
 import { FormValues, PurposeRestriction } from "./types";
 
@@ -97,10 +97,11 @@ export const checkForVendorRestrictionConflicts = (
   values: FormValues,
   existingRestrictions: PurposeRestriction[],
   purposeId?: number,
+  restrictionBeingEditedId?: string,
 ): boolean => {
-  // Filter to only get restrictions for the current purpose
+  // Filter to only get restrictions for the current purpose, excluding the one being edited
   const relevantRestrictions = existingRestrictions.filter(
-    (r) => r.purpose_id === purposeId,
+    (r) => r.purpose_id === purposeId && r.id !== restrictionBeingEditedId,
   );
 
   // Check for RESTRICT_ALL conflict
@@ -192,4 +193,47 @@ export const checkForVendorRestrictionConflicts = (
 
     return false;
   });
+};
+
+/**
+ * Converts a vendor ID string to a RangeEntry object
+ * @param vendorId A string representing either a single vendor ID (e.g. "10") or a range (e.g. "15-300")
+ * @returns A RangeEntry object or null if the format is invalid
+ */
+export const convertVendorIdToRangeEntry = (
+  vendorId: string,
+): RangeEntry | null => {
+  // Check if it's a single number
+  if (/^\d+$/.test(vendorId)) {
+    const num = parseInt(vendorId, 10);
+    return { start_vendor_id: num, end_vendor_id: null };
+  }
+
+  // Parse range (e.g., "15-300")
+  const rangeMatch = vendorId.match(/^(\d+)-(\d+)$/);
+  if (rangeMatch) {
+    const start = parseInt(rangeMatch[1], 10);
+    const end = parseInt(rangeMatch[2], 10);
+    if (start < end) {
+      return {
+        start_vendor_id: start,
+        end_vendor_id: end,
+      };
+    }
+  }
+
+  return null;
+};
+
+/**
+ * Converts an array of vendor ID strings to RangeEntry objects
+ * @param vendorIds Array of vendor ID strings
+ * @returns Array of valid RangeEntry objects
+ */
+export const convertVendorIdsToRangeEntries = (
+  vendorIds: string[] = [],
+): RangeEntry[] => {
+  return vendorIds
+    .map(convertVendorIdToRangeEntry)
+    .filter((entry): entry is RangeEntry => entry !== null);
 };
