@@ -86,7 +86,9 @@ const RecordsList = <T extends RecordListItem>({
       {items.map((item) => (
         <DataUseToggle
           key={item.id}
-          title={item.bestTranslation?.title || getNameForItem(item)}
+          title={
+            item.bestTranslation?.title || item.name || getNameForItem(item)
+          }
           noticeKey={`${item.id}`}
           onToggle={(_, triggerDetails) => {
             handleToggle(item, triggerDetails);
