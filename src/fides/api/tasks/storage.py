@@ -183,12 +183,13 @@ def upload_to_gcs(
         presigned_url = blob.generate_signed_url(
             version="v4",
             expiration=CONFIG.security.subject_request_download_link_ttl_seconds,
-            method="GET"
+            method="GET",
         )
         return presigned_url
     except Exception as e:
         logger.error(
-            "Encountered error while uploading and generating link for Google Cloud Storage object: {}", e
+            "Encountered error while uploading and generating link for Google Cloud Storage object: {}",
+            e,
         )
         raise e
 

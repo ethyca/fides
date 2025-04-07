@@ -1,6 +1,10 @@
 from typing import Any, Dict, Union
 
 from botocore.exceptions import ClientError
+from google.auth.exceptions import GoogleAuthError
+from google.auth.transport.requests import Request
+from google.oauth2 import service_account
+from loguru import logger
 
 from fides.api.schemas.storage.storage import (
     SUPPORTED_STORAGE_SECRETS,
@@ -9,10 +13,6 @@ from fides.api.schemas.storage.storage import (
     StorageType,
 )
 from fides.api.util.aws_util import get_aws_session
-from google.oauth2 import service_account
-from google.auth.transport.requests import Request
-from google.auth.exceptions import GoogleAuthError
-from loguru import logger
 
 
 def secrets_are_valid(
@@ -46,14 +46,17 @@ def _gcs_authenticator(secrets: Dict) -> bool:
     try:
         credentials = service_account.Credentials.from_service_account_info(
             dict(secrets),
-            scopes=["https://www.googleapis.com/auth/devstorage.read_only"]
+            scopes=["https://www.googleapis.com/auth/devstorage.read_only"],
         )
         # To validate the credentials, it is necessary to make a request to Google Cloud API
         credentials.refresh(Request())
         return True
 
     except GoogleAuthError as auth_error:
-        logger.warning("Google authentication error trying to authenticate GCS secrets: {}", auth_error)
+        logger.warning(
+            "Google authentication error trying to authenticate GCS secrets: {}",
+            auth_error,
+        )
         return False
 
     except Exception as e:
