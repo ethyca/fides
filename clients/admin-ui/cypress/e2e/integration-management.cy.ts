@@ -494,7 +494,7 @@ describe("Integration management for data detection & discovery", () => {
           force: true,
         });
         cy.getByTestId("controlled-select-execution_frequency").antSelect(
-          "Daily",
+          "Quarterly",
         );
         cy.getByTestId("input-execution_start_date").type("2034-06-03T10:00");
         cy.getByTestId("save-btn").click();
