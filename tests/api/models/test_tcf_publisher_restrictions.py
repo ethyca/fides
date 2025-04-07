@@ -97,6 +97,25 @@ class TestCreateTCFPublisherRestrictionAsync:
         assert restriction is not None
         assert len(restriction.range_entries) == 2
 
+    def test_create_sync_throws_error(
+        self, db: Session, tcf_config: TCFConfiguration
+    ) -> None:
+        """
+        Test that the sync create method throws an error telling users to use the async method.
+        """
+        data = {
+            "tcf_configuration_id": tcf_config.id,
+            "purpose_id": 8,
+            "restriction_type": TCFRestrictionType.require_consent,
+            "vendor_restriction": TCFVendorRestriction.allow_specific_vendors,
+            "range_entries": [
+                {"start_vendor_id": 1, "end_vendor_id": 5},
+                {"start_vendor_id": 7, "end_vendor_id": 10},
+            ],
+        }
+        with pytest.raises(NotImplementedError, match="Use create_async instead"):
+            TCFPublisherRestriction.create(db=db, data=data)
+
     async def test_invalid_range_entry(
         self, async_session: AsyncSession, tcf_config: TCFConfiguration
     ) -> None:
