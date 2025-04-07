@@ -65,7 +65,7 @@ def encrypt_access_request_results(data: Union[str, bytes], request_id: str) -> 
 def write_to_in_memory_buffer(
     resp_format: str, data: Dict[str, Any], privacy_request: PrivacyRequest
 ) -> BytesIO:
-    """Write JSON/CSV data to in-memory file-like object to be passed to S3. Encrypt data if encryption key/nonce
+    """Write JSON/CSV data to in-memory file-like object to be passed to S3 or GCS. Encrypt data if encryption key/nonce
     has been cached for the given privacy request id
 
     :param resp_format: str, should be one of ResponseFormat
@@ -176,7 +176,14 @@ def upload_to_gcs(
 
         blob = bucket.blob(file_key)
         in_memory_file = write_to_in_memory_buffer(resp_format, data, privacy_request)
-        blob.upload_from_string(in_memory_file.getvalue())
+        content_type = {
+            ResponseFormat.json.value: "application/json",
+            ResponseFormat.csv.value: "application/zip",
+            ResponseFormat.html.value: "application/zip",
+        }
+        blob.upload_from_string(
+            in_memory_file.getvalue(), content_type=content_type[resp_format]
+        )
 
         logger.info("File {} uploaded to {}", file_key, blob.public_url)
 
