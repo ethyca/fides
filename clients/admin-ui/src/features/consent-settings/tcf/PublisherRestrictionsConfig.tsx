@@ -62,6 +62,9 @@ export const PublisherRestrictionsConfig = ({
     if (tcfConfigurations?.items?.length && !selectedTCFConfigId) {
       setSelectedTCFConfigId(tcfConfigurations.items[0].id);
     }
+    if (selectedTCFConfigId && !tcfConfigurations?.items?.length) {
+      setSelectedTCFConfigId(null);
+    }
   }, [tcfConfigurations?.items, selectedTCFConfigId, setSelectedTCFConfigId]);
 
   const toast = useToast();
@@ -186,7 +189,7 @@ export const PublisherRestrictionsConfig = ({
           setSelectedTCFConfigId(configId);
         }}
       />
-      {showTcfOverrideConfig && (
+      {showTcfOverrideConfig && selectedTCFConfigId && (
         <PublisherRestrictionsTable
           className="mt-3"
           config={selectedConfig}

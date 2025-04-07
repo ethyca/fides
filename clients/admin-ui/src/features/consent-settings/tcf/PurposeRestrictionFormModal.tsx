@@ -11,12 +11,11 @@ import * as Yup from "yup";
 import { ControlledSelect } from "~/features/common/form/ControlledSelect";
 import FormModal from "~/features/common/modals/FormModal";
 import { successToastParams } from "~/features/common/toast";
+import { TCFRestrictionType, TCFVendorRestriction } from "~/types/api";
 
 import {
   RESTRICTION_TYPE_LABELS,
-  RestrictionType,
   VENDOR_RESTRICTION_LABELS,
-  VendorRestriction,
 } from "./constants";
 import { FormValues, PurposeRestriction } from "./types";
 import {
@@ -50,32 +49,37 @@ export const PurposeRestrictionFormModal = ({
 
   const restrictionTypeOptions = [
     {
-      value: RestrictionType.PURPOSE_RESTRICTION,
-      label: RESTRICTION_TYPE_LABELS[RestrictionType.PURPOSE_RESTRICTION],
+      value: TCFRestrictionType.PURPOSE_RESTRICTION,
+      label: RESTRICTION_TYPE_LABELS[TCFRestrictionType.PURPOSE_RESTRICTION],
     },
     {
-      value: RestrictionType.REQUIRE_CONSENT,
-      label: RESTRICTION_TYPE_LABELS[RestrictionType.REQUIRE_CONSENT],
+      value: TCFRestrictionType.REQUIRE_CONSENT,
+      label: RESTRICTION_TYPE_LABELS[TCFRestrictionType.REQUIRE_CONSENT],
     },
     {
-      value: RestrictionType.REQUIRE_LEGITIMATE_INTEREST,
+      value: TCFRestrictionType.REQUIRE_LEGITIMATE_INTEREST,
       label:
-        RESTRICTION_TYPE_LABELS[RestrictionType.REQUIRE_LEGITIMATE_INTEREST],
+        RESTRICTION_TYPE_LABELS[TCFRestrictionType.REQUIRE_LEGITIMATE_INTEREST],
     },
   ];
 
   const vendorRestrictionOptions = [
     {
-      value: VendorRestriction.RESTRICT_ALL,
-      label: VENDOR_RESTRICTION_LABELS[VendorRestriction.RESTRICT_ALL],
+      value: TCFVendorRestriction.RESTRICT_ALL_VENDORS,
+      label:
+        VENDOR_RESTRICTION_LABELS[TCFVendorRestriction.RESTRICT_ALL_VENDORS],
     },
     {
-      value: VendorRestriction.RESTRICT_SPECIFIC,
-      label: VENDOR_RESTRICTION_LABELS[VendorRestriction.RESTRICT_SPECIFIC],
+      value: TCFVendorRestriction.RESTRICT_SPECIFIC_VENDORS,
+      label:
+        VENDOR_RESTRICTION_LABELS[
+          TCFVendorRestriction.RESTRICT_SPECIFIC_VENDORS
+        ],
     },
     {
-      value: VendorRestriction.ALLOW_SPECIFIC,
-      label: VENDOR_RESTRICTION_LABELS[VendorRestriction.ALLOW_SPECIFIC],
+      value: TCFVendorRestriction.ALLOW_SPECIFIC_VENDORS,
+      label:
+        VENDOR_RESTRICTION_LABELS[TCFVendorRestriction.ALLOW_SPECIFIC_VENDORS],
     },
   ];
 
@@ -84,7 +88,7 @@ export const PurposeRestrictionFormModal = ({
     restriction_type: Yup.string().required("Restriction type is required"),
     vendor_restriction: Yup.string().required("Vendor restriction is required"),
     vendor_ids: Yup.array().when("vendor_restriction", {
-      is: (val: string) => val !== VendorRestriction.RESTRICT_ALL,
+      is: (val: string) => val !== TCFVendorRestriction.RESTRICT_ALL_VENDORS,
       then: (schema) =>
         schema
           .required("At least one vendor ID is required")
@@ -166,7 +170,8 @@ export const PurposeRestrictionFormModal = ({
               <Collapse
                 in={
                   !!values.vendor_restriction &&
-                  values.vendor_restriction !== VendorRestriction.RESTRICT_ALL
+                  values.vendor_restriction !==
+                    TCFVendorRestriction.RESTRICT_ALL_VENDORS
                 }
                 animateOpacity
               >
@@ -182,7 +187,8 @@ export const PurposeRestrictionFormModal = ({
                   suffixIcon={<span />}
                   tooltip="List the specific vendors that are restricted or allowed from processing data for this purpose. Enter a single vendor ID or a range of IDs and press enter."
                   disabled={
-                    values.vendor_restriction === VendorRestriction.RESTRICT_ALL
+                    values.vendor_restriction ===
+                    TCFVendorRestriction.RESTRICT_ALL_VENDORS
                   }
                 />
               </Collapse>

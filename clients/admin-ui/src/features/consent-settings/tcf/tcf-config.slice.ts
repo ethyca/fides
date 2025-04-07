@@ -3,19 +3,11 @@ import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import type { RootState } from "~/app/store";
 import { baseApi } from "~/features/common/api.slice";
 import {
-  PaginatedResponse,
-  PaginationQueryParams,
-} from "~/types/common/PaginationQueryParams";
-
-export interface TCFConfiguration {
-  id: string;
-  name: string;
-  restrictions_per_purpose?: Record<number, string>;
-}
-
-interface CreateTCFConfigurationRequest {
-  name: string;
-}
+  Page_TCFConfigurationResponse_,
+  TCFConfigurationDetail,
+  TCFConfigurationRequest,
+} from "~/types/api";
+import { PaginationQueryParams } from "~/types/common/PaginationQueryParams";
 
 export interface State {
   page: number;
@@ -61,7 +53,7 @@ export const selectTCFConfigFilters = createSelector(
 export const tcfConfigApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
     getTCFConfigurations: build.query<
-      PaginatedResponse<TCFConfiguration>,
+      Page_TCFConfigurationResponse_,
       Partial<PaginationQueryParams>
     >({
       query: (params) => ({
@@ -70,7 +62,7 @@ export const tcfConfigApi = baseApi.injectEndpoints({
       }),
       providesTags: () => ["TCF Purpose Override"],
     }),
-    getTCFConfiguration: build.query<TCFConfiguration, string>({
+    getTCFConfiguration: build.query<TCFConfigurationDetail, string>({
       query: (id) => ({
         url: `/plus/tcf/configurations/${id}`,
       }),
@@ -79,8 +71,8 @@ export const tcfConfigApi = baseApi.injectEndpoints({
       ],
     }),
     createTCFConfiguration: build.mutation<
-      TCFConfiguration,
-      CreateTCFConfigurationRequest
+      TCFConfigurationDetail,
+      TCFConfigurationRequest
     >({
       query: (body) => ({
         url: "/plus/tcf/configurations",

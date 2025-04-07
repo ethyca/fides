@@ -4,8 +4,8 @@ import { useRouter } from "next/router";
 import { useState } from "react";
 
 import { FidesTableV2, TableActionBar } from "~/features/common/table/v2";
+import { TCFRestrictionType, TCFVendorRestriction } from "~/types/api";
 
-import { RestrictionType, VendorRestriction } from "./constants";
 import { PurposeRestrictionFormModal } from "./PurposeRestrictionFormModal";
 import { PurposeRestriction } from "./types";
 import { usePurposeRestrictionTableColumns } from "./usePurposeRestrictionTableColumns";
@@ -44,8 +44,8 @@ export const PurposeRestrictionsTable = () => {
   // TASK: Fetch data from API
   const data: PurposeRestriction[] = [
     {
-      restriction_type: RestrictionType.PURPOSE_RESTRICTION,
-      vendor_restriction: VendorRestriction.RESTRICT_SPECIFIC,
+      restriction_type: TCFRestrictionType.PURPOSE_RESTRICTION,
+      vendor_restriction: TCFVendorRestriction.RESTRICT_SPECIFIC_VENDORS,
       vendor_ids: ["123", "456", "10-100"],
       purpose_id: purposeId,
     },

@@ -1,5 +1,11 @@
-import { VendorRestriction } from "./constants";
-import { FormValues, PurposeRestriction, VendorRange } from "./types";
+import { TCFVendorRestriction } from "~/types/api";
+
+import { FormValues, PurposeRestriction } from "./types";
+
+interface VendorRange {
+  start: number;
+  end: number | null;
+}
 
 export const ERROR_MESSAGE =
   "One or more of these vendors already have a restriction for this purpose. Please update the existing restriction or remove duplicates.";
@@ -100,7 +106,7 @@ export const checkForVendorRestrictionConflicts = (
   // Check for RESTRICT_ALL conflict
   const hasRestrictAll = relevantRestrictions.some(
     (r) =>
-      r.vendor_restriction === VendorRestriction.RESTRICT_ALL &&
+      r.vendor_restriction === TCFVendorRestriction.RESTRICT_ALL_VENDORS &&
       r.restriction_type === values.restriction_type,
   );
 
@@ -109,12 +115,13 @@ export const checkForVendorRestrictionConflicts = (
   }
 
   // If current form is RESTRICT_ALL, check for any existing specific restrictions
-  if (values.vendor_restriction === VendorRestriction.RESTRICT_ALL) {
+  if (values.vendor_restriction === TCFVendorRestriction.RESTRICT_ALL_VENDORS) {
     const hasSpecificRestrictions = relevantRestrictions.some(
       (r) =>
         r.restriction_type === values.restriction_type &&
-        (r.vendor_restriction === VendorRestriction.RESTRICT_SPECIFIC ||
-          r.vendor_restriction === VendorRestriction.ALLOW_SPECIFIC),
+        (r.vendor_restriction ===
+          TCFVendorRestriction.RESTRICT_SPECIFIC_VENDORS ||
+          r.vendor_restriction === TCFVendorRestriction.ALLOW_SPECIFIC_VENDORS),
     );
 
     return hasSpecificRestrictions;
@@ -144,10 +151,14 @@ export const checkForVendorRestrictionConflicts = (
 
     // Check for opposite vendor restriction types (RESTRICT_SPECIFIC vs ALLOW_SPECIFIC)
     const isOppositeRestrictionType =
-      (values.vendor_restriction === VendorRestriction.RESTRICT_SPECIFIC &&
-        restriction.vendor_restriction === VendorRestriction.ALLOW_SPECIFIC) ||
-      (values.vendor_restriction === VendorRestriction.ALLOW_SPECIFIC &&
-        restriction.vendor_restriction === VendorRestriction.RESTRICT_SPECIFIC);
+      (values.vendor_restriction ===
+        TCFVendorRestriction.RESTRICT_SPECIFIC_VENDORS &&
+        restriction.vendor_restriction ===
+          TCFVendorRestriction.ALLOW_SPECIFIC_VENDORS) ||
+      (values.vendor_restriction ===
+        TCFVendorRestriction.ALLOW_SPECIFIC_VENDORS &&
+        restriction.vendor_restriction ===
+          TCFVendorRestriction.RESTRICT_SPECIFIC_VENDORS);
 
     // Check for conflicts when restriction types are opposite
     if (isOppositeRestrictionType) {

@@ -2,12 +2,11 @@ import { createColumnHelper } from "@tanstack/react-table";
 import { useMemo } from "react";
 
 import { DefaultCell, DefaultHeaderCell } from "~/features/common/table/v2";
+import { TCFRestrictionType, TCFVendorRestriction } from "~/types/api";
 
 import {
   RESTRICTION_TYPE_LABELS,
-  RestrictionType,
   VENDOR_RESTRICTION_LABELS,
-  VendorRestriction,
 } from "./constants";
 import { PublisherRestrictionActionCell } from "./PublisherRestrictionActionCell";
 import { PurposeRestriction } from "./types";
@@ -20,7 +19,7 @@ export const usePurposeRestrictionTableColumns = () => {
       columnHelper.accessor((row) => row.restriction_type, {
         id: "restriction_type",
         cell: ({ getValue }) => {
-          const value = getValue() as RestrictionType;
+          const value = getValue() as TCFRestrictionType;
           return <DefaultCell value={RESTRICTION_TYPE_LABELS[value]} />;
         },
         header: (props) => (
@@ -30,7 +29,7 @@ export const usePurposeRestrictionTableColumns = () => {
       columnHelper.accessor((row) => row.vendor_restriction, {
         id: "vendor_restriction",
         cell: ({ getValue }) => {
-          const value = getValue() as VendorRestriction;
+          const value = getValue() as TCFVendorRestriction;
           return <DefaultCell value={VENDOR_RESTRICTION_LABELS[value]} />;
         },
         header: (props) => (

@@ -10,9 +10,9 @@ import NextLink from "next/link";
 
 import { useAppSelector } from "~/app/hooks";
 import { selectPurposes } from "~/features/common/purpose.slice";
+import { TCFConfigurationDetail } from "~/types/api";
 
 import { FORBIDDEN_LEGITIMATE_INTEREST_PURPOSE_IDS } from "./constants";
-import { TCFConfiguration } from "./tcf-config.slice";
 
 interface FauxTableCellProps extends FlexProps {
   borderLeft?: boolean;
@@ -94,7 +94,7 @@ const FauxRow = ({
 );
 
 interface PublisherRestrictionsTableProps extends Omit<FlexProps, "children"> {
-  config?: TCFConfiguration;
+  config?: TCFConfigurationDetail;
   isLoading?: boolean;
 }
 
@@ -150,7 +150,7 @@ export const PublisherRestrictionsTable = ({
             {isLoading ? (
               <Skeleton height="16px" width="100%" />
             ) : (
-              config?.restrictions_per_purpose?.[purpose.id] || "none"
+              config?.restriction_types_per_purpose?.[purpose.id] || "none"
             )}
           </FauxTableCell>
           <FauxTableCell width="100px" borderLeft>

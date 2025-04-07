@@ -1,7 +1,5 @@
-import {
-  RestrictionType,
-  VendorRestriction,
-} from "../../src/features/consent-settings/tcf/constants";
+import { TCFRestrictionType, TCFVendorRestriction } from "~/types/api";
+
 import {
   FormValues,
   PurposeRestriction,
@@ -161,8 +159,8 @@ describe("doRangesOverlap", () => {
 describe("checkForVendorRestrictionConflicts", () => {
   const purposeId = 1;
   const baseFormValues: FormValues = {
-    restriction_type: RestrictionType.PURPOSE_RESTRICTION,
-    vendor_restriction: VendorRestriction.RESTRICT_SPECIFIC,
+    restriction_type: TCFRestrictionType.PURPOSE_RESTRICTION,
+    vendor_restriction: TCFVendorRestriction.RESTRICT_SPECIFIC_VENDORS,
     vendor_ids: ["1-10"],
   };
 
@@ -188,8 +186,8 @@ describe("checkForVendorRestrictionConflicts", () => {
     const existingRestrictions: PurposeRestriction[] = [
       {
         purpose_id: 2, // Different purpose ID
-        restriction_type: RestrictionType.PURPOSE_RESTRICTION,
-        vendor_restriction: VendorRestriction.RESTRICT_SPECIFIC,
+        restriction_type: TCFRestrictionType.PURPOSE_RESTRICTION,
+        vendor_restriction: TCFVendorRestriction.RESTRICT_SPECIFIC_VENDORS,
         vendor_ids: ["1-10"],
       },
     ];
@@ -206,8 +204,8 @@ describe("checkForVendorRestrictionConflicts", () => {
     const existingRestrictions: PurposeRestriction[] = [
       {
         purpose_id: purposeId,
-        restriction_type: RestrictionType.REQUIRE_CONSENT, // Different restriction type
-        vendor_restriction: VendorRestriction.RESTRICT_SPECIFIC,
+        restriction_type: TCFRestrictionType.REQUIRE_CONSENT, // Different restriction type
+        vendor_restriction: TCFVendorRestriction.RESTRICT_SPECIFIC_VENDORS,
         vendor_ids: ["1-10"],
       },
     ];
@@ -225,8 +223,8 @@ describe("checkForVendorRestrictionConflicts", () => {
     const existingRestrictions: PurposeRestriction[] = [
       {
         purpose_id: purposeId,
-        restriction_type: RestrictionType.PURPOSE_RESTRICTION,
-        vendor_restriction: VendorRestriction.RESTRICT_ALL,
+        restriction_type: TCFRestrictionType.PURPOSE_RESTRICTION,
+        vendor_restriction: TCFVendorRestriction.RESTRICT_ALL_VENDORS,
         vendor_ids: [],
       },
     ];
@@ -240,16 +238,16 @@ describe("checkForVendorRestrictionConflicts", () => {
 
     // When new restriction is RESTRICT_ALL and there are existing specific restrictions
     const formValuesWithRestrictAll: FormValues = {
-      restriction_type: RestrictionType.PURPOSE_RESTRICTION,
-      vendor_restriction: VendorRestriction.RESTRICT_ALL,
+      restriction_type: TCFRestrictionType.PURPOSE_RESTRICTION,
+      vendor_restriction: TCFVendorRestriction.RESTRICT_ALL_VENDORS,
       vendor_ids: [],
     };
 
     const existingSpecificRestrictions: PurposeRestriction[] = [
       {
         purpose_id: purposeId,
-        restriction_type: RestrictionType.PURPOSE_RESTRICTION,
-        vendor_restriction: VendorRestriction.RESTRICT_SPECIFIC,
+        restriction_type: TCFRestrictionType.PURPOSE_RESTRICTION,
+        vendor_restriction: TCFVendorRestriction.RESTRICT_SPECIFIC_VENDORS,
         vendor_ids: ["1-10"],
       },
     ];
@@ -264,16 +262,16 @@ describe("checkForVendorRestrictionConflicts", () => {
 
   it("should detect conflicts between RESTRICT_SPECIFIC and ALLOW_SPECIFIC", () => {
     const formValuesWithRestrictSpecific: FormValues = {
-      restriction_type: RestrictionType.PURPOSE_RESTRICTION,
-      vendor_restriction: VendorRestriction.RESTRICT_SPECIFIC,
+      restriction_type: TCFRestrictionType.PURPOSE_RESTRICTION,
+      vendor_restriction: TCFVendorRestriction.RESTRICT_SPECIFIC_VENDORS,
       vendor_ids: ["1-10"],
     };
 
     const existingAllowSpecificRestrictions: PurposeRestriction[] = [
       {
         purpose_id: purposeId,
-        restriction_type: RestrictionType.PURPOSE_RESTRICTION,
-        vendor_restriction: VendorRestriction.ALLOW_SPECIFIC,
+        restriction_type: TCFRestrictionType.PURPOSE_RESTRICTION,
+        vendor_restriction: TCFVendorRestriction.ALLOW_SPECIFIC_VENDORS,
         vendor_ids: ["5-15"], // Overlaps with 1-10
       },
     ];
@@ -289,8 +287,8 @@ describe("checkForVendorRestrictionConflicts", () => {
     const existingNonOverlappingRestrictions: PurposeRestriction[] = [
       {
         purpose_id: purposeId,
-        restriction_type: RestrictionType.PURPOSE_RESTRICTION,
-        vendor_restriction: VendorRestriction.ALLOW_SPECIFIC,
+        restriction_type: TCFRestrictionType.PURPOSE_RESTRICTION,
+        vendor_restriction: TCFVendorRestriction.ALLOW_SPECIFIC_VENDORS,
         vendor_ids: ["20-30"], // Does not overlap with 1-10
       },
     ];
@@ -305,16 +303,16 @@ describe("checkForVendorRestrictionConflicts", () => {
 
   it("should detect duplicate ranges for the same restriction type", () => {
     const formValuesWithRestrictSpecific: FormValues = {
-      restriction_type: RestrictionType.PURPOSE_RESTRICTION,
-      vendor_restriction: VendorRestriction.RESTRICT_SPECIFIC,
+      restriction_type: TCFRestrictionType.PURPOSE_RESTRICTION,
+      vendor_restriction: TCFVendorRestriction.RESTRICT_SPECIFIC_VENDORS,
       vendor_ids: ["1-10"],
     };
 
     const existingRestrictSpecificRestrictions: PurposeRestriction[] = [
       {
         purpose_id: purposeId,
-        restriction_type: RestrictionType.PURPOSE_RESTRICTION,
-        vendor_restriction: VendorRestriction.RESTRICT_SPECIFIC,
+        restriction_type: TCFRestrictionType.PURPOSE_RESTRICTION,
+        vendor_restriction: TCFVendorRestriction.RESTRICT_SPECIFIC_VENDORS,
         vendor_ids: ["5-15"], // Overlaps with 1-10
       },
     ];
@@ -330,8 +328,8 @@ describe("checkForVendorRestrictionConflicts", () => {
     const existingNonOverlappingRestrictions: PurposeRestriction[] = [
       {
         purpose_id: purposeId,
-        restriction_type: RestrictionType.PURPOSE_RESTRICTION,
-        vendor_restriction: VendorRestriction.RESTRICT_SPECIFIC,
+        restriction_type: TCFRestrictionType.PURPOSE_RESTRICTION,
+        vendor_restriction: TCFVendorRestriction.RESTRICT_SPECIFIC_VENDORS,
         vendor_ids: ["20-30"], // Does not overlap with 1-10
       },
     ];
@@ -346,16 +344,16 @@ describe("checkForVendorRestrictionConflicts", () => {
 
   it("should handle invalid vendor IDs properly", () => {
     const formValuesWithInvalidIds: FormValues = {
-      restriction_type: RestrictionType.PURPOSE_RESTRICTION,
-      vendor_restriction: VendorRestriction.RESTRICT_SPECIFIC,
+      restriction_type: TCFRestrictionType.PURPOSE_RESTRICTION,
+      vendor_restriction: TCFVendorRestriction.RESTRICT_SPECIFIC_VENDORS,
       vendor_ids: ["invalid", "also-invalid"],
     };
 
     const existingRestrictions: PurposeRestriction[] = [
       {
         purpose_id: purposeId,
-        restriction_type: RestrictionType.PURPOSE_RESTRICTION,
-        vendor_restriction: VendorRestriction.RESTRICT_SPECIFIC,
+        restriction_type: TCFRestrictionType.PURPOSE_RESTRICTION,
+        vendor_restriction: TCFVendorRestriction.RESTRICT_SPECIFIC_VENDORS,
         vendor_ids: ["1-10"],
       },
     ];
@@ -370,8 +368,8 @@ describe("checkForVendorRestrictionConflicts", () => {
 
     // Should still detect conflicts with valid IDs
     const formValuesWithMixedIds: FormValues = {
-      restriction_type: RestrictionType.PURPOSE_RESTRICTION,
-      vendor_restriction: VendorRestriction.RESTRICT_SPECIFIC,
+      restriction_type: TCFRestrictionType.PURPOSE_RESTRICTION,
+      vendor_restriction: TCFVendorRestriction.RESTRICT_SPECIFIC_VENDORS,
       vendor_ids: ["invalid", "5"], // 5 is valid and would conflict
     };
 
