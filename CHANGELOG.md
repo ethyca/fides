@@ -38,6 +38,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ### Fixed
 - Updated relationships for Comments, Attachments and PrivacyRequests to remove overlap sqlalchemy error. [#5929](https://github.com/ethyca/fides/pull/5929)
 - Hide "Reclassify" option on fields in D&D tables [#5956](https://github.com/ethyca/fides/pull/5956)
+- Fixes translation bug in TCF custom notices [#6003](https://github.com/ethyca/fides/pull/6003)
 
 ### Removed
 - Removed datasetClassificationUpdates flag from admin UI. [#5950](https://github.com/ethyca/fides/pull/5950)
