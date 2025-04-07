@@ -4,7 +4,7 @@ from typing import Any, Dict, List, Optional
 from pydantic import BaseModel, Field, ValidationError, model_validator
 from sqlalchemy import Column
 from sqlalchemy import Enum as EnumColumn
-from sqlalchemy import ForeignKey, Index, Integer, String, insert, select
+from sqlalchemy import ForeignKey, Index, Integer, String, insert, select, update
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.ext.declarative import declared_attr
@@ -186,20 +186,55 @@ class TCFPublisherRestriction(Base):
         return data
 
     @classmethod
+    async def validate_vendor_overlaps_for_purpose(
+        cls,
+        async_db: AsyncSession,
+        configuration_id: str,
+        purpose_id: int,
+        new_data: dict,
+    ) -> None:
+        """
+        Validates that the new vendor ranges do not overlap with any existing vendor ranges for the purpose
+        in the given configuration.
+        Raises a ValueError if any vendor ranges overlap.
+        """
+        # First, get all the restrictions for the purpose in the given configuration
+        query = (
+            select(cls)  # type: ignore[arg-type]
+            .where(cls.tcf_configuration_id == configuration_id)
+            .where(cls.purpose_id == purpose_id)
+        )
+        restrictions = await async_db.execute(query)
+        restrictions = restrictions.scalars().all()
+
+        # If we have an existing id, we need to exclude the current restriction from the list of existing restrictions
+        # so that the new_data restrictions don't overlap with themselves
+        if "id" in new_data:
+            existing_entries = [
+                entry
+                for r in restrictions
+                for entry in r.range_entries
+                if r.id != new_data["id"]
+            ]
+        else:
+            existing_entries = [
+                entry for r in restrictions for entry in r.range_entries
+            ]
+
+        all_entries = [*existing_entries, *new_data.get("range_entries", [])]
+        cls.check_for_overlaps(
+            [RangeEntry.model_validate(entry) for entry in all_entries]
+        )
+
+    @classmethod
     def create(
         cls,
         db: Session,
         *,
         data: Dict[str, Any],
-        check_name: bool = False,
+        check_name: bool = True,
     ) -> "TCFPublisherRestriction":
-        """
-        Create a new TCFPublisherRestriction with validated range_entries.
-        Validates each range entry using the RangeEntry Pydantic model.
-        """
-        data = cls.validate_publisher_restriction_data(data)
-
-        return super().create(db=db, data=data, check_name=check_name)
+        raise NotImplementedError("Use create_async instead")
 
     @classmethod
     async def create_async(
@@ -222,9 +257,48 @@ class TCFPublisherRestriction(Base):
             "range_entries": data["range_entries"],
         }
 
+        # Validate that the new vendor ranges do not overlap with any existing vendor ranges for the purpose
+        await cls.validate_vendor_overlaps_for_purpose(
+            async_db=async_db,
+            configuration_id=data["tcf_configuration_id"],
+            purpose_id=data["purpose_id"],
+            new_data=values,
+        )
+
+        # Insert the new restriction
         insert_stmt = insert(cls).values(values)  # type: ignore[arg-type]
         result = await async_db.execute(insert_stmt)
         record_id = result.inserted_primary_key.id
 
         created_record = await async_db.execute(select(cls).where(cls.id == record_id))  # type: ignore[arg-type]
         return created_record.scalars().first()
+
+    async def update_async(
+        self, async_db: AsyncSession, data: Dict[str, Any]
+    ) -> "TCFPublisherRestriction":
+        """
+        Update a TCFPublisherRestriction with the data.
+        Validates the data and checks for vendor overlaps.
+        """
+        # Validate the data on its own
+        data = self.validate_publisher_restriction_data(data)
+
+        # Validate that the new vendor ranges do not overlap with any existing vendor ranges for the purpose
+        await self.validate_vendor_overlaps_for_purpose(
+            async_db=async_db,
+            configuration_id=self.tcf_configuration_id,
+            purpose_id=self.purpose_id,
+            new_data={**data, "id": self.id},  # Pass in id explicitly
+        )
+
+        # Finally, make the update
+        update_query = (
+            update(TCFPublisherRestriction)  # type: ignore[arg-type]
+            .where(TCFPublisherRestriction.id == self.id)
+            .values(**data)
+        )
+        await async_db.execute(update_query)
+        await async_db.commit()
+        await async_db.refresh(self)
+
+        return self
