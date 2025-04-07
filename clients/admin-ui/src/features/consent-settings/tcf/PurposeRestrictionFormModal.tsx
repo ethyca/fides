@@ -9,8 +9,9 @@ import { Form, Formik } from "formik";
 import * as Yup from "yup";
 
 import { ControlledSelect } from "~/features/common/form/ControlledSelect";
+import { isErrorResult } from "~/features/common/helpers";
 import FormModal from "~/features/common/modals/FormModal";
-import { successToastParams } from "~/features/common/toast";
+import { errorToastParams, successToastParams } from "~/features/common/toast";
 import {
   TCFPublisherRestrictionRequest,
   TCFRestrictionType,
@@ -21,6 +22,10 @@ import {
   RESTRICTION_TYPE_LABELS,
   VENDOR_RESTRICTION_LABELS,
 } from "./constants";
+import {
+  useCreatePublisherRestrictionMutation,
+  useUpdatePublisherRestrictionMutation,
+} from "./tcf-config.slice";
 import { FormValues, PurposeRestriction } from "./types";
 import {
   checkForVendorRestrictionConflicts,
@@ -36,6 +41,7 @@ interface PurposeRestrictionFormModalProps {
   existingRestrictions?: PurposeRestriction[];
   purposeId?: number;
   restrictionId?: string;
+  configurationId: string;
 }
 
 const defaultInitialValues: FormValues = {
@@ -51,8 +57,11 @@ export const PurposeRestrictionFormModal = ({
   existingRestrictions = [],
   purposeId,
   restrictionId,
+  configurationId,
 }: PurposeRestrictionFormModalProps) => {
   const toast = useToast();
+  const [createRestriction] = useCreatePublisherRestrictionMutation();
+  const [updateRestriction] = useUpdatePublisherRestrictionMutation();
 
   const restrictionTypeOptions = [
     {
@@ -135,21 +144,45 @@ export const PurposeRestrictionFormModal = ({
   });
 
   const handleSubmit = async (values: FormValues): Promise<void> => {
-    // Convert form values to API request format
-    const request: TCFPublisherRestrictionRequest = {
-      purpose_id: purposeId ?? 0, // You might want to handle this case differently
-      restriction_type: values.restriction_type as TCFRestrictionType,
-      vendor_restriction: values.vendor_restriction as TCFVendorRestriction,
-      range_entries:
-        values.vendor_restriction !== TCFVendorRestriction.RESTRICT_ALL_VENDORS
-          ? convertVendorIdsToRangeEntries(values.vendor_ids)
-          : [],
-    };
+    try {
+      // Convert form values to API request format
+      const request: TCFPublisherRestrictionRequest = {
+        purpose_id: purposeId ?? 0,
+        restriction_type: values.restriction_type as TCFRestrictionType,
+        vendor_restriction: values.vendor_restriction as TCFVendorRestriction,
+        range_entries:
+          values.vendor_restriction !==
+          TCFVendorRestriction.RESTRICT_ALL_VENDORS
+            ? convertVendorIdsToRangeEntries(values.vendor_ids)
+            : [],
+      };
 
-    // TASK: Submit to API
-    console.log("API request:", request);
-    toast(successToastParams("Restriction updated successfully"));
-    onClose();
+      if (restrictionId) {
+        const result = await updateRestriction({
+          configuration_id: configurationId,
+          restriction_id: restrictionId,
+          restriction: request,
+        });
+        if (isErrorResult(result)) {
+          toast(errorToastParams("Failed to update restriction"));
+          return;
+        }
+        toast(successToastParams("Restriction updated successfully"));
+      } else {
+        const result = await createRestriction({
+          configuration_id: configurationId,
+          restriction: request,
+        });
+        if (isErrorResult(result)) {
+          toast(errorToastParams("Failed to create restriction"));
+          return;
+        }
+        toast(successToastParams("Restriction created successfully"));
+      }
+      onClose();
+    } catch (error) {
+      toast(errorToastParams("Failed to save restriction"));
+    }
   };
 
   return (

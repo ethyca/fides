@@ -6,6 +6,7 @@ import {
   Page_TCFConfigurationResponse_,
   TCFConfigurationDetail,
   TCFConfigurationRequest,
+  TCFPublisherRestrictionRequest,
 } from "~/types/api";
 import { PaginationQueryParams } from "~/types/common/PaginationQueryParams";
 
@@ -63,11 +64,11 @@ export const tcfConfigApi = baseApi.injectEndpoints({
       providesTags: () => ["TCF Purpose Override"],
     }),
     getTCFConfiguration: build.query<TCFConfigurationDetail, string>({
-      query: (id) => ({
-        url: `/plus/tcf/configurations/${id}`,
+      query: (configuration_id) => ({
+        url: `/plus/tcf/configurations/${configuration_id}`,
       }),
-      providesTags: (_result, _error, id) => [
-        { type: "TCF Purpose Override", id },
+      providesTags: (_result, _error, configuration_id) => [
+        { type: "TCF Purpose Override", id: configuration_id },
       ],
     }),
     createTCFConfiguration: build.mutation<
@@ -82,11 +83,41 @@ export const tcfConfigApi = baseApi.injectEndpoints({
       invalidatesTags: () => ["TCF Purpose Override"],
     }),
     deleteTCFConfiguration: build.mutation<void, string>({
-      query: (id) => ({
-        url: `/plus/tcf/configurations/${id}`,
+      query: (configuration_id) => ({
+        url: `/plus/tcf/configurations/${configuration_id}`,
         method: "DELETE",
       }),
       invalidatesTags: () => ["TCF Purpose Override"],
+    }),
+    createPublisherRestriction: build.mutation<
+      void,
+      { configuration_id: string; restriction: TCFPublisherRestrictionRequest }
+    >({
+      query: ({ configuration_id, restriction }) => ({
+        url: `/plus/tcf/configurations/${configuration_id}/publisher_restrictions`,
+        method: "POST",
+        body: restriction,
+      }),
+      invalidatesTags: (_result, _error, { configuration_id }) => [
+        { type: "TCF Purpose Override", id: configuration_id },
+      ],
+    }),
+    updatePublisherRestriction: build.mutation<
+      void,
+      {
+        configuration_id: string;
+        restriction_id: string;
+        restriction: TCFPublisherRestrictionRequest;
+      }
+    >({
+      query: ({ configuration_id, restriction_id, restriction }) => ({
+        url: `/plus/tcf/configurations/${configuration_id}/publisher_restrictions/${restriction_id}`,
+        method: "PATCH",
+        body: restriction,
+      }),
+      invalidatesTags: (_result, _error, { configuration_id }) => [
+        { type: "TCF Purpose Override", id: configuration_id },
+      ],
     }),
   }),
 });
@@ -96,6 +127,8 @@ export const {
   useGetTCFConfigurationQuery,
   useCreateTCFConfigurationMutation,
   useDeleteTCFConfigurationMutation,
+  useCreatePublisherRestrictionMutation,
+  useUpdatePublisherRestrictionMutation,
 } = tcfConfigApi;
 
 export default tcfConfigSlice.reducer;

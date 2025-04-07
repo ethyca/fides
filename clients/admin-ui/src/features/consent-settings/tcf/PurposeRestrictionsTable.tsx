@@ -41,6 +41,8 @@ export const PurposeRestrictionsTable = () => {
     ? parseInt(router.query.purpose_id as string, 10)
     : undefined;
 
+  const configurationId = router.query.configuration_id as string;
+
   // TASK: Fetch data from API
   const data: PurposeRestriction[] = [
     {
@@ -84,6 +86,7 @@ export const PurposeRestrictionsTable = () => {
         onClose={handleCloseModal}
         existingRestrictions={data}
         purposeId={purposeId}
+        configurationId={configurationId}
       />
     </Flex>
   );

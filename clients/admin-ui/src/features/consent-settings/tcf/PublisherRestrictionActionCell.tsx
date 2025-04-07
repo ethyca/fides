@@ -24,6 +24,8 @@ export const PublisherRestrictionActionCell = ({
     ? parseInt(router.query.purpose_id as string, 10)
     : undefined;
 
+  const configurationId = router.query.configuration_id as string;
+
   const handleDelete = () => {
     // TASK: Delete from API
     console.log("delete");
@@ -48,6 +50,7 @@ export const PublisherRestrictionActionCell = ({
         existingRestrictions={existingRestrictions}
         purposeId={purposeId}
         restrictionId={currentValues?.id}
+        configurationId={configurationId}
       />
 
       <ConfirmationModal
