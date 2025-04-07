@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.58.2b2.post0.dev2"
+    "version": "2.58.2b2.post0.dev3"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -12515,26 +12515,6 @@
         "description": "Sets the password and enables the user if a valid username and invite code are provided.",
         "operationId": "accept_user_invite_api_v1_user_accept_invite_post",
         "parameters": [
-          {
-            "name": "config_path_override",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "string",
-              "default": "",
-              "title": "Config Path Override"
-            }
-          },
-          {
-            "name": "verbose",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "boolean",
-              "default": false,
-              "title": "Verbose"
-            }
-          },
           {
             "name": "username",
             "in": "query",
