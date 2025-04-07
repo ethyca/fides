@@ -1,17 +1,16 @@
 import { FidesGlobal } from "fides-js/src/lib/consent-types";
-import { Flex, Text, useToast } from "fidesui";
+import { AntFlex as Flex, Text } from "fidesui";
 import { useFormikContext } from "formik";
 import Script from "next/script";
 import React, { useEffect, useMemo, useState } from "react";
 
 import { PREVIEW_CONTAINER_ID } from "~/constants";
-import { getErrorMessage } from "~/features/common/helpers";
 import { TranslationWithLanguageName } from "~/features/privacy-experience/form/helpers";
 import {
   buildBaseConfig,
   translationOrDefault,
 } from "~/features/privacy-experience/preview/helpers";
-import { useLazyGetPrivacyNoticeByIdQuery } from "~/features/privacy-notices/privacy-notices.slice";
+import theme from "~/theme";
 import {
   ComponentType,
   ExperienceConfigCreate,
@@ -20,7 +19,8 @@ import {
   PrivacyNoticeResponse,
 } from "~/types/api";
 
-import { COMPONENT_MAP } from "./constants";
+import { useFeatures } from "../../common/features";
+import { COMPONENT_MAP } from "../constants";
 
 declare global {
   interface Window {
@@ -35,16 +35,15 @@ const NoPreviewNotice = ({
   title: string;
   description: string;
 }) => (
-  <Flex h="full" justify="center" align="center">
+  <Flex className="h-full items-center justify-center">
     <Flex
-      bgColor="white"
-      borderRadius="md"
-      p={6}
-      boxShadow="md"
-      direction="column"
-      align="center"
-      gap="2"
-      maxW="512px"
+      className="items-center gap-2 rounded-md p-6"
+      style={{
+        backgroundColor: theme.colors.white,
+        boxShadow: theme.shadows.md,
+        maxWidth: 512,
+      }}
+      vertical
       data-testid="no-preview-notice"
     >
       <Text fontSize="lg" fontWeight="500" align="center">
@@ -75,53 +74,51 @@ const Preview = ({
   const isPreviewAvailable = [
     ComponentType.BANNER_AND_MODAL,
     ComponentType.MODAL,
+    ComponentType.TCF_OVERLAY,
   ].includes(values.component);
 
-  const toast = useToast();
-
-  const [getPrivacyNoticeByIdTrigger] = useLazyGetPrivacyNoticeByIdQuery();
-
-  const getPrivacyNotice = async (id: string) => {
-    const result = await getPrivacyNoticeByIdTrigger(id);
-    if (result.isError) {
-      const errorMsg = getErrorMessage(
-        result.error,
-        "A problem occurred while fetching privacy notice data.  Some notices may not display correctly on the preview.",
-      );
-      toast({ status: "error", description: errorMsg });
-    }
-    const { data } = await getPrivacyNoticeByIdTrigger(id);
-    return data;
-  };
+  const { systemsCount } = useFeatures();
 
   useEffect(() => {
-    if (
-      values.privacy_notice_ids &&
-      values.component !== ComponentType.TCF_OVERLAY
-    ) {
-      Promise.all(
-        values.privacy_notice_ids!.map((id) => getPrivacyNotice(id)),
-      ).then((data) =>
-        // TS can't tell that we filter out notices that are undefined here
-        // @ts-ignore
-        setNoticesOnConfig(data.filter((notice) => notice !== undefined)),
-      );
+    if (values.privacy_notice_ids) {
+      const notices = values.privacy_notice_ids
+        .map((id) => allPrivacyNotices.find((notice) => notice?.id === id))
+        .map((notice) => {
+          if (
+            values.component === ComponentType.TCF_OVERLAY &&
+            notice !== undefined
+          ) {
+            return {
+              ...notice,
+              translations: [
+                {
+                  language: "en",
+                  text: notice?.name,
+                },
+              ],
+            };
+          }
+          return notice;
+        })
+        .filter(
+          (notice): notice is PrivacyNoticeResponse => notice !== undefined,
+        );
+      setNoticesOnConfig(notices);
     } else {
       setNoticesOnConfig([]);
     }
-    // ESLint wants us to have getPrivacyNotice in the dependencies, but doing
-    // so makes the privacy notice queries fire on every re-render;
-    // we can omit it because it isn't calculated from state or props
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [values.privacy_notice_ids]);
-
-  const fidesJsScript = "/lib/fides.js";
+  }, [values.privacy_notice_ids, allPrivacyNotices, values.component]);
 
   // Create the base FidesConfig JSON that will be used to initialize fides.js
   const baseConfig = useMemo(
     () => buildBaseConfig(initialValues, noticesOnConfig),
     [initialValues, noticesOnConfig],
   );
+
+  const fidesJsScript =
+    values.component === ComponentType.TCF_OVERLAY
+      ? "/lib/fides-tcf.js"
+      : "/lib/fides.js";
 
   useEffect(() => {
     // if current component is a modal, we want to force fides.js to show a modal, not a banner component
@@ -149,7 +146,7 @@ const Preview = ({
       }
     }
     baseConfig.experience.experience_config.show_layer1_notices =
-      !!values.privacy_notice_ids?.length && !!values.show_layer1_notices;
+      !!noticesOnConfig?.length && !!values.show_layer1_notices;
     baseConfig.experience.experience_config.layer1_button_options =
       (values.component === ComponentType.BANNER_AND_MODAL ||
         values.component === ComponentType.TCF_OVERLAY) &&
@@ -157,18 +154,39 @@ const Preview = ({
         ? values.layer1_button_options
         : Layer1ButtonOption.OPT_IN_OPT_OUT;
     baseConfig.options.preventDismissal = !values.dismissable;
+    baseConfig.experience.vendor_count = systemsCount;
+    baseConfig.experience.experience_config.component = values.component;
     if (
       window.Fides &&
-      values.privacy_notice_ids?.length &&
+      (noticesOnConfig?.length ||
+        values.component === ComponentType.TCF_OVERLAY) &&
       isPreviewAvailable
     ) {
+      // reinitialize fides.js each time the form changes
       window.Fides.init(baseConfig as any);
     }
-  }, [values, translation, baseConfig, allPrivacyNotices, isPreviewAvailable]);
+  }, [
+    values,
+    noticesOnConfig,
+    translation,
+    baseConfig,
+    allPrivacyNotices,
+    isPreviewAvailable,
+    systemsCount,
+  ]);
 
   const modal = document.getElementById("fides-modal");
   if (modal) {
     modal.removeAttribute("tabindex");
+  }
+
+  if (!values.component) {
+    return (
+      <NoPreviewNotice
+        title="No privacy experience type selected"
+        description="Please select a privacy experience type to preview."
+      />
+    );
   }
 
   if (!isPreviewAvailable) {
@@ -176,12 +194,15 @@ const Preview = ({
       <NoPreviewNotice
         title={`${COMPONENT_MAP.get(values.component)} preview not available`}
         description={`There is no preview available for ${COMPONENT_MAP.get(values.component)}. You can edit the available settings
-      and languages to the left.`}
+    and languages to the left.`}
       />
     );
   }
 
-  if (!values.privacy_notice_ids?.length) {
+  if (
+    !noticesOnConfig?.length &&
+    values.component !== ComponentType.TCF_OVERLAY
+  ) {
     return (
       <NoPreviewNotice
         title="No privacy notices added"
@@ -192,15 +213,19 @@ const Preview = ({
   }
 
   return (
-    <Flex h="full" justify="center" align="center" overflow="scroll">
+    <Flex className="size-full items-center justify-center overflow-scroll">
       {/* style overrides for preview model */}
       <style jsx global>{`
         div#fides-overlay {
           z-index: 5000 !important;
         }
         div#${PREVIEW_CONTAINER_ID} {
+          width: 100%;
           padding-top: 45px;
-          margin: auto !important;
+          ${values.component !== ComponentType.TCF_OVERLAY
+            ? "padding-bottom: 45px;"
+            : ""}
+          margin: auto;
           pointer-events: none;
         }
         div#fides-banner-container {
@@ -238,8 +263,9 @@ const Preview = ({
           justify-content: center;
           background-color: unset;
           ${
-            values.component === ComponentType.BANNER_AND_MODAL
-              ? "padding-top: 3rem; padding-bottom: 3rem;"
+            values.component === ComponentType.BANNER_AND_MODAL ||
+            values.component === ComponentType.TCF_OVERLAY
+              ? "padding-bottom: 3rem;"
               : ""
           }
         }`}
@@ -247,15 +273,12 @@ const Preview = ({
       ) : null}
       {isMobilePreview ? (
         <style>{`
-            div#${PREVIEW_CONTAINER_ID} {
-              width: 70% !important;
+            div#fides-overlay-wrapper {
+              max-width: 400px;
+              margin: auto;
             }
             div.fides-modal-button-group {
               flex-direction: column !important;
-            }
-            div#fides-modal {
-              width: 70% !important;
-              margin: auto;
             }
             div#fides-banner {
               padding: 24px;
@@ -305,16 +328,31 @@ const Preview = ({
             `}</style>
       ) : (
         <style>{`
-            div#fides-banner {
-              width: 90% !important;
+              div#fides-banner {
+                width: 60%;
+              }
+            @media (min-width: 768px) {
+              div#fides-banner {
+                width: 100%;
+              }
+            }
+            @media (min-width: 1155px) {
+              div#fides-banner {
+                width: 90%;
+              }
+            }
+            @media (min-width: 1440px) {
+              div#fides-banner {
+                width: 60%;
+              }
             }
             `}</style>
       )}
       <Script
-        id="fides-js-base"
+        id="fides-js-script"
         src={fidesJsScript}
         onReady={() => {
-          if (isPreviewAvailable) {
+          if (!window.Fides.experience) {
             window.Fides?.init(baseConfig as any);
           }
         }}

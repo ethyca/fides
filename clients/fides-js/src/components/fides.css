@@ -517,29 +517,12 @@ div#fides-consent-content .fides-modal-description {
   overflow: hidden;
 }
 
-/* Responsive overlay */
-/* TODO: merge this with the responsive styles below */
-@media (max-width: 768px) {
-  div.fides-modal-content,
-  div#fides-consent-content {
-    width: 100% !important;
-  }
-
-  .fides-modal-button-group {
-    flex-direction: column;
-  }
-
-  button.fides-banner-button {
-    margin: 0;
-    margin-right: 8px;
-    margin-bottom: 12px;
-  }
-}
-
 div#fides-banner .fides-close-button {
   position: absolute;
-  top: 8px;
-  right: 3px;
+  top: 0;
+  right: 0;
+  padding-top: 8px;
+  padding-right: 8px;
   cursor: pointer;
   background: none;
   border: none;
@@ -1117,6 +1100,12 @@ button.fides-banner-button.fides-menu-item:not([aria-pressed="true"]):hover {
   background: var(--fides-overlay-secondary-button-background-hover-color);
 }
 
+@media (min-width: 1280px) {
+  div#fides-banner {
+    width: 60%;
+  }
+}
+
 /* Responsive banner */
 @media (min-width: 768px) {
   div#fides-banner {
@@ -1130,13 +1119,23 @@ button.fides-banner-button.fides-menu-item:not([aria-pressed="true"]):hover {
   }
 }
 
-@media (min-width: 1280px) {
-  div#fides-banner {
-    width: 60%;
-  }
-}
-
+/* Responsive overlay */
 @media (max-width: 768px) {
+  div.fides-modal-content,
+  div#fides-consent-content {
+    width: 100% !important;
+  }
+
+  .fides-modal-button-group {
+    flex-direction: column;
+  }
+
+  button.fides-banner-button {
+    margin: 0;
+    margin-right: 8px;
+    margin-bottom: 12px;
+  }
+
   div#fides-banner {
     padding: 24px;
     width: 100%;

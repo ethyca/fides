@@ -1,10 +1,16 @@
 import { ColumnDef, createColumnHelper } from "@tanstack/react-table";
 
+import { PRIVACY_NOTICE_REGION_RECORD } from "~/features/common/privacy-notice-regions";
 import {
   DefaultCell,
   IndeterminateCheckboxCell,
 } from "~/features/common/table/v2";
+import {
+  BadgeCellExpandable,
+  ListCellExpandable,
+} from "~/features/common/table/v2/cells";
 import DiscoveredSystemDataUseCell from "~/features/data-discovery-and-detection/action-center/tables/cells/DiscoveredSystemDataUseCell";
+import { PrivacyNoticeRegion } from "~/types/api";
 
 import { DiscoveredSystemActionsCell } from "../tables/cells/DiscoveredSystemAggregateActionsCell";
 import { DiscoveredSystemStatusCell } from "../tables/cells/DiscoveredSystemAggregateStatusCell";
@@ -64,28 +70,34 @@ export const useDiscoveredSystemAggregateColumns = (monitorId: string) => {
     columnHelper.accessor((row) => row.locations, {
       id: "locations",
       cell: (props) => (
-        <DefaultCell
-          value={
-            props.getValue().length > 1
-              ? `${props.getValue().length} locations`
-              : props.getValue()[0]
-          }
+        <BadgeCellExpandable
+          values={props.getValue().map((location: PrivacyNoticeRegion) => ({
+            label: PRIVACY_NOTICE_REGION_RECORD[location],
+            key: location,
+          }))}
         />
       ),
       header: "Locations",
+      size: 300,
+      meta: {
+        showHeaderMenu: true,
+        disableRowClick: true,
+      },
     }),
     columnHelper.accessor((row) => row.domains, {
       id: "domains",
       cell: (props) => (
-        <DefaultCell
-          value={
-            props.getValue().length > 1
-              ? `${props.getValue().length} domains`
-              : props.getValue()[0]
-          }
+        <ListCellExpandable
+          values={props.getValue()}
+          valueSuffix="domains"
+          cellProps={props}
         />
       ),
       header: "Domains",
+      meta: {
+        showHeaderMenu: true,
+        disableRowClick: true,
+      },
     }),
     columnHelper.display({
       id: "actions",
