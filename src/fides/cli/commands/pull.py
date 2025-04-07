@@ -8,6 +8,8 @@ from fides.cli.utils import with_analytics, with_server_health_check
 from fides.common.utils import echo_green, echo_red
 from fides.core import parse as _parse
 from fides.core import pull as _pull
+from fides.core.api_helpers import list_server_resources
+from fides.core.pull import remove_nulls, write_manifest_file
 from fides.core.utils import git_is_dirty
 
 
@@ -63,7 +65,8 @@ def pull_all(
 @click.argument("fides_key", required=False)
 @manifests_dir_argument
 @click.option(
-    "--all",
+    "--all-resources",
+    "-a",
     is_flag=True,
     default=False,
     help="Pull all datasets from the server.",
@@ -76,34 +79,34 @@ def pull_all(
 )
 @with_analytics
 @with_server_health_check
-def dataset(
+def pull_dataset(
     ctx: click.Context,
     fides_key: Optional[str],
     manifests_dir: str,
-    all: bool,
+    all_resources: bool,
     separate_files: bool,
 ) -> None:
     """
     Retrieve datasets from the server and update the local manifest files.
 
     If FIDES_KEY is provided, only that dataset will be pulled.
-    If --all is specified, all datasets will be pulled.
+    If --all-resources is specified, all datasets will be pulled.
     If --separate-files is specified, each dataset will be written to a separate file.
     """
-    if not fides_key and not all:
-        echo_red("Error: Either FIDES_KEY or --all must be specified.")
+    if not fides_key and not all_resources:
+        echo_red("Error: Either FIDES_KEY or --all-resources must be specified.")
         raise SystemExit(1)
 
     config = ctx.obj["CONFIG"]
 
-    if fides_key:
-        # Check for unstaged git changes before proceeding
-        if git_is_dirty(manifests_dir):
-            echo_red(
-                f"There are unstaged changes in your manifest directory: '{manifests_dir}' \nAborting pull!"
-            )
-            raise SystemExit(1)
+    # Check for unstaged git changes before proceeding
+    if git_is_dirty(manifests_dir):
+        echo_red(
+            f"There are unstaged changes in your manifest directory: '{manifests_dir}' \nAborting pull!"
+        )
+        raise SystemExit(1)
 
+    if fides_key:
         _pull.pull(
             url=config.cli.server_url,
             manifests_dir=manifests_dir,
@@ -112,18 +115,8 @@ def dataset(
             resource_type="dataset",
             all_resources_file=None,
         )
-    elif all:
-        # Check for unstaged git changes before proceeding
-        if git_is_dirty(manifests_dir):
-            echo_red(
-                f"There are unstaged changes in your manifest directory: '{manifests_dir}' \nAborting pull!"
-            )
-            raise SystemExit(1)
-
+    elif all_resources:
         # Get all available datasets from server
-        from fides.core.api_helpers import list_server_resources
-        from fides.core.pull import remove_nulls
-
         datasets = list_server_resources(
             url=config.cli.server_url,
             headers=config.user.auth_header,
@@ -144,17 +137,11 @@ def dataset(
                 if "fides_key" in dataset:
                     fides_key = dataset["fides_key"]
                     manifest_path = f"{manifests_dir.rstrip('/')}/{fides_key}.yml"
-                    from fides.core.pull import write_manifest_file
-
                     write_manifest_file(manifest_path, {"dataset": [dataset]})
         else:
             # Write all datasets to a single file
             all_datasets_file = f"{manifests_dir.rstrip('/')}/datasets.yml"
-            from fides.core.pull import write_manifest_file
-
             write_manifest_file(all_datasets_file, {"dataset": datasets})
-
-        from fides.common.utils import echo_green
 
         echo_green("Pull complete.")
 

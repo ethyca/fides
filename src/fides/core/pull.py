@@ -155,7 +155,7 @@ def pull_missing_resources(
     # Remove null values from all resources
     for resource_type, resources in resource_manifest.items():
         resource_manifest[resource_type] = [
-            remove_nulls(resource) for resource in resources
+            remove_nulls(resource) for resource in (resources or [])
         ]
 
     resource_manifest = {
