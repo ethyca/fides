@@ -12,6 +12,7 @@ import {
   ViewOffIcon,
 } from "fidesui";
 
+import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { useAlert } from "~/features/common/hooks";
 import { DiscoveryMonitorItem } from "~/features/data-discovery-and-detection/types/DiscoveryMonitorItem";
 import { findResourceType } from "~/features/data-discovery-and-detection/utils/findResourceType";
@@ -47,7 +48,7 @@ const DiscoveryItemActionsCell = ({ resource }: DiscoveryItemActionsProps) => {
     top_level_field_name,
   } = resource;
 
-  const { successAlert } = useAlert();
+  const { successAlert, errorAlert } = useAlert();
 
   const isSubField = !!top_level_field_name;
 
@@ -76,36 +77,51 @@ const DiscoveryItemActionsCell = ({ resource }: DiscoveryItemActionsProps) => {
     showPromoteAction && showMuteAction && showReclassifyAction;
 
   const handlePromote = async () => {
-    await promoteResourceMutation({
+    const result = await promoteResourceMutation({
       staged_resource_urn: resource.urn,
     });
-    successAlert(
-      `These changes have been added to a Fides dataset. To view, navigate to "Manage datasets".`,
-      `Table changes confirmed`,
-    );
+    if (isErrorResult(result)) {
+      errorAlert(getErrorMessage(result.error), "Failed to promote resource");
+    } else {
+      successAlert(
+        `These changes have been added to a Fides dataset. To view, navigate to "Manage datasets".`,
+        `Table changes confirmed`,
+      );
+    }
   };
 
   const handleMute = async () => {
-    await muteResourceMutation({
+    const result = await muteResourceMutation({
       staged_resource_urn: resource.urn,
     });
-    successAlert(
-      `Ignored changes will not be added to a Fides dataset.`,
-      `${resource.name || "Changes"} ignored`,
-    );
+    if (isErrorResult(result)) {
+      errorAlert(getErrorMessage(result.error), "Failed to mute resource");
+    } else {
+      successAlert(
+        `Ignored changes will not be added to a Fides dataset.`,
+        `${resource.name || "Changes"} ignored`,
+      );
+    }
   };
 
   const handleReclassify = async () => {
-    await confirmResourceMutation({
+    const result = await confirmResourceMutation({
       staged_resource_urn: resource.urn,
       monitor_config_id: resource.monitor_config_id!,
       start_classification: true,
       classify_monitored_resources: true,
     });
-    successAlert(
-      `Reclassification of ${getResourceName(resource) || "the resource"} has begun.  The results may take some time to appear in the “Data discovery“ tab.`,
-      `Reclassification started`,
-    );
+    if (isErrorResult(result)) {
+      errorAlert(
+        getErrorMessage(result.error),
+        "Failed to reclassify resource",
+      );
+    } else {
+      successAlert(
+        `Reclassification of ${getResourceName(resource) || "the resource"} has begun.  The results may take some time to appear in the “Data discovery“ tab.`,
+        `Reclassification started`,
+      );
+    }
   };
 
   return (
