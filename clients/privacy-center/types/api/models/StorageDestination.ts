@@ -5,6 +5,7 @@
 import type { ResponseFormat } from "./ResponseFormat";
 import type { StorageDetailsLocal } from "./StorageDetailsLocal";
 import type { StorageDetailsS3 } from "./StorageDetailsS3";
+import type { StorageDetailsGCS } from "./StorageDetailsGCS";
 import type { StorageType } from "./StorageType";
 
 /**
@@ -12,7 +13,7 @@ import type { StorageType } from "./StorageType";
  */
 export type StorageDestination = {
   type: StorageType;
-  details: StorageDetailsS3 | StorageDetailsLocal;
+  details: StorageDetailsS3 | StorageDetailsGCS | StorageDetailsLocal;
   format?: ResponseFormat | null;
   name: string;
   key?: string | null;
