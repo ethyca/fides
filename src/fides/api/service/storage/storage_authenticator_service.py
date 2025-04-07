@@ -11,6 +11,8 @@ from fides.api.schemas.storage.storage import (
 from fides.api.util.aws_util import get_aws_session
 from google.oauth2 import service_account
 from google.auth.transport.requests import Request
+from google.auth.exceptions import GoogleAuthError
+from loguru import logger
 
 
 def secrets_are_valid(
@@ -42,14 +44,20 @@ def _s3_authenticator(secrets: Dict[StorageSecrets, Any]) -> bool:
 def _gcs_authenticator(secrets: Dict) -> bool:
     """Autenticates secrets for Google Cloud Storage, returns true if secrets are valid"""
     try:
-        # FIXME: should convert secrets to json?
         credentials = service_account.Credentials.from_service_account_info(
-            secrets
+            dict(secrets),
+            scopes=["https://www.googleapis.com/auth/devstorage.read_only"]
         )
         # To validate the credentials, it is necessary to make a request to Google Cloud API
         credentials.refresh(Request())
         return True
-    except Exception:
+
+    except GoogleAuthError as auth_error:
+        logger.warning("Google authentication error trying to authenticate GCS secrets: {}", auth_error)
+        return False
+
+    except Exception as e:
+        logger.warning("Unexpected error authenticating GCS secrets: {}", e)
         return False
 
 
