@@ -65,10 +65,10 @@ export const MonitorResult = ({
 
   useEffect(() => {
     if (property) {
-      setIconUrl(getWebsiteIconUrl(property));
+      setIconUrl(getWebsiteIconUrl(property, 60));
     }
     if (secrets?.url) {
-      setIconUrl(getWebsiteIconUrl(getDomain(secrets.url)));
+      setIconUrl(getWebsiteIconUrl(getDomain(secrets.url), 60));
     }
   }, [property, secrets?.url]);
 
@@ -81,7 +81,7 @@ export const MonitorResult = ({
               avatar={
                 <Avatar
                   src={iconUrl}
-                  size="small"
+                  size={30}
                   icon={<Icons.Wikis />}
                   style={{
                     backgroundColor: "transparent",
