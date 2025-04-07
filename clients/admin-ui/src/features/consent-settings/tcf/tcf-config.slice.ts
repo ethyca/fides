@@ -8,6 +8,7 @@ import {
   TCFConfigurationDetail,
   TCFConfigurationRequest,
   TCFPublisherRestrictionRequest,
+  TCFPublisherRestrictionUpdateRequest,
 } from "~/types/api";
 import { PaginationQueryParams } from "~/types/common/PaginationQueryParams";
 
@@ -123,13 +124,25 @@ export const tcfConfigApi = baseApi.injectEndpoints({
       {
         configuration_id: string;
         restriction_id: string;
-        restriction: TCFPublisherRestrictionRequest;
+        restriction: TCFPublisherRestrictionUpdateRequest;
       }
     >({
       query: ({ configuration_id, restriction_id, restriction }) => ({
         url: `/plus/tcf/configurations/${configuration_id}/publisher_restrictions/${restriction_id}`,
         method: "PATCH",
         body: restriction,
+      }),
+      invalidatesTags: (_result, _error, { configuration_id }) => [
+        { type: "TCF Purpose Override", id: configuration_id },
+      ],
+    }),
+    deletePublisherRestriction: build.mutation<
+      void,
+      { configuration_id: string; restriction_id: string }
+    >({
+      query: ({ configuration_id, restriction_id }) => ({
+        url: `/plus/tcf/configurations/${configuration_id}/publisher_restrictions/${restriction_id}`,
+        method: "DELETE",
       }),
       invalidatesTags: (_result, _error, { configuration_id }) => [
         { type: "TCF Purpose Override", id: configuration_id },
@@ -146,6 +159,7 @@ export const {
   useDeleteTCFConfigurationMutation,
   useCreatePublisherRestrictionMutation,
   useUpdatePublisherRestrictionMutation,
+  useDeletePublisherRestrictionMutation,
 } = tcfConfigApi;
 
 export default tcfConfigSlice.reducer;

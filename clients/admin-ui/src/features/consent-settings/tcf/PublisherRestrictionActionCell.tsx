@@ -1,9 +1,13 @@
-import { AntButton as Button, AntSpace as Space } from "fidesui";
+import { AntButton as Button, AntSpace as Space, useToast } from "fidesui";
 import { useRouter } from "next/router";
 import { useState } from "react";
 
+import { isErrorResult } from "~/features/common/helpers";
+import { errorToastParams, successToastParams } from "~/features/common/toast";
+
 import ConfirmationModal from "../../common/modals/ConfirmationModal";
 import { PurposeRestrictionFormModal } from "./PurposeRestrictionFormModal";
+import { useDeletePublisherRestrictionMutation } from "./tcf-config.slice";
 import { PurposeRestriction } from "./types";
 
 interface PublisherRestrictionActionCellProps {
@@ -18,6 +22,9 @@ export const PublisherRestrictionActionCell = ({
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState<boolean>(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState<boolean>(false);
   const router = useRouter();
+  const toast = useToast();
+
+  const [deleteRestriction] = useDeletePublisherRestrictionMutation();
 
   // Get purpose ID from the URL
   const purposeId = router.query.purpose_id
@@ -26,10 +33,24 @@ export const PublisherRestrictionActionCell = ({
 
   const configurationId = router.query.configuration_id as string;
 
-  const handleDelete = () => {
-    // TASK: Delete from API
-    console.log("delete");
-    setIsDeleteModalOpen(false);
+  const handleDelete = async () => {
+    try {
+      if (!currentValues?.id) {
+        return;
+      }
+      const result = await deleteRestriction({
+        configuration_id: configurationId,
+        restriction_id: currentValues.id,
+      });
+      if (isErrorResult(result)) {
+        toast(errorToastParams("Failed to delete publisher restriction"));
+        return;
+      }
+      setIsDeleteModalOpen(false);
+      toast(successToastParams("Publisher restriction deleted successfully"));
+    } catch (error) {
+      toast(errorToastParams("Failed to delete publisher restriction"));
+    }
   };
 
   return (

@@ -146,8 +146,7 @@ export const PurposeRestrictionFormModal = ({
   const handleSubmit = async (values: FormValues): Promise<void> => {
     try {
       // Convert form values to API request format
-      const request: TCFPublisherRestrictionRequest = {
-        purpose_id: purposeId ?? 0,
+      const request: Omit<TCFPublisherRestrictionRequest, "purpose_id"> = {
         restriction_type: values.restriction_type as TCFRestrictionType,
         vendor_restriction: values.vendor_restriction as TCFVendorRestriction,
         range_entries:
@@ -155,6 +154,10 @@ export const PurposeRestrictionFormModal = ({
           TCFVendorRestriction.RESTRICT_ALL_VENDORS
             ? convertVendorIdsToRangeEntries(values.vendor_ids)
             : [],
+      };
+      const requestWithPurposeId: TCFPublisherRestrictionRequest = {
+        ...request,
+        purpose_id: purposeId ?? 0,
       };
 
       if (restrictionId) {
@@ -171,7 +174,7 @@ export const PurposeRestrictionFormModal = ({
       } else {
         const result = await createRestriction({
           configuration_id: configurationId,
-          restriction: request,
+          restriction: requestWithPurposeId,
         });
         if (isErrorResult(result)) {
           toast(errorToastParams("Failed to create restriction"));
