@@ -2,7 +2,7 @@
 import os
 from base64 import b64decode
 from json import dump, loads
-from typing import Generator
+from typing import Generator, List
 
 import pytest
 import yaml
@@ -16,6 +16,7 @@ from fides.common.api.scope_registry import SCOPE_REGISTRY
 from fides.config import CONFIG
 from fides.core.user import get_systems_managed_by_user, get_user_permissions
 from fides.core.utils import get_auth_header, read_credentials_file
+from tests.ctl.core.test_api_helpers import created_resources
 
 OKTA_URL = "https://dev-78908748.okta.com"
 
@@ -249,6 +250,41 @@ class TestPull:
         )
         git_reset(test_dir)
         os.remove(test_file)
+        print(result.output)
+        assert result.exit_code == 0
+
+    @pytest.mark.parametrize(
+        "created_resources", ["dataset"], indirect=["created_resources"]
+    )
+    def test_pull_all_separate_files(
+        self,
+        test_cli_runner: CliRunner,
+        created_resources: List,
+    ) -> None:
+        """
+        Due to the fact that this command checks the real git status, a pytest
+        tmp_dir can't be used. Consequently a real directory must be tested against
+        and then reset.
+        """
+        test_dir = ".fides"
+
+        resource_type = created_resources[0]
+        resource_keys = created_resources[1]
+
+        result = test_cli_runner.invoke(
+            cli,
+            [
+                "pull",
+                resource_type,
+                "--all",
+                "--separate-files",
+            ],
+        )
+        git_reset(test_dir)
+
+        for resource_key in resource_keys:
+            os.remove(f"{test_dir}/{resource_key}.yml")
+
         print(result.output)
         assert result.exit_code == 0
 
