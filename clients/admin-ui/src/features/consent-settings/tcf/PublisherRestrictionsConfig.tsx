@@ -1,37 +1,24 @@
-import { SerializedError } from "@reduxjs/toolkit";
-import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import {
   AntButton as Button,
   AntSpace as Space,
-  AntSwitch as Switch,
   Skeleton,
   Text,
-  useToast,
 } from "fidesui";
 import { useEffect, useState } from "react";
 
-import { getErrorMessage } from "~/features/common/helpers";
-import { errorToastParams } from "~/features/common/toast";
 import {
   useGetTCFConfigurationQuery,
   useGetTCFConfigurationsQuery,
 } from "~/features/consent-settings/tcf/tcf-config.slice";
-import { isErrorResult } from "~/types/errors";
 
 import DocsLink from "../../common/DocsLink";
 import { useLocalStorage } from "../../common/hooks/useLocalStorage";
-import QuestionTooltip from "../../common/QuestionTooltip";
-import { usePatchConfigurationSettingsMutation } from "../../config-settings/config-settings.slice";
-import {
-  useGetHealthQuery,
-  useGetTcfPurposeOverridesQuery,
-  usePatchTcfPurposeOverridesMutation,
-} from "../../plus/plus.slice";
 import SettingsBox from "../SettingsBox";
 import { PUBLISHER_RESTRICTIONS_DOCS_URL } from "./constants";
 import { CreateTCFConfigModal } from "./CreateTCFConfigModal";
 import { PublisherRestrictionsTable } from "./PublisherRestrictionsTable";
 import { TCFConfigurationDropdown } from "./TCFConfigurationDropdown";
+import { TCFOverrideToggle } from "./TCFOverrideToggle";
 
 interface PublisherRestrictionsConfigProps {
   isTCFOverrideEnabled: boolean;
@@ -67,82 +54,23 @@ export const PublisherRestrictionsConfig = ({
     }
   }, [tcfConfigurations?.items, selectedTCFConfigId, setSelectedTCFConfigId]);
 
-  const toast = useToast();
-
-  const { isLoading: isHealthCheckLoading } = useGetHealthQuery();
-  const [
-    patchConfigSettingsTrigger,
-    { isLoading: isPatchConfigSettingsLoading },
-  ] = usePatchConfigurationSettingsMutation();
-  const [patchTcfPurposeOverridesTrigger] =
-    usePatchTcfPurposeOverridesMutation();
-  const { data: tcfPurposeOverrides } = useGetTcfPurposeOverridesQuery(
-    undefined,
-    {
-      skip: isHealthCheckLoading,
-    },
-  );
-
-  const handleOverrideOnChange = async (checked: boolean) => {
-    const handleResult = (
-      result:
-        | { data: object }
-        | { error: FetchBaseQueryError | SerializedError },
-    ) => {
-      toast.closeAll();
-      setShowTcfOverrideConfig(checked);
-      if (isErrorResult(result)) {
-        const errorMsg = getErrorMessage(
-          result.error,
-          `An unexpected error occurred while saving vendor override settings. Please try again.`,
-        );
-        setShowTcfOverrideConfig(false);
-        toast(errorToastParams(errorMsg));
-      }
-    };
-
-    const result = await patchConfigSettingsTrigger({
-      consent: {
-        override_vendor_purposes: checked,
-      },
-    });
-
-    if (checked && tcfPurposeOverrides) {
-      await patchTcfPurposeOverridesTrigger(
-        tcfPurposeOverrides.map((po) => ({
-          ...po,
-          is_included: true,
-          required_legal_basis: undefined,
-        })),
-      );
-    }
-
-    handleResult(result);
-  };
-
   return (
     <SettingsBox title="Publisher restrictions" fontSize="sm">
-      <Space direction="vertical" size="small">
-        <Text>Configure overrides for TCF related purposes.</Text>
-        {/* eslint-disable-next-line no-nested-ternary */}
-        {isTcfConfigurationsLoading ? (
+      <Space direction="vertical" size="small" style={{ width: "100%" }}>
+        <TCFOverrideToggle
+          defaultChecked={showTcfOverrideConfig}
+          onChange={(checked) => setShowTcfOverrideConfig(checked)}
+        />
+        {showTcfOverrideConfig && (
           <>
-            <Skeleton height="20px" />
-            <Skeleton height="20px" />
-          </>
-        ) : tcfConfigurations?.items?.length ? (
-          <>
-            <Space size="small">
-              <Switch
-                size="small"
-                defaultChecked={showTcfOverrideConfig}
-                onChange={handleOverrideOnChange}
-                disabled={isPatchConfigSettingsLoading}
-              />
-              <Text>Override vendor purposes</Text>
-              <QuestionTooltip label="Toggle on if you want to globally change any flexible legal bases or remove TCF purposes from your CMP" />
-            </Space>
-            {showTcfOverrideConfig && (
+            {isTcfConfigurationsLoading && (
+              <>
+                <Skeleton height="20px" />
+                <Skeleton height="20px" />
+                <Skeleton height="32px" width="200px" />
+              </>
+            )}
+            {!isTcfConfigurationsLoading && tcfConfigurations?.items?.length ? (
               <>
                 <Text>
                   The table below allows you to adjust which TCF purposes you
@@ -160,25 +88,24 @@ export const PublisherRestrictionsConfig = ({
                 <TCFConfigurationDropdown
                   selectedConfigId={selectedTCFConfigId || ""}
                   configurations={tcfConfigurations?.items || []}
-                  isLoading={isTcfConfigurationsLoading}
                   onConfigurationSelect={setSelectedTCFConfigId}
                 />
               </>
+            ) : (
+              <>
+                <Text>
+                  To define custom publisher restrictions select &quot;create
+                  configuration&quot; below.{" "}
+                  <DocsLink href={PUBLISHER_RESTRICTIONS_DOCS_URL}>
+                    Learn more about publisher restrictions
+                  </DocsLink>{" "}
+                  in our docs.
+                </Text>
+                <Button onClick={() => setIsCreateModalOpen(true)}>
+                  Create configuration +
+                </Button>
+              </>
             )}
-          </>
-        ) : (
-          <>
-            <Text>
-              To define custom publisher restrictions select &quot;create
-              configuration&quot; below.{" "}
-              <DocsLink href={PUBLISHER_RESTRICTIONS_DOCS_URL}>
-                Learn more about publisher restrictions
-              </DocsLink>{" "}
-              in our docs.
-            </Text>
-            <Button onClick={() => setIsCreateModalOpen(true)}>
-              Create configuration +
-            </Button>
           </>
         )}
       </Space>

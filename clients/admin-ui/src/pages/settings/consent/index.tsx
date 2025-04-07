@@ -7,6 +7,7 @@ import {
   Flex,
   Spinner,
   Stack,
+  Text,
   useToast,
 } from "fidesui";
 import { Form, Formik } from "formik";
@@ -26,6 +27,7 @@ import {
   useGetConfigurationSettingsQuery,
   usePatchConfigurationSettingsMutation,
 } from "~/features/config-settings/config-settings.slice";
+import DeprecatedPurposeOverrides from "~/features/consent-settings/DeprecatedPurposeOverrides";
 import FrameworkStatus from "~/features/consent-settings/FrameworkStatus";
 import GppConfiguration from "~/features/consent-settings/GppConfiguration";
 import PublisherSettings, {
@@ -33,6 +35,7 @@ import PublisherSettings, {
 } from "~/features/consent-settings/PublisherSettings";
 import SettingsBox from "~/features/consent-settings/SettingsBox";
 import { PublisherRestrictionsConfig } from "~/features/consent-settings/tcf/PublisherRestrictionsConfig";
+import { TCFOverrideToggle } from "~/features/consent-settings/tcf/TCFOverrideToggle";
 import {
   useGetHealthQuery,
   useGetTcfPurposeOverridesQuery,
@@ -64,8 +67,10 @@ const ConsentConfigPage: NextPage = () => {
     useGetTcfPurposeOverridesQuery(undefined, {
       skip: isHealthCheckLoading || !isTcfEnabled,
     });
-  const [patchTcfPurposeOverridesTrigger] =
-    usePatchTcfPurposeOverridesMutation();
+  const [
+    patchTcfPurposeOverridesTrigger,
+    { isLoading: isPatchConfigSettingsLoading },
+  ] = usePatchTcfPurposeOverridesMutation();
   const { data: apiConfigSet, isLoading: isApiConfigSetLoading } =
     useGetConfigurationSettingsQuery({ api_set: true });
   const { data: configSet, isLoading: isConfigSetLoading } =
@@ -179,6 +184,18 @@ const ConsentConfigPage: NextPage = () => {
     [tcfPurposeOverrides, gppSettings, plusConsentSettings],
   );
 
+  const hasLegacyLegalBasisOverrides = useMemo(() => {
+    return (
+      isTcfOverrideEnabled &&
+      tcfPurposeOverrides?.some(
+        (po) =>
+          !po.is_included ||
+          po.required_legal_basis === TCFLegalBasisEnum.CONSENT ||
+          po.required_legal_basis === TCFLegalBasisEnum.LEGITIMATE_INTERESTS,
+      )
+    );
+  }, [tcfPurposeOverrides, isTcfOverrideEnabled]);
+
   return (
     <Layout title="Consent Configuration">
       {isHealthCheckLoading ||
@@ -196,7 +213,7 @@ const ConsentConfigPage: NextPage = () => {
             <SettingsBox title="Transparency & Consent Framework settings">
               <FrameworkStatus name="TCF" enabled={isTcfEnabled} />
             </SettingsBox>
-            {isTcfEnabled && (
+            {isTcfEnabled && !hasLegacyLegalBasisOverrides && (
               <PublisherRestrictionsConfig
                 isTCFOverrideEnabled={isTcfOverrideEnabled}
               />
@@ -210,6 +227,27 @@ const ConsentConfigPage: NextPage = () => {
             {({ dirty, isValid, isSubmitting }) => (
               <Form>
                 <Stack spacing={6}>
+                  {hasLegacyLegalBasisOverrides && (
+                    <SettingsBox title="Vendor overrides" fontSize="sm">
+                      <TCFOverrideToggle
+                        defaultChecked
+                        disabled={isPatchConfigSettingsLoading}
+                      />
+                      <Stack mt={2} spacing={2}>
+                        <Text>
+                          The table below allows you to adjust which TCF
+                          purposes you allow as part of your user facing notices
+                          and business activites.
+                        </Text>
+                        <Text>
+                          To configure this section, select the purposes you
+                          allow and where available, the appropriate legal bases
+                          (either Consent or Legitimate Interest).
+                        </Text>
+                        <DeprecatedPurposeOverrides />
+                      </Stack>
+                    </SettingsBox>
+                  )}
                   <PublisherSettings />
                   <GppConfiguration />
                   <Button

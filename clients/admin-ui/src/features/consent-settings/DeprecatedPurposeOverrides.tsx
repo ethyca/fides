@@ -103,6 +103,7 @@ const DeprecatedPurposeOverrides = () => {
               alignItems="center"
               borderBottom="solid 1px"
               borderColor="gray.200"
+              backgroundColor="#fff"
             >
               <Flex
                 width="600px"
