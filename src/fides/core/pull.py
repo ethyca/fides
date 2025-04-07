@@ -1,6 +1,6 @@
 """This module handles the logic for syncing remote resource versions into their local file."""
 
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 import yaml
 from fideslang import model_list
@@ -11,6 +11,30 @@ from fides.core.api_helpers import get_server_resource, list_server_resources
 from fides.core.utils import get_manifest_list
 
 MODEL_LIST = model_list
+
+
+def remove_nulls(obj: Any) -> Any:
+    """
+    Recursively remove all null values from dictionaries and lists.
+
+    Args:
+        obj: Any Python object (dict, list, etc.)
+
+    Returns:
+        The transformed data structure with null values removed
+    """
+    if isinstance(obj, list):
+        # For lists: process each item and filter out None values
+        return [remove_nulls(item) for item in obj if item is not None]
+
+    if isinstance(obj, dict):
+        # For dictionaries: process each key-value pair and filter out pairs with None values
+        return {
+            key: remove_nulls(value) for key, value in obj.items() if value is not None
+        }
+
+    # Return all other data types unchanged
+    return obj
 
 
 def write_manifest_file(manifest_path: str, manifest: Dict) -> None:
@@ -54,6 +78,8 @@ def pull_existing_resources(
                 )
 
                 if server_resource:
+                    # Remove null values from the server resource
+                    server_resource = remove_nulls(server_resource)
                     updated_resource_list.append(server_resource)
                     print(
                         f" - {resource_type.capitalize()} with fides_key: {fides_key} is being updated from the server..."
@@ -77,16 +103,17 @@ def pull_resource_by_key(
 ) -> None:
     """
     Pull a resource from the server by its fides_key and update the local manifest file if it exists,
-    otherwise a new manifest file at {manifests_dir}/{resource_type}.yaml
+    otherwise a new manifest file at {manifests_dir}/{resource_type}.yml
     """
     if manifests_dir[-1] == "/":
         manifests_dir = manifests_dir[:-1]
-    manifest_path = f"{manifests_dir}/{resource_type}.yaml"
-    print(f"Pulling {resource_type} with fides_key: {fides_key}...", end=" ")
+    manifest_path = f"{manifests_dir}/{fides_key}.yml"
+    print(f"Pulling {resource_type} with fides_key: {fides_key}...", end="\n")
     server_resource = get_server_resource(url, resource_type, fides_key, headers)
-    print("done.")
 
     if server_resource:
+        # Remove null values from the server resource
+        server_resource = remove_nulls(server_resource)
         try:
             manifest = load_yaml_into_dict(manifest_path)
         except FileNotFoundError:
@@ -94,10 +121,8 @@ def pull_resource_by_key(
                 f"Manifest file {manifest_path} does not already exist and will be created"
             )
             manifest = {}
-        print("Writing out resource to file...", end=" ")
         manifest[resource_type] = [server_resource]
         write_manifest_file(manifest_path, manifest)
-        print("done.")
 
     else:
         echo_red(
@@ -126,6 +151,12 @@ def pull_missing_resources(
         )
         for resource in MODEL_LIST
     }
+
+    # Remove null values from all resources
+    for resource_type, resources in resource_manifest.items():
+        resource_manifest[resource_type] = [
+            remove_nulls(resource) for resource in resources
+        ]
 
     resource_manifest = {
         key: value for key, value in resource_manifest.items() if value

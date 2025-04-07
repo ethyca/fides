@@ -4,8 +4,8 @@ from typing import Dict, List, Optional, Union
 
 import requests
 
-from fides.api.util.endpoint_utils import API_PREFIX
-
+# Not using the constant value from fides.api.util.endpoint_utils to reduce the startup time for the CLI
+API_PREFIX = "/api/v1"
 
 def generate_resource_url(
     url: str,
