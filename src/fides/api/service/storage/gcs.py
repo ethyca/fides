@@ -25,10 +25,8 @@ def get_gcs_client(
             logger.warning(err_msg)
             raise StorageUploadError(err_msg)
 
-        # FIXME: should convert to json?
-        # creds_dict = json.loads(storage_secrets)
         credentials = service_account.Credentials.from_service_account_info(
-            storage_secrets
+            dict(storage_secrets)
         )
         storage_client = Client(credentials=credentials)
     else:

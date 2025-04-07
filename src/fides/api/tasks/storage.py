@@ -163,25 +163,34 @@ def upload_to_gcs(
     data: Dict,
     bucket_name: str,
     file_key: str,
+    resp_format: str,
     privacy_request: PrivacyRequest,
     auth_method: str,
-    resp_format: str = ResponseFormat.json.value,
 ) -> str:
     """Uploads access request data to a Google Cloud Storage bucket"""
     logger.info("Starting Google Cloud Storage upload of {}", file_key)
 
-    storage_client = get_gcs_client(auth_method, storage_secrets)
-    bucket = storage_client.bucket(bucket_name)
+    try:
+        storage_client = get_gcs_client(auth_method, storage_secrets)
+        bucket = storage_client.bucket(bucket_name)
 
-    blob = bucket.blob(file_key)
-    in_memory_file = write_to_in_memory_buffer(resp_format, data, privacy_request)
-    blob.upload_from_string(in_memory_file.getvalue())
+        blob = bucket.blob(file_key)
+        in_memory_file = write_to_in_memory_buffer(resp_format, data, privacy_request)
+        blob.upload_from_string(in_memory_file.getvalue())
 
-    logger.info("File {} uploaded to {}", file_key, blob.public_url)
-    return blob.public_url
-    # FIXME: By default, uploaded files are not public, so blob.public_url may not work
-    # file_url = f"https://storage.googleapis.com/{bucket_name}/{destination_blob_name}"
-    # return file_url
+        logger.info("File {} uploaded to {}", file_key, blob.public_url)
+
+        presigned_url = blob.generate_signed_url(
+            version="v4",
+            expiration=CONFIG.security.subject_request_download_link_ttl_seconds,
+            method="GET"
+        )
+        return presigned_url
+    except Exception as e:
+        logger.error(
+            "Encountered error while uploading and generating link for Google Cloud Storage object: {}", e
+        )
+        raise e
 
 
 def upload_to_local(

@@ -124,9 +124,9 @@ def _gcs_uploader(
         data,
         bucket_name,
         file_key,
+        config.format.value,
         privacy_request,
         auth_method,
-        config.format.value,
     )
 
 
