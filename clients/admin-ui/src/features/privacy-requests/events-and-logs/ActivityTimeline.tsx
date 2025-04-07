@@ -62,7 +62,7 @@ const ActivityTimeline = ({ subjectRequest }: ActivityTimelineProps) => {
 
   return (
     <Box width="100%">
-      <ActivityTimelineCollapse results={results} />
+      <ActivityTimelineCollapse results={results!} />
       {results &&
         resultKeys.map((key, index) => (
           <TimelineEntry

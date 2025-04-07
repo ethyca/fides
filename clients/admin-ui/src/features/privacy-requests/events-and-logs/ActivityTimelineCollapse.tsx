@@ -9,12 +9,12 @@ import { map } from "lodash";
 import { formatDate } from "~/features/common/utils";
 import { ExecutionLogStatus } from "~/types/api";
 
-import { ExecutionLog } from "../types";
+import { PrivacyRequestResults } from "../types";
 import styles from "./ActivityTimelineCollapse.module.scss";
 import EventLog from "./EventLog";
 
 interface ActivityTimelineProps {
-  results: Record<string, ExecutionLog[]>;
+  results: PrivacyRequestResults;
 }
 
 const ActivityTimelineCollapse = ({ results }: ActivityTimelineProps) => {
