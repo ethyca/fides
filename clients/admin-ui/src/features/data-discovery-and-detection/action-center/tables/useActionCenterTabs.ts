@@ -31,7 +31,7 @@ const getTabFromIndex = (index: number) => {
   );
 };
 
-const useDiscoveredAssetsTabs = ({ systemId }: { systemId: string }) => {
+const useActionCenterTabs = ({ systemId }: { systemId?: string }) => {
   const router = useRouter();
   const getInitialTabIndex = () => {
     const hash: string = router.asPath.split("#")[1];
@@ -91,12 +91,17 @@ const useDiscoveredAssetsTabs = ({ systemId }: { systemId: string }) => {
     },
   ];
 
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  const { diff_status, system } = filterTabs[filterTabIndex!].params;
+
+  const activeParams = systemId ? { diff_status, system } : { diff_status };
+
   return {
     filterTabs,
     filterTabIndex,
     onTabChange,
-    activeParams: filterTabs[filterTabIndex!].params,
+    activeParams,
   };
 };
 
-export default useDiscoveredAssetsTabs;
+export default useActionCenterTabs;

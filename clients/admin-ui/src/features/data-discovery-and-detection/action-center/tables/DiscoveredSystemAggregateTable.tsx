@@ -19,6 +19,7 @@ import {
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 
+import DataTabsHeader from "~/features/common/DataTabsHeader";
 import { getErrorMessage } from "~/features/common/helpers";
 import { useAlert } from "~/features/common/hooks";
 import {
@@ -37,6 +38,8 @@ import {
   useGetDiscoveredSystemAggregateQuery,
   useIgnoreMonitorResultSystemsMutation,
 } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
+import useActionCenterTabs from "~/features/data-discovery-and-detection/action-center/tables/useActionCenterTabs";
+import { DiffStatus } from "~/types/api";
 import { isErrorResult } from "~/types/errors";
 
 import { SearchInput } from "../../SearchInput";
@@ -82,12 +85,23 @@ export const DiscoveredSystemAggregateTable = ({
     resetPageIndexToDefault();
   }, [monitorId, searchQuery, resetPageIndexToDefault]);
 
+  const { filterTabs, filterTabIndex, onTabChange, activeParams } =
+    useActionCenterTabs({});
+
   const { data, isLoading, isFetching } = useGetDiscoveredSystemAggregateQuery({
     key: monitorId,
     page: pageIndex,
     size: pageSize,
     search: searchQuery,
+    ...activeParams,
   });
+
+  // TODO: disable actions and change columns when appropriate
+
+  // handling this can also probably be folded into the hook
+  const disableEditing = activeParams.diff_status.includes(
+    DiffStatus.MONITORED,
+  );
 
   useEffect(() => {
     if (data) {
@@ -120,6 +134,7 @@ export const DiscoveredSystemAggregateTable = ({
   }
 
   const handleRowClick = (row: MonitorSystemAggregate) => {
+    // TODO: hash should be maintained
     router.push(
       `${ACTION_CENTER_ROUTE}/${monitorId}/${row.id ?? UNCATEGORIZED_SEGMENT}`,
     );
@@ -171,6 +186,14 @@ export const DiscoveredSystemAggregateTable = ({
 
   return (
     <>
+      <DataTabsHeader
+        data={filterTabs}
+        data-testid="filter-tabs"
+        index={filterTabIndex}
+        isLazy
+        isManual
+        onChange={onTabChange}
+      />
       <TableActionBar>
         <Flex
           direction="row"

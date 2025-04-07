@@ -45,7 +45,7 @@ import {
   useUpdateAssetsSystemMutation,
 } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
 import AddDataUsesModal from "~/features/data-discovery-and-detection/action-center/AddDataUsesModal";
-import useDiscoveredAssetsTabs from "~/features/data-discovery-and-detection/action-center/tables/useDiscoveredAssetsTabs";
+import useActionCenterTabs from "~/features/data-discovery-and-detection/action-center/tables/useActionCenterTabs";
 import { DiffStatus } from "~/types/api";
 
 import { SearchInput } from "../../SearchInput";
@@ -112,7 +112,7 @@ export const DiscoveredAssetsTable = ({
   }, [monitorId, searchQuery, resetPageIndexToDefault]);
 
   const { filterTabs, filterTabIndex, onTabChange, activeParams } =
-    useDiscoveredAssetsTabs({ systemId });
+    useActionCenterTabs({ systemId });
 
   const { data, isLoading, isFetching } = useGetDiscoveredAssetsQuery({
     key: monitorId,
@@ -271,7 +271,7 @@ export const DiscoveredAssetsTable = ({
     <>
       <DataTabsHeader
         data={filterTabs}
-        data-testid="system-tabs"
+        data-testid="filter-tabs"
         index={filterTabIndex}
         isLazy
         isManual
