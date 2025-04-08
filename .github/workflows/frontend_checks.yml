@@ -35,6 +35,18 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
 
+      - name: Cache frontend dependencies and build
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.npm
+            clients/node_modules
+            clients/.next/cache
+          key: ${{ runner.os }}-nextjs-${{ hashFiles('clients/package-lock.json') }}-${{ hashFiles('clients/**/*.js', 'clients/**/*.jsx', 'clients/**/*.ts', 'clients/**/*.tsx') }}
+          restore-keys: |
+            ${{ runner.os }}-nextjs-${{ hashFiles('clients/package-lock.json') }}-
+            ${{ runner.os }}-nextjs-
+
       - name: Install dependencies
         run: npm install
 
