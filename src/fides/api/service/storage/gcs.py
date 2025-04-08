@@ -28,6 +28,7 @@ def get_gcs_client(
             dict(storage_secrets)
         )
         storage_client = Client(credentials=credentials)
+
     else:
         logger.error("Google Cloud Storage auth method not supported: {}", auth_method)
         raise ValueError(
