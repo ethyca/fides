@@ -233,7 +233,7 @@ class PrivacyExperienceConfig(PrivacyExperienceConfigBase, Base):
 
     tcf_configuration_id = Column(
         String,
-        ForeignKey(TCFConfiguration.id_field_path),
+        ForeignKey(TCFConfiguration.id_field_path, ondelete="SET NULL"),
         nullable=True,
     )
 
@@ -266,11 +266,11 @@ class PrivacyExperienceConfig(PrivacyExperienceConfigBase, Base):
         lazy="selectin",
     )
 
-    # tcf_configuration: RelationshipProperty[TCFConfiguration] = relationship(
-    #     "TCFConfiguration",
-    #     back_populates="privacy_experience_configs",
-    #     lazy="selectin",
-    # )
+    tcf_configuration: RelationshipProperty[Optional[TCFConfiguration]] = relationship(
+        "TCFConfiguration",
+        back_populates="privacy_experience_configs",
+        lazy="selectin",
+    )
 
     @property
     def regions(self) -> List[PrivacyNoticeRegion]:
@@ -560,6 +560,12 @@ class PrivacyExperienceConfigHistory(
     # Nullable because this is not applicable for other experience types
     reject_all_mechanism = Column(
         EnumColumn(RejectAllMechanism),
+        nullable=True,
+    )
+    # Optional FK to a TCF Configuration
+    tcf_configuration_id = Column(
+        String,
+        ForeignKey(TCFConfiguration.id_field_path, ondelete="SET NULL"),
         nullable=True,
     )
 
