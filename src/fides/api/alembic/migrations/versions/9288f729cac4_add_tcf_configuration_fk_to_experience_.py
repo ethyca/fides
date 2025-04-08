@@ -1,7 +1,7 @@
 """Add tcf_configuration FK to experience config
 
 Revision ID: 9288f729cac4
-Revises: 6e565c16dae1
+Revises: 99c603c1b8f9
 Create Date: 2025-04-07 18:49:31.843362
 
 """
@@ -11,7 +11,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "9288f729cac4"
-down_revision = "6e565c16dae1"
+down_revision = "99c603c1b8f9"
 branch_labels = None
 depends_on = None
 
