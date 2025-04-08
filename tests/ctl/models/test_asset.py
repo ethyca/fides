@@ -16,7 +16,6 @@ These tests are in the `test/ctl` subdir to load async db fixtures correctly.
 """
 
 
-@pytest.fixture(autouse=True)
 async def clear_table(async_session):
     """Ensure a clean table state before and after each test."""
     async with async_session.begin():

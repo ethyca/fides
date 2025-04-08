@@ -354,6 +354,7 @@ async def load_default_taxonomy(async_session: AsyncSession) -> None:
             sql_model_map[resource_type], async_session
         )
         existing_keys = [item.fides_key for item in existing_resources]
+
         resources = [
             resource
             for resource in default_resources

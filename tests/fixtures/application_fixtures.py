@@ -247,7 +247,7 @@ integration_secrets = {
 }
 
 
-@pytest.fixture(scope="session", autouse=True)
+@pytest.fixture(scope="session")
 def mock_upload_logic() -> Generator:
     with mock.patch(
         "fides.api.service.storage.storage_uploader_service.upload_to_s3"

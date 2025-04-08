@@ -506,7 +506,7 @@ class TestCrud:
 
 @pytest.mark.unit
 class TestSystemCreate:
-    @pytest.fixture(scope="function", autouse=True)
+    @pytest.fixture(scope="function")
     def remove_all_systems(self, db) -> None:
         """Remove any systems (and privacy declarations) before test execution for clean state"""
         for privacy_declaration in PrivacyDeclaration.all(db):
@@ -1320,7 +1320,7 @@ class TestSystemGet:
 
 @pytest.mark.unit
 class TestSystemList:
-    @pytest.fixture(scope="function", autouse=True)
+    @pytest.fixture(scope="function")
     def remove_all_systems(self, db) -> None:
         """Remove any systems (and privacy declarations) before test execution for clean state"""
         for privacy_declaration in PrivacyDeclaration.all(db):
@@ -1662,7 +1662,7 @@ class TestSystemList:
 class TestSystemUpdate:
     updated_system_name = "Updated System Name"
 
-    @pytest.fixture(scope="function", autouse=True)
+    @pytest.fixture(scope="function")
     def remove_all_systems(self, db) -> None:
         """Remove any systems (and privacy declarations) before test execution for clean state"""
         for privacy_declaration in PrivacyDeclaration.all(db):
@@ -3418,9 +3418,7 @@ def test_trailing_slash(test_config: FidesConfig, endpoint_name: str) -> None:
 
 
 class TestPrivacyDeclarationGetPurposeLegalBasisOverride:
-    async def test_privacy_declaration_enable_override_is_false(
-        self, async_session_temp
-    ):
+    async def test_privacy_declaration_enable_override_is_false(self, async_session):
         """Enable override is false so overridden legal basis is going to default
         to the defined legal basis"""
         resource = SystemSchema(
@@ -3439,7 +3437,7 @@ class TestPrivacyDeclarationGetPurposeLegalBasisOverride:
         )
 
         system = await create_system(
-            resource, async_session_temp, CONFIG.security.oauth_root_client_id
+            resource, async_session, CONFIG.security.oauth_root_client_id
         )
         pd = system.privacy_declarations[0]
 
@@ -3450,7 +3448,7 @@ class TestPrivacyDeclarationGetPurposeLegalBasisOverride:
         "enable_override_vendor_purposes",
     )
     async def test_enable_override_is_true_but_no_matching_purpose(
-        self, async_session_temp, db
+        self, async_session, db
     ):
         """Privacy Declaration has Special Purpose not Purpose, so no overrides applicable"""
         resource = SystemSchema(
@@ -3469,7 +3467,7 @@ class TestPrivacyDeclarationGetPurposeLegalBasisOverride:
         )
 
         system = await create_system(
-            resource, async_session_temp, CONFIG.security.oauth_root_client_id
+            resource, async_session, CONFIG.security.oauth_root_client_id
         )
         pd = system.privacy_declarations[0]
 
@@ -3480,7 +3478,7 @@ class TestPrivacyDeclarationGetPurposeLegalBasisOverride:
         "enable_override_vendor_purposes",
     )
     async def test_enable_override_is_true_but_purpose_is_excluded(
-        self, async_session_temp, db
+        self, async_session, db
     ):
         """Purpose is overridden as excluded, so legal basis returns as None, to match
         class-wide override"""
@@ -3500,7 +3498,7 @@ class TestPrivacyDeclarationGetPurposeLegalBasisOverride:
         )
 
         system = await create_system(
-            resource, async_session_temp, CONFIG.security.oauth_root_client_id
+            resource, async_session, CONFIG.security.oauth_root_client_id
         )
         pd = system.privacy_declarations[0]
 
@@ -3521,7 +3519,7 @@ class TestPrivacyDeclarationGetPurposeLegalBasisOverride:
         "enable_override_vendor_purposes",
     )
     async def test_purpose_is_excluded_even_with_inflexible_legal_basis(
-        self, async_session_temp, db
+        self, async_session, db
     ):
         """Purpose is overridden as excluded, so even if legal basis is not flexible,
         legal basis returns as None, to match class-wide override."""
@@ -3542,7 +3540,7 @@ class TestPrivacyDeclarationGetPurposeLegalBasisOverride:
         )
 
         system = await create_system(
-            resource, async_session_temp, CONFIG.security.oauth_root_client_id
+            resource, async_session, CONFIG.security.oauth_root_client_id
         )
         pd = system.privacy_declarations[0]
 
@@ -3562,7 +3560,7 @@ class TestPrivacyDeclarationGetPurposeLegalBasisOverride:
     @pytest.mark.usefixtures(
         "enable_override_vendor_purposes",
     )
-    async def test_legal_basis_is_inflexible(self, async_session_temp, db):
+    async def test_legal_basis_is_inflexible(self, async_session, db):
         """Purpose is overridden but we can't apply because the legal basis is specified as inflexible"""
         resource = SystemSchema(
             fides_key=str(uuid4()),
@@ -3581,7 +3579,7 @@ class TestPrivacyDeclarationGetPurposeLegalBasisOverride:
         )
 
         system = await create_system(
-            resource, async_session_temp, CONFIG.security.oauth_root_client_id
+            resource, async_session, CONFIG.security.oauth_root_client_id
         )
         pd = system.privacy_declarations[0]
 
@@ -3622,7 +3620,7 @@ class TestPrivacyDeclarationGetPurposeLegalBasisOverride:
         )
 
         system = await create_system(
-            resource, async_session_temp, CONFIG.security.oauth_root_client_id
+            resource, async_session, CONFIG.security.oauth_root_client_id
         )
         pd = system.privacy_declarations[0]
 
@@ -3643,7 +3641,7 @@ class TestPrivacyDeclarationGetPurposeLegalBasisOverride:
         "enable_override_vendor_purposes",
     )
     async def test_publisher_override_defined_with_required_legal_basis_specified(
-        self, async_session_temp, db
+        self, async_session, db
     ):
         """Purpose override specified along with the requirements to apply that override"""
         resource = SystemSchema(
@@ -3662,7 +3660,7 @@ class TestPrivacyDeclarationGetPurposeLegalBasisOverride:
         )
 
         system = await create_system(
-            resource, async_session_temp, CONFIG.security.oauth_root_client_id
+            resource, async_session, CONFIG.security.oauth_root_client_id
         )
         override = TCFPurposeOverride.create(
             db,

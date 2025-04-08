@@ -6,7 +6,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Callable
 from uuid import uuid4
-
+from pytest import MonkeyPatch
 import boto3
 import pytest
 import requests
@@ -17,6 +17,8 @@ from fideslang import DEFAULT_TAXONOMY, models
 from fideslang.models import System as SystemSchema
 from httpx import AsyncClient
 from loguru import logger
+from fides.api.db.base_class import Base
+from fides.api.db.database import seed_db
 from moto import mock_aws
 from sqlalchemy.engine.base import Engine
 from sqlalchemy.exc import IntegrityError
@@ -134,11 +136,10 @@ def test_client():
         yield test_client
 
 
-@pytest.fixture(scope="session")
 @pytest.mark.asyncio
-async def async_session(test_client):
+@pytest.fixture(scope="session")
+async def async_session():
     assert CONFIG.test_mode
-    assert requests.post == test_client.post
 
     create_citext_extension(sync_engine)
 
@@ -208,7 +209,7 @@ async def async_api_client():
         yield client
 
 
-@pytest.fixture(scope="session", autouse=True)
+@pytest.fixture(scope="session")
 def event_loop():
     try:
         loop = asyncio.get_running_loop()
@@ -388,7 +389,7 @@ def auth_header(request, oauth_client, config):
     return {"Authorization": "Bearer " + jwe}
 
 
-@pytest.fixture(autouse=True)
+@pytest.fixture
 def clear_get_config_cache() -> None:
     get_config.cache_clear()
 
@@ -700,13 +701,13 @@ def celery_config():
     return {"task_always_eager": False}
 
 
-@pytest.fixture(autouse=True, scope="session")
+@pytest.fixture(scope="session")
 def celery_enable_logging():
     """Turns on celery output logs."""
     return True
 
 
-@pytest.fixture(autouse=True, scope="session")
+@pytest.fixture(scope="session")
 def celery_use_virtual_worker(celery_session_worker):
     """
     This is a catch-all fixture that forces all of our
@@ -842,7 +843,7 @@ def consent_runner_tester(
         return privacy_request.get_consent_results()
 
 
-@pytest.fixture(autouse=True, scope="session")
+@pytest.fixture(scope="session")
 def analytics_opt_out():
     """Disable sending analytics when running tests."""
     original_value = CONFIG.user.analytics_opt_out
@@ -884,7 +885,7 @@ def subject_identity_verification_required(db):
     ApplicationConfig.update_config_set(db, CONFIG)
 
 
-@pytest.fixture(autouse=True, scope="function")
+@pytest.fixture(scope="function")
 def subject_identity_verification_not_required(db):
     """Disable identity verification for most tests unless overridden"""
     original_value = CONFIG.execution.subject_identity_verification_required
@@ -908,7 +909,7 @@ def disable_consent_identity_verification(db):
     ApplicationConfig.update_config_set(db, CONFIG)
 
 
-@pytest.fixture(autouse=True, scope="function")
+@pytest.fixture(scope="function")
 def privacy_request_complete_email_notification_disabled(db):
     """Disable request completion email for most tests unless overridden"""
     original_value = CONFIG.notifications.send_request_completion_notification
@@ -921,7 +922,7 @@ def privacy_request_complete_email_notification_disabled(db):
     db.commit()
 
 
-@pytest.fixture(autouse=True, scope="function")
+@pytest.fixture(scope="function")
 def privacy_request_receipt_notification_disabled(db):
     """Disable request receipt notification for most tests unless overridden"""
     original_value = CONFIG.notifications.send_request_receipt_notification
@@ -934,7 +935,7 @@ def privacy_request_receipt_notification_disabled(db):
     db.commit()
 
 
-@pytest.fixture(autouse=True, scope="function")
+@pytest.fixture(scope="function")
 def privacy_request_review_notification_disabled(db):
     """Disable request review notification for most tests unless overridden"""
     original_value = CONFIG.notifications.send_request_review_notification
@@ -947,7 +948,7 @@ def privacy_request_review_notification_disabled(db):
     db.commit()
 
 
-@pytest.fixture(scope="function", autouse=True)
+@pytest.fixture(scope="function")
 def set_notification_service_type_mailgun(db):
     """Set default notification service type"""
     original_value = CONFIG.notifications.notification_service_type
@@ -1008,7 +1009,7 @@ def set_property_specific_messaging_enabled(db):
     ApplicationConfig.update_config_set(db, CONFIG)
 
 
-@pytest.fixture(autouse=True, scope="function")
+@pytest.fixture(scope="function")
 def set_property_specific_messaging_disabled(db):
     """Disable property specific messaging for all tests unless overridden"""
     original_value = CONFIG.notifications.enable_property_specific_messaging
@@ -1821,7 +1822,7 @@ def connection_client(db, connection_config):
     client.delete(db)
 
 
-@pytest.fixture(scope="function", autouse=True)
+@pytest.fixture(scope="function")
 def load_default_data_uses(db):
     for data_use in DEFAULT_TAXONOMY.data_use:
         # weirdly, only in some test scenarios, we already have the default taxonomy
@@ -1857,3 +1858,66 @@ def viewer_and_approver_auth_header(viewer_and_approver_user):
     return generate_role_header_for_user(
         viewer_and_approver_user, viewer_and_approver_user.client.roles
     )
+
+
+@pytest.mark.asyncio
+@pytest.fixture(autouse=True)
+async def seed_data(async_session):
+    """
+    Fixture to load default resources into the database before a test.
+    Optionally loads sample data if needed (can be parameterized).
+    """
+    await seed_db(async_session, samples=False)
+
+
+@pytest.fixture(autouse=True)
+def clear_db_tables(db):
+    """Clear data from tables between tests.
+
+    If relationships are not set to cascade on delete they will fail with an
+    IntegrityError if there are relationsips present. This function stores tables
+    that fail with this error then recursively deletes until no more IntegrityErrors
+    are present.
+    """
+    yield
+
+    def delete_data(tables):
+        redo = []
+        for table in tables:
+            try:
+                db.execute(table.delete())
+            except IntegrityError:
+                redo.append(table)
+            finally:
+                db.commit()
+
+        if redo:
+            delete_data(redo)
+
+    db.commit()  # make sure all transactions are closed before starting deletes
+    delete_data(Base.metadata.sorted_tables)
+
+
+@pytest.fixture(autouse=True, scope="session")
+def monkeysession():
+    """
+    Monkeypatch at the session level instead of the function level.
+    Automatically undoes the monkeypatching when the session finishes.
+    """
+    mpatch = MonkeyPatch()
+    yield mpatch
+    mpatch.undo()
+
+
+@pytest.fixture(autouse=True, scope="session")
+def monkeypatch_requests(test_client, monkeysession) -> None:
+    """
+    Some places within the application, for example `fides.core.api`, use the `requests`
+    library to interact with the webserver. This fixture patches those `requests` calls
+    so that all of those tests instead interact with the test instance.
+    """
+    monkeysession.setattr(requests, "get", test_client.get)
+    monkeysession.setattr(requests, "post", test_client.post)
+    monkeysession.setattr(requests, "put", test_client.put)
+    monkeysession.setattr(requests, "patch", test_client.patch)
+    monkeysession.setattr(requests, "delete", test_client.delete)
