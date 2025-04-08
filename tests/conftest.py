@@ -438,7 +438,7 @@ def resources_dict():
             organization_fides_key="1",
             fides_key="user.custom",
             parent_key="user",
-            name="Custom Data Category",
+            name="User dot Custom Data Category",
             description="Custom Data Category",
         ),
         "dataset": models.Dataset(
