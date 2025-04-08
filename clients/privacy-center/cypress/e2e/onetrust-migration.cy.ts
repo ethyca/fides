@@ -95,7 +95,7 @@ describe("OneTrust to Fides consent migration", () => {
               .is.eql(true);
             expect(cookieKeyConsent.fides_meta)
               .property("consentMethod")
-              .is.eql(ConsentMethod.SAVE);
+              .is.eql(ConsentMethod.SCRIPT);
           });
         });
 
@@ -165,7 +165,7 @@ describe("OneTrust to Fides consent migration", () => {
           expect(cookieKeyConsent.consent).property(ANALYTICS_KEY).is.eql(true);
           expect(cookieKeyConsent.fides_meta)
             .property("consentMethod")
-            .is.eql(ConsentMethod.SAVE);
+            .is.eql(ConsentMethod.SCRIPT);
         });
       });
 
@@ -230,13 +230,17 @@ describe("OneTrust to Fides consent migration", () => {
           expect(cookieKeyConsent.consent)
             .property(ADVERTISING_KEY)
             .is.eql(false);
-          expect(cookieKeyConsent.consent).property(ESSENTIAL_KEY).is.eql(true);
+          // Edge case - we always match consent vals one-to-one from OT, even if it's "false" on a notice_only notice.
+          // However, the Fides UI won't let you re-save a "false" value for a notice_only notice.
+          expect(cookieKeyConsent.consent)
+            .property(ESSENTIAL_KEY)
+            .is.eql(false);
           expect(cookieKeyConsent.consent)
             .property(ANALYTICS_KEY)
             .is.eql(false);
           expect(cookieKeyConsent.fides_meta)
             .property("consentMethod")
-            .is.eql(ConsentMethod.SAVE);
+            .is.eql(ConsentMethod.SCRIPT);
         });
       });
 
@@ -246,7 +250,7 @@ describe("OneTrust to Fides consent migration", () => {
         .its("consent")
         .should("eql", {
           [ADVERTISING_KEY]: false,
-          [ESSENTIAL_KEY]: true,
+          [ESSENTIAL_KEY]: false,
           [ANALYTICS_KEY]: false,
         });
     });
