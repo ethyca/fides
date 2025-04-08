@@ -26,21 +26,24 @@ jobs:
           node-version: 20
 
       - name: Cache frontend dependencies and build
+        id: cache-frontend
         uses: actions/cache@v4
         with:
           path: |
             ~/.npm
-            clients/node_modules
-            clients/*/node_modules
-            clients/*/dist
-            clients/admin-ui/.next/cache
-            clients/privacy-center/.next/cache
+            ${{ github.workspace }}/clients/node_modules
+            ${{ github.workspace }}/clients/*/node_modules
+            ${{ github.workspace }}/clients/*/dist
+            ${{ github.workspace }}/clients/admin-ui/.next/cache
+            ${{ github.workspace }}/clients/privacy-center/.next/cache
           key: ${{ runner.os }}-nextjs-${{ hashFiles('clients/package-lock.json') }}-${{ hashFiles('clients/**/*.js', 'clients/**/*.jsx', 'clients/**/*.ts', 'clients/**/*.tsx') }}
           restore-keys: |
             ${{ runner.os }}-nextjs-${{ hashFiles('clients/package-lock.json') }}-
             ${{ runner.os }}-nextjs-
 
+      # Only install if cache miss
       - name: Install node modules
+        if: steps.cache-frontend.outputs.cache-hit != 'true'
         run: |
           cd clients
           npm install
@@ -49,6 +52,11 @@ jobs:
         run: |
           cd clients
           npm run prod-export-admin-ui
+
+      - name: Ensure Next.js cache directory exists
+        run: |
+          mkdir -p ${{ github.workspace }}/clients/admin-ui/.next/cache
+          mkdir -p ${{ github.workspace }}/clients/privacy-center/.next/cache
 
       - name: Install setuptools
         run: pip install setuptools -U

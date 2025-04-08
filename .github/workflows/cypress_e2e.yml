@@ -42,7 +42,7 @@ jobs:
         with:
           path: |
             ~/.npm
-            clients/cypress-e2e/node_modules
+            ${{ github.workspace }}/clients/cypress-e2e/node_modules
             ~/.cache/Cypress
           key: ${{ runner.os }}-cypress-${{ hashFiles('clients/cypress-e2e/package-lock.json') }}-${{ hashFiles('clients/cypress-e2e/**/*.js') }}
           restore-keys: |

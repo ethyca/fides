@@ -35,10 +35,10 @@ jobs:
         with:
           path: |
             ~/.npm
-            clients/node_modules
-            clients/*/node_modules
-            clients/*/dist
-            clients/admin-ui/.next/cache
+            ${{ github.workspace }}/clients/node_modules
+            ${{ github.workspace }}/clients/*/node_modules
+            ${{ github.workspace }}/clients/*/dist
+            ${{ github.workspace }}/clients/admin-ui/.next/cache
             ~/.cache/Cypress
           key: ${{ runner.os }}-nextjs-${{ hashFiles('clients/package-lock.json') }}-${{ hashFiles('clients/**/*.js', 'clients/**/*.jsx', 'clients/**/*.ts', 'clients/**/*.tsx') }}
           restore-keys: |
