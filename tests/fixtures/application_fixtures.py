@@ -2241,7 +2241,7 @@ def privacy_notice(db: Session) -> Generator:
         Asset(
             name="test_cookie_2",
             asset_type="Cookie",
-            data_uses=["analytics.performance"],  # a not matching data use
+            data_uses=["third_party_sharing.disclosure"],  # a not matching data use
         ),
         Asset(
             name="test_cookie_3",

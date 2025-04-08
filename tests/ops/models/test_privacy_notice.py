@@ -713,7 +713,7 @@ class TestPrivacyNoticeModel:
         nt.delete(db)
 
     def test_cookies_property(self, privacy_notice):
-        assert len(privacy_notice.cookies) == 1
+        assert len(privacy_notice.cookies) == 2
 
 
 class TestHierarchicalNotices:
