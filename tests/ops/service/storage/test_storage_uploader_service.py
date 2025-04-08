@@ -35,186 +35,38 @@ from fides.api.util.encryption.aes_gcm_encryption_scheme import (
 from fides.config import CONFIG
 
 
-@mock.patch("fides.api.service.storage.storage_uploader_service.upload_to_s3")
-def test_uploader_s3_success_secrets_auth(
-    mock_upload_to_s3: Mock, db: Session, privacy_request: PrivacyRequest
-) -> None:
-    request_id = privacy_request.id
+class TestS3Uploader:
+    @mock.patch("fides.api.service.storage.storage_uploader_service.upload_to_s3")
+    def test_uploader_s3_success_secrets_auth(
+        self,
+        mock_upload_to_s3: Mock,
+        db: Session,
+        privacy_request: PrivacyRequest,
+    ) -> None:
+        request_id = privacy_request.id
 
-    mock_config = {
-        "name": "test dest",
-        "key": "test_dest_key",
-        "type": StorageType.s3.value,
-        "details": {
-            "auth_method": AWSAuthMethod.SECRET_KEYS.value,
-            "bucket": "some-bucket",
-            "naming": FileNaming.request_id.value,
-            "max_retries": 10,
-        },
-        "secrets": {
-            StorageSecrets.AWS_ACCESS_KEY_ID.value: "1345234524",
-            StorageSecrets.AWS_SECRET_ACCESS_KEY.value: "23451345834789",
-        },
-    }
-    storage_config = StorageConfig.create(db, data=mock_config)
-
-    mock_upload_to_s3.return_value = (
-        f"https://some-bucket.s3.amazonaws.com/{request_id}.json"
-    )
-    upload_data = {"phone": "1231231234"}
-
-    upload(
-        db=db,
-        privacy_request=privacy_request,
-        data=upload_data,
-        storage_key=mock_config["key"],
-    )
-
-    mock_upload_to_s3.assert_called_with(
-        mock_config["secrets"],
-        upload_data,
-        mock_config["details"][StorageDetails.BUCKET.value],
-        f"{request_id}.json",
-        "json",
-        privacy_request,
-        None,
-        AWSAuthMethod.SECRET_KEYS.value,
-    )
-
-    storage_config.delete(db)
-
-
-def test_write_to_in_memory_buffer_handles_bson(privacy_request: PrivacyRequest):
-    OBJECT_ID_STR = "5b4a61b1326bd9777aa61c19"
-    data = {
-        "collection:users": [
-            {
-                "paymentCustomerIds": {"stripe": "cus_abc"},
-                "birthday": datetime(1997, 1, 8, 0, 0),
-                "geolocation": {
-                    "type": "Point",
-                    "coordinates": [-122.272782, 37.871666],
-                },
-                "firstName": "Test",
-                "number": "+12345678910",
-                "name": "Test User",
-                "email": "user@example.com",
-            }
-        ],
-        "mongo_collection:purchases": [
-            {
-                "user": {"_id": ObjectId(OBJECT_ID_STR)},
-                "geolocation": {
-                    "type": "Point",
-                    "coordinates": [-122.41210448012356, 37.773223876953125],
-                },
-                "customerName": None,
+        mock_config = {
+            "name": "test dest",
+            "key": "test_dest_key",
+            "type": StorageType.s3.value,
+            "details": {
+                "auth_method": AWSAuthMethod.SECRET_KEYS.value,
+                "bucket": "some-bucket",
+                "naming": FileNaming.request_id.value,
+                "max_retries": 10,
             },
-            {
-                "user": {"_id": ObjectId(OBJECT_ID_STR)},
-                "geolocation": {
-                    "type": "Point",
-                    "coordinates": [-122.4157451701343, 37.773162841796875],
-                },
-                "customerName": None,
+            "secrets": {
+                StorageSecrets.AWS_ACCESS_KEY_ID.value: "1345234524",
+                StorageSecrets.AWS_SECRET_ACCESS_KEY.value: "23451345834789",
             },
-        ],
-        "firebase_auth:user": [
-            {
-                "provider_data": [
-                    {"email": "user@example.com", "display_name": "Test User"}
-                ],
-                "display_name": "Test User",
-                "phone_number": "+12345678910",
-                "email": "user@example.com",
-            }
-        ],
-    }
-    # This will throw a `ValueError: Circular reference detected` if no ObjectId
-    # handler is available to the JSON encoder.
-    bytesio = write_to_in_memory_buffer(
-        resp_format="json",
-        data=data,
-        privacy_request=privacy_request,
-    )
-    assert bytesio is not None
-    data = json.loads(bytesio.read())
-    assert data["collection:users"][0]["birthday"] == "1997-01-08T00:00:00"
-    assert data["mongo_collection:purchases"][0]["user"]["_id"] == {
-        "$oid": OBJECT_ID_STR
-    }
+        }
+        storage_config = StorageConfig.create(db, data=mock_config)
 
+        mock_upload_to_s3.return_value = (
+            f"https://some-bucket.s3.amazonaws.com/{request_id}.json"
+        )
+        upload_data = {"phone": "1231231234"}
 
-@mock.patch("fides.api.service.storage.storage_uploader_service.upload_to_s3")
-def test_uploader_s3_success_automatic_auth(
-    mock_upload_to_s3: Mock, db: Session, privacy_request: PrivacyRequest
-) -> None:
-    request_id = privacy_request.id
-
-    mock_config = {
-        "name": "test dest",
-        "key": "test_dest_key",
-        "type": StorageType.s3.value,
-        "details": {
-            "auth_method": AWSAuthMethod.AUTOMATIC.value,
-            "bucket": "some-bucket",
-            "naming": FileNaming.request_id.value,
-            "max_retries": 10,
-        },
-    }
-    storage_config = StorageConfig.create(db, data=mock_config)
-
-    mock_upload_to_s3.return_value = (
-        f"https://some-bucket.s3.amazonaws.com/{request_id}.json"
-    )
-    upload_data = {"phone": "2018675309"}
-
-    upload(
-        db=db,
-        privacy_request=privacy_request,
-        data=upload_data,
-        storage_key=mock_config["key"],
-    )
-
-    mock_upload_to_s3.assert_called_with(
-        None,
-        upload_data,
-        mock_config["details"][StorageDetails.BUCKET.value],
-        f"{request_id}.json",
-        "json",
-        privacy_request,
-        None,
-        AWSAuthMethod.AUTOMATIC.value,
-    )
-
-    storage_config.delete(db)
-
-
-@mock.patch("fides.api.service.storage.storage_uploader_service.upload_to_s3")
-def test_uploader_s3_invalid_file_naming(
-    mock_upload_to_s3: Mock, db: Session, privacy_request: PrivacyRequest
-) -> None:
-    request_id = "214513r"
-
-    mock_config = {
-        "name": "test dest",
-        "key": "test_dest_key",
-        "type": StorageType.s3.value,
-        "details": {
-            "bucket": "some-bucket",
-            "naming": "something invalid",
-            "max_retries": 10,
-        },
-        "secrets": {
-            StorageSecrets.AWS_ACCESS_KEY_ID.value: "1345234524",
-            StorageSecrets.AWS_SECRET_ACCESS_KEY.value: "23451345834789",
-        },
-    }
-    sc = StorageConfig.create(db, data=mock_config)
-
-    upload_data = {"phone": "1231231234"}
-
-    with pytest.raises(ValueError):
         upload(
             db=db,
             privacy_request=privacy_request,
@@ -222,122 +74,549 @@ def test_uploader_s3_invalid_file_naming(
             storage_key=mock_config["key"],
         )
 
-    mock_upload_to_s3.assert_not_called()
-    sc.delete(db)
+        mock_upload_to_s3.assert_called_with(
+            mock_config["secrets"],
+            upload_data,
+            mock_config["details"][StorageDetails.BUCKET.value],
+            f"{request_id}.json",
+            "json",
+            privacy_request,
+            None,
+            AWSAuthMethod.SECRET_KEYS.value,
+        )
 
+        storage_config.delete(db)
 
-@mock.patch("fides.api.service.storage.storage_uploader_service.upload_to_s3")
-def test_uploader_no_config(
-    mock_upload_to_s3: Mock, db: Session, privacy_request: PrivacyRequest
-) -> None:
-    request_id = privacy_request.id
-    storage_key = "s3_key"
+    @mock.patch("fides.api.service.storage.storage_uploader_service.upload_to_s3")
+    def test_uploader_s3_success_automatic_auth(
+        self,
+        mock_upload_to_s3: Mock,
+        db: Session,
+        privacy_request: PrivacyRequest,
+    ) -> None:
+        request_id = privacy_request.id
 
-    upload_data = {"phone": "1231231234"}
+        mock_config = {
+            "name": "test dest",
+            "key": "test_dest_key",
+            "type": StorageType.s3.value,
+            "details": {
+                "auth_method": AWSAuthMethod.AUTOMATIC.value,
+                "bucket": "some-bucket",
+                "naming": FileNaming.request_id.value,
+                "max_retries": 10,
+            },
+        }
+        storage_config = StorageConfig.create(db, data=mock_config)
 
-    with pytest.raises(StorageUploadError):
+        mock_upload_to_s3.return_value = (
+            f"https://some-bucket.s3.amazonaws.com/{request_id}.json"
+        )
+        upload_data = {"phone": "2018675309"}
+
         upload(
             db=db,
             privacy_request=privacy_request,
             data=upload_data,
-            storage_key=storage_key,
+            storage_key=mock_config["key"],
         )
 
-    mock_upload_to_s3.assert_not_called()
+        mock_upload_to_s3.assert_called_with(
+            None,
+            upload_data,
+            mock_config["details"][StorageDetails.BUCKET.value],
+            f"{request_id}.json",
+            "json",
+            privacy_request,
+            None,
+            AWSAuthMethod.AUTOMATIC.value,
+        )
+
+        storage_config.delete(db)
+
+    @mock.patch("fides.api.service.storage.storage_uploader_service.upload_to_s3")
+    def test_uploader_s3_invalid_file_naming(
+        self,
+        mock_upload_to_s3: Mock,
+        db: Session,
+        privacy_request: PrivacyRequest,
+    ) -> None:
+        mock_config = {
+            "name": "test dest",
+            "key": "test_dest_key",
+            "type": StorageType.s3.value,
+            "details": {
+                "bucket": "some-bucket",
+                "naming": "something invalid",
+                "max_retries": 10,
+            },
+            "secrets": {
+                StorageSecrets.AWS_ACCESS_KEY_ID.value: "1345234524",
+                StorageSecrets.AWS_SECRET_ACCESS_KEY.value: "23451345834789",
+            },
+        }
+        sc = StorageConfig.create(db, data=mock_config)
+
+        upload_data = {"phone": "1231231234"}
+
+        with pytest.raises(ValueError):
+            upload(
+                db=db,
+                privacy_request=privacy_request,
+                data=upload_data,
+                storage_key=mock_config["key"],
+            )
+
+        mock_upload_to_s3.assert_not_called()
+        sc.delete(db)
+
+    @mock.patch("fides.api.service.storage.storage_uploader_service.upload_to_s3")
+    def test_uploader_no_config(
+        self,
+        mock_upload_to_s3: Mock,
+        db: Session,
+        privacy_request: PrivacyRequest,
+    ) -> None:
+        storage_key = "s3_key"
+
+        upload_data = {"phone": "1231231234"}
+
+        with pytest.raises(StorageUploadError):
+            upload(
+                db=db,
+                privacy_request=privacy_request,
+                data=upload_data,
+                storage_key=storage_key,
+            )
+
+        mock_upload_to_s3.assert_not_called()
 
 
-def test_uploader_local_success(db: Session, privacy_request: PrivacyRequest) -> None:
-    request_id = privacy_request.id
+class TestGCSUploader:
+    """Test suite for Google Cloud Storage upload functionality."""
 
-    mock_config = {
-        "name": "test dest",
-        "key": "test_dest_local",
-        "type": StorageType.local.value,
-        "details": {
-            StorageDetails.NAMING.value: FileNaming.request_id.value,
-        },
-        "secrets": None,
-    }
-    config = StorageConfig.create(db, data=mock_config)
+    @mock.patch("fides.api.service.storage.storage_uploader_service.upload_to_gcs")
+    def test_uploader_gcs_success_service_account_keys_auth(
+        self,
+        mock_upload_to_gcs: Mock,
+        db: Session,
+        privacy_request: PrivacyRequest,
+    ) -> None:
+        """Test successful GCS upload using service account keys authentication."""
+        mock_config = {
+            "name": "test gcs dest",
+            "key": "test_dest_key",
+            "type": StorageType.gcs.value,
+            "details": {
+                "auth_method": "service_account_keys",
+                "bucket": "some-bucket",
+                "naming": FileNaming.request_id.value,
+                "max_retries": 10,
+            },
+            "secrets": {
+                "type": "service_account",
+                "project_id": "test-project-123",
+                "private_key_id": "test-key-id-456",
+                "private_key": (
+                    "-----BEGIN PRIVATE KEY-----\n"
+                    "MIItest\n"
+                    "-----END PRIVATE KEY-----\n"
+                ),
+                "client_email": "test-service@test-project-123.iam.gserviceaccount.com",
+                "client_id": "123456789",
+                "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+                "token_uri": "https://oauth2.googleapis.com/token",
+                "auth_provider_x509_cert_url": (
+                    "https://www.googleapis.com/oauth2/v1/certs"
+                ),
+                "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/test-service%40test-project-123.iam.gserviceaccount.com",
+            },
+            "format": ResponseFormat.json.value,
+        }
+        storage_config = StorageConfig.create(db, data=mock_config)
 
-    upload_data = {
-        "mysql.users": {"name": "Hannah Testing"},
-        "mongo.orders": {
-            "orderId": "23456",
-            "phone": "234523454",
-            "address": "123 mains st",
-            "birthday": datetime(1995, 1, 1),
-            "city": "Plainville",
-        },
-    }
+        mock_upload_to_gcs.return_value = (
+            f"https://storage.googleapis.com/some-bucket/{privacy_request.id}.json"
+        )
+        upload_data = {"phone": "1231231234"}
 
-    resulting_uploaded_data = {
-        "mysql.users": {"name": "Hannah Testing"},
-        "mongo.orders": {
-            "orderId": "23456",
-            "phone": "234523454",
-            "address": "123 mains st",
-            "birthday": "1995-01-01T00:00:00",
-            "city": "Plainville",
-        },
-    }
+        upload(
+            db=db,
+            privacy_request=privacy_request,
+            data=upload_data,
+            storage_key=mock_config["key"],
+        )
 
-    upload(
-        db=db,
-        privacy_request=privacy_request,
-        data=upload_data,
-        storage_key=mock_config["key"],
-    )
-    with open(f"{LOCAL_FIDES_UPLOAD_DIRECTORY}/{request_id}.json") as f:
-        d = json.load(f)
-        assert d == resulting_uploaded_data
-    os.remove(f"{LOCAL_FIDES_UPLOAD_DIRECTORY}/{request_id}.json")
-    config.delete(db)
+        mock_upload_to_gcs.assert_called_with(
+            mock_config["secrets"],
+            upload_data,
+            "some-bucket",
+            f"{privacy_request.id}.json",
+            "json",
+            privacy_request,
+            "service_account_keys",
+        )
+
+        storage_config.delete(db)
+
+    @mock.patch("fides.api.service.storage.storage_uploader_service.upload_to_gcs")
+    def test_uploader_gcs_success_adc_auth(
+        self,
+        mock_upload_to_gcs: Mock,
+        db: Session,
+        privacy_request: PrivacyRequest,
+    ) -> None:
+        """Test successful GCS upload using adc authentication."""
+        mock_config = {
+            "name": "test gcs dest",
+            "key": "test_dest_key",
+            "type": StorageType.gcs.value,
+            "details": {
+                "auth_method": "adc",
+                "bucket": "some-bucket",
+                "naming": FileNaming.request_id.value,
+                "max_retries": 10,
+            },
+            "format": ResponseFormat.json.value,
+        }
+        storage_config = StorageConfig.create(db, data=mock_config)
+
+        mock_upload_to_gcs.return_value = (
+            f"https://storage.googleapis.com/some-bucket/{privacy_request.id}.json"
+        )
+        upload_data = {"phone": "2018675309"}
+
+        upload(
+            db=db,
+            privacy_request=privacy_request,
+            data=upload_data,
+            storage_key=mock_config["key"],
+        )
+
+        mock_upload_to_gcs.assert_called_with(
+            None,
+            upload_data,
+            "some-bucket",
+            f"{privacy_request.id}.json",
+            "json",
+            privacy_request,
+            "adc",
+        )
+
+        storage_config.delete(db)
+
+    @mock.patch("fides.api.service.storage.storage_uploader_service.upload_to_gcs")
+    def test_uploader_gcs_invalid_file_naming(
+        self,
+        mock_upload_to_gcs: Mock,
+        db: Session,
+        privacy_request: PrivacyRequest,
+    ) -> None:
+        """Test error handling for invalid file naming configuration."""
+        mock_config = {
+            "name": "test gcs dest",
+            "key": "test_dest_key",
+            "type": StorageType.gcs.value,
+            "details": {
+                "auth_method": "adc",
+                "bucket": "some-bucket",
+                "naming": "something invalid",
+            },
+            "format": ResponseFormat.json.value,
+        }
+        sc = StorageConfig.create(db, data=mock_config)
+
+        upload_data = {"phone": "1231231234"}
+
+        with pytest.raises(ValueError):
+            upload(
+                db=db,
+                privacy_request=privacy_request,
+                data=upload_data,
+                storage_key=mock_config["key"],
+            )
+
+        mock_upload_to_gcs.assert_not_called()
+        sc.delete(db)
+
+    @mock.patch("fides.api.service.storage.storage_uploader_service.upload_to_gcs")
+    def test_uploader_gcs_with_csv_format(
+        self,
+        mock_upload_to_gcs: Mock,
+        db: Session,
+        privacy_request: PrivacyRequest,
+    ) -> None:
+        """Test GCS upload with CSV format response."""
+        mock_config = {
+            "name": "test gcs dest",
+            "key": "test_dest_key",
+            "type": StorageType.gcs.value,
+            "details": {
+                "auth_method": "adc",
+                "bucket": "some-bucket",
+                "naming": FileNaming.request_id.value,
+            },
+            "format": ResponseFormat.csv.value,
+        }
+        storage_config = StorageConfig.create(db, data=mock_config)
+
+        mock_upload_to_gcs.return_value = (
+            f"https://storage.googleapis.com/some-bucket/{privacy_request.id}.zip"
+        )
+        upload_data = {"phone": "2018675309"}
+
+        upload(
+            db=db,
+            privacy_request=privacy_request,
+            data=upload_data,
+            storage_key=mock_config["key"],
+        )
+
+        mock_upload_to_gcs.assert_called_with(
+            None,
+            upload_data,
+            "some-bucket",
+            f"{privacy_request.id}.zip",
+            "csv",
+            privacy_request,
+            "adc",
+        )
+
+        storage_config.delete(db)
+
+    @mock.patch("fides.api.service.storage.storage_uploader_service.upload_to_gcs")
+    def test_uploader_gcs_with_html_format(
+        self,
+        mock_upload_to_gcs: Mock,
+        db: Session,
+        privacy_request: PrivacyRequest,
+    ) -> None:
+        """Test GCS upload with HTML format response."""
+        mock_config = {
+            "name": "test gcs dest",
+            "key": "test_dest_key",
+            "type": StorageType.gcs.value,
+            "details": {
+                "auth_method": "adc",
+                "bucket": "some-bucket",
+                "naming": FileNaming.request_id.value,
+            },
+            "format": ResponseFormat.html.value,
+        }
+        storage_config = StorageConfig.create(db, data=mock_config)
+
+        mock_upload_to_gcs.return_value = (
+            f"https://storage.googleapis.com/some-bucket/{privacy_request.id}.zip"
+        )
+        upload_data = {"phone": "2018675309"}
+
+        upload(
+            db=db,
+            privacy_request=privacy_request,
+            data=upload_data,
+            storage_key=mock_config["key"],
+        )
+
+        mock_upload_to_gcs.assert_called_with(
+            None,
+            upload_data,
+            "some-bucket",
+            f"{privacy_request.id}.zip",
+            "html",
+            privacy_request,
+            "adc",
+        )
+
+        storage_config.delete(db)
+
+    @mock.patch("fides.api.service.storage.storage_uploader_service.upload_to_gcs")
+    def test_uploader_gcs_missing_bucket(
+        self,
+        mock_upload_to_gcs: Mock,
+        db: Session,
+        privacy_request: PrivacyRequest,
+    ) -> None:
+        """Test error handling for missing bucket configuration."""
+        mock_config = {
+            "name": "test gcs dest",
+            "key": "test_dest_key",
+            "type": StorageType.gcs.value,
+            "details": {
+                "auth_method": "adc",
+                "naming": FileNaming.request_id.value,
+            },
+            "format": ResponseFormat.json.value,
+        }
+        sc = StorageConfig.create(db, data=mock_config)
+
+        upload_data = {"phone": "1231231234"}
+
+        with pytest.raises(KeyError):
+            upload(
+                db=db,
+                privacy_request=privacy_request,
+                data=upload_data,
+                storage_key=mock_config["key"],
+            )
+
+        mock_upload_to_gcs.assert_not_called()
+        sc.delete(db)
 
 
-def test_uploader_local_dsr_package(
-    db: Session, privacy_request: PrivacyRequest
-) -> None:
-    mock_config = {
-        "name": "test dest",
-        "key": "test_dest_local",
-        "type": StorageType.local.value,
-        "details": {
-            StorageDetails.NAMING.value: FileNaming.request_id.value,
-        },
-        "secrets": None,
-        "format": ResponseFormat.html.value,
-    }
-    config = StorageConfig.create(db, data=mock_config)
+class TestLocalUploader:
+    def test_uploader_local_success(
+        self, db: Session, privacy_request: PrivacyRequest
+    ) -> None:
+        request_id = privacy_request.id
 
-    upload_data = {
-        "mysql:users": [{"name": "Hannah Testing"}],
-        "mongo:orders": [
-            {
+        mock_config = {
+            "name": "test dest",
+            "key": "test_dest_local",
+            "type": StorageType.local.value,
+            "details": {
+                StorageDetails.NAMING.value: FileNaming.request_id.value,
+            },
+            "secrets": None,
+        }
+        config = StorageConfig.create(db, data=mock_config)
+
+        upload_data = {
+            "mysql.users": {"name": "Hannah Testing"},
+            "mongo.orders": {
                 "orderId": "23456",
                 "phone": "234523454",
                 "address": "123 mains st",
                 "birthday": datetime(1995, 1, 1),
                 "city": "Plainville",
-            }
-        ],
-    }
+            },
+        }
 
-    upload(
-        db=db,
-        privacy_request=privacy_request,
-        data=upload_data,
-        storage_key=mock_config["key"],
-    )
+        resulting_uploaded_data = {
+            "mysql.users": {"name": "Hannah Testing"},
+            "mongo.orders": {
+                "orderId": "23456",
+                "phone": "234523454",
+                "address": "123 mains st",
+                "birthday": "1995-01-01T00:00:00",
+                "city": "Plainville",
+            },
+        }
 
-    dsr_report_path = f"{LOCAL_FIDES_UPLOAD_DIRECTORY}/{privacy_request.id}.zip"
-    assert os.path.isfile(dsr_report_path)
-    os.remove(dsr_report_path)
-    config.delete(db)
+        upload(
+            db=db,
+            privacy_request=privacy_request,
+            data=upload_data,
+            storage_key=mock_config["key"],
+        )
+        with open(f"{LOCAL_FIDES_UPLOAD_DIRECTORY}/{request_id}.json") as f:
+            d = json.load(f)
+            assert d == resulting_uploaded_data
+        os.remove(f"{LOCAL_FIDES_UPLOAD_DIRECTORY}/{request_id}.json")
+        config.delete(db)
+
+    def test_uploader_local_dsr_package(
+        self, db: Session, privacy_request: PrivacyRequest
+    ) -> None:
+        mock_config = {
+            "name": "test dest",
+            "key": "test_dest_local",
+            "type": StorageType.local.value,
+            "details": {
+                StorageDetails.NAMING.value: FileNaming.request_id.value,
+            },
+            "secrets": None,
+            "format": ResponseFormat.html.value,
+        }
+        config = StorageConfig.create(db, data=mock_config)
+
+        upload_data = {
+            "mysql:users": [{"name": "Hannah Testing"}],
+            "mongo:orders": [
+                {
+                    "orderId": "23456",
+                    "phone": "234523454",
+                    "address": "123 mains st",
+                    "birthday": datetime(1995, 1, 1),
+                    "city": "Plainville",
+                }
+            ],
+        }
+
+        upload(
+            db=db,
+            privacy_request=privacy_request,
+            data=upload_data,
+            storage_key=mock_config["key"],
+        )
+
+        dsr_report_path = f"{LOCAL_FIDES_UPLOAD_DIRECTORY}/{privacy_request.id}.zip"
+        assert os.path.isfile(dsr_report_path)
+        os.remove(dsr_report_path)
+        config.delete(db)
 
 
 class TestWriteToInMemoryBuffer:
     key = "test--encryption"
+
+    def test_handles_bson(self, privacy_request: PrivacyRequest):
+        OBJECT_ID_STR = "5b4a61b1326bd9777aa61c19"
+        data = {
+            "collection:users": [
+                {
+                    "paymentCustomerIds": {"stripe": "cus_abc"},
+                    "birthday": datetime(1997, 1, 8, 0, 0),
+                    "geolocation": {
+                        "type": "Point",
+                        "coordinates": [-122.272782, 37.871666],
+                    },
+                    "firstName": "Test",
+                    "number": "+12345678910",
+                    "name": "Test User",
+                    "email": "user@example.com",
+                }
+            ],
+            "mongo_collection:purchases": [
+                {
+                    "user": {"_id": ObjectId(OBJECT_ID_STR)},
+                    "geolocation": {
+                        "type": "Point",
+                        "coordinates": [-122.41210448012356, 37.773223876953125],
+                    },
+                    "customerName": None,
+                },
+                {
+                    "user": {"_id": ObjectId(OBJECT_ID_STR)},
+                    "geolocation": {
+                        "type": "Point",
+                        "coordinates": [-122.4157451701343, 37.773162841796875],
+                    },
+                    "customerName": None,
+                },
+            ],
+            "firebase_auth:user": [
+                {
+                    "provider_data": [
+                        {"email": "user@example.com", "display_name": "Test User"}
+                    ],
+                    "display_name": "Test User",
+                    "phone_number": "+12345678910",
+                    "email": "user@example.com",
+                }
+            ],
+        }
+        # This will throw a `ValueError: Circular reference detected` if no ObjectId
+        # handler is available to the JSON encoder.
+        bytesio = write_to_in_memory_buffer(
+            resp_format="json",
+            data=data,
+            privacy_request=privacy_request,
+        )
+        assert bytesio is not None
+        data = json.loads(bytesio.read())
+        assert data["collection:users"][0]["birthday"] == "1997-01-08T00:00:00"
+        assert data["mongo_collection:purchases"][0]["user"]["_id"] == {
+            "$oid": OBJECT_ID_STR
+        }
 
     @pytest.fixture(scope="function")
     def privacy_request_with_encryption_keys(self, privacy_request) -> Generator:
