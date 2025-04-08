@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, ValidationError, model_validator
 from sqlalchemy import Column
@@ -8,9 +8,12 @@ from sqlalchemy import ForeignKey, Index, Integer, String, insert, select, updat
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.ext.declarative import declared_attr
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, relationship
 
 from fides.api.db.base_class import Base
+
+if TYPE_CHECKING:
+    from fides.api.models.privacy_experience import PrivacyExperienceConfig
 
 
 class TCFRestrictionType(str, Enum):
@@ -81,6 +84,12 @@ class TCFConfiguration(Base):
         return "tcf_configuration"
 
     name = Column(String, nullable=False, index=True, unique=True)
+
+    privacy_experience_configs = relationship(
+        "PrivacyExperienceConfig",
+        back_populates="tcf_configuration",
+        lazy="selectin",
+    )
 
 
 class TCFPublisherRestriction(Base):

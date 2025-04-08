@@ -13,6 +13,7 @@ from fides.api.models.privacy_experience import (
     RejectAllMechanism,
     upsert_privacy_experiences_after_config_update,
 )
+from fides.api.models.tcf_publisher_restrictions import TCFConfiguration
 from fides.api.schemas.language import SupportedLanguage
 
 
@@ -652,6 +653,30 @@ class TestExperienceConfig:
             db.query(PrivacyExperience).filter(PrivacyExperience.id == exp_id).first()
             is None
         )
+
+    def test_update_privacy_experience_config_update_tcf_configuration(
+        self, db, experience_config_tcf_overlay
+    ):
+        tcf_configuration = TCFConfiguration.create(
+            db=db,
+            data={
+                "name": "My TCF Configuration",
+            },
+        )
+
+        assert experience_config_tcf_overlay.tcf_configuration is None
+
+        experience_config_tcf_overlay.tcf_configuration = tcf_configuration
+        experience_config_tcf_overlay.save(db)
+        db.refresh(experience_config_tcf_overlay)
+        assert experience_config_tcf_overlay.tcf_configuration == tcf_configuration
+
+        # Delete the TCF configuration
+        tcf_configuration.delete(db)
+
+        # Refresh the experience config to ensure the TCF configuration is set to None
+        db.refresh(experience_config_tcf_overlay)
+        assert experience_config_tcf_overlay.tcf_configuration is None
 
 
 class TestPrivacyExperience:

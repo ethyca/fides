@@ -569,6 +569,11 @@ class PrivacyExperienceConfigHistory(
         nullable=True,
     )
 
+    tcf_configuration: RelationshipProperty[Optional[TCFConfiguration]] = relationship(
+        "TCFConfiguration",
+        lazy="selectin",
+    )
+
     version = Column(Float, nullable=False, default=1.0)
 
 
@@ -631,6 +636,7 @@ class PrivacyExperience(Base):
     tcf_special_features: List = []
     tcf_system_consents: List = []
     tcf_system_legitimate_interests: List = []
+    tcf_publisher_restrictions: List = []
     gvl: Optional[Dict] = {}
     # TCF Developer-Friendly Meta added at runtime as the result of build_tc_data_for_mobile
     meta: Dict = {}
