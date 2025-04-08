@@ -353,7 +353,7 @@ export const stubDatamap = () => {
 };
 
 export const stubLocations = () => {
-  cy.intercept("GET", "/api/v1/plus/locations", {
+  cy.intercept("GET", "/api/v1/plus/locations*", {
     fixture: "locations/list.json",
   }).as("getLocations");
   cy.intercept("PATCH", "/api/v1/plus/locations", {
@@ -507,6 +507,9 @@ export const stubExperienceConfig = () => {
   cy.intercept("GET", "/api/v1/experience-config/available_translations", {
     fixture: "privacy-notices/available-translations.json",
   }).as("getAvailableTranslations");
+  cy.intercept("POST", "/api/v1/experience-config", {
+    fixture: "privacy-experiences/experienceConfig.json",
+  }).as("postExperience");
   stubPlus(true);
 };
 
@@ -566,6 +569,15 @@ export const stubSystemAssets = () => {
   cy.intercept("GET", "/api/v1/plus/system-assets/*", {
     fixture: "systems/system_assets",
   }).as("getSystemAssets");
+  cy.intercept("POST", "/api/v1/plus/system-assets/*/assets", {
+    response: 200,
+  }).as("addSystemAsset");
+  cy.intercept("PUT", "/api/v1/plus/system-assets/*/assets*", {
+    response: 200,
+  }).as("updateSystemAssets");
+  cy.intercept("DELETE", "/api/v1/plus/system-assets/*/assets*", {
+    response: 200,
+  }).as("deleteSystemAssets");
 };
 
 export const stubDataCatalog = () => {

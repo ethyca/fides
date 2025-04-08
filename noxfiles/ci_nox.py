@@ -14,7 +14,7 @@ from constants_nox import (
     START_APP,
     WITH_TEST_CONFIG,
 )
-from setup_tests_nox import pytest_ctl, pytest_lib, pytest_nox, pytest_ops
+from setup_tests_nox import pytest_api, pytest_ctl, pytest_lib, pytest_nox, pytest_ops
 from utils_nox import install_requirements
 
 
@@ -287,6 +287,7 @@ TEST_GROUPS = [
     nox.param("ops-integration", id="ops-integration"),
     nox.param("ops-external-datastores", id="ops-external-datastores"),
     nox.param("ops-saas", id="ops-saas"),
+    nox.param("api", id="api"),
     nox.param("lib", id="lib"),
     nox.param("nox", id="nox"),
 ]
@@ -302,6 +303,7 @@ TEST_MATRIX: Dict[str, Callable] = {
     "ops-integration": partial(pytest_ops, mark="integration"),
     "ops-external-datastores": partial(pytest_ops, mark="external_datastores"),
     "ops-saas": partial(pytest_ops, mark="saas"),
+    "api": pytest_api,
     "lib": pytest_lib,
     "nox": pytest_nox,
 }

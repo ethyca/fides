@@ -35,7 +35,7 @@ export const vendorGvlEntry = (
   vendorId: TCFVendorRelationships["id"],
   gvl: GVLJson | undefined,
 ) => {
-  if (!gvl) {
+  if (!gvl?.vendors) {
     return undefined;
   }
   const { source, id } = decodeVendorId(vendorId);

@@ -22,6 +22,7 @@ import {
 } from "../../lib/consent-utils";
 import { resolveConsentValue } from "../../lib/consent-value";
 import {
+  consentCookieObjHasSomeConsentSet,
   getFidesConsentCookie,
   updateCookieFromNoticePreferences,
 } from "../../lib/cookie";
@@ -44,13 +45,13 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
   experience,
   fidesRegionString,
   cookie,
-  savedConsent,
   propertyId,
 }) => {
   const { i18n, currentLocale, setCurrentLocale } = useI18n();
+  const parsedCookie: FidesCookie | undefined = getFidesConsentCookie();
+  const savedConsent = window.Fides.saved_consent;
 
   // TODO (PROD-1792): restore useMemo here but ensure that saved changes are respected
-  const parsedCookie: FidesCookie | undefined = getFidesConsentCookie();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const initialEnabledNoticeKeys = (consent?: NoticeConsent) => {
     if (experience.privacy_notices) {
@@ -58,7 +59,6 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
       return experience.privacy_notices.map((notice) => {
         const val = resolveConsentValue(
           notice,
-          getConsentContext(),
           consent || savedConsent || parsedCookie?.consent,
         );
         return val ? (notice.notice_key as PrivacyNotice["notice_key"]) : "";
@@ -94,22 +94,35 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
    *
    * Each "item" includes both:
    * 1) notice: The PrivacyNotice itself with it's properties like keys,
-   *    preferences, etc.
+   *    preferences, etc. We also check if the notice needs to be disabled
+   *    based on the fidesDisabledNotices option or if the notice is a
+   *    notice-only notice.
    * 2) bestTranslation: The "best" translation for the notice based on the
    *    current locale
    *
-   * We memoize these together to avoid repeatedly figuring out the "best"
-   * translation on every render, since it will only change if the overall
-   * locale changes!
+   * We memoize these together to avoid repeatedly figuring out disabled status and the "best"
+   * translation on every render.
    */
   const privacyNoticeItems: PrivacyNoticeItem[] = useMemo(
-    () =>
-      (experience.privacy_notices || []).map((notice) => {
+    () => {
+      const privacyNotices = experience.privacy_notices ?? [];
+      return privacyNotices.map((notice) => {
+        const disabled =
+          notice.consent_mechanism === ConsentMechanism.NOTICE_ONLY ||
+          (options.fidesDisabledNotices?.includes(notice.notice_key) ??
+            false) ||
+          notice.disabled;
         const bestTranslation = selectBestNoticeTranslation(i18n, notice);
-        return { notice, bestTranslation };
-      }),
+        return { notice: { ...notice, disabled }, bestTranslation };
+      });
+    },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [experience.privacy_notices, i18n, currentLocale],
+    [
+      experience.privacy_notices,
+      i18n,
+      currentLocale,
+      options.fidesDisabledNotices,
+    ],
   );
 
   const [draftEnabledNoticeKeys, setDraftEnabledNoticeKeys] = useState<
@@ -142,7 +155,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
       description: item.bestTranslation?.description,
       checked,
       consentMechanism: item.notice.consent_mechanism,
-      disabled: item.notice.consent_mechanism === ConsentMechanism.NOTICE_ONLY,
+      disabled: item.notice.disabled,
       gpcStatus,
     };
   });
@@ -208,10 +221,17 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
     (wasAutomated?: boolean) => {
       handleUpdatePreferences(
         wasAutomated ? ConsentMethod.SCRIPT : ConsentMethod.ACCEPT,
-        privacyNoticeItems.map((n) => n.notice.notice_key),
+        privacyNoticeItems
+          .filter((n) => {
+            return (
+              !n.notice.disabled ||
+              draftEnabledNoticeKeys.includes(n.notice.notice_key)
+            );
+          })
+          .map((n) => n.notice.notice_key),
       );
     },
-    [handleUpdatePreferences, privacyNoticeItems],
+    [draftEnabledNoticeKeys, handleUpdatePreferences, privacyNoticeItems],
   );
 
   const handleRejectAll = useCallback(
@@ -219,13 +239,17 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
       handleUpdatePreferences(
         wasAutomated ? ConsentMethod.SCRIPT : ConsentMethod.REJECT,
         privacyNoticeItems
-          .filter(
-            (n) => n.notice.consent_mechanism === ConsentMechanism.NOTICE_ONLY,
-          )
+          .filter((n) => {
+            return (
+              n.notice.consent_mechanism === ConsentMechanism.NOTICE_ONLY ||
+              (n.notice.disabled &&
+                draftEnabledNoticeKeys.includes(n.notice.notice_key))
+            );
+          })
           .map((n) => n.notice.notice_key),
       );
     },
-    [handleUpdatePreferences, privacyNoticeItems],
+    [draftEnabledNoticeKeys, handleUpdatePreferences, privacyNoticeItems],
   );
 
   useEffect(() => {
@@ -258,8 +282,17 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
   }, [cookie, options.debug]);
 
   const handleDismiss = useCallback(() => {
-    handleUpdatePreferences(ConsentMethod.DISMISS, initialEnabledNoticeKeys());
-  }, [handleUpdatePreferences, initialEnabledNoticeKeys]);
+    if (!consentCookieObjHasSomeConsentSet(parsedCookie?.consent)) {
+      handleUpdatePreferences(
+        ConsentMethod.DISMISS,
+        initialEnabledNoticeKeys(),
+      );
+    }
+  }, [
+    handleUpdatePreferences,
+    initialEnabledNoticeKeys,
+    parsedCookie?.consent,
+  ]);
 
   const experienceConfig = experience.experience_config;
   if (!experienceConfig) {

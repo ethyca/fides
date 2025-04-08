@@ -1,4 +1,5 @@
-@import "../palette/palette.module.scss";
+@use "sass:map";
+@use "../palette/palette.module.scss" as palette;
 
 .tag {
   display: inline-flex;
@@ -20,13 +21,13 @@
   &:focus {
     :global(.ant-tag) {
       // !important is necessary because our custom component adds the background style to the tag inline giving it a higher specificity than our scss style here
-      background: map-get($colors, "neutral-50") !important;
+      background: map.get(palette.$colors, "neutral-50") !important;
     }
   }
   &:focus-visible {
     outline: none;
     :global(.ant-tag) {
-      border: 1px solid map-get($colors, "minos");
+      border: 1px solid map.get(palette.$colors, "minos");
     }
   }
 }
@@ -34,7 +35,7 @@
 .closeButton {
   border-radius: var(--ant-border-radius-xs);
   &:focus-visible {
-    outline: 1px solid map-get($colors, "minos");
+    outline: 1px solid map.get(palette.$colors, "minos");
     outline-offset: 2px;
   }
 }

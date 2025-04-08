@@ -1,3 +1,4 @@
+/* eslint-disable no-underscore-dangle */
 /**
  * FidesJS: JavaScript SDK for Fides (https://github.com/ethyca/fides)
  *
@@ -11,16 +12,17 @@ import type { TCData } from "@iabtechlabtcf/cmpapi";
 import { TCString } from "@iabtechlabtcf/core";
 
 import {
+  decodeNoticeConsentString,
   defaultShowModal,
+  encodeNoticeConsentString,
   FidesCookie,
-  isPrivacyExperience,
-  shouldResurfaceConsent,
+  shouldResurfaceBanner,
 } from "./fides";
 import { blueconic } from "./integrations/blueconic";
 import { gtm } from "./integrations/gtm";
 import { meta } from "./integrations/meta";
 import { shopify } from "./integrations/shopify";
-import { isConsentOverride, raise } from "./lib/common-utils";
+import { raise } from "./lib/common-utils";
 import {
   FidesConfig,
   FidesExperienceTranslationOverrides,
@@ -57,7 +59,7 @@ import { customGetConsentPreferences } from "./services/external/preferences";
 declare global {
   interface Window {
     Fides: FidesGlobal;
-    fides_overrides: FidesOptions;
+    fides_overrides: Partial<FidesOptions>;
     __tcfapiLocator?: Window;
     __tcfapi?: (
       command: string,
@@ -134,6 +136,7 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
   makeStub({
     gdprAppliesDefault: optionsOverrides?.fidesTcfGdprApplies,
   });
+
   const experienceTranslationOverrides: Partial<FidesExperienceTranslationOverrides> =
     getOverridesByType<Partial<FidesExperienceTranslationOverrides>>(
       OverrideType.EXPERIENCE_TRANSLATION,
@@ -157,7 +160,6 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
   };
   this.cookie = {
     ...getInitialCookie(config),
-    ...overrides.consentPrefsOverrides?.consent,
   };
 
   // Keep a copy of saved consent from the cookie, since we update the "cookie"
@@ -200,6 +202,7 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
     updateWindowFides(this);
     dispatchFidesEvent("FidesInitialized", this.cookie, config.options.debug, {
       shouldShowExperience: this.shouldShowExperience(),
+      firstInit: true,
     });
   }
   this.experience = initialFides?.experience ?? config.experience;
@@ -218,6 +221,7 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
   // Dispatch the "FidesInitialized" event to update listeners with the initial state.
   dispatchFidesEvent("FidesInitialized", this.cookie, config.options.debug, {
     shouldShowExperience: this.shouldShowExperience(),
+    firstInit: false,
   });
 }
 
@@ -256,6 +260,7 @@ const _Fides: FidesGlobal = {
     fidesClearCookie: false,
     showFidesBrandLink: false,
     fidesConsentOverride: null,
+    fidesDisabledNotices: null,
   },
   fides_meta: {},
   identity: {},
@@ -274,27 +279,19 @@ const _Fides: FidesGlobal = {
   initialized: false,
   onFidesEvent,
   shouldShowExperience() {
-    if (!isPrivacyExperience(this.experience)) {
-      // Nothing to show if there's no experience
-      return false;
-    }
-    if (isConsentOverride(this.options)) {
-      // If consent preference was automatic, we should not show the experience
-      return false;
-    }
-    if (!this.cookie) {
-      throw new Error("Should have a cookie");
-    }
-    return shouldResurfaceConsent(
+    return shouldResurfaceBanner(
       this.experience,
       this.cookie,
       this.saved_consent,
+      this.options,
     );
   },
   meta,
   shopify,
   showModal: defaultShowModal,
   getModalLinkLabel: () => DEFAULT_MODAL_LINK_LABEL,
+  encodeNoticeConsentString,
+  decodeNoticeConsentString,
 };
 
 if (typeof window !== "undefined") {

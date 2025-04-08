@@ -1,4 +1,4 @@
-import { Icon } from "@chakra-ui/icon";
+import { Icon } from "@chakra-ui/icons";
 
 const LinkIcon = (props: any) => (
   <Icon viewBox="0 0 12 8" {...props}>

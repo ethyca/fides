@@ -1,22 +1,19 @@
 import { format, parseISO } from "date-fns";
-import { AntButton, AntFlex, Box, Text } from "fidesui";
+import { AntButton as Button, AntFlex as Flex, Text } from "fidesui";
 import { Form, Formik } from "formik";
 import { useRouter } from "next/router";
 import * as Yup from "yup";
 
-import { useAppSelector } from "~/app/hooks";
 import { ControlledSelect } from "~/features/common/form/ControlledSelect";
 import {
   CustomDateTimeInput,
   CustomTextInput,
 } from "~/features/common/form/inputs";
 import { enumToOptions } from "~/features/common/helpers";
+import FormInfoBox from "~/features/common/modals/FormInfoBox";
 import { PRIVACY_NOTICE_REGION_RECORD } from "~/features/common/privacy-notice-regions";
 import { formatKey } from "~/features/datastore-connections/add-connection/helpers";
-import {
-  selectLocationsRegulations,
-  useGetLocationsRegulationsQuery,
-} from "~/features/locations/locations.slice";
+import { useGetOnlyCountryLocationsQuery } from "~/features/locations/locations.slice";
 import { getSelectedRegionIds } from "~/features/privacy-experience/form/helpers";
 import {
   MonitorConfig,
@@ -40,6 +37,11 @@ const validationSchema = Yup.object().shape({
   name: Yup.string().required().label("Name"),
   execution_frequency: Yup.string().nullable().label("Execution frequency"),
   execution_start_date: Yup.date().nullable().label("Execution start date"),
+  datasource_params: Yup.object().shape({
+    locations: Yup.array().label("Locations"),
+    exclude_domains: Yup.array().label("Exclude domains"),
+    sitemap_url: Yup.string().nullable().url().label("Sitemap URL"),
+  }),
 });
 
 const ConfigureWebsiteMonitorForm = ({
@@ -61,12 +63,12 @@ const ConfigureWebsiteMonitorForm = ({
     ? parseISO(monitor.execution_start_date)
     : Date.now();
 
-  useGetLocationsRegulationsQuery();
-  const locationsRegulations = useAppSelector(selectLocationsRegulations);
+  const { data: locationRegulationResponse, isLoading: locationsLoading } =
+    useGetOnlyCountryLocationsQuery();
 
   const allSelectedRegions = [
-    ...getSelectedRegionIds(locationsRegulations.locations),
-    ...getSelectedRegionIds(locationsRegulations.location_groups),
+    ...getSelectedRegionIds(locationRegulationResponse?.locations ?? []),
+    ...getSelectedRegionIds(locationRegulationResponse?.location_groups ?? []),
   ];
 
   const regionOptions = allSelectedRegions.map((region) => ({
@@ -77,7 +79,7 @@ const ConfigureWebsiteMonitorForm = ({
   const initialValues: WebsiteMonitorConfig = {
     name: monitor?.name || "",
     execution_frequency:
-      monitor?.execution_frequency || MonitorFrequency.MONTHLY,
+      monitor?.execution_frequency || MonitorFrequency.NOT_SCHEDULED,
     execution_start_date: format(initialDate, "yyyy-MM-dd'T'HH:mm"),
     url,
     connection_config_key: integrationId,
@@ -106,27 +108,28 @@ const ConfigureWebsiteMonitorForm = ({
       ...executionInfo,
       key: monitor?.key || formatKey(values.name),
       classify_params: monitor?.classify_params || {},
-      datasource_params: {
-        locations: values.datasource_params?.locations ?? [],
-        exclude_domains: [],
-      },
+      datasource_params: values.datasource_params || {},
       connection_config_key: integrationId,
     };
     onSubmit(payload);
   };
 
+  // Website monitors should only support
+  // monthly, quarterly, yearly, and not scheduled frequencies
+  const frequencyOptions = enumToOptions(MonitorFrequency).filter((option) =>
+    [
+      MonitorFrequency.MONTHLY,
+      MonitorFrequency.QUARTERLY,
+      MonitorFrequency.YEARLY,
+      MonitorFrequency.NOT_SCHEDULED,
+    ].includes(option.value as MonitorFrequency),
+  );
+
   return (
-    <AntFlex vertical className="pt-4">
-      <Box
-        p={4}
-        mb={4}
-        border="1px solid"
-        borderColor="gray.200"
-        bgColor="gray.50"
-        borderRadius="md"
-      >
+    <Flex vertical className="pt-4">
+      <FormInfoBox>
         <Text fontSize="sm">{FORM_COPY}</Text>
-      </Box>
+      </FormInfoBox>
       <Formik
         initialValues={initialValues}
         enableReinitialize
@@ -135,13 +138,29 @@ const ConfigureWebsiteMonitorForm = ({
       >
         {({ values, resetForm }) => (
           <Form>
-            <AntFlex vertical gap="middle">
+            <Flex vertical gap="middle">
               <CustomTextInput
                 name="name"
                 id="name"
                 label="Name"
                 isRequired
                 variant="stacked"
+              />
+              <CustomTextInput
+                name="datasource_params.sitemap_url"
+                id="sitemap_url"
+                label="Sitemap URL"
+                variant="stacked"
+              />
+              <ControlledSelect
+                mode="tags"
+                name="datasource_params.exclude_domains"
+                placeholder="Enter domains to exclude"
+                id="exclude_domains"
+                label="Exclude domains"
+                options={[]}
+                open={false}
+                layout="stacked"
               />
               <CustomTextInput
                 name="url"
@@ -157,6 +176,7 @@ const ConfigureWebsiteMonitorForm = ({
                 name="datasource_params.locations"
                 id="locations"
                 label="Locations"
+                loading={locationsLoading}
                 options={regionOptions}
                 optionFilterProp="label"
                 tooltip={REGIONS_TOOLTIP_COPY}
@@ -165,7 +185,7 @@ const ConfigureWebsiteMonitorForm = ({
               <ControlledSelect
                 name="execution_frequency"
                 id="execution_frequency"
-                options={enumToOptions(MonitorFrequency)}
+                options={frequencyOptions}
                 label="Automatic execution frequency"
                 layout="stacked"
               />
@@ -178,28 +198,24 @@ const ConfigureWebsiteMonitorForm = ({
                 id="execution_start_date"
                 tooltip={START_TIME_TOOLTIP_COPY}
               />
-              <AntFlex className="mt-2 justify-between">
-                <AntButton
+              <Flex className="mt-2 justify-between">
+                <Button
                   onClick={() => {
                     resetForm();
                     onClose();
                   }}
                 >
                   Cancel
-                </AntButton>
-                <AntButton
-                  type="primary"
-                  htmlType="submit"
-                  data-testid="save-btn"
-                >
+                </Button>
+                <Button type="primary" htmlType="submit" data-testid="save-btn">
                   Save
-                </AntButton>
-              </AntFlex>
-            </AntFlex>
+                </Button>
+              </Flex>
+            </Flex>
           </Form>
         )}
       </Formik>
-    </AntFlex>
+    </Flex>
   );
 };
 

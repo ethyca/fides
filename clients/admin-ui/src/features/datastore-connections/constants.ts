@@ -56,6 +56,7 @@ export const CONNECTION_TYPE_LOGO_MAP = new Map<ConnectionType, string>([
   [ConnectionType.SNOWFLAKE, "snowflake.svg"],
   [ConnectionType.SOVRN, "sovrn.svg"],
   [ConnectionType.TIMESCALE, "timescaledb.svg"],
+  [ConnectionType.WEBSITE, "website.svg"],
 ]);
 
 /**

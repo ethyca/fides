@@ -66,32 +66,23 @@ export interface Fides {
   consent: Record<string, boolean>;
 
   /**
-   * User's current consent string(s) combined into a single value. The string
-   * consists of three parts separated by commas in the format:
-   * `TC_STRING,AC_STRING,GPP_STRING` where:
+   * User's current consent string(s) combined into a single value. This is used by
+   * FidesJS to store IAB consent strings from various frameworks such as TCF, GPP,
+   * and Google's "Additional Consent" string. Additionally, we support passing a
+   * Notice Consent string, which is a base64 encoded string of the user's Notice
+   * Consent preferences. See {@link FidesOptions.fides_string} for more details.
+   *
+   * The string consists of four parts separated by commas in the format:
+   * `TC_STRING,AC_STRING,GPP_STRING,NC_STRING` where:
    *
    * - TC_STRING: IAB TCF (Transparency & Consent Framework) string
-   * - AC_STRING: Google's Additional Consent string, derived from TC_STRING
+   * - AC_STRING: Google's Additional Consent string
    * - GPP_STRING: IAB GPP (Global Privacy Platform) string
-   *
-   * Note: The AC_STRING can only exist if TC_STRING exists, as it's derived from it.
-   * When GPP is enabled, the GPP_STRING portion is automatically initialized during
-   * FidesJS initialization, either preserving any existing GPP string or using a
-   * default value. The GPP_STRING is independent and can exist with or without the
-   * other strings.
+   * - NC_STRING: Base64 encoded string of the user's Notice Consent preferences.
    *
    * @example
-   * // Complete string with all parts:
    * console.log(Fides.fides_string);
-   * // "CPzHq4APzHq4AAMABBENAUEAALAAAEOAAAAAAEAEACACAAAA,1~61.70,DBABLA~BVAUAAAAAWA.QA"
-   *
-   * // TC and AC strings only (no GPP):
-   * console.log(Fides.fides_string);
-   * // "CPzHq4APzHq4AAMABBENAUEAALAAAEOAAAAAAEAEACACAAAA,1~61.70"
-   *
-   * // GPP string only:
-   * console.log(Fides.fides_string);
-   * // ",,DBABLA~BVAUAAAAAWA.QA"
+   * // "CPzHq4APzHq4AAMABBENAUEAALAAAEOAAAAAAEAEACACAAAA,1~61.70,DBABLA~BVAUAAAAAWA.QA,eyJkYXRhX3NhbGVzX2FuZF9zaGFyaW5nIjowLCJhbmFseXRpY3MiOjF9"
    */
   fides_string?: string;
 
@@ -205,19 +196,39 @@ export interface Fides {
    * they occur, which can then be used to trigger/block tags in GTM based on
    * `Fides.consent` preferences or other business logic.
    *
-   * See the Google Tag Manager tutorial for more: {@link
-   * https://fid.es/configuring-gtm-consent}
+   * See the [Google Tag Manager tutorial](/docs/tutorials/consent-management/consent-management-configuration/google-tag-manager-consent-mode) for more.
+   *
+   * @param options - Optional configuration for the GTM integration
+   * @param options.non_applicable_flag_mode - Controls how non-applicable privacy notices are handled in the data layer. Can be "omit" (default) to exclude non-applicable notices, or "include" to include them with a default value.
+   * @param options.flag_type - Controls how consent values are represented in the data layer. Can be "boolean" (default) for true/false values, or "consent_mechanism" for string values like "opt_in", "opt_out", "acknowledge", "not_applicable".
    *
    * @example
-   * Enabling the GTM integration in your site's `<head>`:
+   * Basic usage in your site's `<head>`:
    * ```html
    * <head>
    *   <script src="path/to/fides.js"></script>
    *   <script>Fides.gtm()</script>
    * </head>
    * ```
+   *
+   * @example
+   * With options to include non-applicable notices and use consent mechanism strings:
+   * ```html
+   * <head>
+   *   <script src="path/to/fides.js"></script>
+   *   <script>
+   *     Fides.gtm({
+   *       non_applicable_flag_mode: "include",
+   *       flag_type: "consent_mechanism"
+   *     });
+   *   </script>
+   * </head>
+   * ```
    */
-  gtm: () => void;
+  gtm: (options?: {
+    non_applicable_flag_mode?: "omit" | "include";
+    flag_type?: "boolean" | "consent_mechanism";
+  }) => void;
 
   /**
    * Initializes FidesJS with an initial configuration object.
@@ -280,6 +291,77 @@ export interface Fides {
   shouldShowExperience: () => boolean;
 
   /**
+   * Encode the user's consent preferences into a Notice Consent string. See {@link FidesOptions.fides_string} for more details.
+   *
+   * @example
+   * ```ts
+   * const encoded = Fides.encodeNoticeConsentString({data_sales_and_sharing:0,analytics:1});
+   * console.log(encoded); // "eyJkYXRhX3NhbGVzX2FuZF9zaGFyaW5nIjowLCJhbmFseXRpY3MiOjF9"
+   * ```
+   *
+   * @param consent The user's consent preferences to encode. (Numeric values are supported for smaller string results and will be decoded to boolean values)
+   */
+  encodeNoticeConsentString: (
+    consent: Record<string, boolean | 0 | 1>,
+  ) => string;
+
+  /**
+   * Decode a Notice Consent string into a user's consent preferences. See {@link FidesOptions.fides_string} for more details.
+   *
+   * @example
+   * ```ts
+   * const decoded = Fides.decodeNoticeConsentString("eyJkYXRhX3NhbGVzX2FuZF9zaGFyaW5nIjowLCJhbmFseXRpY3MiOjF9");
+   * console.log(decoded); // {data_sales_and_sharing: false, analytics: true}
+   * ```
+   *
+   * @param base64String The Notice Consent string to decode.
+   */
+  decodeNoticeConsentString: (base64String: string) => {
+    [noticeKey: string]: boolean;
+  };
+
+  /**
+   * The detected geolocation that Fides uses to determine the user's experience.
+   * This field is read-only.
+   *
+   * @example
+   * ```ts
+   * {
+   *   "country": "ca",
+   *   "location": "ca-on",
+   *   "region": "on"
+   * }
+   * ```
+   */
+  geolocation?: any;
+
+  /**
+   * The detected i18n locale that Fides uses to determine the language shown to the user.
+   *
+   * @example
+   * ```ts
+   * "en"
+   * ```
+   *
+   * This field is read-only.
+   */
+  locale: string;
+
+  /**
+   * The user's identity values, which only include a copy of the fides user device id that we store in the fides_consent cookie e.g.
+   *
+   * @example
+   * ```ts
+   * {
+   *   "fides_user_device_id": "1234-"
+   * }
+   * ```
+   *
+   * This field is read-only.
+   */
+  identity: Record<string, string>;
+
+  /**
    * NOTE: The properties below are all marked @internal, despite being exported
    * on the global Fides object. This is because they are mostly implementation
    * details and internals that we probably *should* be hiding, to avoid
@@ -307,23 +389,6 @@ export interface Fides {
    * @internal
    */
   fides_meta: Record<any, any>;
-
-  /**
-   * @internal
-   */
-  geolocation?: any;
-
-  /**
-   * @internal
-   */
-  locale: string;
-
-  /**
-   * DEFER (PROD-1815): This probably *should* be part of the documented SDK.
-   *
-   * @internal
-   */
-  identity: Record<string, string>;
 
   /**
    * @internal

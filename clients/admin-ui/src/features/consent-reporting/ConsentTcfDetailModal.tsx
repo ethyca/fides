@@ -28,12 +28,17 @@ const ConsentTcfDetailModal = ({
   onClose,
   tcfPreferences,
 }: ConsentTcfDetailModalProps) => {
-  const { tcfColumns, mapTcfPreferencesToRowColumns } = useTcfConsentColumns();
+  const {
+    tcfColumns,
+    mapTcfPreferencesToRowColumns,
+    filterTcfConsentPreferences,
+  } = useTcfConsentColumns();
   const tcfData = mapTcfPreferencesToRowColumns(tcfPreferences);
+  const filteredTcfData = filterTcfConsentPreferences(tcfData);
 
   const tableInstance = useReactTable<TcfDetailRow>({
     getCoreRowModel: getCoreRowModel(),
-    data: tcfData || [],
+    data: filteredTcfData || [],
     columns: tcfColumns,
     getRowId: (row) => `${row.key}-${row.id}`,
     manualPagination: true,
@@ -49,7 +54,7 @@ const ConsentTcfDetailModal = ({
       isCentered
     >
       <ModalOverlay />
-      <ModalContent>
+      <ModalContent data-testid="consent-tcf-detail-modal">
         <ModalCloseButton />
         <ModalHeader pb={2}>TCF Consent Details</ModalHeader>
         <ModalBody>

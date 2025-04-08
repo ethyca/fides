@@ -444,6 +444,14 @@ describe("discovery and detection", () => {
           cy.getByTestId("taxonomy-add-btn").should("not.exist");
         });
       });
+
+      it("doesn't allow reclassifying fields", () => {
+        cy.getByTestId(
+          "row-my_bigquery_monitor.prj-bigquery-418515.test_dataset_1.consent-reports-20.address-col-actions",
+        ).within(() => {
+          cy.getByTestId("action-reclassify").should("not.exist");
+        });
+      });
     });
 
     describe("nested-field-level view", () => {

@@ -1,7 +1,6 @@
 import { TCString } from "@iabtechlabtcf/core";
 
 import { extractIds } from "../common-utils";
-import { getConsentContext } from "../consent-context";
 import {
   ConsentMechanism,
   FidesCookie,
@@ -274,11 +273,10 @@ export const getEnabledIdsNotice = (
     return [];
   }
   const parsedCookie: FidesCookie | undefined = getFidesConsentCookie();
-  const context = getConsentContext();
 
   return noticeList
     .map((notice) => {
-      const value = resolveConsentValue(notice, context, parsedCookie?.consent);
+      const value = resolveConsentValue(notice, parsedCookie?.consent);
       return { ...notice, consentValue: value };
     })
     .filter((notice) => notice.consentValue)

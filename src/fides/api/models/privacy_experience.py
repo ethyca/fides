@@ -20,6 +20,7 @@ from fides.api.models import (
 from fides.api.models.location_regulation_selections import PrivacyNoticeRegion
 from fides.api.models.privacy_notice import PrivacyNotice
 from fides.api.models.property import Property
+from fides.api.models.tcf_publisher_restrictions import TCFConfiguration
 from fides.api.schemas.language import SupportedLanguage
 
 
@@ -46,6 +47,21 @@ class Layer1ButtonOption(Enum):
 
     ACKNOWLEDGE = "acknowledge"
     OPT_IN_OPT_OUT = "opt_in_opt_out"
+    OPT_IN_ONLY = "opt_in_only"
+
+
+class RejectAllMechanism(Enum):
+    """
+    Reject all mechanism options - not formalized in the db.
+    Used to configure the behavior of the reject all button in TCF experiences
+    """
+
+    # Reject both consent and legitimate interest preferences (all purposes, special features, vendors)
+    # This is the default behavior
+    REJECT_ALL = "reject_all"
+    # Reject only consent preferences (all purposes, special features, vendors).
+    # Do not reject any legitimate interest preferences.
+    REJECT_CONSENT_ONLY = "reject_consent_only"
 
 
 # Fides JS UX Types - there should only be one of these defined per region
@@ -179,6 +195,10 @@ class PrivacyExperienceConfig(PrivacyExperienceConfigBase, Base):
     The Privacy Experience Configuration model that stores shared configuration for Privacy Experiences.
 
     - Translations, Notices, and Regions (via Privacy Experiences) are linked to this resource.
+
+    If you're adding a new PrivacyExperienceConfig, make sure to use the `create` method since it has
+    custom logic that ensures other resources are created/updated as needed, as well as setting the
+    expected values for some fields in the experience config itself.
     """
 
     allow_language_selection = Column(
@@ -202,6 +222,20 @@ class PrivacyExperienceConfig(PrivacyExperienceConfigBase, Base):
     origin = Column(
         String, ForeignKey(ExperienceConfigTemplate.id_field_path)
     )  # The template from which this config was created if applicable
+
+    # Mechanism to use when the reject all button is clicked in a TCF experience
+    # Nullable because this is not applicable for other experience types
+    reject_all_mechanism = Column(
+        EnumColumn(RejectAllMechanism),
+        nullable=True,
+    )
+    # Optional FK to a TCF Configuration
+
+    tcf_configuration_id = Column(
+        String,
+        ForeignKey(TCFConfiguration.id_field_path, ondelete="SET NULL"),
+        nullable=True,
+    )
 
     # Relationships
     experiences = relationship(
@@ -229,6 +263,12 @@ class PrivacyExperienceConfig(PrivacyExperienceConfigBase, Base):
         "Property",
         secondary="plus_privacy_experience_config_property",
         back_populates="experiences",
+        lazy="selectin",
+    )
+
+    tcf_configuration: RelationshipProperty[Optional[TCFConfiguration]] = relationship(
+        "TCFConfiguration",
+        back_populates="privacy_experience_configs",
         lazy="selectin",
     )
 
@@ -303,6 +343,15 @@ class PrivacyExperienceConfig(PrivacyExperienceConfigBase, Base):
         )
         # Link Properties to this Privacy Experience config via the PrivacyExperienceConfigProperty table
         link_properties_to_experience_config(db, properties, experience_config)
+
+        # If the reject all mechanism is not set and the experience config is a TCF experience,
+        # set the reject all mechanism to REJECT_ALL
+        if (
+            experience_config.component == ComponentType.tcf_overlay
+            and experience_config.reject_all_mechanism is None
+        ):
+            experience_config.reject_all_mechanism = RejectAllMechanism.REJECT_ALL  # type: ignore
+            experience_config.save(db)
 
         return experience_config
 
@@ -507,6 +556,24 @@ class PrivacyExperienceConfigHistory(
         index=True,
     )  # If a translation is deleted, this is set to null, but the overall record remains in the database for reporting purposes
 
+    # Mechanism to use when the reject all button is clicked in a TCF experience
+    # Nullable because this is not applicable for other experience types
+    reject_all_mechanism = Column(
+        EnumColumn(RejectAllMechanism),
+        nullable=True,
+    )
+    # Optional FK to a TCF Configuration
+    tcf_configuration_id = Column(
+        String,
+        ForeignKey(TCFConfiguration.id_field_path, ondelete="SET NULL"),
+        nullable=True,
+    )
+
+    tcf_configuration: RelationshipProperty[Optional[TCFConfiguration]] = relationship(
+        "TCFConfiguration",
+        lazy="selectin",
+    )
+
     version = Column(Float, nullable=False, default=1.0)
 
 
@@ -569,6 +636,7 @@ class PrivacyExperience(Base):
     tcf_special_features: List = []
     tcf_system_consents: List = []
     tcf_system_legitimate_interests: List = []
+    tcf_publisher_restrictions: List = []
     gvl: Optional[Dict] = {}
     # TCF Developer-Friendly Meta added at runtime as the result of build_tc_data_for_mobile
     meta: Dict = {}

@@ -11,7 +11,8 @@
       ],
       "locations": ["us", "ca"],
       "with_consent": false,
-      "data_uses": ["analytics"]
+      "data_uses": ["analytics", "employment"],
+      "description": "This is a test description"
     },
     {
       "id": "ass_25313ee9-32e9-46c9-bbc9-ec75d2839f9c",
