@@ -33,9 +33,11 @@ import {
 } from "./lib/consent-utils";
 import {
   consentCookieObjHasSomeConsentSet,
-  getFidesConsentCookie, getOrMakeFidesCookie,
+  getFidesConsentCookie,
+  getOrMakeFidesCookie,
   getOTConsentCookie,
-  otCookieToFidesConsent, saveFidesCookie,
+  otCookieToFidesConsent,
+  saveFidesCookie,
   updateExperienceFromCookieConsentNotices,
 } from "./lib/cookie";
 import { initializeDebugger } from "./lib/debugger";

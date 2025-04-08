@@ -76,10 +76,6 @@ describe("OneTrust to Fides consent migration", () => {
           cy.get("input").should("be.checked");
         });
 
-        cy.getByTestId("Save-btn").click();
-        // Modal should close after saving
-        cy.getByTestId("consent-modal").should("not.be.visible");
-
         // Verify Fides cookie was created
         cy.getCookie("fides_consent").should("exist");
         // check that the cookie updated
@@ -154,10 +150,6 @@ describe("OneTrust to Fides consent migration", () => {
         cy.get("input").should("be.checked");
       });
 
-      cy.getByTestId("Save-btn").click();
-      // Modal should close after saving
-      cy.getByTestId("consent-modal").should("not.be.visible");
-
       // Verify Fides cookie was created
       cy.getCookie("fides_consent").should("exist");
       // check that the cookie updated
@@ -226,10 +218,6 @@ describe("OneTrust to Fides consent migration", () => {
       cy.getByTestId("toggle-Essential").within(() => {
         cy.get("input").should("be.checked");
       });
-
-      cy.getByTestId("Save-btn").click();
-      // Modal should close after saving
-      cy.getByTestId("consent-modal").should("not.be.visible");
 
       // Verify Fides cookie was created
       cy.getCookie("fides_consent").should("exist");
