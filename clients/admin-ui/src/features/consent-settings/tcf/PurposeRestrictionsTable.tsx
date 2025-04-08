@@ -1,5 +1,11 @@
 import { getCoreRowModel, useReactTable } from "@tanstack/react-table";
-import { AntButton as Button, AntFlex as Flex, Spacer, Text } from "fidesui";
+import {
+  AntButton as Button,
+  AntFlex as Flex,
+  AntTooltip as Tooltip,
+  Spacer,
+  Text,
+} from "fidesui";
 import { useRouter } from "next/router";
 import { useState } from "react";
 
@@ -8,7 +14,7 @@ import {
   TableActionBar,
   TableSkeletonLoader,
 } from "~/features/common/table/v2";
-import { RangeEntry } from "~/types/api";
+import { RangeEntry, TCFVendorRestriction } from "~/types/api";
 
 import { PurposeRestrictionFormModal } from "./PurposeRestrictionFormModal";
 import { useGetPublisherRestrictionsQuery } from "./tcf-config.slice";
@@ -71,6 +77,11 @@ export const PurposeRestrictionsTable = () => {
     purpose_id: item.purpose_id,
   }));
 
+  const hasRestrictAllVendors = transformedData.some(
+    (item) =>
+      item.vendor_restriction === TCFVendorRestriction.RESTRICT_ALL_VENDORS,
+  );
+
   const table = useReactTable<PurposeRestriction>({
     getCoreRowModel: getCoreRowModel(),
     columns,
@@ -91,9 +102,21 @@ export const PurposeRestrictionsTable = () => {
     <Flex vertical className="overflow-auto">
       <TableActionBar>
         <Spacer />
-        <Button type="primary" onClick={handleOpenModal}>
-          Add restriction +
-        </Button>
+        <Tooltip
+          title={
+            hasRestrictAllVendors
+              ? 'Each vendor must have a unique restriction type. When "Restrict all vendors" is active for any restriction type, no other restrictions can be added.'
+              : undefined
+          }
+        >
+          <Button
+            type="primary"
+            onClick={handleOpenModal}
+            disabled={hasRestrictAllVendors}
+          >
+            Add restriction +
+          </Button>
+        </Tooltip>
       </TableActionBar>
       {isFetching ? (
         <TableSkeletonLoader rowHeight={36} numRows={3} />

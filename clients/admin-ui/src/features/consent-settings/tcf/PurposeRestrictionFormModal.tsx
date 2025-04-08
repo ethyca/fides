@@ -34,6 +34,9 @@ import {
   isValidVendorIdFormat,
 } from "./validation-utils";
 
+const IN_USE_TOOLTIP =
+  "This restriction type is already in use for this purpose";
+
 interface PurposeRestrictionFormModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -63,19 +66,46 @@ export const PurposeRestrictionFormModal = ({
   const [createRestriction] = useCreatePublisherRestrictionMutation();
   const [updateRestriction] = useUpdatePublisherRestrictionMutation();
 
+  // Get the list of restriction types that are already in use for this purpose
+  const usedRestrictionTypes = existingRestrictions
+    .filter((r) => r.id !== restrictionId) // Exclude current restriction when editing
+    .map((r) => r.restriction_type);
+
   const restrictionTypeOptions = [
     {
       value: TCFRestrictionType.PURPOSE_RESTRICTION,
       label: RESTRICTION_TYPE_LABELS[TCFRestrictionType.PURPOSE_RESTRICTION],
+      disabled: usedRestrictionTypes.includes(
+        TCFRestrictionType.PURPOSE_RESTRICTION,
+      ),
+      title: usedRestrictionTypes.includes(
+        TCFRestrictionType.PURPOSE_RESTRICTION,
+      )
+        ? IN_USE_TOOLTIP
+        : undefined,
     },
     {
       value: TCFRestrictionType.REQUIRE_CONSENT,
       label: RESTRICTION_TYPE_LABELS[TCFRestrictionType.REQUIRE_CONSENT],
+      disabled: usedRestrictionTypes.includes(
+        TCFRestrictionType.REQUIRE_CONSENT,
+      ),
+      title: usedRestrictionTypes.includes(TCFRestrictionType.REQUIRE_CONSENT)
+        ? IN_USE_TOOLTIP
+        : undefined,
     },
     {
       value: TCFRestrictionType.REQUIRE_LEGITIMATE_INTEREST,
       label:
         RESTRICTION_TYPE_LABELS[TCFRestrictionType.REQUIRE_LEGITIMATE_INTEREST],
+      disabled: usedRestrictionTypes.includes(
+        TCFRestrictionType.REQUIRE_LEGITIMATE_INTEREST,
+      ),
+      title: usedRestrictionTypes.includes(
+        TCFRestrictionType.REQUIRE_LEGITIMATE_INTEREST,
+      )
+        ? IN_USE_TOOLTIP
+        : undefined,
     },
   ];
 
@@ -84,6 +114,11 @@ export const PurposeRestrictionFormModal = ({
       value: TCFVendorRestriction.RESTRICT_ALL_VENDORS,
       label:
         VENDOR_RESTRICTION_LABELS[TCFVendorRestriction.RESTRICT_ALL_VENDORS],
+      disabled: existingRestrictions.length > 0,
+      title:
+        existingRestrictions.length > 0
+          ? "Cannot restrict all vendors when other restrictions exist"
+          : undefined,
     },
     {
       value: TCFVendorRestriction.RESTRICT_SPECIFIC_VENDORS,
@@ -128,18 +163,6 @@ export const PurposeRestrictionFormModal = ({
                 restrictionId,
               ),
           ),
-      otherwise: (schema) =>
-        schema.test(
-          "no-conflicts-restrict-all",
-          ERROR_MESSAGE,
-          (_, context) =>
-            !checkForVendorRestrictionConflicts(
-              context.parent as FormValues,
-              existingRestrictions,
-              purposeId,
-              restrictionId,
-            ),
-        ),
     }),
   });
 
@@ -195,7 +218,7 @@ export const PurposeRestrictionFormModal = ({
         onSubmit={handleSubmit}
         validationSchema={validationSchema}
       >
-        {({ values }) => (
+        {({ values, validateField }) => (
           <Form>
             <Flex vertical className="gap-6">
               <Text className="text-sm">
@@ -225,6 +248,7 @@ export const PurposeRestrictionFormModal = ({
 
               <Collapse
                 in={
+                  !!values.restriction_type &&
                   !!values.vendor_restriction &&
                   values.vendor_restriction !==
                     TCFVendorRestriction.RESTRICT_ALL_VENDORS
@@ -246,6 +270,13 @@ export const PurposeRestrictionFormModal = ({
                     values.vendor_restriction ===
                     TCFVendorRestriction.RESTRICT_ALL_VENDORS
                   }
+                  onBlur={() => {
+                    // Add small delay to allow Ant Select to create tag before validation
+                    setTimeout(() => {
+                      validateField("vendor_ids");
+                    }, 100);
+                  }}
+                  isRequired
                 />
               </Collapse>
 

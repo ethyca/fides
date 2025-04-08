@@ -375,7 +375,7 @@ export const IndeterminateCheckboxCell = ({
 );
 
 type DefaultHeaderCellProps<T> = {
-  value: string | number | string[] | undefined | boolean;
+  value: ReactNode;
 } & HeaderContext<T, unknown> &
   TextProps;
 

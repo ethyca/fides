@@ -10,9 +10,13 @@ import NextLink from "next/link";
 
 import { useAppSelector } from "~/app/hooks";
 import { selectPurposes } from "~/features/common/purpose.slice";
+import QuestionTooltip from "~/features/common/QuestionTooltip";
 import { TCFConfigurationDetail } from "~/types/api";
 
-import { FORBIDDEN_LEGITIMATE_INTEREST_PURPOSE_IDS } from "./constants";
+import {
+  FORBIDDEN_LEGITIMATE_INTEREST_PURPOSE_IDS,
+  RESTRICTION_TYPE_LABELS,
+} from "./constants";
 
 interface FauxTableCellProps extends FlexProps {
   borderLeft?: boolean;
@@ -129,10 +133,12 @@ export const PublisherRestrictionsTable = ({
       >
         <FauxColumnHeader width="600px">TCF purpose</FauxColumnHeader>
         <FauxColumnHeader flex={1} borderLeft>
-          Restrictions
+          Restrictions{" "}
+          <QuestionTooltip label="Restrictions control how vendors are permitted to process data for specific purposes. Fides supports three restriction types: Purpose Restriction to completely disallow data processing for a purpose, Require Consent to allow processing only with explicit user consent, and Require Legitimate Interest to allow processing based on legitimate business interest unless the user objects." />
         </FauxColumnHeader>
         <FauxColumnHeader width="100px" borderLeft>
-          Flexible
+          Flexible{" "}
+          <QuestionTooltip label='Indicates whether the legal basis for this purpose can be overridden by publisher restrictions. If marked "No," the purpose has a fixed legal basis defined by the TCF and cannot be changed.' />
         </FauxColumnHeader>
         <FauxColumnHeader width="100px" borderLeft>
           Actions
@@ -150,7 +156,21 @@ export const PublisherRestrictionsTable = ({
             {isLoading ? (
               <Skeleton height="16px" width="100%" />
             ) : (
-              config?.restriction_types_per_purpose?.[purpose.id] || "none"
+              (() => {
+                const types =
+                  config?.restriction_types_per_purpose?.[purpose.id] || [];
+                if (types.length === 0) {
+                  return "none";
+                }
+                if (types.length === 1) {
+                  return (
+                    <Text size="sm" whiteSpace="nowrap">
+                      {RESTRICTION_TYPE_LABELS[types[0]]}
+                    </Text>
+                  );
+                }
+                return <Text>{types.length} restrictions</Text>;
+              })()
             )}
           </FauxTableCell>
           <FauxTableCell width="100px" borderLeft>

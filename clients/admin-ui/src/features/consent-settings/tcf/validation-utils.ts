@@ -49,7 +49,12 @@ export const parseVendorIdToRange = (vendorId: string): VendorRange | null => {
   return null;
 };
 
-// Check if two ranges overlap
+/**
+ * Checks if two vendor ranges share any values in common
+ * @example
+ * doRangesOverlap({start: 1, end: 10}, {start: 5, end: 15}) // true - shares 5-10
+ * doRangesOverlap({start: 1, end: 5}, {start: 6, end: 10}) // false - no overlap
+ */
 export const doRangesOverlap = (
   range1: VendorRange,
   range2: VendorRange,
@@ -92,6 +97,38 @@ export const doRangesOverlap = (
   );
 };
 
+/**
+ * Checks if range1 is fully contained within range2
+ * @example
+ * isRangeContained({start: 5, end: 10}, {start: 1, end: 15}) // true - 5-10 inside 1-15
+ * isRangeContained({start: 1, end: 10}, {start: 5, end: 15}) // false - 1-4 outside
+ */
+export const isRangeContained = (
+  range1: VendorRange,
+  range2: VendorRange,
+): boolean => {
+  // If range1 is a single value
+  if (range1.end === range1.start) {
+    return (
+      range1.start >= range2.start &&
+      (range2.end === null || range1.start <= range2.end)
+    );
+  }
+
+  // If range2 has no upper bound (null end), range1 must start after range2.start
+  if (range2.end === null) {
+    return range1.start >= range2.start;
+  }
+
+  // If range1 has no upper bound, it can't be contained in range2 (which has an upper bound)
+  if (range1.end === null) {
+    return false;
+  }
+
+  // Check if range1 is fully contained within range2
+  return range1.start >= range2.start && range1.end <= range2.end;
+};
+
 // Check for conflicts between RESTRICT_SPECIFIC and ALLOW_SPECIFIC
 export const checkForVendorRestrictionConflicts = (
   values: FormValues,
@@ -103,30 +140,6 @@ export const checkForVendorRestrictionConflicts = (
   const relevantRestrictions = existingRestrictions.filter(
     (r) => r.purpose_id === purposeId && r.id !== restrictionBeingEditedId,
   );
-
-  // Check for RESTRICT_ALL conflict
-  const hasRestrictAll = relevantRestrictions.some(
-    (r) =>
-      r.vendor_restriction === TCFVendorRestriction.RESTRICT_ALL_VENDORS &&
-      r.restriction_type === values.restriction_type,
-  );
-
-  if (hasRestrictAll) {
-    return true;
-  }
-
-  // If current form is RESTRICT_ALL, check for any existing specific restrictions
-  if (values.vendor_restriction === TCFVendorRestriction.RESTRICT_ALL_VENDORS) {
-    const hasSpecificRestrictions = relevantRestrictions.some(
-      (r) =>
-        r.restriction_type === values.restriction_type &&
-        (r.vendor_restriction ===
-          TCFVendorRestriction.RESTRICT_SPECIFIC_VENDORS ||
-          r.vendor_restriction === TCFVendorRestriction.ALLOW_SPECIFIC_VENDORS),
-    );
-
-    return hasSpecificRestrictions;
-  }
 
   // Return false if there are no vendor IDs to check
   if (!values.vendor_ids?.length) {
@@ -143,13 +156,8 @@ export const checkForVendorRestrictionConflicts = (
     return false;
   }
 
-  // Check for conflicts with existing restrictions using reduce instead of for loops
+  // Check for conflicts with existing restrictions
   return relevantRestrictions.some((restriction) => {
-    // Skip if different restriction type
-    if (restriction.restriction_type !== values.restriction_type) {
-      return false;
-    }
-
     // Check for opposite vendor restriction types (RESTRICT_SPECIFIC vs ALLOW_SPECIFIC)
     const isOppositeRestrictionType =
       (values.vendor_restriction ===
@@ -161,28 +169,34 @@ export const checkForVendorRestrictionConflicts = (
         restriction.vendor_restriction ===
           TCFVendorRestriction.RESTRICT_SPECIFIC_VENDORS);
 
+    // Convert restriction's vendor_ids to ranges and filter out invalid formats
+    const existingRanges = restriction.vendor_ids
+      .map(parseVendorIdToRange)
+      .filter((range): range is VendorRange => range !== null);
+
     // Check for conflicts when restriction types are opposite
     if (isOppositeRestrictionType) {
-      // Convert restriction's vendor_ids to ranges and filter out invalid formats
-      const existingRanges = restriction.vendor_ids
-        .map(parseVendorIdToRange)
-        .filter((range): range is VendorRange => range !== null);
-
-      // Check if any ranges overlap
+      if (
+        values.vendor_restriction ===
+        TCFVendorRestriction.ALLOW_SPECIFIC_VENDORS
+      ) {
+        // For ALLOW_SPECIFIC: Check if any current range is outside ALL existing RESTRICT ranges
+        return currentRanges.some((currentRange) =>
+          existingRanges.every(
+            (existingRange) => !isRangeContained(currentRange, existingRange),
+          ),
+        );
+      }
+      // For RESTRICT_SPECIFIC: Check if any current range has ANY allowed range not contained within it
       return currentRanges.some((currentRange) =>
-        existingRanges.some((existingRange) =>
-          doRangesOverlap(currentRange, existingRange),
+        existingRanges.some(
+          (existingRange) => !isRangeContained(existingRange, currentRange),
         ),
       );
     }
 
     // Check for duplicates when restriction types are the same
     if (restriction.vendor_restriction === values.vendor_restriction) {
-      // Convert restriction's vendor_ids to ranges and filter out invalid formats
-      const existingRanges = restriction.vendor_ids
-        .map(parseVendorIdToRange)
-        .filter((range): range is VendorRange => range !== null);
-
       // Check if any ranges overlap
       return currentRanges.some((currentRange) =>
         existingRanges.some((existingRange) =>
