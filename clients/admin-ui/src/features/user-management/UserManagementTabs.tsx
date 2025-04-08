@@ -11,7 +11,7 @@ import {
   selectActiveUserId,
   useGetUserByIdQuery,
 } from "./user-management.slice";
-import UserForm, { type Props as UserFormProps } from "./UserForm";
+import UserForm, { type UserFormProps } from "./UserForm";
 
 const UserManagementTabs = ({
   onSubmit,
