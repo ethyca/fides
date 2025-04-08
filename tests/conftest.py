@@ -436,8 +436,8 @@ def resources_dict():
     resources_dict = {
         "data_category": models.DataCategory(
             organization_fides_key="1",
-            fides_key="test.parent.custom",
-            parent_key="test.parent",
+            fides_key="user.custom",
+            parent_key="user",
             name="Custom Data Category",
             description="Custom Data Category",
         ),
