@@ -70,4 +70,4 @@ toml==0.10.2
 twilio==7.15.0
 typing-extensions==4.12.2
 versioneer==0.19
-fideslang @ git+https://github.com/ethyca/fideslang@0efc6763e899e11eb246310830d4e2bb0f1fef73
+fideslang @ git+https://github.com/ethyca/fideslang@7c2b92a16716d4f34f7666eb6ca8dae05b8295e7
