@@ -1,13 +1,14 @@
 # pylint: disable=missing-docstring, redefined-outer-name
 import os
 from typing import Generator, List
-from uuid import uuid4
 
 import pytest
 from fideslang.models import PrivacyDeclaration as PrivacyDeclarationSchema
 from fideslang.models import System, SystemMetadata
 from py._path.local import LocalPath
+from sqlalchemy.ext.asyncio import AsyncSession
 
+from fides.api.db.system import upsert_system
 from fides.api.models.sql_models import PrivacyDeclaration
 from fides.api.models.sql_models import System as sql_System
 from fides.api.util.data_category import get_data_categories_map
@@ -15,6 +16,13 @@ from fides.config import FidesConfig
 from fides.connectors.models import OktaConfig
 from fides.core import api
 from fides.core import system as _system
+
+
+async def test_upsert_system_malformed_privacy_declaration(
+    test_config: FidesConfig, system: System, async_session: AsyncSession
+) -> None:
+    with pytest.raises(AttributeError, match="has no attribute 'model_dump'"):
+        result = await upsert_system(resources=[system], db=async_session)
 
 
 def create_server_systems(test_config: FidesConfig, systems: List[System]) -> None:
