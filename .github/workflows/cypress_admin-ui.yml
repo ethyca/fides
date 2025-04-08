@@ -10,8 +10,6 @@ on:
       - "main"
       - "release-**"
 
-# Null change
-
 env:
   CI: true
 
@@ -36,7 +34,9 @@ jobs:
           path: |
             ~/.npm
             clients/node_modules
-            clients/.next/cache
+            clients/*/node_modules
+            clients/*/dist
+            clients/admin-ui/.next/cache
             ~/.cache/Cypress
           key: ${{ runner.os }}-nextjs-${{ hashFiles('clients/package-lock.json') }}-${{ hashFiles('clients/**/*.js', 'clients/**/*.jsx', 'clients/**/*.ts', 'clients/**/*.tsx') }}
           restore-keys: |
