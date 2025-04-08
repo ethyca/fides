@@ -707,7 +707,7 @@ def celery_enable_logging():
     return True
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(autouse=True, scope="session")
 def celery_use_virtual_worker(celery_session_worker):
     """
     This is a catch-all fixture that forces all of our

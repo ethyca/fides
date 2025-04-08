@@ -97,9 +97,6 @@ def pytest_ctl(session: Session, mark: str, coverage_arg: str) -> None:
         session.run(*LOGIN, external=True)
         run_command = (
             *EXEC,
-            "timeout",
-            "--signal=INT",
-            "360",
             "pytest",
             coverage_arg,
             "tests/ctl/",

@@ -4449,7 +4449,7 @@ class TestDenyPrivacyRequest:
     def url(self, db, privacy_request):
         return V1_URL_PREFIX + PRIVACY_REQUEST_DENY
 
-    @pytest.fixture(scope="function")
+    @pytest.fixture(autouse=True, scope="function")
     def privacy_request_review_notification_enabled(self, db):
         """Enable request review notification"""
         original_value = CONFIG.notifications.send_request_review_notification
