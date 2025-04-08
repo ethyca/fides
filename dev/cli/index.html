@@ -2207,13 +2207,27 @@ configuration file if not present.
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>  --help  Show this message and exit.
 </code></pre></div></td></tr></table></div>
 <h4 id="fides-pull-dataset">fides pull dataset</h4>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>Retrieve a specific dataset from the server and update the local manifest files.
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span></pre></div></td><td class="code"><div><pre><span></span><code>Retrieve datasets from the server and update the local manifest files.
+
+If FIDES_KEY is provided, only that dataset will be pulled.
+If --all-resources is specified, all datasets will be pulled.
+If --separate-files is specified, each dataset will be written to a separate file.
 </code></pre></div></td></tr></table></div>
 <p><strong>Usage:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fides pull dataset [OPTIONS] FIDES_KEY [MANIFESTS_DIR]
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>fides pull dataset [OPTIONS] [FIDES_KEY] [MANIFESTS_DIR]
 </code></pre></div></td></tr></table></div>
 <p><strong>Options:</strong></p>
-<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>  --help  Show this message and exit.
+<div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span></pre></div></td><td class="code"><div><pre><span></span><code>  -a, --all-resources  Pull all datasets from the server.
+  --separate-files     Write each dataset to a separate file named after its
+                       fides_key.
+  --help               Show this message and exit.
 </code></pre></div></td></tr></table></div>
 <h4 id="fides-pull-system">fides pull system</h4>
 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span></pre></div></td><td class="code"><div><pre><span></span><code>Retrieve a specific system from the server and update the local manifest files.
