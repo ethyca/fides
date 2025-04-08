@@ -24,6 +24,7 @@ export const useDiscoveredSystemAggregateColumns = (monitorId: string) => {
       id: "select",
       cell: ({ row }) => (
         <IndeterminateCheckboxCell
+          size="sm"
           isChecked={row.getIsSelected()}
           onChange={row.getToggleSelectedHandler()}
           dataTestId={`select-${row.original.name || row.id}`}
@@ -31,6 +32,7 @@ export const useDiscoveredSystemAggregateColumns = (monitorId: string) => {
       ),
       header: ({ table }) => (
         <IndeterminateCheckboxCell
+          size="sm"
           isChecked={table.getIsAllPageRowsSelected()}
           isIndeterminate={table.getIsSomeRowsSelected()}
           onChange={table.getToggleAllRowsSelectedHandler()}
@@ -40,6 +42,9 @@ export const useDiscoveredSystemAggregateColumns = (monitorId: string) => {
       maxSize: 40,
       meta: {
         disableRowClick: true,
+        cellProps: {
+          borderRight: "none",
+        },
       },
     }),
     columnHelper.accessor((row) => row.name, {
