@@ -122,6 +122,7 @@ def extract_key_for_address(
     return f"{dataset}:{collection}"
 
 
+# pylint: disable=too-many-branches
 def unflatten_dict(flat_dict: Dict[str, Any], separator: str = ".") -> Dict[str, Any]:
     """
     Converts a dictionary of paths/values into a nested dictionary
@@ -149,17 +150,29 @@ def unflatten_dict(flat_dict: Dict[str, Any], separator: str = ".") -> Dict[str,
         for i, current_key in enumerate(keys[:-1]):
             next_key = keys[i + 1]
             if next_key.isdigit():
-                target = target.setdefault(current_key, [])
+                if isinstance(target, dict):  # Only call setdefault on dictionaries
+                    target = target.setdefault(current_key, [])
+                elif isinstance(
+                    target, list
+                ):  # If target is a list, handle differently
+                    idx = int(current_key)
+                    while len(target) <= idx:
+                        target.append([])  # Add a list since next_key is a digit
+                    target = target[idx]
             else:
                 if isinstance(target, dict):
                     target = target.setdefault(current_key, {})
                 elif isinstance(target, list):
-                    while len(target) <= int(current_key):
+                    idx = int(current_key)
+                    while len(target) <= idx:
                         target.append({})
-                    target = target[int(current_key)]
+                    target = target[idx]
         try:
             if isinstance(target, list):
-                target.append(value)
+                idx = int(keys[-1]) if keys[-1].isdigit() else len(target)
+                while len(target) <= idx:
+                    target.append(None)
+                target[idx] = value
             else:
                 # If the value is a dictionary, add its components to the queue for processing
                 if isinstance(value, dict):
@@ -176,10 +189,12 @@ def unflatten_dict(flat_dict: Dict[str, Any], separator: str = ".") -> Dict[str,
     return output
 
 
+# pylint: disable=too-many-branches
 def flatten_dict(data: Any, prefix: str = "", separator: str = ".") -> Dict[str, Any]:
     """
     Recursively flatten a dictionary or list into a flat dictionary with dot-notation keys.
     Handles nested dictionaries and arrays with proper indices.
+    Preserves empty lists and dictionaries.
 
     example:
 
@@ -191,7 +206,9 @@ def flatten_dict(data: Any, prefix: str = "", separator: str = ".") -> Dict[str,
         "D": [
             {"E": "3"},
             {"E": "4"}
-        ]
+        ],
+        "E": [],
+        "F": {}
     }
 
     becomes
@@ -200,7 +217,9 @@ def flatten_dict(data: Any, prefix: str = "", separator: str = ".") -> Dict[str,
         "A.B": "1",
         "A.C": "2",
         "D.0.E": "3",
-        "D.1.E": "4"
+        "D.1.E": "4",
+        "E": [],
+        "F": {}
     }
 
     Args:
@@ -211,20 +230,40 @@ def flatten_dict(data: Any, prefix: str = "", separator: str = ".") -> Dict[str,
     Returns:
         A flattened dictionary with dot-notation keys
     """
-    items = {}
+    items: Dict[str, Any] = {}
 
     if isinstance(data, dict):
+        # Handle top-level empty dictionary case
+        if not data and not prefix:
+            return {}
+
+        # If the dictionary is empty but has a prefix, store it as is
+        if not data:
+            items[prefix] = {}
+            return items
+
         for k, v in data.items():
             new_key = f"{prefix}{separator}{k}" if prefix else k
             if isinstance(v, (dict, list)):
-                items.update(flatten_dict(v, new_key, separator))
+                if not v:  # Handle empty dict or list
+                    items[new_key] = v
+                else:
+                    items.update(flatten_dict(v, new_key, separator))
             else:
                 items[new_key] = v
     elif isinstance(data, list):
+        # If the list is empty, store it as is
+        if not data:
+            items[prefix] = []
+            return items
+
         for i, v in enumerate(data):
             new_key = f"{prefix}{separator}{i}"
             if isinstance(v, (dict, list)):
-                items.update(flatten_dict(v, new_key, separator))
+                if not v:  # Handle empty dict or list
+                    items[new_key] = v
+                else:
+                    items.update(flatten_dict(v, new_key, separator))
             else:
                 items[new_key] = v
     else:

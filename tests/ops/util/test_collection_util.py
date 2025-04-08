@@ -112,6 +112,14 @@ class TestUnflattenDict:
     def test_empty_dict_value(self):
         assert unflatten_dict({"A": {}}) == {"A": {}}
 
+    def test_empty_list_value(self):
+        assert unflatten_dict({"A": []}) == {"A": []}
+
+    def test_list_of_lists(self):
+        assert unflatten_dict(
+            {"points.0.0": 0, "points.0.1": 0, "points.1.0": 1, "points.1.1": 1}
+        ) == {"points": [[0, 0], [1, 1]]}
+
     def test_unflattened_dict(self):
         assert unflatten_dict({"A": "1"}) == {"A": "1"}
 
@@ -237,11 +245,13 @@ class TestFlattenDict:
         assert flatten_dict(data) == expected
 
     def test_empty_nested_structures(self):
-        # Empty dictionaries and arrays don't contribute any keys to the flattened result
-        assert flatten_dict({"A": {}, "B": []}) == {}
+        assert flatten_dict({"A": {}, "B": []}) == {"A": {}, "B": []}
 
-        # Mixed with non-empty values
-        assert flatten_dict({"A": {}, "B": [], "C": "value"}) == {"C": "value"}
+        assert flatten_dict({"A": {}, "B": [], "C": "value"}) == {
+            "A": {},
+            "B": [],
+            "C": "value",
+        }
 
     def test_none_values(self):
         assert flatten_dict({"A": None, "B": {"C": None}}) == {"A": None, "B.C": None}
@@ -278,3 +288,24 @@ class TestFlattenDict:
             "tags.2": "example",
         }
         assert flatten_dict(data) == expected
+
+    def test_list_of_lists(self):
+        data = {
+            "points": [
+                [0, 0],
+                [1, 1],
+            ]
+        }
+
+        assert flatten_dict(data) == {
+            "points.0.0": 0,
+            "points.0.1": 0,
+            "points.1.0": 1,
+            "points.1.1": 1,
+        }
+
+    def test_empty_list_value(self):
+        assert flatten_dict({"A": []}) == {"A": []}
+
+    def test_empty_dict_value(self):
+        assert flatten_dict({"A": {}}) == {"A": {}}

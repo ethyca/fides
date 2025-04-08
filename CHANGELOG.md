@@ -43,6 +43,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Hide "Reclassify" option on fields in D&D tables [#5956](https://github.com/ethyca/fides/pull/5956)
 - Fix D&D action errors not surfacing in UI [#5997](https://github.com/ethyca/fides/pull/5997)
 - Fixes translation bug in TCF custom notices [#6003](https://github.com/ethyca/fides/pull/6003)
+- Fixed issue with SaaS integration update payloads [#6001](https://github.com/ethyca/fides/pull/6001)
 
 ### Removed
 - Removed datasetClassificationUpdates flag from admin UI. [#5950](https://github.com/ethyca/fides/pull/5950)
