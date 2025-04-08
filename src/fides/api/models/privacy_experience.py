@@ -20,6 +20,7 @@ from fides.api.models import (
 from fides.api.models.location_regulation_selections import PrivacyNoticeRegion
 from fides.api.models.privacy_notice import PrivacyNotice
 from fides.api.models.property import Property
+from fides.api.models.tcf_publisher_restrictions import TCFConfiguration
 from fides.api.schemas.language import SupportedLanguage
 
 
@@ -228,6 +229,13 @@ class PrivacyExperienceConfig(PrivacyExperienceConfigBase, Base):
         EnumColumn(RejectAllMechanism),
         nullable=True,
     )
+    # Optional FK to a TCF Configuration
+
+    tcf_configuration_id = Column(
+        String,
+        ForeignKey(TCFConfiguration.id_field_path),
+        nullable=True,
+    )
 
     # Relationships
     experiences = relationship(
@@ -257,6 +265,12 @@ class PrivacyExperienceConfig(PrivacyExperienceConfigBase, Base):
         back_populates="experiences",
         lazy="selectin",
     )
+
+    # tcf_configuration: RelationshipProperty[TCFConfiguration] = relationship(
+    #     "TCFConfiguration",
+    #     back_populates="privacy_experience_configs",
+    #     lazy="selectin",
+    # )
 
     @property
     def regions(self) -> List[PrivacyNoticeRegion]:
