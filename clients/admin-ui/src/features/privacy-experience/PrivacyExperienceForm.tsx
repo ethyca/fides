@@ -20,6 +20,10 @@ import { PRIVACY_EXPERIENCE_ROUTE } from "~/features/common/nav/routes";
 import { PRIVACY_NOTICE_REGION_RECORD } from "~/features/common/privacy-notice-regions";
 import ScrollableList from "~/features/common/ScrollableList";
 import {
+  selectTCFConfigFilters,
+  useGetTCFConfigurationsQuery,
+} from "~/features/consent-settings/tcf/tcf-config.slice";
+import {
   selectLocationsRegulations,
   useGetLocationsRegulationsQuery,
 } from "~/features/locations/locations.slice";
@@ -203,6 +207,18 @@ export const PrivacyExperienceForm = ({
   useGetAllPropertiesQuery({ page: propertyPage, size: propertyPageSize });
   const allProperties = useAppSelector(selectAllProperties);
 
+  const tcfConfigFilters = useAppSelector(selectTCFConfigFilters);
+  const { data: tcfConfigs } = useGetTCFConfigurationsQuery(tcfConfigFilters);
+
+  const tcfConfigOptions = useMemo(
+    () =>
+      tcfConfigs?.items.map((config) => ({
+        label: config.name,
+        value: config.id,
+      })) ?? [],
+    [tcfConfigs],
+  );
+
   const buttonPanel = (
     <div className="flex justify-between border-t border-[#DEE5EE] p-4">
       <Button onClick={() => router.push(PRIVACY_EXPERIENCE_ROUTE)}>
@@ -244,6 +260,21 @@ export const PrivacyExperienceForm = ({
           isRequired
         />
       )}
+      <Collapse
+        in={values.component === ComponentType.TCF_OVERLAY}
+        animateOpacity
+      >
+        <ControlledSelect
+          name="tcf_configuration_id"
+          id="tcf_configuration_id"
+          label="TCF Configuration"
+          options={tcfConfigOptions}
+          layout="stacked"
+          disabled={values.component !== ComponentType.TCF_OVERLAY}
+          tooltip="Select a TCF configuration. Configurations are defined in “Consent settings” and apply to TCF privacy experiences."
+          allowClear
+        />
+      </Collapse>
       <Collapse
         in={values.component === ComponentType.TCF_OVERLAY}
         animateOpacity

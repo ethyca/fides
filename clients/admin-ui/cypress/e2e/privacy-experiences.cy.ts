@@ -335,6 +335,57 @@ describe("Privacy experiences", () => {
           "Manage your consent preferences",
         );
       });
+
+      it("can edit the TCF configuration for a TCF experience", () => {
+        // Load a TCF experience that already has a config assigned
+        cy.fixture("privacy-experiences/experienceConfig.json").then((data) => {
+          cy.intercept("GET", "/api/v1/experience-config/pri_001", {
+            ...data,
+            id: "pri_001",
+            component: "tcf_overlay",
+            tcf_configuration_id: "tcf_config_1", // Assign initial config
+          }).as("getTCFExperience");
+        });
+        cy.intercept("PATCH", "/api/v1/experience-config/pri_001", {
+          fixture: "privacy-experiences/experienceConfig.json",
+        }).as("patchExperience");
+
+        cy.visit(`${PRIVACY_EXPERIENCE_ROUTE}/pri_001`);
+        cy.wait("@getTCFExperience");
+        cy.wait("@getTcfConfigs"); // Make sure configs are loaded
+
+        // Verify the select is visible and has the initial value
+        cy.getByTestId("controlled-select-tcf_configuration_id")
+          .should("be.visible")
+          .contains("Default TCF Config");
+
+        // Change the TCF config
+        cy.getByTestId("controlled-select-tcf_configuration_id").antSelect(
+          "Strict TCF Config",
+        );
+        cy.getByTestId("save-btn").click();
+        cy.wait("@patchExperience").then((interception) => {
+          const { body } = interception.request;
+          expect(body.tcf_configuration_id).to.eql("tcf_config_2");
+        });
+        cy.getByTestId("toast-success-msg").should("exist");
+
+        // Clear the TCF config
+        cy.visit(`${PRIVACY_EXPERIENCE_ROUTE}/pri_001`); // Re-visit to reset state
+        cy.wait("@getTCFExperience");
+        cy.wait("@getTcfConfigs");
+        cy.getByTestId("controlled-select-tcf_configuration_id")
+          .should("be.visible")
+          .find(".ant-select-clear")
+          .click();
+        cy.getByTestId("save-btn").click();
+        cy.wait("@patchExperience").then((interception) => {
+          const { body } = interception.request;
+          // Depending on backend behavior, this might be null or undefined
+          expect(body.tcf_configuration_id).to.be.oneOf([null, undefined]);
+        });
+        cy.getByTestId("toast-success-msg").should("exist");
+      });
     });
 
     describe("editing translations", () => {
