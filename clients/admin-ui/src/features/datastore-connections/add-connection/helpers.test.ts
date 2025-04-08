@@ -1,6 +1,6 @@
 import { describe, expect, it } from "@jest/globals";
 
-import { formatKey } from "~/features/datastore-connections/add-connection/helpers";
+import { formatKey } from "~/features/datastore-connections/system_portal_config/helpers";
 
 const TEST_CASES = [
   ["Test Key with Spaces", "test_key_with_spaces"],

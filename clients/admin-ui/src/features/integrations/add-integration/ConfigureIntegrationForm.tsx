@@ -14,7 +14,7 @@ import {
   usePatchDatastoreConnectionMutation,
   usePatchDatastoreConnectionSecretsMutation,
 } from "~/features/datastore-connections";
-import { formatKey } from "~/features/datastore-connections/add-connection/helpers";
+import { formatKey } from "~/features/datastore-connections/system_portal_config/helpers";
 import { useDatasetConfigField } from "~/features/datastore-connections/system_portal_config/forms/fields/DatasetConfigField/useDatasetConfigField";
 import {
   useGetAllSystemsQuery,
