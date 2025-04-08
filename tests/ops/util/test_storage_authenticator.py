@@ -133,6 +133,7 @@ class TestGCSAuthenticator:
                 "https://www.googleapis.com/robot/v1/metadata/x509/"
                 "test-service%40test-project-123.iam.gserviceaccount.com"
             ),
+            "universe_domain": "googleapis.com",
         }
 
         assert secrets_are_valid(test_secrets, StorageType.gcs)

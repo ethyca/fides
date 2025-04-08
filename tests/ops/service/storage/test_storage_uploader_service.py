@@ -201,39 +201,10 @@ class TestGCSUploader:
         mock_upload_to_gcs: Mock,
         db: Session,
         privacy_request: PrivacyRequest,
+        storage_config_default_gcs_service_account_keys,
     ) -> None:
         """Test successful GCS upload using service account keys authentication."""
-        mock_config = {
-            "name": "test gcs dest",
-            "key": "test_dest_key",
-            "type": StorageType.gcs.value,
-            "details": {
-                "auth_method": "service_account_keys",
-                "bucket": "some-bucket",
-                "naming": FileNaming.request_id.value,
-                "max_retries": 10,
-            },
-            "secrets": {
-                "type": "service_account",
-                "project_id": "test-project-123",
-                "private_key_id": "test-key-id-456",
-                "private_key": (
-                    "-----BEGIN PRIVATE KEY-----\n"
-                    "MIItest\n"
-                    "-----END PRIVATE KEY-----\n"
-                ),
-                "client_email": "test-service@test-project-123.iam.gserviceaccount.com",
-                "client_id": "123456789",
-                "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-                "token_uri": "https://oauth2.googleapis.com/token",
-                "auth_provider_x509_cert_url": (
-                    "https://www.googleapis.com/oauth2/v1/certs"
-                ),
-                "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/test-service%40test-project-123.iam.gserviceaccount.com",
-            },
-            "format": ResponseFormat.json.value,
-        }
-        storage_config = StorageConfig.create(db, data=mock_config)
+        storage_config = storage_config_default_gcs_service_account_keys
 
         mock_upload_to_gcs.return_value = (
             f"https://storage.googleapis.com/some-bucket/{privacy_request.id}.json"
@@ -244,20 +215,18 @@ class TestGCSUploader:
             db=db,
             privacy_request=privacy_request,
             data=upload_data,
-            storage_key=mock_config["key"],
+            storage_key=storage_config.key,
         )
 
         mock_upload_to_gcs.assert_called_with(
-            mock_config["secrets"],
+            storage_config.secrets,
             upload_data,
-            "some-bucket",
+            "test_bucket",
             f"{privacy_request.id}.json",
             "json",
             privacy_request,
             "service_account_keys",
         )
-
-        storage_config.delete(db)
 
     @mock.patch("fides.api.service.storage.storage_uploader_service.upload_to_gcs")
     def test_uploader_gcs_success_adc_auth(
@@ -265,21 +234,10 @@ class TestGCSUploader:
         mock_upload_to_gcs: Mock,
         db: Session,
         privacy_request: PrivacyRequest,
+        storage_config_default_gcs,
     ) -> None:
         """Test successful GCS upload using adc authentication."""
-        mock_config = {
-            "name": "test gcs dest",
-            "key": "test_dest_key",
-            "type": StorageType.gcs.value,
-            "details": {
-                "auth_method": "adc",
-                "bucket": "some-bucket",
-                "naming": FileNaming.request_id.value,
-                "max_retries": 10,
-            },
-            "format": ResponseFormat.json.value,
-        }
-        storage_config = StorageConfig.create(db, data=mock_config)
+        storage_config = storage_config_default_gcs
 
         mock_upload_to_gcs.return_value = (
             f"https://storage.googleapis.com/some-bucket/{privacy_request.id}.json"
@@ -290,20 +248,18 @@ class TestGCSUploader:
             db=db,
             privacy_request=privacy_request,
             data=upload_data,
-            storage_key=mock_config["key"],
+            storage_key=storage_config.key,
         )
 
         mock_upload_to_gcs.assert_called_with(
             None,
             upload_data,
-            "some-bucket",
+            "test_bucket",
             f"{privacy_request.id}.json",
             "json",
             privacy_request,
             "adc",
         )
-
-        storage_config.delete(db)
 
     @mock.patch("fides.api.service.storage.storage_uploader_service.upload_to_gcs")
     def test_uploader_gcs_invalid_file_naming(
@@ -311,20 +267,17 @@ class TestGCSUploader:
         mock_upload_to_gcs: Mock,
         db: Session,
         privacy_request: PrivacyRequest,
+        storage_config_default_gcs,
     ) -> None:
         """Test error handling for invalid file naming configuration."""
-        mock_config = {
-            "name": "test gcs dest",
-            "key": "test_dest_key",
-            "type": StorageType.gcs.value,
-            "details": {
-                "auth_method": "adc",
-                "bucket": "some-bucket",
-                "naming": "something invalid",
-            },
-            "format": ResponseFormat.json.value,
+        storage_config = storage_config_default_gcs
+        storage_config.details = {
+            "auth_method": "adc",
+            "bucket": "some-bucket",
+            "naming": "something invalid",
         }
-        sc = StorageConfig.create(db, data=mock_config)
+        storage_config.save(db)
+        db.refresh(storage_config)
 
         upload_data = {"phone": "1231231234"}
 
@@ -333,11 +286,10 @@ class TestGCSUploader:
                 db=db,
                 privacy_request=privacy_request,
                 data=upload_data,
-                storage_key=mock_config["key"],
+                storage_key=storage_config.key,
             )
 
         mock_upload_to_gcs.assert_not_called()
-        sc.delete(db)
 
     @mock.patch("fides.api.service.storage.storage_uploader_service.upload_to_gcs")
     def test_uploader_gcs_with_csv_format(
@@ -345,20 +297,13 @@ class TestGCSUploader:
         mock_upload_to_gcs: Mock,
         db: Session,
         privacy_request: PrivacyRequest,
+        storage_config_default_gcs,
     ) -> None:
         """Test GCS upload with CSV format response."""
-        mock_config = {
-            "name": "test gcs dest",
-            "key": "test_dest_key",
-            "type": StorageType.gcs.value,
-            "details": {
-                "auth_method": "adc",
-                "bucket": "some-bucket",
-                "naming": FileNaming.request_id.value,
-            },
-            "format": ResponseFormat.csv.value,
-        }
-        storage_config = StorageConfig.create(db, data=mock_config)
+        storage_config = storage_config_default_gcs
+        storage_config.format = ResponseFormat.csv.value
+        storage_config.save(db)
+        db.refresh(storage_config)
 
         mock_upload_to_gcs.return_value = (
             f"https://storage.googleapis.com/some-bucket/{privacy_request.id}.zip"
@@ -369,20 +314,18 @@ class TestGCSUploader:
             db=db,
             privacy_request=privacy_request,
             data=upload_data,
-            storage_key=mock_config["key"],
+            storage_key=storage_config.key,
         )
 
         mock_upload_to_gcs.assert_called_with(
             None,
             upload_data,
-            "some-bucket",
+            "test_bucket",
             f"{privacy_request.id}.zip",
             "csv",
             privacy_request,
             "adc",
         )
-
-        storage_config.delete(db)
 
     @mock.patch("fides.api.service.storage.storage_uploader_service.upload_to_gcs")
     def test_uploader_gcs_with_html_format(
@@ -390,20 +333,13 @@ class TestGCSUploader:
         mock_upload_to_gcs: Mock,
         db: Session,
         privacy_request: PrivacyRequest,
+        storage_config_default_gcs,
     ) -> None:
         """Test GCS upload with HTML format response."""
-        mock_config = {
-            "name": "test gcs dest",
-            "key": "test_dest_key",
-            "type": StorageType.gcs.value,
-            "details": {
-                "auth_method": "adc",
-                "bucket": "some-bucket",
-                "naming": FileNaming.request_id.value,
-            },
-            "format": ResponseFormat.html.value,
-        }
-        storage_config = StorageConfig.create(db, data=mock_config)
+        storage_config = storage_config_default_gcs
+        storage_config.format = ResponseFormat.html.value
+        storage_config.save(db)
+        db.refresh(storage_config)
 
         mock_upload_to_gcs.return_value = (
             f"https://storage.googleapis.com/some-bucket/{privacy_request.id}.zip"
@@ -414,20 +350,18 @@ class TestGCSUploader:
             db=db,
             privacy_request=privacy_request,
             data=upload_data,
-            storage_key=mock_config["key"],
+            storage_key=storage_config.key,
         )
 
         mock_upload_to_gcs.assert_called_with(
             None,
             upload_data,
-            "some-bucket",
+            "test_bucket",
             f"{privacy_request.id}.zip",
             "html",
             privacy_request,
             "adc",
         )
-
-        storage_config.delete(db)
 
     @mock.patch("fides.api.service.storage.storage_uploader_service.upload_to_gcs")
     def test_uploader_gcs_missing_bucket(
@@ -435,19 +369,16 @@ class TestGCSUploader:
         mock_upload_to_gcs: Mock,
         db: Session,
         privacy_request: PrivacyRequest,
+        storage_config_default_gcs,
     ) -> None:
         """Test error handling for missing bucket configuration."""
-        mock_config = {
-            "name": "test gcs dest",
-            "key": "test_dest_key",
-            "type": StorageType.gcs.value,
-            "details": {
-                "auth_method": "adc",
-                "naming": FileNaming.request_id.value,
-            },
-            "format": ResponseFormat.json.value,
+        storage_config = storage_config_default_gcs
+        storage_config.details = {
+            "auth_method": "adc",
+            "naming": FileNaming.request_id.value,
         }
-        sc = StorageConfig.create(db, data=mock_config)
+        storage_config.save(db)
+        db.refresh(storage_config)
 
         upload_data = {"phone": "1231231234"}
 
@@ -456,11 +387,10 @@ class TestGCSUploader:
                 db=db,
                 privacy_request=privacy_request,
                 data=upload_data,
-                storage_key=mock_config["key"],
+                storage_key=storage_config.key,
             )
 
         mock_upload_to_gcs.assert_not_called()
-        sc.delete(db)
 
 
 class TestLocalUploader:
