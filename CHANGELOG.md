@@ -30,6 +30,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Added "Reject all" behavior and visibility options to TCF Experience config form [#5964](https://github.com/ethyca/fides/pull/5964)
 - Added `TCFConfiguration` and `TCFPublisherRestriction` models [#5983](https://github.com/ethyca/fides/pull/5983) https://github.com/ethyca/fides/labels/db-migration
 - Support `Quarterly` and `Yearly` monitor scheduling [#5981](https://github.com/ethyca/fides/pull/5981)
+- Adds integration tests for Enterprise Bigquery DSR nested fields [#5969](https://github.com/ethyca/fides/pull/5969)
 
 ### Changed
 - Bumped Next.js for all frontend apps to latest patch versions. [#5946](https://github.com/ethyca/fides/pull/5946)
@@ -42,6 +43,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Updated relationships for Comments, Attachments and PrivacyRequests to remove overlap sqlalchemy error. [#5929](https://github.com/ethyca/fides/pull/5929)
 - Hide "Reclassify" option on fields in D&D tables [#5956](https://github.com/ethyca/fides/pull/5956)
 - Fix D&D action errors not surfacing in UI [#5997](https://github.com/ethyca/fides/pull/5997)
+- Fixes translation bug in TCF custom notices [#6003](https://github.com/ethyca/fides/pull/6003)
 
 ### Removed
 - Removed datasetClassificationUpdates flag from admin UI. [#5950](https://github.com/ethyca/fides/pull/5950)
