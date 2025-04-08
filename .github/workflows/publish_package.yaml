@@ -35,8 +35,8 @@ jobs:
           cd clients
           npm run prod-export-admin-ui
 
-      - name: Install Twine and wheel
-        run: pip install twine wheel
+      - name: Install Twine, wheel, and setuptools
+        run: pip install twine setuptools wheel
 
       # The git reset is required here because the build modifies
       # egg-info and the wheel becomes a dirty version
@@ -47,7 +47,6 @@ jobs:
 
       - name: Build the wheel
         run: python setup.py bdist_wheel
-
 
       - name: Check Prod Tag
         id: check-prod-tag
