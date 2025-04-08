@@ -1,14 +1,12 @@
 import { getCoreRowModel, useReactTable } from "@tanstack/react-table";
 import { AntButton as Button, AntFlex as Flex, Spacer, Text } from "fidesui";
 import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import {
   FidesTableV2,
-  PaginationBar,
   TableActionBar,
   TableSkeletonLoader,
-  useServerSidePagination,
 } from "~/features/common/table/v2";
 import { RangeEntry } from "~/types/api";
 
@@ -43,20 +41,6 @@ export const PurposeRestrictionsTable = () => {
   const columns = usePurposeRestrictionTableColumns();
   const router = useRouter();
 
-  const {
-    PAGE_SIZES,
-    pageSize,
-    setPageSize: updatePageSize,
-    onPreviousPageClick,
-    isPreviousPageDisabled,
-    onNextPageClick,
-    isNextPageDisabled,
-    startRange,
-    endRange,
-    pageIndex,
-    setTotalPages,
-  } = useServerSidePagination();
-
   const purposeId = router.query.purpose_id
     ? parseInt(router.query.purpose_id as string, 10)
     : undefined;
@@ -68,15 +52,9 @@ export const PurposeRestrictionsTable = () => {
       {
         configuration_id: configurationId,
         purpose_id: purposeId ?? 0,
-        page: pageIndex,
-        size: pageSize,
       },
       { skip: !configurationId || !purposeId },
     );
-
-  useEffect(() => {
-    setTotalPages(restrictionsData?.pages ?? 1);
-  }, [restrictionsData?.pages, setTotalPages]);
 
   const transformedData: PurposeRestriction[] = (
     restrictionsData?.items || []
@@ -118,24 +96,13 @@ export const PurposeRestrictionsTable = () => {
         </Button>
       </TableActionBar>
       {isFetching ? (
-        <TableSkeletonLoader rowHeight={36} numRows={20} />
+        <TableSkeletonLoader rowHeight={36} numRows={3} />
       ) : (
         <FidesTableV2
           tableInstance={table}
           emptyTableNotice={<EmptyTableNotice onAdd={handleOpenModal} />}
         />
       )}
-      <PaginationBar
-        totalRows={restrictionsData?.total ?? 0}
-        pageSizes={PAGE_SIZES}
-        setPageSize={updatePageSize}
-        onPreviousPageClick={onPreviousPageClick}
-        isPreviousPageDisabled={isPreviousPageDisabled || isFetching}
-        onNextPageClick={onNextPageClick}
-        isNextPageDisabled={isNextPageDisabled || isFetching}
-        startRange={startRange}
-        endRange={endRange}
-      />
       <PurposeRestrictionFormModal
         isOpen={isModalOpen}
         onClose={handleCloseModal}
