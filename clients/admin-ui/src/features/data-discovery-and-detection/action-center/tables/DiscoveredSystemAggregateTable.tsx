@@ -109,10 +109,11 @@ export const DiscoveredSystemAggregateTable = ({
     }
   }, [data, setTotalPages]);
 
-  const { columns } = useDiscoveredSystemAggregateColumns(
+  const { columns } = useDiscoveredSystemAggregateColumns({
     monitorId,
-    actionsDisabled,
-  );
+    readonly: actionsDisabled,
+    allowIgnore: !activeParams.diff_status.includes(DiffStatus.MUTED),
+  });
 
   const tableInstance = useReactTable({
     getCoreRowModel: getCoreRowModel(),

@@ -17,10 +17,17 @@ import { DiscoveredSystemActionsCell } from "../tables/cells/DiscoveredSystemAgg
 import { DiscoveredSystemStatusCell } from "../tables/cells/DiscoveredSystemAggregateStatusCell";
 import { MonitorSystemAggregate } from "../types";
 
-export const useDiscoveredSystemAggregateColumns = (
-  monitorId: string,
-  readonly: boolean,
-) => {
+interface UseDiscoveredSystemAggregateColumnsProps {
+  monitorId: string;
+  readonly: boolean;
+  allowIgnore?: boolean;
+}
+
+export const useDiscoveredSystemAggregateColumns = ({
+  monitorId,
+  readonly,
+  allowIgnore,
+}: UseDiscoveredSystemAggregateColumnsProps) => {
   const columnHelper = createColumnHelper<MonitorSystemAggregate>();
 
   const select = columnHelper.display({
@@ -112,6 +119,7 @@ export const useDiscoveredSystemAggregateColumns = (
       <DiscoveredSystemActionsCell
         system={props.row.original}
         monitorId={monitorId}
+        allowIgnore={allowIgnore}
       />
     ),
     header: "Actions",
