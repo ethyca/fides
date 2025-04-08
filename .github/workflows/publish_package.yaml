@@ -35,7 +35,7 @@ jobs:
           cd clients
           npm run prod-export-admin-ui
 
-      - name: Install Twine and wheel
+      - name: Install Twine, wheel, and setuptools
         run: pip install twine setuptools wheel
 
       # The git reset is required here because the build modifies
