@@ -23,6 +23,7 @@ import {
   selectLocationsRegulations,
   useGetLocationsRegulationsQuery,
 } from "~/features/locations/locations.slice";
+import { selectHealth as selectPlusHealth } from "~/features/plus/plus.slice";
 import { getSelectedRegionIds } from "~/features/privacy-experience/form/helpers";
 import { selectAllLanguages } from "~/features/privacy-experience/language.slice";
 import {
@@ -49,25 +50,6 @@ import {
 } from "~/types/api";
 
 import { ControlledSelect } from "../common/form/ControlledSelect";
-
-const componentTypeOptions: SelectProps["options"] = [
-  {
-    label: "Banner and modal",
-    value: ComponentType.BANNER_AND_MODAL,
-  },
-  {
-    label: "Modal",
-    value: ComponentType.MODAL,
-  },
-  {
-    label: "Privacy center",
-    value: ComponentType.PRIVACY_CENTER,
-  },
-  {
-    label: "Headless",
-    value: ComponentType.HEADLESS,
-  },
-];
 
 const tcfRejectAllMechanismOptions: SelectProps["options"] = [
   {
@@ -144,6 +126,7 @@ export const PrivacyExperienceForm = ({
   onCreateTranslation: (lang: SupportedLanguage) => ExperienceTranslation;
 }) => {
   const router = useRouter();
+  const plusHealth = useAppSelector(selectPlusHealth);
 
   const { values, setFieldValue, dirty, isValid, isSubmitting, initialValues } =
     useFormikContext<ExperienceConfigCreate>();
@@ -166,6 +149,36 @@ export const PrivacyExperienceForm = ({
       }
       return noticesWithTcfPlaceholder;
     }, [allPrivacyNotices]);
+
+  const getComponentTypeOptions = (): SelectProps["options"] => {
+    const options = [
+      {
+        label: "Banner and modal",
+        value: ComponentType.BANNER_AND_MODAL,
+      },
+      {
+        label: "Modal",
+        value: ComponentType.MODAL,
+      },
+      {
+        label: "Privacy center",
+        value: ComponentType.PRIVACY_CENTER,
+      },
+      {
+        label: "Headless",
+        value: ComponentType.HEADLESS,
+      },
+    ];
+
+    if (plusHealth?.tcf?.enabled) {
+      options.push({
+        label: "TCF overlay",
+        value: ComponentType.TCF_OVERLAY,
+      });
+    }
+
+    return options;
+  };
 
   const getPrivacyNoticeName = (id: string) => {
     const notice = allPrivacyNoticesWithTcfPlaceholder.find((n) => n.id === id);
@@ -233,17 +246,15 @@ export const PrivacyExperienceForm = ({
         isRequired
         variant="stacked"
       />
-      {values.component !== ComponentType.TCF_OVERLAY && (
-        <ControlledSelect
-          name="component"
-          id="component"
-          options={componentTypeOptions}
-          label="Experience type"
-          layout="stacked"
-          disabled={!!initialValues.component}
-          isRequired
-        />
-      )}
+      <ControlledSelect
+        name="component"
+        id="component"
+        options={getComponentTypeOptions()}
+        label="Experience type"
+        layout="stacked"
+        disabled={!!initialValues.component}
+        isRequired
+      />
       <Collapse
         in={values.component === ComponentType.TCF_OVERLAY}
         animateOpacity
