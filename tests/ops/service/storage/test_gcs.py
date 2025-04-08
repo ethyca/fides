@@ -35,6 +35,7 @@ class TestGetGCSClient:
                 "https://www.googleapis.com/oauth2/v1/certs"
             ),
             "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/test-service%40test-project-123.iam.gserviceaccount.com",
+            "universe_domain": "googleapis.com",
         }
 
         with patch(
