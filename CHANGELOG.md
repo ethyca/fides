@@ -50,6 +50,9 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Action center table's checkboxes were improved, also improved change indications [#6021](https://github.com/ethyca/fides/pull/6021)
 - Changed how TCF Publisher Overrides gets configured in consent settings [#6013](https://github.com/ethyca/fides/pull/6013)
 
+### Developer Experience
+- Reduced animations on Cypress tests in Privacy Center for quicker results [#5976](https://github.com/ethyca/fides/pull/5976)
+
 ### Fixed
 - Updated relationships for Comments, Attachments and PrivacyRequests to remove overlap sqlalchemy error. [#5929](https://github.com/ethyca/fides/pull/5929)
 - Hide "Reclassify" option on fields in D&D tables [#5956](https://github.com/ethyca/fides/pull/5956)
