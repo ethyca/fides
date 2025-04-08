@@ -64,6 +64,8 @@ export const DiscoveredAssetsTable = ({
   onSystemName,
 }: DiscoveredAssetsTableProps) => {
   const router = useRouter();
+  const tabHash = router.asPath.split("#")[1];
+
   const [systemName, setSystemName] = useState(systemId);
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
   const [isAssignSystemModalOpen, setIsAssignSystemModalOpen] =
@@ -111,8 +113,13 @@ export const DiscoveredAssetsTable = ({
     resetPageIndexToDefault();
   }, [monitorId, searchQuery, resetPageIndexToDefault]);
 
-  const { filterTabs, filterTabIndex, onTabChange, activeParams } =
-    useActionCenterTabs({ systemId });
+  const {
+    filterTabs,
+    filterTabIndex,
+    onTabChange,
+    activeParams,
+    actionsDisabled,
+  } = useActionCenterTabs({ systemId, initialHash: tabHash });
 
   const { data, isLoading, isFetching } = useGetDiscoveredAssetsQuery({
     key: monitorId,
@@ -132,12 +139,8 @@ export const DiscoveredAssetsTable = ({
     }
   }, [data, systemId, onSystemName, setTotalPages, systemName]);
 
-  const disableEditing = activeParams.diff_status.includes(
-    DiffStatus.MONITORED,
-  );
-
   const { columns } = useDiscoveredAssetsColumns({
-    readonly: disableEditing,
+    readonly: actionsDisabled,
   });
 
   const tableInstance = useReactTable({
@@ -259,6 +262,11 @@ export const DiscoveredAssetsTable = ({
     }
   };
 
+  const handleTabChange = (index: number) => {
+    onTabChange(index);
+    setRowSelection({});
+  };
+
   if (!monitorId || !systemId) {
     return null;
   }
@@ -275,7 +283,7 @@ export const DiscoveredAssetsTable = ({
         index={filterTabIndex}
         isLazy
         isManual
-        onChange={onTabChange}
+        onChange={handleTabChange}
       />
       <TableActionBar>
         <SearchInput value={searchQuery} onChange={setSearchQuery} />
@@ -300,7 +308,7 @@ export const DiscoveredAssetsTable = ({
                 disabled={
                   !selectedUrns.length ||
                   anyBulkActionIsLoading ||
-                  disableEditing
+                  actionsDisabled
                 }
                 // @ts-ignore - `type` prop is for Ant button, not Chakra MenuButton
                 type="primary"

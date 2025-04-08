@@ -54,6 +54,8 @@ export const DiscoveredSystemAggregateTable = ({
   monitorId,
 }: DiscoveredSystemAggregateTableProps) => {
   const router = useRouter();
+  const tabHash = router.asPath.split("#")[1];
+
   const {
     PAGE_SIZES,
     pageSize,
@@ -85,8 +87,13 @@ export const DiscoveredSystemAggregateTable = ({
     resetPageIndexToDefault();
   }, [monitorId, searchQuery, resetPageIndexToDefault]);
 
-  const { filterTabs, filterTabIndex, onTabChange, activeParams } =
-    useActionCenterTabs({});
+  const {
+    filterTabs,
+    filterTabIndex,
+    onTabChange,
+    activeParams,
+    actionsDisabled,
+  } = useActionCenterTabs({ initialHash: tabHash });
 
   const { data, isLoading, isFetching } = useGetDiscoveredSystemAggregateQuery({
     key: monitorId,
@@ -96,20 +103,16 @@ export const DiscoveredSystemAggregateTable = ({
     ...activeParams,
   });
 
-  // TODO: disable actions and change columns when appropriate
-
-  // handling this can also probably be folded into the hook
-  const disableEditing = activeParams.diff_status.includes(
-    DiffStatus.MONITORED,
-  );
-
   useEffect(() => {
     if (data) {
       setTotalPages(data.pages || 1);
     }
   }, [data, setTotalPages]);
 
-  const { columns } = useDiscoveredSystemAggregateColumns(monitorId);
+  const { columns } = useDiscoveredSystemAggregateColumns(
+    monitorId,
+    actionsDisabled,
+  );
 
   const tableInstance = useReactTable({
     getCoreRowModel: getCoreRowModel(),
@@ -134,10 +137,8 @@ export const DiscoveredSystemAggregateTable = ({
   }
 
   const handleRowClick = (row: MonitorSystemAggregate) => {
-    // TODO: hash should be maintained
-    router.push(
-      `${ACTION_CENTER_ROUTE}/${monitorId}/${row.id ?? UNCATEGORIZED_SEGMENT}`,
-    );
+    const newUrl = `${ACTION_CENTER_ROUTE}/${monitorId}/${row.id ?? UNCATEGORIZED_SEGMENT}${tabHash ? `#${tabHash}` : ""}`;
+    router.push(newUrl);
   };
 
   const handleBulkAdd = async () => {
@@ -184,6 +185,11 @@ export const DiscoveredSystemAggregateTable = ({
     }
   };
 
+  const handleTabChange = (index: number) => {
+    onTabChange(index);
+    setRowSelection({});
+  };
+
   return (
     <>
       <DataTabsHeader
@@ -192,7 +198,7 @@ export const DiscoveredSystemAggregateTable = ({
         index={filterTabIndex}
         isLazy
         isManual
-        onChange={onTabChange}
+        onChange={handleTabChange}
       />
       <TableActionBar>
         <Flex
@@ -249,13 +255,15 @@ export const DiscoveredSystemAggregateTable = ({
                     Add
                   </MenuItem>
                 </Tooltip>
-                <MenuItem
-                  fontSize="small"
-                  onClick={handleBulkIgnore}
-                  data-testid="bulk-ignore"
-                >
-                  Ignore
-                </MenuItem>
+                {!activeParams.diff_status.includes(DiffStatus.MUTED) && (
+                  <MenuItem
+                    fontSize="small"
+                    onClick={handleBulkIgnore}
+                    data-testid="bulk-ignore"
+                  >
+                    Ignore
+                  </MenuItem>
+                )}
               </MenuList>
             </Menu>
           </Flex>
