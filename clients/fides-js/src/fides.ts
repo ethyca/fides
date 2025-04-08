@@ -34,7 +34,6 @@ import {
 import {
   consentCookieObjHasSomeConsentSet,
   getFidesConsentCookie,
-  getOrMakeFidesCookie,
   getOTConsentCookie,
   otCookieToFidesConsent,
   saveFidesCookie,
