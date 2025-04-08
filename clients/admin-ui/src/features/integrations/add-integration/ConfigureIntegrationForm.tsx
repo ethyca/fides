@@ -126,7 +126,6 @@ const ConfigureIntegrationForm = ({
         }
       : {
           name: values.name,
-          key: formatKey(values.name),
           connection_type: connectionOption.identifier as ConnectionType,
           access: AccessLevel.READ,
           disabled: false,
@@ -168,7 +167,7 @@ const ConfigureIntegrationForm = ({
     // if provided, update secrets with separate request
     if (!isEmpty(newSecretsValues)) {
       const secretsResult = await patchConnectionSecretsMutationTrigger({
-        connection_key: connectionPayload.key,
+        connection_key: patchResult.data.succeeded[0].key,
         secrets: newSecretsValues,
       });
 
