@@ -194,7 +194,7 @@ class PrivacyNotice(PrivacyNoticeBase, Base):
         """Return relevant assets of type 'cookie' (via the data use)"""
         db = Session.object_session(self)
         or_queries = [
-            f"array_to_string(data_uses, ',') ILIKE '%{data_use}%'"
+            f"array_to_string(data_uses, ',') ILIKE '{data_use}%'"
             for data_use in self.data_uses
         ]
 
