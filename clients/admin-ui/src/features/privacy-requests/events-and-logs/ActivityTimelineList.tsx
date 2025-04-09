@@ -49,12 +49,7 @@ const ActivityTimelineList = ({
           data-testid="activity-timeline-item"
         >
           <div className={styles.header}>
-            <span
-              className={styles.author}
-              data-testid="activity-timeline-author"
-            >
-              Fides:
-            </span>
+            <span data-testid="activity-timeline-author">Fides:</span>
             <span
               className={classNames(styles.title, {
                 [styles["title--error"]]: hasUnresolvedError,
