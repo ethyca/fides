@@ -48,51 +48,56 @@ class AccessManualWebhooks(FidesSchema):
     fields: ManualWebhookFieldsList
     model_config = ConfigDict(from_attributes=True)
 
-    @model_validator(mode="after")
-    def check_for_duplicates(self) -> "AccessManualWebhooks":
+    @field_validator("fields")
+    @classmethod
+    def check_for_duplicates(
+        cls, value: List[ManualWebhookField]
+    ) -> List[ManualWebhookField]:
         """
         Verify that pii_fields and dsr_package_labels are unique.
         Set the dsr_package_label to a snake_cased lower case version of pii field if it doesn't exist.
         """
-        unique_pii_fields: Set[str] = {field.pii_field for field in self.fields}
-        if len(self.fields) != len(unique_pii_fields):
+        unique_pii_fields: Set[str] = {field.pii_field for field in value}
+        if len(value) != len(unique_pii_fields):
             raise ValueError("pii_fields must be unique")
 
-        for field in self.fields:
+        for field in value:
             if not field.dsr_package_label:
                 field.dsr_package_label = DSRLabelFieldType(
                     to_snake_case(field.pii_field)
                 )
 
-        unique_dsr_package_labels: Set[str] = {
-            field.dsr_package_label
-            for field in self.fields
-            if field.dsr_package_label is not None
+        unique_dsr_package_labels: Set[Optional[str]] = {
+            field.dsr_package_label for field in value
         }
-        if len(self.fields) != len(unique_dsr_package_labels):
+        if len(value) != len(unique_dsr_package_labels):
+            # Postponing dsr_package_label uniqueness check in case we get overlaps
+            # above when we fallback to converting pii_fields to dsr_package_labels
             raise ValueError("dsr_package_labels must be unique")
 
-        return self
+        return value
 
-    def access_field_definitions(self) -> Dict[str, Any]:
-        """Shared access field definitions for manual webhook schemas"""
-        field_definitions = {}
-        for field in self.fields or []:
-            if field.dsr_package_label:
-                if "file" in field.types:
-                    field_definitions[field.dsr_package_label] = (Optional[str], None)
-                else:
-                    field_definitions[field.dsr_package_label] = (Optional[str], None)
-        return field_definitions
+    @field_validator("fields")
+    @classmethod
+    def fields_must_exist(
+        cls, value: List[ManualWebhookField]
+    ) -> List[ManualWebhookField]:
+        """
+        Verify that pii_fields and dsr_package_labels are unique.
+        Set the dsr_package_label to a snake_cased lower case version of pii field if it doesn't exist.
+        """
+        unique_pii_fields: Set[str] = {field.pii_field for field in value}
+        if len(value) != len(unique_pii_fields):
+            raise ValueError("pii_fields must be unique")
 
-    def erasure_field_definitions(self) -> Dict[str, Any]:
-        """Shared erasure field definitions for manual webhook schemas.
-        Only string fields can be used for erasure confirmation."""
-        return {
-            field.dsr_package_label: (Optional[bool], None)
-            for field in self.fields or []
-            if field.dsr_package_label
-            and "string" in field.types  # only include string fields
+        for field in value:
+            if not field.dsr_package_label:
+                field.dsr_package_label = DSRLabelFieldType(
+                    to_snake_case(field.pii_field)
+                )
+
+        unique_dsr_package_labels: Set[Optional[str]] = {
+            field.dsr_package_label for field in value
         }
 
 
