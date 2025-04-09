@@ -11,6 +11,7 @@ import { meta } from "./integrations/meta";
 import { shopify } from "./integrations/shopify";
 import { raise } from "./lib/common-utils";
 import {
+  ConsentMethod,
   FidesConfig,
   FidesCookie,
   FidesExperienceTranslationOverrides,
@@ -35,6 +36,7 @@ import {
   getFidesConsentCookie,
   getOTConsentCookie,
   otCookieToFidesConsent,
+  saveFidesCookie,
   updateExperienceFromCookieConsentNotices,
 } from "./lib/cookie";
 import { initializeDebugger } from "./lib/debugger";
@@ -194,6 +196,15 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
   this.saved_consent = {
     ...this.cookie.consent,
   };
+
+  if (consentFromOneTrust && !getFidesConsentCookie()) {
+    // If we have consent from OneTrust, we need to write the cookie to the browser
+    Object.assign(this.cookie.fides_meta, {
+      consentMethod: ConsentMethod.SCRIPT,
+    });
+    fidesDebugger("Saving OT preferences to Fides cookie");
+    saveFidesCookie(this.cookie, config.options.base64Cookie);
+  }
 
   // Update the fidesString if we have an override and the NC portion is valid
   const { fidesString } = config.options;
