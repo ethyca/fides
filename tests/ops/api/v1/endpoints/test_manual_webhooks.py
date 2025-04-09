@@ -1,3 +1,5 @@
+from typing import Optional
+
 import pytest
 from sqlalchemy.orm import Session
 from starlette.testclient import TestClient

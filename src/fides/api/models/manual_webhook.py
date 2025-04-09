@@ -61,8 +61,6 @@ class AccessManualWebhook(Base):
         """Shared access field definitions for manual webhook schemas"""
         field_definitions = {}
         for field in self.fields or []:
-            # Use types if present, otherwise default to ["string"]
-            field_types = field.get("types", ["string"])
             # Include all fields for access, regardless of type
             if "dsr_package_label" in field:
                 field_definitions[field["dsr_package_label"]] = (Optional[str], None)
