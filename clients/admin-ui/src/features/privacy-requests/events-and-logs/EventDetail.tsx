@@ -1,22 +1,15 @@
 import ClipboardButton from "common/ClipboardButton";
 import { AntTag as Tag, Box, Divider, Flex, Text } from "fidesui";
-import { ExecutionLogStatus } from "privacy-requests/types";
+import {
+  ExecutionLogStatus,
+  ExecutionLogStatusColors,
+  ExecutionLogStatusLabels,
+} from "privacy-requests/types";
 import React from "react";
 
 type EventDetailProps = {
   errorMessage: string;
   status?: ExecutionLogStatus;
-};
-
-const getTagColorForStatus = (status?: ExecutionLogStatus) => {
-  switch (status) {
-    case ExecutionLogStatus.SKIPPED:
-      return "warning";
-    case ExecutionLogStatus.ERROR:
-      return "error";
-    default:
-      return "error"; // fallback to error
-  }
 };
 
 const EventDetail = ({
@@ -34,7 +27,9 @@ const EventDetail = ({
       >
         Status
       </Text>
-      <Tag color={getTagColorForStatus(status)}>{status}</Tag>
+      <Tag color={ExecutionLogStatusColors[status]}>
+        {ExecutionLogStatusLabels[status]}
+      </Tag>
       <Box padding="0px" marginBottom="3px">
         <ClipboardButton copyText={errorMessage} />
       </Box>
