@@ -210,7 +210,7 @@ const MonitorConfigTab = ({
       const lastScanColumn = columnHelper.display({
         id: "monitor_status",
         cell: (props) => <MonitorStatusCell monitor={props.row.original} />,
-        header: (props) => <DefaultHeaderCell value="Last scan" {...props} />,
+        header: (props) => <DefaultHeaderCell value="Status" {...props} />,
         meta: { disableRowClick: true },
       });
 

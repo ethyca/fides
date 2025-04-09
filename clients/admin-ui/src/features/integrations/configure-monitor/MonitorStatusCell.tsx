@@ -68,9 +68,13 @@ const MonitorStatusCell = ({ monitor }: { monitor: MonitorStatusResponse }) => {
           className={styles.monitorStatusTag}
           data-testid="tag-error"
         >
-          <Typography.Text onClick={onOpen} className={styles.errorTagText}>
+          <button
+            onClick={onOpen}
+            className={styles.errorTagText}
+            type="button"
+          >
             Incomplete
-          </Typography.Text>
+          </button>
         </Tag>
         <Drawer isOpen={isOpen} onClose={onClose} size="md">
           <DrawerOverlay />
