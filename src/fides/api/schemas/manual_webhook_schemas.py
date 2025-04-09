@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING, Annotated, Any, Dict, List, Literal, Optional, Set
 
 from fideslang.validation import FidesKey
-from pydantic import ConfigDict, Field, StringConstraints, model_validator
+from pydantic import ConfigDict, Field, StringConstraints, field_validator
 
 from fides.api.schemas.base_class import FidesSchema
 from fides.api.schemas.connection_configuration.connection_config import (
@@ -24,16 +24,18 @@ class ManualWebhookField(FidesSchema):
     dsr_package_label: Optional[DSRLabelFieldType] = None
     data_categories: Optional[List[FidesKey]] = None
 
-    model_config = ConfigDict(from_attributes=True)
-
-    @model_validator(mode="before")
+    @field_validator("dsr_package_label")
+    @classmethod
     def convert_empty_string_dsr_package_label(
-        cls, values: Dict[str, Any]
-    ) -> Dict[str, Any]:
-        """Convert empty string dsr_package_label to None"""
-        if "dsr_package_label" in values and values["dsr_package_label"] == "":
-            values["dsr_package_label"] = None
-        return values
+        cls, value: Optional[str]
+    ) -> Optional[str]:
+        """
+        We specifically allow the dsr_package_label to be submitted as an empty string on input,
+        so converting to None here.
+        """
+        return None if value == "" else value
+
+    model_config = ConfigDict(from_attributes=True)
 
 
 if TYPE_CHECKING:
@@ -55,6 +57,7 @@ class AccessManualWebhooks(FidesSchema):
     ) -> List[ManualWebhookField]:
         """
         Verify that pii_fields and dsr_package_labels are unique.
+
         Set the dsr_package_label to a snake_cased lower case version of pii field if it doesn't exist.
         """
         unique_pii_fields: Set[str] = {field.pii_field for field in value}
@@ -84,6 +87,7 @@ class AccessManualWebhooks(FidesSchema):
     ) -> List[ManualWebhookField]:
         """
         Verify that pii_fields and dsr_package_labels are unique.
+
         Set the dsr_package_label to a snake_cased lower case version of pii field if it doesn't exist.
         """
         unique_pii_fields: Set[str] = {field.pii_field for field in value}
@@ -99,11 +103,15 @@ class AccessManualWebhooks(FidesSchema):
         unique_dsr_package_labels: Set[Optional[str]] = {
             field.dsr_package_label for field in value
         }
+        if len(value) != len(unique_dsr_package_labels):
+            raise ValueError("dsr_package_labels must be unique")
+
+        return value
 
 
 class AccessManualWebhookResponse(AccessManualWebhooks):
     """Expected response for accessing Access Manual Webhooks"""
 
-    id: str
     connection_config: ConnectionConfigurationResponse
+    id: str
     model_config = ConfigDict(from_attributes=True)
