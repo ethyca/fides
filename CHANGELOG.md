@@ -19,10 +19,12 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - https://github.com/ethyca/fides/labels/high-risk: to indicate that a change is a "high-risk" change that could potentially lead to unanticipated regressions or degradations
 - https://github.com/ethyca/fides/labels/db-migration: to indicate that a given change includes a DB migration
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.58.0...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.58.1...main)
 
+### Changed
+- Writes fides consent cookie during OT consent migration [#6009](https://github.com/ethyca/fides/pull/6009)
 
-
+## [2.58.1](https://github.com/ethyca/fides/compare/2.58.0...2.58.1)
 
 ### Fixed
 - Fixed an issue with banner dismisal resulting in resurfaced banner [#5979](https://github.com/ethyca/fides/pull/5979)
