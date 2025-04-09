@@ -163,12 +163,19 @@ describe("Action center", () => {
       cy.getByTestId("row-1-col-data_use").children().should("have.length", 1);
 
       // multiple locations
-      cy.getByTestId("row-2-col-locations").should("contain", "2 locations");
+      cy.getByTestId("row-2-col-locations")
+        .should("contain", "United States")
+        .and("contain", "Canada");
       // single location
-      cy.getByTestId("row-3-col-locations").should("contain", "USA");
+      cy.getByTestId("row-3-col-locations").should("contain", "United States");
 
       // multiple domains
-      cy.getByTestId("row-0-col-domains").should("contain", "29 domains");
+      cy.getByTestId("row-0-col-domains")
+        .should("contain", "29 domains")
+        .within(() => {
+          cy.get("button").click({ force: true });
+          cy.get("li").should("have.length", 29);
+        });
       // single domain
       cy.getByTestId("row-3-col-domains").should(
         "contain",
@@ -254,6 +261,59 @@ describe("Action center", () => {
         "contain",
         "system_key-8fe42cdb-af2e-4b9e-9b38-f75673180b88",
       );
+    });
+
+    describe("tab navigation", () => {
+      it("updates URL hash when switching tabs", () => {
+        cy.visit(`${ACTION_CENTER_ROUTE}/${webMonitorKey}#attention-required`);
+        cy.location("hash").should("eq", "#attention-required");
+
+        // eslint-disable-next-line cypress/no-unnecessary-waiting
+        cy.wait(500);
+        cy.getByTestId("tab-Recent activity").click({ force: true });
+        cy.location("hash").should("eq", "#recent-activity");
+
+        // "recent activity" tab should be read-only
+        cy.getByTestId("bulk-actions-menu").should("be.disabled");
+        cy.getByTestId("row-0-col-select").should("not.exist");
+        cy.getByTestId("row-0-col-actions").should("not.exist");
+
+        // eslint-disable-next-line cypress/no-unnecessary-waiting
+        cy.wait(500);
+        cy.getByTestId("tab-Ignored").click({ force: true });
+        cy.location("hash").should("eq", "#ignored");
+        // "ignore" option should not show in bulk actions menu
+        cy.getByTestId("row-0-col-select").find("label").click();
+        cy.getByTestId("row-2-col-select").find("label").click();
+        cy.getByTestId("row-3-col-select").find("label").click();
+        cy.getByTestId("bulk-actions-menu").click();
+        cy.getByTestId("bulk-ignore").should("not.exist");
+      });
+
+      it("maintains hash when clicking on a row", () => {
+        // no hash
+        cy.visit(`${ACTION_CENTER_ROUTE}/${webMonitorKey}`);
+        cy.getByTestId("row-0-col-system_name").click();
+        cy.location("hash").should("eq", "");
+
+        // eslint-disable-next-line cypress/no-unnecessary-waiting
+        cy.wait(500);
+        cy.visit(`${ACTION_CENTER_ROUTE}/${webMonitorKey}#attention-required`);
+        cy.getByTestId("row-0-col-system_name").click();
+        cy.location("hash").should("eq", "#attention-required");
+
+        // eslint-disable-next-line cypress/no-unnecessary-waiting
+        cy.wait(500);
+        cy.visit(`${ACTION_CENTER_ROUTE}/${webMonitorKey}#recent-activity`);
+        cy.getByTestId("row-0-col-system_name").click();
+        cy.location("hash").should("eq", "#recent-activity");
+
+        // eslint-disable-next-line cypress/no-unnecessary-waiting
+        cy.wait(500);
+        cy.visit(`${ACTION_CENTER_ROUTE}/${webMonitorKey}#ignored`);
+        cy.getByTestId("row-0-col-system_name").click();
+        cy.location("hash").should("eq", "#ignored");
+      });
     });
   });
 

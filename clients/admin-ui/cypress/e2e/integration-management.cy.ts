@@ -272,6 +272,22 @@ describe("Integration management for data detection & discovery", () => {
 
       it("shows a table of monitors", () => {
         cy.getByTestId("row-test monitor 1").should("exist");
+        // scan status column
+        cy.getByTestId("row-test monitor 1-col-monitor_status").should(
+          "contain",
+          "Scanning",
+        );
+        cy.getByTestId("row-test monitor 2-col-monitor_status").within(() => {
+          cy.getByTestId("tag-success").should("exist");
+        });
+        cy.getByTestId("row-test monitor 3-col-monitor_status").within(() => {
+          cy.getByTestId("tag-error").should("exist").click();
+        });
+        cy.getByTestId("error-log-drawer")
+          .should("be.visible")
+          .within(() => {
+            cy.getByTestId("error-log-message").should("have.length", 2);
+          });
       });
 
       it("can configure a new monitor", () => {
@@ -478,7 +494,7 @@ describe("Integration management for data detection & discovery", () => {
           force: true,
         });
         cy.getByTestId("controlled-select-execution_frequency").antSelect(
-          "Daily",
+          "Quarterly",
         );
         cy.getByTestId("input-execution_start_date").type("2034-06-03T10:00");
         cy.getByTestId("save-btn").click();

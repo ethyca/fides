@@ -59,6 +59,7 @@ declare module "@tanstack/table-core" {
     overflow?: "auto" | "visible" | "hidden";
     disableRowClick?: boolean;
     cellProps?: TableCellProps;
+    headerProps?: TableCellProps;
     noPadding?: boolean;
     onCellClick?: (row: TData) => void;
   }
@@ -137,6 +138,7 @@ const HeaderContent = <T,>({
         fontSize="xs"
         lineHeight={9} // same as table header height
         fontWeight="medium"
+        style={header.column.columnDef.meta?.headerProps as React.CSSProperties}
       >
         {flexRender(header.column.columnDef.header, header.getContext())}
       </Box>
