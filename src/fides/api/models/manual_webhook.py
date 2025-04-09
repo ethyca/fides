@@ -1,5 +1,6 @@
 from typing import Any, Dict, List, Optional
 
+from loguru import logger
 from pydantic import ConfigDict, create_model
 from sqlalchemy import Column, ForeignKey, String, or_, text
 from sqlalchemy.dialects.postgresql import JSONB
@@ -7,6 +8,8 @@ from sqlalchemy.ext.mutable import MutableList
 from sqlalchemy.orm import Session, relationship
 
 from fides.api.db.base_class import Base
+from fides.api.models.attachment import Attachment, AttachmentReference
+from fides.api.models.comment import Comment, CommentReference
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.schemas.base_class import FidesSchema
 from fides.api.schemas.policy import ActionType
@@ -28,6 +31,28 @@ class AccessManualWebhook(Base):
     )
     connection_config = relationship(
         ConnectionConfig, back_populates="access_manual_webhook", uselist=False
+    )
+
+    attachments = relationship(
+        "Attachment",
+        secondary="attachment_reference",
+        primaryjoin="and_(AccessManualWebhook.id == AttachmentReference.reference_id, "
+        "AttachmentReference.reference_type == 'manual_step')",
+        secondaryjoin="Attachment.id == AttachmentReference.attachment_id",
+        order_by="Attachment.created_at",
+        viewonly=True,
+        uselist=True,
+    )
+
+    comments = relationship(
+        "Comment",
+        secondary="comment_reference",
+        primaryjoin="and_(AccessManualWebhook.id == CommentReference.reference_id, "
+        "CommentReference.reference_type == 'manual_step')",
+        secondaryjoin="Comment.id == CommentReference.comment_id",
+        order_by="Comment.created_at",
+        viewonly=True,
+        uselist=True,
     )
 
     fields = Column(MutableList.as_mutable(JSONB), nullable=False)
@@ -123,3 +148,47 @@ class AccessManualWebhook(Base):
             )
 
         return query.all()
+
+    def get_comment_by_id(self, db: Session, comment_id: str) -> Optional[Comment]:
+        """Get the comment associated with the manual webhook"""
+        comment = (
+            db.query(Comment)
+            .join(CommentReference, Comment.id == CommentReference.comment_id)
+            .filter(
+                CommentReference.reference_id == self.id,
+                Comment.id == comment_id,
+            )
+            .first()
+        )
+        if not comment:
+            logger.info(
+                f"Comment with id {comment_id} not found on manual webhook {self.id}"
+            )
+        return comment
+
+    def get_attachment_by_id(
+        self, db: Session, attachment_id: str
+    ) -> Optional[Attachment]:
+        """Get the attachment associated with the manual webhook"""
+        attachment = (
+            db.query(Attachment)
+            .join(
+                AttachmentReference, Attachment.id == AttachmentReference.attachment_id
+            )
+            .filter(
+                AttachmentReference.reference_id == self.id,
+                Attachment.id == attachment_id,
+            )
+            .first()
+        )
+        if not attachment:
+            logger.info(
+                f"Attachment with id {attachment_id} not found on manual webhook {self.id}"
+            )
+        return attachment
+
+    def delete_attachment_by_id(self, db: Session, attachment_id: str) -> None:
+        """Delete the attachment associated with the manual webhook"""
+        attachment = self.get_attachment_by_id(db, attachment_id)
+        if attachment:
+            attachment.delete(db)

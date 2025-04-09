@@ -80,18 +80,23 @@ class TestGetAccessManualWebhook:
 
         resp = response.json()
 
-        assert resp["fields"] == [
+        expected_fields = [
             {
                 "pii_field": "email",
                 "dsr_package_label": "email",
                 "data_categories": ["user.contact.email"],
+                "types": ["string"],
             },
             {
                 "pii_field": "Last Name",
                 "dsr_package_label": "last_name",
                 "data_categories": ["user.name"],
+                "types": ["string"],
             },
         ]
+
+        assert resp["fields"] == expected_fields
+
         connection_config_details = resp["connection_config"]
         assert connection_config_details["key"] == integration_manual_webhook_config.key
         assert connection_config_details["connection_type"] == "manual_webhook"
@@ -99,6 +104,40 @@ class TestGetAccessManualWebhook:
         assert connection_config_details["created_at"] is not None
         assert connection_config_details["updated_at"] is not None
         assert connection_config_details["secrets"] is None
+
+    def test_get_manual_webhook_with_multiple_types(
+        self,
+        api_client: TestClient,
+        db,
+        url,
+        generate_auth_header,
+        integration_manual_webhook_config,
+    ):
+        """Test retrieving a manual webhook with multiple types per field"""
+        manual_webhook = AccessManualWebhook.create(
+            db=db,
+            data={
+                "connection_config_id": integration_manual_webhook_config.id,
+                "fields": [
+                    {
+                        "pii_field": "medical_records",
+                        "dsr_package_label": "medical_records",
+                        "data_categories": ["user.medical"],
+                        "types": ["string", "file"],
+                    }
+                ],
+            },
+        )
+
+        auth_header = generate_auth_header([WEBHOOK_READ])
+        response = api_client.get(url, headers=auth_header)
+
+        assert response.status_code == 200
+        resp = response.json()
+
+        assert resp["fields"][0]["types"] == ["string", "file"]
+
+        manual_webhook.delete(db)
 
 
 class TestPostAccessManualWebhook:
@@ -116,16 +155,19 @@ class TestPostAccessManualWebhook:
                     "pii_field": "First name",
                     "dsr_package_label": None,
                     "data_categories": ["user.name"],
+                    "types": ["string"],
                 },
                 {
                     "pii_field": "Last name",
                     "dsr_package_label": "last_name",
                     "data_categories": ["user.name"],
+                    "types": ["string"],
                 },
                 {
                     "pii_field": "Order number",
                     "dsr_package_label": "order_number",
                     "data_categories": None,
+                    "types": ["string"],
                 },
             ]
         }
@@ -248,11 +290,13 @@ class TestPostAccessManualWebhook:
                 "pii_field": "first_name",
                 "dsr_package_label": "First Name",
                 "data_categories": ["user.name"],
+                "types": ["string"],
             },
             {
                 "pii_field": "last_name",
                 "dsr_package_label": "last_name",
                 "data_categories": ["user.name"],
+                "types": ["string"],
             },
         ]
 
@@ -265,11 +309,13 @@ class TestPostAccessManualWebhook:
                     "pii_field": "first_name",
                     "dsr_package_label": "First Name",
                     "data_categories": ["user.name"],
+                    "types": ["string"],
                 },
                 {
                     "pii_field": "last_name",
                     "dsr_package_label": "  ",
                     "data_categories": ["user.name"],
+                    "types": ["string"],
                 },
             ]
         }
@@ -281,11 +327,13 @@ class TestPostAccessManualWebhook:
                 "pii_field": "first_name",
                 "dsr_package_label": "First Name",
                 "data_categories": ["user.name"],
+                "types": ["string"],
             },
             {
                 "pii_field": "last_name",
                 "dsr_package_label": "last_name",
                 "data_categories": ["user.name"],
+                "types": ["string"],
             },
         ]
 
@@ -334,16 +382,19 @@ class TestPostAccessManualWebhook:
                 "pii_field": "First name",
                 "dsr_package_label": "first_name",
                 "data_categories": ["user.name"],
+                "types": ["string"],
             },
             {
                 "pii_field": "Last name",
                 "dsr_package_label": "last_name",
                 "data_categories": ["user.name"],
+                "types": ["string"],
             },
             {
                 "pii_field": "Order number",
                 "dsr_package_label": "order_number",
                 "data_categories": None,
+                "types": ["string"],
             },
         ]
         connection_config_details = resp["connection_config"]
@@ -356,6 +407,63 @@ class TestPostAccessManualWebhook:
 
         manual_webhook = AccessManualWebhook.get(db=db, object_id=resp["id"])
         manual_webhook.delete(db)
+
+    def test_post_manual_webhook_with_multiple_types(
+        self,
+        db: Session,
+        api_client: TestClient,
+        url,
+        generate_auth_header,
+        integration_manual_webhook_config,
+    ):
+        """Test creating a manual webhook with multiple types per field"""
+        auth_header = generate_auth_header([WEBHOOK_CREATE_OR_UPDATE])
+        payload = {
+            "fields": [
+                {
+                    "pii_field": "medical_records",
+                    "dsr_package_label": "medical_records",
+                    "data_categories": ["user.medical"],
+                    "types": ["string", "file"],
+                },
+                {
+                    "pii_field": "patient_notes",
+                    "dsr_package_label": "patient_notes",
+                    "data_categories": ["user.medical.notes"],
+                    "types": ["string"],
+                },
+            ]
+        }
+        response = api_client.post(url, headers=auth_header, json=payload)
+        assert response.status_code == 201
+        resp = response.json()
+
+        assert resp["fields"][0]["types"] == ["string", "file"]
+        assert resp["fields"][1]["types"] == ["string"]
+
+    def test_post_manual_webhook_invalid_types(
+        self,
+        db: Session,
+        api_client: TestClient,
+        url,
+        generate_auth_header,
+    ):
+        """Test validation of field types"""
+        auth_header = generate_auth_header([WEBHOOK_CREATE_OR_UPDATE])
+        payload = {
+            "fields": [
+                {
+                    "pii_field": "test_field",
+                    "dsr_package_label": "test_field",
+                    "types": ["invalid_type"],
+                }
+            ]
+        }
+        response = api_client.post(url, headers=auth_header, json=payload)
+        assert response.status_code == 422
+        assert (
+            "Input should be 'string' or 'file'" in response.json()["detail"][0]["msg"]
+        )
 
 
 class TestPatchAccessManualWebhook:
@@ -387,6 +495,7 @@ class TestPatchAccessManualWebhook:
                     "pii_field": "New Field",
                     "dsr_package_label": None,
                     "data_categories": None,
+                    "types": ["string"],
                 },
             ]
         }
@@ -418,6 +527,7 @@ class TestPatchAccessManualWebhook:
                         "user.contact.address.city",
                         "user.contact.address.state",
                     ],
+                    "types": ["string", "file"],
                 },
             ]
         }
@@ -436,6 +546,7 @@ class TestPatchAccessManualWebhook:
                     "user.contact.address.city",
                     "user.contact.address.state",
                 ],
+                "types": ["string", "file"],
             },
         ]
         connection_config_details = resp["connection_config"]
@@ -445,6 +556,62 @@ class TestPatchAccessManualWebhook:
         assert connection_config_details["created_at"] is not None
         assert connection_config_details["updated_at"] is not None
         assert connection_config_details["secrets"] is None
+
+    def test_patch_manual_webhook_with_multiple_types(
+        self,
+        api_client: TestClient,
+        db,
+        url,
+        generate_auth_header,
+        access_manual_webhook,
+        integration_manual_webhook_config,
+    ):
+        """Test updating a manual webhook with multiple types per field"""
+        auth_header = generate_auth_header([WEBHOOK_CREATE_OR_UPDATE])
+        payload = {
+            "fields": [
+                {
+                    "pii_field": "medical_records",
+                    "dsr_package_label": "medical_records",
+                    "data_categories": ["user.medical"],
+                    "types": ["string", "file"],
+                }
+            ]
+        }
+
+        response = api_client.patch(url, headers=auth_header, json=payload)
+        assert response.status_code == 200
+
+        resp = response.json()
+        assert resp["fields"][0]["types"] == ["string", "file"]
+
+    def test_patch_manual_webhook_backward_compatibility(
+        self,
+        api_client: TestClient,
+        db,
+        url,
+        generate_auth_header,
+        access_manual_webhook,
+        integration_manual_webhook_config,
+    ):
+        """Test that old-style fields without types still work"""
+        auth_header = generate_auth_header([WEBHOOK_CREATE_OR_UPDATE])
+        payload = {
+            "fields": [
+                {
+                    "pii_field": "email",
+                    "dsr_package_label": "email",
+                    "data_categories": ["user.contact.email"],
+                    "types": ["string"],
+                }
+            ]
+        }
+
+        response = api_client.patch(url, headers=auth_header, json=payload)
+        assert response.status_code == 200
+
+        resp = response.json()
+        assert resp["fields"][0]["types"] == ["string"]  # Default type
 
 
 class TestDeleteAccessManualWebhook:
@@ -554,13 +721,16 @@ class TestGetAccessManualWebhooks:
                 "pii_field": "email",
                 "dsr_package_label": "email",
                 "data_categories": ["user.contact.email"],
+                "types": ["string"],
             },
             {
                 "pii_field": "Last Name",
                 "dsr_package_label": "last_name",
                 "data_categories": ["user.name"],
+                "types": ["string"],
             },
         ]
+
         connection_config_details = resp["connection_config"]
         assert connection_config_details["key"] == integration_manual_webhook_config.key
         assert connection_config_details["connection_type"] == "manual_webhook"

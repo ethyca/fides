@@ -363,3 +363,71 @@ def test_relationship_warning_conditions(
 
     # Refresh the session to ensure clean state
     db.expire_all()
+
+
+def test_comment_attachment_relationship(
+    s3_client, db, comment, attachment, monkeypatch
+):
+    """Test the relationship between a comment and its attachments."""
+
+    def mock_get_s3_client(auth_method, storage_secrets):
+        return s3_client
+
+    monkeypatch.setattr("fides.api.tasks.storage.get_s3_client", mock_get_s3_client)
+
+    # Create attachment reference
+    attachment_ref = AttachmentReference.create(
+        db,
+        data={
+            "attachment_id": attachment.id,
+            "reference_id": comment.id,
+            "reference_type": AttachmentReferenceType.comment,
+        },
+    )
+    db.refresh(comment)
+
+    # Test the relationship
+    assert len(comment.attachments) == 1
+    assert comment.attachments[0] == attachment
+    assert comment.attachments[0].file_name == attachment.file_name
+
+    # Clean up
+    attachment_ref.delete(db)
+    attachment.delete(db)
+
+
+def test_comment_multiple_attachments_relationship(
+    s3_client, db, comment, multiple_attachments, monkeypatch
+):
+    """Test the relationship between a comment and multiple attachments."""
+
+    def mock_get_s3_client(auth_method, storage_secrets):
+        return s3_client
+
+    monkeypatch.setattr("fides.api.tasks.storage.get_s3_client", mock_get_s3_client)
+
+    # Create references for all attachments
+    refs = []
+    for attachment in multiple_attachments:
+        ref = AttachmentReference.create(
+            db,
+            data={
+                "attachment_id": attachment.id,
+                "reference_id": comment.id,
+                "reference_type": AttachmentReferenceType.comment,
+            },
+        )
+        refs.append(ref)
+
+    db.refresh(comment)
+
+    # Test the relationships
+    assert len(comment.attachments) == len(multiple_attachments)
+    for attachment in multiple_attachments:
+        assert attachment in comment.attachments
+
+    # Clean up
+    for ref in refs:
+        ref.delete(db)
+    for attachment in multiple_attachments:
+        attachment.delete(db)
