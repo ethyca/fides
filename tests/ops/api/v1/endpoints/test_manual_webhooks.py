@@ -806,3 +806,141 @@ class TestManualWebhookTest:
         response = api_client.get(url, headers=auth_header)
         assert 200 == response.status_code
         assert response.json()["test_status"] == "succeeded"
+
+    def test_manual_webhook_backwards_compatibility(
+        self,
+        db: Session,
+        api_client: TestClient,
+        url,
+        generate_auth_header,
+        integration_manual_webhook_config,
+    ):
+        """Test that old-style fields without types still work"""
+        # Create a webhook with old-style fields (no types)
+        manual_webhook = AccessManualWebhook.create(
+            db=db,
+            data={
+                "connection_config_id": integration_manual_webhook_config.id,
+                "fields": [
+                    {
+                        "pii_field": "email",
+                        "dsr_package_label": "email",
+                        "data_categories": ["user.contact.email"],
+                    }
+                ],
+            },
+        )
+
+        auth_header = generate_auth_header([WEBHOOK_READ])
+        response = api_client.get(url, headers=auth_header)
+
+        assert response.status_code == 200
+        resp = response.json()
+
+        # Verify that the field got a default type of "string"
+        assert resp["fields"][0]["types"] == ["string"]
+
+        manual_webhook.delete(db)
+
+
+class TestManualWebhookBackwardsCompatibility:
+    def test_field_definitions_backwards_compatibility(
+        self,
+        db: Session,
+        integration_manual_webhook_config,
+    ):
+        """Test that field definitions work with both old and new style fields"""
+        # Create a webhook with old-style fields (no types)
+        manual_webhook = AccessManualWebhook.create(
+            db=db,
+            data={
+                "connection_config_id": integration_manual_webhook_config.id,
+                "fields": [
+                    {
+                        "pii_field": "email",
+                        "dsr_package_label": "email",
+                        "data_categories": ["user.contact.email"],
+                    },
+                    {
+                        "pii_field": "document",
+                        "dsr_package_label": "document",
+                        "data_categories": ["user.documents"],
+                        "types": ["file"],  # New style field
+                    },
+                ],
+            },
+        )
+
+        try:
+            # Test access field definitions
+            access_fields = manual_webhook.access_field_definitions()
+            assert "email" in access_fields
+            assert "document" in access_fields
+            assert access_fields["email"] == (Optional[str], None)
+            assert access_fields["document"] == (Optional[str], None)
+
+            # Test erasure field definitions
+            erasure_fields = manual_webhook.erasure_field_definitions()
+            assert (
+                "email" in erasure_fields
+            )  # Old field defaults to string, so included
+            assert "document" not in erasure_fields  # File type field not included
+            assert erasure_fields["email"] == (Optional[bool], None)
+
+            # Test that the schema generation works
+            schema = manual_webhook.fields_schema
+            assert "email" in schema.schema()["properties"]
+            assert "document" in schema.schema()["properties"]
+
+            erasure_schema = manual_webhook.erasure_fields_schema
+            assert "email" in erasure_schema.schema()["properties"]
+            assert "document" not in erasure_schema.schema()["properties"]
+
+        finally:
+            manual_webhook.delete(db)
+
+    def test_mixed_field_types_compatibility(
+        self,
+        db: Session,
+        integration_manual_webhook_config,
+    ):
+        """Test that fields can handle mixed types in both old and new formats"""
+        manual_webhook = AccessManualWebhook.create(
+            db=db,
+            data={
+                "connection_config_id": integration_manual_webhook_config.id,
+                "fields": [
+                    {
+                        "pii_field": "name",
+                        "dsr_package_label": "name",
+                        "data_categories": ["user.name"],
+                    },
+                    {
+                        "pii_field": "medical_records",
+                        "dsr_package_label": "medical_records",
+                        "data_categories": ["user.medical"],
+                        "types": ["string", "file"],
+                    },
+                ],
+            },
+        )
+
+        try:
+            # Test that old style field defaults to string
+            access_fields = manual_webhook.access_field_definitions()
+            assert "name" in access_fields
+            assert "medical_records" in access_fields
+
+            # Test that both fields appear in erasure fields since they both support string
+            erasure_fields = manual_webhook.erasure_field_definitions()
+            assert "name" in erasure_fields
+            assert "medical_records" in erasure_fields
+
+            # Verify schema generation works for mixed fields
+            schema = manual_webhook.fields_schema
+            properties = schema.schema()["properties"]
+            assert "name" in properties
+            assert "medical_records" in properties
+
+        finally:
+            manual_webhook.delete(db)

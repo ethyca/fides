@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional
+from typing import Any, Optional
 
 from loguru import logger
 from pydantic import ConfigDict, create_model
@@ -57,19 +57,27 @@ class AccessManualWebhook(Base):
 
     fields = Column(MutableList.as_mutable(JSONB), nullable=False)
 
-    def access_field_definitions(self) -> Dict[str, Any]:
+    def access_field_definitions(self) -> dict[str, Any]:
         """Shared access field definitions for manual webhook schemas"""
-        return {
-            field["dsr_package_label"]: (Optional[str], None)
-            for field in self.fields or []
-        }
+        field_definitions = {}
+        for field in self.fields or []:
+            # Use types if present, otherwise default to ["string"]
+            field_types = field.get("types", ["string"])
+            # Include all fields for access, regardless of type
+            if "dsr_package_label" in field:
+                field_definitions[field["dsr_package_label"]] = (Optional[str], None)
+        return field_definitions
 
-    def erasure_field_definitions(self) -> Dict[str, Any]:
+    def erasure_field_definitions(self) -> dict[str, Any]:
         """Shared erasure field definitions for manual webhook schemas"""
-        return {
-            field["dsr_package_label"]: (Optional[bool], None)
-            for field in self.fields or []
-        }
+        field_definitions = {}
+        for field in self.fields or []:
+            # Use types if present, otherwise default to ["string"]
+            field_types = field.get("types", ["string"])
+            # Only include string fields for erasure
+            if "dsr_package_label" in field and "string" in field_types:
+                field_definitions[field["dsr_package_label"]] = (Optional[bool], None)
+        return field_definitions
 
     @property
     def fields_schema(self) -> FidesSchema:
@@ -115,7 +123,7 @@ class AccessManualWebhook(Base):
         )
 
     @property
-    def empty_fields_dict(self) -> Dict[str, None]:
+    def empty_fields_dict(self) -> dict[str, None]:
         """Return a dictionary that maps defined dsr_package_labels to None
 
         Returned as a default if no data has been uploaded for a privacy request.
@@ -128,7 +136,7 @@ class AccessManualWebhook(Base):
     @classmethod
     def get_enabled(
         cls, db: Session, action_type: Optional[ActionType] = None
-    ) -> List["AccessManualWebhook"]:
+    ) -> list["AccessManualWebhook"]:
         """Get all enabled access manual webhooks with fields"""
 
         query = db.query(cls).filter(
