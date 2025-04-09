@@ -356,7 +356,7 @@ describe("checkForVendorRestrictionConflicts", () => {
     const formValuesWithRestrictSpecific: FormValues = {
       restriction_type: TCFRestrictionType.PURPOSE_RESTRICTION,
       vendor_restriction: TCFVendorRestriction.RESTRICT_SPECIFIC_VENDORS,
-      vendor_ids: ["1-20"],
+      vendor_ids: ["5-10"], // Smaller range that should be contained within ALLOW range
     };
 
     const existingAllowSpecificRestrictions: PurposeRestriction[] = [
@@ -365,11 +365,11 @@ describe("checkForVendorRestrictionConflicts", () => {
         purpose_id: purposeId,
         restriction_type: TCFRestrictionType.PURPOSE_RESTRICTION,
         vendor_restriction: TCFVendorRestriction.ALLOW_SPECIFIC_VENDORS,
-        vendor_ids: ["5-10"], // Contained within 1-20
+        vendor_ids: ["1-20"], // Larger range that contains the RESTRICT range
       },
     ];
 
-    // Should not detect conflict when ALLOW range is fully contained in RESTRICT range
+    // Should not detect conflict when RESTRICT range is fully contained in ALLOW range
     const result = checkForVendorRestrictionConflicts(
       formValuesWithRestrictSpecific,
       existingAllowSpecificRestrictions,
@@ -377,48 +377,60 @@ describe("checkForVendorRestrictionConflicts", () => {
     );
     expect(result).toBe(false);
 
-    // Test with ALLOW range not contained in RESTRICT range
+    // Test with RESTRICT range not contained in ALLOW range
+    const formValuesWithLargerRestrict: FormValues = {
+      restriction_type: TCFRestrictionType.PURPOSE_RESTRICTION,
+      vendor_restriction: TCFVendorRestriction.RESTRICT_SPECIFIC_VENDORS,
+      vendor_ids: ["1-20"], // Larger range that is not contained
+    };
+
     const existingNonContainedRestrictions: PurposeRestriction[] = [
       {
         id: "1",
         purpose_id: purposeId,
         restriction_type: TCFRestrictionType.PURPOSE_RESTRICTION,
         vendor_restriction: TCFVendorRestriction.ALLOW_SPECIFIC_VENDORS,
-        vendor_ids: ["15-25"], // Partially overlaps but not contained
+        vendor_ids: ["5-10"], // Smaller range that doesn't contain the RESTRICT range
       },
     ];
 
     const result2 = checkForVendorRestrictionConflicts(
-      formValuesWithRestrictSpecific,
+      formValuesWithLargerRestrict,
       existingNonContainedRestrictions,
       purposeId,
     );
     expect(result2).toBe(true);
 
-    // Test with ALLOW range completely outside RESTRICT range
+    // Test with RESTRICT range completely outside ALLOW range
+    const formValuesWithNonOverlapping: FormValues = {
+      restriction_type: TCFRestrictionType.PURPOSE_RESTRICTION,
+      vendor_restriction: TCFVendorRestriction.RESTRICT_SPECIFIC_VENDORS,
+      vendor_ids: ["30-40"], // No overlap with ALLOW range
+    };
+
     const existingNonOverlappingRestrictions: PurposeRestriction[] = [
       {
         id: "1",
         purpose_id: purposeId,
         restriction_type: TCFRestrictionType.PURPOSE_RESTRICTION,
         vendor_restriction: TCFVendorRestriction.ALLOW_SPECIFIC_VENDORS,
-        vendor_ids: ["30-40"], // No overlap
+        vendor_ids: ["1-20"], // Different range with no overlap
       },
     ];
 
     const result3 = checkForVendorRestrictionConflicts(
-      formValuesWithRestrictSpecific,
+      formValuesWithNonOverlapping,
       existingNonOverlappingRestrictions,
       purposeId,
     );
-    expect(result3).toBe(true); // Changed to true since non-contained ranges are conflicts
+    expect(result3).toBe(true);
   });
 
   it("should handle unlimited ranges in RESTRICT_SPECIFIC and ALLOW_SPECIFIC conflicts", () => {
     const formValuesWithUnlimitedRestrict: FormValues = {
       restriction_type: TCFRestrictionType.PURPOSE_RESTRICTION,
       vendor_restriction: TCFVendorRestriction.RESTRICT_SPECIFIC_VENDORS,
-      vendor_ids: ["10"], // Single value becomes range with same start and end
+      vendor_ids: ["10"], // Single value
     };
 
     const existingAllowSpecificRestrictions: PurposeRestriction[] = [
@@ -427,7 +439,7 @@ describe("checkForVendorRestrictionConflicts", () => {
         purpose_id: purposeId,
         restriction_type: TCFRestrictionType.PURPOSE_RESTRICTION,
         vendor_restriction: TCFVendorRestriction.ALLOW_SPECIFIC_VENDORS,
-        vendor_ids: ["5-15"], // Not contained in single value 10
+        vendor_ids: ["1-20"], // Range that contains the single value
       },
     ];
 
@@ -436,16 +448,16 @@ describe("checkForVendorRestrictionConflicts", () => {
       existingAllowSpecificRestrictions,
       purposeId,
     );
-    expect(result).toBe(true);
+    expect(result).toBe(false);
 
-    // Test with ALLOW range after the RESTRICT single value
+    // Test with ALLOW range not containing the RESTRICT value
     const existingLaterRestrictions: PurposeRestriction[] = [
       {
         id: "1",
         purpose_id: purposeId,
         restriction_type: TCFRestrictionType.PURPOSE_RESTRICTION,
         vendor_restriction: TCFVendorRestriction.ALLOW_SPECIFIC_VENDORS,
-        vendor_ids: ["15-20"], // After single value 10
+        vendor_ids: ["15-20"], // Range that doesn't contain the single value 10
       },
     ];
 
@@ -454,7 +466,7 @@ describe("checkForVendorRestrictionConflicts", () => {
       existingLaterRestrictions,
       purposeId,
     );
-    expect(result2).toBe(true); // Changed to true since not contained in the single value
+    expect(result2).toBe(true);
   });
 
   it("should handle invalid vendor IDs properly", () => {

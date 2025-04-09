@@ -1,9 +1,10 @@
-import type { FormLabelProps } from "fidesui";
 import {
   AntFlex as Flex,
   AntSelect as Select,
   AntSelectProps as SelectProps,
   FormControl,
+  FormHelperText,
+  FormLabelProps,
   Grid,
   VStack,
 } from "fidesui";
@@ -20,6 +21,7 @@ export interface ControlledSelectProps extends SelectProps {
   tooltip?: string | null;
   isRequired?: boolean;
   layout?: "inline" | "stacked";
+  helperText?: string | null;
 }
 
 export const ControlledSelect = ({
@@ -29,6 +31,7 @@ export const ControlledSelect = ({
   tooltip,
   isRequired,
   layout = "inline",
+  helperText,
   ...props
 }: ControlledSelectProps) => {
   const [field, meta, { setValue }] = useField(name);
@@ -100,6 +103,7 @@ export const ControlledSelect = ({
                 value={field.value || undefined} // solves weird bug where placeholder won't appear if value is an empty string ""
                 status={isInvalid ? "error" : undefined}
               />
+              {helperText && <FormHelperText>{helperText}</FormHelperText>}
               <ErrorMessage
                 isInvalid={isInvalid}
                 message={meta.error}
@@ -140,6 +144,9 @@ export const ControlledSelect = ({
           value={field.value || undefined} // solves weird bug where placeholder won't appear if value is an empty string ""
           status={isInvalid ? "error" : undefined}
         />
+        {helperText && (
+          <FormHelperText style={{ marginTop: 0 }}>{helperText}</FormHelperText>
+        )}
         <ErrorMessage
           isInvalid={isInvalid}
           message={meta.error}

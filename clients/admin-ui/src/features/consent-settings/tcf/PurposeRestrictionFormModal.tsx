@@ -227,7 +227,6 @@ export const PurposeRestrictionFormModal = ({
                 listed vendors are restricted or allowed, and specify which
                 vendor IDs the restriction applies to.
               </Text>
-
               <ControlledSelect
                 name="restriction_type"
                 label="Restriction type"
@@ -236,7 +235,6 @@ export const PurposeRestrictionFormModal = ({
                 tooltip="Choose how vendors are permitted to process data for this purpose. This setting overrides the vendor's declared legal basis in the Global Vendor List."
                 isRequired
               />
-
               <ControlledSelect
                 name="vendor_restriction"
                 label="Vendor restriction"
@@ -245,7 +243,6 @@ export const PurposeRestrictionFormModal = ({
                 tooltip="Decide if the restriction applies to all vendors, specific vendors, or if only certain vendors are allowed."
                 isRequired
               />
-
               <Collapse
                 in={
                   !!values.restriction_type &&
@@ -261,11 +258,11 @@ export const PurposeRestrictionFormModal = ({
                   mode="tags"
                   options={[]}
                   layout="stacked"
-                  placeholder="Enter a single ID or range of IDs and press enter"
+                  placeholder="Enter vendor IDs"
                   open={false}
                   // eslint-disable-next-line react/no-unstable-nested-components
                   suffixIcon={<span />}
-                  tooltip="List the specific vendors that are restricted or allowed from processing data for this purpose. Enter a single vendor ID or a range of IDs and press enter."
+                  tooltip="List the specific vendors that are restricted or allowed from processing data for this purpose."
                   disabled={
                     values.vendor_restriction ===
                     TCFVendorRestriction.RESTRICT_ALL_VENDORS
@@ -276,10 +273,23 @@ export const PurposeRestrictionFormModal = ({
                       validateField("vendor_ids");
                     }, 100);
                   }}
+                  onInputKeyDown={(e) => {
+                    // disable space and comma keys to help avoid confusion on the expected behavior
+                    // eg. prevent attempting to type "123, 1-100" and enter or "123 1-100" and enter
+                    if (
+                      e.key === " " ||
+                      e.code === "Space" ||
+                      e.key === "," ||
+                      e.code === "Comma"
+                    ) {
+                      e.preventDefault();
+                      e.stopPropagation();
+                    }
+                  }}
+                  helperText="Enter IDs (e.g. 123) or ranges (e.g. 1-10) and press enter"
                   isRequired
                 />
               </Collapse>
-
               <Flex justify="flex-end" className="gap-3 pt-4">
                 <Button onClick={onClose}>Cancel</Button>
                 <Button type="primary" htmlType="submit">

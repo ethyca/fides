@@ -180,17 +180,17 @@ export const checkForVendorRestrictionConflicts = (
         values.vendor_restriction ===
         TCFVendorRestriction.ALLOW_SPECIFIC_VENDORS
       ) {
-        // For ALLOW_SPECIFIC: Check if any current range is outside ALL existing RESTRICT ranges
-        return currentRanges.some((currentRange) =>
-          existingRanges.every(
-            (existingRange) => !isRangeContained(currentRange, existingRange),
+        // For ALLOW_SPECIFIC: ALL existing RESTRICT ranges must be contained within ALL new ALLOW ranges
+        return existingRanges.some((restrictRange) =>
+          currentRanges.some(
+            (allowRange) => !isRangeContained(restrictRange, allowRange),
           ),
         );
       }
-      // For RESTRICT_SPECIFIC: Check if any current range has ANY allowed range not contained within it
-      return currentRanges.some((currentRange) =>
+      // For RESTRICT_SPECIFIC: ALL new RESTRICT ranges must be contained within ALL existing ALLOW ranges
+      return currentRanges.some((restrictRange) =>
         existingRanges.some(
-          (existingRange) => !isRangeContained(existingRange, currentRange),
+          (allowRange) => !isRangeContained(restrictRange, allowRange),
         ),
       );
     }
