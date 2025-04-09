@@ -29,6 +29,14 @@ export const useDiscoveredAssetsColumns = ({
       cell: (props) => <DefaultCell value={props.getValue()} />,
       header: "Asset",
       size: 300,
+      meta: {
+        headerProps: {
+          paddingLeft: "0px",
+        },
+        cellProps: {
+          padding: "0 !important",
+        },
+      },
     }),
     columnHelper.accessor((row) => row.resource_type, {
       id: "resource_type",

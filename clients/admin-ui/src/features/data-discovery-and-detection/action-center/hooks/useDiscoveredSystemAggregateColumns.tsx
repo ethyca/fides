@@ -54,6 +54,14 @@ export const useDiscoveredSystemAggregateColumns = (monitorId: string) => {
       ),
       header: "System",
       size: 300,
+      meta: {
+        headerProps: {
+          paddingLeft: "0px",
+        },
+        cellProps: {
+          padding: "0 !important",
+        },
+      },
     }),
     columnHelper.accessor((row) => row.total_updates, {
       id: "total_updates",

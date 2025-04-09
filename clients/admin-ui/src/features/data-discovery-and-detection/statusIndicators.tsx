@@ -27,7 +27,7 @@ export const ClassificationIndicator = () => (
 );
 
 export const ChangeIndicator = () => (
-  <CircleIcon color="blue.400" boxSize={2.5} mr={2} data-testid="change-icon" />
+  <CircleIcon color="blue.400" boxSize={2.5} mb="2px" mr="6px" data-testid="change-icon" />
 );
 
 export const MonitoredIndicator = () => (
