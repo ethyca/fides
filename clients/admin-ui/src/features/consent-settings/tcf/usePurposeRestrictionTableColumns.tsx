@@ -24,7 +24,7 @@ export const usePurposeRestrictionTableColumns = () => {
           return <DefaultCell value={RESTRICTION_TYPE_LABELS[value]} />;
         },
         header: (props) => (
-          <DefaultHeaderCell value="Restriction Type" {...props} />
+          <DefaultHeaderCell value="Restriction type" {...props} />
         ),
       }),
       columnHelper.accessor((row) => row.vendor_restriction, {
@@ -34,7 +34,7 @@ export const usePurposeRestrictionTableColumns = () => {
           return <DefaultCell value={VENDOR_RESTRICTION_LABELS[value]} />;
         },
         header: (props) => (
-          <DefaultHeaderCell value="Vendor Restriction" {...props} />
+          <DefaultHeaderCell value="Vendor restriction" {...props} />
         ),
       }),
       columnHelper.accessor((row) => row.vendor_ids, {

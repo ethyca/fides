@@ -56,7 +56,7 @@ const ConsentConfigurationPage: NextPage = () => {
   return (
     <FixedLayout title="Consent Configuration">
       <PageHeader
-        heading="Consent Configuration"
+        heading="Consent configuration"
         breadcrumbItems={[
           { title: "Consent settings", href: "/settings/consent" },
           {

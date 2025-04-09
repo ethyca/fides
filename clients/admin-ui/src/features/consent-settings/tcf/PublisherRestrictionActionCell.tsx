@@ -78,7 +78,7 @@ export const PublisherRestrictionActionCell = ({
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
         onConfirm={handleDelete}
-        title="Confirm Deletion"
+        title="Confirm deletion"
         message="Are you sure you want to delete this publisher restriction? This action cannot be undone."
         cancelButtonText="Cancel"
         continueButtonText="Delete"

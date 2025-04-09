@@ -160,7 +160,7 @@ const DropdownContent = ({
 
   return (
     <Card
-      title="TCF Configurations"
+      title="TCF configurations"
       className="min-w-[300px]"
       extra={
         <Button
