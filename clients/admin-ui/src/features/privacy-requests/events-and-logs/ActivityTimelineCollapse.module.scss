@@ -1,23 +1,16 @@
 $border-width: 1px;
 $horizontal-padding: 20px;
 
-.collapse {
-}
-
 .item {
   border: $border-width solid transparent;
 
-  border-radius: 6px !important;
+  border-radius: 6px;
   transition: border-color 0.2s ease-in-out;
   margin-bottom: 20px;
-
-  // important needed to override ant's ghost border-bottom:0
-  border-bottom: 1px solid transparent !important;
 
   &:hover,
   &--error {
     border-color: var(--fidesui-neutral-100);
-    border-bottom-color: var(--fidesui-neutral-100) !important;
   }
 
   &--error,
@@ -27,15 +20,16 @@ $horizontal-padding: 20px;
 }
 
 .header {
-  cursor: pointer !important;
+  cursor: pointer;
   width: 100%;
-  padding: calc(12px - $border-width) $horizontal-padding;
-  color: var(--ant-color-text-heading) !important;
+  padding: 0 $horizontal-padding;
+  color: var(--ant-color-text-heading);
+
+  display: flex;
+  gap: 8px;
 }
 
 .headerInner {
-  display: flex;
-  gap: 8px;
 }
 
 .author {
