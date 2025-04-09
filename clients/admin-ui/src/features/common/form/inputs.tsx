@@ -6,6 +6,7 @@ import {
   AntButton as Button,
   AntDefaultOptionType as DefaultOptionType,
   AntSwitch as Switch,
+  AntSwitchProps as SwitchProps,
   Box,
   Checkbox,
   Code,
@@ -445,13 +446,16 @@ interface CustomSwitchProps {
   label?: string;
   tooltip?: string;
   variant?: "inline" | "condensed" | "stacked" | "switchFirst";
+  size?: SwitchProps["size"];
   isDisabled?: boolean;
   onChange?: (checked: boolean) => void;
+  className?: string;
 }
 export const CustomSwitch = ({
   label,
   tooltip,
   variant = "inline",
+  size = "small",
   onChange,
   isDisabled,
   ...props
@@ -474,7 +478,7 @@ export const CustomSwitch = ({
           disabled={isDisabled}
           className="mr-2"
           data-testid={`input-${field.name}`}
-          size="small"
+          size={size}
         />
       )}
     </Field>
