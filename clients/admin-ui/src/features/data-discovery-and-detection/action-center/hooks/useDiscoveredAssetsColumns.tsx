@@ -140,6 +140,11 @@ export const useDiscoveredAssetsColumns = ({
         />
       ),
       maxSize: 40,
+      meta: {
+        cellProps: {
+          borderRight: "none",
+        },
+      },
     }),
     ...readonlyColumns,
     columnHelper.display({
