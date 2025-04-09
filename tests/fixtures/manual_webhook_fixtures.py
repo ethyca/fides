@@ -40,11 +40,13 @@ def access_manual_webhook(db, integration_manual_webhook_config) -> ConnectionCo
                     "pii_field": "email",
                     "dsr_package_label": "email",
                     "data_categories": ["user.contact.email"],
+                    "types": ["string"],
                 },
                 {
                     "pii_field": "Last Name",
                     "dsr_package_label": "last_name",
                     "data_categories": ["user.name"],
+                    "types": ["string"],
                 },
             ],
         },
