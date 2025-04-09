@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.58.3b1.post0.dev1"
+    "version": "2.58.3b1.post0.dev2"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -19214,6 +19214,20 @@
             "maxLength": 200,
             "minLength": 1,
             "title": "Pii Field"
+          },
+          "types": {
+            "items": {
+              "type": "string",
+              "enum": [
+                "string",
+                "file"
+              ]
+            },
+            "type": "array",
+            "title": "Types",
+            "default": [
+              "string"
+            ]
           },
           "dsr_package_label": {
             "anyOf": [
