@@ -43,11 +43,8 @@ const INTEGRATION_TYPE_MAP: { [K in ConnectionType]?: IntegrationTypeInfo } = {
   [ConnectionType.SCYLLA]: SCYLLA_TYPE_INFO,
   [ConnectionType.SNOWFLAKE]: SNOWFLAKE_TYPE_INFO,
   [ConnectionType.MYSQL]: MYSQL_TYPE_INFO,
-<<<<<<< Updated upstream
   [ConnectionType.WEBSITE]: WEBSITE_INTEGRATION_TYPE_INFO,
-=======
   [ConnectionType.POSTGRES]: POSTGRES_TYPE_INFO,
->>>>>>> Stashed changes
 };
 
 export const INTEGRATION_TYPE_LIST: IntegrationTypeInfo[] =
