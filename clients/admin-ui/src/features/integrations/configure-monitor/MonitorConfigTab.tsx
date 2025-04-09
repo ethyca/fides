@@ -29,11 +29,11 @@ import {
   TableActionBar,
   useServerSidePagination,
 } from "~/features/common/table/v2";
-import { RelativeTimestampCell } from "~/features/common/table/v2/cells";
 import { useGetMonitorsByIntegrationQuery } from "~/features/data-discovery-and-detection/discovery-detection.slice";
 import ConfigureMonitorModal from "~/features/integrations/configure-monitor/ConfigureMonitorModal";
 import MonitorConfigActionsCell from "~/features/integrations/configure-monitor/MonitorConfigActionsCell";
 import { MonitorConfigEnableCell } from "~/features/integrations/configure-monitor/MonitorConfigEnableCell";
+import MonitorStatusCell from "~/features/integrations/configure-monitor/MonitorStatusCell";
 import {
   ConnectionConfigurationResponse,
   ConnectionSystemTypeMap,
@@ -90,6 +90,9 @@ const MonitorConfigTab = ({
   integration: ConnectionConfigurationResponse;
   integrationOption?: ConnectionSystemTypeMap;
 }) => {
+  const isWebsiteMonitor =
+    integrationOption?.identifier === ConnectionType.WEBSITE;
+
   const {
     PAGE_SIZES,
     pageSize,
@@ -204,14 +207,12 @@ const MonitorConfigTab = ({
         },
       );
 
-      const lastScanColumn = columnHelper.accessor(
-        (row) => row.last_monitored,
-        {
-          id: "last_monitored",
-          cell: (props) => <RelativeTimestampCell time={props.getValue()} />,
-          header: (props) => <DefaultHeaderCell value="Last scan" {...props} />,
-        },
-      );
+      const lastScanColumn = columnHelper.display({
+        id: "monitor_status",
+        cell: (props) => <MonitorStatusCell monitor={props.row.original} />,
+        header: (props) => <DefaultHeaderCell value="Scan status" {...props} />,
+        meta: { disableRowClick: true },
+      });
 
       const regionsColumn = columnHelper.accessor(
         (row) => {
@@ -247,6 +248,7 @@ const MonitorConfigTab = ({
         cell: (props) => (
           <MonitorConfigActionsCell
             onEditClick={() => handleEditMonitor(props.row.original)}
+            isWebsiteMonitor={isWebsiteMonitor}
             monitorId={props.row.original.key!}
           />
         ),
@@ -254,7 +256,7 @@ const MonitorConfigTab = ({
         meta: { disableRowClick: true },
       });
 
-      if (integrationOption?.identifier === ConnectionType.WEBSITE) {
+      if (isWebsiteMonitor) {
         return [
           nameColumn,
           sourceUrlColumn,
@@ -297,9 +299,7 @@ const MonitorConfigTab = ({
   return (
     <>
       <Text maxW="720px" mb={6} fontSize="sm" data-testid="monitor-description">
-        {integrationOption?.identifier === ConnectionType.WEBSITE
-          ? WEBSITE_MONITOR_COPY
-          : DATA_DISCOVERY_MONITOR_COPY}
+        {isWebsiteMonitor ? WEBSITE_MONITOR_COPY : DATA_DISCOVERY_MONITOR_COPY}
       </Text>
       <TableActionBar>
         <Spacer />
@@ -320,6 +320,7 @@ const MonitorConfigTab = ({
           isEditing={isEditing}
           integration={integration}
           integrationOption={integrationOption!}
+          isWebsiteMonitor={isWebsiteMonitor}
         />
       </TableActionBar>
       <FidesTableV2

@@ -2,10 +2,10 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { MonitorConfig } from "./MonitorConfig";
+import type { AttachmentResponse } from "./AttachmentResponse";
 
-export type Page_MonitorConfig_ = {
-  items: Array<MonitorConfig>;
+export type Page_AttachmentResponse_ = {
+  items: Array<AttachmentResponse>;
   total: number | null;
   page: number | null;
   size: number | null;

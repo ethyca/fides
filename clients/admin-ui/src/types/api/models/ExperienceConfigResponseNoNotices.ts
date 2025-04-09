@@ -7,6 +7,7 @@ import type { ExperienceTranslationResponse } from "./ExperienceTranslationRespo
 import type { Layer1ButtonOption } from "./Layer1ButtonOption";
 import type { MinimalProperty } from "./MinimalProperty";
 import type { PrivacyNoticeRegion } from "./PrivacyNoticeRegion";
+import type { RejectAllMechanism } from "./RejectAllMechanism";
 
 /**
  * Schema for embedding an Experience Config in a Privacy Experience response.
@@ -29,4 +30,8 @@ export type ExperienceConfigResponseNoNotices = {
   component: ComponentType;
   translations?: Array<ExperienceTranslationResponse>;
   properties?: Array<MinimalProperty>;
+  /**
+   * Determines the behavior of the reject all button
+   */
+  reject_all_mechanism?: RejectAllMechanism | null;
 };
