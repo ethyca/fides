@@ -6,8 +6,8 @@ import {
 } from "privacy-requests/types";
 import React, { useEffect, useState } from "react";
 
+import ActivityTimelineList from "./ActivityTimelineList";
 import LogDrawer from "./LogDrawer";
-import TimelineEntry from "./TimelineEntry";
 
 type ActivityTimelineProps = {
   subjectRequest: PrivacyRequestEntity;
@@ -24,7 +24,6 @@ const ActivityTimeline = ({ subjectRequest }: ActivityTimelineProps) => {
   );
 
   const { results } = subjectRequest;
-  const resultKeys = results ? Object.keys(results) : [];
 
   // Update currentLogs when results change and we have a selected key
   useEffect(() => {
@@ -61,16 +60,10 @@ const ActivityTimeline = ({ subjectRequest }: ActivityTimelineProps) => {
 
   return (
     <Box width="100%">
-      {results &&
-        resultKeys.map((key, index) => (
-          <TimelineEntry
-            key={key}
-            entryKey={key}
-            logs={results[key]}
-            isLast={index === resultKeys.length - 1}
-            onViewLog={() => showLogs(key, results[key])}
-          />
-        ))}
+      <ActivityTimelineList
+        results={results}
+        onItemClicked={({ key, logs }) => showLogs(key, logs)}
+      />
       <LogDrawer
         isOpen={isOpen}
         onClose={closeDrawer}
