@@ -33,6 +33,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ### Changed
 - Bumped Next.js for all frontend apps to latest patch versions. [#5946](https://github.com/ethyca/fides/pull/5946)
 - Updating UI for Integrations, the tags now represent capabilities of the integrations [#5973](https://github.com/ethyca/fides/pull/5973)
+- Removing Unescape-Safestr header in favour of config-based approach for escaping html [#5993](https://github.com/ethyca/fides/pull/5993) https://github.com/ethyca/fides/labels/high-risk
 
 ### Fixed
 - Updated relationships for Comments, Attachments and PrivacyRequests to remove overlap sqlalchemy error. [#5929](https://github.com/ethyca/fides/pull/5929)
