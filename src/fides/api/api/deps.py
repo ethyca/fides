@@ -12,7 +12,7 @@ from fides.config import get_config as get_app_config
 from fides.config.config_proxy import ConfigProxy
 
 _engine = None
-_read_engine = None
+_readonly_engine = None
 
 
 def get_config() -> FidesConfig:
@@ -76,9 +76,9 @@ def get_readonly_api_session() -> Session:
     if not CONFIG.database.sqlalchemy_readonly_database_uri:
         return get_api_session()
 
-    global _read_engine  # pylint: disable=W0603
-    if not _read_engine:
-        _read_engine = get_db_engine(
+    global _readonly_engine  # pylint: disable=W0603
+    if not _readonly_engine:
+        _readonly_engine = get_db_engine(
             database_uri=CONFIG.database.sqlalchemy_readonly_database_uri,
             pool_size=CONFIG.database.api_engine_pool_size,
             max_overflow=CONFIG.database.api_engine_max_overflow,
@@ -86,7 +86,7 @@ def get_readonly_api_session() -> Session:
             keepalives_interval=CONFIG.database.api_engine_keepalives_interval,
             keepalives_count=CONFIG.database.api_engine_keepalives_count,
         )
-    SessionLocal = get_db_session(CONFIG, engine=_read_engine)
+    SessionLocal = get_db_session(CONFIG, engine=_readonly_engine)
     db = SessionLocal()
     return db
 
