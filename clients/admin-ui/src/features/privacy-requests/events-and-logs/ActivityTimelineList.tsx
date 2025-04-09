@@ -9,14 +9,16 @@ import { ExecutionLogStatus } from "~/types/api";
 import { ExecutionLog, PrivacyRequestResults } from "../types";
 import styles from "./ActivityTimelineList.module.scss";
 
-interface ActivityTimelineProps {
-  results?: PrivacyRequestResults;
-  onItemClicked: ({ key, logs }: { key: string; logs: ExecutionLog[] }) => void;
+interface ActivityTimelineItem {
+  // eslint-disable-next-line react/no-unused-prop-types
+  logs: ExecutionLog[];
+  // eslint-disable-next-line react/no-unused-prop-types
+  key: string;
 }
 
-interface ActivityTimelineItem {
-  logs: ExecutionLog[];
-  key: string;
+interface ActivityTimelineProps {
+  results?: PrivacyRequestResults;
+  onItemClicked: ({ key, logs }: ActivityTimelineItem) => void;
 }
 
 const ActivityTimelineList = ({
