@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime
 from enum import Enum
+from re import match
 from typing import Any, Dict, Iterable, List, Optional, Type
 
 from loguru import logger
@@ -35,7 +36,15 @@ class MonitorFrequency(Enum):
     DAILY = "Daily"
     WEEKLY = "Weekly"
     MONTHLY = "Monthly"
+    QUARTERLY = "Quarterly"
+    YEARLY = "Yearly"
     NOT_SCHEDULED = "Not scheduled"
+
+
+# pattern for a string of 4 comma-separated integers,
+# used to represent the months of the year that the monitor will run
+# on quarterly basis, in cron format
+QUARTERLY_MONTH_PATTERN = r"^\d+,\d+,\d+,\d+$"
 
 
 class MonitorConfig(Base):
@@ -138,6 +147,13 @@ class MonitorConfig(Base):
             or self.monitor_execution_trigger.get("hour", None) is None
         ):
             return MonitorFrequency.NOT_SCHEDULED
+        month_trigger = self.monitor_execution_trigger.get("month", None)
+        if month_trigger is not None:
+            if isinstance(month_trigger, str) and match(
+                QUARTERLY_MONTH_PATTERN, month_trigger
+            ):
+                return MonitorFrequency.QUARTERLY
+            return MonitorFrequency.YEARLY
         if self.monitor_execution_trigger.get("day", None) is not None:
             return MonitorFrequency.MONTHLY
         if self.monitor_execution_trigger.get("day_of_week", None) is not None:
@@ -201,6 +217,10 @@ class MonitorConfig(Base):
         a Tuesday.
         - with an `execution_frequency` of "monthly", it will result in monthly
         execution at 12:00:00+00:00 on the 14th day of every month.
+        - with an `execution_frequency` of "quarterly", it will result in quarterly
+        execution at 12:00:00+00:00 on the 14th day of the first month of each quarter.
+        - with an `execution_frequency` of "yearly", it will result in yearly
+        execution at 12:00:00+00:00 on May 14th of each year.
 
         See https://apscheduler.readthedocs.io/en/3.x/modules/triggers/cron.html
         for more information about the cron trigger parameters.
@@ -221,6 +241,17 @@ class MonitorConfig(Base):
                 cron_trigger_dict["day_of_week"] = execution_start_date.weekday()
             if execution_frequency == MonitorFrequency.MONTHLY:
                 cron_trigger_dict["day"] = execution_start_date.day
+            if execution_frequency == MonitorFrequency.QUARTERLY:
+                cron_trigger_dict["day"] = execution_start_date.day
+                # Calculate which month of the quarter (0-2) this is
+                month_of_quarter = (execution_start_date.month - 1) % 3
+                # Set to run in the same month of each quarter (1, 4, 7, 10 for first month)
+                cron_trigger_dict["month"] = (
+                    f"{1 + month_of_quarter},{4 + month_of_quarter},{7 + month_of_quarter},{10 + month_of_quarter}"
+                )
+            if execution_frequency == MonitorFrequency.YEARLY:
+                cron_trigger_dict["day"] = execution_start_date.day
+                cron_trigger_dict["month"] = execution_start_date.month
             data["monitor_execution_trigger"] = cron_trigger_dict
 
 
