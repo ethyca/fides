@@ -22,6 +22,7 @@ order of precedence:
 
 ## Example
 
+Configure `window.fides_overrides` before loading Fides.js tag
 ```html
 <head>
   <script>
@@ -33,6 +34,27 @@ order of precedence:
     };
   </script>
   <script src="path/to/fides.js"></script>
+</head>
+```
+Configure `window.fides_overrides` after loading Fides.js tag
+```html
+<head>
+  <script src="path/to/fides.js">
+    // Loading Fides.js before setting window.fides_overrides requires re-initialization
+  </script>
+
+  <script>
+    function onChange(newData) {
+      // Update Fides options
+      window.fides_overrides = window.fides_overrides || {};
+      window.fides_overrides = {
+        fides_locale: newData,
+      };
+
+      // Reinitialize FidesJS
+      window.Fides.init();
+    };
+  </script>
 </head>
 ```
 
