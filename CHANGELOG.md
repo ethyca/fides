@@ -39,6 +39,8 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Updating UI for Integrations, the tags now represent capabilities of the integrations [#5973](https://github.com/ethyca/fides/pull/5973)
 - Changed action center result tables to use expandable cells for multi-value results [#5963](https://github.com/ethyca/fides/pull/5963)
 - Changed action center homepage to use CSS grid layout [#5982](https://github.com/ethyca/fides/pull/5982)
+- Updated the UI for the activity tab of the privacy request detail page [#6005](https://github.com/ethyca/fides/pull/6005)
+
 
 ### Fixed
 - Updated relationships for Comments, Attachments and PrivacyRequests to remove overlap sqlalchemy error. [#5929](https://github.com/ethyca/fides/pull/5929)
