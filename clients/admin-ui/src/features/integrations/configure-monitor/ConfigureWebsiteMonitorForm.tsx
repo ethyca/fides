@@ -12,7 +12,7 @@ import {
 import { enumToOptions } from "~/features/common/helpers";
 import FormInfoBox from "~/features/common/modals/FormInfoBox";
 import { PRIVACY_NOTICE_REGION_RECORD } from "~/features/common/privacy-notice-regions";
-import { formatKey } from "~/features/datastore-connections/add-connection/helpers";
+import { formatKey } from "~/features/datastore-connections/system_portal_config/helpers";
 import { useGetOnlyCountryLocationsQuery } from "~/features/locations/locations.slice";
 import { getSelectedRegionIds } from "~/features/privacy-experience/form/helpers";
 import {
