@@ -41,6 +41,7 @@ from fides.api.task.create_request_tasks import (
     persist_initial_erasure_request_tasks,
     persist_new_access_request_tasks,
 )
+from fides.api.util.cache import get_cache
 from fides.config import CONFIG
 from tests.ops.graph.graph_test_util import generate_node
 
@@ -957,14 +958,21 @@ class TestSaasConnectorRunConsentRequest:
 
         spy = mocker.spy(SaaSRequestOverrideFactory, "get_override")
 
+        email = "testing@testing.com"
         connector.run_consent_request(
             node=execution_node,
             policy=consent_policy,
             privacy_request=privacy_request_with_consent_policy,
-            identity_data={"ljt_readerID": "abcde"},
+            identity_data={"email": email},
             request_task=request_task,
             session=db,
         )
+
+        cache = get_cache()
+        cache_data = cache.get_encoded_objects_by_prefix(
+            f"{saas_example_connection_config.saas_config['type']}_{email}_"
+        )
+        assert len(cache_data) == 1
 
         # Asserts
         spy.assert_called_once_with(name, SaaSRequestType.UPDATE_CONSENT)
@@ -974,6 +982,9 @@ class TestSaasConnectorRunConsentRequest:
         }, "Updated to skipped in graph task, not updated here"
 
         # Cleanup
+        cache.delete_keys_by_prefix(
+            f"{saas_example_connection_config.saas_config['type']}_{email}_"
+        )
         consent_automation.delete(db)
 
 
