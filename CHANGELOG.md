@@ -29,16 +29,19 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Added support for links in `<a>` tags on the custom HTML description [#5960](https://github.com/ethyca/fides/pull/5960)
 - Added "Reject all" behavior and visibility options to TCF Experience config form [#5964](https://github.com/ethyca/fides/pull/5964)
 - Added `TCFConfiguration` and `TCFPublisherRestriction` models [#5983](https://github.com/ethyca/fides/pull/5983) https://github.com/ethyca/fides/labels/db-migration
+- Added tab navigation to action center system aggregate table [#6011](https://github.com/ethyca/fides/pull/6011)
 - Support `Quarterly` and `Yearly` monitor scheduling [#5981](https://github.com/ethyca/fides/pull/5981)
 - Adds integration tests for Enterprise Bigquery DSR nested fields [#5969](https://github.com/ethyca/fides/pull/5969)
 - Added `tcf_configuration_id` to `PrivacyExperienceConfig` and fixes `TCFPublisherRestriction` validations [#6012](https://github.com/ethyca/fides/pull/6012) https://github.com/ethyca/fides/labels/db-migration
 - Added a `--separate-files` flag to the `fides pull dataset` CLI command to pull each dataset into its own file [#6007](https://github.com/ethyca/fides/pull/6007)
+- Added a `readonly_server` database setting to support specifying a read-only database [#6023](https://github.com/ethyca/fides/pull/6023)
 
 ### Changed
 - Bumped Next.js for all frontend apps to latest patch versions. [#5946](https://github.com/ethyca/fides/pull/5946)
 - Updating UI for Integrations, the tags now represent capabilities of the integrations [#5973](https://github.com/ethyca/fides/pull/5973)
 - Changed action center result tables to use expandable cells for multi-value results [#5963](https://github.com/ethyca/fides/pull/5963)
 - Changed action center homepage to use CSS grid layout [#5982](https://github.com/ethyca/fides/pull/5982)
+- Updated the UI for the activity tab of the privacy request detail page [#6005](https://github.com/ethyca/fides/pull/6005)
 - Unified frontend formatKey method, so its behavior is closer to the backend behavior [#6010](https://github.com/ethyca/fides/pull/6010)
 
 ### Fixed

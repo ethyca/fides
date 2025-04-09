@@ -17,11 +17,13 @@ import { MonitorSystemAggregate } from "../../types";
 interface DiscoveredSystemActionsCellProps {
   monitorId: string;
   system: MonitorSystemAggregate;
+  allowIgnore?: boolean;
 }
 
 export const DiscoveredSystemActionsCell = ({
   monitorId,
   system,
+  allowIgnore,
 }: DiscoveredSystemActionsCellProps) => {
   const [addMonitorResultSystemsMutation, { isLoading: isAddingResults }] =
     useAddMonitorResultSystemsMutation();
@@ -92,15 +94,17 @@ export const DiscoveredSystemActionsCell = ({
           Add
         </Button>
       </Tooltip>
-      <Button
-        data-testid="ignore-btn"
-        size="small"
-        onClick={handleIgnore}
-        disabled={anyActionIsLoading}
-        loading={isIgnoringResults}
-      >
-        Ignore
-      </Button>
+      {allowIgnore && (
+        <Button
+          data-testid="ignore-btn"
+          size="small"
+          onClick={handleIgnore}
+          disabled={anyActionIsLoading}
+          loading={isIgnoringResults}
+        >
+          Ignore
+        </Button>
+      )}
     </Space>
   );
 };

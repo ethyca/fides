@@ -8,6 +8,7 @@ export * from "@chakra-ui/utils";
 export type { ThemeConfig as AntThemeConfig } from "antd/es";
 export type {
   ButtonProps as AntButtonProps,
+  CollapseProps as AntCollapseProps,
   FlexProps as AntFlexProps,
   FormInstance as AntFormInstance,
   InputProps as AntInputProps,
@@ -30,6 +31,7 @@ export {
   Card as AntCard,
   Checkbox as AntCheckbox,
   Col as AntCol,
+  Collapse as AntCollapse,
   Divider as AntDivider,
   Dropdown as AntDropdown,
   Empty as AntEmpty,
