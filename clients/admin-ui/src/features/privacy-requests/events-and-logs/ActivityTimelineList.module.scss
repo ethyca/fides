@@ -1,14 +1,18 @@
 $border-width: 1px;
 $horizontal-padding: 20px;
 
-.item {
+.itemButton {
+  display: block;
+  width: 100%;
   border: $border-width solid transparent;
 
   border-radius: 6px;
   transition: border-color 0.2s ease-in-out;
   margin-bottom: 20px;
+  padding: 12px $horizontal-padding;
 
   &:hover,
+  &:focus,
   &--error {
     border-color: var(--fidesui-neutral-100);
   }
@@ -22,14 +26,9 @@ $horizontal-padding: 20px;
 .header {
   cursor: pointer;
   width: 100%;
-  padding: 0 $horizontal-padding;
-  color: var(--ant-color-text-heading);
 
   display: flex;
   gap: 8px;
-}
-
-.headerInner {
 }
 
 .author {

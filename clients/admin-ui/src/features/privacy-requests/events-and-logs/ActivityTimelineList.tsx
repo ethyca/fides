@@ -40,12 +40,12 @@ const ActivityTimelineList = ({
       );
 
       return (
-        <List.Item
-          key={key}
-          className={classNames(styles.item, {
-            [styles["item--error"]]: hasUnresolvedError,
-          })}
+        <button
+          type="button"
           onClick={() => onItemClicked({ key, logs })}
+          className={classNames(styles.itemButton, {
+            [styles["itemButton--error"]]: hasUnresolvedError,
+          })}
         >
           <div className={styles.header}>
             <span className={styles.author}>Fides:</span>
@@ -67,7 +67,7 @@ const ActivityTimelineList = ({
                 <span className={styles.viewLogs}>View Log</span>
               ))}
           </div>
-        </List.Item>
+        </button>
       );
     },
     [onItemClicked],
