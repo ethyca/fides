@@ -47,7 +47,6 @@ const PrivacyRequest = ({ data: initialData }: PrivacyRequestProps) => {
         key: "activity",
         label: "Activity",
         children: <ActivityTimeline subjectRequest={subjectRequest} />,
-        tabIndex: -1,
       },
       {
         key: "manual-steps",
