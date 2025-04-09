@@ -19,3 +19,8 @@ export interface LoginResponse {
 
 export interface LogoutRequest {}
 export interface LogoutResponse {}
+
+export interface AuthenticationMethods {
+  username_password: boolean;
+  sso: boolean;
+}

@@ -19,7 +19,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - https://github.com/ethyca/fides/labels/high-risk: to indicate that a change is a "high-risk" change that could potentially lead to unanticipated regressions or degradations
 - https://github.com/ethyca/fides/labels/db-migration: to indicate that a given change includes a DB migration
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.58.1...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.58.2...main)
 
 ### Added
 - Added `reject_all_mechanism` to `PrivacyExperienceConfig` [#5952](https://github.com/ethyca/fides/pull/5952) https://github.com/ethyca/fides/labels/db-migration
@@ -29,20 +29,34 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Added support for links in `<a>` tags on the custom HTML description [#5960](https://github.com/ethyca/fides/pull/5960)
 - Added "Reject all" behavior and visibility options to TCF Experience config form [#5964](https://github.com/ethyca/fides/pull/5964)
 - Added `TCFConfiguration` and `TCFPublisherRestriction` models [#5983](https://github.com/ethyca/fides/pull/5983) https://github.com/ethyca/fides/labels/db-migration
-
+- Support `Quarterly` and `Yearly` monitor scheduling [#5981](https://github.com/ethyca/fides/pull/5981)
+- Adds integration tests for Enterprise Bigquery DSR nested fields [#5969](https://github.com/ethyca/fides/pull/5969)
+- Added `tcf_configuration_id` to `PrivacyExperienceConfig` and fixes `TCFPublisherRestriction` validations [#6012](https://github.com/ethyca/fides/pull/6012) https://github.com/ethyca/fides/labels/db-migration
+- Added a `--separate-files` flag to the `fides pull dataset` CLI command to pull each dataset into its own file [#6007](https://github.com/ethyca/fides/pull/6007)
 
 ### Changed
 - Bumped Next.js for all frontend apps to latest patch versions. [#5946](https://github.com/ethyca/fides/pull/5946)
 - Updating UI for Integrations, the tags now represent capabilities of the integrations [#5973](https://github.com/ethyca/fides/pull/5973)
 - Changed action center result tables to use expandable cells for multi-value results [#5963](https://github.com/ethyca/fides/pull/5963)
 - Changed action center homepage to use CSS grid layout [#5982](https://github.com/ethyca/fides/pull/5982)
+- Updated the UI for the activity tab of the privacy request detail page [#6005](https://github.com/ethyca/fides/pull/6005)
+
 
 ### Fixed
 - Updated relationships for Comments, Attachments and PrivacyRequests to remove overlap sqlalchemy error. [#5929](https://github.com/ethyca/fides/pull/5929)
 - Hide "Reclassify" option on fields in D&D tables [#5956](https://github.com/ethyca/fides/pull/5956)
+- Fix D&D action errors not surfacing in UI [#5997](https://github.com/ethyca/fides/pull/5997)
+- Fixes translation bug in TCF custom notices [#6003](https://github.com/ethyca/fides/pull/6003)
+- Fixed issue with SaaS integration update payloads [#6001](https://github.com/ethyca/fides/pull/6001)
+- Fix non-consent-category data uses showing up in system assets table [#5999](https://github.com/ethyca/fides/pull/5999)
 
 ### Removed
 - Removed datasetClassificationUpdates flag from admin UI. [#5950](https://github.com/ethyca/fides/pull/5950)
+
+## [2.58.2](https://github.com/ethyca/fides/compare/2.58.1...2.58.2)
+
+### Changed
+- Writes fides consent cookie during OT consent migration [#6009](https://github.com/ethyca/fides/pull/6009)
 
 ## [2.58.1](https://github.com/ethyca/fides/compare/2.58.0...2.58.1)
 
