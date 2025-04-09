@@ -19,10 +19,10 @@ from toml import load as load_toml
 from fides.api.common_exceptions import SystemManagerException
 from fides.api.graph.graph import DatasetGraph
 from fides.api.models.application_config import ApplicationConfig
+from fides.api.models.asset import Asset
 from fides.api.models.attachment import Attachment, AttachmentType
 from fides.api.models.audit_log import AuditLog, AuditLogAction
 from fides.api.models.client import ClientDetail
-from fides.api.models.asset import Asset
 from fides.api.models.comment import Comment, CommentType
 from fides.api.models.connectionconfig import (
     AccessLevel,
