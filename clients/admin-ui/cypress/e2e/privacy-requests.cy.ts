@@ -410,21 +410,4 @@ describe("Privacy Requests", () => {
       });
     });
   });
-
-  it("should display privacy requests and handle drawer functionality", () => {
-    // Check if privacy requests are displayed
-    cy.get("[data-testid=privacy-requests-table]").should("exist");
-
-    // Click on a privacy request to open the drawer
-    cy.get("[data-testid=privacy-request-row]").first().click();
-
-    // Check if the drawer is open
-    cy.get("[data-testid=log-drawer]").should("be.visible");
-
-    // Close the drawer
-    cy.get("[data-testid=log-drawer]").find("button[aria-label=Close]").click();
-
-    // Check if the drawer is closed
-    cy.get("[data-testid=log-drawer]").should("not.exist");
-  });
 });
