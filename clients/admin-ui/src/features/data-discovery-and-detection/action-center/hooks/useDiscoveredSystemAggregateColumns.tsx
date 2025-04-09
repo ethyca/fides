@@ -51,7 +51,7 @@ export const useDiscoveredSystemAggregateColumns = ({
     meta: {
       disableRowClick: true,
       cellProps: {
-          borderRight: "none",
+        borderRight: "none",
       },
     },
   });
