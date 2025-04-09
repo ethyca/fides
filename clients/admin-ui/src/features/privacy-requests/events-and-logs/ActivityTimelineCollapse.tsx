@@ -1,31 +1,37 @@
 import classNames from "classnames";
-import {
-  AntCollapse as Collapse,
-  AntCollapseProps as CollapseProps,
-  AntTag as Tag,
-} from "fidesui";
+import { AntTag as Tag, List, ListItem } from "fidesui";
 import { map } from "lodash";
 
 import { formatDate } from "~/features/common/utils";
 import { ExecutionLogStatus } from "~/types/api";
 
-import { PrivacyRequestResults } from "../types";
+import { ExecutionLog, PrivacyRequestResults } from "../types";
 import styles from "./ActivityTimelineCollapse.module.scss";
-import EventLog from "./EventLog";
 
 interface ActivityTimelineProps {
   results?: PrivacyRequestResults;
 }
 
 const ActivityTimelineCollapse = ({ results }: ActivityTimelineProps) => {
-  const items: CollapseProps["items"] = map(results, (values, key) => {
+  const items = map(results, (values, key) => ({
+    values,
+    key,
+  }));
+
+  const renderItem = ({
+    values,
+    key,
+  }: {
+    values: ExecutionLog[];
+    key: string;
+  }) => {
     const isError = values.some(
-      (value) => value.status === ExecutionLogStatus.ERROR,
+      (value: { status: ExecutionLogStatus }) =>
+        value.status === ExecutionLogStatus.ERROR,
     );
 
-    return {
-      key,
-      label: (
+    return (
+      <ListItem key={key}>
         <div className={styles.headerInner}>
           <span className={styles.author}>Fides:</span>
           <span
@@ -42,26 +48,11 @@ const ActivityTimelineCollapse = ({ results }: ActivityTimelineProps) => {
           <Tag color="sandstone">Request update</Tag>
           {isError && <span className={styles.viewLogs}>View Log</span>}
         </div>
-      ),
-      children: <EventLog eventLogs={values} openErrorPanel={() => {}} />,
-      className: classNames(styles.item, {
-        [styles["item--error"]]: isError,
-      }),
-      classNames: {
-        header: styles.header,
-        body: "test2",
-      },
-    };
-  });
-  return (
-    <Collapse
-      items={items}
-      expandIcon={() => null}
-      className={styles.collapse}
-      bordered={false}
-      ghost
-    />
-  );
+      </ListItem>
+    );
+  };
+
+  return <List className={styles.collapse}>{items.map(renderItem)}</List>;
 };
 
 export default ActivityTimelineCollapse;

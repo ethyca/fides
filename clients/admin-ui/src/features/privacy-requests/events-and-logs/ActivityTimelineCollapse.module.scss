@@ -27,9 +27,10 @@ $horizontal-padding: 20px;
 }
 
 .header {
-  cursor: pointer;
+  cursor: pointer !important;
   width: 100%;
   padding: calc(12px - $border-width) $horizontal-padding;
+  color: var(--ant-color-text-heading) !important;
 }
 
 .headerInner {
