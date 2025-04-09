@@ -6,7 +6,7 @@ import {
 } from "privacy-requests/types";
 import React, { useEffect, useState } from "react";
 
-import ActivityTimelineCollapse from "./ActivityTimelineCollapse";
+import ActivityTimelineList from "./ActivityTimelineList";
 import LogDrawer from "./LogDrawer";
 
 type ActivityTimelineProps = {
@@ -60,7 +60,7 @@ const ActivityTimeline = ({ subjectRequest }: ActivityTimelineProps) => {
 
   return (
     <Box width="100%">
-      <ActivityTimelineCollapse
+      <ActivityTimelineList
         results={results}
         onItemClicked={({ key, logs }) => showLogs(key, logs)}
       />
