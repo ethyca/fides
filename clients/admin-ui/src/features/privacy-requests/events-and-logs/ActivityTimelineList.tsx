@@ -46,26 +46,42 @@ const ActivityTimelineList = ({
           className={classNames(styles.itemButton, {
             [styles["itemButton--error"]]: hasUnresolvedError,
           })}
+          data-testid="activity-timeline-item"
         >
           <div className={styles.header}>
-            <span className={styles.author}>Fides:</span>
+            <span
+              className={styles.author}
+              data-testid="activity-timeline-author"
+            >
+              Fides:
+            </span>
             <span
               className={classNames(styles.title, {
                 [styles["title--error"]]: hasUnresolvedError,
                 [styles["title--skipped"]]: hasSkippedEntry,
               })}
+              data-testid="activity-timeline-title"
             >
               {key}
               {hasUnresolvedError && " failed"}
             </span>
-            <span className={styles.timestamp}>
+            <span
+              className={styles.timestamp}
+              data-testid="activity-timeline-timestamp"
+            >
               {formatDate(logs[0].updated_at)}
             </span>
-            <Tag color="sandstone">Request update</Tag>
-            {hasUnresolvedError ||
-              (hasSkippedEntry && (
-                <span className={styles.viewLogs}>View Log</span>
-              ))}
+            <Tag color="sandstone" data-testid="activity-timeline-type">
+              Request update
+            </Tag>
+            {(hasUnresolvedError || hasSkippedEntry) && (
+              <span
+                className={styles.viewLogs}
+                data-testid="activity-timeline-view-logs"
+              >
+                View Log
+              </span>
+            )}
           </div>
         </button>
       );
@@ -74,7 +90,12 @@ const ActivityTimelineList = ({
   );
 
   return (
-    <List className={styles.collapse} bordered={false} split={false}>
+    <List
+      className={styles.collapse}
+      bordered={false}
+      split={false}
+      data-testid="activity-timeline-list"
+    >
       {items.map(renderItem)}
     </List>
   );

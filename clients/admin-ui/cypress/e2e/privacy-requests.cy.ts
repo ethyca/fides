@@ -109,6 +109,68 @@ describe("Privacy Requests", () => {
       });
     });
 
+    describe("Activity Timeline", () => {
+      beforeEach(() => {
+        // Override the privacy request with our fixture that has logs
+        cy.intercept("GET", "/api/v1/privacy-request*", {
+          fixture: "privacy-requests/with-logs.json",
+        }).as("getPrivacyRequestWithLogs");
+        cy.visit("/privacy-requests/pri_96bb91d3-cdb9-46c3-9546-0c276eb05a5c");
+        cy.wait("@getPrivacyRequestWithLogs");
+      });
+
+      it("displays activity timeline entries with logs", () => {
+        // Verify timeline entries are visible
+        cy.getByTestId("activity-timeline-list").should("exist");
+        cy.getByTestId("activity-timeline-item").should(
+          "have.length.at.least",
+          1,
+        );
+
+        // Check first entry details
+        cy.getByTestId("activity-timeline-item")
+          .first()
+          .within(() => {
+            cy.getByTestId("activity-timeline-author").should(
+              "contain",
+              "Fides:",
+            );
+            cy.getByTestId("activity-timeline-title").should("exist");
+            cy.getByTestId("activity-timeline-timestamp").should("exist");
+            cy.getByTestId("activity-timeline-type").should(
+              "contain",
+              "Request update",
+            );
+          });
+
+        // Check the item with error has View Log
+        cy.getByTestId("activity-timeline-item")
+          .contains("klavyio_klaviyo_api")
+          .parent()
+          .within(() => {
+            cy.getByTestId("activity-timeline-view-logs").should(
+              "contain",
+              "View Log",
+            );
+          });
+      });
+
+      it("opens and closes the log details drawer", () => {
+        // Click on the item with error to open drawer
+        cy.getByTestId("activity-timeline-item")
+          .contains("klavyio_klaviyo_api")
+          .click();
+
+        // Verify drawer opens with correct content
+        cy.get("[data-testid=log-drawer]").should("be.visible");
+        cy.get("[data-testid=log-drawer]").should("exist");
+
+        // Close drawer
+        cy.getByTestId("log-drawer-close").click();
+        cy.get("[data-testid=log-drawer]").should("not.exist");
+      });
+    });
+
     it("allows approving a new request", () => {
       cy.getByTestId("privacy-request-actions-dropdown-btn").click();
       cy.getByTestId("privacy-request-approve-btn").click();
@@ -347,5 +409,22 @@ describe("Privacy Requests", () => {
         cy.wait("@getPrivacyRequests");
       });
     });
+  });
+
+  it("should display privacy requests and handle drawer functionality", () => {
+    // Check if privacy requests are displayed
+    cy.get("[data-testid=privacy-requests-table]").should("exist");
+
+    // Click on a privacy request to open the drawer
+    cy.get("[data-testid=privacy-request-row]").first().click();
+
+    // Check if the drawer is open
+    cy.get("[data-testid=log-drawer]").should("be.visible");
+
+    // Close the drawer
+    cy.get("[data-testid=log-drawer]").find("button[aria-label=Close]").click();
+
+    // Check if the drawer is closed
+    cy.get("[data-testid=log-drawer]").should("not.exist");
   });
 });
