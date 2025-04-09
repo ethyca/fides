@@ -35,6 +35,17 @@ jobs:
         with:
           python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
           cache: "pip"
+          cache-dependency-path: |
+            requirements.txt
+            dev-requirements.txt
+            optional-requirements.txt
+
+      - name: Cache nox environments
+        uses: actions/cache@v4
+        id: cache-nox
+        with:
+          path: .nox
+          key: ${{ runner.os }}-nox-${{ env.DEFAULT_PYTHON_VERSION }}-${{ hashFiles('noxfiles/**/*.py', 'requirements.txt', 'dev-requirements.txt', 'optional-requirements.txt') }}
 
       - name: Install Nox
         run: pip install nox>=2022
