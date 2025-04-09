@@ -17,7 +17,7 @@ const EventDetail = ({
   status = ExecutionLogStatus.ERROR,
 }: EventDetailProps) => (
   <Box height="100%" id="outer">
-    <Flex alignItems="center" paddingBottom="8px">
+    <Flex alignItems="center">
       <Text
         size="sm"
         color="gray.700"
@@ -34,7 +34,7 @@ const EventDetail = ({
         <ClipboardButton copyText={errorMessage} />
       </Box>
     </Flex>
-    <Divider />
+    <Divider marginTop="4px" marginBottom="6px" />
     <Box id="errorWrapper" overflow="auto" height="100%">
       <Text>{errorMessage}</Text>
     </Box>
