@@ -1,5 +1,6 @@
 import { formatDate } from "common/utils";
 import {
+  AntTag,
   Box,
   Table,
   TableContainer,
@@ -11,7 +12,12 @@ import {
   Tr,
 } from "fidesui";
 import palette from "fidesui/src/palette/palette.module.scss";
-import { ExecutionLog, ExecutionLogStatus } from "privacy-requests/types";
+import {
+  ExecutionLog,
+  ExecutionLogStatus,
+  ExecutionLogStatusColors,
+  ExecutionLogStatusLabels,
+} from "privacy-requests/types";
 
 import { ActionType } from "~/types/api";
 
@@ -39,13 +45,12 @@ const EventLog = ({ eventLogs, openErrorPanel }: EventDetailsProps) => {
   const tableItems = eventLogs?.map((detail) => (
     <Tr
       key={detail.updated_at}
-      _hover={{
-        backgroundColor:
-          detail.status === ExecutionLogStatus.ERROR ||
-          (detail.status === ExecutionLogStatus.SKIPPED && detail.message)
-            ? palette.FIDESUI_NEUTRAL_50
-            : "unset",
-      }}
+      backgroundColor={
+        detail.status === ExecutionLogStatus.ERROR ||
+        (detail.status === ExecutionLogStatus.SKIPPED && detail.message)
+          ? palette.FIDESUI_NEUTRAL_50
+          : "unset"
+      }
       onClick={() => {
         if (
           detail.status === ExecutionLogStatus.ERROR ||
@@ -73,9 +78,9 @@ const EventLog = ({ eventLogs, openErrorPanel }: EventDetailsProps) => {
         </Text>
       </Td>
       <Td>
-        <Text color="gray.600" fontSize="xs" lineHeight="4" fontWeight="medium">
-          {detail.status}
-        </Text>
+        <AntTag color={ExecutionLogStatusColors[detail.status]}>
+          {ExecutionLogStatusLabels[detail.status]}
+        </AntTag>
       </Td>
       <Td>
         <Text color="gray.600" fontSize="xs" lineHeight="4" fontWeight="medium">
@@ -84,6 +89,7 @@ const EventLog = ({ eventLogs, openErrorPanel }: EventDetailsProps) => {
       </Td>
     </Tr>
   ));
+
   return (
     <Box width="100%" paddingTop="0px" height="100%">
       <TableContainer

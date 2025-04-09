@@ -21,6 +21,29 @@ export enum ExecutionLogStatus {
   SKIPPED = "skipped",
 }
 
+export const ExecutionLogStatusLabels: Record<ExecutionLogStatus, string> = {
+  [ExecutionLogStatus.IN_PROCESSING]: "In processing",
+  [ExecutionLogStatus.PENDING]: "Pending",
+  [ExecutionLogStatus.COMPLETE]: "Complete",
+  [ExecutionLogStatus.ERROR]: "Error",
+  [ExecutionLogStatus.PAUSED]: "Paused",
+  [ExecutionLogStatus.RETRYING]: "Retrying",
+  [ExecutionLogStatus.SKIPPED]: "Skipped",
+};
+
+export const ExecutionLogStatusColors: Record<
+  ExecutionLogStatus,
+  string | undefined
+> = {
+  [ExecutionLogStatus.ERROR]: "error",
+  [ExecutionLogStatus.SKIPPED]: "warning",
+  [ExecutionLogStatus.IN_PROCESSING]: undefined,
+  [ExecutionLogStatus.PENDING]: undefined,
+  [ExecutionLogStatus.COMPLETE]: undefined,
+  [ExecutionLogStatus.PAUSED]: undefined,
+  [ExecutionLogStatus.RETRYING]: undefined,
+};
+
 export interface ExecutionLog {
   collection_name: string | null;
   fields_affected: FieldsAffected[];
