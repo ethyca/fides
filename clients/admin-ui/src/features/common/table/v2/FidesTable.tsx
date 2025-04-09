@@ -138,7 +138,7 @@ const HeaderContent = <T,>({
         fontSize="xs"
         lineHeight={9} // same as table header height
         fontWeight="medium"
-        style={header.column.columnDef.meta?.headerProps}
+        style={header.column.columnDef.meta?.headerProps as object}
       >
         {flexRender(header.column.columnDef.header, header.getContext())}
       </Box>
