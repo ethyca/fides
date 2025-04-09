@@ -84,7 +84,6 @@ def parent_server_config_password_only():
 
 @pytest.mark.unit
 class TestFilterDataCategories:
-    @pytest.mark.skip("this times out on CI")
     def test_filter_data_categories_excluded(self) -> None:
         """Test that the filter method works as intended"""
         excluded_data_categories = [
@@ -200,7 +199,6 @@ class TestLoadDefaultTaxonomy:
 
     async def test_add_to_default_taxonomy(
         self,
-        monkeypatch: pytest.MonkeyPatch,
         test_config: FidesConfig,
         data_category: DataCategory,
         async_session: AsyncSession,
@@ -217,8 +215,8 @@ class TestLoadDefaultTaxonomy:
         updated_default_taxonomy = DEFAULT_TAXONOMY.model_copy()
         updated_default_taxonomy.data_category.append(data_category)
 
-        monkeypatch.setattr(seed, "DEFAULT_TAXONOMY", updated_default_taxonomy)
-        await seed.load_default_resources(async_session)
+        with patch("fides.api.db.seed.DEFAULT_TAXONOMY", updated_default_taxonomy):
+            await seed.load_default_resources(async_session)
 
         result = _api.get(
             test_config.cli.server_url,
@@ -436,15 +434,18 @@ async def test_load_default_dsr_policies(
     assert len(access_rule.targets) == num_rule_targets - 1
 
 
-async def test_load_organizations(loguru_caplog, async_session, monkeypatch):
+async def test_load_organizations(loguru_caplog, async_session_temp: AsyncSession):
     updated_default_taxonomy = DEFAULT_TAXONOMY.model_copy()
     current_orgs = len(updated_default_taxonomy.organization)
     updated_default_taxonomy.organization.append(
         Organization(fides_key="new_organization")
     )
 
-    monkeypatch.setattr(seed, "DEFAULT_TAXONOMY", updated_default_taxonomy)
-    await seed.load_default_organization(async_session)
+    with (
+        patch("fideslang.default_taxonomy.DEFAULT_TAXONOMY", updated_default_taxonomy),
+        patch("fides.api.db.seed.DEFAULT_TAXONOMY", updated_default_taxonomy),
+    ):
+        await seed.load_default_organization(async_session_temp)
 
     assert "INSERTED 1" in loguru_caplog.text
     assert f"SKIPPED {current_orgs}" in loguru_caplog.text

@@ -243,7 +243,9 @@ class TestCreateDrpPrivacyRequest:
         resp = api_client.post(url, json=data)
         assert resp.status_code == 404
 
-    @pytest.mark.usefixtures("messaging_config", "policy_drp_action")
+    @pytest.mark.usefixtures(
+        "messaging_config", "policy_drp_action", "set_notification_service_type_mailgun"
+    )
     @mock.patch(
         "fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher"
     )
@@ -258,7 +260,7 @@ class TestCreateDrpPrivacyRequest:
         db,
         api_client: TestClient,
         cache,
-        policy,
+        policy_drp_action,
     ):
         TEST_EMAIL = "test@example.com"
         TEST_PHONE_NUMBER = "+12345678910"
@@ -293,8 +295,8 @@ class TestCreateDrpPrivacyRequest:
                 "requested_at": datetime(2021, 1, 1),
                 "status": PrivacyRequestStatus.error,
                 "origin": "https://example.com/",
-                "policy_id": policy.id,
-                "client_id": policy.client_id,
+                "policy_id": policy_drp_action.id,
+                "client_id": policy_drp_action.client_id,
             },
         )
 

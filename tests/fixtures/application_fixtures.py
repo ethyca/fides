@@ -6,7 +6,6 @@ from io import BytesIO
 from typing import Dict, Generator, List, Optional
 from unittest import mock
 from uuid import uuid4
-
 import pydash
 import pytest
 import yaml
@@ -1077,6 +1076,10 @@ def policy(
     oauth_client: ClientDetail,
     storage_config: StorageConfig,
 ) -> Generator:
+    policies = db.query(Policy).all()
+    for policy in policies:
+        policy.delete(db)
+
     access_request_policy = Policy.create(
         db=db,
         data={
@@ -1218,6 +1221,11 @@ def policy_drp_action(
     oauth_client: ClientDetail,
     storage_config: StorageConfig,
 ) -> Generator:
+    # DRP action is unique to a policy, so we need to delete all policies before creating a new one
+    policies = db.query(Policy).all()
+    for policy in policies:
+        policy.delete(db)
+
     access_request_policy = Policy.create(
         db=db,
         data={
