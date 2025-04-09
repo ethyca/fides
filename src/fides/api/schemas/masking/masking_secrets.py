@@ -5,7 +5,7 @@ from typing import Callable, Generic, TypeVar
 T = TypeVar("T")
 
 
-class SecretType(Enum):
+class SecretType(str, Enum):
     """Enum that holds all possible types of secrets across all masking strategies"""
 
     key = "key"
