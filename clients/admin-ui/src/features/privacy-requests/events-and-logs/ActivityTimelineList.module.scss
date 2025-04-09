@@ -12,13 +12,17 @@ $horizontal-padding: 20px;
   padding: 12px $horizontal-padding;
 
   &:hover,
-  &:focus,
   &--error {
     border-color: var(--fidesui-neutral-100);
   }
 
+  &:focus-visible {
+    border-color: var(--fidesui-neutral-700);
+  }
+
   &--error,
-  &--error:hover {
+  &--error:hover,
+  &--error:focus {
     border-left: 8px solid var(--fidesui-error);
   }
 }
