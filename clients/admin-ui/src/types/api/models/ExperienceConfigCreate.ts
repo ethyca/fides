@@ -32,5 +32,4 @@ export type ExperienceConfigCreate = {
   privacy_notice_ids?: Array<string>;
   translations?: Array<ExperienceTranslationCreate>;
   properties?: Array<MinimalProperty>;
-  tcf_configuration_id?: string;
 };

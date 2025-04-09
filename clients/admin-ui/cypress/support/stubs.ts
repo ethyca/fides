@@ -510,9 +510,6 @@ export const stubExperienceConfig = () => {
   cy.intercept("POST", "/api/v1/experience-config", {
     fixture: "privacy-experiences/experienceConfig.json",
   }).as("postExperience");
-  cy.intercept("GET", "/api/v1/plus/tcf/configurations*", {
-    fixture: "tcf/configurations.json",
-  }).as("getTcfConfigs");
   stubPlus(true);
 };
 
