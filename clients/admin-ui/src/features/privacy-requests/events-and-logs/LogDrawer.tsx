@@ -46,9 +46,10 @@ const LogDrawer = ({
       onClose={onClose}
       size="full"
       autoFocus={false}
+      data-testid="log-drawer"
     >
       <DrawerOverlay />
-      <DrawerContent style={{ width: "50%" }}>
+      <DrawerContent style={{ width: "50%" }} data-testid="log-drawer">
         <DrawerHeader style={{ paddingBottom: "0px" }}>
           <Flex
             justifyContent="space-between"
@@ -79,6 +80,7 @@ const LogDrawer = ({
               aria-label="Stop viewing error message"
               size="small"
               onClick={onClose}
+              data-testid="log-drawer-close"
             />
           </Flex>
         </DrawerHeader>
