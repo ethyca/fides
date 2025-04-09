@@ -13,9 +13,9 @@ const TEST_CASES = [
   ["TestKeyWithNoSpacesOrDots", "testkeywithnospacesordots"],
   ["test_key_with_no_changes", "test_key_with_no_changes"],
   ["test.key.with.dots", "test_key_with_dots"],
-  ["test.key.with.dots.and.spaces", "test_key_with_dots_and_spaces"],
+  ["test.key.with.dots and spaces", "test_key_with_dots_and_spaces"],
   [
-    "test.key.with.dots.and.spaces.and.special.chars(áéíóúÑ)",
+    "test.key.with.dots.and spaces and.special.chars(áéíóúÑ)",
     "test_key_with_dots_and_spaces_and_special_chars",
   ],
 ];
