@@ -7,7 +7,6 @@ import type { ExperienceMeta } from "./ExperienceMeta";
 import type { PrivacyExperienceGPPSettings } from "./PrivacyExperienceGPPSettings";
 import type { PrivacyNoticeRegion } from "./PrivacyNoticeRegion";
 import type { PrivacyNoticeResponse } from "./PrivacyNoticeResponse";
-import type { RejectAllMechanism } from "./RejectAllMechanism";
 import type { TCFFeatureRecord } from "./TCFFeatureRecord";
 import type { TCFPurposeConsentRecord } from "./TCFPurposeConsentRecord";
 import type { TCFPurposeLegitimateInterestsRecord } from "./TCFPurposeLegitimateInterestsRecord";
@@ -60,8 +59,4 @@ export type PrivacyExperienceResponse = {
   gvl_translations?: null;
   available_locales?: Array<string> | null;
   meta?: ExperienceMeta | null;
-  /**
-   * Determines the behavior of the reject all button
-   */
-  reject_all_mechanism?: RejectAllMechanism | null;
 };
