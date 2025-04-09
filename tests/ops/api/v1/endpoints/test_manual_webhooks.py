@@ -833,15 +833,15 @@ class TestManualWebhookTest:
             },
         )
 
-        auth_header = generate_auth_header([WEBHOOK_READ])
+        auth_header = generate_auth_header([CONNECTION_READ])
         response = api_client.get(url, headers=auth_header)
 
         assert response.status_code == 200
         resp = response.json()
 
-        # Verify that the field got a default type of "string"
-        assert resp["fields"][0]["types"] == ["string"]
+        assert resp["test_status"] == "succeeded"
 
+        # Clean up
         manual_webhook.delete(db)
 
 
@@ -943,6 +943,139 @@ class TestManualWebhookBackwardsCompatibility:
             properties = schema.schema()["properties"]
             assert "name" in properties
             assert "medical_records" in properties
+
+        finally:
+            manual_webhook.delete(db)
+
+    def test_schema_validation_backwards_compatibility(
+        self,
+        db: Session,
+        integration_manual_webhook_config,
+    ):
+        """Test that schema validation works correctly with mixed old and new style fields"""
+        manual_webhook = AccessManualWebhook.create(
+            db=db,
+            data={
+                "connection_config_id": integration_manual_webhook_config.id,
+                "fields": [
+                    {
+                        "pii_field": "email",
+                        "dsr_package_label": "email",
+                        "data_categories": ["user.contact.email"],
+                    },  # old style
+                    {
+                        "pii_field": "document",
+                        "dsr_package_label": "document",
+                        "data_categories": ["user.documents"],
+                        "types": ["file"],
+                    },  # new style
+                ],
+            },
+        )
+
+        try:
+            # Test validation with old style field
+            schema = manual_webhook.fields_schema
+            data = {"email": "test@example.com"}
+            validated = schema.model_validate(data)
+            assert validated.email == "test@example.com"
+
+            # Test validation with new style field
+            data = {"document": "file_content"}
+            validated = schema.model_validate(data)
+            assert validated.document == "file_content"
+
+            # Test validation with both fields
+            data = {"email": "test@example.com", "document": "file_content"}
+            validated = schema.model_validate(data)
+            assert validated.email == "test@example.com"
+            assert validated.document == "file_content"
+
+        finally:
+            manual_webhook.delete(db)
+
+    def test_non_strict_schema_backwards_compatibility(
+        self,
+        db: Session,
+        integration_manual_webhook_config,
+    ):
+        """Test that non-strict schemas handle both old and new style fields"""
+        manual_webhook = AccessManualWebhook.create(
+            db=db,
+            data={
+                "connection_config_id": integration_manual_webhook_config.id,
+                "fields": [
+                    {
+                        "pii_field": "email",
+                        "dsr_package_label": "email",
+                    },  # minimal old style
+                    {
+                        "pii_field": "document",
+                        "dsr_package_label": "document",
+                        "types": ["file"],
+                    },  # minimal new style
+                ],
+            },
+        )
+
+        try:
+            # Test non-strict schema with extra fields
+            schema = manual_webhook.fields_non_strict_schema
+            data = {
+                "email": "test@example.com",
+                "document": "file_content",
+                "extra_field": "should be ignored",
+            }
+            validated = schema.model_validate(data)
+            assert validated.email == "test@example.com"
+            assert validated.document == "file_content"
+            assert not hasattr(validated, "extra_field")
+
+            # Test non-strict erasure schema
+            schema = manual_webhook.erasure_fields_non_strict_schema
+            data = {
+                "email": True,  # Only email should be included since it defaults to string
+                "document": True,  # Should be ignored since it's a file type
+                "extra_field": True,
+            }
+            validated = schema.model_validate(data)
+            assert validated.email is True
+            assert not hasattr(validated, "document")
+            assert not hasattr(validated, "extra_field")
+
+        finally:
+            manual_webhook.delete(db)
+
+    def test_empty_fields_dict_backwards_compatibility(
+        self,
+        db: Session,
+        integration_manual_webhook_config,
+    ):
+        """Test that empty_fields_dict works correctly with both old and new style fields"""
+        manual_webhook = AccessManualWebhook.create(
+            db=db,
+            data={
+                "connection_config_id": integration_manual_webhook_config.id,
+                "fields": [
+                    {
+                        "pii_field": "email",
+                        "dsr_package_label": "email",
+                    },  # old style
+                    {
+                        "pii_field": "document",
+                        "dsr_package_label": "document",
+                        "types": ["file"],
+                    },  # new style
+                ],
+            },
+        )
+
+        try:
+            empty_dict = manual_webhook.empty_fields_dict
+            assert "email" in empty_dict
+            assert empty_dict["email"] is None
+            assert "document" in empty_dict
+            assert empty_dict["document"] is None
 
         finally:
             manual_webhook.delete(db)
