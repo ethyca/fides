@@ -1,0 +1,56 @@
+$border-width: 1px;
+$horizontal-padding: 20px;
+
+.container {
+  border: $border-width solid transparent;
+  transition: border-color 0.2s ease-in-out;
+
+  &:hover,
+  &--open {
+    border-color: var(--fidesui-neutral-100);
+    border-radius: 6px;
+  }
+}
+
+.header {
+  display: flex;
+  gap: 8px;
+  cursor: pointer;
+  width: 100%;
+  padding: calc(12px - $border-width) $horizontal-padding;
+}
+
+.author {
+}
+
+.title {
+  font-weight: 600;
+}
+
+.timestamp {
+  color: var(--fidesui-neutral-700);
+}
+
+.type {
+}
+
+.content {
+}
+
+.viewLogs {
+  color: var(--fidesui-link);
+}
+
+.logs {
+  height: 0;
+  overflow: hidden;
+  transition: height 0.2s ease-in-out;
+  box-sizing: border-box;
+  padding: 0 $horizontal-padding;
+
+  &--open {
+    height: auto;
+    margin-top: 20px;
+    margin-bottom: 20px;
+  }
+}

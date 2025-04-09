@@ -72,7 +72,10 @@ const PrivacyRequest = ({ data: initialData }: PrivacyRequestProps) => {
           onChange={setActiveTabKey}
         />
       </div>
-      <div className="w-[432px]" data-testid="privacy-request-details">
+      <div
+        className="w-1/3 2xl:w-[432px]"
+        data-testid="privacy-request-details"
+      >
         <RequestDetails subjectRequest={subjectRequest} />
       </div>
     </div>
