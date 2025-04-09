@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Annotated, Any, Dict, List, Literal, Optional, Set
+from typing import TYPE_CHECKING, Annotated, Literal, Optional, Set
 
 from fideslang.validation import FidesKey
 from pydantic import ConfigDict, Field, StringConstraints, field_validator
@@ -20,9 +20,9 @@ class ManualWebhookField(FidesSchema):
     pii_field: Annotated[
         str, StringConstraints(min_length=1, max_length=200, strip_whitespace=True)
     ]
-    types: List[Literal["string", "file"]] = ["string"]
+    types: list[Literal["string", "file"]] = ["string"]
     dsr_package_label: Optional[DSRLabelFieldType] = None
-    data_categories: Optional[List[FidesKey]] = None
+    data_categories: Optional[list[FidesKey]] = None
 
     @field_validator("dsr_package_label")
     @classmethod
@@ -39,9 +39,9 @@ class ManualWebhookField(FidesSchema):
 
 
 if TYPE_CHECKING:
-    ManualWebhookFieldsList = List[ManualWebhookField]
+    ManualWebhookFieldsList = list[ManualWebhookField]
 else:
-    ManualWebhookFieldsList = Annotated[List[ManualWebhookField], Field(min_length=1)]
+    ManualWebhookFieldsList = Annotated[list[ManualWebhookField], Field(min_length=1)]
 
 
 class AccessManualWebhooks(FidesSchema):
@@ -53,8 +53,8 @@ class AccessManualWebhooks(FidesSchema):
     @field_validator("fields")
     @classmethod
     def check_for_duplicates(
-        cls, value: List[ManualWebhookField]
-    ) -> List[ManualWebhookField]:
+        cls, value: list[ManualWebhookField]
+    ) -> list[ManualWebhookField]:
         """
         Verify that pii_fields and dsr_package_labels are unique.
 
@@ -83,8 +83,8 @@ class AccessManualWebhooks(FidesSchema):
     @field_validator("fields")
     @classmethod
     def fields_must_exist(
-        cls, value: List[ManualWebhookField]
-    ) -> List[ManualWebhookField]:
+        cls, value: list[ManualWebhookField]
+    ) -> list[ManualWebhookField]:
         """
         Verify that pii_fields and dsr_package_labels are unique.
 
