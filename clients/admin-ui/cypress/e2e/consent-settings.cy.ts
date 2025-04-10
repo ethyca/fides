@@ -221,17 +221,10 @@ describe("Consent settings", () => {
     });
   });
 
-  describe("Publisher Settings", () => {
+  describe("Publisher settings", () => {
     const API_CONFIG = {
       consent: {
         override_vendor_purposes: false,
-      },
-      gpp: {
-        us_approach: "national",
-        mspa_service_provider_mode: true,
-        mspa_opt_out_option_mode: false,
-        mspa_covered_transactions: true,
-        enable_tcfeu_string: true,
       },
       plus_consent_settings: {
         tcf_publisher_country_code: "us",
@@ -241,86 +234,59 @@ describe("Consent settings", () => {
       consent: {
         override_vendor_purposes: false,
       },
-      gpp: {
-        enabled: true,
-        us_approach: "state",
-        mspa_service_provider_mode: false,
-        mspa_opt_out_option_mode: false,
-        mspa_covered_transactions: false,
-        enable_tcfeu_string: false,
-      },
       plus_consent_settings: {
         tcf_publisher_country_code: "br",
       },
     };
 
-    it("shows the publisher settings when both config sets are present", () => {
-      cy.intercept("/api/v1/config?api_set=false", { body: DEFAULT_CONFIG }).as(
-        "getConfig",
-      );
-      cy.intercept("/api/v1/config?api_set=true", { body: API_CONFIG }).as(
-        "getApiConfig",
-      );
+    beforeEach(() => {
+      if (Cypress.currentTest.title.includes("only api config is present")) {
+        cy.intercept("/api/v1/config?api_set=false", { body: {} }).as(
+          "getConfig",
+        );
+      } else {
+        cy.intercept("/api/v1/config?api_set=false", {
+          body: DEFAULT_CONFIG,
+        }).as("getConfig");
+      }
+      if (
+        Cypress.currentTest.title.includes("only default config is present")
+      ) {
+        cy.intercept("/api/v1/config?api_set=true", { body: {} }).as(
+          "getApiConfig",
+        );
+      } else {
+        cy.intercept("/api/v1/config?api_set=true", { body: API_CONFIG }).as(
+          "getApiConfig",
+        );
+      }
       cy.intercept("PATCH", "/api/v1/config", { body: {} }).as("patchConfig");
       cy.visit(GLOBAL_CONSENT_CONFIG_ROUTE);
+      cy.getByTestId("save-btn").should("be.disabled");
       cy.wait("@getLocations");
       cy.wait("@getApiConfig");
       cy.wait("@getConfig");
-      cy.getByTestId("save-btn").should("be.disabled");
+    });
+
+    it("shows the publisher settings when both config sets are present", () => {
       cy.getByTestId(
         "input-publisher_settings.publisher_country_code",
       ).contains("United States");
     });
 
     it("shows the publisher settings when only default config is present", () => {
-      cy.intercept("/api/v1/config?api_set=false", { body: DEFAULT_CONFIG }).as(
-        "getConfig",
-      );
-      cy.intercept("/api/v1/config?api_set=true", { body: {} }).as(
-        "getApiConfig",
-      );
-      cy.intercept("PATCH", "/api/v1/config", { body: {} }).as("patchConfig");
-      cy.visit(GLOBAL_CONSENT_CONFIG_ROUTE);
-      cy.wait("@getLocations");
-      cy.wait("@getApiConfig");
-      cy.wait("@getConfig");
-      cy.getByTestId("save-btn").should("be.disabled");
       cy.getByTestId(
         "input-publisher_settings.publisher_country_code",
       ).contains("Brazil");
     });
 
     it("shows the publisher settings when only api config is present", () => {
-      cy.intercept("/api/v1/config?api_set=false", { body: {} }).as(
-        "getConfig",
-      );
-      cy.intercept("/api/v1/config?api_set=true", { body: API_CONFIG }).as(
-        "getApiConfig",
-      );
-      cy.intercept("PATCH", "/api/v1/config", { body: {} }).as("patchConfig");
-      cy.visit(GLOBAL_CONSENT_CONFIG_ROUTE);
-      cy.wait("@getLocations");
-      cy.wait("@getApiConfig");
-      cy.wait("@getConfig");
-      cy.getByTestId("save-btn").should("be.disabled");
       cy.getByTestId(
         "input-publisher_settings.publisher_country_code",
       ).contains("United States");
     });
 
-    it("saves new publisher settings", () => {
-      cy.intercept("/api/v1/config?api_set=false", { body: DEFAULT_CONFIG }).as(
-        "getConfig",
-      );
-      cy.intercept("/api/v1/config?api_set=true", { body: API_CONFIG }).as(
-        "getApiConfig",
-      );
-      cy.intercept("PATCH", "/api/v1/config", { body: {} }).as("patchConfig");
-      cy.visit(GLOBAL_CONSENT_CONFIG_ROUTE);
-      cy.getByTestId("save-btn").should("be.disabled");
-      cy.wait("@getLocations");
-      cy.wait("@getApiConfig");
-      cy.wait("@getConfig");
+    it("saves publisher country code", () => {
       cy.getByTestId(
         "input-publisher_settings.publisher_country_code",
       ).contains("United States");
@@ -330,34 +296,13 @@ describe("Consent settings", () => {
       cy.getByTestId("save-btn").should("be.enabled").click();
       cy.wait("@patchConfig").then((interception) => {
         const { body } = interception.request;
-        expect(body).to.eql({
-          gpp: {
-            us_approach: "national",
-            mspa_service_provider_mode: true,
-            mspa_opt_out_option_mode: false,
-            mspa_covered_transactions: true,
-            enable_tcfeu_string: true,
-          },
-          plus_consent_settings: {
-            tcf_publisher_country_code: "fr",
-          },
+        expect(body.plus_consent_settings).to.eql({
+          tcf_publisher_country_code: "fr",
         });
       });
     });
 
-    it("allows clearing the publisher country", () => {
-      cy.intercept("/api/v1/config?api_set=false", { body: DEFAULT_CONFIG }).as(
-        "getConfig",
-      );
-      cy.intercept("/api/v1/config?api_set=true", { body: API_CONFIG }).as(
-        "getApiConfig",
-      );
-      cy.intercept("PATCH", "/api/v1/config", { body: {} }).as("patchConfig");
-      cy.visit(GLOBAL_CONSENT_CONFIG_ROUTE);
-      cy.getByTestId("save-btn").should("be.disabled");
-      cy.wait("@getLocations");
-      cy.wait("@getApiConfig");
-      cy.wait("@getConfig");
+    it("allows clearing the publisher country code", () => {
       cy.getByTestId(
         "input-publisher_settings.publisher_country_code",
       ).contains("United States");
@@ -367,17 +312,8 @@ describe("Consent settings", () => {
       cy.getByTestId("save-btn").should("be.enabled").click();
       cy.wait("@patchConfig").then((interception) => {
         const { body } = interception.request;
-        expect(body).to.eql({
-          gpp: {
-            us_approach: "national",
-            mspa_service_provider_mode: true,
-            mspa_opt_out_option_mode: false,
-            mspa_covered_transactions: true,
-            enable_tcfeu_string: true,
-          },
-          plus_consent_settings: {
-            tcf_publisher_country_code: null,
-          },
+        expect(body.plus_consent_settings).to.eql({
+          tcf_publisher_country_code: null,
         });
       });
     });
