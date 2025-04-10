@@ -86,6 +86,8 @@ class StorageSecretsS3(BaseModel):
 
     aws_access_key_id: str
     aws_secret_access_key: str
+    region_name: str
+    assume_role_arn: str
     model_config = ConfigDict(extra="forbid")
 
 
