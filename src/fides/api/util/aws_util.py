@@ -69,7 +69,7 @@ def get_aws_session(
 
 def get_assumed_role_session(
     assume_role_arn: str, sts_client, region_name: Optional[str] = None
-):
+) -> Session:
     response = sts_client.assume_role(
         RoleArn=assume_role_arn, RoleSessionName="FidesAssumeRoleSession"
     )
