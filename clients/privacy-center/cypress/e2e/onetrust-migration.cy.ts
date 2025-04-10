@@ -204,6 +204,7 @@ describe("OneTrust to Fides consent migration", () => {
 
     cy.waitUntilFidesInitialized().then(() => {
       // Banner should not exist since all notices have consents
+      cy.wait(1000);
       cy.get("div#fides-banner").should("not.exist");
 
       cy.get("#fides-modal-link").click();
@@ -471,7 +472,7 @@ describe("Fides cookie precedence", () => {
       // Set OneTrust cookie with additional categories not in mapping
       cy.setCookie(
         "OptanonConsent",
-        "OptanonConsent=groups=C0001%3A1%2CC0002%3A1%2CC0003%3A1%2CC0099%3A1",
+        "OptanonConsent=groups=C0001%3A1%2CC0002%3A1%2CC0003%3A1%2CC0004%3A1%2CC0099%3A1",
       );
 
       const overrides = {
@@ -492,12 +493,56 @@ describe("Fides cookie precedence", () => {
       });
 
       cy.waitUntilFidesInitialized().then(() => {
+        cy.get("div#fides-banner").should("not.exist");
         // Open the modal
         cy.contains("button", "Manage preferences").click();
 
         // Verify Fides UI matches expected defaults
         cy.getByTestId("toggle-Advertising").within(() => {
           cy.get("input").should("not.be.checked");
+        });
+        cy.getByTestId("toggle-Analytics").within(() => {
+          cy.get("input").should("be.checked");
+        });
+        cy.getByTestId("toggle-Essential").within(() => {
+          cy.get("input").should("be.checked");
+        });
+      });
+      // C0003 and C0099 should not affect any Fides notices
+    });
+    it("should not surface banner if all fides notice keys have consent from OT", () => {
+      // Set OneTrust cookie with all fides notices and also additional categories not in mapping
+      cy.setCookie(
+          "OptanonConsent",
+          "OptanonConsent=groups=C0001%3A1%2CC0002%3A1%2CC0003%3A1%2CC0004%3A1%2CC0099%3A1",
+      );
+
+      const overrides = {
+        ot_fides_mapping: testOTMappingValue,
+      };
+      // Stub the experience with the following defaults:
+      // analytics: true, advertising: false, essential: true
+      cy.fixture("consent/experience_banner_modal.json").then((experience) => {
+        stubConfig(
+            {
+              experience: experience.items[0],
+            },
+            null,
+            null,
+            undefined,
+            { ...overrides },
+        );
+      });
+
+      cy.waitUntilFidesInitialized().then(() => {
+        // Banner should not exist since all notices have consents
+        cy.get("div#fides-banner").should("not.exist");
+
+        cy.get("#fides-modal-link").click();
+
+        // Verify Fides UI matches expected defaults
+        cy.getByTestId("toggle-Advertising").within(() => {
+          cy.get("input").should("be.checked");
         });
         cy.getByTestId("toggle-Analytics").within(() => {
           cy.get("input").should("be.checked");
