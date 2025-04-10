@@ -77,11 +77,11 @@ const componentTypeOptions: SelectProps["options"] = [
 
 const tcfRejectAllMechanismOptions: SelectProps["options"] = [
   {
-    label: "Reject All",
+    label: "Reject all",
     value: RejectAllMechanism.REJECT_ALL,
   },
   {
-    label: "Reject Consent Only",
+    label: "Reject consent only",
     value: RejectAllMechanism.REJECT_CONSENT_ONLY,
   },
 ];
@@ -99,7 +99,7 @@ const tcfBannerButtonOptions: SelectProps["options"] = [
 
 const bannerButtonOptions: SelectProps["options"] = [
   {
-    label: "Opt In/Opt Out",
+    label: "Opt in/Opt out",
     value: Layer1ButtonOption.OPT_IN_OPT_OUT,
   },
   {
@@ -311,7 +311,7 @@ export const PrivacyExperienceForm = ({
             defaultValue={RejectAllMechanism.REJECT_ALL}
             label="Reject all behavior"
             layout="stacked"
-            tooltip="Reject All: Blocks both consent and legitimate interest data processing across all purposes, features, and vendors. Reject Consent-Only: Blocks only consent-based processing, but allows legitimate interest processing to continue, requiring separate objection."
+            tooltip="Reject all: Blocks both consent and legitimate interest data processing across all purposes, features, and vendors. Reject consent-only: Blocks only consent-based processing, but allows legitimate interest processing to continue, requiring separate objection."
           />
         )}
       </Collapse>
