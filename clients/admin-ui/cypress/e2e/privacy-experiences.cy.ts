@@ -337,6 +337,13 @@ describe("Privacy experiences", () => {
       });
 
       it("can edit the TCF configuration for a TCF experience", () => {
+        cy.intercept("GET", "/api/v1/config*", {
+          body: {
+            consent: {
+              override_vendor_purposes: true,
+            },
+          },
+        });
         // Load a TCF experience that already has a config assigned
         cy.fixture("privacy-experiences/experienceConfig.json").then((data) => {
           cy.intercept("GET", "/api/v1/experience-config/pri_001", {
@@ -385,6 +392,63 @@ describe("Privacy experiences", () => {
           expect(body.tcf_configuration_id).to.be.oneOf([null, undefined]);
         });
         cy.getByTestId("toast-success-msg").should("exist");
+      });
+
+      it("disables the TCF Publisher Override configuration when the consent override is disabled", () => {
+        cy.intercept("GET", "/api/v1/config*", {
+          body: {
+            consent: {
+              override_vendor_purposes: false,
+            },
+          },
+        });
+        // Load a TCF experience that already has a config assigned
+        cy.fixture("privacy-experiences/experienceConfig.json").then((data) => {
+          cy.intercept("GET", "/api/v1/experience-config/pri_001", {
+            ...data,
+            id: "pri_001",
+            component: "tcf_overlay",
+            tcf_configuration_id: "tcf_config_1", // Assign initial config
+          }).as("getTCFExperience");
+        });
+        cy.intercept("PATCH", "/api/v1/experience-config/pri_001", {
+          fixture: "privacy-experiences/experienceConfig.json",
+        }).as("patchExperience");
+
+        cy.visit(`${PRIVACY_EXPERIENCE_ROUTE}/pri_001`);
+        cy.wait("@getTCFExperience");
+        cy.wait("@getTcfConfigs"); // Make sure configs are loaded
+        cy.getByTestId("controlled-select-tcf_configuration_id")
+          .should("be.visible")
+          .should("have.class", "ant-select-disabled");
+      });
+
+      it("disables the TCF Publisher Override configuration when there are no TCF configs", () => {
+        cy.intercept("GET", "/api/v1/config*", {
+          body: {
+            consent: {
+              override_vendor_purposes: true,
+            },
+          },
+        });
+        // Load a TCF experience that already has a config assigned
+        cy.fixture("privacy-experiences/experienceConfig.json").then((data) => {
+          cy.intercept("GET", "/api/v1/experience-config/pri_001", {
+            ...data,
+            id: "pri_001",
+            component: "tcf_overlay",
+          }).as("getTCFExperience");
+        });
+        cy.intercept("GET", "/api/v1/plus/tcf/configurations*", {
+          items: [],
+        }).as("getTcfConfigs");
+
+        cy.visit(`${PRIVACY_EXPERIENCE_ROUTE}/pri_001`);
+        cy.wait("@getTCFExperience");
+        cy.wait("@getTcfConfigs"); // Make sure configs are loaded
+        cy.getByTestId("controlled-select-tcf_configuration_id")
+          .should("be.visible")
+          .should("have.class", "ant-select-disabled");
       });
     });
 
