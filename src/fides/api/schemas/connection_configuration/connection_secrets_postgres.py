@@ -49,7 +49,6 @@ class PostgreSQLSchema(ConnectionConfigSecretsSchema):
 
     _required_components: ClassVar[List[str]] = [
         "host",
-        "dbname",
     ]
 
 
