@@ -296,7 +296,7 @@ export const PRIVACY_NOTICE_REGION_RECORD: Record<PrivacyNoticeRegion, string> =
     [PrivacyNoticeRegion.US_UT]: "Utah",
     [PrivacyNoticeRegion.US_VA]: "Virginia",
     [PrivacyNoticeRegion.US_VI]: "United States Virgin Islands",
-    [PrivacyNoticeRegion.US_VT]: "Vermon",
+    [PrivacyNoticeRegion.US_VT]: "Vermont",
     [PrivacyNoticeRegion.US_WA]: "Washington",
     [PrivacyNoticeRegion.US_WV]: "West Virginia",
     [PrivacyNoticeRegion.US_WI]: "Wisconsin",
