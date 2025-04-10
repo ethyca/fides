@@ -8,7 +8,7 @@ from fides.api.schemas.connection_configuration.connection_secrets import (
 )
 
 
-class PostgreSQLSchema(ConnectionConfigSecretsSchema):
+class PostgreSQLSchemaBase(ConnectionConfigSecretsSchema):
     """Schema to validate the secrets needed to connect to a PostgreSQL Database"""
 
     host: str = Field(
@@ -31,6 +31,20 @@ class PostgreSQLSchema(ConnectionConfigSecretsSchema):
         description="The password used to authenticate and access the database.",
         json_schema_extra={"sensitive": True},
     )
+    ssh_required: bool = Field(
+        False,
+        title="SSH required",
+        description="Indicates whether an SSH tunnel is required for the connection. Enable this option if your PostgreSQL server is behind a firewall and requires SSH tunneling for remote connections.",
+    )
+
+    _required_components: ClassVar[List[str]] = [
+        "host",
+    ]
+
+
+class PostgreSQLSchema(PostgreSQLSchemaBase):
+    """Schema to validate the secrets needed to connect to a PostgreSQL Database"""
+
     dbname: str = Field(
         title="Database",
         description="The name of the specific database within the database server that you want to connect to.",
@@ -39,11 +53,6 @@ class PostgreSQLSchema(ConnectionConfigSecretsSchema):
         default=None,
         title="Schema",
         description="The default schema to be used for the database connection (defaults to public).",
-    )
-    ssh_required: bool = Field(
-        False,
-        title="SSH required",
-        description="Indicates whether an SSH tunnel is required for the connection. Enable this option if your PostgreSQL server is behind a firewall and requires SSH tunneling for remote connections.",
     )
 
     _required_components: ClassVar[List[str]] = [
