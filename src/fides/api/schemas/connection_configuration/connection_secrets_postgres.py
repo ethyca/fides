@@ -46,6 +46,11 @@ class PostgreSQLSchema(ConnectionConfigSecretsSchema):
         title="Schema",
         description="The default schema to be used for the database connection (defaults to public).",
     )
+    ssl_mode: Optional[str] = Field(
+        default=None,
+        title="SSL Mode",
+        description="The SSL mode to use for the connection. Valid values are 'required', 'preferred', and disabled'.",
+    )
 
     _required_components: ClassVar[List[str]] = [
         "host",
