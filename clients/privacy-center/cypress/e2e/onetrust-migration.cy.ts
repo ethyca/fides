@@ -204,7 +204,6 @@ describe("OneTrust to Fides consent migration", () => {
 
     cy.waitUntilFidesInitialized().then(() => {
       // Banner should not exist since all notices have consents
-      cy.wait(1000);
       cy.get("div#fides-banner").should("not.exist");
 
       cy.get("#fides-modal-link").click();
@@ -472,7 +471,7 @@ describe("Fides cookie precedence", () => {
       // Set OneTrust cookie with additional categories not in mapping
       cy.setCookie(
         "OptanonConsent",
-        "OptanonConsent=groups=C0001%3A1%2CC0002%3A1%2CC0003%3A1%2CC0004%3A1%2CC0099%3A1",
+        "OptanonConsent=groups=C0001%3A1%2CC0002%3A1%2CC0003%3A1%2CC0099%3A1",
       );
 
       const overrides = {
