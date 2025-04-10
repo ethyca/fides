@@ -71,7 +71,7 @@ class PostgreSQLConnector(SQLConnector):
             uri = (self.configuration.secrets or {}).get("url") or self.build_uri()
 
         ssl_mode = self.configuration.secrets.get("ssl_mode", None)
-        connector_args = ssl_mode if ssl_mode else {}
+        connector_args = {ssl_mode: ssl_mode} if ssl_mode else None
         return create_engine(
             uri,
             hide_parameters=self.hide_parameters,
