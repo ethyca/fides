@@ -100,11 +100,6 @@ describe("Consent overlay", () => {
 
     it("should not render the banner or modal", () => {
       cy.waitUntilFidesInitialized().then(() => {
-        // The banner has a delay, so in order to assert its non-existence, we have
-        // to give it a chance to come up first. Otherwise, the following gets will
-        // pass regardless.
-        // eslint-disable-next-line cypress/no-unnecessary-waiting
-        cy.wait(500);
         cy.get("@FidesUIShown").should("not.have.been.called");
         cy.get("div#fides-banner").should("not.exist");
         // can display the modal link but it shouldn't do anything
@@ -115,6 +110,55 @@ describe("Consent overlay", () => {
   });
 
   describe("when overlay is enabled", () => {
+    describe("when animation is not disabled", () => {
+      beforeEach(() => {
+        cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
+        stubConfig(
+          {
+            options: {
+              isOverlayEnabled: true,
+            },
+          },
+          undefined,
+          undefined,
+          { disable_animations: "false" },
+        );
+      });
+      it("slides banner from the bottom automaticallly", () => {
+        cy.get("div#fides-banner-container.fides-banner-hidden")
+          .should(
+            "have.css",
+            "transition",
+            "transform 1s ease 0s, visibility 1s ease 0s",
+          )
+          .should("have.css", "transform", "matrix(1, 0, 0, 1, 0, 313.5)");
+        cy.get("div#fides-banner").should("not.be.visible");
+        cy.get("div#fides-banner-container").should(
+          "have.css",
+          "transform",
+          "matrix(1, 0, 0, 1, 0, 0)",
+        );
+        cy.get("div#fides-banner").should("be.visible");
+      });
+      it("slides banner to the bottom when dismissed", () => {
+        cy.get("div#fides-banner-container").should(
+          "have.css",
+          "transform",
+          "matrix(1, 0, 0, 1, 0, 0)",
+        );
+        cy.get("div#fides-banner").should("be.visible");
+        cy.get("div#fides-banner-container").within(() => {
+          cy.get("button.fides-close-button").click();
+        });
+        cy.get("div#fides-banner").should("exist");
+        cy.get("div#fides-banner").should("not.be.visible");
+        cy.get("div#fides-banner-container").should(
+          "have.css",
+          "transform",
+          "matrix(1, 0, 0, 1, 0, 313.5)",
+        );
+      });
+    });
     describe("when overlay is shown", () => {
       beforeEach(() => {
         cy.getCookie(CONSENT_COOKIE_NAME).should("not.exist");
@@ -221,11 +265,6 @@ describe("Consent overlay", () => {
           },
         });
         cy.waitUntilFidesInitialized().then(() => {
-          // The banner has a delay, so in order to assert its non-existence, we have
-          // to give it a chance to come up first. Otherwise, the following gets will
-          // pass regardless.
-          // eslint-disable-next-line cypress/no-unnecessary-waiting
-          cy.wait(500);
           cy.get("@FidesUIShown").should("not.have.been.called");
           cy.get("div#fides-banner").should("not.exist");
           // can still open the modal
