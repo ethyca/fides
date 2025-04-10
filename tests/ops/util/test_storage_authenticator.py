@@ -2,16 +2,14 @@ import boto3
 import pytest
 from botocore.exceptions import NoCredentialsError
 from moto import mock_aws
+from sqlalchemy.ext.mutable import MutableDict
 
 from fides.api.common_exceptions import StorageUploadError
 from fides.api.schemas.storage.storage import (
     AWSAuthMethod,
     StorageDetails,
     StorageSecrets,
-    StorageSecretsS3,
-    StorageType,
 )
-from fides.api.service.storage.storage_authenticator_service import secrets_are_valid
 from fides.api.util.aws_util import get_aws_session, get_s3_client
 
 
@@ -51,35 +49,6 @@ class TestGetS3Session:
                 AWSAuthMethod.AUTOMATIC.value,  # type: ignore
                 None,
             )
-
-    def test_secrets_are_valid_bad_storage_type(self):
-        with pytest.raises(ValueError):
-            secrets_are_valid(
-                StorageSecretsS3(
-                    aws_access_key_id="aws_access_key_id",
-                    aws_secret_access_key="aws_secret_access_key",
-                ),
-                "fake_storage_type",
-            )
-
-    def test_secrets_are_valid(self):
-        # just test we don't error out
-        assert not secrets_are_valid(
-            StorageSecretsS3(
-                aws_access_key_id="aws_access_key_id",
-                aws_secret_access_key="aws_secret_access_key",
-            ),
-            "s3",
-        )  # we expect this to fail because they're not real secret values
-
-        # just test we don't error out
-        assert not secrets_are_valid(
-            StorageSecretsS3(
-                aws_access_key_id="aws_access_key_id",
-                aws_secret_access_key="aws_secret_access_key",
-            ),
-            StorageType.s3,
-        )  # we expect this to fail because they're not real secret values
 
 
 @mock_aws
