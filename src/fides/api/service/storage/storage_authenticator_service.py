@@ -17,7 +17,7 @@ def secrets_are_valid(
     storage_config: StorageConfig,
 ) -> bool:
     """Authenticates upload destination with appropriate upload method"""
-    uploader: Any = _get_authenticator_from_config(storage_config.type)
+    uploader: Any = _get_authenticator_from_config(storage_config.type)  # type: ignore
     return uploader(storage_config, secrets)
 
 
