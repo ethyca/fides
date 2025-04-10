@@ -39,7 +39,7 @@ const LegalBasisContainer = ({
   );
 };
 
-const PurposeOverrides = () => {
+const DeprecatedPurposeOverrides = () => {
   const { values, setFieldValue } = useFormikContext<{
     purposeOverrides: FormPurposeOverride[];
   }>();
@@ -103,6 +103,7 @@ const PurposeOverrides = () => {
               alignItems="center"
               borderBottom="solid 1px"
               borderColor="gray.200"
+              backgroundColor="#fff"
             >
               <Flex
                 width="600px"
@@ -170,4 +171,4 @@ const PurposeOverrides = () => {
     />
   );
 };
-export default PurposeOverrides;
+export default DeprecatedPurposeOverrides;

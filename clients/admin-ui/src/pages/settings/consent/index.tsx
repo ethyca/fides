@@ -3,7 +3,6 @@ import { SerializedError } from "@reduxjs/toolkit";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/dist/query";
 import {
   AntButton as Button,
-  AntSwitch as Switch,
   Box,
   Flex,
   Spinner,
@@ -16,13 +15,11 @@ import type { NextPage } from "next";
 import { useMemo } from "react";
 
 import { useAppSelector } from "~/app/hooks";
-import DocsLink from "~/features/common/DocsLink";
 import { useFeatures } from "~/features/common/features";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import Layout from "~/features/common/Layout";
 import PageHeader from "~/features/common/PageHeader";
 import { useGetPurposesQuery } from "~/features/common/purpose.slice";
-import QuestionTooltip from "~/features/common/QuestionTooltip";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import {
   selectGppSettings,
@@ -30,13 +27,15 @@ import {
   useGetConfigurationSettingsQuery,
   usePatchConfigurationSettingsMutation,
 } from "~/features/config-settings/config-settings.slice";
+import DeprecatedPurposeOverrides from "~/features/consent-settings/DeprecatedPurposeOverrides";
 import FrameworkStatus from "~/features/consent-settings/FrameworkStatus";
 import GppConfiguration from "~/features/consent-settings/GppConfiguration";
 import PublisherSettings, {
   TCFPublisherSettings,
 } from "~/features/consent-settings/PublisherSettings";
-import PurposeOverrides from "~/features/consent-settings/PurposeOverrides";
 import SettingsBox from "~/features/consent-settings/SettingsBox";
+import { PublisherRestrictionsConfig } from "~/features/consent-settings/tcf/PublisherRestrictionsConfig";
+import { TCFOverrideToggle } from "~/features/consent-settings/tcf/TCFOverrideToggle";
 import {
   useGetHealthQuery,
   useGetTcfPurposeOverridesQuery,
@@ -68,20 +67,19 @@ const ConsentConfigPage: NextPage = () => {
     useGetTcfPurposeOverridesQuery(undefined, {
       skip: isHealthCheckLoading || !isTcfEnabled,
     });
-  const [patchTcfPurposeOverridesTrigger] =
-    usePatchTcfPurposeOverridesMutation();
+  const [
+    patchTcfPurposeOverridesTrigger,
+    { isLoading: isPatchConfigSettingsLoading },
+  ] = usePatchTcfPurposeOverridesMutation();
   const { data: apiConfigSet, isLoading: isApiConfigSetLoading } =
     useGetConfigurationSettingsQuery({ api_set: true });
   const { data: configSet, isLoading: isConfigSetLoading } =
     useGetConfigurationSettingsQuery({ api_set: false });
-  const [
-    patchConfigSettingsTrigger,
-    { isLoading: isPatchConfigSettingsLoading },
-  ] = usePatchConfigurationSettingsMutation();
+  const [patchConfigSettingsTrigger] = usePatchConfigurationSettingsMutation();
   const gppSettings = useAppSelector(selectGppSettings);
   const plusConsentSettings = useAppSelector(selectPlusConsentSettings);
 
-  const isOverrideEnabled = useMemo(() => {
+  const isTcfOverrideEnabled = useMemo(() => {
     if (
       apiConfigSet &&
       apiConfigSet?.consent &&
@@ -142,7 +140,7 @@ const ConsentConfigPage: NextPage = () => {
     ];
 
     // Try to patch TCF overrides first
-    if (isOverrideEnabled) {
+    if (isTcfOverrideEnabled) {
       const result = await patchTcfPurposeOverridesTrigger(payload);
       if (isErrorResult(result)) {
         handleResult(result);
@@ -160,41 +158,6 @@ const ConsentConfigPage: NextPage = () => {
       },
     });
     handleResult(configResult);
-  };
-
-  const handleOverrideOnChange = async (checked: boolean) => {
-    const handleResult = (
-      result:
-        | { data: object }
-        | { error: FetchBaseQueryError | SerializedError },
-    ) => {
-      toast.closeAll();
-      if (isErrorResult(result)) {
-        const errorMsg = getErrorMessage(
-          result.error,
-          `An unexpected error occurred while saving vendor override settings. Please try again.`,
-        );
-        toast(errorToastParams(errorMsg));
-      }
-    };
-
-    const result = await patchConfigSettingsTrigger({
-      consent: {
-        override_vendor_purposes: checked,
-      },
-    });
-
-    if (checked) {
-      await patchTcfPurposeOverridesTrigger(
-        tcfPurposeOverrides!.map((po) => ({
-          ...po,
-          is_included: true,
-          required_legal_basis: undefined,
-        })),
-      );
-    }
-
-    handleResult(result);
   };
 
   const initialValues = useMemo(
@@ -221,6 +184,18 @@ const ConsentConfigPage: NextPage = () => {
     [tcfPurposeOverrides, gppSettings, plusConsentSettings],
   );
 
+  const hasLegacyLegalBasisOverrides = useMemo(() => {
+    return (
+      isTcfOverrideEnabled &&
+      tcfPurposeOverrides?.some(
+        (po) =>
+          !po.is_included ||
+          po.required_legal_basis === TCFLegalBasisEnum.CONSENT ||
+          po.required_legal_basis === TCFLegalBasisEnum.LEGITIMATE_INTERESTS,
+      )
+    );
+  }, [tcfPurposeOverrides, isTcfOverrideEnabled]);
+
   return (
     <Layout title="Consent Configuration">
       {isHealthCheckLoading ||
@@ -238,66 +213,11 @@ const ConsentConfigPage: NextPage = () => {
             <SettingsBox title="Transparency & Consent Framework settings">
               <FrameworkStatus name="TCF" enabled={isTcfEnabled} />
             </SettingsBox>
-
-            <SettingsBox title="Vendor overrides">
-              {isTcfEnabled ? (
-                <>
-                  <Text
-                    mb={2}
-                    fontSize="sm"
-                    lineHeight="5"
-                    fontWeight="medium"
-                    color="gray.700"
-                  >
-                    Configure overrides for TCF related purposes.
-                  </Text>
-                  <Flex alignItems="center" marginBottom={2}>
-                    <Switch
-                      size="small"
-                      checked={isOverrideEnabled}
-                      onChange={handleOverrideOnChange}
-                      disabled={isPatchConfigSettingsLoading}
-                    />
-                    <Text
-                      px={2}
-                      fontSize="sm"
-                      lineHeight="5"
-                      fontWeight="medium"
-                      color="gray.700"
-                    >
-                      Override vendor purposes
-                    </Text>
-                    <QuestionTooltip label="Toggle on if you want to globally change any flexible legal bases or remove TCF purposes from your CMP" />
-                  </Flex>
-                  <Text
-                    mb={2}
-                    fontSize="sm"
-                    lineHeight="5"
-                    fontWeight="medium"
-                    color="gray.700"
-                  >
-                    {isOverrideEnabled
-                      ? "The table below allows you to adjust which TCF purposes you allow as part of your user facing notices and business activites."
-                      : null}
-                  </Text>
-                </>
-              ) : null}
-              {isOverrideEnabled && isTcfEnabled ? (
-                <Text
-                  fontSize="sm"
-                  lineHeight="5"
-                  fontWeight="medium"
-                  color="gray.700"
-                >
-                  To configure this section, select the purposes you allow and
-                  where available, the appropriate legal bases (either Consent
-                  or Legitimate Interest).{" "}
-                  <DocsLink href="https://fid.es/tcf-overrides">
-                    Read the guide on vendor overrides here.{" "}
-                  </DocsLink>
-                </Text>
-              ) : null}
-            </SettingsBox>
+            {isTcfEnabled && !hasLegacyLegalBasisOverrides && (
+              <PublisherRestrictionsConfig
+                isTCFOverrideEnabled={isTcfOverrideEnabled}
+              />
+            )}
           </Stack>
           <Formik<FormValues>
             initialValues={initialValues}
@@ -307,7 +227,27 @@ const ConsentConfigPage: NextPage = () => {
             {({ dirty, isValid, isSubmitting }) => (
               <Form>
                 <Stack spacing={6}>
-                  {isOverrideEnabled ? <PurposeOverrides /> : null}
+                  {hasLegacyLegalBasisOverrides && (
+                    <SettingsBox title="Vendor overrides" fontSize="sm">
+                      <TCFOverrideToggle
+                        defaultChecked
+                        disabled={isPatchConfigSettingsLoading}
+                      />
+                      <Stack mt={2} spacing={2}>
+                        <Text>
+                          The table below allows you to adjust which TCF
+                          purposes you allow as part of your user facing notices
+                          and business activites.
+                        </Text>
+                        <Text>
+                          To configure this section, select the purposes you
+                          allow and where available, the appropriate legal bases
+                          (either Consent or Legitimate Interest).
+                        </Text>
+                        <DeprecatedPurposeOverrides />
+                      </Stack>
+                    </SettingsBox>
+                  )}
                   <PublisherSettings />
                   <GppConfiguration />
                   <Button
