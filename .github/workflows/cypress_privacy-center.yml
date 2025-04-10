@@ -36,15 +36,72 @@ jobs:
         working-directory: clients/fides-js
         run: npm run build
 
+      - name: Pre-test diagnostics
+        run: |
+          echo "System resources before test:"
+          df -h
+          free -m
+          echo "Node version:"
+          node --version
+          echo "NPM version:"
+          npm --version
+
+      - name: Start and monitor service
+        run: |
+          # Start the service in the background
+          npm run cy:start &
+
+          # Monitor service startup
+          echo "Monitoring service startup..."
+          attempt=1
+          max_attempts=30
+
+          while [ $attempt -le $max_attempts ]; do
+            if curl -s --max-time 5 "http://localhost:3001" > /dev/null; then
+              echo "✅ Service is available after $attempt attempts"
+              break
+            fi
+            echo "⏳ Attempt $attempt/$max_attempts: Service not yet available..."
+            attempt=$((attempt+1))
+            sleep 10
+          done
+
+          if [ $attempt -gt $max_attempts ]; then
+            echo "❌ Service failed to become available after $max_attempts attempts"
+            # Keep going, let Cypress handle the timeout
+          fi
+
+          echo "Service monitoring complete"
+
+          # This diagnostic info will be useful regardless
+          ps aux | grep node
+
       - name: Cypress Privacy Center E2E Tests
         uses: cypress-io/github-action@v6
         with:
           command: npm run cy:parallel
           working-directory: clients/privacy-center
           install: false
-          start: npm run cy:start
+          # We're already starting the service in the previous step
+          start: false
           wait-on: "http://localhost:3001"
-          wait-on-timeout: 180
+          wait-on-timeout: 300
+        env:
+          # Enable Cypress debug logs
+          DEBUG: "cypress:*"
+          # Increase Cypress verbosity
+          CYPRESS_VERBOSE: true
+
+      - name: Post-test diagnostics
+        if: always()
+        run: |
+          echo "Service status after tests:"
+          curl -v http://localhost:3001 || echo "Failed to connect to service"
+          echo "Process status:"
+          ps aux | grep node
+          echo "System resources after test:"
+          df -h
+          free -m
 
       - uses: actions/upload-artifact@v4
         if: failure()
