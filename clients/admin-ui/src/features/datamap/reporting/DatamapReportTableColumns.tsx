@@ -451,21 +451,6 @@ export const getDatamapReportColumns = ({
         overflow: "hidden",
       },
     }),
-    columnHelper.accessor((row) => row.cookies, {
-      id: COLUMN_IDS.COOKIES,
-      cell: (props) => (
-        <GroupCountBadgeCell
-          ignoreZero
-          suffix="cookies"
-          value={props.getValue()}
-          {...props}
-        />
-      ),
-      meta: {
-        showHeaderMenu: !isRenaming,
-        width: "auto",
-      },
-    }),
     columnHelper.accessor((row) => row.uses_cookies, {
       id: COLUMN_IDS.USES_COOKIES,
     }),
