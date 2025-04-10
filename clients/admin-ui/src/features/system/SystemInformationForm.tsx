@@ -256,6 +256,19 @@ const SystemInformationForm = ({
     }
 
     await customFields.upsertCustomFields(values);
+    // TODO: implement this
+    // if (values.vendor_id) {
+    //   const assetResult = await populateSystemAssets({
+    //     fides_key: values.fides_key,
+    //   });
+    //   if (assetResult.isError) {
+    //     toast({
+    //       status: "error",
+    //       description:
+    //         "An unexpected error occurred while populating the system assets. Please try again.",
+    //     });
+    //   }
+    // }
 
     handleResult(result);
   };
