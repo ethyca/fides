@@ -42,9 +42,9 @@ class MySQLSchema(ConnectionConfigSecretsSchema):
     )
     sslmode: Optional[str] = Field(
         None,
-        title="SSL mode",
-        description="The SSL mode to use for the connection. Valid values are 'disable', 'allow', 'prefer', 'require'.",
-        # TODO: add verify-ca and verify-full
+        title="SSL Mode",
+        description="The SSL mode to use for the connection. Valid values are 'required', 'preferred', and 'disabled'.",
+        # TODO: support for verify-ca and verify-full
     )
 
     _required_components: ClassVar[List[str]] = ["host", "dbname"]

@@ -30,4 +30,8 @@ export type MySQLDocsSchema = {
    * Indicates whether an SSH tunnel is required for the connection. Enable this option if your MySQL server is behind a firewall and requires SSH tunneling for remote connections.
    */
   ssh_required?: boolean;
+  /**
+   * The SSL mode to use for the connection. Valid values are 'required', 'preferred', and'disabled'.
+   */
+  sslmode?: string;
 };
