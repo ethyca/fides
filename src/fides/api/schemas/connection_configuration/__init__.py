@@ -97,6 +97,7 @@ from fides.api.schemas.connection_configuration.connection_secrets_postgres impo
 )
 from fides.api.schemas.connection_configuration.connection_secrets_postgres import (
     PostgreSQLSchema as PostgreSQLSchema,
+    PostgreSQLSchemaBase as PostgreSQLSchemaBase,
 )
 from fides.api.schemas.connection_configuration.connection_secrets_rds_mysql import (
     RDSMySQLDocsSchema as RDSMySQLDocsSchema,
