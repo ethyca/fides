@@ -7,6 +7,7 @@ from fides.api.schemas.storage.storage import (
     SUPPORTED_STORAGE_SECRETS,
     StorageSecrets,
     StorageType,
+    AWSAuthMethod,
 )
 from fides.api.util.aws_util import get_aws_session
 
@@ -25,7 +26,7 @@ def _s3_authenticator(
 ) -> bool:
     """Authenticates secrets for s3, returns true if secrets are valid"""
     try:
-        get_aws_session(config.details["auth_method"], secrets.model_dump(mode="json"))  # type: ignore
+        get_aws_session(config.details["auth_method"] or AWSAuthMethod.SECRET_KEYS.value, secrets.model_dump(mode="json"))  # type: ignore
         return True
     except ClientError:
         return False
