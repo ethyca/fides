@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union,
 
 from fideslang.validation import FidesKey
 from pydantic import (
@@ -82,12 +82,10 @@ class StorageSecretsLocal(BaseModel):
 
 
 class StorageSecretsS3(BaseModel):
-    """The secrets required to connect to an S3 bucket."""
-
-    aws_access_key_id: str
-    aws_secret_access_key: str
-    region_name: str
-    assume_role_arn: str
+    aws_access_key_id: Optional[str] = None
+    aws_secret_access_key: Optional[str] = None
+    region_name: Optional[str] = None
+    assume_role_arn: Optional[str] = None
     model_config = ConfigDict(extra="forbid")
 
 
