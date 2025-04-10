@@ -5,9 +5,9 @@ from botocore.exceptions import ClientError
 from fides.api.models.storage import StorageConfig
 from fides.api.schemas.storage.storage import (
     SUPPORTED_STORAGE_SECRETS,
+    AWSAuthMethod,
     StorageSecrets,
     StorageType,
-    AWSAuthMethod,
 )
 from fides.api.util.aws_util import get_aws_session
 
