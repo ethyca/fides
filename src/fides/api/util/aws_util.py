@@ -24,7 +24,7 @@ def get_aws_session(
         storage_secrets = {}
 
     stored_region_name = storage_secrets.get("region_name")  # type: ignore
-    stored_assume_role_arn: Optional[str] = storage_secrets.get("assume_role_arn")
+    stored_assume_role_arn: Optional[str] = storage_secrets.get("assume_role_arn")  # type: ignore
 
     if auth_method == AWSAuthMethod.SECRET_KEYS.value:
         if not storage_secrets:
