@@ -89,6 +89,7 @@ class TCFConfiguration(Base):
         "PrivacyExperienceConfig",
         back_populates="tcf_configuration",
         lazy="selectin",
+        viewonly=True,
     )
 
 
