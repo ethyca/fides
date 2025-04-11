@@ -123,6 +123,11 @@ const ConfigurePrivacyExperience = ({
     values.privacy_notice_ids = values.privacy_notice_ids?.filter(
       (item) => item !== "tcf_purposes_placeholder",
     );
+    if (initialValues.tcf_configuration_id && !values.tcf_configuration_id) {
+      // If the TCF configuration gets cleared, set the TCF configuration ID to null to remove it on the DB side
+      // eslint-disable-next-line no-param-reassign
+      values.tcf_configuration_id = null;
+    }
     const valuesToSubmit = {
       ...values,
       disabled: passedInExperience?.disabled ?? true,
