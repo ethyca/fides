@@ -69,6 +69,7 @@ class PostgreSQLConnector(SQLConnector):
             uri = self.build_ssh_uri(local_address=self.ssh_server.local_bind_address)
         else:
             uri = (self.configuration.secrets or {}).get("url") or self.build_uri()
+
         return create_engine(
             uri,
             hide_parameters=self.hide_parameters,

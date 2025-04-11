@@ -1451,7 +1451,7 @@ class TestPutConnectionConfigSecrets:
         assert resp.status_code == 422
         assert (
             resp.json()["detail"][0]["msg"]
-            == "Value error, PostgreSQLSchema must be supplied all of: ['host', 'dbname']."
+            == "Value error, PostgreSQLSchema must be supplied all of: ['host']."
         )
 
         payload = {

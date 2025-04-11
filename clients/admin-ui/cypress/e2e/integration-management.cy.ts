@@ -189,7 +189,7 @@ describe("Integration management for data detection & discovery", () => {
 
     it("redirects to list view if the integration type is incorrect", () => {
       cy.intercept("GET", "/api/v1/connection/*", {
-        fixture: "connectors/postgres_connector.json",
+        fixture: "connectors/sovrn_connector.json",
       }).as("getConnection");
       cy.wait("@getConnection");
       cy.url().should("not.contain", "bq_integration");
