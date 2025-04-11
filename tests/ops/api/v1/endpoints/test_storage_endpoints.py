@@ -459,8 +459,10 @@ class TestPutStorageConfigSecretsS3:
         get_aws_session_mock.assert_called_once_with(
             AWSAuthMethod.SECRET_KEYS.value,
             {
+                "assume_role_arn": None,
                 "aws_access_key_id": payload["aws_access_key_id"],
                 "aws_secret_access_key": payload["aws_secret_access_key"],
+                "region_name": None,
             },
         )
 
