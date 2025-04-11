@@ -42,7 +42,7 @@ const IntegrationDetailView: NextPage = () => {
 
   const { onOpen, isOpen, onClose } = useDisclosure();
 
-  const { overview, instructions } = getIntegrationTypeInfo(
+  const { overview, instructions, description } = getIntegrationTypeInfo(
     connection?.connection_type,
   );
 
@@ -87,6 +87,7 @@ const IntegrationDetailView: NextPage = () => {
             isOpen={isOpen}
             onClose={onClose}
             connection={connection!}
+            description={description}
           />
           {overview}
           {instructions}
