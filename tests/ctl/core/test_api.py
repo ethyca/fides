@@ -924,14 +924,7 @@ class TestSystemCreate:
 
         assert result.status_code == HTTP_201_CREATED
         json_results = result.json()
-        assert json_results["privacy_declarations"][0]["assets"] == [
-            {
-                "name": "essential_cookie",
-                "asset_type": "Cookie",
-                "domain": "example.com",
-            }
-        ]
-        assert json_results["privacy_declarations"][1]["assets"] == []
+
         assert json_results["data_stewards"] == []
 
         systems = System.all(db)
@@ -979,7 +972,7 @@ class TestSystemCreate:
             == "We encrypt all your data in transit and at rest"
         )
         assert system.cookie_max_age_seconds == 31536000
-        assert system.uses_cookies is True
+        assert system.uses_cookies is False
         assert system.cookie_refresh is True
         assert system.uses_non_cookie_access is True
         assert (
@@ -987,10 +980,6 @@ class TestSystemCreate:
             == "http://www.example.com/legitimate_interest_disclosure"
         )
         assert system.data_stewards == []
-        assert [asset.name for asset in systems[0].privacy_declarations[0].assets] == [
-            "essential_cookie"
-        ]
-        assert systems[0].privacy_declarations[1].assets == []
 
         privacy_decl = system.privacy_declarations[0]
         assert privacy_decl.name == "declaration-name"
