@@ -21,11 +21,11 @@ export const DATAHUB_TAGS = ["Sync"];
 
 export const DATAHUB_DESCRIPTION = (
   <>
-    Set up a connection to your DataHub instance by providing a name, server URL,
-    and access token. You can also select the BigQuery datasets you&apos;d like
-    to sync—these will be matched with corresponding datasets in DataHub. If no
-    datasets are selected, all available BigQuery datasets will be included by
-    default.
+    Set up a connection to your DataHub instance by providing a name, server
+    URL, and access token. You can also select the BigQuery datasets you&apos;d
+    like to sync—these will be matched with corresponding datasets in DataHub.
+    If no datasets are selected, all available BigQuery datasets will be
+    included by default.
   </>
 );
 
