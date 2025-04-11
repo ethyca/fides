@@ -19,6 +19,7 @@ from toml import load as load_toml
 from fides.api.common_exceptions import SystemManagerException
 from fides.api.graph.graph import DatasetGraph
 from fides.api.models.application_config import ApplicationConfig
+from fides.api.models.asset import Asset
 from fides.api.models.attachment import Attachment, AttachmentType
 from fides.api.models.audit_log import AuditLog, AuditLogAction
 from fides.api.models.client import ClientDetail
@@ -2231,12 +2232,34 @@ def privacy_notice(db: Session) -> Generator:
         },
     )
 
+    cookie_assets = [
+        Asset(
+            name="test_cookie",
+            asset_type="Cookie",
+            data_uses=["marketing.advertising"],
+        ),
+        Asset(
+            name="test_cookie_2",
+            asset_type="Cookie",
+            data_uses=["third_party_sharing.disclosure"],  # a not matching data use
+        ),
+        Asset(
+            name="test_cookie_3",
+            asset_type="Cookie",
+            data_uses=["test.third_party_sharing.cookie"],  # should not match either
+        ),
+    ]
+    for cookie_asset in cookie_assets:
+        cookie_asset.save(db)
+
     yield privacy_notice
     for translation in privacy_notice.translations:
         for history in translation.histories:
             history.delete(db)
         translation.delete(db)
     privacy_notice.delete(db)
+    for cookie_asset in cookie_assets:
+        cookie_asset.delete(db)
 
 
 @pytest.fixture(scope="function")

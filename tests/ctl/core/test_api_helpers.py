@@ -25,7 +25,7 @@ def created_resources(
     test_config: FidesConfig, resources_dict: Dict, request: FixtureRequest
 ) -> Generator:
     """
-    Fixture that creates and tears down a set of resources for each test run.
+    Creates a set of resources for testing and cleans them up after the test.
     Only creates resources for a given type based on test parameter
     """
     created_keys = []

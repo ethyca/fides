@@ -40,7 +40,7 @@ from fides.api.models.privacy_request import (
     generate_request_callback_pre_approval_jwe,
     generate_request_callback_resume_jwe,
 )
-from fides.api.models.sql_models import Cookies, DataUse, PrivacyDeclaration
+from fides.api.models.sql_models import DataUse, PrivacyDeclaration
 from fides.api.oauth.jwt import generate_jwe
 from fides.api.oauth.roles import APPROVER, CONTRIBUTOR, OWNER, VIEWER_AND_APPROVER
 from fides.api.schemas.messaging.messaging import MessagingServiceType
@@ -438,7 +438,7 @@ def resources_dict():
             organization_fides_key="1",
             fides_key="user.custom",
             parent_key="user",
-            name="Custom Data Category",
+            name="User dot Custom Data Category",
             description="Custom Data Category",
         ),
         "dataset": models.Dataset(
@@ -1309,17 +1309,6 @@ def system(db: Session) -> System:
         },
     )
 
-    Cookies.create(
-        db=db,
-        data={
-            "name": "test_cookie",
-            "path": "/",
-            "privacy_declaration_id": privacy_declaration.id,
-            "system_id": system.id,
-        },
-        check_name=False,
-    )
-
     db.refresh(system)
     return system
 
@@ -1386,17 +1375,6 @@ def system_with_cleanup(db: Session) -> Generator[System, None, None]:
             "egress": None,
             "ingress": None,
         },
-    )
-
-    Cookies.create(
-        db=db,
-        data={
-            "name": "test_cookie",
-            "path": "/",
-            "privacy_declaration_id": privacy_declaration.id,
-            "system_id": system.id,
-        },
-        check_name=False,
     )
 
     ConnectionConfig.create(
