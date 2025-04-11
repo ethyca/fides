@@ -46,13 +46,26 @@ export const PublisherRestrictionsConfig = ({
 
   // Automatically select first configuration when available
   useEffect(() => {
-    if (tcfConfigurations?.items?.length && !selectedTCFConfigId) {
+    if (
+      !isTcfConfigurationsLoading &&
+      tcfConfigurations?.items?.length &&
+      !selectedTCFConfigId
+    ) {
       setSelectedTCFConfigId(tcfConfigurations.items[0].id);
     }
-    if (selectedTCFConfigId && !tcfConfigurations?.items?.length) {
+    if (
+      !isTcfConfigurationsLoading &&
+      selectedTCFConfigId &&
+      !tcfConfigurations?.items?.length
+    ) {
       setSelectedTCFConfigId(null);
     }
-  }, [tcfConfigurations?.items, selectedTCFConfigId, setSelectedTCFConfigId]);
+  }, [
+    isTcfConfigurationsLoading,
+    tcfConfigurations?.items,
+    selectedTCFConfigId,
+    setSelectedTCFConfigId,
+  ]);
 
   return (
     <SettingsBox title="Publisher restrictions" fontSize="sm">

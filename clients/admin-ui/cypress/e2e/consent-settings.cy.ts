@@ -301,9 +301,28 @@ describe("Consent settings", () => {
       });
 
       it("allows changing the TCF configuration", () => {
+        cy.getAllLocalStorage().then((ls) => {
+          expect(ls["http://localhost:3000"]?.selectedTCFConfigId).to.not.exist;
+        });
         cy.getByTestId("tcf-config-dropdown-trigger").click();
         cy.getByTestId("tcf-config-item-tcf_config_2").click();
         cy.getByTestId("apply-config-button").click();
+        cy.getByTestId("tcf-config-dropdown-trigger").should(
+          "have.text",
+          "Strict TCF Config",
+        );
+        cy.getAllLocalStorage().then((ls) => {
+          expect(ls["http://localhost:3000"]?.selectedTCFConfigId).to.eq(
+            `"tcf_config_2"`,
+          );
+        });
+        // check that the selected config gets remembered with new page load
+        cy.visit(GLOBAL_CONSENT_CONFIG_ROUTE);
+        cy.getAllLocalStorage().then((ls) => {
+          expect(ls["http://localhost:3000"]?.selectedTCFConfigId).to.eq(
+            `"tcf_config_2"`,
+          );
+        });
         cy.getByTestId("tcf-config-dropdown-trigger").should(
           "have.text",
           "Strict TCF Config",
