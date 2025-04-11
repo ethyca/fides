@@ -21,6 +21,12 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.59.0...main)
 
+### Changed
+- Changed how TCF Publisher Overrides gets configured in consent settings [#6013](https://github.com/ethyca/fides/pull/6013)
+
+### Developer Experience
+- Reduced animations on Cypress tests in Privacy Center for quicker results [#5976](https://github.com/ethyca/fides/pull/5976)
+
 ### Fixed
 - Fixed typo in Vermont US state name [#6029](https://github.com/ethyca/fides/pull/6029)
 
@@ -49,10 +55,6 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Updated the UI for the activity tab of the privacy request detail page [#6005](https://github.com/ethyca/fides/pull/6005)
 - Unified frontend formatKey method, so its behavior is closer to the backend behavior [#6010](https://github.com/ethyca/fides/pull/6010)
 - Action center table's checkboxes were improved, also improved change indications [#6021](https://github.com/ethyca/fides/pull/6021)
-- Changed how TCF Publisher Overrides gets configured in consent settings [#6013](https://github.com/ethyca/fides/pull/6013)
-
-### Developer Experience
-- Reduced animations on Cypress tests in Privacy Center for quicker results [#5976](https://github.com/ethyca/fides/pull/5976)
 
 ### Fixed
 - Updated relationships for Comments, Attachments and PrivacyRequests to remove overlap sqlalchemy error. [#5929](https://github.com/ethyca/fides/pull/5929)
