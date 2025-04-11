@@ -1,9 +1,11 @@
 from unittest import mock
+from unittest.mock import create_autospec
 
 import boto3
 import pytest
 from botocore.exceptions import NoCredentialsError
 from google.auth.exceptions import GoogleAuthError
+from google.oauth2.service_account import Credentials
 from moto import mock_aws
 
 from fides.api.common_exceptions import StorageUploadError
@@ -102,17 +104,26 @@ def test_get_s3_client_with_assume_role(storage_secrets):
     assert s3_client.list_buckets() is not None
 
 
+@mock.patch(
+    "fides.api.service.storage.storage_authenticator_service.Request", autospec=True
+)
+@mock.patch(
+    "fides.api.service.storage.storage_authenticator_service.service_account.Credentials",
+    autospec=True,
+)
 class TestGCSAuthenticator:
     """Tests for GCS storage authenticator"""
 
-    @mock.patch("fides.api.service.storage.storage_authenticator_service.Request")
-    @mock.patch(
-        "fides.api.service.storage.storage_authenticator_service.service_account.Credentials"
-    )
-    def test_secrets_are_valid_for_gcs(self, mock_credentials, mock_request):
+    @pytest.fixture
+    def mock_creds_instance(self):
+        """Create a mock credentials instance"""
+        mock_instance = create_autospec(Credentials)
+        return mock_instance
+
+    def test_secrets_are_valid_for_gcs(
+        self, mock_credentials, mock_request, mock_creds_instance
+    ):
         """Test GCS credentials validation with valid credentials"""
-        # Mock the credentials and request
-        mock_creds_instance = mock.MagicMock()
         mock_credentials.from_service_account_info.return_value = mock_creds_instance
 
         test_secrets = {
@@ -143,16 +154,14 @@ class TestGCSAuthenticator:
         )
         mock_creds_instance.refresh.assert_called_once_with(mock_request())
 
-    @mock.patch("fides.api.service.storage.storage_authenticator_service.logger")
-    @mock.patch("fides.api.service.storage.storage_authenticator_service.Request")
     @mock.patch(
-        "fides.api.service.storage.storage_authenticator_service.service_account.Credentials"
+        "fides.api.service.storage.storage_authenticator_service.logger",
+        autospec=True,
     )
     def test_secrets_are_invalid_for_gcs(
-        self, mock_credentials, mock_request, mock_logger
+        self, mock_logger, mock_credentials, mock_request, mock_creds_instance
     ):
         """Test GCS credentials validation with invalid credentials"""
-        mock_creds_instance = mock.MagicMock()
         mock_credentials.from_service_account_info.return_value = mock_creds_instance
         error = GoogleAuthError("Invalid credentials")
         mock_creds_instance.refresh.side_effect = error
@@ -172,19 +181,18 @@ class TestGCSAuthenticator:
         )
         mock_creds_instance.refresh.assert_called_once_with(mock_request())
         mock_logger.warning.assert_called_once_with(
-            "Google authentication error trying to authenticate GCS secrets: {}", error
+            "Google authentication error trying to authenticate GCS secrets: {}",
+            error,
         )
 
-    @mock.patch("fides.api.service.storage.storage_authenticator_service.logger")
-    @mock.patch("fides.api.service.storage.storage_authenticator_service.Request")
     @mock.patch(
-        "fides.api.service.storage.storage_authenticator_service.service_account.Credentials"
+        "fides.api.service.storage.storage_authenticator_service.logger",
+        autospec=True,
     )
     def test_secrets_validation_unexpected_error(
-        self, mock_credentials, mock_request, mock_logger
+        self, mock_logger, mock_credentials, mock_request, mock_creds_instance
     ):
         """Test GCS credentials validation with unexpected error"""
-        mock_creds_instance = mock.MagicMock()
         mock_credentials.from_service_account_info.return_value = mock_creds_instance
         error = Exception("Unexpected error")
         mock_creds_instance.refresh.side_effect = error
