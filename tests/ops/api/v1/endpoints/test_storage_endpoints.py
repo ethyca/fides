@@ -1221,10 +1221,12 @@ class TestPutDefaultStorageConfigSecretsS3:
         response = api_client.put(url, headers=auth_header, json=payload)
         assert 200 == response.status_code
         get_aws_session_mock.assert_called_once_with(
-            AWSAuthMethod.SECRET_KEYS.value,
+            AWSAuthMethod.AUTOMATIC.value,
             {
                 "aws_access_key_id": payload["aws_access_key_id"],
                 "aws_secret_access_key": payload["aws_secret_access_key"],
+                "region_name": None,
+                "assume_role_arn": None,
             },
         )
 
