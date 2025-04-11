@@ -39,7 +39,6 @@ jobs:
       - name: Cypress Privacy Center E2E Tests
         uses: cypress-io/github-action@v6
         with:
-          command: npm run cy:parallel
           working-directory: clients/privacy-center
           install: false
           start: npm run cy:start

@@ -50,6 +50,9 @@ export const useDiscoveredSystemAggregateColumns = ({
     maxSize: 40,
     meta: {
       disableRowClick: true,
+      cellProps: {
+        borderRight: "none",
+      },
     },
   });
 
@@ -58,6 +61,14 @@ export const useDiscoveredSystemAggregateColumns = ({
     cell: (props) => <DiscoveredSystemStatusCell system={props.row.original} />,
     header: "System",
     size: 300,
+    meta: {
+      headerProps: {
+        paddingLeft: "0px",
+      },
+      cellProps: {
+        padding: "0 !important",
+      },
+    },
   });
 
   const totalUpdates = columnHelper.accessor((row) => row.total_updates, {

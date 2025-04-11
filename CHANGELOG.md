@@ -19,7 +19,12 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - https://github.com/ethyca/fides/labels/high-risk: to indicate that a change is a "high-risk" change that could potentially lead to unanticipated regressions or degradations
 - https://github.com/ethyca/fides/labels/db-migration: to indicate that a given change includes a DB migration
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.58.2...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.59.0...main)
+
+### Fixed
+- Fixed typo in Vermont US state name [#6029](https://github.com/ethyca/fides/pull/6029)
+
+## [2.59.0](https://github.com/ethyca/fides/compare/2.58.2...2.59.0)
 
 ### Added
 - Added `reject_all_mechanism` to `PrivacyExperienceConfig` [#5952](https://github.com/ethyca/fides/pull/5952) https://github.com/ethyca/fides/labels/db-migration
@@ -45,7 +50,11 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Updated the UI for the activity tab of the privacy request detail page [#6005](https://github.com/ethyca/fides/pull/6005)
 - Unified frontend formatKey method, so its behavior is closer to the backend behavior [#6010](https://github.com/ethyca/fides/pull/6010)
 - Removed `dbname` as a required field for PostgreSQL connection configs to support use with discovery monitors [#6018](https://github.com/ethyca/fides/pull/6018)
+- Action center table's checkboxes were improved, also improved change indications [#6021](https://github.com/ethyca/fides/pull/6021)
+- Changed how TCF Publisher Overrides gets configured in consent settings [#6013](https://github.com/ethyca/fides/pull/6013)
 
+### Developer Experience
+- Reduced animations on Cypress tests in Privacy Center for quicker results [#5976](https://github.com/ethyca/fides/pull/5976)
 
 ### Fixed
 - Updated relationships for Comments, Attachments and PrivacyRequests to remove overlap sqlalchemy error. [#5929](https://github.com/ethyca/fides/pull/5929)
@@ -54,6 +63,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Fixes translation bug in TCF custom notices [#6003](https://github.com/ethyca/fides/pull/6003)
 - Fixed issue with SaaS integration update payloads [#6001](https://github.com/ethyca/fides/pull/6001)
 - Fix non-consent-category data uses showing up in system assets table [#5999](https://github.com/ethyca/fides/pull/5999)
+- Fix `TCFConfiguration` relationship definitions [#6031](https://github.com/ethyca/fides/pull/6031)
 
 ### Removed
 - Removed datasetClassificationUpdates flag from admin UI. [#5950](https://github.com/ethyca/fides/pull/5950)
