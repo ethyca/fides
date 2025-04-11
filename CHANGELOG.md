@@ -23,6 +23,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ### Fixed
 - Fixed typo in Vermont US state name [#6029](https://github.com/ethyca/fides/pull/6029)
+- Fixed two Georgia's in regions list and incorrect name for the state SD [#6036](https://github.com/ethyca/fides/pull/6036)
 
 ## [2.59.0](https://github.com/ethyca/fides/compare/2.58.2...2.59.0)
 
