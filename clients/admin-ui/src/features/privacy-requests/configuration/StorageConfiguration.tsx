@@ -24,6 +24,7 @@ import {
   useGetStorageDetailsQuery,
 } from "~/features/privacy-requests/privacy-requests.slice";
 
+import GoogleCloudStorageConfiguration from "./GoogleCloudStorageConfiguration";
 import S3StorageConfiguration from "./S3StorageConfiguration";
 
 const StorageConfiguration = () => {
@@ -72,6 +73,13 @@ const StorageConfiguration = () => {
     }
   };
 
+  const storageComponents = {
+    s3: S3StorageConfiguration,
+    gcs: GoogleCloudStorageConfiguration,
+  };
+  const StorageConfigComponent =
+    storageComponents[storageValue as keyof typeof storageComponents];
+
   return (
     <Layout title="Configure Privacy Requests - Storage">
       <PageHeader
@@ -102,10 +110,14 @@ const StorageConfiguration = () => {
           your results. Fides currently supports{" "}
           <Text as="span" color="complimentary.500">
             Local
+          </Text>
+          {", "}
+          <Text as="span" color="complimentary.500">
+            S3
           </Text>{" "}
           and{" "}
           <Text as="span" color="complimentary.500">
-            S3
+            GCS
           </Text>{" "}
           storage methods.
         </Box>
@@ -126,11 +138,15 @@ const StorageConfiguration = () => {
             <Radio key="s3" value="s3" data-testid="option-s3">
               S3
             </Radio>
+            <Radio key="gcs" value="gcs" data-testid="option-gcs">
+              GCS
+            </Radio>
           </Flex>
         </Radio.Group>
-        {storageValue === "s3" && storageDetails ? (
-          <S3StorageConfiguration storageDetails={storageDetails} />
-        ) : null}
+
+        {StorageConfigComponent && storageDetails && (
+          <StorageConfigComponent storageDetails={storageDetails} />
+        )}
       </Box>
     </Layout>
   );

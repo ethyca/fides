@@ -6,6 +6,7 @@ from pydantic import ValidationError
 
 from fides.api.schemas.storage.storage import (
     SUPPORTED_STORAGE_SECRETS,
+    StorageSecretsGCS,
     StorageSecretsS3,
     StorageType,
 )
@@ -31,6 +32,7 @@ def get_schema_for_secrets(
     try:
         schema = {
             StorageType.s3: StorageSecretsS3,
+            StorageType.gcs: StorageSecretsGCS,
         }[storage_type]
     except KeyError:
         raise ValueError(

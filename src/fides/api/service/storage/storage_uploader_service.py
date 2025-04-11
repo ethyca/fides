@@ -14,7 +14,7 @@ from fides.api.schemas.storage.storage import (
     StorageDetails,
     StorageType,
 )
-from fides.api.tasks.storage import upload_to_local, upload_to_s3
+from fides.api.tasks.storage import upload_to_gcs, upload_to_local, upload_to_s3
 
 
 def upload(
@@ -78,6 +78,7 @@ def _get_uploader_from_config_type(storage_type: StorageType) -> Any:
     return {
         StorageType.s3.value: _s3_uploader,
         StorageType.local.value: _local_uploader,
+        StorageType.gcs.value: _gcs_uploader,
     }[storage_type.value]
 
 
@@ -102,6 +103,29 @@ def _s3_uploader(
         config.format.value,  # type: ignore
         privacy_request,
         document,
+        auth_method,
+    )
+
+
+def _gcs_uploader(
+    _: Session,
+    config: StorageConfig,
+    data: Dict,
+    privacy_request: PrivacyRequest,
+) -> str:
+    """Constructs necessary info needed for Google Cloud Storage before calling upload"""
+    file_key: str = _construct_file_key(privacy_request.id, config)
+
+    bucket_name = config.details[StorageDetails.BUCKET.value]
+    auth_method = config.details[StorageDetails.AUTH_METHOD.value]
+
+    return upload_to_gcs(
+        config.secrets,
+        data,
+        bucket_name,
+        file_key,
+        config.format.value,  # type: ignore
+        privacy_request,
         auth_method,
     )
 

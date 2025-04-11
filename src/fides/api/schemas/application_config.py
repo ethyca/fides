@@ -14,6 +14,7 @@ class StorageTypeApiAccepted(Enum):
     """Enum for storage destination types accepted in API updates"""
 
     s3 = "s3"
+    gcs = "gcs"
     local = "local"  # local should be used for testing only, not for processing real-world privacy requests
 
 

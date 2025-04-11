@@ -43,4 +43,5 @@ export const messagingProviders = {
 export const storageTypes = {
   local: "local",
   s3: "s3",
+  gcs: "gcs",
 };
