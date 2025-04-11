@@ -1,0 +1,47 @@
+{
+  "items": [
+    {
+      "purpose_id": 2,
+      "restriction_type": "require_consent",
+      "vendor_restriction": "allow_specific_vendors",
+      "range_entries": [
+        {
+          "start_vendor_id": 49,
+          "end_vendor_id": 51
+        }
+      ],
+      "id": "tcf_75f0c466-ce9e-4140-bcfc-93cb8acbdfc2",
+      "tcf_configuration_id": "tcf_642bf84f-78d4-495d-ad75-666325578722"
+    },
+    {
+      "purpose_id": 2,
+      "restriction_type": "require_legitimate_interest",
+      "vendor_restriction": "restrict_specific_vendors",
+      "range_entries": [
+        {
+          "start_vendor_id": 50,
+          "end_vendor_id": null
+        }
+      ],
+      "id": "tcf_3a478fc0-36b8-42a6-8503-6ce32863c58e",
+      "tcf_configuration_id": "tcf_642bf84f-78d4-495d-ad75-666325578722"
+    },
+    {
+      "purpose_id": 2,
+      "restriction_type": "purpose_restriction",
+      "vendor_restriction": "restrict_specific_vendors",
+      "range_entries": [
+        {
+          "start_vendor_id": 51,
+          "end_vendor_id": null
+        }
+      ],
+      "id": "tcf_0feb7324-0b2b-4e25-bd9e-faac7b3ccb05",
+      "tcf_configuration_id": "tcf_642bf84f-78d4-495d-ad75-666325578722"
+    }
+  ],
+  "total": 3,
+  "page": 1,
+  "size": 50,
+  "pages": 1
+}

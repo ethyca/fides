@@ -88,6 +88,7 @@ const ConfigurationList = ({
       <Flex
         key={config.id}
         className={userCanDeleteConfigs ? "justify-between" : "justify-start"}
+        data-testid={`tcf-config-item-${config.id}`}
       >
         <Radio
           value={config.id}

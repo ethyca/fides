@@ -56,10 +56,18 @@ export const PublisherRestrictionActionCell = ({
   return (
     <>
       <Space>
-        <Button size="small" onClick={() => setIsEditModalOpen(true)}>
+        <Button
+          size="small"
+          onClick={() => setIsEditModalOpen(true)}
+          data-testid="edit-restriction-button"
+        >
           Edit
         </Button>
-        <Button size="small" onClick={() => setIsDeleteModalOpen(true)}>
+        <Button
+          size="small"
+          onClick={() => setIsDeleteModalOpen(true)}
+          data-testid="delete-restriction-button"
+        >
           Delete
         </Button>
       </Space>
