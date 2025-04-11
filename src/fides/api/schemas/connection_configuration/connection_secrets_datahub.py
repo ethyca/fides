@@ -20,11 +20,11 @@ class PeriodicIntegrationFrequency(Enum):
 
 class DatahubSchema(ConnectionConfigSecretsSchema):
     datahub_server_url: AnyHttpUrlStringRemovesSlash = Field(
-        title="DataHub Server URL",
+        title="DataHub server URL",
         description="The URL of your DataHub server.",
     )
     datahub_token: str = Field(
-        title="DataHub Token",
+        title="DataHub token",
         description="The token used to authenticate with your DataHub server.",
         json_schema_extra={"sensitive": True},
     )
@@ -33,7 +33,7 @@ class DatahubSchema(ConnectionConfigSecretsSchema):
         description="The frequency at which the integration should run. Available options are daily, weekly, and monthly.",
     )
     glossary_node: str = Field(
-        title="Glossary Node",
+        title="Glossary node",
         description="The glossary node name to use on Datahub for Fides Data Categories. (e.g. FidesDataCategories)",
     )
 

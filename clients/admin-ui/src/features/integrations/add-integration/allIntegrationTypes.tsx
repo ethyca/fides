@@ -24,6 +24,7 @@ export type IntegrationTypeInfo = {
   placeholder: ConnectionConfigurationResponse;
   category: ConnectionCategory;
   overview?: ReactNode;
+  description?: ReactNode;
   instructions?: ReactNode;
   tags: string[];
 };

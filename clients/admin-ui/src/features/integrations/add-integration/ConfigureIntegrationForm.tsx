@@ -283,7 +283,7 @@ const ConfigureIntegrationForm = ({
                 name="dataset"
                 options={datasetOptions ?? []}
                 label="Datasets"
-                tooltip="The datasets to associate with the integration"
+                tooltip="Only BigQuery datasets are supported. Selected datasets will sync with matching DataHub datasets. If none are selected, all datasets will be included by default."
                 layout="stacked"
                 mode="multiple"
               />

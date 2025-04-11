@@ -21,6 +21,9 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.59.0...main)
 
+### Changed
+- Integrations manage modals now are cappable of showing a small description [xxxx](https://github.com/ethyca/fides/pull/6029)
+
 ### Fixed
 - Fixed typo in Vermont US state name [#6029](https://github.com/ethyca/fides/pull/6029)
 
