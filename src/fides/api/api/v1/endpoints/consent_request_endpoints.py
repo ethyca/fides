@@ -58,6 +58,7 @@ from fides.api.util.consent_util import (
 from fides.api.util.endpoint_utils import validate_start_and_end_filters
 from fides.api.util.logger import Pii
 from fides.common.api.scope_registry import CONSENT_READ
+from fides.common.api.v1.tag_registry import PUBLIC_INTERNET
 from fides.common.api.v1.urn_registry import (
     CONSENT_REQUEST,
     CONSENT_REQUEST_PREFERENCES,
@@ -174,6 +175,7 @@ def report_consent_requests(
     CONSENT_REQUEST,
     status_code=HTTP_200_OK,
     response_model=ConsentRequestResponse,
+    tags=[PUBLIC_INTERNET],
 )
 def create_consent_request(
     *,
@@ -239,6 +241,7 @@ def create_consent_request(
     CONSENT_REQUEST_VERIFY,
     status_code=HTTP_200_OK,
     response_model=ConsentPreferences,
+    tags=[PUBLIC_INTERNET],
 )
 def consent_request_verify(
     *,
@@ -293,6 +296,7 @@ def consent_request_verify(
             "only supported with disable_consent_identity_verification set to true"
         },
     },
+    tags=[PUBLIC_INTERNET],
 )
 def get_consent_preferences_no_id(
     *,
@@ -442,6 +446,7 @@ def queue_privacy_request_to_propagate_consent_old_workflow(
     CONSENT_REQUEST_PREFERENCES_WITH_ID,
     status_code=HTTP_200_OK,
     response_model=ConsentPreferences,
+    tags=[PUBLIC_INTERNET],
 )
 def set_consent_preferences(
     *,
