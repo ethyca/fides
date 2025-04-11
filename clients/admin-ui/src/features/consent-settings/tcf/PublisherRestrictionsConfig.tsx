@@ -101,7 +101,10 @@ export const PublisherRestrictionsConfig = ({
                   </DocsLink>{" "}
                   in our docs.
                 </Text>
-                <Button onClick={() => setIsCreateModalOpen(true)}>
+                <Button
+                  onClick={() => setIsCreateModalOpen(true)}
+                  data-testid="create-config-button"
+                >
                   Create configuration +
                 </Button>
               </>
