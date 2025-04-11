@@ -1,21 +1,22 @@
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, create_autospec, patch
 
 import pytest
+from google.cloud.storage import Blob, Bucket, Client
 
 from fides.api.schemas.storage.storage import ResponseFormat
 from fides.api.tasks.storage import upload_to_gcs
 from fides.config import CONFIG
 
 
+@patch("fides.api.tasks.storage.write_to_in_memory_buffer", autospec=True)
+@patch("fides.api.tasks.storage.get_gcs_client", autospec=True)
 class TestUploadToGCS:
-    @patch("fides.api.tasks.storage.write_to_in_memory_buffer")
-    @patch("fides.api.tasks.storage.get_gcs_client")
     def test_upload_to_gcs_success(
         self, mock_get_gcs_client, mock_write_to_in_memory_buffer
     ):
-        mock_storage_client = MagicMock()
-        mock_bucket = MagicMock()
-        mock_blob = MagicMock()
+        mock_storage_client = create_autospec(Client)
+        mock_bucket = create_autospec(Bucket)
+        mock_blob = create_autospec(Blob)
         mock_in_memory_file = MagicMock()
 
         mock_get_gcs_client.return_value = mock_storage_client
@@ -54,15 +55,13 @@ class TestUploadToGCS:
         )
         assert result == "http://example.com/signed-url"
 
-    @patch("fides.api.tasks.storage.logger")
-    @patch("fides.api.tasks.storage.write_to_in_memory_buffer")
-    @patch("fides.api.tasks.storage.get_gcs_client")
+    @patch("fides.api.tasks.storage.logger", autospec=True)
     def test_upload_to_gcs_exception(
-        self, mock_get_gcs_client, mock_write_to_in_memory_buffer, mock_logger
+        self, mock_logger, mock_get_gcs_client, mock_write_to_in_memory_buffer
     ):
-        mock_storage_client = MagicMock()
-        mock_bucket = MagicMock()
-        mock_blob = MagicMock()
+        mock_storage_client = create_autospec(Client)
+        mock_bucket = create_autospec(Bucket)
+        mock_blob = create_autospec(Blob)
         mock_in_memory_file = MagicMock()
 
         mock_get_gcs_client.return_value = mock_storage_client

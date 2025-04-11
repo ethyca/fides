@@ -1,6 +1,7 @@
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, create_autospec, patch
 
 import pytest
+from google.oauth2.service_account import Credentials
 
 from fides.api.common_exceptions import StorageUploadError
 from fides.api.schemas.storage.storage import GCSAuthMethod
@@ -10,11 +11,13 @@ from fides.api.service.storage.gcs import get_gcs_client
 class TestGetGCSClient:
     def test_get_gcs_client_adc(self):
         """Test getting GCS client using ADC authentication."""
-        with patch("fides.api.service.storage.gcs.Client") as mock_client:
-            mock_client.return_value = MagicMock()
+        with patch(
+            "fides.api.service.storage.gcs.Client", autospec=True
+        ) as mock_client_cls:
+            mock_client_cls.return_value = MagicMock()
             client = get_gcs_client(GCSAuthMethod.ADC.value, None)
             assert isinstance(client, MagicMock)
-            mock_client.assert_called_once()
+            mock_client_cls.assert_called_once()
 
     def test_get_gcs_client_service_account(self):
         """Test getting GCS client using service account authentication."""
@@ -38,22 +41,24 @@ class TestGetGCSClient:
             "universe_domain": "googleapis.com",
         }
 
+        mock_credentials = create_autospec(Credentials)
         with patch(
-            "fides.api.service.storage.gcs.service_account.Credentials"
-        ) as mock_creds:
-            with patch("fides.api.service.storage.gcs.Client") as mock_client:
-                mock_credentials = MagicMock()
-                mock_creds.from_service_account_info.return_value = mock_credentials
-                mock_client.return_value = MagicMock()
+            "fides.api.service.storage.gcs.service_account.Credentials", autospec=True
+        ) as mock_creds_cls:
+            with patch(
+                "fides.api.service.storage.gcs.Client", autospec=True
+            ) as mock_client_cls:
+                mock_creds_cls.from_service_account_info.return_value = mock_credentials
+                mock_client_cls.return_value = MagicMock()
 
                 client = get_gcs_client(
                     GCSAuthMethod.SERVICE_ACCOUNT_KEYS.value, test_secrets
                 )
 
-                mock_creds.from_service_account_info.assert_called_once_with(
+                mock_creds_cls.from_service_account_info.assert_called_once_with(
                     test_secrets
                 )
-                mock_client.assert_called_once_with(credentials=mock_credentials)
+                mock_client_cls.assert_called_once_with(credentials=mock_credentials)
                 assert isinstance(client, MagicMock)
 
     def test_get_gcs_client_service_account_no_secrets(self):

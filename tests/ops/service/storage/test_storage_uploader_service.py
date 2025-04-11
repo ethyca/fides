@@ -192,10 +192,12 @@ class TestS3Uploader:
         mock_upload_to_s3.assert_not_called()
 
 
+@mock.patch(
+    "fides.api.service.storage.storage_uploader_service.upload_to_gcs", autospec=True
+)
 class TestGCSUploader:
     """Test suite for Google Cloud Storage upload functionality."""
 
-    @mock.patch("fides.api.service.storage.storage_uploader_service.upload_to_gcs")
     def test_uploader_gcs_success_service_account_keys_auth(
         self,
         mock_upload_to_gcs: Mock,
@@ -228,7 +230,6 @@ class TestGCSUploader:
             "service_account_keys",
         )
 
-    @mock.patch("fides.api.service.storage.storage_uploader_service.upload_to_gcs")
     def test_uploader_gcs_success_adc_auth(
         self,
         mock_upload_to_gcs: Mock,
@@ -261,7 +262,6 @@ class TestGCSUploader:
             "adc",
         )
 
-    @mock.patch("fides.api.service.storage.storage_uploader_service.upload_to_gcs")
     def test_uploader_gcs_invalid_file_naming(
         self,
         mock_upload_to_gcs: Mock,
@@ -291,7 +291,6 @@ class TestGCSUploader:
 
         mock_upload_to_gcs.assert_not_called()
 
-    @mock.patch("fides.api.service.storage.storage_uploader_service.upload_to_gcs")
     def test_uploader_gcs_with_csv_format(
         self,
         mock_upload_to_gcs: Mock,
@@ -327,7 +326,6 @@ class TestGCSUploader:
             "adc",
         )
 
-    @mock.patch("fides.api.service.storage.storage_uploader_service.upload_to_gcs")
     def test_uploader_gcs_with_html_format(
         self,
         mock_upload_to_gcs: Mock,
@@ -363,7 +361,6 @@ class TestGCSUploader:
             "adc",
         )
 
-    @mock.patch("fides.api.service.storage.storage_uploader_service.upload_to_gcs")
     def test_uploader_gcs_missing_bucket(
         self,
         mock_upload_to_gcs: Mock,
