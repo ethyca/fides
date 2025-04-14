@@ -365,8 +365,6 @@ class TestPutStorageConfigSecretsS3:
         )
         assert response.status_code == 400
         assert response.json()["detail"] == [
-            "Field required ('aws_access_key_id',)",
-            "Field required ('aws_secret_access_key',)",
             "Extra inputs are not permitted ('bad_key',)",
         ]
 
@@ -459,8 +457,10 @@ class TestPutStorageConfigSecretsS3:
         get_aws_session_mock.assert_called_once_with(
             AWSAuthMethod.SECRET_KEYS.value,
             {
+                "assume_role_arn": None,
                 "aws_access_key_id": payload["aws_access_key_id"],
                 "aws_secret_access_key": payload["aws_secret_access_key"],
+                "region_name": None,
             },
         )
 
@@ -1110,8 +1110,6 @@ class TestPutDefaultStorageConfigSecretsS3:
         )
 
         assert response.json()["detail"] == [
-            "Field required ('aws_access_key_id',)",
-            "Field required ('aws_secret_access_key',)",
             "Extra inputs are not permitted ('bad_key',)",
         ]
         assert response.status_code == 400
@@ -1221,10 +1219,12 @@ class TestPutDefaultStorageConfigSecretsS3:
         response = api_client.put(url, headers=auth_header, json=payload)
         assert 200 == response.status_code
         get_aws_session_mock.assert_called_once_with(
-            AWSAuthMethod.SECRET_KEYS.value,
+            AWSAuthMethod.AUTOMATIC.value,
             {
                 "aws_access_key_id": payload["aws_access_key_id"],
                 "aws_secret_access_key": payload["aws_secret_access_key"],
+                "region_name": None,
+                "assume_role_arn": None,
             },
         )
 
