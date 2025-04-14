@@ -21,6 +21,9 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.59.0...main)
 
+### Added
+- Added support for selecting TCF Publisher Override configuration when configuring Privacy Experience [#6033](https://github.com/ethyca/fides/pull/6033)
+
 ### Changed
 - Changed how TCF Publisher Overrides gets configured in consent settings [#6013](https://github.com/ethyca/fides/pull/6013)
 - Frontend now do not generate `key` when creating a Website Monitor [#6041](https://github.com/ethyca/fides/pull/6041)
