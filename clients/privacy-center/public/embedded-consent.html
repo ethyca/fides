@@ -1,0 +1,93 @@
+<!doctype html>
+<html>
+<head>
+    <title>Fides-js Embedded Consent</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!--
+      Pass along any params to the fides.js script. For example, visiting
+      http://localhost:3001/embedded-consent?geolocation=fr-id
+      will pass a geolocation query param to fides.js
+    -->
+    <script>
+        (function () {
+            window.fides_overrides = {
+                fides_embed: true,
+                // fides_disable_banner: true
+            }
+            const params = new URLSearchParams(window.location.search);
+            const gpp = params.get("gpp");
+            const src = `/fides.js${!!params.size ? `?${params.toString()}` : ""}`;
+            document.write('<script src="' + src + '"><\/script>');
+            if (gpp === "debug") {
+                document.write('<script src="/fides-ext-gpp.js"><\/script>');
+            }
+        })();
+    </script>
+
+    <style>
+        body {
+            font-family: var(--fides-overlay-font-family);
+            color: var(--fides-overlay-font-color-dark);
+            font-size: var(--fides-overlay-font-size-body);
+            background-color: var(--fides-overlay-background-color);
+        }
+
+        /* Allow the embedded consent modal to fill the width of the screen */
+        #fides-embed-container {
+            --fides-overlay-width: 'auto'
+        }
+        #fides-embed-no-results {
+            display: none;
+            text-align: center;
+            font-family: var(--fides-overlay-font-family);
+            color: var(--fides-overlay-font-color-dark);
+            font-size: var(--fides-overlay-font-size-body);
+        }
+        #fides-embed-no-results .close {
+            cursor: pointer;
+            font-size: 1.5em;
+            position: absolute;
+            right: 0;
+            top: 0;
+            padding: 10px;
+        }
+    </style>
+</head>
+
+<body>
+<main>
+    <div id="fides-embed-container" ></div>
+    <H3 id="fides-embed-no-results">
+        <span class="close">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none">
+              <path
+                  fill="#2D3748"
+                  d="m8 7.057 3.3-3.3.943.943-3.3 3.3 3.3 3.3-.943.943-3.3-3.3-3.3 3.3-.943-.943 3.3-3.3-3.3-3.3.943-.943 3.3 3.3Z"
+              />
+            </svg>
+        </span>
+        <div>Consent is not available in your region.</div>
+    </H3>
+</main>
+<script>
+    const onInitialized = () => {
+        window.document
+            .getElementById("fides-embed-no-results")
+            .setAttribute("style", "display: block");
+    }
+
+    // Handle both synchronous & asynchronous initialization
+    if (Fides.initialized) {
+        onInitialized();
+    } else {
+        window.addEventListener("FidesInitialized", onInitialized);
+    }
+
+    window.addEventListener("FidesUIShown", () => {
+        window.document
+            .getElementById("fides-embed-no-results")
+            .setAttribute("style", "display: none");
+    });
+</script>
+</body>
+</html>
