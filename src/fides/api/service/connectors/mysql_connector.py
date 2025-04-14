@@ -1,5 +1,5 @@
 import re
-from typing import List
+from typing import List, Dict, Any
 
 from sqlalchemy.engine import Engine, LegacyCursorResult, create_engine  # type: ignore
 
@@ -37,14 +37,7 @@ class MySQLConnector(SQLConnector):
         netloc = config.host
         port = f":{config.port}" if config.port else ""
         dbname = f"/{config.dbname}" if config.dbname else ""
-        sslmode = (
-            config.sslmode.upper()
-            if re.search(r"required|preferred|disabled", config.sslmode, re.IGNORECASE)
-            else "PREFERRED"
-        )
-        url = (
-            f"mysql+pymysql://{user_password}{netloc}{port}{dbname}?ssl_mode={sslmode}"
-        )
+        url = f"mysql+pymysql://{user_password}{netloc}{port}{dbname}"
         return url
 
     def build_ssh_uri(self, local_address: tuple) -> str:
@@ -61,14 +54,7 @@ class MySQLConnector(SQLConnector):
         netloc = local_host
         port = f":{local_port}" if local_port else ""
         dbname = f"/{config.dbname}" if config.dbname else ""
-        sslmode = (
-            config.sslmode.upper()
-            if re.search(r"required|preferred|disabled", config.sslmode, re.IGNORECASE)
-            else "PREFERRED"
-        )
-        url = (
-            f"mysql+pymysql://{user_password}{netloc}{port}{dbname}?ssl_mode={sslmode}"
-        )
+        url = f"mysql+pymysql://{user_password}{netloc}{port}{dbname}"
         return url
 
     # Overrides SQLConnector.create_client
@@ -89,11 +75,26 @@ class MySQLConnector(SQLConnector):
             uri,
             hide_parameters=self.hide_parameters,
             echo=not self.hide_parameters,
+            connect_args=self.get_connect_args(),
         )
 
     def query_config(self, node: ExecutionNode) -> SQLQueryConfig:
         """Query wrapper corresponding to the input execution_node."""
         return MySQLQueryConfig(node)
+
+    def get_connect_args(self) -> Dict[str, Any]:
+        """Get connection arguments for the engine"""
+        config = self.secrets_schema(**self.configuration.secrets or {})
+        sslmode = (
+            config.sslmode.upper()
+            if re.search(r"required|preferred|disabled", config.sslmode, re.IGNORECASE)
+            else "PREFERRED"
+        )
+        return {
+            "ssl": {
+                "mode": sslmode,
+            }
+        }
 
     @staticmethod
     def cursor_result_to_rows(results: LegacyCursorResult) -> List[Row]:
