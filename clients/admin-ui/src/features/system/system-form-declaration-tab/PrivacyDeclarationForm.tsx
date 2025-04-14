@@ -45,7 +45,6 @@ export const ValidationSchema = Yup.object().shape({
 
 export type FormValues = Omit<PrivacyDeclarationResponse, "cookies"> & {
   customFieldValues: CustomFieldValues;
-  cookies?: string[];
 };
 
 const defaultInitialValues: FormValues = {
@@ -66,16 +65,10 @@ const defaultInitialValues: FormValues = {
   third_parties: "",
   shared_categories: [],
   customFieldValues: {},
-  cookies: [],
   id: "",
 };
 
 const transformFormValueToDeclaration = (values: FormValues) => {
-  // transform cookies from strings into object with default values
-  const transformedCookies = values.cookies
-    ? values.cookies.map((name) => ({ name, path: "/" }))
-    : undefined;
-
   const declaration = {
     ...values,
     // fill in an empty string for name: https://github.com/ethyca/fideslang/issues/98
@@ -89,7 +82,6 @@ const transformFormValueToDeclaration = (values: FormValues) => {
     shared_categories: values.data_shared_with_third_parties
       ? values.shared_categories
       : undefined,
-    cookies: transformedCookies,
   };
   return declaration;
 };
@@ -334,18 +326,12 @@ export const transformPrivacyDeclarationToFormValues = (
   privacyDeclaration?: PrivacyDeclarationResponse,
   customFieldValues?: CustomFieldValues,
 ): FormValues => {
-  if (privacyDeclaration) {
-    const formCookies =
-      privacyDeclaration.cookies && privacyDeclaration.cookies.length > 0
-        ? privacyDeclaration.cookies.map((c) => c.name)
-        : undefined;
-    return {
-      ...privacyDeclaration,
-      customFieldValues: customFieldValues || {},
-      cookies: formCookies,
-    };
-  }
-  return defaultInitialValues;
+  return privacyDeclaration
+    ? {
+        ...privacyDeclaration,
+        customFieldValues: customFieldValues || {},
+      }
+    : defaultInitialValues;
 };
 
 /**
