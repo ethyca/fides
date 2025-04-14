@@ -8,6 +8,7 @@ import GOOGLE_CLOUD_SQL_MYSQL_TYPE_INFO from "~/features/integrations/integratio
 import GOOGLE_CLOUD_SQL_POSTGRES_TYPE_INFO from "~/features/integrations/integration-type-info/googleCloudSQLPostgresInfo";
 import MICROSOFT_SQL_SERVER_TYPE_INFO from "~/features/integrations/integration-type-info/microsoftSQLServerInfo";
 import MYSQL_TYPE_INFO from "~/features/integrations/integration-type-info/mySQLInfo";
+import POSTGRES_TYPE_INFO from "~/features/integrations/integration-type-info/postgreSQLInfo";
 import RDS_MYSQL_TYPE_INFO from "~/features/integrations/integration-type-info/rdsMySQLInfo";
 import RDS_POSTGRES_TYPE_INFO from "~/features/integrations/integration-type-info/rdsPostgresInfo";
 import S3_TYPE_INFO from "~/features/integrations/integration-type-info/s3Info";
@@ -44,6 +45,7 @@ const INTEGRATION_TYPE_MAP: { [K in ConnectionType]?: IntegrationTypeInfo } = {
   [ConnectionType.SNOWFLAKE]: SNOWFLAKE_TYPE_INFO,
   [ConnectionType.MYSQL]: MYSQL_TYPE_INFO,
   [ConnectionType.WEBSITE]: WEBSITE_INTEGRATION_TYPE_INFO,
+  [ConnectionType.POSTGRES]: POSTGRES_TYPE_INFO,
 };
 
 export const INTEGRATION_TYPE_LIST: IntegrationTypeInfo[] =
