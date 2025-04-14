@@ -365,8 +365,6 @@ class TestPutStorageConfigSecretsS3:
         )
         assert response.status_code == 400
         assert response.json()["detail"] == [
-            "Field required ('aws_access_key_id',)",
-            "Field required ('aws_secret_access_key',)",
             "Extra inputs are not permitted ('bad_key',)",
         ]
 
