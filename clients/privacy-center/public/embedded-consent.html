@@ -86,7 +86,7 @@
       };
 
       // Handle both synchronous & asynchronous initialization
-      if (Fides.initialized) {
+      if (window.Fides?.initialized) {
         onInitialized();
       } else {
         window.addEventListener("FidesInitialized", onInitialized);
