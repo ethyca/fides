@@ -17,9 +17,13 @@
         const params = new URLSearchParams(window.location.search);
         const gpp = params.get("gpp");
         const src = `/fides.js${!!params.size ? `?${params.toString()}` : ""}`;
-        document.write('<script src="' + src + '"><\/script>');
+        const script = document.createElement("script");
+        script.src = src;
+        document.head.appendChild(script);
         if (gpp === "debug") {
-          document.write('<script src="/fides-ext-gpp.js"><\/script>');
+          const gppScript = document.createElement("script");
+          gppScript.src = "/fides-ext-gpp.js";
+          document.head.appendChild(gppScript);
         }
       })();
     </script>
