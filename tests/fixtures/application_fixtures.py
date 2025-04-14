@@ -1072,12 +1072,11 @@ def empty_policy(
 
 
 @pytest.fixture(scope="function")
-@pytest.mark.usefixtures("default_data_categories")
 def policy(
     db: Session,
     oauth_client: ClientDetail,
     storage_config: StorageConfig,
-    default_data_categories,  # TODO: Remove this once we have a better way to handle data categories
+    default_data_categories,  # This needs to be explicitly passed in to ensure data categories are available
 ) -> Generator:
     access_request_policy = Policy.create(
         db=db,
@@ -1160,11 +1159,11 @@ def consent_policy(
 
 
 @pytest.fixture(scope="function")
-@pytest.mark.usefixtures("default_data_categories")
 def policy_local_storage(
     db: Session,
     oauth_client: ClientDetail,
     storage_config_local: StorageConfig,
+    default_data_categories,  # This needs to be explicitly passed in to ensure data categories are available
 ) -> Generator:
     """
     A basic example policy fixture that uses a local storage config
@@ -1215,11 +1214,11 @@ def policy_local_storage(
 
 
 @pytest.fixture(scope="function")
-@pytest.mark.usefixtures("default_data_categories")
 def policy_drp_action(
     db: Session,
     oauth_client: ClientDetail,
     storage_config: StorageConfig,
+    default_data_categories,  # This needs to be explicitly passed in to ensure data categories are available
 ) -> Generator:
 
     access_request_policy = Policy.create(
@@ -1267,8 +1266,11 @@ def policy_drp_action(
 
 
 @pytest.fixture(scope="function")
-@pytest.mark.usefixtures("default_data_categories")
-def policy_drp_action_erasure(db: Session, oauth_client: ClientDetail) -> Generator:
+def policy_drp_action_erasure(
+    db: Session,
+    oauth_client: ClientDetail,
+    default_data_categories,  # This needs to be explicitly passed in to ensure data categories are available
+) -> Generator:
     erasure_request_policy = Policy.create(
         db=db,
         data={
@@ -1317,10 +1319,10 @@ def policy_drp_action_erasure(db: Session, oauth_client: ClientDetail) -> Genera
 
 
 @pytest.fixture(scope="function")
-@pytest.mark.usefixtures("default_data_categories")
 def erasure_policy_string_rewrite(
     db: Session,
     oauth_client: ClientDetail,
+    default_data_categories,  # This needs to be explicitly passed in to ensure data categories are available
 ) -> Generator:
     erasure_policy = Policy.create(
         db=db,

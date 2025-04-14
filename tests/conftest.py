@@ -1873,7 +1873,6 @@ def default_data_categories(db):
             DataCategoryDbModel.create(
                 db=db, data=data_category.model_dump(mode="json")
             )
-    db.commit()
 
 
 @pytest.fixture(scope="function")
