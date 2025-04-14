@@ -2,10 +2,10 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { MonitorConfig } from "./MonitorConfig";
+import type { TCFConfigurationResponse } from "./TCFConfigurationResponse";
 
-export type Page_MonitorConfig_ = {
-  items: Array<MonitorConfig>;
+export type Page_TCFConfigurationResponse_ = {
+  items: Array<TCFConfigurationResponse>;
   total: number | null;
   page: number | null;
   size: number | null;

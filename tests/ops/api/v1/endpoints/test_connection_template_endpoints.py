@@ -1120,7 +1120,7 @@ class TestGetConnectionSecretSchema:
                     "type": "boolean",
                 },
             },
-            "required": ["host", "dbname"],
+            "required": ["host"],
         }
 
     def test_get_connection_secret_schema_google_cloud_sql_postgres(

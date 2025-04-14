@@ -43,16 +43,17 @@ const actionCenterApi = baseApi.injectEndpoints({
       {
         key: string;
         search?: string;
+        diff_status?: DiffStatus[];
       } & PaginationQueryParams
     >({
-      query: ({ key, page = 1, size = 20, search }) => ({
+      query: ({ key, page = 1, size = 20, search, diff_status }) => ({
         url: `/plus/discovery-monitor/system-aggregate-results`,
         params: {
           monitor_config_id: key,
           page,
           size,
           search,
-          diff_status: "addition",
+          diff_status,
         },
       }),
       providesTags: ["Discovery Monitor Results"],
