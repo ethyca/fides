@@ -24,6 +24,18 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ### Added
 - Adds embedded-consent route to Privacy Center [#6040](https://github.com/ethyca/fides/pull/6040)
 
+### Changed
+- Changed how TCF Publisher Overrides gets configured in consent settings [#6013](https://github.com/ethyca/fides/pull/6013)
+- Frontend now do not generate `key` when creating a Website Monitor [#6041](https://github.com/ethyca/fides/pull/6041)
+- Integrations manage modals now are cappable of showing a small description [#6037](https://github.com/ethyca/fides/pull/6037)
+
+### Developer Experience
+- Reduced animations on Cypress tests in Privacy Center for quicker results [#5976](https://github.com/ethyca/fides/pull/5976)
+
+### Fixed
+- Fixed typo in Vermont US state name [#6029](https://github.com/ethyca/fides/pull/6029)
+- Fixed two Georgia's in regions list and incorrect name for the state SD [#6036](https://github.com/ethyca/fides/pull/6036)
+- Fixed Privacy Center issue where unconfigured fields (eg. phone) were being passed as null form values [#6045](https://github.com/ethyca/fides/pull/6045)
 
 ## [2.59.0](https://github.com/ethyca/fides/compare/2.58.2...2.59.0)
 
