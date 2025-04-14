@@ -1909,7 +1909,7 @@ def monkeysession():
     mpatch.undo()
 
 
-@pytest.fixture(autouse=True, scope="session")
+@pytest.fixture(scope="session")
 def monkeypatch_requests(test_client, monkeysession) -> None:
     """
     Some places within the application, for example `fides.core.api`, use the `requests`

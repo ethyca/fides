@@ -364,10 +364,6 @@ class TestPatchApplicationConfig:
         # now ensure that the middleware update was effective by trying
         # some sample requests with different origins
 
-        import pdb
-
-        pdb.set_trace()
-
         # first, try with an original allowed origin, which should still be accepted
         assert len(original_cors_middleware_origins)
         headers = {
