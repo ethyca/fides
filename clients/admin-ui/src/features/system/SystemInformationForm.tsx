@@ -206,7 +206,7 @@ const SystemInformationForm = ({
             dataUseQueryResult.error,
             `A problem occurred while fetching data uses from Fides Compass for your system.  Please try again.`,
           );
-          toast({ status: "error", description: dataUseErrorMsg });
+          toast(errorToastParams(dataUseErrorMsg));
         }
       } else if (
         dataUseQueryResult.data &&
@@ -260,7 +260,7 @@ const SystemInformationForm = ({
 
     await customFields.upsertCustomFields(values);
 
-    if (values.vendor_id && result.data?.fides_key) {
+    if (!isEditing && values.vendor_id && result.data?.fides_key) {
       const assetResult = await populateSystemAssets({
         systemKey: result.data.fides_key,
       });
