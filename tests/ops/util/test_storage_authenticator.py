@@ -1,19 +1,15 @@
 import boto3
 import pytest
 from botocore.exceptions import NoCredentialsError
-from sqlalchemy.ext.mutable import MutableDict
-from fides.api.models.storage import StorageConfig
 from moto import mock_aws
+from sqlalchemy.ext.mutable import MutableDict
 
 from fides.api.common_exceptions import StorageUploadError
 from fides.api.schemas.storage.storage import (
     AWSAuthMethod,
     StorageDetails,
     StorageSecrets,
-    StorageSecretsS3,
-    StorageType,
 )
-from fides.api.service.storage.storage_authenticator_service import secrets_are_valid
 from fides.api.util.aws_util import get_aws_session, get_s3_client
 
 
