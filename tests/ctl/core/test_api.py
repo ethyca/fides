@@ -180,7 +180,6 @@ class TestCrud:
         resources_dict: Dict,
         endpoint: str,
     ) -> None:
-        # find existing resource if it exists and delete it
         token_scopes: List[str] = [
             f"{CLI_SCOPE_PREFIX_MAPPING[endpoint]}:{READ}",
             f"{CLI_SCOPE_PREFIX_MAPPING[endpoint]}:{DELETE}",
@@ -204,16 +203,15 @@ class TestCrud:
                 )
                 break
         manifest = resources_dict[endpoint]
-        print(manifest.json(exclude_none=True))
         token_scopes: List[str] = [f"{CLI_SCOPE_PREFIX_MAPPING[endpoint]}:{CREATE}"]
         auth_header = generate_auth_header(scopes=token_scopes)
+
         result = _api.create(
             url=test_config.cli.server_url,
             resource_type=endpoint,
             json_resource=manifest.json(exclude_none=True),
             headers=auth_header,
         )
-        print(result.text)
         assert result.status_code == 201, result.text
 
     @pytest.mark.parametrize("endpoint", model_list)
@@ -432,7 +430,8 @@ class TestCrud:
             resource_type=endpoint,
             resources=[loads(manifest.json())],
         )
-        assert result.status_code == 200
+        assert result.status_code == 201, result.text
+        assert "Upserted 1" in result.json()["message"]
 
     @pytest.mark.parametrize("endpoint", model_list)
     def test_api_upsert_wrong_scope(
