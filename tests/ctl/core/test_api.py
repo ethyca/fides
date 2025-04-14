@@ -185,23 +185,20 @@ class TestCrud:
             f"{CLI_SCOPE_PREFIX_MAPPING[endpoint]}:{DELETE}",
         ]
         auth_header = generate_auth_header(scopes=token_scopes)
-        existing_resources = _api.ls(
-            test_config.cli.server_url,
-            endpoint,
-            auth_header,
-        ).json()
-        for resource in existing_resources:
-            if (
-                hasattr(resource, "fides_key")
-                and resource["fides_key"] == resources_dict[endpoint].fides_key
-            ):
-                _api.delete(
-                    url=test_config.cli.server_url,
-                    resource_type=endpoint,
-                    resource_id=resource["fides_key"],
-                    headers=auth_header,
-                )
-                break
+        existing_resource = _api.get(
+            url=test_config.cli.server_url,
+            resource_type=endpoint,
+            resource_id=resources_dict[endpoint].fides_key,
+            headers=auth_header,
+        )
+        if existing_resource.status_code == 200:
+            _api.delete(
+                url=test_config.cli.server_url,
+                resource_type=endpoint,
+                resource_id=resources_dict[endpoint].fides_key,
+                headers=auth_header,
+            )
+
         manifest = resources_dict[endpoint]
         token_scopes: List[str] = [f"{CLI_SCOPE_PREFIX_MAPPING[endpoint]}:{CREATE}"]
         auth_header = generate_auth_header(scopes=token_scopes)
