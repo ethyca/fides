@@ -165,7 +165,7 @@ async def run_database_startup(app: FastAPI) -> None:
 
     if CONFIG.database.automigrate:
         try:
-            await configure_db(CONFIG.database.sync_database_uri)
+            configure_db(CONFIG.database.sync_database_uri)
         except Exception as e:
             logger.error("Error occurred during database configuration: {}", str(e))
     else:

@@ -4,7 +4,7 @@ import os
 import time
 from datetime import datetime
 from pathlib import Path
-from typing import Callable
+from typing import Any, Callable, Dict, Generator, List
 from uuid import uuid4
 
 import boto3
@@ -1862,7 +1862,7 @@ def viewer_and_approver_auth_header(viewer_and_approver_user):
 
 
 @pytest.mark.asyncio
-@pytest.fixture(autouse=True)
+@pytest.fixture(scope="function")
 async def seed_data(async_session):
     """
     Fixture to load default resources into the database before a test.

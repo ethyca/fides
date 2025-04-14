@@ -74,11 +74,6 @@ class TestGetPolicies:
         generate_auth_header,
         url,
     ):
-        # delete all policies
-        policies = db.query(Policy).all()
-        for policy in policies:
-            policy.delete(db)
-
         auth_header = generate_auth_header(scopes=[scopes.POLICY_READ])
         policies = []
         POLICY_COUNT = 50

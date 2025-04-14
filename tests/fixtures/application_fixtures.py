@@ -1077,10 +1077,6 @@ def policy(
     oauth_client: ClientDetail,
     storage_config: StorageConfig,
 ) -> Generator:
-    policies = db.query(Policy).all()
-    for policy in policies:
-        policy.delete(db)
-
     access_request_policy = Policy.create(
         db=db,
         data={
@@ -1129,7 +1125,6 @@ def policy(
 def consent_policy(
     db: Session,
     oauth_client: ClientDetail,
-    storage_config: StorageConfig,
 ) -> Generator:
     """Consent policies only need a ConsentRule attached - no RuleTargets necessary"""
     consent_request_policy = Policy.create(
@@ -1222,10 +1217,6 @@ def policy_drp_action(
     oauth_client: ClientDetail,
     storage_config: StorageConfig,
 ) -> Generator:
-    # DRP action is unique to a policy, so we need to delete all policies before creating a new one
-    policies = db.query(Policy).all()
-    for policy in policies:
-        policy.delete(db)
 
     access_request_policy = Policy.create(
         db=db,

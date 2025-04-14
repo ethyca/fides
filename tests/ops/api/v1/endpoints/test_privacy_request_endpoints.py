@@ -128,6 +128,16 @@ def stringify_date(log_date: datetime) -> str:
 
 class TestCreatePrivacyRequest:
     @pytest.fixture(scope="function")
+    def privacy_request_receipt_notification_enabled(self, db):
+        """Enable request receipt notification"""
+        original_value = CONFIG.notifications.send_request_receipt_notification
+        CONFIG.notifications.send_request_receipt_notification = True
+        ApplicationConfig.update_config_set(db, CONFIG)
+        yield
+        CONFIG.notifications.send_request_receipt_notification = original_value
+        ApplicationConfig.update_config_set(db, CONFIG)
+
+    @pytest.fixture(scope="function")
     def url(self) -> str:
         return V1_URL_PREFIX + PRIVACY_REQUESTS
 
@@ -764,7 +774,9 @@ class TestCreatePrivacyRequest:
         pr = PrivacyRequest.get(db=db, object_id=response_data["id"])
         pr.delete(db=db)
 
-    @pytest.mark.usefixtures("messaging_config")
+    @pytest.mark.usefixtures(
+        "messaging_config", "privacy_request_receipt_notification_enabled"
+    )
     @mock.patch(
         "fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher"
     )

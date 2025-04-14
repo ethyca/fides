@@ -131,7 +131,7 @@ async def seed_db(async_session: AsyncSession, samples: bool = False) -> None:
         raise  # Re-raising might be appropriate depending on desired behavior
 
 
-async def configure_db(database_url: str, revision: Optional[str] = "head") -> None:
+def configure_db(database_url: str, revision: Optional[str] = "head") -> None:
     """Set up the db to be used by the app. Creates db if needed and runs migrations."""
     try:
         create_db_if_not_exists(database_url)

@@ -220,7 +220,6 @@ class TestGetPolicyPreExecutionWebhookDetail:
 
     def test_webhook_not_on_policy(
         self,
-        db,
         api_client,
         generate_auth_header,
         erasure_policy,
@@ -243,7 +242,6 @@ class TestGetPolicyPreExecutionWebhookDetail:
     def test_get_pre_execution_policy_webhook_detail(
         self,
         url,
-        db,
         api_client,
         generate_auth_header,
         policy_pre_execution_webhooks,
@@ -303,7 +301,6 @@ class TestGetPolicyPostExecutionWebhookDetail:
 
     def test_webhook_not_on_policy(
         self,
-        db,
         api_client,
         generate_auth_header,
         erasure_policy,
@@ -326,7 +323,6 @@ class TestGetPolicyPostExecutionWebhookDetail:
     def test_get_pre_execution_policy_webhook_detail(
         self,
         url,
-        db,
         api_client,
         generate_auth_header,
         policy_post_execution_webhooks,
