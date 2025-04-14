@@ -267,7 +267,6 @@ class TestCrud:
             resource_type=endpoint,
             headers=auth_header,
         )
-        print(result.text)
         assert result.status_code == 200
 
     @pytest.mark.parametrize("endpoint", model_list)
@@ -298,7 +297,6 @@ class TestCrud:
             resource_type=endpoint,
             resource_id=existing_id,
         )
-        print(result.text)
         assert result.status_code == 200
 
     @pytest.mark.parametrize("endpoint", model_list)
@@ -335,14 +333,32 @@ class TestCrud:
         manifest = resources_dict[endpoint]
         resource_key = manifest.fides_key if endpoint != "user" else manifest.userName
 
-        print(manifest.json(exclude_none=True))
+        # confirm exists
+        result = _api.ls(
+            url=test_config.cli.server_url,
+            headers=auth_header,
+            resource_type=endpoint,
+        )
+        assert result.status_code == 200
+        resource = [r for r in result.json() if r["fides_key"] == resource_key]
+        if not resource:
+            # create the resource
+            token_scopes: List[str] = [f"{CLI_SCOPE_PREFIX_MAPPING[endpoint]}:{CREATE}"]
+            auth_header = generate_auth_header(scopes=token_scopes)
+            result = _api.create(
+                url=test_config.cli.server_url,
+                headers=auth_header,
+                resource_type=endpoint,
+                json_resource=manifest.json(exclude_none=True),
+            )
+            assert result.status_code == 200
+
         result = _api.get(
             url=test_config.cli.server_url,
             headers=auth_header,
             resource_type=endpoint,
             resource_id=resource_key,
         )
-        print(result.text)
         assert result.status_code == 200
         parsed_result = parse.parse_dict(endpoint, result.json())
 
@@ -364,7 +380,6 @@ class TestCrud:
             headers=auth_header,
             resource_type=endpoint,
         )
-        print(f"Result: {result.json()}")
         resource = [
             r
             for r in result.json()
@@ -581,7 +596,6 @@ class TestCrud:
             resource_id=resource_key,
             headers=auth_header,
         )
-        print(result.text)
         assert result.status_code == 200
         resp = result.json()
         assert resp["message"] == "resource deleted"
@@ -3111,7 +3125,6 @@ class TestDefaultTaxonomyCrud:
             resources=[manifest.model_dump(mode="json")],
         )
         assert result.status_code == 403
-        print(f"Result: {result.json()}")
         assert (
             result.status_code == 403
         ), f"Expected 403 but got {result.status_code}: {result.json()}"
@@ -3423,7 +3436,6 @@ class TestPrivacyDeclarationGetPurposeLegalBasisOverride:
             ],
         )
 
-        print(f"Resource: {resource}")
         system = await create_system(
             resource, async_session_temp, CONFIG.security.oauth_root_client_id
         )
