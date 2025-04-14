@@ -35,7 +35,6 @@ import {
   PrivacyDeclarationResponse,
   ResourceTypes,
 } from "~/types/api";
-import { Cookies } from "~/types/api/models/Cookies";
 
 export const ValidationSchema = Yup.object().shape({
   data_categories: Yup.array(Yup.string())
@@ -101,7 +100,6 @@ export interface DataProps {
   allDataSubjects: DataSubject[];
   allDatasets?: Dataset[];
   includeCustomFields?: boolean;
-  cookies?: Cookies[] | null;
 }
 
 export const PrivacyDeclarationFormComponents = ({
@@ -109,7 +107,6 @@ export const PrivacyDeclarationFormComponents = ({
   allDataCategories,
   allDataSubjects,
   allDatasets,
-  cookies,
   values,
   includeCustomFields,
   privacyDeclarationId,
@@ -322,21 +319,6 @@ export const PrivacyDeclarationFormComponents = ({
             </Stack>
           </Collapse>
         </Stack>
-      </SystemFormInputGroup>
-      <SystemFormInputGroup heading="Cookies">
-        <ControlledSelect
-          name="cookies"
-          label="Cookies"
-          options={
-            cookies && cookies.length
-              ? cookies.map((c) => ({ label: c.name, value: c.name }))
-              : []
-          }
-          mode="tags"
-          tooltip="Which cookies are placed on consumer domains for this purpose?"
-          layout="stacked"
-          disabled={lockedForGVL}
-        />
       </SystemFormInputGroup>
       {includeCustomFields ? (
         <CustomFieldsList
