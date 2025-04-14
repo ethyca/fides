@@ -6,7 +6,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Callable
 from uuid import uuid4
-from pytest import MonkeyPatch
+
 import boto3
 import pytest
 import requests
@@ -17,9 +17,8 @@ from fideslang import DEFAULT_TAXONOMY, models
 from fideslang.models import System as SystemSchema
 from httpx import AsyncClient
 from loguru import logger
-from fides.api.db.base_class import Base
-from fides.api.db.database import seed_db
 from moto import mock_aws
+from pytest import MonkeyPatch
 from sqlalchemy.engine.base import Engine
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
@@ -33,7 +32,9 @@ from fides.api.cryptography.schemas.jwt import (
     JWE_PAYLOAD_SCOPES,
     JWE_PAYLOAD_SYSTEMS,
 )
+from fides.api.db.base_class import Base
 from fides.api.db.ctl_session import sync_engine
+from fides.api.db.database import seed_db
 from fides.api.db.system import create_system
 from fides.api.main import app
 from fides.api.models.privacy_request import (
