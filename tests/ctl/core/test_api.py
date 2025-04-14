@@ -356,9 +356,36 @@ class TestCrud:
         endpoint: str,
         generate_auth_header,
     ) -> None:
-        token_scopes: List[str] = [f"{CLI_SCOPE_PREFIX_MAPPING[endpoint]}:{UPDATE}"]
+        # check if the resource exists first
+        token_scopes: List[str] = [f"{CLI_SCOPE_PREFIX_MAPPING[endpoint]}:{READ}"]
         auth_header = generate_auth_header(scopes=token_scopes)
+        result = _api.ls(
+            url=test_config.cli.server_url,
+            headers=auth_header,
+            resource_type=endpoint,
+        )
+        print(f"Result: {result.json()}")
+        resource = [
+            r
+            for r in result.json()
+            if r["fides_key"] == resources_dict[endpoint].fides_key
+        ]
+
         manifest = resources_dict[endpoint]
+        if not resource:
+            # create the resource
+            token_scopes: List[str] = [f"{CLI_SCOPE_PREFIX_MAPPING[endpoint]}:{CREATE}"]
+            auth_header = generate_auth_header(scopes=token_scopes)
+            result = _api.create(
+                url=test_config.cli.server_url,
+                headers=auth_header,
+                resource_type=endpoint,
+                json_resource=manifest.json(exclude_none=True),
+            )
+        token_scopes: List[str] = [
+            f"{CLI_SCOPE_PREFIX_MAPPING[endpoint]}:{UPDATE}",
+        ]
+        auth_header = generate_auth_header(scopes=token_scopes)
         result = _api.update(
             url=test_config.cli.server_url,
             headers=auth_header,
