@@ -1,4 +1,4 @@
-import { Box, UseDisclosureReturn } from "fidesui";
+import { UseDisclosureReturn } from "fidesui";
 
 import FormModal from "~/features/common/modals/FormModal";
 import ConfigureIntegrationForm from "~/features/integrations/add-integration/ConfigureIntegrationForm";
@@ -22,23 +22,11 @@ const ConfigureIntegrationModal = ({
       isOpen={isOpen}
       onClose={onClose}
     >
-      {description && (
-        <Box
-          padding="20px 24px"
-          backgroundColor="gray.50"
-          borderRadius="md"
-          border="1px solid"
-          borderColor="gray.200"
-          fontSize="sm"
-          marginTop="16px"
-        >
-          {description}
-        </Box>
-      )}
       <ConfigureIntegrationForm
         connection={connection}
         connectionOption={connectionOption!}
         onCancel={onClose}
+        description={description}
       />
     </FormModal>
   );
