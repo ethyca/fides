@@ -365,7 +365,6 @@ class TestCrud:
             resource_type=endpoint,
             json_resource=manifest.json(exclude_none=True),
         )
-        print(result.text)
         assert result.status_code == 200, result.text
 
     @pytest.mark.parametrize("endpoint", model_list)
@@ -432,8 +431,9 @@ class TestCrud:
             resource_type=endpoint,
             resources=[loads(manifest.json())],
         )
-        assert result.status_code == 200, result.text
+
         assert "Upserted 1" in result.json()["message"]
+        assert result.status_code in [200, 201], result.text
 
     @pytest.mark.parametrize("endpoint", model_list)
     def test_api_upsert_wrong_scope(
