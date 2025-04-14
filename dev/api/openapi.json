@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.59.1b0.post0.dev8"
+    "version": "2.59.1b0.post0.dev9"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -17074,12 +17074,12 @@
             "type": "string",
             "minLength": 1,
             "format": "uri",
-            "title": "DataHub Server URL",
+            "title": "DataHub server URL",
             "description": "The URL of your DataHub server."
           },
           "datahub_token": {
             "type": "string",
-            "title": "DataHub Token",
+            "title": "DataHub token",
             "description": "The token used to authenticate with your DataHub server.",
             "sensitive": true
           },
@@ -17094,7 +17094,7 @@
           },
           "glossary_node": {
             "type": "string",
-            "title": "Glossary Node",
+            "title": "Glossary node",
             "description": "The glossary node name to use on Datahub for Fides Data Categories. (e.g. FidesDataCategories)"
           }
         },
