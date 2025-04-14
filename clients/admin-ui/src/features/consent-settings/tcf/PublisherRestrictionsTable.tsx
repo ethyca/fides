@@ -65,11 +65,13 @@ const FauxColumnHeader = ({
     style={{
       borderLeft: borderLeft ? "solid 1px" : "none",
       borderColor: "var(--ant-color-border)",
+      fontWeight: 500,
+      whiteSpace: "nowrap",
       width,
       ...style,
     }}
   >
-    <Text fontWeight="medium">{children}</Text>
+    {children}
   </Flex>
 );
 
@@ -124,6 +126,7 @@ export const PublisherRestrictionsTable = ({
       }}
       aria-label="Publisher restrictions table"
       role="table"
+      data-testid="publisher-restrictions-table"
     >
       <FauxRow
         isHeader
@@ -132,12 +135,12 @@ export const PublisherRestrictionsTable = ({
         }}
       >
         <FauxColumnHeader width="600px">TCF purpose</FauxColumnHeader>
-        <FauxColumnHeader flex={1} borderLeft>
-          Restrictions{" "}
+        <FauxColumnHeader flex={1} gap={3} borderLeft>
+          Restrictions
           <QuestionTooltip label="Restrictions control how vendors are permitted to process data for specific purposes. Fides supports three restriction types: Purpose Restriction to completely disallow data processing for a purpose, Require Consent to allow processing only with explicit user consent, and Require Legitimate Interest to allow processing based on legitimate business interest unless the user objects." />
         </FauxColumnHeader>
-        <FauxColumnHeader width="100px" borderLeft>
-          Flexible{" "}
+        <FauxColumnHeader width="100px" gap={3} borderLeft>
+          Flexible
           <QuestionTooltip label='Indicates whether the legal basis for this purpose can be overridden by publisher restrictions. If marked "No," the purpose has a fixed legal basis defined by the TCF and cannot be changed.' />
         </FauxColumnHeader>
         <FauxColumnHeader width="100px" borderLeft>
@@ -152,7 +155,11 @@ export const PublisherRestrictionsTable = ({
           <FauxTableCell width="600px">
             Purpose {purpose.id}: {purpose.name}
           </FauxTableCell>
-          <FauxTableCell flex={1} borderLeft>
+          <FauxTableCell
+            flex={1}
+            borderLeft
+            data-testid={`restriction-type-cell-${purpose.id}`}
+          >
             {isLoading ? (
               <Skeleton height="16px" width="100%" />
             ) : (
@@ -175,9 +182,16 @@ export const PublisherRestrictionsTable = ({
           </FauxTableCell>
           <FauxTableCell width="100px" borderLeft>
             {FORBIDDEN_LEGITIMATE_INTEREST_PURPOSE_IDS.includes(purpose.id) ? (
-              <Tag color="error">No</Tag>
+              <Tag color="error" data-testid={`flexibility-tag-${purpose.id}`}>
+                No
+              </Tag>
             ) : (
-              <Tag color="success">Yes</Tag>
+              <Tag
+                color="success"
+                data-testid={`flexibility-tag-${purpose.id}`}
+              >
+                Yes
+              </Tag>
             )}
           </FauxTableCell>
           <FauxTableCell width="100px" borderLeft>
@@ -189,7 +203,12 @@ export const PublisherRestrictionsTable = ({
                 passHref
                 legacyBehavior
               >
-                <Button size="small">Edit</Button>
+                <Button
+                  size="small"
+                  data-testid={`edit-restriction-btn-${purpose.id}`}
+                >
+                  Edit
+                </Button>
               </NextLink>
             )}
           </FauxTableCell>

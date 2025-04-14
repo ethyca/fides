@@ -598,3 +598,48 @@ export const stubDataCatalog = () => {
     pages: 1,
   }).as("getAvailableDatabases");
 };
+
+export const stubTCFConfig = () => {
+  cy.intercept("/api/v1/config?api_set=false", {
+    body: { consent: { override_vendor_purposes: true } },
+  });
+  cy.intercept("/api/v1/config?api_set=true", {
+    body: { consent: { override_vendor_purposes: true } },
+  });
+  cy.intercept("PATCH", "/api/v1/config", { body: {} }).as("patchConfig");
+  cy.intercept("GET", "/api/v1/plus/tcf/configurations*", {
+    fixture: "tcf/configurations.json",
+  }).as("getTcfConfigs");
+  cy.intercept("GET", "/api/v1/purposes", {
+    fixture: "tcf/purposes.json",
+  }).as("getTcfPurposes");
+  cy.intercept(
+    "GET",
+    "/api/v1/plus/tcf/configurations/*/publisher_restrictions?purpose_id=*",
+    {
+      fixture: "tcf/publisher-restrictions.json",
+    },
+  ).as("getTcfRestrictions");
+  cy.intercept(
+    "DELETE",
+    "/api/v1/plus/tcf/configurations/*/publisher_restrictions/*",
+    {
+      body: {},
+    },
+  ).as("deleteRestriction");
+  cy.fixture("tcf/configurations.json").then((data) => {
+    cy.intercept("GET", "/api/v1/plus/tcf/configurations/*", {
+      body: data.items[0],
+    }).as("getTCFConfig");
+  });
+  cy.intercept("POST", "/api/v1/plus/tcf/configurations", {
+    body: { id: "new-config-id" },
+  }).as("createConfig");
+  cy.intercept(
+    "POST",
+    "/api/v1/plus/tcf/configurations/*/publisher_restrictions",
+    {
+      body: {},
+    },
+  ).as("createRestriction");
+};

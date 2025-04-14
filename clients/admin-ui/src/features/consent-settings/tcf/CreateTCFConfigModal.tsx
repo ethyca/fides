@@ -76,6 +76,7 @@ export const CreateTCFConfigModal = ({
                   type="primary"
                   htmlType="submit"
                   disabled={!isValid || !dirty}
+                  data-testid="save-config-button"
                 >
                   Save
                 </Button>

@@ -218,7 +218,7 @@ export const PurposeRestrictionFormModal = ({
         onSubmit={handleSubmit}
         validationSchema={validationSchema}
       >
-        {({ values, validateField }) => (
+        {({ values, validateField, setTouched }) => (
           <Form>
             <Flex vertical className="gap-6">
               <Text className="text-sm">
@@ -270,6 +270,9 @@ export const PurposeRestrictionFormModal = ({
                   onBlur={() => {
                     // Add small delay to allow Ant Select to create tag before validation
                     setTimeout(() => {
+                      setTouched({
+                        vendor_ids: true,
+                      });
                       validateField("vendor_ids");
                     }, 100);
                   }}
@@ -291,8 +294,17 @@ export const PurposeRestrictionFormModal = ({
                 />
               </Collapse>
               <Flex justify="flex-end" className="gap-3 pt-4">
-                <Button onClick={onClose}>Cancel</Button>
-                <Button type="primary" htmlType="submit">
+                <Button
+                  onClick={onClose}
+                  data-testid="cancel-restriction-button"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="primary"
+                  htmlType="submit"
+                  data-testid="save-restriction-button"
+                >
                   Save
                 </Button>
               </Flex>

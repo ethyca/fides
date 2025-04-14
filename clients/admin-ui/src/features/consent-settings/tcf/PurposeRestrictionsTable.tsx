@@ -14,7 +14,11 @@ import {
   TableActionBar,
   TableSkeletonLoader,
 } from "~/features/common/table/v2";
-import { RangeEntry, TCFVendorRestriction } from "~/types/api";
+import {
+  RangeEntry,
+  TCFRestrictionType,
+  TCFVendorRestriction,
+} from "~/types/api";
 
 import { PurposeRestrictionFormModal } from "./PurposeRestrictionFormModal";
 import { useGetPublisherRestrictionsQuery } from "./tcf-config.slice";
@@ -82,6 +86,10 @@ export const PurposeRestrictionsTable = () => {
       item.vendor_restriction === TCFVendorRestriction.RESTRICT_ALL_VENDORS,
   );
 
+  const hasAllRestrictTypes = Object.values(TCFRestrictionType).every((type) =>
+    transformedData.some((item) => item.restriction_type === type),
+  );
+
   const table = useReactTable<PurposeRestriction>({
     getCoreRowModel: getCoreRowModel(),
     columns,
@@ -104,15 +112,19 @@ export const PurposeRestrictionsTable = () => {
         <Spacer />
         <Tooltip
           title={
+            // eslint-disable-next-line no-nested-ternary
             hasRestrictAllVendors
               ? 'Each vendor must have a unique restriction type. When "Restrict all vendors" is active for any restriction type, no other restrictions can be added.'
-              : undefined
+              : hasAllRestrictTypes
+                ? "Each purpose must have a unique restriction type. When all restriction types are active, no other restrictions can be added. Use the 'Edit' button to change the vendor restrictions on each type."
+                : undefined
           }
         >
           <Button
             type="primary"
             onClick={handleOpenModal}
-            disabled={hasRestrictAllVendors}
+            disabled={hasRestrictAllVendors || hasAllRestrictTypes}
+            data-testid="add-restriction-button"
           >
             Add restriction +
           </Button>

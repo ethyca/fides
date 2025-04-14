@@ -112,6 +112,7 @@ export const TCFOverrideToggle = ({
             checked={isChecked}
             defaultChecked={defaultChecked}
             onClick={handleBeforeChange}
+            data-testid="tcf-override-toggle"
           />
           <Text>Override vendor purposes</Text>
           <QuestionTooltip label="Toggle on if you want to globally change any flexible legal bases or remove TCF purposes from your CMP" />
