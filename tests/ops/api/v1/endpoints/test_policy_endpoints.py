@@ -426,12 +426,14 @@ class TestGetRuleTargets:
         rule_target: RuleTarget,
         url,
     ):
+        # since we have more than one policy fixture, we expect to have
+        # more than one policy, and therefore more than one rule target, in the db
         all_policies = Policy.query(db=db).all()
-        assert len(all_policies) == 1
+        assert len(all_policies) > 1
         all_rules = Rule.query(db=db).all()
-        assert len(all_rules) == 1
+        assert len(all_rules) > 1
         all_rule_targets = RuleTarget.query(db=db).all()
-        assert len(all_rule_targets) == 1
+        assert len(all_rule_targets) > 1
 
         auth_header = generate_auth_header(scopes=[scopes.RULE_READ])
         resp = api_client.get(

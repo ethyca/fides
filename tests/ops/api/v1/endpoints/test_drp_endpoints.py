@@ -244,7 +244,9 @@ class TestCreateDrpPrivacyRequest:
         assert resp.status_code == 404
 
     @pytest.mark.usefixtures(
-        "messaging_config", "policy_drp_action", "set_notification_service_type_mailgun"
+        "messaging_config",
+        "policy_drp_action",
+        "set_notification_service_type_to_mailgun",
     )
     @mock.patch(
         "fides.api.service.messaging.message_dispatch_service._mailgun_dispatcher"

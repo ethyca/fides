@@ -1072,6 +1072,7 @@ def empty_policy(
 
 
 @pytest.fixture(scope="function")
+@pytest.mark.usefixtures("default_data_categories")
 def policy(
     db: Session,
     oauth_client: ClientDetail,
@@ -1158,6 +1159,7 @@ def consent_policy(
 
 
 @pytest.fixture(scope="function")
+@pytest.mark.usefixtures("default_data_categories")
 def policy_local_storage(
     db: Session,
     oauth_client: ClientDetail,
@@ -1212,6 +1214,7 @@ def policy_local_storage(
 
 
 @pytest.fixture(scope="function")
+@pytest.mark.usefixtures("default_data_categories")
 def policy_drp_action(
     db: Session,
     oauth_client: ClientDetail,
@@ -1263,6 +1266,7 @@ def policy_drp_action(
 
 
 @pytest.fixture(scope="function")
+@pytest.mark.usefixtures("default_data_categories")
 def policy_drp_action_erasure(db: Session, oauth_client: ClientDetail) -> Generator:
     erasure_request_policy = Policy.create(
         db=db,
@@ -1312,10 +1316,10 @@ def policy_drp_action_erasure(db: Session, oauth_client: ClientDetail) -> Genera
 
 
 @pytest.fixture(scope="function")
+@pytest.mark.usefixtures("default_data_categories")
 def erasure_policy_string_rewrite(
     db: Session,
     oauth_client: ClientDetail,
-    storage_config: StorageConfig,
 ) -> Generator:
     erasure_policy = Policy.create(
         db=db,

@@ -950,7 +950,7 @@ def privacy_request_review_notification_disabled(db):
 
 
 @pytest.fixture(scope="function")
-def set_notification_service_type_mailgun(db):
+def set_notification_service_type_to_mailgun(db):
     """Set default notification service type"""
     original_value = CONFIG.notifications.notification_service_type
     CONFIG.notifications.notification_service_type = MessagingServiceType.mailgun.value
@@ -1869,6 +1869,13 @@ async def seed_data(async_session):
     Optionally loads sample data if needed (can be parameterized).
     """
     await seed_db(async_session, samples=False)
+
+
+@pytest.fixture(scope="function")
+def default_data_categories(db):
+    for data_category in DEFAULT_TAXONOMY.data_category:
+        if DataCategory.get_by(db, field="name", value=data_category.name) is None:
+            DataCategory.create(db=db, data=data_category.model_dump(mode="json"))
 
 
 @pytest.fixture(autouse=True)

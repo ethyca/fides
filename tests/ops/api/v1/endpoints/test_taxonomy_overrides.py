@@ -74,6 +74,7 @@ class TestCreateDataUse:
         response = api_client.post(url, headers=auth_header, json=payload)
         assert 403 == response.status_code
 
+    @pytest.mark.usefixtures("default_data_categories")
     def test_create_data_use_with_fides_key_and_parent_key(
         self,
         db: Session,
@@ -87,7 +88,7 @@ class TestCreateDataUse:
         payload["parent_key"] = "analytics"
         response = api_client.post(url, headers=auth_header, json=payload)
 
-        assert 201 == response.status_code
+        assert response.status_code == 201
         response_body = json.loads(response.text)
 
         assert response_body["fides_key"] == "analytics.test_data_use"
@@ -127,6 +128,7 @@ class TestCreateDataUse:
         data_use = db.query(DataUse).filter_by(fides_key="test_data_use")[0]
         data_use.delete(db)
 
+    @pytest.mark.usefixtures("default_data_categories")
     def test_create_data_use_with_no_fides_key_and_has_parent_key(
         self,
         db: Session,
@@ -139,7 +141,7 @@ class TestCreateDataUse:
         payload["parent_key"] = "analytics"
         response = api_client.post(url, headers=auth_header, json=payload)
 
-        assert 201 == response.status_code
+        assert response.status_code == 201
         response_body = json.loads(response.text)
 
         assert response_body["fides_key"] == "analytics.test_data_use"
