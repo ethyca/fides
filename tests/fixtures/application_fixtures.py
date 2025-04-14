@@ -1077,6 +1077,7 @@ def policy(
     db: Session,
     oauth_client: ClientDetail,
     storage_config: StorageConfig,
+    default_data_categories,  # TODO: Remove this once we have a better way to handle data categories
 ) -> Generator:
     access_request_policy = Policy.create(
         db=db,

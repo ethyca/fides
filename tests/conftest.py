@@ -55,6 +55,7 @@ from fides.api.util.collection_util import Row
 from fides.common.api.scope_registry import SCOPE_REGISTRY
 from fides.config import get_config
 from fides.config.config_proxy import ConfigProxy
+from fides.api.models.sql_models import DataCategory as DataCategoryDbModel
 from tests.fixtures.application_fixtures import *
 from tests.fixtures.bigquery_fixtures import *
 from tests.fixtures.datahub_fixtures import *
@@ -1865,8 +1866,14 @@ async def seed_data(async_session):
 @pytest.fixture(scope="function")
 def default_data_categories(db):
     for data_category in DEFAULT_TAXONOMY.data_category:
-        if DataCategory.get_by(db, field="name", value=data_category.name) is None:
-            DataCategory.create(db=db, data=data_category.model_dump(mode="json"))
+        if (
+            DataCategoryDbModel.get_by(db, field="name", value=data_category.name)
+            is None
+        ):
+            DataCategoryDbModel.create(
+                db=db, data=data_category.model_dump(mode="json")
+            )
+    db.commit()
 
 
 @pytest.fixture(scope="function")
