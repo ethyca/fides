@@ -1823,15 +1823,6 @@ def connection_client(db, connection_config):
     client.delete(db)
 
 
-@pytest.fixture(scope="function")
-def load_default_data_uses(db):
-    for data_use in DEFAULT_TAXONOMY.data_use:
-        # weirdly, only in some test scenarios, we already have the default taxonomy
-        # loaded, in which case the create will throw an error. so we first check existence.
-        if DataUse.get_by(db, field="name", value=data_use.name) is None:
-            DataUse.create(db=db, data=data_use.model_dump(mode="json"))
-
-
 @pytest.fixture
 def owner_auth_header(owner_user):
     return generate_role_header_for_user(owner_user, owner_user.client.roles)
@@ -1876,6 +1867,13 @@ def default_data_categories(db):
     for data_category in DEFAULT_TAXONOMY.data_category:
         if DataCategory.get_by(db, field="name", value=data_category.name) is None:
             DataCategory.create(db=db, data=data_category.model_dump(mode="json"))
+
+
+@pytest.fixture(scope="function")
+def default_data_uses(db):
+    for data_use in DEFAULT_TAXONOMY.data_use:
+        if DataUse.get_by(db, field="name", value=data_use.name) is None:
+            DataUse.create(db=db, data=data_use.model_dump(mode="json"))
 
 
 @pytest.fixture(autouse=True)

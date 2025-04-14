@@ -29,13 +29,3 @@ def setup_ctl_db(test_config, test_client, config):
         headers=config.user.auth_header,
         action="reset",
     )
-
-
-@pytest.fixture(scope="function")
-def load_default_data_uses(db):
-    for data_use in DEFAULT_TAXONOMY.data_use:
-        # Default data uses are cleared and not automatically reloaded by `clear_db_tables` fixture.
-        # Here we make sure our default data uses are always available for our tests,
-        # if they're not present already.
-        if DataUse.get_by(db, field="name", value=data_use.name) is None:
-            DataUse.create(db=db, data=data_use.model_dump(mode="json"))
