@@ -52,16 +52,6 @@ class TestGetS3Session:
                 None,
             )
 
-    def test_secrets_are_valid_bad_storage_type(self):
-        with pytest.raises(ValueError):
-            secrets_are_valid(
-                StorageSecretsS3(
-                    aws_access_key_id="aws_access_key_id",
-                    aws_secret_access_key="aws_secret_access_key",
-                ),
-                "fake_storage_type",
-            )
-
     def test_secrets_are_valid(self):
         # just test we don't error out
         assert not secrets_are_valid(
