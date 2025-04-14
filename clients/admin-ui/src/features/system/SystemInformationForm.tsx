@@ -28,6 +28,7 @@ import {
   VendorSources,
 } from "~/features/common/helpers";
 import { FormGuard } from "~/features/common/hooks/useIsAnyFormDirty";
+import { errorToastParams } from "~/features/common/toast";
 import {
   selectAllDictEntries,
   useGetAllDictionaryEntriesQuery,
@@ -57,6 +58,7 @@ import {
   useLazyGetSystemsQuery,
   useUpdateSystemMutation,
 } from "~/features/system/system.slice";
+import { usePopulateSystemAssetsMutation } from "~/features/system/system-assets.slice";
 import SystemFormInputGroup from "~/features/system/SystemFormInputGroup";
 import VendorSelector from "~/features/system/VendorSelector";
 import { ResourceTypes, SystemResponse } from "~/types/api";
@@ -155,6 +157,7 @@ const SystemInformationForm = ({
     useCreateSystemMutation();
   const [updateSystemMutationTrigger, updateSystemMutationResult] =
     useUpdateSystemMutation();
+  const [populateSystemAssets] = usePopulateSystemAssetsMutation();
   useGetAllDictionaryEntriesQuery(undefined, {
     skip: !features.dictionaryService,
   });
@@ -256,19 +259,19 @@ const SystemInformationForm = ({
     }
 
     await customFields.upsertCustomFields(values);
-    // TODO: implement this
-    // if (values.vendor_id) {
-    //   const assetResult = await populateSystemAssets({
-    //     fides_key: values.fides_key,
-    //   });
-    //   if (assetResult.isError) {
-    //     toast({
-    //       status: "error",
-    //       description:
-    //         "An unexpected error occurred while populating the system assets. Please try again.",
-    //     });
-    //   }
-    // }
+
+    if (values.vendor_id && result.data?.fides_key) {
+      const assetResult = await populateSystemAssets({
+        systemKey: result.data.fides_key,
+      });
+      if (isErrorResult(assetResult)) {
+        toast(
+          errorToastParams(
+            "An unexpected error occurred while populating the system assets from Compass. Please try again.",
+          ),
+        );
+      }
+    }
 
     handleResult(result);
   };

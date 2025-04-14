@@ -57,6 +57,13 @@ const systemAssetsApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["System Assets"],
     }),
+    populateSystemAssets: build.mutation<any, { systemKey: string }>({
+      query: ({ systemKey }) => ({
+        method: "POST",
+        url: `/plus/dictionary/system-vendors/cookie-assets`,
+        body: [systemKey],
+      }),
+    }),
   }),
 });
 
@@ -65,4 +72,5 @@ export const {
   useAddSystemAssetMutation,
   useUpdateSystemAssetsMutation,
   useDeleteSystemAssetsMutation,
+  usePopulateSystemAssetsMutation,
 } = systemAssetsApi;
