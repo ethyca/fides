@@ -192,8 +192,8 @@ class TestCrud:
         ).json()
         for resource in existing_resources:
             if (
-                resource["fides_key"] == resources_dict[endpoint].fides_key
-                or resource["name"] == resources_dict[endpoint].name
+                hasattr(resource, "fides_key")
+                and resource["fides_key"] == resources_dict[endpoint].fides_key
             ):
                 _api.delete(
                     url=test_config.cli.server_url,
