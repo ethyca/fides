@@ -300,7 +300,7 @@ class TestPull:
             cli, ["-f", test_config_path, "pull", "data_category", "system"]
         )
         git_reset(test_dir)
-        os.remove(".fides/data_category.yaml")
+        os.remove(".fides/system.yml")
         print(result.output)
         assert result.exit_code == 0
         assert "not found" not in result.output

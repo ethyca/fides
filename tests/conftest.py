@@ -33,8 +33,10 @@ from fides.api.cryptography.schemas.jwt import (
     JWE_PAYLOAD_SYSTEMS,
 )
 from fides.api.db.base_class import Base
+from fides.api.db.crud import create_resource
 from fides.api.db.ctl_session import sync_engine
 from fides.api.db.database import seed_db
+from fides.api.db.seed import load_default_organization, load_default_taxonomy
 from fides.api.db.system import create_system
 from fides.api.main import app
 from fides.api.models.privacy_request import (
@@ -43,7 +45,9 @@ from fides.api.models.privacy_request import (
     generate_request_callback_pre_approval_jwe,
     generate_request_callback_resume_jwe,
 )
-from fides.api.models.sql_models import Cookies, DataUse, PrivacyDeclaration
+from fides.api.models.sql_models import Cookies
+from fides.api.models.sql_models import DataCategory as DataCategoryDbModel
+from fides.api.models.sql_models import DataUse, PrivacyDeclaration, sql_model_map
 from fides.api.oauth.jwt import generate_jwe
 from fides.api.oauth.roles import APPROVER, CONTRIBUTOR, OWNER, VIEWER_AND_APPROVER
 from fides.api.schemas.messaging.messaging import MessagingServiceType
@@ -55,7 +59,6 @@ from fides.api.util.collection_util import Row
 from fides.common.api.scope_registry import SCOPE_REGISTRY
 from fides.config import get_config
 from fides.config.config_proxy import ConfigProxy
-from fides.api.models.sql_models import DataCategory as DataCategoryDbModel
 from tests.fixtures.application_fixtures import *
 from tests.fixtures.bigquery_fixtures import *
 from tests.fixtures.datahub_fixtures import *
@@ -391,7 +394,7 @@ def auth_header(request, oauth_client, config):
     return {"Authorization": "Bearer " + jwe}
 
 
-@pytest.fixture
+@pytest.fixture(scope="function", autouse=True)
 def clear_get_config_cache() -> None:
     get_config.cache_clear()
 
@@ -548,6 +551,29 @@ def resources_dict():
         ),
     }
     yield resources_dict
+
+
+@pytest.fixture(scope="function")
+@pytest.mark.asyncio
+async def fideslang_resources(async_session, resources_dict, default_taxonomy, config):
+    """
+    Loads all resources from resources_dict into the database.
+    This fixture runs automatically before each test function.
+    """
+
+    # Load each resource into the database
+    for resource_type, resource in resources_dict.items():
+        if resource_type in sql_model_map:
+            if resource_type == "system":
+                await create_system(
+                    resource, async_session, config.security.oauth_root_client_id
+                )
+            else:
+                await create_resource(
+                    sql_model_map[resource_type],
+                    resource.model_dump(mode="json"),
+                    async_session,
+                )
 
 
 @pytest.fixture
@@ -1863,6 +1889,16 @@ async def seed_data(async_session):
     await seed_db(async_session, samples=False)
 
 
+@pytest.mark.asyncio
+@pytest.fixture(scope="function")
+async def seed_data_with_samples(async_session):
+    """
+    Fixture to load default resources into the database before a test.
+    Optionally loads sample data if needed (can be parameterized).
+    """
+    await seed_db(async_session, samples=True)
+
+
 @pytest.fixture(scope="function")
 def default_data_categories(db):
     for data_category in DEFAULT_TAXONOMY.data_category:
@@ -1880,6 +1916,16 @@ def default_data_uses(db):
     for data_use in DEFAULT_TAXONOMY.data_use:
         if DataUse.get_by(db, field="name", value=data_use.name) is None:
             DataUse.create(db=db, data=data_use.model_dump(mode="json"))
+
+
+@pytest.fixture(scope="function")
+async def default_organization(async_session):
+    await load_default_organization(async_session)
+
+
+@pytest.fixture(scope="function")
+async def default_taxonomy(async_session):
+    await load_default_taxonomy(async_session)
 
 
 @pytest.fixture(autouse=True)

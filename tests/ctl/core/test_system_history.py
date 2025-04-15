@@ -18,7 +18,7 @@ class TestSystemHistory:
     """Verifies the correct number of system history entries are created per system update."""
 
     @pytest.fixture()
-    async def system(self, async_session_temp):
+    async def system(self, async_session):
         resource = SystemSchema(
             fides_key=str(uuid4()),
             organization_fides_key="default_organization",

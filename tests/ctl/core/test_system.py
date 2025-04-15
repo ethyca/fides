@@ -412,11 +412,12 @@ class TestPrivacyDeclarationPurpose:
         assert pd.purpose is None
 
 
+@pytest.mark.usefixtures("default_data_uses")
 class TestUpsertCookies:
     @pytest.fixture()
     async def test_cookie_system(
         self,
-        async_session_temp,
+        async_session,
         generate_auth_header,
         test_config,
         generate_role_header,
@@ -446,7 +447,7 @@ class TestUpsertCookies:
             ],
         )
 
-        system = await create_system(resource, async_session_temp)
+        system = await create_system(resource, async_session)
 
         Cookies.create(
             db=db,
@@ -459,22 +460,22 @@ class TestUpsertCookies:
             },
             check_name=False,
         )
-        await async_session_temp.refresh(system)
+        await async_session.refresh(system)
         yield system
         delete(sql_System).where(sql_System.id == system.id)
 
-    async def test_new_system_cookies(self, test_cookie_system, async_session_temp):
+    async def test_new_system_cookies(self, test_cookie_system, async_session):
         """Test adding a cookie at the system level"""
         new_cookies = [{"name": "carrots"}]
 
         await upsert_cookies(
-            async_session_temp,
+            async_session,
             new_cookies,
             privacy_declaration=None,
             system=test_cookie_system,
         )
 
-        await async_session_temp.refresh(test_cookie_system)
+        await async_session.refresh(test_cookie_system)
         assert len(test_cookie_system.cookies) == 1
 
         new_cookie = test_cookie_system.cookies[0]
@@ -485,7 +486,7 @@ class TestUpsertCookies:
         assert new_cookie.privacy_declaration_id is None
 
     async def test_new_privacy_declaration_cookies(
-        self, test_cookie_system, async_session_temp
+        self, test_cookie_system, async_session
     ):
         """Test adding a new cookie to a privacy declaration.  The other privacy declaration on the
         system already has a cookie."""
@@ -499,12 +500,12 @@ class TestUpsertCookies:
         )[1]
 
         await upsert_cookies(
-            async_session_temp,
+            async_session,
             new_cookies,
             privacy_declaration,
             system=None,
         )
-        await async_session_temp.refresh(test_cookie_system)
+        await async_session.refresh(test_cookie_system)
         assert len(test_cookie_system.cookies) == 0
 
         assert len(privacy_declaration.cookies) == 1
@@ -525,7 +526,7 @@ class TestUpsertCookies:
         assert new_cookie.privacy_declaration_id == privacy_declaration.id
 
     async def test_no_change_to_privacy_declaration_cookies(
-        self, test_cookie_system, async_session_temp
+        self, test_cookie_system, async_session
     ):
         """Test specified cookies already exist on given privacy declaration, so no change required"""
         new_cookies = [{"name": "strawberry"}]
@@ -536,12 +537,12 @@ class TestUpsertCookies:
         assert existing_cookie.name == "strawberry"
 
         await upsert_cookies(
-            async_session_temp,
+            async_session,
             new_cookies,
             privacy_declaration,
             system=None,
         )
-        await async_session_temp.refresh(test_cookie_system)
+        await async_session.refresh(test_cookie_system)
         assert len(test_cookie_system.cookies) == 0
 
         assert len(privacy_declaration.cookies) == 1
@@ -555,7 +556,7 @@ class TestUpsertCookies:
         assert new_cookie.privacy_declaration_id == privacy_declaration.id
 
     async def test_update_and_delete_system_cookies(
-        self, test_cookie_system, async_session_temp
+        self, test_cookie_system, async_session
     ):
         """Test updating and deleting cookies on System. Cookies are updated to match request, so this
         involves adding, updating, and deleting Cookies to match."""
@@ -563,13 +564,13 @@ class TestUpsertCookies:
 
         # Let's add cookie first
         await upsert_cookies(
-            async_session_temp,
+            async_session,
             new_cookies,
             privacy_declaration=None,
             system=test_cookie_system,
         )
 
-        await async_session_temp.refresh(test_cookie_system)
+        await async_session.refresh(test_cookie_system)
         assert len(test_cookie_system.cookies) == 1
 
         new_cookie = test_cookie_system.cookies[0]
@@ -578,13 +579,13 @@ class TestUpsertCookies:
 
         # Let's update cookie now
         await upsert_cookies(
-            async_session_temp,
+            async_session,
             [{"name": "carrots", "path": "second_path/"}],
             privacy_declaration=None,
             system=test_cookie_system,
         )
 
-        await async_session_temp.refresh(test_cookie_system)
+        await async_session.refresh(test_cookie_system)
         assert len(test_cookie_system.cookies) == 1
 
         updated_cookie = test_cookie_system.cookies[0]
@@ -594,22 +595,22 @@ class TestUpsertCookies:
 
         # Let's delete this cookie
         await upsert_cookies(
-            async_session_temp,
+            async_session,
             [],
             privacy_declaration=None,
             system=test_cookie_system,
         )
 
-        await async_session_temp.refresh(test_cookie_system)
+        await async_session.refresh(test_cookie_system)
 
         with pytest.raises(InvalidRequestError):
             # This cookie was deleted altogether
-            await async_session_temp.refresh(updated_cookie)
+            await async_session.refresh(updated_cookie)
 
         assert len(test_cookie_system.cookies) == 0
 
     async def test_update_privacy_declaration_cookies(
-        self, test_cookie_system, async_session_temp
+        self, test_cookie_system, async_session
     ):
         """Test cookie exists but path has changed"""
 
@@ -621,12 +622,12 @@ class TestUpsertCookies:
         assert existing_cookie.name == "strawberry"
 
         await upsert_cookies(
-            async_session_temp,
+            async_session,
             new_cookies,
             privacy_declaration,
             system=None,
         )
-        await async_session_temp.refresh(test_cookie_system)
+        await async_session.refresh(test_cookie_system)
         assert len(test_cookie_system.cookies) == 0
 
         assert len(privacy_declaration.cookies) == 1
@@ -640,7 +641,7 @@ class TestUpsertCookies:
         assert updated_cookie.privacy_declaration_id == privacy_declaration.id
 
     async def test_remove_cookies_from_privacy_declaration(
-        self, test_cookie_system, async_session_temp
+        self, test_cookie_system, async_session
     ):
         """Test cookie list is missing a cookie currently on the privacy declaration so add the new
         cookie and we remove the existing one"""
@@ -653,12 +654,12 @@ class TestUpsertCookies:
         assert existing_cookie.name == "strawberry"
 
         await upsert_cookies(
-            async_session_temp,
+            async_session,
             new_cookies,
             privacy_declaration,
             system=None,
         )
-        await async_session_temp.refresh(test_cookie_system)
+        await async_session.refresh(test_cookie_system)
         assert len(test_cookie_system.cookies) == 0
 
         assert len(privacy_declaration.cookies) == 1
@@ -671,9 +672,7 @@ class TestUpsertCookies:
         assert new_cookie.system_id is None
         assert new_cookie.privacy_declaration_id == privacy_declaration.id
 
-    async def test_delete_privacy_declaration(
-        self, test_cookie_system, async_session_temp
-    ):
+    async def test_delete_privacy_declaration(self, test_cookie_system, async_session):
         """Test if a privacy declaration is deleted, its cookie is still linked to the system"""
 
         privacy_declaration = sorted(
@@ -687,31 +686,31 @@ class TestUpsertCookies:
         stmt = delete(PrivacyDeclaration).where(
             PrivacyDeclaration.id == privacy_declaration.id
         )
-        await async_session_temp.execute(stmt)
+        await async_session.execute(stmt)
 
         with pytest.raises(InvalidRequestError):
             # This cookie was deleted altogether
-            await async_session_temp.refresh(existing_cookie)
+            await async_session.refresh(existing_cookie)
 
     async def test_either_system_or_privacy_declaration_required(
-        self, test_cookie_system, async_session_temp
+        self, test_cookie_system, async_session
     ):
         """Test if a privacy declaration is deleted, its cookie is still linked to the system"""
         with pytest.raises(Exception):
             await upsert_cookies(
-                async_session_temp,
+                async_session,
                 [{"name": "cookie_name"}],
                 privacy_declaration=None,
                 system=None,
             )
 
     async def test_only_system_or_declaration_not_both(
-        self, test_cookie_system, async_session_temp
+        self, test_cookie_system, async_session
     ):
         """Test if a privacy declaration is deleted, its cookie is still linked to the system"""
         with pytest.raises(Exception):
             await upsert_cookies(
-                async_session_temp,
+                async_session,
                 [{"name": "cookie_name"}],
                 privacy_declaration=test_cookie_system.privacy_declarations[0],
                 system=test_cookie_system,

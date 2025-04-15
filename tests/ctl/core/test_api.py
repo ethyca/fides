@@ -167,6 +167,7 @@ def test_generate_resource_urls_with_id(test_config: FidesConfig) -> None:
 
 
 @pytest.mark.integration
+@pytest.mark.usefixtures("monkeypatch_requests", "default_taxonomy")
 class TestCrud:
     @pytest.mark.parametrize("endpoint", model_list)
     def test_api_create(
@@ -257,6 +258,7 @@ class TestCrud:
         assert result.status_code == 403
 
     @pytest.mark.parametrize("endpoint", model_list)
+    @pytest.mark.usefixtures("fideslang_resources")
     def test_api_get(
         self, test_config: FidesConfig, endpoint: str, generate_auth_header
     ) -> None:
@@ -274,6 +276,7 @@ class TestCrud:
         assert result.status_code == 200
 
     @pytest.mark.parametrize("endpoint", model_list)
+    @pytest.mark.usefixtures("fideslang_resources")
     def test_api_get_wrong_scope(
         self, test_config: FidesConfig, endpoint: str, generate_auth_header
     ) -> None:
@@ -290,6 +293,7 @@ class TestCrud:
         assert result.status_code == 403
 
     @pytest.mark.parametrize("endpoint", model_list)
+    @pytest.mark.usefixtures("fideslang_resources")
     def test_sent_is_received(
         self, test_config: FidesConfig, resources_dict: Dict, endpoint: str
     ) -> None:
@@ -314,6 +318,7 @@ class TestCrud:
         assert parsed_result == manifest
 
     @pytest.mark.parametrize("endpoint", model_list)
+    @pytest.mark.usefixtures("fideslang_resources")
     def test_api_update(
         self,
         test_config: FidesConfig,
@@ -372,6 +377,7 @@ class TestCrud:
         )
 
     @pytest.mark.parametrize("endpoint", model_list)
+    @pytest.mark.usefixtures("fideslang_resources")
     def test_api_upsert(
         self,
         test_config: FidesConfig,
@@ -478,6 +484,7 @@ class TestCrud:
         assert result.status_code == 403
 
     @pytest.mark.parametrize("endpoint", model_list)
+    @pytest.mark.usefixtures("fideslang_resources")
     def test_api_delete(
         self,
         test_config: FidesConfig,
@@ -505,8 +512,9 @@ class TestCrud:
 
 
 @pytest.mark.unit
+@pytest.mark.usefixtures("monkeypatch_requests", "default_taxonomy")
 class TestSystemCreate:
-    @pytest.fixture(scope="function")
+    @pytest.fixture(scope="function", autouse=True)
     def remove_all_systems(self, db) -> None:
         """Remove any systems (and privacy declarations) before test execution for clean state"""
         for privacy_declaration in PrivacyDeclaration.all(db):
@@ -1319,15 +1327,8 @@ class TestSystemGet:
 
 
 @pytest.mark.unit
+@pytest.mark.usefixtures("monkeypatch_requests")
 class TestSystemList:
-    @pytest.fixture(scope="function")
-    def remove_all_systems(self, db) -> None:
-        """Remove any systems (and privacy declarations) before test execution for clean state"""
-        for privacy_declaration in PrivacyDeclaration.all(db):
-            privacy_declaration.delete(db)
-        for system in System.all(db):
-            system.delete(db)
-
     def test_list_no_pagination(self, test_config, system_with_cleanup):
         result = _api.ls(
             url=test_config.cli.server_url,
@@ -1659,10 +1660,11 @@ class TestSystemList:
 
 
 @pytest.mark.unit
+@pytest.mark.usefixtures("monkeypatch_requests", "default_taxonomy")
 class TestSystemUpdate:
     updated_system_name = "Updated System Name"
 
-    @pytest.fixture(scope="function")
+    @pytest.fixture(scope="function", autouse=True)
     def remove_all_systems(self, db) -> None:
         """Remove any systems (and privacy declarations) before test execution for clean state"""
         for privacy_declaration in PrivacyDeclaration.all(db):
@@ -2852,6 +2854,7 @@ class TestSystemUpdate:
 
 
 @pytest.mark.unit
+@pytest.mark.usefixtures("monkeypatch_requests", "default_taxonomy")
 class TestSystemDelete:
     @pytest.fixture(scope="function")
     def url(self, system) -> str:
@@ -3015,6 +3018,7 @@ class TestSystemDelete:
 
 
 @pytest.mark.integration
+@pytest.mark.usefixtures("monkeypatch_requests", "default_taxonomy")
 class TestDefaultTaxonomyCrud:
     @pytest.mark.parametrize("endpoint", TAXONOMY_ENDPOINTS)
     def test_api_cannot_delete_default(
@@ -3202,6 +3206,7 @@ class TestDefaultTaxonomyCrud:
 
 
 @pytest.mark.integration
+@pytest.mark.usefixtures("monkeypatch_requests", "default_taxonomy")
 class TestCrudActiveProperty:
     """
     Ensure `active` property is exposed properly via CRUD endpoints.
@@ -3417,6 +3422,7 @@ def test_trailing_slash(test_config: FidesConfig, endpoint_name: str) -> None:
     assert response.status_code == 200
 
 
+@pytest.mark.usefixtures("monkeypatch_requests", "default_taxonomy")
 class TestPrivacyDeclarationGetPurposeLegalBasisOverride:
     async def test_privacy_declaration_enable_override_is_false(self, async_session):
         """Enable override is false so overridden legal basis is going to default
@@ -3601,7 +3607,7 @@ class TestPrivacyDeclarationGetPurposeLegalBasisOverride:
         "enable_override_vendor_purposes",
     )
     async def test_publisher_override_defined_but_no_required_legal_basis_specified(
-        self, db, async_session_temp
+        self, db, async_session
     ):
         """Purpose override *object* is defined, but no legal basis override"""
         resource = SystemSchema(

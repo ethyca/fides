@@ -129,6 +129,7 @@ def test_repeatable_unique_key() -> None:
 
 
 @pytest.mark.integration
+@pytest.mark.usefixtures("monkeypatch_requests")
 class TestCheckResponseAuth:
     def test_check_response_auth_sys_exit(self) -> None:
         """

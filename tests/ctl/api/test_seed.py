@@ -194,6 +194,7 @@ class TestFilterDataCategories:
 
 
 @pytest.mark.integration
+@pytest.mark.usefixtures("monkeypatch_requests")
 class TestLoadDefaultTaxonomy:
     """Tests related to load_default_taxonomy"""
 
@@ -226,6 +227,7 @@ class TestLoadDefaultTaxonomy:
         )
         assert result.status_code == 200
 
+    @pytest.mark.usefixtures("default_data_categories")
     async def test_does_not_override_user_changes(
         self, test_config: FidesConfig, async_session: AsyncSession
     ) -> None:
@@ -352,9 +354,8 @@ def test_create_or_update_parent_user_password_only():
         seed.create_or_update_parent_user()
 
 
-async def test_load_default_dsr_policies(
-    db,
-):
+@pytest.mark.usefixtures("default_data_categories")
+async def test_load_default_dsr_policies(db):
     # seed the default dsr policies and its artifacts
     seed.load_default_dsr_policies()
 
@@ -434,18 +435,16 @@ async def test_load_default_dsr_policies(
     assert len(access_rule.targets) == num_rule_targets - 1
 
 
-async def test_load_organizations(loguru_caplog, async_session_temp: AsyncSession):
+@pytest.mark.usefixtures("default_organization")
+async def test_load_organizations(loguru_caplog, async_session: AsyncSession):
     updated_default_taxonomy = DEFAULT_TAXONOMY.model_copy()
     current_orgs = len(updated_default_taxonomy.organization)
     updated_default_taxonomy.organization.append(
         Organization(fides_key="new_organization")
     )
 
-    with (
-        patch("fideslang.default_taxonomy.DEFAULT_TAXONOMY", updated_default_taxonomy),
-        patch("fides.api.db.seed.DEFAULT_TAXONOMY", updated_default_taxonomy),
-    ):
-        await seed.load_default_organization(async_session_temp)
+    with patch("fides.api.db.seed.DEFAULT_TAXONOMY", updated_default_taxonomy):
+        await seed.load_default_organization(async_session)
 
     assert "INSERTED 1" in loguru_caplog.text
     assert f"SKIPPED {current_orgs}" in loguru_caplog.text
@@ -473,6 +472,7 @@ class TestLoadSamples:
     }
 
     @patch.dict(os.environ, SAMPLE_ENV_VARS, clear=True)
+    @pytest.mark.usefixtures("default_taxonomy")
     async def test_load_samples(
         self,
         async_session: AsyncSession,

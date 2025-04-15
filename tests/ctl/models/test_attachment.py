@@ -236,11 +236,12 @@ def test_attachment_storageconfig_foreign_key_constraint(
     attachment = Attachment.create_and_upload(
         db=db, data=attachment_data, attachment_file=BytesIO(b"test file content")
     )
+    attachment_id = attachment.id
 
     config = db.query(StorageConfig).filter_by(key=attachment.storage_key).first()
     config.delete(db)
 
-    retrieved_attachment = db.query(Attachment).filter_by(id=attachment.id).first()
+    retrieved_attachment = db.query(Attachment).filter_by(id=attachment_id).first()
     assert retrieved_attachment is None
 
 
