@@ -46,7 +46,7 @@
         color: var(--fides-overlay-font-color-dark);
         font-size: var(--fides-overlay-font-size-body);
       }
-      .no-results--is-hidden{
+      .no-results--is-hidden {
         display: none;
       }
       .no-results__close {
@@ -62,8 +62,8 @@
 
   <body>
     <main>
-      <div id="fides-embed-container" class="container></div>
-      <h3 id="fides-embed-no-results" class="no-results">
+      <div id="fides-embed-container" class="container"></div>
+      <h3 id="fides-embed-no-results" class="no-results no-results--is-hidden">
         <span class="no-results__close">
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -82,6 +82,21 @@
     </main>
     <script>
       const onInitialized = () => {
+        let fidesUIShown = false;
+        window.addEventListener("FidesUIShown", () => {
+          fidesUIShown = true;
+          window.document
+            .getElementById("fides-embed-no-results")
+            .classList.add("no-results--is-hidden");
+        });
+        setTimeout(function () {
+          if (!fidesUIShown) {
+            window.document
+              .getElementById("fides-embed-no-results")
+              .classList.remove("no-results--is-hidden");
+          }
+        }, 200);
+      };
 
       // Handle both synchronous & asynchronous initialization
       if (window.Fides?.initialized) {
@@ -89,12 +104,6 @@
       } else {
         window.addEventListener("FidesInitialized", onInitialized);
       }
-
-      window.addEventListener("FidesUIShown", () => {
-        window.document
-          .getElementById("fides-embed-no-results")
-          .classList.add("no-results--is-hidden");
-      });
     </script>
   </body>
 </html>
