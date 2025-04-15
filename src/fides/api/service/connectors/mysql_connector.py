@@ -4,7 +4,6 @@ from typing import List, Dict, Any
 from sqlalchemy.engine import Engine, LegacyCursorResult, create_engine  # type: ignore
 
 from fides.api.graph.execution import ExecutionNode
-from fides.api.common_exceptions import ValidationError
 from fides.api.schemas.connection_configuration.connection_secrets_mysql import (
     MySQLSchema,
 )
