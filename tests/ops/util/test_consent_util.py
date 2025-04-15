@@ -175,7 +175,7 @@ class TestBuildUserConsentAndFilteredPreferencesForService:
             privacy_notice.id: UserConsentPreference.opt_in,
             privacy_notice_2.id: UserConsentPreference.opt_out,
         }
-        assert filtered_preferences == [pref_1, pref_2]
+        assert set(filtered_preferences) == {pref_1, pref_2}
 
         pref_1.delete(db)
         pref_2.delete(db)

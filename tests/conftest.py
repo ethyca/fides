@@ -1929,7 +1929,7 @@ async def default_taxonomy(async_session):
 
 
 @pytest.fixture(autouse=True)
-def clear_db_tables(db):
+async def clear_db_tables(db, async_session):
     """Clear data from tables between tests.
 
     If relationships are not set to cascade on delete they will fail with an
@@ -1952,7 +1952,10 @@ def clear_db_tables(db):
         if redo:
             delete_data(redo)
 
-    db.commit()  # make sure all transactions are closed before starting deletes
+    # make sure all transactions are closed before starting deletes
+    db.commit()
+    await async_session.commit()
+
     delete_data(Base.metadata.sorted_tables)
 
 

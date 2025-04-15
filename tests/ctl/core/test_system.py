@@ -412,7 +412,6 @@ class TestPrivacyDeclarationPurpose:
         assert pd.purpose is None
 
 
-@pytest.mark.skip(reason="Needs investigation")
 @pytest.mark.usefixtures("default_data_uses")
 class TestUpsertCookies:
     @pytest.fixture()
@@ -444,25 +443,21 @@ class TestUpsertCookies:
                     data_use="functional.service.improve",
                     data_subjects=[],
                     dataset_references=[],
+                    cookies=[
+                        Cookies(
+                            name="strawberry",
+                            path="/",
+                        )
+                    ],
                 ),
             ],
         )
 
         system = await create_system(resource, async_session)
-
-        Cookies.create(
-            db=db,
-            data={
-                "name": "strawberry",
-                "path": "/",
-                "privacy_declaration_id": sorted(
-                    system.privacy_declarations, key=lambda x: x.name
-                )[1].id,
-            },
-            check_name=False,
-        )
         await async_session.refresh(system)
+
         yield system
+
         delete(sql_System).where(sql_System.id == system.id)
 
     async def test_new_system_cookies(self, test_cookie_system, async_session):
