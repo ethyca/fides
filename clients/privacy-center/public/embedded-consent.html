@@ -37,17 +37,19 @@
       }
 
       /* Allow the embedded consent modal to fill the width of the screen */
-      #fides-embed-container {
+      .container {
         --fides-overlay-width: "auto";
       }
-      #fides-embed-no-results {
-        display: none;
+      .no-results {
         text-align: center;
         font-family: var(--fides-overlay-font-family);
         color: var(--fides-overlay-font-color-dark);
         font-size: var(--fides-overlay-font-size-body);
       }
-      #fides-embed-no-results .close {
+      .no-results--is-hidden{
+        display: none;
+      }
+      .no-results__close {
         cursor: pointer;
         font-size: 1.5em;
         position: absolute;
@@ -60,9 +62,9 @@
 
   <body>
     <main>
-      <div id="fides-embed-container"></div>
-      <h3 id="fides-embed-no-results">
-        <span class="close">
+      <div id="fides-embed-container" class="container></div>
+      <h3 id="fides-embed-no-results" class="no-results">
+        <span class="no-results__close">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="16"
@@ -80,10 +82,6 @@
     </main>
     <script>
       const onInitialized = () => {
-        window.document
-          .getElementById("fides-embed-no-results")
-          .setAttribute("style", "display: block");
-      };
 
       // Handle both synchronous & asynchronous initialization
       if (window.Fides?.initialized) {
@@ -95,7 +93,7 @@
       window.addEventListener("FidesUIShown", () => {
         window.document
           .getElementById("fides-embed-no-results")
-          .setAttribute("style", "display: none");
+          .classList.add("no-results--is-hidden");
       });
     </script>
   </body>
