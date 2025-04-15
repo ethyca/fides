@@ -136,7 +136,7 @@ class TestAWS_SES_Service:
         }
 
         with pytest.raises(
-            AWS_SESException, match="Email test@example.com is not verified in SES."
+            AWS_SESException, match="test@example.com is not verified in SES."
         ):
             aws_ses_service.validate_email_and_domain_status()
 
@@ -157,7 +157,7 @@ class TestAWS_SES_Service:
         }
 
         with pytest.raises(
-            AWS_SESException, match="Email test@example.com is not verified in SES."
+            AWS_SESException, match="test@example.com is not verified in SES."
         ):
             aws_ses_service.validate_email_and_domain_status()
 
@@ -179,7 +179,7 @@ class TestAWS_SES_Service:
         }
 
         with pytest.raises(
-            AWS_SESException, match="Domain example.com is not verified in SES."
+            AWS_SESException, match="example.com is not verified in SES."
         ):
             aws_ses_service.validate_email_and_domain_status()
 

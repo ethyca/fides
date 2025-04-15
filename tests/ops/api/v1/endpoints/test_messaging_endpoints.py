@@ -509,7 +509,6 @@ class TestPostMessagingConfig:
             "service_type": MessagingServiceType.aws_ses.value,
             "details": {
                 "aws_region": "us-east-1",
-
             },
         }
 
@@ -517,7 +516,13 @@ class TestPostMessagingConfig:
 
         response = api_client.post(url, headers=auth_header, json=aws_ses_payload)
         assert response.status_code == 422
-        assert response.json()["detail"] == [{'type': 'value_error', 'loc': ['body'], 'msg': "Value error, Either 'email_from' or 'domain' must be provided."}]
+        assert response.json()["detail"] == [
+            {
+                "type": "value_error",
+                "loc": ["body"],
+                "msg": "Value error, Either 'email_from' or 'domain' must be provided.",
+            }
+        ]
 
 
 class TestPatchMessagingConfig:

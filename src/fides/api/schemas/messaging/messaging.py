@@ -296,9 +296,7 @@ class MessagingServiceDetailsAWS_SES(BaseModel):
     @classmethod
     def validate_fields(cls, values: Dict[str, Any]) -> Dict[str, Any]:
         if not values.get("domain") and not values.get("email_from"):
-            raise ValueError(
-                "Either 'email_from' or 'domain' must be provided."
-            )
+            raise ValueError("Either 'email_from' or 'domain' must be provided.")
         return values
 
 
