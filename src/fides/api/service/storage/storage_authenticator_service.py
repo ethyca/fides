@@ -1,6 +1,10 @@
 from typing import Any, Dict, Union
 
 from botocore.exceptions import ClientError
+from google.auth.exceptions import GoogleAuthError
+from google.auth.transport.requests import Request
+from google.oauth2 import service_account
+from loguru import logger
 
 from fides.api.schemas.storage.storage import (
     SUPPORTED_STORAGE_SECRETS,
@@ -37,8 +41,32 @@ def _s3_authenticator(secrets: Dict[StorageSecrets, Any]) -> bool:
         return False
 
 
+def _gcs_authenticator(secrets: Dict) -> bool:
+    """Autenticates secrets for Google Cloud Storage, returns true if secrets are valid"""
+    try:
+        credentials = service_account.Credentials.from_service_account_info(
+            dict(secrets),
+            scopes=["https://www.googleapis.com/auth/devstorage.read_only"],
+        )
+        # To validate the credentials, it is necessary to make a request to Google Cloud API
+        credentials.refresh(Request())
+        return True
+
+    except GoogleAuthError as auth_error:
+        logger.warning(
+            "Google authentication error trying to authenticate GCS secrets: {}",
+            auth_error,
+        )
+        return False
+
+    except Exception as e:
+        logger.warning("Unexpected error authenticating GCS secrets: {}", e)
+        return False
+
+
 def _get_authenticator_from_config(storage_type: StorageType) -> Any:
     """Determines which uploader method to use based on storage type"""
     return {
         StorageType.s3.value: _s3_authenticator,
+        StorageType.gcs.value: _gcs_authenticator,
     }[storage_type.value]
