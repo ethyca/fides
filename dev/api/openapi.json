@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.59.1b0.post0.dev10"
+    "version": "2.59.1b0.post0.dev11"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -10128,7 +10128,15 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/StorageSecretsS3Docs"
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/StorageSecretsS3Docs"
+                  },
+                  {
+                    "$ref": "#/components/schemas/StorageSecretsGCSDocs"
+                  }
+                ],
+                "title": "Unvalidated Storage Secrets"
               }
             }
           }
@@ -10468,7 +10476,15 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/StorageSecretsS3Docs"
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/StorageSecretsS3Docs"
+                  },
+                  {
+                    "$ref": "#/components/schemas/StorageSecretsGCSDocs"
+                  }
+                ],
+                "title": "Unvalidated Storage Secrets"
               }
             }
           }
@@ -18676,6 +18692,14 @@
         "title": "FilteredPrivacyRequestResults",
         "description": "Schema representing the status and results of a test privacy request"
       },
+      "GCSAuthMethod": {
+        "type": "string",
+        "enum": [
+          "adc",
+          "service_account_keys"
+        ],
+        "title": "GCSAuthMethod"
+      },
       "Generate": {
         "properties": {
           "config": {
@@ -25528,6 +25552,9 @@
                 "$ref": "#/components/schemas/StorageDetailsS3"
               },
               {
+                "$ref": "#/components/schemas/StorageDetailsGCS"
+              },
+              {
                 "$ref": "#/components/schemas/StorageDetailsLocal"
               }
             ],
@@ -25579,6 +25606,9 @@
             "anyOf": [
               {
                 "$ref": "#/components/schemas/StorageDetailsS3"
+              },
+              {
+                "$ref": "#/components/schemas/StorageDetailsGCS"
               },
               {
                 "$ref": "#/components/schemas/StorageDetailsLocal"
@@ -25657,6 +25687,42 @@
         "title": "StorageDetails",
         "description": "Enum for storage detail keys"
       },
+      "StorageDetailsGCS": {
+        "properties": {
+          "naming": {
+            "type": "string",
+            "title": "Naming",
+            "default": "request_id"
+          },
+          "auth_method": {
+            "$ref": "#/components/schemas/GCSAuthMethod"
+          },
+          "bucket": {
+            "type": "string",
+            "title": "Bucket"
+          },
+          "max_retries": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Retries",
+            "default": 0
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "auth_method",
+          "bucket"
+        ],
+        "title": "StorageDetailsGCS",
+        "description": "The details required to represent a Google Cloud Storage bucket."
+      },
       "StorageDetailsLocal": {
         "properties": {
           "naming": {
@@ -25706,6 +25772,71 @@
         "title": "StorageDetailsS3",
         "description": "The details required to represent an AWS S3 storage bucket."
       },
+      "StorageSecretsGCSDocs": {
+        "properties": {
+          "type": {
+            "type": "string",
+            "title": "Type",
+            "default": "service_account"
+          },
+          "project_id": {
+            "type": "string",
+            "title": "Project Id"
+          },
+          "private_key_id": {
+            "type": "string",
+            "title": "Private Key Id"
+          },
+          "private_key": {
+            "type": "string",
+            "title": "Private Key"
+          },
+          "client_email": {
+            "type": "string",
+            "title": "Client Email"
+          },
+          "client_id": {
+            "type": "string",
+            "title": "Client Id"
+          },
+          "auth_uri": {
+            "type": "string",
+            "title": "Auth Uri"
+          },
+          "token_uri": {
+            "type": "string",
+            "title": "Token Uri"
+          },
+          "auth_provider_x509_cert_url": {
+            "type": "string",
+            "title": "Auth Provider X509 Cert Url"
+          },
+          "client_x509_cert_url": {
+            "type": "string",
+            "title": "Client X509 Cert Url"
+          },
+          "universe_domain": {
+            "type": "string",
+            "title": "Universe Domain"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "project_id",
+          "private_key_id",
+          "private_key",
+          "client_email",
+          "client_id",
+          "auth_uri",
+          "token_uri",
+          "auth_provider_x509_cert_url",
+          "client_x509_cert_url",
+          "universe_domain"
+        ],
+        "title": "StorageSecretsGCSDocs",
+        "description": "The secrets required to connect to Google Cloud Storage, for documentation"
+      },
       "StorageSecretsS3Docs": {
         "properties": {
           "aws_access_key_id": {
@@ -25742,6 +25873,7 @@
         "type": "string",
         "enum": [
           "s3",
+          "gcs",
           "local"
         ],
         "title": "StorageTypeApiAccepted",
