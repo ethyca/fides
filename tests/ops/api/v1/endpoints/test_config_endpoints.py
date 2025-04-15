@@ -154,12 +154,12 @@ class TestPatchApplicationConfig:
         )
         assert response.status_code == 422
 
-        # gcs is valid storage type but not allowed currently
+        # ethyca is valid storage type but not allowed currently
         # as an `active_default_storage_type``
         response = api_client.patch(
             url,
             headers=auth_header,
-            json={"storage": {"active_default_storage_type": StorageType.gcs.value}},
+            json={"storage": {"active_default_storage_type": StorageType.ethyca.value}},
         )
         assert response.status_code == 422
 
@@ -626,12 +626,12 @@ class TestPutApplicationConfig:
         )
         assert response.status_code == 422
 
-        # gcs is valid storage type but not allowed currently
+        # ethyca is valid storage type but not allowed currently
         # as an `active_default_storage_type``
         response = api_client.put(
             url,
             headers=auth_header,
-            json={"storage": {"active_default_storage_type": StorageType.gcs.value}},
+            json={"storage": {"active_default_storage_type": StorageType.ethyca.value}},
         )
         assert response.status_code == 422
 
