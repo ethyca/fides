@@ -19,7 +19,6 @@ import {
 import FormInfoBox from "~/features/common/modals/FormInfoBox";
 import FormModal from "~/features/common/modals/FormModal";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
-import isConsentCategory from "~/features/data-discovery-and-detection/action-center/utils/isConsentCategory";
 import {
   useAddSystemAssetMutation,
   useUpdateSystemAssetsMutation,
@@ -94,13 +93,7 @@ const AddEditAssetModal = ({
   };
 
   const handleUpdate = async (values: Asset) => {
-    const nonConsentDataUses =
-      asset?.data_uses?.filter((use) => !isConsentCategory(use)) ?? [];
-    const payload = {
-      ...values,
-      data_uses: [...(values.data_uses ?? []), ...nonConsentDataUses],
-    };
-    const result = await updateSystemAsset({ systemKey, assets: [payload] });
+    const result = await updateSystemAsset({ systemKey, assets: [values] });
     if (isErrorResult(result)) {
       const errorMsg = getErrorMessage(
         result.error,
@@ -121,12 +114,7 @@ const AddEditAssetModal = ({
     }
   };
 
-  const initialValues = asset
-    ? {
-        ...asset,
-        data_uses: asset?.data_uses?.filter((use) => isConsentCategory(use)),
-      }
-    : DEFAULT_VALUES;
+  const initialValues = asset ?? DEFAULT_VALUES;
 
   return (
     <FormModal
