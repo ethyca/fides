@@ -24,7 +24,7 @@ import {
   useAddSystemAssetMutation,
   useUpdateSystemAssetsMutation,
 } from "~/features/system/system-assets.slice";
-import WrappedConsentCategorySelect from "~/features/system/tabs/system-assets/WrappedConsentCategorySelect";
+import WrappedDataUseSelect from "~/features/system/tabs/system-assets/WrappedDataUseSelect";
 import { Asset } from "~/types/api";
 
 interface AddEditAssetModalProps extends Omit<ModalProps, "children"> {
@@ -46,7 +46,7 @@ const validationSchema = Yup.object().shape({
   name: Yup.string().required("Enter a name for this asset"),
   domain: Yup.string().required("Enter a valid domain for this asset"),
   asset_type: Yup.string().required("Select an asset type"),
-  data_uses: Yup.array().min(1, "Select at least one category of consent"),
+  data_uses: Yup.array().min(1, "Select at least one data use"),
   base_url: Yup.string().when("asset_type", {
     is: (asset_type: string) => asset_type !== AssetType.COOKIE,
     then: (schema) => schema.required("Base URL is required"),
@@ -165,9 +165,9 @@ const AddEditAssetModal = ({
                     layout="stacked"
                     disabled={!isCreate}
                   />
-                  <WrappedConsentCategorySelect
+                  <WrappedDataUseSelect
                     name="data_uses"
-                    label="Categories of consent"
+                    label="Data uses"
                     layout="stacked"
                   />
                   <CustomTextInput
