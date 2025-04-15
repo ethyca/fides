@@ -31,7 +31,7 @@ export type MySQLDocsSchema = {
    */
   ssh_required?: boolean;
   /**
-   * The SSL mode to use for the connection. Valid values are 'required', 'preferred', and'disabled'.
+   * The SSL mode to use for the connection. Valid values are 'required', 'preferred', and 'disabled'.
    */
   sslmode?: string;
 };
