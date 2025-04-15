@@ -2327,7 +2327,7 @@ def privacy_notice(db: Session) -> Generator:
             history.delete(db)
         translation.delete(db)
     privacy_notice.delete(db)
-        for cookie in privacy_notice.cookies:
+    for cookie in cookie_assets:
         cookie.delete(db)
 
 
