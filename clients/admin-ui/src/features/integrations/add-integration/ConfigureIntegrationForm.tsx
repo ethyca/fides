@@ -1,4 +1,4 @@
-import { AntButton as Button, useToast, VStack } from "fidesui";
+import { AntButton as Button, Box, useToast, VStack } from "fidesui";
 import { Form, Formik } from "formik";
 import { isEmpty, isUndefined, mapValues, omitBy } from "lodash";
 import * as Yup from "yup";
@@ -47,10 +47,12 @@ const ConfigureIntegrationForm = ({
   connection,
   connectionOption,
   onCancel,
+  description,
 }: {
   connection?: ConnectionConfigurationResponse;
   connectionOption: ConnectionSystemTypeMap;
   onCancel: () => void;
+  description: React.ReactNode;
 }) => {
   const [
     patchConnectionSecretsMutationTrigger,
@@ -242,75 +244,89 @@ const ConfigureIntegrationForm = ({
       secrets: Yup.object().shape(Object.fromEntries(fieldsFromSchema)),
     });
   };
-
   return (
-    <Formik
-      initialValues={initialValues}
-      enableReinitialize
-      onSubmit={handleSubmit}
-      validationSchema={generateValidationSchema(secrets!)}
-    >
-      {({ dirty, isValid, resetForm }) => (
-        <Form>
-          <VStack alignItems="start" spacing={6} mt={4}>
-            <CustomTextInput
-              id="name"
-              name="name"
-              label="Name"
-              variant="stacked"
-              isRequired
-            />
-            <CustomTextInput
-              id="description"
-              name="description"
-              label="Description"
-              variant="stacked"
-            />
-            {generateFields(secrets!)}
-            {!isEditing && (
-              <ControlledSelect
-                id="system_fides_key"
-                name="system_fides_key"
-                options={systemOptions ?? []}
-                label="System"
-                tooltip="The system to associate with the integration"
-                layout="stacked"
-              />
-            )}
-            {connectionOption.identifier === ConnectionType.DATAHUB && (
-              <ControlledSelect
-                id="dataset"
-                name="dataset"
-                options={datasetOptions ?? []}
-                label="Datasets"
-                tooltip="The datasets to associate with the integration"
-                layout="stacked"
-                mode="multiple"
-              />
-            )}
-            <div className="flex w-full justify-between">
-              <Button
-                onClick={() => {
-                  onCancel();
-                  resetForm();
-                }}
-              >
-                Cancel
-              </Button>
-              <Button
-                htmlType="submit"
-                type="primary"
-                disabled={!dirty || !isValid}
-                loading={submitPending}
-                data-testid="save-btn"
-              >
-                Save
-              </Button>
-            </div>
-          </VStack>
-        </Form>
+    <>
+      {description && (
+        <Box
+          padding="20px 24px"
+          backgroundColor="gray.50"
+          borderRadius="md"
+          border="1px solid"
+          borderColor="gray.200"
+          fontSize="sm"
+          marginTop="16px"
+        >
+          {description}
+        </Box>
       )}
-    </Formik>
+      <Formik
+        initialValues={initialValues}
+        enableReinitialize
+        onSubmit={handleSubmit}
+        validationSchema={generateValidationSchema(secrets!)}
+      >
+        {({ dirty, isValid, resetForm }) => (
+          <Form>
+            <VStack alignItems="start" spacing={6} mt={4}>
+              <CustomTextInput
+                id="name"
+                name="name"
+                label="Name"
+                variant="stacked"
+                isRequired
+              />
+              <CustomTextInput
+                id="description"
+                name="description"
+                label="Description"
+                variant="stacked"
+              />
+              {generateFields(secrets!)}
+              {!isEditing && (
+                <ControlledSelect
+                  id="system_fides_key"
+                  name="system_fides_key"
+                  options={systemOptions ?? []}
+                  label="System"
+                  tooltip="The system to associate with the integration"
+                  layout="stacked"
+                />
+              )}
+              {connectionOption.identifier === ConnectionType.DATAHUB && (
+                <ControlledSelect
+                  id="dataset"
+                  name="dataset"
+                  options={datasetOptions ?? []}
+                  label="Datasets"
+                  tooltip="Only BigQuery datasets are supported. Selected datasets will sync with matching DataHub datasets. If none are selected, all datasets will be included by default."
+                  layout="stacked"
+                  mode="multiple"
+                />
+              )}
+              <div className="flex w-full justify-between">
+                <Button
+                  onClick={() => {
+                    onCancel();
+                    resetForm();
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  htmlType="submit"
+                  type="primary"
+                  disabled={!dirty || !isValid}
+                  loading={submitPending}
+                  data-testid="save-btn"
+                >
+                  Save
+                </Button>
+              </div>
+            </VStack>
+          </Form>
+        )}
+      </Formik>
+    </>
   );
 };
 

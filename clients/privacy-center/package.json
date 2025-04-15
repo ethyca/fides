@@ -18,7 +18,7 @@
     "clean": "rm -rf .turbo node_modules .next",
     "cy:open": "cypress open",
     "cy:run": "cypress run",
-    "cy:parallel": "cypress-parallel -s cy:run -t 5 -d cypress/e2e -n ../node_modules/cypress-multi-reporters",
+    "cy:parallel": "cypress-parallel -s cy:run -t 2 -d cypress/e2e -n ../node_modules/cypress-multi-reporters",
     "cy:start": "export NODE_ENV=test && export FIDES_PRIVACY_CENTER__IS_OVERLAY_ENABLED=true && npm run build && next start -p 3001",
     "analyze": "cross-env ANALYZE=true next build",
     "analyze:server": "cross-env BUNDLE_ANALYZE=server next build",

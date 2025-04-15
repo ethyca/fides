@@ -25,7 +25,7 @@ const PublisherSettings = () => {
   ].sort((a, b) => (a.name < b.name ? -1 : 1));
 
   return isTcfEnabled ? (
-    <SettingsBox title="Publisher Settings">
+    <SettingsBox title="Publisher settings">
       <Typography.Paragraph className="mb-3">
         Specify the country in which your organization operates for TCF
         compliance. This setting will determine the &apos;Publisher Country Code

@@ -21,7 +21,22 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.59.0...main)
 
+### Added
+- Added support for selecting TCF Publisher Override configuration when configuring Privacy Experience [#6033](https://github.com/ethyca/fides/pull/6033)
+- Added Google Cloud Storage as a storage option [#6006](https://github.com/ethyca/fides/pull/6006)
 
+### Changed
+- Changed how TCF Publisher Overrides gets configured in consent settings [#6013](https://github.com/ethyca/fides/pull/6013)
+- Frontend now do not generate `key` when creating a Website Monitor [#6041](https://github.com/ethyca/fides/pull/6041)
+- Integrations manage modals now are cappable of showing a small description [#6037](https://github.com/ethyca/fides/pull/6037)
+
+### Developer Experience
+- Reduced animations on Cypress tests in Privacy Center for quicker results [#5976](https://github.com/ethyca/fides/pull/5976)
+
+### Fixed
+- Fixed typo in Vermont US state name [#6029](https://github.com/ethyca/fides/pull/6029)
+- Fixed two Georgia's in regions list and incorrect name for the state SD [#6036](https://github.com/ethyca/fides/pull/6036)
+- Fixed Privacy Center issue where unconfigured fields (eg. phone) were being passed as null form values [#6045](https://github.com/ethyca/fides/pull/6045)
 
 ## [2.59.0](https://github.com/ethyca/fides/compare/2.58.2...2.59.0)
 
@@ -39,6 +54,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Added `tcf_configuration_id` to `PrivacyExperienceConfig` and fixes `TCFPublisherRestriction` validations [#6012](https://github.com/ethyca/fides/pull/6012) https://github.com/ethyca/fides/labels/db-migration
 - Added a `--separate-files` flag to the `fides pull dataset` CLI command to pull each dataset into its own file [#6007](https://github.com/ethyca/fides/pull/6007)
 - Added a `readonly_server` database setting to support specifying a read-only database [#6023](https://github.com/ethyca/fides/pull/6023)
+- Added PostgreSQL connection config form to the "integrations" page to support use with discovery monitors [#6018](https://github.com/ethyca/fides/pull/6018)
 
 ### Changed
 - Bumped Next.js for all frontend apps to latest patch versions. [#5946](https://github.com/ethyca/fides/pull/5946)
@@ -47,8 +63,8 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Changed action center homepage to use CSS grid layout [#5982](https://github.com/ethyca/fides/pull/5982)
 - Updated the UI for the activity tab of the privacy request detail page [#6005](https://github.com/ethyca/fides/pull/6005)
 - Unified frontend formatKey method, so its behavior is closer to the backend behavior [#6010](https://github.com/ethyca/fides/pull/6010)
+- Removed `dbname` as a required field for PostgreSQL connection configs to support use with discovery monitors [#6018](https://github.com/ethyca/fides/pull/6018)
 - Action center table's checkboxes were improved, also improved change indications [#6021](https://github.com/ethyca/fides/pull/6021)
-
 
 ### Fixed
 - Updated relationships for Comments, Attachments and PrivacyRequests to remove overlap sqlalchemy error. [#5929](https://github.com/ethyca/fides/pull/5929)
@@ -57,6 +73,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Fixes translation bug in TCF custom notices [#6003](https://github.com/ethyca/fides/pull/6003)
 - Fixed issue with SaaS integration update payloads [#6001](https://github.com/ethyca/fides/pull/6001)
 - Fix non-consent-category data uses showing up in system assets table [#5999](https://github.com/ethyca/fides/pull/5999)
+- Fix `TCFConfiguration` relationship definitions [#6031](https://github.com/ethyca/fides/pull/6031)
 
 ### Removed
 - Removed datasetClassificationUpdates flag from admin UI. [#5950](https://github.com/ethyca/fides/pull/5950)

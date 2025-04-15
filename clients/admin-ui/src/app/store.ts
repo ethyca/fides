@@ -25,6 +25,7 @@ import { healthApi } from "~/features/common/health.slice";
 import { dirtyFormsSlice } from "~/features/common/hooks/dirty-forms.slice";
 import { configWizardSlice } from "~/features/config-wizard/config-wizard.slice";
 import { connectionTypeSlice } from "~/features/connection-type";
+import { tcfConfigSlice } from "~/features/consent-settings/tcf/tcf-config.slice";
 import { discoveryDetectionSlice } from "~/features/data-discovery-and-detection/discovery-detection.slice";
 import { dataSubjectsSlice } from "~/features/data-subjects/data-subject.slice";
 import { dataUseSlice } from "~/features/data-use/data-use.slice";
@@ -77,6 +78,7 @@ const reducer = {
   [authSlice.name]: authSlice.reducer,
   [configWizardSlice.name]: configWizardSlice.reducer,
   [connectionTypeSlice.name]: connectionTypeSlice.reducer,
+  [tcfConfigSlice.name]: tcfConfigSlice.reducer,
   [dataSubjectsSlice.name]: dataSubjectsSlice.reducer,
   [dataUseSlice.name]: dataUseSlice.reducer,
   [datasetSlice.name]: datasetSlice.reducer,
