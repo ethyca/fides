@@ -41,10 +41,9 @@ class MySQLSchema(ConnectionConfigSecretsSchema):
         description="Indicates whether an SSH tunnel is required for the connection. Enable this option if your MySQL server is behind a firewall and requires SSH tunneling for remote connections.",
     )
     sslmode: Optional[str] = Field(
-        None,
+        None,  # TODO: support for verify-ca and verify-full
         title="SSL Mode",
         description="The SSL mode to use for the connection. Valid values are 'required', 'preferred', and 'disabled'.",
-        # TODO: support for verify-ca and verify-full
     )
 
     _required_components: ClassVar[List[str]] = ["host", "dbname"]

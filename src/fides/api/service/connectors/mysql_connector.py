@@ -25,7 +25,7 @@ class MySQLConnector(SQLConnector):
     secrets_schema = MySQLSchema
 
     def build_uri(self) -> str:
-        """Build URI of format mysql+pymysql://[user[:password]@][netloc][:port][/dbname][?ssl_mode]"""
+        """Build URI of format mysql+pymysql://[user[:password]@][netloc][:port][/dbname]"""
         config = self.secrets_schema(**self.configuration.secrets or {})
 
         user_password = ""
@@ -41,7 +41,7 @@ class MySQLConnector(SQLConnector):
         return url
 
     def build_ssh_uri(self, local_address: tuple) -> str:
-        """Build URI of format mysql+pymysql://[user[:password]@][ssh_host][:ssh_port][/dbname][?ssl_mode]"""
+        """Build URI of format mysql+pymysql://[user[:password]@][ssh_host][:ssh_port][/dbname]"""
         config = self.secrets_schema(**self.configuration.secrets or {})
 
         user_password = ""
