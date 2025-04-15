@@ -25,63 +25,6 @@ async def test_upsert_system_malformed_privacy_declaration(
         result = await upsert_system(resources=[system], db=async_session)
 
 
-@pytest.mark.skip(
-    reason="This test blows up CI for some reason and is only needed for codecov on exception catching"
-)
-async def test_upsert_system_privacy_declaration_error(
-    test_config: FidesConfig, system: System, async_session: AsyncSession
-) -> None:
-    # Create a system with a malformed privacy declaration that will cause an error
-    system.privacy_declarations = [
-        PrivacyDeclarationSchema(
-            name="test_declaration",
-            data_categories=["invalid_category"],  # This will cause validation error
-            data_use="marketing",
-            data_subjects=["customer"],
-        )
-    ]
-
-    with pytest.raises(Exception) as exc_info:
-        await upsert_system(resources=[system], db=async_session)
-
-    # Verify the error message contains the expected text
-    assert "Error adding privacy declarations" in str(exc_info.value)
-    assert "reverting system creation" in str(exc_info.value)
-
-
-@pytest.mark.skip(
-    reason="This test blows up CI for some reason and is only needed for codecov on exception catching"
-)
-async def test_upsert_system_reverts_creation_on_privacy_declaration_error(
-    test_config: FidesConfig, system: System, async_session: AsyncSession
-) -> None:
-    # Create a system with a malformed privacy declaration that will cause an error
-    system.privacy_declarations = [
-        PrivacyDeclarationSchema(
-            name="test_declaration",
-            data_categories=["invalid_category"],  # This will cause validation error
-            data_use="marketing",
-            data_subjects=["customer"],
-        )
-    ]
-
-    # Store the system's fides_key for later verification
-    system_fides_key = system.fides_key
-
-    with pytest.raises(Exception) as exc_info:
-        await upsert_system(resources=[system], db=async_session)
-
-    # Verify the error message contains the expected text
-    assert "Error adding privacy declarations" in str(exc_info.value)
-    assert "reverting system creation" in str(exc_info.value)
-
-    # Verify the system was deleted by attempting to query it
-    deleted_system = await async_session.get(sql_System, system_fides_key)
-    assert (
-        deleted_system is None
-    ), "System should have been deleted after privacy declaration error"
-
-
 def create_server_systems(test_config: FidesConfig, systems: List[System]) -> None:
     for system in systems:
         api.create(

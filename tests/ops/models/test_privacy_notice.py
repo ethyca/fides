@@ -582,6 +582,114 @@ class TestPrivacyNoticeModel:
         db.refresh(privacy_notice)
         assert privacy_notice.name == old_name
 
+    @pytest.mark.parametrize(
+        "privacy_notice_data_use,declaration_cookies,expected_cookies,description",
+        [
+            (
+                ["marketing.advertising", "third_party_sharing"],
+                [{"name": "test_cookie", "domain": "example.com"}],
+                [
+                    {
+                        "name": "test_cookie",
+                        "domain": "example.com",
+                        "asset_type": "Cookie",
+                    }
+                ],
+                "Data uses overlap exactly",
+            ),
+            (
+                ["marketing.advertising.first_party", "third_party_sharing"],
+                [{"name": "test_cookie", "domain": "example.com"}],
+                [],
+                "Privacy notice use more specific than system's.  Too big a leap to assume system should be adjusted here.",
+            ),
+            (
+                ["marketing", "third_party_sharing"],
+                [{"name": "test_cookie", "domain": "example.com"}],
+                [
+                    {
+                        "name": "test_cookie",
+                        "domain": "example.com",
+                        "asset_type": "Cookie",
+                    }
+                ],
+                "Privacy notice use more general than system's, so system's data use is under the scope of the notice",
+            ),
+            (
+                ["marketing.advertising", "third_party_sharing"],
+                [
+                    {"name": "test_cookie", "domain": "example.com"},
+                    {"name": "another_cookie", "domain": "example.com"},
+                ],
+                [
+                    {
+                        "name": "test_cookie",
+                        "domain": "example.com",
+                        "asset_type": "Cookie",
+                    },
+                    {
+                        "name": "another_cookie",
+                        "domain": "example.com",
+                        "asset_type": "Cookie",
+                    },
+                ],
+                "Test multiple cookies",
+            ),
+            (["marketing.advertising"], [], [], "No cookies returns an empty set"),
+        ],
+    )
+    def test_relevant_cookies(
+        self,
+        privacy_notice_data_use,
+        declaration_cookies,
+        expected_cookies,
+        description,
+        privacy_notice,
+        db,
+        system,
+    ):
+        """Test different combinations of data uses and cookies between the Privacy Notice and the Privacy Declaration"""
+        # Clean up any existing cookie assets first
+        db.query(Asset).filter(Asset.asset_type == "Cookie").delete()
+        db.commit()
+
+        privacy_notice.data_uses = privacy_notice_data_use
+        privacy_notice.save(db)
+
+        privacy_declaration = system.privacy_declarations[0]
+        assert privacy_declaration.data_use == "marketing.advertising"
+
+        # Create test assets
+        created_assets = []
+        for cookie in declaration_cookies:
+            asset = Asset.create(
+                db,
+                data={
+                    "name": cookie["name"],
+                    "asset_type": "Cookie",
+                    "domain": cookie["domain"],
+                    "system_id": system.id,
+                    "data_uses": [privacy_declaration.data_use],
+                },
+                check_name=False,
+            )
+            created_assets.append(asset)
+
+        try:
+            assert [
+                {
+                    "name": cookie.name,
+                    "domain": cookie.domain,
+                    "asset_type": cookie.asset_type,
+                }
+                for cookie in privacy_notice.cookies
+            ] == expected_cookies, description
+        finally:
+            # Clean up created assets
+            for asset in created_assets:
+                db.delete(asset)
+            db.commit()
+
     def test_generate_privacy_notice_key(self, privacy_notice):
         assert (
             PrivacyNotice.generate_notice_key("Example Privacy Notice")
