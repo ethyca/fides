@@ -159,12 +159,28 @@ export interface ConfigStorageDetailsRequest {
   format?: string;
 }
 
+export interface S3SecretsDetails {
+  aws_access_key_id: string;
+  aws_secret_access_key: string;
+}
+
+export interface GCSSecretsDetails {
+  type: string;
+  project_id: string;
+  private_key_id: string;
+  private_key: string;
+  client_email: string;
+  client_id: string;
+  auth_uri: string;
+  token_uri: string;
+  auth_provider_x509_cert_url: string;
+  client_x509_cert_url: string;
+  universe_domain: string;
+}
+
 export interface ConfigStorageSecretsDetailsRequest {
   type?: string;
-  details?: {
-    aws_access_key_id: string;
-    aws_secret_access_key: string;
-  };
+  details?: S3SecretsDetails | GCSSecretsDetails;
 }
 
 export interface ConfigMessagingRequest {

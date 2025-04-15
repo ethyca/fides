@@ -21,9 +21,15 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.59.0...main)
 
+### Added
+- Added support for selecting TCF Publisher Override configuration when configuring Privacy Experience [#6033](https://github.com/ethyca/fides/pull/6033)
+- Added Google Cloud Storage as a storage option [#6006](https://github.com/ethyca/fides/pull/6006)
+- Adds embedded-consent route to Privacy Center [#6040](https://github.com/ethyca/fides/pull/6040)
+
 ### Changed
 - Changed how TCF Publisher Overrides gets configured in consent settings [#6013](https://github.com/ethyca/fides/pull/6013)
 - Frontend now do not generate `key` when creating a Website Monitor [#6041](https://github.com/ethyca/fides/pull/6041)
+- Integrations manage modals now are cappable of showing a small description [#6037](https://github.com/ethyca/fides/pull/6037)
 
 ### Developer Experience
 - Reduced animations on Cypress tests in Privacy Center for quicker results [#5976](https://github.com/ethyca/fides/pull/5976)
@@ -31,6 +37,8 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ### Fixed
 - Fixed typo in Vermont US state name [#6029](https://github.com/ethyca/fides/pull/6029)
 - Fixed two Georgia's in regions list and incorrect name for the state SD [#6036](https://github.com/ethyca/fides/pull/6036)
+- Fixed Privacy Center issue where unconfigured fields (eg. phone) were being passed as null form values [#6045](https://github.com/ethyca/fides/pull/6045)
+- Fixed performance issues in Data map report in Admin UI [#6046](https://github.com/ethyca/fides/pull/6046)
 
 ## [2.59.0](https://github.com/ethyca/fides/compare/2.58.2...2.59.0)
 

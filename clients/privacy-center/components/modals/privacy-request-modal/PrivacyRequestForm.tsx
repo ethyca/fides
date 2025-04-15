@@ -107,7 +107,7 @@ const usePrivacyRequestForm = ({
         Object.entries(action.identity_inputs ?? {})
           // we have to support name as an identity_input for legacy purposes
           // but we ignore it since it's not unique enough to be treated as an identity
-          .filter(([key]) => key !== "name")
+          .filter(([key, field]) => key !== "name" && !!field)
           .map(([key, field]) => {
             const value = fallbackNull(values[key]);
             if (typeof field === "string") {
