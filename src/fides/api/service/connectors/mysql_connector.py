@@ -4,6 +4,7 @@ from typing import List, Dict, Any
 from sqlalchemy.engine import Engine, LegacyCursorResult, create_engine  # type: ignore
 
 from fides.api.graph.execution import ExecutionNode
+from fides.api.common_exceptions import ValidationError
 from fides.api.schemas.connection_configuration.connection_secrets_mysql import (
     MySQLSchema,
 )
@@ -24,7 +25,7 @@ class MySQLConnector(SQLConnector):
     secrets_schema = MySQLSchema
 
     def build_uri(self) -> str:
-        """Build URI of format mysql+pymysql://[user[:password]@][netloc][:port][/dbname]"""
+        """Build URI of format mysql+pymysql://[user[:password]@][netloc][:port][/dbname][?ssl_mode]"""
         config = self.secrets_schema(**self.configuration.secrets or {})
 
         user_password = ""
@@ -40,7 +41,7 @@ class MySQLConnector(SQLConnector):
         return url
 
     def build_ssh_uri(self, local_address: tuple) -> str:
-        """Build URI of format mysql+pymysql://[user[:password]@][ssh_host][:ssh_port][/dbname]"""
+        """Build URI of format mysql+pymysql://[user[:password]@][ssh_host][:ssh_port][/dbname][?ssl_mode]"""
         config = self.secrets_schema(**self.configuration.secrets or {})
 
         user_password = ""
@@ -85,13 +86,17 @@ class MySQLConnector(SQLConnector):
         """Get connection arguments for the engine"""
         config = self.secrets_schema(**self.configuration.secrets or {})
         sslmode = (
-            config.sslmode.upper()
-            if re.search(r"required|preferred|disabled", config.sslmode, re.IGNORECASE)
-            else "PREFERRED"
+            config.sslmode
+            if re.search(
+                r"required|preferred|disabled",
+                config.get("sslmode", "preferred"),
+                re.IGNORECASE,
+            )
+            else "preferred"
         )
         return {
             "ssl": {
-                "mode": sslmode,
+                "mode": sslmode.lower(),
             }
         }
 

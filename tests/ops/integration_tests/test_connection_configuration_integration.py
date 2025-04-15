@@ -309,6 +309,7 @@ class TestMySQLConnectionPutSecretsAPI:
             "username": None,
             "password": None,
             "ssh_required": False,
+            "sslmode": None,
         }
         assert connection_config_mysql.last_test_timestamp is not None
         assert connection_config_mysql.last_test_succeeded is False
