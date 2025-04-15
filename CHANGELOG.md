@@ -21,6 +21,8 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.59.0...main)
 
+### Added
+- Adds embedded-consent route to Privacy Center [#6040](https://github.com/ethyca/fides/pull/6040)
 
 
 ## [2.59.0](https://github.com/ethyca/fides/compare/2.58.2...2.59.0)
