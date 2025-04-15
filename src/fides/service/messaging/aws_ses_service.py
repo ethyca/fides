@@ -136,6 +136,9 @@ class AWS_SES_Service:
 
         from_address = self.messaging_config_details.email_from
         if not from_address:
+            # If there is no email_from, there is a domain, and the domain was verified against SES.
+            # When you verify a domain identity, you can send email from any subdomain or email address of the
+            # verified domain without having to verify each one individually.
             from_address = f"noreply@{self.messaging_config_details.domain}"
 
         ses_client.send_email(
