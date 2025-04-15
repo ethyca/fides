@@ -286,11 +286,20 @@ class MessagingServiceDetailsTwilioEmail(BaseModel):
 class MessagingServiceDetailsAWS_SES(BaseModel):
     """The details required to represent an AWS SES email configuration."""
 
-    email_from: str
-    domain: str
+    email_from: Optional[str] = None
+    domain: Optional[str] = None
     aws_region: str
 
     model_config = ConfigDict(extra="forbid")
+
+    @model_validator(mode="before")
+    @classmethod
+    def validate_fields(cls, values: Dict[str, Any]) -> Dict[str, Any]:
+        if not values.get("domain") and not values.get("email_from"):
+            raise ValueError(
+                "Either 'email_from' or 'domain' must be provided."
+            )
+        return values
 
 
 class MessagingServiceSecrets(Enum):

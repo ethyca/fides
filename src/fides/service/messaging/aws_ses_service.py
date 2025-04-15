@@ -101,10 +101,11 @@ class AWS_SES_Service:
         """
         email = self.messaging_config_details.email_from
         domain = self.messaging_config_details.domain
+        identities = list(filter(None, (email, domain)))
 
         ses_client = self.get_ses_client()
         response = ses_client.get_identity_verification_attributes(
-            Identities=[email, domain]
+            Identities=identities
         )
         email_status = (
             response["VerificationAttributes"].get(email, {}).get("VerificationStatus")
@@ -112,10 +113,10 @@ class AWS_SES_Service:
         domain_status = (
             response["VerificationAttributes"].get(domain, {}).get("VerificationStatus")
         )
-        if email_status != "Success":
+        if email and email_status != "Success":
             logger.error(f"Email {email} is not verified in SES.")
             raise AWS_SESException(f"Email {email} is not verified in SES.")
-        if domain_status != "Success":
+        if domain and domain_status != "Success":
             logger.error(f"Domain {domain} is not verified in SES.")
             raise AWS_SESException(f"Domain {domain} is not verified in SES.")
 
@@ -127,13 +128,17 @@ class AWS_SES_Service:
     ) -> None:
         """
         Send an email using AWS SES.
-        Both the from_email and domain set in the messaging config must be verified in SES.
+        Either `email_from` or `domain` must be verified in SES.
         """
         self.validate_email_and_domain_status()
         ses_client = self.get_ses_client()
 
+        from_address = self.messaging_config_details.email_from
+        if not from_address and self.messaging_config_details.domain:
+            from_address = f"noreply@{self.messaging_config_details.domain}"
+
         ses_client.send_email(
-            Source=self.messaging_config_details.email_from,
+            Source=from_address,
             Destination={"ToAddresses": [to.strip()]},
             Message={
                 "Subject": {"Data": subject},

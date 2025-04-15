@@ -85,6 +85,44 @@ class TestAWS_SES_Service:
         )
 
     @patch("fides.service.messaging.aws_ses_service.AWS_SES_Service.get_ses_client")
+    def test_validate_email_and_domain_status_success_without_email_from(
+        self, mock_get_ses_client, aws_ses_service
+    ):
+        aws_ses_service.messaging_config_details.email_from = None
+        mock_client = MagicMock()
+        mock_get_ses_client.return_value = mock_client
+        mock_client.get_identity_verification_attributes.return_value = {
+            "VerificationAttributes": {
+                "example.com": {"VerificationStatus": "Success"},
+            }
+        }
+
+        aws_ses_service.validate_email_and_domain_status()
+
+        mock_client.get_identity_verification_attributes.assert_called_once_with(
+            Identities=["example.com"]
+        )
+
+    @patch("fides.service.messaging.aws_ses_service.AWS_SES_Service.get_ses_client")
+    def test_validate_email_and_domain_status_success_without_domain(
+        self, mock_get_ses_client, aws_ses_service
+    ):
+        aws_ses_service.messaging_config_details.domain = None
+        mock_client = MagicMock()
+        mock_get_ses_client.return_value = mock_client
+        mock_client.get_identity_verification_attributes.return_value = {
+            "VerificationAttributes": {
+                "test@example.com": {"VerificationStatus": "Success"},
+            }
+        }
+
+        aws_ses_service.validate_email_and_domain_status()
+
+        mock_client.get_identity_verification_attributes.assert_called_once_with(
+            Identities=["test@example.com"]
+        )
+
+    @patch("fides.service.messaging.aws_ses_service.AWS_SES_Service.get_ses_client")
     def test_validate_email_and_domain_email_status_failure(
         self, mock_get_ses_client, aws_ses_service
     ):
@@ -169,6 +207,34 @@ class TestAWS_SES_Service:
         mock_validate_email_and_domain_status.assert_called_once()
         mock_client.send_email.assert_called_once_with(
             Source="test@example.com",
+            Destination={"ToAddresses": ["recipient@example.com"]},
+            Message={
+                "Subject": {"Data": "Test Subject"},
+                "Body": {"Html": {"Data": "<p>Test Body</p>"}},
+            },
+        )
+
+    @patch("fides.service.messaging.aws_ses_service.AWS_SES_Service.get_ses_client")
+    @patch(
+        "fides.service.messaging.aws_ses_service.AWS_SES_Service.validate_email_and_domain_status"
+    )
+    def test_send_email_without_config_email_from(
+        self,
+        mock_validate_email_and_domain_status,
+        mock_get_ses_client,
+        aws_ses_service,
+    ):
+        aws_ses_service.messaging_config_details.email_from = None
+        mock_client = MagicMock()
+        mock_get_ses_client.return_value = mock_client
+
+        aws_ses_service.send_email(
+            to="recipient@example.com", subject="Test Subject", body="<p>Test Body</p>"
+        )
+
+        mock_validate_email_and_domain_status.assert_called_once()
+        mock_client.send_email.assert_called_once_with(
+            Source="noreply@example.com",
             Destination={"ToAddresses": ["recipient@example.com"]},
             Message={
                 "Subject": {"Data": "Test Subject"},
