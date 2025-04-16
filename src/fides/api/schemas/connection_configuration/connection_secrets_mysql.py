@@ -44,6 +44,7 @@ class MySQLSchema(ConnectionConfigSecretsSchema):
         None,  # TODO: support for verify-ca and verify-full
         title="SSL Mode",
         description="The SSL mode to use for the connection. Valid values are 'required', 'preferred', and 'disabled'.",
+        pattern=r"required|preferred|disabled",
     )
 
     _required_components: ClassVar[List[str]] = ["host", "dbname"]

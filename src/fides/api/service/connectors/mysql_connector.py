@@ -1,10 +1,9 @@
 import re
-from typing import List, Dict, Any
+from typing import Dict, List
 
 from sqlalchemy.engine import Engine, LegacyCursorResult, create_engine  # type: ignore
 
 from fides.api.graph.execution import ExecutionNode
-from fides.api.common_exceptions import ValidationError
 from fides.api.schemas.connection_configuration.connection_secrets_mysql import (
     MySQLSchema,
 )
@@ -82,18 +81,18 @@ class MySQLConnector(SQLConnector):
         """Query wrapper corresponding to the input execution_node."""
         return MySQLQueryConfig(node)
 
-    def get_connect_args(self) -> Dict[str, Any]:
+    def get_connect_args(self) -> Dict[str]:
         """Get connection arguments for the engine"""
         config = self.secrets_schema(**self.configuration.secrets or {})
-        sslmode = (
-            config.sslmode
-            if re.search(
-                r"required|preferred|disabled",
-                config.get("sslmode", "preferred"),
-                re.IGNORECASE,
+        sslmode = config.sslmode
+        if sslmode is None:
+            sslmode = "preferred"
+        else:
+            sslmode = (
+                sslmode
+                if re.search(r"required|preferred|disabled", sslmode, re.IGNORECASE)
+                else "preferred"
             )
-            else "preferred"
-        )
         return {
             "ssl": {
                 "mode": sslmode.lower(),
