@@ -24,12 +24,14 @@ interface AssetSystemCellProps {
   systemKey: string;
   systemName: string;
   asset: Asset;
+  readonly?: boolean;
 }
 
 const AssetSystemCell = ({
   systemKey,
   systemName,
   asset,
+  readonly,
 }: AssetSystemCellProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [updateParams, setUpdateParams] = useState<
@@ -74,6 +76,14 @@ const AssetSystemCell = ({
     setUpdateParams(params);
     confirmationModal.onOpen();
   };
+
+  if (readonly) {
+    return (
+      <Tag data-testid="system-badge" color="white">
+        {systemName}
+      </Tag>
+    );
+  }
 
   return (
     <>

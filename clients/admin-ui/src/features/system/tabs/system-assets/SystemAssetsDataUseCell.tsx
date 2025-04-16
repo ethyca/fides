@@ -14,9 +14,11 @@ import { isErrorResult } from "~/types/errors";
 const SystemAssetsDataUseCell = ({
   asset,
   systemId,
+  readonly,
 }: {
   asset: Asset;
   systemId: string;
+  readonly?: boolean;
 }) => {
   const { getDataUseDisplayName } = useTaxonomies();
   const [updateSystemAssets] = useUpdateSystemAssetsMutation();
@@ -63,6 +65,18 @@ const SystemAssetsDataUseCell = ({
         label: getDataUseDisplayName(use),
         key: use,
       })) ?? [];
+
+  if (readonly) {
+    return (
+      <TaxonomyCellContainer>
+        {cellValues.map((use) => (
+          <Tag key={use.key} data-testid={`data-use-${use.key}`} color="white">
+            {use.label}
+          </Tag>
+        ))}
+      </TaxonomyCellContainer>
+    );
+  }
 
   return (
     <TaxonomyCellContainer>
