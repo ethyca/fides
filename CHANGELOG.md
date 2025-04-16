@@ -19,12 +19,11 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - https://github.com/ethyca/fides/labels/high-risk: to indicate that a change is a "high-risk" change that could potentially lead to unanticipated regressions or degradations
 - https://github.com/ethyca/fides/labels/db-migration: to indicate that a given change includes a DB migration
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.59.0...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.59.1...main)
 
 ### Added
 - Added support for selecting TCF Publisher Override configuration when configuring Privacy Experience [#6033](https://github.com/ethyca/fides/pull/6033)
 - Added Google Cloud Storage as a storage option [#6006](https://github.com/ethyca/fides/pull/6006)
-- Adds embedded-consent route to Privacy Center [#6040](https://github.com/ethyca/fides/pull/6040)
 - Added sslmode field for MySQL connections [#6048](https://github.com/ethyca/fides/pull/6048)
 
 ### Changed
@@ -40,6 +39,12 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Fixed two Georgia's in regions list and incorrect name for the state SD [#6036](https://github.com/ethyca/fides/pull/6036)
 - Fixed Privacy Center issue where unconfigured fields (eg. phone) were being passed as null form values [#6045](https://github.com/ethyca/fides/pull/6045)
 - Fixed performance issues in Data map report in Admin UI [#6046](https://github.com/ethyca/fides/pull/6046)
+- Fixed details requirements in AWS SES setup [#6047](https://github.com/ethyca/fides/pull/6047)
+
+## [2.59.1](https://github.com/ethyca/fides/compare/2.59.0...2.59.1)
+
+### Added
+- Adds embedded-consent route to Privacy Center [#6040](https://github.com/ethyca/fides/pull/6040)
 
 ## [2.59.0](https://github.com/ethyca/fides/compare/2.58.2...2.59.0)
 
