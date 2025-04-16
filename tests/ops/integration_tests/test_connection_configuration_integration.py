@@ -352,6 +352,7 @@ class TestMySQLConnectionPutSecretsAPI:
             "password": "mysql_pw",
             "port": 3306,
             "ssh_required": False,
+            "sslmode": None,
         }
         assert connection_config_mysql.last_test_timestamp is not None
         assert connection_config_mysql.last_test_succeeded is True
