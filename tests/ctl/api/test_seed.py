@@ -1,7 +1,7 @@
 import io
 import os
 from textwrap import dedent
-from typing import Generator, List
+from typing import Generator
 from unittest.mock import patch
 
 import pytest

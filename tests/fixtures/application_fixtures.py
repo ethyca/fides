@@ -2321,14 +2321,20 @@ def privacy_notice(db: Session) -> Generator:
 
     yield privacy_notice
 
+    # Clean up cookie assets first
+    for cookie in cookie_assets:
+        try:
+            cookie.delete(db)
+        except ObjectDeletedError:
+            # Skip if already deleted
+            pass
+
     # Then clean up translations and histories
     for translation in privacy_notice.translations:
         for history in translation.histories:
             history.delete(db)
         translation.delete(db)
     privacy_notice.delete(db)
-    for cookie in cookie_assets:
-        cookie.delete(db)
 
 
 @pytest.fixture(scope="function")
