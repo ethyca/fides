@@ -2341,14 +2341,12 @@ def privacy_notice(db: Session) -> Generator:
 def served_notice_history(
     db: Session, privacy_notice, fides_user_provided_identity
 ) -> Generator:
-    # Get the first translation of the notice
-    notice_translation = privacy_notice.translations[0]
     pref_1 = ServedNoticeHistory.create(
         db=db,
         data={
             "acknowledge_mode": False,
             "serving_component": ServingComponent.overlay,
-            "privacy_notice_history_id": notice_translation.privacy_notice_history_id,
+            "privacy_notice_history_id": privacy_notice.privacy_notice_history_id,
             "email": "test@example.com",
             "hashed_email": ConsentIdentitiesMixin.hash_value("test@example.com"),
             "served_notice_history_id": "ser_12345",
@@ -3856,14 +3854,14 @@ def purpose_three_consent_publisher_override(db):
 def served_notice_history(
     db: Session, privacy_notice, fides_user_provided_identity
 ) -> Generator:
-    # Get the first translation of the notice
-    notice_translation = privacy_notice.translations[0]
     pref_1 = ServedNoticeHistory.create(
         db=db,
         data={
             "acknowledge_mode": False,
             "serving_component": ServingComponent.overlay,
-            "privacy_notice_history_id": notice_translation.privacy_notice_history_id,
+            "privacy_notice_history_id": privacy_notice.translations[
+                0
+            ].privacy_notice_history_id,
             "email": "test@example.com",
             "hashed_email": ConsentIdentitiesMixin.hash_value("test@example.com"),
             "served_notice_history_id": "ser_12345",
