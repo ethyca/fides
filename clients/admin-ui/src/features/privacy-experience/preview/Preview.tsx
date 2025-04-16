@@ -76,6 +76,7 @@ const Preview = ({
     PrivacyNoticeResponse[]
   >([]);
   const [fidesScriptLoaded, setFidesScriptLoaded] = useState(false);
+  const [previewMode, setPreviewMode] = useState<"standard" | "tcf">();
   const isPreviewAvailable = [
     ComponentType.BANNER_AND_MODAL,
     ComponentType.MODAL,
@@ -83,6 +84,38 @@ const Preview = ({
   ].includes(values.component);
 
   const { systemsCount } = useFeatures();
+
+  useEffect(() => {
+    if (
+      isPreviewAvailable &&
+      fidesScriptLoaded &&
+      window.FidesPreview &&
+      values.component &&
+      (values.privacy_notice_ids?.length ||
+        values.component === ComponentType.TCF_OVERLAY)
+    ) {
+      if (values.component === ComponentType.TCF_OVERLAY) {
+        window.FidesPreview("tcf");
+        setPreviewMode("tcf");
+      } else {
+        window.FidesPreview("standard");
+        setPreviewMode("standard");
+      }
+    } else if (window.FidesPreview) {
+      window.FidesPreview?.cleanup();
+    }
+
+    return () => {
+      // cleanup fides.js preview when the component unmounts so it doesn't continue to run on other pages
+      window.FidesPreview?.cleanup();
+    };
+  }, [
+    values.component,
+    fidesScriptLoaded,
+    isPreviewAvailable,
+    values.privacy_notice_ids?.length,
+    isNewExperience,
+  ]);
 
   useEffect(() => {
     if (initialValues && values.component && allPrivacyNotices) {
@@ -104,12 +137,6 @@ const Preview = ({
     initialValues,
   ]);
 
-  const memoizedFidesJsScript = useMemo(() => {
-    return values.component === ComponentType.TCF_OVERLAY
-      ? "/lib/fides-tcf.js"
-      : "/lib/fides.js";
-  }, [values.component]);
-
   const baseConfig = useMemo(() => {
     return values.component
       ? buildBaseConfig(
@@ -123,6 +150,7 @@ const Preview = ({
     if (
       !isPreviewAvailable ||
       !fidesScriptLoaded ||
+      !window.FidesPreview ||
       !window.Fides ||
       (!values.privacy_notice_ids?.length &&
         values.component !== ComponentType.TCF_OVERLAY)
@@ -181,6 +209,7 @@ const Preview = ({
     isPreviewAvailable,
     systemsCount,
     fidesScriptLoaded,
+    previewMode,
     values.privacy_notice_ids,
     values.component,
     values.translations,
@@ -366,17 +395,12 @@ const Preview = ({
       )}
       <Script
         id="fides-js-script"
-        src={memoizedFidesJsScript}
+        src="/api/fides-preview.js"
         onReady={() => {
-          if (!window.Fides.experience) {
-            if (isNewExperience) {
-              window.Fides?.init(baseConfig);
-            }
-            setFidesScriptLoaded(true);
-          }
+          setFidesScriptLoaded(true);
         }}
       />
-      <div id={PREVIEW_CONTAINER_ID} />
+      <div id={PREVIEW_CONTAINER_ID} key={values.component} />
     </Flex>
   );
 };
