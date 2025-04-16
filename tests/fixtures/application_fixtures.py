@@ -3853,7 +3853,9 @@ def served_notice_history(
         data={
             "acknowledge_mode": False,
             "serving_component": ServingComponent.overlay,
-            "privacy_notice_history_id": privacy_notice.privacy_notice_history_id,
+            "privacy_notice_history_id": privacy_notice.translations[
+                0
+            ].privacy_notice_history_id,
             "email": "test@example.com",
             "hashed_email": ConsentIdentitiesMixin.hash_value("test@example.com"),
             "served_notice_history_id": "ser_12345",
