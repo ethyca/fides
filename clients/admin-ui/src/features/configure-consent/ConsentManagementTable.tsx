@@ -207,18 +207,17 @@ export const ConsentManagementTable = () => {
         ),
         header: (props) => <DefaultHeaderCell value="Categories" {...props} />,
       }),
-      // TODO: uncomment when cookies are returned from the API
-      // columnHelper.accessor((row) => row.cookies, {
-      //   id: "cookies",
-      //   cell: (props) => (
-      //     <BadgeCellCount
-      //       plSuffix="cookies"
-      //       singSuffix="cookie"
-      //       count={props.getValue()}
-      //     />
-      //   ),
-      //   header: (props) => <DefaultHeaderCell value="Cookies" {...props} />,
-      // }),
+      columnHelper.accessor((row) => row.cookies, {
+        id: "cookies",
+        cell: (props) => (
+          <BadgeCellCount
+            plSuffix="cookies"
+            singSuffix="cookie"
+            count={props.getValue()}
+          />
+        ),
+        header: (props) => <DefaultHeaderCell value="Cookies" {...props} />,
+      }),
     ],
     [],
   );
@@ -232,7 +231,7 @@ export const ConsentManagementTable = () => {
         data_uses: isTcfEnabled,
         legal_bases: isTcfEnabled,
         consent_categories: !isTcfEnabled,
-        // cookies: !isTcfEnabled,
+        cookies: !isTcfEnabled,
       },
     },
     getCoreRowModel: getCoreRowModel(),
