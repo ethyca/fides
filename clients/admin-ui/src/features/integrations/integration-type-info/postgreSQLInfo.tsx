@@ -9,8 +9,8 @@ import ShowMoreContent from "~/features/common/copy/ShowMoreContent";
 import { ConnectionCategory } from "~/features/integrations/ConnectionCategory";
 import { AccessLevel, ConnectionType } from "~/types/api";
 
-export const RDS_POSTGRES_PLACEHOLDER = {
-  name: "Amazon Postgres",
+export const POSTGRES_PLACEHOLDER = {
+  name: "Postgres",
   key: "postgres_placeholder",
   connection_type: ConnectionType.POSTGRES,
   access: AccessLevel.READ,
@@ -56,7 +56,7 @@ export const PostgresOverview = () => (
 );
 
 const POSTGRES_TYPE_INFO = {
-  placeholder: RDS_POSTGRES_PLACEHOLDER,
+  placeholder: POSTGRES_PLACEHOLDER,
   category: ConnectionCategory.DATABASE,
   overview: <PostgresOverview />,
   tags: POSTGRES_TAGS,
