@@ -125,6 +125,8 @@ def pytest_ops(
                 *OPS_API_TEST_DIRS,
                 "-m",
                 "not integration and not integration_external and not integration_saas",
+                "-n",
+                "8",
             )
         elif subset_dir == "non-api":
             ignore_args = [f"--ignore={dir}" for dir in OPS_API_TEST_DIRS]

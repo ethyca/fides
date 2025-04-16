@@ -1928,7 +1928,7 @@ async def default_taxonomy(async_session):
     await load_default_taxonomy(async_session)
 
 
-@pytest.fixture(autouse=True)
+@pytest.fixture(scope="function", autouse=True)
 async def clear_db_tables(db, async_session):
     """Clear data from tables between tests.
 
@@ -1982,3 +1982,28 @@ def monkeypatch_requests(test_client, monkeysession) -> None:
     monkeysession.setattr(requests, "put", test_client.put)
     monkeysession.setattr(requests, "patch", test_client.patch)
     monkeysession.setattr(requests, "delete", test_client.delete)
+
+
+def pytest_configure_node(node):
+    """Pytest hook automatically called for each xdist worker node configuration."""
+    if hasattr(node, "workerinput") and node.workerinput:
+        worker_id = node.workerinput["workerid"]
+        print(
+            f"[Configure Node] Configuring database and config for worker {worker_id}..."
+        )
+
+        os.environ["FIDES__DATABASE__TEST_DB"] = f"fides_test_{worker_id}"
+
+        get_config.cache_clear()
+        fides_config = get_config()
+        sync_db_uri = fides_config.database.sqlalchemy_test_database_uri
+        async_db_uri = fides_config.database.async_database_uri
+
+        # Log connection strings
+        print(
+            f"[Configure Node] Sync DB URI: {sync_db_uri} Async DB URI: {async_db_uri}"
+        )
+    else:
+        print(
+            "[Configure Node] Skipping DB setup/config update on single node or non-xdist run."
+        )
