@@ -96,6 +96,7 @@ const ScrollableListItem = <T extends unknown>({
             icon={<Icons.TrashCan />}
             size="small"
             className="invisible absolute right-2 bg-white group-hover:visible"
+            data-testid={`delete-${rowTestId}`}
           />
         )}
         {onEditItem && (
@@ -105,6 +106,7 @@ const ScrollableListItem = <T extends unknown>({
             icon={<Icons.Edit />}
             size="small"
             className="invisible absolute right-2 bg-white group-hover:visible"
+            data-testid={`edit-${rowTestId}`}
           />
         )}
       </Flex>
@@ -245,6 +247,9 @@ const ScrollableList = <T extends unknown>({
     setValues([newValue, ...values.slice()]);
     if (selectOnAdd && onRowClick) {
       onRowClick(newValue);
+    }
+    if (selectOnAdd && onEditItem) {
+      onEditItem(newValue);
     }
   };
 
