@@ -450,7 +450,7 @@ export const PrivacyExperienceForm = ({
             createNewValue={(opt) =>
               onCreateTranslation(opt.value as SupportedLanguage)
             }
-            onRowClick={onSelectTranslation}
+            onEditItem={onSelectTranslation}
             selectOnAdd
             draggable
             baseTestId="language"

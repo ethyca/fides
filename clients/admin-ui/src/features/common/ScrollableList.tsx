@@ -3,9 +3,9 @@ import {
   AntSelect as Select,
   Box,
   ChakraProps,
-  DeleteIcon,
   DragHandleIcon,
   Flex,
+  Icons,
   List,
   SmallAddIcon,
   Text,
@@ -21,6 +21,7 @@ const ScrollableListItem = <T extends unknown>({
   label,
   draggable,
   onDeleteItem,
+  onEditItem,
   tooltip,
   onRowClick,
   maxH = 10,
@@ -30,6 +31,7 @@ const ScrollableListItem = <T extends unknown>({
   label: string;
   draggable?: boolean;
   onDeleteItem?: (item: T) => void;
+  onEditItem?: (item: T) => void;
   tooltip?: string;
   onRowClick?: (item: T) => void;
   maxH?: number;
@@ -91,7 +93,16 @@ const ScrollableListItem = <T extends unknown>({
           <Button
             aria-label="Delete"
             onClick={() => onDeleteItem(item)}
-            icon={<DeleteIcon boxSize={3} />}
+            icon={<Icons.TrashCan />}
+            size="small"
+            className="invisible absolute right-2 bg-white group-hover:visible"
+          />
+        )}
+        {onEditItem && (
+          <Button
+            aria-label="Edit"
+            onClick={() => onEditItem(item)}
+            icon={<Icons.Edit />}
             size="small"
             className="invisible absolute right-2 bg-white group-hover:visible"
           />
@@ -162,6 +173,7 @@ const ScrollableList = <T extends unknown>({
   canDeleteItem,
   getTooltip,
   onRowClick,
+  onEditItem,
   selectOnAdd,
   getItemLabel,
   createNewValue,
@@ -180,6 +192,7 @@ const ScrollableList = <T extends unknown>({
   canDeleteItem?: (item: T) => boolean;
   getTooltip?: (item: T) => string | undefined;
   onRowClick?: (item: T) => void;
+  onEditItem?: (item: T) => void;
   selectOnAdd?: boolean;
   getItemLabel?: (item: T) => string;
   createNewValue?: (opt: Option) => T;
@@ -262,6 +275,7 @@ const ScrollableList = <T extends unknown>({
                   ? handleDeleteItem
                   : undefined
               }
+              onEditItem={onEditItem}
               onRowClick={onRowClick}
               draggable
               maxH={maxHeight}
