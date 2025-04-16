@@ -58,6 +58,7 @@ class MySQLConnector(SQLConnector):
     # Overrides SQLConnector.create_client
     def create_client(self) -> Engine:
         """Returns a SQLAlchemy Engine that can be used to interact with a database"""
+        connect_args = self.get_connect_args()
         if (
             self.configuration.secrets
             and self.configuration.secrets.get("ssh_required", False)
@@ -73,7 +74,7 @@ class MySQLConnector(SQLConnector):
             uri,
             hide_parameters=self.hide_parameters,
             echo=not self.hide_parameters,
-            connect_args=self.get_connect_args(),
+            connect_args=connect_args,
         )
 
     def query_config(self, node: ExecutionNode) -> SQLQueryConfig:
