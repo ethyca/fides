@@ -64,7 +64,7 @@ def build_user_consent_and_filtered_preferences_for_service(
     session: Session,
     is_notice_based: bool = False,
 ) -> Tuple[
-    Optional[Union[bool, Dict[str, UserConsentPreference]]],
+    Optional[Union[bool, Dict[str, Dict[str, Any]]]],
     List[PrivacyPreferenceHistory],
 ]:
     """
@@ -109,7 +109,7 @@ def build_user_consent_and_filtered_preferences_for_service(
 
     # 1. NOTICE-BASED WORKFLOW
     if is_notice_based:
-        notice_id_to_preference_map: Dict[str, UserConsentPreference] = {}
+        notice_preference_map: Dict[str, Dict[str, Any]] = {}
         # retrieve notices from the DB if they are associated with a relevant preference
         notices_with_preference: Query = session.query(PrivacyNotice).filter(
             PrivacyNotice.notice_key.in_(
@@ -125,10 +125,16 @@ def build_user_consent_and_filtered_preferences_for_service(
             ]
             # we only expect max 1 preference in this list
             if preference and preference[0]:
-                notice_id_to_preference_map[notice.id] = preference[0].preference  # type: ignore[assignment]
+                notice_preference_map[notice.id] = {
+                    "preference": preference[0].preference,
+                    "notice_key": notice.notice_key,
+                }
                 filtered_preferences.append(preference[0])
 
-        return notice_id_to_preference_map, filtered_preferences
+        return (
+            notice_preference_map,
+            filtered_preferences,
+        )
 
     # 2. GLOBAL (OPT-IN/OUT) WORKFLOW
     preference_to_propagate: UserConsentPreference = (
