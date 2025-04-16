@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.59.1"
+    "version": "2.59.2b0.post0.dev1"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -10128,7 +10128,15 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/StorageSecretsS3Docs"
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/StorageSecretsS3Docs"
+                  },
+                  {
+                    "$ref": "#/components/schemas/StorageSecretsGCSDocs"
+                  }
+                ],
+                "title": "Unvalidated Storage Secrets"
               }
             }
           }
@@ -10468,7 +10476,15 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/StorageSecretsS3Docs"
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/StorageSecretsS3Docs"
+                  },
+                  {
+                    "$ref": "#/components/schemas/StorageSecretsGCSDocs"
+                  }
+                ],
+                "title": "Unvalidated Storage Secrets"
               }
             }
           }
@@ -17074,12 +17090,12 @@
             "type": "string",
             "minLength": 1,
             "format": "uri",
-            "title": "DataHub Server URL",
+            "title": "DataHub server URL",
             "description": "The URL of your DataHub server."
           },
           "datahub_token": {
             "type": "string",
-            "title": "DataHub Token",
+            "title": "DataHub token",
             "description": "The token used to authenticate with your DataHub server.",
             "sensitive": true
           },
@@ -17094,7 +17110,7 @@
           },
           "glossary_node": {
             "type": "string",
-            "title": "Glossary Node",
+            "title": "Glossary node",
             "description": "The glossary node name to use on Datahub for Fides Data Categories. (e.g. FidesDataCategories)"
           }
         },
@@ -18676,6 +18692,14 @@
         "title": "FilteredPrivacyRequestResults",
         "description": "Schema representing the status and results of a test privacy request"
       },
+      "GCSAuthMethod": {
+        "type": "string",
+        "enum": [
+          "adc",
+          "service_account_keys"
+        ],
+        "title": "GCSAuthMethod"
+      },
       "Generate": {
         "properties": {
           "config": {
@@ -19740,11 +19764,25 @@
       "MessagingServiceDetailsAWS_SES": {
         "properties": {
           "email_from": {
-            "type": "string",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Email From"
           },
           "domain": {
-            "type": "string",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Domain"
           },
           "aws_region": {
@@ -19755,8 +19793,6 @@
         "additionalProperties": false,
         "type": "object",
         "required": [
-          "email_from",
-          "domain",
           "aws_region"
         ],
         "title": "MessagingServiceDetailsAWS_SES",
@@ -21911,8 +21947,21 @@
             "description": "The password used to authenticate and access the database.",
             "sensitive": true
           },
+          "ssh_required": {
+            "type": "boolean",
+            "title": "SSH required",
+            "description": "Indicates whether an SSH tunnel is required for the connection. Enable this option if your PostgreSQL server is behind a firewall and requires SSH tunneling for remote connections.",
+            "default": false
+          },
           "dbname": {
-            "type": "string",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Database",
             "description": "The name of the specific database within the database server that you want to connect to."
           },
@@ -21927,18 +21976,11 @@
             ],
             "title": "Schema",
             "description": "The default schema to be used for the database connection (defaults to public)."
-          },
-          "ssh_required": {
-            "type": "boolean",
-            "title": "SSH required",
-            "description": "Indicates whether an SSH tunnel is required for the connection. Enable this option if your PostgreSQL server is behind a firewall and requires SSH tunneling for remote connections.",
-            "default": false
           }
         },
         "type": "object",
         "required": [
-          "host",
-          "dbname"
+          "host"
         ],
         "title": "PostgreSQLDocsSchema",
         "description": "Postgres Secrets Schema for API Docs"
@@ -25522,6 +25564,9 @@
                 "$ref": "#/components/schemas/StorageDetailsS3"
               },
               {
+                "$ref": "#/components/schemas/StorageDetailsGCS"
+              },
+              {
                 "$ref": "#/components/schemas/StorageDetailsLocal"
               }
             ],
@@ -25573,6 +25618,9 @@
             "anyOf": [
               {
                 "$ref": "#/components/schemas/StorageDetailsS3"
+              },
+              {
+                "$ref": "#/components/schemas/StorageDetailsGCS"
               },
               {
                 "$ref": "#/components/schemas/StorageDetailsLocal"
@@ -25651,6 +25699,42 @@
         "title": "StorageDetails",
         "description": "Enum for storage detail keys"
       },
+      "StorageDetailsGCS": {
+        "properties": {
+          "naming": {
+            "type": "string",
+            "title": "Naming",
+            "default": "request_id"
+          },
+          "auth_method": {
+            "$ref": "#/components/schemas/GCSAuthMethod"
+          },
+          "bucket": {
+            "type": "string",
+            "title": "Bucket"
+          },
+          "max_retries": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Retries",
+            "default": 0
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "auth_method",
+          "bucket"
+        ],
+        "title": "StorageDetailsGCS",
+        "description": "The details required to represent a Google Cloud Storage bucket."
+      },
       "StorageDetailsLocal": {
         "properties": {
           "naming": {
@@ -25700,6 +25784,71 @@
         "title": "StorageDetailsS3",
         "description": "The details required to represent an AWS S3 storage bucket."
       },
+      "StorageSecretsGCSDocs": {
+        "properties": {
+          "type": {
+            "type": "string",
+            "title": "Type",
+            "default": "service_account"
+          },
+          "project_id": {
+            "type": "string",
+            "title": "Project Id"
+          },
+          "private_key_id": {
+            "type": "string",
+            "title": "Private Key Id"
+          },
+          "private_key": {
+            "type": "string",
+            "title": "Private Key"
+          },
+          "client_email": {
+            "type": "string",
+            "title": "Client Email"
+          },
+          "client_id": {
+            "type": "string",
+            "title": "Client Id"
+          },
+          "auth_uri": {
+            "type": "string",
+            "title": "Auth Uri"
+          },
+          "token_uri": {
+            "type": "string",
+            "title": "Token Uri"
+          },
+          "auth_provider_x509_cert_url": {
+            "type": "string",
+            "title": "Auth Provider X509 Cert Url"
+          },
+          "client_x509_cert_url": {
+            "type": "string",
+            "title": "Client X509 Cert Url"
+          },
+          "universe_domain": {
+            "type": "string",
+            "title": "Universe Domain"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "project_id",
+          "private_key_id",
+          "private_key",
+          "client_email",
+          "client_id",
+          "auth_uri",
+          "token_uri",
+          "auth_provider_x509_cert_url",
+          "client_x509_cert_url",
+          "universe_domain"
+        ],
+        "title": "StorageSecretsGCSDocs",
+        "description": "The secrets required to connect to Google Cloud Storage, for documentation"
+      },
       "StorageSecretsS3Docs": {
         "properties": {
           "aws_access_key_id": {
@@ -25736,6 +25885,7 @@
         "type": "string",
         "enum": [
           "s3",
+          "gcs",
           "local"
         ],
         "title": "StorageTypeApiAccepted",
@@ -26842,8 +26992,21 @@
             "description": "The password used to authenticate and access the database.",
             "sensitive": true
           },
+          "ssh_required": {
+            "type": "boolean",
+            "title": "SSH required",
+            "description": "Indicates whether an SSH tunnel is required for the connection. Enable this option if your PostgreSQL server is behind a firewall and requires SSH tunneling for remote connections.",
+            "default": false
+          },
           "dbname": {
-            "type": "string",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Database",
             "description": "The name of the specific database within the database server that you want to connect to."
           },
@@ -26858,18 +27021,11 @@
             ],
             "title": "Schema",
             "description": "The default schema to be used for the database connection (defaults to public)."
-          },
-          "ssh_required": {
-            "type": "boolean",
-            "title": "SSH required",
-            "description": "Indicates whether an SSH tunnel is required for the connection. Enable this option if your PostgreSQL server is behind a firewall and requires SSH tunneling for remote connections.",
-            "default": false
           }
         },
         "type": "object",
         "required": [
-          "host",
-          "dbname"
+          "host"
         ],
         "title": "TimescaleDocsSchema",
         "description": "TimescaleDB Secrets Schema for API Docs"
