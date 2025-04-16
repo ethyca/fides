@@ -190,11 +190,16 @@ const Preview = ({
   }
 
   if (!isPreviewAvailable) {
+    const componentName = COMPONENT_MAP.get(values.component);
     return (
       <NoPreviewNotice
-        title={`${COMPONENT_MAP.get(values.component)} preview not available`}
-        description={`There is no preview available for ${COMPONENT_MAP.get(values.component)}. You can edit the available settings
-    and languages to the left.`}
+        title={
+          componentName
+            ? `${componentName} preview not available`
+            : "Preview not available"
+        }
+        description={`There is no preview available for ${componentName || "this component"}. You can edit the available settings
+      and languages to the left.`}
       />
     );
   }
