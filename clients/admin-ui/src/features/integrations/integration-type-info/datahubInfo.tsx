@@ -46,7 +46,10 @@ export const DatahubOverview = () => (
       </InfoUnorderedList>
       <InfoHeading text="Permissions" />
       <InfoUnorderedList>
-        <ListItem>Placeholder</ListItem>
+        <ListItem>
+          The related user to the access token must have at least the Editor
+          role on DataHub.
+        </ListItem>
       </InfoUnorderedList>
     </ShowMoreContent>
   </>
