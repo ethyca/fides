@@ -2321,14 +2321,20 @@ def privacy_notice(db: Session) -> Generator:
 
     yield privacy_notice
 
+    # Clean up cookie assets first
+    for cookie in cookie_assets:
+        try:
+            cookie.delete(db)
+        except ObjectDeletedError:
+            # Skip if already deleted
+            pass
+
     # Then clean up translations and histories
     for translation in privacy_notice.translations:
         for history in translation.histories:
             history.delete(db)
         translation.delete(db)
     privacy_notice.delete(db)
-    for cookie in cookie_assets:
-        cookie.delete(db)
 
 
 @pytest.fixture(scope="function")
@@ -3853,9 +3859,7 @@ def served_notice_history(
         data={
             "acknowledge_mode": False,
             "serving_component": ServingComponent.overlay,
-            "privacy_notice_history_id": privacy_notice.translations[
-                0
-            ].privacy_notice_history_id,
+            "privacy_notice_history_id": privacy_notice.privacy_notice_history_id,
             "email": "test@example.com",
             "hashed_email": ConsentIdentitiesMixin.hash_value("test@example.com"),
             "served_notice_history_id": "ser_12345",
