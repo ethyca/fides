@@ -43,7 +43,7 @@ export const GlobalFilterV2 = ({
           onChange(changeValue);
         }}
         onClear={onClear}
-        search={value || ""}
+        value={value || ""}
         placeholder={placeholder}
         data-testid={testid}
       />
