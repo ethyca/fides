@@ -55,7 +55,6 @@ const PrivacyDeclarationStep = ({ system }: Props) => {
         <PrivacyDeclarationFormTab
           system={system}
           includeCustomFields
-          includeCookies
           {...filteredDataProps}
         />
       )}

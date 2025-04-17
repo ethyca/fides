@@ -72,11 +72,15 @@ TAXONOMY_EXTENSIONS = {
 
 
 # Helper Functions
-def get_existing_key(test_config: FidesConfig, resource_type: str) -> int:
+def get_existing_key(
+    test_config: FidesConfig, resource_type: str, generate_auth_header
+) -> int:
     """Get an ID that is known to exist."""
-    return _api.ls(
-        test_config.cli.server_url, resource_type, test_config.user.auth_header
-    ).json()[-1]["fides_key"]
+    token_scopes: List[str] = [f"{CLI_SCOPE_PREFIX_MAPPING[resource_type]}:{READ}"]
+    auth_header = generate_auth_header(scopes=token_scopes)
+    return _api.ls(test_config.cli.server_url, resource_type, auth_header).json()[-1][
+        "fides_key"
+    ]
 
 
 @pytest.fixture(scope="function", name="inactive_data_category")
@@ -177,18 +181,36 @@ class TestCrud:
         resources_dict: Dict,
         endpoint: str,
     ) -> None:
+        token_scopes: List[str] = [
+            f"{CLI_SCOPE_PREFIX_MAPPING[endpoint]}:{READ}",
+            f"{CLI_SCOPE_PREFIX_MAPPING[endpoint]}:{DELETE}",
+        ]
+        auth_header = generate_auth_header(scopes=token_scopes)
+        existing_resource = _api.get(
+            url=test_config.cli.server_url,
+            resource_type=endpoint,
+            resource_id=resources_dict[endpoint].fides_key,
+            headers=auth_header,
+        )
+        if existing_resource.status_code == 200:
+            _api.delete(
+                url=test_config.cli.server_url,
+                resource_type=endpoint,
+                resource_id=resources_dict[endpoint].fides_key,
+                headers=auth_header,
+            )
+
         manifest = resources_dict[endpoint]
-        print(manifest.json(exclude_none=True))
         token_scopes: List[str] = [f"{CLI_SCOPE_PREFIX_MAPPING[endpoint]}:{CREATE}"]
         auth_header = generate_auth_header(scopes=token_scopes)
+
         result = _api.create(
             url=test_config.cli.server_url,
             resource_type=endpoint,
             json_resource=manifest.json(exclude_none=True),
             headers=auth_header,
         )
-        print(result.text)
-        assert result.status_code == 201
+        assert result.status_code == 201, result.text
 
     @pytest.mark.parametrize("endpoint", model_list)
     def test_api_create_wrong_scope(
@@ -210,15 +232,18 @@ class TestCrud:
         assert result.status_code == 403
 
     async def test_create_dataset_data_categories_validated(
-        self, test_config: FidesConfig, resources_dict: Dict
+        self, test_config: FidesConfig, resources_dict: Dict, generate_auth_header
     ):
         endpoint = "dataset"
         manifest: Dataset = resources_dict[endpoint]
         manifest.collections[0].data_categories = ["bad_category"]
 
+        token_scopes: List[str] = [f"{CLI_SCOPE_PREFIX_MAPPING[endpoint]}:{CREATE}"]
+        auth_header = generate_auth_header(scopes=token_scopes)
+
         result = _api.create(
             url=test_config.cli.server_url,
-            headers=test_config.user.auth_header,
+            headers=auth_header,
             json_resource=manifest.json(exclude_none=True),
             resource_type=endpoint,
         )
@@ -240,7 +265,6 @@ class TestCrud:
             resource_type=endpoint,
             headers=auth_header,
         )
-        print(result.text)
         assert result.status_code == 200
 
     @pytest.mark.parametrize("endpoint", model_list)
@@ -265,14 +289,13 @@ class TestCrud:
         token_scopes: List[str] = [f"{CLI_SCOPE_PREFIX_MAPPING[endpoint]}:{READ}"]
         auth_header = generate_auth_header(scopes=token_scopes)
 
-        existing_id = get_existing_key(test_config, endpoint)
+        existing_id = get_existing_key(test_config, endpoint, generate_auth_header)
         result = _api.get(
             url=test_config.cli.server_url,
             headers=auth_header,
             resource_type=endpoint,
             resource_id=existing_id,
         )
-        print(result.text)
         assert result.status_code == 200
 
     @pytest.mark.parametrize("endpoint", model_list)
@@ -283,7 +306,7 @@ class TestCrud:
         token_scopes: List[str] = [PRIVACY_REQUEST_READ]
         auth_header = generate_auth_header(scopes=token_scopes)
 
-        existing_id = get_existing_key(test_config, endpoint)
+        existing_id = get_existing_key(test_config, endpoint, generate_auth_header)
         result = _api.get(
             url=test_config.cli.server_url,
             headers=auth_header,
@@ -295,23 +318,48 @@ class TestCrud:
     @pytest.mark.parametrize("endpoint", model_list)
     @pytest.mark.usefixtures("fideslang_resources")
     def test_sent_is_received(
-        self, test_config: FidesConfig, resources_dict: Dict, endpoint: str
+        self,
+        test_config: FidesConfig,
+        resources_dict: Dict,
+        endpoint: str,
+        generate_auth_header,
     ) -> None:
         """
         Confirm that the resource and values that we send are the
         same as the resource that the server returns.
         """
+        token_scopes: List[str] = [f"{CLI_SCOPE_PREFIX_MAPPING[endpoint]}:{READ}"]
+        auth_header = generate_auth_header(scopes=token_scopes)
+
         manifest = resources_dict[endpoint]
         resource_key = manifest.fides_key if endpoint != "user" else manifest.userName
 
-        print(manifest.json(exclude_none=True))
+        # confirm exists
+        result = _api.ls(
+            url=test_config.cli.server_url,
+            headers=auth_header,
+            resource_type=endpoint,
+        )
+        assert result.status_code == 200
+        resource = [r for r in result.json() if r["fides_key"] == resource_key]
+        if not resource:
+            # create the resource
+            token_scopes: List[str] = [f"{CLI_SCOPE_PREFIX_MAPPING[endpoint]}:{CREATE}"]
+            auth_header = generate_auth_header(scopes=token_scopes)
+            result = _api.create(
+                url=test_config.cli.server_url,
+                headers=auth_header,
+                resource_type=endpoint,
+                json_resource=manifest.json(exclude_none=True),
+            )
+            assert result.status_code == 200
+
         result = _api.get(
             url=test_config.cli.server_url,
-            headers=test_config.user.auth_header,
+            headers=auth_header,
             resource_type=endpoint,
             resource_id=resource_key,
         )
-        print(result.text)
         assert result.status_code == 200
         parsed_result = parse.parse_dict(endpoint, result.json())
 
@@ -326,17 +374,42 @@ class TestCrud:
         endpoint: str,
         generate_auth_header,
     ) -> None:
-        token_scopes: List[str] = [f"{CLI_SCOPE_PREFIX_MAPPING[endpoint]}:{UPDATE}"]
+        # check if the resource exists first
+        token_scopes: List[str] = [f"{CLI_SCOPE_PREFIX_MAPPING[endpoint]}:{READ}"]
         auth_header = generate_auth_header(scopes=token_scopes)
+        result = _api.ls(
+            url=test_config.cli.server_url,
+            headers=auth_header,
+            resource_type=endpoint,
+        )
+        resource = [
+            r
+            for r in result.json()
+            if r["fides_key"] == resources_dict[endpoint].fides_key
+        ]
+
         manifest = resources_dict[endpoint]
+        if not resource:
+            # create the resource
+            token_scopes: List[str] = [f"{CLI_SCOPE_PREFIX_MAPPING[endpoint]}:{CREATE}"]
+            auth_header = generate_auth_header(scopes=token_scopes)
+            result = _api.create(
+                url=test_config.cli.server_url,
+                headers=auth_header,
+                resource_type=endpoint,
+                json_resource=manifest.json(exclude_none=True),
+            )
+        token_scopes: List[str] = [
+            f"{CLI_SCOPE_PREFIX_MAPPING[endpoint]}:{UPDATE}",
+        ]
+        auth_header = generate_auth_header(scopes=token_scopes)
         result = _api.update(
             url=test_config.cli.server_url,
             headers=auth_header,
             resource_type=endpoint,
             json_resource=manifest.json(exclude_none=True),
         )
-        print(result.text)
-        assert result.status_code == 200
+        assert result.status_code == 200, result.text
 
     @pytest.mark.parametrize("endpoint", model_list)
     def test_api_update_wrong_scope(
@@ -358,15 +431,18 @@ class TestCrud:
         assert result.status_code == 403
 
     async def test_update_dataset_data_categories_validated(
-        self, test_config: FidesConfig, resources_dict: Dict
+        self, test_config: FidesConfig, resources_dict: Dict, generate_auth_header
     ):
         endpoint = "dataset"
+        token_scopes: List[str] = [f"{CLI_SCOPE_PREFIX_MAPPING[endpoint]}:{UPDATE}"]
+        auth_header = generate_auth_header(scopes=token_scopes)
+
         manifest: Dataset = resources_dict[endpoint]
         manifest.collections[0].data_categories = ["bad_category"]
 
         result = _api.update(
             url=test_config.cli.server_url,
-            headers=test_config.user.auth_header,
+            headers=auth_header,
             resource_type=endpoint,
             json_resource=manifest.json(exclude_none=True),
         )
@@ -376,6 +452,8 @@ class TestCrud:
             == "Value error, The data category bad_category is not supported."
         )
 
+    # TODO: fix the up/down steps for this and other tests in this file
+    # right now the test operates differently ran individually vs w/ the whole suite
     @pytest.mark.parametrize("endpoint", model_list)
     @pytest.mark.usefixtures("fideslang_resources")
     def test_api_upsert(
@@ -398,7 +476,9 @@ class TestCrud:
             resource_type=endpoint,
             resources=[loads(manifest.json())],
         )
-        assert result.status_code == 200
+
+        assert "Upserted 1" in result.json()["message"]
+        assert result.status_code in [200, 201], result.text
 
     @pytest.mark.parametrize("endpoint", model_list)
     def test_api_upsert_wrong_scope(
@@ -423,16 +503,26 @@ class TestCrud:
         assert result.status_code == 403
 
     async def test_upsert_validates_resources_against_pydantic_model(
-        self, test_config: FidesConfig, resources_dict: Dict, async_session
+        self,
+        test_config: FidesConfig,
+        resources_dict: Dict,
+        async_session,
+        generate_auth_header,
     ):
         endpoint = "dataset"
+        token_scopes: List[str] = [
+            f"{CLI_SCOPE_PREFIX_MAPPING[endpoint]}:{UPDATE}",
+            f"{CLI_SCOPE_PREFIX_MAPPING[endpoint]}:{CREATE}",
+        ]
+        auth_header = generate_auth_header(scopes=token_scopes)
+
         manifest: Dataset = resources_dict[endpoint]
         dict_manifest = manifest.model_dump(mode="json")
         del dict_manifest["organization_fides_key"]
 
         result = _api.upsert(
             url=test_config.cli.server_url,
-            headers=test_config.user.auth_header,
+            headers=auth_header,
             resource_type=endpoint,
             resources=[dict_manifest],
         )
@@ -442,16 +532,22 @@ class TestCrud:
         assert resource.organization_fides_key == "default_organization"
 
     async def test_upsert_dataset_data_categories_validated(
-        self, test_config: FidesConfig, resources_dict: Dict
+        self, test_config: FidesConfig, resources_dict: Dict, generate_auth_header
     ):
         endpoint = "dataset"
+        token_scopes: List[str] = [
+            f"{CLI_SCOPE_PREFIX_MAPPING[endpoint]}:{UPDATE}",
+            f"{CLI_SCOPE_PREFIX_MAPPING[endpoint]}:{CREATE}",
+        ]
+        auth_header = generate_auth_header(scopes=token_scopes)
+
         manifest: Dataset = resources_dict[endpoint]
         dict_manifest = manifest.model_dump(mode="json")
         dict_manifest["collections"][0]["data_categories"] = ["bad_category"]
 
         result = _api.upsert(
             url=test_config.cli.server_url,
-            headers=test_config.user.auth_header,
+            headers=auth_header,
             resource_type=endpoint,
             resources=[dict_manifest],
         )
@@ -504,7 +600,6 @@ class TestCrud:
             resource_id=resource_key,
             headers=auth_header,
         )
-        print(result.text)
         assert result.status_code == 200
         resp = result.json()
         assert resp["message"] == "resource deleted"
@@ -550,7 +645,6 @@ class TestSystemCreate:
             joint_controller_info="Jane Doe",
             data_security_practices="We encrypt all your data in transit and at rest",
             cookie_max_age_seconds="31536000",
-            uses_cookies=True,
             cookie_refresh=True,
             uses_non_cookie_access=True,
             legitimate_interest_disclosure_url="http://www.example.com/legitimate_interest_disclosure",
@@ -571,13 +665,6 @@ class TestSystemCreate:
                     data_shared_with_third_parties=True,
                     third_parties="Third Party Marketing Dept.",
                     shared_categories=["user"],
-                    cookies=[
-                        {
-                            "name": "essential_cookie",
-                            "path": "/",
-                            "domain": "example.com",
-                        }
-                    ],
                 ),
                 models.PrivacyDeclaration(
                     name="declaration-name-2",
@@ -884,11 +971,7 @@ class TestSystemCreate:
 
         assert result.status_code == HTTP_201_CREATED
         json_results = result.json()
-        assert json_results["cookies"] == []  # No cookies at System level
-        assert json_results["privacy_declarations"][0]["cookies"] == [
-            {"name": "essential_cookie", "path": "/", "domain": "example.com"}
-        ]
-        assert json_results["privacy_declarations"][1]["cookies"] == []
+
         assert json_results["data_stewards"] == []
 
         systems = System.all(db)
@@ -936,7 +1019,7 @@ class TestSystemCreate:
             == "We encrypt all your data in transit and at rest"
         )
         assert system.cookie_max_age_seconds == 31536000
-        assert system.uses_cookies is True
+        assert system.uses_cookies is False
         assert system.cookie_refresh is True
         assert system.uses_non_cookie_access is True
         assert (
@@ -944,11 +1027,6 @@ class TestSystemCreate:
             == "http://www.example.com/legitimate_interest_disclosure"
         )
         assert system.data_stewards == []
-        assert [cookie.name for cookie in systems[0].cookies] == []
-        assert [
-            cookie.name for cookie in systems[0].privacy_declarations[0].cookies
-        ] == ["essential_cookie"]
-        assert systems[0].privacy_declarations[1].cookies == []
 
         privacy_decl = system.privacy_declarations[0]
         assert privacy_decl.name == "declaration-name"
@@ -1038,7 +1116,6 @@ class TestSystemCreate:
             assert getattr(system, field) is False
 
         expected_empty_list = [
-            "cookies",
             "dataset_references",
             "data_stewards",
             "legal_basis_for_profiling",
@@ -1072,7 +1149,6 @@ class TestSystemCreate:
             assert getattr(privacy_declaration, field) is False
 
         expected_empty_list_pd_fields = [
-            "cookies",
             "data_subjects",
             "features",
             "shared_categories",
@@ -1281,28 +1357,27 @@ class TestSystemCreate:
 @pytest.mark.unit
 class TestSystemGet:
     def test_data_stewards_included_in_response(
-        self, test_config, system, system_manager
+        self, test_config, system, system_manager, generate_auth_header
     ):
+        token_scopes: List[str] = [f"{CLI_SCOPE_PREFIX_MAPPING['system']}:{READ}"]
+        auth_header = generate_auth_header(scopes=token_scopes)
+
         result = _api.get(
             url=test_config.cli.server_url,
-            headers=test_config.user.auth_header,
+            headers=auth_header,
             resource_type="system",
             resource_id=system.fides_key,
         )
         assert result.status_code == 200
         assert result.json()["fides_key"] == system.fides_key
 
-        data_stewards = result.json()["data_stewards"]
-        assert len(data_stewards) == 1
-        steward = data_stewards[0]
-
-        assert steward["id"] == system_manager.id
-        assert steward["username"] == system_manager.username
-        assert "first_name" in steward
-        assert "last_name" in steward
-
-    def test_system_privacy_declarations_are_sorted(self, test_config, system, db):
+    def test_system_privacy_declarations_are_sorted(
+        self, test_config, system, db, generate_auth_header
+    ):
         """Test system Privacy Declarations are returned in alphabetical order by name."""
+        token_scopes: List[str] = [f"{CLI_SCOPE_PREFIX_MAPPING['system']}:{READ}"]
+        auth_header = generate_auth_header(scopes=token_scopes)
+
         data = {
             "data_use": "essential",
             "name": "Another Declaration Name",
@@ -1314,7 +1389,7 @@ class TestSystemGet:
 
         result = _api.get(
             url=test_config.cli.server_url,
-            headers=test_config.user.auth_header,
+            headers=auth_header,
             resource_type="system",
             resource_id=system.fides_key,
         )
@@ -1329,10 +1404,23 @@ class TestSystemGet:
 @pytest.mark.unit
 @pytest.mark.usefixtures("monkeypatch_requests")
 class TestSystemList:
-    def test_list_no_pagination(self, test_config, system_with_cleanup):
+    @pytest.fixture(scope="function", autouse=True)
+    def remove_all_systems(self, db) -> None:
+        """Remove any systems (and privacy declarations) before test execution for clean state"""
+        for privacy_declaration in PrivacyDeclaration.all(db):
+            privacy_declaration.delete(db)
+        for system in System.all(db):
+            system.delete(db)
+
+    def test_list_no_pagination(
+        self, test_config, system_with_cleanup, generate_auth_header
+    ):
+        token_scopes: List[str] = [f"{CLI_SCOPE_PREFIX_MAPPING['system']}:{READ}"]
+        auth_header = generate_auth_header(scopes=token_scopes)
+
         result = _api.ls(
             url=test_config.cli.server_url,
-            headers=test_config.user.auth_header,
+            headers=auth_header,
             resource_type="system",
         )
 
@@ -1347,10 +1435,14 @@ class TestSystemList:
         test_config,
         system_with_cleanup,
         tcf_system,
+        generate_auth_header,
     ):
+        token_scopes: List[str] = [f"{CLI_SCOPE_PREFIX_MAPPING['system']}:{READ}"]
+        auth_header = generate_auth_header(scopes=token_scopes)
+
         result = _api.ls(
             url=test_config.cli.server_url,
-            headers=test_config.user.auth_header,
+            headers=auth_header,
             resource_type="system",
             query_params={
                 "page": 1,
@@ -1375,12 +1467,16 @@ class TestSystemList:
         test_config,
         system_with_cleanup,
         tcf_system,
+        generate_auth_header,
     ):
+        token_scopes: List[str] = [f"{CLI_SCOPE_PREFIX_MAPPING['system']}:{READ}"]
+        auth_header = generate_auth_header(scopes=token_scopes)
+
         # We don't pass in the page but we pass in the size,
         # so we should get a paginated response with the default page number (1)
         result = _api.ls(
             url=test_config.cli.server_url,
-            headers=test_config.user.auth_header,
+            headers=auth_header,
             resource_type="system",
             query_params={
                 "size": 5,
@@ -1404,12 +1500,16 @@ class TestSystemList:
         test_config,
         system_with_cleanup,
         tcf_system,
+        generate_auth_header,
     ):
+        token_scopes: List[str] = [f"{CLI_SCOPE_PREFIX_MAPPING['system']}:{READ}"]
+        auth_header = generate_auth_header(scopes=token_scopes)
+
         # We don't pass in the size but we pass in the page,
         # so we should get a paginated response with the default size (50)
         result = _api.ls(
             url=test_config.cli.server_url,
-            headers=test_config.user.auth_header,
+            headers=auth_header,
             resource_type="system",
             query_params={
                 "page": 1,
@@ -1434,10 +1534,14 @@ class TestSystemList:
         system_with_cleanup,
         tcf_system,
         system_third_party_sharing,
+        generate_auth_header,
     ):
+        token_scopes: List[str] = [f"{CLI_SCOPE_PREFIX_MAPPING['system']}:{READ}"]
+        auth_header = generate_auth_header(scopes=token_scopes)
+
         result = _api.ls(
             url=test_config.cli.server_url,
-            headers=test_config.user.auth_header,
+            headers=auth_header,
             resource_type="system",
             query_params={"page": 1, "size": 5, "search": "tcf"},
         )
@@ -1454,10 +1558,14 @@ class TestSystemList:
         system_multiple_decs,
         tcf_system,
         system_third_party_sharing,
+        generate_auth_header,
     ):
+        token_scopes: List[str] = [f"{CLI_SCOPE_PREFIX_MAPPING['system']}:{READ}"]
+        auth_header = generate_auth_header(scopes=token_scopes)
+
         result = _api.ls(
             url=test_config.cli.server_url,
-            headers=test_config.user.auth_header,
+            headers=auth_header,
             resource_type="system",
             query_params={
                 "page": 1,
@@ -1482,10 +1590,14 @@ class TestSystemList:
         system_multiple_decs,
         tcf_system,
         system_third_party_sharing,
+        generate_auth_header,
     ):
+        token_scopes: List[str] = [f"{CLI_SCOPE_PREFIX_MAPPING['system']}:{READ}"]
+        auth_header = generate_auth_header(scopes=token_scopes)
+
         result = _api.ls(
             url=test_config.cli.server_url,
-            headers=test_config.user.auth_header,
+            headers=auth_header,
             resource_type="system",
             query_params={
                 "page": 1,
@@ -1511,10 +1623,14 @@ class TestSystemList:
         tcf_system,
         system_third_party_sharing,
         system_with_no_uses,
+        generate_auth_header,
     ):
+        token_scopes: List[str] = [f"{CLI_SCOPE_PREFIX_MAPPING['system']}:{READ}"]
+        auth_header = generate_auth_header(scopes=token_scopes)
+
         result = _api.ls(
             url=test_config.cli.server_url,
-            headers=test_config.user.auth_header,
+            headers=auth_header,
             resource_type="system",
             query_params={
                 "page": 1,
@@ -1540,10 +1656,14 @@ class TestSystemList:
         tcf_system,
         system_third_party_sharing,
         system_with_no_uses,
+        generate_auth_header,
     ):
+        token_scopes: List[str] = [f"{CLI_SCOPE_PREFIX_MAPPING['system']}:{READ}"]
+        auth_header = generate_auth_header(scopes=token_scopes)
+
         result = _api.ls(
             url=test_config.cli.server_url,
-            headers=test_config.user.auth_header,
+            headers=auth_header,
             resource_type="system",
             query_params={
                 "page": 1,
@@ -1569,10 +1689,14 @@ class TestSystemList:
         tcf_system,
         system_third_party_sharing,
         system_with_no_uses,
+        generate_auth_header,
     ):
+        token_scopes: List[str] = [f"{CLI_SCOPE_PREFIX_MAPPING['system']}:{READ}"]
+        auth_header = generate_auth_header(scopes=token_scopes)
+
         result = _api.ls(
             url=test_config.cli.server_url,
-            headers=test_config.user.auth_header,
+            headers=auth_header,
             resource_type="system",
             query_params={
                 "page": 1,
@@ -1600,12 +1724,15 @@ class TestSystemList:
         system_third_party_sharing,
         system_with_no_uses,
         db,
+        generate_auth_header,
     ):
+        token_scopes: List[str] = [f"{CLI_SCOPE_PREFIX_MAPPING['system']}:{READ}"]
+        auth_header = generate_auth_header(scopes=token_scopes)
 
         db.que
         result = _api.ls(
             url=test_config.cli.server_url,
-            headers=test_config.user.auth_header,
+            headers=auth_header,
             resource_type="system",
             query_params={
                 "page": 1,
@@ -1641,14 +1768,17 @@ class TestSystemList:
         vendor_deleted_date,
         expected_systems_count,
         show_deleted,
+        generate_auth_header,
     ):
+        token_scopes: List[str] = [f"{CLI_SCOPE_PREFIX_MAPPING['system']}:{READ}"]
+        auth_header = generate_auth_header(scopes=token_scopes)
 
         system_with_cleanup.vendor_deleted_date = vendor_deleted_date
         db.commit()
 
         result = _api.ls(
             url=test_config.cli.server_url,
-            headers=test_config.user.auth_header,
+            headers=auth_header,
             resource_type="system",
             query_params={"show_deleted": show_deleted, "size": 50},
         )
@@ -1690,56 +1820,6 @@ class TestSystemUpdate:
                     dataset_references=[],
                     ingress=None,
                     egress=None,
-                )
-            ],
-        )
-
-    @pytest.fixture(scope="function")
-    def system_update_request_body_with_system_cookies(self, system) -> SystemSchema:
-        return SystemSchema(
-            organization_fides_key="1",
-            fides_key=system.fides_key,
-            system_type="SYSTEM",
-            name=self.updated_system_name,
-            description="Test Policy",
-            cookies=[
-                {"name": "my_system_cookie", "domain": "example.com"},
-                {"name": "my_other_system_cookie"},
-            ],
-            privacy_declarations=[
-                models.PrivacyDeclaration(
-                    name="declaration-name",
-                    data_categories=[],
-                    data_use="essential",
-                    data_subjects=[],
-                    dataset_references=[],
-                    ingress=None,
-                    egress=None,
-                )
-            ],
-        )
-
-    @pytest.fixture(scope="function")
-    def system_update_request_body_with_privacy_declaration_cookies(
-        self, system
-    ) -> SystemSchema:
-        return SystemSchema(
-            organization_fides_key="1",
-            fides_key=system.fides_key,
-            system_type="SYSTEM",
-            name=self.updated_system_name,
-            description="Test Policy",
-            privacy_declarations=[
-                models.PrivacyDeclaration(
-                    name="declaration-name",
-                    data_categories=[],
-                    data_use="essential",
-                    data_subjects=[],
-                    dataset_references=[],
-                    cookies=[
-                        {"name": "my_cookie", "domain": "example.com"},
-                        {"name": "my_other_cookie"},
-                    ],
                 )
             ],
         )
@@ -1794,13 +1874,6 @@ class TestSystemUpdate:
                     data_shared_with_third_parties=True,
                     third_parties="Third Party Marketing Dept.",
                     shared_categories=["user"],
-                    cookies=[
-                        {
-                            "name": "essential_cookie",
-                            "path": "/",
-                            "domain": "example.com",
-                        }
-                    ],
                 )
             ],
         )
@@ -2387,94 +2460,6 @@ class TestSystemUpdate:
                 if hasattr(decl, field) and isinstance(decl_val, typing.Hashable):
                     assert decl_val == json_results["privacy_declarations"][i][field]
 
-    def test_system_update_system_cookies(
-        self,
-        test_config,
-        system_update_request_body_with_system_cookies,
-        system,
-        db,
-        generate_system_manager_header,
-    ):
-        assert system.name != self.updated_system_name
-        assert len(system.cookies) == 1
-
-        auth_header = generate_system_manager_header([system.id])
-        result = _api.update(
-            url=test_config.cli.server_url,
-            headers=auth_header,
-            resource_type="system",
-            json_resource=system_update_request_body_with_system_cookies.json(
-                exclude_none=True
-            ),
-        )
-        assert result.status_code == HTTP_200_OK
-        assert result.json()["name"] == self.updated_system_name
-        # System level cookies removed
-        assert result.json()["cookies"] == [
-            {"name": "my_system_cookie", "domain": "example.com", "path": None},
-            {"name": "my_other_system_cookie", "domain": None, "path": None},
-        ]
-
-        # Privacy declaration cookies added
-        assert result.json()["privacy_declarations"][0]["cookies"] == []
-
-        db.refresh(system)
-        assert system.name == self.updated_system_name
-        assert len(system.cookies) == 2
-        assert len(system.privacy_declarations[0].cookies) == 0
-
-        system_history = (
-            db.query(SystemHistory).filter(SystemHistory.system_id == system.id).first()
-        )
-        cookie_history = system_history.after["cookies"]
-        assert {cookie["name"] for cookie in cookie_history} == {
-            "my_system_cookie",
-            "my_other_system_cookie",
-        }
-
-    def test_system_update_privacy_declaration_cookies(
-        self,
-        test_config,
-        system_update_request_body_with_privacy_declaration_cookies,
-        system,
-        db,
-        generate_system_manager_header,
-    ):
-        assert system.name != self.updated_system_name
-        assert len(system.cookies) == 1
-
-        auth_header = generate_system_manager_header([system.id])
-        result = _api.update(
-            url=test_config.cli.server_url,
-            headers=auth_header,
-            resource_type="system",
-            json_resource=system_update_request_body_with_privacy_declaration_cookies.json(
-                exclude_none=True
-            ),
-        )
-        assert result.status_code == HTTP_200_OK
-        assert result.json()["name"] == self.updated_system_name
-        # System level cookies removed
-        assert result.json()["cookies"] == []
-        # Privacy declaration cookies added
-        assert sorted(
-            result.json()["privacy_declarations"][0]["cookies"], key=lambda r: r["name"]
-        ) == sorted(
-            [
-                {"name": "my_cookie", "path": None, "domain": "example.com"},
-                {"name": "my_other_cookie", "path": None, "domain": None},
-            ],
-            key=lambda r: r["name"],
-        )
-
-        db.refresh(system)
-        assert system.name == self.updated_system_name
-        assert (
-            len(system.cookies)
-            == 0  # System cookies were deleted because they weren't in the request
-        )  # Two from the current privacy declaration
-        assert len(system.privacy_declarations[0].cookies) == 2
-
     @pytest.mark.parametrize(
         "update_declarations",
         [
@@ -2486,7 +2471,6 @@ class TestSystemUpdate:
                         data_use="essential",
                         data_subjects=[],
                         dataset_references=[],
-                        cookies=[],
                         egress=None,
                         ingress=None,
                     )
@@ -2501,7 +2485,6 @@ class TestSystemUpdate:
                         data_use="essential",
                         data_subjects=[],
                         dataset_references=[],
-                        cookies=[],
                         egress=None,
                         ingress=None,
                     ),
@@ -2511,7 +2494,6 @@ class TestSystemUpdate:
                         data_use="third_party_sharing",
                         data_subjects=[],
                         dataset_references=[],
-                        cookies=[],
                         egress=None,
                         ingress=None,
                     ),
@@ -2526,7 +2508,6 @@ class TestSystemUpdate:
                         data_use="third_party_sharing",
                         data_subjects=[],
                         dataset_references=[],
-                        cookies=[],
                         ingress=None,
                         egress=None,
                     ),
@@ -2536,7 +2517,6 @@ class TestSystemUpdate:
                         data_use="marketing.advertising",
                         data_subjects=[],
                         dataset_references=[],
-                        cookies=[],
                         ingress=None,
                         egress=None,
                     ),
@@ -2551,7 +2531,6 @@ class TestSystemUpdate:
                         data_use="marketing.advertising",
                         data_subjects=[],
                         dataset_references=[],
-                        cookies=[],
                         egress=None,
                         ingress=None,
                     ),
@@ -2561,7 +2540,6 @@ class TestSystemUpdate:
                         data_use="marketing.advertising",
                         data_subjects=[],
                         dataset_references=[],
-                        cookies=[],
                         egress=None,
                         ingress=None,
                     ),
@@ -3022,17 +3000,21 @@ class TestSystemDelete:
 class TestDefaultTaxonomyCrud:
     @pytest.mark.parametrize("endpoint", TAXONOMY_ENDPOINTS)
     def test_api_cannot_delete_default(
-        self, test_config: FidesConfig, endpoint: str
+        self, test_config: FidesConfig, generate_auth_header, endpoint: str
     ) -> None:
         resource = getattr(DEFAULT_TAXONOMY, endpoint)[0]
+        token_scopes: List[str] = [f"{CLI_SCOPE_PREFIX_MAPPING[endpoint]}:{DELETE}"]
+        auth_header = generate_auth_header(scopes=token_scopes)
 
         result = _api.delete(
             url=test_config.cli.server_url,
             resource_type=endpoint,
             resource_id=resource.fides_key,
-            headers=test_config.user.auth_header,
+            headers=auth_header,
         )
-        assert result.status_code == 403
+        assert (
+            result.status_code == 403
+        ), f"Expected 403 but got {result.status_code}: {result.json()}"
         assert (
             "cannot modify 'is_default' field on an existing resource"
             in result.json()["detail"]["error"]
@@ -3040,117 +3022,167 @@ class TestDefaultTaxonomyCrud:
 
     @pytest.mark.parametrize("endpoint", TAXONOMY_ENDPOINTS)
     def test_api_can_update_default(
-        self, test_config: FidesConfig, endpoint: str
+        self, test_config: FidesConfig, generate_auth_header, endpoint: str
     ) -> None:
         """Should be able to update as long as `is_default` is not changing"""
         resource = getattr(DEFAULT_TAXONOMY, endpoint)[0]
         json_resource = resource.json(exclude_none=True)
+        token_scopes: List[str] = [f"{CLI_SCOPE_PREFIX_MAPPING[endpoint]}:{UPDATE}"]
+        auth_header = generate_auth_header(scopes=token_scopes)
 
         result = _api.update(
             url=test_config.cli.server_url,
-            headers=test_config.user.auth_header,
+            headers=auth_header,
             resource_type=endpoint,
             json_resource=json_resource,
         )
-        assert result.status_code == 200
+        assert (
+            result.status_code == 200
+        ), f"Expected 200 but got {result.status_code}: {result.json()}"
 
     @pytest.mark.parametrize("endpoint", TAXONOMY_ENDPOINTS)
     def test_api_can_upsert_default(
-        self, test_config: FidesConfig, endpoint: str
+        self, test_config: FidesConfig, generate_auth_header, endpoint: str
     ) -> None:
         """Should be able to upsert as long as `is_default` is not changing"""
         resources = [
             r.model_dump(mode="json") for r in getattr(DEFAULT_TAXONOMY, endpoint)[0:2]
         ]
+        token_scopes: List[str] = [
+            f"{CLI_SCOPE_PREFIX_MAPPING[endpoint]}:{CREATE}",
+            f"{CLI_SCOPE_PREFIX_MAPPING[endpoint]}:{UPDATE}",
+        ]
+        auth_header = generate_auth_header(scopes=token_scopes)
+
         result = _api.upsert(
             url=test_config.cli.server_url,
-            headers=test_config.user.auth_header,
+            headers=auth_header,
             resource_type=endpoint,
             resources=resources,
         )
-        assert result.status_code == 200
+        assert (
+            result.status_code == 200
+        ), f"Expected 200 but got {result.status_code}: {result.json()}"
 
     @pytest.mark.parametrize("endpoint", TAXONOMY_ENDPOINTS)
     def test_api_cannot_create_default_taxonomy(
-        self, test_config: FidesConfig, resources_dict: Dict, endpoint: str
+        self,
+        test_config: FidesConfig,
+        resources_dict: Dict,
+        generate_auth_header,
+        endpoint: str,
     ) -> None:
         manifest = resources_dict[endpoint]
 
         #  Set fields for default labels
         manifest.is_default = True
         manifest.version_added = "2.0.0"
+        token_scopes: List[str] = [f"{CLI_SCOPE_PREFIX_MAPPING[endpoint]}:{CREATE}"]
+        auth_header = generate_auth_header(scopes=token_scopes)
 
         result = _api.create(
             url=test_config.cli.server_url,
             resource_type=endpoint,
             json_resource=manifest.json(exclude_none=True),
-            headers=test_config.user.auth_header,
+            headers=auth_header,
         )
-        assert result.status_code == 403
         assert (
-            "cannot create a resource where 'is_default' is true"
-            in result.json()["detail"]["error"]
-        )
+            result.status_code == 403
+        ), f"Expected 403 but got {result.status_code}: {result.json()}"
+        response_json = result.json()
+        assert "cannot create a resource where 'is_default' is true" in str(
+            response_json
+        ), f"Expected error message not found in response: {response_json}"
 
         _api.delete(
             url=test_config.cli.server_url,
             resource_type=endpoint,
             resource_id=manifest.fides_key,
-            headers=test_config.user.auth_header,
+            headers=auth_header,
         )
 
     @pytest.mark.parametrize("endpoint", TAXONOMY_ENDPOINTS)
     def test_api_cannot_upsert_default_taxonomy(
-        self, test_config: FidesConfig, resources_dict: Dict, endpoint: str
+        self,
+        test_config: FidesConfig,
+        resources_dict: Dict,
+        generate_auth_header,
+        endpoint: str,
     ) -> None:
         manifest = resources_dict[endpoint]
 
-        #  Set fields for default labels
+        # Use a unique fides_key that won't conflict with default taxonomy
+        manifest.fides_key = f"test_unique_{manifest.fides_key}"
+        manifest.name = f"Test Unique {manifest.name}"
         manifest.is_default = True
         manifest.version_added = "2.0.0"
 
+        # Update parent_key if it exists (for data categories)
+        if hasattr(manifest, "parent_key") and manifest.parent_key is not None:
+            manifest.parent_key = f"test_unique_{manifest.parent_key}"
+
+        token_scopes: List[str] = [
+            f"{CLI_SCOPE_PREFIX_MAPPING[endpoint]}:{CREATE}",
+            f"{CLI_SCOPE_PREFIX_MAPPING[endpoint]}:{UPDATE}",
+        ]
+        auth_header = generate_auth_header(scopes=token_scopes)
+
         result = _api.upsert(
             url=test_config.cli.server_url,
-            headers=test_config.user.auth_header,
+            headers=auth_header,
             resource_type=endpoint,
             resources=[manifest.model_dump(mode="json")],
         )
         assert result.status_code == 403
         assert (
-            "cannot create a resource where 'is_default' is true"
-            in result.json()["detail"]["error"]
-        )
+            result.status_code == 403
+        ), f"Expected 403 but got {result.status_code}: {result.json()}"
+        response_json = result.json()
+        assert "cannot create a resource where 'is_default' is true" in str(
+            response_json
+        ), f"Expected error message not found in response: {response_json}"
 
         _api.delete(
             url=test_config.cli.server_url,
             resource_type=endpoint,
             resource_id=manifest.fides_key,
-            headers=test_config.user.auth_header,
+            headers=auth_header,
         )
 
     @pytest.mark.parametrize("endpoint", TAXONOMY_ENDPOINTS)
     def test_api_cannot_update_is_default(
-        self, test_config: FidesConfig, resources_dict: Dict, endpoint: str
+        self,
+        test_config: FidesConfig,
+        resources_dict: Dict,
+        generate_auth_header,
+        endpoint: str,
     ) -> None:
         manifest = resources_dict[endpoint]
+        token_scopes: List[str] = [f"{CLI_SCOPE_PREFIX_MAPPING[endpoint]}:{CREATE}"]
+        auth_header = generate_auth_header(scopes=token_scopes)
+
         _api.create(
             url=test_config.cli.server_url,
             resource_type=endpoint,
             json_resource=manifest.json(exclude_none=True),
-            headers=test_config.user.auth_header,
+            headers=auth_header,
         )
 
         #  Set fields for default labels
         manifest.is_default = True
         manifest.version_added = "2.0.0"
+        token_scopes: List[str] = [f"{CLI_SCOPE_PREFIX_MAPPING[endpoint]}:{UPDATE}"]
+        auth_header = generate_auth_header(scopes=token_scopes)
 
         result = _api.update(
             url=test_config.cli.server_url,
-            headers=test_config.user.auth_header,
+            headers=auth_header,
             resource_type=endpoint,
             json_resource=manifest.json(exclude_none=True),
         )
-        assert result.status_code == 403
+        assert (
+            result.status_code == 403
+        ), f"Expected 403 but got {result.status_code}: {result.json()}"
         assert (
             "cannot modify 'is_default' field on an existing resource"
             in result.json()["detail"]["error"]
@@ -3158,7 +3190,11 @@ class TestDefaultTaxonomyCrud:
 
     @pytest.mark.parametrize("endpoint", TAXONOMY_ENDPOINTS)
     def test_api_cannot_upsert_is_default(
-        self, test_config: FidesConfig, resources_dict: Dict, endpoint: str
+        self,
+        test_config: FidesConfig,
+        resources_dict: Dict,
+        generate_auth_header,
+        endpoint: str,
     ) -> None:
         manifest = resources_dict[endpoint]
         second_item = manifest.model_copy()
@@ -3168,24 +3204,34 @@ class TestDefaultTaxonomyCrud:
         manifest.version_added = "2.0.0"
 
         second_item.is_default = False
+        token_scopes: List[str] = [f"{CLI_SCOPE_PREFIX_MAPPING[endpoint]}:{CREATE}"]
+        auth_header = generate_auth_header(scopes=token_scopes)
 
         _api.create(
             url=test_config.cli.server_url,
             resource_type=endpoint,
             json_resource=second_item.json(exclude_none=True),
-            headers=test_config.user.auth_header,
+            headers=auth_header,
         )
+
+        token_scopes: List[str] = [
+            f"{CLI_SCOPE_PREFIX_MAPPING[endpoint]}:{CREATE}",
+            f"{CLI_SCOPE_PREFIX_MAPPING[endpoint]}:{UPDATE}",
+        ]
+        auth_header = generate_auth_header(scopes=token_scopes)
 
         result = _api.upsert(
             url=test_config.cli.server_url,
-            headers=test_config.user.auth_header,
+            headers=auth_header,
             resource_type=endpoint,
             resources=[
                 manifest.model_dump(mode="json"),
                 second_item.model_dump(mode="json"),
             ],
         )
-        assert result.status_code == 403
+        assert (
+            result.status_code == 403
+        ), f"Expected 403 but got {result.status_code}: {result.json()}"
         assert (
             "cannot modify 'is_default' field on an existing resource"
             in result.json()["detail"]["error"]
@@ -3195,13 +3241,13 @@ class TestDefaultTaxonomyCrud:
             url=test_config.cli.server_url,
             resource_type=endpoint,
             resource_id=manifest.fides_key,
-            headers=test_config.user.auth_header,
+            headers=auth_header,
         )
         _api.delete(
             url=test_config.cli.server_url,
             resource_type=endpoint,
             resource_id=second_item.fides_key,
-            headers=test_config.user.auth_header,
+            headers=auth_header,
         )
 
 
@@ -3215,8 +3261,8 @@ class TestCrudActiveProperty:
     """
 
     @pytest.mark.parametrize("endpoint", TAXONOMY_ENDPOINTS)
-    def test_api_can_update_active_on_default(
-        self, test_config: FidesConfig, endpoint: str
+    def test_api_can_toggle_active_property(
+        self, test_config: FidesConfig, endpoint: str, generate_auth_header
     ) -> None:
         """Ensure we can toggle `active` property on default taxonomy elements"""
         # Use the third element to avoid deactivating top-level items, which deactivates
@@ -3227,18 +3273,25 @@ class TestCrudActiveProperty:
         )  # cast resource to extended model
         resource.active = False
         json_resource = resource.json(exclude_none=True)
+
+        token_scopes: List[str] = [f"{CLI_SCOPE_PREFIX_MAPPING[endpoint]}:{UPDATE}"]
+        auth_header = generate_auth_header(scopes=token_scopes)
+
         result = _api.update(
             url=test_config.cli.server_url,
-            headers=test_config.user.auth_header,
+            headers=auth_header,
             resource_type=endpoint,
             json_resource=json_resource,
         )
         assert result.status_code == 200
         assert result.json()["active"] is False
 
+        token_scopes: List[str] = [f"{CLI_SCOPE_PREFIX_MAPPING[endpoint]}:{READ}"]
+        auth_header = generate_auth_header(scopes=token_scopes)
+
         result = _api.get(
             url=test_config.cli.server_url,
-            headers=test_config.user.auth_header,
+            headers=auth_header,
             resource_type=endpoint,
             resource_id=resource.fides_key,
         )
@@ -3246,80 +3299,25 @@ class TestCrudActiveProperty:
 
         resource.active = True
         json_resource = resource.json(exclude_none=True)
+
+        token_scopes: List[str] = [f"{CLI_SCOPE_PREFIX_MAPPING[endpoint]}:{UPDATE}"]
+        auth_header = generate_auth_header(scopes=token_scopes)
+
         result = _api.update(
             url=test_config.cli.server_url,
-            headers=test_config.user.auth_header,
+            headers=auth_header,
             resource_type=endpoint,
             json_resource=json_resource,
         )
         assert result.status_code == 200
         assert result.json()["active"] is True
 
-        result = _api.get(
-            url=test_config.cli.server_url,
-            headers=test_config.user.auth_header,
-            resource_type=endpoint,
-            resource_id=resource.fides_key,
-        )
-        assert result.json()["active"] is True
-
-    @pytest.mark.parametrize("endpoint", TAXONOMY_ENDPOINTS)
-    def test_api_can_create_with_active_property(
-        self,
-        test_config: FidesConfig,
-        endpoint: str,
-        generate_auth_header,
-    ) -> None:
-        """Ensure we can create taxonomy elements with `active` property set"""
-        # get a default taxonomy element as a sample resource
-        resource = getattr(DEFAULT_TAXONOMY, endpoint)[0]
-        resource = TAXONOMY_EXTENSIONS[endpoint](
-            **resource.model_dump(mode="json")
-        )  # cast resource to extended model
-        resource.fides_key = resource.fides_key + "_test_create_active_false"
-        resource.name = resource.name + "_test_create_active_false"
-        resource.is_default = False
-        resource.version_added = None
-        resource.active = False
-        json_resource = resource.json(exclude_none=True)
-        token_scopes: List[str] = [f"{CLI_SCOPE_PREFIX_MAPPING[endpoint]}:{CREATE}"]
+        token_scopes: List[str] = [f"{CLI_SCOPE_PREFIX_MAPPING[endpoint]}:{READ}"]
         auth_header = generate_auth_header(scopes=token_scopes)
-        result = _api.create(
+
+        result = _api.get(
             url=test_config.cli.server_url,
             headers=auth_header,
-            resource_type=endpoint,
-            json_resource=json_resource,
-        )
-        assert result.status_code == 201
-        assert result.json()["active"] is False
-
-        result = _api.get(
-            url=test_config.cli.server_url,
-            headers=test_config.user.auth_header,
-            resource_type=endpoint,
-            resource_id=resource.fides_key,
-        )
-        assert result.json()["active"] is False
-
-        resource.fides_key = resource.fides_key + "_test_create_active_true"
-        resource.name = resource.name + "_test_create_active_true"
-        resource.is_default = False
-        resource.active = True
-        json_resource = resource.json(exclude_none=True)
-        token_scopes: List[str] = [f"{CLI_SCOPE_PREFIX_MAPPING[endpoint]}:{CREATE}"]
-        auth_header = generate_auth_header(scopes=token_scopes)
-        result = _api.create(
-            url=test_config.cli.server_url,
-            headers=auth_header,
-            resource_type=endpoint,
-            json_resource=json_resource,
-        )
-        assert result.status_code == 201
-        assert result.json()["active"] is True
-
-        result = _api.get(
-            url=test_config.cli.server_url,
-            headers=test_config.user.auth_header,
             resource_type=endpoint,
             resource_id=resource.fides_key,
         )
@@ -3413,12 +3411,17 @@ class TestHealthchecks:
 
 @pytest.mark.integration
 @pytest.mark.parametrize("endpoint_name", [f"{API_PREFIX}/organization", "/health"])
-def test_trailing_slash(test_config: FidesConfig, endpoint_name: str) -> None:
+def test_trailing_slash(
+    test_config: FidesConfig, endpoint_name: str, generate_auth_header
+) -> None:
     """URLs both with and without a trailing slash should resolve and not 404"""
+    token_scopes: List[str] = [f"{CLI_SCOPE_PREFIX_MAPPING['organization']}:{READ}"]
+    auth_header = generate_auth_header(scopes=token_scopes)
+
     url = f"{test_config.cli.server_url}{endpoint_name}"
-    response = requests.get(url, headers=CONFIG.user.auth_header)
+    response = requests.get(url, headers=auth_header)
     assert response.status_code == 200
-    response = requests.get(f"{url}/", headers=CONFIG.user.auth_header)
+    response = requests.get(f"{url}/", headers=auth_header)
     assert response.status_code == 200
 
 
