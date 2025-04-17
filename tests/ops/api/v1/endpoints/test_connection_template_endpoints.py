@@ -1068,8 +1068,7 @@ class TestGetConnectionSecretSchema:
                 "sslmode": {
                     "title": "SSL Mode",
                     "description": "The SSL mode to use for the connection. Valid values are 'required', 'preferred', and 'disabled'.",
-                    "type": "string",
-                    "pattern": "required|preferred|disabled",
+                    "type": "MySQLSslMode",
                 },
             },
             "required": ["host", "dbname"],

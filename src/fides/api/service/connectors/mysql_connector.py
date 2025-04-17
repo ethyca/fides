@@ -84,8 +84,11 @@ class MySQLConnector(SQLConnector):
 
     def get_connect_args(self) -> Dict[str, Dict[str, MySQLSslMode]]:
         """Get connection arguments for the engine"""
-        config = self.secrets_schema(**self.configuration.secrets or {})
-        sslmode = config.sslmode
+        if not self.configuration.secrets:
+            sslmode = MySQLSslMode.preferred
+        else:
+            config = self.secrets_schema(**self.configuration.secrets)
+            sslmode = config.sslmode
         if sslmode is None:
             sslmode = MySQLSslMode.preferred
         return {
