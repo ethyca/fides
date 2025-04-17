@@ -22,16 +22,20 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.59.1...main)
 
 ### Added
+- Migrate `Cookies` resources to `Asset` resources of type `Cookie` [#5776](https://github.com/ethyca/fides/pull/5776) https://github.com/ethyca/fides/labels/db-migration https://github.com/ethyca/fides/labels/high-risk
 - Added support for selecting TCF Publisher Override configuration when configuring Privacy Experience [#6033](https://github.com/ethyca/fides/pull/6033)
 - Added Google Cloud Storage as a storage option [#6006](https://github.com/ethyca/fides/pull/6006)
 - Added sslmode field for MySQL connections [#6048](https://github.com/ethyca/fides/pull/6048)
 - Added PostgreSQL connection config form to the "integrations" page to support use with discovery monitors [#6018](https://github.com/ethyca/fides/pull/6018)
+- Update the Datahub Permissions section to include required permissions from Datahub [#6052](https://github.com/ethyca/fides/pull/6052)
 
 ### Changed
 - Changed how TCF Publisher Overrides gets configured in consent settings [#6013](https://github.com/ethyca/fides/pull/6013)
 - Frontend now do not generate `key` when creating a Website Monitor [#6041](https://github.com/ethyca/fides/pull/6041)
 - Integrations manage modals now are cappable of showing a small description [#6037](https://github.com/ethyca/fides/pull/6037)
 - Removed `dbname` as a required field for PostgreSQL connection configs to support use with discovery monitors [#6018](https://github.com/ethyca/fides/pull/6018)
+- UI now allows assigning of non-consent-category data uses to system assets [#6049](https://github.com/ethyca/fides/pull/6049)
+- Updated bulk ignore assets toast message [#6043](https://github.com/ethyca/fides/pull/6043)
 
 ### Developer Experience
 - Reduced animations on Cypress tests in Privacy Center for quicker results [#5976](https://github.com/ethyca/fides/pull/5976)

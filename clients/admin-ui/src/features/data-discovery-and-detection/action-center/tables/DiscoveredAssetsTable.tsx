@@ -238,7 +238,9 @@ export const DiscoveredAssetsTable = ({
     } else {
       tableInstance.resetRowSelection();
       successAlert(
-        `${selectedUrns.length} assets from ${systemName} have been ignored and will not appear in future scans.`,
+        systemName === UNCATEGORIZED_SEGMENT
+          ? `${selectedUrns.length} uncategorized assets have been ignored and will not appear in future scans.`
+          : `${selectedUrns.length} assets from ${systemName} have been ignored and will not appear in future scans.`,
         `Confirmed`,
       );
     }
