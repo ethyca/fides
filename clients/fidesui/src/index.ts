@@ -50,7 +50,6 @@ export {
   Switch as AntSwitch,
   Tabs as AntTabs,
   Tooltip as AntTooltip,
-  Typography as AntTypography,
 } from "antd/lib";
 export type {
   BreadcrumbItemType as AntBreadcrumbItemType,
@@ -63,8 +62,12 @@ export type {
 } from "antd/lib/select";
 
 // Higher-order components
-export { CustomSelect as AntSelect } from "./hoc";
-export { CustomDateRangePicker as AntDateRangePicker } from "./hoc";
+export {
+  CustomDateRangePicker as AntDateRangePicker,
+  CustomSelect as AntSelect,
+  CustomTag as AntTag,
+  CustomTypography as AntTypography,
+} from "./hoc";
 
 /**
  * Custom Re-exports
@@ -100,4 +103,3 @@ export { ExampleComponent } from "./components/example-component";
 export { FloatingMenu } from "./components/floating-menu";
 export { PrimaryLink, SecondaryLink } from "./components/links";
 export { SystemsCheckboxTable } from "./components/systems-checkbox-table";
-export { CustomTag as AntTag } from "./hoc";

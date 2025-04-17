@@ -15,7 +15,9 @@ import {
   AntSwitch as Switch,
   AntTag as Tag,
   AntTooltip as Tooltip,
+  AntTypography as Typography,
   Icons,
+  Link,
 } from "fidesui";
 import type { NextPage } from "next";
 
@@ -260,6 +262,52 @@ const AntPOC: NextPage = () => {
                   Data Category
                 </Tag>
               </Flex>
+            </Card>
+          </Col>
+        </Row>
+        <br />
+        <Row gutter={16}>
+          <Col span={8}>
+            <Card title="Typography" variant="borderless" className="h-full">
+              <Space direction="vertical">
+                <Typography.Title level={1}>Heading 1</Typography.Title>
+                <Typography.Title level={2}>Heading 2</Typography.Title>
+                <Typography.Title level={3}>Heading 3</Typography.Title>
+                <div>
+                  <Typography.Paragraph>Paragraph 1</Typography.Paragraph>
+                  <Typography.Paragraph>Paragraph 2</Typography.Paragraph>
+                </div>
+                <Typography.Text>Ant Design (default)</Typography.Text>
+                <Typography.Text type="secondary">
+                  Ant Design (secondary)
+                </Typography.Text>
+                <Typography.Text type="success">
+                  Ant Design (success)
+                </Typography.Text>
+                <Typography.Text type="warning">
+                  Ant Design (warning)
+                </Typography.Text>
+                <Typography.Text type="danger">
+                  Ant Design (danger)
+                </Typography.Text>
+                <Typography.Text disabled>
+                  Ant Design (disabled)
+                </Typography.Text>
+                <Typography.Text mark>Ant Design (mark)</Typography.Text>
+                <Typography.Text code>Ant Design (code)</Typography.Text>
+                <Typography.Text keyboard>
+                  Ant Design (keyboard)
+                </Typography.Text>
+                <Typography.Text underline>
+                  Ant Design (underline)
+                </Typography.Text>
+                <Typography.Text delete>Ant Design (delete)</Typography.Text>
+                <Typography.Text strong>Ant Design (strong)</Typography.Text>
+                <Typography.Text italic>Ant Design (italic)</Typography.Text>
+                <Link href="https://ant.design" target="_blank">
+                  Ant Design (Link)
+                </Link>
+              </Space>
             </Card>
           </Col>
         </Row>
