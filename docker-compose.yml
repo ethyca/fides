@@ -174,10 +174,10 @@ services:
     restart: always
     healthcheck:
       test: ["CMD", "celery", "-A", "fides.api.tasks", "inspect", "ping"]
+      start_period: 60s
       interval: 30s
       timeout: 10s
       retries: 20
-      start_period: 60s
     environment:
       FIDES__CONFIG_PATH: ${FIDES__CONFIG_PATH:-/fides/.fides/fides.toml}
       FIDES__LOGGING__COLORIZE: "True"
