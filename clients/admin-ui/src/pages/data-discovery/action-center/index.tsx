@@ -8,6 +8,7 @@ import {
 import NextLink from "next/link";
 import { useCallback, useEffect, useState } from "react";
 
+import { DebouncedSearchInput } from "~/features/common/DebouncedSearchInput";
 import Layout from "~/features/common/Layout";
 import { ACTION_CENTER_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
@@ -21,7 +22,6 @@ import { DisabledMonitorsPage } from "~/features/data-discovery-and-detection/ac
 import { EmptyMonitorsResult } from "~/features/data-discovery-and-detection/action-center/EmptyMonitorsResult";
 import { MonitorResult } from "~/features/data-discovery-and-detection/action-center/MonitorResult";
 import { MonitorAggregatedResults } from "~/features/data-discovery-and-detection/action-center/types";
-import { SearchInput } from "~/features/data-discovery-and-detection/SearchInput";
 
 const ActionCenterPage = () => {
   const toast = useToast();
@@ -135,7 +135,7 @@ const ActionCenterPage = () => {
       />
 
       <Flex className="justify-between py-6">
-        <SearchInput value={searchQuery} onChange={setSearchQuery} />
+        <DebouncedSearchInput value={searchQuery} onChange={setSearchQuery} />
       </Flex>
 
       <List

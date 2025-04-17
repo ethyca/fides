@@ -6,20 +6,19 @@ import {
   SearchLineIcon,
 } from "fidesui";
 
-interface Props extends Omit<InputProps, "onChange"> {
-  search?: string;
+export interface SearchInputProps extends Omit<InputProps, "onChange"> {
   onChange: (value: string) => void;
   withIcon?: boolean;
   onClear?: () => void;
 }
-const SearchBar = ({
-  search,
+
+const SearchInput = ({
   onChange,
   withIcon,
   onClear,
   placeholder,
   ...props
-}: Props) => {
+}: SearchInputProps) => {
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) =>
     onChange(event.target.value);
 
@@ -27,7 +26,6 @@ const SearchBar = ({
     <Space.Compact className="w-96" data-testid="search-bar">
       <Input
         autoComplete="off"
-        value={search}
         onChange={handleSearchChange}
         placeholder={placeholder || "Search..."}
         prefix={withIcon ? <SearchLineIcon boxSize={4} /> : undefined}
@@ -38,4 +36,4 @@ const SearchBar = ({
   );
 };
 
-export default SearchBar;
+export default SearchInput;
