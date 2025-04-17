@@ -6,7 +6,7 @@ import { useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import DataTabsContent from "~/features/common/DataTabsContent";
 import DataTabsHeader from "~/features/common/DataTabsHeader";
-import { useFeatures, useFlags } from "~/features/common/features";
+import { useFeatures } from "~/features/common/features";
 import FidesSpinner from "~/features/common/FidesSpinner";
 import { extractVendorSource, VendorSources } from "~/features/common/helpers";
 import { GearLightIcon } from "~/features/common/Icon";
@@ -46,9 +46,7 @@ const ConfigureSystem: NextPage = () => {
   const { error: dictionaryError, isLoading: isDictionaryLoading } =
     useGetAllDictionaryEntriesQuery();
 
-  const { tcf: isTCFEnabled } = useFeatures();
-  const { flags } = useFlags();
-  const discoveryDetectionEnabled = flags.dataDiscoveryAndDetection;
+  const { tcf: isTCFEnabled, plus: isPlusEnabled } = useFeatures();
 
   const lockedForGVL = useAppSelector(selectLockedForGVL);
 
@@ -97,7 +95,7 @@ const ConfigureSystem: NextPage = () => {
             width="full"
             border="full-width"
           />
-          {discoveryDetectionEnabled && (
+          {isPlusEnabled && (
             <Button
               size="small"
               className="absolute right-2 top-2"

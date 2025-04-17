@@ -299,13 +299,6 @@ describe("System management page", () => {
       cy.url().should("contain", "/systems/configure/fidesctl_system");
     });
 
-    it("Can access integration management page from system edit page", () => {
-      cy.visit("/systems/configure/fidesctl_system");
-      cy.wait("@getFidesctlSystem");
-      cy.getByTestId("integration-page-btn").click();
-      cy.url().should("contain", INTEGRATION_MANAGEMENT_ROUTE);
-    });
-
     it("Can persist fields not directly in the form", () => {
       cy.visit("/systems/configure/fidesctl_system");
       cy.wait("@getFidesctlSystem");

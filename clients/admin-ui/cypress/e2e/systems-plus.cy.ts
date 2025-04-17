@@ -15,6 +15,7 @@ import {
   ADD_SYSTEMS_ROUTE,
   DATAMAP_ROUTE,
   INDEX_ROUTE,
+  INTEGRATION_MANAGEMENT_ROUTE,
   SYSTEM_ROUTE,
 } from "~/features/common/nav/routes";
 import { RoleRegistryEnum } from "~/types/api";
@@ -37,10 +38,18 @@ describe("System management with Plus features", () => {
   });
 
   describe("permissions", () => {
-    it("can view a system page as a viewer", () => {
+    beforeEach(() => {
       cy.assumeRole(RoleRegistryEnum.VIEWER);
       cy.visit(`${SYSTEM_ROUTE}/configure/demo_analytics_system`);
+    });
+
+    it("can view a system page as a viewer", () => {
       cy.getByTestId("input-name").should("exist");
+    });
+
+    it("can access integration management page from system edit page", () => {
+      cy.getByTestId("integration-page-btn").click();
+      cy.url().should("contain", INTEGRATION_MANAGEMENT_ROUTE);
     });
   });
 
