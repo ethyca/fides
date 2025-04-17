@@ -89,7 +89,7 @@ class MySQLConnector(SQLConnector):
             sslmode = "preferred"
         return {
             "ssl": {
-                "mode": sslmode.lower(),
+                "mode": sslmode,
             }
         }
 
