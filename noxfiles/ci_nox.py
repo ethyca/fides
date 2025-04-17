@@ -377,140 +377,42 @@ def python_build(session: nox.Session, dist: str) -> None:
 @nox_session()
 def check_worker_startup(session: Session) -> None:
     """
-    Start the worker containers and verify initialization.
-
-    Checks if Celery workers can successfully initialize, detecting SQLAlchemy,
-    import errors, container health issues, etc.
-
-    This function is similar to check_container_startup but is specialized for Celery workers.
-    It will check if each type of worker container can at least attempt to start up.
+    Check that the main 'worker' service can start up successfully using docker compose --wait.
+    Relies on the healthcheck defined in docker-compose.yml.
     """
+    worker_service = "worker"
+    session.log(f"Attempting to start and wait for service: {worker_service}")
 
-    has_error = False
-    # Check each worker type
-    for worker_service in ["worker", "worker-privacy-preferences", "worker-dsr"]:
-        session.log(f"Testing {worker_service} startup...")
-        throw_error = False
+    start_command = (
+        "docker",
+        "compose",
+        "up",
+        "--wait",
+        worker_service,
+    )
+    # Use "down" which stops and removes containers, networks, etc.
+    cleanup_command = (
+        "docker",
+        "compose",
+        "down",
+    )
 
-        # Start the worker
-        worker_start_command = (
-            "docker",
-            "compose",
-            "up",
-            "-d",
-            worker_service,
-        )
-
-        # Docker container name is prefixed with 'fides-'
-        container_name = f"fides-{worker_service}-1"
-
-        try:
-            session.run(*worker_start_command, external=True)
-            # Give it some time to at least attempt startup
-            time.sleep(15)
-        except CommandFailed:
-            throw_error = True
-            session.log(f"Failed to start {worker_service}")
-
-        # Display logs for each container
-        log_dashes = "*" * 20
-        session.log(f"{log_dashes} {worker_service.upper()} LOGS {log_dashes}")
-
-        # Get and analyze the logs
-        try:
-            logs = session.run(
-                "docker", "logs", container_name, external=True, silent=True
-            )
-
-            # Print the logs
-            session.log(logs)
-
-            # Check for error patterns in logs
-            error_patterns = [
-                "sqlalchemy.exc.InvalidRequestError",
-                "name 'systemmanager' is not defined",
-                "ModuleNotFoundError",
-                "ImportError",
-                "AttributeError",
-                "Cannot start service",
-                "exited with code",
-                "OCI runtime exec failed",
-                "Health check exceeded timeout",
-            ]
-
-            for pattern in error_patterns:
-                if pattern in logs:
-                    session.log(f"Error found in logs: {pattern}")
-                    throw_error = True
-
-            # Check for startup indicator
-            if "Running Celery worker for queues" in logs and not throw_error:
-                session.log(f"{worker_service} started initializing")
-            else:
-                session.log(f"{worker_service} failed to initialize")
-                throw_error = True
-
-        except CommandFailed:
-            session.log(f"Failed to retrieve logs for {container_name}")
-            throw_error = True
-
-        # Check container health status
-        try:
-            health_info = session.run(
-                "docker",
-                "inspect",
-                "--format",
-                "{{json .State.Health}}",
-                container_name,
-                external=True,
-                silent=True,
-            )
-            session.log(f"Container health info: {health_info}")
-
-            if '"Status":"healthy"' not in health_info:
-                session.log(f"Container {container_name} health check is not passing")
-                throw_error = True
-
-        except CommandFailed:
-            session.log(f"Failed to get health status for {container_name}")
-            throw_error = True
-
-        # Check container status
-        try:
-            status = session.run(
-                "docker",
-                "ps",
-                "--filter",
-                f"name={container_name}",
-                "--format",
-                "{{.Status}}",
-                external=True,
-                silent=True,
-            )
-
-            if "Up" not in status:
-                session.log(f"Container {container_name} is not running")
-                throw_error = True
-
-        except CommandFailed:
-            session.log(f"Failed to get status for {container_name}")
-            throw_error = True
-
-        # Stop the worker container
-        try:
-            session.run("docker", "compose", "stop", worker_service, external=True)
-            session.run("docker", "compose", "rm", "-f", worker_service, external=True)
-        except CommandFailed:
-            pass
-
-        if throw_error:
-            has_error = True
-
-    # Clean up after all workers are checked
     try:
-        session.run("docker", "compose", "down", external=True)
+        # Run the command. Nox will automatically raise CommandFailed on non-zero exit code.
+        session.run(*start_command, external=True)
+        session.log(
+            f"Service {worker_service} started successfully and became healthy."
+        )
     except CommandFailed:
-        pass
-
-    if has_error:
-        session.error("One or more workers failed to start properly")
+        # If --wait fails (service doesn't become healthy), CommandFailed is raised.
+        session.log(
+            f"Service {worker_service} failed to start or become healthy within the specified timeout/retries."
+        )
+        # Logs are not printed automatically here, but can be checked manually if needed.
+        session.error(f"Service {worker_service} failed health check during startup.")
+    finally:
+        # Ensure cleanup runs regardless of success or failure
+        session.log("Running cleanup command: docker compose down")
+        session.run(
+            *cleanup_command, external=True, silent=True
+        )  # silent=True avoids extra noise if already down

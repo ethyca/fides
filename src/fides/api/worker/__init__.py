@@ -1,4 +1,3 @@
-import json
 from typing import Any, List, Optional
 
 from celery import VERSION_BANNER
@@ -6,6 +5,7 @@ from celery.apps.worker import Worker
 from celery.signals import celeryd_after_setup
 from loguru import logger
 
+# from fides.api.db.base import Base  # type: ignore
 from fides.api.service.saas_request.override_implementations import *
 from fides.api.tasks import (
     DSR_QUEUE_NAME,
