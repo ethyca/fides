@@ -15,6 +15,7 @@ import {
 } from "fidesui";
 import { useEffect, useState } from "react";
 
+import { DebouncedSearchInput } from "~/features/common/DebouncedSearchInput";
 import { getErrorMessage } from "~/features/common/helpers";
 import {
   FidesTableV2,
@@ -24,7 +25,6 @@ import {
   useServerSidePagination,
 } from "~/features/common/table/v2";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
-import { SearchInput } from "~/features/data-discovery-and-detection/SearchInput";
 import {
   useDeleteSystemAssetsMutation,
   useGetSystemAssetsQuery,
@@ -155,7 +155,11 @@ const SystemAssetsTable = ({ system }: { system: SystemResponse }) => {
         {COPY}
       </Text>
       <TableActionBar>
-        <SearchInput value={searchQuery} onChange={setSearchQuery} />
+        <DebouncedSearchInput
+          value={searchQuery}
+          onChange={setSearchQuery}
+          placeholder="Search by asset name..."
+        />
         <Spacer />
         <Button
           icon={<Icons.Add />}

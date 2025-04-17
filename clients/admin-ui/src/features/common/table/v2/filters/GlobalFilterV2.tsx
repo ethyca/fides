@@ -1,7 +1,8 @@
-import SearchBar from "common/SearchBar";
 import { debounce } from "common/utils";
 import { Box } from "fidesui";
 import { useCallback, useEffect, useMemo, useState } from "react";
+
+import SearchInput from "~/features/common/SearchInput";
 
 type GlobalFilterProps = {
   globalFilter: any;
@@ -36,7 +37,7 @@ export const GlobalFilterV2 = ({
 
   return (
     <Box maxWidth="424px" width="100%">
-      <SearchBar
+      <SearchInput
         onChange={(changeValue) => {
           setValue(changeValue);
           onChange(changeValue);
