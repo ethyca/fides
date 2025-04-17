@@ -4,7 +4,7 @@ import { useField } from "formik";
 import DataUseSelect from "~/features/common/dropdown/DataUseSelect";
 import { ControlledSelectProps } from "~/features/common/form/ControlledSelect";
 import { ErrorMessage, Label } from "~/features/common/form/inputs";
-import QuestionTooltip from "~/features/common/QuestionTooltip";
+import { InfoTooltip } from "~/features/common/InfoTooltip";
 
 const WrappedDataUseSelect = ({
   name,
@@ -24,7 +24,7 @@ const WrappedDataUseSelect = ({
               {label}
             </Label>
           )}
-          {tooltip && <QuestionTooltip label={tooltip} />}
+          {tooltip && <InfoTooltip label={tooltip} />}
         </Flex>
         <DataUseSelect
           {...field}

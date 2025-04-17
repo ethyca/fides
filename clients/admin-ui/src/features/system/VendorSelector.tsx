@@ -23,7 +23,7 @@ import {
   Label,
 } from "~/features/common/form/inputs";
 import { CompassIcon } from "~/features/common/Icon/CompassIcon";
-import QuestionTooltip from "~/features/common/QuestionTooltip";
+import { InfoTooltip } from "~/features/common/InfoTooltip";
 import { DictOption as VendorOption } from "~/features/plus/plus.slice";
 import { selectSuggestions } from "~/features/system/dictionary-form/dict-suggestion.slice";
 import { FormValues } from "~/features/system/form";
@@ -196,7 +196,7 @@ const VendorSelector = ({
           <Label htmlFor="vendorName" fontSize="xs" my={0} mr={1}>
             {label}
           </Label>
-          <QuestionTooltip label="Enter the system name" />
+          <InfoTooltip label="Enter the system name" />
         </HStack>
         <Box width="100%" className="relative">
           <Select<VendorOption, VendorOption>

@@ -1,14 +1,14 @@
 import { debounce } from "lodash";
 import { useCallback, useState } from "react";
 
-import SearchBar from "~/features/common/SearchBar";
+import SearchInput, { SearchInputProps } from "~/features/common/SearchInput";
 
-interface SearchInputProps {
-  value: string;
-  onChange: (newValue: string) => void;
-}
-
-export const SearchInput = ({ value, onChange }: SearchInputProps) => {
+export const DebouncedSearchInput = ({
+  value,
+  onChange,
+  placeholder,
+  ...props
+}: SearchInputProps) => {
   const INPUT_CHANGE_DELAY = 500;
   const [currentInput, setCurrentInput] = useState(value);
 
@@ -30,10 +30,12 @@ export const SearchInput = ({ value, onChange }: SearchInputProps) => {
   };
 
   return (
-    <SearchBar
-      search={currentInput}
+    <SearchInput
+      value={currentInput}
       onChange={handleOnChange}
       onClear={onClear}
+      placeholder={placeholder}
+      {...props}
     />
   );
 };

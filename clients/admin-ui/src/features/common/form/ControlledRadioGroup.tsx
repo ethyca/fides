@@ -11,7 +11,7 @@ import { useField } from "formik";
 
 import type { StringField } from "~/features/common/form/inputs";
 import { ErrorMessage, Label, Option } from "~/features/common/form/inputs";
-import QuestionTooltip from "~/features/common/QuestionTooltip";
+import { InfoTooltip } from "~/features/common/InfoTooltip";
 
 interface ControlledRadioGroupProps extends RadioGroupProps {
   label?: string;
@@ -61,7 +61,7 @@ const ControlledRadioGroup = ({
                         {optionLabel}
                       </Text>
                       {optionTooltip ? (
-                        <QuestionTooltip label={optionTooltip} />
+                        <InfoTooltip label={optionTooltip} />
                       ) : null}
                     </Flex>
                   </Radio>

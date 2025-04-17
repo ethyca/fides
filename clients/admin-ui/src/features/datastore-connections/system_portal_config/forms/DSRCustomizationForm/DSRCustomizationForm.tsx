@@ -119,14 +119,12 @@ const DSRCustomizationForm = ({
                               <Box minH="57px" w="416px">
                                 <CustomInput
                                   autoFocus={index === 0}
-                                  displayHelpIcon={false}
                                   isRequired
                                   name={`fields.${index}.pii_field`}
                                 />
                               </Box>
                               <Box minH="57px" w="416px">
                                 <CustomInput
-                                  displayHelpIcon={false}
                                   isRequired
                                   name={`fields.${index}.dsr_package_label`}
                                 />
