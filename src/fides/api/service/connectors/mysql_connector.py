@@ -87,10 +87,9 @@ class MySQLConnector(SQLConnector):
         if not self.configuration.secrets:
             sslmode = MySQLSslMode.preferred
         else:
-            config = self.secrets_schema(**self.configuration.secrets)
-            sslmode = config.sslmode
-        if sslmode is None:
-            sslmode = MySQLSslMode.preferred
+            config = self.secrets_schema(**self.configuration.secrets or {})
+            set_sslmode = config.sslmode
+            sslmode = set_sslmode if set_sslmode is not None else MySQLSslMode.preferred
         return {
             "ssl": {
                 "mode": sslmode,
