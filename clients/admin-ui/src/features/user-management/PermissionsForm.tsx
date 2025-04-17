@@ -14,9 +14,9 @@ import React, { useEffect, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
+import { InfoTooltip } from "~/features/common/InfoTooltip";
 import ConfirmationModal from "~/features/common/modals/ConfirmationModal";
 import { USER_MANAGEMENT_ROUTE } from "~/features/common/nav/routes";
-import QuestionTooltip from "~/features/common/QuestionTooltip";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import { ROLES } from "~/features/user-management/constants";
 import { RoleRegistryEnum, ScopeRegistryEnum, System } from "~/types/api";
@@ -166,7 +166,7 @@ const PermissionsForm = () => {
                 <Text fontSize="sm" fontWeight="semibold" mr={1}>
                   User role
                 </Text>
-                <QuestionTooltip label="A user's role in the organization determines what parts of the UI they can access and which functions are available to them." />
+                <InfoTooltip label="A user's role in the organization determines what parts of the UI they can access and which functions are available to them." />
               </Flex>
               {ROLES.map((role) => {
                 const isSelected = values.roles.indexOf(role.roleKey) >= 0;

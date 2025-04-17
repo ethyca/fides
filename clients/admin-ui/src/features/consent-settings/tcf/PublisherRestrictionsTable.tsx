@@ -9,8 +9,8 @@ import {
 import NextLink from "next/link";
 
 import { useAppSelector } from "~/app/hooks";
+import { InfoTooltip } from "~/features/common/InfoTooltip";
 import { selectPurposes } from "~/features/common/purpose.slice";
-import QuestionTooltip from "~/features/common/QuestionTooltip";
 import { TCFConfigurationDetail } from "~/types/api";
 
 import {
@@ -137,11 +137,11 @@ export const PublisherRestrictionsTable = ({
         <FauxColumnHeader width="600px">TCF purpose</FauxColumnHeader>
         <FauxColumnHeader flex={1} gap={3} borderLeft>
           Restrictions
-          <QuestionTooltip label="Restrictions control how vendors are permitted to process data for specific purposes. Fides supports three restriction types: Purpose Restriction to completely disallow data processing for a purpose, Require Consent to allow processing only with explicit user consent, and Require Legitimate Interest to allow processing based on legitimate business interest unless the user objects." />
+          <InfoTooltip label="Restrictions control how vendors are permitted to process data for specific purposes. Fides supports three restriction types: Purpose Restriction to completely disallow data processing for a purpose, Require Consent to allow processing only with explicit user consent, and Require Legitimate Interest to allow processing based on legitimate business interest unless the user objects." />
         </FauxColumnHeader>
         <FauxColumnHeader width="100px" gap={3} borderLeft>
           Flexible
-          <QuestionTooltip label='Indicates whether the legal basis for this purpose can be overridden by publisher restrictions. If marked "No," the purpose has a fixed legal basis defined by the TCF and cannot be changed.' />
+          <InfoTooltip label='Indicates whether the legal basis for this purpose can be overridden by publisher restrictions. If marked "No," the purpose has a fixed legal basis defined by the TCF and cannot be changed.' />
         </FauxColumnHeader>
         <FauxColumnHeader width="100px" borderLeft>
           Actions
