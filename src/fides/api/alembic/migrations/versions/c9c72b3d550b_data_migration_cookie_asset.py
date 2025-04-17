@@ -38,16 +38,18 @@ def upgrade():
     for row in result:
         if row.privacy_declaration_id is None:
             # If the privacy declaration ID is None, we skip matching for this row
-            assets_to_create[row.name] = Asset(
-                id=str(uuid.uuid4()),
-                created_at=row.created_at,
-                updated_at=row.updated_at,
-                name=row.name,
-                domain=row.domain,
-                system_id=row.system_id,
-                data_uses=[],
-                asset_type="Cookie",
-            )
+            identifier = f"{row.name}_{row.system_id}"
+            if identifier not in assets_to_create.keys():
+                assets_to_create[identifier] = Asset(
+                    id=str(uuid.uuid4()),
+                    created_at=row.created_at,
+                    updated_at=row.updated_at,
+                    name=row.name,
+                    domain=row.domain,
+                    system_id=row.system_id,
+                    data_uses=[],
+                    asset_type="Cookie",
+                )
             continue
 
         if row.pud_system_id:
