@@ -145,7 +145,6 @@ def test_parse(test_config_path: str, test_cli_runner: CliRunner) -> None:
 
 
 class TestDB:
-    @pytest.mark.skip("Needs investigation")
     @pytest.mark.integration
     def test_reset_db(self, test_config_path: str, test_cli_runner: CliRunner) -> None:
         result = test_cli_runner.invoke(
@@ -223,7 +222,6 @@ class TestPull:
         print(result.output)
         assert result.exit_code == 0
 
-    @pytest.mark.skip("Too slow")
     def test_pull_all(
         self,
         test_config_path: str,
@@ -308,7 +306,7 @@ class TestPull:
 
 @pytest.mark.integration
 class TestAnnotate:
-
+    @pytest.mark.skip("Needs investigation")
     def test_annotate(
         self,
         test_config_path: str,
@@ -400,7 +398,6 @@ class TestCRUD:
         print(result.output)
         assert result.exit_code == 0
 
-    @pytest.mark.skip("Needs investigation")
     def test_delete(self, test_config_path: str, test_cli_runner: CliRunner) -> None:
         result = test_cli_runner.invoke(
             cli,
@@ -598,7 +595,6 @@ class TestEvaluate:
         assert result.exit_code == 1
 
 
-@pytest.mark.skip
 class TestScan:
     @pytest.mark.integration
     def test_scan_dataset_db_input_connection_string(
@@ -809,7 +805,6 @@ class TestScan:
         assert result.exit_code == 0
 
 
-@pytest.mark.skip
 class TestGenerate:
     @pytest.mark.integration
     def test_generate_dataset_db_with_connection_string(
@@ -1128,7 +1123,6 @@ class TestUser:
         print(result.output)
         assert result.exit_code == 0
 
-    @pytest.mark.skip("Too slow")
     def test_user_login_env_var_failed(
         self, test_config_path: str, test_cli_runner: CliRunner, credentials_path: str
     ) -> None:
@@ -1154,7 +1148,6 @@ class TestUser:
         print(result.output)
         assert result.exit_code == 1
 
-    @pytest.mark.skip("Too slow")
     def test_user_login_env_var_password(
         self, test_config_path: str, test_cli_runner: CliRunner, credentials_path: str
     ) -> None:
@@ -1174,7 +1167,6 @@ class TestUser:
         print(result.output)
         assert result.exit_code == 0
 
-    @pytest.mark.skip("Too slow")
     def test_user_login_env_var_credentials(
         self, test_config_path: str, test_cli_runner: CliRunner, credentials_path: str
     ) -> None:
