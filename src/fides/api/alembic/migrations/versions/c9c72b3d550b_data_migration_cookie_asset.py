@@ -37,7 +37,6 @@ def upgrade():
     assets_to_create: Dict[str, Asset] = {}
     for row in result:
         if row.privacy_declaration_id is None:
-            # If the privacy declaration ID is None, we skip matching for this row
             identifier = f"{row.name}_{row.system_id}"
             if identifier not in assets_to_create.keys():
                 assets_to_create[identifier] = Asset(
