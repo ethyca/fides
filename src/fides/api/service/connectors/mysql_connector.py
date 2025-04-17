@@ -59,7 +59,6 @@ class MySQLConnector(SQLConnector):
     # Overrides SQLConnector.create_client
     def create_client(self) -> Engine:
         """Returns a SQLAlchemy Engine that can be used to interact with a database"""
-        connect_args = self.get_connect_args()
         if (
             self.configuration.secrets
             and self.configuration.secrets.get("ssh_required", False)
@@ -71,6 +70,7 @@ class MySQLConnector(SQLConnector):
             uri = self.build_ssh_uri(local_address=self.ssh_server.local_bind_address)
         else:
             uri = (self.configuration.secrets or {}).get("url") or self.build_uri()
+        connect_args = self.get_connect_args()
         return create_engine(
             uri,
             hide_parameters=self.hide_parameters,
@@ -84,12 +84,7 @@ class MySQLConnector(SQLConnector):
 
     def get_connect_args(self) -> Dict[str, Dict[str, MySQLSslMode]]:
         """Get connection arguments for the engine"""
-        if not self.configuration.secrets:
-            sslmode = MySQLSslMode.preferred
-        else:
-            config = self.secrets_schema(**self.configuration.secrets or {})
-            set_sslmode = config.sslmode
-            sslmode = set_sslmode if set_sslmode is not None else MySQLSslMode.preferred
+        sslmode = self.configuration.secrets.get("sslmode", MySQLSslMode.preferred)
         return {
             "ssl": {
                 "mode": sslmode,

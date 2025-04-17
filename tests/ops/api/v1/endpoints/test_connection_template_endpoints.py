@@ -1068,10 +1068,17 @@ class TestGetConnectionSecretSchema:
                 "sslmode": {
                     "title": "SSL Mode",
                     "description": "The SSL mode to use for the connection. Valid values are 'required', 'preferred', and 'disabled'.",
-                    "type": "MySQLSslMode",
+                    "allOf": [{"$ref": "#/definitions/MySQLSslMode"}],
                 },
             },
             "required": ["host", "dbname"],
+            "definitions": {
+                "MySQLSslMode": {
+                    "title": "MySQLSslMode",
+                    "type": "string",
+                    "enum": ["required", "preferred", "disabled"],
+                }
+            },
         }
 
     def test_get_connection_secret_schema_postgres(
