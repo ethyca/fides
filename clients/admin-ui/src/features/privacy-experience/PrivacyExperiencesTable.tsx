@@ -18,6 +18,7 @@ import {
   useServerSidePagination,
 } from "common/table/v2";
 import { AntButton as Button, Flex, HStack, Text, VStack } from "fidesui";
+import { useRouter } from "next/router";
 import { useEffect, useMemo } from "react";
 
 import { PRIVACY_EXPERIENCE_ROUTE } from "~/features/common/nav/routes";
@@ -46,6 +47,7 @@ const emptyExperienceResponse = {
 };
 
 const EmptyTableExperience = () => {
+  const router = useRouter();
   return (
     <VStack
       mt={6}
@@ -67,13 +69,7 @@ const EmptyTableExperience = () => {
         </Text>
       </VStack>
       <Button
-        onClick={() => {
-          // NOTE: do not use router.push here!
-          // The experience Preview relies on loading the FidesJS script dynamically
-          // and caching it can cause problems especially when switching between
-          // TCF and non-TCF experiences.
-          window.location.href = `${PRIVACY_EXPERIENCE_ROUTE}/new`;
-        }}
+        onClick={() => router.push(`${PRIVACY_EXPERIENCE_ROUTE}/new`)}
         size="small"
         type="primary"
         data-testid="add-privacy-experience-btn"
@@ -86,6 +82,7 @@ const EmptyTableExperience = () => {
 const columnHelper = createColumnHelper<ExperienceConfigListViewResponse>();
 
 export const PrivacyExperiencesTable = () => {
+  const router = useRouter();
   const { isLoading: isLoadingHealthCheck } = useGetHealthQuery();
 
   // Permissions
@@ -210,11 +207,7 @@ export const PrivacyExperiencesTable = () => {
 
   const onRowClick = ({ id }: ExperienceConfigListViewResponse) => {
     if (userCanUpdate) {
-      // NOTE: do not use router.push here!
-      // The experience Preview relies on loading the FidesJS script dynamically
-      // and caching it can cause problems especially when switching between
-      // TCF and non-TCF experiences.
-      window.location.href = `${PRIVACY_EXPERIENCE_ROUTE}/${id}`;
+      router.push(`${PRIVACY_EXPERIENCE_ROUTE}/${id}`);
     }
   };
 
@@ -235,13 +228,7 @@ export const PrivacyExperiencesTable = () => {
               </Restrict>
             </HStack>
             <Button
-              onClick={() => {
-                // NOTE: do not use router.push here!
-                // The experience Preview relies on loading the FidesJS script dynamically
-                // and caching it can cause problems especially when switching between
-                // TCF and non-TCF experiences.
-                window.location.href = `${PRIVACY_EXPERIENCE_ROUTE}/new`;
-              }}
+              onClick={() => router.push(`${PRIVACY_EXPERIENCE_ROUTE}/new`)}
               type="primary"
               data-testid="add-privacy-experience-btn"
             >
