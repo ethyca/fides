@@ -3,7 +3,6 @@ from typing import Dict, List, Literal, Optional
 from pydantic import BaseModel, Field
 
 from fides.api.models.consent_automation import ConsentableItem as ConsentableItemModel
-from fides.api.models.privacy_notice import UserConsentPreference
 from fides.api.schemas.base_class import FidesSchema
 
 
