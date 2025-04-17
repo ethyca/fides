@@ -1076,7 +1076,7 @@ class TestGetConnectionSecretSchema:
                 "MySQLSslMode": {
                     "title": "MySQLSslMode",
                     "type": "string",
-                    "enum": ["required", "preferred", "disabled"],
+                    "enum": ["preferred", "required", "disabled"],
                 }
             },
         }
