@@ -19,6 +19,7 @@ export type {
   SwitchProps as AntSwitchProps,
   TabsProps as AntTabsProps,
   TagProps as AntTagProps,
+  TooltipProps as AntTooltipProps,
   GetProps,
   InputRef,
   RadioChangeEvent,

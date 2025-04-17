@@ -1,12 +1,12 @@
 import {
   AntSelect as Select,
+  AntTooltip as Tooltip,
   Box,
   CircleHelpIcon,
   Flex,
   FormControl,
   FormErrorMessage,
   FormLabel,
-  Tooltip,
   VStack,
 } from "fidesui";
 import { useField } from "formik";
@@ -42,11 +42,9 @@ const SelectDataset = ({ options }: { options?: Option[] }) => {
         <FormErrorMessage>{error}</FormErrorMessage>
       </VStack>
       <Tooltip
-        aria-label="Select datasets to associate with this integration"
-        hasArrow
-        label="Select datasets to associate with this integration"
-        placement="right-start"
-        openDelay={500}
+        title="Select datasets to associate with this integration"
+        placement="rightTop"
+        mouseEnterDelay={0.5}
       >
         <Flex alignItems="center" h="32px">
           <CircleHelpIcon marginLeft="8px" _hover={{ cursor: "pointer" }} />

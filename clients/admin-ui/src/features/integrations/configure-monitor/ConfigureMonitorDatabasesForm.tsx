@@ -1,4 +1,10 @@
-import { AntButton as Button, Flex, Text, Tooltip, useToast } from "fidesui";
+import {
+  AntButton as Button,
+  AntTooltip as Tooltip,
+  Flex,
+  Text,
+  useToast,
+} from "fidesui";
 
 import FidesSpinner from "~/features/common/FidesSpinner";
 import { usePaginatedPicker } from "~/features/common/hooks/usePicker";
@@ -103,8 +109,9 @@ const ConfigureMonitorDatabasesForm = ({
       <div className="mt-4 flex w-full justify-between">
         <Button onClick={onClose}>Cancel</Button>
         <Tooltip
-          label="Select one or more projects to save"
-          isDisabled={!saveIsDisabled}
+          title={
+            saveIsDisabled ? "Select one or more projects to save" : undefined
+          }
         >
           <Button
             onClick={handleSave}

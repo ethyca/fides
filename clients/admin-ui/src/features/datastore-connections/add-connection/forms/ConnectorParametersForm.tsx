@@ -7,6 +7,7 @@ import {
 import { useLazyGetDatastoreConnectionStatusQuery } from "datastore-connections/datastore-connection.slice";
 import {
   AntButton as Button,
+  AntTooltip as Tooltip,
   CircleHelpIcon,
   Flex,
   FormControl,
@@ -20,7 +21,6 @@ import {
   NumberInputField,
   NumberInputStepper,
   Textarea,
-  Tooltip,
   VStack,
 } from "fidesui";
 import { Field, FieldInputProps, Form, Formik, FormikProps } from "formik";
@@ -173,11 +173,9 @@ const ConnectorParametersForm = ({
             <FormErrorMessage>{form.errors[key]}</FormErrorMessage>
           </VStack>
           <Tooltip
-            aria-label={item.description}
-            hasArrow
-            label={item.description}
-            placement="right-start"
-            openDelay={500}
+            title={item.description}
+            placement="rightTop"
+            mouseEnterDelay={0.5}
           >
             <Flex
               alignItems="center"
@@ -337,11 +335,9 @@ const ConnectorParametersForm = ({
                     </FormErrorMessage>
                   </VStack>
                   <Tooltip
-                    aria-label="The fides_key will allow fidesops to associate dataset field references appropriately. Must be a unique alphanumeric value with no spaces (underscores allowed) to represent this connection."
-                    hasArrow
-                    label="The fides_key will allow fidesops to associate dataset field references appropriately. Must be a unique alphanumeric value with no spaces (underscores allowed) to represent this connection."
-                    placement="right-start"
-                    openDelay={500}
+                    title="The fides_key will allow fidesops to associate dataset field references appropriately. Must be a unique alphanumeric value with no spaces (underscores allowed) to represent this connection."
+                    placement="rightTop"
+                    mouseEnterDelay={0.5}
                   >
                     <Flex alignItems="center" h="32px">
                       <CircleHelpIcon

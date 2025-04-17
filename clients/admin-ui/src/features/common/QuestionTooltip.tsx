@@ -1,7 +1,16 @@
-import { QuestionIcon, Tooltip, TooltipProps } from "fidesui";
+import {
+  AntTooltip as Tooltip,
+  AntTooltipProps as TooltipProps,
+  QuestionIcon,
+} from "fidesui";
 
-const QuestionTooltip = ({ ...props }: Omit<TooltipProps, "children">) => (
-  <Tooltip placement="right" {...props}>
+interface QuestionTooltipProps
+  extends Omit<TooltipProps, "children" | "title"> {
+  label: string;
+}
+
+const QuestionTooltip = ({ label, ...props }: QuestionTooltipProps) => (
+  <Tooltip title={label} placement="right" {...props}>
     <QuestionIcon color="gray.400" />
   </Tooltip>
 );
