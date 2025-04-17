@@ -58,10 +58,26 @@ def test_mysql_connector_build_uri(connection_config_mysql, db: Session):
     )
 
 
-def test_mysql_connector_build_uri_without_secrets(
-    connection_config_mysql, db: Session
-):
-    connection_config_mysql.secrets = None
-    connection_config_mysql.save(db)
-    with pytest.raises(ValueError):
-        MySQLConnector(configuration=connection_config_mysql)
+def test_get_connect_args(connection_config_mysql):
+    connector = MySQLConnector(configuration=connection_config_mysql)
+
+    # Default sslmode
+    connection_config_mysql.secrets = {
+        "username": "mysql_user",
+        "password": "mysql_pw",
+        "host": "host.docker.internal",
+        "dbname": "mysql_example",
+    }
+    connect_args = connector.get_connect_args()
+    assert connect_args == {"ssl": {"mode": "preferred"}}
+
+    # Custom sslmode
+    connection_config_mysql.secrets = {
+        "username": "mysql_user",
+        "password": "mysql_pw",
+        "host": "host.docker.internal",
+        "dbname": "mysql_example",
+        "sslmode": "required",
+    }
+    connect_args = connector.get_connect_args()
+    assert connect_args == {"ssl": {"mode": "required"}}

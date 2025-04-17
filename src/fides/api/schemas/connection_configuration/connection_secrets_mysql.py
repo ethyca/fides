@@ -1,3 +1,4 @@
+from enum import Enum
 from typing import ClassVar, List, Optional
 
 from pydantic import Field
@@ -6,6 +7,12 @@ from fides.api.schemas.base_class import NoValidationSchema
 from fides.api.schemas.connection_configuration.connection_secrets import (
     ConnectionConfigSecretsSchema,
 )
+
+
+class MySQLSslMode(str, Enum):
+    preferred = "preferred"
+    required = "required"
+    disabled = "disabled"
 
 
 class MySQLSchema(ConnectionConfigSecretsSchema):
@@ -40,11 +47,10 @@ class MySQLSchema(ConnectionConfigSecretsSchema):
         title="SSH required",
         description="Indicates whether an SSH tunnel is required for the connection. Enable this option if your MySQL server is behind a firewall and requires SSH tunneling for remote connections.",
     )
-    sslmode: Optional[str] = Field(
+    sslmode: Optional[MySQLSslMode] = Field(
         None,  # TODO: support for verify-ca and verify-full
         title="SSL Mode",
         description="The SSL mode to use for the connection. Valid values are 'required', 'preferred', and 'disabled'.",
-        pattern=r"required|preferred|disabled",
     )
 
     _required_components: ClassVar[List[str]] = ["host", "dbname"]
