@@ -1,12 +1,12 @@
 import { AntFlex as Flex, FormControl } from "fidesui";
 import { useField } from "formik";
 
+import DataUseSelect from "~/features/common/dropdown/DataUseSelect";
 import { ControlledSelectProps } from "~/features/common/form/ControlledSelect";
 import { ErrorMessage, Label } from "~/features/common/form/inputs";
 import QuestionTooltip from "~/features/common/QuestionTooltip";
-import ConsentCategorySelect from "~/features/data-discovery-and-detection/action-center/ConsentCategorySelect";
 
-const WrappedConsentCategorySelect = ({
+const WrappedDataUseSelect = ({
   name,
   label,
   labelProps,
@@ -26,7 +26,7 @@ const WrappedConsentCategorySelect = ({
           )}
           {tooltip && <QuestionTooltip label={tooltip} />}
         </Flex>
-        <ConsentCategorySelect
+        <DataUseSelect
           {...field}
           mode="multiple"
           // show checked options in the dropdown instead of removing them once selected
@@ -51,4 +51,4 @@ const WrappedConsentCategorySelect = ({
   );
 };
 
-export default WrappedConsentCategorySelect;
+export default WrappedDataUseSelect;
