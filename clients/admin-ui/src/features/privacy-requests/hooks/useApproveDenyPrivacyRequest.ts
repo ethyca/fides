@@ -1,4 +1,4 @@
-import { antMessage as message, useDisclosure } from "fidesui";
+import { AntMessage as message, useDisclosure } from "fidesui";
 
 import { PrivacyRequestStatus } from "~/types/api";
 

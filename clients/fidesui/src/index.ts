@@ -42,7 +42,7 @@ export {
   Layout as AntLayout,
   List as AntList,
   Menu as AntMenu,
-  message as antMessage,
+  message as AntMessage,
   Radio as AntRadio,
   Row as AntRow,
   Skeleton as AntSkeleton,
