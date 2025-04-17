@@ -1,6 +1,5 @@
 """Contains the nox sessions used during CI checks."""
 
-import time
 from functools import partial
 from typing import Callable, Dict
 
