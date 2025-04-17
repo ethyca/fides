@@ -1,6 +1,7 @@
 import {
   AntButton as Button,
   AntSelect as Select,
+  AntSpace as Space,
   Box,
   ChakraProps,
   DragHandleIcon,
@@ -89,26 +90,26 @@ const ScrollableListItem = <T extends unknown>({
           </Text>
           <InfoTooltip label={tooltip} />
         </Flex>
-        {onDeleteItem && (
-          <Button
-            aria-label="Delete"
-            onClick={() => onDeleteItem(item)}
-            icon={<Icons.TrashCan />}
-            size="small"
-            className="invisible absolute right-2 bg-white group-hover:visible"
-            data-testid={`delete-${rowTestId}`}
-          />
-        )}
-        {onEditItem && (
-          <Button
-            aria-label="Edit"
-            onClick={() => onEditItem(item)}
-            icon={<Icons.Edit />}
-            size="small"
-            className="invisible absolute right-2 bg-white group-hover:visible"
-            data-testid={`edit-${rowTestId}`}
-          />
-        )}
+        <Space className="invisible absolute right-2 bg-white group-hover:visible">
+          {onEditItem && (
+            <Button
+              aria-label="Edit"
+              onClick={() => onEditItem(item)}
+              icon={<Icons.Edit />}
+              size="small"
+              data-testid={`edit-${rowTestId}`}
+            />
+          )}
+          {onDeleteItem && (
+            <Button
+              aria-label="Delete"
+              onClick={() => onDeleteItem(item)}
+              icon={<Icons.TrashCan />}
+              size="small"
+              data-testid={`delete-${rowTestId}`}
+            />
+          )}
+        </Space>
       </Flex>
     </Reorder.Item>
   );
