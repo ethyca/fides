@@ -1,0 +1,11 @@
+.paragraph {
+  // Use :global to target Ant's classes directly
+  &:global(.ant-typography) {
+    margin-bottom: 0;
+
+    // Only add margin to paragraphs that aren't the last element
+    &:not(:last-child) {
+      margin-bottom: 1em;
+    }
+  }
+}
