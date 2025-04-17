@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.59.2b0.post0.dev2"
+    "version": "2.59.2b0.post0.dev3"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -14573,21 +14573,6 @@
             "title": "Legitimate Interest Disclosure Url",
             "description": "A URL that points to the system's publicly accessible legitimate interest disclosure."
           },
-          "cookies": {
-            "anyOf": [
-              {
-                "items": {
-                  "$ref": "#/components/schemas/Cookies"
-                },
-                "type": "array"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Cookies",
-            "description": "System-level cookies unassociated with a data use to deliver services and functionality"
-          },
           "created_at": {
             "type": "string",
             "format": "date-time",
@@ -15890,42 +15875,6 @@
         "type": "object",
         "title": "ContactDetails",
         "description": "The contact details information model.\n\nUsed to capture contact information for controllers, used\nas part of exporting a data map / ROPA.\n\nThis model is nested under an Organization and\npotentially under a system/dataset."
-      },
-      "Cookies": {
-        "properties": {
-          "name": {
-            "type": "string",
-            "title": "Name"
-          },
-          "path": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Path"
-          },
-          "domain": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Domain"
-          }
-        },
-        "type": "object",
-        "required": [
-          "name"
-        ],
-        "title": "Cookies",
-        "description": "The Cookies resource model"
       },
       "CoreHealthCheck": {
         "properties": {
@@ -22251,21 +22200,6 @@
             "type": "array",
             "title": "Shared Categories",
             "description": "The categories of personal data that this system shares with third parties."
-          },
-          "cookies": {
-            "anyOf": [
-              {
-                "items": {
-                  "$ref": "#/components/schemas/Cookies"
-                },
-                "type": "array"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Cookies",
-            "description": "Cookies associated with this data use to deliver services and functionality"
           }
         },
         "type": "object",
@@ -22447,21 +22381,6 @@
             "type": "array",
             "title": "Shared Categories",
             "description": "The categories of personal data that this system shares with third parties."
-          },
-          "cookies": {
-            "anyOf": [
-              {
-                "items": {
-                  "$ref": "#/components/schemas/Cookies"
-                },
-                "type": "array"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Cookies",
-            "default": []
           },
           "id": {
             "type": "string",
@@ -26292,21 +26211,6 @@
             ],
             "title": "Legitimate Interest Disclosure Url",
             "description": "A URL that points to the system's publicly accessible legitimate interest disclosure."
-          },
-          "cookies": {
-            "anyOf": [
-              {
-                "items": {
-                  "$ref": "#/components/schemas/Cookies"
-                },
-                "type": "array"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Cookies",
-            "description": "System-level cookies unassociated with a data use to deliver services and functionality"
           }
         },
         "type": "object",
@@ -26743,21 +26647,6 @@
             ],
             "title": "Legitimate Interest Disclosure Url",
             "description": "A URL that points to the system's publicly accessible legitimate interest disclosure."
-          },
-          "cookies": {
-            "anyOf": [
-              {
-                "items": {
-                  "$ref": "#/components/schemas/Cookies"
-                },
-                "type": "array"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Cookies",
-            "description": "System-level cookies unassociated with a data use to deliver services and functionality"
           },
           "created_at": {
             "type": "string",
