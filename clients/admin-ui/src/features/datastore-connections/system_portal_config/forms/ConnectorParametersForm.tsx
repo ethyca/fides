@@ -8,6 +8,7 @@ import DSRCustomizationModal from "datastore-connections/system_portal_config/fo
 import {
   AntButton as Button,
   AntSelect as Select,
+  Flex,
   FormControl,
   FormErrorMessage,
   FormLabel,
@@ -215,9 +216,9 @@ export const ConnectorParametersForm = ({
               )}
               <FormErrorMessage>{error}</FormErrorMessage>
             </VStack>
-            <div style={{ marginLeft: "8px" }}>
+            <Flex alignItems="center" h={8} ml={2}>
               <InfoTooltip label={item.description} />
-            </div>
+            </Flex>
           </FormControl>
         );
       }}
@@ -386,9 +387,9 @@ export const ConnectorParametersForm = ({
                           {props.errors.instance_key as string}
                         </FormErrorMessage>
                       </VStack>
-                      <div style={{ marginLeft: "8px" }}>
+                      <Flex alignItems="center" h={8} ml={2}>
                         <InfoTooltip label="The fides_key will allow fidesops to associate dataset field references appropriately. Must be a unique alphanumeric value with no spaces (underscores allowed) to represent this integration." />
-                      </div>
+                      </Flex>
                     </FormControl>
                   )}
                 </Field>
@@ -458,9 +459,9 @@ export const ConnectorParametersForm = ({
                           {props.errors.enabled_actions as string}
                         </FormErrorMessage>
                       </VStack>
-                      <div style={{ marginLeft: "8px" }}>
+                      <Flex alignItems="center" h={8} ml={2}>
                         <InfoTooltip label="The request types that are supported for this integration." />
-                      </div>
+                      </Flex>
                     </FormControl>
                   )}
                 </Field>

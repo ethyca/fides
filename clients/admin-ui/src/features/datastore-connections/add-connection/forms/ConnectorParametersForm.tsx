@@ -7,6 +7,7 @@ import {
 import { useLazyGetDatastoreConnectionStatusQuery } from "datastore-connections/datastore-connection.slice";
 import {
   AntButton as Button,
+  Flex,
   FormControl,
   FormErrorMessage,
   FormLabel,
@@ -170,9 +171,9 @@ const ConnectorParametersForm = ({
             )}
             <FormErrorMessage>{form.errors[key]}</FormErrorMessage>
           </VStack>
-          <div style={{ marginLeft: "8px" }}>
+          <Flex alignItems="center" h={8} ml={2}>
             <InfoTooltip label={item.description} />
-          </div>
+          </Flex>
         </FormControl>
       )}
     </Field>
@@ -317,9 +318,9 @@ const ConnectorParametersForm = ({
                       {props.errors.instance_key}
                     </FormErrorMessage>
                   </VStack>
-                  <div style={{ marginLeft: "8px" }}>
+                  <Flex alignItems="center" h={8} ml={2}>
                     <InfoTooltip label="The fides_key will allow fidesops to associate dataset field references appropriately. Must be a unique alphanumeric value with no spaces (underscores allowed) to represent this connection." />
-                  </div>
+                  </Flex>
                 </FormControl>
               )}
             </Field>
@@ -331,7 +332,7 @@ const ConnectorParametersForm = ({
               }
               return getFormField(key, item);
             })}
-            <div className="flex gap-2">
+            <Flex gap={2}>
               <Button
                 disabled={!connection?.key}
                 loading={result.isLoading || result.isFetching}
@@ -348,7 +349,7 @@ const ConnectorParametersForm = ({
               >
                 Save
               </Button>
-            </div>
+            </Flex>
           </VStack>
         </Form>
       )}
