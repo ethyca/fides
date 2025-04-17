@@ -11,7 +11,7 @@ import {
   useCreateStorageMutation,
   useCreateStorageSecretsMutation,
 } from "~/features/privacy-requests/privacy-requests.slice";
-import { S3SecretsDetails } from "~/features/privacy-requests/types";
+import { GCSSecretsDetails } from "~/features/privacy-requests/types";
 
 interface SavedStorageDetails {
   storageDetails: {
@@ -30,7 +30,9 @@ interface StorageDetails {
   };
 }
 
-const S3StorageConfiguration = ({ storageDetails }: SavedStorageDetails) => {
+const GoogleCloudStorageConfiguration = ({
+  storageDetails,
+}: SavedStorageDetails) => {
   const [authMethod, setAuthMethod] = useState("");
   const [saveStorageDetails] = useCreateStorageMutation();
   const [setStorageSecrets] = useCreateStorageSecretsMutation();
@@ -39,22 +41,31 @@ const S3StorageConfiguration = ({ storageDetails }: SavedStorageDetails) => {
   const { successAlert } = useAlert();
 
   const initialValues = {
-    type: storageTypes.s3,
+    type: storageTypes.gcs,
     auth_method: storageDetails?.details?.auth_method ?? "",
     bucket: storageDetails?.details?.bucket ?? "",
     format: storageDetails?.format ?? "",
   };
 
   const initialSecretValues = {
-    aws_access_key_id: "",
-    aws_secret_access_key: "",
+    type: "",
+    project_id: "",
+    private_key_id: "",
+    private_key: "",
+    client_email: "",
+    client_id: "",
+    auth_uri: "",
+    token_uri: "",
+    auth_provider_x509_cert_url: "",
+    client_x509_cert_url: "",
+    universe_domain: "",
   };
 
   const handleSubmitStorageConfiguration = async (
     newValues: StorageDetails["storageDetails"],
   ) => {
     const result = await saveStorageDetails({
-      type: storageTypes.s3,
+      type: storageTypes.gcs,
       details: {
         auth_method: newValues.auth_method,
         bucket: newValues.bucket,
@@ -66,30 +77,45 @@ const S3StorageConfiguration = ({ storageDetails }: SavedStorageDetails) => {
       handleError(result.error);
     } else {
       setAuthMethod(newValues.auth_method);
-      successAlert(`S3 storage credentials successfully updated.`);
+      successAlert(`Google Cloud Storage credentials successfully updated.`);
     }
   };
 
-  const handleSubmitStorageSecrets = async (newValues: S3SecretsDetails) => {
+  const handleSubmitStorageSecrets = async (newValues: GCSSecretsDetails) => {
+    let cleanedKey = newValues.private_key.trim();
+    // Replace escaped newlines with actual newlines
+    if (cleanedKey.includes("\\n")) {
+      cleanedKey = cleanedKey.replace(/\\n/g, "\n");
+    }
+
     const result = await setStorageSecrets({
       details: {
-        aws_access_key_id: newValues.aws_access_key_id,
-        aws_secret_access_key: newValues.aws_secret_access_key,
+        type: newValues.type,
+        project_id: newValues.project_id,
+        private_key_id: newValues.private_key_id,
+        private_key: cleanedKey,
+        client_email: newValues.client_email,
+        client_id: newValues.client_id,
+        auth_uri: newValues.auth_uri,
+        token_uri: newValues.token_uri,
+        auth_provider_x509_cert_url: newValues.auth_provider_x509_cert_url,
+        client_x509_cert_url: newValues.client_x509_cert_url,
+        universe_domain: newValues.universe_domain,
       },
-      type: storageTypes.s3,
+      type: storageTypes.gcs,
     });
 
     if (isErrorResult(result)) {
       handleError(result.error);
     } else {
-      successAlert(`S3 storage secrets successfully updated.`);
+      successAlert(`Google Cloud Storage secrets successfully updated.`);
     }
   };
 
   return (
     <>
       <Heading fontSize="md" fontWeight="semibold" mt={10}>
-        S3 storage configuration
+        Google Cloud Storage configuration
       </Heading>
       <Stack>
         <Formik
@@ -114,8 +140,11 @@ const S3StorageConfiguration = ({ storageDetails }: SavedStorageDetails) => {
                   name="auth_method"
                   label="Auth method"
                   options={[
-                    { label: "secret_keys", value: "secret_keys" },
-                    { label: "automatic", value: "automatic" },
+                    {
+                      label: "Service Account Keys",
+                      value: "service_account_keys",
+                    },
+                    { label: "Application Default Credentials", value: "adc" },
                   ]}
                   data-testid="auth_method"
                   isRequired
@@ -144,7 +173,7 @@ const S3StorageConfiguration = ({ storageDetails }: SavedStorageDetails) => {
           )}
         </Formik>
       </Stack>
-      {authMethod === "secret_keys" ? (
+      {authMethod === "service_account_keys" && (
         <>
           <Divider mt={5} />
           <Heading fontSize="md" fontWeight="semibold" mt={5}>
@@ -158,15 +187,33 @@ const S3StorageConfiguration = ({ storageDetails }: SavedStorageDetails) => {
               {({ isSubmitting, handleReset }) => (
                 <Form>
                   <Stack mt={5} spacing={5}>
+                    <CustomTextInput name="type" label="Type" />
+                    <CustomTextInput name="project_id" label="Project ID" />
                     <CustomTextInput
-                      name="aws_access_key_id"
-                      label="AWS access key ID"
-                    />
-
-                    <CustomTextInput
-                      name="aws_secret_access_key"
-                      label="AWS secret access key"
+                      name="private_key_id"
+                      label="Private key ID"
                       type="password"
+                    />
+                    <CustomTextInput
+                      name="private_key"
+                      label="Private key"
+                      type="password"
+                    />
+                    <CustomTextInput name="client_email" label="Client email" />
+                    <CustomTextInput name="client_id" label="Client ID" />
+                    <CustomTextInput name="auth_uri" label="Auth URI" />
+                    <CustomTextInput name="token_uri" label="Token URI" />
+                    <CustomTextInput
+                      name="auth_provider_x509_cert_url"
+                      label="Auth provider x509 cert URL"
+                    />
+                    <CustomTextInput
+                      name="client_x509_cert_url"
+                      label="Client x509 cert URL"
+                    />
+                    <CustomTextInput
+                      name="universe_domain"
+                      label="Universe domain"
                     />
                   </Stack>
                   <Box mt={10}>
@@ -188,9 +235,9 @@ const S3StorageConfiguration = ({ storageDetails }: SavedStorageDetails) => {
             </Formik>
           </Stack>
         </>
-      ) : null}
+      )}
     </>
   );
 };
 
-export default S3StorageConfiguration;
+export default GoogleCloudStorageConfiguration;

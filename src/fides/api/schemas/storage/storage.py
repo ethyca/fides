@@ -61,6 +61,20 @@ class StorageDetailsS3(FileBasedStorageDetails):
     model_config = ConfigDict(use_enum_values=True)
 
 
+class GCSAuthMethod(str, Enum):
+    ADC = "adc"  # Application Default Credentials
+    SERVICE_ACCOUNT_KEYS = "service_account_keys"
+
+
+class StorageDetailsGCS(FileBasedStorageDetails):
+    """The details required to represent a Google Cloud Storage bucket."""
+
+    auth_method: GCSAuthMethod
+    bucket: str
+    max_retries: Optional[int] = 0
+    model_config = ConfigDict(use_enum_values=True)
+
+
 class StorageDetailsLocal(FileBasedStorageDetails):
     """The details required to configurate local storage configuration"""
 
@@ -87,6 +101,23 @@ class StorageSecretsS3(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
 
+class StorageSecretsGCS(BaseModel):
+    """The secrets required to connect to a Google Cloud Storage bucket."""
+
+    type: str = "service_account"
+    project_id: str
+    private_key_id: str
+    private_key: str
+    client_email: str
+    client_id: str
+    auth_uri: str
+    token_uri: str
+    auth_provider_x509_cert_url: str
+    client_x509_cert_url: str
+    universe_domain: str
+    model_config = ConfigDict(extra="forbid")
+
+
 class StorageType(Enum):
     """Enum for storage destination types"""
 
@@ -99,6 +130,7 @@ class StorageType(Enum):
 
 FULLY_CONFIGURED_STORAGE_TYPES = (
     StorageType.s3,
+    StorageType.gcs,
 )  # storage types that are considered "fully configured"
 
 
@@ -108,6 +140,7 @@ class StorageDestinationBase(BaseModel):
     type: StorageType
     details: Union[
         StorageDetailsS3,
+        StorageDetailsGCS,
         StorageDetailsLocal,
     ] = Field(validate_default=True)
     format: Optional[ResponseFormat] = ResponseFormat.json.value  # type: ignore
@@ -145,6 +178,7 @@ class StorageDestinationBase(BaseModel):
         try:
             schema = {
                 StorageType.s3.value: StorageDetailsS3,
+                StorageType.gcs.value: StorageDetailsGCS,
                 StorageType.local.value: StorageDetailsLocal,
             }[storage_type]
         except KeyError:
@@ -209,7 +243,7 @@ class BulkPutStorageConfigResponse(BulkResponse):
     failed: List[BulkUpdateFailed] = []
 
 
-SUPPORTED_STORAGE_SECRETS = StorageSecretsS3
+SUPPORTED_STORAGE_SECRETS = Union[StorageSecretsS3, StorageSecretsGCS]
 
 
 class StorageConfigStatus(Enum):
