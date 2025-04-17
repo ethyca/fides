@@ -1,9 +1,6 @@
 import {
   AntSelect as Select,
-  AntTooltip as Tooltip,
   Box,
-  CircleHelpIcon,
-  Flex,
   FormControl,
   FormErrorMessage,
   FormLabel,
@@ -12,6 +9,7 @@ import {
 import { useField } from "formik";
 
 import { Option } from "~/features/common/form/inputs";
+import { InfoTooltip } from "~/features/common/InfoTooltip";
 
 const SelectDataset = ({ options }: { options?: Option[] }) => {
   const [field, { error }, helpers] = useField("dataset");
@@ -41,15 +39,9 @@ const SelectDataset = ({ options }: { options?: Option[] }) => {
         </Box>
         <FormErrorMessage>{error}</FormErrorMessage>
       </VStack>
-      <Tooltip
-        title="Select datasets to associate with this integration"
-        placement="rightTop"
-        mouseEnterDelay={0.5}
-      >
-        <Flex alignItems="center" h="32px">
-          <CircleHelpIcon marginLeft="8px" _hover={{ cursor: "pointer" }} />
-        </Flex>
-      </Tooltip>
+      <div style={{ marginLeft: "8px" }}>
+        <InfoTooltip label="Select datasets to associate with this integration" />
+      </div>
     </FormControl>
   );
 };

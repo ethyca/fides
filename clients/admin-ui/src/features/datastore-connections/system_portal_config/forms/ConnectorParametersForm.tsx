@@ -8,8 +8,6 @@ import DSRCustomizationModal from "datastore-connections/system_portal_config/fo
 import {
   AntButton as Button,
   AntSelect as Select,
-  CircleHelpIcon,
-  Flex,
   FormControl,
   FormErrorMessage,
   FormLabel,
@@ -20,7 +18,6 @@ import {
   NumberInputField,
   NumberInputStepper,
   Spacer,
-  Tooltip,
   VStack,
 } from "fidesui";
 import { Field, FieldInputProps, Form, Formik, FormikProps } from "formik";
@@ -29,6 +26,7 @@ import React from "react";
 import { DatastoreConnectionStatus } from "src/features/datastore-connections/types";
 
 import { useFeatures } from "~/features/common/features";
+import { InfoTooltip } from "~/features/common/InfoTooltip";
 import DisableConnectionModal from "~/features/datastore-connections/DisableConnectionModal";
 import SelectDataset from "~/features/datastore-connections/system_portal_config/forms/SelectDataset";
 import {
@@ -217,24 +215,9 @@ export const ConnectorParametersForm = ({
               )}
               <FormErrorMessage>{error}</FormErrorMessage>
             </VStack>
-            <Tooltip
-              aria-label={item.description}
-              hasArrow
-              label={item.description}
-              placement="right-start"
-              openDelay={500}
-            >
-              <Flex
-                alignItems="center"
-                h="32px"
-                visibility={item.description ? "visible" : "hidden"}
-              >
-                <CircleHelpIcon
-                  marginLeft="8px"
-                  _hover={{ cursor: "pointer" }}
-                />
-              </Flex>
-            </Tooltip>
+            <div style={{ marginLeft: "8px" }}>
+              <InfoTooltip label={item.description} />
+            </div>
           </FormControl>
         );
       }}
@@ -403,20 +386,9 @@ export const ConnectorParametersForm = ({
                           {props.errors.instance_key as string}
                         </FormErrorMessage>
                       </VStack>
-                      <Tooltip
-                        aria-label="The fides_key will allow fidesops to associate dataset field references appropriately. Must be a unique alphanumeric value with no spaces (underscores allowed) to represent this integration."
-                        hasArrow
-                        label="The fides_key will allow fidesops to associate dataset field references appropriately. Must be a unique alphanumeric value with no spaces (underscores allowed) to represent this integration."
-                        placement="right-start"
-                        openDelay={500}
-                      >
-                        <Flex alignItems="center" h="32px">
-                          <CircleHelpIcon
-                            marginLeft="8px"
-                            _hover={{ cursor: "pointer" }}
-                          />
-                        </Flex>
-                      </Tooltip>
+                      <div style={{ marginLeft: "8px" }}>
+                        <InfoTooltip label="The fides_key will allow fidesops to associate dataset field references appropriately. Must be a unique alphanumeric value with no spaces (underscores allowed) to represent this integration." />
+                      </div>
                     </FormControl>
                   )}
                 </Field>
@@ -486,20 +458,9 @@ export const ConnectorParametersForm = ({
                           {props.errors.enabled_actions as string}
                         </FormErrorMessage>
                       </VStack>
-                      <Tooltip
-                        aria-label="The request types that are supported for this integration."
-                        hasArrow
-                        label="The request types that are supported for this integration."
-                        placement="right-start"
-                        openDelay={500}
-                      >
-                        <Flex alignItems="center" h="32px">
-                          <CircleHelpIcon
-                            marginLeft="8px"
-                            _hover={{ cursor: "pointer" }}
-                          />
-                        </Flex>
-                      </Tooltip>
+                      <div style={{ marginLeft: "8px" }}>
+                        <InfoTooltip label="The request types that are supported for this integration." />
+                      </div>
                     </FormControl>
                   )}
                 </Field>

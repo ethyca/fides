@@ -5,6 +5,7 @@ import {
   AntCard as Card,
   AntCheckbox as Checkbox,
   AntCol as Col,
+  AntFlex as Flex,
   AntInput as Input,
   AntLayout as Layout,
   AntRadio as Radio,
@@ -18,6 +19,7 @@ import {
 } from "fidesui";
 import type { NextPage } from "next";
 
+import { InfoTooltip } from "~/features/common/InfoTooltip";
 import PageHeader from "~/features/common/PageHeader";
 
 const { Content } = Layout;
@@ -203,9 +205,10 @@ const AntPOC: NextPage = () => {
           <Col span={8}>
             <Card title="Tooltip" variant="borderless" className="h-full">
               <Space direction="vertical">
-                <Tooltip title="prompt text">
-                  <span>Tooltip will show on mouse enter.</span>
+                <Tooltip title="I'm a tooltip">
+                  <span>Hover this text</span>
                 </Tooltip>
+                <InfoTooltip label="Tooltip will show on mouse enter." />
               </Space>
             </Card>
           </Col>
@@ -221,7 +224,7 @@ const AntPOC: NextPage = () => {
           </Col>
           <Col span={8}>
             <Card title="Tag" variant="borderless" className="h-full">
-              <Space direction="vertical">
+              <Flex wrap gap="small">
                 <Tag color="default">default</Tag>
                 <Tag color="corinth">corinth</Tag>
                 <Tag color="minos">minos</Tag>
@@ -256,7 +259,7 @@ const AntPOC: NextPage = () => {
                 >
                   Data Category
                 </Tag>
-              </Space>
+              </Flex>
             </Card>
           </Col>
         </Row>

@@ -23,7 +23,7 @@ import {
   StringField,
   TextInput,
 } from "~/features/common/form/inputs";
-import QuestionTooltip from "~/features/common/QuestionTooltip";
+import { InfoTooltip } from "~/features/common/InfoTooltip";
 import { selectDictEntry } from "~/features/plus/plus.slice";
 import { selectSuggestions } from "~/features/system/dictionary-form/dict-suggestion.slice";
 import type { FormValues } from "~/features/system/form";
@@ -124,7 +124,7 @@ export const DictSuggestionTextInput = ({
           <Label htmlFor={id || name} fontSize="xs" my={0} mr={1}>
             {label}
           </Label>
-          <QuestionTooltip label={tooltip} />
+          <InfoTooltip label={tooltip} />
         </Flex>
         <TextInput
           {...field}
@@ -171,7 +171,7 @@ export const DictSuggestionTextArea = ({
           <Label htmlFor={id || name} fontSize="xs" my={0} mr={1}>
             {label}
           </Label>
-          <QuestionTooltip label={tooltip} />
+          <InfoTooltip label={tooltip} />
         </Flex>
 
         <Textarea
@@ -216,7 +216,7 @@ export const DictSuggestionSwitch = ({
           <Label htmlFor={id || name} fontSize="xs" my={0} mr={0}>
             {label}
           </Label>
-          <QuestionTooltip label={tooltip} />
+          <InfoTooltip label={tooltip} />
         </HStack>
         <HStack>
           <Field name={field.name}>
@@ -267,7 +267,7 @@ export const DictSuggestionNumberInput = ({
           <Label htmlFor={id || name} fontSize="xs" my={0} mr={0}>
             {label}
           </Label>
-          <QuestionTooltip label={tooltip} />
+          <InfoTooltip label={tooltip} />
         </HStack>
         <HStack>
           <NumberInput

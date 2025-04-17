@@ -4,7 +4,7 @@ import _ from "lodash";
 import React, { useEffect, useRef, useState } from "react";
 
 import { Label } from "~/features/common/form/inputs";
-import QuestionTooltip from "~/features/common/QuestionTooltip";
+import { InfoTooltip } from "~/features/common/InfoTooltip";
 
 import { useSelectedHistory } from "../SelectedHistoryContext";
 
@@ -79,7 +79,7 @@ const SystemDataTags = ({
           <Label htmlFor={props.name} fontSize="xs" my={0} mr={1}>
             {label}
           </Label>
-          <QuestionTooltip label={tooltip} />
+          <InfoTooltip label={tooltip} />
         </Flex>
         <Flex
           wrap="wrap"

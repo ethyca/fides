@@ -7,9 +7,6 @@ import {
 import { useLazyGetDatastoreConnectionStatusQuery } from "datastore-connections/datastore-connection.slice";
 import {
   AntButton as Button,
-  AntTooltip as Tooltip,
-  CircleHelpIcon,
-  Flex,
   FormControl,
   FormErrorMessage,
   FormLabel,
@@ -27,6 +24,7 @@ import { Field, FieldInputProps, Form, Formik, FormikProps } from "formik";
 import React, { useEffect, useRef } from "react";
 
 import { useAppSelector } from "~/app/hooks";
+import { InfoTooltip } from "~/features/common/InfoTooltip";
 import { ConnectionType } from "~/types/api";
 
 import {
@@ -172,19 +170,9 @@ const ConnectorParametersForm = ({
             )}
             <FormErrorMessage>{form.errors[key]}</FormErrorMessage>
           </VStack>
-          <Tooltip
-            title={item.description}
-            placement="rightTop"
-            mouseEnterDelay={0.5}
-          >
-            <Flex
-              alignItems="center"
-              h="32px"
-              visibility={item.description ? "visible" : "hidden"}
-            >
-              <CircleHelpIcon marginLeft="8px" _hover={{ cursor: "pointer" }} />
-            </Flex>
-          </Tooltip>
+          <div style={{ marginLeft: "8px" }}>
+            <InfoTooltip label={item.description} />
+          </div>
         </FormControl>
       )}
     </Field>
@@ -263,7 +251,7 @@ const ConnectorParametersForm = ({
                   isInvalid={props.errors.name && props.touched.name}
                 >
                   {getFormLabel("name", "Name")}
-                  <VStack align="flex-start" w="inherit">
+                  <VStack align="flex-start" w="inherit" mr="6">
                     <Input
                       {...field}
                       autoComplete="off"
@@ -277,9 +265,6 @@ const ConnectorParametersForm = ({
                     />
                     <FormErrorMessage>{props.errors.name}</FormErrorMessage>
                   </VStack>
-                  <Flex alignItems="center" h="32px" visibility="hidden">
-                    <CircleHelpIcon marginLeft="8px" />
-                  </Flex>
                 </FormControl>
               )}
             </Field>
@@ -297,10 +282,8 @@ const ConnectorParametersForm = ({
                     resize="none"
                     size="sm"
                     value={field.value || ""}
+                    mr="6"
                   />
-                  <Flex alignItems="center" h="32px" visibility="hidden">
-                    <CircleHelpIcon marginLeft="8px" />
-                  </Flex>
                 </FormControl>
               )}
             </Field>
@@ -334,18 +317,9 @@ const ConnectorParametersForm = ({
                       {props.errors.instance_key}
                     </FormErrorMessage>
                   </VStack>
-                  <Tooltip
-                    title="The fides_key will allow fidesops to associate dataset field references appropriately. Must be a unique alphanumeric value with no spaces (underscores allowed) to represent this connection."
-                    placement="rightTop"
-                    mouseEnterDelay={0.5}
-                  >
-                    <Flex alignItems="center" h="32px">
-                      <CircleHelpIcon
-                        marginLeft="8px"
-                        _hover={{ cursor: "pointer" }}
-                      />
-                    </Flex>
-                  </Tooltip>
+                  <div style={{ marginLeft: "8px" }}>
+                    <InfoTooltip label="The fides_key will allow fidesops to associate dataset field references appropriately. Must be a unique alphanumeric value with no spaces (underscores allowed) to represent this connection." />
+                  </div>
                 </FormControl>
               )}
             </Field>
