@@ -37,7 +37,7 @@ const AntPOC: NextPage = () => {
         <PageHeader heading="Ant Design Proof of Concept" />
         <Row gutter={16}>
           <Col span={8}>
-            <Card title="Button" bordered={false} className="h-full">
+            <Card title="Button" variant="borderless" className="h-full">
               <Space direction="vertical">
                 <Button type="primary">Primary Button</Button>
                 <Button>Default Button</Button>
@@ -54,7 +54,7 @@ const AntPOC: NextPage = () => {
             </Card>
           </Col>
           <Col span={8}>
-            <Card title="Switch" bordered={false} className="h-full">
+            <Card title="Switch" variant="borderless" className="h-full">
               <Space direction="vertical">
                 <Switch defaultChecked />
                 <Switch size="small" defaultChecked />
@@ -63,7 +63,7 @@ const AntPOC: NextPage = () => {
             </Card>
           </Col>
           <Col span={8}>
-            <Card title="Select" bordered={false} className="h-full">
+            <Card title="Select" variant="borderless" className="h-full">
               <Space direction="vertical">
                 <Select
                   defaultValue="lucy"
@@ -116,7 +116,7 @@ const AntPOC: NextPage = () => {
         <br />
         <Row gutter={16}>
           <Col span={8}>
-            <Card title="Checkbox" bordered={false} className="h-full">
+            <Card title="Checkbox" variant="borderless" className="h-full">
               <Space direction="vertical">
                 <Checkbox>Checkbox</Checkbox>
                 <Checkbox defaultChecked>Checkbox</Checkbox>
@@ -134,7 +134,7 @@ const AntPOC: NextPage = () => {
             </Card>
           </Col>
           <Col span={8}>
-            <Card title="Radio" bordered={false} className="h-full">
+            <Card title="Radio" variant="borderless" className="h-full">
               <Space direction="vertical">
                 <Radio>Radio</Radio>
                 <Radio defaultChecked>Radio</Radio>
@@ -170,7 +170,7 @@ const AntPOC: NextPage = () => {
             </Card>
           </Col>
           <Col span={8}>
-            <Card title="Input" bordered={false} className="h-full">
+            <Card title="Input" variant="borderless" className="h-full">
               <Space direction="vertical" size="middle">
                 <Space.Compact>
                   <Input defaultValue="26888888" />
@@ -201,7 +201,7 @@ const AntPOC: NextPage = () => {
         <br />
         <Row gutter={16}>
           <Col span={8}>
-            <Card title="Tooltip" bordered={false} className="h-full">
+            <Card title="Tooltip" variant="borderless" className="h-full">
               <Space direction="vertical">
                 <Tooltip title="prompt text">
                   <span>Tooltip will show on mouse enter.</span>
@@ -210,7 +210,7 @@ const AntPOC: NextPage = () => {
             </Card>
           </Col>
           <Col span={8}>
-            <Card title="Alert" bordered={false} className="h-full">
+            <Card title="Alert" variant="borderless" className="h-full">
               <Space direction="vertical">
                 <Alert message="Success Tips" type="success" showIcon />
                 <Alert message="Informational Notes" type="info" showIcon />
@@ -220,7 +220,7 @@ const AntPOC: NextPage = () => {
             </Card>
           </Col>
           <Col span={8}>
-            <Card title="Tag" bordered={false} className="h-full">
+            <Card title="Tag" variant="borderless" className="h-full">
               <Space direction="vertical">
                 <Tag color="default">default</Tag>
                 <Tag color="corinth">corinth</Tag>
