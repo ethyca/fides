@@ -124,6 +124,11 @@ services:
       redis:
         condition: service_started
     restart: always
+    healthcheck:
+      test: ["CMD", "celery", "-A", "fides.api.tasks", "inspect", "ping"]
+      interval: 30s
+      timeout: 5s
+      retries: 10
     environment:
       FIDES__CONFIG_PATH: ${FIDES__CONFIG_PATH:-/fides/.fides/fides.toml}
       FIDES__LOGGING__COLORIZE: "True"
@@ -142,6 +147,11 @@ services:
       redis:
         condition: service_started
     restart: always
+    healthcheck:
+      test: ["CMD", "celery", "-A", "fides.api.tasks", "inspect", "ping"]
+      interval: 30s
+      timeout: 5s
+      retries: 10
     environment:
       FIDES__CONFIG_PATH: ${FIDES__CONFIG_PATH:-/fides/.fides/fides.toml}
       FIDES__LOGGING__COLORIZE: "True"
@@ -160,6 +170,11 @@ services:
       redis:
         condition: service_started
     restart: always
+    healthcheck:
+      test: ["CMD", "celery", "-A", "fides.api.tasks", "inspect", "ping"]
+      interval: 30s
+      timeout: 5s
+      retries: 10
     environment:
       FIDES__CONFIG_PATH: ${FIDES__CONFIG_PATH:-/fides/.fides/fides.toml}
       FIDES__LOGGING__COLORIZE: "True"
