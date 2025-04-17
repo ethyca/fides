@@ -4,34 +4,91 @@ import classNames from "classnames";
 
 import styles from "./CustomTypography.module.scss";
 
-export interface CustomTypographyProps extends TypographyProps {
-  children?: React.ReactNode;
+type TextSize = "sm" | "default" | "lg";
+type HeadingSize = 1 | 2 | 3 | 4 | 5;
+
+interface CustomTypographyTextProps {
+  size?: TextSize;
 }
 
-// Custom wrapper for Paragraph to add paragraph role
-const CustomParagraph = (
-  props: React.ComponentProps<typeof Typography.Paragraph>,
-) => {
-  const { className, ...rest } = props;
-  return (
-    <Typography.Paragraph
-      role="paragraph"
-      className={classNames(styles.paragraph, className)}
-      {...rest}
-    />
-  );
+interface CustomTypographyTitleProps
+  extends React.ComponentProps<typeof Typography.Title> {
+  headingSize?: HeadingSize;
+}
+
+export interface CustomTypographyProps extends TypographyProps {
+  children?: React.ReactNode;
+  size?: TextSize;
+}
+
+const getTextSizeClassName = (size?: TextSize): string | undefined => {
+  if (!size) {
+    return undefined;
+  }
+  return styles[size];
+};
+
+const getHeadingSizeClassName = (size?: HeadingSize): string | undefined => {
+  if (!size) {
+    return undefined;
+  }
+  return styles[`h${size}`];
+};
+
+const CustomTitle = ({ headingSize, ...props }: CustomTypographyTitleProps) => (
+  <Typography.Title
+    className={getHeadingSizeClassName(headingSize)}
+    {...props}
+  />
+);
+
+const CustomText = ({
+  size,
+  ...props
+}: React.ComponentProps<typeof Typography.Text> &
+  CustomTypographyTextProps) => (
+  <Typography.Text className={getTextSizeClassName(size)} {...props} />
+);
+
+const CustomParagraph = ({
+  size,
+  ...props
+}: React.ComponentProps<typeof Typography.Paragraph> &
+  CustomTypographyTextProps) => (
+  <Typography.Paragraph
+    role="paragraph"
+    className={classNames(styles.paragraph, getTextSizeClassName(size))}
+    {...props}
+  />
+);
+
+const CustomLink = ({
+  size,
+  ...props
+}: React.ComponentProps<typeof Typography.Link> &
+  CustomTypographyTextProps) => (
+  <Typography.Link className={getTextSizeClassName(size)} {...props} />
+);
+
+type TypographyType = typeof Typography & {
+  Text: typeof CustomText;
+  Title: typeof CustomTitle;
+  Paragraph: typeof CustomParagraph;
+  Link: typeof CustomLink;
 };
 
 export const withCustomProps = (WrappedComponent: typeof Typography) => {
-  const WrappedTypography = ({ ...props }: CustomTypographyProps) => {
-    return <WrappedComponent {...props} />;
-  };
-
-  // Preserve all Typography subcomponents
-  WrappedTypography.Title = Typography.Title;
-  WrappedTypography.Text = Typography.Text;
-  WrappedTypography.Paragraph = CustomParagraph;
-  WrappedTypography.Link = Typography.Link;
+  const WrappedTypography = Object.assign(
+    ({ size, ...props }: CustomTypographyProps) => (
+      <WrappedComponent className={getTextSizeClassName(size)} {...props} />
+    ),
+    {
+      Text: CustomText,
+      Title: CustomTitle,
+      Paragraph: CustomParagraph,
+      Link: CustomLink,
+    },
+  ) as TypographyType;
 
   return WrappedTypography;
 };

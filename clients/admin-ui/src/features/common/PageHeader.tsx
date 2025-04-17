@@ -1,7 +1,9 @@
-import { AntFlex as Flex, Heading } from "fidesui";
+import { AntFlex as Flex, AntTypography as Typography } from "fidesui";
 import { ComponentProps, ReactNode } from "react";
 
 import { NextBreadcrumb, NextBreadcrumbProps } from "./nav/NextBreadcrumb";
+
+const { Title } = Typography;
 
 interface PageHeaderProps extends ComponentProps<"div"> {
   heading?: ReactNode;
@@ -58,13 +60,13 @@ const PageHeader = ({
   >
     <Flex justify="space-between">
       {typeof heading === "string" ? (
-        <Heading
+        <Title
           className={!!breadcrumbItems || !!children ? "pb-4" : undefined}
-          fontSize="2xl"
+          level={1}
           data-testid="page-heading"
         >
           {heading}
-        </Heading>
+        </Title>
       ) : (
         heading
       )}
