@@ -246,9 +246,9 @@ def validate_update_consent_function(f: Callable) -> None:
         raise InvalidSaaSRequestOverrideException(
             "Provided SaaS update consent function must return a ConsentPropagationStatus"
         )
-    if len(sig.parameters) < 6:
+    if len(sig.parameters) < 5:
         raise InvalidSaaSRequestOverrideException(
-            "Provided SaaS update consent function must declare at least 6 parameters"
+            "Provided SaaS update consent function must declare at least 5 parameters"
         )
 
 
