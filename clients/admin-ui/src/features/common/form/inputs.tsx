@@ -217,7 +217,7 @@ export const CustomTextInput = ({
                 fieldName={field.name}
               />
             </Flex>
-            {tooltip ? <QuestionTooltip label={tooltip} /> : null}
+            <QuestionTooltip label={tooltip} />
           </Flex>
         </Grid>
       </FormControl>
@@ -236,7 +236,7 @@ export const CustomTextInput = ({
             >
               {label}
             </Label>
-            {tooltip ? <QuestionTooltip label={tooltip} /> : null}
+            <QuestionTooltip label={tooltip} />
           </Flex>
         ) : null}
         {innerInput}
@@ -317,7 +317,7 @@ export const CustomTextArea = ({
               fieldName={field.name}
             />
           </Flex>
-          {tooltip ? <QuestionTooltip label={tooltip} /> : null}
+          <QuestionTooltip label={tooltip} />
         </Flex>
       </FormControl>
     );
@@ -337,7 +337,7 @@ export const CustomTextArea = ({
                 fieldName={field.name}
               />
             </Flex>
-            {tooltip ? <QuestionTooltip label={tooltip} /> : null}
+            <QuestionTooltip label={tooltip} />
           </Flex>
         </Grid>
       </FormControl>
@@ -350,7 +350,7 @@ export const CustomTextArea = ({
           <Label htmlFor={props.id || props.name} fontSize="xs" my={0} mr={1}>
             {label}
           </Label>
-          {tooltip ? <QuestionTooltip label={tooltip} /> : null}
+          <QuestionTooltip label={tooltip} />
         </Flex>
         {innerTextArea}
         <ErrorMessage
@@ -399,7 +399,7 @@ export const CustomNumberInput = ({
                 </NumberInputStepper>
               </NumberInput>
             </Flex>
-            {tooltip ? <QuestionTooltip label={tooltip} /> : null}
+            <QuestionTooltip label={tooltip} />
           </Flex>
         </Grid>
       </FormControl>
@@ -412,7 +412,7 @@ export const CustomNumberInput = ({
           <Label htmlFor={props.id || props.name} fontSize="xs" my={0} mr={1}>
             {label}
           </Label>
-          {tooltip ? <QuestionTooltip label={tooltip} /> : null}
+          <QuestionTooltip label={tooltip} />
         </Flex>
         <NumberInput
           {...field}
@@ -493,7 +493,7 @@ export const CustomSwitch = ({
           </Label>
           <Box display="flex" alignItems="center">
             {innerSwitch}
-            {tooltip ? <QuestionTooltip label={tooltip} /> : null}
+            <QuestionTooltip label={tooltip} />
           </Box>
         </Grid>
       </FormControl>
@@ -508,7 +508,7 @@ export const CustomSwitch = ({
           <Label htmlFor={props.id || props.name} my={0} fontSize="sm" mr={2}>
             {label}
           </Label>
-          {tooltip ? <QuestionTooltip label={tooltip} /> : null}
+          <QuestionTooltip label={tooltip} />
         </Flex>
       </FormControl>
     );
@@ -522,7 +522,7 @@ export const CustomSwitch = ({
             <Label htmlFor={props.id || props.name} fontSize="xs" my={0} mr={0}>
               {label}
             </Label>
-            {tooltip ? <QuestionTooltip label={tooltip} /> : null}
+            <QuestionTooltip label={tooltip} />
           </HStack>
           <HStack>{innerSwitch}</HStack>
         </Box>
@@ -543,7 +543,7 @@ export const CustomSwitch = ({
           {label}
         </Label>
         {innerSwitch}
-        {tooltip ? <QuestionTooltip label={tooltip} /> : null}
+        <QuestionTooltip label={tooltip} />
       </Box>
     </FormControl>
   );
@@ -584,7 +584,7 @@ export const CustomCheckbox = ({
           </Text>
         </Checkbox>
 
-        {tooltip ? <QuestionTooltip label={tooltip} /> : null}
+        <QuestionTooltip label={tooltip} />
       </Flex>
     </FormControl>
   );
@@ -629,7 +629,7 @@ export const CustomClipboardCopy = ({
             <Flex flexDir="column" flexGrow={1} mr="2">
               {innerInput}
             </Flex>
-            {tooltip ? <QuestionTooltip label={tooltip} /> : null}
+            <QuestionTooltip label={tooltip} />
           </Flex>
         </Grid>
       </FormControl>
@@ -643,7 +643,7 @@ export const CustomClipboardCopy = ({
             <Label htmlFor={props.id || props.name} fontSize="xs" my={0} mr={1}>
               {label}
             </Label>
-            {tooltip ? <QuestionTooltip label={tooltip} /> : null}
+            <QuestionTooltip label={tooltip} />
           </Flex>
         ) : null}
         {innerInput}

@@ -85,7 +85,7 @@ const ScrollableListItem = <T extends unknown>({
           >
             {label}
           </Text>
-          {tooltip ? <QuestionTooltip label={tooltip} /> : null}
+          <QuestionTooltip label={tooltip} />
         </Flex>
         {onDeleteItem && (
           <Button
@@ -305,7 +305,7 @@ const ScrollableList = <T extends unknown>({
           {label}
         </Label>
       ) : null}
-      {tooltip ? <QuestionTooltip label={tooltip} /> : null}
+      <QuestionTooltip label={tooltip} />
       {innerList}
       {unselectedValues.length ? (
         <ScrollableListAdd

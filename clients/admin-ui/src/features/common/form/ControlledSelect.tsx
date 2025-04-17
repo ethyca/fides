@@ -110,7 +110,7 @@ export const ControlledSelect = ({
                 fieldName={field.name}
               />
             </Flex>
-            {tooltip ? <QuestionTooltip label={tooltip} /> : null}
+            <QuestionTooltip label={tooltip} />
           </Flex>
         </Grid>
       </FormControl>
@@ -131,7 +131,7 @@ export const ControlledSelect = ({
               {label}
             </Label>
           ) : null}
-          {tooltip ? <QuestionTooltip label={tooltip} /> : null}
+          <QuestionTooltip label={tooltip} />
         </Flex>
         <Select
           {...field}

@@ -6,13 +6,14 @@ import {
 
 interface QuestionTooltipProps
   extends Omit<TooltipProps, "children" | "title"> {
-  label: string;
+  label: string | null | undefined;
 }
 
-const QuestionTooltip = ({ label, ...props }: QuestionTooltipProps) => (
-  <Tooltip title={label} placement="right" {...props}>
-    <QuestionIcon color="gray.400" />
-  </Tooltip>
-);
+const QuestionTooltip = ({ label, ...props }: QuestionTooltipProps) =>
+  label ? (
+    <Tooltip title={label} placement="right" {...props}>
+      <QuestionIcon color="gray.400" />
+    </Tooltip>
+  ) : null;
 
 export default QuestionTooltip;

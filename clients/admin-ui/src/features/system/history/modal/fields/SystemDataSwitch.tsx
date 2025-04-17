@@ -65,7 +65,7 @@ const SystemDataSwitch = ({
           <Label htmlFor={props.id || props.name} fontSize="xs" my={0} mr={1}>
             {label}
           </Label>
-          {tooltip ? <QuestionTooltip label={tooltip} /> : null}
+          <QuestionTooltip label={tooltip} />
         </Flex>
         {field.value !== undefined && (
           <Tag color="marble" className="m-1">

@@ -76,7 +76,7 @@ const PrivacyNoticeLocationDisplay = ({
           {label}
         </FormLabel>
       ) : null}
-      {tooltip ? <QuestionTooltip label={tooltip} /> : null}
+      <QuestionTooltip label={tooltip} />
     </Flex>
     <Box w="100%" data-testid="notice-locations">
       <Space size={[0, 2]} wrap>

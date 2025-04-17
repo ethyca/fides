@@ -79,7 +79,7 @@ const SystemDataTags = ({
           <Label htmlFor={props.name} fontSize="xs" my={0} mr={1}>
             {label}
           </Label>
-          {tooltip ? <QuestionTooltip label={tooltip} /> : null}
+          <QuestionTooltip label={tooltip} />
         </Flex>
         <Flex
           wrap="wrap"
