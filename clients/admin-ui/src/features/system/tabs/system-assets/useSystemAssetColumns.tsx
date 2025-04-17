@@ -79,7 +79,7 @@ const useSystemAssetColumns = ({
           systemId={systemKey}
         />
       ),
-      header: "Categories of consent",
+      header: "Data uses",
       size: 200,
     }),
     columnHelper.accessor((row) => row.locations, {
