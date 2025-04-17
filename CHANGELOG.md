@@ -33,6 +33,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Frontend now do not generate `key` when creating a Website Monitor [#6041](https://github.com/ethyca/fides/pull/6041)
 - Integrations manage modals now are cappable of showing a small description [#6037](https://github.com/ethyca/fides/pull/6037)
 - Removed `dbname` as a required field for PostgreSQL connection configs to support use with discovery monitors [#6018](https://github.com/ethyca/fides/pull/6018)
+- Updated bulk ignore assets toast message [#6043](https://github.com/ethyca/fides/pull/6043)
 
 ### Developer Experience
 - Reduced animations on Cypress tests in Privacy Center for quicker results [#5976](https://github.com/ethyca/fides/pull/5976)
