@@ -13,7 +13,6 @@ export interface SearchInputProps extends Omit<InputProps, "onChange"> {
 }
 
 const SearchInput = ({
-  value,
   onChange,
   withIcon,
   onClear,
@@ -27,7 +26,6 @@ const SearchInput = ({
     <Space.Compact className="w-96" data-testid="search-bar">
       <Input
         autoComplete="off"
-        value={value}
         onChange={handleSearchChange}
         placeholder={placeholder || "Search..."}
         prefix={withIcon ? <SearchLineIcon boxSize={4} /> : undefined}
