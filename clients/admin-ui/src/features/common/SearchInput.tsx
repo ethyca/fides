@@ -6,9 +6,7 @@ import {
   SearchLineIcon,
 } from "fidesui";
 
-export interface SearchInputProps
-  extends Omit<InputProps, "onChange" | "value"> {
-  value?: string;
+export interface SearchInputProps extends Omit<InputProps, "onChange"> {
   onChange: (value: string) => void;
   withIcon?: boolean;
   onClear?: () => void;
