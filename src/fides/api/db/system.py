@@ -8,19 +8,15 @@ from typing import Any, Dict, List, Optional, Tuple, Type, Union
 
 from deepdiff import DeepDiff
 from fastapi import HTTPException
-from fideslang.models import Cookies as CookieSchema
 from fideslang.models import System as SystemSchema
 from fideslang.validation import FidesKey
 from loguru import logger as log
-from sqlalchemy import and_, delete, insert, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
-from sqlalchemy.sql.elements import BinaryExpression
 from starlette.status import HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND
 
 from fides.api.db.crud import create_resource, get_resource, update_resource
 from fides.api.models.sql_models import (  # type: ignore[attr-defined]
-    Cookies,
     DataCategory,
     DataSubject,
     DataUse,
@@ -155,7 +151,6 @@ async def upsert_privacy_declarations(
         for privacy_declaration in resource.privacy_declarations:
             # prepare our 'payload' for either create or update
             data = privacy_declaration.model_dump(mode="json")
-            privacy_declaration_cookies: List[Dict] = data.pop("cookies", None)
             data["system_id"] = system.id  # include FK back to system
 
             # if we find matching declaration, remove it from our map
@@ -168,100 +163,9 @@ async def upsert_privacy_declarations(
                 # otherwise, create a new declaration record
                 declaration = PrivacyDeclaration.create(db, data=data)
 
-            # Upsert cookies for the given privacy declaration
-            await upsert_cookies(
-                db, privacy_declaration_cookies, declaration, system=None
-            )
-
         # delete any existing privacy declarations that have not been "matched" in the request
         for existing_declarations in existing_declarations.values():
             await db.delete(existing_declarations)
-
-
-async def upsert_cookies(
-    async_session: AsyncSession,
-    cookies: Optional[List[Dict]],
-    privacy_declaration: Optional[PrivacyDeclaration],
-    system: Optional[System],
-) -> None:
-    """
-    Upsert cookies for the given system or privacy_declaration.  Cookies can be attached at the system-level
-    or the privacy declaration-level.
-
-    Remove any existing cookies that aren't specified here.
-    """
-    if not (privacy_declaration or system):
-        # Dev-level error
-        raise ValueError(
-            "Either system or privacy declaration must be supplied to upsert cookies"
-        )
-
-    if privacy_declaration and system:
-        # Dev-level error
-        raise ValueError(
-            "Supply either system or privacy declaration, not both, to upsert cookies"
-        )
-
-    parsed_cookies = (
-        [CookieSchema.model_validate(cookie) for cookie in cookies] if cookies else []
-    )
-
-    resource_filter: BinaryExpression = (
-        Cookies.system_id == system.id
-        if system
-        else Cookies.privacy_declaration_id == privacy_declaration.id  # type: ignore[union-attr]
-    )
-
-    for cookie_data in parsed_cookies:
-        # Check if cookie exists on the resource
-        result = await async_session.execute(
-            select(Cookies).where(
-                and_(Cookies.name == cookie_data.name, resource_filter)
-            )
-        )
-        row: Optional[Cookies] = result.scalars().first()
-        if row:
-            # Update existing cookie
-            await async_session.execute(
-                update(Cookies)
-                .where(Cookies.id == row.id)
-                .values(cookie_data.model_dump(mode="json"))
-            )
-
-        else:
-            # Insert new cookie
-            await async_session.execute(
-                insert(Cookies).values(
-                    {
-                        "name": cookie_data.name,
-                        "path": cookie_data.path,
-                        "domain": cookie_data.domain,
-                        "privacy_declaration_id": (
-                            privacy_declaration.id if privacy_declaration else None
-                        ),
-                        "system_id": system.id if system else None,
-                    }
-                )
-            )
-
-    # Select cookies which are currently on the application resource, but not included in the request
-    delete_result = await async_session.execute(
-        select(Cookies).where(
-            and_(
-                Cookies.name.notin_([cookie.name for cookie in parsed_cookies]),
-                resource_filter,
-            )
-        )
-    )
-
-    # Remove those cookies altogether
-    await async_session.execute(
-        delete(Cookies).where(
-            Cookies.id.in_(
-                [cookie.id for cookie in delete_result.scalars().unique().all()]
-            )
-        )
-    )
 
 
 async def update_system(
@@ -288,18 +192,10 @@ async def update_system(
         resource, "privacy_declarations"
     )  # remove the attribute on the system since we've already updated declarations
 
-    # Remove system-level cookies from request before updating the system.
-    # Cookies are upserted separately
-    proposed_system_cookies: Optional[List[Cookies]] = resource.cookies
-    delattr(resource, "cookies")
-
     # perform any updates on the system resource itself
     updated_system = await update_resource(System, resource.model_dump(), db)
 
     async with db.begin():
-        await upsert_cookies(
-            db, proposed_system_cookies, privacy_declaration=None, system=updated_system
-        )  # Upsert the associated cookies at the System-level
 
         await db.refresh(updated_system)
 
@@ -400,10 +296,6 @@ async def create_system(
     # remove the attribute on the system update since the declarations will be created separately
     delattr(resource, "privacy_declarations")
 
-    # Remove system-level cookies from request; these will be processed after the system is added
-    proposed_system_cookies: Optional[List[Cookies]] = resource.cookies
-    delattr(resource, "cookies")
-
     # create the system resource using generic creation
     # the system must be created before the privacy declarations so that it can be referenced
     resource_dict = resource.model_dump()
@@ -418,27 +310,15 @@ async def create_system(
     privacy_declaration_exception = None
     try:
         async with db.begin():
-            await upsert_cookies(
-                db,
-                proposed_system_cookies,
-                privacy_declaration=None,
-                system=created_system,
-            )  # Create the associated cookies at the System-level
 
             # create the specified declarations as records in their own table
             for privacy_declaration in privacy_declarations:
                 data = privacy_declaration.model_dump(mode="json")
                 data["system_id"] = created_system.id  # add FK back to system
-                privacy_declaration_cookies: List[Dict] = data.pop("cookies", [])
                 privacy_declaration = PrivacyDeclaration.create(
                     db, data=data
                 )  # create the associated PrivacyDeclaration
-                await upsert_cookies(
-                    db,
-                    privacy_declaration_cookies,
-                    privacy_declaration=privacy_declaration,
-                    system=None,
-                )  # Create the associated cookies on the Privacy Declaration
+
     except Exception as e:
         log.error(
             f"Error adding privacy declarations, reverting system creation: {str(privacy_declaration_exception)}"
