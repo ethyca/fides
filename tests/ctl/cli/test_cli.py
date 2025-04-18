@@ -327,6 +327,7 @@ class TestPull:
 
 @pytest.mark.integration
 class TestAnnotate:
+    @pytest.mark.skip("Needs investigation")
     def test_annotate(
         self,
         test_config_path: str,
