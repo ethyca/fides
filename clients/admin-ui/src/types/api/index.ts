@@ -208,6 +208,7 @@ export type { GenerateRequestPayload } from "./models/GenerateRequestPayload";
 export type { GenerateResponse } from "./models/GenerateResponse";
 export { GenerateTypes } from "./models/GenerateTypes";
 export type { GetRegistrationStatusResponse } from "./models/GetRegistrationStatusResponse";
+export type { GoogleCloudSQLIPType } from "./models/GoogleCloudSQLIPType";
 export type { GoogleCloudSQLMySQLDocsSchema } from "./models/GoogleCloudSQLMySQLDocsSchema";
 export type { GoogleCloudSQLPostgresDocsSchema } from "./models/GoogleCloudSQLPostgresDocsSchema";
 export type { GPPApplicationConfig } from "./models/GPPApplicationConfig";

@@ -8,6 +8,9 @@ from sqlalchemy.engine import Engine, LegacyCursorResult, create_engine  # type:
 from fides.api.schemas.connection_configuration.connection_secrets_google_cloud_sql_mysql import (
     GoogleCloudSQLMySQLSchema,
 )
+from fides.api.schemas.connection_configuration.enums.google_cloud_sql_ip_type import (
+    GoogleCloudSQLIPType,
+)
 from fides.api.service.connectors.sql_connector import SQLConnector
 from fides.api.util.collection_util import Row
 from fides.config import get_config
@@ -37,6 +40,7 @@ class GoogleCloudSQLMySQLConnector(SQLConnector):
             conn: pymysql.connections.Connection = connector.connect(
                 config.instance_connection_name,
                 "pymysql",
+                ip_type=config.ip_type or GoogleCloudSQLIPType.public,
                 user=config.db_iam_user,
                 db=config.dbname,
                 enable_iam_auth=True,
