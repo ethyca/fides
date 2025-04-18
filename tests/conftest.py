@@ -6,6 +6,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Callable, Dict, Generator, List
 from uuid import uuid4
+import copy
 
 import boto3
 import pytest
@@ -561,7 +562,8 @@ async def fideslang_resources(async_session, resources_dict, default_taxonomy, c
     """
 
     # Load each resource into the database
-    for resource_type, resource in resources_dict.items():
+    resources = copy.deepcopy(resources_dict)
+    for resource_type, resource in resources.items():
         if resource_type in sql_model_map:
             if resource_type == "system":
                 await create_system(
