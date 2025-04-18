@@ -309,7 +309,7 @@ class TestMySQLConnectionPutSecretsAPI:
             "username": None,
             "password": None,
             "ssh_required": False,
-            "sslmode": None,
+            "ssl_mode": None,
         }
         assert connection_config_mysql.last_test_timestamp is not None
         assert connection_config_mysql.last_test_succeeded is False
@@ -352,7 +352,7 @@ class TestMySQLConnectionPutSecretsAPI:
             "password": "mysql_pw",
             "port": 3306,
             "ssh_required": False,
-            "sslmode": None,
+            "ssl_mode": None,
         }
         assert connection_config_mysql.last_test_timestamp is not None
         assert connection_config_mysql.last_test_succeeded is True
@@ -370,7 +370,7 @@ class TestMySQLConnectionPutSecretsAPI:
             "dbname": "mysql_example",
             "username": "mysql_user",
             "password": "mysql_pw",
-            "sslmode": "preferred",
+            "ssl_mode": "preferred",
         }
 
         auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
@@ -396,7 +396,7 @@ class TestMySQLConnectionPutSecretsAPI:
             "password": "mysql_pw",
             "port": 3306,
             "ssh_required": False,
-            "sslmode": "preferred",
+            "ssl_mode": "preferred",
         }
         assert connection_config_mysql.last_test_timestamp is not None
         assert connection_config_mysql.last_test_succeeded is True

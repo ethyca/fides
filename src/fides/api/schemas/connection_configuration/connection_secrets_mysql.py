@@ -9,7 +9,7 @@ from fides.api.schemas.connection_configuration.connection_secrets import (
 )
 
 
-class MySQLSslMode(str, Enum):
+class MySQLSSLMode(str, Enum):
     preferred = "preferred"
     required = "required"
     disabled = "disabled"
@@ -47,7 +47,7 @@ class MySQLSchema(ConnectionConfigSecretsSchema):
         title="SSH required",
         description="Indicates whether an SSH tunnel is required for the connection. Enable this option if your MySQL server is behind a firewall and requires SSH tunneling for remote connections.",
     )
-    sslmode: Optional[MySQLSslMode] = Field(
+    ssl_mode: Optional[MySQLSSLMode] = Field(
         None,  # TODO: support for verify-ca and verify-full
         title="SSL Mode",
         description="The SSL mode to use for the connection. Valid values are 'required', 'preferred', and 'disabled'.",

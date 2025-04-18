@@ -25,7 +25,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Migrate `Cookies` resources to `Asset` resources of type `Cookie` [#5776](https://github.com/ethyca/fides/pull/5776) https://github.com/ethyca/fides/labels/db-migration https://github.com/ethyca/fides/labels/high-risk
 - Added support for selecting TCF Publisher Override configuration when configuring Privacy Experience [#6033](https://github.com/ethyca/fides/pull/6033)
 - Added Google Cloud Storage as a storage option [#6006](https://github.com/ethyca/fides/pull/6006)
-- Added sslmode field for MySQL connections [#6048](https://github.com/ethyca/fides/pull/6048)
+- Added SSL Mode field for MySQL connections [#6048](https://github.com/ethyca/fides/pull/6048)
 - Added PostgreSQL connection config form to the "integrations" page to support use with discovery monitors [#6018](https://github.com/ethyca/fides/pull/6018)
 - Update the Datahub Permissions section to include required permissions from Datahub [#6052](https://github.com/ethyca/fides/pull/6052)
 

@@ -33,5 +33,5 @@ export type MySQLDocsSchema = {
   /**
    * The SSL mode to use for the connection. Valid values are 'required', 'preferred', and 'disabled'.
    */
-  sslmode?: string;
+  ssl_mode?: string;
 };

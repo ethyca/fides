@@ -5,7 +5,7 @@ from sqlalchemy.engine import Engine, LegacyCursorResult, create_engine  # type:
 from fides.api.graph.execution import ExecutionNode
 from fides.api.schemas.connection_configuration.connection_secrets_mysql import (
     MySQLSchema,
-    MySQLSslMode,
+    MySQLSSLMode,
 )
 from fides.api.service.connectors.query_configs.mysql_query_config import (
     MySQLQueryConfig,
@@ -82,12 +82,12 @@ class MySQLConnector(SQLConnector):
         """Query wrapper corresponding to the input execution_node."""
         return MySQLQueryConfig(node)
 
-    def get_connect_args(self) -> Dict[str, Dict[str, MySQLSslMode]]:
+    def get_connect_args(self) -> Dict[str, Dict[str, MySQLSSLMode]]:
         """Get connection arguments for the engine"""
-        sslmode = self.configuration.secrets.get("sslmode", MySQLSslMode.preferred)
+        ssl_mode = self.configuration.secrets.get("ssl_mode", MySQLSSLMode.preferred)
         return {
             "ssl": {
-                "mode": sslmode,
+                "mode": ssl_mode,
             }
         }
 
