@@ -81,6 +81,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ### Fixed
 - Fixed Privacy Center issue where unconfigured fields (eg. phone) were being passed as null form values [#6045](https://github.com/ethyca/fides/pull/6045)
 - Fixed startup issues with Celery workers [#6058](https://github.com/ethyca/fides/pull/6058)
+- Fixed GCP SQL connection to support ip_type [#6065](https://github.com/ethyca/fides/pull/6065)
 
 
 ## [2.59.1](https://github.com/ethyca/fides/compare/2.59.0...2.59.1)
