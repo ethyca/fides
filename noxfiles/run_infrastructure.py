@@ -7,6 +7,7 @@ and related workflows.
 import argparse
 import subprocess
 import sys
+import time
 from typing import List
 
 from constants_nox import COMPOSE_SERVICE_NAME
@@ -124,8 +125,10 @@ def run_infrastructure(
     path: str = get_path_for_datastores(datastores, remote_debug)
 
     _run_cmd_or_err(
-        f"docker compose {path} up --wait {COMPOSE_SERVICE_NAME} {' '.join(docker_datastores)}"
+        f"docker compose {path} up -d {COMPOSE_SERVICE_NAME} {' '.join(docker_datastores)}"
     )
+    _run_cmd_or_err('echo "Waiting 15 seconds for containers to initialize..."')
+    time.sleep(15)
 
     seed_initial_data(
         datastores,
