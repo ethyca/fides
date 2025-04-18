@@ -3,10 +3,10 @@ import type { NextPage } from "next";
 import { useState } from "react";
 
 import { useFeatures } from "~/features/common/features";
+import { InfoTooltip } from "~/features/common/InfoTooltip";
 import Layout from "~/features/common/Layout";
 import { DATASET_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
-import QuestionTooltip from "~/features/common/QuestionTooltip";
 import DatabaseConnectForm from "~/features/dataset/DatabaseConnectForm";
 import DatasetYamlForm from "~/features/dataset/DatasetYamlForm";
 
@@ -47,7 +47,7 @@ const NewDataset: NextPage = () => {
             Connect to a database
           </Button>
           {features.flags.dataDiscoveryAndDetection ? (
-            <QuestionTooltip label="Creating a dataset via a database connection is disabled when the 'detection & discovery' beta feature is enabled" />
+            <InfoTooltip label="Creating a dataset via a database connection is disabled when the 'detection & discovery' beta feature is enabled" />
           ) : null}
         </Box>
         {generateMethod === "database" && (

@@ -132,7 +132,7 @@ describe("Data map report table", () => {
     });
   });
 
-  describe.skip("Column customization", () => {
+  describe("Column customization", () => {
     it("should show/hide columns", () => {
       // hide
       cy.getByTestId("more-menu").click();

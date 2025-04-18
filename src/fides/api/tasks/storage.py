@@ -16,6 +16,7 @@ from fides.api.schemas.storage.storage import ResponseFormat, StorageSecrets
 from fides.api.service.privacy_request.dsr_package.dsr_report_builder import (
     DsrReportBuilder,
 )
+from fides.api.service.storage.gcs import get_gcs_client
 from fides.api.service.storage.s3 import (
     create_presigned_url_for_s3,
     generic_upload_to_s3,
@@ -64,7 +65,7 @@ def encrypt_access_request_results(data: Union[str, bytes], request_id: str) -> 
 def write_to_in_memory_buffer(
     resp_format: str, data: Dict[str, Any], privacy_request: PrivacyRequest
 ) -> BytesIO:
-    """Write JSON/CSV data to in-memory file-like object to be passed to S3. Encrypt data if encryption key/nonce
+    """Write JSON/CSV data to in-memory file-like object to be passed to S3 or GCS. Encrypt data if encryption key/nonce
     has been cached for the given privacy request id
 
     :param resp_format: str, should be one of ResponseFormat
@@ -159,6 +160,49 @@ def upload_to_s3(  # pylint: disable=R0913
         raise e
     except ParamValidationError as e:
         raise ValueError(f"The parameters you provided are incorrect: {e}")
+
+
+def upload_to_gcs(
+    storage_secrets: Dict,
+    data: Dict,
+    bucket_name: str,
+    file_key: str,
+    resp_format: str,
+    privacy_request: PrivacyRequest,
+    auth_method: str,
+) -> str:
+    """Uploads access request data to a Google Cloud Storage bucket"""
+    logger.info("Starting Google Cloud Storage upload of {}", file_key)
+
+    try:
+        storage_client = get_gcs_client(auth_method, storage_secrets)
+        bucket = storage_client.bucket(bucket_name)
+
+        blob = bucket.blob(file_key)
+        in_memory_file = write_to_in_memory_buffer(resp_format, data, privacy_request)
+        content_type = {
+            ResponseFormat.json.value: "application/json",
+            ResponseFormat.csv.value: "application/zip",
+            ResponseFormat.html.value: "application/zip",
+        }
+        blob.upload_from_string(
+            in_memory_file.getvalue(), content_type=content_type[resp_format]
+        )
+
+        logger.info("File {} uploaded to {}", file_key, blob.public_url)
+
+        presigned_url = blob.generate_signed_url(
+            version="v4",
+            expiration=CONFIG.security.subject_request_download_link_ttl_seconds,
+            method="GET",
+        )
+        return presigned_url
+    except Exception as e:
+        logger.error(
+            "Encountered error while uploading and generating link for Google Cloud Storage object: {}",
+            e,
+        )
+        raise e
 
 
 def upload_to_local(
