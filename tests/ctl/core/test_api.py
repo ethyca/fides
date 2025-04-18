@@ -502,6 +502,7 @@ class TestCrud:
         )
         assert result.status_code == 403
 
+    @pytest.mark.usefixtures("monkeypatch_requests")
     async def test_upsert_validates_resources_against_pydantic_model(
         self,
         test_config: FidesConfig,
