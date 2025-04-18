@@ -81,12 +81,10 @@ export const PrivacyDeclarationFormComponents = ({
   allDataSubjects,
   allDatasets,
   privacyDeclarationId,
-  includeCookies,
   includeCustomFields,
 }: DataProps &
   Pick<Props, "onDelete"> & {
     privacyDeclarationId?: string;
-    includeCookies?: boolean;
     includeCustomFields?: boolean;
   }) => {
   const datasetOptions = allDatasets
@@ -142,14 +140,6 @@ export const PrivacyDeclarationFormComponents = ({
         layout="stacked"
         disabled
       />
-      {includeCookies ? (
-        <ControlledSelect
-          name="cookies"
-          label="Cookies"
-          mode="tags"
-          layout="stacked"
-        />
-      ) : null}
       {allDatasets ? (
         <ControlledSelect
           name="dataset_references"
@@ -292,7 +282,6 @@ interface Props {
   initialValues?: PrivacyDeclarationResponse;
   privacyDeclarationId?: string;
   includeCustomFields?: boolean;
-  includeCookies?: boolean;
 }
 
 export const PrivacyDeclarationForm = ({

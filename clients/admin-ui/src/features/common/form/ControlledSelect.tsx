@@ -11,7 +11,7 @@ import {
 import { useField } from "formik";
 import { useState } from "react";
 
-import QuestionTooltip from "../QuestionTooltip";
+import { InfoTooltip } from "../InfoTooltip";
 import { ErrorMessage, Label } from "./inputs";
 
 export interface ControlledSelectProps extends SelectProps {
@@ -110,7 +110,7 @@ export const ControlledSelect = ({
                 fieldName={field.name}
               />
             </Flex>
-            {tooltip ? <QuestionTooltip label={tooltip} /> : null}
+            <InfoTooltip label={tooltip} />
           </Flex>
         </Grid>
       </FormControl>
@@ -131,7 +131,7 @@ export const ControlledSelect = ({
               {label}
             </Label>
           ) : null}
-          {tooltip ? <QuestionTooltip label={tooltip} /> : null}
+          <InfoTooltip label={tooltip} />
         </Flex>
         <Select
           {...field}

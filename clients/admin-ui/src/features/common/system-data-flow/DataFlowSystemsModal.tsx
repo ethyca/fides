@@ -1,4 +1,3 @@
-import SearchBar from "common/SearchBar";
 import {
   AntButton as Button,
   AntSwitch as Switch,
@@ -20,6 +19,7 @@ import {
 import { useFormikContext } from "formik";
 import { useMemo, useState } from "react";
 
+import SearchInput from "~/features/common/SearchInput";
 import { DataFlow, System } from "~/types/api";
 
 import DataFlowSystemsTable from "./DataFlowSystemsTable";
@@ -131,8 +131,8 @@ const DataFlowSystemsModal = ({
                   </FormControl>
                 </Box>
               </Flex>
-              <SearchBar
-                search={searchFilter}
+              <SearchInput
+                value={searchFilter}
                 onChange={setSearchFilter}
                 placeholder="Search for systems"
                 data-testid="system-search"

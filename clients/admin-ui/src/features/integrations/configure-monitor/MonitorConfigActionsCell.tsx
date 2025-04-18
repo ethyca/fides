@@ -1,8 +1,8 @@
 import {
   AntButton as Button,
+  AntTooltip as Tooltip,
   DeleteIcon,
   EditIcon,
-  Tooltip,
   useDisclosure,
 } from "fidesui";
 
@@ -69,7 +69,7 @@ const MonitorConfigActionsCell = ({
         isCentered
       />
       <div className="flex gap-2">
-        <Tooltip label="Edit">
+        <Tooltip title="Edit">
           <Button
             onClick={onEditClick}
             size="small"
@@ -78,7 +78,7 @@ const MonitorConfigActionsCell = ({
             aria-label="Edit monitor"
           />
         </Tooltip>
-        <Tooltip label="Delete">
+        <Tooltip title="Delete">
           <Button
             onClick={onOpen}
             size="small"

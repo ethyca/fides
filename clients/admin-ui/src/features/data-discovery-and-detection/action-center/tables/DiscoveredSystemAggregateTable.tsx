@@ -42,7 +42,7 @@ import useActionCenterTabs from "~/features/data-discovery-and-detection/action-
 import { DiffStatus } from "~/types/api";
 import { isErrorResult } from "~/types/errors";
 
-import { SearchInput } from "../../SearchInput";
+import { DebouncedSearchInput } from "../../../common/DebouncedSearchInput";
 import { useDiscoveredSystemAggregateColumns } from "../hooks/useDiscoveredSystemAggregateColumns";
 import { MonitorSystemAggregate } from "../types";
 
@@ -210,7 +210,10 @@ export const DiscoveredSystemAggregateTable = ({
         >
           <Flex gap={6} align="center">
             <Box flexShrink={0}>
-              <SearchInput value={searchQuery} onChange={setSearchQuery} />
+              <DebouncedSearchInput
+                value={searchQuery}
+                onChange={setSearchQuery}
+              />
             </Box>
           </Flex>
           <Flex align="center">

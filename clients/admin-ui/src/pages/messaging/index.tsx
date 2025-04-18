@@ -25,12 +25,12 @@ import { useEffect, useMemo, useState } from "react";
 import FixedLayout from "~/features/common/FixedLayout";
 import { useLocalStorage } from "~/features/common/hooks/useLocalStorage";
 import InfoBox from "~/features/common/InfoBox";
+import { InfoTooltip } from "~/features/common/InfoTooltip";
 import {
   MESSAGING_ADD_TEMPLATE_ROUTE,
   MESSAGING_EDIT_ROUTE,
 } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
-import QuestionTooltip from "~/features/common/QuestionTooltip";
 import {
   DefaultCell,
   DefaultHeaderCell,
@@ -306,7 +306,7 @@ const MissingMessagesInfoBox = () => {
             submit privacy requests for these properties may not receive the
             necessary emails regarding their requests.{" "}
             <Box as="span">
-              <QuestionTooltip
+              <InfoTooltip
                 label={propertiesWithoutMessagingTemplates
                   ?.map((p) => p.name)
                   .join(", ")}
