@@ -57,14 +57,12 @@ export const CustomFieldForm = ({
       <Box py={3}>
         <FormSection title="Field Information">
           <CustomInput
-            displayHelpIcon
             isRequired
             label="Name"
             name="name"
             customLabelProps={CustomFieldLabelStyles}
           />
           <CustomInput
-            displayHelpIcon
             label="Description"
             name="description"
             customLabelProps={CustomFieldLabelStyles}
@@ -120,7 +118,6 @@ export const CustomFieldForm = ({
                                 minW: "126px",
                                 pr: "8px",
                               }}
-                              displayHelpIcon={false}
                               isRequired
                               label={`List item ${index + 1}`}
                               name={`allow_list.allowed_values[${index}]`}
