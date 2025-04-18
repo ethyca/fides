@@ -1,4 +1,4 @@
-from typing import Any, Dict
+from typing import Any
 
 from botocore.exceptions import ClientError
 from google.auth.exceptions import GoogleAuthError
@@ -26,7 +26,7 @@ def secrets_are_valid(
 
 
 def _s3_authenticator(
-    config: StorageConfig, secrets: Dict[StorageSecrets, Any]
+    config: StorageConfig, secrets: dict[StorageSecrets, Any]
 ) -> bool:
     """Authenticates secrets for s3, returns true if secrets are valid"""
     try:
@@ -36,7 +36,7 @@ def _s3_authenticator(
         return False
 
 
-def _gcs_authenticator(secrets: Dict) -> bool:
+def _gcs_authenticator(storage_config: StorageConfig, secrets: dict) -> bool:
     """Autenticates secrets for Google Cloud Storage, returns true if secrets are valid"""
     try:
         credentials = service_account.Credentials.from_service_account_info(
