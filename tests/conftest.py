@@ -555,7 +555,13 @@ def resources_dict():
 
 @pytest.fixture(scope="function")
 @pytest.mark.asyncio
-async def fideslang_resources(async_session, resources_dict, default_taxonomy, config):
+async def fideslang_resources(
+    async_session,
+    resources_dict,
+    default_organization,
+    default_taxonomy,
+    config,
+):
     """
     Loads all resources from resources_dict into the database.
     This fixture runs automatically before each test function.
