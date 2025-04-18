@@ -52,6 +52,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Fixed performance issues in Data map report in Admin UI [#6046](https://github.com/ethyca/fides/pull/6046)
 - Fixed details requirements in AWS SES setup [#6047](https://github.com/ethyca/fides/pull/6047)
 - Fixed startup issues with Celery workers [#6058](https://github.com/ethyca/fides/pull/6058)
+- Fixed incorrect capitalization on "URL" field in website integration config [#6064](https://github.com/ethyca/fides/pull/6064)
 
 ## [2.59.1](https://github.com/ethyca/fides/compare/2.59.0...2.59.1)
 
