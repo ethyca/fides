@@ -25,8 +25,12 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Migrate `Cookies` resources to `Asset` resources of type `Cookie` [#5776](https://github.com/ethyca/fides/pull/5776) https://github.com/ethyca/fides/labels/db-migration https://github.com/ethyca/fides/labels/high-risk
 - Added support for selecting TCF Publisher Override configuration when configuring Privacy Experience [#6033](https://github.com/ethyca/fides/pull/6033)
 - Added Google Cloud Storage as a storage option [#6006](https://github.com/ethyca/fides/pull/6006)
+- Added SSL Mode field for MySQL connections [#6048](https://github.com/ethyca/fides/pull/6048)
 - Added PostgreSQL connection config form to the "integrations" page to support use with discovery monitors [#6018](https://github.com/ethyca/fides/pull/6018)
 - Update the Datahub Permissions section to include required permissions from Datahub [#6052](https://github.com/ethyca/fides/pull/6052)
+
+### Added
+- Added assumed role arn capabilities to aws Storage [#6027](https://github.com/ethyca/fides/pull/6027)
 
 ### Changed
 - Changed how TCF Publisher Overrides gets configured in consent settings [#6013](https://github.com/ethyca/fides/pull/6013)
@@ -47,6 +51,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Fixed Privacy Center issue where unconfigured fields (eg. phone) were being passed as null form values [#6045](https://github.com/ethyca/fides/pull/6045)
 - Fixed performance issues in Data map report in Admin UI [#6046](https://github.com/ethyca/fides/pull/6046)
 - Fixed details requirements in AWS SES setup [#6047](https://github.com/ethyca/fides/pull/6047)
+- Fixed startup issues with Celery workers [#6058](https://github.com/ethyca/fides/pull/6058)
 
 ## [2.59.1](https://github.com/ethyca/fides/compare/2.59.0...2.59.1)
 
