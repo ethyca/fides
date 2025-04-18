@@ -163,7 +163,7 @@ class TestBuildUserConsentAndFilteredPreferencesForService:
         pref_4.privacy_request_id = privacy_request_with_consent_policy.id
         pref_4.save(db)
 
-        notice_id_to_preference_map, filtered_preferences = (
+        notice_preference_map, filtered_preferences = (
             build_user_consent_and_filtered_preferences_for_service(
                 system,
                 privacy_request_with_consent_policy,
@@ -171,9 +171,15 @@ class TestBuildUserConsentAndFilteredPreferencesForService:
                 True,  # signal notice-based consent
             )
         )
-        assert notice_id_to_preference_map == {
-            privacy_notice.id: UserConsentPreference.opt_in,
-            privacy_notice_2.id: UserConsentPreference.opt_out,
+        assert notice_preference_map == {
+            privacy_notice.id: {
+                "preference": UserConsentPreference.opt_in,
+                "notice_key": privacy_notice.notice_key,
+            },
+            privacy_notice_2.id: {
+                "preference": UserConsentPreference.opt_out,
+                "notice_key": privacy_notice_2.notice_key,
+            },
         }
         assert filtered_preferences == [pref_1, pref_2]
 
