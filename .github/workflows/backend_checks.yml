@@ -30,16 +30,27 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set Up Python
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
           cache: "pip"
+          cache-dependency-path: |
+            requirements.txt
+            dev-requirements.txt
+            optional-requirements.txt
+
+      - name: Cache nox environments
+        uses: actions/cache@v4
+        id: cache-nox
+        with:
+          path: .nox
+          key: ${{ runner.os }}-nox-${{ env.DEFAULT_PYTHON_VERSION }}-${{ hashFiles('noxfiles/**/*.py', 'requirements.txt', 'dev-requirements.txt', 'optional-requirements.txt') }}
 
       - name: Install Nox
         run: pip install nox>=2022
 
-      - name: Run Static Check
+      - name: Run static check
         run: nox -s collect_tests
 
   Build:
@@ -57,6 +68,16 @@ jobs:
         id: buildx
         uses: docker/setup-buildx-action@v3
 
+      # Add Docker layer caching
+      - name: Cache Docker layers
+        uses: actions/cache@v3
+        with:
+          path: /tmp/.buildx-cache${{ matrix.python_version == '3.9.18' && '-py39' || '' }}
+          key: ${{ runner.os }}-buildx-${{ matrix.python_version }}-${{ hashFiles('requirements.txt', 'optional-requirements.txt', 'dev-requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-${{ matrix.python_version }}-
+            ${{ runner.os }}-buildx-
+
       - name: Build container
         uses: docker/build-push-action@v6
         with:
@@ -67,6 +88,14 @@ jobs:
           outputs: type=docker,dest=/tmp/python-${{ matrix.python_version }}.tar
           push: false
           tags: ${{ env.IMAGE }}
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
+
+      # Move cache to prevent cache growth
+      - name: Move cache
+        run: |
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache || true
 
       - name: Upload container
         uses: actions/upload-artifact@v4
@@ -95,7 +124,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set Up Python
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
@@ -139,7 +168,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set Up Python
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
@@ -186,7 +215,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set Up Python
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
@@ -236,7 +265,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set Up Python
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
@@ -288,7 +317,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set Up Python
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
@@ -350,7 +379,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set Up Python
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
@@ -445,7 +474,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set Up Python
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
@@ -454,7 +483,7 @@ jobs:
       - name: Install Nox
         run: pip install nox>=2022
 
-      - name: Get Vault Token
+      - name: Get Vault token
         uses: hashicorp/vault-action@v2.5.0
         with:
           url: ${{ secrets.VAULT_ADDR }}
@@ -469,7 +498,7 @@ jobs:
           username: ${{ env.DOCKER_USER }}
           password: ${{ env.DOCKER_RO_TOKEN }}
 
-      - name: SaaS Connector Tests
+      - name: SaaS connector tests
         env:
           VAULT_ADDR: ${{ secrets.VAULT_ADDR }}
           VAULT_NAMESPACE: ${{ secrets.VAULT_NAMESPACE }}
