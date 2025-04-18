@@ -1,4 +1,6 @@
 // Unmodified components exported directly from ChakraUI
+import { CustomTypography } from "./hoc/CustomTypography";
+
 export * from "@chakra-ui/icons";
 export * from "@chakra-ui/react";
 export { getCSSVar } from "@chakra-ui/react";
@@ -50,7 +52,6 @@ export {
   Switch as AntSwitch,
   Tabs as AntTabs,
   Tooltip as AntTooltip,
-  Typography as AntTypography,
 } from "antd/lib";
 export type {
   BreadcrumbItemType as AntBreadcrumbItemType,
@@ -63,8 +64,18 @@ export type {
 } from "antd/lib/select";
 
 // Higher-order components
-export { CustomSelect as AntSelect } from "./hoc";
-export { CustomDateRangePicker as AntDateRangePicker } from "./hoc";
+export {
+  CustomDateRangePicker as AntDateRangePicker,
+  CustomSelect as AntSelect,
+  CustomTag as AntTag,
+  CustomTypography as AntTypography,
+} from "./hoc";
+
+// Export the destructured Typography components individually
+export const AntText = CustomTypography.Text;
+export const AntTitle = CustomTypography.Title;
+export const AntParagraph = CustomTypography.Paragraph;
+export const AntLink = CustomTypography.Link;
 
 /**
  * Custom Re-exports
@@ -100,4 +111,3 @@ export { ExampleComponent } from "./components/example-component";
 export { FloatingMenu } from "./components/floating-menu";
 export { PrimaryLink, SecondaryLink } from "./components/links";
 export { SystemsCheckboxTable } from "./components/systems-checkbox-table";
-export { CustomTag as AntTag } from "./hoc";
