@@ -156,11 +156,15 @@ class TestS3Authenticator:
         # Set the secrets with the role ARN and credentials
         secrets = {
             StorageSecrets.AWS_ACCESS_KEY_ID.value: mock_aws_role["access_key_id"],
-            StorageSecrets.AWS_SECRET_ACCESS_KEY.value: mock_aws_role["secret_access_key"],
+            StorageSecrets.AWS_SECRET_ACCESS_KEY.value: mock_aws_role[
+                "secret_access_key"
+            ],
         }
         if has_role:
             secrets["assume_role_arn"] = mock_aws_role["role_arn"]
-            s3_storage_config.details[StorageDetails.AUTH_METHOD.value] = AWSAuthMethod.AUTOMATIC.value
+            s3_storage_config.details[StorageDetails.AUTH_METHOD.value] = (
+                AWSAuthMethod.AUTOMATIC.value
+            )
 
         s3_storage_config.set_secrets(
             db=db,
