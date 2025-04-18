@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.59.2b1.post0.dev6"
+    "version": "2.59.2b1.post0.dev7"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -25792,20 +25792,52 @@
       "StorageSecretsS3Docs": {
         "properties": {
           "aws_access_key_id": {
-            "type": "string",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Aws Access Key Id"
           },
           "aws_secret_access_key": {
-            "type": "string",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Aws Secret Access Key"
+          },
+          "region_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Region Name"
+          },
+          "assume_role_arn": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Assume Role Arn"
           }
         },
         "additionalProperties": false,
         "type": "object",
-        "required": [
-          "aws_access_key_id",
-          "aws_secret_access_key"
-        ],
         "title": "StorageSecretsS3Docs",
         "description": "The secrets required to connect to S3, for documentation"
       },
