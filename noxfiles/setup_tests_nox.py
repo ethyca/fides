@@ -138,6 +138,8 @@ def pytest_ops(
                 *ignore_args,
                 "-m",
                 "not integration and not integration_external and not integration_saas",
+                "-n",
+                "8",
             )
         else:
             run_command = (
