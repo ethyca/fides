@@ -16,6 +16,9 @@ from fides.api.graph.execution import ExecutionNode
 from fides.api.schemas.connection_configuration.connection_secrets_google_cloud_sql_postgres import (
     GoogleCloudSQLPostgresSchema,
 )
+from fides.api.schemas.connection_configuration.enums.google_cloud_sql_ip_type import (
+    GoogleCloudSQLIPType,
+)
 from fides.api.service.connectors.query_configs.google_cloud_postgres_query_config import (
     GoogleCloudSQLPostgresQueryConfig,
 )
@@ -53,6 +56,7 @@ class GoogleCloudSQLPostgresConnector(SQLConnector):
             conn: pg8000.dbapi.Connection = connector.connect(
                 config.instance_connection_name,
                 "pg8000",
+                ip_type=config.ip_type or GoogleCloudSQLIPType.public,
                 user=config.db_iam_user,
                 db=config.dbname or self.default_db_name,
                 enable_iam_auth=True,
