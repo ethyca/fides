@@ -42,7 +42,9 @@ const TaxonomyCustomFieldsForm = ({
       layout="vertical"
       data-testid="custom-fields-form"
     >
-      <Typography.Title level={5}>Custom fields</Typography.Title>
+      <div className="mb-2">
+        <Typography.Title level={3}>Custom fields</Typography.Title>
+      </div>
 
       {isLoading ? (
         <FidesSpinner />

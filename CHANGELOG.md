@@ -29,6 +29,9 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Added PostgreSQL connection config form to the "integrations" page to support use with discovery monitors [#6018](https://github.com/ethyca/fides/pull/6018)
 - Update the Datahub Permissions section to include required permissions from Datahub [#6052](https://github.com/ethyca/fides/pull/6052)
 
+### Added
+- Added assumed role arn capabilities to aws Storage [#6027](https://github.com/ethyca/fides/pull/6027)
+
 ### Changed
 - Changed how TCF Publisher Overrides gets configured in consent settings [#6013](https://github.com/ethyca/fides/pull/6013)
 - Frontend now do not generate `key` when creating a Website Monitor [#6041](https://github.com/ethyca/fides/pull/6041)
@@ -40,6 +43,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ### Developer Experience
 - Reduced animations on Cypress tests in Privacy Center for quicker results [#5976](https://github.com/ethyca/fides/pull/5976)
 - Migrated Tooltip components to Ant Design across Admin UI [#6060](https://github.com/ethyca/fides/pull/6060)
+- Added custom Typography component to FidesUI with configurable text sizes [#6062](https://github.com/ethyca/fides/pull/6062)
 
 ### Fixed
 - Fixed typo in Vermont US state name [#6029](https://github.com/ethyca/fides/pull/6029)
