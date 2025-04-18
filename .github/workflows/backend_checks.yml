@@ -254,6 +254,12 @@ jobs:
       - name: Run test suite
         run: nox -s "pytest(${{ matrix.test_selection }})"
 
+      - name: Dump MSSQL logs on failure
+        if: failure() && matrix.test_selection == 'ops-integration' # Only dump logs if the ops-integration suite failed
+        run: |
+          echo "Attempting to dump logs for mssql_example..."
+          docker compose -f docker-compose.yml -f docker/docker-compose.integration-scylladb.yml -f docker/docker-compose.integration-mongodb.yml -f docker/docker-compose.integration-postgres.yml -f docker/docker-compose.integration-mariadb.yml -f docker/docker-compose.integration-timescale.yml -f docker/docker-compose.integration-mysql.yml -f docker/docker-compose.integration-mssql.yml logs mssql_example
+
       - name: Upload coverage
         uses: codecov/codecov-action@v5
         with:
