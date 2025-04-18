@@ -1,4 +1,10 @@
-import { Text, Tooltip, useDisclosure, useToast, WarningIcon } from "fidesui";
+import {
+  AntTooltip as Tooltip,
+  Text,
+  useDisclosure,
+  useToast,
+  WarningIcon,
+} from "fidesui";
 import router from "next/router";
 import React from "react";
 
@@ -57,9 +63,12 @@ const DeletePropertyModal = ({ property, triggerComponent }: Props) => {
   return (
     <Restrict scopes={[ScopeRegistryEnum.PROPERTY_DELETE]}>
       <Tooltip
-        label="All of the experiences on this property must be unlinked before the property can be deleted."
+        title={
+          !disabled
+            ? undefined
+            : "All of the experiences on this property must be unlinked before the property can be deleted."
+        }
         placement="right"
-        isDisabled={!disabled}
       >
         <span>
           {React.cloneElement(triggerComponent, {

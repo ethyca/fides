@@ -8,6 +8,7 @@ import {
 import { Box, Flex } from "fidesui";
 import { useEffect, useMemo, useState } from "react";
 
+import { DebouncedSearchInput } from "~/features/common/DebouncedSearchInput";
 import {
   FidesTableV2,
   PaginationBar,
@@ -19,7 +20,6 @@ import EmptyCatalogTableNotice from "~/features/data-catalog/datasets/EmptyCatal
 import CatalogResourceDetailDrawer from "~/features/data-catalog/staged-resources/CatalogResourceDetailDrawer";
 import useCatalogResourceColumns from "~/features/data-catalog/useCatalogResourceColumns";
 import { useGetMonitorResultsQuery } from "~/features/data-discovery-and-detection/discovery-detection.slice";
-import { SearchInput } from "~/features/data-discovery-and-detection/SearchInput";
 import { findResourceType } from "~/features/data-discovery-and-detection/utils/findResourceType";
 import resourceHasChildren from "~/features/data-discovery-and-detection/utils/resourceHasChildren";
 import { DiffStatus, StagedResourceAPIResponse } from "~/types/api";
@@ -123,7 +123,10 @@ const CatalogResourcesTable = ({
       <TableActionBar>
         <Flex gap={6} align="center">
           <Box flexShrink={0}>
-            <SearchInput value={searchQuery} onChange={setSearchQuery} />
+            <DebouncedSearchInput
+              value={searchQuery}
+              onChange={setSearchQuery}
+            />
           </Box>
         </Flex>
       </TableActionBar>

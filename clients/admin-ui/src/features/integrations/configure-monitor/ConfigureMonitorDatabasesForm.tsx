@@ -1,8 +1,14 @@
-import { AntButton as Button, Flex, Text, Tooltip, useToast } from "fidesui";
+import {
+  AntButton as Button,
+  AntTooltip as Tooltip,
+  Flex,
+  Text,
+  useToast,
+} from "fidesui";
 
 import FidesSpinner from "~/features/common/FidesSpinner";
 import { usePaginatedPicker } from "~/features/common/hooks/usePicker";
-import QuestionTooltip from "~/features/common/QuestionTooltip";
+import { InfoTooltip } from "~/features/common/InfoTooltip";
 import { DEFAULT_TOAST_PARAMS } from "~/features/common/toast";
 import MonitorDatabasePicker from "~/features/integrations/configure-monitor/MonitorDatabasePicker";
 import useCumulativeGetDatabases from "~/features/integrations/configure-monitor/useCumulativeGetDatabases";
@@ -85,7 +91,7 @@ const ConfigureMonitorDatabasesForm = ({
       <Flex p={4} direction="column">
         <Flex direction="row" mb={4} gap={1} align="center">
           <Text fontSize="sm">Select projects to monitor</Text>
-          <QuestionTooltip label={TOOLTIP_COPY} />
+          <InfoTooltip label={TOOLTIP_COPY} />
         </Flex>
         <MonitorDatabasePicker
           items={databases}
@@ -103,8 +109,9 @@ const ConfigureMonitorDatabasesForm = ({
       <div className="mt-4 flex w-full justify-between">
         <Button onClick={onClose}>Cancel</Button>
         <Tooltip
-          label="Select one or more projects to save"
-          isDisabled={!saveIsDisabled}
+          title={
+            saveIsDisabled ? "Select one or more projects to save" : undefined
+          }
         >
           <Button
             onClick={handleSave}

@@ -23,16 +23,9 @@ const CalloutNavCard = ({
     <Card className={styles.card} data-testid={`tile-${title}`}>
       <div className="mb-1 flex items-center gap-1.5">
         {icon}
-        <Typography.Title
-          level={5}
-          style={{ marginBottom: 1, textAlign: "left" }}
-        >
-          {title}
-        </Typography.Title>
+        <Typography.Title level={3}>{title}</Typography.Title>
       </div>
-      <Typography.Text style={{ textAlign: "left" }}>
-        {description}
-      </Typography.Text>
+      <Typography.Text>{description}</Typography.Text>
     </Card>
   </Box>
 );

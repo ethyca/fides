@@ -3,7 +3,6 @@ export { default as AddIcon } from "./Add";
 export { default as ArrowDownLineIcon } from "./ArrowDownLine";
 export { default as ArrowDownRightIcon } from "./ArrowDownRight";
 export { default as ArrowUpLineIcon } from "./ArrowUpLine";
-export { default as CircleHelpIcon } from "./CircleHelp";
 export { default as CloseSolidIcon } from "./CloseSolid";
 export { default as DownloadSolidIcon } from "./DownloadSolid";
 export { default as ErrorWarningIcon } from "./ErrorWarning";

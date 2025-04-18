@@ -2,13 +2,13 @@ import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import {
   AntButton as Button,
   AntSelect as Select,
+  AntTooltip as Tooltip,
   ErrorWarningIcon,
   GreenCheckCircleIcon,
   Heading,
   HStack,
   Stack,
   Text,
-  Tooltip,
   useToast,
   VStack,
 } from "fidesui";
@@ -223,8 +223,7 @@ const EditorSection = ({ connectionKey }: EditorSectionProps) => {
         </HStack>
         <HStack spacing={2}>
           <Tooltip
-            label="Refresh to load the latest data from the database. This will overwrite any unsaved local changes."
-            hasArrow
+            title="Refresh to load the latest data from the database. This will overwrite any unsaved local changes."
             placement="top"
           >
             <Button
@@ -238,8 +237,7 @@ const EditorSection = ({ connectionKey }: EditorSectionProps) => {
             </Button>
           </Tooltip>
           <Tooltip
-            label="Save your changes to update the dataset in the database."
-            hasArrow
+            title="Save your changes to update the dataset in the database."
             placement="top"
           >
             <Button htmlType="submit" size="small" onClick={handleSave}>

@@ -220,7 +220,7 @@ def put_config_secrets(
 
     msg = f"Secrets updated for StorageConfig with key: {config_key}."
     if verify:
-        status = secrets_are_valid(secrets_schema, storage_config.type)
+        status = secrets_are_valid(secrets_schema, storage_config)
         if status:
             logger.info(
                 "Storage secrets are valid for config with key '{}'", config_key
@@ -534,7 +534,7 @@ def put_default_config_secrets(
 
     msg = f"Secrets updated for default config of storage type: {storage_type.value}."
     if verify:
-        status = secrets_are_valid(secrets_schema, storage_config.type)
+        status = secrets_are_valid(secrets_schema, storage_config)
         if status:
             logger.info(
                 "Storage secrets are valid for default config of storage type '{}'",

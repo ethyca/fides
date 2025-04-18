@@ -16,6 +16,7 @@ import {
 import { useEffect, useState } from "react";
 
 import { useAppSelector } from "~/app/hooks";
+import { DebouncedSearchInput } from "~/features/common/DebouncedSearchInput";
 import { getErrorMessage } from "~/features/common/helpers";
 import {
   FidesTableV2,
@@ -25,7 +26,6 @@ import {
   useServerSidePagination,
 } from "~/features/common/table/v2";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
-import { SearchInput } from "~/features/data-discovery-and-detection/SearchInput";
 import { selectLockedForGVL } from "~/features/system/dictionary-form/dict-suggestion.slice";
 import {
   useDeleteSystemAssetsMutation,
@@ -161,7 +161,7 @@ const SystemAssetsTable = ({ system }: { system: SystemResponse }) => {
         {lockedForGVL ? GVL_COPY : COPY}
       </Text>
       <TableActionBar>
-        <SearchInput value={searchQuery} onChange={setSearchQuery} />
+        <DebouncedSearchInput value={searchQuery} onChange={setSearchQuery} />
         {!lockedForGVL && (
           <>
             <Spacer />
