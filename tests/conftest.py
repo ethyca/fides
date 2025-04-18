@@ -1,4 +1,5 @@
 import asyncio
+import copy
 import json
 import os
 import time
@@ -6,7 +7,6 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Callable, Dict, Generator, List
 from uuid import uuid4
-import copy
 
 import boto3
 import pytest
