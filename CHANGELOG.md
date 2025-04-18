@@ -29,6 +29,9 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Added PostgreSQL connection config form to the "integrations" page to support use with discovery monitors [#6018](https://github.com/ethyca/fides/pull/6018)
 - Update the Datahub Permissions section to include required permissions from Datahub [#6052](https://github.com/ethyca/fides/pull/6052)
 
+### Added
+- Added assumed role arn capabilities to aws Storage [#6027](https://github.com/ethyca/fides/pull/6027)
+
 ### Changed
 - Changed how TCF Publisher Overrides gets configured in consent settings [#6013](https://github.com/ethyca/fides/pull/6013)
 - Frontend now do not generate `key` when creating a Website Monitor [#6041](https://github.com/ethyca/fides/pull/6041)
