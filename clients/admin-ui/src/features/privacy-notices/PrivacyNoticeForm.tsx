@@ -21,10 +21,10 @@ import { useAppSelector } from "~/app/hooks";
 import FormSection from "~/features/common/form/FormSection";
 import { CustomSwitch, CustomTextInput } from "~/features/common/form/inputs";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
+import { InfoTooltip } from "~/features/common/InfoTooltip";
 import { PRIVACY_NOTICES_ROUTE } from "~/features/common/nav/routes";
 import * as routes from "~/features/common/nav/routes";
 import { PRIVACY_NOTICE_REGION_RECORD } from "~/features/common/privacy-notice-regions";
-import QuestionTooltip from "~/features/common/QuestionTooltip";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import {
   selectEnabledDataUseOptions,
@@ -76,7 +76,7 @@ const PrivacyNoticeLocationDisplay = ({
           {label}
         </FormLabel>
       ) : null}
-      {tooltip ? <QuestionTooltip label={tooltip} /> : null}
+      <InfoTooltip label={tooltip} />
     </Flex>
     <Box w="100%" data-testid="notice-locations">
       <Space size={[0, 2]} wrap>

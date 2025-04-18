@@ -14,7 +14,7 @@ import { getErrorMessage } from "~/features/common/helpers";
 import { errorToastParams } from "~/features/common/toast";
 import { isErrorResult } from "~/types/errors";
 
-import QuestionTooltip from "../../common/QuestionTooltip";
+import { InfoTooltip } from "../../common/InfoTooltip";
 import { usePatchConfigurationSettingsMutation } from "../../config-settings/config-settings.slice";
 import {
   useGetHealthQuery,
@@ -115,7 +115,7 @@ export const TCFOverrideToggle = ({
             data-testid="tcf-override-toggle"
           />
           <Text>Override vendor purposes</Text>
-          <QuestionTooltip label="Toggle on if you want to globally change any flexible legal bases or remove TCF purposes from your CMP" />
+          <InfoTooltip label="Toggle on if you want to globally change any flexible legal bases or remove TCF purposes from your CMP" />
         </Space>
       </Space>
       <ConfirmationModal
