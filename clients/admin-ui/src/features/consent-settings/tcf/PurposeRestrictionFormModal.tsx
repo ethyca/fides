@@ -1,11 +1,13 @@
 import {
   AntButton as Button,
   AntFlex as Flex,
+  AntTooltip as Tooltip,
   Collapse,
   Text,
   useToast,
 } from "fidesui";
 import { Form, Formik } from "formik";
+import { useEffect, useState } from "react";
 import * as Yup from "yup";
 
 import { ControlledSelect } from "~/features/common/form/ControlledSelect";
@@ -19,6 +21,7 @@ import {
 } from "~/types/api";
 
 import {
+  FORBIDDEN_LEGITIMATE_INTEREST_PURPOSE_IDS,
   RESTRICTION_TYPE_LABELS,
   VENDOR_RESTRICTION_LABELS,
 } from "./constants";
@@ -65,6 +68,17 @@ export const PurposeRestrictionFormModal = ({
   const toast = useToast();
   const [createRestriction] = useCreatePublisherRestrictionMutation();
   const [updateRestriction] = useUpdatePublisherRestrictionMutation();
+  const [isPurposeFlexible, setIsPurposeFlexible] = useState(true);
+  useEffect(() => {
+    if (
+      purposeId &&
+      FORBIDDEN_LEGITIMATE_INTEREST_PURPOSE_IDS.includes(+purposeId)
+    ) {
+      setIsPurposeFlexible(false);
+      // eslint-disable-next-line no-param-reassign
+      initialValues.restriction_type = TCFRestrictionType.PURPOSE_RESTRICTION;
+    }
+  }, [initialValues, purposeId]);
 
   // Get the list of restriction types that are already in use for this purpose
   const usedRestrictionTypes = existingRestrictions
@@ -227,14 +241,24 @@ export const PurposeRestrictionFormModal = ({
                 listed vendors are restricted or allowed, and specify which
                 vendor IDs the restriction applies to.
               </Text>
-              <ControlledSelect
-                name="restriction_type"
-                label="Restriction type"
-                options={restrictionTypeOptions}
-                layout="stacked"
-                tooltip="Choose how vendors are permitted to process data for this purpose. This setting overrides the vendor's declared legal basis in the Global Vendor List."
-                isRequired
-              />
+              <Tooltip
+                title={
+                  !isPurposeFlexible
+                    ? "Non-flexible purposes only support Purpose restrictions and cannot be restricted by consent or legitimate interest settings."
+                    : undefined
+                }
+              >
+                <ControlledSelect
+                  name="restriction_type"
+                  label="Restriction type"
+                  options={restrictionTypeOptions}
+                  layout="stacked"
+                  tooltip="Choose how vendors are permitted to process data for this purpose. This setting overrides the vendor's declared legal basis in the Global Vendor List."
+                  isRequired
+                  disabled={!isPurposeFlexible}
+                  className="w-full" // tooltip wrapper makes this necessary
+                />
+              </Tooltip>
               <ControlledSelect
                 name="vendor_restriction"
                 label="Vendor restriction"
