@@ -15,7 +15,7 @@ import { useMemo, useState } from "react";
 import { getErrorMessage } from "~/features/common/helpers";
 import ConfirmationModal from "~/features/common/modals/ConfirmationModal";
 import { LOCATIONS_ROUTE } from "~/features/common/nav/routes";
-import SearchBar from "~/features/common/SearchBar";
+import SearchInput from "~/features/common/SearchInput";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import ToastLink from "~/features/common/ToastLink";
 import {
@@ -98,10 +98,10 @@ const RegulationManagement = ({
   return (
     <VStack alignItems="start" spacing={4}>
       <Box maxWidth="510px" width="100%">
-        <SearchBar
+        <SearchInput
           onChange={setSearch}
           placeholder="Search"
-          search={search}
+          value={search}
           onClear={() => setSearch("")}
         />
       </Box>

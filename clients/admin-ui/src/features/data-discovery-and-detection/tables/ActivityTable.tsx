@@ -32,7 +32,7 @@ import {
   StagedResourceAPIResponse,
 } from "~/types/api";
 
-import { SearchInput } from "../SearchInput";
+import { DebouncedSearchInput } from "../../common/DebouncedSearchInput";
 import { ResourceActivityTypeEnum } from "../types/ResourceActivityTypeEnum";
 import findProjectFromUrn from "../utils/findProjectFromUrn";
 import findActivityType from "../utils/getResourceActivityLabel";
@@ -187,7 +187,10 @@ const ActivityTable = ({
       <TableActionBar>
         <Flex gap={6} align="center">
           <Box flexShrink={0}>
-            <SearchInput value={searchQuery} onChange={setSearchQuery} />
+            <DebouncedSearchInput
+              value={searchQuery}
+              onChange={setSearchQuery}
+            />
           </Box>
           <IconLegendTooltip />
         </Flex>

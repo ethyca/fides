@@ -156,7 +156,9 @@ const TaxonomyEditDrawer = ({
         }
       >
         <div className="mb-4">
-          <Typography.Title level={5}>Details</Typography.Title>
+          <div className="mb-2">
+            <Typography.Title level={3}>Details</Typography.Title>
+          </div>
           <div className="flex">
             <span className="w-1/3 shrink-0 text-sm text-gray-500">
               Fides key:

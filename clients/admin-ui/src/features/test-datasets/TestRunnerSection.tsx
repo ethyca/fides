@@ -14,7 +14,7 @@ import { useSelector } from "react-redux";
 import { useAppDispatch } from "~/app/hooks";
 import ClipboardButton from "~/features/common/ClipboardButton";
 import { getErrorMessage } from "~/features/common/helpers";
-import QuestionTooltip from "~/features/common/QuestionTooltip";
+import { InfoTooltip } from "~/features/common/InfoTooltip";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
 import {
   useGetDatasetInputsQuery,
@@ -295,7 +295,7 @@ const TestResultsSection = ({ connectionKey }: TestResultsSectionProps) => {
           >
             {isTestRunning ? "Stop" : "Run"}
           </Button>
-          <QuestionTooltip
+          <InfoTooltip
             label={
               isTestRunning
                 ? "Stop the currently running test"

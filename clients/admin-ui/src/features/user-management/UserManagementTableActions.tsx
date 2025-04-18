@@ -5,7 +5,7 @@ import { useDispatch, useSelector } from "react-redux";
 
 import { USER_MANAGEMENT_ROUTE } from "~/features/common/nav/routes";
 import Restrict from "~/features/common/Restrict";
-import SearchBar from "~/features/common/SearchBar";
+import SearchInput from "~/features/common/SearchInput";
 import { ScopeRegistryEnum } from "~/types/api";
 
 import { selectUserFilters, setUsernameSearch } from "./user-management.slice";
@@ -29,8 +29,8 @@ const UserManagementTableActions = () => {
 
   return (
     <Stack direction="row" spacing={4} mb={6}>
-      <SearchBar
-        search={username}
+      <SearchInput
+        value={username}
         onChange={handleSearchChange}
         placeholder="Search by Username"
       />

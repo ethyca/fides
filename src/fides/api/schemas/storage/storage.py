@@ -85,6 +85,8 @@ class StorageSecrets(Enum):
     # s3-specific
     AWS_ACCESS_KEY_ID = "aws_access_key_id"
     AWS_SECRET_ACCESS_KEY = "aws_secret_access_key"
+    REGION_NAME = "region_name"
+    AWS_ASSUME_ROLE = "assume_role_arn"
 
 
 class StorageSecretsLocal(BaseModel):
@@ -94,10 +96,10 @@ class StorageSecretsLocal(BaseModel):
 
 
 class StorageSecretsS3(BaseModel):
-    """The secrets required to connect to an S3 bucket."""
-
-    aws_access_key_id: str
-    aws_secret_access_key: str
+    aws_access_key_id: Optional[str] = None
+    aws_secret_access_key: Optional[str] = None
+    region_name: Optional[str] = None
+    assume_role_arn: Optional[str] = None
     model_config = ConfigDict(extra="forbid")
 
 

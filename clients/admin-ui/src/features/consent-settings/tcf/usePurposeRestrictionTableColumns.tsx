@@ -1,7 +1,7 @@
 import { createColumnHelper } from "@tanstack/react-table";
 import { useMemo } from "react";
 
-import QuestionTooltip from "~/features/common/QuestionTooltip";
+import { InfoTooltip } from "~/features/common/InfoTooltip";
 import { DefaultCell, DefaultHeaderCell } from "~/features/common/table/v2";
 import { TCFRestrictionType, TCFVendorRestriction } from "~/types/api";
 
@@ -47,7 +47,7 @@ export const usePurposeRestrictionTableColumns = () => {
             value={
               <>
                 Vendors{" "}
-                <QuestionTooltip label="Specify which vendors the restriction applies to. You can apply restrictions to all vendors, specific vendors by their IDs, or allow only certain vendors while restricting the rest." />
+                <InfoTooltip label="Specify which vendors the restriction applies to. You can apply restrictions to all vendors, specific vendors by their IDs, or allow only certain vendors while restricting the rest." />
               </>
             }
             {...props}
