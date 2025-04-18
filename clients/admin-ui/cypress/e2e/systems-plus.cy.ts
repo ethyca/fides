@@ -47,6 +47,7 @@ describe("System management with Plus features", () => {
   describe("vendor list", () => {
     beforeEach(() => {
       stubVendorList();
+      stubSystemAssets();
       cy.visit(`${ADD_SYSTEMS_MANUAL_ROUTE}`);
       cy.wait(["@getDictionaryEntries", "@getSystems"]);
     });
@@ -148,6 +149,20 @@ describe("System management with Plus features", () => {
       cy.getByTestId("delete-btn").should("not.exist");
       cy.getByTestId("row-functional.service.improve").click();
       cy.getByTestId("input-name").should("be.disabled");
+    });
+
+    it("does not allow system assets to be edited when locked", () => {
+      cy.getByTestId("vendor-name-select").find("input").type("Aniview{enter}");
+      cy.getByTestId("save-btn").click();
+      cy.wait(["@postSystem", "@getSystem", "@getSystems"]);
+      cy.getByTestId("tab-Assets").click();
+      cy.getByTestId("col-select").should("not.exist");
+      cy.getByTestId("col-actions").should("not.exist");
+      cy.getByTestId("add-asset-btn").should("not.exist");
+      cy.getByTestId("row-0").within(() => {
+        cy.getByTestId("system-badge").should("not.have.attr", "onClick");
+        cy.getByTestId("taxonomy-add-btn").should("not.exist");
+      });
     });
 
     it("does not lock editing for a non-GVL vendor", () => {
