@@ -19,8 +19,9 @@ _Write some things here about the changes and any potential caveats_
 * [ ] `CHANGELOG.md` updated
   * [ ] Add a https://github.com/ethyca/fides/labels/db-migration label to the entry if your change includes a DB migration
   * [ ] Add a https://github.com/ethyca/fides/labels/high-risk label to the entry if your change includes a high-risk change (i.e. potential for performance impact or unexpected regression) that should be flagged
+  * [ ] Updates unreleased work already in Changelog, no new entry necessary
 * Followup issues:
-  * [ ] Followup issues created (include link)
+  * [ ] Followup issues created
   * [ ] No followup issues
 * Database migrations:
   * [ ] Ensure that your downrev is up to date with the latest revision on `main`
