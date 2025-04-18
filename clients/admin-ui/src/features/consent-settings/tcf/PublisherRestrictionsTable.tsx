@@ -195,22 +195,18 @@ export const PublisherRestrictionsTable = ({
             )}
           </FauxTableCell>
           <FauxTableCell width="100px" borderLeft>
-            {FORBIDDEN_LEGITIMATE_INTEREST_PURPOSE_IDS.includes(purpose.id) ? (
-              <div />
-            ) : (
-              <NextLink
-                href={`/settings/consent/${config?.id}/${purpose.id}`}
-                passHref
-                legacyBehavior
+            <NextLink
+              href={`/settings/consent/${config?.id}/${purpose.id}`}
+              passHref
+              legacyBehavior
+            >
+              <Button
+                size="small"
+                data-testid={`edit-restriction-btn-${purpose.id}`}
               >
-                <Button
-                  size="small"
-                  data-testid={`edit-restriction-btn-${purpose.id}`}
-                >
-                  Edit
-                </Button>
-              </NextLink>
-            )}
+                Edit
+              </Button>
+            </NextLink>
           </FauxTableCell>
         </FauxRow>
       ))}
