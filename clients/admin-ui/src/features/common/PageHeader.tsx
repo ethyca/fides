@@ -1,9 +1,7 @@
-import { AntFlex as Flex, AntTypography as Typography } from "fidesui";
+import { AntFlex as Flex, AntTitle as Title } from "fidesui";
 import { ComponentProps, ReactNode } from "react";
 
 import { NextBreadcrumb, NextBreadcrumbProps } from "./nav/NextBreadcrumb";
-
-const { Title } = Typography;
 
 interface PageHeaderProps extends ComponentProps<"div"> {
   heading?: ReactNode;

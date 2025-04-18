@@ -1,4 +1,6 @@
 // Unmodified components exported directly from ChakraUI
+import { CustomTypography } from "./hoc/CustomTypography";
+
 export * from "@chakra-ui/icons";
 export * from "@chakra-ui/react";
 export { getCSSVar } from "@chakra-ui/react";
@@ -68,6 +70,12 @@ export {
   CustomTag as AntTag,
   CustomTypography as AntTypography,
 } from "./hoc";
+
+// Export the destructured Typography components individually
+export const AntText = CustomTypography.Text;
+export const AntTitle = CustomTypography.Title;
+export const AntParagraph = CustomTypography.Paragraph;
+export const AntLink = CustomTypography.Link;
 
 /**
  * Custom Re-exports
