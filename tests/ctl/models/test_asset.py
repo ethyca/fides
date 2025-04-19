@@ -175,7 +175,6 @@ class TestUpsertAsset:
             assert new_asset.system_id == javascript_asset_data["system_id"]
             assert new_asset.base_url == "https://www.googletagmanager.com/gtm.js"
 
-    # @pytest.mark.skip(reason="Figuring out unique index constraints")
     async def test_upsert_asset_no_base_url(self, async_session, cookie_asset_data):
         """
         Ensures assets can be created and updated without a `base_url` even if `base_url` is part of unique key.
