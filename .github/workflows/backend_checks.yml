@@ -251,11 +251,8 @@ jobs:
           username: ${{ env.DOCKER_USER }}
           password: ${{ env.DOCKER_RO_TOKEN }}
 
-      - name: Dump MSSQL startup logs
-        if: matrix.test_selection == 'ops-integration'
-        run: |
-          echo "Attempting to dump logs for mssql_example regardless of test outcome..."
-          docker compose -f docker-compose.yml -f docker/docker-compose.integration-mssql.yml up mssql_example
+      - name: Run test suite
+        run: nox -s "pytest(${{ matrix.test_selection }})"
 
       - name: Upload coverage
         uses: codecov/codecov-action@v5
