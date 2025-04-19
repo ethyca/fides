@@ -93,6 +93,7 @@ class TestPostgresConnectionPutSecretsAPI:
             "username": "postgres",
             "password": "postgres",
             "db_schema": None,
+            "ssl_mode": None,
         }
 
         auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
