@@ -6,6 +6,7 @@ from unittest.mock import Mock
 from uuid import uuid4
 
 import pytest
+from fideslang.models import FidesKey
 from requests import Response
 from sqlalchemy.orm import Session
 from starlette.status import HTTP_200_OK, HTTP_204_NO_CONTENT, HTTP_404_NOT_FOUND
@@ -50,10 +51,11 @@ def uuid():
 
 
 def valid_consent_update_override(
+    connection_key: FidesKey,
     client: AuthenticatedClient,
     secrets: Dict[str, Any],
     input_data: Dict[str, List[Any]],
-    notice_id_to_preference_map: Dict[str, UserConsentPreference],
+    notice_preference_map: Dict[str, Dict[str, Any]],
     consentable_items_hierarchy: List[ConsentableItem],
 ) -> ConsentPropagationStatus:
     """
