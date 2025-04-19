@@ -81,6 +81,7 @@ class TestGetServerResource:
     @pytest.mark.parametrize(
         "created_resources", PARAM_MODEL_LIST, indirect=["created_resources"]
     )
+    @pytest.mark.usefixtures("monkeypatch_requests", "fideslang_resources")
     def test_get_server_resource_found_resource(
         self, test_config: FidesConfig, created_resources: List
     ) -> None:
@@ -120,6 +121,7 @@ class TestGetServerResources:
     @pytest.mark.parametrize(
         "created_resources", PARAM_MODEL_LIST, indirect=["created_resources"]
     )
+    @pytest.mark.usefixtures("monkeypatch_requests", "fideslang_resources")
     def test_get_server_resources_found_resources(
         self, test_config: FidesConfig, created_resources: List
     ) -> None:
@@ -156,6 +158,7 @@ class TestGetServerResources:
 
 @pytest.mark.integration
 class TestListServerResources:
+    @pytest.mark.usefixtures("monkeypatch_requests", "fideslang_resources")
     def test_list_server_resources_passing(self, test_config: FidesConfig) -> None:
         resource_type = "data_category"
         result = _api_helpers.list_server_resources(

@@ -18,11 +18,12 @@ from fides.core import api
 from fides.core import system as _system
 
 
+@pytest.mark.usefixtures("default_taxonomy")
 async def test_upsert_system_malformed_privacy_declaration(
-    test_config: FidesConfig, system: System, async_session: AsyncSession
+    system: System, async_session: AsyncSession
 ) -> None:
     with pytest.raises(AttributeError, match="has no attribute 'model_dump'"):
-        result = await upsert_system(resources=[system], db=async_session)
+        await upsert_system(resources=[system], db=async_session)
 
 
 def create_server_systems(test_config: FidesConfig, systems: List[System]) -> None:

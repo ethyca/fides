@@ -181,7 +181,7 @@ class TestBuildUserConsentAndFilteredPreferencesForService:
                 "notice_key": privacy_notice_2.notice_key,
             },
         }
-        assert filtered_preferences == [pref_1, pref_2]
+        assert set(filtered_preferences) == {pref_1, pref_2}
 
         pref_1.delete(db)
         pref_2.delete(db)

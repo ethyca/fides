@@ -163,6 +163,7 @@ def connection_config(
 
 
 @pytest.mark.unit
+@pytest.mark.usefixtures("monkeypatch_requests")
 async def test_upsert_db_datasets(
     test_config: FidesConfig, db: Session, connection_config, async_session
 ) -> None:

@@ -26,6 +26,7 @@ def generate_fides_data_categories() -> Type[EnumType]:
     return FidesDataCategory
 
 
+# TODO: Move away from using this, it conflicts with the DataCategory model
 DataCategory = generate_fides_data_categories()
 
 

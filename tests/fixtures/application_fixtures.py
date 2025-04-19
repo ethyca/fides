@@ -698,6 +698,7 @@ def access_and_erasure_policy(
 def erasure_policy(
     db: Session,
     oauth_client: ClientDetail,
+    default_data_categories,  # This needs to be explicitly passed in to ensure data categories are available
 ) -> Generator:
     erasure_policy = Policy.create(
         db=db,
@@ -1143,6 +1144,7 @@ def policy(
     db: Session,
     oauth_client: ClientDetail,
     storage_config: StorageConfig,
+    default_data_categories,  # This needs to be explicitly passed in to ensure data categories are available
 ) -> Generator:
     access_request_policy = Policy.create(
         db=db,
@@ -1192,7 +1194,6 @@ def policy(
 def consent_policy(
     db: Session,
     oauth_client: ClientDetail,
-    storage_config: StorageConfig,
 ) -> Generator:
     """Consent policies only need a ConsentRule attached - no RuleTargets necessary"""
     consent_request_policy = Policy.create(
@@ -1230,6 +1231,7 @@ def policy_local_storage(
     db: Session,
     oauth_client: ClientDetail,
     storage_config_local: StorageConfig,
+    default_data_categories,  # This needs to be explicitly passed in to ensure data categories are available
 ) -> Generator:
     """
     A basic example policy fixture that uses a local storage config
@@ -1284,7 +1286,9 @@ def policy_drp_action(
     db: Session,
     oauth_client: ClientDetail,
     storage_config: StorageConfig,
+    default_data_categories,  # This needs to be explicitly passed in to ensure data categories are available
 ) -> Generator:
+
     access_request_policy = Policy.create(
         db=db,
         data={
@@ -1330,7 +1334,11 @@ def policy_drp_action(
 
 
 @pytest.fixture(scope="function")
-def policy_drp_action_erasure(db: Session, oauth_client: ClientDetail) -> Generator:
+def policy_drp_action_erasure(
+    db: Session,
+    oauth_client: ClientDetail,
+    default_data_categories,  # This needs to be explicitly passed in to ensure data categories are available
+) -> Generator:
     erasure_request_policy = Policy.create(
         db=db,
         data={
@@ -1382,7 +1390,7 @@ def policy_drp_action_erasure(db: Session, oauth_client: ClientDetail) -> Genera
 def erasure_policy_string_rewrite(
     db: Session,
     oauth_client: ClientDetail,
-    storage_config: StorageConfig,
+    default_data_categories,  # This needs to be explicitly passed in to ensure data categories are available
 ) -> Generator:
     erasure_policy = Policy.create(
         db=db,

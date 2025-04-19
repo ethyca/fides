@@ -108,7 +108,6 @@ class TestConsentRequestOverride:
         consent_policy,
         saas_consent_request_override_connection_config,
         saas_consent_request_override_dataset_config,
-        privacy_request,
         dsr_version,
         request,
         mocker,
