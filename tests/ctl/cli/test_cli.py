@@ -327,7 +327,7 @@ class TestPull:
 
 @pytest.mark.integration
 class TestAnnotate:
-    @pytest.mark.skip("Needs investigation")
+    @pytest.mark.usefixtures("default_data_categories")
     def test_annotate(
         self,
         test_config_path: str,
@@ -1325,7 +1325,6 @@ class TestUser:
         )
         assert systems == []
 
-    @pytest.mark.skip("Needs investigation")
     def test_get_other_user_perms_and_systems(
         self, test_config_path, test_cli_runner, credentials_path, system_manager
     ) -> None:
