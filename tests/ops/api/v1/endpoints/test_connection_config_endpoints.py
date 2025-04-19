@@ -1509,6 +1509,7 @@ class TestPutConnectionConfigSecrets:
             "password": None,
             "db_schema": None,
             "ssh_required": False,
+            "ssl_mode": None,
         }
         assert connection_config.last_test_timestamp is None
         assert connection_config.last_test_succeeded is None
@@ -2337,6 +2338,7 @@ class TestPatchConnectionConfigSecrets:
             "password": previous_secrets["password"],
             "db_schema": None,  # Was not set in the payload nor in the fixture
             "ssh_required": False,  # Was not set in the payload nor in the fixture
+            "ssl_mode": None,  # Was not set in the payload nor in the fixture
         }
         assert connection_config.last_test_timestamp is None
         assert connection_config.last_test_succeeded is None
