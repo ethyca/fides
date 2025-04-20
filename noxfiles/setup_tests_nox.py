@@ -126,7 +126,7 @@ def pytest_ops(
                 "-m",
                 "not integration and not integration_external and not integration_saas",
                 "-n",
-                "8",
+                "4",
             )
         elif subset_dir == "non-api":
             ignore_args = [f"--ignore={dir}" for dir in OPS_API_TEST_DIRS]
@@ -139,7 +139,7 @@ def pytest_ops(
                 "-m",
                 "not integration and not integration_external and not integration_saas",
                 "-n",
-                "8",
+                "4",
             )
         else:
             run_command = (
@@ -255,6 +255,8 @@ def pytest_ops(
             OPS_TEST_DIR,
             "-m",
             "integration_external",
+            "-n",
+            "4",
         )
         session.run(*run_command, external=True)
     elif mark == "saas":
