@@ -149,7 +149,7 @@ async def async_session():
     create_citext_extension(sync_engine)
 
     async_engine = create_async_engine(
-        CONFIG.database.async_database_uri,
+        f"{CONFIG.database.async_database_uri}?prepared_statement_cache_size=0",
         echo=False,
     )
 
