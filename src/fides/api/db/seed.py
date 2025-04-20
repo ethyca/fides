@@ -547,7 +547,7 @@ def load_default_taxonomy(db: Session) -> None:
             try:
                 sql_model.create_or_update(db=db, data=resource_data)
                 created_count += 1
-            except Exception as exc:
+            except Exception:
                 pass
 
         if created_count > 0:

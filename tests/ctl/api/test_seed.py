@@ -3,13 +3,14 @@ import os
 from textwrap import dedent
 from typing import Generator
 from unittest.mock import patch
-from sqlalchemy.orm import Session
+
 import pytest
 import yaml
 from fideslang.default_taxonomy import DEFAULT_TAXONOMY
 from fideslang.models import DataCategory, Organization
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+from sqlalchemy.orm import Session
 
 from fides.api.db import samples, seed
 from fides.api.models.connectionconfig import ConnectionConfig

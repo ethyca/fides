@@ -9,13 +9,12 @@ from alembic import command, script
 from alembic.config import Config
 from alembic.runtime import migration
 from loguru import logger as log
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
 from sqlalchemy_utils.functions import create_database, database_exists
 from sqlalchemy_utils.types.encrypted.encrypted_type import InvalidCiphertextError
 
 from fides.api.db.base import Base  # type: ignore[attr-defined]
-from fides.api.db.seed import load_default_resources, load_samples
+from fides.api.db.seed import load_default_resources
 from fides.api.util.errors import get_full_exception_name
 from fides.core.utils import get_db_engine
 
