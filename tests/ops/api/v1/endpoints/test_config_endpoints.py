@@ -1063,7 +1063,6 @@ class TestDeleteApplicationConfig:
         # this should be empty
         assert db_settings.api_set == {}
 
-    @pytest.mark.skip(reason="Needs investigation")
     def test_reset_application_config_non_existing(
         self,
         api_client: TestClient,
@@ -1074,6 +1073,10 @@ class TestDeleteApplicationConfig:
         """
         Test that a DELETE works even if no 'api-set' settings have been set yet
         """
+
+        # Create an empty application config record
+        ApplicationConfig.create_or_update(db, data={})
+
         # we ensure they are not returned
         auth_header = generate_auth_header([scopes.CONFIG_READ])
         response = api_client.get(
