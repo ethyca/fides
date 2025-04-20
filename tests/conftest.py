@@ -1870,16 +1870,7 @@ def seed_data(session):
     """
     Fixture to load default resources into the database before a test.
     """
-    seed_db(session, samples=False)
-
-
-@pytest.mark.asyncio
-@pytest.fixture(scope="function")
-def seed_data_with_samples(session):
-    """
-    Fixture to load default resources into the database before a test.
-    """
-    seed_db(session, samples=True)
+    seed_db(session)
 
 
 @pytest.fixture(scope="function")
