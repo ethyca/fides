@@ -171,9 +171,10 @@ def test_generate_resource_urls_with_id(test_config: FidesConfig) -> None:
 
 
 @pytest.mark.integration
-@pytest.mark.usefixtures("monkeypatch_requests", "default_taxonomy")
+@pytest.mark.usefixtures("monkeypatch_requests", "fideslang_resources")
 class TestCrud:
     @pytest.mark.parametrize("endpoint", model_list)
+    @pytest.mark.usefixtures("default_taxonomy")
     def test_api_create(
         self,
         generate_auth_header,
@@ -282,7 +283,6 @@ class TestCrud:
         assert result.status_code == 403
 
     @pytest.mark.parametrize("endpoint", model_list)
-    @pytest.mark.usefixtures("fideslang_resources")
     def test_api_get(
         self, test_config: FidesConfig, endpoint: str, generate_auth_header
     ) -> None:
@@ -299,7 +299,6 @@ class TestCrud:
         assert result.status_code == 200
 
     @pytest.mark.parametrize("endpoint", model_list)
-    @pytest.mark.usefixtures("fideslang_resources")
     def test_api_get_wrong_scope(
         self, test_config: FidesConfig, endpoint: str, generate_auth_header
     ) -> None:
@@ -316,7 +315,6 @@ class TestCrud:
         assert result.status_code == 403
 
     @pytest.mark.parametrize("endpoint", model_list)
-    @pytest.mark.usefixtures("fideslang_resources")
     def test_sent_is_received(
         self,
         test_config: FidesConfig,
@@ -366,7 +364,6 @@ class TestCrud:
         assert parsed_result == manifest
 
     @pytest.mark.parametrize("endpoint", model_list)
-    @pytest.mark.usefixtures("fideslang_resources")
     def test_api_update(
         self,
         test_config: FidesConfig,
@@ -455,7 +452,6 @@ class TestCrud:
     # TODO: fix the up/down steps for this and other tests in this file
     # right now the test operates differently ran individually vs w/ the whole suite
     @pytest.mark.parametrize("endpoint", model_list)
-    @pytest.mark.usefixtures("fideslang_resources")
     def test_api_upsert(
         self,
         test_config: FidesConfig,
@@ -502,7 +498,6 @@ class TestCrud:
         )
         assert result.status_code == 403
 
-    @pytest.mark.usefixtures("fideslang_resources")
     async def test_upsert_validates_resources_against_pydantic_model(
         self,
         test_config: FidesConfig,
@@ -581,7 +576,6 @@ class TestCrud:
         assert result.status_code == 403
 
     @pytest.mark.parametrize("endpoint", model_list)
-    @pytest.mark.usefixtures("fideslang_resources")
     def test_api_delete(
         self,
         test_config: FidesConfig,
