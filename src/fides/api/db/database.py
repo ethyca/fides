@@ -115,20 +115,9 @@ def get_db_health(
         return ("unhealthy", None)
 
 
-async def seed_db(async_session: AsyncSession, samples: bool = False) -> None:
+def seed_db(session: Session, samples: bool = False) -> None:
     """Load default resources into the database, and optionally load samples."""
-    log.info("Loading database resources")
-    try:
-        await load_default_resources(async_session)
-        if samples:
-            await load_samples(async_session)
-        log.info("Finished loading database resources")
-    except Exception as error:  # pylint: disable=broad-except
-        error_type = get_full_exception_name(error)
-        log.error("Unable to load database resources: {}: {}", error_type, error)
-        log.opt(exception=True).error(error)
-        # Decide if we should raise here or just log
-        raise  # Re-raising might be appropriate depending on desired behavior
+    load_default_resources(session)
 
 
 def configure_db(database_url: str, revision: Optional[str] = "head") -> None:

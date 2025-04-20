@@ -1866,22 +1866,20 @@ def viewer_and_approver_auth_header(viewer_and_approver_user):
 
 @pytest.mark.asyncio
 @pytest.fixture(scope="function")
-async def seed_data(async_session):
+def seed_data(session):
     """
     Fixture to load default resources into the database before a test.
-    Optionally loads sample data if needed (can be parameterized).
     """
-    await seed_db(async_session, samples=False)
+    seed_db(session, samples=False)
 
 
 @pytest.mark.asyncio
 @pytest.fixture(scope="function")
-async def seed_data_with_samples(async_session):
+def seed_data_with_samples(session):
     """
     Fixture to load default resources into the database before a test.
-    Optionally loads sample data if needed (can be parameterized).
     """
-    await seed_db(async_session, samples=True)
+    seed_db(session, samples=True)
 
 
 @pytest.fixture(scope="function")
@@ -1904,13 +1902,13 @@ def default_data_uses(db):
 
 
 @pytest.fixture(scope="function")
-async def default_organization(async_session):
-    await load_default_organization(async_session)
+def default_organization(db: Session):
+    load_default_organization(db)
 
 
 @pytest.fixture(scope="function")
-async def default_taxonomy(async_session):
-    await load_default_taxonomy(async_session)
+def default_taxonomy(db: Session):
+    load_default_taxonomy(db)
 
 
 @pytest.fixture(scope="function", autouse=True)

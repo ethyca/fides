@@ -25,6 +25,7 @@ from fides.api.models.fides_user_permissions import FidesUserPermissions
 from fides.api.models.policy import Policy, Rule, RuleTarget
 from fides.api.models.sql_models import (  # type: ignore[attr-defined]
     Dataset,
+    Organization,
     System,
     sql_model_map,
 )
@@ -44,7 +45,7 @@ from fides.api.util.text import to_snake_case
 from fides.config import CONFIG
 from fides.service.dataset.dataset_config_service import DatasetConfigService
 
-from .crud import create_resource, get_resource, list_resource, upsert_resources
+from .crud import upsert_resources
 from .samples import (
     load_sample_connections_from_project,
     load_sample_resources_from_project,
@@ -282,107 +283,41 @@ def load_default_erasure_policy(
     )
 
 
-def load_default_dsr_policies() -> None:
+def load_default_dsr_policies(session: Session) -> None:
     """
     Checks whether DSR execution policies exist in the database, and
     inserts them to target a default set of data categories if not.
     """
-    with sync_session() as db_session:  # type: ignore[attr-defined]
-        client_id = get_client_id(db_session)
+    client_id = get_client_id(session)
 
-        # By default, include all categories *except* those related to a user's
-        # financial, payment, and credentials data. These are typically not
-        # included in access and erasure requests as they are covered by other
-        # compliance programs (e.g. legal, tax, security) and most
-        # organizations need to be extra careful about how these are used -
-        # especially for erasure! Therefore, a safe default for "out of the
-        # box" behaviour is to exclude these
+    # By default, include all categories *except* those related to a user's
+    # financial, payment, and credentials data. These are typically not
+    # included in access and erasure requests as they are covered by other
+    # compliance programs (e.g. legal, tax, security) and most
+    # organizations need to be extra careful about how these are used -
+    # especially for erasure! Therefore, a safe default for "out of the
+    # box" behaviour is to exclude these
 
-        default_data_categories = get_user_data_categories()
+    default_data_categories = get_user_data_categories()
 
-        log.debug(
-            f"Preparing to create default rules for the following Data Categories: {default_data_categories} if they do not already exist"
-        )
-
-        load_default_access_policy(db_session, client_id, default_data_categories)
-        load_default_erasure_policy(db_session, client_id, default_data_categories)
-
-        log.info("All default policies & rules created")
-
-
-async def load_default_organization(async_session: AsyncSession) -> None:
-    """
-    Seed the database with a default organization unless
-    one with a matching name already exists.
-    """
-
-    log.info("Loading the default organization...")
-    organizations: List[Dict] = list(
-        map(dict, DEFAULT_TAXONOMY.model_dump(mode="json")["organization"])
+    log.debug(
+        f"Preparing to create default rules for the following Data Categories: {default_data_categories} if they do not already exist"
     )
 
-    inserted = 0
-    for org in organizations:
-        try:
-            existing = await get_resource(
-                sql_model_map["organization"],
-                org["fides_key"],
-                async_session,
-                raise_not_found=False,
-            )
-            if not existing:
-                await create_resource(sql_model_map["organization"], org, async_session)
-                inserted += 1
-        except AlreadyExistsError:
-            pass
+    load_default_access_policy(session, client_id, default_data_categories)
+    load_default_erasure_policy(session, client_id, default_data_categories)
 
-    log.debug(f"INSERTED {inserted} organization resource(s)")
-    log.debug(f"SKIPPED {len(organizations)-inserted} organization resource(s)")
+    log.info("All default policies & rules created")
 
 
-async def load_default_taxonomy(async_session: AsyncSession) -> None:
-    """Seed the database with the default taxonomy resources."""
-
-    upsert_resource_types = list(DEFAULT_TAXONOMY.model_fields_set)
-    upsert_resource_types.remove("organization")
-
-    log.info("Loading the default fideslang taxonomy resources...")
-    for resource_type in upsert_resource_types:
-        log.debug(f"Processing {resource_type} resources...")
-        default_resources = DEFAULT_TAXONOMY.model_dump(mode="json")[resource_type]
-        existing_resources = await list_resource(
-            sql_model_map[resource_type], async_session
-        )
-        existing_keys = [item.fides_key for item in existing_resources]
-
-        resources = [
-            resource
-            for resource in default_resources
-            if resource["fides_key"] not in existing_keys
-        ]
-
-        if len(resources) == 0:
-            log.debug(f"No new {resource_type} resources to add from default taxonomy.")
-            continue
-
-        try:
-            await upsert_resources(
-                sql_model_map[resource_type], resources, async_session
-            )
-        except QueryError:  # pragma: no cover
-            pass  # The create_resource function will log the error
-        else:
-            log.debug(f"UPSERTED {len(resources)} {resource_type} resource(s)")
-
-
-async def load_default_resources(async_session: AsyncSession) -> None:
+def load_default_resources(session: Session) -> None:
     """
     Seed the database with default resources that the application
     expects to be available.
     """
-    await load_default_organization(async_session)
-    await load_default_taxonomy(async_session)
-    load_default_dsr_policies()
+    load_default_organization(session)
+    load_default_taxonomy(session)
+    load_default_dsr_policies(session)
 
 
 async def load_samples(async_session: AsyncSession) -> None:
@@ -550,3 +485,70 @@ async def load_samples(async_session: AsyncSession) -> None:
 
     except QueryError:  # pragma: no cover
         pass  # The upsert_resources function will log any error
+
+
+def load_default_organization(db: Session) -> None:
+    """
+    Seed the database with a default organization unless
+    one with a matching name already exists.
+    """
+    log.info("Loading the default organization...")
+    organizations: List[Dict] = list(
+        map(dict, DEFAULT_TAXONOMY.model_dump(mode="json")["organization"])
+    )
+
+    inserted = 0
+    for org in organizations:
+        try:
+            existing = Organization.get_by(
+                db=db, field="fides_key", value=org["fides_key"]
+            )
+            if not existing:
+                Organization.create(db=db, data=org, check_name=False)
+                inserted += 1
+        except AlreadyExistsError:
+            pass
+
+    log.debug(f"INSERTED {inserted} organization resource(s)")
+    log.debug(f"SKIPPED {len(organizations)-inserted} organization resource(s)")
+
+
+def load_default_taxonomy(db: Session) -> None:
+    """Synchronous version: Seed the database with the default taxonomy resources."""
+    upsert_resource_types = list(DEFAULT_TAXONOMY.model_fields_set)
+    upsert_resource_types.remove("organization")
+
+    log.info("Loading the default fideslang taxonomy resources...")
+    for resource_type in upsert_resource_types:
+        sql_model = sql_model_map[resource_type]
+        log.debug(f"Processing {resource_type} resources...")
+        default_resources = DEFAULT_TAXONOMY.model_dump(mode="json")[resource_type]
+
+        try:
+            # Fetch existing keys first
+            existing_keys = {item[0] for item in db.query(sql_model.fides_key).all()}
+        except Exception as exc:
+            log.error(f"Error fetching existing keys for {resource_type}: {exc}")
+            continue  # Skip this resource type if we can't get existing keys
+
+        # Filter for resources that don't exist
+        resources_to_create = [
+            resource
+            for resource in default_resources
+            if resource["fides_key"] not in existing_keys
+        ]
+
+        if not resources_to_create:
+            log.debug(f"No new {resource_type} resources to add from default taxonomy.")
+            continue
+
+        created_count = 0
+        for resource_data in resources_to_create:
+            try:
+                sql_model.create_or_update(db=db, data=resource_data)
+                created_count += 1
+            except Exception as exc:
+                pass
+
+        if created_count > 0:
+            log.debug(f"UPSERTED {created_count} {resource_type} resource(s)")
