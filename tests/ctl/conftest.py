@@ -4,9 +4,7 @@ tests/conftest.py file.
 
 import pytest
 import requests
-from fideslang import DEFAULT_TAXONOMY
 
-from fides.api.models.sql_models import DataUse
 from fides.core import api
 
 orig_requests_get = requests.get

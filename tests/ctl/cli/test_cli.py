@@ -2,7 +2,7 @@
 import os
 from base64 import b64decode
 from json import dump, loads
-from typing import Generator, List
+from typing import Generator
 
 import pytest
 import yaml
@@ -16,7 +16,6 @@ from fides.common.api.scope_registry import SCOPE_REGISTRY
 from fides.config import CONFIG
 from fides.core.user import get_systems_managed_by_user, get_user_permissions
 from fides.core.utils import get_auth_header, read_credentials_file
-from tests.ctl.core.test_api_helpers import created_resources
 
 OKTA_URL = "https://dev-78908748.okta.com"
 
@@ -28,8 +27,12 @@ def git_reset(change_dir: str) -> None:
     git_session.checkout("HEAD", change_dir)
 
 
-@pytest.fixture()
-def test_cli_runner() -> Generator:
+@pytest.fixture(scope="function")
+def test_cli_runner(monkeypatch_requests) -> Generator:
+    """
+    We use the `monkeypatch_requests` fixture to make sure all CLI requests
+    use the TestClient and are executed against the test DB.
+    """
     runner = CliRunner()
     yield runner
 
@@ -136,7 +139,6 @@ def test_worker() -> None:
 
 
 @pytest.fixture(scope="function")
-@pytest.mark.usefixtures("monkeypatch_requests")
 def demo_resources(test_config_path, test_cli_runner, default_taxonomy):
     """
     Push all demo resources before the test session starts.
@@ -182,9 +184,9 @@ class TestDB:
         assert result.exit_code == 0
 
 
+@pytest.mark.integration
 class TestPush:
-    @pytest.mark.integration
-    @pytest.mark.usefixtures("monkeypatch_requests", "default_taxonomy")
+    @pytest.mark.usefixtures("default_taxonomy")
     def test_push(
         self,
         test_config_path: str,
@@ -205,7 +207,7 @@ class TestPush:
         assert result.exit_code == 0
 
     @pytest.mark.integration
-    @pytest.mark.usefixtures("monkeypatch_requests", "default_taxonomy")
+    @pytest.mark.usefixtures("default_taxonomy")
     def test_diff_push(self, test_config_path: str, test_cli_runner: CliRunner) -> None:
         result = test_cli_runner.invoke(
             cli, ["-f", test_config_path, "push", "--diff", "demo_resources/"]
@@ -225,6 +227,7 @@ class TestPush:
 
 
 @pytest.mark.integration
+@pytest.mark.usefixtures("fideslang_resources")
 class TestPull:
     def test_pull(
         self,
@@ -270,13 +273,9 @@ class TestPull:
         print(result.output)
         assert result.exit_code == 0
 
-    @pytest.mark.parametrize(
-        "created_resources", ["dataset"], indirect=["created_resources"]
-    )
     def test_pull_all_separate_files(
         self,
         test_cli_runner: CliRunner,
-        created_resources: List,
     ) -> None:
         """
         Due to the fact that this command checks the real git status, a pytest
@@ -285,27 +284,22 @@ class TestPull:
         """
         test_dir = ".fides"
 
-        resource_type = created_resources[0]
-        resource_keys = created_resources[1]
-
         result = test_cli_runner.invoke(
             cli,
             [
                 "pull",
-                resource_type,
+                "dataset",
                 "--all-resources",
                 "--separate-files",
             ],
         )
         git_reset(test_dir)
-
-        for resource_key in resource_keys:
-            os.remove(f"{test_dir}/{resource_key}.yml")
+        os.remove(f"{test_dir}/test_sample_db_dataset.yml")
 
         print(result.output)
         assert result.exit_code == 0
 
-    @pytest.mark.usefixtures("monkeypatch_requests", "default_taxonomy")
+    @pytest.mark.usefixtures("default_taxonomy")
     def test_pull_one_resource(
         self,
         test_config_path: str,
@@ -403,7 +397,7 @@ class TestAnnotate:
 
 
 @pytest.mark.integration
-@pytest.mark.usefixtures("monkeypatch_requests", "default_taxonomy")
+@pytest.mark.usefixtures("default_taxonomy")
 def test_audit(test_config_path: str, test_cli_runner: CliRunner) -> None:
     result = test_cli_runner.invoke(cli, ["-f", test_config_path, "evaluate", "-a"])
     print(result.output)
@@ -411,7 +405,7 @@ def test_audit(test_config_path: str, test_cli_runner: CliRunner) -> None:
 
 
 @pytest.mark.integration
-@pytest.mark.usefixtures("monkeypatch_requests", "demo_resources")
+@pytest.mark.usefixtures("demo_resources")
 class TestCRUD:
     def test_get(self, test_config_path: str, test_cli_runner: CliRunner) -> None:
         result = test_cli_runner.invoke(
@@ -452,7 +446,7 @@ class TestCRUD:
         assert result.exit_code == 0
 
 
-@pytest.mark.usefixtures("monkeypatch_requests", "default_taxonomy")
+@pytest.mark.usefixtures("default_taxonomy")
 class TestEvaluate:
     @pytest.mark.integration
     def test_evaluate_with_declaration_pass(
@@ -1118,7 +1112,6 @@ def credentials_path(tmp_path_factory) -> str:
 
 
 @pytest.mark.integration
-@pytest.mark.usefixtures("monkeypatch_requests")
 class TestUser:
     """
     Test the "user" command group.

@@ -1874,7 +1874,7 @@ def seed_data(session):
 
 
 @pytest.fixture(scope="function")
-def default_data_categories(db):
+def default_data_categories(db: Session):
     for data_category in DEFAULT_TAXONOMY.data_category:
         if (
             DataCategoryDbModel.get_by(db, field="name", value=data_category.name)
@@ -1886,7 +1886,7 @@ def default_data_categories(db):
 
 
 @pytest.fixture(scope="function")
-def default_data_uses(db):
+def default_data_uses(db: Session):
     for data_use in DEFAULT_TAXONOMY.data_use:
         if DataUse.get_by(db, field="name", value=data_use.name) is None:
             DataUse.create(db=db, data=data_use.model_dump(mode="json"))
@@ -1907,7 +1907,7 @@ async def clear_db_tables(db, async_session):
     """Clear data from tables between tests.
 
     If relationships are not set to cascade on delete they will fail with an
-    IntegrityError if there are relationsips present. This function stores tables
+    IntegrityError if there are relationships present. This function stores tables
     that fail with this error then recursively deletes until no more IntegrityErrors
     are present.
     """

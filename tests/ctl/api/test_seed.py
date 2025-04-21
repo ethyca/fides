@@ -24,6 +24,7 @@ from fides.core import api as _api
 
 
 @pytest.fixture(scope="function", name="data_category")
+@pytest.mark.usefixtures("monkeypatch_requests")
 def fixture_data_category(test_config: FidesConfig) -> Generator:
     """
     Fixture that yields a data category and then deletes it for each test run.

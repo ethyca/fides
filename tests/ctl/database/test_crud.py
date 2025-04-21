@@ -22,6 +22,7 @@ from tests.ctl.types import FixtureRequest
 
 
 @pytest.fixture(name="created_resources")
+@pytest.mark.usefixtures("monkeypatch_requests")
 def fixture_created_resources(
     test_config: FidesConfig, request: FixtureRequest
 ) -> Generator:
@@ -61,7 +62,6 @@ def fixture_created_resources(
     ["data_category", "data_use"],
     indirect=["created_resources"],
 )
-@pytest.mark.usefixtures("monkeypatch_requests")
 async def test_cascade_delete_taxonomy_children(
     created_resources: List,
     async_session: AsyncSession,

@@ -145,6 +145,7 @@ def fixture_inactive_data_subject(db: Session) -> typing.Generator:
 
 # Unit Tests
 @pytest.mark.unit
+@pytest.mark.usefixtures("monkeypatch_requests")
 def test_generate_resource_urls_no_id(test_config: FidesConfig) -> None:
     """
     Test that the URL generator works as intended.
@@ -156,6 +157,7 @@ def test_generate_resource_urls_no_id(test_config: FidesConfig) -> None:
 
 
 @pytest.mark.unit
+@pytest.mark.usefixtures("monkeypatch_requests")
 def test_generate_resource_urls_with_id(test_config: FidesConfig) -> None:
     """
     Test that the URL generator works as intended.
@@ -1350,6 +1352,7 @@ class TestSystemCreate:
 
 
 @pytest.mark.unit
+@pytest.mark.usefixtures("monkeypatch_requests")
 class TestSystemGet:
     def test_data_stewards_included_in_response(
         self, test_config, system, system_manager, generate_auth_header
