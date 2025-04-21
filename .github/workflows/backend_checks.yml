@@ -67,28 +67,25 @@ jobs:
         if: steps.venv-cache.outputs.cache-hit != 'true'
         run: |
           python -m pip install --upgrade pip
-          # Install dependencies into the virtual environment
-          pip install -r requirements.txt -r dev-requirements.txt -r optional-requirements.txt
+          # Install all dependencies from requirement files
+          pip install -r requirements.txt
+          pip install -r dev-requirements.txt
+          pip install -r optional-requirements.txt
           # Verify installation
           pip freeze > installed-packages.txt
 
       - name: Install package
         run: |
-          # Only install the package, dependencies are already there
-          pip install -e . --no-deps
+          # Install the package in development mode
+          pip install -e .
 
-      - name: Cache nox environments
-        uses: actions/cache@v4
-        id: cache-nox
-        with:
-          path: .nox
-          key: ${{ runner.os }}-nox-${{ env.DEFAULT_PYTHON_VERSION }}-${{ hashFiles('noxfiles/**/*.py', 'requirements.txt', 'dev-requirements.txt', 'optional-requirements.txt') }}
+      # Don't need nox for test collection anymore
+      - name: Install pytest
+        run: pip install pytest
 
-      - name: Install Nox
-        run: pip install nox>=2022
-
-      - name: Run static check
-        run: nox -s collect_tests -- skip_install
+      - name: Collect tests
+        run: |
+          python -m pytest tests/ --collect-only
 
   Build:
     needs: Collect-Tests
