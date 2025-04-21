@@ -36,6 +36,10 @@ h6 {
   --ant-button-default-hover-bg: var(--fidesui-neutral-200);
   --ant-button-default-bg: var(--fidesui-neutral-50);
 }
+.ant-btn-icon {
+  // fixes misalignment of Carbon icons in buttons
+  line-height: 1;
+}
 
 // Input labels should have a font weight of 600
 .ant-form-item-label {

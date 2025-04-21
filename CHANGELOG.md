@@ -28,6 +28,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Added SSL Mode field for MySQL connections [#6048](https://github.com/ethyca/fides/pull/6048)
 - Added PostgreSQL connection config form to the "integrations" page to support use with discovery monitors [#6018](https://github.com/ethyca/fides/pull/6018)
 - Update the Datahub Permissions section to include required permissions from Datahub [#6052](https://github.com/ethyca/fides/pull/6052)
+- Added the ability to create new TCF Experiences within Admin UI [#6055](https://github.com/ethyca/fides/pull/6055)
 
 ### Added
 - Added assumed role arn capabilities to aws Storage [#6027](https://github.com/ethyca/fides/pull/6027)
@@ -40,6 +41,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - UI now allows assigning of non-consent-category data uses to system assets [#6049](https://github.com/ethyca/fides/pull/6049)
 - Updated bulk ignore assets toast message [#6043](https://github.com/ethyca/fides/pull/6043)
 - Updated consent automation models to support echo detection in Fidesplus [#6054](https://github.com/ethyca/fides/pull/6054)
+- Updated UI behavior for editing languages in the Experience config for consistency and clarity [#6055](https://github.com/ethyca/fides/pull/6055)
 
 ### Developer Experience
 - Reduced animations on Cypress tests in Privacy Center for quicker results [#5976](https://github.com/ethyca/fides/pull/5976)
@@ -53,7 +55,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Fixed performance issues in Data map report in Admin UI [#6046](https://github.com/ethyca/fides/pull/6046)
 - Fixed details requirements in AWS SES setup [#6047](https://github.com/ethyca/fides/pull/6047)
 - Fixed startup issues with Celery workers [#6058](https://github.com/ethyca/fides/pull/6058)
-- Fixed incorrect capitalization on "URL" field in website integration config [#6064](https://github.com/ethyca/fides/pull/6064)
+- Addressed some performance issues with Experience configuration previews [#6055](https://github.com/ethyca/fides/pull/6055)
 
 ## [2.59.1](https://github.com/ethyca/fides/compare/2.59.0...2.59.1)
 
