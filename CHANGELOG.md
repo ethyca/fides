@@ -29,6 +29,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Added PostgreSQL connection config form to the "integrations" page to support use with discovery monitors [#6018](https://github.com/ethyca/fides/pull/6018)
 - Update the Datahub Permissions section to include required permissions from Datahub [#6052](https://github.com/ethyca/fides/pull/6052)
 - Added the ability to create new TCF Experiences within Admin UI [#6055](https://github.com/ethyca/fides/pull/6055)
+- PostgreSQL connection config now supports SSL Mode [#6068](https://github.com/ethyca/fides/pull/6068)
 
 ### Added
 - Added assumed role arn capabilities to aws Storage [#6027](https://github.com/ethyca/fides/pull/6027)
