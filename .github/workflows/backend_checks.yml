@@ -34,8 +34,7 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
-          # Don't use the built-in pip cache since we're managing our own
-          cache: "none"
+          # Don't use built-in caching since we're managing our own
 
       # Cache the entire Python virtual environment
       - name: Cache virtual environment
