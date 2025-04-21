@@ -125,16 +125,15 @@ def retry(
                     ActionDisabled,
                     NotSupportedForCollection,
                 ) as exc:
-                    traceback.print_exc()
                     logger.warning(
-                        "Skipping collection {} for privacy_request: {}",
+                        "{} - Skipping collection {} for privacy_request: {}",
+                        exc.__class__.__name__,
                         self.execution_node.address,
                         self.resources.request.id,
                     )
                     self.log_skipped(action_type, exc)
                     return default_return
                 except SkippingConsentPropagation as exc:
-                    traceback.print_exc()
                     logger.warning(
                         "Skipping consent propagation on collection {} for privacy_request: {}",
                         self.execution_node.address,

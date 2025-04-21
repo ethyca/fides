@@ -38,6 +38,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Updated bulk ignore assets toast message [#6043](https://github.com/ethyca/fides/pull/6043)
 - Updated UI behavior for editing languages in the Experience config for consistency and clarity [#6055](https://github.com/ethyca/fides/pull/6055)
 - Moved detection & discovery features out of beta [#6059](https://github.com/ethyca/fides/pull/6059)
+- Updated consent automation models to support echo detection in Fidesplus [#6054](https://github.com/ethyca/fides/pull/6054)
 
 ### Developer Experience
 - Reduced animations on Cypress tests in Privacy Center for quicker results [#5976](https://github.com/ethyca/fides/pull/5976)
