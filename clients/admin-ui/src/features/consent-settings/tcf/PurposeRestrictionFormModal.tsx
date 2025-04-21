@@ -287,6 +287,7 @@ export const PurposeRestrictionFormModal = ({
                     values.vendor_restriction ===
                     TCFVendorRestriction.RESTRICT_ALL_VENDORS
                   }
+                  tokenSeparators={[",", " "]}
                   onBlur={() => {
                     // Add small delay to allow Ant Select to create tag before validation
                     setTimeout(() => {
@@ -295,19 +296,6 @@ export const PurposeRestrictionFormModal = ({
                       });
                       validateField("vendor_ids");
                     }, 100);
-                  }}
-                  onInputKeyDown={(e) => {
-                    // disable space and comma keys to help avoid confusion on the expected behavior
-                    // eg. prevent attempting to type "123, 1-100" and enter or "123 1-100" and enter
-                    if (
-                      e.key === " " ||
-                      e.code === "Space" ||
-                      e.key === "," ||
-                      e.code === "Comma"
-                    ) {
-                      e.preventDefault();
-                      e.stopPropagation();
-                    }
                   }}
                   helperText="Enter IDs (e.g. 123) or ranges (e.g. 1-10) and press enter"
                   isRequired
