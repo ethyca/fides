@@ -311,6 +311,7 @@ class TestMySQLConnectionPutSecretsAPI:
             "username": None,
             "password": None,
             "ssh_required": False,
+            "ssl_mode": None,
         }
         assert connection_config_mysql.last_test_timestamp is not None
         assert connection_config_mysql.last_test_succeeded is False
@@ -353,6 +354,51 @@ class TestMySQLConnectionPutSecretsAPI:
             "password": "mysql_pw",
             "port": 3306,
             "ssh_required": False,
+            "ssl_mode": None,
+        }
+        assert connection_config_mysql.last_test_timestamp is not None
+        assert connection_config_mysql.last_test_succeeded is True
+
+    def test_mysql_db_connection_connect_with_ssl(
+        self,
+        url,
+        api_client: TestClient,
+        db: Session,
+        generate_auth_header,
+        connection_config_mysql,
+    ) -> None:
+        payload = {
+            "host": "mysql_example",
+            "dbname": "mysql_example",
+            "username": "mysql_user",
+            "password": "mysql_pw",
+            "ssl_mode": "preferred",
+        }
+
+        auth_header = generate_auth_header(scopes=[CONNECTION_CREATE_OR_UPDATE])
+        resp = api_client.put(
+            url,
+            headers=auth_header,
+            json=payload,
+        )
+        assert resp.status_code == 200
+        body = resp.json()
+
+        assert (
+            body["msg"]
+            == f"Secrets updated for ConnectionConfig with key: {connection_config_mysql.key}."
+        )
+        assert body["test_status"] == "succeeded"
+        assert body["failure_reason"] is None
+        db.refresh(connection_config_mysql)
+        assert connection_config_mysql.secrets == {
+            "host": "mysql_example",
+            "dbname": "mysql_example",
+            "username": "mysql_user",
+            "password": "mysql_pw",
+            "port": 3306,
+            "ssh_required": False,
+            "ssl_mode": "preferred",
         }
         assert connection_config_mysql.last_test_timestamp is not None
         assert connection_config_mysql.last_test_succeeded is True
