@@ -1118,6 +1118,7 @@ def credentials_path(tmp_path_factory) -> str:
 
 
 @pytest.mark.integration
+@pytest.mark.usefixtures("monkeypatch_requests")
 class TestUser:
     """
     Test the "user" command group.
@@ -1259,11 +1260,8 @@ class TestUser:
         assert set(total_scopes) == set(SCOPE_REGISTRY)
         assert roles == [OWNER]
 
-    @pytest.mark.skip("Needs investigation")
-    def test_user_permissions_valid(
-        self, test_config_path: str, test_cli_runner: CliRunner, credentials_path: str
-    ) -> None:
-        """Test getting user permissions for the current user."""
+        # This should be in its own test (test_user_permissions_valid)
+        # but we need a fixture to create a user first
         print(credentials_path)
         result = test_cli_runner.invoke(
             cli,
