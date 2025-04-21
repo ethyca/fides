@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import copy
 from typing import Any, Generator
-from loguru import logger
+
 import pytest
 from sqlalchemy.orm import Session
 from starlette.testclient import TestClient
