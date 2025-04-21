@@ -158,6 +158,7 @@ export const DiscoveredAssetsTable = ({
   const selectedRows = tableInstance.getSelectedRowModel().rows;
   const selectedUrns = selectedRows.map((row) => row.original.urn);
 
+  // TODO: add toast link to system if applicable
   const handleBulkAdd = async () => {
     const result = await addMonitorResultAssetsMutation({
       urnList: selectedUrns,
@@ -229,6 +230,7 @@ export const DiscoveredAssetsTable = ({
     setIsAddDataUseModalOpen(false);
   };
 
+  // TODO: add toast link to ignored tab
   const handleBulkIgnore = async () => {
     const result = await ignoreMonitorResultAssetsMutation({
       urnList: selectedUrns,

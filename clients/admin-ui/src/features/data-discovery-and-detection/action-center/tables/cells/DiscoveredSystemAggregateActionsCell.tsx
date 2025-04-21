@@ -2,11 +2,17 @@ import {
   AntButton as Button,
   AntSpace as Space,
   AntTooltip as Tooltip,
+  useToast,
 } from "fidesui";
+import { useRouter } from "next/router";
 
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
-import { useAlert } from "~/features/common/hooks";
-import { UNCATEGORIZED_SEGMENT } from "~/features/common/nav/routes";
+import {
+  SYSTEM_ROUTE,
+  UNCATEGORIZED_SEGMENT,
+} from "~/features/common/nav/routes";
+import { errorToastParams, successToastParams } from "~/features/common/toast";
+import styles from "~/features/ToastLink.module.scss";
 
 import {
   useAddMonitorResultSystemsMutation,
@@ -30,7 +36,8 @@ export const DiscoveredSystemActionsCell = ({
   const [ignoreMonitorResultSystemsMutation, { isLoading: isIgnoringResults }] =
     useIgnoreMonitorResultSystemsMutation();
 
-  const { successAlert, errorAlert } = useAlert();
+  const router = useRouter();
+  const toast = useToast();
 
   const anyActionIsLoading = isAddingResults || isIgnoringResults;
 
@@ -41,19 +48,39 @@ export const DiscoveredSystemActionsCell = ({
     total_updates: totalUpdates,
   } = system;
 
+  // TODO: get system key to navigate
+  const addSuccessToastContent = (systemName: string, systemKey?: string) => (
+    <>
+      {`${systemName} and ${totalUpdates} assets have been added to the system inventory. ${systemName} is now configured for consent.`}
+      {systemKey && (
+        <Button
+          className={styles.toastLink}
+          size="small"
+          type="link"
+          role="link"
+          onClick={() => router.push(`${SYSTEM_ROUTE}/configure/${systemKey}`)}
+        >
+          View
+        </Button>
+      )}
+    </>
+  );
+
   const handleAdd = async () => {
     const result = await addMonitorResultSystemsMutation({
       monitor_config_key: monitorId,
       resolved_system_ids: [resolvedSystemId],
     });
     if (isErrorResult(result)) {
-      errorAlert(getErrorMessage(result.error));
+      toast(errorToastParams(getErrorMessage(result.error)));
     } else {
-      successAlert(
-        !systemKey
-          ? `${systemName} and ${totalUpdates} assets have been added to the system inventory. ${systemName} is now configured for consent.`
-          : `${totalUpdates} assets from ${systemName} have been added to the system inventory.`,
-        `Confirmed`,
+      toast(
+        successToastParams(
+          !systemKey
+            ? `${systemName} and ${totalUpdates} assets have been added to the system inventory. ${systemName} is now configured for consent.`
+            : `${totalUpdates} assets from ${systemName} have been added to the system inventory.`,
+          `Confirmed`,
+        ),
       );
     }
   };
@@ -64,13 +91,15 @@ export const DiscoveredSystemActionsCell = ({
       resolved_system_ids: [resolvedSystemId || UNCATEGORIZED_SEGMENT],
     });
     if (isErrorResult(result)) {
-      errorAlert(getErrorMessage(result.error));
+      toast(errorToastParams(getErrorMessage(result.error)));
     } else {
-      successAlert(
-        systemName
-          ? `${totalUpdates} assets from ${systemName} have been ignored and will not appear in future scans.`
-          : `${totalUpdates} uncategorized assets have been ignored and will not appear in future scans.`,
-        `Confirmed`,
+      toast(
+        successToastParams(
+          systemName
+            ? `${totalUpdates} assets from ${systemName} have been ignored and will not appear in future scans.`
+            : `${totalUpdates} uncategorized assets have been ignored and will not appear in future scans.`,
+          `Confirmed`,
+        ),
       );
     }
   };

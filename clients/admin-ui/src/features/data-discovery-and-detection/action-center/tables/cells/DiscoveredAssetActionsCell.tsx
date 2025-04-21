@@ -2,10 +2,14 @@ import {
   AntButton as Button,
   AntSpace as Space,
   AntTooltip as Tooltip,
+  useToast,
 } from "fidesui";
+import { useRouter } from "next/router";
 
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
-import { useAlert } from "~/features/common/hooks";
+import { SYSTEM_ROUTE } from "~/features/common/nav/routes";
+import { errorToastParams, successToastParams } from "~/features/common/toast";
+import ToastLink from "~/features/common/ToastLink";
 import { DiffStatus } from "~/types/api";
 import { StagedResourceAPIResponse } from "~/types/api/models/StagedResourceAPIResponse";
 
@@ -26,37 +30,59 @@ export const DiscoveredAssetActionsCell = ({
   const [ignoreMonitorResultAssetsMutation, { isLoading: isIgnoringResults }] =
     useIgnoreMonitorResultAssetsMutation();
 
-  const { successAlert, errorAlert } = useAlert();
+  const toast = useToast();
+
+  const router = useRouter();
+
+  const addSuccessToastContent = (
+    type: string,
+    name: string,
+    systemKey?: string,
+  ) => (
+    <>
+      {`${type} "${name}" has been added to the system inventory.`}
+      {systemKey && (
+        <ToastLink
+          onClick={() => router.push(`${SYSTEM_ROUTE}/configure/${systemKey}`)}
+        >
+          View
+        </ToastLink>
+      )}
+    </>
+  );
 
   const anyActionIsLoading = isAddingResults || isIgnoringResults;
 
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  const { urn, name, resource_type: type, diff_status } = asset;
+  // TODO: get system key to navigate
+  const { urn, name, resource_type: type, diff_status: diffStatus } = asset;
 
   const handleAdd = async () => {
     const result = await addMonitorResultAssetsMutation({
       urnList: [urn],
     });
     if (isErrorResult(result)) {
-      errorAlert(getErrorMessage(result.error));
+      toast(errorToastParams(getErrorMessage(result.error)));
     } else {
-      successAlert(
-        `${type} "${name}" has been added to the system inventory.`,
-        `Confirmed`,
+      toast(
+        successToastParams(
+          addSuccessToastContent(type as string, name as string),
+        ),
       );
     }
   };
 
+  // TODO: add toast link to ignored tab
   const handleIgnore = async () => {
     const result = await ignoreMonitorResultAssetsMutation({
       urnList: [urn],
     });
     if (isErrorResult(result)) {
-      errorAlert(getErrorMessage(result.error));
+      toast(errorToastParams(getErrorMessage(result.error)));
     } else {
-      successAlert(
-        `${type} "${name}" has been ignored and will not appear in future scans.`,
-        `Ignored`,
+      toast(
+        successToastParams(
+          `${type} "${name}" has been ignored and will not appear in future scans.`,
+        ),
       );
     }
   };
@@ -81,7 +107,7 @@ export const DiscoveredAssetActionsCell = ({
           Add
         </Button>
       </Tooltip>
-      {diff_status !== DiffStatus.MUTED && (
+      {diffStatus !== DiffStatus.MUTED && (
         <Button
           data-testid="ignore-btn"
           size="small"
@@ -92,6 +118,18 @@ export const DiscoveredAssetActionsCell = ({
           Ignore
         </Button>
       )}
+      <Button
+        size="small"
+        onClick={() =>
+          toast(
+            successToastParams(
+              addSuccessToastContent(type as string, name as string),
+            ),
+          )
+        }
+      >
+        Test toast
+      </Button>
     </Space>
   );
 };
