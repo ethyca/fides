@@ -54,21 +54,18 @@ export const NAV_CONFIG: NavConfigGroup[] = [
         title: "Activity",
         path: routes.DETECTION_DISCOVERY_ACTIVITY_ROUTE,
         scopes: [],
-        requiresFlag: "dataDiscoveryAndDetection",
         requiresPlus: true,
       },
       {
         title: "Data detection",
         path: routes.DATA_DETECTION_ROUTE,
         scopes: [],
-        requiresFlag: "dataDiscoveryAndDetection",
         requiresPlus: true,
       },
       {
         title: "Data discovery",
         path: routes.DATA_DISCOVERY_ROUTE,
         scopes: [],
-        requiresFlag: "dataDiscoveryAndDetection",
         requiresPlus: true,
       },
       {
@@ -200,7 +197,6 @@ export const NAV_CONFIG: NavConfigGroup[] = [
       {
         title: "Integrations",
         path: routes.INTEGRATION_MANAGEMENT_ROUTE,
-        requiresFlag: "dataDiscoveryAndDetection",
         requiresPlus: true,
         scopes: [
           ScopeRegistryEnum.CONNECTION_AUTHORIZE,
