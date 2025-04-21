@@ -7,7 +7,6 @@ import {
   useToast,
 } from "fidesui";
 import { Form, Formik } from "formik";
-import { useEffect, useState } from "react";
 import * as Yup from "yup";
 
 import { ControlledSelect } from "~/features/common/form/ControlledSelect";
@@ -68,17 +67,9 @@ export const PurposeRestrictionFormModal = ({
   const toast = useToast();
   const [createRestriction] = useCreatePublisherRestrictionMutation();
   const [updateRestriction] = useUpdatePublisherRestrictionMutation();
-  const [isPurposeFlexible, setIsPurposeFlexible] = useState(true);
-  useEffect(() => {
-    if (
-      purposeId &&
-      FORBIDDEN_LEGITIMATE_INTEREST_PURPOSE_IDS.includes(+purposeId)
-    ) {
-      setIsPurposeFlexible(false);
-      // eslint-disable-next-line no-param-reassign
-      initialValues.restriction_type = TCFRestrictionType.PURPOSE_RESTRICTION;
-    }
-  }, [initialValues, purposeId]);
+  const isPurposeFlexible = !(
+    purposeId && FORBIDDEN_LEGITIMATE_INTEREST_PURPOSE_IDS.includes(+purposeId)
+  );
 
   // Get the list of restriction types that are already in use for this purpose
   const usedRestrictionTypes = existingRestrictions
@@ -228,7 +219,12 @@ export const PurposeRestrictionFormModal = ({
   return (
     <FormModal isOpen={isOpen} onClose={onClose} title="Edit restriction">
       <Formik
-        initialValues={initialValues}
+        initialValues={{
+          ...initialValues,
+          restriction_type: isPurposeFlexible
+            ? initialValues.restriction_type
+            : TCFRestrictionType.PURPOSE_RESTRICTION,
+        }}
         onSubmit={handleSubmit}
         validationSchema={validationSchema}
       >
