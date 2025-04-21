@@ -37,7 +37,8 @@ class PostgreSQLConnector(SQLConnector):
         netloc = config.host
         port = f":{config.port}" if config.port else ""
         dbname = f"/{config.dbname}" if config.dbname else ""
-        return f"postgresql://{user_password}{netloc}{port}{dbname}"
+        query = f"?sslmode=${config.ssl_mode}" if config.ssl_mode else ""
+        return f"postgresql://{user_password}{netloc}{port}{dbname}{query}"
 
     def build_ssh_uri(self, local_address: tuple) -> str:
         """Build URI of format postgresql://[user[:password]@][ssh_host][:ssh_port][/dbname]"""
@@ -53,7 +54,8 @@ class PostgreSQLConnector(SQLConnector):
         netloc = local_host
         port = f":{local_port}" if local_port else ""
         dbname = f"/{config.dbname}" if config.dbname else ""
-        return f"postgresql://{user_password}{netloc}{port}{dbname}"
+        query = f"?sslmode=${config.ssl_mode}" if config.ssl_mode else ""
+        return f"postgresql://{user_password}{netloc}{port}{dbname}{query}"
 
     # Overrides SQLConnector.create_client
     def create_client(self) -> Engine:

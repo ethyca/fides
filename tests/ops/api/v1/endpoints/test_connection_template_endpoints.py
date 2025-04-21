@@ -1131,6 +1131,10 @@ class TestGetConnectionSecretSchema:
                     "default": False,
                     "type": "boolean",
                 },
+                "ssl_mode": {
+                    "title": "SSL Mode",
+                    "type": "string",
+                },
             },
             "required": ["host"],
         }
