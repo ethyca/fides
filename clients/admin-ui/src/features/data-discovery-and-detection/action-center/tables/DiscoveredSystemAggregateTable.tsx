@@ -19,6 +19,7 @@ import {
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 
+import DataTabsHeader from "~/features/common/DataTabsHeader";
 import { getErrorMessage } from "~/features/common/helpers";
 import { useAlert } from "~/features/common/hooks";
 import {
@@ -37,9 +38,11 @@ import {
   useGetDiscoveredSystemAggregateQuery,
   useIgnoreMonitorResultSystemsMutation,
 } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
+import useActionCenterTabs from "~/features/data-discovery-and-detection/action-center/tables/useActionCenterTabs";
+import { DiffStatus } from "~/types/api";
 import { isErrorResult } from "~/types/errors";
 
-import { SearchInput } from "../../SearchInput";
+import { DebouncedSearchInput } from "../../../common/DebouncedSearchInput";
 import { useDiscoveredSystemAggregateColumns } from "../hooks/useDiscoveredSystemAggregateColumns";
 import { MonitorSystemAggregate } from "../types";
 
@@ -51,6 +54,8 @@ export const DiscoveredSystemAggregateTable = ({
   monitorId,
 }: DiscoveredSystemAggregateTableProps) => {
   const router = useRouter();
+  const tabHash = router.asPath.split("#")[1];
+
   const {
     PAGE_SIZES,
     pageSize,
@@ -82,11 +87,20 @@ export const DiscoveredSystemAggregateTable = ({
     resetPageIndexToDefault();
   }, [monitorId, searchQuery, resetPageIndexToDefault]);
 
+  const {
+    filterTabs,
+    filterTabIndex,
+    onTabChange,
+    activeParams,
+    actionsDisabled,
+  } = useActionCenterTabs({ initialHash: tabHash });
+
   const { data, isLoading, isFetching } = useGetDiscoveredSystemAggregateQuery({
     key: monitorId,
     page: pageIndex,
     size: pageSize,
     search: searchQuery,
+    ...activeParams,
   });
 
   useEffect(() => {
@@ -95,7 +109,11 @@ export const DiscoveredSystemAggregateTable = ({
     }
   }, [data, setTotalPages]);
 
-  const { columns } = useDiscoveredSystemAggregateColumns(monitorId);
+  const { columns } = useDiscoveredSystemAggregateColumns({
+    monitorId,
+    readonly: actionsDisabled,
+    allowIgnore: !activeParams.diff_status.includes(DiffStatus.MUTED),
+  });
 
   const tableInstance = useReactTable({
     getCoreRowModel: getCoreRowModel(),
@@ -120,9 +138,8 @@ export const DiscoveredSystemAggregateTable = ({
   }
 
   const handleRowClick = (row: MonitorSystemAggregate) => {
-    router.push(
-      `${ACTION_CENTER_ROUTE}/${monitorId}/${row.id ?? UNCATEGORIZED_SEGMENT}`,
-    );
+    const newUrl = `${ACTION_CENTER_ROUTE}/${monitorId}/${row.id ?? UNCATEGORIZED_SEGMENT}${tabHash ? `#${tabHash}` : ""}`;
+    router.push(newUrl);
   };
 
   const handleBulkAdd = async () => {
@@ -169,8 +186,21 @@ export const DiscoveredSystemAggregateTable = ({
     }
   };
 
+  const handleTabChange = (index: number) => {
+    onTabChange(index);
+    setRowSelection({});
+  };
+
   return (
     <>
+      <DataTabsHeader
+        data={filterTabs}
+        data-testid="filter-tabs"
+        index={filterTabIndex}
+        isLazy
+        isManual
+        onChange={handleTabChange}
+      />
       <TableActionBar>
         <Flex
           direction="row"
@@ -180,7 +210,10 @@ export const DiscoveredSystemAggregateTable = ({
         >
           <Flex gap={6} align="center">
             <Box flexShrink={0}>
-              <SearchInput value={searchQuery} onChange={setSearchQuery} />
+              <DebouncedSearchInput
+                value={searchQuery}
+                onChange={setSearchQuery}
+              />
             </Box>
           </Flex>
           <Flex align="center">
@@ -226,13 +259,15 @@ export const DiscoveredSystemAggregateTable = ({
                     Add
                   </MenuItem>
                 </Tooltip>
-                <MenuItem
-                  fontSize="small"
-                  onClick={handleBulkIgnore}
-                  data-testid="bulk-ignore"
-                >
-                  Ignore
-                </MenuItem>
+                {!activeParams.diff_status.includes(DiffStatus.MUTED) && (
+                  <MenuItem
+                    fontSize="small"
+                    onClick={handleBulkIgnore}
+                    data-testid="bulk-ignore"
+                  >
+                    Ignore
+                  </MenuItem>
+                )}
               </MenuList>
             </Menu>
           </Flex>

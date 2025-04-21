@@ -5,6 +5,8 @@ import {
   AntCard as Card,
   AntCheckbox as Checkbox,
   AntCol as Col,
+  AntDivider as Divider,
+  AntFlex as Flex,
   AntInput as Input,
   AntLayout as Layout,
   AntRadio as Radio,
@@ -14,13 +16,16 @@ import {
   AntSwitch as Switch,
   AntTag as Tag,
   AntTooltip as Tooltip,
+  AntTypography as Typography,
   Icons,
 } from "fidesui";
 import type { NextPage } from "next";
 
+import { InfoTooltip } from "~/features/common/InfoTooltip";
 import PageHeader from "~/features/common/PageHeader";
 
 const { Content } = Layout;
+const { Link, Paragraph, Text, Title } = Typography;
 
 const options: { label: string; value: string }[] = [];
 for (let i = 10; i < 36; i += 1) {
@@ -35,9 +40,9 @@ const AntPOC: NextPage = () => {
     <Layout>
       <Content className="overflow-auto px-10 py-6">
         <PageHeader heading="Ant Design Proof of Concept" />
-        <Row gutter={16}>
+        <Row gutter={16} className="mt-6">
           <Col span={8}>
-            <Card title="Button" bordered={false} className="h-full">
+            <Card title="Button" variant="borderless" className="h-full">
               <Space direction="vertical">
                 <Button type="primary">Primary Button</Button>
                 <Button>Default Button</Button>
@@ -54,7 +59,7 @@ const AntPOC: NextPage = () => {
             </Card>
           </Col>
           <Col span={8}>
-            <Card title="Switch" bordered={false} className="h-full">
+            <Card title="Switch" variant="borderless" className="h-full">
               <Space direction="vertical">
                 <Switch defaultChecked />
                 <Switch size="small" defaultChecked />
@@ -63,7 +68,7 @@ const AntPOC: NextPage = () => {
             </Card>
           </Col>
           <Col span={8}>
-            <Card title="Select" bordered={false} className="h-full">
+            <Card title="Select" variant="borderless" className="h-full">
               <Space direction="vertical">
                 <Select
                   defaultValue="lucy"
@@ -116,7 +121,7 @@ const AntPOC: NextPage = () => {
         <br />
         <Row gutter={16}>
           <Col span={8}>
-            <Card title="Checkbox" bordered={false} className="h-full">
+            <Card title="Checkbox" variant="borderless" className="h-full">
               <Space direction="vertical">
                 <Checkbox>Checkbox</Checkbox>
                 <Checkbox defaultChecked>Checkbox</Checkbox>
@@ -134,7 +139,7 @@ const AntPOC: NextPage = () => {
             </Card>
           </Col>
           <Col span={8}>
-            <Card title="Radio" bordered={false} className="h-full">
+            <Card title="Radio" variant="borderless" className="h-full">
               <Space direction="vertical">
                 <Radio>Radio</Radio>
                 <Radio defaultChecked>Radio</Radio>
@@ -170,7 +175,7 @@ const AntPOC: NextPage = () => {
             </Card>
           </Col>
           <Col span={8}>
-            <Card title="Input" bordered={false} className="h-full">
+            <Card title="Input" variant="borderless" className="h-full">
               <Space direction="vertical" size="middle">
                 <Space.Compact>
                   <Input defaultValue="26888888" />
@@ -201,16 +206,17 @@ const AntPOC: NextPage = () => {
         <br />
         <Row gutter={16}>
           <Col span={8}>
-            <Card title="Tooltip" bordered={false} className="h-full">
+            <Card title="Tooltip" variant="borderless" className="h-full">
               <Space direction="vertical">
-                <Tooltip title="prompt text">
-                  <span>Tooltip will show on mouse enter.</span>
+                <Tooltip title="I'm a tooltip">
+                  <span>Hover this text</span>
                 </Tooltip>
+                <InfoTooltip label="Tooltip will show on mouse enter." />
               </Space>
             </Card>
           </Col>
           <Col span={8}>
-            <Card title="Alert" bordered={false} className="h-full">
+            <Card title="Alert" variant="borderless" className="h-full">
               <Space direction="vertical">
                 <Alert message="Success Tips" type="success" showIcon />
                 <Alert message="Informational Notes" type="info" showIcon />
@@ -220,8 +226,8 @@ const AntPOC: NextPage = () => {
             </Card>
           </Col>
           <Col span={8}>
-            <Card title="Tag" bordered={false} className="h-full">
-              <Space direction="vertical">
+            <Card title="Tag" variant="borderless" className="h-full">
+              <Flex wrap gap="small">
                 <Tag color="default">default</Tag>
                 <Tag color="corinth">corinth</Tag>
                 <Tag color="minos">minos</Tag>
@@ -256,6 +262,96 @@ const AntPOC: NextPage = () => {
                 >
                   Data Category
                 </Tag>
+              </Flex>
+            </Card>
+          </Col>
+        </Row>
+        <br />
+        <Row gutter={16}>
+          <Col span={8}>
+            <Card
+              title="Typography Headings"
+              variant="borderless"
+              className="h-full"
+            >
+              <Space direction="vertical">
+                <Title level={1}>H1 default</Title>
+                <Title level={1} headingSize={2}>
+                  H1 sized as H2
+                </Title>
+                <Title level={1} headingSize={3}>
+                  H1 sized as H3
+                </Title>
+                <Divider style={{ margin: 0 }} />
+                <Title level={2}>H2 default</Title>
+                <Title level={2} headingSize={1}>
+                  H2 sized as H1
+                </Title>
+                <Title level={2} headingSize={3}>
+                  H2 sized as H3
+                </Title>
+                <Divider style={{ margin: 0 }} />
+                <Title level={3}>H3 default</Title>
+                <Title level={3} headingSize={1}>
+                  H3 sized as H1
+                </Title>
+                <Title level={3} headingSize={2}>
+                  H3 sized as H2
+                </Title>
+              </Space>
+            </Card>
+          </Col>
+          <Col span={8}>
+            <Card
+              title="Typography Paragraphs"
+              variant="borderless"
+              className="h-full"
+            >
+              <Typography>
+                <Paragraph>
+                  This paragraph has a bottom margin. Imperdiet ex curae laoreet
+                  turpis adipiscing pulvinar erat conubia rhoncus, faucibus
+                  dictum porta integer tincidunt iaculis pharetra. Dis praesent
+                  egestas curae tortor primis volutpat metus ridiculus sit
+                  rutrum vitae ac aenean, nisi dolor a per molestie etiam ad
+                  tristique magnis fames laoreet.
+                </Paragraph>
+                <Paragraph>
+                  This paragraph has no bottom margin. Imperdiet ex curae
+                  laoreet turpis adipiscing pulvinar erat conubia rhoncus,
+                  faucibus dictum porta integer tincidunt iaculis pharetra. Dis
+                  praesent egestas curae tortor primis volutpat metus ridiculus
+                  sit rutrum vitae ac aenean, nisi dolor a per molestie etiam ad
+                  tristique magnis fames laoreet.
+                </Paragraph>
+              </Typography>
+            </Card>
+          </Col>
+          <Col span={8}>
+            <Card
+              title="Typography Text & Link"
+              variant="borderless"
+              className="h-full"
+            >
+              <Space direction="vertical">
+                <Text>Ant Design (default)</Text>
+                <Text size="sm">Ant Design (small)</Text>
+                <Text size="lg">Ant Design (large)</Text>
+                <Text type="secondary">Ant Design (secondary)</Text>
+                <Text type="success">Ant Design (success)</Text>
+                <Text type="warning">Ant Design (warning)</Text>
+                <Text type="danger">Ant Design (danger)</Text>
+                <Text disabled>Ant Design (disabled)</Text>
+                <Text mark>Ant Design (mark)</Text>
+                <Text code>Ant Design (code)</Text>
+                <Text keyboard>Ant Design (keyboard)</Text>
+                <Text underline>Ant Design (underline)</Text>
+                <Text delete>Ant Design (delete)</Text>
+                <Text strong>Ant Design (strong)</Text>
+                <Text italic>Ant Design (italic)</Text>
+                <Link href="https://ant.design" target="_blank">
+                  Ant Design (Link)
+                </Link>
               </Space>
             </Card>
           </Col>

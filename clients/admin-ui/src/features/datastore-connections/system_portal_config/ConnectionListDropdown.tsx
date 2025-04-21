@@ -1,6 +1,7 @@
 import { debounce } from "common/utils";
 import {
   AntButton as Button,
+  AntTooltip as Tooltip,
   ArrowDownLineIcon,
   Box,
   Flex,
@@ -13,7 +14,6 @@ import {
   MenuList,
   SearchLineIcon,
   Text,
-  Tooltip,
 } from "fidesui";
 import { useCallback, useMemo, useRef, useState } from "react";
 
@@ -251,13 +251,10 @@ const ConnectionListDropdown = ({
           <Box overflowY="auto" maxHeight="272px">
             {filteredListItems.map(([key, option]) => (
               <Tooltip
-                aria-label={option.toolTip}
-                hasArrow
-                label={option.toolTip}
+                title={option.toolTip}
                 key={key}
-                placement="auto-start"
-                openDelay={500}
-                shouldWrapChildren
+                placement="rightTop"
+                mouseEnterDelay={0.5}
               >
                 <MenuItem
                   color={

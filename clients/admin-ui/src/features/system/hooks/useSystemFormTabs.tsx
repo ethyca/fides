@@ -126,7 +126,7 @@ const useSystemFormTabs = ({
     useState<boolean | undefined>(undefined);
   const { plus: isPlusEnabled } = useFeatures();
   const {
-    flags: { dataDiscoveryAndDetection, webMonitor },
+    flags: { dataDiscoveryAndDetection },
   } = useFlags();
   const { plus: hasPlus } = useFeatures();
 
@@ -354,7 +354,7 @@ const useSystemFormTabs = ({
     },
   ];
 
-  if (isPlusEnabled && webMonitor) {
+  if (isPlusEnabled) {
     tabData.push({
       label: "Assets",
       content: activeSystem ? (

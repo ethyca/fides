@@ -1065,8 +1065,20 @@ class TestGetConnectionSecretSchema:
                     "default": False,
                     "type": "boolean",
                 },
+                "ssl_mode": {
+                    "title": "SSL Mode",
+                    "description": "The SSL mode to use for the connection. Valid values are 'required', 'preferred', and 'disabled'.",
+                    "allOf": [{"$ref": "#/definitions/MySQLSSLMode"}],
+                },
             },
             "required": ["host", "dbname"],
+            "definitions": {
+                "MySQLSSLMode": {
+                    "title": "MySQLSSLMode",
+                    "type": "string",
+                    "enum": ["preferred", "required", "disabled"],
+                }
+            },
         }
 
     def test_get_connection_secret_schema_postgres(
@@ -1120,7 +1132,7 @@ class TestGetConnectionSecretSchema:
                     "type": "boolean",
                 },
             },
-            "required": ["host", "dbname"],
+            "required": ["host"],
         }
 
     def test_get_connection_secret_schema_google_cloud_sql_postgres(

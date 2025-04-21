@@ -559,6 +559,12 @@ dataset:
     - name: email_address
       data_categories:
       - user.contact.email
+    - name: password_login_enabled
+      data_categories:
+      - system.operations
+    - name: totp_secret
+      data_categories:
+      - system.operations
   - name: fidesuserpermissions
     fields:
     - name: created_at
@@ -1185,6 +1191,8 @@ dataset:
       data_categories: [system.operations]
     - name: reject_all_mechanism
       data_categories: [system.operations]
+    - name: tcf_configuration_id
+      data_categories: [system.operations]
   - name: privacyexperienceconfighistory
     description: 'Historical table to store all versions of Experience Config History for record keeping'
     fields:
@@ -1251,6 +1259,8 @@ dataset:
     - name: version
       data_categories: [system.operations]
     - name: reject_all_mechanism
+      data_categories: [system.operations]
+    - name: tcf_configuration_id
       data_categories: [system.operations]
   - name: privacynoticetemplate
     data_categories: []

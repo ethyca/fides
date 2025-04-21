@@ -1,6 +1,7 @@
 import {
   AntButton as Button,
   AntSelectProps as SelectProps,
+  AntTooltip as Tooltip,
   ArrowForwardIcon,
   Box,
   Collapse,
@@ -19,6 +20,10 @@ import BackButton from "~/features/common/nav/BackButton";
 import { PRIVACY_EXPERIENCE_ROUTE } from "~/features/common/nav/routes";
 import { PRIVACY_NOTICE_REGION_RECORD } from "~/features/common/privacy-notice-regions";
 import ScrollableList from "~/features/common/ScrollableList";
+import {
+  selectTCFConfigFilters,
+  useGetTCFConfigurationsQuery,
+} from "~/features/consent-settings/tcf/tcf-config.slice";
 import {
   selectLocationsRegulations,
   useGetLocationsRegulationsQuery,
@@ -49,6 +54,7 @@ import {
 } from "~/types/api";
 
 import { ControlledSelect } from "../common/form/ControlledSelect";
+import { useGetConfigurationSettingsQuery } from "../config-settings/config-settings.slice";
 
 const componentTypeOptions: SelectProps["options"] = [
   {
@@ -71,11 +77,11 @@ const componentTypeOptions: SelectProps["options"] = [
 
 const tcfRejectAllMechanismOptions: SelectProps["options"] = [
   {
-    label: "Reject All",
+    label: "Reject all",
     value: RejectAllMechanism.REJECT_ALL,
   },
   {
-    label: "Reject Consent Only",
+    label: "Reject consent only",
     value: RejectAllMechanism.REJECT_CONSENT_ONLY,
   },
 ];
@@ -93,7 +99,7 @@ const tcfBannerButtonOptions: SelectProps["options"] = [
 
 const bannerButtonOptions: SelectProps["options"] = [
   {
-    label: "Opt In/Opt Out",
+    label: "Opt in/Opt out",
     value: Layer1ButtonOption.OPT_IN_OPT_OUT,
   },
   {
@@ -151,6 +157,10 @@ export const PrivacyExperienceForm = ({
   const noticePageSize = useAppSelector(selectNoticePageSize);
   useGetAllPrivacyNoticesQuery({ page: noticePage, size: noticePageSize });
 
+  const { data: appConfig } = useGetConfigurationSettingsQuery({
+    api_set: true,
+  });
+
   const allPrivacyNoticesWithTcfPlaceholder: LimitedPrivacyNoticeResponseSchema[] =
     useMemo(() => {
       const noticesWithTcfPlaceholder = [...allPrivacyNotices];
@@ -203,6 +213,18 @@ export const PrivacyExperienceForm = ({
   useGetAllPropertiesQuery({ page: propertyPage, size: propertyPageSize });
   const allProperties = useAppSelector(selectAllProperties);
 
+  const tcfConfigFilters = useAppSelector(selectTCFConfigFilters);
+  const { data: tcfConfigs } = useGetTCFConfigurationsQuery(tcfConfigFilters);
+
+  const tcfConfigOptions = useMemo(
+    () =>
+      tcfConfigs?.items.map((config) => ({
+        label: config.name,
+        value: config.id,
+      })) ?? [],
+    [tcfConfigs],
+  );
+
   const buttonPanel = (
     <div className="flex justify-between border-t border-[#DEE5EE] p-4">
       <Button onClick={() => router.push(PRIVACY_EXPERIENCE_ROUTE)}>
@@ -248,16 +270,50 @@ export const PrivacyExperienceForm = ({
         in={values.component === ComponentType.TCF_OVERLAY}
         animateOpacity
       >
-        <ControlledSelect
-          name="reject_all_mechanism"
-          id="reject_all_mechanism"
-          options={tcfRejectAllMechanismOptions}
-          defaultValue={RejectAllMechanism.REJECT_ALL}
-          label="Reject all behavior"
-          layout="stacked"
-          disabled={values.component !== ComponentType.TCF_OVERLAY}
-          tooltip="Reject All: Blocks both consent and legitimate interest data processing across all purposes, features, and vendors. Reject Consent-Only: Blocks only consent-based processing, but allows legitimate interest processing to continue, requiring separate objection."
-        />
+        {values.component === ComponentType.TCF_OVERLAY && (
+          <Tooltip
+            title={
+              // eslint-disable-next-line no-nested-ternary
+              !appConfig?.consent?.override_vendor_purposes
+                ? "You must enable the Override vendor purposes setting in consent settings to select a TCF configuration."
+                : !tcfConfigOptions?.length
+                  ? "No TCF configurations found. Please create a TCF configuration in 'Consent settings' to select one."
+                  : undefined
+            }
+          >
+            <div>
+              <ControlledSelect
+                name="tcf_configuration_id"
+                id="tcf_configuration_id"
+                label="TCF Configuration"
+                options={tcfConfigOptions}
+                layout="stacked"
+                disabled={
+                  !tcfConfigOptions?.length ||
+                  !appConfig?.consent?.override_vendor_purposes
+                }
+                tooltip='Select a TCF configuration. Configurations are defined in "Consent settings" and apply to TCF privacy experiences.'
+                allowClear
+              />
+            </div>
+          </Tooltip>
+        )}
+      </Collapse>
+      <Collapse
+        in={values.component === ComponentType.TCF_OVERLAY}
+        animateOpacity
+      >
+        {values.component === ComponentType.TCF_OVERLAY && (
+          <ControlledSelect
+            name="reject_all_mechanism"
+            id="reject_all_mechanism"
+            options={tcfRejectAllMechanismOptions}
+            defaultValue={RejectAllMechanism.REJECT_ALL}
+            label="Reject all behavior"
+            layout="stacked"
+            tooltip="Reject all: Blocks both consent and legitimate interest data processing across all purposes, features, and vendors. Reject consent-only: Blocks only consent-based processing, but allows legitimate interest processing to continue, requiring separate objection."
+          />
+        )}
       </Collapse>
       <Collapse
         in={
@@ -266,26 +322,25 @@ export const PrivacyExperienceForm = ({
         }
         animateOpacity
       >
-        <ControlledSelect
-          name="layer1_button_options"
-          id="layer1_button_options"
-          defaultValue={Layer1ButtonOption.OPT_IN_OPT_OUT}
-          options={
-            values.component === ComponentType.TCF_OVERLAY
-              ? tcfBannerButtonOptions
-              : bannerButtonOptions
-          }
-          label={
-            values.component === ComponentType.TCF_OVERLAY
-              ? "Reject all visibility"
-              : "Banner options"
-          }
-          layout="stacked"
-          disabled={
-            values.component !== ComponentType.BANNER_AND_MODAL &&
-            values.component !== ComponentType.TCF_OVERLAY
-          }
-        />
+        {(values.component === ComponentType.BANNER_AND_MODAL ||
+          values.component === ComponentType.TCF_OVERLAY) && (
+          <ControlledSelect
+            name="layer1_button_options"
+            id="layer1_button_options"
+            defaultValue={Layer1ButtonOption.OPT_IN_OPT_OUT}
+            options={
+              values.component === ComponentType.TCF_OVERLAY
+                ? tcfBannerButtonOptions
+                : bannerButtonOptions
+            }
+            label={
+              values.component === ComponentType.TCF_OVERLAY
+                ? "Reject all visibility"
+                : "Banner options"
+            }
+            layout="stacked"
+          />
+        )}
       </Collapse>
       <Collapse
         in={
@@ -343,21 +398,25 @@ export const PrivacyExperienceForm = ({
           baseTestId="privacy-notice"
         />
       )}
-      {values.component === ComponentType.BANNER_AND_MODAL ? (
-        <>
-          <Collapse in={!!values.privacy_notice_ids?.length} animateOpacity>
-            <Box p="1px">
-              <CustomSwitch
-                name="show_layer1_notices"
-                id="show_layer1_notices"
-                label="Add privacy notices to banner"
-                variant="stacked"
-              />
-            </Box>
-          </Collapse>
-          <Divider />
-        </>
-      ) : null}
+      <Collapse
+        in={
+          values.component === ComponentType.BANNER_AND_MODAL &&
+          !!values.privacy_notice_ids?.length
+        }
+        animateOpacity
+      >
+        {values.component === ComponentType.BANNER_AND_MODAL && (
+          <Box p="1px">
+            <CustomSwitch
+              name="show_layer1_notices"
+              id="show_layer1_notices"
+              label="Add privacy notices to banner"
+              variant="stacked"
+            />
+          </Box>
+        )}
+      </Collapse>
+      <Divider />
       <Text as="h2" fontWeight="600">
         Locations & Languages
       </Text>

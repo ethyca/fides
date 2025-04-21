@@ -95,6 +95,17 @@ class Comment(Base):
         primaryjoin=lambda: Comment.id == orm.foreign(CommentReference.comment_id),
     )
 
+    attachments = relationship(
+        "Attachment",
+        secondary="attachment_reference",
+        primaryjoin="and_(Comment.id == AttachmentReference.reference_id, "
+        "AttachmentReference.reference_type == 'comment')",
+        secondaryjoin="Attachment.id == AttachmentReference.attachment_id",
+        order_by="Attachment.created_at",
+        viewonly=True,
+        uselist=True,
+    )
+
     def delete(self, db: Session) -> None:
         """Delete the comment and all associated references."""
         # Delete the comment

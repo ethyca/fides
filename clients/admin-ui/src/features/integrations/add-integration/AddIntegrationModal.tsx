@@ -2,7 +2,9 @@ import { UseDisclosureReturn } from "fidesui";
 import { useState } from "react";
 
 import FormModal from "~/features/common/modals/FormModal";
-import { IntegrationTypeInfo } from "~/features/integrations/add-integration/allIntegrationTypes";
+import getIntegrationTypeInfo, {
+  IntegrationTypeInfo,
+} from "~/features/integrations/add-integration/allIntegrationTypes";
 import ConfigureIntegrationForm from "~/features/integrations/add-integration/ConfigureIntegrationForm";
 import IntegrationTypeDetail from "~/features/integrations/add-integration/IntegrationTypeDetail";
 import SelectIntegrationType from "~/features/integrations/add-integration/SelectIntegrationType";
@@ -25,6 +27,10 @@ const AddIntegrationModal = ({
   const [integrationType, setIntegrationType] = useState<IntegrationTypeInfo>();
 
   const connectionOption = useIntegrationOption(
+    integrationType?.placeholder.connection_type,
+  );
+
+  const { description } = getIntegrationTypeInfo(
     integrationType?.placeholder.connection_type,
   );
 
@@ -73,6 +79,7 @@ const AddIntegrationModal = ({
         <ConfigureIntegrationForm
           connectionOption={connectionOption!}
           onCancel={handleCancel}
+          description={description}
         />
       )}
     </FormModal>

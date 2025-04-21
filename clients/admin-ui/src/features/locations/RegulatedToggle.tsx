@@ -1,6 +1,6 @@
 import { AntSwitch as Switch, Flex, FormLabel } from "fidesui";
 
-import QuestionTooltip from "~/features/common/QuestionTooltip";
+import { InfoTooltip } from "~/features/common/InfoTooltip";
 
 const RegulatedToggle = ({
   id,
@@ -22,7 +22,7 @@ const RegulatedToggle = ({
     <FormLabel fontSize="sm" m={0} htmlFor={id}>
       Regulated
     </FormLabel>
-    <QuestionTooltip label="Toggle on to see only locations in this region with privacy regulations supported by Fides" />
+    <InfoTooltip label="Toggle on to see only locations in this region with privacy regulations supported by Fides" />
   </Flex>
 );
 

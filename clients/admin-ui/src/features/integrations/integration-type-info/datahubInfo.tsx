@@ -19,6 +19,16 @@ export const DATAHUB_PLACEHOLDER = {
 
 export const DATAHUB_TAGS = ["Sync"];
 
+export const DATAHUB_DESCRIPTION = (
+  <>
+    Set up a connection to your DataHub instance by providing a name, server
+    URL, and access token. You can also select the BigQuery datasets you&apos;d
+    like to sync—these will be matched with corresponding datasets in DataHub.
+    If no datasets are selected, all available BigQuery datasets will be
+    included by default.
+  </>
+);
+
 export const DatahubOverview = () => (
   <>
     <InfoHeading text="Overview" />
@@ -36,7 +46,10 @@ export const DatahubOverview = () => (
       </InfoUnorderedList>
       <InfoHeading text="Permissions" />
       <InfoUnorderedList>
-        <ListItem>Placeholder</ListItem>
+        <ListItem>
+          The related user to the access token must have at least the Editor
+          role on DataHub.
+        </ListItem>
       </InfoUnorderedList>
     </ShowMoreContent>
   </>
@@ -47,6 +60,7 @@ const DATAHUB_TYPE_INFO = {
   category: ConnectionCategory.DATA_CATALOG,
   overview: <DatahubOverview />,
   tags: DATAHUB_TAGS,
+  description: DATAHUB_DESCRIPTION,
 };
 
 export default DATAHUB_TYPE_INFO;

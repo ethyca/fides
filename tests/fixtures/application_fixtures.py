@@ -19,6 +19,7 @@ from toml import load as load_toml
 from fides.api.common_exceptions import SystemManagerException
 from fides.api.graph.graph import DatasetGraph
 from fides.api.models.application_config import ApplicationConfig
+from fides.api.models.asset import Asset
 from fides.api.models.attachment import Attachment, AttachmentType
 from fides.api.models.audit_log import AuditLog, AuditLogAction
 from fides.api.models.client import ClientDetail
@@ -89,6 +90,7 @@ from fides.api.schemas.redis_cache import (
 from fides.api.schemas.storage.storage import (
     AWSAuthMethod,
     FileNaming,
+    GCSAuthMethod,
     StorageDetails,
     StorageSecrets,
     StorageType,
@@ -367,6 +369,71 @@ def storage_config_default_s3_secret_keys(db: Session) -> Generator:
             "secrets": {
                 StorageSecrets.AWS_ACCESS_KEY_ID.value: "access_key_id",
                 StorageSecrets.AWS_SECRET_ACCESS_KEY.value: "secret_access_key",
+            },
+            "format": ResponseFormat.json,
+        },
+    )
+    yield sc
+
+
+@pytest.fixture(scope="function")
+def storage_config_default_gcs(db: Session) -> Generator:
+    """
+    Create and yield a default storage config, as defined by its
+    `is_default` flag being set to `True`. This is a Google Cloud Storage config.
+    """
+    sc = StorageConfig.create(
+        db=db,
+        data={
+            "name": default_storage_config_name(StorageType.gcs.value),
+            "type": StorageType.gcs,
+            "is_default": True,
+            "details": {
+                StorageDetails.NAMING.value: FileNaming.request_id.value,
+                StorageDetails.AUTH_METHOD.value: GCSAuthMethod.ADC.value,
+                StorageDetails.BUCKET.value: "test_bucket",
+            },
+            "format": ResponseFormat.json,
+        },
+    )
+    yield sc
+
+
+@pytest.fixture(scope="function")
+def storage_config_default_gcs_service_account_keys(db: Session) -> Generator:
+    """
+    Create and yield a default storage config, as defined by its
+    `is_default` flag being set to `True`. This is a Google Cloud Storage config.
+    """
+    sc = StorageConfig.create(
+        db=db,
+        data={
+            "name": default_storage_config_name(StorageType.gcs.value),
+            "type": StorageType.gcs,
+            "is_default": True,
+            "details": {
+                StorageDetails.NAMING.value: FileNaming.request_id.value,
+                StorageDetails.AUTH_METHOD.value: GCSAuthMethod.SERVICE_ACCOUNT_KEYS.value,
+                StorageDetails.BUCKET.value: "test_bucket",
+            },
+            "secrets": {
+                "type": "service_account",
+                "project_id": "test-project-123",
+                "private_key_id": "test-key-id-456",
+                "private_key": (
+                    "-----BEGIN PRIVATE KEY-----\n"
+                    "MIItest\n"
+                    "-----END PRIVATE KEY-----\n"
+                ),
+                "client_email": "test-service@test-project-123.iam.gserviceaccount.com",
+                "client_id": "123456789",
+                "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+                "token_uri": "https://oauth2.googleapis.com/token",
+                "auth_provider_x509_cert_url": (
+                    "https://www.googleapis.com/oauth2/v1/certs"
+                ),
+                "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/test-service%40test-project-123.iam.gserviceaccount.com",
+                "universe_domain": "googleapis.com",
             },
             "format": ResponseFormat.json,
         },
@@ -2231,7 +2298,38 @@ def privacy_notice(db: Session) -> Generator:
         },
     )
 
+    # Create cookie assets
+    cookie_assets = [
+        Asset(
+            name="test_cookie",
+            asset_type="Cookie",
+            data_uses=["marketing.advertising"],
+        ),
+        Asset(
+            name="test_cookie_2",
+            asset_type="Cookie",
+            data_uses=["third_party_sharing.disclosure"],  # a not matching data use
+        ),
+        Asset(
+            name="test_cookie_3",
+            asset_type="Cookie",
+            data_uses=["test.third_party_sharing.cookie"],  # should not match either
+        ),
+    ]
+    for cookie_asset in cookie_assets:
+        cookie_asset.save(db)
+
     yield privacy_notice
+
+    # Clean up cookie assets first
+    for cookie in cookie_assets:
+        try:
+            cookie.delete(db)
+        except ObjectDeletedError:
+            # Skip if already deleted
+            pass
+
+    # Then clean up translations and histories
     for translation in privacy_notice.translations:
         for history in translation.histories:
             history.delete(db)
