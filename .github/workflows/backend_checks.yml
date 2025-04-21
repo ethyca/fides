@@ -40,11 +40,30 @@ jobs:
             dev-requirements.txt
             optional-requirements.txt
 
+      # Create dedicated pip cache for test requirements
+      - name: Cache pip dependencies
+        uses: actions/cache@v4
+        id: pip-cache
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ env.DEFAULT_PYTHON_VERSION }}-${{ hashFiles('requirements.txt', 'dev-requirements.txt', 'optional-requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-${{ env.DEFAULT_PYTHON_VERSION }}-
+
       - name: Install dependencies
         run: |
-          pip install -r requirements.txt
-          pip install -r dev-requirements.txt
-          pip install -r optional-requirements.txt
+          python -m pip install --upgrade pip
+          # Only install if cache miss
+          if [ "${{ steps.pip-cache.outputs.cache-hit }}" != 'true' ]; then
+            echo "Cache miss - installing dependencies"
+            pip install --no-deps -r requirements.txt
+            pip install --no-deps -r dev-requirements.txt
+            pip install --no-deps -r optional-requirements.txt
+            # Install any missing dependencies
+            pip check || pip install -r requirements.txt -r dev-requirements.txt -r optional-requirements.txt
+          else
+            echo "Cache hit - skipping dependency installation"
+          fi
 
       - name: Install package
         run: pip install -e .
