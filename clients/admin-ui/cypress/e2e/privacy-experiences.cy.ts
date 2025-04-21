@@ -463,14 +463,16 @@ describe("Privacy experiences", () => {
       });
 
       it("shows the preview for the translation currently being edited", () => {
-        cy.getByTestId("language-row-fr").click();
+        cy.getByTestId("language-row-fr").realHover();
+        cy.getByTestId("edit-language-row-fr").click({ force: true });
         cy.get(`#${PREVIEW_CONTAINER_ID}`).contains(
           "Gestion du consentement et des préférences",
         );
       });
 
       it("allows discarding unsaved changes after showing a modal", () => {
-        cy.getByTestId("language-row-en").click();
+        cy.getByTestId("language-row-en").realHover();
+        cy.getByTestId("edit-language-row-en").click({ force: true });
         cy.getByTestId("input-translations.0.title")
           .clear()
           .type("Some other title");
@@ -482,7 +484,8 @@ describe("Privacy experiences", () => {
       });
 
       it("allows changing the default language after showing a modal", () => {
-        cy.getByTestId("language-row-fr").click();
+        cy.getByTestId("language-row-fr").realHover();
+        cy.getByTestId("edit-language-row-fr").click({ force: true });
         cy.getByTestId("input-translations.1.is_default").click();
         cy.getByTestId("save-btn").click();
         cy.getByTestId("warning-modal-confirm-btn").click();
@@ -495,6 +498,7 @@ describe("Privacy experiences", () => {
       it("can add new translations with all required fields", () => {
         const components = [
           { type: ComponentType.PRIVACY_CENTER, displayName: "Privacy center" },
+          { type: ComponentType.HEADLESS, displayName: "Headless" },
           { type: ComponentType.MODAL, displayName: "Modal" },
           {
             type: ComponentType.BANNER_AND_MODAL,
