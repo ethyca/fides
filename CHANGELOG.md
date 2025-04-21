@@ -45,6 +45,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Reduced animations on Cypress tests in Privacy Center for quicker results [#5976](https://github.com/ethyca/fides/pull/5976)
 - Migrated Tooltip components to Ant Design across Admin UI [#6060](https://github.com/ethyca/fides/pull/6060)
 - Added custom Typography component to FidesUI with configurable text sizes [#6062](https://github.com/ethyca/fides/pull/6062)
+- Cleaning up test fixtures [#6008](https://github.com/ethyca/fides/pull/6008)
 
 ### Fixed
 - Fixed typo in Vermont US state name [#6029](https://github.com/ethyca/fides/pull/6029)
