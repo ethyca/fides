@@ -28,6 +28,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Added SSL Mode field for MySQL connections [#6048](https://github.com/ethyca/fides/pull/6048)
 - Added PostgreSQL connection config form to the "integrations" page to support use with discovery monitors [#6018](https://github.com/ethyca/fides/pull/6018)
 - Update the Datahub Permissions section to include required permissions from Datahub [#6052](https://github.com/ethyca/fides/pull/6052)
+- Added support for uploading internal attachments to privacy requests [#6069](https://github.com/ethyca/fides/pull/6069)
 
 ### Added
 - Added assumed role arn capabilities to aws Storage [#6027](https://github.com/ethyca/fides/pull/6027)
