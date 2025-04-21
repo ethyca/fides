@@ -1968,7 +1968,9 @@ def privacy_request_with_consent_policy(
 
 
 @pytest.fixture(scope="function")
-def privacy_request_with_custom_fields(db: Session, policy: Policy) -> PrivacyRequest:
+def privacy_request_with_custom_fields(
+    db: Session, policy: Policy, allow_custom_privacy_request_field_collection_enabled
+) -> PrivacyRequest:
     privacy_request = PrivacyRequest.create(
         db=db,
         data={
@@ -1996,7 +1998,7 @@ def privacy_request_with_custom_fields(db: Session, policy: Policy) -> PrivacyRe
 
 @pytest.fixture(scope="function")
 def privacy_request_with_custom_array_fields(
-    db: Session, policy: Policy
+    db: Session, policy: Policy, allow_custom_privacy_request_field_collection_enabled
 ) -> PrivacyRequest:
     privacy_request = PrivacyRequest.create(
         db=db,
@@ -3418,7 +3420,7 @@ def allow_custom_privacy_request_field_collection_enabled():
     original_value = CONFIG.execution.allow_custom_privacy_request_field_collection
     CONFIG.execution.allow_custom_privacy_request_field_collection = True
     yield
-    CONFIG.notifications.send_request_review_notification = original_value
+    CONFIG.execution.allow_custom_privacy_request_field_collection = original_value
 
 
 @pytest.fixture(scope="function")
@@ -3426,7 +3428,7 @@ def allow_custom_privacy_request_field_collection_disabled():
     original_value = CONFIG.execution.allow_custom_privacy_request_field_collection
     CONFIG.execution.allow_custom_privacy_request_field_collection = False
     yield
-    CONFIG.notifications.send_request_review_notification = original_value
+    CONFIG.execution.allow_custom_privacy_request_field_collection = original_value
 
 
 @pytest.fixture(scope="function")
@@ -3436,7 +3438,7 @@ def allow_custom_privacy_request_fields_in_request_execution_enabled():
     )
     CONFIG.execution.allow_custom_privacy_request_fields_in_request_execution = True
     yield
-    CONFIG.notifications.allow_custom_privacy_request_fields_in_request_execution = (
+    CONFIG.execution.allow_custom_privacy_request_fields_in_request_execution = (
         original_value
     )
 
@@ -3448,7 +3450,7 @@ def allow_custom_privacy_request_fields_in_request_execution_disabled():
     )
     CONFIG.execution.allow_custom_privacy_request_fields_in_request_execution = False
     yield
-    CONFIG.notifications.allow_custom_privacy_request_fields_in_request_execution = (
+    CONFIG.execution.allow_custom_privacy_request_fields_in_request_execution = (
         original_value
     )
 

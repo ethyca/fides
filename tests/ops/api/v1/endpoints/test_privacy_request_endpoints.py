@@ -2465,7 +2465,6 @@ class TestPrivacyRequestSearch:
         assert resp["items"][0]["id"] == privacy_request.id
         assert resp["items"][0].get("custom_privacy_request_fields") is None
 
-    @pytest.mark.skip(reason="Needs investigation, fails when running in parallel")
     def test_privacy_request_search_by_custom_fields_and_array_fields(
         self,
         api_client: TestClient,
@@ -3846,7 +3845,6 @@ class TestApprovePrivacyRequest:
 
         privacy_request.delete(db)
 
-    @pytest.mark.skip(reason="Needs investigation, fails when running in parallel")
     @mock.patch(
         "fides.api.service.privacy_request.request_runner_service.run_privacy_request.apply_async"
     )
