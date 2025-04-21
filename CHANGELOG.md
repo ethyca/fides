@@ -25,11 +25,8 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Migrate `Cookies` resources to `Asset` resources of type `Cookie` [#5776](https://github.com/ethyca/fides/pull/5776) https://github.com/ethyca/fides/labels/db-migration https://github.com/ethyca/fides/labels/high-risk
 - Added support for selecting TCF Publisher Override configuration when configuring Privacy Experience [#6033](https://github.com/ethyca/fides/pull/6033)
 - Added Google Cloud Storage as a storage option [#6006](https://github.com/ethyca/fides/pull/6006)
-- Added SSL Mode field for MySQL connections [#6048](https://github.com/ethyca/fides/pull/6048)
-- Added PostgreSQL connection config form to the "integrations" page to support use with discovery monitors [#6018](https://github.com/ethyca/fides/pull/6018)
 - Update the Datahub Permissions section to include required permissions from Datahub [#6052](https://github.com/ethyca/fides/pull/6052)
 - Added the ability to create new TCF Experiences within Admin UI [#6055](https://github.com/ethyca/fides/pull/6055)
-- PostgreSQL connection config now supports SSL Mode [#6068](https://github.com/ethyca/fides/pull/6068)
 - Added assumed role arn capabilities to aws Storage [#6027](https://github.com/ethyca/fides/pull/6027)
 
 ### Changed
@@ -40,7 +37,6 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Updated bulk ignore assets toast message [#6043](https://github.com/ethyca/fides/pull/6043)
 - Updated UI behavior for editing languages in the Experience config for consistency and clarity [#6055](https://github.com/ethyca/fides/pull/6055)
 - Moved detection & discovery features out of beta [#6059](https://github.com/ethyca/fides/pull/6059)
-- Updated consent automation models to support echo detection in Fidesplus [#6054](https://github.com/ethyca/fides/pull/6054)
 
 ### Developer Experience
 - Reduced animations on Cypress tests in Privacy Center for quicker results [#5976](https://github.com/ethyca/fides/pull/5976)
@@ -57,6 +53,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ### Added
 - Added PostgreSQL connection config form to the "integrations" page to support use with discovery monitors [#6018](https://github.com/ethyca/fides/pull/6018)
 - Added SSL Mode field for MySQL connections [#6048](https://github.com/ethyca/fides/pull/6048)
+- PostgreSQL connection config now supports SSL Mode [#6068](https://github.com/ethyca/fides/pull/6068)
 
 ### Changed
 - Removed `dbname` as a required field for PostgreSQL connection configs to support use with discovery monitors [#6018](https://github.com/ethyca/fides/pull/6018)
@@ -87,7 +84,6 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Added `tcf_configuration_id` to `PrivacyExperienceConfig` and fixes `TCFPublisherRestriction` validations [#6012](https://github.com/ethyca/fides/pull/6012) https://github.com/ethyca/fides/labels/db-migration
 - Added a `--separate-files` flag to the `fides pull dataset` CLI command to pull each dataset into its own file [#6007](https://github.com/ethyca/fides/pull/6007)
 - Added a `readonly_server` database setting to support specifying a read-only database [#6023](https://github.com/ethyca/fides/pull/6023)
-- Added PostgreSQL connection config form to the "integrations" page to support use with discovery monitors [#6018](https://github.com/ethyca/fides/pull/6018)
 
 ### Changed
 - Bumped Next.js for all frontend apps to latest patch versions. [#5946](https://github.com/ethyca/fides/pull/5946)
@@ -96,7 +92,6 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Changed action center homepage to use CSS grid layout [#5982](https://github.com/ethyca/fides/pull/5982)
 - Updated the UI for the activity tab of the privacy request detail page [#6005](https://github.com/ethyca/fides/pull/6005)
 - Unified frontend formatKey method, so its behavior is closer to the backend behavior [#6010](https://github.com/ethyca/fides/pull/6010)
-- Removed `dbname` as a required field for PostgreSQL connection configs to support use with discovery monitors [#6018](https://github.com/ethyca/fides/pull/6018)
 - Action center table's checkboxes were improved, also improved change indications [#6021](https://github.com/ethyca/fides/pull/6021)
 
 
