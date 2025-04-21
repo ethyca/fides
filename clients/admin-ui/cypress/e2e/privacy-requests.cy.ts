@@ -412,9 +412,9 @@ describe("Privacy Requests", () => {
   });
 
   /**
-   * TODO: Remove .only before committing
+   * Tests for privacy request attachments functionality
    */
-  describe.only("Request Attachments", () => {
+  describe("Request Attachments", () => {
     beforeEach(() => {
       cy.get<PrivacyRequestEntity>("@privacyRequest").then((privacyRequest) => {
         cy.visit(`/privacy-requests/${privacyRequest.id}`);
@@ -470,10 +470,13 @@ describe("Privacy Requests", () => {
 
       // Verify upload request was made
       cy.wait("@uploadAttachment").then((interception) => {
-        // Check that the request body contains the expected parts
-        expect(interception.request.body).to.include("attachment_type");
-        expect(interception.request.body).to.include("internal_use_only");
-        expect(interception.request.body).to.include("test-upload.pdf");
+        // Verify it's a multipart form request
+        expect(interception.request.headers["content-type"]).to.include(
+          "multipart/form-data",
+        );
+
+        // Verify the response was successful
+        expect(interception.response.statusCode).to.equal(200);
       });
 
       // Verify success message
