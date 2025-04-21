@@ -25,6 +25,7 @@ export type {
   GetProps,
   InputRef,
   RadioChangeEvent,
+  UploadProps,
 } from "antd/lib";
 export {
   Alert as AntAlert,
@@ -52,6 +53,7 @@ export {
   Switch as AntSwitch,
   Tabs as AntTabs,
   Tooltip as AntTooltip,
+  Upload as AntUpload,
 } from "antd/lib";
 export type {
   BreadcrumbItemType as AntBreadcrumbItemType,
