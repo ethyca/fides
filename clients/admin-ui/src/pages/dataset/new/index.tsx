@@ -2,8 +2,6 @@ import { AntButton as Button, Box, Stack } from "fidesui";
 import type { NextPage } from "next";
 import { useState } from "react";
 
-import { useFeatures } from "~/features/common/features";
-import { InfoTooltip } from "~/features/common/InfoTooltip";
 import Layout from "~/features/common/Layout";
 import { DATASET_ROUTE } from "~/features/common/nav/routes";
 import PageHeader from "~/features/common/PageHeader";
@@ -11,7 +9,6 @@ import DatabaseConnectForm from "~/features/dataset/DatabaseConnectForm";
 import DatasetYamlForm from "~/features/dataset/DatasetYamlForm";
 
 const NewDataset: NextPage = () => {
-  const features = useFeatures();
   const [generateMethod, setGenerateMethod] = useState<
     "yaml" | "database" | "manual" | null
   >(null);
@@ -40,15 +37,11 @@ const NewDataset: NextPage = () => {
           <Button
             onClick={() => setGenerateMethod("database")}
             ghost={generateMethod === "database"}
-            disabled={features.flags.dataDiscoveryAndDetection}
             className="mr-2"
             data-testid="connect-db-btn"
           >
             Connect to a database
           </Button>
-          {features.flags.dataDiscoveryAndDetection ? (
-            <InfoTooltip label="Creating a dataset via a database connection is disabled when the 'detection & discovery' beta feature is enabled" />
-          ) : null}
         </Box>
         {generateMethod === "database" && (
           <Box w={{ base: "100%", lg: "50%" }}>
