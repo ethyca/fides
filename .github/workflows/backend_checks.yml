@@ -40,12 +40,14 @@ jobs:
             dev-requirements.txt
             optional-requirements.txt
 
-      - name: Install package and dependencies
+      - name: Install dependencies
         run: |
-          pip install -e .
           pip install -r requirements.txt
           pip install -r dev-requirements.txt
           pip install -r optional-requirements.txt
+
+      - name: Install package
+        run: pip install -e .
 
       - name: Cache nox environments
         uses: actions/cache@v4
