@@ -1,23 +1,14 @@
-import {
-  AntFlex as Flex,
-  AntSpace as Space,
-  Skeleton,
-  Text,
-  useToast,
-} from "fidesui";
+import { AntFlex as Flex, AntSpace as Space, Skeleton, Text } from "fidesui";
 import { NextPage } from "next";
 import { useRouter } from "next/router";
-import { useEffect, useMemo } from "react";
+import { useMemo } from "react";
 
 import DocsLink from "~/features/common/DocsLink";
 import FixedLayout from "~/features/common/FixedLayout";
 import PageHeader from "~/features/common/PageHeader";
 import { useGetPurposesQuery } from "~/features/common/purpose.slice";
 import SettingsBox from "~/features/consent-settings/SettingsBox";
-import {
-  FORBIDDEN_LEGITIMATE_INTEREST_PURPOSE_IDS,
-  PUBLISHER_RESTRICTIONS_DOCS_URL,
-} from "~/features/consent-settings/tcf/constants";
+import { PUBLISHER_RESTRICTIONS_DOCS_URL } from "~/features/consent-settings/tcf/constants";
 import { PurposeRestrictionsTable } from "~/features/consent-settings/tcf/PurposeRestrictionsTable";
 import { useGetTCFConfigurationQuery } from "~/features/consent-settings/tcf/tcf-config.slice";
 
@@ -27,7 +18,6 @@ const ConsentConfigurationPage: NextPage = () => {
     router.query.configuration_id as string,
   );
   const purposeId = decodeURIComponent(router.query.purpose_id as string);
-  const toast = useToast();
 
   const { data: purposes, isLoading: isPurposesLoading } =
     useGetPurposesQuery();
@@ -36,22 +26,6 @@ const ConsentConfigurationPage: NextPage = () => {
   const purpose = useMemo(() => {
     return purposes?.purposes[purposeId];
   }, [purposes, purposeId]);
-
-  useEffect(() => {
-    if (
-      purposeId &&
-      FORBIDDEN_LEGITIMATE_INTEREST_PURPOSE_IDS.includes(
-        parseInt(purposeId, 10),
-      )
-    ) {
-      toast({
-        status: "error",
-        title: `Purpose ${purposeId} is not flexible`,
-        description: "Please select a different purpose.",
-      });
-      router.replace("/settings/consent");
-    }
-  }, [purposeId, toast, router]);
 
   return (
     <FixedLayout title="Consent Configuration">
