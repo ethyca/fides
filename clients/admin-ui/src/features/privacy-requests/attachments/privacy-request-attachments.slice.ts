@@ -4,9 +4,7 @@ import { baseApi } from "~/features/common/api.slice";
 import { AttachmentType } from "~/types/api/models/AttachmentType";
 import { Page_AttachmentResponse_ } from "~/types/api/models/Page_AttachmentResponse_";
 
-export interface State {
-  // Add state properties if needed
-}
+export interface State {}
 
 const initialState: State = {};
 
@@ -74,9 +72,7 @@ export const { useGetAttachmentsQuery, useUploadAttachmentMutation } =
 export const privacyRequestAttachmentsSlice = createSlice({
   name: "privacyRequestAttachments",
   initialState,
-  reducers: {
-    // Add reducers if needed
-  },
+  reducers: {},
 });
 
 export const { reducer } = privacyRequestAttachmentsSlice;
