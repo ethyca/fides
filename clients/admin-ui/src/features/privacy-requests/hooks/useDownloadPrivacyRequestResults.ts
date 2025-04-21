@@ -47,7 +47,6 @@ const useDownloadPrivacyRequestResults = ({
   const downloadResults = () => {
     const link = document.createElement("a");
     link.href = accessResultUrl;
-    console.log("accessResultUrl", accessResultUrl);
     link.target = "_blank";
     link.rel = "noopener noreferrer";
     link.click();
