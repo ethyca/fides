@@ -18,7 +18,7 @@ import {
 import { PrivacyExperience, PrivacyExperienceMinimal } from "./consent-types";
 import { ETHYCA_CMP_ID, FIDES_SEPARATOR } from "./tcf/constants";
 import { extractTCStringForCmpApi } from "./tcf/events";
-import { EnabledIds } from "./tcf/types";
+import { EnabledIds, TcfPublisherRestriction } from "./tcf/types";
 import {
   decodeVendorId,
   uniqueGvlVendorIds,
@@ -107,7 +107,7 @@ export const generateFidesString = async ({
           const { id } = decodeVendorId(vendorId);
           tcModel.vendorConsents.set(+id);
 
-          // look up each vendor in the GVL vendors list to see if they have a purpose list.
+          // Legacy: look up each vendor in the GVL vendors list to see if they have a purpose list.
           // If they do not it means they have been set in Admin UI as Vendor Overrides to
           // require consent. In that case we need to set a publisher restriction for the
           // vendor's flexible purposes.
@@ -123,6 +123,7 @@ export const generateFidesString = async ({
           }
         }
       });
+
       tcStringPreferences.vendorsLegint.forEach((vendorId) => {
         if (experience.minimal_tcf) {
           (
@@ -196,6 +197,24 @@ export const generateFidesString = async ({
       tcStringPreferences.specialFeatures.forEach((id) => {
         tcModel.specialFeatureOptins.set(+id);
       });
+
+      // Process tcf_publisher_restrictions if available
+      if (
+        experience.tcf_publisher_restrictions &&
+        experience.tcf_publisher_restrictions.length > 0
+      ) {
+        experience.tcf_publisher_restrictions.forEach(
+          (restriction: TcfPublisherRestriction) => {
+            // For each vendor in the restriction's vendors array
+            restriction.vendors.forEach((vendorId: number) => {
+              const purposeRestriction = new PurposeRestriction();
+              purposeRestriction.purposeId = restriction.purpose_id;
+              purposeRestriction.restrictionType = restriction.restriction_type;
+              tcModel.publisherRestrictions.add(vendorId, purposeRestriction);
+            });
+          },
+        );
+      }
 
       encodedString = TCString.encode(tcModel, {
         // We do not want to include vendors disclosed or publisher tc at the moment
