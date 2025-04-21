@@ -255,8 +255,6 @@ def pytest_ops(
             OPS_TEST_DIR,
             "-m",
             "integration_external",
-            "-n",
-            "4",
         )
         session.run(*run_command, external=True)
     elif mark == "saas":
