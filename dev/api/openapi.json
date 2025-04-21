@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.59.2b3.post0.dev3"
+    "version": "2.59.2b3.post0.dev4"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -21946,6 +21946,17 @@
             ],
             "title": "Schema",
             "description": "The default schema to be used for the database connection (defaults to public)."
+          },
+          "ssl_mode": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "SSL Mode"
           }
         },
         "type": "object",
@@ -26963,6 +26974,17 @@
             ],
             "title": "Schema",
             "description": "The default schema to be used for the database connection (defaults to public)."
+          },
+          "ssl_mode": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "SSL Mode"
           }
         },
         "type": "object",
