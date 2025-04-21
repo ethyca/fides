@@ -34,39 +34,49 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
-          cache: "pip"
-          cache-dependency-path: |
-            requirements.txt
-            dev-requirements.txt
-            optional-requirements.txt
+          # Don't use the built-in pip cache since we're managing our own
+          cache: "none"
 
-      # Create dedicated pip cache for test requirements
-      - name: Cache pip dependencies
+      # Cache the entire Python virtual environment
+      - name: Cache virtual environment
         uses: actions/cache@v4
-        id: pip-cache
+        id: venv-cache
         with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ env.DEFAULT_PYTHON_VERSION }}-${{ hashFiles('requirements.txt', 'dev-requirements.txt', 'optional-requirements.txt') }}
+          path: |
+            .venv
+            ~/.cache/pip
+          key: ${{ runner.os }}-venv-${{ env.DEFAULT_PYTHON_VERSION }}-${{ hashFiles('requirements.txt', 'dev-requirements.txt', 'optional-requirements.txt') }}
           restore-keys: |
-            ${{ runner.os }}-pip-${{ env.DEFAULT_PYTHON_VERSION }}-
+            ${{ runner.os }}-venv-${{ env.DEFAULT_PYTHON_VERSION }}-
+
+      # Create and activate virtual environment if not cached
+      - name: Create virtual environment
+        if: steps.venv-cache.outputs.cache-hit != 'true'
+        run: |
+          python -m venv .venv
+          echo "VIRTUAL_ENV=$(pwd)/.venv" >> $GITHUB_ENV
+          echo "$(pwd)/.venv/bin" >> $GITHUB_PATH
+
+      # Make sure the cached venv is in the path
+      - name: Activate virtual environment
+        if: steps.venv-cache.outputs.cache-hit == 'true'
+        run: |
+          echo "VIRTUAL_ENV=$(pwd)/.venv" >> $GITHUB_ENV
+          echo "$(pwd)/.venv/bin" >> $GITHUB_PATH
 
       - name: Install dependencies
+        if: steps.venv-cache.outputs.cache-hit != 'true'
         run: |
           python -m pip install --upgrade pip
-          # Only install if cache miss
-          if [ "${{ steps.pip-cache.outputs.cache-hit }}" != 'true' ]; then
-            echo "Cache miss - installing dependencies"
-            pip install --no-deps -r requirements.txt
-            pip install --no-deps -r dev-requirements.txt
-            pip install --no-deps -r optional-requirements.txt
-            # Install any missing dependencies
-            pip check || pip install -r requirements.txt -r dev-requirements.txt -r optional-requirements.txt
-          else
-            echo "Cache hit - skipping dependency installation"
-          fi
+          # Install dependencies into the virtual environment
+          pip install -r requirements.txt -r dev-requirements.txt -r optional-requirements.txt
+          # Verify installation
+          pip freeze > installed-packages.txt
 
       - name: Install package
-        run: pip install -e .
+        run: |
+          # Only install the package, dependencies are already there
+          pip install -e . --no-deps
 
       - name: Cache nox environments
         uses: actions/cache@v4
