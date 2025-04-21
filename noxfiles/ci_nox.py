@@ -330,6 +330,7 @@ def collect_tests(session: nox.Session) -> None:
     Good to run as a sanity check that there aren't any obvious syntax
     errors within the test code.
     """
+
     # Skip installation if requested (should be handled in the GitHub workflow)
     if not session.posargs or "skip_install" not in session.posargs:
         session.install(".")
