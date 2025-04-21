@@ -5,6 +5,7 @@ import {
   AntTooltip as Tooltip,
   AntUpload as Upload,
   Icons,
+  UploadFile,
 } from "fidesui";
 import { useCallback } from "react";
 
@@ -36,17 +37,29 @@ const RequestAttachments = ({ subjectRequest }: RequestAttachmentsProps) => {
       user_id: currentUser?.id || "",
     });
 
-  const defaultFileList = attachments?.items.map((attachment) => {
-    const isExternalLink = attachment.download_url.startsWith("http");
-    return {
-      uid: attachment.id,
-      name: attachment.file_name,
-      status: "done" as const,
-      url: isExternalLink ? attachment.download_url : undefined,
-    };
-  });
+  const defaultFileList: UploadFile[] =
+    attachments?.items.map((attachment) => {
+      const isExternalLink = attachment.download_url.startsWith("http");
+      return {
+        uid: attachment.id,
+        name: attachment.file_name,
+        status: "done" as const,
+        url: isExternalLink ? attachment.download_url : undefined,
+      };
+    }) || [];
 
   const renderAttachmentIcon = useCallback(() => <Icons.Attachment />, []);
+
+  const downloadIcon = useCallback((file: UploadFile) => {
+    if (file.url) {
+      return <Icons.Download />;
+    }
+    return (
+      <Tooltip title="Download is not available when using local storage methods">
+        <Icons.Download />
+      </Tooltip>
+    );
+  }, []);
 
   return (
     <div>
@@ -61,7 +74,11 @@ const RequestAttachments = ({ subjectRequest }: RequestAttachmentsProps) => {
             name="attachment_file"
             defaultFileList={defaultFileList}
             iconRender={renderAttachmentIcon}
-            showUploadList={{ showRemoveIcon: false }}
+            showUploadList={{
+              showRemoveIcon: false,
+              showDownloadIcon: true,
+              downloadIcon,
+            }}
             customRequest={async (options) => {
               const { file, onSuccess, onError } = options;
               const fileName = (file as File).name;

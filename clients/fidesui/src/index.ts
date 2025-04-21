@@ -25,6 +25,7 @@ export type {
   GetProps,
   InputRef,
   RadioChangeEvent,
+  UploadFile,
   UploadProps,
 } from "antd/lib";
 export {
