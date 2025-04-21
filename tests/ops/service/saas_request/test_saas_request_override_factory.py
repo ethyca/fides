@@ -2,6 +2,7 @@ from typing import Any, Callable, Dict, List
 from uuid import uuid4
 
 import pytest
+from fideslang.validation import FidesKey
 
 from fides.api.common_exceptions import (
     InvalidSaaSRequestOverrideException,
@@ -91,6 +92,7 @@ def valid_consent_override(
 
 
 def valid_consent_update_override(
+    connection_key: FidesKey,
     client: AuthenticatedClient,
     secrets: Dict[str, Any],
     input_data: Dict[str, List[Any]],
@@ -107,7 +109,6 @@ def valid_process_consent_webhook_override(
     client: AuthenticatedClient,
     secrets: Dict[str, Any],
     payload: Any,
-    notice_id_to_preference_map: Dict[str, UserConsentPreference],
     consentable_items: List[ConsentableItem],
 ) -> ConsentWebhookResult:
     """

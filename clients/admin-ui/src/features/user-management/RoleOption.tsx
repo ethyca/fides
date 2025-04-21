@@ -14,7 +14,7 @@ import React from "react";
 
 import { RoleRegistryEnum, System } from "~/types/api";
 
-import QuestionTooltip from "../common/QuestionTooltip";
+import { InfoTooltip } from "../common/InfoTooltip";
 import AssignSystemsModal from "./AssignSystemsModal";
 import { AssignSystemsDeleteTable } from "./AssignSystemsTable";
 import { type FormValues } from "./PermissionsForm";
@@ -72,7 +72,7 @@ const RoleOption = ({
               <Text fontSize="sm" fontWeight="semibold" mr={1}>
                 Assigned systems
               </Text>
-              <QuestionTooltip label="Assigned systems refer to those systems that have been specifically allocated to a user for management purposes. Users assigned to a system possess full edit permissions and are listed as the Data Steward for the respective system." />
+              <InfoTooltip label="Assigned systems refer to those systems that have been specifically allocated to a user for management purposes. Users assigned to a system possess full edit permissions and are listed as the Data Steward for the respective system." />
             </Flex>
             <Button
               disabled={isDisabled}

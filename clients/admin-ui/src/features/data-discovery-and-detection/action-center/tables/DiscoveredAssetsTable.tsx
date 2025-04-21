@@ -48,7 +48,7 @@ import AddDataUsesModal from "~/features/data-discovery-and-detection/action-cen
 import useActionCenterTabs from "~/features/data-discovery-and-detection/action-center/tables/useActionCenterTabs";
 import { DiffStatus } from "~/types/api";
 
-import { SearchInput } from "../../SearchInput";
+import { DebouncedSearchInput } from "../../../common/DebouncedSearchInput";
 import { AssignSystemModal } from "../AssignSystemModal";
 import { useDiscoveredAssetsColumns } from "../hooks/useDiscoveredAssetsColumns";
 
@@ -288,7 +288,11 @@ export const DiscoveredAssetsTable = ({
         onChange={handleTabChange}
       />
       <TableActionBar>
-        <SearchInput value={searchQuery} onChange={setSearchQuery} />
+        <DebouncedSearchInput
+          value={searchQuery}
+          onChange={setSearchQuery}
+          placeholder="Search by asset name..."
+        />
         <Flex alignItems="center">
           {!!selectedUrns.length && (
             <Text

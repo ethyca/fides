@@ -1,4 +1,4 @@
-import { antMessage as message } from "fidesui";
+import { AntMessage as message } from "fidesui";
 
 import { getErrorMessage } from "~/features/common/helpers";
 import { useAlert } from "~/features/common/hooks";
