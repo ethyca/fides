@@ -22,7 +22,15 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.59.0...main)
 
 ### Added
-- Adds embedded-consent route to Privacy Center [#6040](https://github.com/ethyca/fides/pull/6040)
+- Migrate `Cookies` resources to `Asset` resources of type `Cookie` [#5776](https://github.com/ethyca/fides/pull/5776) https://github.com/ethyca/fides/labels/db-migration https://github.com/ethyca/fides/labels/high-risk
+- Added support for selecting TCF Publisher Override configuration when configuring Privacy Experience [#6033](https://github.com/ethyca/fides/pull/6033)
+- Added Google Cloud Storage as a storage option [#6006](https://github.com/ethyca/fides/pull/6006)
+- Added SSL Mode field for MySQL connections [#6048](https://github.com/ethyca/fides/pull/6048)
+- Added PostgreSQL connection config form to the "integrations" page to support use with discovery monitors [#6018](https://github.com/ethyca/fides/pull/6018)
+- Update the Datahub Permissions section to include required permissions from Datahub [#6052](https://github.com/ethyca/fides/pull/6052)
+- Added the ability to create new TCF Experiences within Admin UI [#6055](https://github.com/ethyca/fides/pull/6055)
+- PostgreSQL connection config now supports SSL Mode [#6068](https://github.com/ethyca/fides/pull/6068)
+- Added assumed role arn capabilities to aws Storage [#6027](https://github.com/ethyca/fides/pull/6027)
 
 ### Changed
 - Changed how TCF Publisher Overrides gets configured in consent settings [#6013](https://github.com/ethyca/fides/pull/6013)
