@@ -6,6 +6,7 @@ import {
   ExperienceConfigCreate,
   ExperienceTranslation,
   Layer1ButtonOption,
+  LimitedPrivacyNoticeResponseSchema,
   PrivacyNoticeResponse,
   SupportedLanguage,
 } from "~/types/api";
@@ -150,4 +151,31 @@ export const translationOrDefault = (
     is_default: translation.is_default,
     ...newTextFields,
   };
+};
+
+export const generateMockNotices = (
+  privacyNoticeIds: string[],
+  component: ComponentType,
+  allPrivacyNotices: (LimitedPrivacyNoticeResponseSchema | undefined)[],
+) => {
+  if (!privacyNoticeIds) {
+    return [];
+  }
+  return privacyNoticeIds
+    .map((id) => allPrivacyNotices.find((notice) => notice?.id === id))
+    .map((notice) => {
+      if (component === ComponentType.TCF_OVERLAY && notice !== undefined) {
+        return {
+          ...notice,
+          translations: [
+            {
+              language: "en",
+              text: notice?.name,
+            },
+          ],
+        };
+      }
+      return notice;
+    })
+    .filter((notice): notice is PrivacyNoticeResponse => notice !== undefined);
 };
