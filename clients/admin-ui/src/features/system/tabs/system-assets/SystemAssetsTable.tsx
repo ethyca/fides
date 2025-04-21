@@ -15,6 +15,7 @@ import {
 } from "fidesui";
 import { useEffect, useState } from "react";
 
+import { useAppSelector } from "~/app/hooks";
 import { DebouncedSearchInput } from "~/features/common/DebouncedSearchInput";
 import { getErrorMessage } from "~/features/common/helpers";
 import {
@@ -25,6 +26,7 @@ import {
   useServerSidePagination,
 } from "~/features/common/table/v2";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
+import { selectLockedForGVL } from "~/features/system/dictionary-form/dict-suggestion.slice";
 import {
   useDeleteSystemAssetsMutation,
   useGetSystemAssetsQuery,
@@ -35,6 +37,8 @@ import { Asset, SystemResponse } from "~/types/api";
 import { isErrorResult } from "~/types/errors";
 
 const COPY = `This page displays all assets associated with this system. Use the table below to review and manage these technologies for compliance and detailed insights.`;
+
+const GVL_COPY = `This page displays all assets associated with this system. Use the table below to review these technologies for compliance and detailed insights.`;
 
 const SystemAssetsTable = ({ system }: { system: SystemResponse }) => {
   const {
@@ -59,6 +63,7 @@ const SystemAssetsTable = ({ system }: { system: SystemResponse }) => {
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
 
   const [deleteAssets] = useDeleteSystemAssetsMutation();
+  const lockedForGVL = useAppSelector(selectLockedForGVL);
 
   const toast = useToast();
 
@@ -103,6 +108,7 @@ const SystemAssetsTable = ({ system }: { system: SystemResponse }) => {
     systemName: system.name ?? system.fides_key,
     systemKey: system.fides_key,
     onEditClick: handleEditAsset,
+    lockedForGVL,
   });
 
   const tableInstance = useReactTable({
@@ -152,46 +158,46 @@ const SystemAssetsTable = ({ system }: { system: SystemResponse }) => {
   return (
     <>
       <Text fontSize="sm" mb={4}>
-        {COPY}
+        {lockedForGVL ? GVL_COPY : COPY}
       </Text>
       <TableActionBar>
-        <DebouncedSearchInput
-          value={searchQuery}
-          onChange={setSearchQuery}
-          placeholder="Search by asset name..."
-        />
-        <Spacer />
-        <Button
-          icon={<Icons.Add />}
-          iconPosition="end"
-          onClick={onOpenAddEditModal}
-          data-testid="add-asset-btn"
-        >
-          Add asset
-        </Button>
-        <AddEditAssetModal
-          isOpen={addEditModalIsOpen}
-          onClose={handleCloseModal}
-          systemKey={system.fides_key}
-          asset={selectedAsset}
-        />
-        <Button
-          icon={<Icons.TrashCan />}
-          iconPosition="end"
-          onClick={onOpenDeleteModal}
-          disabled={!selectedAssetIds.length}
-          data-testid="bulk-delete-btn"
-        >
-          Remove
-        </Button>
-        <ConfirmationModal
-          isOpen={isDeleteModalOpen}
-          onClose={onCloseDeleteModal}
-          onConfirm={handleBulkDelete}
-          title="Remove assets"
-          message="Are you sure you want to remove the selected assets? This action cannot be undone and may impact consent automation."
-          isCentered
-        />
+        <DebouncedSearchInput value={searchQuery} onChange={setSearchQuery} />
+        {!lockedForGVL && (
+          <>
+            <Spacer />
+            <Button
+              icon={<Icons.Add />}
+              iconPosition="end"
+              onClick={onOpenAddEditModal}
+              data-testid="add-asset-btn"
+            >
+              Add asset
+            </Button>
+            <AddEditAssetModal
+              isOpen={addEditModalIsOpen}
+              onClose={handleCloseModal}
+              systemKey={system.fides_key}
+              asset={selectedAsset}
+            />
+            <Button
+              icon={<Icons.TrashCan />}
+              iconPosition="end"
+              onClick={onOpenDeleteModal}
+              disabled={!selectedAssetIds.length}
+              data-testid="bulk-delete-btn"
+            >
+              Remove
+            </Button>
+            <ConfirmationModal
+              isOpen={isDeleteModalOpen}
+              onClose={onCloseDeleteModal}
+              onConfirm={handleBulkDelete}
+              title="Remove assets"
+              message="Are you sure you want to remove the selected assets? This action cannot be undone and may impact consent automation."
+              isCentered
+            />
+          </>
+        )}
       </TableActionBar>
       <FidesTableV2
         tableInstance={tableInstance}

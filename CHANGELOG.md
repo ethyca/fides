@@ -39,6 +39,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Removed `dbname` as a required field for PostgreSQL connection configs to support use with discovery monitors [#6018](https://github.com/ethyca/fides/pull/6018)
 - UI now allows assigning of non-consent-category data uses to system assets [#6049](https://github.com/ethyca/fides/pull/6049)
 - Updated bulk ignore assets toast message [#6043](https://github.com/ethyca/fides/pull/6043)
+- Updated consent automation models to support echo detection in Fidesplus [#6054](https://github.com/ethyca/fides/pull/6054)
 
 ### Developer Experience
 - Reduced animations on Cypress tests in Privacy Center for quicker results [#5976](https://github.com/ethyca/fides/pull/5976)
