@@ -66,12 +66,6 @@ const RequestAttachments = ({ subjectRequest }: RequestAttachmentsProps) => {
               const { file, onSuccess, onError } = options;
               const fileName = (file as File).name;
 
-              if (!activeStorage?.key) {
-                message.error("No active storage configuration found");
-                onError?.(new Error("No active storage configuration"));
-                return;
-              }
-
               try {
                 await uploadAttachment({
                   privacy_request_id: subjectRequest.id,
