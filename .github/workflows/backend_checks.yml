@@ -40,6 +40,12 @@ jobs:
             dev-requirements.txt
             optional-requirements.txt
 
+      - name: Install package and dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install -r dev-requirements.txt
+          pip install -r optional-requirements.txt
+
       - name: Cache nox environments
         uses: actions/cache@v4
         id: cache-nox
@@ -51,7 +57,7 @@ jobs:
         run: pip install nox>=2022
 
       - name: Run static check
-        run: nox -s collect_tests
+        run: nox -s collect_tests -- skip_install
 
   Build:
     needs: Collect-Tests

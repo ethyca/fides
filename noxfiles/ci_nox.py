@@ -331,6 +331,11 @@ def collect_tests(session: nox.Session) -> None:
     errors within the test code.
     """
     session.install(".")
+
+    # Skip installation if requested (should be handled in the GitHub workflow)
+    if not session.posargs or "skip_install" not in session.posargs:
+        install_requirements(session, True)
+
     command = ("pytest", "tests/", "--collect-only")
     session.run(*command)
 
