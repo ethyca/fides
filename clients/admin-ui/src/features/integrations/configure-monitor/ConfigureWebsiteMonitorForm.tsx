@@ -12,7 +12,6 @@ import {
 import { enumToOptions } from "~/features/common/helpers";
 import FormInfoBox from "~/features/common/modals/FormInfoBox";
 import { PRIVACY_NOTICE_REGION_RECORD } from "~/features/common/privacy-notice-regions";
-import { formatKey } from "~/features/datastore-connections/add-connection/helpers";
 import { useGetOnlyCountryLocationsQuery } from "~/features/locations/locations.slice";
 import { getSelectedRegionIds } from "~/features/privacy-experience/form/helpers";
 import {
@@ -106,7 +105,7 @@ const ConfigureWebsiteMonitorForm = ({
       ...monitor,
       ...values,
       ...executionInfo,
-      key: monitor?.key || formatKey(values.name),
+      key: monitor?.key,
       classify_params: monitor?.classify_params || {},
       datasource_params: values.datasource_params || {},
       connection_config_key: integrationId,

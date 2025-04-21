@@ -29,7 +29,7 @@ import getResourceRowName from "~/features/data-discovery-and-detection/utils/ge
 import isNestedField from "~/features/data-discovery-and-detection/utils/isNestedField";
 import { StagedResource, StagedResourceTypeValue } from "~/types/api";
 
-import { SearchInput } from "../SearchInput";
+import { DebouncedSearchInput } from "../../common/DebouncedSearchInput";
 
 const EMPTY_RESPONSE = {
   items: [],
@@ -182,7 +182,10 @@ const DetectionResultTable = ({ resourceUrn }: MonitorResultTableProps) => {
         >
           <Flex gap={6} align="center">
             <Box flexShrink={0}>
-              <SearchInput value={searchQuery} onChange={setSearchQuery} />
+              <DebouncedSearchInput
+                value={searchQuery}
+                onChange={setSearchQuery}
+              />
             </Box>
             <IconLegendTooltip />
           </Flex>

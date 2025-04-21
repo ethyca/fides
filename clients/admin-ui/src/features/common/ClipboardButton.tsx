@@ -1,7 +1,7 @@
 import {
   AntButton as Button,
   AntButtonProps as ButtonProps,
-  Tooltip,
+  AntTooltip as Tooltip,
   useClipboard,
 } from "fidesui";
 import React, { useState } from "react";
@@ -43,14 +43,11 @@ const ClipboardButton = ({ copyText, ...props }: ClipboardButtonProps) => {
 
   return (
     <Tooltip
-      label={tooltipText}
+      title={tooltipText}
       placement="top"
-      closeDelay={500}
-      onOpen={() => {
-        setTooltipText(TooltipText.COPY);
-      }}
-      onClose={() => {
-        setTooltipText(TooltipText.COPY);
+      mouseLeaveDelay={0.5}
+      onOpenChange={(value) => {
+        setTooltipText(value ? TooltipText.COPY : TooltipText.COPIED);
       }}
     >
       <Button

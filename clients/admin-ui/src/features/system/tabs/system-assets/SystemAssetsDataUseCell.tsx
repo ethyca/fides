@@ -1,11 +1,10 @@
 import { AntTag as Tag, Box } from "fidesui";
 import { useState } from "react";
 
+import DataUseSelect from "~/features/common/dropdown/DataUseSelect";
 import { getErrorMessage } from "~/features/common/helpers";
 import { useAlert } from "~/features/common/hooks/useAlert";
 import useTaxonomies from "~/features/common/hooks/useTaxonomies";
-import ConsentCategorySelect from "~/features/data-discovery-and-detection/action-center/ConsentCategorySelect";
-import isConsentCategory from "~/features/data-discovery-and-detection/action-center/utils/isConsentCategory";
 import TaxonomyCellContainer from "~/features/data-discovery-and-detection/tables/cells/TaxonomyCellContainer";
 import { useUpdateSystemAssetsMutation } from "~/features/system/system-assets.slice";
 import { Asset } from "~/types/api";
@@ -14,9 +13,11 @@ import { isErrorResult } from "~/types/errors";
 const SystemAssetsDataUseCell = ({
   asset,
   systemId,
+  readonly,
 }: {
   asset: Asset;
   systemId: string;
+  readonly?: boolean;
 }) => {
   const { getDataUseDisplayName } = useTaxonomies();
   const [updateSystemAssets] = useUpdateSystemAssetsMutation();
@@ -57,12 +58,22 @@ const SystemAssetsDataUseCell = ({
   };
 
   const cellValues =
-    asset.data_uses
-      ?.filter((use) => isConsentCategory(use))
-      .map((use) => ({
-        label: getDataUseDisplayName(use),
-        key: use,
-      })) ?? [];
+    asset.data_uses?.map((use) => ({
+      label: getDataUseDisplayName(use),
+      key: use,
+    })) ?? [];
+
+  if (readonly) {
+    return (
+      <TaxonomyCellContainer>
+        {cellValues.map((use) => (
+          <Tag key={use.key} data-testid={`data-use-${use.key}`} color="white">
+            {use.label}
+          </Tag>
+        ))}
+      </TaxonomyCellContainer>
+    );
+  }
 
   return (
     <TaxonomyCellContainer>
@@ -100,7 +111,7 @@ const SystemAssetsDataUseCell = ({
           height="max"
           bgColor="#fff"
         >
-          <ConsentCategorySelect
+          <DataUseSelect
             selectedTaxonomies={asset.data_uses || []}
             onSelect={handleAddDataUse}
             onBlur={() => setIsAdding(false)}

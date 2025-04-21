@@ -14,7 +14,7 @@ import { motion, Reorder, useDragControls } from "framer-motion";
 import { useState } from "react";
 
 import { Label, Option } from "~/features/common/form/inputs";
-import QuestionTooltip from "~/features/common/QuestionTooltip";
+import { InfoTooltip } from "~/features/common/InfoTooltip";
 
 const ScrollableListItem = <T extends unknown>({
   item,
@@ -85,7 +85,7 @@ const ScrollableListItem = <T extends unknown>({
           >
             {label}
           </Text>
-          {tooltip ? <QuestionTooltip label={tooltip} /> : null}
+          <InfoTooltip label={tooltip} />
         </Flex>
         {onDeleteItem && (
           <Button
@@ -305,7 +305,7 @@ const ScrollableList = <T extends unknown>({
           {label}
         </Label>
       ) : null}
-      {tooltip ? <QuestionTooltip label={tooltip} /> : null}
+      <InfoTooltip label={tooltip} />
       {innerList}
       {unselectedValues.length ? (
         <ScrollableListAdd

@@ -189,7 +189,7 @@ describe("Integration management for data detection & discovery", () => {
 
     it("redirects to list view if the integration type is incorrect", () => {
       cy.intercept("GET", "/api/v1/connection/*", {
-        fixture: "connectors/postgres_connector.json",
+        fixture: "connectors/sovrn_connector.json",
       }).as("getConnection");
       cy.wait("@getConnection");
       cy.url().should("not.contain", "bq_integration");
@@ -272,6 +272,22 @@ describe("Integration management for data detection & discovery", () => {
 
       it("shows a table of monitors", () => {
         cy.getByTestId("row-test monitor 1").should("exist");
+        // scan status column
+        cy.getByTestId("row-test monitor 1-col-monitor_status").should(
+          "contain",
+          "Scanning",
+        );
+        cy.getByTestId("row-test monitor 2-col-monitor_status").within(() => {
+          cy.getByTestId("tag-success").should("exist");
+        });
+        cy.getByTestId("row-test monitor 3-col-monitor_status").within(() => {
+          cy.getByTestId("tag-error").should("exist").click();
+        });
+        cy.getByTestId("error-log-drawer")
+          .should("be.visible")
+          .within(() => {
+            cy.getByTestId("error-log-message").should("have.length", 2);
+          });
       });
 
       it("can configure a new monitor", () => {

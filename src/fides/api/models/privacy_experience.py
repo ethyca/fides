@@ -270,6 +270,7 @@ class PrivacyExperienceConfig(PrivacyExperienceConfigBase, Base):
         "TCFConfiguration",
         back_populates="privacy_experience_configs",
         lazy="selectin",
+        uselist=False,
     )
 
     @property

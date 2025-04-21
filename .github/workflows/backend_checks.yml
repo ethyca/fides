@@ -183,8 +183,11 @@ jobs:
           username: ${{ env.DOCKER_USER }}
           password: ${{ env.DOCKER_RO_TOKEN }}
 
-      - name: Run test suite
+      - name: Run Fides webserver startup check
         run: nox -s check_container_startup
+
+      - name: Run Celery worker startup check
+        run: nox -s check_worker_startup
 
   Misc-Tests:
     needs: Check-Container-Startup

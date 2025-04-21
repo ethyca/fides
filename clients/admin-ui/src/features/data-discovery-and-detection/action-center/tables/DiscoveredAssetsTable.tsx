@@ -45,10 +45,10 @@ import {
   useUpdateAssetsSystemMutation,
 } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
 import AddDataUsesModal from "~/features/data-discovery-and-detection/action-center/AddDataUsesModal";
-import useDiscoveredAssetsTabs from "~/features/data-discovery-and-detection/action-center/tables/useDiscoveredAssetsTabs";
+import useActionCenterTabs from "~/features/data-discovery-and-detection/action-center/tables/useActionCenterTabs";
 import { DiffStatus } from "~/types/api";
 
-import { SearchInput } from "../../SearchInput";
+import { DebouncedSearchInput } from "../../../common/DebouncedSearchInput";
 import { AssignSystemModal } from "../AssignSystemModal";
 import { useDiscoveredAssetsColumns } from "../hooks/useDiscoveredAssetsColumns";
 
@@ -64,6 +64,8 @@ export const DiscoveredAssetsTable = ({
   onSystemName,
 }: DiscoveredAssetsTableProps) => {
   const router = useRouter();
+  const tabHash = router.asPath.split("#")[1];
+
   const [systemName, setSystemName] = useState(systemId);
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
   const [isAssignSystemModalOpen, setIsAssignSystemModalOpen] =
@@ -111,8 +113,13 @@ export const DiscoveredAssetsTable = ({
     resetPageIndexToDefault();
   }, [monitorId, searchQuery, resetPageIndexToDefault]);
 
-  const { filterTabs, filterTabIndex, onTabChange, activeParams } =
-    useDiscoveredAssetsTabs({ systemId });
+  const {
+    filterTabs,
+    filterTabIndex,
+    onTabChange,
+    activeParams,
+    actionsDisabled,
+  } = useActionCenterTabs({ systemId, initialHash: tabHash });
 
   const { data, isLoading, isFetching } = useGetDiscoveredAssetsQuery({
     key: monitorId,
@@ -132,12 +139,8 @@ export const DiscoveredAssetsTable = ({
     }
   }, [data, systemId, onSystemName, setTotalPages, systemName]);
 
-  const disableEditing = activeParams.diff_status.includes(
-    DiffStatus.MONITORED,
-  );
-
   const { columns } = useDiscoveredAssetsColumns({
-    readonly: disableEditing,
+    readonly: actionsDisabled,
   });
 
   const tableInstance = useReactTable({
@@ -235,7 +238,9 @@ export const DiscoveredAssetsTable = ({
     } else {
       tableInstance.resetRowSelection();
       successAlert(
-        `${selectedUrns.length} assets from ${systemName} have been ignored and will not appear in future scans.`,
+        systemName === UNCATEGORIZED_SEGMENT
+          ? `${selectedUrns.length} uncategorized assets have been ignored and will not appear in future scans.`
+          : `${selectedUrns.length} assets from ${systemName} have been ignored and will not appear in future scans.`,
         `Confirmed`,
       );
     }
@@ -259,6 +264,11 @@ export const DiscoveredAssetsTable = ({
     }
   };
 
+  const handleTabChange = (index: number) => {
+    onTabChange(index);
+    setRowSelection({});
+  };
+
   if (!monitorId || !systemId) {
     return null;
   }
@@ -271,14 +281,18 @@ export const DiscoveredAssetsTable = ({
     <>
       <DataTabsHeader
         data={filterTabs}
-        data-testid="system-tabs"
+        data-testid="filter-tabs"
         index={filterTabIndex}
         isLazy
         isManual
-        onChange={onTabChange}
+        onChange={handleTabChange}
       />
       <TableActionBar>
-        <SearchInput value={searchQuery} onChange={setSearchQuery} />
+        <DebouncedSearchInput
+          value={searchQuery}
+          onChange={setSearchQuery}
+          placeholder="Search by asset name..."
+        />
         <Flex alignItems="center">
           {!!selectedUrns.length && (
             <Text
@@ -300,7 +314,7 @@ export const DiscoveredAssetsTable = ({
                 disabled={
                   !selectedUrns.length ||
                   anyBulkActionIsLoading ||
-                  disableEditing
+                  actionsDisabled
                 }
                 // @ts-ignore - `type` prop is for Ant button, not Chakra MenuButton
                 type="primary"

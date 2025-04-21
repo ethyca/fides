@@ -47,6 +47,7 @@ describe("System management with Plus features", () => {
   describe("vendor list", () => {
     beforeEach(() => {
       stubVendorList();
+      stubSystemAssets();
       cy.visit(`${ADD_SYSTEMS_MANUAL_ROUTE}`);
       cy.wait(["@getDictionaryEntries", "@getSystems"]);
     });
@@ -148,6 +149,20 @@ describe("System management with Plus features", () => {
       cy.getByTestId("delete-btn").should("not.exist");
       cy.getByTestId("row-functional.service.improve").click();
       cy.getByTestId("input-name").should("be.disabled");
+    });
+
+    it("does not allow system assets to be edited when locked", () => {
+      cy.getByTestId("vendor-name-select").find("input").type("Aniview{enter}");
+      cy.getByTestId("save-btn").click();
+      cy.wait(["@postSystem", "@getSystem", "@getSystems"]);
+      cy.getByTestId("tab-Assets").click();
+      cy.getByTestId("col-select").should("not.exist");
+      cy.getByTestId("col-actions").should("not.exist");
+      cy.getByTestId("add-asset-btn").should("not.exist");
+      cy.getByTestId("row-0").within(() => {
+        cy.getByTestId("system-badge").should("not.have.attr", "onClick");
+        cy.getByTestId("taxonomy-add-btn").should("not.exist");
+      });
     });
 
     it("does not lock editing for a non-GVL vendor", () => {
@@ -491,8 +506,7 @@ describe("System management with Plus features", () => {
       cy.wait("@getSystemAssets");
       cy.getByTestId("row-0-col-name").should("contain", "ar_debug");
       cy.getByTestId("row-0-col-locations").should("contain", "United States");
-      cy.getByTestId("row-0-col-data_uses").should("contain", "analytics");
-      cy.getByTestId("row-0-col-data_uses").should("not.contain", "employment");
+      cy.getByTestId("row-0-col-data_uses").should("contain", "Essential");
     });
 
     describe("asset operations", () => {
@@ -508,7 +522,7 @@ describe("System management with Plus features", () => {
         cy.getByTestId("input-domain").type("example.com");
         cy.getByTestId("controlled-select-asset_type").antSelect("Cookie");
         cy.getByTestId("controlled-select-data_uses").antSelect("analytics");
-        cy.getByTestId("save-btn").click();
+        cy.getByTestId("save-btn").click({ force: true });
         cy.wait("@addSystemAsset");
       });
 
@@ -524,10 +538,11 @@ describe("System management with Plus features", () => {
         cy.getByTestId("controlled-select-asset_type")
           .should("contain", "Cookie")
           .should("have.class", "ant-select-disabled");
-        cy.getByTestId("controlled-select-data_uses")
-          .should("contain", "analytics")
-          .should("not.contain", "employment")
-          .antSelect("essential");
+        cy.getByTestId("controlled-select-data_uses").should(
+          "contain",
+          "essential",
+        );
+        cy.getByTestId("controlled-select-data_uses").antSelect(0);
         cy.getByTestId("input-domain")
           .should("have.value", ".doubleclick.net")
           .should("be.disabled");
@@ -539,9 +554,8 @@ describe("System management with Plus features", () => {
         cy.getByTestId("save-btn").click();
         cy.wait("@updateSystemAssets").then((interception) => {
           expect(interception.request.body[0].data_uses).to.eql([
-            "analytics",
             "essential",
-            "employment",
+            "analytics",
           ]);
         });
       });
@@ -552,7 +566,7 @@ describe("System management with Plus features", () => {
         });
 
         cy.getByTestId("confirmation-modal").should("exist");
-        cy.getByTestId("continue-btn").click();
+        cy.getByTestId("continue-btn").click({ force: true });
         cy.wait("@deleteSystemAssets");
       });
 
@@ -566,6 +580,10 @@ describe("System management with Plus features", () => {
           "Javascript tag",
         );
         cy.getByTestId("controlled-select-data_uses").antSelect("analytics");
+        cy.getByTestId("controlled-select-data_uses").within(() => {
+          // force select menu to close so it doesn't cover the input
+          cy.get("input").focus().blur();
+        });
         // blur the input without entering anything to trigger the error
         cy.getByTestId("input-base_url").clear().blur();
         cy.getByTestId("save-btn").should("be.disabled");
