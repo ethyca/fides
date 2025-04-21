@@ -613,6 +613,7 @@ class TestEvaluate:
         assert result.exit_code == 1
 
 
+@pytest.mark.usefixtures("default_organization")
 class TestScan:
     @pytest.mark.integration
     def test_scan_dataset_db_input_connection_string(
@@ -823,6 +824,7 @@ class TestScan:
         assert result.exit_code == 0
 
 
+@pytest.mark.usefixtures("default_organization")
 class TestGenerate:
     @pytest.mark.integration
     def test_generate_dataset_db_with_connection_string(

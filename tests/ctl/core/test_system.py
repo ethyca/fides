@@ -3,7 +3,6 @@ import os
 from typing import Generator, List
 
 import pytest
-from fideslang.models import PrivacyDeclaration as PrivacyDeclarationSchema
 from fideslang.models import System, SystemMetadata
 from py._path.local import LocalPath
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -259,6 +258,7 @@ def test_get_all_server_systems(
     assert actual_result
 
 
+@pytest.mark.usefixtures("default_organization")
 class TestSystemAWS:
     @pytest.mark.unit
     def test_get_system_resource_ids(self, redshift_systems: List[System]) -> None:
@@ -311,6 +311,7 @@ class TestSystemAWS:
 OKTA_ORG_URL = "https://dev-78908748.okta.com"
 
 
+@pytest.mark.usefixtures("default_organization")
 class TestSystemOkta:
     @pytest.mark.external
     def test_generate_system_okta(
