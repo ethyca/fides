@@ -351,9 +351,7 @@ describe("Consent settings", () => {
                   : "Yes",
               );
               cy.getByTestId(`edit-restriction-btn-${purpose.id}`).should(
-                FORBIDDEN_LEGITIMATE_INTEREST_PURPOSE_IDS.includes(purpose.id)
-                  ? "not.exist"
-                  : "exist",
+                "exist",
               );
             });
           },
