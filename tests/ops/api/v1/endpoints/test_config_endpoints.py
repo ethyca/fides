@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import copy
 from typing import Any, Generator
-
+from loguru import logger
 import pytest
 from sqlalchemy.orm import Session
 from starlette.testclient import TestClient
@@ -351,6 +351,7 @@ class TestPatchApplicationConfig:
         generate_auth_header,
         url,
         payload,
+        original_cors_middleware_origins,
     ):
         # Create a new application config with the original cors origins
         CONFIG.security.cors_origins = original_cors_middleware_origins
@@ -794,6 +795,7 @@ class TestPutApplicationConfig:
         generate_auth_header,
         url,
         payload,
+        original_cors_middleware_origins,
     ):
         # Create a new application config with the original cors origins
         CONFIG.security.cors_origins = original_cors_middleware_origins
