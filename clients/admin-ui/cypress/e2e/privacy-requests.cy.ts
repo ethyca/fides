@@ -410,4 +410,74 @@ describe("Privacy Requests", () => {
       });
     });
   });
+
+  /**
+   * TODO: Remove .only before committing
+   */
+  describe.only("Request Attachments", () => {
+    beforeEach(() => {
+      cy.get<PrivacyRequestEntity>("@privacyRequest").then((privacyRequest) => {
+        cy.visit(`/privacy-requests/${privacyRequest.id}`);
+      });
+      cy.wait("@getPrivacyRequest");
+
+      // Mock active storage configuration
+      cy.intercept("GET", "/api/v1/storage/default/active", {
+        key: "default_storage_config_local",
+        type: "local",
+      }).as("getActiveStorage");
+
+      // Mock attachments list
+      cy.intercept("GET", "/api/v1/plus/privacy-request/*/attachment*", {
+        fixture: "privacy-requests/attachments.json",
+      }).as("getAttachments");
+    });
+
+    it("displays existing attachments", () => {
+      cy.wait(["@getActiveStorage", "@getAttachments"]);
+
+      // Check that both attachments are displayed
+      cy.get(".ant-upload-list-item").should("have.length", 2);
+
+      // Check that external link is clickable
+      cy.get(".ant-upload-list-item")
+        .first()
+        .should("contain", "test-document.pdf")
+        .find("a")
+        .should("have.attr", "href", "https://example.com/test-document.pdf");
+
+      // Check that local file is displayed but not linked
+      cy.get(".ant-upload-list-item")
+        .last()
+        .should("contain", "local-document.pdf")
+        .find("a")
+        .should("not.exist");
+    });
+
+    it("uploads new attachments", () => {
+      cy.wait(["@getActiveStorage", "@getAttachments"]);
+
+      // Mock successful upload
+      cy.intercept("POST", "/api/v1/plus/privacy-request/*/attachment*", {
+        statusCode: 200,
+      }).as("uploadAttachment");
+
+      // Upload a file
+      cy.get('input[type="file"]').selectFile(
+        "cypress/fixtures/privacy-requests/test-upload.pdf",
+        { force: true },
+      );
+
+      // Verify upload request was made
+      cy.wait("@uploadAttachment").then((interception) => {
+        // Check that the request body contains the expected parts
+        expect(interception.request.body).to.include("attachment_type");
+        expect(interception.request.body).to.include("internal_use_only");
+        expect(interception.request.body).to.include("test-upload.pdf");
+      });
+
+      // Verify success message
+      cy.contains("test-upload.pdf file uploaded successfully");
+    });
+  });
 });
