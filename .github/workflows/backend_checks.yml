@@ -42,6 +42,7 @@ jobs:
 
       - name: Install package and dependencies
         run: |
+          pip install -e .
           pip install -r requirements.txt
           pip install -r dev-requirements.txt
           pip install -r optional-requirements.txt
