@@ -2209,7 +2209,7 @@ describe("Consent overlay", () => {
           id: "pri_notice-only-second",
           notice_key: "notice_only_second",
           consent_mechanism: ConsentMechanism.NOTICE_ONLY,
-        })
+        }),
       ];
 
       stubConfig({

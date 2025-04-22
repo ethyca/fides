@@ -116,8 +116,14 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
         return { notice: { ...notice, disabled }, bestTranslation };
       });
 
-      const noticeOnly = items.filter(item => item.notice.consent_mechanism === ConsentMechanism.NOTICE_ONLY);
-      const others = items.filter(item => item.notice.consent_mechanism !== ConsentMechanism.NOTICE_ONLY);
+      const noticeOnly = items.filter(
+        (item) =>
+          item.notice.consent_mechanism === ConsentMechanism.NOTICE_ONLY,
+      );
+      const others = items.filter(
+        (item) =>
+          item.notice.consent_mechanism !== ConsentMechanism.NOTICE_ONLY,
+      );
       return [...noticeOnly, ...others];
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
