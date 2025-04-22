@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.59.1"
+    "version": "2.59.2"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -20098,6 +20098,18 @@
             "title": "SSH required",
             "description": "Indicates whether an SSH tunnel is required for the connection. Enable this option if your MySQL server is behind a firewall and requires SSH tunneling for remote connections.",
             "default": false
+          },
+          "ssl_mode": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MySQLSSLMode"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "SSL Mode",
+            "description": "The SSL mode to use for the connection. Valid values are 'required', 'preferred', and 'disabled'."
           }
         },
         "type": "object",
@@ -20107,6 +20119,15 @@
         ],
         "title": "MySQLDocsSchema",
         "description": "MySQL Secrets Schema for API Docs"
+      },
+      "MySQLSSLMode": {
+        "type": "string",
+        "enum": [
+          "preferred",
+          "required",
+          "disabled"
+        ],
+        "title": "MySQLSSLMode"
       },
       "NotificationApplicationConfig": {
         "properties": {
@@ -21911,8 +21932,21 @@
             "description": "The password used to authenticate and access the database.",
             "sensitive": true
           },
+          "ssh_required": {
+            "type": "boolean",
+            "title": "SSH required",
+            "description": "Indicates whether an SSH tunnel is required for the connection. Enable this option if your PostgreSQL server is behind a firewall and requires SSH tunneling for remote connections.",
+            "default": false
+          },
           "dbname": {
-            "type": "string",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Database",
             "description": "The name of the specific database within the database server that you want to connect to."
           },
@@ -21928,17 +21962,21 @@
             "title": "Schema",
             "description": "The default schema to be used for the database connection (defaults to public)."
           },
-          "ssh_required": {
-            "type": "boolean",
-            "title": "SSH required",
-            "description": "Indicates whether an SSH tunnel is required for the connection. Enable this option if your PostgreSQL server is behind a firewall and requires SSH tunneling for remote connections.",
-            "default": false
+          "ssl_mode": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "SSL Mode"
           }
         },
         "type": "object",
         "required": [
-          "host",
-          "dbname"
+          "host"
         ],
         "title": "PostgreSQLDocsSchema",
         "description": "Postgres Secrets Schema for API Docs"
@@ -26842,8 +26880,21 @@
             "description": "The password used to authenticate and access the database.",
             "sensitive": true
           },
+          "ssh_required": {
+            "type": "boolean",
+            "title": "SSH required",
+            "description": "Indicates whether an SSH tunnel is required for the connection. Enable this option if your PostgreSQL server is behind a firewall and requires SSH tunneling for remote connections.",
+            "default": false
+          },
           "dbname": {
-            "type": "string",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Database",
             "description": "The name of the specific database within the database server that you want to connect to."
           },
@@ -26859,17 +26910,21 @@
             "title": "Schema",
             "description": "The default schema to be used for the database connection (defaults to public)."
           },
-          "ssh_required": {
-            "type": "boolean",
-            "title": "SSH required",
-            "description": "Indicates whether an SSH tunnel is required for the connection. Enable this option if your PostgreSQL server is behind a firewall and requires SSH tunneling for remote connections.",
-            "default": false
+          "ssl_mode": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "SSL Mode"
           }
         },
         "type": "object",
         "required": [
-          "host",
-          "dbname"
+          "host"
         ],
         "title": "TimescaleDocsSchema",
         "description": "TimescaleDB Secrets Schema for API Docs"
