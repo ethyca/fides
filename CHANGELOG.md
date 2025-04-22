@@ -26,11 +26,9 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Added support for selecting TCF Publisher Override configuration when configuring Privacy Experience [#6033](https://github.com/ethyca/fides/pull/6033)
 - Added Google Cloud Storage as a storage option [#6006](https://github.com/ethyca/fides/pull/6006)
 - Update the Datahub Permissions section to include required permissions from Datahub [#6052](https://github.com/ethyca/fides/pull/6052)
+- Added assumed role arn capabilities to aws Storage [#6027](https://github.com/ethyca/fides/pull/6027)
 - Added the ability to create new TCF Experiences within Admin UI [#6055](https://github.com/ethyca/fides/pull/6055)
 - PostgreSQL connection config now supports SSL Mode [#6068](https://github.com/ethyca/fides/pull/6068)
-
-### Added
-- Added assumed role arn capabilities to aws Storage [#6027](https://github.com/ethyca/fides/pull/6027)
 
 ### Changed
 - Changed how TCF Publisher Overrides gets configured in consent settings [#6013](https://github.com/ethyca/fides/pull/6013)
@@ -46,6 +44,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Migrated Tooltip components to Ant Design across Admin UI [#6060](https://github.com/ethyca/fides/pull/6060)
 - Added custom Typography component to FidesUI with configurable text sizes [#6062](https://github.com/ethyca/fides/pull/6062)
 - Updated the Docker image used for MSSQL integration tests [#6063](https://github.com/ethyca/fides/pull/6063)
+- Improved Docker image build times by using separate amd64/arm64 Github runners [#6073](https://github.com/ethyca/fides/pull/6073)
 
 ### Fixed
 - Fixed typo in Vermont US state name [#6029](https://github.com/ethyca/fides/pull/6029)
