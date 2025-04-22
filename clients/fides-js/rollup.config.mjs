@@ -9,11 +9,22 @@ import postcss from "rollup-plugin-postcss";
 import commonjs from "@rollup/plugin-commonjs";
 import { visualizer } from "rollup-plugin-visualizer";
 import strip from "@rollup/plugin-strip";
+import { readFileSync } from "fs";
 
 const NAME = "fides";
 const IS_DEV = process.env.NODE_ENV === "development";
 const GZIP_SIZE_ERROR_KB = 45; // fail build if bundle size exceeds this
 const GZIP_SIZE_WARN_KB = 35; // log a warning if bundle size exceeds this
+
+// Get version from changelog Unreleased section
+const changelog = readFileSync("../../CHANGELOG.md", "utf8");
+const unreleasedIndex = changelog.indexOf("## [Unreleased]");
+const contextStart = Math.max(0, unreleasedIndex - 50);
+const contextEnd = Math.min(changelog.length, unreleasedIndex + 100);
+const unreleasedMatch = changelog
+  .substring(contextStart, contextEnd)
+  .match(/## \[Unreleased\]\(.*?compare\/([0-9]+.[0-9]+.[0-9]+)\.\.\.main\)/);
+const VERSION = unreleasedMatch ? unreleasedMatch[1] : "0.0.0";
 
 // TCF
 const GZIP_SIZE_TCF_ERROR_KB = 90;
@@ -46,6 +57,9 @@ const fidesScriptPlugins = ({ name, gzipWarnSizeKb, gzipErrorSizeKb }) => [
   }),
   esbuild({
     minify: !IS_DEV,
+    define: {
+      "process.env.FIDES_VERSION": JSON.stringify(VERSION),
+    },
   }),
   strip(
     IS_DEV
@@ -161,7 +175,11 @@ SCRIPTS.forEach(({ name, gzipErrorSizeKb, gzipWarnSizeKb, isExtension }) => {
       nodeResolve(),
       commonjs(),
       postcss(),
-      esbuild(),
+      esbuild({
+        define: {
+          "process.env.FIDES_VERSION": JSON.stringify(VERSION),
+        },
+      }),
       strip({
         include: ["**/*.js", "**/*.ts"],
         functions: ["fidesDebugger"],
