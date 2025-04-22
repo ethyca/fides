@@ -133,6 +133,13 @@ jobs:
     strategy:
       matrix:
         application: ["fides", "sample_app", "privacy_center"]
+        include:
+          - application: "fides"
+            image_name: "fides"
+          - application: "sample_app"
+            image_name: "fides-sample-app"
+          - application: "privacy_center"
+            image_name: "fides-privacy-center"
     steps:
       - name: Login to DockerHub
         uses: docker/login-action@v3
@@ -143,52 +150,52 @@ jobs:
       - name: Create and Push Dev Manifest
         if: needs.ParseTags.outputs.prod_tag == 'false' && needs.ParseTags.outputs.rc_tag == 'false' && needs.ParseTags.outputs.beta_tag == 'false' && needs.ParseTags.outputs.alpha_tag == 'false'
         run: |
-          docker manifest create ethyca/${{ matrix.application }}:dev \
-            --amend ethyca/${{ matrix.application }}:dev-amd64 \
-            --amend ethyca/${{ matrix.application }}:dev-arm64
-          docker manifest push ethyca/${{ matrix.application }}:dev
+          docker manifest create ethyca/${{ matrix.image_name }}:dev \
+            --amend ethyca/${{ matrix.image_name }}:dev-amd64 \
+            --amend ethyca/${{ matrix.image_name }}:dev-arm64
+          docker manifest push ethyca/${{ matrix.image_name }}:dev
 
       - name: Create and Push Prod Manifest
         if: needs.ParseTags.outputs.prod_tag == 'true'
         run: |
           # Create and push version manifest
-          docker manifest create ethyca/${{ matrix.application }}:${{ needs.ParseTags.outputs.version }} \
-            --amend ethyca/${{ matrix.application }}:${{ needs.ParseTags.outputs.version }}-amd64 \
-            --amend ethyca/${{ matrix.application }}:${{ needs.ParseTags.outputs.version }}-arm64
-          docker manifest push ethyca/${{ matrix.application }}:${{ needs.ParseTags.outputs.version }}
+          docker manifest create ethyca/${{ matrix.image_name }}:${{ needs.ParseTags.outputs.version }} \
+            --amend ethyca/${{ matrix.image_name }}:${{ needs.ParseTags.outputs.version }}-amd64 \
+            --amend ethyca/${{ matrix.image_name }}:${{ needs.ParseTags.outputs.version }}-arm64
+          docker manifest push ethyca/${{ matrix.image_name }}:${{ needs.ParseTags.outputs.version }}
           # Create and push latest manifest
-          docker manifest create ethyca/${{ matrix.application }}:latest \
-            --amend ethyca/${{ matrix.application }}:latest-amd64 \
-            --amend ethyca/${{ matrix.application }}:latest-arm64
-          docker manifest push ethyca/${{ matrix.application }}:latest
+          docker manifest create ethyca/${{ matrix.image_name }}:latest \
+            --amend ethyca/${{ matrix.image_name }}:latest-amd64 \
+            --amend ethyca/${{ matrix.image_name }}:latest-arm64
+          docker manifest push ethyca/${{ matrix.image_name }}:latest
 
       - name: Create and Push RC Manifest
         if: needs.ParseTags.outputs.rc_tag == 'true'
         run: |
           # Create and push version manifest
-          docker manifest create ethyca/${{ matrix.application }}:${{ needs.ParseTags.outputs.version }} \
-            --amend ethyca/${{ matrix.application }}:${{ needs.ParseTags.outputs.version }}-amd64 \
-            --amend ethyca/${{ matrix.application }}:${{ needs.ParseTags.outputs.version }}-arm64
-          docker manifest push ethyca/${{ matrix.application }}:${{ needs.ParseTags.outputs.version }}
+          docker manifest create ethyca/${{ matrix.image_name }}:${{ needs.ParseTags.outputs.version }} \
+            --amend ethyca/${{ matrix.image_name }}:${{ needs.ParseTags.outputs.version }}-amd64 \
+            --amend ethyca/${{ matrix.image_name }}:${{ needs.ParseTags.outputs.version }}-arm64
+          docker manifest push ethyca/${{ matrix.image_name }}:${{ needs.ParseTags.outputs.version }}
           # Create and push rc manifest
-          docker manifest create ethyca/${{ matrix.application }}:rc \
-            --amend ethyca/${{ matrix.application }}:rc-amd64 \
-            --amend ethyca/${{ matrix.application }}:rc-arm64
-          docker manifest push ethyca/${{ matrix.application }}:rc
+          docker manifest create ethyca/${{ matrix.image_name }}:rc \
+            --amend ethyca/${{ matrix.image_name }}:rc-amd64 \
+            --amend ethyca/${{ matrix.image_name }}:rc-arm64
+          docker manifest push ethyca/${{ matrix.image_name }}:rc
 
       - name: Create and Push Prerelease Manifest
         if: needs.ParseTags.outputs.alpha_tag == 'true' || needs.ParseTags.outputs.beta_tag == 'true'
         run: |
           # Create and push version manifest
-          docker manifest create ethyca/${{ matrix.application }}:${{ needs.ParseTags.outputs.version }} \
-            --amend ethyca/${{ matrix.application }}:${{ needs.ParseTags.outputs.version }}-amd64 \
-            --amend ethyca/${{ matrix.application }}:${{ needs.ParseTags.outputs.version }}-arm64
-          docker manifest push ethyca/${{ matrix.application }}:${{ needs.ParseTags.outputs.version }}
+          docker manifest create ethyca/${{ matrix.image_name }}:${{ needs.ParseTags.outputs.version }} \
+            --amend ethyca/${{ matrix.image_name }}:${{ needs.ParseTags.outputs.version }}-amd64 \
+            --amend ethyca/${{ matrix.image_name }}:${{ needs.ParseTags.outputs.version }}-arm64
+          docker manifest push ethyca/${{ matrix.image_name }}:${{ needs.ParseTags.outputs.version }}
           # Create and push prerelease manifest
-          docker manifest create ethyca/${{ matrix.application }}:prerelease \
-            --amend ethyca/${{ matrix.application }}:prerelease-amd64 \
-            --amend ethyca/${{ matrix.application }}:prerelease-arm64
-          docker manifest push ethyca/${{ matrix.application }}:prerelease
+          docker manifest create ethyca/${{ matrix.image_name }}:prerelease \
+            --amend ethyca/${{ matrix.image_name }}:prerelease-amd64 \
+            --amend ethyca/${{ matrix.image_name }}:prerelease-arm64
+          docker manifest push ethyca/${{ matrix.image_name }}:prerelease
 
   NotifyRedeploy:
     runs-on: ubuntu-latest
