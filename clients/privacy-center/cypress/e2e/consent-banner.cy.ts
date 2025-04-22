@@ -2182,6 +2182,55 @@ describe("Consent overlay", () => {
         });
       });
     });
+
+    it("should display notice-only notices first in the toggle list", () => {
+      // Create a mix of notice types with different consent mechanisms
+      const notices = [
+        mockPrivacyNotice({
+          title: "Regular Notice",
+          id: "pri_notice-regular",
+          notice_key: "regular",
+          consent_mechanism: ConsentMechanism.OPT_IN,
+        }),
+        mockPrivacyNotice({
+          title: "Notice Only First",
+          id: "pri_notice-only-first",
+          notice_key: "notice_only_first",
+          consent_mechanism: ConsentMechanism.NOTICE_ONLY,
+        }),
+        mockPrivacyNotice({
+          title: "Another Regular",
+          id: "pri_notice-another",
+          notice_key: "another",
+          consent_mechanism: ConsentMechanism.OPT_OUT,
+        }),
+        mockPrivacyNotice({
+          title: "Notice Only Second",
+          id: "pri_notice-only-second",
+          notice_key: "notice_only_second",
+          consent_mechanism: ConsentMechanism.NOTICE_ONLY,
+        })
+      ];
+
+      stubConfig({
+        experience: {
+          privacy_notices: notices,
+        },
+      });
+
+      // Open the modal
+      cy.contains("button", "Manage preferences").click();
+
+      // Get all notice toggles
+      cy.get(".fides-notice-toggle").then(($toggles) => {
+        // First two toggles should be notice-only
+        cy.wrap($toggles[0]).contains("Notice Only First");
+        cy.wrap($toggles[1]).contains("Notice Only Second");
+        // Followed by regular notices
+        cy.wrap($toggles[2]).contains("Regular Notice");
+        cy.wrap($toggles[3]).contains("Another Regular");
+      });
+    });
   });
 
   describe("when listening for fides.js events", () => {
