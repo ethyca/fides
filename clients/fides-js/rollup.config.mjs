@@ -211,6 +211,16 @@ const previewScript = {
       },
       preventAssignment: true,
     }),
+    copy({
+      targets: [
+        {
+          src: "dist/fides-preview.js",
+          dest: "../admin-ui/public/lib/",
+        },
+      ],
+      verbose: true,
+      hook: "writeBundle",
+    }),
   ],
   output: [
     {
