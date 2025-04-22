@@ -19,6 +19,7 @@ from constants_nox import (
 from git_nox import get_current_tag, recognized_tag
 
 DOCKER_PLATFORMS = os.getenv("DOCKER_PLATFORMS", "linux/amd64,linux/arm64")
+IMAGE_SUFFIX = os.getenv("IMAGE_SUFFIX", "")  # Empty by default for local builds
 
 
 def verify_git_tag(session: nox.Session) -> Optional[str]:
@@ -57,11 +58,13 @@ def generate_docker_command(
         "docker",
         "build",
         f"--target={docker_build_target}",
+        "--platform",
+        DOCKER_PLATFORMS,
         dockerfile_path,
     )
 
     for tag in image_tags:
-        build_command += ("--tag", tag)
+        build_command += ("--tag", f"{tag}{IMAGE_SUFFIX}")
 
     return build_command
 
@@ -69,6 +72,31 @@ def generate_docker_command(
 def get_current_image() -> str:
     """Returns the current image tag"""
     return f"{IMAGE}:{get_current_tag()}"
+
+
+def generate_buildx_command(
+    image_tags: List[str],
+    docker_build_target: str,
+    dockerfile_path: str = ".",
+) -> Tuple[str, ...]:
+    """
+    Generate the command for building and publishing an image.
+    """
+    buildx_command: Tuple[str, ...] = (
+        "docker",
+        "buildx",
+        "build",
+        "--push",
+        f"--target={docker_build_target}",
+        "--platform",
+        DOCKER_PLATFORMS,
+        dockerfile_path,
+    )
+
+    for tag in image_tags:
+        buildx_command += ("--tag", tag)
+
+    return buildx_command
 
 
 @nox.session()
@@ -244,4 +272,4 @@ def push(session: nox.Session, tag: str, app: str) -> None:
 
     # Push each tag
     for tag in full_tags:
-        session.run("docker", "push", tag, external=True)
+        session.run("docker", "push", f"{tag}{IMAGE_SUFFIX}", external=True)
