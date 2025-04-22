@@ -158,6 +158,16 @@ export const generateFidesString = async ({
         }
       });
 
+      // Set legitimate interest for special-purpose only vendors
+      if (!experience.minimal_tcf && experience.gvl?.vendors) {
+        Object.entries(experience.gvl.vendors).forEach(([vendorId, vendor]) => {
+          // Check if vendor only has special purposes (no regular purposes)
+          if (vendor.specialPurposes?.length && (!vendor.purposes || vendor.purposes.length === 0)) {
+            tcModel.vendorLegitimateInterests.set(+vendorId);
+          }
+        });
+      }
+
       // Set purposes on tcModel
       tcStringPreferences.purposesConsent.forEach((purposeId) => {
         tcModel.purposeConsents.set(+purposeId);
