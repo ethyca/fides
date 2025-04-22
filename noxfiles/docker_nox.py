@@ -1,5 +1,6 @@
 """Contains the nox sessions for docker-related tasks."""
 
+import os
 from typing import Callable, Dict, List, Optional, Tuple
 
 import nox
@@ -17,7 +18,7 @@ from constants_nox import (
 )
 from git_nox import get_current_tag, recognized_tag
 
-DOCKER_PLATFORMS = "linux/amd64,linux/arm64"
+DOCKER_PLATFORMS = os.getenv("DOCKER_PLATFORMS", "linux/amd64,linux/arm64")
 
 
 def verify_git_tag(session: nox.Session) -> Optional[str]:
@@ -44,31 +45,25 @@ def verify_git_tag(session: nox.Session) -> Optional[str]:
     return existing_commit_tag
 
 
-def generate_buildx_command(
+def generate_docker_command(
     image_tags: List[str],
     docker_build_target: str,
     dockerfile_path: str = ".",
 ) -> Tuple[str, ...]:
     """
     Generate the command for building and publishing an image.
-
-    See tests for example usage in `test_docker_nox.py`
     """
-    buildx_command: Tuple[str, ...] = (
+    build_command: Tuple[str, ...] = (
         "docker",
-        "buildx",
         "build",
-        "--push",
         f"--target={docker_build_target}",
-        "--platform",
-        DOCKER_PLATFORMS,
         dockerfile_path,
     )
 
     for tag in image_tags:
-        buildx_command += ("--tag", tag)
+        build_command += ("--tag", tag)
 
-    return buildx_command
+    return build_command
 
 
 def get_current_image() -> str:
@@ -202,30 +197,7 @@ def push(session: nox.Session, tag: str, app: str) -> None:
 
     Posargs:
     git_tag - Additionally tags images with the git tag of the current commit, if it exists
-
-    Note:
-    Due to how `buildx` works, all platform images need to be build in a
-    single `buildx` command. Otherwise it will cause the images in
-    Dockerhub to be overwritten.
-
-    Example Calls:
-    nox -s "push(fides, prod)"
-    nox -s "push(sample_app, prerelease) -- git_tag"
     """
-
-    # Create the buildx builder
-    session.run(
-        "docker",
-        "buildx",
-        "create",
-        "--name",
-        "fides_builder",
-        "--bootstrap",
-        "--use",
-        external=True,
-        success_codes=[0, 1],  # Will fail if it already exists, but this is fine
-    )
-
     # Use lambdas to force lazy evaluation
     param_tag_map: Dict[str, Callable] = {
         "dev": lambda: [DEV_TAG_SUFFIX],
@@ -261,12 +233,15 @@ def push(session: nox.Session, tag: str, app: str) -> None:
         f"{app_info['image']}:{tag_suffix}" for tag_suffix in tag_suffixes
     ]
 
-    # Parallel build the various images
-
-    buildx_command: Tuple[str, ...] = generate_buildx_command(
+    # Build and push the image
+    build_command: Tuple[str, ...] = generate_docker_command(
         image_tags=full_tags,
         docker_build_target=app_info["target"],
         dockerfile_path=app_info["path"],
     )
 
-    session.run(*buildx_command, external=True)
+    session.run(*build_command, external=True)
+
+    # Push each tag
+    for tag in full_tags:
+        session.run("docker", "push", tag, external=True)
