@@ -21,6 +21,7 @@ jobs:
       rc_tag: ${{ steps.check-rc-tag.outputs.match }}
       alpha_tag: ${{ steps.check-alpha-tag.outputs.match }}
       beta_tag: ${{ steps.check-beta-tag.outputs.match }}
+      version: ${{ github.ref_name }}
     steps:
       - name: Check Prod Tag
         id: check-prod-tag
@@ -150,13 +151,11 @@ jobs:
       - name: Create and Push Prod Manifest
         if: needs.ParseTags.outputs.prod_tag == 'true'
         run: |
-          # Get the version from the git tag
-          VERSION=${GITHUB_REF#refs/tags/}
           # Create and push version manifest
-          docker manifest create ethyca/${{ matrix.application }}:${VERSION} \
-            --amend ethyca/${{ matrix.application }}:${VERSION}-amd64 \
-            --amend ethyca/${{ matrix.application }}:${VERSION}-arm64
-          docker manifest push ethyca/${{ matrix.application }}:${VERSION}
+          docker manifest create ethyca/${{ matrix.application }}:${{ needs.ParseTags.outputs.version }} \
+            --amend ethyca/${{ matrix.application }}:${{ needs.ParseTags.outputs.version }}-amd64 \
+            --amend ethyca/${{ matrix.application }}:${{ needs.ParseTags.outputs.version }}-arm64
+          docker manifest push ethyca/${{ matrix.application }}:${{ needs.ParseTags.outputs.version }}
           # Create and push latest manifest
           docker manifest create ethyca/${{ matrix.application }}:latest \
             --amend ethyca/${{ matrix.application }}:latest-amd64 \
@@ -166,13 +165,11 @@ jobs:
       - name: Create and Push RC Manifest
         if: needs.ParseTags.outputs.rc_tag == 'true'
         run: |
-          # Get the version from the git tag
-          VERSION=${GITHUB_REF#refs/tags/}
           # Create and push version manifest
-          docker manifest create ethyca/${{ matrix.application }}:${VERSION} \
-            --amend ethyca/${{ matrix.application }}:${VERSION}-amd64 \
-            --amend ethyca/${{ matrix.application }}:${VERSION}-arm64
-          docker manifest push ethyca/${{ matrix.application }}:${VERSION}
+          docker manifest create ethyca/${{ matrix.application }}:${{ needs.ParseTags.outputs.version }} \
+            --amend ethyca/${{ matrix.application }}:${{ needs.ParseTags.outputs.version }}-amd64 \
+            --amend ethyca/${{ matrix.application }}:${{ needs.ParseTags.outputs.version }}-arm64
+          docker manifest push ethyca/${{ matrix.application }}:${{ needs.ParseTags.outputs.version }}
           # Create and push rc manifest
           docker manifest create ethyca/${{ matrix.application }}:rc \
             --amend ethyca/${{ matrix.application }}:rc-amd64 \
@@ -182,13 +179,11 @@ jobs:
       - name: Create and Push Prerelease Manifest
         if: needs.ParseTags.outputs.alpha_tag == 'true' || needs.ParseTags.outputs.beta_tag == 'true'
         run: |
-          # Get the version from the git tag
-          VERSION=${GITHUB_REF#refs/tags/}
           # Create and push version manifest
-          docker manifest create ethyca/${{ matrix.application }}:${VERSION} \
-            --amend ethyca/${{ matrix.application }}:${VERSION}-amd64 \
-            --amend ethyca/${{ matrix.application }}:${VERSION}-arm64
-          docker manifest push ethyca/${{ matrix.application }}:${VERSION}
+          docker manifest create ethyca/${{ matrix.application }}:${{ needs.ParseTags.outputs.version }} \
+            --amend ethyca/${{ matrix.application }}:${{ needs.ParseTags.outputs.version }}-amd64 \
+            --amend ethyca/${{ matrix.application }}:${{ needs.ParseTags.outputs.version }}-arm64
+          docker manifest push ethyca/${{ matrix.application }}:${{ needs.ParseTags.outputs.version }}
           # Create and push prerelease manifest
           docker manifest create ethyca/${{ matrix.application }}:prerelease \
             --amend ethyca/${{ matrix.application }}:prerelease-amd64 \
