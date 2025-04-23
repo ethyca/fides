@@ -99,7 +99,7 @@ const RequestAttachments = ({ subjectRequest }: RequestAttachmentsProps) => {
     <div>
       <div className="mt-6">
         <div className="mb-6">
-          <Title level={2}>Attachments</Title>
+          <Title level={3}>Attachments</Title>
         </div>
         {isLoadingStorage || isLoadingAttachments ? (
           <FidesSpinner size="md" alignment="start" />
