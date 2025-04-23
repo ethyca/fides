@@ -1,5 +1,6 @@
 import {
   AntButton as Button,
+  AntFlex as Flex,
   AntMessage as message,
   AntTitle as Title,
   AntTooltip as Tooltip,
@@ -13,6 +14,7 @@ import { useAppSelector } from "~/app/hooks";
 import { selectUser } from "~/features/auth";
 import FidesSpinner from "~/features/common/FidesSpinner";
 import { getErrorMessage } from "~/features/common/helpers";
+import { InfoTooltip } from "~/features/common/InfoTooltip";
 import { useHasPermission } from "~/features/common/Restrict";
 import { PrivacyRequestEntity } from "~/features/privacy-requests/types";
 import { ScopeRegistryEnum } from "~/types/api";
@@ -80,6 +82,19 @@ const RequestAttachments = ({ subjectRequest }: RequestAttachmentsProps) => {
 
   const isAddButtonEnabled = canUserUploadAttachments && activeStorage?.key;
 
+  const allowedFileExtensions = [
+    ".pdf",
+    ".doc",
+    ".docx",
+    ".xls",
+    ".xlsx",
+    ".txt",
+    ".csv",
+    ".jpg",
+    ".jpeg",
+    ".png",
+    ".zip",
+  ];
   return (
     <div>
       <div className="mt-6">
@@ -98,6 +113,7 @@ const RequestAttachments = ({ subjectRequest }: RequestAttachmentsProps) => {
               showDownloadIcon: true,
               downloadIcon,
             }}
+            accept={allowedFileExtensions.join(",")}
             customRequest={async (options) => {
               const { file, onSuccess, onError } = options;
               const fileName = (file as File).name;
@@ -131,13 +147,20 @@ const RequestAttachments = ({ subjectRequest }: RequestAttachmentsProps) => {
                 }
                 placement="top"
               >
-                <Button
-                  icon={<Icons.Add />}
-                  iconPosition="end"
-                  disabled={!isAddButtonEnabled}
-                >
-                  Add
-                </Button>
+                <Flex align="center" gap={4}>
+                  <Button
+                    icon={<Icons.Add />}
+                    iconPosition="end"
+                    disabled={!isAddButtonEnabled}
+                  >
+                    Add
+                  </Button>
+                  <InfoTooltip
+                    label={`Uploaded attachments are for internal use and won't be send as part of the request package.
+                      Maximum file size: XMB. Accepted filetypes: ${allowedFileExtensions.join(", ")}`}
+                    placement="top"
+                  />
+                </Flex>
               </Tooltip>
             )}
           </Upload>
