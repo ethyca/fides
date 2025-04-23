@@ -21,6 +21,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.60.1...main)
 
+- Added Recorded URL to Consent Report [#6077](https://github.com/ethyca/fides/pull/6077)
 
 
 
