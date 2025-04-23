@@ -197,6 +197,56 @@ jobs:
             --amend ethyca/${{ matrix.image_name }}:prerelease-arm64
           docker manifest push ethyca/${{ matrix.image_name }}:prerelease
 
+  Cleanup:
+    needs: [CreateManifests, ParseTags]
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        application: ["fides", "sample_app", "privacy_center"]
+        include:
+          - application: "fides"
+            image_name: "fides"
+          - application: "sample_app"
+            image_name: "fides-sample-app"
+          - application: "privacy_center"
+            image_name: "fides-privacy-center"
+    steps:
+      - name: Delete Architecture-Specific Images
+        run: |
+          # Get Docker Hub API token
+          TOKEN=$(curl -s -H "Content-Type: application/json" \
+            -X POST \
+            -d '{"username": "${{ env.DOCKER_USER }}", "password": "${{ env.DOCKER_TOKEN }}"}' \
+            https://hub.docker.com/v2/users/login/ | jq -r .token)
+
+          # Define delete function
+          delete_tag() {
+            curl -s -X DELETE -H "Authorization: JWT $TOKEN" \
+              "https://hub.docker.com/v2/repositories/ethyca/${{ matrix.image_name }}/tags/$1/" > /dev/null
+            echo "Deleted tag: $1"
+          }
+
+          # Delete based on tag type
+          if [[ "${{ needs.ParseTags.outputs.prod_tag }}" == "true" ]]; then
+            delete_tag "${{ needs.ParseTags.outputs.version }}-amd64"
+            delete_tag "${{ needs.ParseTags.outputs.version }}-arm64"
+            delete_tag "latest-amd64"
+            delete_tag "latest-arm64"
+          elif [[ "${{ needs.ParseTags.outputs.rc_tag }}" == "true" ]]; then
+            delete_tag "${{ needs.ParseTags.outputs.version }}-amd64"
+            delete_tag "${{ needs.ParseTags.outputs.version }}-arm64"
+            delete_tag "rc-amd64"
+            delete_tag "rc-arm64"
+          elif [[ "${{ needs.ParseTags.outputs.alpha_tag }}" == "true" || "${{ needs.ParseTags.outputs.beta_tag }}" == "true" ]]; then
+            delete_tag "${{ needs.ParseTags.outputs.version }}-amd64"
+            delete_tag "${{ needs.ParseTags.outputs.version }}-arm64"
+            delete_tag "prerelease-amd64"
+            delete_tag "prerelease-arm64"
+          else
+            delete_tag "dev-amd64"
+            delete_tag "dev-arm64"
+          fi
+
   NotifyRedeploy:
     runs-on: ubuntu-latest
     needs: [CreateManifests]
