@@ -46,6 +46,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Added custom Typography component to FidesUI with configurable text sizes [#6062](https://github.com/ethyca/fides/pull/6062)
 - Updated the Docker image used for MSSQL integration tests [#6063](https://github.com/ethyca/fides/pull/6063)
 - Improved Docker image build times by using separate amd64/arm64 Github runners [#6073](https://github.com/ethyca/fides/pull/6073)
+- Enhanced Fides.js demo pages with improved styling and JSON visualization [#6075](https://github.com/ethyca/fides/pull/6075)
 
 ### Fixed
 - Fixed typo in Vermont US state name [#6029](https://github.com/ethyca/fides/pull/6029)
