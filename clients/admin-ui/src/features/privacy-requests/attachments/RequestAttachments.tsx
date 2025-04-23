@@ -12,7 +12,10 @@ import { useCallback } from "react";
 import { useAppSelector } from "~/app/hooks";
 import { selectUser } from "~/features/auth";
 import FidesSpinner from "~/features/common/FidesSpinner";
+import { getErrorMessage } from "~/features/common/helpers";
+import { useHasPermission } from "~/features/common/Restrict";
 import { PrivacyRequestEntity } from "~/features/privacy-requests/types";
+import { ScopeRegistryEnum } from "~/types/api";
 import { AttachmentType } from "~/types/api/models/AttachmentType";
 
 import { useGetActiveStorageQuery } from "../privacy-requests.slice";
@@ -26,10 +29,20 @@ interface RequestAttachmentsProps {
 }
 
 const RequestAttachments = ({ subjectRequest }: RequestAttachmentsProps) => {
+  const canUserReadAttachments = useHasPermission([
+    ScopeRegistryEnum.ATTACHMENT_READ,
+  ]);
+  const canUserUploadAttachments = useHasPermission([
+    ScopeRegistryEnum.ATTACHMENT_CREATE,
+  ]);
+
   const currentUser = useAppSelector(selectUser);
   const [uploadAttachment] = useUploadAttachmentMutation();
-  const { data: activeStorage, isLoading: isLoadingStorage } =
-    useGetActiveStorageQuery();
+  const {
+    data: activeStorage,
+    isLoading: isLoadingStorage,
+    error: activeStorageError,
+  } = useGetActiveStorageQuery();
 
   const { data: attachments, isLoading: isLoadingAttachments } =
     useGetAttachmentsQuery({
@@ -60,6 +73,12 @@ const RequestAttachments = ({ subjectRequest }: RequestAttachmentsProps) => {
       </Tooltip>
     );
   }, []);
+
+  if (!canUserReadAttachments) {
+    return null;
+  }
+
+  const isAddButtonEnabled = canUserUploadAttachments && activeStorage?.key;
 
   return (
     <div>
@@ -100,24 +119,27 @@ const RequestAttachments = ({ subjectRequest }: RequestAttachmentsProps) => {
               }
             }}
             className="[&_.ant-upload-list]:mt-4"
-            disabled={!activeStorage?.key}
+            disabled={!isAddButtonEnabled}
           >
-            <Tooltip
-              title={
-                !activeStorage?.key
-                  ? "There's no active storage configured to upload files"
-                  : ""
-              }
-              placement="top"
-            >
-              <Button
-                icon={<Icons.Add />}
-                iconPosition="end"
-                disabled={!activeStorage?.key}
+            {canUserUploadAttachments && (
+              <Tooltip
+                title={
+                  activeStorageError &&
+                  `Add attachment not available: ${getErrorMessage(
+                    activeStorageError,
+                  )}`
+                }
+                placement="top"
               >
-                Add
-              </Button>
-            </Tooltip>
+                <Button
+                  icon={<Icons.Add />}
+                  iconPosition="end"
+                  disabled={!isAddButtonEnabled}
+                >
+                  Add
+                </Button>
+              </Tooltip>
+            )}
           </Upload>
         )}
       </div>
