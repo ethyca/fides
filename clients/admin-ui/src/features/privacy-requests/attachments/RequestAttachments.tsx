@@ -134,7 +134,6 @@ const RequestAttachments = ({ subjectRequest }: RequestAttachmentsProps) => {
                 onError?.(err as Error);
               }
             }}
-            className="[&_.ant-upload-list]:mt-4"
             disabled={!isAddButtonEnabled}
           >
             {canUserUploadAttachments && (
@@ -147,7 +146,7 @@ const RequestAttachments = ({ subjectRequest }: RequestAttachmentsProps) => {
                 }
                 placement="top"
               >
-                <Flex align="center" gap={4}>
+                <Flex align="center" gap={4} className="mb-4">
                   <Button
                     icon={<Icons.Add />}
                     iconPosition="end"
