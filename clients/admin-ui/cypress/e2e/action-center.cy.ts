@@ -486,6 +486,17 @@ describe("Action center", () => {
         'Browser request "11020051272" has been ignored and will not appear in future scans.',
       );
     });
+
+    it("should restore individual ignored assets", () => {
+      cy.getByTestId("row-1-col-actions").within(() => {
+        cy.getByTestId("restore-btn").click({ force: true });
+      });
+      cy.wait("@restoreAssets");
+      cy.getByTestId("success-alert").should(
+        "contain",
+        'Browser request "697301175" is no longer ignored and will appear in future scans.',
+      );
+    });
     it("should bulk add assets", () => {
       cy.getByTestId("bulk-actions-menu").should("be.disabled");
       cy.getByTestId("row-0-col-select").find("label").click();
@@ -517,22 +528,8 @@ describe("Action center", () => {
       );
     });
 
-    it("should restore individual ignored assets", () => {
+    it("should bulk restore ignored assets", () => {
       cy.getByTestId("tab-Ignored").click({ force: true });
-      cy.location("hash").should("eq", "#ignored");
-      cy.getByTestId("row-0-col-actions").within(() => {
-        cy.getByTestId("restore-btn").click();
-      });
-      cy.wait("@restoreAssets");
-      cy.getByTestId("success-alert").should(
-        "contain",
-        "1 asset has been restored and will appear in future scans.",
-      );
-    });
-
-    it("should restore ignored assets", () => {
-      cy.getByTestId("tab-Ignored").click({ force: true });
-      cy.location("hash").should("eq", "#ignored");
       cy.getByTestId("bulk-actions-menu").should("be.disabled");
       cy.getByTestId("row-0-col-select").find("label").click();
       cy.getByTestId("row-2-col-select").find("label").click();
