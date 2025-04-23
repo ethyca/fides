@@ -132,6 +132,11 @@ const useConsentReportingTableColumns = ({
         ),
         size: 120,
       }),
+      columnHelper.accessor((row) => row.url_recorded, {
+        id: "url_recorded",
+        cell: ({ getValue }) => <DefaultCell value={getValue()} />,
+        header: (props) => <DefaultCell value="Recorded URL" {...props} />,
+      }),
       columnHelper.accessor((row) => row.external_id, {
         id: "external_id",
         cell: ({ getValue }) => <DefaultCell value={getValue()} />,
