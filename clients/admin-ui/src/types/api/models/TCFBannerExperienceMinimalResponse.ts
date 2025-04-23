@@ -6,7 +6,6 @@ import type { ExperienceMinimalMeta } from "./ExperienceMinimalMeta";
 import type { MinimalTCFExperienceConfig } from "./MinimalTCFExperienceConfig";
 import type { PrivacyExperienceGPPSettings } from "./PrivacyExperienceGPPSettings";
 import type { PrivacyNoticeResponse } from "./PrivacyNoticeResponse";
-import type { RejectAllMechanism } from "./RejectAllMechanism";
 
 /**
  * Minimal TCF Banner Privacy Experience response that has the details to show the most minimal
@@ -35,10 +34,6 @@ export type TCFBannerExperienceMinimalResponse = {
    */
   id: string;
   gvl?: null;
-  /**
-   * Determines the behavior of the reject all button
-   */
-  reject_all_mechanism?: RejectAllMechanism | null;
   meta?: ExperienceMinimalMeta | null;
   /**
    * Helps FE detect that this is a minimal TCF response

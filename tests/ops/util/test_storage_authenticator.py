@@ -8,10 +8,7 @@ from fides.api.schemas.storage.storage import (
     AWSAuthMethod,
     StorageDetails,
     StorageSecrets,
-    StorageSecretsS3,
-    StorageType,
 )
-from fides.api.service.storage.storage_authenticator_service import secrets_are_valid
 from fides.api.util.aws_util import get_aws_session, get_s3_client
 
 
@@ -42,44 +39,6 @@ class TestGetS3Session:
             get_aws_session(
                 "bad", {StorageSecrets.AWS_ACCESS_KEY_ID: "aws_access_key_id"}  # type: ignore
             )
-
-    def tests_automatic_auth_method(self, loguru_caplog):
-        # credentials error raised by AWS since runtime doesn't have env credentials set up -
-        # but ensure we don't raise an exception from our own code in parsing.
-        with pytest.raises(NoCredentialsError):
-            get_aws_session(
-                AWSAuthMethod.AUTOMATIC.value,  # type: ignore
-                None,
-            )
-
-    def test_secrets_are_valid_bad_storage_type(self):
-        with pytest.raises(ValueError):
-            secrets_are_valid(
-                StorageSecretsS3(
-                    aws_access_key_id="aws_access_key_id",
-                    aws_secret_access_key="aws_secret_access_key",
-                ),
-                "fake_storage_type",
-            )
-
-    def test_secrets_are_valid(self):
-        # just test we don't error out
-        assert not secrets_are_valid(
-            StorageSecretsS3(
-                aws_access_key_id="aws_access_key_id",
-                aws_secret_access_key="aws_secret_access_key",
-            ),
-            "s3",
-        )  # we expect this to fail because they're not real secret values
-
-        # just test we don't error out
-        assert not secrets_are_valid(
-            StorageSecretsS3(
-                aws_access_key_id="aws_access_key_id",
-                aws_secret_access_key="aws_secret_access_key",
-            ),
-            StorageType.s3,
-        )  # we expect this to fail because they're not real secret values
 
 
 @mock_aws

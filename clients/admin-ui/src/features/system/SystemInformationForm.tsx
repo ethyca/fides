@@ -28,6 +28,7 @@ import {
   VendorSources,
 } from "~/features/common/helpers";
 import { FormGuard } from "~/features/common/hooks/useIsAnyFormDirty";
+import { errorToastParams } from "~/features/common/toast";
 import {
   selectAllDictEntries,
   useGetAllDictionaryEntriesQuery,
@@ -57,6 +58,7 @@ import {
   useLazyGetSystemsQuery,
   useUpdateSystemMutation,
 } from "~/features/system/system.slice";
+import { usePopulateSystemAssetsMutation } from "~/features/system/system-assets.slice";
 import SystemFormInputGroup from "~/features/system/SystemFormInputGroup";
 import VendorSelector from "~/features/system/VendorSelector";
 import { ResourceTypes, SystemResponse } from "~/types/api";
@@ -155,6 +157,7 @@ const SystemInformationForm = ({
     useCreateSystemMutation();
   const [updateSystemMutationTrigger, updateSystemMutationResult] =
     useUpdateSystemMutation();
+  const [populateSystemAssets] = usePopulateSystemAssetsMutation();
   useGetAllDictionaryEntriesQuery(undefined, {
     skip: !features.dictionaryService,
   });
@@ -203,7 +206,7 @@ const SystemInformationForm = ({
             dataUseQueryResult.error,
             `A problem occurred while fetching data uses from Fides Compass for your system.  Please try again.`,
           );
-          toast({ status: "error", description: dataUseErrorMsg });
+          toast(errorToastParams(dataUseErrorMsg));
         }
       } else if (
         dataUseQueryResult.data &&
@@ -256,6 +259,19 @@ const SystemInformationForm = ({
     }
 
     await customFields.upsertCustomFields(values);
+
+    if (!isEditing && values.vendor_id && result.data?.fides_key) {
+      const assetResult = await populateSystemAssets({
+        systemKey: result.data.fides_key,
+      });
+      if (isErrorResult(assetResult)) {
+        toast(
+          errorToastParams(
+            "An unexpected error occurred while populating the system assets from Compass. Please try again.",
+          ),
+        );
+      }
+    }
 
     handleResult(result);
   };

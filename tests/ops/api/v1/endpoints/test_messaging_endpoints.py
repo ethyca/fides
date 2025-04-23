@@ -434,6 +434,96 @@ class TestPostMessagingConfig:
         assert email_config.details == aws_ses_payload["details"]
         email_config.delete(db)
 
+    def test_post_aws_ses_email_config_domain_not_present(
+        self,
+        db,
+        url,
+        api_client,
+        generate_auth_header,
+    ):
+        aws_ses_payload = {
+            "key": "my_aws_ses_email_config",
+            "name": "aws_ses_email",
+            "service_type": MessagingServiceType.aws_ses.value,
+            "details": {
+                "aws_region": "us-east-1",
+                "email_from": "test@test.com",
+            },
+        }
+
+        auth_header = generate_auth_header([MESSAGING_CREATE_OR_UPDATE])
+
+        response = api_client.post(url, headers=auth_header, json=aws_ses_payload)
+        assert 200 == response.status_code
+        response_body = json.loads(response.text)
+        aws_ses_payload["details"]["domain"] = None
+        assert response_body == aws_ses_payload
+
+        email_config = db.query(MessagingConfig).filter_by(
+            key="my_aws_ses_email_config"
+        )[0]
+        assert email_config.details == aws_ses_payload["details"]
+        email_config.delete(db)
+
+    def test_post_aws_ses_email_config_email_from_not_present(
+        self,
+        db,
+        url,
+        api_client,
+        generate_auth_header,
+    ):
+        aws_ses_payload = {
+            "key": "my_aws_ses_email_config",
+            "name": "aws_ses_email",
+            "service_type": MessagingServiceType.aws_ses.value,
+            "details": {
+                "aws_region": "us-east-1",
+                "domain": "example.com",
+            },
+        }
+
+        auth_header = generate_auth_header([MESSAGING_CREATE_OR_UPDATE])
+
+        response = api_client.post(url, headers=auth_header, json=aws_ses_payload)
+        assert 200 == response.status_code
+        response_body = json.loads(response.text)
+        aws_ses_payload["details"]["email_from"] = None
+        assert response_body == aws_ses_payload
+
+        email_config = db.query(MessagingConfig).filter_by(
+            key="my_aws_ses_email_config"
+        )[0]
+        assert email_config.details == aws_ses_payload["details"]
+        email_config.delete(db)
+
+    def test_post_aws_ses_email_config_missing_details_data(
+        self,
+        db,
+        url,
+        api_client,
+        generate_auth_header,
+    ):
+        aws_ses_payload = {
+            "key": "my_aws_ses_email_config",
+            "name": "aws_ses_email",
+            "service_type": MessagingServiceType.aws_ses.value,
+            "details": {
+                "aws_region": "us-east-1",
+            },
+        }
+
+        auth_header = generate_auth_header([MESSAGING_CREATE_OR_UPDATE])
+
+        response = api_client.post(url, headers=auth_header, json=aws_ses_payload)
+        assert response.status_code == 422
+        assert response.json()["detail"] == [
+            {
+                "type": "value_error",
+                "loc": ["body"],
+                "msg": "Value error, Either 'email_from' or 'domain' must be provided.",
+            }
+        ]
+
 
 class TestPatchMessagingConfig:
     @pytest.fixture(scope="function")

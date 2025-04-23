@@ -49,11 +49,17 @@ import {
 } from "~/types/api";
 
 import { ControlledSelect } from "../common/form/ControlledSelect";
+import { useGetConfigurationSettingsQuery } from "../config-settings/config-settings.slice";
+import { TCFConfigSelect } from "./form/TCFConfigSelect";
 
 const componentTypeOptions: SelectProps["options"] = [
   {
     label: "Banner and modal",
     value: ComponentType.BANNER_AND_MODAL,
+  },
+  {
+    label: "TCF overlay",
+    value: ComponentType.TCF_OVERLAY,
   },
   {
     label: "Modal",
@@ -71,11 +77,11 @@ const componentTypeOptions: SelectProps["options"] = [
 
 const tcfRejectAllMechanismOptions: SelectProps["options"] = [
   {
-    label: "Reject All",
+    label: "Reject all",
     value: RejectAllMechanism.REJECT_ALL,
   },
   {
-    label: "Reject Consent Only",
+    label: "Reject consent only",
     value: RejectAllMechanism.REJECT_CONSENT_ONLY,
   },
 ];
@@ -93,7 +99,7 @@ const tcfBannerButtonOptions: SelectProps["options"] = [
 
 const bannerButtonOptions: SelectProps["options"] = [
   {
-    label: "Opt In/Opt Out",
+    label: "Opt in/Opt out",
     value: Layer1ButtonOption.OPT_IN_OPT_OUT,
   },
   {
@@ -121,7 +127,9 @@ export const PrivacyExperienceConfigColumnLayout = ({
   </Flex>
 );
 
-function privacyNoticeIdsWithTcfId(values: ExperienceConfigCreate): string[] {
+const privacyNoticeIdsWithTcfId = (
+  values: ExperienceConfigCreate,
+): string[] => {
   if (!values.privacy_notice_ids) {
     return [TCF_PLACEHOLDER_ID];
   }
@@ -130,7 +138,7 @@ function privacyNoticeIdsWithTcfId(values: ExperienceConfigCreate): string[] {
     noticeIdsWithTcfId.push(TCF_PLACEHOLDER_ID);
   }
   return noticeIdsWithTcfId;
-}
+};
 
 export const PrivacyExperienceForm = ({
   allPrivacyNotices,
@@ -145,11 +153,22 @@ export const PrivacyExperienceForm = ({
 }) => {
   const router = useRouter();
 
-  const { values, setFieldValue, dirty, isValid, isSubmitting, initialValues } =
-    useFormikContext<ExperienceConfigCreate>();
+  const {
+    values,
+    setFieldValue,
+    dirty,
+    isValid,
+    isSubmitting,
+    initialValues,
+    setValues,
+  } = useFormikContext<ExperienceConfigCreate>();
   const noticePage = useAppSelector(selectNoticePage);
   const noticePageSize = useAppSelector(selectNoticePageSize);
   useGetAllPrivacyNoticesQuery({ page: noticePage, size: noticePageSize });
+
+  const { data: appConfig } = useGetConfigurationSettingsQuery({
+    api_set: true,
+  });
 
   const allPrivacyNoticesWithTcfPlaceholder: LimitedPrivacyNoticeResponseSchema[] =
     useMemo(() => {
@@ -220,6 +239,61 @@ export const PrivacyExperienceForm = ({
     </div>
   );
 
+  const handleComponentChange = (value: ComponentType) => {
+    if (!values.component) {
+      return;
+    }
+    const newComponent = value as ComponentType;
+
+    // Reset common fields that might need to be unset
+    const updates: Partial<ExperienceConfigCreate> = {
+      tcf_configuration_id: undefined,
+      layer1_button_options: undefined,
+      show_layer1_notices: false,
+    };
+
+    // Handle TCF specific fields
+    if (newComponent !== ComponentType.TCF_OVERLAY) {
+      updates.reject_all_mechanism = undefined;
+      // Remove TCF placeholder from privacy notices if present
+      if (values.privacy_notice_ids?.includes(TCF_PLACEHOLDER_ID)) {
+        updates.privacy_notice_ids = values.privacy_notice_ids.filter(
+          (id) => id !== TCF_PLACEHOLDER_ID,
+        );
+      }
+    } else {
+      updates.privacy_notice_ids = [TCF_PLACEHOLDER_ID];
+    }
+
+    // Set component specific defaults
+    switch (newComponent) {
+      case ComponentType.PRIVACY_CENTER:
+      case ComponentType.HEADLESS:
+        updates.dismissable = undefined;
+        updates.layer1_button_options = undefined;
+        updates.show_layer1_notices = undefined;
+        break;
+      case ComponentType.BANNER_AND_MODAL:
+        updates.layer1_button_options = Layer1ButtonOption.OPT_IN_OPT_OUT;
+        break;
+      case ComponentType.TCF_OVERLAY:
+        updates.layer1_button_options = Layer1ButtonOption.OPT_IN_OPT_OUT;
+        updates.reject_all_mechanism = RejectAllMechanism.REJECT_ALL;
+        break;
+      case ComponentType.MODAL:
+        updates.layer1_button_options = undefined;
+        updates.show_layer1_notices = undefined;
+        break;
+      default:
+        break;
+    }
+
+    setValues({
+      ...values,
+      ...updates,
+    });
+    setFieldValue("component", value);
+  };
   return (
     <PrivacyExperienceConfigColumnLayout buttonPanel={buttonPanel}>
       <BackButton backPath={PRIVACY_EXPERIENCE_ROUTE} mt={4} />
@@ -233,31 +307,41 @@ export const PrivacyExperienceForm = ({
         isRequired
         variant="stacked"
       />
-      {values.component !== ComponentType.TCF_OVERLAY && (
-        <ControlledSelect
-          name="component"
-          id="component"
-          options={componentTypeOptions}
-          label="Experience type"
-          layout="stacked"
-          disabled={!!initialValues.component}
-          isRequired
-        />
-      )}
+      <ControlledSelect
+        name="component"
+        id="component"
+        options={componentTypeOptions}
+        label="Experience type"
+        layout="stacked"
+        disabled={!!initialValues.component}
+        onChange={handleComponentChange}
+        isRequired
+      />
       <Collapse
         in={values.component === ComponentType.TCF_OVERLAY}
         animateOpacity
       >
-        <ControlledSelect
-          name="reject_all_mechanism"
-          id="reject_all_mechanism"
-          options={tcfRejectAllMechanismOptions}
-          defaultValue={RejectAllMechanism.REJECT_ALL}
-          label="Reject all behavior"
-          layout="stacked"
-          disabled={values.component !== ComponentType.TCF_OVERLAY}
-          tooltip="Reject All: Blocks both consent and legitimate interest data processing across all purposes, features, and vendors. Reject Consent-Only: Blocks only consent-based processing, but allows legitimate interest processing to continue, requiring separate objection."
-        />
+        {values.component === ComponentType.TCF_OVERLAY && (
+          <TCFConfigSelect
+            overridesEnabled={appConfig?.consent?.override_vendor_purposes}
+          />
+        )}
+      </Collapse>
+      <Collapse
+        in={values.component === ComponentType.TCF_OVERLAY}
+        animateOpacity
+      >
+        {values.component === ComponentType.TCF_OVERLAY && (
+          <ControlledSelect
+            name="reject_all_mechanism"
+            id="reject_all_mechanism"
+            options={tcfRejectAllMechanismOptions}
+            defaultValue={RejectAllMechanism.REJECT_ALL}
+            label="Reject all behavior"
+            layout="stacked"
+            tooltip="Reject all: Blocks both consent and legitimate interest data processing across all purposes, features, and vendors. Reject consent-only: Blocks only consent-based processing, but allows legitimate interest processing to continue, requiring separate objection."
+          />
+        )}
       </Collapse>
       <Collapse
         in={
@@ -266,26 +350,25 @@ export const PrivacyExperienceForm = ({
         }
         animateOpacity
       >
-        <ControlledSelect
-          name="layer1_button_options"
-          id="layer1_button_options"
-          defaultValue={Layer1ButtonOption.OPT_IN_OPT_OUT}
-          options={
-            values.component === ComponentType.TCF_OVERLAY
-              ? tcfBannerButtonOptions
-              : bannerButtonOptions
-          }
-          label={
-            values.component === ComponentType.TCF_OVERLAY
-              ? "Reject all visibility"
-              : "Banner options"
-          }
-          layout="stacked"
-          disabled={
-            values.component !== ComponentType.BANNER_AND_MODAL &&
-            values.component !== ComponentType.TCF_OVERLAY
-          }
-        />
+        {(values.component === ComponentType.BANNER_AND_MODAL ||
+          values.component === ComponentType.TCF_OVERLAY) && (
+          <ControlledSelect
+            name="layer1_button_options"
+            id="layer1_button_options"
+            defaultValue={Layer1ButtonOption.OPT_IN_OPT_OUT}
+            options={
+              values.component === ComponentType.TCF_OVERLAY
+                ? tcfBannerButtonOptions
+                : bannerButtonOptions
+            }
+            label={
+              values.component === ComponentType.TCF_OVERLAY
+                ? "Reject all visibility"
+                : "Banner options"
+            }
+            layout="stacked"
+          />
+        )}
       </Collapse>
       <Collapse
         in={
@@ -343,21 +426,25 @@ export const PrivacyExperienceForm = ({
           baseTestId="privacy-notice"
         />
       )}
-      {values.component === ComponentType.BANNER_AND_MODAL ? (
-        <>
-          <Collapse in={!!values.privacy_notice_ids?.length} animateOpacity>
-            <Box p="1px">
-              <CustomSwitch
-                name="show_layer1_notices"
-                id="show_layer1_notices"
-                label="Add privacy notices to banner"
-                variant="stacked"
-              />
-            </Box>
-          </Collapse>
-          <Divider />
-        </>
-      ) : null}
+      <Collapse
+        in={
+          values.component === ComponentType.BANNER_AND_MODAL &&
+          !!values.privacy_notice_ids?.length
+        }
+        animateOpacity
+      >
+        {values.component === ComponentType.BANNER_AND_MODAL && (
+          <Box p="1px">
+            <CustomSwitch
+              name="show_layer1_notices"
+              id="show_layer1_notices"
+              label="Add privacy notices to banner"
+              variant="stacked"
+            />
+          </Box>
+        )}
+      </Collapse>
+      <Divider />
       <Text as="h2" fontWeight="600">
         Locations & Languages
       </Text>
@@ -391,7 +478,7 @@ export const PrivacyExperienceForm = ({
             createNewValue={(opt) =>
               onCreateTranslation(opt.value as SupportedLanguage)
             }
-            onRowClick={onSelectTranslation}
+            onEditItem={onSelectTranslation}
             selectOnAdd
             draggable
             baseTestId="language"

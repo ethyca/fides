@@ -19,14 +19,12 @@ import { DataProps, PrivacyDeclarationForm } from "./PrivacyDeclarationForm";
 interface Props {
   system: SystemResponse;
   includeCustomFields?: boolean;
-  includeCookies?: boolean;
   onSave?: (system: System) => void;
 }
 
 const PrivacyDeclarationManager = ({
   system,
   includeCustomFields,
-  includeCookies,
   onSave,
   ...dataProps
 }: Props & DataProps) => {
@@ -180,7 +178,6 @@ const PrivacyDeclarationManager = ({
         onEdit={handleEditDeclaration}
         onDelete={handleDelete}
         includeCustomFields={includeCustomFields}
-        includeCookies={includeCookies}
         {...dataProps}
       />
       {showNewForm ? (
@@ -190,7 +187,6 @@ const PrivacyDeclarationManager = ({
             onSubmit={saveNewDeclaration}
             onDelete={handleDeleteNew}
             includeCustomFields={includeCustomFields}
-            includeCookies={includeCookies}
             {...dataProps}
           />
         </Box>

@@ -1,4 +1,8 @@
-import { stubOpenIdProviders, stubUserManagement } from "cypress/support/stubs";
+import {
+  stubOpenIdProviders,
+  stubPlus,
+  stubUserManagement,
+} from "cypress/support/stubs";
 
 import { utf8ToB64 } from "~/features/common/utils";
 import { RoleRegistryEnum } from "~/types/api";
@@ -125,6 +129,372 @@ describe("User management", () => {
       cy.visit(`/user-management/new`);
       cy.getByTestId("input-email_address");
       cy.getByTestId("input-password").should("not.exist");
+    });
+
+    it("shows password login toggle when Plus and SSO are enabled with username/password login allowed", () => {
+      stubPlus(true);
+
+      // Setup: Enable SSO providers, and username/password login option
+      cy.intercept("GET", "/api/v1/openid/provider", {
+        body: [{ id: "test-provider" }],
+      }).as("getOpenIdProviders");
+
+      cy.intercept("GET", "/api/v1/config*", {
+        body: {
+          plus_security_settings: { allow_username_password_login: true },
+        },
+      }).as("getConfigSettings");
+
+      // Intercept messaging status to ensure email invite is disabled
+      cy.intercept("GET", "/api/v1/messaging/email-invite/status", {
+        body: {
+          enabled: false, // Ensure inviteUsersViaEmail = false
+        },
+      }).as("getEmailInviteStatus");
+
+      cy.log("Visiting user management new page");
+      cy.visit("/user-management/new");
+
+      // Wait for key API calls to complete
+      cy.wait("@getOpenIdProviders");
+      cy.wait("@getConfigSettings");
+      cy.wait("@getEmailInviteStatus");
+
+      // Check for the toggle
+      cy.getByTestId("input-password_login_enabled").should("exist");
+    });
+
+    it("hides password login toggle when Plus is disabled", () => {
+      // Setup: Disable Plus feature
+      stubPlus(false);
+
+      // Intercept messaging status to ensure email invite is disabled
+      cy.intercept("GET", "/api/v1/messaging/email-invite/status", {
+        body: {
+          enabled: false,
+        },
+      }).as("getEmailInviteStatus");
+
+      cy.visit("/user-management/new");
+      cy.wait("@getEmailInviteStatus");
+
+      // The toggle should not exist when Plus is disabled
+      cy.getByTestId("input-password_login_enabled").should("not.exist");
+
+      // But the password field should always exist when Plus is disabled
+      cy.getByTestId("input-password").should("exist");
+    });
+
+    it("can create a user with password login disabled", () => {
+      // Setup Plus with SSO and username/password login allowed
+      stubPlus(true);
+      cy.intercept("GET", "/api/v1/openid/provider", {
+        body: [{ id: "test-provider" }],
+      }).as("getOpenIdProviders");
+      cy.intercept("GET", "/api/v1/config?api_set=false", {
+        body: {
+          plus_security_settings: { allow_username_password_login: true },
+        },
+      }).as("getConfigSettings");
+
+      // Intercept messaging status to ensure email invite is disabled
+      cy.intercept("GET", "/api/v1/messaging/email-invite/status", {
+        body: {
+          enabled: false,
+        },
+      }).as("getEmailInviteStatus");
+
+      // Setup intercept for POST request
+      cy.intercept("POST", "/api/v1/user", {
+        statusCode: 200,
+        body: {
+          id: "new-user-123",
+          username: "testuser",
+          email_address: "test@example.com",
+          first_name: "Test",
+          last_name: "User",
+        },
+      }).as("createUser");
+
+      cy.visit("/user-management/new");
+      cy.wait("@getOpenIdProviders");
+      cy.wait("@getConfigSettings");
+      cy.wait("@getEmailInviteStatus");
+
+      // Verify toggle exists and ensure it's initially checked (enabled)
+      cy.getByTestId("input-password_login_enabled").should("exist");
+      cy.getByTestId("input-password_login_enabled").click();
+      cy.getByTestId("input-password").should("exist");
+      cy.getByTestId("input-password_login_enabled").click();
+
+      // Password field should be hidden once toggle is disabled
+      cy.getByTestId("input-password").should("not.exist");
+
+      // Fill form
+      cy.getByTestId("input-username").type("testuser");
+      cy.getByTestId("input-email_address").type("test@example.com");
+      cy.getByTestId("input-first_name").type("Test");
+      cy.getByTestId("input-last_name").type("User");
+
+      // Submit form
+      cy.getByTestId("save-user-btn").click();
+
+      // Verify request payload
+      cy.wait("@createUser").then((interception) => {
+        const { body } = interception.request;
+        expect(body).to.include({
+          username: "testuser",
+          email_address: "test@example.com",
+          first_name: "Test",
+          last_name: "User",
+          password_login_enabled: false,
+        });
+        expect(body.password).to.be.undefined;
+      });
+
+      // Verify success toast
+      cy.getByTestId("toast-success-msg");
+    });
+
+    it("can create a user with password login enabled", () => {
+      // Setup Plus with SSO and username/password login allowed
+      stubPlus(true);
+      cy.intercept("GET", "/api/v1/openid/provider", {
+        body: [{ id: "test-provider" }],
+      }).as("getOpenIdProviders");
+      cy.intercept("GET", "/api/v1/config?api_set=false", {
+        body: {
+          plus_security_settings: { allow_username_password_login: true },
+        },
+      }).as("getConfigSettings");
+
+      // Intercept messaging status to ensure email invite is disabled
+      cy.intercept("GET", "/api/v1/messaging/email-invite/status", {
+        body: {
+          enabled: false,
+        },
+      }).as("getEmailInviteStatus");
+
+      // Setup intercept for POST request
+      cy.intercept("POST", "/api/v1/user", {
+        statusCode: 200,
+        body: {
+          id: "new-user-123",
+          username: "testuser",
+          email_address: "test@example.com",
+          first_name: "Test",
+          last_name: "User",
+        },
+      }).as("createUser");
+
+      cy.visit("/user-management/new");
+      cy.wait("@getOpenIdProviders");
+      cy.wait("@getConfigSettings");
+      cy.wait("@getEmailInviteStatus");
+
+      // Verify toggle exists and ensure it's checked
+      cy.getByTestId("input-password_login_enabled").should("exist");
+      cy.getByTestId("input-password_login_enabled").click();
+
+      // Verify the password field is visible
+      cy.getByTestId("input-password").should("exist");
+
+      // Fill form with password login enabled
+      cy.getByTestId("input-username").type("testuser");
+      cy.getByTestId("input-email_address").type("test@example.com");
+      cy.getByTestId("input-first_name").type("Test");
+      cy.getByTestId("input-last_name").type("User");
+      cy.getByTestId("input-password").type("P@ssw0rd123");
+
+      // Submit form
+      cy.getByTestId("save-user-btn").click();
+
+      // Verify request payload
+      cy.wait("@createUser").then((interception) => {
+        const { body } = interception.request;
+        expect(body).to.include({
+          username: "testuser",
+          email_address: "test@example.com",
+          first_name: "Test",
+          last_name: "User",
+          password_login_enabled: true,
+        });
+        expect(body.password).to.exist;
+      });
+
+      // Verify success toast
+      cy.getByTestId("toast-success-msg");
+    });
+
+    it("prevents submission with invalid email format", () => {
+      // Intercept messaging status to ensure email invite is disabled
+      cy.intercept("GET", "/api/v1/messaging/email-invite/status", {
+        body: {
+          enabled: false,
+        },
+      }).as("getEmailInviteStatus");
+
+      cy.visit("/user-management/new");
+      cy.wait("@getEmailInviteStatus");
+
+      // Fill form with invalid email
+      cy.getByTestId("input-username").type("testuser");
+      cy.getByTestId("input-email_address").type("invalid-email");
+      cy.getByTestId("input-password").type("P@ssw0rd123");
+
+      // Try to submit (should be disabled)
+      cy.getByTestId("save-user-btn").should("be.disabled");
+
+      // Fix email and verify button becomes enabled
+      cy.getByTestId("input-email_address").clear().type("valid@example.com");
+      cy.getByTestId("save-user-btn").should("not.be.disabled");
+    });
+
+    it("validates password complexity requirements", () => {
+      // Intercept messaging status to ensure email invite is disabled
+      cy.intercept("GET", "/api/v1/messaging/email-invite/status", {
+        body: {
+          enabled: false,
+        },
+      }).as("getEmailInviteStatus");
+      cy.intercept("GET", "/api/v1/config?api_set=false", {
+        body: {
+          plus_security_settings: { allow_username_password_login: true },
+        },
+      }).as("getConfigSettings");
+
+      cy.visit("/user-management/new");
+      cy.wait("@getEmailInviteStatus");
+      cy.wait("@getConfigSettings");
+      cy.getByTestId("input-username").type("testuser");
+      cy.getByTestId("input-email_address").type("test@example.com");
+      cy.getByTestId("input-password").type("simple");
+
+      // Trigger validation by clicking elsewhere
+      cy.getByTestId("input-username").click();
+
+      // Button should be disabled due to invalid password
+      cy.getByTestId("save-user-btn").should("be.disabled");
+
+      // Enter valid password
+      cy.getByTestId("input-password").clear().type("P@ssw0rd123");
+      cy.getByTestId("save-user-btn").should("not.be.disabled");
+    });
+
+    it("displays error message when user creation fails", () => {
+      // Intercept messaging status to ensure email invite is disabled
+      cy.intercept("GET", "/api/v1/messaging/email-invite/status", {
+        body: {
+          enabled: false,
+        },
+      }).as("getEmailInviteStatus");
+
+      // Setup intercept for error response
+      cy.intercept("POST", "/api/v1/user", {
+        statusCode: 400,
+        body: {
+          detail: "Username already exists",
+        },
+      }).as("createUserError");
+
+      cy.visit("/user-management/new");
+      cy.wait("@getEmailInviteStatus");
+
+      // Fill form
+      cy.getByTestId("input-username").type("testuser");
+      cy.getByTestId("input-email_address").type("test@example.com");
+      cy.getByTestId("input-password").type("P@ssw0rd123");
+
+      // Submit form
+      cy.getByTestId("save-user-btn").click();
+
+      // Verify error toast
+      cy.wait("@createUserError");
+      cy.getByTestId("toast-error-msg").contains("Username already exists");
+    });
+
+    it("cancels user creation and returns to user management page", () => {
+      cy.visit("/user-management/new");
+
+      // Fill some form fields first
+      cy.getByTestId("input-username").type("testuser");
+
+      // Click cancel button
+      cy.getByTestId("cancel-btn").click();
+
+      // Verify redirection
+      cy.url().should("eq", "http://localhost:3000/user-management");
+    });
+
+    it("does not show password field when SSO is enabled but username/password login is not allowed", () => {
+      // Setup: Enable Plus & SSO providers, but disable username/password login
+      stubPlus(true);
+      cy.intercept("GET", "/api/v1/openid/provider", {
+        body: [{ id: "test-provider" }],
+      }).as("getOpenIdProviders");
+      cy.intercept("GET", "/api/v1/config?api_set=false", {
+        body: {
+          plus_security_settings: { allow_username_password_login: false },
+        },
+      }).as("getConfigSettings");
+
+      // Intercept messaging status to ensure email invite is disabled
+      cy.intercept("GET", "/api/v1/messaging/email-invite/status", {
+        body: {
+          enabled: false,
+        },
+      }).as("getEmailInviteStatus");
+
+      cy.visit("/user-management/new");
+      cy.wait("@getOpenIdProviders");
+      cy.wait("@getConfigSettings");
+      cy.wait("@getEmailInviteStatus");
+
+      // Verify toggle is not shown
+      cy.getByTestId("input-password_login_enabled").should("not.exist");
+
+      // Verify password field is not shown
+      cy.getByTestId("input-password").should("not.exist");
+    });
+
+    it("immediately updates UI when password login toggle is clicked", () => {
+      // Setup Plus with SSO and username/password login allowed
+      stubPlus(true);
+      cy.intercept("GET", "/api/v1/openid/provider", {
+        body: [{ id: "test-provider" }],
+      }).as("getOpenIdProviders");
+      cy.intercept("GET", "/api/v1/config?api_set=false", {
+        body: {
+          plus_security_settings: { allow_username_password_login: true },
+        },
+      }).as("getConfigSettings");
+
+      // Intercept messaging status to ensure email invite is disabled
+      cy.intercept("GET", "/api/v1/messaging/email-invite/status", {
+        body: {
+          enabled: false,
+        },
+      }).as("getEmailInviteStatus");
+
+      cy.visit("/user-management/new");
+      cy.wait("@getOpenIdProviders");
+      cy.wait("@getConfigSettings");
+      cy.wait("@getEmailInviteStatus");
+
+      // Get the toggle and verify it exists
+      cy.getByTestId("input-password_login_enabled").should("exist");
+
+      // Enable password login
+      cy.getByTestId("input-password_login_enabled").click();
+      cy.getByTestId("input-password").should("exist");
+
+      // Disable password login
+      cy.getByTestId("input-password_login_enabled").click();
+      cy.getByTestId("input-password").should("not.exist");
+
+      // Re-enable password login
+      cy.getByTestId("input-password_login_enabled").click();
+      cy.getByTestId("input-password").should("exist");
     });
   });
 

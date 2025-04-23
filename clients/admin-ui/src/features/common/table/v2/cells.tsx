@@ -20,7 +20,7 @@ import {
   useToast,
   WarningIcon,
 } from "fidesui";
-import { useField, useFormikContext } from "formik";
+import { FastField, useFormikContext } from "formik";
 import { isBoolean } from "lodash";
 import { ReactElement, ReactNode, useEffect, useMemo, useState } from "react";
 
@@ -375,7 +375,7 @@ export const IndeterminateCheckboxCell = ({
 );
 
 type DefaultHeaderCellProps<T> = {
-  value: string | number | string[] | undefined | boolean;
+  value: ReactNode;
 } & HeaderContext<T, unknown> &
   TextProps;
 
@@ -398,11 +398,11 @@ export const EditableHeaderCell = <T,>({
   isEditing: boolean;
 }) => {
   const headerId = props.column.columnDef.id || "";
-  const [field] = useField(headerId);
   const { submitForm } = useFormikContext();
   return isEditing ? (
-    <Input
-      {...field}
+    <FastField
+      name={headerId}
+      as={Input}
       maxLength={80}
       placeholder={defaultValue}
       aria-label="Edit column name"

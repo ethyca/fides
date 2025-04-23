@@ -1,11 +1,12 @@
 import {
   AntButton as Button,
   AntSelect as Select,
+  AntSpace as Space,
   Box,
   ChakraProps,
-  DeleteIcon,
   DragHandleIcon,
   Flex,
+  Icons,
   List,
   SmallAddIcon,
   Text,
@@ -14,13 +15,14 @@ import { motion, Reorder, useDragControls } from "framer-motion";
 import { useState } from "react";
 
 import { Label, Option } from "~/features/common/form/inputs";
-import QuestionTooltip from "~/features/common/QuestionTooltip";
+import { InfoTooltip } from "~/features/common/InfoTooltip";
 
 const ScrollableListItem = <T extends unknown>({
   item,
   label,
   draggable,
   onDeleteItem,
+  onEditItem,
   tooltip,
   onRowClick,
   maxH = 10,
@@ -30,6 +32,7 @@ const ScrollableListItem = <T extends unknown>({
   label: string;
   draggable?: boolean;
   onDeleteItem?: (item: T) => void;
+  onEditItem?: (item: T) => void;
   tooltip?: string;
   onRowClick?: (item: T) => void;
   maxH?: number;
@@ -85,17 +88,28 @@ const ScrollableListItem = <T extends unknown>({
           >
             {label}
           </Text>
-          {tooltip ? <QuestionTooltip label={tooltip} /> : null}
+          <InfoTooltip label={tooltip} />
         </Flex>
-        {onDeleteItem && (
-          <Button
-            aria-label="Delete"
-            onClick={() => onDeleteItem(item)}
-            icon={<DeleteIcon boxSize={3} />}
-            size="small"
-            className="invisible absolute right-2 bg-white group-hover:visible"
-          />
-        )}
+        <Space className="invisible absolute right-2 bg-white group-hover:visible">
+          {onEditItem && (
+            <Button
+              aria-label="Edit"
+              onClick={() => onEditItem(item)}
+              icon={<Icons.Edit />}
+              size="small"
+              data-testid={`edit-${rowTestId}`}
+            />
+          )}
+          {onDeleteItem && (
+            <Button
+              aria-label="Delete"
+              onClick={() => onDeleteItem(item)}
+              icon={<Icons.TrashCan />}
+              size="small"
+              data-testid={`delete-${rowTestId}`}
+            />
+          )}
+        </Space>
       </Flex>
     </Reorder.Item>
   );
@@ -162,6 +176,7 @@ const ScrollableList = <T extends unknown>({
   canDeleteItem,
   getTooltip,
   onRowClick,
+  onEditItem,
   selectOnAdd,
   getItemLabel,
   createNewValue,
@@ -180,6 +195,7 @@ const ScrollableList = <T extends unknown>({
   canDeleteItem?: (item: T) => boolean;
   getTooltip?: (item: T) => string | undefined;
   onRowClick?: (item: T) => void;
+  onEditItem?: (item: T) => void;
   selectOnAdd?: boolean;
   getItemLabel?: (item: T) => string;
   createNewValue?: (opt: Option) => T;
@@ -233,6 +249,9 @@ const ScrollableList = <T extends unknown>({
     if (selectOnAdd && onRowClick) {
       onRowClick(newValue);
     }
+    if (selectOnAdd && onEditItem) {
+      onEditItem(newValue);
+    }
   };
 
   const listContainerProps = {
@@ -262,6 +281,7 @@ const ScrollableList = <T extends unknown>({
                   ? handleDeleteItem
                   : undefined
               }
+              onEditItem={onEditItem}
               onRowClick={onRowClick}
               draggable
               maxH={maxHeight}
@@ -305,7 +325,7 @@ const ScrollableList = <T extends unknown>({
           {label}
         </Label>
       ) : null}
-      {tooltip ? <QuestionTooltip label={tooltip} /> : null}
+      <InfoTooltip label={tooltip} />
       {innerList}
       {unselectedValues.length ? (
         <ScrollableListAdd

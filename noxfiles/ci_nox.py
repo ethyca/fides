@@ -4,6 +4,8 @@ from functools import partial
 from typing import Callable, Dict
 
 import nox
+from nox import Session
+from nox import session as nox_session
 from nox.command import CommandFailed
 
 from constants_nox import (
@@ -369,3 +371,47 @@ def python_build(session: nox.Session, dist: str) -> None:
         dist,
         external=True,
     )
+
+
+@nox_session()
+def check_worker_startup(session: Session) -> None:
+    """
+    Check that the main 'worker' service can start up successfully using docker compose --wait.
+    Relies on the healthcheck defined in docker-compose.yml.
+    """
+    worker_service = "worker"
+    session.log(f"Attempting to start and wait for service: {worker_service}")
+
+    start_command = (
+        "docker",
+        "compose",
+        "up",
+        "--wait",
+        worker_service,
+    )
+    # Use "down" which stops and removes containers, networks, etc.
+    cleanup_command = (
+        "docker",
+        "compose",
+        "down",
+    )
+
+    try:
+        # Run the command. Nox will automatically raise CommandFailed on non-zero exit code.
+        session.run(*start_command, external=True)
+        session.log(
+            f"Service {worker_service} started successfully and became healthy."
+        )
+    except CommandFailed:
+        # If --wait fails (service doesn't become healthy), CommandFailed is raised.
+        session.log(
+            f"Service {worker_service} failed to start or become healthy within the specified timeout/retries."
+        )
+        # Logs are not printed automatically here, but can be checked manually if needed.
+        session.error(f"Service {worker_service} failed health check during startup.")
+    finally:
+        # Ensure cleanup runs regardless of success or failure
+        session.log("Running cleanup command: docker compose down")
+        session.run(
+            *cleanup_command, external=True, silent=True
+        )  # silent=True avoids extra noise if already down

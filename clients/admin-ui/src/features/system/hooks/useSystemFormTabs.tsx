@@ -6,7 +6,7 @@ import { useCallback, useEffect, useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "~/app/hooks";
 import { type TabData } from "~/features/common/DataTabs";
-import { useFeatures, useFlags } from "~/features/common/features";
+import { useFeatures } from "~/features/common/features";
 import {
   DirtyFormConfirmationModal,
   useIsAnyFormDirty,
@@ -125,9 +125,6 @@ const useSystemFormTabs = ({
   const [systemProcessesPersonalData, setSystemProcessesPersonalData] =
     useState<boolean | undefined>(undefined);
   const { plus: isPlusEnabled } = useFeatures();
-  const {
-    flags: { dataDiscoveryAndDetection, webMonitor },
-  } = useFlags();
   const { plus: hasPlus } = useFeatures();
 
   // Once we have saved the system basics, subscribe to the query so that activeSystem
@@ -246,7 +243,7 @@ const useSystemFormTabs = ({
     }
   }, [router.query, onTabChange]);
 
-  const showNewIntegrationNotice = hasPlus && dataDiscoveryAndDetection;
+  const showNewIntegrationNotice = hasPlus;
 
   const tabData: TabData[] = [
     {
@@ -354,7 +351,7 @@ const useSystemFormTabs = ({
     },
   ];
 
-  if (isPlusEnabled && webMonitor) {
+  if (isPlusEnabled) {
     tabData.push({
       label: "Assets",
       content: activeSystem ? (

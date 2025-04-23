@@ -29,6 +29,11 @@
           "fides_consent=;Path=/;expires='Thu, 01 Jan 1970 00:00:01 GMT';";
         location.reload();
       };
+      if (params.get("disable_animations") === "true") {
+        document.write(
+          "<style>div#fides-banner-container:not(.fides-embedded) { transition: none !important; }</style>",
+        );
+      }
     </script>
     <script>
       // Our cypress test suite requires injecting consent options through an obj on window
@@ -221,16 +226,24 @@
 
     <style>
       body {
-        margin: 16px;
+        margin: 16px 16px 64px 16px;
+        background-color: #fafafa;
+        font-family: "Inter", Arial, Helvetica, sans-serif;
         height: 100vh;
         overflow: scroll;
         overflow-x: hidden;
       }
+      h2 {
+        margin-bottom: 8px;
+      }
       pre {
-        background-color: #eee;
+        background-color: #e6e6e8;
         padding: 16px;
         white-space: pre-wrap;
         overflow-y: auto;
+        margin: 0px;
+        border-radius: 4px;
+        box-shadow: 0 2px 2px inset rgba(0, 0, 0, 0.05);
       }
       #fides-modal-link {
         border: none;
@@ -239,6 +252,14 @@
         cursor: pointer;
         text-decoration: underline;
       }
+      .delete-cookie {
+        background-color: #2b2e35;
+        color: #fafafa;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 4px;
+        cursor: pointer;
+      }
     </style>
   </head>
 
@@ -246,10 +267,9 @@
     <main>
       <h1>fides.js demo page</h1>
       <p>
-        This page exists to demonstrate and debug the fides.js script. It is
-        used by the Privacy Center's test suite to ensure that users' consent
-        choices can be accessed by pages that live outside of the Privacy
-        Center.
+        This page exists to test and debug the fides.js script. It is used by
+        the Privacy Center's test suite to ensure that users' consent choices
+        can be accessed by pages that live outside of the Privacy Center.
       </p>
 
       <div>

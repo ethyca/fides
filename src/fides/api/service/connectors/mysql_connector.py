@@ -1,10 +1,11 @@
-from typing import List
+from typing import Dict, List
 
 from sqlalchemy.engine import Engine, LegacyCursorResult, create_engine  # type: ignore
 
 from fides.api.graph.execution import ExecutionNode
 from fides.api.schemas.connection_configuration.connection_secrets_mysql import (
     MySQLSchema,
+    MySQLSSLMode,
 )
 from fides.api.service.connectors.query_configs.mysql_query_config import (
     MySQLQueryConfig,
@@ -69,15 +70,26 @@ class MySQLConnector(SQLConnector):
             uri = self.build_ssh_uri(local_address=self.ssh_server.local_bind_address)
         else:
             uri = (self.configuration.secrets or {}).get("url") or self.build_uri()
+        connect_args = self.get_connect_args()
         return create_engine(
             uri,
             hide_parameters=self.hide_parameters,
             echo=not self.hide_parameters,
+            connect_args=connect_args,
         )
 
     def query_config(self, node: ExecutionNode) -> SQLQueryConfig:
         """Query wrapper corresponding to the input execution_node."""
         return MySQLQueryConfig(node)
+
+    def get_connect_args(self) -> Dict[str, Dict[str, MySQLSSLMode]]:
+        """Get connection arguments for the engine"""
+        ssl_mode = self.configuration.secrets.get("ssl_mode", MySQLSSLMode.preferred)
+        return {
+            "ssl": {
+                "mode": ssl_mode,
+            }
+        }
 
     @staticmethod
     def cursor_result_to_rows(results: LegacyCursorResult) -> List[Row]:
