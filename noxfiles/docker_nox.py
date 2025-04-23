@@ -1,6 +1,7 @@
 """Contains the nox sessions for docker-related tasks."""
 
 import os
+import subprocess
 from typing import Callable, Dict, List, Optional, Tuple
 
 import nox
@@ -20,6 +21,12 @@ from git_nox import get_current_tag, recognized_tag
 
 DOCKER_PLATFORMS = os.getenv("DOCKER_PLATFORMS", "linux/amd64,linux/arm64")
 IMAGE_SUFFIX = os.getenv("IMAGE_SUFFIX", "")  # Empty by default for local builds
+DIGEST_MODE = (
+    os.getenv("DIGEST_MODE", "false").lower() == "true"
+)  # New env var for digest mode
+DIGEST_FILE = os.getenv(
+    "DIGEST_FILE", "/tmp/image-digest.txt"
+)  # Output file for the digest
 
 
 def verify_git_tag(session: nox.Session) -> Optional[str]:
@@ -54,24 +61,41 @@ def generate_buildx_command(
     """
     Generate the command for building and publishing an image.
 
+    Modified to support digest-only mode for multi-arch builds.
     See tests for example usage in `test_docker_nox.py`
     """
-    buildx_command: Tuple[str, ...] = (
-        "docker",
-        "buildx",
-        "build",
-        "--push",
-        "--provenance=false",
-        f"--target={docker_build_target}",
-        "--platform",
-        DOCKER_PLATFORMS,
-        dockerfile_path,
-    )
+    if DIGEST_MODE:
+        # In digest mode, we use output=type=image,push-by-digest=true
+        buildx_command: Tuple[str, ...] = (
+            "docker",
+            "buildx",
+            "build",
+            "--provenance=false",
+            f"--target={docker_build_target}",
+            "--platform",
+            DOCKER_PLATFORMS,
+            f"--output=type=image,name={image_tags[0].split(':')[0]},push-by-digest=true,push=true",
+            dockerfile_path,
+        )
+        return buildx_command
+    else:
+        # Original behavior
+        buildx_command: Tuple[str, ...] = (
+            "docker",
+            "buildx",
+            "build",
+            "--push",
+            "--provenance=false",
+            f"--target={docker_build_target}",
+            "--platform",
+            DOCKER_PLATFORMS,
+            dockerfile_path,
+        )
 
-    for tag in image_tags:
-        buildx_command += ("--tag", f"{tag}{IMAGE_SUFFIX}")
+        for tag in image_tags:
+            buildx_command += ("--tag", f"{tag}{IMAGE_SUFFIX}")
 
-    return buildx_command
+        return buildx_command
 
 
 def get_current_image() -> str:
@@ -205,6 +229,7 @@ def push(session: nox.Session, tag: str, app: str) -> None:
 
     Posargs:
     git_tag - Additionally tags images with the git tag of the current commit, if it exists
+    digest - Enable digest mode, which builds and pushes by digest without tags
 
     Note:
     Due to how `buildx` works, all platform images need to be build in a
@@ -214,7 +239,12 @@ def push(session: nox.Session, tag: str, app: str) -> None:
     Example Calls:
     nox -s "push(fides, prod)"
     nox -s "push(sample_app, prerelease) -- git_tag"
+    nox -s "push(fides, dev) -- digest"  # Push by digest only
     """
+    # Check if we should enable digest mode based on posargs
+    if "digest" in session.posargs:
+        os.environ["DIGEST_MODE"] = "true"
+        session.log("Digest mode enabled: Building and pushing by digest without tags")
 
     # Create the buildx builder
     session.run(
@@ -271,4 +301,38 @@ def push(session: nox.Session, tag: str, app: str) -> None:
         dockerfile_path=app_info["path"],
     )
 
-    session.run(*buildx_command, external=True)
+    if DIGEST_MODE:
+        # In digest mode, we need to capture the output to extract the digest
+        cmd_str = " ".join(buildx_command)
+        session.log(f"Running: {cmd_str}")
+        # Use subprocess directly to capture output
+        result = subprocess.run(
+            buildx_command, capture_output=True, text=True, check=True
+        )
+
+        # Extract digest from output
+        output_lines = result.stdout.splitlines()
+        digest_line = None
+        for line in output_lines:
+            if "sha256:" in line and "digest:" in line:
+                digest_line = line
+                break
+
+        if digest_line:
+            # Extract the digest
+            parts = digest_line.split("sha256:")
+            if len(parts) > 1:
+                digest = parts[1].strip().split(" ")[0].strip()
+                session.log(f"Image digest: sha256:{digest}")
+
+                # Write digest to file
+                with open(DIGEST_FILE, "w") as f:
+                    f.write(digest)
+                session.log(f"Digest written to {DIGEST_FILE}")
+            else:
+                session.error("Failed to parse digest from output")
+        else:
+            session.error("No digest found in build output")
+    else:
+        # Standard mode, just run the command
+        session.run(*buildx_command, external=True)

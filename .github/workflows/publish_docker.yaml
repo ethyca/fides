@@ -82,6 +82,9 @@ jobs:
           python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
           cache: "pip"
 
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
       - name: Login to DockerHub
         uses: docker/login-action@v3
         with:
@@ -91,6 +94,11 @@ jobs:
       - name: Install Dev Requirements
         run: pip install -r dev-requirements.txt
 
+      - name: Prepare Platform Info
+        id: platform
+        run: |
+          echo "PLATFORM_PAIR=linux-${{ matrix.arch }}" >> $GITHUB_OUTPUT
+
       # if neither prod, rc, beta or alpha git tag, then push images with the ":dev" tag
       # these dev images do not need a versioned/git-tagged image
       - name: Push Fides Dev Tag
@@ -98,7 +106,9 @@ jobs:
         env:
           DOCKER_PLATFORMS: linux/${{ matrix.arch }}
           IMAGE_SUFFIX: -${{ matrix.arch }}
-        run: nox -s "push(${{ matrix.application }},dev)"
+          DIGEST_MODE: "true"
+          DIGEST_FILE: "/tmp/image-digest.txt"
+        run: nox -s "push(${{ matrix.application }},dev)" -- digest
 
       # if a prod git tag, then we run the prod job to publish images tagged with the version number and a constant ":latest" tag
       # prod pushes a versioned image, git-tagged images not needed
@@ -107,7 +117,9 @@ jobs:
         env:
           DOCKER_PLATFORMS: linux/${{ matrix.arch }}
           IMAGE_SUFFIX: -${{ matrix.arch }}
-        run: nox -s "push(${{ matrix.application }},prod)"
+          DIGEST_MODE: "true"
+          DIGEST_FILE: "/tmp/image-digest.txt"
+        run: nox -s "push(${{ matrix.application }},prod)" -- digest
 
       # if an RC git tag, then we run the rc job to publish images with an ":rc" tag
       # git-tagged images are also pushed
@@ -116,7 +128,9 @@ jobs:
         env:
           DOCKER_PLATFORMS: linux/${{ matrix.arch }}
           IMAGE_SUFFIX: -${{ matrix.arch }}
-        run: nox -s "push(${{ matrix.application }},rc)" -- git_tag
+          DIGEST_MODE: "true"
+          DIGEST_FILE: "/tmp/image-digest.txt"
+        run: nox -s "push(${{ matrix.application }},rc)" -- digest git_tag
 
       # if an alpha or beta git tag, then we run the prerelease job to publish images with an ":prerelease" tag
       # git-tagged images are also pushed
@@ -125,7 +139,28 @@ jobs:
         env:
           DOCKER_PLATFORMS: linux/${{ matrix.arch }}
           IMAGE_SUFFIX: -${{ matrix.arch }}
-        run: nox -s "push(${{ matrix.application }},prerelease)" -- git_tag
+          DIGEST_MODE: "true"
+          DIGEST_FILE: "/tmp/image-digest.txt"
+        run: nox -s "push(${{ matrix.application }},prerelease)" -- digest git_tag
+
+      # Export and upload the digest as an artifact
+      - name: Export digest
+        run: |
+          mkdir -p /tmp/digests/${{ matrix.application }}
+          if [ -f "/tmp/image-digest.txt" ]; then
+            cp "/tmp/image-digest.txt" "/tmp/digests/${{ matrix.application }}/${{ steps.platform.outputs.PLATFORM_PAIR }}"
+          else
+            echo "No digest file found!"
+            exit 1
+          fi
+
+      - name: Upload digest
+        uses: actions/upload-artifact@v4
+        with:
+          name: digests-${{ matrix.application }}-${{ steps.platform.outputs.PLATFORM_PAIR }}
+          path: /tmp/digests/${{ matrix.application }}/*
+          if-no-files-found: error
+          retention-days: 1
 
   CreateManifests:
     needs: [Push, ParseTags]
@@ -141,6 +176,16 @@ jobs:
           - application: "privacy_center"
             image_name: "fides-privacy-center"
     steps:
+      - name: Download digests
+        uses: actions/download-artifact@v4
+        with:
+          path: /tmp/digests
+          pattern: digests-${{ matrix.application }}-*
+          merge-multiple: true
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
       - name: Login to DockerHub
         uses: docker/login-action@v3
         with:
@@ -150,130 +195,38 @@ jobs:
       - name: Create and Push Dev Manifest
         if: needs.ParseTags.outputs.prod_tag == 'false' && needs.ParseTags.outputs.rc_tag == 'false' && needs.ParseTags.outputs.beta_tag == 'false' && needs.ParseTags.outputs.alpha_tag == 'false'
         run: |
-          docker manifest create ethyca/${{ matrix.image_name }}:dev \
-            --amend ethyca/${{ matrix.image_name }}:dev-amd64 \
-            --amend ethyca/${{ matrix.image_name }}:dev-arm64
-          docker manifest push ethyca/${{ matrix.image_name }}:dev
+          docker buildx imagetools create $(find /tmp/digests -type f -not -path "*/\.*" | xargs -I{} echo -n "ethyca/${{ matrix.image_name }}@sha256:$(cat {}) ") \
+            -t ethyca/${{ matrix.image_name }}:dev
 
       - name: Create and Push Prod Manifest
         if: needs.ParseTags.outputs.prod_tag == 'true'
         run: |
           # Create and push version manifest
-          docker manifest create ethyca/${{ matrix.image_name }}:${{ needs.ParseTags.outputs.version }} \
-            --amend ethyca/${{ matrix.image_name }}:${{ needs.ParseTags.outputs.version }}-amd64 \
-            --amend ethyca/${{ matrix.image_name }}:${{ needs.ParseTags.outputs.version }}-arm64
-          docker manifest push ethyca/${{ matrix.image_name }}:${{ needs.ParseTags.outputs.version }}
+          docker buildx imagetools create $(find /tmp/digests -type f -not -path "*/\.*" | xargs -I{} echo -n "ethyca/${{ matrix.image_name }}@sha256:$(cat {}) ") \
+            -t ethyca/${{ matrix.image_name }}:${{ needs.ParseTags.outputs.version }}
           # Create and push latest manifest
-          docker manifest create ethyca/${{ matrix.image_name }}:latest \
-            --amend ethyca/${{ matrix.image_name }}:latest-amd64 \
-            --amend ethyca/${{ matrix.image_name }}:latest-arm64
-          docker manifest push ethyca/${{ matrix.image_name }}:latest
+          docker buildx imagetools create $(find /tmp/digests -type f -not -path "*/\.*" | xargs -I{} echo -n "ethyca/${{ matrix.image_name }}@sha256:$(cat {}) ") \
+            -t ethyca/${{ matrix.image_name }}:latest
 
       - name: Create and Push RC Manifest
         if: needs.ParseTags.outputs.rc_tag == 'true'
         run: |
           # Create and push version manifest
-          docker manifest create ethyca/${{ matrix.image_name }}:${{ needs.ParseTags.outputs.version }} \
-            --amend ethyca/${{ matrix.image_name }}:${{ needs.ParseTags.outputs.version }}-amd64 \
-            --amend ethyca/${{ matrix.image_name }}:${{ needs.ParseTags.outputs.version }}-arm64
-          docker manifest push ethyca/${{ matrix.image_name }}:${{ needs.ParseTags.outputs.version }}
+          docker buildx imagetools create $(find /tmp/digests -type f -not -path "*/\.*" | xargs -I{} echo -n "ethyca/${{ matrix.image_name }}@sha256:$(cat {}) ") \
+            -t ethyca/${{ matrix.image_name }}:${{ needs.ParseTags.outputs.version }}
           # Create and push rc manifest
-          docker manifest create ethyca/${{ matrix.image_name }}:rc \
-            --amend ethyca/${{ matrix.image_name }}:rc-amd64 \
-            --amend ethyca/${{ matrix.image_name }}:rc-arm64
-          docker manifest push ethyca/${{ matrix.image_name }}:rc
+          docker buildx imagetools create $(find /tmp/digests -type f -not -path "*/\.*" | xargs -I{} echo -n "ethyca/${{ matrix.image_name }}@sha256:$(cat {}) ") \
+            -t ethyca/${{ matrix.image_name }}:rc
 
       - name: Create and Push Prerelease Manifest
         if: needs.ParseTags.outputs.alpha_tag == 'true' || needs.ParseTags.outputs.beta_tag == 'true'
         run: |
           # Create and push version manifest
-          docker manifest create ethyca/${{ matrix.image_name }}:${{ needs.ParseTags.outputs.version }} \
-            --amend ethyca/${{ matrix.image_name }}:${{ needs.ParseTags.outputs.version }}-amd64 \
-            --amend ethyca/${{ matrix.image_name }}:${{ needs.ParseTags.outputs.version }}-arm64
-          docker manifest push ethyca/${{ matrix.image_name }}:${{ needs.ParseTags.outputs.version }}
+          docker buildx imagetools create $(find /tmp/digests -type f -not -path "*/\.*" | xargs -I{} echo -n "ethyca/${{ matrix.image_name }}@sha256:$(cat {}) ") \
+            -t ethyca/${{ matrix.image_name }}:${{ needs.ParseTags.outputs.version }}
           # Create and push prerelease manifest
-          docker manifest create ethyca/${{ matrix.image_name }}:prerelease \
-            --amend ethyca/${{ matrix.image_name }}:prerelease-amd64 \
-            --amend ethyca/${{ matrix.image_name }}:prerelease-arm64
-          docker manifest push ethyca/${{ matrix.image_name }}:prerelease
-
-  Cleanup:
-    needs: [CreateManifests, ParseTags]
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        application: ["fides", "sample_app", "privacy_center"]
-        include:
-          - application: "fides"
-            image_name: "fides"
-          - application: "sample_app"
-            image_name: "fides-sample-app"
-          - application: "privacy_center"
-            image_name: "fides-privacy-center"
-    steps:
-      - name: Delete Architecture-Specific Images
-        run: |
-          # Get Docker Hub API token
-          TOKEN_RESPONSE=$(curl -s -H "Content-Type: application/json" \
-            -X POST \
-            -d '{"username": "${{ env.DOCKER_USER }}", "password": "${{ env.DOCKER_TOKEN }}"}' \
-            https://hub.docker.com/v2/users/login/)
-
-          echo "Token response: ${TOKEN_RESPONSE}"
-          TOKEN=$(echo "${TOKEN_RESPONSE}" | jq -r '.token')
-
-          if [[ -z "$TOKEN" || "$TOKEN" == "null" ]]; then
-            echo "::error::Failed to get Docker Hub API token"
-            echo "Response was: ${TOKEN_RESPONSE}"
-            exit 1
-          fi
-
-          echo "Successfully obtained Docker Hub API token"
-
-          # Define delete function with error checking
-          delete_tag() {
-            echo "Attempting to delete tag: $1"
-            RESPONSE=$(curl -s -w "\n%{http_code}" -X DELETE -H "Authorization: JWT $TOKEN" \
-              "https://hub.docker.com/v2/repositories/ethyca/${{ matrix.image_name }}/tags/$1/")
-
-            STATUS_CODE=$(echo "$RESPONSE" | tail -n1)
-            BODY=$(echo "$RESPONSE" | sed '$d')
-
-            if [[ "$STATUS_CODE" == 2* ]]; then
-              echo "Successfully deleted tag: $1"
-            else
-              echo "Failed to delete tag: $1"
-              echo "Status code: $STATUS_CODE"
-              echo "Response body: $BODY"
-            fi
-          }
-
-          # Delete based on tag type with explicit echo statements
-          echo "Current tag type: prod=${{ needs.ParseTags.outputs.prod_tag }}, rc=${{ needs.ParseTags.outputs.rc_tag }}, alpha=${{ needs.ParseTags.outputs.alpha_tag }}, beta=${{ needs.ParseTags.outputs.beta_tag }}"
-
-          if [[ "${{ needs.ParseTags.outputs.prod_tag }}" == "true" ]]; then
-            echo "Deleting prod tags"
-            delete_tag "${{ needs.ParseTags.outputs.version }}-amd64"
-            delete_tag "${{ needs.ParseTags.outputs.version }}-arm64"
-            delete_tag "latest-amd64"
-            delete_tag "latest-arm64"
-          elif [[ "${{ needs.ParseTags.outputs.rc_tag }}" == "true" ]]; then
-            echo "Deleting rc tags"
-            delete_tag "${{ needs.ParseTags.outputs.version }}-amd64"
-            delete_tag "${{ needs.ParseTags.outputs.version }}-arm64"
-            delete_tag "rc-amd64"
-            delete_tag "rc-arm64"
-          elif [[ "${{ needs.ParseTags.outputs.alpha_tag }}" == "true" || "${{ needs.ParseTags.outputs.beta_tag }}" == "true" ]]; then
-            echo "Deleting prerelease tags"
-            delete_tag "${{ needs.ParseTags.outputs.version }}-amd64"
-            delete_tag "${{ needs.ParseTags.outputs.version }}-arm64"
-            delete_tag "prerelease-amd64"
-            delete_tag "prerelease-arm64"
-          else
-            echo "Deleting dev tags"
-            delete_tag "dev-amd64"
-            delete_tag "dev-arm64"
-          fi
+          docker buildx imagetools create $(find /tmp/digests -type f -not -path "*/\.*" | xargs -I{} echo -n "ethyca/${{ matrix.image_name }}@sha256:$(cat {}) ") \
+            -t ethyca/${{ matrix.image_name }}:prerelease
 
   NotifyRedeploy:
     runs-on: ubuntu-latest
