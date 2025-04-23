@@ -146,7 +146,7 @@ const RequestAttachments = ({ subjectRequest }: RequestAttachmentsProps) => {
                 }
                 placement="top"
               >
-                <Flex align="center" gap={4} className="mb-4">
+                <Flex align="center" gap={12} className="mb-4">
                   <Button
                     icon={<Icons.Add />}
                     iconPosition="end"
@@ -156,7 +156,7 @@ const RequestAttachments = ({ subjectRequest }: RequestAttachmentsProps) => {
                   </Button>
                   <InfoTooltip
                     label={`Uploaded attachments are for internal use and won't be send as part of the request package.
-                      Maximum file size: XMB. Accepted filetypes: ${allowedFileExtensions.join(", ")}`}
+                      Maximum file size: 50MB. Accepted filetypes: ${allowedFileExtensions.join(", ")}`}
                     placement="top"
                   />
                 </Flex>
