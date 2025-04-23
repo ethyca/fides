@@ -133,6 +133,21 @@ const actionCenterApi = baseApi.injectEndpoints({
       },
       invalidatesTags: ["Discovery Monitor Results"],
     }),
+    restoreMonitorResultAssets: build.mutation<any, { urnList?: string[] }>({
+      query: (params) => {
+        const queryParams = new URLSearchParams({
+          status_to_set: DiffStatus.ADDITION,
+        });
+        params.urnList?.forEach((urn) =>
+          queryParams.append("staged_resource_urns", urn),
+        );
+        return {
+          method: "POST",
+          url: `/plus/discovery-monitor/un-mute?${queryParams}`,
+        };
+      },
+      invalidatesTags: ["Discovery Monitor Results"],
+    }),
     updateAssetsSystem: build.mutation<
       any,
       {
@@ -191,6 +206,7 @@ export const {
   useIgnoreMonitorResultSystemsMutation,
   useAddMonitorResultAssetsMutation,
   useIgnoreMonitorResultAssetsMutation,
+  useRestoreMonitorResultAssetsMutation,
   useUpdateAssetsSystemMutation,
   useUpdateAssetsDataUseMutation,
   useUpdateAssetsMutation,
