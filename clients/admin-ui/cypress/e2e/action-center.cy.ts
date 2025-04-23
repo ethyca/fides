@@ -516,6 +516,37 @@ describe("Action center", () => {
         "3 assets from Google Tag Manager have been ignored and will not appear in future scans.",
       );
     });
+
+    it("should restore individual ignored assets", () => {
+      cy.getByTestId("tab-Ignored").click({ force: true });
+      cy.location("hash").should("eq", "#ignored");
+      cy.getByTestId("row-0-col-actions").within(() => {
+        cy.getByTestId("restore-btn").click();
+      });
+      cy.wait("@restoreAssets");
+      cy.getByTestId("success-alert").should(
+        "contain",
+        "1 asset has been restored and will appear in future scans.",
+      );
+    });
+
+    it("should restore ignored assets", () => {
+      cy.getByTestId("tab-Ignored").click({ force: true });
+      cy.location("hash").should("eq", "#ignored");
+      cy.getByTestId("bulk-actions-menu").should("be.disabled");
+      cy.getByTestId("row-0-col-select").find("label").click();
+      cy.getByTestId("row-2-col-select").find("label").click();
+      cy.getByTestId("selected-count").should("contain", "2 selected");
+      cy.getByTestId("bulk-actions-menu").should("not.be.disabled");
+      cy.getByTestId("bulk-actions-menu").click();
+      cy.getByTestId("bulk-restore").click();
+      cy.wait("@restoreAssets");
+      cy.getByTestId("success-alert").should(
+        "contain",
+        "2 assets have been restored and will appear in future scans.",
+      );
+    });
+
     it("should add all assets", () => {
       cy.intercept(
         "POST",
