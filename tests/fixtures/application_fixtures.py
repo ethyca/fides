@@ -698,6 +698,7 @@ def access_and_erasure_policy(
 def erasure_policy(
     db: Session,
     oauth_client: ClientDetail,
+    default_data_categories,  # This needs to be explicitly passed in to ensure data categories are available
 ) -> Generator:
     erasure_policy = Policy.create(
         db=db,
@@ -1143,6 +1144,7 @@ def policy(
     db: Session,
     oauth_client: ClientDetail,
     storage_config: StorageConfig,
+    default_data_categories,  # This needs to be explicitly passed in to ensure data categories are available
 ) -> Generator:
     access_request_policy = Policy.create(
         db=db,
@@ -1192,7 +1194,6 @@ def policy(
 def consent_policy(
     db: Session,
     oauth_client: ClientDetail,
-    storage_config: StorageConfig,
 ) -> Generator:
     """Consent policies only need a ConsentRule attached - no RuleTargets necessary"""
     consent_request_policy = Policy.create(
@@ -1230,6 +1231,7 @@ def policy_local_storage(
     db: Session,
     oauth_client: ClientDetail,
     storage_config_local: StorageConfig,
+    default_data_categories,  # This needs to be explicitly passed in to ensure data categories are available
 ) -> Generator:
     """
     A basic example policy fixture that uses a local storage config
@@ -1284,7 +1286,9 @@ def policy_drp_action(
     db: Session,
     oauth_client: ClientDetail,
     storage_config: StorageConfig,
+    default_data_categories,  # This needs to be explicitly passed in to ensure data categories are available
 ) -> Generator:
+
     access_request_policy = Policy.create(
         db=db,
         data={
@@ -1330,7 +1334,11 @@ def policy_drp_action(
 
 
 @pytest.fixture(scope="function")
-def policy_drp_action_erasure(db: Session, oauth_client: ClientDetail) -> Generator:
+def policy_drp_action_erasure(
+    db: Session,
+    oauth_client: ClientDetail,
+    default_data_categories,  # This needs to be explicitly passed in to ensure data categories are available
+) -> Generator:
     erasure_request_policy = Policy.create(
         db=db,
         data={
@@ -1382,7 +1390,7 @@ def policy_drp_action_erasure(db: Session, oauth_client: ClientDetail) -> Genera
 def erasure_policy_string_rewrite(
     db: Session,
     oauth_client: ClientDetail,
-    storage_config: StorageConfig,
+    default_data_categories,  # This needs to be explicitly passed in to ensure data categories are available
 ) -> Generator:
     erasure_policy = Policy.create(
         db=db,
@@ -1960,7 +1968,9 @@ def privacy_request_with_consent_policy(
 
 
 @pytest.fixture(scope="function")
-def privacy_request_with_custom_fields(db: Session, policy: Policy) -> PrivacyRequest:
+def privacy_request_with_custom_fields(
+    db: Session, policy: Policy, allow_custom_privacy_request_field_collection_enabled
+) -> PrivacyRequest:
     privacy_request = PrivacyRequest.create(
         db=db,
         data={
@@ -1988,7 +1998,7 @@ def privacy_request_with_custom_fields(db: Session, policy: Policy) -> PrivacyRe
 
 @pytest.fixture(scope="function")
 def privacy_request_with_custom_array_fields(
-    db: Session, policy: Policy
+    db: Session, policy: Policy, allow_custom_privacy_request_field_collection_enabled
 ) -> PrivacyRequest:
     privacy_request = PrivacyRequest.create(
         db=db,
@@ -3410,7 +3420,7 @@ def allow_custom_privacy_request_field_collection_enabled():
     original_value = CONFIG.execution.allow_custom_privacy_request_field_collection
     CONFIG.execution.allow_custom_privacy_request_field_collection = True
     yield
-    CONFIG.notifications.send_request_review_notification = original_value
+    CONFIG.execution.allow_custom_privacy_request_field_collection = original_value
 
 
 @pytest.fixture(scope="function")
@@ -3418,7 +3428,7 @@ def allow_custom_privacy_request_field_collection_disabled():
     original_value = CONFIG.execution.allow_custom_privacy_request_field_collection
     CONFIG.execution.allow_custom_privacy_request_field_collection = False
     yield
-    CONFIG.notifications.send_request_review_notification = original_value
+    CONFIG.execution.allow_custom_privacy_request_field_collection = original_value
 
 
 @pytest.fixture(scope="function")
@@ -3428,7 +3438,7 @@ def allow_custom_privacy_request_fields_in_request_execution_enabled():
     )
     CONFIG.execution.allow_custom_privacy_request_fields_in_request_execution = True
     yield
-    CONFIG.notifications.allow_custom_privacy_request_fields_in_request_execution = (
+    CONFIG.execution.allow_custom_privacy_request_fields_in_request_execution = (
         original_value
     )
 
@@ -3440,7 +3450,7 @@ def allow_custom_privacy_request_fields_in_request_execution_disabled():
     )
     CONFIG.execution.allow_custom_privacy_request_fields_in_request_execution = False
     yield
-    CONFIG.notifications.allow_custom_privacy_request_fields_in_request_execution = (
+    CONFIG.execution.allow_custom_privacy_request_fields_in_request_execution = (
         original_value
     )
 

@@ -13,7 +13,7 @@ These tests are in the `test/ctl` subdir to load async db fixtures correctly.
 """
 
 
-@pytest.fixture(scope="function", autouse=True)
+@pytest.fixture(scope="function")
 async def reset_location_regulation_selections(async_session):
     await LocationRegulationSelections.set_selected_locations_async(async_session, [])
     await LocationRegulationSelections.set_selected_regulations_async(async_session, [])

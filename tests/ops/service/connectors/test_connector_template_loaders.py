@@ -58,7 +58,7 @@ class TestFileConnectorTemplateLoader:
 
 
 class TestCustomConnectorTemplateLoader:
-    @pytest.fixture(autouse=True)
+    @pytest.fixture(scope="function", autouse=True)
     def reset_connector_template_loaders(self):
         """
         Resets the loader singleton instances before each test
