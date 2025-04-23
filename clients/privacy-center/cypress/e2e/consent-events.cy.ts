@@ -95,8 +95,9 @@ describe("Consent FidesEvents", () => {
         detail: { extraDetails: { servingComponent: "modal" } },
       });
 
-      // Toggle first notice on then off
-      cy.get("#fides-modal .fides-toggle-input").first().click().click();
+      // Toggle Advertising notice on then off
+      cy.getByTestId("toggle-Advertising").click().click();
+      // cy.get("#fides-modal .fides-toggle-input").first().click().click();
       expectedEvents.push(
         {
           type: "FidesUIChanged",
@@ -135,7 +136,7 @@ describe("Consent FidesEvents", () => {
       );
 
       // Toggle second notice off (Analytics opt out)
-      cy.get("#fides-modal .fides-toggle-input").eq(1).click();
+      cy.get("#fides-modal .fides-toggle-input").eq(2).click();
       expectedEvents.push({
         type: "FidesUIChanged",
         detail: {

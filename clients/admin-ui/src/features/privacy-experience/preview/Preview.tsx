@@ -395,7 +395,7 @@ const Preview = ({
       )}
       <Script
         id="fides-js-script"
-        src="/api/fides-preview.js"
+        src="/lib/fides-preview.js"
         onReady={() => {
           setFidesScriptLoaded(true);
         }}
