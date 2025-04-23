@@ -39,6 +39,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Updated bulk ignore assets toast message [#6043](https://github.com/ethyca/fides/pull/6043)
 - Updated UI behavior for editing languages in the Experience config for consistency and clarity [#6055](https://github.com/ethyca/fides/pull/6055)
 - Moved detection & discovery features out of beta [#6059](https://github.com/ethyca/fides/pull/6059)
+- Show notice-only notices before other notices in modals of non-TCF experiences [#6074](https://github.com/ethyca/fides/pull/6074)
 
 ### Developer Experience
 - Reduced animations on Cypress tests in Privacy Center for quicker results [#5976](https://github.com/ethyca/fides/pull/5976)
@@ -54,6 +55,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Fixed performance issues in Data map report in Admin UI [#6046](https://github.com/ethyca/fides/pull/6046)
 - Fixed details requirements in AWS SES setup [#6047](https://github.com/ethyca/fides/pull/6047)
 - Addressed some performance issues with Experience configuration previews [#6055](https://github.com/ethyca/fides/pull/6055)
+- Fixed icon sizing in request manager table [#6079](https://github.com/ethyca/fides/pull/6079)
 
 ## [2.59.2](https://github.com/ethyca/fides/compare/2.59.1...2.59.2)
 

@@ -608,19 +608,19 @@ describe("Consent i18n", () => {
           testModalNoticesLocalization(notices);
 
           // Check the GPC badge labels on the first notice
-          cy.get(
-            "#fides-modal .fides-modal-notices .fides-notice-toggle:first",
-          ).within(() => {
-            cy.get(".fides-notice-toggle-title").contains(notices[0].title);
-            cy.get(".fides-gpc-label").contains(modal.gpc_label);
-            cy.get(".fides-gpc-label .fides-gpc-badge").contains(
-              modal.gpc_applied_label,
-            );
-            cy.get(".fides-toggle-input").click();
-            cy.get(".fides-gpc-label .fides-gpc-badge").contains(
-              modal.gpc_overridden_label,
-            );
-          });
+          cy.get("#fides-modal .fides-modal-notices .fides-notice-toggle")
+            .eq(1)
+            .within(() => {
+              cy.get(".fides-notice-toggle-title").contains(notices[0].title);
+              cy.get(".fides-gpc-label").contains(modal.gpc_label);
+              cy.get(".fides-gpc-label .fides-gpc-badge").contains(
+                modal.gpc_applied_label,
+              );
+              cy.get(".fides-toggle-input").click();
+              cy.get(".fides-gpc-label .fides-gpc-badge").contains(
+                modal.gpc_overridden_label,
+              );
+            });
           cy.get(
             "#fides-modal .fides-modal-notices .fides-notice-toggle:last",
           ).within(() => {
@@ -790,9 +790,9 @@ describe("Consent i18n", () => {
            * 3) Spanish essential notice (correct Spanish translation)
            */
           const EXPECTED_NOTICE_HISTORY_IDS = [
+            "pri_notice-history-essential-es-000", // Spanish (es)
             "pri_notice-history-advertising-en-000", // English (en)
             "pri_notice-history-analytics-es-000", // Spanish (es)
-            "pri_notice-history-essential-es-000", // Spanish (es)
           ];
 
           // First, expect GPC to auto-apply and save preferences to the API
@@ -811,7 +811,14 @@ describe("Consent i18n", () => {
             const noticeHistoryIDs = preferences.map(
               (e: any) => e.privacy_notice_history_id,
             );
-            expect(noticeHistoryIDs).to.eql(EXPECTED_NOTICE_HISTORY_IDS);
+            cy.wrap(noticeHistoryIDs).should(
+              "deep.include.members",
+              EXPECTED_NOTICE_HISTORY_IDS,
+            );
+            cy.wrap(EXPECTED_NOTICE_HISTORY_IDS).should(
+              "deep.include.members",
+              noticeHistoryIDs,
+            );
           });
 
           // Open the modal and test the "notices served" API
@@ -824,8 +831,13 @@ describe("Consent i18n", () => {
             expect(privacy_experience_config_history_id).to.eq(
               "pri_exp-history-banner-modal-es-000",
             );
-            expect(privacy_notice_history_ids).to.eql(
+            cy.wrap(privacy_notice_history_ids).should(
+              "deep.include.members",
               EXPECTED_NOTICE_HISTORY_IDS,
+            );
+            cy.wrap(EXPECTED_NOTICE_HISTORY_IDS).should(
+              "deep.include.members",
+              privacy_notice_history_ids,
             );
           });
 
@@ -846,7 +858,14 @@ describe("Consent i18n", () => {
             const noticeHistoryIDs = preferences.map(
               (e: any) => e.privacy_notice_history_id,
             );
-            expect(noticeHistoryIDs).to.eql(EXPECTED_NOTICE_HISTORY_IDS);
+            cy.wrap(noticeHistoryIDs).should(
+              "deep.include.members",
+              EXPECTED_NOTICE_HISTORY_IDS,
+            );
+            cy.wrap(EXPECTED_NOTICE_HISTORY_IDS).should(
+              "deep.include.members",
+              noticeHistoryIDs,
+            );
           });
 
           // TODO (PROD-1598): test that correct history ID used after user changes language
@@ -1732,9 +1751,9 @@ describe("Consent i18n", () => {
         });
         cy.get("#fides-modal-link").click();
         cy.get("#fides-modal .fides-modal-notices").within(() => {
-          cy.get(".fides-toggle:first").contains("Off");
-          cy.get(".fides-toggle:first").click();
-          cy.get(".fides-toggle:first").contains("On");
+          cy.getByTestId("toggle-Advertising").contains("Off");
+          cy.getByTestId("toggle-Advertising").click();
+          cy.getByTestId("toggle-Advertising").contains("On");
         });
       });
 
