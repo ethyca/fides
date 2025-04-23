@@ -121,6 +121,7 @@ const ConsentReportingPage = () => {
                   icon={<Icons.Download />}
                   data-testid="download-btn"
                   onClick={() => setIsDownloadReportModalOpen(true)}
+                  aria-label="Download Consent Report"
                 />
                 <Dropdown
                   menu={{
