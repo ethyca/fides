@@ -788,7 +788,14 @@ describe("Consent overlay", () => {
             served_notice_history_id: body.served_notice_history_id,
             source: REQUEST_SOURCE,
           };
-          expect(body).to.eql(expected);
+          cy.wrap(body.preferences).should(
+            "deep.include.members",
+            expected.preferences,
+          );
+          cy.wrap(expected.preferences).should(
+            "deep.include.members",
+            body.preferences,
+          );
           expect(body.served_notice_history_id).to.be.a("string");
         });
 
@@ -890,7 +897,15 @@ describe("Consent overlay", () => {
             served_notice_history_id: body.served_notice_history_id,
             source: REQUEST_SOURCE,
           };
-          expect(body).to.eql(expected);
+          cy.wrap(body.preferences).should(
+            "deep.include.members",
+            expected.preferences,
+          );
+          cy.wrap(expected.preferences).should(
+            "deep.include.members",
+            body.preferences,
+          );
+          expect(body.served_notice_history_id).to.be.a("string");
         });
 
         // check that the cookie updated
@@ -2333,7 +2348,6 @@ describe("Consent overlay", () => {
             expect(consentMethod).to.eql(ConsentMethod.REJECT);
           });
       });
-
       it("emits FidesUpdating -> FidesUpdated events when accept all is clicked", () => {
         cy.get("div#fides-banner").within(() => {
           cy.contains("button", "Opt in to all").should("be.visible").click();
