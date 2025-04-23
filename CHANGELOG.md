@@ -38,6 +38,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Updated bulk ignore assets toast message [#6043](https://github.com/ethyca/fides/pull/6043)
 - Updated UI behavior for editing languages in the Experience config for consistency and clarity [#6055](https://github.com/ethyca/fides/pull/6055)
 - Moved detection & discovery features out of beta [#6059](https://github.com/ethyca/fides/pull/6059)
+- Show notice-only notices before other notices in modals of non-TCF experiences [#6074](https://github.com/ethyca/fides/pull/6074)
 
 ### Developer Experience
 - Reduced animations on Cypress tests in Privacy Center for quicker results [#5976](https://github.com/ethyca/fides/pull/5976)
@@ -45,6 +46,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Added custom Typography component to FidesUI with configurable text sizes [#6062](https://github.com/ethyca/fides/pull/6062)
 - Updated the Docker image used for MSSQL integration tests [#6063](https://github.com/ethyca/fides/pull/6063)
 - Improved Docker image build times by using separate amd64/arm64 Github runners [#6073](https://github.com/ethyca/fides/pull/6073)
+- Enhanced Fides.js demo pages with improved styling and JSON visualization [#6075](https://github.com/ethyca/fides/pull/6075)
 - Cleaning up test fixtures [#6008](https://github.com/ethyca/fides/pull/6008)
 
 ### Fixed
