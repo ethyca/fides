@@ -21,9 +21,8 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.60.1...main)
 
-
-
-
+### Developer Experience
+- Cleaning up test fixtures [#6008](https://github.com/ethyca/fides/pull/6008)
 
 ## [2.60.0](https://github.com/ethyca/fides/compare/2.59.2...2.60.0)
 
@@ -54,7 +53,6 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Updated the Docker image used for MSSQL integration tests [#6063](https://github.com/ethyca/fides/pull/6063)
 - Improved Docker image build times by using separate amd64/arm64 Github runners [#6073](https://github.com/ethyca/fides/pull/6073)
 - Enhanced Fides.js demo pages with improved styling and JSON visualization [#6075](https://github.com/ethyca/fides/pull/6075)
-- Cleaning up test fixtures [#6008](https://github.com/ethyca/fides/pull/6008)
 
 ### Fixed
 - Fixed typo in Vermont US state name [#6029](https://github.com/ethyca/fides/pull/6029)
