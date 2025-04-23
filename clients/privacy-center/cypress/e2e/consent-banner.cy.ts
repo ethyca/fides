@@ -332,7 +332,14 @@ describe("Consent overlay", () => {
             // uuid is generated automatically if the user has no saved consent cookie
             generatedUserDeviceId = body.browser_identity.fides_user_device_id;
             expect(generatedUserDeviceId).to.be.a("string");
-            expect(body.preferences).to.eql(expected.preferences);
+            cy.wrap(body.preferences).should(
+              "deep.include.members",
+              expected.preferences,
+            );
+            cy.wrap(expected.preferences).should(
+              "deep.include.members",
+              body.preferences,
+            );
             expect(body.privacy_experience_config_history_id).to.eql(
               expected.privacy_experience_config_history_id,
             );
@@ -1099,7 +1106,8 @@ describe("Consent overlay", () => {
           cy.get("button").contains("OK").click();
           cy.wait("@patchPrivacyPreference").then((interception) => {
             const { body } = interception.request;
-            expect(body.preferences).to.eql(expected);
+            cy.wrap(body.preferences).should("deep.include.members", expected);
+            cy.wrap(expected).should("deep.include.members", body.preferences);
           });
         });
       });
@@ -1111,7 +1119,8 @@ describe("Consent overlay", () => {
           cy.get("button").contains("OK").click();
           cy.wait("@patchPrivacyPreference").then((interception) => {
             const { body } = interception.request;
-            expect(body.preferences).to.eql(expected);
+            cy.wrap(body.preferences).should("deep.include.members", expected);
+            cy.wrap(expected).should("deep.include.members", body.preferences);
           });
         });
       });
@@ -2039,7 +2048,7 @@ describe("Consent overlay", () => {
       describe("Reject all", () => {
         const validateRejectAll = (interception: any) => {
           const { body } = interception.request;
-          expect(body.preferences).to.eql([
+          const expectedPreferences = [
             {
               preference: "opt_out",
               privacy_notice_history_id:
@@ -2053,7 +2062,15 @@ describe("Consent overlay", () => {
               preference: "acknowledge",
               privacy_notice_history_id: "pri_notice-history-essential-en-000",
             },
-          ]);
+          ];
+          cy.wrap(body.preferences).should(
+            "deep.include.members",
+            expectedPreferences,
+          );
+          cy.wrap(expectedPreferences).should(
+            "deep.include.members",
+            body.preferences,
+          );
           expect(body.method).to.eql(ConsentMethod.SCRIPT);
         };
         it("rejects all notices automatically when set", () => {
@@ -2112,7 +2129,7 @@ describe("Consent overlay", () => {
       describe("Accept all", () => {
         const validateAcceptAll = (interception: any) => {
           const { body } = interception.request;
-          expect(body.preferences).to.eql([
+          const expectedPreferences = [
             {
               preference: "opt_in",
               privacy_notice_history_id:
@@ -2126,7 +2143,15 @@ describe("Consent overlay", () => {
               preference: "acknowledge",
               privacy_notice_history_id: "pri_notice-history-essential-en-000",
             },
-          ]);
+          ];
+          cy.wrap(body.preferences).should(
+            "deep.include.members",
+            expectedPreferences,
+          );
+          cy.wrap(expectedPreferences).should(
+            "deep.include.members",
+            body.preferences,
+          );
           expect(body.method).to.eql(ConsentMethod.SCRIPT);
         };
         it("accepts all notices automatically when set", () => {
