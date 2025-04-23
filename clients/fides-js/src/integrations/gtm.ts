@@ -73,8 +73,10 @@ const pushFidesVariableToGTM = (
     nonApplicablePrivacyNotices
   ) {
     nonApplicablePrivacyNotices.forEach((key) => {
-      consentValues[key] =
-        flagType === GtmFlagType.CONSENT_MECHANISM ? "not_applicable" : true;
+      if (typeof consentValues[key] === "undefined") {
+        consentValues[key] =
+          flagType === GtmFlagType.CONSENT_MECHANISM ? "not_applicable" : true;
+      }
     });
   }
 
