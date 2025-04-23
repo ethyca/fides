@@ -54,6 +54,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Fixed performance issues in Data map report in Admin UI [#6046](https://github.com/ethyca/fides/pull/6046)
 - Fixed details requirements in AWS SES setup [#6047](https://github.com/ethyca/fides/pull/6047)
 - Addressed some performance issues with Experience configuration previews [#6055](https://github.com/ethyca/fides/pull/6055)
+- Fixed icon sizing in request manager table [#6079](https://github.com/ethyca/fides/pull/6079)
 
 ## [2.59.2](https://github.com/ethyca/fides/compare/2.59.1...2.59.2)
 
