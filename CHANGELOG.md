@@ -27,6 +27,9 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 ### Developer Experience
 - Cleaning up test fixtures [#6008](https://github.com/ethyca/fides/pull/6008)
 
+### Fixed
+- Fix Special-purpose only vendors not correctly encoded in TC string [#6086](https://github.com/ethyca/fides/pull/6086)
+
 ## [2.60.0](https://github.com/ethyca/fides/compare/2.59.2...2.60.0)
 
 ### Added
