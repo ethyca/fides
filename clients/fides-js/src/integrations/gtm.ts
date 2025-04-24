@@ -32,6 +32,33 @@ export interface GtmOptions {
   flag_type?: GtmFlagType;
 }
 
+/**
+ * Composes consent values based on the consent mechanism and flag type
+ */
+const composeConsent = (
+  consent: Record<string, boolean>,
+  privacyNotices: any[] | undefined,
+  flagType: GtmFlagType,
+): Record<string, boolean | string> => {
+  const consentValues: Record<string, boolean | string> = {};
+
+  Object.entries(consent).forEach(([key, value]) => {
+    if (privacyNotices && flagType === GtmFlagType.CONSENT_MECHANISM) {
+      const relevantNotice = privacyNotices.find(
+        (notice) => notice.notice_key === key,
+      );
+      consentValues[key] = transformConsentToFidesUserPreference(
+        value,
+        relevantNotice?.consent_mechanism,
+      );
+    } else {
+      consentValues[key] = value;
+    }
+  });
+
+  return consentValues;
+};
+
 // Helper function to push the Fides variable to the GTM data layer from a FidesEvent
 const pushFidesVariableToGTM = (
   fidesEvent: {
@@ -69,19 +96,10 @@ const pushFidesVariableToGTM = (
 
   // Then override with actual consent values
   if (consent) {
-    if (privacyNotices && flagType === GtmFlagType.CONSENT_MECHANISM) {
-      Object.entries(consent).forEach(([key, value]) => {
-        consentValues[key] = transformConsentToFidesUserPreference(
-          value,
-          privacyNotices.find((notice) => notice.notice_key === key)
-            ?.consent_mechanism,
-        );
-      });
-    } else {
-      Object.entries(consent).forEach(([key, value]) => {
-        consentValues[key] = value;
-      });
-    }
+    Object.assign(
+      consentValues,
+      composeConsent(consent, privacyNotices, flagType),
+    );
   }
 
   // Construct the Fides variable that will be pushed to GTM
