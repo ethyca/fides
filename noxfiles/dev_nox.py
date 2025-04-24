@@ -289,3 +289,10 @@ def delete_old_test_pypi_packages(session: Session, action: str) -> None:
             "-y",
             "--do-it",
         )
+
+@nox_session()
+def load_integration_env_vars(session: Session) -> None:
+    """
+    Load integration environment variables from 1Password.
+    """
+    session.run("bash", "noxfiles/load-integration-env-vars.sh", external=True)

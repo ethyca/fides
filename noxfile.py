@@ -7,6 +7,7 @@ import shutil
 import sys
 import webbrowser
 from os.path import isfile
+from pathlib import Path
 from subprocess import PIPE, CalledProcessError, run
 from typing import List
 
@@ -82,6 +83,8 @@ def usage(session: nox.Session) -> None:
 
 def check_for_env_file() -> None:
     """Create a .env file if none exists."""
+    env_integrations_file = ".env.integrations"
+    Path(env_integrations_file).touch()
     env_file_example = "example.env"
     env_file = ".env"
     if not isfile(env_file):
