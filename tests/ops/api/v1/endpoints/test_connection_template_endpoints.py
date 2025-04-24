@@ -1150,6 +1150,12 @@ class TestGetConnectionSecretSchema:
 
         assert resp.json() == {
             "definitions": {
+                "GoogleCloudSQLIPType": {
+                    "description": "Enum for Google " "Cloud SQL IP types",
+                    "enum": ["public", "private", "psc"],
+                    "title": "GoogleCloudSQLIPType",
+                    "type": "string",
+                },
                 "KeyfileCreds": {
                     "description": "Schema that holds Google "
                     "Cloud SQL for Postgres "
@@ -1190,7 +1196,7 @@ class TestGetConnectionSecretSchema:
                     "required": ["project_id", "universe_domain"],
                     "title": "KeyfileCreds",
                     "type": "object",
-                }
+                },
             },
             "description": "Schema to validate the secrets needed to connect to Google "
             "Cloud SQL for Postgres",
@@ -1223,6 +1229,11 @@ class TestGetConnectionSecretSchema:
                     "account in GCP.",
                     "sensitive": True,
                     "title": "Keyfile creds",
+                },
+                "ip_type": {
+                    "allOf": [{"$ref": "#/definitions/GoogleCloudSQLIPType"}],
+                    "description": "Specify the IP Address type required for your database (defaults to public). See the Google Cloud documentation for more information about connection options: https://cloud.google.com/sql/docs/postgres/connect-overview",
+                    "title": "IP type",
                 },
             },
             "required": ["db_iam_user", "instance_connection_name", "keyfile_creds"],
