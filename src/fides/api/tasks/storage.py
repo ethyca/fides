@@ -130,9 +130,9 @@ def upload_to_s3(  # pylint: disable=R0913
     if privacy_request is None:
         raise ValueError("Privacy request must be provided")
 
-    storage_settings = CONFIG.credentials.get("storage")
+    storage_settings = CONFIG.credentials.get("storage", None)
     assume_role_arn = (
-        storage_settings.get("aws_s3_assume_role_arn")
+        storage_settings.get("aws_s3_assume_role_arn", None)
         if storage_settings is not None
         else None
     )
