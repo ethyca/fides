@@ -34,7 +34,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ### Added
 - Migrate `Cookies` resources to `Asset` resources of type `Cookie` [#5776](https://github.com/ethyca/fides/pull/5776) https://github.com/ethyca/fides/labels/db-migration https://github.com/ethyca/fides/labels/high-risk
-- Added support for selecting TCF Publisher Override configuration when configuring Privacy Experience [#6033](https://github.com/ethyca/fides/pull/6033)
+- Added support for selecting TCF Publisher Override configuration when configuring Privacy Experience (behind beta feature flag) [#6033](https://github.com/ethyca/fides/pull/6033)
 - Added Google Cloud Storage as a storage option [#6006](https://github.com/ethyca/fides/pull/6006)
 - Update the Datahub Permissions section to include required permissions from Datahub [#6052](https://github.com/ethyca/fides/pull/6052)
 - Added assumed role arn capabilities to aws Storage [#6027](https://github.com/ethyca/fides/pull/6027)
@@ -43,7 +43,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Added ability to "restore" ignored assets in action center [#6080](https://github.com/ethyca/fides/pull/6080)
 
 ### Changed
-- Changed how TCF Publisher Overrides gets configured in consent settings [#6013](https://github.com/ethyca/fides/pull/6013)
+- Changed how TCF Publisher Overrides gets configured in consent settings (behind beta feature flag) [#6013](https://github.com/ethyca/fides/pull/6013)
 - Frontend now do not generate `key` when creating a Website Monitor [#6041](https://github.com/ethyca/fides/pull/6041)
 - Integrations manage modals now are cappable of showing a small description [#6037](https://github.com/ethyca/fides/pull/6037)
 - UI now allows assigning of non-consent-category data uses to system assets [#6049](https://github.com/ethyca/fides/pull/6049)
