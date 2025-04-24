@@ -51,23 +51,12 @@ const pushFidesVariableToGTM = (
       nonApplicableFlagMode = GtmNonApplicableFlagMode.OMIT,
     flag_type: flagType = GtmFlagType.BOOLEAN,
   } = options ?? {};
-  const consentValues: FidesVariable["consent"] = JSON.parse(
-    JSON.stringify(consent),
-  );
+  const consentValues: FidesVariable["consent"] = {};
   const privacyNotices = window.Fides?.experience?.privacy_notices;
   const nonApplicablePrivacyNotices =
     window.Fides?.experience?.non_applicable_privacy_notices;
 
-  if (privacyNotices && flagType === GtmFlagType.CONSENT_MECHANISM) {
-    Object.entries(consent).forEach(([key, value]) => {
-      consentValues[key] = transformConsentToFidesUserPreference(
-        value,
-        privacyNotices.find((notice) => notice.notice_key === key)
-          ?.consent_mechanism,
-      );
-    });
-  }
-
+  // First set defaults for non-applicable privacy notices if needed
   if (
     nonApplicableFlagMode === GtmNonApplicableFlagMode.INCLUDE &&
     nonApplicablePrivacyNotices
@@ -76,6 +65,23 @@ const pushFidesVariableToGTM = (
       consentValues[key] =
         flagType === GtmFlagType.CONSENT_MECHANISM ? "not_applicable" : true;
     });
+  }
+
+  // Then override with actual consent values
+  if (consent) {
+    if (privacyNotices && flagType === GtmFlagType.CONSENT_MECHANISM) {
+      Object.entries(consent).forEach(([key, value]) => {
+        consentValues[key] = transformConsentToFidesUserPreference(
+          value,
+          privacyNotices.find((notice) => notice.notice_key === key)
+            ?.consent_mechanism,
+        );
+      });
+    } else {
+      Object.entries(consent).forEach(([key, value]) => {
+        consentValues[key] = value;
+      });
+    }
   }
 
   // Construct the Fides variable that will be pushed to GTM
