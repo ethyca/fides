@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.59.3b0.post0.dev14"
+    "version": "2.59.3b0.post0.dev15"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -18752,6 +18752,16 @@
         "title": "GetRegistrationStatusResponse",
         "description": "Reflects the registration status of a Fides deployment."
       },
+      "GoogleCloudSQLIPType": {
+        "type": "string",
+        "enum": [
+          "public",
+          "private",
+          "psc"
+        ],
+        "title": "GoogleCloudSQLIPType",
+        "description": "Enum for Google Cloud SQL IP types"
+      },
       "GoogleCloudSQLMySQLDocsSchema": {
         "properties": {
           "db_iam_user": {
@@ -18777,6 +18787,18 @@
             "title": "Keyfile creds",
             "description": "The contents of the key file that contains authentication credentials for a service account in GCP.",
             "sensitive": true
+          },
+          "ip_type": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/GoogleCloudSQLIPType"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "IP type",
+            "description": "Specify the IP Address type required for your database (defaults to public). See the Google Cloud documentation for more information about connection options: https://cloud.google.com/sql/docs/postgres/connect-overview"
           }
         },
         "type": "object",
@@ -18833,6 +18855,18 @@
             "title": "Keyfile creds",
             "description": "The contents of the key file that contains authentication credentials for a service account in GCP.",
             "sensitive": true
+          },
+          "ip_type": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/GoogleCloudSQLIPType"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "IP type",
+            "description": "Specify the IP Address type required for your database (defaults to public). See the Google Cloud documentation for more information about connection options: https://cloud.google.com/sql/docs/postgres/connect-overview"
           }
         },
         "type": "object",
