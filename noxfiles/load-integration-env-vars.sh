@@ -19,8 +19,8 @@ fi
 echo -e "${BLUE}Signing in to 1Password${NC}"
 $(op signin) || exit 1
 
-echo -e "${YELLOW}Clearing integrations.env${NC}"
-# Clear the integrations.env file
+echo -e "${YELLOW}Clearing ${INTEGRATIONS_ENV_FILE}${NC}"
+# Clear the INTEGRATIONS_ENV_FILE file
 > $INTEGRATIONS_ENV_FILE
 
 echo -e "${BLUE}Getting all items in the $VAULT_NAME vault${NC}"
@@ -42,4 +42,4 @@ for id in $item_ids; do
     jq -r '.fields[] | select(.value) | {value, reference} | select((.reference | split("/")[-1]) | test("^[A-Z0-9_]+$")) | "export \(.reference | split("/")[-1])='\''\(.value)'\''"' >> $INTEGRATIONS_ENV_FILE
 done
 
-echo -e "${GREEN}Done. integrations.env has been updated with the new values.${NC}"
+echo -e "${GREEN}Done. ${INTEGRATIONS_ENV_FILE} has been updated with the new values.${NC}"

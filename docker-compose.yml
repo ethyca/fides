@@ -19,7 +19,7 @@ services:
       - 8080
     env_file:
       - .env
-      - integrations.env
+      - .env.integrations
     environment:
       FIDES__CONFIG_PATH: ${FIDES__CONFIG_PATH:-/fides/.fides/fides.toml}
       FIDES__CLI__ANALYTICS_ID: ${FIDES__CLI__ANALYTICS_ID-}
