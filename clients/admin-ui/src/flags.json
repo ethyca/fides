@@ -41,5 +41,11 @@
     "development": true,
     "test": true,
     "production": false
+  },
+  "publisherRestrictions": {
+    "description": "TCF publisher restrictions",
+    "development": true,
+    "test": true,
+    "production": false
   }
 }

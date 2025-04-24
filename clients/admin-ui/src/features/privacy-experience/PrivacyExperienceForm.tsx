@@ -48,6 +48,7 @@ import {
   SupportedLanguage,
 } from "~/types/api";
 
+import { useFeatures } from "../common/features";
 import { ControlledSelect } from "../common/form/ControlledSelect";
 import { useGetConfigurationSettingsQuery } from "../config-settings/config-settings.slice";
 import { TCFConfigSelect } from "./form/TCFConfigSelect";
@@ -152,6 +153,8 @@ export const PrivacyExperienceForm = ({
   onCreateTranslation: (lang: SupportedLanguage) => ExperienceTranslation;
 }) => {
   const router = useRouter();
+  const isPublisherRestrictionsFlagEnabled =
+    useFeatures()?.flags?.publisherRestrictions;
 
   const {
     values,
@@ -318,14 +321,18 @@ export const PrivacyExperienceForm = ({
         isRequired
       />
       <Collapse
-        in={values.component === ComponentType.TCF_OVERLAY}
+        in={
+          values.component === ComponentType.TCF_OVERLAY &&
+          isPublisherRestrictionsFlagEnabled
+        }
         animateOpacity
       >
-        {values.component === ComponentType.TCF_OVERLAY && (
-          <TCFConfigSelect
-            overridesEnabled={appConfig?.consent?.override_vendor_purposes}
-          />
-        )}
+        {values.component === ComponentType.TCF_OVERLAY &&
+          isPublisherRestrictionsFlagEnabled && (
+            <TCFConfigSelect
+              overridesEnabled={appConfig?.consent?.override_vendor_purposes}
+            />
+          )}
       </Collapse>
       <Collapse
         in={values.component === ComponentType.TCF_OVERLAY}
