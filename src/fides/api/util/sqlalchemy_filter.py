@@ -9,7 +9,7 @@ class SQLAlchemyGeneratedFilter(logging.Filter):
     which typically come from sqlalchemy.engine.Engine when executing cached queries.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         # List of substrings to filter out
         self.patterns = [
@@ -18,7 +18,7 @@ class SQLAlchemyGeneratedFilter(logging.Filter):
             "does not support caching",
         ]
 
-    def filter(self, record):
+    def filter(self, record: logging.LogRecord) -> bool:
         # Only filter records from sqlalchemy.engine.Engine
         if record.name == "sqlalchemy.engine.Engine":
             message = record.getMessage()
