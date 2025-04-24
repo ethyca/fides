@@ -1,5 +1,6 @@
 import {
   AntButton as Button,
+  AntFlex,
   Box,
   Flex,
   Spacer,
@@ -23,6 +24,7 @@ import DatahubDataSyncTab from "~/features/integrations/configure-scan/DatahubDa
 import ConfigureIntegrationModal from "~/features/integrations/ConfigureIntegrationModal";
 import ConnectionStatusNotice from "~/features/integrations/ConnectionStatusNotice";
 import IntegrationBox from "~/features/integrations/IntegrationBox";
+import { IntegrationSetupSteps } from "~/features/integrations/setup-steps/IntegrationSetupSteps";
 import useIntegrationOption from "~/features/integrations/useIntegrationOption";
 import { ConnectionType } from "~/types/api";
 
@@ -127,12 +129,23 @@ const IntegrationDetailView: NextPage = () => {
           },
         ]}
       >
-        <IntegrationBox integration={connection} showDeleteButton />
-        {integrationIsLoading ? (
-          <Spinner />
-        ) : (
-          !!connection && <DataTabs data={tabs} isLazy />
-        )}
+        <AntFlex gap={24}>
+          <div className="grow">
+            <IntegrationBox integration={connection} showDeleteButton />
+            {integrationIsLoading ? (
+              <Spinner />
+            ) : (
+              !!connection && <DataTabs data={tabs} isLazy />
+            )}
+          </div>
+          <div className="w-[400px]">
+            <IntegrationSetupSteps
+              testData={testData}
+              testIsLoading={testIsLoading}
+              onTestConnection={testConnection}
+            />
+          </div>
+        </AntFlex>
       </PageHeader>
     </Layout>
   );
