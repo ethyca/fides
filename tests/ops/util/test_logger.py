@@ -4,6 +4,7 @@ from datetime import datetime
 import pytest
 from loguru import logger
 from loguru._handler import Message
+import logging
 
 from fides.api.schemas.privacy_request import PrivacyRequestSource
 from fides.api.util.cache import get_cache
@@ -16,6 +17,7 @@ from fides.api.util.logger import (
     suppress_logging,
 )
 from fides.config import CONFIG
+from fides.api.util.sqlalchemy_filter import SQLAlchemyGeneratedFilter
 
 
 @pytest.mark.unit
@@ -165,3 +167,36 @@ class TestSuppressLogging:
         assert logger._core.min_level == original_min_level
         assert "This message should be suppressed" not in loguru_caplog.text
         assert "This message should appear in logs" in loguru_caplog.text
+
+
+@pytest.mark.unit
+class TestSQLAlchemyLogger:
+    def test_sqlalchemy_logging_filter(self, loguru_caplog):
+        """Test that the SQLAlchemyGeneratedFilter correctly filters out unwanted log messages."""
+
+        # Create a logger for SQLAlchemy
+        sqlalchemy_logger = logging.getLogger("sqlalchemy.engine.Engine")
+        sqlalchemy_logger.setLevel(logging.INFO)
+
+        # Add the SQLAlchemyGeneratedFilter
+        filter = SQLAlchemyGeneratedFilter()
+        sqlalchemy_logger.addFilter(filter)
+
+        # Log messages that should be filtered out
+        sqlalchemy_logger.info("This message was cached since yesterday and should be filtered")
+        sqlalchemy_logger.info("This message indicates caching disabled and should be filtered")
+        sqlalchemy_logger.info("[dialect redshift+psycopg2 does not support caching 0.00016s] {'email': ('atestingemail@email.com',)")
+
+        # Log a message that should not be filtered out
+        sqlalchemy_logger.info("This message should appear in logs")
+
+        # Check that only the message that should not be filtered appears in the logs
+        log_messages = loguru_caplog.text
+        assert "This message should appear in logs" in log_messages
+        assert "This message contains no key and should be filtered" not in log_messages
+        assert "This message was cached since yesterday and should be filtered" not in log_messages
+        assert "This message was generated in 0.001s and should be filtered" not in log_messages
+        assert "This message indicates caching disabled and should be filtered" not in log_messages
+        assert "This message does not support caching and should be filtered" not in log_messages
+        assert "This message is unknown and should be filtered" not in log_messages
+        assert "[dialect redshift+psycopg2 does not support caching 0.00016s] {'email': ('atestingemail@email.com',)" not in log_messages
