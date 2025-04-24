@@ -130,18 +130,13 @@ def upload_to_s3(  # pylint: disable=R0913
     if privacy_request is None:
         raise ValueError("Privacy request must be provided")
 
-    storage_settings = CONFIG.credentials.get("storage", None)
-    assume_role_arn = (
-        storage_settings.get("aws_s3_assume_role_arn", None)
-        if storage_settings is not None
-        else None
-    )
-
     try:
         s3_client = get_s3_client(
             auth_method,
             storage_secrets,
-            assume_role_arn=assume_role_arn,
+            assume_role_arn=CONFIG.credentials.get(  # pylint: disable=no-member
+                "storage", {}
+            ).get("aws_s3_assume_role_arn"),
         )
 
         # handles file chunking
