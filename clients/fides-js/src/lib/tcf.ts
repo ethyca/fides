@@ -159,7 +159,7 @@ export const generateFidesString = async ({
       });
 
       // Set legitimate interest for special-purpose only vendors
-      if (!experience.minimal_tcf && experience.gvl?.vendors) {
+      if (experience.gvl?.vendors) {
         (experience as PrivacyExperience).tcf_vendor_relationships?.forEach(
           (relationship) => {
             const { id } = decodeVendorId(relationship.id);
