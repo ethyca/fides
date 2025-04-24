@@ -164,10 +164,16 @@ export const generateFidesString = async ({
           (relationship) => {
             const { id } = decodeVendorId(relationship.id);
             const vendor = experience.gvl?.vendors[id];
+            const isInVendorConsents = (
+              experience as PrivacyExperience
+            ).tcf_vendor_consents?.some(
+              (consent) => consent.id === relationship.id,
+            );
             if (
               vendor &&
               vendor.specialPurposes?.length &&
-              (!vendor.purposes || vendor.purposes.length === 0)
+              (!vendor.purposes || vendor.purposes.length === 0) &&
+              !isInVendorConsents
             ) {
               tcModel.vendorLegitimateInterests.set(+id);
             }
