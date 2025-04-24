@@ -1,7 +1,5 @@
 from typing import Dict, Union
 from urllib.parse import quote_plus
-import logging
-
 
 from loguru import logger
 from sqlalchemy import text
@@ -78,13 +76,11 @@ class RedshiftConnector(SQLConnector):
     def set_schema(self, connection: Connection) -> None:
         """Sets the search_path for the duration of the session"""
         config = self.secrets_schema(**self.configuration.secrets or {})
-
         if config.db_schema:
             logger.info("Setting Redshift search_path before retrieving data")
-            with suppress_logging():
-                stmt = text("SET search_path to :search_path")
-                stmt = stmt.bindparams(search_path=config.db_schema)
-                connection.execute(stmt)
+            stmt = text("SET search_path to :search_path")
+            stmt = stmt.bindparams(search_path=config.db_schema)
+            connection.execute(stmt)
 
     # Overrides SQLConnector.query_config
     def query_config(self, node: ExecutionNode) -> RedshiftQueryConfig:
