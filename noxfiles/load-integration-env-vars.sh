@@ -9,6 +9,12 @@ NC='\033[0m' # No Color
 VAULT_NAME="github-actions"
 INTEGRATIONS_ENV_FILE=".env.integrations"
 
+# Check if op is installed
+if ! command -v op &> /dev/null; then
+  echo -e "${RED}op could not be found. Please install it and try again.${NC}"
+  exit 1
+fi
+
 echo -e "${BLUE}Signing in to 1Password${NC}"
 $(op signin) || exit 1
 
