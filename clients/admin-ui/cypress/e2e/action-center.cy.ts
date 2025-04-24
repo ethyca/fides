@@ -486,6 +486,17 @@ describe("Action center", () => {
         'Browser request "11020051272" has been ignored and will not appear in future scans.',
       );
     });
+
+    it("should restore individual ignored assets", () => {
+      cy.getByTestId("row-1-col-actions").within(() => {
+        cy.getByTestId("restore-btn").click({ force: true });
+      });
+      cy.wait("@restoreAssets");
+      cy.getByTestId("success-alert").should(
+        "contain",
+        'Browser request "697301175" is no longer ignored and will appear in future scans.',
+      );
+    });
     it("should bulk add assets", () => {
       cy.getByTestId("bulk-actions-menu").should("be.disabled");
       cy.getByTestId("row-0-col-select").find("label").click();
@@ -516,6 +527,23 @@ describe("Action center", () => {
         "3 assets from Google Tag Manager have been ignored and will not appear in future scans.",
       );
     });
+
+    it("should bulk restore ignored assets", () => {
+      cy.getByTestId("tab-Ignored").click({ force: true });
+      cy.getByTestId("bulk-actions-menu").should("be.disabled");
+      cy.getByTestId("row-0-col-select").find("label").click();
+      cy.getByTestId("row-2-col-select").find("label").click();
+      cy.getByTestId("selected-count").should("contain", "2 selected");
+      cy.getByTestId("bulk-actions-menu").should("not.be.disabled");
+      cy.getByTestId("bulk-actions-menu").click();
+      cy.getByTestId("bulk-restore").click();
+      cy.wait("@restoreAssets");
+      cy.getByTestId("success-alert").should(
+        "contain",
+        "2 assets have been restored and will appear in future scans.",
+      );
+    });
+
     it("should add all assets", () => {
       cy.intercept(
         "POST",

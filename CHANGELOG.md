@@ -19,7 +19,15 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - https://github.com/ethyca/fides/labels/high-risk: to indicate that a change is a "high-risk" change that could potentially lead to unanticipated regressions or degradations
 - https://github.com/ethyca/fides/labels/db-migration: to indicate that a given change includes a DB migration
 
-## [Unreleased](https://github.com/ethyca/fides/compare/2.59.2...main)
+## [Unreleased](https://github.com/ethyca/fides/compare/2.60.1...main)
+
+### Added
+- Added Recorded URL to Consent Report [#6077](https://github.com/ethyca/fides/pull/6077)
+
+### Developer Experience
+- Cleaning up test fixtures [#6008](https://github.com/ethyca/fides/pull/6008)
+
+## [2.60.0](https://github.com/ethyca/fides/compare/2.59.2...2.60.0)
 
 ### Added
 - Migrate `Cookies` resources to `Asset` resources of type `Cookie` [#5776](https://github.com/ethyca/fides/pull/5776) https://github.com/ethyca/fides/labels/db-migration https://github.com/ethyca/fides/labels/high-risk
@@ -29,6 +37,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Added assumed role arn capabilities to aws Storage [#6027](https://github.com/ethyca/fides/pull/6027)
 - Added the ability to create new TCF Experiences within Admin UI [#6055](https://github.com/ethyca/fides/pull/6055)
 - PostgreSQL connection config now supports SSL Mode [#6068](https://github.com/ethyca/fides/pull/6068)
+- Added ability to "restore" ignored assets in action center [#6080](https://github.com/ethyca/fides/pull/6080)
 
 ### Changed
 - Changed how TCF Publisher Overrides gets configured in consent settings [#6013](https://github.com/ethyca/fides/pull/6013)
@@ -38,6 +47,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Updated bulk ignore assets toast message [#6043](https://github.com/ethyca/fides/pull/6043)
 - Updated UI behavior for editing languages in the Experience config for consistency and clarity [#6055](https://github.com/ethyca/fides/pull/6055)
 - Moved detection & discovery features out of beta [#6059](https://github.com/ethyca/fides/pull/6059)
+- Show notice-only notices before other notices in modals of non-TCF experiences [#6074](https://github.com/ethyca/fides/pull/6074)
 
 ### Developer Experience
 - Reduced animations on Cypress tests in Privacy Center for quicker results [#5976](https://github.com/ethyca/fides/pull/5976)
@@ -53,6 +63,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Fixed performance issues in Data map report in Admin UI [#6046](https://github.com/ethyca/fides/pull/6046)
 - Fixed details requirements in AWS SES setup [#6047](https://github.com/ethyca/fides/pull/6047)
 - Addressed some performance issues with Experience configuration previews [#6055](https://github.com/ethyca/fides/pull/6055)
+- Fixed icon sizing in request manager table [#6079](https://github.com/ethyca/fides/pull/6079)
 
 ## [2.59.2](https://github.com/ethyca/fides/compare/2.59.1...2.59.2)
 

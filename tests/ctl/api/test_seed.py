@@ -10,6 +10,7 @@ from fideslang.default_taxonomy import DEFAULT_TAXONOMY
 from fideslang.models import DataCategory, Organization
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+from sqlalchemy.orm import Session
 
 from fides.api.db import samples, seed
 from fides.api.models.connectionconfig import ConnectionConfig
@@ -23,6 +24,7 @@ from fides.core import api as _api
 
 
 @pytest.fixture(scope="function", name="data_category")
+@pytest.mark.usefixtures("monkeypatch_requests")
 def fixture_data_category(test_config: FidesConfig) -> Generator:
     """
     Fixture that yields a data category and then deletes it for each test run.
@@ -84,7 +86,6 @@ def parent_server_config_password_only():
 
 @pytest.mark.unit
 class TestFilterDataCategories:
-    @pytest.mark.skip("this times out on CI")
     def test_filter_data_categories_excluded(self) -> None:
         """Test that the filter method works as intended"""
         excluded_data_categories = [
@@ -195,15 +196,15 @@ class TestFilterDataCategories:
 
 
 @pytest.mark.integration
+@pytest.mark.usefixtures("monkeypatch_requests")
 class TestLoadDefaultTaxonomy:
     """Tests related to load_default_taxonomy"""
 
-    async def test_add_to_default_taxonomy(
+    def test_add_to_default_taxonomy(
         self,
-        monkeypatch: pytest.MonkeyPatch,
         test_config: FidesConfig,
         data_category: DataCategory,
-        async_session: AsyncSession,
+        db: Session,
     ) -> None:
         """Should be able to add to the existing default taxonomy"""
         result = _api.get(
@@ -217,8 +218,8 @@ class TestLoadDefaultTaxonomy:
         updated_default_taxonomy = DEFAULT_TAXONOMY.model_copy()
         updated_default_taxonomy.data_category.append(data_category)
 
-        monkeypatch.setattr(seed, "DEFAULT_TAXONOMY", updated_default_taxonomy)
-        await seed.load_default_resources(async_session)
+        with patch("fides.api.db.seed.DEFAULT_TAXONOMY", updated_default_taxonomy):
+            seed.load_default_resources(db)
 
         result = _api.get(
             test_config.cli.server_url,
@@ -228,8 +229,9 @@ class TestLoadDefaultTaxonomy:
         )
         assert result.status_code == 200
 
-    async def test_does_not_override_user_changes(
-        self, test_config: FidesConfig, async_session: AsyncSession
+    @pytest.mark.usefixtures("default_data_categories")
+    def test_does_not_override_user_changes(
+        self, test_config: FidesConfig, db: Session
     ) -> None:
         """
         Loading the default taxonomy should not override user changes
@@ -246,7 +248,7 @@ class TestLoadDefaultTaxonomy:
         )
         assert result.status_code == 200
 
-        await seed.load_default_resources(async_session)
+        seed.load_default_resources(db)
         result = _api.get(
             test_config.cli.server_url,
             "data_category",
@@ -255,11 +257,11 @@ class TestLoadDefaultTaxonomy:
         )
         assert result.json()["description"] == new_description
 
-    async def test_does_not_remove_user_added_taxonomies(
+    def test_does_not_remove_user_added_taxonomies(
         self,
         test_config: FidesConfig,
         data_category: DataCategory,
-        async_session: AsyncSession,
+        db: Session,
     ) -> None:
         """
         Loading the default taxonomy should not delete user additions
@@ -272,7 +274,7 @@ class TestLoadDefaultTaxonomy:
             headers=CONFIG.user.auth_header,
         )
 
-        await seed.load_default_resources(async_session)
+        seed.load_default_resources(db)
 
         result = _api.get(
             test_config.cli.server_url,
@@ -354,11 +356,10 @@ def test_create_or_update_parent_user_password_only():
         seed.create_or_update_parent_user()
 
 
-async def test_load_default_dsr_policies(
-    db,
-):
+@pytest.mark.usefixtures("default_data_categories")
+async def test_load_default_dsr_policies(db):
     # seed the default dsr policies and its artifacts
-    seed.load_default_dsr_policies()
+    seed.load_default_dsr_policies(db)
 
     # run some basic checks on its artifacts to make sure they're populated as we expect
     access_policy: Policy = Policy.get_by(
@@ -418,7 +419,7 @@ async def test_load_default_dsr_policies(
     # now test that re-running `load_default_dsr_policies()` does not
     # overwrite any of the manual changed that have been made to the artifacts
 
-    seed.load_default_dsr_policies()
+    seed.load_default_dsr_policies(db)
 
     access_policy: Policy = Policy.get_by(
         db, field="key", value=seed.DEFAULT_ACCESS_POLICY
@@ -436,15 +437,16 @@ async def test_load_default_dsr_policies(
     assert len(access_rule.targets) == num_rule_targets - 1
 
 
-async def test_load_organizations(loguru_caplog, async_session, monkeypatch):
+@pytest.mark.usefixtures("default_organization")
+def test_load_organizations(loguru_caplog, db: Session):
     updated_default_taxonomy = DEFAULT_TAXONOMY.model_copy()
     current_orgs = len(updated_default_taxonomy.organization)
     updated_default_taxonomy.organization.append(
         Organization(fides_key="new_organization")
     )
 
-    monkeypatch.setattr(seed, "DEFAULT_TAXONOMY", updated_default_taxonomy)
-    await seed.load_default_organization(async_session)
+    with patch("fides.api.db.seed.DEFAULT_TAXONOMY", updated_default_taxonomy):
+        seed.load_default_organization(db)
 
     assert "INSERTED 1" in loguru_caplog.text
     assert f"SKIPPED {current_orgs}" in loguru_caplog.text
@@ -472,6 +474,7 @@ class TestLoadSamples:
     }
 
     @patch.dict(os.environ, SAMPLE_ENV_VARS, clear=True)
+    @pytest.mark.usefixtures("default_taxonomy")
     async def test_load_samples(
         self,
         async_session: AsyncSession,

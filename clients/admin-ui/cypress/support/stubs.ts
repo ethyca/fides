@@ -566,6 +566,9 @@ export const stubWebsiteMonitor = () => {
   cy.intercept("PATCH", "/api/v1/plus/discovery-monitor/*/results", {
     response: 200,
   }).as("patchAssets");
+  cy.intercept("POST", "/api/v1/plus/discovery-monitor/un-mute*", {
+    response: 200,
+  }).as("restoreAssets");
 };
 
 export const stubSystemAssets = () => {
