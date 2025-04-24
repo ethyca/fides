@@ -160,12 +160,19 @@ export const generateFidesString = async ({
 
       // Set legitimate interest for special-purpose only vendors
       if (!experience.minimal_tcf && experience.gvl?.vendors) {
-        Object.entries(experience.gvl.vendors).forEach(([vendorId, vendor]) => {
-          // Check if vendor only has special purposes (no regular purposes)
-          if (vendor.specialPurposes?.length && (!vendor.purposes || vendor.purposes.length === 0)) {
-            tcModel.vendorLegitimateInterests.set(+vendorId);
-          }
-        });
+        (experience as PrivacyExperience).tcf_vendor_relationships?.forEach(
+          (relationship) => {
+            const { id } = decodeVendorId(relationship.id);
+            const vendor = experience.gvl?.vendors[id];
+            if (
+              vendor &&
+              vendor.specialPurposes?.length &&
+              (!vendor.purposes || vendor.purposes.length === 0)
+            ) {
+              tcModel.vendorLegitimateInterests.set(+id);
+            }
+          },
+        );
       }
 
       // Set purposes on tcModel
@@ -184,10 +191,6 @@ export const generateFidesString = async ({
         tcModel.specialFeatureOptins.set(+id);
       });
 
-      // note that we cannot set consent for special purposes nor features because the IAB policy states
-      // the user is not given choice by a CMP.
-      // See https://iabeurope.eu/iab-europe-transparency-consent-framework-policies/
-      // and https://github.com/InteractiveAdvertisingBureau/iabtcf-es/issues/63#issuecomment-581798996
       encodedString = TCString.encode(tcModel, {
         // We do not want to include vendors disclosed or publisher tc at the moment
         segments: [Segment.CORE],
