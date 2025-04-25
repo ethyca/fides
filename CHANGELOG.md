@@ -28,6 +28,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Cleaning up test fixtures [#6008](https://github.com/ethyca/fides/pull/6008)
 
 ### Fixed
+- TCF overlay option no longer an Experience option when TCF is not enabled [#6091](https://github.com/ethyca/fides/pull/6091)
 - Fixed GTM integration to properly handle duplicate notice keys [#6090](https://github.com/ethyca/fides/pull/6090)
 - Fix Special-purpose only vendors not correctly encoded in TC string [#6086](https://github.com/ethyca/fides/pull/6086)
 

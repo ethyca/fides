@@ -11,7 +11,7 @@ import {
 } from "fidesui";
 import { useFormikContext } from "formik";
 import { useRouter } from "next/router";
-import { useEffect, useMemo } from "react";
+import { useMemo } from "react";
 
 import { useAppSelector } from "~/app/hooks";
 import { CustomSwitch, CustomTextInput } from "~/features/common/form/inputs";
