@@ -19,15 +19,19 @@ depends_on = None
 type_to_handle = "okta"
 
 
+def get_enum_values():
+    conn = op.get_bind()
+    result = conn.execute("SELECT unnest(enum_range(NULL::connectiontype))").fetchall()
+    return [row[0] for row in result]
+
+
 def upgrade():
     # add 'okta' to ConnectionType enum
-    conn = op.get_bind()
-    result = conn.execute("SELECT enum_range(NULL::connectiontype)").scalar()
-    current_values = result[1:-1].split(",")  # Remove the {} and split by comma
-    enum_values = [f"'{v.strip()}'" for v in current_values + [type_to_handle]]
+    enum_values = [f"'{v.strip()}'" for v in get_enum_values() + [type_to_handle]]
     enum_values.sort()  # Just to keep it fantastic
+
     op.execute("ALTER TYPE connectiontype RENAME TO connectiontype_old")
-    op.execute(f"CREATE TYPE connectiontype AS ENUM ({', '.join(enum_values)})")
+    op.execute(f"CREATE TYPE connectiontype AS ENUM ({', '.join(set(enum_values))})")
     op.execute(
         """
         ALTER TABLE connectionconfig ALTER COLUMN connection_type TYPE connectiontype USING
@@ -39,12 +43,7 @@ def upgrade():
 
 def downgrade():
     # Remove 'okta' from ConnectionType enum
-    conn = op.get_bind()
-    result = conn.execute("SELECT enum_range(NULL::connectiontype)").scalar()
-    current_values = result[1:-1].split(",")  # Remove the {} and split by comma
-    enum_values = [
-        f"'{v.strip()}'" for v in current_values if v.strip() != type_to_handle
-    ]
+    enum_values = [f"'{v.strip()}'" for v in get_enum_values() if v != type_to_handle]
     enum_values.sort()  # Just to keep it fantastic
 
     op.execute(
@@ -52,7 +51,7 @@ def downgrade():
     )
     op.execute("ALTER TYPE connectiontype RENAME TO connectiontype_old")
 
-    op.execute(f"CREATE TYPE connectiontype AS ENUM ({', '.join(enum_values)})")
+    op.execute(f"CREATE TYPE connectiontype AS ENUM ({', '.join(set(enum_values))})")
     op.execute(
         """
         ALTER TABLE connectionconfig ALTER COLUMN connection_type TYPE connectiontype USING
