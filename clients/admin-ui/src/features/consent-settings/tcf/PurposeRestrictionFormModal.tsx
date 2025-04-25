@@ -119,9 +119,9 @@ export const PurposeRestrictionFormModal = ({
       value: TCFVendorRestriction.RESTRICT_ALL_VENDORS,
       label:
         VENDOR_RESTRICTION_LABELS[TCFVendorRestriction.RESTRICT_ALL_VENDORS],
-      disabled: existingRestrictions.length > 0,
+      disabled: usedRestrictionTypes.length > 0,
       title:
-        existingRestrictions.length > 0
+        usedRestrictionTypes.length > 0
           ? "Cannot restrict all vendors when other restrictions exist"
           : undefined,
     },
