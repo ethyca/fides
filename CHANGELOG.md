@@ -66,6 +66,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Addressed some performance issues with Experience configuration previews [#6055](https://github.com/ethyca/fides/pull/6055)
 - Fixed icon sizing in request manager table [#6079](https://github.com/ethyca/fides/pull/6079)
 - Fixed GCP SQL connection to support ip_type [#6065](https://github.com/ethyca/fides/pull/6065)
+- TCF overlay option no longer an Experience option when TCF is not enabled [#6091](https://github.com/ethyca/fides/pull/6091)
 
 ## [2.59.2](https://github.com/ethyca/fides/compare/2.59.1...2.59.2)
 
