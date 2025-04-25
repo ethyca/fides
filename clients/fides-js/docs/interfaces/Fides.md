@@ -303,6 +303,16 @@ regular/embedded mode with `fides_embed`, overriding the user's language with
 FidesJS with the initial configuration, but taking into account any new overrides
 such as the `fides_overrides` global or the query params.
 
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `config`? | `any` |
+
+#### Returns
+
+`Promise`\<`void`\>
+
 #### Example
 
 Disable FidesJS initialization and trigger manually instead:
@@ -336,16 +346,6 @@ Configure overrides after loading Fides.js tag.
   </script>
 </head>
 ```
-
-#### Parameters
-
-| Parameter | Type |
-| ------ | ------ |
-| `config`? | `any` |
-
-#### Returns
-
-`Promise`\<`void`\>
 
 ***
 
