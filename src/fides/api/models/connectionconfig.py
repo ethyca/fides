@@ -137,7 +137,7 @@ class ConnectionType(enum.Enum):
             ConnectionType.mongodb.value: SystemType.database,
             ConnectionType.mssql.value: SystemType.database,
             ConnectionType.mysql.value: SystemType.database,
-            ConnectionType.okta.value: SystemType.manual,  # Maybe implement a new system type for Okta?
+            ConnectionType.okta.value: SystemType.system,
             ConnectionType.postgres.value: SystemType.database,
             ConnectionType.rds_mysql.value: SystemType.database,
             ConnectionType.rds_postgres.value: SystemType.database,
