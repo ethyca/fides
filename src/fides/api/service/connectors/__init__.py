@@ -54,6 +54,7 @@ from fides.api.service.connectors.mongodb_connector import (
 from fides.api.service.connectors.mysql_connector import (
     MySQLConnector as MySQLConnector,
 )
+from fides.api.service.connectors.okta_connector import OktaConnector
 from fides.api.service.connectors.postgres_connector import (
     PostgreSQLConnector as PostgreSQLConnector,
 )
@@ -96,6 +97,7 @@ supported_connectors: Dict[str, Any] = {
     ConnectionType.mongodb.value: MongoDBConnector,
     ConnectionType.mssql.value: MicrosoftSQLServerConnector,
     ConnectionType.mysql.value: MySQLConnector,
+    ConnectionType.okta.value: OktaConnector,
     ConnectionType.postgres.value: PostgreSQLConnector,
     ConnectionType.rds_mysql.value: RDSMySQLConnector,
     ConnectionType.rds_postgres.value: RDSPostgresConnector,
