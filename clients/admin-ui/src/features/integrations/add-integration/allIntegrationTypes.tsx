@@ -12,6 +12,7 @@ import POSTGRES_TYPE_INFO from "~/features/integrations/integration-type-info/po
 import RDS_MYSQL_TYPE_INFO from "~/features/integrations/integration-type-info/rdsMySQLInfo";
 import RDS_POSTGRES_TYPE_INFO from "~/features/integrations/integration-type-info/rdsPostgresInfo";
 import S3_TYPE_INFO from "~/features/integrations/integration-type-info/s3Info";
+import SALESFORCE_TYPE_INFO from "~/features/integrations/integration-type-info/salesforceInfo";
 import SCYLLA_TYPE_INFO from "~/features/integrations/integration-type-info/scyllaInfo";
 import SNOWFLAKE_TYPE_INFO from "~/features/integrations/integration-type-info/snowflakeInfo";
 import WEBSITE_INTEGRATION_TYPE_INFO from "~/features/integrations/integration-type-info/websiteInfo";
@@ -41,6 +42,7 @@ const INTEGRATION_TYPE_MAP: { [K in ConnectionType]?: IntegrationTypeInfo } = {
   [ConnectionType.RDS_MYSQL]: RDS_MYSQL_TYPE_INFO,
   [ConnectionType.RDS_POSTGRES]: RDS_POSTGRES_TYPE_INFO,
   [ConnectionType.S3]: S3_TYPE_INFO,
+  [ConnectionType.SALESFORCE]: SALESFORCE_TYPE_INFO,
   [ConnectionType.SCYLLA]: SCYLLA_TYPE_INFO,
   [ConnectionType.SNOWFLAKE]: SNOWFLAKE_TYPE_INFO,
   [ConnectionType.MYSQL]: MYSQL_TYPE_INFO,

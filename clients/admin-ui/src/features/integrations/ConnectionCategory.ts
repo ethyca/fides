@@ -3,4 +3,5 @@ export enum ConnectionCategory {
   DATA_WAREHOUSE = "Data Warehouse",
   DATABASE = "Database",
   WEBSITE = "Website",
+  CRM = "CRM",
 }
