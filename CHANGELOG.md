@@ -28,6 +28,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Cleaning up test fixtures [#6008](https://github.com/ethyca/fides/pull/6008)
 
 ### Fixed
+- Fixed GTM integration to properly handle duplicate notice keys [#6090](https://github.com/ethyca/fides/pull/6090)
 - Fix Special-purpose only vendors not correctly encoded in TC string [#6086](https://github.com/ethyca/fides/pull/6086)
 - Suppressing SQLAlchemy logging related to caching queries [#6089](https://github.com/ethyca/fides/pull/6089)
 
@@ -35,7 +36,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ### Added
 - Migrate `Cookies` resources to `Asset` resources of type `Cookie` [#5776](https://github.com/ethyca/fides/pull/5776) https://github.com/ethyca/fides/labels/db-migration https://github.com/ethyca/fides/labels/high-risk
-- Added support for selecting TCF Publisher Override configuration when configuring Privacy Experience [#6033](https://github.com/ethyca/fides/pull/6033)
+- Added support for selecting TCF Publisher Override configuration when configuring Privacy Experience (behind beta feature flag) [#6033](https://github.com/ethyca/fides/pull/6033)
 - Added Google Cloud Storage as a storage option [#6006](https://github.com/ethyca/fides/pull/6006)
 - Update the Datahub Permissions section to include required permissions from Datahub [#6052](https://github.com/ethyca/fides/pull/6052)
 - Added assumed role arn capabilities to aws Storage [#6027](https://github.com/ethyca/fides/pull/6027)
@@ -44,7 +45,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Added ability to "restore" ignored assets in action center [#6080](https://github.com/ethyca/fides/pull/6080)
 
 ### Changed
-- Changed how TCF Publisher Overrides gets configured in consent settings [#6013](https://github.com/ethyca/fides/pull/6013)
+- Changed how TCF Publisher Overrides gets configured in consent settings (behind beta feature flag) [#6013](https://github.com/ethyca/fides/pull/6013)
 - Frontend now do not generate `key` when creating a Website Monitor [#6041](https://github.com/ethyca/fides/pull/6041)
 - Integrations manage modals now are cappable of showing a small description [#6037](https://github.com/ethyca/fides/pull/6037)
 - UI now allows assigning of non-consent-category data uses to system assets [#6049](https://github.com/ethyca/fides/pull/6049)
@@ -69,6 +70,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Addressed some performance issues with Experience configuration previews [#6055](https://github.com/ethyca/fides/pull/6055)
 - Fixed icon sizing in request manager table [#6079](https://github.com/ethyca/fides/pull/6079)
 - Fixed GCP SQL connection to support ip_type [#6065](https://github.com/ethyca/fides/pull/6065)
+- TCF overlay option no longer an Experience option when TCF is not enabled [#6091](https://github.com/ethyca/fides/pull/6091)
 
 ## [2.59.2](https://github.com/ethyca/fides/compare/2.59.1...2.59.2)
 
