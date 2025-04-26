@@ -155,6 +155,12 @@ class SecuritySettings(FidesSettings):
         description="The timeout in seconds for tunnel connection (open_channel timeout)",
     )
 
+    # Would prefer if this was an enum
+    message_queue_mode: str = Field(
+        default="none",  # Other options are Amazon SQS
+        description="The message queueing mode that Fides will use",
+    )
+
     @field_validator("app_encryption_key", mode="before")
     @classmethod
     def validate_encryption_key_length(

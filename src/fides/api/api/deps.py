@@ -22,7 +22,7 @@ def get_config() -> FidesConfig:
     return get_app_config()
 
 
-def get_db() -> Generator:
+def get_db() -> Generator[Session]:
     """Return our database session"""
     try:
         db = get_api_session()

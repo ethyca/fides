@@ -65,7 +65,8 @@ def patch_settings(
     logger.info("PATCHing application settings")
     update_config: ApplicationConfig = ApplicationConfig.update_api_set(db, pruned_data)
 
-    ConfigProxy(db).load_current_cors_domains_into_middleware(request.app)
+    # TODO: dispatch read domains instead, read domains message does the line below
+    # ConfigProxy(db).load_current_cors_domains_into_middleware(request.app)
 
     return update_config.api_set
 
@@ -96,7 +97,8 @@ def put_settings(
         merge_updates=False,
     )
 
-    ConfigProxy(db).load_current_cors_domains_into_middleware(request.app)
+    # TODO: dispatch read domains instead, read domains message does the line below
+    # ConfigProxy(db).load_current_cors_domains_into_middleware(request.app)
     return update_config.api_set
 
 
@@ -120,6 +122,7 @@ def reset_settings(
     logger.info("Resetting api-set application settings")
     update_config: Optional[ApplicationConfig] = ApplicationConfig.clear_api_set(db)
 
-    ConfigProxy(db).load_current_cors_domains_into_middleware(request.app)
+    # TODO: dispatch read domains instead, read domains message does the line below
+    # ConfigProxy(db).load_current_cors_domains_into_middleware(request.app)
 
     return update_config.api_set if update_config else {}

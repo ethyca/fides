@@ -10,7 +10,8 @@ from logging import WARNING
 from time import perf_counter
 from typing import AsyncGenerator, Callable, Optional
 from urllib.parse import unquote
-
+from sqlalchemy.orm import Session
+import punq
 from fastapi import FastAPI, HTTPException, Request, Response, status
 from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
@@ -23,6 +24,7 @@ from starlette.status import HTTP_422_UNPROCESSABLE_ENTITY
 from uvicorn import Config, Server
 
 import fides
+from fides.api.api.deps import get_db
 from fides.api.app_setup import (
     check_redis,
     create_fides_app,
@@ -59,6 +61,11 @@ from fides.api.util.endpoint_utils import API_PREFIX
 from fides.api.util.logger import _log_exception
 from fides.cli.utils import FIDES_ASCII_ART
 from fides.config import CONFIG, check_required_webserver_config_values
+from fides.service.memory.cors_domains import (
+    CORSDomainsMessagePublisherService,
+    CORSDomainsService,
+    CORSDomainsInMemoryService,
+)
 
 IGNORED_AUDIT_LOG_RESOURCE_PATHS = {"/api/v1/login"}
 NEXT_JS_CATCH_ALL_SEGMENTS_RE = r"^\[{1,2}\.\.\.\w+\]{1,2}"  # https://nextjs.org/docs/pages/building-your-application/routing/dynamic-routes#catch-all-segments
@@ -122,7 +129,20 @@ async def lifespan(wrapped_app: FastAPI) -> AsyncGenerator[None, None]:
     yield  # All of this happens before the webserver comes up
 
 
+# Configure container
+container = punq.Container()
+container.register(CORSDomainsInMemoryService)
+container.register(Session, get_db)
+
+
+if CONFIG.security.message_queue_mode == "amazon_sqs":
+    container.register(CORSDomainsService, CORSDomainsMessagePublisherService)
+else:
+    container.register(CORSDomainsService, CORSDomainsInMemoryService)
+
+
 app = create_fides_app(lifespan=lifespan)  # type: ignore
+app.state.container = container
 
 
 if CONFIG.dev_mode:
