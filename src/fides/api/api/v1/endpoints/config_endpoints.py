@@ -17,7 +17,8 @@ from fides.common.api import scope_registry as scopes
 from fides.common.api.v1 import urn_registry as urls
 from fides.config import censor_config
 from fides.config import get_config as get_app_config
-from fides.config.config_proxy import ConfigProxy
+from fides.service.helper import Service
+from fides.service.memory.cors_domains import CORSDomainsService
 
 router = APIRouter(tags=["Config"], prefix=urls.V1_URL_PREFIX)
 
@@ -50,6 +51,7 @@ def patch_settings(
     *,
     db: Session = Depends(deps.get_db),
     request: Request,
+    cors_domain_service=Service(CORSDomainsService),
     data: ApplicationConfigSchema,
 ) -> ApplicationConfigSchema:
     """
@@ -67,6 +69,7 @@ def patch_settings(
 
     # TODO: dispatch read domains instead, read domains message does the line below
     # ConfigProxy(db).load_current_cors_domains_into_middleware(request.app)
+    cors_domain_service.update_cors_domains(request)
 
     return update_config.api_set
 
@@ -74,15 +77,18 @@ def patch_settings(
 @router.put(
     urls.CONFIG,
     status_code=HTTP_200_OK,
-    dependencies=[Security(verify_oauth_client, scopes=[scopes.CONFIG_UPDATE])],
+    dependencies=[
+        Security(verify_oauth_client, scopes=[scopes.CONFIG_UPDATE]),
+    ],
     response_model=ApplicationConfigSchema,
     response_model_exclude_unset=True,
 )
 def put_settings(
     *,
-    db: Session = Depends(deps.get_db),
     request: Request,
     data: ApplicationConfigSchema,
+    db: Session = Depends(deps.get_db),
+    cors_domain_service: CORSDomainsService = Service(CORSDomainsService),
 ) -> ApplicationConfigSchema:
     """
     Updates the global application settings record.
@@ -99,6 +105,7 @@ def put_settings(
 
     # TODO: dispatch read domains instead, read domains message does the line below
     # ConfigProxy(db).load_current_cors_domains_into_middleware(request.app)
+    cors_domain_service.update_cors_domains(request)
     return update_config.api_set
 
 
@@ -112,6 +119,7 @@ def reset_settings(
     *,
     db: Session = Depends(deps.get_db),
     request: Request,
+    cors_domain_service=Service(CORSDomainsService),
 ) -> dict:
     """
     Resets the global application settings record.
@@ -124,5 +132,6 @@ def reset_settings(
 
     # TODO: dispatch read domains instead, read domains message does the line below
     # ConfigProxy(db).load_current_cors_domains_into_middleware(request.app)
+    cors_domain_service.update_cors_domains(request)
 
     return update_config.api_set if update_config else {}

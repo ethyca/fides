@@ -6,6 +6,7 @@ Contains utility functions that set up the application webserver.
 from logging import DEBUG
 from typing import AsyncGenerator, List
 
+import punq
 from fastapi import FastAPI
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.routing import APIRoute
@@ -14,6 +15,7 @@ from redis.exceptions import RedisError, ResponseError
 from slowapi.errors import RateLimitExceeded  # type: ignore
 from slowapi.extension import _rate_limit_exceeded_handler  # type: ignore
 from slowapi.middleware import SlowAPIMiddleware  # type: ignore
+from sqlalchemy.orm import Session
 
 import fides
 from fides.api.api.deps import (
@@ -53,6 +55,11 @@ from fides.api.util.errors import FidesError
 from fides.api.util.logger import setup as setup_logging
 from fides.config import CONFIG
 from fides.config.config_proxy import ConfigProxy
+from fides.service.memory.cors_domains import (
+    CORSDomainsInMemoryService,
+    CORSDomainsMessagePublisherService,
+    CORSDomainsService,
+)
 
 VERSION = fides.__version__
 
@@ -82,6 +89,17 @@ def create_fides_app(
     )
 
     fastapi_app = FastAPI(title="fides", version=app_version, lifespan=lifespan, separate_input_output_schemas=False)  # type: ignore
+
+    # Configure container
+    container = punq.Container()
+    container.register(CORSDomainsInMemoryService)
+    container.register(Session, get_api_session)
+    if CONFIG.security.message_queue_mode == "amazon_sqs":
+        container.register(CORSDomainsService, CORSDomainsMessagePublisherService)
+    else:
+        container.register(CORSDomainsService, CORSDomainsInMemoryService)
+    fastapi_app.state.container = container
+
     fastapi_app.state.limiter = fides_limiter
     # Starlette bug causing this to fail mypy
     fastapi_app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)  # type: ignore
