@@ -1,7 +1,7 @@
-from typing import Any, Dict, Optional
+from typing import Annotated, Any, Dict, Optional
 
 from fastapi import Depends, Request
-from fastapi.params import Security
+from fastapi.params import Security, Depends as D
 from loguru import logger
 from sqlalchemy.orm import Session
 from starlette.status import HTTP_200_OK
@@ -80,7 +80,8 @@ def patch_settings(
     dependencies=[
         Security(verify_oauth_client, scopes=[scopes.CONFIG_UPDATE]),
     ],
-    response_model=ApplicationConfigSchema,
+    # response_model=ApplicationConfigSchema,
+    response_model=None,
     response_model_exclude_unset=True,
 )
 def put_settings(
@@ -95,6 +96,7 @@ def put_settings(
 
     The record will look exactly as it is provided, i.e. true PUT behavior.
     """
+
     pruned_data = data.model_dump(exclude_none=True)
     logger.info("PUTing application settings")
     update_config: ApplicationConfig = ApplicationConfig.update_api_set(
@@ -105,6 +107,11 @@ def put_settings(
 
     # TODO: dispatch read domains instead, read domains message does the line below
     # ConfigProxy(db).load_current_cors_domains_into_middleware(request.app)
+    # cors_domain_service.update_cors_domains(request)
+    print("this is the injected", cors_domain_service, type(cors_domain_service))
+    print("this is db", db)
+    service = request.app.state.container.resolve(CORSDomainsService)
+    print("this is the service", service)
     cors_domain_service.update_cors_domains(request)
     return update_config.api_set
 
