@@ -198,14 +198,21 @@ export const generateFidesString = async ({
         tcModel.specialFeatureOptins.set(+id);
       });
 
-      // Process tcf_publisher_restrictions if available
+      // Process publisher restrictions if available
       if (
         experience.tcf_publisher_restrictions &&
         experience.tcf_publisher_restrictions.length > 0
       ) {
         experience.tcf_publisher_restrictions.forEach(
           (restriction: TcfPublisherRestriction) => {
-            // For each vendor in the restriction's vendors array
+            // NOTE: While this documentation https://github.com/InteractiveAdvertisingBureau/GDPR-Transparency-and-Consent-Framework/blob/master/TCFv2/TCF-Implementation-Guidelines.md#pubrestrenc
+            // mentions "it might be more efficient to encode a small number of range restriction
+            // segments using a specific encoding scheme," this is referring to the CMP's interface (Admin UI)
+            // providing a mechanism for handling ranges, but the TCModel.publisherRestrictions object does
+            // not support ranges. We must add each vendor id as a separate publisher restriction because
+            // that's what the TCModel we're using for our encoding supports.
+            // See https://github.com/InteractiveAdvertisingBureau/iabtcf-es/tree/master/modules/core#setting-publisher-restrictions
+            // for more information about the loop below.
             restriction.vendors.forEach((vendorId: number) => {
               const purposeRestriction = new PurposeRestriction();
               purposeRestriction.purposeId = restriction.purpose_id;
