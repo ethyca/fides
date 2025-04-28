@@ -99,6 +99,18 @@ export const FIDES_OVERRIDE_OPTIONS_VALIDATOR_MAP: FidesOverrideValidatorMap[] =
       validationRegex: /(.*)/,
       transform: parseFidesDisabledNotices,
     },
+    {
+      overrideName: "fidesConsentNonApplicableFlagMode",
+      overrideType: "string",
+      overrideKey: "fides_consent_non_applicable_flag_mode",
+      validationRegex: /^(omit|include)$/,
+    },
+    {
+      overrideName: "fidesConsentFlagType",
+      overrideType: "string",
+      overrideKey: "fides_consent_flag_type",
+      validationRegex: /^(boolean|consent_mechanism)$/,
+    },
   ];
 
 /**

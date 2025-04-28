@@ -315,6 +315,8 @@ const _Fides: FidesGlobal = {
     fidesConsentOverride: null,
     otFidesMapping: null,
     fidesDisabledNotices: null,
+    fidesConsentNonApplicableFlagMode: null,
+    fidesConsentFlagType: null,
   },
   fides_meta: {},
   identity: {},

@@ -17,19 +17,19 @@ type FidesVariable = Omit<FidesEvent["detail"], "consent"> & {
   consent: Record<string, boolean | string>;
 };
 
-export enum GtmNonApplicableFlagMode {
+export enum ConsentNonApplicableFlagMode {
   OMIT = "omit",
   INCLUDE = "include",
 }
 
-export enum GtmFlagType {
+export enum ConsentFlagType {
   BOOLEAN = "boolean",
   CONSENT_MECHANISM = "consent_mechanism",
 }
 
 export interface GtmOptions {
-  non_applicable_flag_mode?: GtmNonApplicableFlagMode;
-  flag_type?: GtmFlagType;
+  non_applicable_flag_mode?: ConsentNonApplicableFlagMode;
+  flag_type?: ConsentFlagType;
 }
 
 /**
@@ -38,12 +38,12 @@ export interface GtmOptions {
 const composeConsent = (
   consent: Record<string, boolean>,
   privacyNotices: any[] | undefined,
-  flagType: GtmFlagType,
+  flagType: ConsentFlagType,
 ): Record<string, boolean | string> => {
   const consentValues: Record<string, boolean | string> = {};
 
   Object.entries(consent).forEach(([key, value]) => {
-    if (privacyNotices && flagType === GtmFlagType.CONSENT_MECHANISM) {
+    if (privacyNotices && flagType === ConsentFlagType.CONSENT_MECHANISM) {
       const relevantNotice = privacyNotices.find(
         (notice) => notice.notice_key === key,
       );
@@ -75,8 +75,8 @@ const pushFidesVariableToGTM = (
   const { consent, extraDetails, fides_string, timestamp } = detail;
   const {
     non_applicable_flag_mode:
-      nonApplicableFlagMode = GtmNonApplicableFlagMode.OMIT,
-    flag_type: flagType = GtmFlagType.BOOLEAN,
+      nonApplicableFlagMode = ConsentNonApplicableFlagMode.OMIT,
+    flag_type: flagType = ConsentFlagType.BOOLEAN,
   } = options ?? {};
   const consentValues: FidesVariable["consent"] = {};
   const privacyNotices = window.Fides?.experience?.privacy_notices;
@@ -85,12 +85,14 @@ const pushFidesVariableToGTM = (
 
   // First set defaults for non-applicable privacy notices if needed
   if (
-    nonApplicableFlagMode === GtmNonApplicableFlagMode.INCLUDE &&
+    nonApplicableFlagMode === ConsentNonApplicableFlagMode.INCLUDE &&
     nonApplicablePrivacyNotices
   ) {
     nonApplicablePrivacyNotices.forEach((key) => {
       consentValues[key] =
-        flagType === GtmFlagType.CONSENT_MECHANISM ? "not_applicable" : true;
+        flagType === ConsentFlagType.CONSENT_MECHANISM
+          ? "not_applicable"
+          : true;
     });
   }
 

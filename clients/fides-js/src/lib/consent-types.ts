@@ -5,7 +5,11 @@ import type {
   FidesOptions,
 } from "../docs";
 import { blueconic } from "../integrations/blueconic";
-import type { gtm } from "../integrations/gtm";
+import type {
+  ConsentFlagType,
+  ConsentNonApplicableFlagMode,
+  gtm,
+} from "../integrations/gtm";
 import type { meta } from "../integrations/meta";
 import type { shopify } from "../integrations/shopify";
 import type { FidesEventDetail } from "./events";
@@ -149,6 +153,12 @@ export interface FidesInitOptions {
 
   // List of notice_keys to disable their respective Toggle elements in the CMP Overlay
   fidesDisabledNotices: string[] | null;
+
+  // Determines how non-applicable privacy notices are handled (omit or include)
+  fidesConsentNonApplicableFlagMode: ConsentNonApplicableFlagMode | null;
+
+  // The type of value to use for consent (boolean or consent_mechanism)
+  fidesConsentFlagType: ConsentFlagType | null;
 }
 
 /**
@@ -736,6 +746,8 @@ export type FidesInitOptionsOverrides = Pick<
   | "fidesConsentOverride"
   | "otFidesMapping"
   | "fidesDisabledNotices"
+  | "fidesConsentNonApplicableFlagMode"
+  | "fidesConsentFlagType"
 >;
 
 export type FidesExperienceTranslationOverrides = {

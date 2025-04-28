@@ -226,6 +226,8 @@ const _Fides: FidesGlobal = {
     showFidesBrandLink: true,
     fidesConsentOverride: null,
     fidesDisabledNotices: null,
+    fidesConsentNonApplicableFlagMode: null,
+    fidesConsentFlagType: null,
   },
   fides_meta: {},
   identity: {},
