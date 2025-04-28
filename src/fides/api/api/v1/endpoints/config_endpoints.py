@@ -126,8 +126,6 @@ def reset_settings(
     logger.info("Resetting api-set application settings")
     update_config: Optional[ApplicationConfig] = ApplicationConfig.clear_api_set(db)
 
-    # TODO: dispatch read domains instead, read domains message does the line below
-    # ConfigProxy(db).load_current_cors_domains_into_middleware(request.app)
     cors_domain_service.update_cors_domains(request)
 
     return update_config.api_set if update_config else {}

@@ -17,12 +17,10 @@ class CORSDomainsInMemoryService(CORSDomainsService):
         self.db = db
 
     def update_cors_domains(self, request):
-        print("Updating proxy")
         ConfigProxy(self.db).load_current_cors_domains_into_middleware(request.app)
 
 
 class CORSDomainsMessagePublisherService(CORSDomainsService):
-
     def update_cors_domains(self, request):
         raise NotImplementedError
 
