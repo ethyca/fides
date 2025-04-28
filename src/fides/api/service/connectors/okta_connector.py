@@ -20,6 +20,10 @@ class OktaConnector(BaseConnector):
     This connector allows for user management and authentication operations.
     """
 
+    @property
+    def dsr_supported(self) -> bool:
+        return False
+
     def create_client(self) -> OktaClient:
         """Creates and returns an Okta client instance"""
         try:
