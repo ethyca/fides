@@ -76,6 +76,18 @@ ROUTERS = [CTL_ROUTER, api_router, DB_ROUTER]
 OVERRIDING_ROUTERS = [GENERIC_OVERRIDES_ROUTER]
 
 
+def configure_container(app: FastAPI):
+    container = punq.Container()
+    container.register(CORSDomainsInMemoryService)
+    container.register(Session, get_api_session)
+    if CONFIG.security.message_queue_mode == "amazon_sqs":
+        container.register(CORSDomainsService, CORSDomainsMessagePublisherService)
+    else:
+        container.register(CORSDomainsService, CORSDomainsInMemoryService)
+
+    app.state.container = container
+
+
 def create_fides_app(
     lifespan: AsyncGenerator[None, None],
     routers: List = ROUTERS,
@@ -89,16 +101,7 @@ def create_fides_app(
     )
 
     fastapi_app = FastAPI(title="fides", version=app_version, lifespan=lifespan, separate_input_output_schemas=False)  # type: ignore
-
-    # Configure container
-    container = punq.Container()
-    container.register(CORSDomainsInMemoryService)
-    container.register(Session, get_api_session)
-    if CONFIG.security.message_queue_mode == "amazon_sqs":
-        container.register(CORSDomainsService, CORSDomainsMessagePublisherService)
-    else:
-        container.register(CORSDomainsService, CORSDomainsInMemoryService)
-    fastapi_app.state.container = container
+    configure_container(fastapi_app)
 
     fastapi_app.state.limiter = fides_limiter
     # Starlette bug causing this to fail mypy
