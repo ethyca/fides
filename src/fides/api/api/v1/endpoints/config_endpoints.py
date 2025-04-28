@@ -1,7 +1,7 @@
 from typing import Annotated, Any, Dict, Optional
 
 from fastapi import Depends, Request
-from fastapi.params import Security, Depends as D
+from fastapi.params import Security
 from loguru import logger
 from sqlalchemy.orm import Session
 from starlette.status import HTTP_200_OK
@@ -67,8 +67,6 @@ def patch_settings(
     logger.info("PATCHing application settings")
     update_config: ApplicationConfig = ApplicationConfig.update_api_set(db, pruned_data)
 
-    # TODO: dispatch read domains instead, read domains message does the line below
-    # ConfigProxy(db).load_current_cors_domains_into_middleware(request.app)
     cors_domain_service.update_cors_domains(request)
 
     return update_config.api_set
@@ -80,8 +78,7 @@ def patch_settings(
     dependencies=[
         Security(verify_oauth_client, scopes=[scopes.CONFIG_UPDATE]),
     ],
-    # response_model=ApplicationConfigSchema,
-    response_model=None,
+    response_model=ApplicationConfigSchema,
     response_model_exclude_unset=True,
 )
 def put_settings(
@@ -89,7 +86,7 @@ def put_settings(
     request: Request,
     data: ApplicationConfigSchema,
     db: Session = Depends(deps.get_db),
-    cors_domain_service: Annotated[CORSDomainsService, Service(CORSDomainsService)],
+    cors_domain_service: Annotated[CORSDomainsService, Service()],
 ) -> ApplicationConfigSchema:
     """
     Updates the global application settings record.
@@ -98,23 +95,12 @@ def put_settings(
     """
 
     pruned_data = data.model_dump(exclude_none=True)
-    logger.info("PUTing application settings")
     update_config: ApplicationConfig = ApplicationConfig.update_api_set(
         db,
         pruned_data,
         merge_updates=False,
     )
 
-    # TODO: dispatch read domains instead, read domains message does the line below
-    # ConfigProxy(db).load_current_cors_domains_into_middleware(request.app)
-    # cors_domain_service.update_cors_domains(request)
-    wtf = Service(CORSDomainsService)
-    print("wtf", wtf)
-    print("I just pasted this", wtf)
-    print("this is the injected", cors_domain_service, type(cors_domain_service))
-    print("this is db", db)
-    service = request.app.state.container.resolve(CORSDomainsService)
-    print("this is the service", service)
     cors_domain_service.update_cors_domains(request)
     return update_config.api_set
 
@@ -129,7 +115,7 @@ def reset_settings(
     *,
     db: Session = Depends(deps.get_db),
     request: Request,
-    cors_domain_service=Service(CORSDomainsService),
+    cors_domain_service=Annotated[CORSDomainsService, Service()],
 ) -> dict:
     """
     Resets the global application settings record.
