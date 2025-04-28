@@ -143,7 +143,10 @@ export const rtkQueryErrorLogger: Middleware = () => (next) => (action) => {
     toast({
       status: "error",
       title: payload?.status ?? "An error occured",
-      description: payload?.error,
+      description:
+        action.error.message ??
+        payload?.error ??
+        "An error occurred please check the console for more detail.",
     });
     // eslint-disable-next-line no-console
     console.error(action.payload);
