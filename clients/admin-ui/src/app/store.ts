@@ -2,9 +2,12 @@ import {
   AnyAction,
   combineReducers,
   configureStore,
+  isRejectedWithValue,
+  Middleware,
   StateFromReducersMapObject,
 } from "@reduxjs/toolkit";
 import { setupListeners } from "@reduxjs/toolkit/query/react";
+import { createStandaloneToast } from "fidesui";
 import {
   FLUSH,
   PAUSE,
@@ -23,6 +26,7 @@ import { baseApi } from "~/features/common/api.slice";
 import { featuresSlice } from "~/features/common/features";
 import { healthApi } from "~/features/common/health.slice";
 import { dirtyFormsSlice } from "~/features/common/hooks/dirty-forms.slice";
+import { DEFAULT_TOAST_PARAMS } from "~/features/common/toast";
 import { configWizardSlice } from "~/features/config-wizard/config-wizard.slice";
 import { connectionTypeSlice } from "~/features/connection-type";
 import { tcfConfigSlice } from "~/features/consent-settings/tcf/tcf-config.slice";
@@ -44,6 +48,10 @@ import { dictSuggestionsSlice } from "~/features/system/dictionary-form/dict-sug
 import { taxonomySlice } from "~/features/taxonomy";
 import { datasetTestSlice } from "~/features/test-datasets";
 import { userManagementSlice } from "~/features/user-management";
+
+const { toast } = createStandaloneToast({
+  defaultOptions: DEFAULT_TOAST_PARAMS,
+});
 
 /**
  * To prevent the "redux-perist failed to create sync storage. falling back to noop storage"
@@ -129,6 +137,22 @@ const persistConfig = {
 };
 
 export const persistedReducer = persistReducer(persistConfig, rootReducer);
+export const rtkQueryErrorLogger: Middleware = () => (next) => (action) => {
+  if (isRejectedWithValue(action)) {
+    const payload = action?.payload as any;
+    toast({
+      status: "error",
+      title: payload?.status ?? "An error occured",
+      description:
+        action?.error?.message ??
+        payload?.error ??
+        "An error occurred please check the console for more detail.",
+    });
+    // eslint-disable-next-line no-console
+    console.error(action.payload);
+  }
+  next(action);
+};
 
 export const makeStore = (
   preloadedState?: Parameters<typeof persistedReducer>[0],
@@ -140,7 +164,7 @@ export const makeStore = (
         serializableCheck: {
           ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
         },
-      }).concat(baseApi.middleware, healthApi.middleware),
+      }).concat(baseApi.middleware, healthApi.middleware, rtkQueryErrorLogger),
     devTools: true,
     preloadedState,
   });
