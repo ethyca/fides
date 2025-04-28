@@ -139,7 +139,7 @@ const persistConfig = {
 export const persistedReducer = persistReducer(persistConfig, rootReducer);
 export const rtkQueryErrorLogger: Middleware = () => (next) => (action) => {
   if (isRejectedWithValue(action)) {
-    const payload = action.payload as any;
+    const payload = action?.payload as any;
     toast({
       status: "error",
       title: payload?.status ?? "An error occured",
