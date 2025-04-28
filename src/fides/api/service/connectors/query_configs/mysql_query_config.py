@@ -1,6 +1,5 @@
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 
-from sqlalchemy import text
 from sqlalchemy.sql.elements import TextClause
 
 from fides.api.service.connectors.query_configs.query_config import SQLQueryConfig
