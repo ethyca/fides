@@ -89,7 +89,7 @@ def put_settings(
     request: Request,
     data: ApplicationConfigSchema,
     db: Session = Depends(deps.get_db),
-    cors_domain_service: CORSDomainsService = Service(CORSDomainsService),
+    cors_domain_service: Annotated[CORSDomainsService, Service(CORSDomainsService)],
 ) -> ApplicationConfigSchema:
     """
     Updates the global application settings record.
@@ -108,6 +108,9 @@ def put_settings(
     # TODO: dispatch read domains instead, read domains message does the line below
     # ConfigProxy(db).load_current_cors_domains_into_middleware(request.app)
     # cors_domain_service.update_cors_domains(request)
+    wtf = Service(CORSDomainsService)
+    print("wtf", wtf)
+    print("I just pasted this", wtf)
     print("this is the injected", cors_domain_service, type(cors_domain_service))
     print("this is db", db)
     service = request.app.state.container.resolve(CORSDomainsService)
