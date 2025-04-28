@@ -4,8 +4,6 @@ import {
   configureStore,
   isRejectedWithValue,
   Middleware,
-  MiddlewareAPI,
-  MiddlewareApiConfig,
   StateFromReducersMapObject,
 } from "@reduxjs/toolkit";
 import { setupListeners } from "@reduxjs/toolkit/query/react";
