@@ -412,6 +412,8 @@ export interface Fides {
   config?: any;
 
   /**
+   * Helps keep track of the real time values to be saved to the cookie. Gets updated during initialization, when the user toggles consent preferences, etc. and ultimately is used to update the browser cookie, the Fides.consent object, and the Fides.saved_consent object which represent more persistent values.
+   *
    * @internal
    */
   cookie?: any;
@@ -434,6 +436,8 @@ export interface Fides {
   options: any;
 
   /**
+   * Represents the initial cookie consent values whether default or saved in the browser cookie. Compare to cookie.consent which represents the unsaved consent values we're going to end up saving to the browser cookie. In some cases we need to access the initial values saved in the cookie, rather than the current unsaved values.
+   *
    * @internal
    */
   saved_consent: Record<string, boolean>;

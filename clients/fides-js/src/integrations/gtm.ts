@@ -73,11 +73,18 @@ const pushFidesVariableToGTM = (
   const { detail, type } = fidesEvent;
   // eslint-disable-next-line @typescript-eslint/naming-convention
   const { consent, extraDetails, fides_string, timestamp } = detail;
+
+  // Get options from either the provided options or the Fides config, with
+  // provided options taking precedence
+  const overrideOptions = window.Fides?.options;
   const {
     non_applicable_flag_mode:
-      nonApplicableFlagMode = ConsentNonApplicableFlagMode.OMIT,
-    flag_type: flagType = ConsentFlagType.BOOLEAN,
+      nonApplicableFlagMode = overrideOptions?.fidesConsentNonApplicableFlagMode ??
+        ConsentNonApplicableFlagMode.OMIT,
+    flag_type: flagType = overrideOptions?.fidesConsentFlagType ??
+      ConsentFlagType.BOOLEAN,
   } = options ?? {};
+
   const consentValues: FidesVariable["consent"] = {};
   const privacyNotices = window.Fides?.experience?.privacy_notices;
   const nonApplicablePrivacyNotices =

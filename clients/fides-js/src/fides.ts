@@ -28,6 +28,7 @@ import {
   OverrideType,
   PrivacyExperience,
   SaveConsentPreference,
+  UserConsentPreference,
 } from "./lib/consent-types";
 import {
   decodeNoticeConsentString,
@@ -56,7 +57,10 @@ import {
 import { initOverlay } from "./lib/initOverlay";
 import { updateConsentPreferences } from "./lib/preferences";
 import { renderOverlay } from "./lib/renderOverlay";
-import { transformConsentToFidesUserPreference } from "./lib/shared-consent-utils";
+import {
+  transformConsentToFidesUserPreference,
+  transformUserPreferenceToBoolean,
+} from "./lib/shared-consent-utils";
 import { customGetConsentPreferences } from "./services/external/preferences";
 
 declare global {
@@ -248,6 +252,12 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
         const notice = noticeMap.get(key);
         if (!notice) {
           return null;
+        }
+        if (typeof value === "string") {
+          // eslint-disable-next-line no-param-reassign
+          value = transformUserPreferenceToBoolean(
+            value as UserConsentPreference,
+          );
         }
         return new SaveConsentPreference(
           notice,
