@@ -1,6 +1,5 @@
 from typing import Any, Dict, List, Optional
 
-from loguru import logger
 from okta.client import Client as OktaClient
 from okta.exceptions import OktaAPIException
 
@@ -81,4 +80,3 @@ class OktaConnector(BaseConnector):
     def close(self) -> None:
         """Close any held resources"""
         # No resources to close for Okta client
-        pass

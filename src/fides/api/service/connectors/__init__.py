@@ -54,7 +54,7 @@ from fides.api.service.connectors.mongodb_connector import (
 from fides.api.service.connectors.mysql_connector import (
     MySQLConnector as MySQLConnector,
 )
-from fides.api.service.connectors.okta_connector import OktaConnector
+from fides.api.service.connectors.okta_connector import OktaConnector as OktaConnector
 from fides.api.service.connectors.postgres_connector import (
     PostgreSQLConnector as PostgreSQLConnector,
 )
