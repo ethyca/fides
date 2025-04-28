@@ -1,4 +1,7 @@
-import { ConnectionType } from "~/types/api";
+import {
+  ConnectionType,
+  SaasConnectionTypes,
+} from "../../types/api/models/ConnectionType";
 
 /**
  * Enums
@@ -52,12 +55,19 @@ export const CONNECTION_TYPE_LOGO_MAP = new Map<ConnectionType, string>([
   [ConnectionType.RDS_POSTGRES, "rds.svg"],
   [ConnectionType.REDSHIFT, "redshift.svg"],
   [ConnectionType.S3, "s3.svg"],
-  [ConnectionType.SALESFORCE, "salesforce.svg"],
+  [ConnectionType.SAAS, "saas.svg"],
   [ConnectionType.SCYLLA, "scylla.svg"],
   [ConnectionType.SNOWFLAKE, "snowflake.svg"],
   [ConnectionType.SOVRN, "sovrn.svg"],
   [ConnectionType.TIMESCALE, "timescaledb.svg"],
   [ConnectionType.WEBSITE, "website.svg"],
+]);
+
+/**
+ * List of SAAS-specific connection type logos
+ */
+export const SAAS_TYPE_LOGO_MAP = new Map<SaasConnectionTypes, string>([
+  [SaasConnectionTypes.SALESFORCE, "salesforce.svg"],
 ]);
 
 /**

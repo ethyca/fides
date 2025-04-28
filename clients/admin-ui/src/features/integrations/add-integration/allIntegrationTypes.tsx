@@ -31,6 +31,9 @@ export type IntegrationTypeInfo = {
   tags: string[];
 };
 
+// Define SaaS-specific integrations separately
+export const SAAS_INTEGRATIONS: IntegrationTypeInfo[] = [SALESFORCE_TYPE_INFO];
+
 const INTEGRATION_TYPE_MAP: { [K in ConnectionType]?: IntegrationTypeInfo } = {
   [ConnectionType.BIGQUERY]: BIGQUERY_TYPE_INFO,
   [ConnectionType.DATAHUB]: DATAHUB_TYPE_INFO,
@@ -42,7 +45,6 @@ const INTEGRATION_TYPE_MAP: { [K in ConnectionType]?: IntegrationTypeInfo } = {
   [ConnectionType.RDS_MYSQL]: RDS_MYSQL_TYPE_INFO,
   [ConnectionType.RDS_POSTGRES]: RDS_POSTGRES_TYPE_INFO,
   [ConnectionType.S3]: S3_TYPE_INFO,
-  [ConnectionType.SALESFORCE]: SALESFORCE_TYPE_INFO,
   [ConnectionType.SCYLLA]: SCYLLA_TYPE_INFO,
   [ConnectionType.SNOWFLAKE]: SNOWFLAKE_TYPE_INFO,
   [ConnectionType.MYSQL]: MYSQL_TYPE_INFO,
@@ -50,10 +52,16 @@ const INTEGRATION_TYPE_MAP: { [K in ConnectionType]?: IntegrationTypeInfo } = {
   [ConnectionType.POSTGRES]: POSTGRES_TYPE_INFO,
 };
 
-export const INTEGRATION_TYPE_LIST: IntegrationTypeInfo[] =
-  Object.values(INTEGRATION_TYPE_MAP);
+// Include both regular integrations and SaaS integrations in the list
+export const INTEGRATION_TYPE_LIST: IntegrationTypeInfo[] = [
+  ...Object.values(INTEGRATION_TYPE_MAP),
+  ...SAAS_INTEGRATIONS,
+];
 
-export const SUPPORTED_INTEGRATIONS = Object.keys(INTEGRATION_TYPE_MAP);
+export const SUPPORTED_INTEGRATIONS = [
+  ...Object.keys(INTEGRATION_TYPE_MAP),
+  ConnectionType.SAAS,
+];
 
 const EMPTY_TYPE = {
   placeholder: {
@@ -73,6 +81,12 @@ const getIntegrationTypeInfo = (
   if (!type) {
     return EMPTY_TYPE;
   }
+
+  // For SAAS type, return the first SaaS integration (temporary until we have a better way to handle this)
+  if (type === ConnectionType.SAAS) {
+    return SAAS_INTEGRATIONS[0] ?? EMPTY_TYPE;
+  }
+
   return INTEGRATION_TYPE_MAP[type] ?? EMPTY_TYPE;
 };
 

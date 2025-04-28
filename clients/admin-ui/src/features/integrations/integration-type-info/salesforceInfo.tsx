@@ -7,12 +7,21 @@ import {
 } from "~/features/common/copy/components";
 import ShowMoreContent from "~/features/common/copy/ShowMoreContent";
 import { ConnectionCategory } from "~/features/integrations/ConnectionCategory";
-import { AccessLevel, ConnectionType } from "~/types/api";
+import { AccessLevel } from "~/types/api";
+import {
+  ConnectionType,
+  SaasConnectionTypes,
+} from "~/types/api/models/ConnectionType";
 
 export const SALESFORCE_PLACEHOLDER = {
   name: "Salesforce",
   key: "salesforce_placeholder",
-  connection_type: ConnectionType.SALESFORCE,
+  connection_type: ConnectionType.SAAS,
+  saas_config: {
+    fides_key: "salesforce",
+    name: "Salesforce",
+    type: SaasConnectionTypes.SALESFORCE,
+  },
   access: AccessLevel.WRITE,
   created_at: "",
 };

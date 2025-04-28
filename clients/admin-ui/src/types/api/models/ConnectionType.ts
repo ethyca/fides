@@ -29,10 +29,16 @@ export enum ConnectionType {
   REDSHIFT = "redshift",
   S3 = "s3",
   SAAS = "saas",
-  SALESFORCE = "salesforce",
   SCYLLA = "scylla",
   SNOWFLAKE = "snowflake",
   SOVRN = "sovrn",
   TIMESCALE = "timescale",
   WEBSITE = "website",
+}
+
+/**
+ * Supported SAAS connection types in Fides.
+ */
+export enum SaasConnectionTypes {
+  SALESFORCE = "salesforce",
 }
