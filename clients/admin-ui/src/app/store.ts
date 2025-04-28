@@ -144,7 +144,7 @@ export const rtkQueryErrorLogger: Middleware = () => (next) => (action) => {
       status: "error",
       title: payload?.status ?? "An error occured",
       description:
-        action.error.message ??
+        action?.error?.message ??
         payload?.error ??
         "An error occurred please check the console for more detail.",
     });
