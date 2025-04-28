@@ -34,7 +34,10 @@ const IntegrationDetailView: NextPage = () => {
   const { data: connection, isLoading: integrationIsLoading } =
     useGetDatastoreConnectionByKeyQuery(id ?? "");
 
-  const integrationOption = useIntegrationOption(connection?.connection_type);
+  const integrationOption = useIntegrationOption(
+    connection?.connection_type,
+    connection?.saas_config?.type,
+  );
 
   const {
     testConnection,

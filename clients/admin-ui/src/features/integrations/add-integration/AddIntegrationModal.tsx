@@ -28,7 +28,10 @@ const AddIntegrationModal = ({
 
   const connectionOption = useIntegrationOption(
     integrationType?.placeholder.connection_type,
+    integrationType?.placeholder?.saas_config?.type,
   );
+  console.log("integrationType", integrationType);
+  console.log("connectionOption", connectionOption);
 
   const { description } = getIntegrationTypeInfo(
     integrationType?.placeholder.connection_type,
