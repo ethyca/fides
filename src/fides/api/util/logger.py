@@ -15,6 +15,7 @@ from loguru import logger
 from loguru._handler import Message
 
 from fides.api.schemas.privacy_request import LogEntry, PrivacyRequestSource
+from fides.api.util.sqlalchemy_filter import SQLAlchemyGeneratedFilter
 from fides.config import CONFIG, FidesConfig
 
 if TYPE_CHECKING:
@@ -159,6 +160,11 @@ def setup(config: FidesConfig) -> None:
     for name in logging.root.manager.loggerDict.keys():
         logging.getLogger(name).handlers = []
         logging.getLogger(name).propagate = True
+
+    # Apply filter to remove generated timing logs
+    sqlalchemy_generated_filter = SQLAlchemyGeneratedFilter()
+    sqlalchemy_engine_logger = logging.getLogger("sqlalchemy.engine.Engine")
+    sqlalchemy_engine_logger.addFilter(sqlalchemy_generated_filter)
 
     handlers = []
 
