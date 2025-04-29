@@ -279,7 +279,7 @@ def oauth_callback(code: str, state: str, db: Session = Depends(get_db)) -> Resp
                 system_key = connection_config.system.fides_key
                 redirect_path = f"/systems/configure/{system_key}"
             else:
-                redirect_path = f"/integrations/{connection_config.id}"
+                redirect_path = f"/integrations/{connection_config.key}"
 
             return RedirectResponse(
                 url=f"{base_url}{redirect_path}?status={test_status_value}"
