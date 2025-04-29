@@ -11,6 +11,7 @@ import { useGetConnectionTypeSecretSchemaQuery } from "~/features/connection-typ
 import type { ConnectionTypeSecretSchemaResponse } from "~/features/connection-type/types";
 import { useGetAllFilteredDatasetsQuery } from "~/features/dataset";
 import {
+  useCreateUnlinkedSassConnectionConfigMutation,
   usePatchDatastoreConnectionMutation,
   usePatchDatastoreConnectionSecretsMutation,
 } from "~/features/datastore-connections";
@@ -28,7 +29,9 @@ import {
   ConnectionType,
   DynamoDBDocsSchema,
   ScyllaDocsSchema,
+  SystemType,
 } from "~/types/api";
+import { SaasConnectionTypes } from "~/types/api/models/ConnectionType";
 import { isErrorResult } from "~/types/errors";
 
 type ConnectionSecrets = Partial<
@@ -62,6 +65,9 @@ const ConfigureIntegrationForm = ({
     usePatchDatastoreConnectionMutation();
   const [patchSystemConnectionsTrigger, { isLoading: systemPatchIsLoading }] =
     usePatchSystemConnectionConfigsMutation();
+
+  const [createUnlinkedSassConnectionConfigTrigger] =
+    useCreateUnlinkedSassConnectionConfigMutation();
 
   const { data: secrets, isLoading: secretsSchemaIsLoading } =
     useGetConnectionTypeSecretSchemaQuery(connectionOption.identifier);
@@ -117,6 +123,7 @@ const ConfigureIntegrationForm = ({
 
   const handleSubmit = async (values: FormValues) => {
     const newSecretsValues = excludeUnchangedSecrets(values.secrets!);
+    const isSaas = connectionOption.type === SystemType.SAAS;
 
     const connectionPayload = isEditing
       ? {
@@ -143,6 +150,13 @@ const ConfigureIntegrationForm = ({
       patchResult = await patchSystemConnectionsTrigger({
         systemFidesKey: values.system_fides_key,
         connectionConfigs: [connectionPayload],
+      });
+    } else if (isSaas) {
+      patchResult = await createUnlinkedSassConnectionConfigTrigger({
+        ...connectionPayload,
+        instance_key: formatKey(values.name),
+        saas_connector_type: connectionOption.identifier,
+        secrets: values.secrets || {},
       });
     } else {
       patchResult = await patchDatastoreConnectionsTrigger(connectionPayload);
