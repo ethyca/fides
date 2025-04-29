@@ -31,7 +31,6 @@ import {
   ScyllaDocsSchema,
   SystemType,
 } from "~/types/api";
-import { SaasConnectionTypes } from "~/types/api/models/ConnectionType";
 import { isErrorResult } from "~/types/errors";
 
 type ConnectionSecrets = Partial<
@@ -151,7 +150,7 @@ const ConfigureIntegrationForm = ({
         systemFidesKey: values.system_fides_key,
         connectionConfigs: [connectionPayload],
       });
-    } else if (isSaas) {
+    } else if (isSaas && !isEditing) {
       patchResult = await createUnlinkedSassConnectionConfigTrigger({
         ...connectionPayload,
         instance_key: formatKey(values.name),
