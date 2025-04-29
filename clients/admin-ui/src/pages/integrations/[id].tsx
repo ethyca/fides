@@ -72,7 +72,10 @@ const IntegrationDetailView: NextPage = () => {
             p={3}
           >
             <Flex flexDirection="column">
-              <ConnectionStatusNotice testData={testData} />
+              <ConnectionStatusNotice
+                testData={testData}
+                connectionOption={integrationOption}
+              />
             </Flex>
             <Spacer />
             <div className="flex gap-4">
