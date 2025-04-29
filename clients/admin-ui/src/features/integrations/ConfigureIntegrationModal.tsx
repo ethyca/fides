@@ -14,7 +14,10 @@ const ConfigureIntegrationModal = ({
   connection: ConnectionConfigurationResponse;
   description: React.ReactNode;
 }) => {
-  const connectionOption = useIntegrationOption(connection.connection_type);
+  const connectionOption = useIntegrationOption(
+    connection.connection_type,
+    connection?.saas_config?.type,
+  );
 
   return (
     <FormModal
