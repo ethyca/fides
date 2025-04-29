@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.59.2"
+    "version": "2.60.0"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -10128,7 +10128,15 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/StorageSecretsS3Docs"
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/StorageSecretsS3Docs"
+                  },
+                  {
+                    "$ref": "#/components/schemas/StorageSecretsGCSDocs"
+                  }
+                ],
+                "title": "Unvalidated Storage Secrets"
               }
             }
           }
@@ -10468,7 +10476,15 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/StorageSecretsS3Docs"
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/StorageSecretsS3Docs"
+                  },
+                  {
+                    "$ref": "#/components/schemas/StorageSecretsGCSDocs"
+                  }
+                ],
+                "title": "Unvalidated Storage Secrets"
               }
             }
           }
@@ -14557,21 +14573,6 @@
             "title": "Legitimate Interest Disclosure Url",
             "description": "A URL that points to the system's publicly accessible legitimate interest disclosure."
           },
-          "cookies": {
-            "anyOf": [
-              {
-                "items": {
-                  "$ref": "#/components/schemas/Cookies"
-                },
-                "type": "array"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Cookies",
-            "description": "System-level cookies unassociated with a data use to deliver services and functionality"
-          },
           "created_at": {
             "type": "string",
             "format": "date-time",
@@ -15875,42 +15876,6 @@
         "title": "ContactDetails",
         "description": "The contact details information model.\n\nUsed to capture contact information for controllers, used\nas part of exporting a data map / ROPA.\n\nThis model is nested under an Organization and\npotentially under a system/dataset."
       },
-      "Cookies": {
-        "properties": {
-          "name": {
-            "type": "string",
-            "title": "Name"
-          },
-          "path": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Path"
-          },
-          "domain": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Domain"
-          }
-        },
-        "type": "object",
-        "required": [
-          "name"
-        ],
-        "title": "Cookies",
-        "description": "The Cookies resource model"
-      },
       "CoreHealthCheck": {
         "properties": {
           "webserver": {
@@ -17074,12 +17039,12 @@
             "type": "string",
             "minLength": 1,
             "format": "uri",
-            "title": "DataHub Server URL",
+            "title": "DataHub server URL",
             "description": "The URL of your DataHub server."
           },
           "datahub_token": {
             "type": "string",
-            "title": "DataHub Token",
+            "title": "DataHub token",
             "description": "The token used to authenticate with your DataHub server.",
             "sensitive": true
           },
@@ -17094,7 +17059,7 @@
           },
           "glossary_node": {
             "type": "string",
-            "title": "Glossary Node",
+            "title": "Glossary node",
             "description": "The glossary node name to use on Datahub for Fides Data Categories. (e.g. FidesDataCategories)"
           }
         },
@@ -18676,6 +18641,14 @@
         "title": "FilteredPrivacyRequestResults",
         "description": "Schema representing the status and results of a test privacy request"
       },
+      "GCSAuthMethod": {
+        "type": "string",
+        "enum": [
+          "adc",
+          "service_account_keys"
+        ],
+        "title": "GCSAuthMethod"
+      },
       "Generate": {
         "properties": {
           "config": {
@@ -18779,6 +18752,16 @@
         "title": "GetRegistrationStatusResponse",
         "description": "Reflects the registration status of a Fides deployment."
       },
+      "GoogleCloudSQLIPType": {
+        "type": "string",
+        "enum": [
+          "public",
+          "private",
+          "psc"
+        ],
+        "title": "GoogleCloudSQLIPType",
+        "description": "Enum for Google Cloud SQL IP types"
+      },
       "GoogleCloudSQLMySQLDocsSchema": {
         "properties": {
           "db_iam_user": {
@@ -18804,6 +18787,18 @@
             "title": "Keyfile creds",
             "description": "The contents of the key file that contains authentication credentials for a service account in GCP.",
             "sensitive": true
+          },
+          "ip_type": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/GoogleCloudSQLIPType"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "IP type",
+            "description": "Specify the IP Address type required for your database (defaults to public). See the Google Cloud documentation for more information about connection options: https://cloud.google.com/sql/docs/postgres/connect-overview"
           }
         },
         "type": "object",
@@ -18860,6 +18855,18 @@
             "title": "Keyfile creds",
             "description": "The contents of the key file that contains authentication credentials for a service account in GCP.",
             "sensitive": true
+          },
+          "ip_type": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/GoogleCloudSQLIPType"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "IP type",
+            "description": "Specify the IP Address type required for your database (defaults to public). See the Google Cloud documentation for more information about connection options: https://cloud.google.com/sql/docs/postgres/connect-overview"
           }
         },
         "type": "object",
@@ -19740,11 +19747,25 @@
       "MessagingServiceDetailsAWS_SES": {
         "properties": {
           "email_from": {
-            "type": "string",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Email From"
           },
           "domain": {
-            "type": "string",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Domain"
           },
           "aws_region": {
@@ -19755,8 +19776,6 @@
         "additionalProperties": false,
         "type": "object",
         "required": [
-          "email_from",
-          "domain",
           "aws_region"
         ],
         "title": "MessagingServiceDetailsAWS_SES",
@@ -22247,21 +22266,6 @@
             "type": "array",
             "title": "Shared Categories",
             "description": "The categories of personal data that this system shares with third parties."
-          },
-          "cookies": {
-            "anyOf": [
-              {
-                "items": {
-                  "$ref": "#/components/schemas/Cookies"
-                },
-                "type": "array"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Cookies",
-            "description": "Cookies associated with this data use to deliver services and functionality"
           }
         },
         "type": "object",
@@ -22443,21 +22447,6 @@
             "type": "array",
             "title": "Shared Categories",
             "description": "The categories of personal data that this system shares with third parties."
-          },
-          "cookies": {
-            "anyOf": [
-              {
-                "items": {
-                  "$ref": "#/components/schemas/Cookies"
-                },
-                "type": "array"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Cookies",
-            "default": []
           },
           "id": {
             "type": "string",
@@ -25560,6 +25549,9 @@
                 "$ref": "#/components/schemas/StorageDetailsS3"
               },
               {
+                "$ref": "#/components/schemas/StorageDetailsGCS"
+              },
+              {
                 "$ref": "#/components/schemas/StorageDetailsLocal"
               }
             ],
@@ -25611,6 +25603,9 @@
             "anyOf": [
               {
                 "$ref": "#/components/schemas/StorageDetailsS3"
+              },
+              {
+                "$ref": "#/components/schemas/StorageDetailsGCS"
               },
               {
                 "$ref": "#/components/schemas/StorageDetailsLocal"
@@ -25689,6 +25684,42 @@
         "title": "StorageDetails",
         "description": "Enum for storage detail keys"
       },
+      "StorageDetailsGCS": {
+        "properties": {
+          "naming": {
+            "type": "string",
+            "title": "Naming",
+            "default": "request_id"
+          },
+          "auth_method": {
+            "$ref": "#/components/schemas/GCSAuthMethod"
+          },
+          "bucket": {
+            "type": "string",
+            "title": "Bucket"
+          },
+          "max_retries": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Retries",
+            "default": 0
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "auth_method",
+          "bucket"
+        ],
+        "title": "StorageDetailsGCS",
+        "description": "The details required to represent a Google Cloud Storage bucket."
+      },
       "StorageDetailsLocal": {
         "properties": {
           "naming": {
@@ -25738,23 +25769,120 @@
         "title": "StorageDetailsS3",
         "description": "The details required to represent an AWS S3 storage bucket."
       },
-      "StorageSecretsS3Docs": {
+      "StorageSecretsGCSDocs": {
         "properties": {
-          "aws_access_key_id": {
+          "type": {
             "type": "string",
-            "title": "Aws Access Key Id"
+            "title": "Type",
+            "default": "service_account"
           },
-          "aws_secret_access_key": {
+          "project_id": {
             "type": "string",
-            "title": "Aws Secret Access Key"
+            "title": "Project Id"
+          },
+          "private_key_id": {
+            "type": "string",
+            "title": "Private Key Id"
+          },
+          "private_key": {
+            "type": "string",
+            "title": "Private Key"
+          },
+          "client_email": {
+            "type": "string",
+            "title": "Client Email"
+          },
+          "client_id": {
+            "type": "string",
+            "title": "Client Id"
+          },
+          "auth_uri": {
+            "type": "string",
+            "title": "Auth Uri"
+          },
+          "token_uri": {
+            "type": "string",
+            "title": "Token Uri"
+          },
+          "auth_provider_x509_cert_url": {
+            "type": "string",
+            "title": "Auth Provider X509 Cert Url"
+          },
+          "client_x509_cert_url": {
+            "type": "string",
+            "title": "Client X509 Cert Url"
+          },
+          "universe_domain": {
+            "type": "string",
+            "title": "Universe Domain"
           }
         },
         "additionalProperties": false,
         "type": "object",
         "required": [
-          "aws_access_key_id",
-          "aws_secret_access_key"
+          "project_id",
+          "private_key_id",
+          "private_key",
+          "client_email",
+          "client_id",
+          "auth_uri",
+          "token_uri",
+          "auth_provider_x509_cert_url",
+          "client_x509_cert_url",
+          "universe_domain"
         ],
+        "title": "StorageSecretsGCSDocs",
+        "description": "The secrets required to connect to Google Cloud Storage, for documentation"
+      },
+      "StorageSecretsS3Docs": {
+        "properties": {
+          "aws_access_key_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Aws Access Key Id"
+          },
+          "aws_secret_access_key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Aws Secret Access Key"
+          },
+          "region_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Region Name"
+          },
+          "assume_role_arn": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Assume Role Arn"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
         "title": "StorageSecretsS3Docs",
         "description": "The secrets required to connect to S3, for documentation"
       },
@@ -25774,6 +25902,7 @@
         "type": "string",
         "enum": [
           "s3",
+          "gcs",
           "local"
         ],
         "title": "StorageTypeApiAccepted",
@@ -26180,21 +26309,6 @@
             ],
             "title": "Legitimate Interest Disclosure Url",
             "description": "A URL that points to the system's publicly accessible legitimate interest disclosure."
-          },
-          "cookies": {
-            "anyOf": [
-              {
-                "items": {
-                  "$ref": "#/components/schemas/Cookies"
-                },
-                "type": "array"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Cookies",
-            "description": "System-level cookies unassociated with a data use to deliver services and functionality"
           }
         },
         "type": "object",
@@ -26631,21 +26745,6 @@
             ],
             "title": "Legitimate Interest Disclosure Url",
             "description": "A URL that points to the system's publicly accessible legitimate interest disclosure."
-          },
-          "cookies": {
-            "anyOf": [
-              {
-                "items": {
-                  "$ref": "#/components/schemas/Cookies"
-                },
-                "type": "array"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Cookies",
-            "description": "System-level cookies unassociated with a data use to deliver services and functionality"
           },
           "created_at": {
             "type": "string",
@@ -27556,7 +27655,7 @@
             "type": "string",
             "minLength": 1,
             "format": "uri",
-            "title": "Url"
+            "title": "URL"
           }
         },
         "type": "object",
