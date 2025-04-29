@@ -21,9 +21,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 
 ## [Unreleased](https://github.com/ethyca/fides/compare/2.60.1...main)
 
-
-
-
+## [2.60.1](https://github.com/ethyca/fides/compare/2.60.0...2.60.1)
 
 ### Fixed
 - Fixed GTM integration to properly handle duplicate notice keys [#6090](https://github.com/ethyca/fides/pull/6090)
