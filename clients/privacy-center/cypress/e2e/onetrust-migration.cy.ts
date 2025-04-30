@@ -35,6 +35,9 @@ describe("OneTrust to Fides consent migration", () => {
     cy.clearCookie("fides_consent");
     // Clear OT cookie between tests
     cy.clearCookie("OptanonConsent");
+
+    // Intercept the API call for saving preferences
+    cy.intercept("PATCH", "**/privacy/preference").as("patchPrivacyPreference");
   });
 
   describe("when user has OneTrust cookie but no Fides cookie", () => {
@@ -62,6 +65,27 @@ describe("OneTrust to Fides consent migration", () => {
       cy.waitUntilFidesInitialized().then(() => {
         // Banner should not exist since all notices have consents
         cy.get("div#fides-banner").should("not.exist");
+
+        // Verify that the preferences were saved to the API with the correct method
+        cy.wait("@patchPrivacyPreference").then((interception) => {
+          expect(interception.request.body).to.deep.include({
+            method: ConsentMethod.OT_MIGRATION,
+            preferences: [
+              {
+                privacy_notice_history_id: "essential",
+                preference: "opt_in",
+              },
+              {
+                privacy_notice_history_id: "analytics_opt_out",
+                preference: "opt_in",
+              },
+              {
+                privacy_notice_history_id: "advertising",
+                preference: "opt_in",
+              },
+            ],
+          });
+        });
 
         cy.get("#fides-modal-link").click();
 
@@ -95,7 +119,7 @@ describe("OneTrust to Fides consent migration", () => {
               .is.eql(true);
             expect(cookieKeyConsent.fides_meta)
               .property("consentMethod")
-              .is.eql(ConsentMethod.SCRIPT);
+              .is.eql(ConsentMethod.OT_MIGRATION);
           });
         });
 
@@ -137,6 +161,27 @@ describe("OneTrust to Fides consent migration", () => {
       // Banner should not exist since all notices have consents
       cy.get("div#fides-banner").should("not.exist");
 
+      // Verify that the preferences were saved to the API with the correct method
+      cy.wait("@patchPrivacyPreference").then((interception) => {
+        expect(interception.request.body).to.deep.include({
+          method: ConsentMethod.OT_MIGRATION,
+          preferences: [
+            {
+              privacy_notice_history_id: "essential",
+              preference: "opt_in",
+            },
+            {
+              privacy_notice_history_id: "analytics_opt_out",
+              preference: "opt_in",
+            },
+            {
+              privacy_notice_history_id: "advertising",
+              preference: "opt_out",
+            },
+          ],
+        });
+      });
+
       cy.get("#fides-modal-link").click();
 
       // Verify Fides UI matches expected migration
@@ -165,7 +210,7 @@ describe("OneTrust to Fides consent migration", () => {
           expect(cookieKeyConsent.consent).property(ANALYTICS_KEY).is.eql(true);
           expect(cookieKeyConsent.fides_meta)
             .property("consentMethod")
-            .is.eql(ConsentMethod.SCRIPT);
+            .is.eql(ConsentMethod.OT_MIGRATION);
         });
       });
 
@@ -206,6 +251,27 @@ describe("OneTrust to Fides consent migration", () => {
       // Banner should not exist since all notices have consents
       cy.get("div#fides-banner").should("not.exist");
 
+      // Verify that the preferences were saved to the API with the correct method
+      cy.wait("@patchPrivacyPreference").then((interception) => {
+        expect(interception.request.body).to.deep.include({
+          method: ConsentMethod.OT_MIGRATION,
+          preferences: [
+            {
+              privacy_notice_history_id: "essential",
+              preference: "opt_out",
+            },
+            {
+              privacy_notice_history_id: "analytics_opt_out",
+              preference: "opt_out",
+            },
+            {
+              privacy_notice_history_id: "advertising",
+              preference: "opt_out",
+            },
+          ],
+        });
+      });
+
       cy.get("#fides-modal-link").click();
 
       // Verify Fides UI matches expected migration
@@ -240,7 +306,7 @@ describe("OneTrust to Fides consent migration", () => {
             .is.eql(false);
           expect(cookieKeyConsent.fides_meta)
             .property("consentMethod")
-            .is.eql(ConsentMethod.SCRIPT);
+            .is.eql(ConsentMethod.OT_MIGRATION);
         });
       });
 
@@ -412,7 +478,7 @@ describe("Fides cookie precedence", () => {
 
       cy.waitUntilFidesInitialized().then(() => {
         // Open the modal
-        cy.contains("button", "Manage preferences").click();
+        cy.contains("button", "Manage").click();
 
         // Verify Fides UI matches expected defaults
         cy.getByTestId("toggle-Advertising").within(() => {
@@ -493,7 +559,7 @@ describe("Fides cookie precedence", () => {
 
       cy.waitUntilFidesInitialized().then(() => {
         // Open the modal
-        cy.contains("button", "Manage preferences").click();
+        cy.contains("button", "Manage").click();
 
         // Verify Fides UI matches expected defaults
         cy.getByTestId("toggle-Advertising").within(() => {

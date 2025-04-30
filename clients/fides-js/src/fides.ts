@@ -24,11 +24,13 @@ import {
   OtToFidesConsentMapping,
   OverrideType,
   PrivacyExperience,
+  SaveConsentPreference,
 } from "./lib/consent-types";
 import {
   decodeNoticeConsentString,
   defaultShowModal,
   encodeNoticeConsentString,
+  isPrivacyExperience,
   shouldResurfaceBanner,
 } from "./lib/consent-utils";
 import {
@@ -51,7 +53,9 @@ import {
   UpdateExperienceFn,
 } from "./lib/initialize";
 import { initOverlay } from "./lib/initOverlay";
+import { updateConsentPreferences } from "./lib/preferences";
 import { renderOverlay } from "./lib/renderOverlay";
+import { transformConsentToFidesUserPreference } from "./lib/shared-consent-utils";
 import { customGetConsentPreferences } from "./services/external/preferences";
 
 declare global {
@@ -178,6 +182,7 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
 
   // Check for an existing cookie for this device
   let consentFromOneTrust: NoticeConsent | undefined;
+  let hasAppliedOTConsent = false;
   if (optionsOverrides.otFidesMapping && !getFidesConsentCookie()) {
     consentFromOneTrust = readConsentFromOneTrust(config, optionsOverrides);
   }
@@ -200,10 +205,11 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
   if (consentFromOneTrust && !getFidesConsentCookie()) {
     // If we have consent from OneTrust, we need to write the cookie to the browser
     Object.assign(this.cookie.fides_meta, {
-      consentMethod: ConsentMethod.SCRIPT,
+      consentMethod: ConsentMethod.OT_MIGRATION,
     });
     fidesDebugger("Saving OT preferences to Fides cookie");
     saveFidesCookie(this.cookie, config.options.base64Cookie);
+    hasAppliedOTConsent = true;
   }
 
   // Update the fidesString if we have an override and the NC portion is valid
@@ -249,6 +255,49 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
   });
   Object.assign(this, updatedFides);
   updateWindowFides(this);
+
+  // Now that we have the final experience, we can save OneTrust preferences to the API, if they exist
+  if (
+    consentFromOneTrust &&
+    hasAppliedOTConsent &&
+    isPrivacyExperience(this.experience) &&
+    this.experience.privacy_notices
+  ) {
+    const noticeMap = new Map(
+      this.experience.privacy_notices.map((notice) => [
+        notice.notice_key,
+        notice,
+      ]),
+    );
+    const consentPreferencesToSave = Object.entries(consentFromOneTrust)
+      .map(([key, value]) => {
+        const notice = noticeMap.get(key);
+        if (!notice) {
+          return null;
+        }
+        return new SaveConsentPreference(
+          notice,
+          transformConsentToFidesUserPreference(value),
+          key,
+        );
+      })
+      .filter((pref): pref is SaveConsentPreference => pref !== null);
+
+    await updateConsentPreferences({
+      consentPreferencesToSave,
+      experience: this.experience as PrivacyExperience,
+      consentMethod: ConsentMethod.OT_MIGRATION,
+      options: config.options,
+      cookie: this.cookie,
+      userLocationString: this.geolocation?.region,
+      updateCookie: async (oldCookie) => {
+        // Just return the current cookie since we've already updated it
+        return oldCookie;
+      },
+      propertyId: config.propertyId,
+    });
+  }
+
   // Dispatch the "FidesInitialized" event to update listeners with the initial state.
   dispatchFidesEvent("FidesInitialized", this.cookie, config.options.debug, {
     shouldShowExperience: this.shouldShowExperience(),
