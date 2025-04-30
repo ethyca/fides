@@ -14,8 +14,10 @@ const OktaIntegrationOverview = () => (
   <>
     <InfoHeading text="Overview" />
     <InfoText>
-      Okta is a cloud-based identity and access management (IAM) service that helps organizations manage user authentication and authorization.
-      The Okta integration allows you to manage user data, handle authentication requests, and ensure compliance with privacy regulations.
+      Okta is a cloud-based identity and access management (IAM) service that
+      helps organizations manage user authentication and authorization. The Okta
+      integration allows you to manage user data, handle authentication
+      requests, and ensure compliance with privacy regulations.
     </InfoText>
   </>
 );
