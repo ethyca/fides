@@ -254,7 +254,7 @@ def oauth_callback(code: str, state: str, db: Session = Depends(get_db)) -> Resp
             authentication.strategy, authentication.configuration  # type: ignore
         )
         connection_config.secrets = {**connection_config.secrets, "code": code}  # type: ignore
-        auth_strategy.get_access_token(connection_config, db)
+        auth_strategy.get_access_token(connection_config)
 
         msg = f"Test completed for ConnectionConfig with key: {connection_config.key}."
         status_message = connection_status(connection_config, msg, db)
