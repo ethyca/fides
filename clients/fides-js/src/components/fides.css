@@ -1111,7 +1111,8 @@ button.fides-banner-button.fides-menu-item:not([aria-pressed="true"]):hover {
   div#fides-banner {
     width: 75%;
     border-radius: var(--fides-overlay-component-border-radius);
-    border: 1px solid var(--fides-overlay-primary-color);
+    border: var(--fides-overlay-container-border-width) solid
+      var(--fides-overlay-primary-color);
   }
 
   div#fides-banner-container.fides-banner-bottom {
