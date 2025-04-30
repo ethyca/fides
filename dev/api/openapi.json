@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.60.1"
+    "version": "2.60.2b0.post0.dev1"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -2452,13 +2452,16 @@
                     "$ref": "#/components/schemas/MySQLDocsSchema"
                   },
                   {
+                    "$ref": "#/components/schemas/OktaDocsSchema"
+                  },
+                  {
+                    "$ref": "#/components/schemas/PostgreSQLDocsSchema"
+                  },
+                  {
                     "$ref": "#/components/schemas/RDSMySQLDocsSchema"
                   },
                   {
                     "$ref": "#/components/schemas/RDSPostgresDocsSchema"
-                  },
-                  {
-                    "$ref": "#/components/schemas/PostgreSQLDocsSchema"
                   },
                   {
                     "$ref": "#/components/schemas/RedshiftDocsSchema"
@@ -3863,13 +3866,16 @@
                     "$ref": "#/components/schemas/MySQLDocsSchema"
                   },
                   {
+                    "$ref": "#/components/schemas/OktaDocsSchema"
+                  },
+                  {
+                    "$ref": "#/components/schemas/PostgreSQLDocsSchema"
+                  },
+                  {
                     "$ref": "#/components/schemas/RDSMySQLDocsSchema"
                   },
                   {
                     "$ref": "#/components/schemas/RDSPostgresDocsSchema"
-                  },
-                  {
-                    "$ref": "#/components/schemas/PostgreSQLDocsSchema"
                   },
                   {
                     "$ref": "#/components/schemas/RedshiftDocsSchema"
@@ -4012,13 +4018,16 @@
                     "$ref": "#/components/schemas/MySQLDocsSchema"
                   },
                   {
+                    "$ref": "#/components/schemas/OktaDocsSchema"
+                  },
+                  {
+                    "$ref": "#/components/schemas/PostgreSQLDocsSchema"
+                  },
+                  {
                     "$ref": "#/components/schemas/RDSMySQLDocsSchema"
                   },
                   {
                     "$ref": "#/components/schemas/RDSPostgresDocsSchema"
-                  },
-                  {
-                    "$ref": "#/components/schemas/PostgreSQLDocsSchema"
                   },
                   {
                     "$ref": "#/components/schemas/RedshiftDocsSchema"
@@ -15406,6 +15415,7 @@
           "mongodb",
           "mssql",
           "mysql",
+          "okta",
           "postgres",
           "rds_mysql",
           "rds_postgres",
@@ -16000,13 +16010,16 @@
                 "$ref": "#/components/schemas/MySQLDocsSchema"
               },
               {
+                "$ref": "#/components/schemas/OktaDocsSchema"
+              },
+              {
+                "$ref": "#/components/schemas/PostgreSQLDocsSchema"
+              },
+              {
                 "$ref": "#/components/schemas/RDSMySQLDocsSchema"
               },
               {
                 "$ref": "#/components/schemas/RDSPostgresDocsSchema"
-              },
-              {
-                "$ref": "#/components/schemas/PostgreSQLDocsSchema"
               },
               {
                 "$ref": "#/components/schemas/RedshiftDocsSchema"
@@ -20229,6 +20242,28 @@
         ],
         "title": "OktaConfig",
         "description": "The model for the connection config for Okta"
+      },
+      "OktaDocsSchema": {
+        "properties": {
+          "org_url": {
+            "type": "string",
+            "title": "Organization URL",
+            "description": "The URL of your Okta organization (e.g. https://your-org.okta.com)"
+          },
+          "api_token": {
+            "type": "string",
+            "title": "API Token",
+            "description": "The API token used to authenticate with Okta",
+            "sensitive": true
+          }
+        },
+        "type": "object",
+        "required": [
+          "org_url",
+          "api_token"
+        ],
+        "title": "OktaDocsSchema",
+        "description": "Okta Secrets Schema for API Docs"
       },
       "Organization": {
         "properties": {
@@ -25071,13 +25106,16 @@
                 "$ref": "#/components/schemas/MySQLDocsSchema"
               },
               {
+                "$ref": "#/components/schemas/OktaDocsSchema"
+              },
+              {
+                "$ref": "#/components/schemas/PostgreSQLDocsSchema"
+              },
+              {
                 "$ref": "#/components/schemas/RDSMySQLDocsSchema"
               },
               {
                 "$ref": "#/components/schemas/RDSPostgresDocsSchema"
-              },
-              {
-                "$ref": "#/components/schemas/PostgreSQLDocsSchema"
               },
               {
                 "$ref": "#/components/schemas/RedshiftDocsSchema"
@@ -26798,6 +26836,7 @@
           "email",
           "manual",
           "saas",
+          "system",
           "website"
         ],
         "title": "SystemType"
