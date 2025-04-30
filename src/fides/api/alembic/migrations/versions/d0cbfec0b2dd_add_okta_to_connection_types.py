@@ -27,7 +27,7 @@ def get_enum_values():
 
 def upgrade():
     # add 'okta' to ConnectionType enum
-    enum_values = [f"'{v.strip()}'" for v in get_enum_values() + [type_to_handle]]
+    enum_values = [f"'{value}'" for value in get_enum_values() + [type_to_handle]]
     enum_values.sort()  # Just to keep it fantastic
 
     op.execute("ALTER TYPE connectiontype RENAME TO connectiontype_old")
