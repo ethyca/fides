@@ -48,4 +48,4 @@ jobs:
         if: failure()
         with:
           name: cypress-videos-admin-ui
-          path: /home/runner/work/fides/fides/clients/admin-ui/cypress/videos/*.mp4
+          path: /home/runner/work/fides/clients/admin-ui/cypress/videos/*.mp4
