@@ -107,19 +107,21 @@ export const generateFidesString = async ({
           const { id } = decodeVendorId(vendorId);
           tcModel.vendorConsents.set(+id);
 
-          // Legacy: look up each vendor in the GVL vendors list to see if they have a purpose list.
-          // If they do not it means they have been set in Admin UI as Vendor Overrides to
-          // require consent. In that case we need to set a publisher restriction for the
-          // vendor's flexible purposes.
-          const vendor = experience.gvl?.vendors[id];
-          if (vendor && !vendor?.purposes?.length) {
-            vendor.flexiblePurposes.forEach((purpose) => {
-              const purposeRestriction = new PurposeRestriction();
-              purposeRestriction.purposeId = purpose;
-              purposeRestriction.restrictionType =
-                RestrictionType.REQUIRE_CONSENT;
-              tcModel.publisherRestrictions.add(+id, purposeRestriction);
-            });
+          if (!experience.tcf_publisher_restrictions?.length) {
+            // Legacy: look up each vendor in the GVL vendors list to see if they have a purpose list.
+            // If they do not it means they have been set in Admin UI as Vendor Overrides to
+            // require consent. In that case we need to set a publisher restriction for the
+            // vendor's flexible purposes.
+            const vendor = experience.gvl?.vendors[id];
+            if (vendor && !vendor?.purposes?.length) {
+              vendor.flexiblePurposes.forEach((purpose) => {
+                const purposeRestriction = new PurposeRestriction();
+                purposeRestriction.purposeId = purpose;
+                purposeRestriction.restrictionType =
+                  RestrictionType.REQUIRE_CONSENT;
+                tcModel.publisherRestrictions.add(+id, purposeRestriction);
+              });
+            }
           }
         }
       });
