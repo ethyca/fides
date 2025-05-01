@@ -11,6 +11,10 @@ import { meta } from "./integrations/meta";
 import { shopify } from "./integrations/shopify";
 import { raise } from "./lib/common-utils";
 import {
+  readConsentFromAnyProvider,
+  registerDefaultProviders,
+} from "./lib/consent-migration";
+import {
   ConsentMethod,
   FidesConfig,
   FidesCookie,
@@ -21,7 +25,6 @@ import {
   FidesOverrides,
   GetPreferencesFnResp,
   NoticeConsent,
-  OtToFidesConsentMapping,
   OverrideType,
   PrivacyExperience,
   SaveConsentPreference,
@@ -36,8 +39,6 @@ import {
 import {
   consentCookieObjHasSomeConsentSet,
   getFidesConsentCookie,
-  getOTConsentCookie,
-  otCookieToFidesConsent,
   saveFidesCookie,
   updateExperienceFromCookieConsentNotices,
 } from "./lib/cookie";
@@ -91,45 +92,6 @@ const updateExperience: UpdateExperienceFn = ({
   return updatedExperience;
 };
 
-const readConsentFromOneTrust = (
-  config: FidesConfig,
-  optionsOverrides: Partial<FidesInitOptionsOverrides>,
-): NoticeConsent | undefined => {
-  const otConsentCookie =
-    !!optionsOverrides.otFidesMapping && getOTConsentCookie();
-  if (!optionsOverrides.otFidesMapping || !otConsentCookie) {
-    fidesDebugger(
-      "OT cookie or OT-Fides mapping does not exist, skipping mapping consent to Fides cookie...",
-      config.options,
-    );
-    return undefined;
-  }
-  try {
-    const decodedString = decodeURIComponent(optionsOverrides.otFidesMapping);
-    const strippedString = decodedString.replace(/^'|'$/g, "");
-    const otFidesMappingParsed: OtToFidesConsentMapping =
-      JSON.parse(strippedString);
-    const otToFidesConsent: NoticeConsent = otCookieToFidesConsent(
-      otConsentCookie,
-      otFidesMappingParsed,
-    );
-    if (otToFidesConsent) {
-      fidesDebugger(
-        `Fides consent built based on OT consent: ${JSON.stringify(otToFidesConsent)}`,
-        config.options,
-      );
-      return otToFidesConsent;
-    }
-    return undefined;
-  } catch (e) {
-    fidesDebugger(
-      `Failed to map OT consent to Fides consent due to: ${e}`,
-      config.options,
-    );
-  }
-  return undefined;
-};
-
 /**
  * Initialize the global Fides object with the given configuration values
  */
@@ -180,12 +142,22 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
     experienceTranslationOverrides,
   };
 
-  // Check for an existing cookie for this device
-  let consentFromOneTrust: NoticeConsent | undefined;
-  let hasAppliedOTConsent = false;
-  if (optionsOverrides.otFidesMapping && !getFidesConsentCookie()) {
-    consentFromOneTrust = readConsentFromOneTrust(config, optionsOverrides);
+  // Register any configured consent migration providers
+  registerDefaultProviders(optionsOverrides);
+
+  // Check for migrated consent from any registered providers
+  let migratedConsent: NoticeConsent | undefined;
+  let hasMigratedConsent = false;
+  let migrationMethod: ConsentMethod | undefined;
+
+  if (!getFidesConsentCookie()) {
+    const { consent, method } = readConsentFromAnyProvider(optionsOverrides);
+    if (consent && method) {
+      migratedConsent = consent;
+      migrationMethod = method;
+    }
   }
+
   config = {
     ...config,
     options: { ...config.options, ...overrides.optionsOverrides },
@@ -193,7 +165,7 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
   this.cookie = getInitialCookie(config);
   this.cookie.consent = {
     ...this.cookie.consent,
-    ...consentFromOneTrust,
+    ...migratedConsent,
   };
 
   // Keep a copy of saved consent from the cookie, since we update the "cookie"
@@ -201,16 +173,6 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
   this.saved_consent = {
     ...this.cookie.consent,
   };
-
-  if (consentFromOneTrust && !getFidesConsentCookie()) {
-    // If we have consent from OneTrust, we need to write the cookie to the browser
-    Object.assign(this.cookie.fides_meta, {
-      consentMethod: ConsentMethod.OT_MIGRATION,
-    });
-    fidesDebugger("Saving OT preferences to Fides cookie");
-    saveFidesCookie(this.cookie, config.options.base64Cookie);
-    hasAppliedOTConsent = true;
-  }
 
   // Update the fidesString if we have an override and the NC portion is valid
   const { fidesString } = config.options;
@@ -230,6 +192,17 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
       );
     }
   }
+
+  if (migratedConsent && migrationMethod) {
+    // If we have migrated consent, we need to write the cookie to the browser
+    Object.assign(this.cookie.fides_meta, {
+      consentMethod: migrationMethod,
+    });
+    fidesDebugger("Saving migrated preferences to Fides cookie");
+    saveFidesCookie(this.cookie, config.options.base64Cookie);
+    hasMigratedConsent = true;
+  }
+
   const initialFides = getInitialFides({
     ...config,
     cookie: this.cookie,
@@ -256,10 +229,11 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
   Object.assign(this, updatedFides);
   updateWindowFides(this);
 
-  // Now that we have the final experience, we can save OneTrust preferences to the API, if they exist
+  // Now that we have the final experience, we can save migrated preferences to the API, if they exist
   if (
-    consentFromOneTrust &&
-    hasAppliedOTConsent &&
+    migratedConsent &&
+    hasMigratedConsent &&
+    migrationMethod &&
     isPrivacyExperience(this.experience) &&
     this.experience.privacy_notices
   ) {
@@ -269,7 +243,7 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
         notice,
       ]),
     );
-    const consentPreferencesToSave = Object.entries(consentFromOneTrust)
+    const consentPreferencesToSave = Object.entries(this.cookie.consent)
       .map(([key, value]) => {
         const notice = noticeMap.get(key);
         if (!notice) {
@@ -286,7 +260,7 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
     await updateConsentPreferences({
       consentPreferencesToSave,
       experience: this.experience as PrivacyExperience,
-      consentMethod: ConsentMethod.OT_MIGRATION,
+      consentMethod: migrationMethod,
       options: config.options,
       cookie: this.cookie,
       userLocationString: this.geolocation?.region,
