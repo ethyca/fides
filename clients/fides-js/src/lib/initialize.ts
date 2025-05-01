@@ -6,6 +6,10 @@ import { fetchExperience } from "../services/api";
 import { getGeolocation } from "../services/external/geolocation";
 import { getConsentContext } from "./consent-context";
 import {
+  readConsentFromAnyProvider,
+  registerDefaultProviders,
+} from "./consent-migration";
+import {
   ComponentType,
   ConsentMechanism,
   ConsentMethod,
@@ -34,7 +38,6 @@ import { resolveConsentValue } from "./consent-value";
 import {
   getCookieByName,
   getOrMakeFidesCookie,
-  getOTConsentCookie,
   isNewFidesCookie,
   makeConsentDefaultsLegacy,
   updateCookieFromExperience,
@@ -317,9 +320,15 @@ export const getInitialFides = ({
     }) => PrivacyExperience;
   }): Partial<FidesGlobal> | null => {
   const hasExistingCookie = !isNewFidesCookie(cookie);
-  const otConsentCookie = !!options.otFidesMapping && getOTConsentCookie();
-  const isOtMigrationMode = !!otConsentCookie && !!options.otFidesMapping;
-  if (!hasExistingCookie && !options.fidesString && !isOtMigrationMode) {
+
+  // Register any configured consent migration providers
+  registerDefaultProviders(options);
+
+  // Check if there's consent available to migrate from any provider
+  const { consent: migratedConsent } = readConsentFromAnyProvider(options);
+  const hasMigratableConsent = !!migratedConsent;
+
+  if (!hasExistingCookie && !options.fidesString && !hasMigratableConsent) {
     // A TC str can be injected and take effect even if the user has no previous Fides Cookie
     return null;
   }
