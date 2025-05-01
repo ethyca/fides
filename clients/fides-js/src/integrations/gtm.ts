@@ -1,11 +1,7 @@
 import { FidesEvent, FidesEventType } from "../docs";
-import {
-  FidesGlobal,
-  NoticeConsent,
-  UserConsentPreference,
-} from "../lib/consent-types";
+import { FidesGlobal, UserConsentPreference } from "../lib/consent-types";
 import { FidesEventDetail } from "../lib/events";
-import { transformConsentToFidesUserPreference } from "../lib/shared-consent-utils";
+import { composeConsent } from "../lib/shared-consent-utils";
 
 declare global {
   interface Window {
@@ -35,39 +31,6 @@ export interface GtmOptions {
   non_applicable_flag_mode?: ConsentNonApplicableFlagMode;
   flag_type?: ConsentFlagType;
 }
-
-/**
- * Composes consent values based on the consent mechanism and flag type
- */
-const composeConsent = (
-  consent: NoticeConsent,
-  privacyNotices: any[] | undefined,
-  flagType: ConsentFlagType,
-): NoticeConsent => {
-  const consentValues: NoticeConsent = {};
-
-  Object.entries(consent).forEach(([key, value]) => {
-    if (privacyNotices && flagType === ConsentFlagType.CONSENT_MECHANISM) {
-      // If value is already a UserConsentPreference string, use it directly
-      if (typeof value === "string") {
-        consentValues[key] = value;
-      } else {
-        const relevantNotice = privacyNotices.find(
-          (notice) => notice.notice_key === key,
-        );
-        // Otherwise transform boolean to UserConsentPreference
-        consentValues[key] = transformConsentToFidesUserPreference(
-          value,
-          relevantNotice?.consent_mechanism,
-        );
-      }
-    } else {
-      consentValues[key] = value;
-    }
-  });
-
-  return consentValues;
-};
 
 // Helper function to push the Fides variable to the GTM data layer from a FidesEvent
 const pushFidesVariableToGTM = (

@@ -1,3 +1,5 @@
+import { ConsentFlagType } from "~/integrations/gtm";
+
 import {
   ConsentMechanism,
   NoticeConsent,
@@ -47,4 +49,37 @@ export const transformConsentToFidesUserPreference = (
     return UserConsentPreference.OPT_IN;
   }
   return UserConsentPreference.OPT_OUT;
+};
+
+/**
+ * Composes consent values based on the consent mechanism and flag type
+ */
+export const composeConsent = (
+  consent: NoticeConsent,
+  privacyNotices: any[] | undefined,
+  flagType: ConsentFlagType,
+): NoticeConsent => {
+  const consentValues: NoticeConsent = {};
+
+  Object.entries(consent).forEach(([key, value]) => {
+    if (privacyNotices && flagType === ConsentFlagType.CONSENT_MECHANISM) {
+      // If value is already a UserConsentPreference string, use it directly
+      if (typeof value === "string") {
+        consentValues[key] = value;
+      } else {
+        const relevantNotice = privacyNotices.find(
+          (notice) => notice.notice_key === key,
+        );
+        // Otherwise transform boolean to UserConsentPreference
+        consentValues[key] = transformConsentToFidesUserPreference(
+          value,
+          relevantNotice?.consent_mechanism,
+        );
+      }
+    } else {
+      consentValues[key] = value;
+    }
+  });
+
+  return consentValues;
 };
