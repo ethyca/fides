@@ -156,7 +156,12 @@ export const rtkQueryErrorLogger: Middleware = () => (next) => (action) => {
 
 const middleware = [baseApi.middleware, healthApi.middleware];
 
-if (process.env.NODE_ENV !== "test") {
+if (process.env.NEXT_PUBLIC_APP_ENV !== "test") {
+  // Adding this middleware in `test` caused Cypress tests
+  // to take a lot longer than they otherwise would because errant
+  // notifications caused Cypress to be unable to click on elements.
+  // TODO: Conditionally enable this in tests so that we can start to
+  // clean up errors that are fired during tests.
   middleware.push(rtkQueryErrorLogger);
 }
 
