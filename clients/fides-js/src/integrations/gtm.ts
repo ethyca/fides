@@ -1,7 +1,7 @@
 import { FidesEvent, FidesEventType } from "../docs";
 import { FidesGlobal, UserConsentPreference } from "../lib/consent-types";
 import { FidesEventDetail } from "../lib/events";
-import { composeConsent } from "../lib/shared-consent-utils";
+import { normalizeConsentValues } from "../lib/shared-consent-utils";
 
 declare global {
   interface Window {
@@ -59,7 +59,7 @@ const pushFidesVariableToGTM = (
   } = options ?? {};
 
   const consentValues: FidesVariable["consent"] = {};
-  const privacyNotices = window.Fides?.experience?.privacy_notices;
+  const privacyNotices = window.Fides?.experience?.privacy_notices ?? [];
   const nonApplicablePrivacyNotices =
     window.Fides?.experience?.non_applicable_privacy_notices;
 
@@ -78,9 +78,21 @@ const pushFidesVariableToGTM = (
 
   // Then override with actual consent values
   if (consent) {
+    const consentMechanisms = privacyNotices.reduce(
+      (acc, notice) => ({
+        ...acc,
+        [notice.notice_key]: notice.consent_mechanism,
+      }),
+      {},
+    );
+
     Object.assign(
       consentValues,
-      composeConsent(consent, privacyNotices, flagType),
+      normalizeConsentValues({
+        consent,
+        consentMechanisms,
+        flagType,
+      }),
     );
   }
 
