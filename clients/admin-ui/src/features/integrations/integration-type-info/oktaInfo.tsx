@@ -14,15 +14,15 @@ const OktaIntegrationOverview = () => (
   <>
     <InfoHeading text="Overview" />
     <InfoText>
-      Okta is a cloud-based identity and access management (IAM) service that
-      helps organizations manage user authentication and authorization. The Okta
-      integration allows you to manage user data, handle authentication
-      requests, and ensure compliance with privacy regulations.
+      SSO providers manage user authentication and can help identify systems
+      within your infrastructure. Adding an SSO provider as a data source allows
+      you to detect connected systems, monitor access patterns, and enhance your
+      data map for better visibility and control.
     </InfoText>
   </>
 );
 
-const OKTA_TAGS = ["Authentication", "User Management", "Identity"];
+const OKTA_TAGS = ["Discovery", "Inventory"];
 
 const OKTA_INTEGRATION_TYPE_INFO = {
   placeholder: OKTA_INTEGRATION_PLACEHOLDER,
