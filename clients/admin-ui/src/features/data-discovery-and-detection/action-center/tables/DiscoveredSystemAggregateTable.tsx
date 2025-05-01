@@ -5,15 +5,12 @@ import {
 } from "@tanstack/react-table";
 import {
   AntButton as Button,
+  AntDropdown as Dropdown,
   AntEmpty as Empty,
   AntTooltip as Tooltip,
   Box,
   Flex,
   Icons,
-  Menu,
-  MenuButton,
-  MenuItem,
-  MenuList,
   Text,
 } from "fidesui";
 import { useRouter } from "next/router";
@@ -228,48 +225,48 @@ export const DiscoveredSystemAggregateTable = ({
                 {`${selectedRows.length} selected`}
               </Text>
             )}
-            <Menu>
-              <MenuButton
-                as={Button}
+            <Dropdown
+              menu={{
+                items: [
+                  {
+                    key: "add",
+                    label: (
+                      <Tooltip
+                        title={
+                          uncategorizedIsSelected
+                            ? "Uncategorized assets can't be added to the inventory"
+                            : null
+                        }
+                        placement="left"
+                      >
+                        Add
+                      </Tooltip>
+                    ),
+                    onClick: handleBulkAdd,
+                    disabled: uncategorizedIsSelected,
+                  },
+                  !activeParams.diff_status.includes(DiffStatus.MUTED)
+                    ? {
+                        key: "ignore",
+                        label: "Ignore",
+                        onClick: handleBulkIgnore,
+                      }
+                    : null,
+                ],
+              }}
+              trigger={["click"]}
+            >
+              <Button
+                type="primary"
                 icon={<Icons.ChevronDown />}
                 iconPosition="end"
                 loading={anyBulkActionIsLoading}
-                data-testid="bulk-actions-menu"
                 disabled={!selectedRows.length}
-                // @ts-ignore - `type` prop is for Ant button, not Chakra MenuButton
-                type="primary"
+                data-testid="bulk-actions-menu"
               >
                 Actions
-              </MenuButton>
-              <MenuList>
-                <Tooltip
-                  title={
-                    uncategorizedIsSelected
-                      ? "Uncategorized assets can't be added to the inventory"
-                      : null
-                  }
-                  placement="left"
-                >
-                  <MenuItem
-                    fontSize="small"
-                    onClick={handleBulkAdd}
-                    data-testid="bulk-add"
-                    isDisabled={uncategorizedIsSelected}
-                  >
-                    Add
-                  </MenuItem>
-                </Tooltip>
-                {!activeParams.diff_status.includes(DiffStatus.MUTED) && (
-                  <MenuItem
-                    fontSize="small"
-                    onClick={handleBulkIgnore}
-                    data-testid="bulk-ignore"
-                  >
-                    Ignore
-                  </MenuItem>
-                )}
-              </MenuList>
-            </Menu>
+              </Button>
+            </Dropdown>
           </Flex>
         </Flex>
       </TableActionBar>
