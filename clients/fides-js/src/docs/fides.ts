@@ -62,8 +62,16 @@ export interface Fides {
    *   "marketing": false
    * }
    * ```
+   *
+   * @example
+   * A `Fides.consent` value showing the user has opted-in to analytics, but not marketing using a consent mechanism string:
+   * ```ts
+   * {
+   *   "analytics": "opt_in",
+   *   "marketing": "opt_out"
+   * }
    */
-  consent: Record<string, boolean>;
+  consent: Record<string, boolean | string>;
 
   /**
    * User's current consent string(s) combined into a single value. This is used by
@@ -443,6 +451,7 @@ export interface Fides {
   saved_consent: Record<string, boolean>;
 
   /**
+   * @deprecated
    * @internal
    */
   tcf_consent: any;

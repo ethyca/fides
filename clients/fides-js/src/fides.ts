@@ -25,6 +25,7 @@ import {
   FidesOverrides,
   GetPreferencesFnResp,
   NoticeConsent,
+  NoticeValues,
   OverrideType,
   PrivacyExperience,
   SaveConsentPreference,
@@ -175,7 +176,7 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
   // Keep a copy of saved consent from the cookie, since we update the "cookie"
   // value during initialization based on overrides, experience, etc.
   this.saved_consent = {
-    ...this.cookie.consent,
+    ...(this.cookie.consent as NoticeValues),
   };
 
   // Update the fidesString if we have an override and the NC portion is valid

@@ -1,5 +1,9 @@
 import { FidesEvent, FidesEventType } from "../docs";
-import { FidesGlobal } from "../lib/consent-types";
+import {
+  FidesGlobal,
+  NoticeConsent,
+  UserConsentPreference,
+} from "../lib/consent-types";
 import { FidesEventDetail } from "../lib/events";
 import { transformConsentToFidesUserPreference } from "../lib/shared-consent-utils";
 
@@ -36,21 +40,27 @@ export interface GtmOptions {
  * Composes consent values based on the consent mechanism and flag type
  */
 const composeConsent = (
-  consent: Record<string, boolean>,
+  consent: NoticeConsent,
   privacyNotices: any[] | undefined,
   flagType: ConsentFlagType,
-): Record<string, boolean | string> => {
-  const consentValues: Record<string, boolean | string> = {};
+): NoticeConsent => {
+  const consentValues: NoticeConsent = {};
 
   Object.entries(consent).forEach(([key, value]) => {
     if (privacyNotices && flagType === ConsentFlagType.CONSENT_MECHANISM) {
-      const relevantNotice = privacyNotices.find(
-        (notice) => notice.notice_key === key,
-      );
-      consentValues[key] = transformConsentToFidesUserPreference(
-        value,
-        relevantNotice?.consent_mechanism,
-      );
+      // If value is already a UserConsentPreference string, use it directly
+      if (typeof value === "string") {
+        consentValues[key] = value;
+      } else {
+        const relevantNotice = privacyNotices.find(
+          (notice) => notice.notice_key === key,
+        );
+        // Otherwise transform boolean to UserConsentPreference
+        consentValues[key] = transformConsentToFidesUserPreference(
+          value,
+          relevantNotice?.consent_mechanism,
+        );
+      }
     } else {
       consentValues[key] = value;
     }
@@ -98,7 +108,7 @@ const pushFidesVariableToGTM = (
     nonApplicablePrivacyNotices.forEach((key) => {
       consentValues[key] =
         flagType === ConsentFlagType.CONSENT_MECHANISM
-          ? "not_applicable"
+          ? UserConsentPreference.NOT_APPLICABLE
           : true;
     });
   }

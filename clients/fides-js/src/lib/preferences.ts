@@ -4,6 +4,7 @@ import {
   ConsentOptionCreate,
   FidesCookie,
   FidesInitOptions,
+  NoticeValues,
   PrivacyExperience,
   PrivacyExperienceMinimal,
   PrivacyPreferencesRequest,
@@ -112,7 +113,7 @@ export const updateConsentPreferences = async ({
   // 4. Save preferences to the cookie in the browser
   fidesDebugger("Saving preferences to cookie");
   saveFidesCookie(cookie, options.base64Cookie);
-  window.Fides.saved_consent = cookie.consent;
+  window.Fides.saved_consent = cookie.consent as NoticeValues;
 
   // 5. Save preferences to API (if not disabled)
   if (!options.fidesDisableSaveApi) {

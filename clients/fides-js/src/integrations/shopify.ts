@@ -1,5 +1,6 @@
 import { MARKETING_CONSENT_KEYS } from "../lib/consent-constants";
-import { NoticeConsent } from "../lib/consent-types";
+import { NoticeConsent, UserConsentPreference } from "../lib/consent-types";
+import { transformUserPreferenceToBoolean } from "../lib/shared-consent-utils";
 
 declare global {
   interface Window {
@@ -40,20 +41,32 @@ type ShopifyConsentResponse = {
 };
 
 type ShopifyConsent = {
-  marketing: boolean | undefined;
-  analytics: boolean | undefined;
-  preferences: boolean | undefined;
+  marketing: boolean;
+  analytics: boolean;
+  preferences: boolean;
   sale_of_data: boolean;
 };
 
-function createShopifyConsent(
-  fidesConsent: Record<string, boolean>,
-): ShopifyConsent {
+function createShopifyConsent(fidesConsent: NoticeConsent): ShopifyConsent {
   const consent = Object.fromEntries(
     Object.entries(CONSENT_MAP).map(([key, values]) => [
       key,
-      values.some((value) => fidesConsent[value] === true) ||
-        (values.some((value) => fidesConsent[value] === false)
+      values.some((value) => {
+        const consentValue = fidesConsent[value];
+        return typeof consentValue === "boolean"
+          ? consentValue
+          : transformUserPreferenceToBoolean(
+              consentValue as UserConsentPreference,
+            );
+      }) ||
+        (values.some((value) => {
+          const consentValue = fidesConsent[value];
+          return typeof consentValue === "boolean"
+            ? !consentValue
+            : !transformUserPreferenceToBoolean(
+                consentValue as UserConsentPreference,
+              );
+        })
           ? false
           : undefined),
     ]),
@@ -67,8 +80,7 @@ function createShopifyConsent(
 
 // Helper function to push consent to Shopify from a Fides Consent object
 const pushConsentToShopify = (fidesConsent: NoticeConsent) => {
-  // @ts-ignore - Shopify is loaded at this point
-  window.Shopify.customerPrivacy.setTrackingConsent(
+  window.Shopify!.customerPrivacy!.setTrackingConsent(
     createShopifyConsent(fidesConsent),
     () => {},
   );

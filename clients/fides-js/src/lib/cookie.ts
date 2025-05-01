@@ -11,6 +11,7 @@ import {
   PrivacyExperience,
   PrivacyNoticeWithPreference,
   SaveConsentPreference,
+  UserConsentPreference,
 } from "./consent-types";
 import { resolveLegacyConsentValue } from "./consent-value";
 import {
@@ -50,7 +51,7 @@ export const consentCookieObjHasSomeConsentSet = (
     return false;
   }
   return Object.values(consent).some(
-    (val: boolean | undefined) => val !== undefined,
+    (val: boolean | UserConsentPreference | undefined) => val !== undefined,
   );
 };
 
