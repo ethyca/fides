@@ -68,22 +68,33 @@ describe("OneTrust to Fides consent migration", () => {
 
         // Verify that the preferences were saved to the API with the correct method
         cy.wait("@patchPrivacyPreference").then((interception) => {
-          expect(interception.request.body).to.deep.include({
-            method: ConsentMethod.OT_MIGRATION,
-            preferences: [
-              {
-                privacy_notice_history_id: "essential",
-                preference: "opt_in",
-              },
-              {
-                privacy_notice_history_id: "analytics_opt_out",
-                preference: "opt_in",
-              },
-              {
-                privacy_notice_history_id: "advertising",
-                preference: "opt_in",
-              },
-            ],
+          // Check method separately since order doesn't matter for that
+          expect(interception.request.body.method).to.equal(
+            ConsentMethod.OT_MIGRATION,
+          );
+
+          // Check that all expected preferences exist, regardless of order
+          const expectedPreferences = [
+            {
+              privacy_notice_history_id: "essential",
+              preference: "opt_in",
+            },
+            {
+              privacy_notice_history_id: "analytics_opt_out",
+              preference: "opt_in",
+            },
+            {
+              privacy_notice_history_id: "advertising",
+              preference: "opt_in",
+            },
+          ];
+
+          const actualPreferences = interception.request.body.preferences;
+          expect(actualPreferences).to.have.length(expectedPreferences.length);
+
+          // For each expected preference, ensure it exists in the actual preferences
+          expectedPreferences.forEach((expected) => {
+            expect(actualPreferences).to.deep.include(expected);
           });
         });
 
@@ -163,22 +174,33 @@ describe("OneTrust to Fides consent migration", () => {
 
       // Verify that the preferences were saved to the API with the correct method
       cy.wait("@patchPrivacyPreference").then((interception) => {
-        expect(interception.request.body).to.deep.include({
-          method: ConsentMethod.OT_MIGRATION,
-          preferences: [
-            {
-              privacy_notice_history_id: "essential",
-              preference: "opt_in",
-            },
-            {
-              privacy_notice_history_id: "analytics_opt_out",
-              preference: "opt_in",
-            },
-            {
-              privacy_notice_history_id: "advertising",
-              preference: "opt_out",
-            },
-          ],
+        // Check method separately since order doesn't matter for that
+        expect(interception.request.body.method).to.equal(
+          ConsentMethod.OT_MIGRATION,
+        );
+
+        // Check that all expected preferences exist, regardless of order
+        const expectedPreferences = [
+          {
+            privacy_notice_history_id: "essential",
+            preference: "opt_in",
+          },
+          {
+            privacy_notice_history_id: "analytics_opt_out",
+            preference: "opt_in",
+          },
+          {
+            privacy_notice_history_id: "advertising",
+            preference: "opt_out",
+          },
+        ];
+
+        const actualPreferences = interception.request.body.preferences;
+        expect(actualPreferences).to.have.length(expectedPreferences.length);
+
+        // For each expected preference, ensure it exists in the actual preferences
+        expectedPreferences.forEach((expected) => {
+          expect(actualPreferences).to.deep.include(expected);
         });
       });
 
@@ -253,22 +275,33 @@ describe("OneTrust to Fides consent migration", () => {
 
       // Verify that the preferences were saved to the API with the correct method
       cy.wait("@patchPrivacyPreference").then((interception) => {
-        expect(interception.request.body).to.deep.include({
-          method: ConsentMethod.OT_MIGRATION,
-          preferences: [
-            {
-              privacy_notice_history_id: "essential",
-              preference: "opt_out",
-            },
-            {
-              privacy_notice_history_id: "analytics_opt_out",
-              preference: "opt_out",
-            },
-            {
-              privacy_notice_history_id: "advertising",
-              preference: "opt_out",
-            },
-          ],
+        // Check method separately since order doesn't matter for that
+        expect(interception.request.body.method).to.equal(
+          ConsentMethod.OT_MIGRATION,
+        );
+
+        // Check that all expected preferences exist, regardless of order
+        const expectedPreferences = [
+          {
+            privacy_notice_history_id: "essential",
+            preference: "opt_out",
+          },
+          {
+            privacy_notice_history_id: "analytics_opt_out",
+            preference: "opt_out",
+          },
+          {
+            privacy_notice_history_id: "advertising",
+            preference: "opt_out",
+          },
+        ];
+
+        const actualPreferences = interception.request.body.preferences;
+        expect(actualPreferences).to.have.length(expectedPreferences.length);
+
+        // For each expected preference, ensure it exists in the actual preferences
+        expectedPreferences.forEach((expected) => {
+          expect(actualPreferences).to.deep.include(expected);
         });
       });
 
