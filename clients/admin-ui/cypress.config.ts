@@ -28,4 +28,7 @@ export default defineConfig({
       bundler: "webpack",
     },
   },
+
+  // Will only run for cy:run, not cy:open
+  video: true,
 });

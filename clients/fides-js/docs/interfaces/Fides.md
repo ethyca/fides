@@ -132,21 +132,25 @@ To always return in the default language only, pass the `disableLocalization` op
 
 #### Examples
 
-Getting the link text in the user's current locale (eg. Spanish):
+Get the link text in the user's current locale (eg. Spanish):
 ```ts
 console.log(Fides.getModalLinkLabel()); // "Tus preferencias de privacidad"
 ```
 
-Getting the link text in the default locale to match other links on the page:
+Get the link text in the default locale to match other links on the page:
 ```ts
 console.log(Fides.getModalLinkLabel({ disableLocalization: true })); // "Your Privacy Choices"
 ```
 
-Applying the link text to a custom modal link element:
+Apply the link text to a custom modal link element on Fides initialization:
 ```html
 <button class="my-custom-show-modal" id="fides-modal-link-label" onclick="Fides.showModal()"><button>
-<script>
- document.getElementById('fides-modal-link-label').innerText = Fides.getModalLinkLabel();
+<script id="fides-js">
+  function() {
+    addEventListener("FidesInitialized", ( function() {
+      document.getElementById('fides-modal-link-label').innerText = Fides.getModalLinkLabel();
+    }));
+  }
 </script>
 ```
 
@@ -288,7 +292,7 @@ However, initialization can be called manually if needed - for example to delay
 initialization until after your own custom JavaScript has run to set up some
 config options. In this case, you can disable the automatic initialization
 by including the query param `initialize=false` in the Fides script URL
-(see (Privacy Center FidesJS Hosting)[/docs/dev-docs/js/privacy-center-fidesjs-hosting] for details).
+(see [Privacy Center FidesJS Hosting](/docs/dev-docs/js/privacy-center-fidesjs-hosting) for details).
 You will then need to call `Fides.init()` manually at the appropriate time.
 
 This function can also be used to reinitialize FidesJS. This is useful when
@@ -308,6 +312,40 @@ such as the `fides_overrides` global or the query params.
 #### Returns
 
 `Promise`\<`void`\>
+
+#### Example
+
+Disable FidesJS initialization and trigger manually instead:
+```html
+<head>
+  <script src="https://privacy.example.com/fides.js?initialize=false"></script>
+</head>
+<body>
+  <!--- Later, in your own application code... -->
+  <script>Fides.init()</script>
+</body>
+```
+Configure overrides after loading Fides.js tag.
+```html
+<head>
+  <script src="path/to/fides.js">
+    // Loading Fides.js before setting window.fides_overrides requires re-initialization
+  </script>
+
+  <script>
+    function onChange(newData) {
+      // Update Fides options
+      window.fides_overrides = window.fides_overrides || {};
+      window.fides_overrides = {
+        fides_locale: newData,
+      };
+
+      // Reinitialize FidesJS
+      window.Fides.init();
+    };
+  </script>
+</head>
+```
 
 ***
 

@@ -41,6 +41,7 @@ import {
   useAddMonitorResultSystemsMutation,
   useGetDiscoveredAssetsQuery,
   useIgnoreMonitorResultAssetsMutation,
+  useRestoreMonitorResultAssetsMutation,
   useUpdateAssetsMutation,
   useUpdateAssetsSystemMutation,
 } from "~/features/data-discovery-and-detection/action-center/action-center.slice";
@@ -82,12 +83,17 @@ export const DiscoveredAssetsTable = ({
     useUpdateAssetsSystemMutation();
   const [updateAssetsMutation, { isLoading: isBulkAddingDataUses }] =
     useUpdateAssetsMutation();
+  const [
+    restoreMonitorResultAssetsMutation,
+    { isLoading: isRestoringResults },
+  ] = useRestoreMonitorResultAssetsMutation();
 
   const anyBulkActionIsLoading =
     isAddingResults ||
     isIgnoringResults ||
     isAddingAllResults ||
-    isBulkUpdatingSystem;
+    isBulkUpdatingSystem ||
+    isRestoringResults;
 
   const disableAddAll =
     anyBulkActionIsLoading || systemId === UNCATEGORIZED_SEGMENT;
@@ -248,6 +254,21 @@ export const DiscoveredAssetsTable = ({
     }
   };
 
+  const handleBulkRestore = async () => {
+    const result = await restoreMonitorResultAssetsMutation({
+      urnList: selectedUrns,
+    });
+    if (isErrorResult(result)) {
+      errorAlert(getErrorMessage(result.error));
+    } else {
+      tableInstance.resetRowSelection();
+      successAlert(
+        `${selectedUrns.length} assets have been restored and will appear in future scans.`,
+        `Confirmed`,
+      );
+    }
+  };
+
   const handleAddAll = async () => {
     const assetCount = data?.items.length || 0;
     const result = await addMonitorResultSystemsMutation({
@@ -358,6 +379,15 @@ export const DiscoveredAssetsTable = ({
                       Ignore
                     </MenuItem>
                   </>
+                )}
+                {activeParams.diff_status.includes(DiffStatus.MUTED) && (
+                  <MenuItem
+                    fontSize="small"
+                    onClick={handleBulkRestore}
+                    data-testid="bulk-restore"
+                  >
+                    Restore
+                  </MenuItem>
                 )}
               </MenuList>
             </Menu>

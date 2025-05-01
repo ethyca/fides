@@ -106,7 +106,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
   const privacyNoticeItems: PrivacyNoticeItem[] = useMemo(
     () => {
       const privacyNotices = experience.privacy_notices ?? [];
-      return privacyNotices.map((notice) => {
+      const items = privacyNotices.map((notice) => {
         const disabled =
           notice.consent_mechanism === ConsentMechanism.NOTICE_ONLY ||
           (options.fidesDisabledNotices?.includes(notice.notice_key) ??
@@ -115,6 +115,16 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
         const bestTranslation = selectBestNoticeTranslation(i18n, notice);
         return { notice: { ...notice, disabled }, bestTranslation };
       });
+
+      const noticeOnly = items.filter(
+        (item) =>
+          item.notice.consent_mechanism === ConsentMechanism.NOTICE_ONLY,
+      );
+      const others = items.filter(
+        (item) =>
+          item.notice.consent_mechanism !== ConsentMechanism.NOTICE_ONLY,
+      );
+      return [...noticeOnly, ...others];
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [

@@ -3,7 +3,6 @@ import os
 from typing import Generator, List
 
 import pytest
-from fideslang.models import PrivacyDeclaration as PrivacyDeclarationSchema
 from fideslang.models import System, SystemMetadata
 from py._path.local import LocalPath
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -18,11 +17,12 @@ from fides.core import api
 from fides.core import system as _system
 
 
+@pytest.mark.usefixtures("default_taxonomy")
 async def test_upsert_system_malformed_privacy_declaration(
-    test_config: FidesConfig, system: System, async_session: AsyncSession
+    system: System, async_session: AsyncSession
 ) -> None:
     with pytest.raises(AttributeError, match="has no attribute 'model_dump'"):
-        result = await upsert_system(resources=[system], db=async_session)
+        await upsert_system(resources=[system], db=async_session)
 
 
 def create_server_systems(test_config: FidesConfig, systems: List[System]) -> None:
@@ -258,6 +258,7 @@ def test_get_all_server_systems(
     assert actual_result
 
 
+@pytest.mark.usefixtures("default_organization")
 class TestSystemAWS:
     @pytest.mark.unit
     def test_get_system_resource_ids(self, redshift_systems: List[System]) -> None:
@@ -310,6 +311,7 @@ class TestSystemAWS:
 OKTA_ORG_URL = "https://dev-78908748.okta.com"
 
 
+@pytest.mark.usefixtures("default_organization")
 class TestSystemOkta:
     @pytest.mark.external
     def test_generate_system_okta(

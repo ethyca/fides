@@ -119,8 +119,8 @@ class SQLConnector(BaseConnector[Engine]):
             )
         except ClientResponseError as e:
             raise ConnectionException(f"Connection error: {e.message}")
-        except Exception:
-            raise ConnectionException("Connection error.")
+        except Exception as exc:
+            raise ConnectionException(f"Connection error: {exc}")
 
         return ConnectionTestStatus.succeeded
 

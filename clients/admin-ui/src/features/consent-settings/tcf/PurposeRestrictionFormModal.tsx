@@ -1,6 +1,7 @@
 import {
   AntButton as Button,
   AntFlex as Flex,
+  AntTooltip as Tooltip,
   Collapse,
   Text,
   useToast,
@@ -19,6 +20,7 @@ import {
 } from "~/types/api";
 
 import {
+  FORBIDDEN_LEGITIMATE_INTEREST_PURPOSE_IDS,
   RESTRICTION_TYPE_LABELS,
   VENDOR_RESTRICTION_LABELS,
 } from "./constants";
@@ -65,6 +67,9 @@ export const PurposeRestrictionFormModal = ({
   const toast = useToast();
   const [createRestriction] = useCreatePublisherRestrictionMutation();
   const [updateRestriction] = useUpdatePublisherRestrictionMutation();
+  const isPurposeFlexible = !(
+    purposeId && FORBIDDEN_LEGITIMATE_INTEREST_PURPOSE_IDS.includes(+purposeId)
+  );
 
   // Get the list of restriction types that are already in use for this purpose
   const usedRestrictionTypes = existingRestrictions
@@ -114,9 +119,9 @@ export const PurposeRestrictionFormModal = ({
       value: TCFVendorRestriction.RESTRICT_ALL_VENDORS,
       label:
         VENDOR_RESTRICTION_LABELS[TCFVendorRestriction.RESTRICT_ALL_VENDORS],
-      disabled: existingRestrictions.length > 0,
+      disabled: usedRestrictionTypes.length > 0,
       title:
-        existingRestrictions.length > 0
+        usedRestrictionTypes.length > 0
           ? "Cannot restrict all vendors when other restrictions exist"
           : undefined,
     },
@@ -214,7 +219,12 @@ export const PurposeRestrictionFormModal = ({
   return (
     <FormModal isOpen={isOpen} onClose={onClose} title="Edit restriction">
       <Formik
-        initialValues={initialValues}
+        initialValues={{
+          ...initialValues,
+          restriction_type: isPurposeFlexible
+            ? initialValues.restriction_type
+            : TCFRestrictionType.PURPOSE_RESTRICTION,
+        }}
         onSubmit={handleSubmit}
         validationSchema={validationSchema}
       >
@@ -227,14 +237,24 @@ export const PurposeRestrictionFormModal = ({
                 listed vendors are restricted or allowed, and specify which
                 vendor IDs the restriction applies to.
               </Text>
-              <ControlledSelect
-                name="restriction_type"
-                label="Restriction type"
-                options={restrictionTypeOptions}
-                layout="stacked"
-                tooltip="Choose how vendors are permitted to process data for this purpose. This setting overrides the vendor's declared legal basis in the Global Vendor List."
-                isRequired
-              />
+              <Tooltip
+                title={
+                  !isPurposeFlexible
+                    ? "Non-flexible purposes only support Purpose restrictions and cannot be restricted by consent or legitimate interest settings."
+                    : undefined
+                }
+              >
+                <ControlledSelect
+                  name="restriction_type"
+                  label="Restriction type"
+                  options={restrictionTypeOptions}
+                  layout="stacked"
+                  tooltip="Choose how vendors are permitted to process data for this purpose. This setting overrides the vendor's declared legal basis in the Global Vendor List."
+                  isRequired
+                  disabled={!isPurposeFlexible}
+                  className="w-full" // tooltip wrapper makes this necessary
+                />
+              </Tooltip>
               <ControlledSelect
                 name="vendor_restriction"
                 label="Vendor restriction"
@@ -267,6 +287,7 @@ export const PurposeRestrictionFormModal = ({
                     values.vendor_restriction ===
                     TCFVendorRestriction.RESTRICT_ALL_VENDORS
                   }
+                  tokenSeparators={[",", " "]}
                   onBlur={() => {
                     // Add small delay to allow Ant Select to create tag before validation
                     setTimeout(() => {
@@ -275,19 +296,6 @@ export const PurposeRestrictionFormModal = ({
                       });
                       validateField("vendor_ids");
                     }, 100);
-                  }}
-                  onInputKeyDown={(e) => {
-                    // disable space and comma keys to help avoid confusion on the expected behavior
-                    // eg. prevent attempting to type "123, 1-100" and enter or "123 1-100" and enter
-                    if (
-                      e.key === " " ||
-                      e.code === "Space" ||
-                      e.key === "," ||
-                      e.code === "Comma"
-                    ) {
-                      e.preventDefault();
-                      e.stopPropagation();
-                    }
                   }}
                   helperText="Enter IDs (e.g. 123) or ranges (e.g. 1-10) and press enter"
                   isRequired

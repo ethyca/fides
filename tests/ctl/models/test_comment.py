@@ -220,14 +220,17 @@ def test_delete_comment_cascades_to_attachments(
     )
     assert len(attachment_refs) == 1
 
+    comment_id = comment.id
+    attachment_id = attachment.id
     comment.delete(db=db)
+    db.commit()
 
     # Verify comment is deleted
-    retrieved_comment = db.query(Comment).filter_by(id=comment.id).first()
+    retrieved_comment = db.query(Comment).filter_by(id=comment_id).first()
     assert retrieved_comment is None
 
     # Verify attachment is deleted
-    retrieved_attachment = db.query(Attachment).filter_by(id=attachment.id).first()
+    retrieved_attachment = db.query(Attachment).filter_by(id=attachment_id).first()
     assert retrieved_attachment is None
 
     # Verify reference is deleted
@@ -275,6 +278,7 @@ def test_delete_all_comments(db, comment, privacy_request):
     Comment.delete_comments_for_reference_and_type(
         db, privacy_request.id, CommentReferenceType.privacy_request
     )
+    db.commit()
 
     retrieved_comment = db.query(Comment).filter_by(id=comment_id).first()
     assert retrieved_comment is None
