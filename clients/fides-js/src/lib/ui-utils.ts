@@ -8,7 +8,9 @@ export const stripHtml = (html: string) => {
   const doc = new DOMParser().parseFromString(html, "text/html");
   return doc.body.textContent || "";
 };
-export const searchForElement = (elementId: string): Promise<HTMLElement> => {
+export const searchForElementById = (
+  elementId: string,
+): Promise<HTMLElement> => {
   let attempts = 0;
   let interval = 200;
   return new Promise((resolve) => {
@@ -18,6 +20,31 @@ export const searchForElement = (elementId: string): Promise<HTMLElement> => {
         if (foundElement) {
           clearInterval(intervalId);
           resolve(foundElement);
+        } else {
+          attempts += 1;
+          // if the container is not found after 5 attempts, increase the interval to reduce the polling frequency
+          if (attempts >= 5 && interval < 1000) {
+            interval += 200;
+          }
+          checkElement(interval);
+        }
+      }, currentDelay);
+    };
+    checkElement(interval);
+  });
+};
+export const searchForElementsByQuerySelector = (
+  elementClass: string,
+): Promise<NodeListOf<Element>> => {
+  let attempts = 0;
+  let interval = 200;
+  return new Promise((resolve) => {
+    const checkElement = (currentDelay: number) => {
+      const intervalId = setTimeout(() => {
+        const foundElements = document.querySelectorAll(elementClass);
+        if (foundElements.length > 0) {
+          clearInterval(intervalId);
+          resolve(foundElements);
         } else {
           attempts += 1;
           // if the container is not found after 5 attempts, increase the interval to reduce the polling frequency

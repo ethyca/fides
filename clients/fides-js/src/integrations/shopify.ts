@@ -50,10 +50,10 @@ function createShopifyConsent(
   fidesConsent: Record<string, boolean>,
 ): ShopifyConsent {
   const consent = Object.fromEntries(
-    Object.entries(CONSENT_MAP).map(([key, values]) => [
-      key,
-      values.some((value) => fidesConsent[value] === true) ||
-        (values.some((value) => fidesConsent[value] === false)
+    Object.entries(CONSENT_MAP).map(([consentGroup, consentKeys]) => [
+      consentGroup,
+      consentKeys.some((consentKey) => fidesConsent[consentKey] === true) ||
+        (consentKeys.some((consentKey) => fidesConsent[consentKey] === false)
           ? false
           : undefined),
     ]),

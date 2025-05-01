@@ -78,6 +78,10 @@ export interface FidesInitOptions {
   // If set to empty string "", fides.js will not attempt to bind the modal link to the click handler
   modalLinkId: string | null;
 
+  // Query selector of the DOM element that should trigger the consent modal (default: "fides-modal-link")
+  // If set to empty string "", fides.js will not attempt to bind the modal link to the click handler
+  modalLinkQuerySelector: string | null;
+
   // URL for the Privacy Center, used to customize consent preferences. Required.
   privacyCenterUrl: string;
 

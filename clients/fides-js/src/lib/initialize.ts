@@ -56,7 +56,7 @@ import {
   noticeHasConsentInCookie,
   transformConsentToFidesUserPreference,
 } from "./shared-consent-utils";
-import { searchForElement } from "./ui-utils";
+import { searchForElementById } from "./ui-utils";
 
 export type UpdateExperienceFn = (args: {
   cookie: FidesCookie;
@@ -524,11 +524,12 @@ export const initialize = async ({
           fidesDebugger("Modal Link is disabled for this experience.");
         }
         fidesDebugger(`Searching for Modal link element #${modalLinkId}...`);
-        searchForElement(modalLinkId).then((foundElement) => {
+        searchForElementById(modalLinkId).then((foundElement) => {
           fidesDebugger("Modal link element found, updating it to show");
           document.body.classList.add("fides-overlay-modal-link-shown");
           foundElement.classList.add("fides-modal-link-shown");
         });
+
         shouldContinueInitOverlay = false;
       }
 

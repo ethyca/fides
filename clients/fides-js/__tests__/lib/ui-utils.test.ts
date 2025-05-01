@@ -1,6 +1,6 @@
 import {
   blockPageScrolling,
-  searchForElement,
+  searchForElementById,
   stripHtml,
   unblockPageScrolling,
 } from "../../src/lib/ui-utils";
@@ -48,7 +48,7 @@ describe("ui-utils", () => {
       const element = document.createElement("div");
       element.id = elementId;
       document.body.appendChild(element);
-      const result = await searchForElement(elementId);
+      const result = await searchForElementById(elementId);
       expect(result).toBe(element);
     });
   });
