@@ -128,12 +128,10 @@ const persistConfig = {
   ],
 };
 
-const middleware = [baseApi.middleware, healthApi.middleware];
-if (process.env.NEXT_PUBLIC_APP_ENV !== "test") {
-  middleware.push(rtkQueryErrorLogger);
-} else {
-  middleware.push(testRtkQueryErrorLogger);
-}
+const errorLoggingMiddleware =
+  process.env.NEXT_PUBLIC_APP_ENV !== "test"
+    ? rtkQueryErrorLogger
+    : testRtkQueryErrorLogger;
 
 export const persistedReducer = persistReducer(persistConfig, rootReducer);
 export const makeStore = (
@@ -146,7 +144,11 @@ export const makeStore = (
         serializableCheck: {
           ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
         },
-      }).concat(...middleware),
+      }).concat(
+        baseApi.middleware,
+        healthApi.middleware,
+        errorLoggingMiddleware,
+      ),
     devTools: true,
     preloadedState,
   });
