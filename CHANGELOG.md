@@ -33,6 +33,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Fix Special-purpose only vendors not correctly encoded in TC string [#6086](https://github.com/ethyca/fides/pull/6086)
 - Suppressing SQLAlchemy logging related to caching queries [#6089](https://github.com/ethyca/fides/pull/6089)
 - FidesJS css variable `--fides-overlay-container-border-width` now applies to banner (only applied to modal before) [#6097](https://github.com/ethyca/fides/pull/6097) https://github.com/ethyca/fides/labels/high-risk
+- Fixed vendor restriction form validation and input handling [#6101](https://github.com/ethyca/fides/pull/6101)
 
 ## [2.60.0](https://github.com/ethyca/fides/compare/2.59.2...2.60.0)
 
