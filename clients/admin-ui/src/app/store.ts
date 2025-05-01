@@ -2,6 +2,7 @@ import {
   AnyAction,
   combineReducers,
   configureStore,
+  Middleware,
   StateFromReducersMapObject,
 } from "@reduxjs/toolkit";
 import { setupListeners } from "@reduxjs/toolkit/query/react";
@@ -128,10 +129,14 @@ const persistConfig = {
   ],
 };
 
-const errorLoggingMiddleware =
-  process.env.NEXT_PUBLIC_APP_ENV !== "test"
-    ? rtkQueryErrorLogger
-    : testRtkQueryErrorLogger;
+const errorLoggingMiddlewares: Record<
+  NodeJS.ProcessEnv["NEXT_PUBLIC_APP_ENV"],
+  Middleware
+> = {
+  development: rtkQueryErrorLogger,
+  production: rtkQueryErrorLogger,
+  test: testRtkQueryErrorLogger,
+};
 
 export const persistedReducer = persistReducer(persistConfig, rootReducer);
 export const makeStore = (
@@ -147,7 +152,7 @@ export const makeStore = (
       }).concat(
         baseApi.middleware,
         healthApi.middleware,
-        errorLoggingMiddleware,
+        errorLoggingMiddlewares[process.env.NEXT_PUBLIC_APP_ENV],
       ),
     devTools: true,
     preloadedState,
