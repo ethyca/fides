@@ -45,6 +45,7 @@ Changes can also be flagged with a GitHub label for tracking purposes. The URL o
 - Added the ability to create new TCF Experiences within Admin UI [#6055](https://github.com/ethyca/fides/pull/6055)
 - PostgreSQL connection config now supports SSL Mode [#6068](https://github.com/ethyca/fides/pull/6068)
 - Added ability to "restore" ignored assets in action center [#6080](https://github.com/ethyca/fides/pull/6080)
+- Added support for TCF publisher restrictions in FidesJS [#6102](https://github.com/ethyca/fides/pull/6102)
 
 ### Changed
 - Changed how TCF Publisher Overrides gets configured in consent settings (behind beta feature flag) [#6013](https://github.com/ethyca/fides/pull/6013)
