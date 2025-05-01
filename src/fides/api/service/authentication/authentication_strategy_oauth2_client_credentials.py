@@ -48,7 +48,7 @@ class OAuth2ClientCredentialsAuthenticationStrategy(OAuth2AuthenticationStrategy
                 "refresh", self.token_request, connection_config
             )
             return self._validate_and_store_response(
-                refresh_response, connection_config.key
+                refresh_response, connection_config
             )
 
         return connection_config.secrets.get("access_token")  # type: ignore

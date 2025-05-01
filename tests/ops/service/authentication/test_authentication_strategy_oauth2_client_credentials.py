@@ -244,7 +244,7 @@ class TestAccessTokenRequest:
                 "oauth2_client_credentials", oauth2_client_credentials_configuration
             )
         )
-        auth_strategy.get_access_token(oauth2_client_credentials_connection_config)
+        auth_strategy.get_access_token(oauth2_client_credentials_connection_config, db)
 
         # verify correct values for connection_config update
         mock_connection_config_update.assert_called_once_with(
@@ -291,7 +291,7 @@ class TestAccessTokenRequest:
                 "oauth2_client_credentials", oauth2_client_credentials_configuration
             )
         )
-        auth_strategy.get_access_token(oauth2_client_credentials_connection_config)
+        auth_strategy.get_access_token(oauth2_client_credentials_connection_config, db)
 
         # verify correct values for connection_config update
         mock_connection_config_update.assert_called_once_with(
@@ -324,8 +324,10 @@ class TestAccessTokenRequest:
             )
         )
         with pytest.raises(FidesopsException) as exc:
-            auth_strategy.get_access_token(oauth2_client_credentials_connection_config)
+            auth_strategy.get_access_token(
+                oauth2_client_credentials_connection_config, db
+            )
         assert (
             str(exc.value)
-            == "Missing required secret(s) 'client_id, client_secret' for oauth2_client_credentials_connector"
+            == f"Missing required secret(s) 'client_id, client_secret' for oauth2_client_credentials_connector"
         )

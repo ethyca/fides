@@ -372,7 +372,7 @@ class TestAccessTokenRequest:
             **oauth2_authorization_code_connection_config.secrets,
             "code": "auth_code",
         }
-        auth_strategy.get_access_token(oauth2_authorization_code_connection_config)
+        auth_strategy.get_access_token(oauth2_authorization_code_connection_config, db)
 
         # verify correct values for connection_config update
         mock_connection_config_update.assert_called_once_with(
@@ -467,7 +467,9 @@ class TestAccessTokenRequest:
                 **oauth2_authorization_code_connection_config.secrets,
                 "code": "auth_code",
             }
-            auth_strategy.get_access_token(oauth2_authorization_code_connection_config)
+            auth_strategy.get_access_token(
+                oauth2_authorization_code_connection_config, db
+            )
         assert (
             str(exc.value)
             == f"Missing required secret(s) 'client_id, client_secret' for oauth2_authorization_code_connector"

@@ -1,9 +1,9 @@
 from datetime import datetime, timedelta
-from typing import Any, Dict, List, Literal
+from typing import Any, Dict, List, Literal, Optional
 
 from loguru import logger
+from sqlalchemy.orm import Session
 
-from fides.api.api.deps import get_autoclose_db_session
 from fides.api.common_exceptions import FidesopsException, OAuth2TokenException
 from fides.api.models.connectionconfig import ConnectionConfig
 from fides.api.schemas.saas.saas_config import ClientConfig, SaaSRequest
@@ -120,7 +120,10 @@ class OAuth2AuthenticationStrategyBase(AuthenticationStrategy):
             )
 
     def _validate_and_store_response(
-        self, response: Dict[str, Any], connection_config_key: str
+        self,
+        response: Dict[str, Any],
+        connection_config: ConnectionConfig,
+        db: Optional[Session] = None,
     ) -> str:
         """
         Persists and returns the new access token.
@@ -135,7 +138,7 @@ class OAuth2AuthenticationStrategyBase(AuthenticationStrategy):
                 filter(
                     None,
                     (
-                        f"Unable to retrieve token for {connection_config_key} ({response.get('error')}).",
+                        f"Unable to retrieve token for {connection_config.key} ({response.get('error')}).",
                         response.get("error_description"),
                         response.get("error_uri"),
                     ),
@@ -168,23 +171,21 @@ class OAuth2AuthenticationStrategyBase(AuthenticationStrategy):
         if expires_in:
             data["expires_at"] = int(datetime.utcnow().timestamp()) + expires_in
 
-        # It's possible for this to be invoked inside a sync or async DB session.
-        # We use the connection_config_key to look up the connection config in an
-        # autoclose sync DB session to avoid having to check.
-        with get_autoclose_db_session() as db:
-            if connection_config := ConnectionConfig.get_by(
-                db, field="key", value=connection_config_key
-            ):
-                updated_secrets = {**connection_config.secrets, **data}  # type: ignore
-                connection_config.update(db, data={"secrets": updated_secrets})
-                logger.info(
-                    "Successfully updated the OAuth2 token(s) for {}",
-                    connection_config.key,
-                )
+        # persist new tokens to the database
+        # ideally we use a passed in database session but we can
+        # get the session from the connection_config as a fallback
+        db = db or Session.object_session(connection_config)
+        updated_secrets = {**connection_config.secrets, **data}  # type: ignore
+        connection_config.update(db, data={"secrets": updated_secrets})
+        logger.info(
+            "Successfully updated the OAuth2 token(s) for {}", connection_config.key
+        )
 
         return access_token
 
-    def get_access_token(self, connection_config: ConnectionConfig) -> str:
+    def get_access_token(
+        self, connection_config: ConnectionConfig, db: Optional[Session] = None
+    ) -> str:
         """
         Executes the access token request based on the OAuth2 config
         and connection config secrets. The access and refresh tokens returned from
@@ -195,7 +196,7 @@ class OAuth2AuthenticationStrategyBase(AuthenticationStrategy):
         access_response = self._call_token_request(
             "access", self.token_request, connection_config
         )
-        return self._validate_and_store_response(access_response, connection_config.key)
+        return self._validate_and_store_response(access_response, connection_config, db)
 
     def _refresh_token(self, connection_config: ConnectionConfig) -> str:
         """
@@ -210,6 +211,6 @@ class OAuth2AuthenticationStrategyBase(AuthenticationStrategy):
                     "refresh", self.refresh_request, connection_config
                 )
                 return self._validate_and_store_response(
-                    refresh_response, connection_config.key
+                    refresh_response, connection_config
                 )
         return connection_config.secrets.get("access_token")  # type: ignore
