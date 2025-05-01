@@ -154,6 +154,12 @@ export const rtkQueryErrorLogger: Middleware = () => (next) => (action) => {
   next(action);
 };
 
+const middleware = [baseApi.middleware, healthApi.middleware];
+
+if (process.env.NODE_ENV !== "test") {
+  middleware.push(rtkQueryErrorLogger);
+}
+
 export const makeStore = (
   preloadedState?: Parameters<typeof persistedReducer>[0],
 ) =>
@@ -164,7 +170,7 @@ export const makeStore = (
         serializableCheck: {
           ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
         },
-      }).concat(baseApi.middleware, healthApi.middleware, rtkQueryErrorLogger),
+      }).concat(...middleware),
     devTools: true,
     preloadedState,
   });
