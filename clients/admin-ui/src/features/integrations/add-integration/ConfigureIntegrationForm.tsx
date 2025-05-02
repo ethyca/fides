@@ -100,7 +100,7 @@ const ConfigureIntegrationForm = ({
     description: connection?.description ?? "",
     secrets: mapValues(
       secrets?.properties,
-      (s, key) => connection?.secrets?.[key] ?? "",
+      (s, key) => connection?.secrets?.[key] ?? s.default ?? "",
     ),
     dataset: initialDatasets,
   };
