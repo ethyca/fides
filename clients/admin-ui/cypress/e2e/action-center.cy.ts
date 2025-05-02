@@ -583,7 +583,7 @@ describe("Action center", () => {
       );
     });
 
-    it.only("should bulk add data uses to assets", () => {
+    it("should bulk add data uses to assets", () => {
       stubTaxonomyEntities();
       cy.getByTestId("bulk-actions-menu").should("be.disabled");
       cy.getByTestId("row-0-col-select").find("label").click();
