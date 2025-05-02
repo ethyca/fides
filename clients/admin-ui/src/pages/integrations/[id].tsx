@@ -172,6 +172,8 @@ const IntegrationDetailView: NextPage = () => {
               testData={testData}
               testIsLoading={testIsLoading}
               onTestConnection={testConnection}
+              onAuthorize={handleAuthorize}
+              connectionOption={integrationOption}
             />
           </div>
         </AntFlex>
