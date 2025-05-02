@@ -189,7 +189,6 @@ export const DiscoveredAssetsTable = ({
       if (isErrorResult(result)) {
         errorAlert(getErrorMessage(result.error));
       } else {
-        tableInstance.resetRowSelection();
         successAlert(
           `${selectedUrns.length} assets have been assigned to ${selectedSystem.label}.`,
           `Confirmed`,
@@ -224,7 +223,6 @@ export const DiscoveredAssetsTable = ({
     if (isErrorResult(result)) {
       errorAlert(getErrorMessage(result.error));
     } else {
-      tableInstance.resetRowSelection();
       successAlert(
         `Consent categories added to ${selectedUrns.length} assets${
           systemName ? ` from ${systemName}` : ""
