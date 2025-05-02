@@ -23,10 +23,12 @@ import MonitorConfigTab from "~/features/integrations/configure-monitor/MonitorC
 import DatahubDataSyncTab from "~/features/integrations/configure-scan/DatahubDataSyncTab";
 import ConfigureIntegrationModal from "~/features/integrations/ConfigureIntegrationModal";
 import ConnectionStatusNotice from "~/features/integrations/ConnectionStatusNotice";
+import { useIntegrationAuthorization } from "~/features/integrations/hooks/useIntegrationAuthorization";
 import IntegrationBox from "~/features/integrations/IntegrationBox";
 import { IntegrationSetupSteps } from "~/features/integrations/setup-steps/IntegrationSetupSteps";
 import useIntegrationOption from "~/features/integrations/useIntegrationOption";
 import { ConnectionType } from "~/types/api";
+import { SaasConnectionTypes } from "~/types/api/models/ConnectionType";
 
 const IntegrationDetailView: NextPage = () => {
   const { query } = useRouter();
@@ -34,9 +36,14 @@ const IntegrationDetailView: NextPage = () => {
   const { data: connection, isLoading: integrationIsLoading } =
     useGetDatastoreConnectionByKeyQuery(id ?? "");
 
+  // Only pass the saas type if it's a valid SaasConnectionTypes value
+  const saasType = connection?.saas_config?.type;
+  const isSaasType = (type: string): type is SaasConnectionTypes =>
+    Object.values(SaasConnectionTypes).includes(type as SaasConnectionTypes);
+
   const integrationOption = useIntegrationOption(
     connection?.connection_type,
-    connection?.saas_config?.type,
+    saasType && isSaasType(saasType) ? saasType : undefined,
   );
 
   const {
@@ -44,6 +51,12 @@ const IntegrationDetailView: NextPage = () => {
     isLoading: testIsLoading,
     testData,
   } = useTestConnection(connection);
+
+  const { handleAuthorize, needsAuthorization } = useIntegrationAuthorization({
+    connection,
+    connectionOption: integrationOption,
+    testData,
+  });
 
   const { onOpen, isOpen, onClose } = useDisclosure();
 
@@ -79,13 +92,23 @@ const IntegrationDetailView: NextPage = () => {
             </Flex>
             <Spacer />
             <div className="flex gap-4">
-              <Button
-                onClick={testConnection}
-                loading={testIsLoading}
-                data-testid="test-connection-btn"
-              >
-                Test connection
-              </Button>
+              {needsAuthorization && (
+                <Button
+                  onClick={handleAuthorize}
+                  data-testid="authorize-integration-btn"
+                >
+                  Authorize integration
+                </Button>
+              )}
+              {!needsAuthorization && (
+                <Button
+                  onClick={testConnection}
+                  loading={testIsLoading}
+                  data-testid="test-connection-btn"
+                >
+                  Test connection
+                </Button>
+              )}
               <Button onClick={onOpen} data-testid="manage-btn">
                 Manage
               </Button>

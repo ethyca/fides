@@ -13,6 +13,7 @@ import DeleteConnectionModal from "~/features/datastore-connections/DeleteConnec
 import useTestConnection from "~/features/datastore-connections/useTestConnection";
 import getIntegrationTypeInfo from "~/features/integrations/add-integration/allIntegrationTypes";
 import ConnectionStatusNotice from "~/features/integrations/ConnectionStatusNotice";
+import { useIntegrationAuthorization } from "~/features/integrations/hooks/useIntegrationAuthorization";
 import useIntegrationOption from "~/features/integrations/useIntegrationOption";
 import { ConnectionConfigurationResponse, ConnectionType } from "~/types/api";
 import { SaasConnectionTypes } from "~/types/api/models/ConnectionType";
@@ -49,6 +50,12 @@ const IntegrationBox = ({
     saasType && isSaasType(saasType) ? saasType : undefined,
   );
 
+  const { handleAuthorize, needsAuthorization } = useIntegrationAuthorization({
+    connection: integration,
+    connectionOption,
+    testData,
+  });
+
   return (
     <Box
       maxW="760px"
@@ -83,7 +90,15 @@ const IntegrationBox = ({
               connection_key={integration.key}
             />
           )}
-          {showTestNotice && (
+          {showTestNotice && needsAuthorization && (
+            <Button
+              onClick={handleAuthorize}
+              data-testid="authorize-integration-btn"
+            >
+              Authorize integration
+            </Button>
+          )}
+          {showTestNotice && !needsAuthorization && (
             <Button
               onClick={testConnection}
               loading={isLoading}
