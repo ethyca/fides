@@ -9,7 +9,8 @@ import { useRouter } from "next/router";
 import { getErrorMessage, isErrorResult } from "~/features/common/helpers";
 import { SYSTEM_ROUTE } from "~/features/common/nav/routes";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
-import ToastLink from "~/features/common/ToastLink";
+import { getIndexFromHash } from "~/features/data-discovery-and-detection/action-center/tables/useActionCenterTabs";
+import { successToastContent } from "~/features/data-discovery-and-detection/action-center/utils/successToastContent";
 import { DiffStatus } from "~/types/api";
 import { StagedResourceAPIResponse } from "~/types/api/models/StagedResourceAPIResponse";
 
@@ -21,10 +22,12 @@ import {
 
 interface DiscoveredAssetActionsCellProps {
   asset: StagedResourceAPIResponse;
+  onTabChange: (index: number) => void;
 }
 
 export const DiscoveredAssetActionsCell = ({
   asset,
+  onTabChange,
 }: DiscoveredAssetActionsCellProps) => {
   const [addMonitorResultAssetsMutation, { isLoading: isAddingResults }] =
     useAddMonitorResultAssetsMutation();
@@ -39,30 +42,21 @@ export const DiscoveredAssetActionsCell = ({
 
   const router = useRouter();
 
-  const addSuccessToastContent = (
-    type: string,
-    name: string,
-    systemKey?: string,
-  ) => (
-    <>
-      {`${type} "${name}" has been added to the system inventory.`}
-      {systemKey && (
-        <ToastLink
-          onClick={() => router.push(`${SYSTEM_ROUTE}/configure/${systemKey}`)}
-        >
-          View
-        </ToastLink>
-      )}
-    </>
-  );
-
   const anyActionIsLoading =
     isAddingResults || isIgnoringResults || isRestoringResults;
 
-  // TODO: get system key to navigate
-  const { urn, name, resource_type: type, diff_status: diffStatus } = asset;
+  const {
+    urn,
+    name,
+    resource_type: type,
+    diff_status: diffStatus,
+    system_key: systemKey,
+    user_assigned_system_key: userAssignedSystemKey,
+  } = asset;
 
   const handleAdd = async () => {
+    const systemToLink = userAssignedSystemKey || systemKey;
+    const href = `${SYSTEM_ROUTE}/configure/${systemToLink}#assets`;
     const result = await addMonitorResultAssetsMutation({
       urnList: [urn],
     });
@@ -71,13 +65,15 @@ export const DiscoveredAssetActionsCell = ({
     } else {
       toast(
         successToastParams(
-          addSuccessToastContent(type as string, name as string),
+          successToastContent(
+            `${type} "${name}" has been added to the system inventory.`,
+            systemToLink ? () => router.push(href) : undefined,
+          ),
         ),
       );
     }
   };
 
-  // TODO: add toast link to ignored tab
   const handleIgnore = async () => {
     const result = await ignoreMonitorResultAssetsMutation({
       urnList: [urn],
@@ -87,7 +83,10 @@ export const DiscoveredAssetActionsCell = ({
     } else {
       toast(
         successToastParams(
-          `${type} "${name}" has been ignored and will not appear in future scans.`,
+          successToastContent(
+            `${type} "${name}" has been ignored and will not appear in future scans.`,
+            () => onTabChange(getIndexFromHash("#ignored")!),
+          ),
         ),
       );
     }
@@ -152,18 +151,6 @@ export const DiscoveredAssetActionsCell = ({
           Restore
         </Button>
       )}
-      <Button
-        size="small"
-        onClick={() =>
-          toast(
-            successToastParams(
-              addSuccessToastContent(type as string, name as string),
-            ),
-          )
-        }
-      >
-        Test toast
-      </Button>
     </Space>
   );
 };

@@ -12,7 +12,8 @@ import {
   UNCATEGORIZED_SEGMENT,
 } from "~/features/common/nav/routes";
 import { errorToastParams, successToastParams } from "~/features/common/toast";
-import styles from "~/features/ToastLink.module.scss";
+import { getIndexFromHash } from "~/features/data-discovery-and-detection/action-center/tables/useActionCenterTabs";
+import { successToastContent } from "~/features/data-discovery-and-detection/action-center/utils/successToastContent";
 
 import {
   useAddMonitorResultSystemsMutation,
@@ -24,12 +25,14 @@ interface DiscoveredSystemActionsCellProps {
   monitorId: string;
   system: MonitorSystemAggregate;
   allowIgnore?: boolean;
+  onTabChange: (index: number) => void;
 }
 
 export const DiscoveredSystemActionsCell = ({
   monitorId,
   system,
   allowIgnore,
+  onTabChange,
 }: DiscoveredSystemActionsCellProps) => {
   const [addMonitorResultSystemsMutation, { isLoading: isAddingResults }] =
     useAddMonitorResultSystemsMutation();
@@ -48,38 +51,23 @@ export const DiscoveredSystemActionsCell = ({
     total_updates: totalUpdates,
   } = system;
 
-  // TODO: get system key to navigate
-  const addSuccessToastContent = (systemName: string, systemKey?: string) => (
-    <>
-      {`${systemName} and ${totalUpdates} assets have been added to the system inventory. ${systemName} is now configured for consent.`}
-      {systemKey && (
-        <Button
-          className={styles.toastLink}
-          size="small"
-          type="link"
-          role="link"
-          onClick={() => router.push(`${SYSTEM_ROUTE}/configure/${systemKey}`)}
-        >
-          View
-        </Button>
-      )}
-    </>
-  );
-
   const handleAdd = async () => {
     const result = await addMonitorResultSystemsMutation({
       monitor_config_key: monitorId,
       resolved_system_ids: [resolvedSystemId],
     });
+    const href = `${SYSTEM_ROUTE}/configure/${systemKey}#assets`;
     if (isErrorResult(result)) {
       toast(errorToastParams(getErrorMessage(result.error)));
     } else {
       toast(
         successToastParams(
-          !systemKey
-            ? `${systemName} and ${totalUpdates} assets have been added to the system inventory. ${systemName} is now configured for consent.`
-            : `${totalUpdates} assets from ${systemName} have been added to the system inventory.`,
-          `Confirmed`,
+          successToastContent(
+            systemKey
+              ? `${totalUpdates} assets from ${systemName} have been added to the system inventory.`
+              : `${systemName} and ${totalUpdates} assets have been added to the system inventory. ${systemName} is now configured for consent.`,
+            systemKey ? () => router.push(href) : undefined,
+          ),
         ),
       );
     }
@@ -95,10 +83,10 @@ export const DiscoveredSystemActionsCell = ({
     } else {
       toast(
         successToastParams(
-          systemName
-            ? `${totalUpdates} assets from ${systemName} have been ignored and will not appear in future scans.`
-            : `${totalUpdates} uncategorized assets have been ignored and will not appear in future scans.`,
-          `Confirmed`,
+          successToastContent(
+            `${totalUpdates} assets from ${systemName} have been ignored and will not appear in future scans.`,
+            () => onTabChange(getIndexFromHash("#ignored")!),
+          ),
         ),
       );
     }

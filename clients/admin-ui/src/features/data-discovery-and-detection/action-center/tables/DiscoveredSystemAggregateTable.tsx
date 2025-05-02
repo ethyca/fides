@@ -109,8 +109,14 @@ export const DiscoveredSystemAggregateTable = ({
     }
   }, [data, setTotalPages]);
 
+  const handleTabChange = (index: number) => {
+    onTabChange(index);
+    setRowSelection({});
+  };
+
   const { columns } = useDiscoveredSystemAggregateColumns({
     monitorId,
+    onTabChange: handleTabChange,
     readonly: actionsDisabled,
     allowIgnore: !activeParams.diff_status.includes(DiffStatus.MUTED),
   });
@@ -184,11 +190,6 @@ export const DiscoveredSystemAggregateTable = ({
       );
       setRowSelection({});
     }
-  };
-
-  const handleTabChange = (index: number) => {
-    onTabChange(index);
-    setRowSelection({});
   };
 
   return (

@@ -147,6 +147,7 @@ export const DiscoveredAssetsTable = ({
 
   const { columns } = useDiscoveredAssetsColumns({
     readonly: actionsDisabled,
+    onTabChange,
   });
 
   const tableInstance = useReactTable({
