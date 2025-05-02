@@ -11,6 +11,10 @@ import { meta } from "./integrations/meta";
 import { shopify } from "./integrations/shopify";
 import { raise } from "./lib/common-utils";
 import {
+  readConsentFromAnyProvider,
+  registerDefaultProviders,
+} from "./lib/consent-migration";
+import {
   ConsentMethod,
   FidesConfig,
   FidesCookie,
@@ -21,21 +25,20 @@ import {
   FidesOverrides,
   GetPreferencesFnResp,
   NoticeConsent,
-  OtToFidesConsentMapping,
   OverrideType,
   PrivacyExperience,
+  SaveConsentPreference,
 } from "./lib/consent-types";
 import {
   decodeNoticeConsentString,
   defaultShowModal,
   encodeNoticeConsentString,
+  isPrivacyExperience,
   shouldResurfaceBanner,
 } from "./lib/consent-utils";
 import {
   consentCookieObjHasSomeConsentSet,
   getFidesConsentCookie,
-  getOTConsentCookie,
-  otCookieToFidesConsent,
   saveFidesCookie,
   updateExperienceFromCookieConsentNotices,
 } from "./lib/cookie";
@@ -51,7 +54,9 @@ import {
   UpdateExperienceFn,
 } from "./lib/initialize";
 import { initOverlay } from "./lib/initOverlay";
+import { updateConsentPreferences } from "./lib/preferences";
 import { renderOverlay } from "./lib/renderOverlay";
+import { transformConsentToFidesUserPreference } from "./lib/shared-consent-utils";
 import { customGetConsentPreferences } from "./services/external/preferences";
 
 declare global {
@@ -85,45 +90,6 @@ const updateExperience: UpdateExperienceFn = ({
     });
   }
   return updatedExperience;
-};
-
-const readConsentFromOneTrust = (
-  config: FidesConfig,
-  optionsOverrides: Partial<FidesInitOptionsOverrides>,
-): NoticeConsent | undefined => {
-  const otConsentCookie =
-    !!optionsOverrides.otFidesMapping && getOTConsentCookie();
-  if (!optionsOverrides.otFidesMapping || !otConsentCookie) {
-    fidesDebugger(
-      "OT cookie or OT-Fides mapping does not exist, skipping mapping consent to Fides cookie...",
-      config.options,
-    );
-    return undefined;
-  }
-  try {
-    const decodedString = decodeURIComponent(optionsOverrides.otFidesMapping);
-    const strippedString = decodedString.replace(/^'|'$/g, "");
-    const otFidesMappingParsed: OtToFidesConsentMapping =
-      JSON.parse(strippedString);
-    const otToFidesConsent: NoticeConsent = otCookieToFidesConsent(
-      otConsentCookie,
-      otFidesMappingParsed,
-    );
-    if (otToFidesConsent) {
-      fidesDebugger(
-        `Fides consent built based on OT consent: ${JSON.stringify(otToFidesConsent)}`,
-        config.options,
-      );
-      return otToFidesConsent;
-    }
-    return undefined;
-  } catch (e) {
-    fidesDebugger(
-      `Failed to map OT consent to Fides consent due to: ${e}`,
-      config.options,
-    );
-  }
-  return undefined;
 };
 
 /**
@@ -176,11 +142,22 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
     experienceTranslationOverrides,
   };
 
-  // Check for an existing cookie for this device
-  let consentFromOneTrust: NoticeConsent | undefined;
-  if (optionsOverrides.otFidesMapping && !getFidesConsentCookie()) {
-    consentFromOneTrust = readConsentFromOneTrust(config, optionsOverrides);
+  // Register any configured consent migration providers
+  registerDefaultProviders(optionsOverrides);
+
+  // Check for migrated consent from any registered providers
+  let migratedConsent: NoticeConsent | undefined;
+  let hasMigratedConsent = false;
+  let migrationMethod: ConsentMethod | undefined;
+
+  if (!getFidesConsentCookie()) {
+    const { consent, method } = readConsentFromAnyProvider(optionsOverrides);
+    if (consent && method) {
+      migratedConsent = consent;
+      migrationMethod = method;
+    }
   }
+
   config = {
     ...config,
     options: { ...config.options, ...overrides.optionsOverrides },
@@ -188,7 +165,7 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
   this.cookie = getInitialCookie(config);
   this.cookie.consent = {
     ...this.cookie.consent,
-    ...consentFromOneTrust,
+    ...migratedConsent,
   };
 
   // Keep a copy of saved consent from the cookie, since we update the "cookie"
@@ -196,15 +173,6 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
   this.saved_consent = {
     ...this.cookie.consent,
   };
-
-  if (consentFromOneTrust && !getFidesConsentCookie()) {
-    // If we have consent from OneTrust, we need to write the cookie to the browser
-    Object.assign(this.cookie.fides_meta, {
-      consentMethod: ConsentMethod.SCRIPT,
-    });
-    fidesDebugger("Saving OT preferences to Fides cookie");
-    saveFidesCookie(this.cookie, config.options.base64Cookie);
-  }
 
   // Update the fidesString if we have an override and the NC portion is valid
   const { fidesString } = config.options;
@@ -224,6 +192,17 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
       );
     }
   }
+
+  if (migratedConsent && migrationMethod) {
+    // If we have migrated consent, we need to write the cookie to the browser
+    Object.assign(this.cookie.fides_meta, {
+      consentMethod: migrationMethod,
+    });
+    fidesDebugger("Saving migrated preferences to Fides cookie");
+    saveFidesCookie(this.cookie, config.options.base64Cookie);
+    hasMigratedConsent = true;
+  }
+
   const initialFides = getInitialFides({
     ...config,
     cookie: this.cookie,
@@ -249,6 +228,50 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
   });
   Object.assign(this, updatedFides);
   updateWindowFides(this);
+
+  // Now that we have the final experience, we can save migrated preferences to the API, if they exist
+  if (
+    migratedConsent &&
+    hasMigratedConsent &&
+    migrationMethod &&
+    isPrivacyExperience(this.experience) &&
+    this.experience.privacy_notices
+  ) {
+    const noticeMap = new Map(
+      this.experience.privacy_notices.map((notice) => [
+        notice.notice_key,
+        notice,
+      ]),
+    );
+    const consentPreferencesToSave = Object.entries(this.cookie.consent)
+      .map(([key, value]) => {
+        const notice = noticeMap.get(key);
+        if (!notice) {
+          return null;
+        }
+        return new SaveConsentPreference(
+          notice,
+          transformConsentToFidesUserPreference(value),
+          key,
+        );
+      })
+      .filter((pref): pref is SaveConsentPreference => pref !== null);
+
+    await updateConsentPreferences({
+      consentPreferencesToSave,
+      experience: this.experience as PrivacyExperience,
+      consentMethod: migrationMethod,
+      options: config.options,
+      cookie: this.cookie,
+      userLocationString: this.geolocation?.region,
+      updateCookie: async (oldCookie) => {
+        // Just return the current cookie since we've already updated it
+        return oldCookie;
+      },
+      propertyId: config.propertyId,
+    });
+  }
+
   // Dispatch the "FidesInitialized" event to update listeners with the initial state.
   dispatchFidesEvent("FidesInitialized", this.cookie, config.options.debug, {
     shouldShowExperience: this.shouldShowExperience(),
