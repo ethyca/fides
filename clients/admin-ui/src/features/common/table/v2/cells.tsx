@@ -30,6 +30,7 @@ import { errorToastParams } from "~/features/common/toast";
 import { formatDate, sentenceCase } from "~/features/common/utils";
 import { RTKResult } from "~/types/errors";
 
+import { InfoTooltip } from "../../InfoTooltip";
 import { FidesCellProps, FidesCellState } from "./FidesCell";
 
 export const DefaultCell = <T,>({
@@ -473,3 +474,22 @@ export const EnableCell = ({
     </>
   );
 };
+
+type TextWithInfoIconHeaderProps<T> = {
+  value: ReactNode;
+  helperText: string;
+} & HeaderContext<T, unknown> &
+  TextProps;
+
+export const TextWithInfoIconHeader = <T,>({
+  value,
+  helperText,
+  ...props
+}: TextWithInfoIconHeaderProps<T>) => (
+  <Flex alignItems="center" gap={1} {...props}>
+    <Text fontSize="xs" lineHeight={9} fontWeight="medium">
+      {value}
+    </Text>
+    <InfoTooltip label={helperText} />
+  </Flex>
+);

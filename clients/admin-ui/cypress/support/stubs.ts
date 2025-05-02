@@ -148,6 +148,10 @@ export const stubDatasetCrud = () => {
     "getDataset",
   );
 
+  cy.intercept("GET", "/api/v1/dataset?only_unlinked_datasets=false", []).as(
+    "getUnlinkedDatasets",
+  );
+
   // Update
   cy.intercept("PUT", "/api/v1/dataset*", { fixture: "dataset.json" }).as(
     "putDataset",

@@ -295,3 +295,9 @@ interface GvlDataCategory {
 }
 export type GvlDataCategories = Record<number, GvlDataCategory>;
 export type GvlDataDeclarations = number[];
+
+export type TcfPublisherRestriction = {
+  purpose_id: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11; // 11 purpose consents
+  restriction_type: 0 | 1 | 2 | 3; // 0 = purpose restriction, 1 = consent only, 2 = legitimate interest only, 3 = not used
+  vendors: number[];
+};

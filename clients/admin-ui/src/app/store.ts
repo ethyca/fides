@@ -2,12 +2,10 @@ import {
   AnyAction,
   combineReducers,
   configureStore,
-  isRejectedWithValue,
   Middleware,
   StateFromReducersMapObject,
 } from "@reduxjs/toolkit";
 import { setupListeners } from "@reduxjs/toolkit/query/react";
-import { createStandaloneToast } from "fidesui";
 import {
   FLUSH,
   PAUSE,
@@ -20,13 +18,13 @@ import {
 } from "redux-persist";
 import createWebStorage from "redux-persist/lib/storage/createWebStorage";
 
+import { rtkQueryErrorLogger, testRtkQueryErrorLogger } from "~/app/middleware";
 import { STORAGE_ROOT_KEY } from "~/constants";
 import { authSlice } from "~/features/auth";
 import { baseApi } from "~/features/common/api.slice";
 import { featuresSlice } from "~/features/common/features";
 import { healthApi } from "~/features/common/health.slice";
 import { dirtyFormsSlice } from "~/features/common/hooks/dirty-forms.slice";
-import { DEFAULT_TOAST_PARAMS } from "~/features/common/toast";
 import { configWizardSlice } from "~/features/config-wizard/config-wizard.slice";
 import { connectionTypeSlice } from "~/features/connection-type";
 import { tcfConfigSlice } from "~/features/consent-settings/tcf/tcf-config.slice";
@@ -48,10 +46,6 @@ import { dictSuggestionsSlice } from "~/features/system/dictionary-form/dict-sug
 import { taxonomySlice } from "~/features/taxonomy";
 import { datasetTestSlice } from "~/features/test-datasets";
 import { userManagementSlice } from "~/features/user-management";
-
-const { toast } = createStandaloneToast({
-  defaultOptions: DEFAULT_TOAST_PARAMS,
-});
 
 /**
  * To prevent the "redux-perist failed to create sync storage. falling back to noop storage"
@@ -110,7 +104,6 @@ const reducer = {
 export type RootState = StateFromReducersMapObject<typeof reducer>;
 
 const allReducers = combineReducers(reducer);
-
 const rootReducer = (state: RootState | undefined, action: AnyAction) => {
   let newState = state;
   if (action.type === "auth/logout") {
@@ -136,24 +129,16 @@ const persistConfig = {
   ],
 };
 
-export const persistedReducer = persistReducer(persistConfig, rootReducer);
-export const rtkQueryErrorLogger: Middleware = () => (next) => (action) => {
-  if (isRejectedWithValue(action)) {
-    const payload = action?.payload as any;
-    toast({
-      status: "error",
-      title: payload?.status ?? "An error occured",
-      description:
-        action?.error?.message ??
-        payload?.error ??
-        "An error occurred please check the console for more detail.",
-    });
-    // eslint-disable-next-line no-console
-    console.error(action.payload);
-  }
-  next(action);
+const errorLoggingMiddlewares: Record<
+  NodeJS.ProcessEnv["NEXT_PUBLIC_APP_ENV"],
+  Middleware
+> = {
+  development: rtkQueryErrorLogger,
+  production: rtkQueryErrorLogger,
+  test: testRtkQueryErrorLogger,
 };
 
+export const persistedReducer = persistReducer(persistConfig, rootReducer);
 export const makeStore = (
   preloadedState?: Parameters<typeof persistedReducer>[0],
 ) =>
@@ -164,7 +149,11 @@ export const makeStore = (
         serializableCheck: {
           ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
         },
-      }).concat(baseApi.middleware, healthApi.middleware, rtkQueryErrorLogger),
+      }).concat(
+        baseApi.middleware,
+        healthApi.middleware,
+        errorLoggingMiddlewares[process.env.NEXT_PUBLIC_APP_ENV],
+      ),
     devTools: true,
     preloadedState,
   });

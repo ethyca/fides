@@ -392,6 +392,7 @@ describe("System management with Plus features", () => {
     it("select page checkbox only selects rows on the displayed page", () => {
       cy.visit(ADD_SYSTEMS_MULTIPLE_ROUTE);
       cy.wait("@getSystemVendors");
+      cy.wait("@getDict");
       // unreliable test because when dictionary loads it overrides the rows selected
       // adding a .wait to make it more reliable
       // eslint-disable-next-line cypress/no-unnecessary-waiting
@@ -399,15 +400,26 @@ describe("System management with Plus features", () => {
       cy.getByTestId("select-page-checkbox")
         .get("[type='checkbox']")
         .check({ force: true });
+      // allow UI to update the selected rows
+      // eslint-disable-next-line cypress/no-unnecessary-waiting
+      cy.wait(500);
       cy.getByTestId("selected-row-count").contains("6 row(s) selected.");
     });
 
     it("select all button selects all rows across every page", () => {
       cy.visit(ADD_SYSTEMS_MULTIPLE_ROUTE);
       cy.wait("@getSystemVendors");
+      cy.wait("@getDict");
+      // unreliable test because when dictionary loads it overrides the rows selected
+      // adding a .wait to make it more reliable
+      // eslint-disable-next-line cypress/no-unnecessary-waiting
+      cy.wait(500);
       cy.getByTestId("select-page-checkbox")
         .get("[type='checkbox']")
         .check({ force: true });
+      // allow UI to update the selected rows
+      // eslint-disable-next-line cypress/no-unnecessary-waiting
+      cy.wait(500);
       cy.getByTestId("select-all-rows-btn").click();
       cy.getByTestId("selected-row-count").contains("8 row(s) selected.");
     });
