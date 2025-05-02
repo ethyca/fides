@@ -2,8 +2,13 @@
 import "./fides.css";
 
 import { FunctionComponent, h, VNode } from "preact";
-import { useCallback, useEffect, useRef, useState } from "preact/hooks";
-import { useMemo } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "preact/hooks";
 
 import { useA11yDialog } from "../lib/a11y-dialog";
 import { FIDES_OVERLAY_WRAPPER } from "../lib/consent-constants";
@@ -213,12 +218,12 @@ const Overlay: FunctionComponent<Props> = ({
         element.classList.add("fides-modal-link-shown"),
       );
     } else {
-      const linkByClassMessage = modalLinkByQuerySelector
-        ? ` and .${modalLinkByQuerySelector}...`
-        : "...";
-      fidesDebugger(
-        `Searching for Modal link element #${modalLinkId}${linkByClassMessage} `,
-      );
+      fidesDebugger(`Searching for Modal link element #${modalLinkId}...`);
+      if (modalLinkByQuerySelector) {
+        fidesDebugger(
+          `Searching for Modal link elements ${modalLinkByQuerySelector}...`,
+        );
+      }
     }
 
     return () => {
@@ -308,6 +313,3 @@ const Overlay: FunctionComponent<Props> = ({
 };
 
 export default Overlay;
-function useElementByClass(modalLinkByClass: string | null) {
-  throw new Error("Function not implemented.");
-}

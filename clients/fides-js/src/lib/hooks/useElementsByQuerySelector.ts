@@ -8,7 +8,7 @@ import { searchForElementsByQuerySelector } from "../ui-utils";
  * @param isDisabled - Optional flag to disable the hook
  * @returns The found element or null if not found
  */
-const useElementByQuerySelector = <T extends HTMLElement = HTMLElement>(
+const useElementsByQuerySelector = <T extends HTMLElement = HTMLElement>(
   className: string,
   isDisabled?: boolean,
 ): Array<T> => {
@@ -27,4 +27,4 @@ const useElementByQuerySelector = <T extends HTMLElement = HTMLElement>(
   return elements;
 };
 
-export default useElementByQuerySelector;
+export default useElementsByQuerySelector;
