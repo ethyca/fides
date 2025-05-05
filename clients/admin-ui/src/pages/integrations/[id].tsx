@@ -169,7 +169,7 @@ const IntegrationDetailView: NextPage = () => {
               )
             )}
           </div>
-          <div className="w-[400px] shrink-0">
+          <div className="w-[350px] shrink-0">
             <IntegrationSetupSteps
               testData={testData}
               testIsLoading={testIsLoading}
