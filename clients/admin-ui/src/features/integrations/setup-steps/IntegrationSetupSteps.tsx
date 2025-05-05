@@ -6,8 +6,8 @@ import { ConnectionSystemTypeMap } from "~/types/api";
 import type { ConnectionStatusData } from "../ConnectionStatusNotice";
 import {
   Step,
-  useAddIntegrationStep,
   useAuthorizeIntegrationStep,
+  useCreateIntegrationStep,
   useCreateMonitorStep,
   useLabelResultsStep,
   useTestConnectionStep,
@@ -34,11 +34,7 @@ export const IntegrationSetupSteps = ({
     connectionOption?.authorization_required && !testData?.authorized;
 
   // Call hooks at the component level, not inside useMemo
-  const addIntegrationStep = useAddIntegrationStep({
-    testData,
-    testIsLoading,
-    connectionOption,
-  });
+  const addIntegrationStep = useCreateIntegrationStep();
 
   const authorizeIntegrationStep = useAuthorizeIntegrationStep({
     testData,

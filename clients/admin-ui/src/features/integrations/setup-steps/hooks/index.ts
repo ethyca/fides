@@ -1,6 +1,6 @@
 export * from "./types";
-export * from "./useAddIntegrationStep";
 export * from "./useAuthorizeIntegrationStep";
+export * from "./useCreateIntegrationStep";
 export * from "./useCreateMonitorStep";
 export * from "./useLabelResultsStep";
 export * from "./useTestConnectionStep";
