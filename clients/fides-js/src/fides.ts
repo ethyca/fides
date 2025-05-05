@@ -167,7 +167,7 @@ async function init(this: FidesGlobal, providedConfig?: FidesConfig) {
     ...config,
     options: { ...config.options, ...overrides.optionsOverrides },
   };
-  this.cookie = getInitialCookie(config);
+  this.cookie = getInitialCookie(config); // also adds legacy consent values to the cookie
   this.cookie.consent = {
     ...this.cookie.consent,
     ...migratedConsent,

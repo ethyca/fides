@@ -1,5 +1,5 @@
 import { MARKETING_CONSENT_KEYS } from "../lib/consent-constants";
-import { NoticeConsent, UserConsentPreference } from "../lib/consent-types";
+import { NoticeConsent } from "../lib/consent-types";
 import { transformUserPreferenceToBoolean } from "../lib/shared-consent-utils";
 
 declare global {
@@ -53,19 +53,15 @@ function createShopifyConsent(fidesConsent: NoticeConsent): ShopifyConsent {
       key,
       values.some((value) => {
         const consentValue = fidesConsent[value];
-        return typeof consentValue === "boolean"
-          ? consentValue
-          : transformUserPreferenceToBoolean(
-              consentValue as UserConsentPreference,
-            );
+        return typeof consentValue === "string"
+          ? transformUserPreferenceToBoolean(consentValue)
+          : consentValue;
       }) ||
         (values.some((value) => {
           const consentValue = fidesConsent[value];
-          return typeof consentValue === "boolean"
-            ? !consentValue
-            : !transformUserPreferenceToBoolean(
-                consentValue as UserConsentPreference,
-              );
+          return typeof consentValue === "string"
+            ? !transformUserPreferenceToBoolean(consentValue)
+            : !consentValue;
         })
           ? false
           : undefined),
@@ -103,8 +99,9 @@ const applyOptions = () => {
   );
 
   // If Fides was already initialized, push consent to Shopify immediately
-  if (window.Fides?.initialized) {
-    pushConsentToShopify(window.Fides.consent);
+  if (window.Fides?.initialized && window.Fides.cookie) {
+    // cookie will always be present in the Fides object after initialization. Event details above also use the cookie.consent so let's stay consistent.
+    pushConsentToShopify(window.Fides.cookie.consent);
   }
 };
 

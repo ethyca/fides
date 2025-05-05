@@ -55,7 +55,7 @@ const NoticeOverlay: FunctionComponent<OverlayProps> = ({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const initialEnabledNoticeKeys = (consent?: NoticeConsent) => {
     if (experience.privacy_notices) {
-      // ensure we have most up-to-date cookie vals
+      // ensure we have most up-to-date cookie vals. If we don't have any consent, use the savedConsent which will be the default values that haven't been passed through the privacy_notices yet so it's perfect to use here.
       return experience.privacy_notices.map((notice) => {
         const val = resolveConsentValue(
           notice,

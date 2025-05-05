@@ -385,7 +385,7 @@ export const updateCookieFromNoticePreferences = async (
  * default values). This is used during initialization to override saved cookie
  * values with newer values from the experience.
  */
-export const getConsentStateFromExperience = (
+const getConsentStateFromExperience = (
   experience: PrivacyExperience,
 ): NoticeConsent => {
   const consent: NoticeConsent = {};
