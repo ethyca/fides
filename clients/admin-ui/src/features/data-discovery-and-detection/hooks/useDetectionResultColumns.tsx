@@ -218,6 +218,67 @@ const useDetectionResultColumns = ({
     ];
     return { columns };
   }
+
+  if (resourceType === StagedResourceTypeValue.ENDPOINT) {
+    const columns = [
+      columnHelper.accessor((row) => row.name, {
+        id: "name",
+        cell: (props) => (
+          <ResultStatusCell
+            changeTypeOverride={changeTypeOverride}
+            result={props.row.original}
+          />
+        ),
+        header: (props) => (
+          <DefaultHeaderCell value="Endpoint name" {...props} />
+        ),
+        size: NAME_COLUMN_SIZE,
+      }),
+      columnHelper.accessor((row) => row.description, {
+        id: "description",
+        cell: (props) => (
+          <DefaultCell value={props.getValue()} cellProps={props} />
+        ),
+        header: (props) => <DefaultHeaderCell value="Description" {...props} />,
+        meta: {
+          showHeaderMenu: true,
+        },
+      }),
+      columnHelper.display({
+        id: "status",
+        cell: (props) => (
+          <ResultStatusBadgeCell
+            changeTypeOverride={changeTypeOverride}
+            result={props.row.original}
+          />
+        ),
+        header: (props) => <DefaultHeaderCell value="Status" {...props} />,
+      }),
+      columnHelper.accessor((row) => row.monitor_config_id, {
+        id: "monitor",
+        cell: (props) => <DefaultCell value={props.getValue()} />,
+        header: (props) => <DefaultHeaderCell value="Detected by" {...props} />,
+      }),
+      columnHelper.accessor((row) => row.updated_at, {
+        id: "time",
+        cell: (props) => <RelativeTimestampCell time={props.getValue()} />,
+        header: (props) => <DefaultHeaderCell value="When" {...props} />,
+      }),
+      columnHelper.display({
+        id: "actions",
+        cell: (props) => (
+          <DetectionItemActionsCell resource={props.row.original} />
+        ),
+        header: "Actions",
+        size: ACTION_COLUMN_SIZE,
+        meta: {
+          disableRowClick: true,
+        },
+      }),
+    ];
+    return { columns };
+  }
+
   return { columns: defaultColumns };
 };
 
