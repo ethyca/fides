@@ -135,54 +135,54 @@ export const generateFidesString = async ({
             tcModel.vendorLegitimateInterests.set(+id);
           });
         } else if (vendorGvlEntry(vendorId, experience.gvl)) {
-          const thisVendor = (
+          const vendor = vendorGvlEntry(vendorId, experience.gvl);
+          const vendorLegitimateInterestsRecord = (
             experience as PrivacyExperience
           ).tcf_vendor_legitimate_interests?.filter(
             (v) => v.id === vendorId,
           )[0];
 
-          const vendorPurposes = thisVendor?.purpose_legitimate_interests;
-          // Handle the case where a vendor has forbidden legint purposes set
-          let skipSetLegInt = false;
-          if (vendorPurposes) {
-            const legIntPurposeIds = vendorPurposes.map((p) => p.id);
-            if (
-              legIntPurposeIds.filter((id) =>
-                FORBIDDEN_LEGITIMATE_INTEREST_PURPOSE_IDS.includes(id),
-              ).length
-            ) {
-              skipSetLegInt = true;
-            }
-            if (!skipSetLegInt) {
-              const { id } = decodeVendorId(vendorId);
-              tcModel.vendorLegitimateInterests.set(+id);
-            }
+          const purposeLegitimateInterests =
+            vendorLegitimateInterestsRecord?.purpose_legitimate_interests;
+
+          if (!purposeLegitimateInterests || !vendor) {
+            return;
+          }
+
+          const legIntPurposeIds = purposeLegitimateInterests.map((p) => p.id);
+
+          // Check if any of the vendor's legitimate interest purposes are forbidden
+          const hasForbiddenLegIntPurposes = legIntPurposeIds.some(id =>
+            FORBIDDEN_LEGITIMATE_INTEREST_PURPOSE_IDS.includes(id)
+          );
+
+          // If any purposes are forbidden, don't set legitimate interests at all
+          if (hasForbiddenLegIntPurposes) {
+            return;
+          }
+
+          const { id } = decodeVendorId(vendorId);
+
+          // Special case: vendor only has special purposes (no regular or flexible purposes)
+          const hasOnlySpecialPurposes =
+            vendor.specialPurposes?.length > 0 &&
+            !vendor.purposes?.length &&
+            !vendor.flexiblePurposes?.length;
+
+          if (hasOnlySpecialPurposes) {
+            tcModel.vendorLegitimateInterests.set(+id);
+            return;
+          }
+
+          // General case: vendor has at least one LI purpose or one flexible purpose
+          const hasLegitimateInterestPurpose = legIntPurposeIds.length > 0;
+          const hasFlexiblePurposes = vendor.flexiblePurposes?.length > 0;
+
+          if (hasLegitimateInterestPurpose || hasFlexiblePurposes) {
+            tcModel.vendorLegitimateInterests.set(+id);
           }
         }
       });
-
-      // Set legitimate interest for special-purpose only vendors
-      if (experience.gvl?.vendors) {
-        (experience as PrivacyExperience).tcf_vendor_relationships?.forEach(
-          (relationship) => {
-            const { id } = decodeVendorId(relationship.id);
-            const vendor = experience.gvl?.vendors[id];
-            const isInVendorConsents = (
-              experience as PrivacyExperience
-            ).tcf_vendor_consents?.some(
-              (consent) => consent.id === relationship.id,
-            );
-            if (
-              vendor &&
-              vendor.specialPurposes?.length &&
-              (!vendor.purposes || vendor.purposes.length === 0) &&
-              !isInVendorConsents
-            ) {
-              tcModel.vendorLegitimateInterests.set(+id);
-            }
-          },
-        );
-      }
 
       // Set purposes on tcModel
       tcStringPreferences.purposesConsent.forEach((purposeId) => {
