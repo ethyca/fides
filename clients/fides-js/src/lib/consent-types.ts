@@ -785,6 +785,7 @@ export enum ConsentMethod {
   GPC = "gpc",
   INDIVIDUAL_NOTICE = "individual_notice",
   ACKNOWLEDGE = "acknowledge",
+  OT_MIGRATION = "ot_migration",
 }
 
 export type PrivacyPreferencesRequest = {
