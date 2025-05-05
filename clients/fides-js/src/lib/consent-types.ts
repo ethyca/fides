@@ -5,11 +5,7 @@ import type {
   FidesOptions,
 } from "../docs";
 import { blueconic } from "../integrations/blueconic";
-import type {
-  ConsentFlagType,
-  ConsentNonApplicableFlagMode,
-  gtm,
-} from "../integrations/gtm";
+import type { gtm } from "../integrations/gtm";
 import type { meta } from "../integrations/meta";
 import type { shopify } from "../integrations/shopify";
 import type { FidesEventDetail } from "./events";
@@ -708,6 +704,16 @@ export enum UserConsentPreference {
   ACKNOWLEDGE = "acknowledge",
   NOT_APPLICABLE = "not_applicable",
   TCF = "tcf",
+}
+
+export enum ConsentNonApplicableFlagMode {
+  OMIT = "omit",
+  INCLUDE = "include",
+}
+
+export enum ConsentFlagType {
+  BOOLEAN = "boolean",
+  CONSENT_MECHANISM = "consent_mechanism",
 }
 
 // NOTE: This (and most enums!) could reasonably be replaced by string union

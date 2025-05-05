@@ -1,13 +1,14 @@
-import { ConsentFlagType } from "~/integrations/gtm";
-
+import {} from "../integrations/gtm";
 import {
+  ConsentFlagType,
   ConsentMechanism,
+  ConsentNonApplicableFlagMode,
   NoticeConsent,
   PrivacyNoticeWithPreference,
   UserConsentPreference,
 } from "./consent-types";
 
-// PC cannot import consent-utils.ts due to Webpack build issue.
+// Privacy Center cannot import consent-utils.ts due to Webpack build issue.
 // We separate out utils shared by fides-js and privacy-center here.
 
 /**
@@ -49,6 +50,50 @@ export const transformConsentToFidesUserPreference = (
     return UserConsentPreference.OPT_IN;
   }
   return UserConsentPreference.OPT_OUT;
+};
+
+interface HandleNonApplicableNoticesOptions {
+  consent: NoticeConsent;
+  nonApplicableNotices: string[];
+  flagType: ConsentFlagType;
+  mode?: ConsentNonApplicableFlagMode;
+}
+
+/**
+ * Handles non-applicable notices in the consent object based on the flag type and mode
+ * @param consent - The consent values to modify
+ * @param nonApplicableNotices - List of notice keys that are not applicable
+ * @param flagType - The target format for normalization
+ * @param mode - Whether to include or omit non-applicable notices
+ */
+export const handleNonApplicableNotices = ({
+  consent,
+  nonApplicableNotices,
+  flagType,
+  mode = ConsentNonApplicableFlagMode.OMIT,
+}: HandleNonApplicableNoticesOptions): NoticeConsent => {
+  if (!nonApplicableNotices?.length) {
+    return consent;
+  }
+
+  const result = { ...consent };
+
+  if (mode === ConsentNonApplicableFlagMode.INCLUDE) {
+    // Add non-applicable notices with appropriate values
+    nonApplicableNotices.forEach((key) => {
+      result[key] =
+        flagType === ConsentFlagType.CONSENT_MECHANISM
+          ? UserConsentPreference.NOT_APPLICABLE
+          : true;
+    });
+  } else {
+    // Remove non-applicable notices
+    nonApplicableNotices.forEach((key) => {
+      delete result[key];
+    });
+  }
+
+  return result;
 };
 
 type NoticeConsentMechanismMap = {
@@ -135,4 +180,58 @@ export const normalizeConsentValues = ({
   });
 
   return normalizedConsentValues;
+};
+
+export const applyOverridesToConsent = (
+  fidesConsent: NoticeConsent,
+  nonApplicablePrivacyNotices: string[] | undefined,
+  privacyNotices: PrivacyNoticeWithPreference[] | undefined = [],
+  flagTypeOverride?: ConsentFlagType,
+  nonApplicableFlagModeOverride?: ConsentNonApplicableFlagMode,
+): NoticeConsent => {
+  const consent = { ...fidesConsent };
+  // Get options from either the provided options or the Fides config, with
+  // provided options taking precedence
+  const overrideOptions = window.Fides?.options;
+  const nonApplicableFlagMode =
+    nonApplicableFlagModeOverride ??
+    overrideOptions?.fidesConsentNonApplicableFlagMode ??
+    ConsentNonApplicableFlagMode.OMIT;
+  const flagType =
+    flagTypeOverride ??
+    overrideOptions?.fidesConsentFlagType ??
+    ConsentFlagType.BOOLEAN;
+
+  const consentValues: NoticeConsent = {};
+
+  // Handle non-applicable privacy notices based on mode
+  Object.assign(
+    consentValues,
+    handleNonApplicableNotices({
+      consent: {},
+      nonApplicableNotices: nonApplicablePrivacyNotices ?? [],
+      flagType,
+      mode: nonApplicableFlagMode,
+    }),
+  );
+
+  // Then override with actual consent values
+  const consentMechanisms = privacyNotices.reduce(
+    (acc, notice) => ({
+      ...acc,
+      [notice.notice_key]: notice.consent_mechanism,
+    }),
+    {},
+  );
+
+  Object.assign(
+    consentValues,
+    normalizeConsentValues({
+      consent,
+      consentMechanisms,
+      flagType,
+    }),
+  );
+
+  return consentValues;
 };

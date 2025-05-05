@@ -1,7 +1,12 @@
 import { FidesEvent, FidesEventType } from "../docs";
-import { FidesGlobal, UserConsentPreference } from "../lib/consent-types";
+import {
+  ConsentFlagType,
+  ConsentNonApplicableFlagMode,
+  FidesGlobal,
+  NoticeConsent,
+} from "../lib/consent-types";
 import { FidesEventDetail } from "../lib/events";
-import { normalizeConsentValues } from "../lib/shared-consent-utils";
+import { applyOverridesToConsent } from "../lib/shared-consent-utils";
 
 declare global {
   interface Window {
@@ -14,18 +19,8 @@ declare global {
  * Defines the structure of the Fides variable pushed to the GTM data layer
  */
 type FidesVariable = Omit<FidesEvent["detail"], "consent"> & {
-  consent: Record<string, boolean | string>;
+  consent: NoticeConsent;
 };
-
-export enum ConsentNonApplicableFlagMode {
-  OMIT = "omit",
-  INCLUDE = "include",
-}
-
-export enum ConsentFlagType {
-  BOOLEAN = "boolean",
-  CONSENT_MECHANISM = "consent_mechanism",
-}
 
 export interface GtmOptions {
   non_applicable_flag_mode?: ConsentNonApplicableFlagMode;
@@ -46,55 +41,27 @@ const pushFidesVariableToGTM = (
   const { detail, type } = fidesEvent;
   // eslint-disable-next-line @typescript-eslint/naming-convention
   const { consent, extraDetails, fides_string, timestamp } = detail;
+  let consentValues: NoticeConsent = consent;
+  const flagType =
+    options?.flag_type ??
+    window.Fides?.options?.fidesConsentFlagType ??
+    ConsentFlagType.BOOLEAN;
+  const nonApplicableFlagMode =
+    options?.non_applicable_flag_mode ??
+    window.Fides?.options?.fidesConsentNonApplicableFlagMode ??
+    ConsentNonApplicableFlagMode.OMIT;
 
-  // Get options from either the provided options or the Fides config, with
-  // provided options taking precedence
-  const overrideOptions = window.Fides?.options;
-  const {
-    non_applicable_flag_mode:
-      nonApplicableFlagMode = overrideOptions?.fidesConsentNonApplicableFlagMode ??
-        ConsentNonApplicableFlagMode.OMIT,
-    flag_type: flagType = overrideOptions?.fidesConsentFlagType ??
-      ConsentFlagType.BOOLEAN,
-  } = options ?? {};
-
-  const consentValues: FidesVariable["consent"] = {};
   const privacyNotices = window.Fides?.experience?.privacy_notices ?? [];
   const nonApplicablePrivacyNotices =
     window.Fides?.experience?.non_applicable_privacy_notices;
 
-  // First set defaults for non-applicable privacy notices if needed
-  if (
-    nonApplicableFlagMode === ConsentNonApplicableFlagMode.INCLUDE &&
-    nonApplicablePrivacyNotices
-  ) {
-    nonApplicablePrivacyNotices.forEach((key) => {
-      consentValues[key] =
-        flagType === ConsentFlagType.CONSENT_MECHANISM
-          ? UserConsentPreference.NOT_APPLICABLE
-          : true;
-    });
-  }
-
-  // Then override with actual consent values
-  if (consent) {
-    const consentMechanisms = privacyNotices.reduce(
-      (acc, notice) => ({
-        ...acc,
-        [notice.notice_key]: notice.consent_mechanism,
-      }),
-      {},
-    );
-
-    Object.assign(
-      consentValues,
-      normalizeConsentValues({
-        consent,
-        consentMechanisms,
-        flagType,
-      }),
-    );
-  }
+  consentValues = applyOverridesToConsent(
+    consent,
+    nonApplicablePrivacyNotices,
+    privacyNotices,
+    flagType,
+    nonApplicableFlagMode,
+  );
 
   // Construct the Fides variable that will be pushed to GTM
   const Fides: FidesVariable = {

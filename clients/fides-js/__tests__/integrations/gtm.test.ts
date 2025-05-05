@@ -1,9 +1,9 @@
 import { FidesEventType } from "../../src/docs";
+import { gtm } from "../../src/integrations/gtm";
 import {
   ConsentFlagType,
   ConsentNonApplicableFlagMode,
-  gtm,
-} from "../../src/integrations/gtm";
+} from "../../src/lib/consent-types";
 
 const fidesEvents: Record<FidesEventType, boolean> = {
   FidesInitializing: false,
