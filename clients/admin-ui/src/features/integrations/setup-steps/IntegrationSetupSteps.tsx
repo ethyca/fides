@@ -168,6 +168,7 @@ export const IntegrationSetupSteps = ({
         current={getCurrentStep()}
         status={getStepStatus()}
         items={steps}
+        size="small"
       />
     </Card>
   );
