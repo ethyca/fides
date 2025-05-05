@@ -275,7 +275,7 @@ def oauth_callback(code: str, state: str, db: Session = Depends(get_db)) -> Resp
             parsed_url = urlparse(authentication_request.referer)
             base_url = f"{parsed_url.scheme}://{parsed_url.netloc}"
 
-            if connection_config.system:
+            if connection_config.system is not None:
                 system_key = connection_config.system.fides_key
                 redirect_path = f"/systems/configure/{system_key}"
             else:
