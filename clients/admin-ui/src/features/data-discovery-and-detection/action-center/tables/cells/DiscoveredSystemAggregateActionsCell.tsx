@@ -56,7 +56,8 @@ export const DiscoveredSystemActionsCell = ({
       monitor_config_key: monitorId,
       resolved_system_ids: [resolvedSystemId],
     });
-    const href = `${SYSTEM_ROUTE}/configure/${systemKey}#assets`;
+    const systemToLink = result.data?.items?.[0]?.system_key ?? systemKey;
+    const href = `${SYSTEM_ROUTE}/configure/${systemToLink}#assets`;
     if (isErrorResult(result)) {
       toast(errorToastParams(getErrorMessage(result.error)));
     } else {
@@ -66,7 +67,7 @@ export const DiscoveredSystemActionsCell = ({
             systemKey
               ? `${totalUpdates} assets from ${systemName} have been added to the system inventory.`
               : `${systemName} and ${totalUpdates} assets have been added to the system inventory. ${systemName} is now configured for consent.`,
-            systemKey ? () => router.push(href) : undefined,
+            systemToLink ? () => router.push(href) : undefined,
           ),
         ),
       );
