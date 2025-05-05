@@ -166,7 +166,8 @@ export const generateFidesString = async ({
           // Special case: vendor only has special purposes (no regular or flexible purposes)
           const hasOnlySpecialPurposes =
             vendor.specialPurposes?.length > 0 &&
-            (!vendor.purposes?.length && !vendor.flexiblePurposes?.length);
+            !vendor.purposes?.length &&
+            !vendor.flexiblePurposes?.length;
 
           if (hasOnlySpecialPurposes) {
             tcModel.vendorLegitimateInterests.set(+id);
@@ -206,16 +207,18 @@ export const generateFidesString = async ({
       ) {
         experience.tcf_publisher_restrictions.forEach(
           (restriction: TcfPublisherRestriction) => {
-            // Map string restriction types to numeric values
-            const restrictionTypeMap: Record<string, number> = {
-              purpose_restriction: 0,
-              require_consent: 1,
-              require_legitimate_interest: 2
-            };
+            // NOTE: While this documentation https://github.com/InteractiveAdvertisingBureau/GDPR-Transparency-and-Consent-Framework/blob/master/TCFv2/TCF-Implementation-Guidelines.md#pubrestrenc
+            // mentions "it might be more efficient to encode a small number of range restriction
+            // segments using a specific encoding scheme," this is referring to the CMP's interface (Admin UI)
+            // providing a mechanism for handling ranges, but the TCModel.publisherRestrictions object does
+            // not support ranges. We must add each vendor id as a separate publisher restriction because
+            // that's what the TCModel we're using for our encoding supports.
+            // See https://github.com/InteractiveAdvertisingBureau/iabtcf-es/tree/master/modules/core#setting-publisher-restrictions
+            // for more information about the loop below.
             restriction.vendors.forEach((vendorId: number) => {
               const purposeRestriction = new PurposeRestriction();
               purposeRestriction.purposeId = restriction.purpose_id;
-              purposeRestriction.restrictionType = restrictionTypeMap[restriction.restriction_type.toString()] || 0;
+              purposeRestriction.restrictionType = restriction.restriction_type;
               tcModel.publisherRestrictions.add(vendorId, purposeRestriction);
             });
           },
