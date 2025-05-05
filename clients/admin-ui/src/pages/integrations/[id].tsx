@@ -76,7 +76,7 @@ const IntegrationDetailView: NextPage = () => {
     {
       label: "Connection",
       content: (
-        <Box maxW="720px">
+        <Box>
           <Flex
             borderRadius="md"
             outline="1px solid"
@@ -164,10 +164,12 @@ const IntegrationDetailView: NextPage = () => {
             {integrationIsLoading ? (
               <Spinner />
             ) : (
-              !!connection && <DataTabs data={tabs} isLazy />
+              !!connection && (
+                <DataTabs data={tabs} border="full-width" isLazy />
+              )
             )}
           </div>
-          <div className="w-[400px]">
+          <div className="w-[400px] shrink-0">
             <IntegrationSetupSteps
               testData={testData}
               testIsLoading={testIsLoading}

@@ -58,7 +58,6 @@ const IntegrationBox = ({
 
   return (
     <Box
-      maxW="760px"
       borderWidth={1}
       borderRadius="lg"
       overflow="hidden"
