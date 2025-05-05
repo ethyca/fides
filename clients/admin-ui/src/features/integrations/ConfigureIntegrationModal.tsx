@@ -4,6 +4,7 @@ import FormModal from "~/features/common/modals/FormModal";
 import ConfigureIntegrationForm from "~/features/integrations/add-integration/ConfigureIntegrationForm";
 import useIntegrationOption from "~/features/integrations/useIntegrationOption";
 import { ConnectionConfigurationResponse } from "~/types/api";
+import { SaasConnectionTypes } from "~/types/api/models/ConnectionType";
 
 const ConfigureIntegrationModal = ({
   isOpen,
@@ -16,7 +17,7 @@ const ConfigureIntegrationModal = ({
 }) => {
   const connectionOption = useIntegrationOption(
     connection.connection_type,
-    connection?.saas_config?.type,
+    connection?.saas_config?.type as SaasConnectionTypes,
   );
 
   return (

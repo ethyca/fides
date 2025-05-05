@@ -9,6 +9,7 @@ import ConfigureIntegrationForm from "~/features/integrations/add-integration/Co
 import IntegrationTypeDetail from "~/features/integrations/add-integration/IntegrationTypeDetail";
 import SelectIntegrationType from "~/features/integrations/add-integration/SelectIntegrationType";
 import useIntegrationOption from "~/features/integrations/useIntegrationOption";
+import { SaasConnectionTypes } from "~/types/api/models/ConnectionType";
 
 enum IntegrationModalStep {
   LIST_VIEW = "list-view",
@@ -28,7 +29,7 @@ const AddIntegrationModal = ({
 
   const connectionOption = useIntegrationOption(
     integrationType?.placeholder.connection_type,
-    integrationType?.placeholder?.saas_config?.type,
+    integrationType?.placeholder?.saas_config?.type as SaasConnectionTypes,
   );
 
   const { description } = getIntegrationTypeInfo(
