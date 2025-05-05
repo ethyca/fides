@@ -1,14 +1,17 @@
 import secrets
-from typing import Dict, List, Optional, TypeVar
+from typing import Any, Dict, List, Optional, TypeVar
 
 from loguru import logger
 
+from fides.api.db.session import get_db_session
+from fides.api.models.masking_secret import MaskingSecret
 from fides.api.schemas.masking.masking_secrets import (
     MaskingSecretCache,
     MaskingSecretMeta,
     SecretType,
 )
 from fides.api.util.cache import get_cache, get_masking_secret_cache_key
+from fides.config import CONFIG
 
 T = TypeVar("T")
 
@@ -21,12 +24,14 @@ class SecretsUtil:
         masking_secret_meta: MaskingSecretMeta[T],
     ) -> Optional[T]:
         if privacy_request_id is not None:
-            secret = SecretsUtil._get_secret_from_cache(
-                privacy_request_id, secret_type, masking_secret_meta
+            secret = SecretsUtil.get_masking_secret(
+                privacy_request_id=privacy_request_id,
+                masking_strategy=masking_secret_meta.masking_strategy,
+                secret_type=secret_type,
             )
             if not secret:
                 logger.warning(
-                    "Secret type {} expected from cache but was not present for masking strategy {}",
+                    "Secret type {} expected but was not present for masking strategy {}",
                     secret_type,
                     masking_secret_meta.masking_strategy,
                 )
@@ -36,20 +41,6 @@ class SecretsUtil:
         return masking_secret_meta.generate_secret_func(
             masking_secret_meta.secret_length
         )
-
-    @staticmethod
-    def _get_secret_from_cache(
-        privacy_request_id: str,
-        secret_type: SecretType,
-        masking_secret_meta: MaskingSecretMeta[T],
-    ) -> Optional[T]:
-        cache = get_cache()
-        masking_secret_cache_key: str = get_masking_secret_cache_key(
-            privacy_request_id=privacy_request_id,
-            masking_strategy=masking_secret_meta.masking_strategy,
-            secret_type=secret_type,
-        )
-        return cache.get_encoded_by_key(masking_secret_cache_key)
 
     @staticmethod
     def generate_secret_string(length: int) -> str:
@@ -75,3 +66,41 @@ class SecretsUtil:
                 )
             )
         return masking_secrets
+
+    @staticmethod
+    def get_masking_secret(
+        privacy_request_id: str,
+        masking_strategy: str,
+        secret_type: SecretType,
+    ) -> Optional[Any]:
+        """
+        Attempts to retrieve masking secret from cache first, then falls back to DB.
+        """
+        # Try cache first
+        cache = get_cache()
+        cache_key = get_masking_secret_cache_key(
+            privacy_request_id=privacy_request_id,
+            masking_strategy=masking_strategy,
+            secret_type=secret_type,
+        )
+        secret = cache.get_encoded_by_key(cache_key)
+        if secret is not None:
+            return secret
+
+        # Cache miss - try database
+        session_local = get_db_session(CONFIG)
+        with session_local() as session:
+            masking_secret: MaskingSecret = (
+                session.query(MaskingSecret)
+                .filter(
+                    MaskingSecret.privacy_request_id == privacy_request_id,
+                    MaskingSecret.masking_strategy == masking_strategy,
+                    MaskingSecret.secret_type == secret_type,
+                )
+                .first()
+            )
+
+            if not masking_secret:
+                return None
+
+            return masking_secret.get_secret()
