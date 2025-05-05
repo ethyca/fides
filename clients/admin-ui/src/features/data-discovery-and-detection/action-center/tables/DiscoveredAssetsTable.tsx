@@ -198,7 +198,7 @@ export const DiscoveredAssetsTable = ({
                   router.push(
                     `${SYSTEM_ROUTE}/configure/${systemToLink}#assets`,
                   )
-              : undefined,
+              : () => router.push(SYSTEM_ROUTE),
           ),
         ),
       );

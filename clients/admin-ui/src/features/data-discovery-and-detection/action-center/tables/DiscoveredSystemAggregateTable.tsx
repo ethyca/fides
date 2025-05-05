@@ -171,7 +171,7 @@ export const DiscoveredSystemAggregateTable = ({
         successToastParams(
           successToastContent(
             `${totalUpdates} assets have been added to the system inventory.`,
-            () => router.push(`${SYSTEM_ROUTE}/`),
+            () => router.push(SYSTEM_ROUTE),
           ),
         ),
       );
