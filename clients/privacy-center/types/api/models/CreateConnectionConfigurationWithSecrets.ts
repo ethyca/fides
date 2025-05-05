@@ -16,6 +16,7 @@ import type { MariaDBDocsSchema } from "./MariaDBDocsSchema";
 import type { MongoDBDocsSchema } from "./MongoDBDocsSchema";
 import type { MSSQLDocsSchema } from "./MSSQLDocsSchema";
 import type { MySQLDocsSchema } from "./MySQLDocsSchema";
+import type { OktaDocsSchema } from "./OktaDocsSchema";
 import type { PostgreSQLDocsSchema } from "./PostgreSQLDocsSchema";
 import type { RedshiftDocsSchema } from "./RedshiftDocsSchema";
 import type { S3DocsSchema } from "./S3DocsSchema";
@@ -36,26 +37,27 @@ export type CreateConnectionConfigurationWithSecrets = {
   disabled?: boolean | null;
   description?: string | null;
   secrets?:
-    | MongoDBDocsSchema
-    | PostgreSQLDocsSchema
-    | MySQLDocsSchema
+    | BigQueryDocsSchema
+    | DynamicErasureEmailDocsSchema
+    | DynamoDBDocsSchema
+    | EmailDocsSchema
+    | FidesDocsSchema
     | GoogleCloudSQLMySQLDocsSchema
     | GoogleCloudSQLPostgresDocsSchema
-    | RedshiftDocsSchema
-    | SnowflakeDocsSchema
-    | MSSQLDocsSchema
-    | MariaDBDocsSchema
-    | BigQueryDocsSchema
-    | SaaSSchema
-    | EmailDocsSchema
     | ManualWebhookDocsSchema
-    | TimescaleDocsSchema
-    | FidesDocsSchema
-    | SovrnDocsSchema
-    | DynamoDBDocsSchema
+    | MariaDBDocsSchema
+    | MongoDBDocsSchema
+    | MSSQLDocsSchema
+    | MySQLDocsSchema
+    | OktaDocsSchema
+    | PostgreSQLDocsSchema
+    | RedshiftDocsSchema
     | S3DocsSchema
+    | SaaSSchema
     | ScyllaDocsSchema
-    | DynamicErasureEmailDocsSchema
+    | SnowflakeDocsSchema
+    | SovrnDocsSchema
+    | TimescaleDocsSchema
     | null;
   saas_connector_type?: string | null;
 };
