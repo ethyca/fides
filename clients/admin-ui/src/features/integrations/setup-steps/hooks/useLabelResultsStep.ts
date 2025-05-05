@@ -7,6 +7,6 @@ export const useLabelResultsStep = (
   return {
     title: "Label Results",
     description: "Review and confirm the monitoring results",
-    state: "wait", // TODO: Add labeling status when available
+    state: "process", // TODO: Add labeling status when available
   };
 };

@@ -7,6 +7,6 @@ export const useTestDSRStep = (
   return {
     title: "Test DSR",
     description: "Run a test Data Subject Request",
-    state: "wait", // TODO: Add DSR test status when available
+    state: "process", // TODO: Add DSR test status when available
   };
 };

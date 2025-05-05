@@ -7,6 +7,6 @@ export const useTestDatasetsStep = (
   return {
     title: "Test Datasets",
     description: "Validate the discovered datasets",
-    state: "wait", // TODO: Add dataset validation status when available
+    state: "process", // TODO: Add dataset validation status when available
   };
 };

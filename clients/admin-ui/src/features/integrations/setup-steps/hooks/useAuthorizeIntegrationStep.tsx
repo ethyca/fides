@@ -39,6 +39,6 @@ export const useAuthorizeIntegrationStep = ({
         )}
       </div>
     ),
-    state: testData?.authorized ? "finish" : "wait",
+    state: testData?.authorized ? "finish" : "process",
   };
 };

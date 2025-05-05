@@ -29,7 +29,7 @@ export const useTestConnectionStep = ({
     }
 
     if (!testData?.timestamp) {
-      return "wait";
+      return "process";
     }
 
     return testData.succeeded ? "finish" : "error";
