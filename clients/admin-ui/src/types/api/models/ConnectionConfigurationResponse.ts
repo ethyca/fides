@@ -27,4 +27,5 @@ export type ConnectionConfigurationResponse = {
   last_test_succeeded?: boolean | null;
   authorized?: boolean | null;
   enabled_actions?: Array<ActionType> | null;
+  system_id?: string | null;
 };
