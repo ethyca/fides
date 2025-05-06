@@ -1,6 +1,6 @@
 import { useAppSelector } from "~/app/hooks";
-import { useGetConfigQuery } from "~/features/common/config.slice";
 import { useGetHealthQuery } from "~/features/common/health.slice";
+import { useGetConfigurationSettingsQuery } from "~/features/config-settings/config-settings.slice";
 import { useGetHealthQuery as useGetPlusHealthQuery } from "~/features/plus/plus.slice";
 import { useGetSystemsQuery } from "~/features/system";
 import { selectThisUsersScopes } from "~/features/user-management";
@@ -10,7 +10,7 @@ const useCommonSubscriptions = () => {
   useGetPlusHealthQuery();
   useGetSystemsQuery({ page: 1, size: 1 }); // used to preload systems count on selectSystemsCount
   useAppSelector(selectThisUsersScopes);
-  useGetConfigQuery();
+  useGetConfigurationSettingsQuery({ api_set: true });
 };
 
 /**

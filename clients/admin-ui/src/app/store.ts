@@ -2,7 +2,6 @@ import {
   AnyAction,
   combineReducers,
   configureStore,
-  Middleware,
   StateFromReducersMapObject,
 } from "@reduxjs/toolkit";
 import { setupListeners } from "@reduxjs/toolkit/query/react";
@@ -18,11 +17,10 @@ import {
 } from "redux-persist";
 import createWebStorage from "redux-persist/lib/storage/createWebStorage";
 
-import { rtkQueryErrorLogger, testRtkQueryErrorLogger } from "~/app/middleware";
+import { rtkQueryErrorLogger } from "~/app/middleware";
 import { STORAGE_ROOT_KEY } from "~/constants";
 import { authSlice } from "~/features/auth";
 import { baseApi } from "~/features/common/api.slice";
-import { applicationConfigSlice } from "~/features/common/config.slice";
 import { featuresSlice } from "~/features/common/features";
 import { healthApi } from "~/features/common/health.slice";
 import { dirtyFormsSlice } from "~/features/common/hooks/dirty-forms.slice";
@@ -100,7 +98,6 @@ const reducer = {
   [taxonomySlice.name]: taxonomySlice.reducer,
   [userManagementSlice.name]: userManagementSlice.reducer,
   [dictSuggestionsSlice.name]: dictSuggestionsSlice.reducer,
-  [applicationConfigSlice.name]: applicationConfigSlice.reducer,
 };
 
 export type RootState = StateFromReducersMapObject<typeof reducer>;
@@ -131,15 +128,6 @@ const persistConfig = {
   ],
 };
 
-const errorLoggingMiddlewares: Record<
-  NodeJS.ProcessEnv["NEXT_PUBLIC_APP_ENV"],
-  Middleware
-> = {
-  development: rtkQueryErrorLogger,
-  production: rtkQueryErrorLogger,
-  test: testRtkQueryErrorLogger,
-};
-
 export const persistedReducer = persistReducer(persistConfig, rootReducer);
 export const makeStore = (
   preloadedState?: Parameters<typeof persistedReducer>[0],
@@ -151,11 +139,7 @@ export const makeStore = (
         serializableCheck: {
           ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
         },
-      }).concat(
-        baseApi.middleware,
-        healthApi.middleware,
-        errorLoggingMiddlewares[process.env.NEXT_PUBLIC_APP_ENV],
-      ),
+      }).concat(baseApi.middleware, healthApi.middleware, rtkQueryErrorLogger),
     devTools: true,
     preloadedState,
   });
