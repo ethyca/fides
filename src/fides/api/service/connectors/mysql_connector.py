@@ -75,6 +75,7 @@ class MySQLConnector(SQLConnector):
             uri,
             hide_parameters=self.hide_parameters,
             echo=not self.hide_parameters,
+            # connect_args={}
             connect_args=connect_args,
         )
 
@@ -84,12 +85,17 @@ class MySQLConnector(SQLConnector):
 
     def get_connect_args(self) -> Dict[str, Dict[str, MySQLSSLMode]]:
         """Get connection arguments for the engine"""
+
+        connect_args = {}
+
         ssl_mode = self.configuration.secrets.get("ssl_mode", MySQLSSLMode.preferred)
-        return {
-            "ssl": {
-                "mode": ssl_mode,
-            }
-        }
+
+        # if SSL mode was assigned in the connector configuration
+        # otherwise connect_args remains empty
+        if (ssl_mode):
+            connect_args["ssl"] = { "mode": ssl_mode }
+
+        return connect_args
 
     @staticmethod
     def cursor_result_to_rows(results: LegacyCursorResult) -> List[Row]:
