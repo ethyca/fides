@@ -67,6 +67,7 @@ def get_api_session() -> Session:
             keepalives_idle=CONFIG.database.api_engine_keepalives_idle,
             keepalives_interval=CONFIG.database.api_engine_keepalives_interval,
             keepalives_count=CONFIG.database.api_engine_keepalives_count,
+            pool_recycle=CONFIG.database.api_engine_pool_recycle,
         )
     SessionLocal = get_db_session(CONFIG, engine=_engine)
     db = SessionLocal()

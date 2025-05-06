@@ -24,6 +24,7 @@ def get_db_engine(
     keepalives_interval: int | None = None,
     keepalives_count: int | None = None,
     disable_pooling: bool = False,
+    pool_recycle: int | None = None,
 ) -> Engine:
     """Return a database engine.
 
@@ -64,6 +65,7 @@ def get_db_engine(
         engine_args["pool_pre_ping"] = True
         engine_args["pool_size"] = pool_size
         engine_args["max_overflow"] = max_overflow
+        engine_args["pool_recycle"] = pool_recycle
 
     return create_engine(database_uri, **engine_args)
 

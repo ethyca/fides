@@ -43,6 +43,10 @@ class DatabaseSettings(FidesSettings):
         default=5,
         description="Maximum number of TCP keepalive retries before the client considers the connection dead and closes it.",
     )
+    api_engine_pool_recycle: int = Field(
+        default=-1,
+        description="Number of seconds between connection recycling, which means upon checkout, if this timeout is surpassed the connection will be closed and replaced with a newly opened connection.",
+    )
     db: str = Field(
         default="default_db", description="The name of the application database."
     )
