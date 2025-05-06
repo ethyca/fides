@@ -1,3 +1,4 @@
+import asyncio
 from typing import Any, Dict, List, Optional
 
 from okta.client import Client as OktaClient
@@ -46,7 +47,16 @@ class OktaConnector(BaseConnector):
         try:
             client = self.client()
             # Try to list applications as a test of the connection
-            client.list_applications()
+            try:
+                loop = asyncio.get_event_loop()
+            except RuntimeError:
+                # Create new event loop if there isn't one in the current thread
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
+
+            _, _, err = loop.run_until_complete(client.list_applications())
+            if err:
+                raise ConnectionException(f"Failed to connect to Okta: {str(err)}")
             return ConnectionTestStatus.succeeded
         except OktaAPIException as e:
             raise ConnectionException(f"Failed to connect to Okta: {str(e)}")
