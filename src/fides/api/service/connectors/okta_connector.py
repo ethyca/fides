@@ -1,4 +1,4 @@
-import asyncio
+import ast
 from typing import Any, Dict, List, Optional
 
 from okta.client import Client as OktaClient
@@ -12,6 +12,7 @@ from fides.api.models.privacy_request import PrivacyRequest, RequestTask
 from fides.api.service.connectors.base_connector import BaseConnector
 from fides.api.service.connectors.query_configs.query_config import QueryConfig
 from fides.api.util.collection_util import Row
+from fides.api.util.wrappers import sync
 
 
 class OktaConnector(BaseConnector):
@@ -31,6 +32,7 @@ class OktaConnector(BaseConnector):
                 {
                     "orgUrl": self.configuration.secrets["org_url"],
                     "token": self.configuration.secrets["api_token"],
+                    "raiseException": True,
                 }
             )
         except Exception as e:
@@ -45,25 +47,21 @@ class OktaConnector(BaseConnector):
         Validates the connection to Okta by attempting to list users.
         """
         try:
-            client = self.client()
-            # Try to list applications as a test of the connection
-            try:
-                loop = asyncio.get_event_loop()
-            except RuntimeError:
-                # Create new event loop if there isn't one in the current thread
-                loop = asyncio.new_event_loop()
-                asyncio.set_event_loop(loop)
-
-            _, _, err = loop.run_until_complete(client.list_applications())
-            if err:
-                raise ConnectionException(f"Failed to connect to Okta: {str(err)}")
+            _, _, err = self._list_applications()
             return ConnectionTestStatus.succeeded
         except OktaAPIException as e:
-            raise ConnectionException(f"Failed to connect to Okta: {str(e)}")
+            error_json = ast.literal_eval(str(e))
+            raise ConnectionException(f"Failed to connect to Okta: {error_json['errorSummary']}")
         except Exception as e:
             raise ConnectionException(
                 f"Unexpected error testing Okta connection: {str(e)}"
             )
+
+    @sync
+    async def _list_applications(self):
+        """List all applications in Okta"""
+        client = self.client()
+        return await client.list_applications()
 
     def retrieve_data(
         self,
