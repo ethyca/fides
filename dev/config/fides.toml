@@ -13,6 +13,9 @@ enabled = true # boolean
 # request report download
 max_privacy_request_download_rows = 100000 # integer
 
+# This setting controls how errors are notified to users.
+error_notification_mode = "console_only" # string
+
 #------------#
 #-- CELERY --#
 #--------------------------------------------------------------------#
@@ -36,7 +39,7 @@ task_always_eager = true # boolean
 
 # A fully anonymized unique identifier that is automatically generated
 # by the application. Used for anonymous analytics when opted-in.
-analytics_id = "1b79a0dc63dc156d19ffe469ccb6d96e" # string
+analytics_id = "d0525c1d4723810a60a22ec891db96f4" # string
 
 # When set to True, disables functionality that requires making calls
 # to a Fides webserver.

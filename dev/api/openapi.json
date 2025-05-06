@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "fides",
-    "version": "2.60.2b1.post0.dev4"
+    "version": "2.60.2b1.post0.dev5"
   },
   "paths": {
     "/api/v1/data_category": {
@@ -13935,6 +13935,17 @@
               }
             ],
             "title": "Url"
+          },
+          "error_notification_mode": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ErrorNotificationMode"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": "console_only"
           }
         },
         "additionalProperties": false,
@@ -18014,6 +18025,14 @@
         ],
         "title": "Endpoint",
         "description": "A collection of read/update/delete requests which corresponds to a FidesDataset collection (by name)"
+      },
+      "ErrorNotificationMode": {
+        "type": "string",
+        "enum": [
+          "console_only",
+          "toast"
+        ],
+        "title": "ErrorNotificationMode"
       },
       "Evaluation": {
         "properties": {
