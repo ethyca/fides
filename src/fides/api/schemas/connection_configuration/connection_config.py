@@ -129,6 +129,7 @@ class ConnectionConfigurationResponse(ConnectionConfigSecretsMixin):
     last_test_succeeded: Optional[bool] = None
     authorized: Optional[bool] = False
     enabled_actions: Optional[List[ActionType]] = None
+    system_id: Optional[str] = None
 
     model_config = ConfigDict(from_attributes=True)
 
