@@ -14,14 +14,12 @@ import {
 interface IntegrationSetupStepsProps {
   testData?: ConnectionStatusData;
   testIsLoading?: boolean;
-  onAuthorize?: () => void;
   connectionOption?: ConnectionSystemTypeMap;
 }
 
 export const IntegrationSetupSteps = ({
   testData,
   testIsLoading,
-  onAuthorize,
   connectionOption,
 }: IntegrationSetupStepsProps) => {
   // Call hooks at the component level, not inside useMemo
@@ -31,7 +29,6 @@ export const IntegrationSetupSteps = ({
     testData,
     testIsLoading,
     connectionOption,
-    onAuthorize,
   });
 
   const createMonitorStep = useCreateMonitorStep({

@@ -72,8 +72,8 @@ const IntegrationDetailView: NextPage = () => {
     router.push(INTEGRATION_MANAGEMENT_ROUTE);
   }
 
-  // Check if the integration has DSR automation capability
-  const hasDsrAutomation = tags?.includes("DSR Automation");
+  // Check if the integration has detection support capability
+  const hasDetectionSupport = tags?.includes("Detection");
 
   const tabs: TabData[] = [
     {
@@ -172,13 +172,11 @@ const IntegrationDetailView: NextPage = () => {
               )
             )}
           </div>
-          {hasDsrAutomation && (
+          {hasDetectionSupport && (
             <div className="w-[350px] shrink-0">
               <IntegrationSetupSteps
                 testData={testData}
                 testIsLoading={testIsLoading}
-                onTestConnection={testConnection}
-                onAuthorize={handleAuthorize}
                 connectionOption={integrationOption}
               />
             </div>

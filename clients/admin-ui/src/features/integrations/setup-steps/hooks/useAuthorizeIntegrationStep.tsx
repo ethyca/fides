@@ -1,15 +1,10 @@
-import { AntButton as Button } from "fidesui";
-
 import { BaseStepHookParams, Step } from "./types";
 
-interface AuthorizeIntegrationStepParams extends BaseStepHookParams {
-  onAuthorize?: () => void;
-}
+interface AuthorizeIntegrationStepParams extends BaseStepHookParams {}
 
 export const useAuthorizeIntegrationStep = ({
   testData,
   connectionOption,
-  onAuthorize,
 }: AuthorizeIntegrationStepParams): Step | null => {
   // Only return this step if authorization is required
   if (!connectionOption?.authorization_required) {
@@ -25,20 +20,7 @@ export const useAuthorizeIntegrationStep = ({
 
   return {
     title: "Authorize Integration",
-    description: (
-      <div className="flex items-center gap-2">
-        <span>{getAuthorizationDescription()}</span>
-        {onAuthorize && !testData?.authorized && (
-          <Button
-            size="small"
-            onClick={onAuthorize}
-            data-testid="step-authorize-integration-btn"
-          >
-            Authorize
-          </Button>
-        )}
-      </div>
-    ),
+    description: <span>{getAuthorizationDescription()}</span>,
     state: testData?.authorized ? "finish" : "process",
   };
 };
