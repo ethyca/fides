@@ -106,3 +106,9 @@ h6 {
 .ant-steps-item-title {
   font-weight: 500;
 }
+
+// don't show the link color for the inactive steps
+.ant-steps-item-wait a,
+.ant-steps-item-wait a:hover {
+  color: inherit;
+}
